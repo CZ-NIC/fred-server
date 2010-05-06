@@ -56,9 +56,6 @@ struct corba_container
     PortableServer::POA_var poa;
     CORBA::Object_var nameservice_ref;
     CosNaming::NamingContext_var root_nameservice_context;
-    ccReg::Admin_var admin_ref;
-    Registry::Registrar::Group::Manager_var group_manager;
-    Registry::Registrar::Certification::Manager_var cert_manager;
 };//struct corba_container
 
 class CorbaSingleton

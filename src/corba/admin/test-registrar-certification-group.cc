@@ -103,6 +103,11 @@ BOOST_AUTO_TEST_CASE( test_corba )
         if (CORBA::is_nil(cs->cc.root_nameservice_context))
             throw "cs->cc.root_nameservice_context";
 
+
+        ccReg::Admin_var admin_ref;
+        Registry::Registrar::Group::Manager_var group_manager;
+        Registry::Registrar::Certification::Manager_var cert_manager;
+
         //Create a name object, containing the name test/context
         CosNaming::Name contextName;
         contextName.length(2);
@@ -117,12 +122,12 @@ BOOST_AUTO_TEST_CASE( test_corba )
         std::cout << "root_nameservice_context->resolve contextName" << std::endl;
         cs->cc.root_nameservice_context->resolve(contextName);
         std::cout << "ccReg::Admin::_narrow" << std::endl;
-        cs->cc.admin_ref = ccReg::Admin::_narrow(cs->cc.root_nameservice_context->resolve(contextName));
+        admin_ref = ccReg::Admin::_narrow(cs->cc.root_nameservice_context->resolve(contextName));
 
         std::cout << "admin_ref->getGroupManager()" << std::endl;
-        cs->cc.group_manager= cs->cc.admin_ref->getGroupManager();
+        group_manager= admin_ref->getGroupManager();
         std::cout << "admin_ref->getCertificationManager()" << std::endl;
-        cs->cc.cert_manager = cs->cc.admin_ref->getCertificationManager();
+        cert_manager = admin_ref->getCertificationManager();
 
 
        // while(cs->cc.orb->work_pending())
