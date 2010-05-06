@@ -225,7 +225,8 @@ top_srcdir = @top_srcdir@
 SUBDIRS = log types db conf
 noinst_HEADERS = util.h singleton.h time_clock.h settings.h \
                     base_exception.h rand_string.h concurrent_queue.h \
-                    random_data_generator.h faked_args.h test_custom_main.h
+                    random_data_generator.h faked_args.h test_custom_main.h \
+                    corba_wrapper.h
 
 all: all-recursive
 
