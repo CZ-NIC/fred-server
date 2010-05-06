@@ -28,6 +28,8 @@ boost::assign::list_of
 
 #include "test_custom_main.h"
 
+#include "corba_wrapper.h"
+
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
@@ -40,14 +42,7 @@ namespace std
 
 #include "test-registrar-certification-group.h"
 
-
-BOOST_AUTO_TEST_CASE( test_config )
-{
-    std::cout << CfgArgs::instance()
-        ->get_handler_by_type<HandleGeneralArgs>()<< std::endl;
-}//test_config
-
-BOOST_AUTO_TEST_CASE( test_corba )
+BOOST_AUTO_TEST_CASE( test_registrar_certification )
 {
     //  try
     //  {
@@ -76,6 +71,8 @@ BOOST_AUTO_TEST_CASE( test_corba )
         Registry::Registrar::Certification::Manager_var cert_manager;
         cert_manager = admin_ref->getCertificationManager();
 
+        CorbaContainer::destroy_instance();
+
 /*
     }//try
     catch(CORBA::TRANSIENT&)
@@ -100,11 +97,6 @@ BOOST_AUTO_TEST_CASE( test_corba )
     }
 */
 
+        BOOST_REQUIRE_EQUAL(registrar_certification_test() , 0);
+
 }//test_corba
-
-BOOST_AUTO_TEST_CASE( test_registrar_certification )
-{
-    BOOST_REQUIRE_EQUAL(registrar_certification_test() , 0);
-    //BOOST_REQUIRE_EXCEPTION( test(), std::exception , check_std_exception_nodatafound);
-}
-
