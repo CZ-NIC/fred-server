@@ -42,7 +42,7 @@ namespace std
 
 #include "test-registrar-certification-group.h"
 
-BOOST_AUTO_TEST_CASE( test_registrar_certification )
+BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
 {
     //  try
     //  {
@@ -59,6 +59,15 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification )
             ->nameservice_context
         );
 
+
+        Database::Connection conn = Database::Manager::acquire();
+        std::string query = str(boost::format(
+                "delete from registrar_group where short_name = '%1%'"
+                " or short_name = '%2%' or short_name = '%3%'")
+                % "group1" % "group2" % "group3");
+
+        Database::Result res = conn.exec( query );
+
         std::cout << "ccReg::Admin::_narrow" << std::endl;
         ccReg::Admin_var admin_ref;
         admin_ref = ccReg::Admin::_narrow(CorbaContainer::get_instance()->nsresolve("Admin"));
@@ -66,6 +75,11 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification )
         std::cout << "admin_ref->getGroupManager()" << std::endl;
         Registry::Registrar::Group::Manager_var group_manager_ref;
         group_manager_ref= admin_ref->getGroupManager();
+
+        ccReg::TID gid1 = group_manager_ref->createGroup("group1");
+        ccReg::TID gid2 = group_manager_ref->createGroup("group2");
+        ccReg::TID gid3 = group_manager_ref->createGroup("group3");
+        group_manager_ref->deleteGroup(gid2);
 
         std::cout << "admin_ref->getCertificationManager()" << std::endl;
         Registry::Registrar::Certification::Manager_var cert_manager_ref;
@@ -99,4 +113,4 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification )
 
         BOOST_REQUIRE_EQUAL(registrar_certification_test() , 0);
 
-}//test_corba
+}//test_registrar_certification_simple
