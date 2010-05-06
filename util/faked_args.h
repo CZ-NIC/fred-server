@@ -334,7 +334,9 @@ public:
         //not found
         throw std::runtime_error("error: handler not found");
     }
-
+    friend class std::auto_ptr<CfgArgs>;
+protected:
+    ~CfgArgs(){}
 private:
     CfgArgs(const HandlerPtrVector& hpv)
         : hpv_(hpv) //vector init
@@ -400,10 +402,6 @@ CfgArgs* CfgArgs::instance()
     if (ret == 0) throw std::runtime_error("error: CfgArgs instance not set");
     return ret;
 }
-
-
-
-
 
 class HandleDatabaseArgs : public HandleArgs
 {
