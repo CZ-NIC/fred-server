@@ -49,94 +49,33 @@ BOOST_AUTO_TEST_CASE( test_config )
 
 BOOST_AUTO_TEST_CASE( test_corba )
 {
+    //  try
+    //  {
 
-//  try
-//  {
-        CorbaSingleton* cs = CorbaSingleton::instance();
+    CorbaContainer::set_instance(CfgArgs::instance()->fa
+        , CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
+            ->nameservice_host
+        , CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
+            ->nameservice_port
+        , CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
+            ->nameservice_context
+        );
 
-        int argc = CfgArgs::instance()->fa.get_argc();
-
-        // Initialise the ORB
-        std::cout << "ORB_init" << std::endl;
-        cs->cc.orb = CORBA::ORB_init( argc
-                , CfgArgs::instance()->fa.get_argv());
-
-      // Obtain a reference to the root POA.
-        std::cout << "resolve_initial_references RootPOA" << std::endl;
-        cs->cc.root_initial_ref
-            = cs->cc.orb->resolve_initial_references("RootPOA");
-
-        std::cout << "PortableServer::POA::_narrow" << std::endl;
-        cs->cc.poa = PortableServer::POA::_narrow(cs->cc.root_initial_ref);
-
-        if (CfgArgs::instance()
-                ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
-                ->nameservice_host.empty())
-        {
-            std::cout << "resolve_initial_references NameService" << std::endl;
-            cs->cc.nameservice_ref
-                = cs->cc.orb->resolve_initial_references("NameService");
-        }
-        else
-        {
-            std::cout << "string_to_object corbaname::" << CfgArgs::instance()
-                ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
-                    ->nameservice_host << std::endl;
-            cs->cc.nameservice_ref = cs->cc.orb->string_to_object(
-                ("corbaname::"
-                + CfgArgs::instance()
-                ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
-                ->nameservice_host
-                + ":"
-                + boost::lexical_cast<std::string>(CfgArgs::instance()
-                ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
-                ->nameservice_port)
-                ).c_str()
-            );
-        }
-
-        std::cout << "CosNaming::NamingContext::_narrow" << std::endl;
-        cs->cc.root_nameservice_context
-            = CosNaming::NamingContext::_narrow(cs->cc.nameservice_ref.in());
-
-        std::cout << "if CORBA::is_nil cs->cc.root_nameservice_context" << std::endl;
-        if (CORBA::is_nil(cs->cc.root_nameservice_context))
-            throw "cs->cc.root_nameservice_context";
-
-
-        ccReg::Admin_var admin_ref;
-        Registry::Registrar::Group::Manager_var group_manager;
-        Registry::Registrar::Certification::Manager_var cert_manager;
-
-        //Create a name object, containing the name test/context
-        CosNaming::Name contextName;
-        contextName.length(2);
-
-        contextName[0].id   = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
-            ->nameservice_context.c_str();
-        contextName[0].kind = "context";
-        contextName[1].id   = "Admin";
-        contextName[1].kind = "Object";
-
-        std::cout << "root_nameservice_context->resolve contextName" << std::endl;
-        cs->cc.root_nameservice_context->resolve(contextName);
         std::cout << "ccReg::Admin::_narrow" << std::endl;
-        admin_ref = ccReg::Admin::_narrow(cs->cc.root_nameservice_context->resolve(contextName));
+        ccReg::Admin_var admin_ref;
+        admin_ref = ccReg::Admin::_narrow(CorbaContainer::get_instance()->nsresolve("Admin"));
 
         std::cout << "admin_ref->getGroupManager()" << std::endl;
+        Registry::Registrar::Group::Manager_var group_manager;
         group_manager= admin_ref->getGroupManager();
+
         std::cout << "admin_ref->getCertificationManager()" << std::endl;
+        Registry::Registrar::Certification::Manager_var cert_manager;
         cert_manager = admin_ref->getCertificationManager();
 
-
-       // while(cs->cc.orb->work_pending())
-         //   cs->cc.orb->perform_work();//run();
-
-
-      std::cout << "before orb destroy" << std::endl;
-      cs->cc.orb->destroy();
-      std::cout << "after orb destroy" << std::endl;
 /*
     }//try
     catch(CORBA::TRANSIENT&)
