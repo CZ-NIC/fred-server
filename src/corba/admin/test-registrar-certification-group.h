@@ -29,7 +29,6 @@
 #include "register/db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
-#include <boost/test/included/unit_test.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
