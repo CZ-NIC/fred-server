@@ -64,12 +64,12 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification )
         admin_ref = ccReg::Admin::_narrow(CorbaContainer::get_instance()->nsresolve("Admin"));
 
         std::cout << "admin_ref->getGroupManager()" << std::endl;
-        Registry::Registrar::Group::Manager_var group_manager;
-        group_manager= admin_ref->getGroupManager();
+        Registry::Registrar::Group::Manager_var group_manager_ref;
+        group_manager_ref= admin_ref->getGroupManager();
 
         std::cout << "admin_ref->getCertificationManager()" << std::endl;
-        Registry::Registrar::Certification::Manager_var cert_manager;
-        cert_manager = admin_ref->getCertificationManager();
+        Registry::Registrar::Certification::Manager_var cert_manager_ref;
+        cert_manager_ref = admin_ref->getCertificationManager();
 
         CorbaContainer::destroy_instance();
 
