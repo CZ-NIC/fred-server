@@ -33,6 +33,7 @@ boost::assign::list_of
 
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
+#include "common.h"
 
 #ifdef BOOST_NO_STDC_NAMESPACE
 namespace std
@@ -65,6 +66,11 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         Database::Connection conn = Database::Manager::acquire();
 
         //deletion of test data
+        std::string query9 (
+                "delete from registrar_certification "
+                "where registrar_id = 1 ");
+        conn.exec( query9 );
+
         std::string query3 (
                 "delete from registrar_group_map "
                 "where registrar_group_map.registrar_group_id "
@@ -138,6 +144,42 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         std::cout << "admin_ref->getCertificationManager()" << std::endl;
         Registry::Registrar::Certification::Manager_var cert_manager_ref;
         cert_manager_ref = admin_ref->getCertificationManager();
+
+        ccReg::TID cid1 =
+                cert_manager_ref->createCertification(1
+                , makeCorbaDate(boost::gregorian::date(2010, 1, 30))
+                ,makeCorbaDate(boost::gregorian::date(2011, 1, 30)),3,0);
+        std::string query8 (
+                "select * from registrar_certification "
+                "where registrar_id = 1  "
+                "and valid_from = to_date('2010-01-30','YYYY-MM-DD') "
+                "and valid_until = to_date('2011-01-30','YYYY-MM-DD') "
+                "and classification = 3 ");
+        Database::Result res8 = conn.exec( query8 );
+        BOOST_REQUIRE_EQUAL(6*res8.size() , 6);
+
+        cert_manager_ref->updateCertification(cid1,4,0);
+        std::string query10 (
+                "select * from registrar_certification "
+                "where registrar_id = 1  "
+                "and valid_from = to_date('2010-01-30','YYYY-MM-DD') "
+                "and valid_until = to_date('2011-01-30','YYYY-MM-DD') "
+                "and classification = 4 ");
+        Database::Result res10 = conn.exec( query10 );
+        BOOST_REQUIRE_EQUAL(7*res10.size() , 7);
+
+        cert_manager_ref->shortenCertification(cid1
+                , makeCorbaDate(boost::gregorian::date(2010, 1, 30)));
+        std::string query11 (
+                "select * from registrar_certification "
+                "where registrar_id = 1  "
+                "and valid_from = to_date('2010-01-30','YYYY-MM-DD') "
+                "and valid_until = to_date('2010-01-30','YYYY-MM-DD') "
+                "and classification = 4 ");
+        Database::Result res11 = conn.exec( query11 );
+        BOOST_REQUIRE_EQUAL(8*res10.size() , 8);
+
+
 
         CorbaContainer::destroy_instance();
 
