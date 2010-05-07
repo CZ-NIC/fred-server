@@ -19,7 +19,6 @@
 
 #include "faked_args.h"
 
-
 //args processing config for custom main
 HandlerPtrVector global_hpv =
 boost::assign::list_of
@@ -70,20 +69,23 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
                 "delete from registrar_group_map "
                 "where registrar_group_map.registrar_group_id "
                 "= (select id from registrar_group "
-                        "where registrar_group.short_name = 'group1' limit 1) "
+                        "where registrar_group.short_name = 'testgroup1' limit 1) "
                 "or registrar_group_map.registrar_group_id "
                 "= (select id from registrar_group "
-                        "where registrar_group.short_name = 'group2' limit 1) "
+                        "where registrar_group.short_name = 'testgroup2' limit 1) "
                 "or registrar_group_map.registrar_group_id "
                 "= (select id from registrar_group "
-                        "where registrar_group.short_name = 'group3' limit 1) "
+                        "where registrar_group.short_name = 'testgroup3' limit 1) "
+                "or registrar_group_map.registrar_group_id "
+                "= (select id from registrar_group "
+                        "where registrar_group.short_name = 'testgroup4' limit 1) "
                 );
         conn.exec( query3 );
 
         std::string query1 = str(boost::format(
                 "delete from registrar_group where short_name = '%1%'"
                 " or short_name = '%2%' or short_name = '%3%'")
-                % "group1" % "group2" % "group3");
+                % "testgroup1" % "testgroup2" % "testgroup3");
         conn.exec( query1 );
 
         //group simple test
@@ -91,15 +93,15 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         Registry::Registrar::Group::Manager_var group_manager_ref;
         group_manager_ref= admin_ref->getGroupManager();
         ccReg::TID gid1 =
-                group_manager_ref->createGroup("group1");
+                group_manager_ref->createGroup("testgroup1");
         ccReg::TID gid2 =
-                group_manager_ref->createGroup("group2");
-        //ccReg::TID gid3 =
-                group_manager_ref->createGroup("group3");
+                group_manager_ref->createGroup("testgroup2");
+        ccReg::TID gid3 =
+                group_manager_ref->createGroup("testgroup3");
         group_manager_ref->deleteGroup(gid2);
 
         std::string query4 ("select short_name, cancelled from registrar_group "
-                " where short_name = 'group2' and cancelled is not null");
+                " where short_name = 'testgroup2' and cancelled is not null");
         Database::Result res = conn.exec( query4 );
         BOOST_REQUIRE_EQUAL(res.size() , 1);
 
@@ -112,9 +114,16 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         std::string query2 ("select * from registrar_group_map "
             "join registrar_group "
             "on registrar_group_map.registrar_group_id = registrar_group.id "
-            " where registrar_group.short_name = 'group1'");
+            " where registrar_group.short_name = 'testgroup1'");
         Database::Result res2 = conn.exec( query2 );
         BOOST_REQUIRE_EQUAL(res2.size() , 2);
+
+        group_manager_ref->updateGroup(gid3, "testgroup4");
+        std::string query5 ("select * from registrar_group "
+            " where registrar_group.short_name = 'testgroup4'");
+        Database::Result res5 = conn.exec( query5 );
+        BOOST_REQUIRE_EQUAL(3*res5.size() , 3);
+
 
 
 
