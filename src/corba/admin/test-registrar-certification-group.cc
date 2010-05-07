@@ -179,8 +179,6 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         Database::Result res11 = conn.exec( query11 );
         BOOST_REQUIRE_EQUAL(8*res10.size() , 8);
 
-
-
         CorbaContainer::destroy_instance();
 
 /*
