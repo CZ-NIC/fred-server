@@ -19,6 +19,8 @@
 
 #include "faked_args.h"
 
+
+//args processing config for custom main
 HandlerPtrVector global_hpv =
 boost::assign::list_of
 (HandleArgsPtr(new HandleGeneralArgs))
@@ -47,18 +49,14 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
     //  try
     //  {
 
-    CorbaContainer::set_instance(
-          CfgArgs::instance()->fa.get_argc()
-        , CfgArgs::instance()->fa.get_argv()
-        , CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
-            ->nameservice_host
-        , CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
-            ->nameservice_port
-        , CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
-            ->nameservice_context
+    FakedArgs fa = CfgArgs::instance()->fa;
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+        , ns_args_ptr->nameservice_host
+        , ns_args_ptr->nameservice_port
+        , ns_args_ptr->nameservice_context
         );
 
 
@@ -78,9 +76,12 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
         Registry::Registrar::Group::Manager_var group_manager_ref;
         group_manager_ref= admin_ref->getGroupManager();
 
-        ccReg::TID gid1 = group_manager_ref->createGroup("group1");
-        ccReg::TID gid2 = group_manager_ref->createGroup("group2");
-        ccReg::TID gid3 = group_manager_ref->createGroup("group3");
+        //ccReg::TID gid1 =
+                group_manager_ref->createGroup("group1");
+        ccReg::TID gid2 =
+                group_manager_ref->createGroup("group2");
+        //ccReg::TID gid3 =
+                group_manager_ref->createGroup("group3");
         group_manager_ref->deleteGroup(gid2);
 
         std::cout << "admin_ref->getCertificationManager()" << std::endl;
