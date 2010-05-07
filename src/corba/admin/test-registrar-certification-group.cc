@@ -58,6 +58,10 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
 
+        std::cout << "ccReg::Admin::_narrow" << std::endl;
+        ccReg::Admin_var admin_ref;
+        admin_ref = ccReg::Admin::_narrow(CorbaContainer::get_instance()->nsresolve("Admin"));
+
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
 
@@ -83,14 +87,9 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         conn.exec( query1 );
 
         //group simple test
-        std::cout << "ccReg::Admin::_narrow" << std::endl;
-        ccReg::Admin_var admin_ref;
-        admin_ref = ccReg::Admin::_narrow(CorbaContainer::get_instance()->nsresolve("Admin"));
-
         std::cout << "admin_ref->getGroupManager()" << std::endl;
         Registry::Registrar::Group::Manager_var group_manager_ref;
         group_manager_ref= admin_ref->getGroupManager();
-
         ccReg::TID gid1 =
                 group_manager_ref->createGroup("group1");
         ccReg::TID gid2 =
@@ -99,11 +98,9 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
                 group_manager_ref->createGroup("group3");
         group_manager_ref->deleteGroup(gid2);
 
-        std::string query2 ("select short_name, cancelled from registrar_group "
+        std::string query4 ("select short_name, cancelled from registrar_group "
                 " where short_name = 'group2' and cancelled is not null");
-
-        Database::Result res = conn.exec( query2 );
-
+        Database::Result res = conn.exec( query4 );
         BOOST_REQUIRE_EQUAL(res.size() , 1);
 
         //membership simple test
@@ -111,6 +108,16 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
                 group_manager_ref->addRegistrarToGroup(1,gid1);
         //ccReg::TID mid2 =
                 group_manager_ref->addRegistrarToGroup(2,gid1);
+
+        std::string query2 ("select * from registrar_group_map "
+            "join registrar_group "
+            "on registrar_group_map.registrar_group_id = registrar_group.id "
+            " where registrar_group.short_name = 'group1'");
+        Database::Result res2 = conn.exec( query2 );
+        BOOST_REQUIRE_EQUAL(res2.size() , 2);
+
+
+
 
 
         std::cout << "admin_ref->getCertificationManager()" << std::endl;
