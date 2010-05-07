@@ -47,7 +47,9 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
     //  try
     //  {
 
-    CorbaContainer::set_instance(CfgArgs::instance()->fa
+    CorbaContainer::set_instance(
+          CfgArgs::instance()->fa.get_argc()
+        , CfgArgs::instance()->fa.get_argv()
         , CfgArgs::instance()
             ->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
             ->nameservice_host
