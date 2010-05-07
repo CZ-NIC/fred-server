@@ -73,7 +73,7 @@ am_libadmin_impl_a_OBJECTS = admin_impl.$(OBJEXT) \
 libadmin_impl_a_OBJECTS = $(am_libadmin_impl_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_test_registrar_certification_group_OBJECTS =  \
-	test-registrar-certification-group.$(OBJEXT)
+	test-registrar-certification-group.$(OBJEXT) common.$(OBJEXT)
 nodist_test_registrar_certification_group_OBJECTS = ccRegSK.$(OBJEXT)
 test_registrar_certification_group_OBJECTS =  \
 	$(am_test_registrar_certification_group_OBJECTS) \
@@ -328,7 +328,7 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
 						  bankinginvoicing_impl.h
 
 test_registrar_certification_group_SOURCES = test-registrar-certification-group.cc \
-                     test-registrar-certification-group.h
+                     test-registrar-certification-group.h common.cc common.h
 
 nodist_test_registrar_certification_group_SOURCES = ../ccRegSK.cc
 test_registrar_certification_group_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) \
