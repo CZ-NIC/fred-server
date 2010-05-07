@@ -61,12 +61,12 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
 
 
         Database::Connection conn = Database::Manager::acquire();
-        std::string query = str(boost::format(
+        std::string query1 = str(boost::format(
                 "delete from registrar_group where short_name = '%1%'"
                 " or short_name = '%2%' or short_name = '%3%'")
                 % "group1" % "group2" % "group3");
 
-        Database::Result res = conn.exec( query );
+        conn.exec( query1 );
 
         std::cout << "ccReg::Admin::_narrow" << std::endl;
         ccReg::Admin_var admin_ref;
@@ -83,6 +83,13 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
         //ccReg::TID gid3 =
                 group_manager_ref->createGroup("group3");
         group_manager_ref->deleteGroup(gid2);
+
+        std::string query2 ("select short_name, cancelled from registrar_group "
+                " where short_name = 'group2' and cancelled is not null");
+
+        Database::Result res = conn.exec( query2 );
+
+        BOOST_REQUIRE_EQUAL(res.size() , 1);
 
         std::cout << "admin_ref->getCertificationManager()" << std::endl;
         Registry::Registrar::Certification::Manager_var cert_manager_ref;
