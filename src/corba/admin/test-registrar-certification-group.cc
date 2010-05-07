@@ -135,11 +135,6 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         Database::Result res7 = conn.exec( query7 );
         BOOST_REQUIRE_EQUAL(2*res7.size() +1 , 5);
 
-
-
-
-
-
         std::cout << "admin_ref->getCertificationManager()" << std::endl;
         Registry::Registrar::Certification::Manager_var cert_manager_ref;
         cert_manager_ref = admin_ref->getCertificationManager();
