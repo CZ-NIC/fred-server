@@ -43,10 +43,7 @@
 
 class CorbaContainer : boost::noncopyable
 {
-public:
     typedef std::auto_ptr<CorbaContainer> CorbaContainerPtr;
-private:
-    int argc;
     CORBA::ORB_var orb;
     CORBA::Object_var root_poa_initial_ref;
     PortableServer::POA_var root_poa;
@@ -56,12 +53,11 @@ private:
     CosNaming::NamingContext_var root_nameservice_context;
     static CorbaContainerPtr instance_ptr;
 
-    CorbaContainer(FakedArgs fa
+    CorbaContainer(int argc, char ** argv
             , const std::string& nameservice_host
             , unsigned nameservice_port
             , const std::string& nameservice_context)
-    : argc(fa.get_argc())
-    , orb(CORBA::ORB_init( argc,fa.get_argv()))
+    : orb(CORBA::ORB_init( argc,argv))
     , root_poa_initial_ref(orb->resolve_initial_references("RootPOA"))
     , root_poa(PortableServer::POA::_narrow(root_poa_initial_ref))
     , name_service_corbaname(nameservice_host.empty() ? std::string("")
@@ -102,7 +98,7 @@ public:
     }
 
     //static interface
-    static void set_instance(FakedArgs fa
+    static void set_instance(int argc , char** argv
             , const std::string& nameservice_host
             , unsigned nameservice_port
             , const std::string& nameservice_context);
@@ -114,13 +110,13 @@ public:
 //static init
 CorbaContainer::CorbaContainerPtr CorbaContainer::instance_ptr(0);
 
-void CorbaContainer::set_instance(FakedArgs fa
+void CorbaContainer::set_instance(int argc, char** argv
         , const std::string& nameservice_host
         , unsigned nameservice_port
         , const std::string& nameservice_context)
 {
     CorbaContainerPtr tmp_instance(new CorbaContainer
-            (fa,nameservice_host,nameservice_port, nameservice_context)
+            (argc, argv, nameservice_host, nameservice_port, nameservice_context)
     );
 
     instance_ptr = tmp_instance;
