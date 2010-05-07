@@ -121,9 +121,10 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         std::string query6 ("select * from registrar_group_map "
             "join registrar_group "
             "on registrar_group_map.registrar_group_id = registrar_group.id "
-            " where registrar_group.short_name = 'testgroup1'");
+            " where registrar_group.short_name = 'testgroup1' "
+            " and registrar_group_map.member_until is null "    );
         Database::Result res6 = conn.exec( query6 );
-        BOOST_REQUIRE_EQUAL(2*res6.size() , 4);
+        BOOST_REQUIRE_EQUAL(4*res6.size() , 4);
 
 
 
