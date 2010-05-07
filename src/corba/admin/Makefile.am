@@ -63,7 +63,7 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
 
 noinst_PROGRAMS =  test-registrar-certification-group                     
 test_registrar_certification_group_SOURCES = test-registrar-certification-group.cc \
-                     test-registrar-certification-group.h
+                     test-registrar-certification-group.h common.cc common.h
 nodist_test_registrar_certification_group_SOURCES = ../ccRegSK.cc
 test_registrar_certification_group_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) \
                      $(BOOST_PROGRAM_OPTIONS_LIB) $(OMNIORB4_LIBS) $(BOOST_DATE_TIME_LIB) \
@@ -78,3 +78,4 @@ test_registrar_certification_group_LDADD   = \
                          $(top_builddir)/util/conf/libconf.a \
                          $(top_builddir)/util/types/libtypes.a \
                          $(top_builddir)/src/old_utils/liboldutils.a
+
