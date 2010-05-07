@@ -68,24 +68,17 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         std::string query3 (
                 "delete from registrar_group_map "
                 "where registrar_group_map.registrar_group_id "
-                "= (select id from registrar_group "
-                        "where registrar_group.short_name = 'testgroup1' limit 1) "
-                "or registrar_group_map.registrar_group_id "
-                "= (select id from registrar_group "
-                        "where registrar_group.short_name = 'testgroup2' limit 1) "
-                "or registrar_group_map.registrar_group_id "
-                "= (select id from registrar_group "
-                        "where registrar_group.short_name = 'testgroup3' limit 1) "
-                "or registrar_group_map.registrar_group_id "
-                "= (select id from registrar_group "
-                        "where registrar_group.short_name = 'testgroup4' limit 1) "
+                "in (select id from registrar_group "
+                " where registrar_group.short_name "
+                "in ('testgroup1', 'testgroup2', 'testgroup3', 'testgroup4'"
+                ", 'testgroup5'))"
                 );
         conn.exec( query3 );
 
         std::string query1 = str(boost::format(
                 "delete from registrar_group where short_name = '%1%'"
-                " or short_name = '%2%' or short_name = '%3%'")
-                % "testgroup1" % "testgroup2" % "testgroup3");
+                " or short_name = '%2%' or short_name = '%3%' or short_name = '%4%' ")
+                % "testgroup1" % "testgroup2" % "testgroup3" % "testgroup4");
         conn.exec( query1 );
 
         //group simple test
@@ -124,6 +117,13 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         Database::Result res5 = conn.exec( query5 );
         BOOST_REQUIRE_EQUAL(3*res5.size() , 3);
 
+        group_manager_ref->removeRegistrarFromGroup(1, gid1);
+        std::string query6 ("select * from registrar_group_map "
+            "join registrar_group "
+            "on registrar_group_map.registrar_group_id = registrar_group.id "
+            " where registrar_group.short_name = 'testgroup1'");
+        Database::Result res6 = conn.exec( query6 );
+        BOOST_REQUIRE_EQUAL(2*res6.size() , 4);
 
 
 
