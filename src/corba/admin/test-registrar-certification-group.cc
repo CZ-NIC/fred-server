@@ -44,30 +44,45 @@ namespace std
 
 #include "test-registrar-certification-group.h"
 
-BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
+BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
 {
     //  try
     //  {
 
-    FakedArgs fa = CfgArgs::instance()->fa;
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+        //CORBA init
+        FakedArgs fa = CfgArgs::instance()->fa;
+        HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+        CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
 
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-        , ns_args_ptr->nameservice_host
-        , ns_args_ptr->nameservice_port
-        , ns_args_ptr->nameservice_context
-        );
-
-
+        //get db connection
         Database::Connection conn = Database::Manager::acquire();
+
+        //deletion of test data
+        std::string query3 (
+                "delete from registrar_group_map "
+                "where registrar_group_map.registrar_group_id "
+                "= (select id from registrar_group "
+                        "where registrar_group.short_name = 'group1' limit 1) "
+                "or registrar_group_map.registrar_group_id "
+                "= (select id from registrar_group "
+                        "where registrar_group.short_name = 'group2' limit 1) "
+                "or registrar_group_map.registrar_group_id "
+                "= (select id from registrar_group "
+                        "where registrar_group.short_name = 'group3' limit 1) "
+                );
+        conn.exec( query3 );
+
         std::string query1 = str(boost::format(
                 "delete from registrar_group where short_name = '%1%'"
                 " or short_name = '%2%' or short_name = '%3%'")
                 % "group1" % "group2" % "group3");
-
         conn.exec( query1 );
 
+        //group simple test
         std::cout << "ccReg::Admin::_narrow" << std::endl;
         ccReg::Admin_var admin_ref;
         admin_ref = ccReg::Admin::_narrow(CorbaContainer::get_instance()->nsresolve("Admin"));
@@ -76,7 +91,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
         Registry::Registrar::Group::Manager_var group_manager_ref;
         group_manager_ref= admin_ref->getGroupManager();
 
-        //ccReg::TID gid1 =
+        ccReg::TID gid1 =
                 group_manager_ref->createGroup("group1");
         ccReg::TID gid2 =
                 group_manager_ref->createGroup("group2");
@@ -90,6 +105,13 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
         Database::Result res = conn.exec( query2 );
 
         BOOST_REQUIRE_EQUAL(res.size() , 1);
+
+        //membership simple test
+        //ccReg::TID mid1 =
+                group_manager_ref->addRegistrarToGroup(1,gid1);
+        //ccReg::TID mid2 =
+                group_manager_ref->addRegistrarToGroup(2,gid1);
+
 
         std::cout << "admin_ref->getCertificationManager()" << std::endl;
         Registry::Registrar::Certification::Manager_var cert_manager_ref;
