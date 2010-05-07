@@ -126,6 +126,16 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         Database::Result res6 = conn.exec( query6 );
         BOOST_REQUIRE_EQUAL(4*res6.size() , 4);
 
+        group_manager_ref->addRegistrarToGroup(1,gid1);
+        std::string query7 ("select * from registrar_group_map "
+            "join registrar_group "
+            "on registrar_group_map.registrar_group_id = registrar_group.id "
+            " where registrar_group.short_name = 'testgroup1' "
+            " and registrar_group_map.member_until is null "    );
+        Database::Result res7 = conn.exec( query7 );
+        BOOST_REQUIRE_EQUAL(2*res7.size() +1 , 5);
+
+
 
 
 
