@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([fred-server], [2.2])
+AC_INIT([fred-server], [2.3])
 AC_CONFIG_SRCDIR(src/corba/server.cc)
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -36,6 +36,7 @@ AC_DEFUN([AS_AC_TEST_CORBA_PORTS],
 AC_PROG_AWK
 AC_PROG_CXX
 AC_PROG_CC
+AC_LANG(C++)
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
@@ -55,6 +56,7 @@ AX_BOOST_DATE_TIME
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_REGEX
 
+
 # For logger class when log type is console or custom file
 AX_BOOST_THREAD 
 # For filter serialization to xml
@@ -62,7 +64,7 @@ AX_BOOST_SERIALIZATION
 
 # For unittests
 AX_BOOST_UNIT_TEST_FRAMEWORK
-
+AC_CHECK_HEADER([boost/test/included/unit_test.hpp],,[AC_MSG_ERROR([Header boost/test/included/unit_test.hpp not found])])
 
 # Checks for PostgreSQL headers and libs
 AX_LIB_POSTGRESQL(8.0)
