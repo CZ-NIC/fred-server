@@ -205,6 +205,5 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
     }
 */
 
-        BOOST_REQUIRE_EQUAL(registrar_certification_test() , 0);
 
 }//test_registrar_certification_simple

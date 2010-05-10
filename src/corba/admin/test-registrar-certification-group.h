@@ -47,13 +47,7 @@
 #include <exception>
 
 
-using namespace std;
 
-
-unsigned registrar_certification_test()
-{
-    return 0;
-}
 
 
 #endif // TEST_REGISTRAR_CERTIFICATION_GROUP_H_
