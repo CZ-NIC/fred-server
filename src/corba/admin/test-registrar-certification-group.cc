@@ -179,6 +179,74 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         Database::Result res11 = conn.exec( query11 );
         BOOST_REQUIRE_EQUAL(8*res10.size() , 8);
 
+        //unbounded struct sequence client side mapping
+        //create owning seq
+        Registry::Registrar::Group::GroupList_var
+            gr_list (new Registry::Registrar::Group::GroupList);
+
+        //read into seq
+        gr_list =  group_manager_ref->getGroups();
+
+        //iterate over seq using reference and read structs
+        const Registry::Registrar::Group::GroupList&  gr_list_ref
+            = gr_list.in();
+        std::cout << "\nGroupList" << std::endl;
+        for (CORBA::ULong i=0; i < gr_list_ref.length(); ++i)
+        {
+            const Registry::Registrar::Group::GroupData& gd = gr_list_ref[i];
+            std::cout << "group name: " << gd.name << std::endl;
+        }
+
+
+        Registry::Registrar::Group::MembershipByGroupList_var
+            mem_by_grp(new Registry::Registrar::Group::MembershipByGroupList);
+        mem_by_grp = group_manager_ref->getMembershipsByGroup(gid1);
+        const Registry::Registrar::Group::MembershipByGroupList& mem_by_grp_ref
+            = mem_by_grp.in();
+        std::cout << "\nMembershipByGroup" << std::endl;
+        for (CORBA::ULong i=0; i < mem_by_grp_ref.length(); ++i)
+        {
+            const Registry::Registrar::Group::MembershipByGroup& mbg = mem_by_grp_ref[i];
+            std::cout << " membership id: " << mbg.id << "\n"
+                    << " registrar_id: " << mbg.registrar_id << "\n"
+                    << " from date: " << mbg.fromDate.day << ". " << mbg.fromDate.month << ". " << mbg.fromDate.year << "\n"
+                    << " to date: " << mbg.toDate.day << ". " << mbg.toDate.month << ". " << mbg.toDate.year << "\n"
+                    << std::endl;
+        }
+
+        Registry::Registrar::Group::MembershipByRegistrarList_var
+            mem_by_reg (new Registry::Registrar::Group::MembershipByRegistrarList);
+        mem_by_reg = group_manager_ref->getMembershipsByRegistar(1);
+        const Registry::Registrar::Group::MembershipByRegistrarList& mem_by_reg_ref
+            = mem_by_reg.in();
+        std::cout << "\nMembershipByRegistrar" << std::endl;
+        for (CORBA::ULong i=0; i < mem_by_reg_ref.length(); ++i)
+        {
+            const Registry::Registrar::Group::MembershipByRegistrar& mbr = mem_by_reg_ref[i];
+            std::cout << " membership id: " << mbr.id << "\n"
+                    << " group_id: " << mbr.group_id << "\n"
+                    << " from date: " << mbr.fromDate.day << ". " << mbr.fromDate.month << ". " << mbr.fromDate.year << "\n"
+                    << " to date: " << mbr.toDate.day << ". " << mbr.toDate.month << ". " << mbr.toDate.year << "\n"
+                    << std::endl;
+        }
+
+        Registry::Registrar::Certification::CertificationList_var
+            cert_by_reg(new Registry::Registrar::Certification::CertificationList);
+        cert_by_reg = cert_manager_ref->getCertificationsByRegistrar(1);
+        const Registry::Registrar::Certification::CertificationList& cert_by_reg_ref
+            = cert_by_reg.in();
+        std::cout << "\nCertificationsByRegistrar" << std::endl;
+        for (CORBA::ULong i=0; i < cert_by_reg_ref.length(); ++i)
+        {
+            const Registry::Registrar::Certification::CertificationData& cd = cert_by_reg_ref[i];
+            std::cout << " certification id: " << cd.id << "\n"
+                    << " score: " << cd.score << "\n"
+                    << " file id: " << cd.evaluation_file_id << "\n"
+                    << " from date: " << cd.fromDate.day << ". " << cd.fromDate.month << ". " << cd.fromDate.year << "\n"
+                    << " to date: " << cd.toDate.day << ". " << cd.toDate.month << ". " << cd.toDate.year << "\n"
+                    << std::endl;
+        }
+
         CorbaContainer::destroy_instance();
 
 /*
