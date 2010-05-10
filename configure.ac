@@ -64,7 +64,6 @@ AX_BOOST_SERIALIZATION
 
 # For unittests
 AX_BOOST_UNIT_TEST_FRAMEWORK
-AC_CHECK_HEADER([boost/test/included/unit_test.hpp],,[AC_MSG_ERROR([Header boost/test/included/unit_test.hpp not found])])
 
 # Checks for PostgreSQL headers and libs
 AX_LIB_POSTGRESQL(8.0)
@@ -75,6 +74,9 @@ AC_CHECK_HEADERS(
 	[arpa/inet.h stdlib.h string.h sys/socket.h \
 	sys/time.h syslog.h unistd.h]
 )
+
+AC_CHECK_HEADER([boost/test/included/unit_test.hpp],,[AC_MSG_ERROR([Header boost/test/included/unit_test.hpp not found])])
+AC_CHECK_HEADER([omniORB4/CORBA.h],,[AC_MSG_ERROR([Header omniORB4/CORBA.h not found])])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
