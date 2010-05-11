@@ -80,7 +80,7 @@ public:
 
     FakedArgs& operator=(const FakedArgs& fa)
     {
-        copy(fa);
+        if (this != &fa) copy(fa);
         return *this;
     }
 
@@ -542,8 +542,5 @@ public:
                 ? std::string("fred") : vm["nameservice.context"].as<std::string>());
     }//handle
 };
-
-
-
 
 #endif //FAKED_ARGS_H_
