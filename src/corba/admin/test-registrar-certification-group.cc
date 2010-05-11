@@ -17,7 +17,7 @@
 
 #define BOOST_TEST_MODULE Test registrar certification group
 
-#include "faked_args.h"
+#include "config_handler.h"
 
 //args processing config for custom main
 HandlerPtrVector global_hpv =

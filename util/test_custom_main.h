@@ -49,7 +49,7 @@
 #include <boost/generator_iterator.hpp>
 #endif
 
-#include "faked_args.h"
+#include "config_handler.h"
 #include <boost/test/included/unit_test.hpp>
 
 int main( int argc, char* argv[] )
