@@ -16,12 +16,20 @@
  */
 
 #define BOOST_TEST_MODULE Test model
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
+
+#include "config_handler.h"
+
+//args processing config for custom main
+HandlerPtrVector global_hpv =
+boost::assign::list_of
+(HandleArgsPtr(new HandleGeneralArgs))
+(HandleArgsPtr(new HandleDatabaseArgs))
+(HandleArgsPtr(new HandleThreadGroupArgs));
+
+#include "test_custom_main.h"
 
 
 #include "random_data_generator.h"
-#include "config_handler.h"
 #include "concurrent_queue.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -33,61 +41,12 @@
 #include <time.h>
 
 
-// Sun CC doesn't handle boost::iterator_adaptor yet
-#if !defined(__SUNPRO_CC) || (__SUNPRO_CC > 0x530)
-#include <boost/generator_iterator.hpp>
-#endif
-
 #ifdef BOOST_NO_STDC_NAMESPACE
 namespace std
 {
   using ::time;
 }
 #endif
-
-
-//compose args processing
-class CmdLineArgHandlers
-{
-    //nonowning container of handlers
-    typedef std::vector<HandleArgs*> HandlerVector;
-    HandlerVector handler;
-public:
-    HandleGeneralArgs general_args;
-    HandleDatabaseArgs database_args;
-    HandleThreadGroupArgs thread_group_args;
-
-    CmdLineArgHandlers()
-    {
-        //order of arguments processing
-        handler.push_back(&general_args);
-        handler.push_back(&database_args);
-        handler.push_back(&thread_group_args);
-
-        //gater options_descriptions for help print
-        for(HandlerVector::iterator i = handler.begin(); i != handler.end(); ++i )
-            general_args.po_description.push_back((*i)->get_options_description());
-    }
-
-    FakedArgs handle( int argc, char* argv[])
-    {
-        FakedArgs fa;
-
-        //initial fa
-        fa.prealocate_for_argc(argc);
-        for (int i = 0; i < argc ; ++i)
-            fa.add_argv(argv[i]);
-
-        for(HandlerVector::iterator i = handler.begin(); i != handler.end(); ++i )
-        {
-            FakedArgs fa_out;
-            (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
-            fa=fa_out;//last output to next input
-        }
-        return fa;
-    }
-
-}cmdlinehandlers;
 
 #include "test-model.h"
 
@@ -105,8 +64,6 @@ public:
      * postgres restart
      *
      * */
-
-
 
 //synchronization using barriers
 struct sync_barriers
@@ -254,8 +211,11 @@ BOOST_AUTO_TEST_CASE( test_model_files )
 
 BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
 {
-    std::size_t const thread_number = cmdlinehandlers.thread_group_args.thread_number;
-    std::size_t const thread_group_divisor = cmdlinehandlers.thread_group_args.thread_group_divisor;
+    HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
+                   get_handler_ptr_by_type<HandleThreadGroupArgs>();
+
+    std::size_t const thread_number = thread_args_ptr->thread_number;
+    std::size_t const thread_group_divisor = thread_args_ptr->thread_group_divisor;
     // int(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
     // - thread_number / thread_group_divisor) is number of synced threads
 
@@ -304,38 +264,4 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
     }//for i
 }
 
-int main( int argc, char* argv[] )
-{
-    //processing of additional program options
-    //producing faked args with unrecognized ones
-    FakedArgs fa;
-    try
-    {
-        fa = cmdlinehandlers.handle(argc, argv);
-    }
-    catch(const ReturnFromMain&)
-    {
-        return 0;
-    }
-
-//fn init_unit_test_suite added in 1.35.0
-#if ( BOOST_VERSION > 103401 )
-
-    // prototype for user's unit test init function
-#ifdef BOOST_TEST_ALTERNATIVE_INIT_API
-    extern bool init_unit_test();
-
-    boost::unit_test::init_unit_test_func init_func = &init_unit_test;
-#else
-    extern ::boost::unit_test::test_suite* init_unit_test_suite( int argc, char* argv[] );
-
-    boost::unit_test::init_unit_test_func init_func = &init_unit_test_suite;
-#endif
-
-    return ::boost::unit_test::unit_test_main( init_func, fa.get_argc(), fa.get_argv() );//using fake args
-#else //1.34.1 and older
-    return ::boost::unit_test::unit_test_main(  fa.get_argc(), fa.get_argv() );//using fake args
-#endif //1.35.0 and newer
-
-}
 
