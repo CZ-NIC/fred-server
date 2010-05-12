@@ -31,177 +31,20 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 #include <typeinfo>
 
 #include <boost/assign/list_of.hpp>
 #include <boost/program_options.hpp>
-#include <boost/format.hpp>
 #include <boost/utility.hpp>
-#include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 
 #include "register/db_settings.h"
 #include "faked_args.h"
+#include "handle_args.h"
+#include "handle_general_args.h"
 
 
-///end process because of cmdline processing by calling return 0; in main()
-class ReturnFromMain : public Exception {
-public:
-    ReturnFromMain(const std::string& _what) : Exception(_what) {
-  }
-};
-
-/**
- * \class HandleArgs
- * \brief interface for option handlers
- */
-class HandleArgs
-{
-public:
-    virtual ~HandleArgs()=0;
-    virtual boost::shared_ptr<boost::program_options::options_description>
-        get_options_description()=0;
-    virtual void handle( int argc, char* argv[], FakedArgs &fa ) = 0;
-};
-HandleArgs::~HandleArgs(){}
-
-///common parsing using program_options
-void handler_parse_args(
-        boost::shared_ptr<boost::program_options::options_description> opts_descs
-        , boost::program_options::variables_map& vm
-        , int argc, char* argv[],  FakedArgs &fa)
-{
-    boost::program_options::parsed_options parsed
-        = boost::program_options::command_line_parser(argc,argv)
-            .options(*opts_descs).allow_unregistered().run();
-    boost::program_options::store(parsed, vm);
-
-    typedef std::vector<std::string> string_vector_t;
-    string_vector_t to_pass_further;//args
-
-    to_pass_further
-        = boost::program_options::collect_unrecognized(parsed.options
-                , boost::program_options::include_positional);
-    boost::program_options::notify(vm);
-
-    //faked args for unittest framework returned by reference in params
-    fa.clear();//to be sure that fa is empty
-    fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
-    fa.add_argv(argv[0]);//program name copy
-    for(string_vector_t::const_iterator i = to_pass_further.begin()
-            ; i != to_pass_further.end(); ++i)
-    {//copying a new arg vector
-        fa.add_argv(*i);//string
-    }//for i
-
-}//handler_parse_args
-
-/**
- * \class HandleGeneralArgs
- * \brief common options and config file handler
- */
-class HandleGeneralArgs : public HandleArgs
-{
-    ///options descriptions reference used to print help for all options
-    typedef std::vector<boost::shared_ptr<boost::program_options::options_description> > PoDescs;
-
-
-    void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
-    {//options without values are ignored
-        std::ifstream cfg_file(fname.c_str());
-        if (cfg_file.fail())
-          throw std::runtime_error("config file '" + fname + "' not found");
-
-        std::string line, opt_prefix;
-        while (std::getline(cfg_file, line))
-        {
-          boost::algorithm::trim(line);// strip whitespace
-          if (!line.empty() && line[0] != '#')// ignore empty line and comments
-          {
-            if (line[0] == '[' && line[line.size() - 1] == ']')
-            {// this is option prefix
-              opt_prefix = line;
-              boost::algorithm::erase_first(opt_prefix, "[");
-              boost::algorithm::erase_last(opt_prefix,  "]");
-            }//if [opt_prefix]
-            else
-            {// this is normal option
-              std::string::size_type sep = line.find("=");
-              if (sep != std::string::npos)
-              {// get name and value couple without any whitespace
-                std::string name  = boost::algorithm::trim_copy(line.substr(0, sep));
-                std::string value = boost::algorithm::trim_copy(line.substr(sep + 1, line.size() - 1));
-                if (!value.empty())
-                {// push appropriate commnad-line string
-                    fa.add_argv("--" + opt_prefix + "." + name + "=" + value);
-                }//if value not empty
-              }// if '=' found
-            }//else - option
-          }//if not empty line
-        }//while getline
-    }//parse_config_file_to_faked_args
-
-public:
-    PoDescs po_description;
-
-    boost::shared_ptr<boost::program_options::options_description>
-        get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> gen_opts(
-                new boost::program_options::options_description(
-                        std::string("General configuration")));
-        gen_opts->add_options()
-                ("help", "print this help message");
-
-        std::string default_config;
-
-#ifdef CONFIG_FILE
-        std::cout << "CONFIG_FILE: "<< CONFIG_FILE << std::endl;
-        default_config = std::string(CONFIG_FILE);
-#else
-        default_config = std::string("");
-#endif
-        if(default_config.length() != 0)
-        {
-            gen_opts->add_options()
-                    ("config,C", boost::program_options
-                            ::value<std::string>()->default_value(default_config)
-                    , "path to configuration file");
-        }
-        else
-        {
-            gen_opts->add_options()
-                    ("config,C", boost::program_options
-                            ::value<std::string>(), "path to configuration file");
-        }
-
-        return gen_opts;
-    }//get_options_description
-    void handle( int argc, char* argv[],  FakedArgs &fa)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-
-        //general config actions
-        if (vm.count("help"))
-        {
-            std::cout << std::endl;
-            for(PoDescs::iterator it = po_description.begin(); it != po_description.end(); ++it)
-            {
-                std::cout << **it << std::endl;
-            }
-            throw ReturnFromMain("help called");
-        }
-
-        //read config file if configured and append content to fa
-        if (vm.count("config"))
-        {
-            std::string fname = vm["config"].as<std::string>();
-            std::cout << "HandleGeneralArgs::handle config file: " << fname << std::endl;
-            if(fname.length())
-                parse_config_file_to_faked_args(fname, fa );
-        }
-    }//handle
-};
 
 //owning container of handlers
 typedef boost::shared_ptr<HandleArgs> HandleArgsPtr;

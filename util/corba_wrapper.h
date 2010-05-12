@@ -28,11 +28,9 @@
 #include <exception>
 #include <string>
 #include <vector>
+#include <memory>
 
-#include <boost/assign/list_of.hpp>
-#include <boost/format.hpp>
 #include <boost/utility.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include <corba/ccReg.hh>
 

@@ -26,21 +26,9 @@
 #define FAKED_ARGS_H_
 
 #include <iostream>
-#include <fstream>
 #include <exception>
 #include <string>
 #include <vector>
-#include <map>
-#include <typeinfo>
-
-#include <boost/assign/list_of.hpp>
-#include <boost/program_options.hpp>
-#include <boost/format.hpp>
-#include <boost/utility.hpp>
-#include <boost/algorithm/string.hpp>
-
-#include "register/db_settings.h"
-
 
 /**
  * \class FakedArgs

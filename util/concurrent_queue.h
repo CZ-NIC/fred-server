@@ -28,8 +28,6 @@
 #include <boost/thread.hpp>
 #include <boost/version.hpp>
 #include <boost/thread/barrier.hpp>
-#include <exception>
-#include <string>
 #include <queue>
 
 /**
