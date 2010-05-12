@@ -306,10 +306,26 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
             if(insert_data.account_date.to_string()
                 .compare(Database::Date(std::string(res[0][13])).to_string()))
                     ret+=8192;
-            if(insert_data.account_memo.compare(res[0][14])) ret+=16384;
+            if(insert_data.account_memo.compare(res[0][14]))
+                {
+                std::cout << "\n\ninsert_data.account_memo: " << insert_data.account_memo
+                        <<"\nresult: " << std::string(res[0][14]) << std::endl;
+                    ret+=16384;
+                }
             if(insert_data.invoice_id
                     != static_cast<unsigned long long>(res[0][15])) ret+=32768;
-            if(insert_data.account_name.compare(res[0][16])) ret+=65536;
+            if(insert_data.account_name.compare(res[0][16]))
+            {
+
+                std::cout << "\n\ninsert_data.account_name: " << insert_data.account_name
+                        << " insert_data.account_name.size: " << insert_data.account_name.size()
+                        << "\nresult id: " << static_cast<unsigned long long>(res[0][0])
+                        <<" result: " << std::string(res[0][16])
+                        << " result.size: " << std::string(res[0][16]).size()
+                        << std::endl;
+
+                ret+=65536;
+            }
             if(insert_data.crtime.to_string()
                 .compare(Database::DateTime(std::string(res[0][17])).to_string()))
                     ret+=131072;

@@ -58,10 +58,14 @@ namespace std
      *  log_duration = off
      *  log_statement = 'none'
      *
+     *  for test:
      *  lower shared_buffers ~2MB
      *  set max_connections > 300 ~400
      *
      * postgres restart
+     * in server.conf
+     * [database]
+     * timeout = 20
      *
      * */
 
@@ -140,8 +144,8 @@ public:
             insert_data.price=rdg_.xint();//int
             insert_data.account_evid=rdg_.xnumstring(20);//20 numletters
             insert_data.account_date=rdg_.xdate(); //some date
-            insert_data.account_memo=rdg_.xstring(64); //64 chars
-            insert_data.account_name=rdg_.xstring(64); //64 chars
+            insert_data.account_memo=rdg_.xstring(63); //63 chars
+            insert_data.account_name=rdg_.xstring(63); //63 chars
             insert_data.crtime=rdg_.xptime();//timestamp
 
             Result res;
