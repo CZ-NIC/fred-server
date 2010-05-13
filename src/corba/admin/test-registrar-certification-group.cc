@@ -30,6 +30,8 @@ boost::assign::list_of
 
 #include "test_custom_main.h"
 
+ccReg::TID gid3 = 0;
+
 BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
 {
     //  try
@@ -77,12 +79,12 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         std::cout << "admin_ref->getGroupManager()" << std::endl;
         Registry::Registrar::Group::Manager_var group_manager_ref;
         group_manager_ref= admin_ref->getGroupManager();
-        ccReg::TID gid1 =
-                group_manager_ref->createGroup("testgroup1");
+        ccReg::TID
+        gid1 = group_manager_ref->createGroup("testgroup1");
         ccReg::TID gid2 =
                 group_manager_ref->createGroup("testgroup2");
-        ccReg::TID gid3 =
-                group_manager_ref->createGroup("testgroup3");
+        //ccReg::TID
+        gid3 = group_manager_ref->createGroup("testgroup3");
         group_manager_ref->deleteGroup(gid2);
 
         std::string query4 ("select short_name, cancelled from registrar_group "
@@ -305,6 +307,9 @@ public:
 
     void operator()()
     {
+        ThreadResult res;
+        res.number = number_;
+
         try
         {
             if(number_%tgd_)//if synchronized thread
@@ -317,21 +322,45 @@ public:
             {//non-synchronized thread
                 std::cout << "NOwaiting: " << number_ << std::endl;
             }
-
             std::cout << "start: " << number_ << std::endl;
 
-            ThreadResult res;
-            res.ret = 0;
-            res.number = number_;
+            Register::Registrar::Manager::AutoPtr regman(
+                    Register::Registrar::Manager::create(0));
+            ///create membership of registrar in group
+            Register::TID m_id = regman->createRegistrarGroupMembership(
+                    1
+                    , gid3
+                    , Database::Date(NOW)
+                    , Database::Date(POS_INF));
 
+            regman->updateRegistrarGroupMembership(
+                    m_id
+                    , 1
+                    , gid3
+                    , Database::Date(NOW)
+                    , Database::Date(NOW) );
+
+            res.ret = 0;
             res.desc = std::string("ok");
-            if(rsq_ptr) rsq_ptr->push(res);
-            std::cout << "end: " << number_ << std::endl;
+        }
+        catch(const std::exception& ex)
+        {
+            std::cout << "exception in operator() thread number: " << number_
+                    << " reason: " << ex.what() << std::endl;
+            res.ret = 1;
+            res.desc = std::string(ex.what());
+            throw;
         }
         catch(...)
         {
             std::cout << "exception in operator() thread number: " << number_ << std::endl;
+            res.ret = 2;
+            res.desc = std::string("unknown exception");
+            throw;
         }
+
+        if(rsq_ptr) rsq_ptr->push(res);
+        std::cout << "end: " << number_ << std::endl;
     }
 
 private:
