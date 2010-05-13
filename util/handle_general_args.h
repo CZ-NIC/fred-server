@@ -38,9 +38,9 @@
 #include "handle_args.h"
 
 ///end process because of cmdline processing by calling return 0; in main()
-class ReturnFromMain : public Exception {
+class ReturnFromMain : public std::runtime_error {
 public:
-    ReturnFromMain(const std::string& _what) : Exception(_what) {
+    ReturnFromMain(const std::string& _what) : std::runtime_error(_what) {
   }
 };
 

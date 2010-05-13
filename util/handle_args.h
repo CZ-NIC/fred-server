@@ -30,7 +30,7 @@
 #include <vector>
 
 #include <boost/program_options.hpp>
-#include <boost/utility.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "faked_args.h"
 
@@ -79,5 +79,8 @@ void handler_parse_args(
 
 }//handler_parse_args
 
+//owning container of handlers
+typedef boost::shared_ptr<HandleArgs> HandleArgsPtr;
+typedef std::vector<HandleArgsPtr > HandlerPtrVector;
 
 #endif //HANDLE_ARGS_H_

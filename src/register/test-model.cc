@@ -17,7 +17,11 @@
 
 #define BOOST_TEST_MODULE Test model
 
-#include "config_handler.h"
+#include "handle_general_args.h"
+#include "handle_database_args.h"
+#include "handle_threadgroup_args.h"
+
+#include <boost/assign/list_of.hpp>
 
 //args processing config for custom main
 HandlerPtrVector global_hpv =

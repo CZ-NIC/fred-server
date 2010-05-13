@@ -26,7 +26,6 @@
 #define CONFIG_HANDLER_H_
 
 #include <iostream>
-#include <fstream>
 #include <exception>
 #include <string>
 #include <vector>
@@ -34,22 +33,15 @@
 #include <memory>
 #include <typeinfo>
 
-#include <boost/assign/list_of.hpp>
-#include <boost/program_options.hpp>
 #include <boost/utility.hpp>
 #include <boost/format.hpp>
 
-#include "register/db_settings.h"
 #include "faked_args.h"
 #include "handle_args.h"
 #include "handle_general_args.h"
 
-
-
-//owning container of handlers
-typedef boost::shared_ptr<HandleArgs> HandleArgsPtr;
-typedef std::vector<HandleArgsPtr > HandlerPtrVector;
 typedef std::map<std::string, HandleArgsPtr > HandlerPtrMap;
+
 
 //compose args processing
 /* possible usage:
@@ -161,157 +153,5 @@ CfgArgs* CfgArgs::instance()
     if (ret == 0) throw std::runtime_error("error: CfgArgs instance not set");
     return ret;
 }
-
-/**
- * \class HandleDatabaseArgs
- * \brief database options handler
- */
-class HandleDatabaseArgs : public HandleArgs
-{
-public:
-
-    boost::shared_ptr<boost::program_options::options_description>
-        get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> db_opts(
-                new boost::program_options::options_description(
-                        std::string("Database connection configuration")));
-        db_opts->add_options()
-                ("database.name", boost::program_options
-                            ::value<std::string>()->default_value(std::string("fred"))
-                        , "database name")
-                ("database.user", boost::program_options
-                            ::value<std::string>()->default_value(std::string("fred"))
-                        , "database user name")
-                ("database.password", boost::program_options
-                            ::value<std::string>(), "database password")
-                ("database.host", boost::program_options
-                            ::value<std::string>()->default_value(std::string("localhost"))
-                        , "database hostname")
-                ("database.port", boost::program_options
-                            ::value<unsigned int>(), "database port number")
-                ("database.timeout", boost::program_options
-                            ::value<unsigned int>(), "database timeout");
-
-        return db_opts;
-    }//get_options_description
-
-    void handle( int argc, char* argv[],  FakedArgs &fa)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-
-        /* construct connection string */
-        std::string dbhost = (vm.count("database.host") == 0 ? ""
-                : "host=" + vm["database.host"].as<std::string>() + " ");
-        std::string dbpass = (vm.count("database.password") == 0 ? ""
-                : "password=" + vm["database.password"].as<std::string>() + " ");
-        std::string dbname = (vm.count("database.name") == 0 ? ""
-                : "dbname=" + vm["database.name"].as<std::string>() + " ");
-        std::string dbuser = (vm.count("database.user") == 0 ? ""
-                : "user=" + vm["database.user"].as<std::string>() + " ");
-        std::string dbport = (vm.count("database.port") == 0 ? ""
-                : "port=" + boost::lexical_cast<std::string>(vm["database.port"].as<unsigned>()) + " ");
-        std::string dbtime = (vm.count("database.timeout") == 0 ? ""
-                : "connect_timeout=" + boost::lexical_cast<std::string>(vm["database.timeout"].as<unsigned>()) + " ");
-        std::string conn_info = str(boost::format("%1% %2% %3% %4% %5% %6%")
-                                                  % dbhost
-                                                  % dbport
-                                                  % dbname
-                                                  % dbuser
-                                                  % dbpass
-                                                  % dbtime);
-        std::cout << "database connection set to: " << conn_info << std::endl;
-
-        Database::Manager::init(new Database::ConnectionFactory(conn_info));
-
-    }//handle
-};
-
-/**
- * \class HandleThreadGroupArgs
- * \brief thread group options handler
- */
-class HandleThreadGroupArgs : public HandleArgs
-{
-public:
-    std::size_t thread_number ;// 300;//number of threads in test
-    std::size_t thread_group_divisor;// = 10;
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> thread_opts(
-                new boost::program_options::options_description(
-                        std::string("Thread group configuration")));
-        thread_opts->add_options()
-                ("thread_number", boost::program_options
-                            ::value<unsigned int>()->default_value(300)
-                             , "number of threads in group")
-                ("thread_group_divisor", boost::program_options
-                            ::value<unsigned int>()->default_value(10)
-                             , "designates fraction of non-synchronized threads");
-        return thread_opts;
-    }//get_options_description
-    void handle( int argc, char* argv[],  FakedArgs &fa)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-
-        thread_number = (vm.count("thread_number") == 0
-                ? 300 : vm["thread_number"].as<unsigned>());
-        std::cout << "thread_number: " << thread_number
-                << " vm[\"thread_number\"].as<unsigned>(): "
-                << vm["thread_number"].as<unsigned>() << std::endl;
-
-        thread_group_divisor = (vm.count("thread_group_divisor") == 0
-                ? 10 : vm["thread_group_divisor"].as<unsigned>());
-        std::cout << "thread_group_divisor: " << thread_group_divisor<< "" << std::endl;
-    }//handle
-};
-
-/**
- * \class HandleCorbaNameServiceArgs
- * \brief corba nameservice options handler
- */
-class HandleCorbaNameServiceArgs : public HandleArgs
-{
-public:
-    std::string nameservice_host ;
-    unsigned nameservice_port;
-    std::string nameservice_context;
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> opts_descs(
-                new boost::program_options::options_description(
-                        std::string("CORBA NameService configuration")));
-        opts_descs->add_options()
-                ("nameservice.host", boost::program_options
-                            ::value<std::string>()->default_value(std::string("localhost"))
-                        , "nameservice host name")
-                ("nameservice.port", boost::program_options
-                            ::value<unsigned int>()->default_value(2809)
-                             , "nameservice port number")
-                ("nameservice.context", boost::program_options
-                         ::value<std::string>()->default_value(std::string("fred"))
-                     , "freds context in name service");
-
-        return opts_descs;
-    }//get_options_description
-    void handle( int argc, char* argv[],  FakedArgs &fa)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-
-        nameservice_host = (vm.count("nameservice.host") == 0
-                ? std::string("localhost") : vm["nameservice.host"].as<std::string>());
-        nameservice_port = (vm.count("nameservice.port") == 0
-                ? 2809 : vm["nameservice.port"].as<unsigned>());
-        nameservice_context = (vm.count("nameservice.context") == 0
-                ? std::string("fred") : vm["nameservice.context"].as<std::string>());
-    }//handle
-};
 
 #endif //CONFIG_HANDLER_H_
