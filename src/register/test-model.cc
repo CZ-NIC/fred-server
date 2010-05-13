@@ -244,7 +244,8 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
     boost::thread_group threads;
     for (unsigned i = 0; i < thread_number; ++i)
     {
-        tw_vector.push_back(ModelBankPaymentThreadWorker(i,3,&sb, thread_group_divisor, &result_queue));
+        tw_vector.push_back(ModelBankPaymentThreadWorker(i,3,&sb
+                , thread_group_divisor, &result_queue));
         threads.create_thread(tw_vector.at(i));
     }
 
