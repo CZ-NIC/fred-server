@@ -17,12 +17,8 @@
 
 #define BOOST_TEST_MODULE Test registrar certification group
 
-#include "handle_general_args.h"
-#include "handle_database_args.h"
-#include "handle_threadgroup_args.h"
-#include "handle_corbanameservice_args.h"
 
-#include <boost/assign/list_of.hpp>
+#include "test-registrar-certification-group.h"
 
 //args processing config for custom main
 HandlerPtrVector global_hpv =
@@ -34,20 +30,11 @@ boost::assign::list_of
 
 #include "test_custom_main.h"
 
-#include "corba_wrapper.h"
 
-#include "random_data_generator.h"
-#include "concurrent_queue.h"
-#include "common.h"
 
-#ifdef BOOST_NO_STDC_NAMESPACE
-namespace std
-{
-  using ::time;
-}
-#endif
 
-#include "test-registrar-certification-group.h"
+
+
 
 BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
 {

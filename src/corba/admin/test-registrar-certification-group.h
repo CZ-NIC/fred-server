@@ -25,29 +25,44 @@
 #include <algorithm>
 #include <functional>
 #include <numeric>
-#include <boost/format.hpp>
-#include "register/db_settings.h"
-#include "log/logger.h"
-#include "log/context.h"
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/thread.hpp>
-#include <boost/version.hpp>
-#include <boost/utility.hpp>
-#include <fstream>
+#include <map>
+#include <exception>
 #include <queue>
 #include <sys/time.h>
 #include <time.h>
+
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time.hpp>
+#include <boost/assign/list_of.hpp>
 
-#include <iostream>
-#include <map>
-#include <exception>
+#include "register/db_settings.h"
+#include "corba_wrapper.h"
+#include "log/logger.h"
+#include "log/context.h"
+
+#include "random_data_generator.h"
+#include "concurrent_queue.h"
+#include "common.h"
+
+#include "handle_general_args.h"
+#include "handle_database_args.h"
+#include "handle_threadgroup_args.h"
+#include "handle_corbanameservice_args.h"
 
 
 
+
+
+#ifdef BOOST_NO_STDC_NAMESPACE
+namespace std
+{
+  using ::time;
+}
+#endif
 
 
 #endif // TEST_REGISTRAR_CERTIFICATION_GROUP_H_
