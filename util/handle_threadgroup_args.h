@@ -42,8 +42,8 @@
 class HandleThreadGroupArgs : public HandleArgs
 {
 public:
-    std::size_t thread_number ;// 300;//number of threads in test
-    std::size_t thread_group_divisor;// = 10;
+    std::size_t thread_number ;//number of threads in test
+    std::size_t thread_group_divisor;//
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -53,7 +53,7 @@ public:
                         std::string("Thread group configuration")));
         thread_opts->add_options()
                 ("thread_number", boost::program_options
-                            ::value<unsigned int>()->default_value(300)
+                            ::value<unsigned int>()->default_value(50)
                              , "number of threads in group")
                 ("thread_group_divisor", boost::program_options
                             ::value<unsigned int>()->default_value(10)
@@ -66,7 +66,7 @@ public:
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
 
         thread_number = (vm.count("thread_number") == 0
-                ? 300 : vm["thread_number"].as<unsigned>());
+                ? 50 : vm["thread_number"].as<unsigned>());
         std::cout << "thread_number: " << thread_number
                 << " vm[\"thread_number\"].as<unsigned>(): "
                 << vm["thread_number"].as<unsigned>() << std::endl;
