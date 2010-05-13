@@ -101,7 +101,9 @@ class ModelBankPaymentThreadWorker
 {
 public:
 
-    ModelBankPaymentThreadWorker(unsigned number,unsigned sleep_time, sync_barriers* sb_ptr, std::size_t thread_group_divisor, ResultQueue* result_queue_ptr = 0, unsigned seed = 0)
+    ModelBankPaymentThreadWorker(unsigned number,unsigned sleep_time
+            , sync_barriers* sb_ptr, std::size_t thread_group_divisor
+            , ResultQueue* result_queue_ptr = 0, unsigned seed = 0)
             : number_(number)
             , sleep_time_(sleep_time)
             , sb_ptr_(sb_ptr)
