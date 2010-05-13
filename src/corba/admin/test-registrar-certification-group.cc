@@ -30,12 +30,6 @@ boost::assign::list_of
 
 #include "test_custom_main.h"
 
-
-
-
-
-
-
 BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
 {
     //  try
@@ -267,3 +261,142 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
 
 
 }//test_registrar_certification_simple
+
+//synchronization using barriers
+struct sync_barriers
+{
+    boost::barrier insert_barrier;
+    boost::barrier update_barrier;
+    sync_barriers(std::size_t thread_number)
+        : insert_barrier(thread_number)
+        , update_barrier(thread_number)
+    {}
+};
+
+struct ThreadResult
+{
+    unsigned number;//thread number
+    unsigned ret;//return code
+    std::string desc;//some closer description
+    ThreadResult()
+    : number(0)
+      , ret(std::numeric_limits<unsigned>::max())
+      , desc("empty result")
+      {}
+};
+
+typedef concurrent_queue<ThreadResult > ThreadResultQueue;
+
+//thread functor
+class TestThreadWorker
+{
+public:
+
+    TestThreadWorker(unsigned number,unsigned sleep_time
+            , sync_barriers* sb_ptr, std::size_t thread_group_divisor
+            , ThreadResultQueue* result_queue_ptr = 0, unsigned seed = 0)
+            : number_(number)
+            , sleep_time_(sleep_time)
+            , sb_ptr_(sb_ptr)
+            , rdg_(seed)
+            , tgd_(thread_group_divisor)
+            , rsq_ptr (result_queue_ptr)
+    {}
+
+    void operator()()
+    {
+        try
+        {
+            if(number_%tgd_)//if synchronized thread
+            {
+                std::cout << "waiting: " << number_ << std::endl;
+                if(sb_ptr_)
+                    sb_ptr_->insert_barrier.wait();//wait for other synced threads
+            }
+            else
+            {//non-synchronized thread
+                std::cout << "NOwaiting: " << number_ << std::endl;
+            }
+
+            std::cout << "start: " << number_ << std::endl;
+
+            ThreadResult res;
+            res.ret = 0;
+            res.number = number_;
+
+            res.desc = std::string("ok");
+            if(rsq_ptr) rsq_ptr->push(res);
+            std::cout << "end: " << number_ << std::endl;
+        }
+        catch(...)
+        {
+            std::cout << "exception in operator() thread number: " << number_ << std::endl;
+        }
+    }
+
+private:
+    //need only defaultly constructible members here
+    unsigned    number_;//thred identification
+    unsigned    sleep_time_;//[s]
+    sync_barriers* sb_ptr_;
+    RandomDataGenerator rdg_;
+    std::size_t tgd_;//thread group divisor
+    ThreadResultQueue* rsq_ptr; //result queue non-owning pointer
+};//class TestThreadWorker
+
+BOOST_AUTO_TEST_CASE( test_threaded )
+{
+    HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
+                   get_handler_ptr_by_type<HandleThreadGroupArgs>();
+
+    std::size_t const thread_number = thread_args_ptr->thread_number;
+    std::size_t const thread_group_divisor = thread_args_ptr->thread_group_divisor;
+    // int(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+    // - thread_number / thread_group_divisor) is number of synced threads
+
+    ThreadResultQueue result_queue;
+
+    //vector of thread functors
+    std::vector<TestThreadWorker> tw_vector;
+    tw_vector.reserve(thread_number);
+
+    std::cout << "thread barriers:: "
+            <<  (thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+                    - thread_number/thread_group_divisor)
+            << std::endl;
+
+    //synchronization barriers instance
+    sync_barriers sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+            - thread_number/thread_group_divisor);
+
+    //thread container
+    boost::thread_group threads;
+    for (unsigned i = 0; i < thread_number; ++i)
+    {
+        tw_vector.push_back(TestThreadWorker(i,3,&sb
+                , thread_group_divisor, &result_queue));
+        threads.create_thread(tw_vector.at(i));
+    }
+
+    threads.join_all();
+
+    std::cout << "threads end result_queue.size(): " << result_queue.size() << std::endl;
+
+    for(unsigned i = 0; i < thread_number; ++i)
+    {
+        ThreadResult thread_result;
+        result_queue.try_pop(thread_result);
+
+        BOOST_REQUIRE_EQUAL(thread_result.ret , 0);
+
+        if(thread_result.ret)
+        {
+            std::cout << thread_result.desc
+                    << " thread number: " << thread_result.number
+                    << " return code: " << thread_result.ret
+                    << " description: " << thread_result.desc
+                    << std::endl;
+        }
+    }//for i
+}
+
