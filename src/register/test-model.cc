@@ -17,11 +17,7 @@
 
 #define BOOST_TEST_MODULE Test model
 
-#include "handle_general_args.h"
-#include "handle_database_args.h"
-#include "handle_threadgroup_args.h"
-
-#include <boost/assign/list_of.hpp>
+#include "test-model.h"
 
 //args processing config for custom main
 HandlerPtrVector global_hpv =
@@ -31,28 +27,6 @@ boost::assign::list_of
 (HandleArgsPtr(new HandleThreadGroupArgs));
 
 #include "test_custom_main.h"
-
-
-#include "random_data_generator.h"
-#include "concurrent_queue.h"
-
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/algorithm/string.hpp>
-
-#include <fstream>
-#include <queue>
-#include <sys/time.h>
-#include <time.h>
-
-
-#ifdef BOOST_NO_STDC_NAMESPACE
-namespace std
-{
-  using ::time;
-}
-#endif
-
-#include "test-model.h"
 
     /*
      * to log queries:
