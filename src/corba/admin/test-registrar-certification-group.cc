@@ -309,6 +309,8 @@ public:
     {
         ThreadResult res;
         res.number = number_;
+        res.ret = 0;
+        res.desc = std::string("ok");
 
         try
         {
@@ -339,9 +341,6 @@ public:
                     , gid3
                     , Database::Date(NOW)
                     , Database::Date(NOW) );
-
-            res.ret = 0;
-            res.desc = std::string("ok");
         }
         catch(const std::exception& ex)
         {
@@ -349,15 +348,71 @@ public:
                     << " reason: " << ex.what() << std::endl;
             res.ret = 1;
             res.desc = std::string(ex.what());
-            throw;
+            return;
         }
         catch(...)
         {
             std::cout << "exception in operator() thread number: " << number_ << std::endl;
             res.ret = 2;
             res.desc = std::string("unknown exception");
-            throw;
+            return;
         }
+
+        try
+        {
+            //try to create multiple registrar certifications in same time
+            //created should by only one
+
+            //get db connection
+            Database::Connection conn = Database::Manager::acquire();
+
+            std::string query1 (
+                    "select * from registrar_certification "
+                    "where registrar_id = 1  "
+                    "and classification = 3 ");
+            Database::Result res1 = conn.exec( query1 );
+
+
+            Register::Registrar::Manager::AutoPtr regman(
+                    Register::Registrar::Manager::create(0));
+
+            regman->createRegistrarCertification(
+                    1
+                    , Database::Date(
+                            boost::posix_time::second_clock::local_time().date() //from now
+                            )
+                    , Database::Date(
+                            date(boost::posix_time::second_clock::local_time().date()
+                                  + boost::gregorian::date_duration( 365 ))
+                                  )
+
+                    , static_cast<Register::Registrar::RegCertClass>(3)//score
+                    , 0//evaluation_file_id
+                    );
+
+            Database::Result res2 = conn.exec( query1 );
+
+            if((res2.size() - res1.size()) > 1 )
+            {
+                res.ret = 3;
+                res.desc = std::string("create multiple registrar certifications in same time failed");
+            }
+
+        }
+        catch(const std::exception&)
+        {
+            //ok
+        }
+        catch(...)
+        {
+            std::cout << "exception in operator() thread number: " << number_ << std::endl;
+            res.ret = 4;
+            res.desc = std::string("unknown exception");
+            return;
+        }
+
+
+
 
         if(rsq_ptr) rsq_ptr->push(res);
         std::cout << "end: " << number_ << std::endl;
