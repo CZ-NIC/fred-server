@@ -267,11 +267,11 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
 //synchronization using barriers
 struct sync_barriers
 {
-    boost::barrier insert_barrier;
-    boost::barrier update_barrier;
+    boost::barrier group_barrier;
+    boost::barrier cert_barrier;
     sync_barriers(std::size_t thread_number)
-        : insert_barrier(thread_number)
-        , update_barrier(thread_number)
+        : group_barrier(thread_number)
+        , cert_barrier(thread_number)
     {}
 };
 
@@ -318,7 +318,7 @@ public:
             {
                 std::cout << "waiting: " << number_ << std::endl;
                 if(sb_ptr_)
-                    sb_ptr_->insert_barrier.wait();//wait for other synced threads
+                    sb_ptr_->group_barrier.wait();//wait for other synced threads
             }
             else
             {//non-synchronized thread
@@ -360,6 +360,12 @@ public:
 
         try
         {
+            if(number_%tgd_)//if synchronized thread
+            {
+                if(sb_ptr_)
+                    sb_ptr_->cert_barrier.wait();//wait for other synced threads
+            }
+
             //try to create multiple registrar certifications in same time
             //created should by only one
 
