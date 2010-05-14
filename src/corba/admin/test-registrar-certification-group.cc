@@ -358,6 +358,7 @@ public:
             return;
         }
 
+        Register::TID cert_id=0;
         try
         {
             if(number_%tgd_)//if synchronized thread
@@ -382,7 +383,7 @@ public:
             Register::Registrar::Manager::AutoPtr regman(
                     Register::Registrar::Manager::create(0));
 
-            regman->createRegistrarCertification(
+            cert_id = regman->createRegistrarCertification(
                     1
                     , Database::Date(
                             boost::posix_time::second_clock::local_time().date() //from now
@@ -417,8 +418,38 @@ public:
             return;
         }
 
+        //edit certification
+        try
+        {
 
+            Register::Registrar::Manager::AutoPtr regman(
+                    Register::Registrar::Manager::create(0));
 
+            regman->shortenRegistrarCertification(cert_id
+                    , Database::Date(
+                            date(boost::posix_time::second_clock::local_time().date()
+                                  + boost::gregorian::date_duration( 7 ))));
+
+            regman->updateRegistrarCertification(cert_id
+                    , static_cast<Register::Registrar::RegCertClass>(2)//score
+                    , 0//evaluation_file_id
+                    );
+        }
+        catch(const std::exception& ex)
+        {
+            std::cout << "exception in operator() thread number: " << number_
+                    << " reason: " << ex.what() << std::endl;
+            res.ret = 5;
+            res.desc = std::string(ex.what());
+            return;
+        }
+        catch(...)
+        {
+            std::cout << "exception in operator() thread number: " << number_ << std::endl;
+            res.ret = 6;
+            res.desc = std::string("unknown exception");
+            return;
+        }
 
         if(rsq_ptr) rsq_ptr->push(res);
         std::cout << "end: " << number_ << std::endl;
