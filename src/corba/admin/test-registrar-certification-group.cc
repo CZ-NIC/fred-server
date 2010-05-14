@@ -341,6 +341,8 @@ public:
                     , gid3
                     , Database::Date(NOW)
                     , Database::Date(NOW) );
+
+
         }
         catch(const std::exception& ex)
         {
@@ -450,6 +452,26 @@ public:
             res.desc = std::string("unknown exception");
             return;
         }
+
+        try
+        {
+            Register::Registrar::Manager::AutoPtr regman(
+                    Register::Registrar::Manager::create(0));
+            //delete group
+            regman->cancelRegistrarGroup(gid3);
+        }
+        catch(const std::exception& )
+        {
+            //ok
+        }
+        catch(...)
+        {
+            std::cout << "exception in operator() thread number: " << number_ << std::endl;
+            res.ret = 7;
+            res.desc = std::string("unknown exception");
+            return;
+        }
+
 
         if(rsq_ptr) rsq_ptr->push(res);
         std::cout << "end: " << number_ << std::endl;
