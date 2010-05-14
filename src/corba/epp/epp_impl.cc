@@ -4584,6 +4584,12 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
             }
         }
 
+        // if request contains change of nsset and no change to keyset
+        // remove keyset from domain
+        if (nssetid != 0 && keysetid == 0) {
+            keysetid = -1;
+        }
+
         //  owner of domain
         if (strlen(registrant_chg) == 0) {
             contactid = 0; // not change owner
