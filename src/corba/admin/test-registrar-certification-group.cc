@@ -54,6 +54,15 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         Database::Connection conn = Database::Manager::acquire();
 
         //deletion of test data
+
+        std::string query12 ("delete from files where id = 1 ");
+        conn.exec( query12 );
+
+        std::string query13 (
+                "INSERT INTO files (id, name, path, filesize, filetype) "
+                " VALUES (1, 'test', 'test', 0,6)");
+        conn.exec( query13 );
+
         std::string query9 (
                 "delete from registrar_certification "
                 "where registrar_id = 1 ");
@@ -136,7 +145,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         ccReg::TID cid1 =
                 cert_manager_ref->createCertification(1
                 , makeCorbaDate(boost::gregorian::date(2010, 1, 30))
-                ,makeCorbaDate(boost::gregorian::date(2011, 1, 30)),3,0);
+                ,makeCorbaDate(boost::gregorian::date(2011, 1, 30)),3,1);
         std::string query8 (
                 "select * from registrar_certification "
                 "where registrar_id = 1  "
@@ -146,7 +155,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         Database::Result res8 = conn.exec( query8 );
         BOOST_REQUIRE_EQUAL(6*res8.size() , 6);
 
-        cert_manager_ref->updateCertification(cid1,4,0);
+        cert_manager_ref->updateCertification(cid1,4,1);
         std::string query10 (
                 "select * from registrar_certification "
                 "where registrar_id = 1  "
@@ -165,7 +174,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
                 "and valid_until = to_date('2010-01-30','YYYY-MM-DD') "
                 "and classification = 4 ");
         Database::Result res11 = conn.exec( query11 );
-        BOOST_REQUIRE_EQUAL(8*res10.size() , 8);
+        BOOST_REQUIRE_EQUAL(8*res11.size() , 8);
 
         //unbounded struct sequence client side mapping
         //create owning seq

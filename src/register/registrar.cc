@@ -1946,7 +1946,7 @@ public:
             mrc.setValidFrom(valid_from);
             mrc.setValidUntil(valid_until);
             mrc.setClassification(classification);
-            if (eval_file_id != 0) mrc.setEvalFileId(eval_file_id);
+            mrc.setEvalFileId(eval_file_id);
             mrc.insert();
             return mrc.getId();
         }//try
@@ -1985,7 +1985,7 @@ public:
             ModelRegistrarCertification mrc;
             mrc.setId(certification_id);
             mrc.setClassification(classification);
-            if (eval_file_id != 0) mrc.setEvalFileId(eval_file_id);
+            mrc.setEvalFileId(eval_file_id);
             mrc.update();
         }//try
         catch (...)

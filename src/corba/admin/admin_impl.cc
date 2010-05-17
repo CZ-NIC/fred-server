@@ -2114,6 +2114,8 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(
     {
         if((score < 0) || (score > 5))
             throw std::runtime_error("Invalid value of score");
+        if(evaluation_file_id < 1)
+            throw std::runtime_error("Invalid value of evaluation_file_id");
         Register::Registrar::Manager::AutoPtr regman(
                 Register::Registrar::Manager::create(0));
         ///create registrar certification
@@ -2174,7 +2176,11 @@ void Registry_Registrar_Certification_Manager_i::updateCertification(
 
     try
     {
-        if((score < 0) || (score > 5)) throw std::runtime_error("Invalid value of score");
+        if((score < 0) || (score > 5))
+            throw std::runtime_error("Invalid value of score");
+        if(evaluation_file_id < 1)
+            throw std::runtime_error("Invalid value of evaluation_file_id");
+
         Register::Registrar::Manager::AutoPtr regman(
                 Register::Registrar::Manager::create(0));
         ///update registrar certification
