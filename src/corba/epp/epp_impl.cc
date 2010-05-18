@@ -4584,10 +4584,14 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
             }
         }
 
-        // if request contains change of nsset and no change to keyset
-        // remove keyset from domain
-        if (nssetid != 0 && keysetid == 0) {
-            keysetid = -1;
+        if (conf.hasOpt("rifd.epp_update_domain_keyset_clear")) {
+            if (conf.get<bool>("rifd.epp_update_domain_keyset_clear") == true) {
+                // if request contains change of nsset and no change to keyset
+                // remove keyset from domain
+                if (nssetid != 0 && keysetid == 0) {
+                    keysetid = -1;
+                }
+            }
         }
 
         //  owner of domain

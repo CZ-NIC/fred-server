@@ -165,7 +165,8 @@ int main(int argc, char** argv) {
     rifd_opts.add_options()
       ("rifd.session_max",           po::value<unsigned>()->default_value(200), "RIFD maximum number of sessions")
       ("rifd.session_timeout",       po::value<unsigned>()->default_value(300), "RIFD session timeout")
-      ("rifd.session_registrar_max", po::value<unsigned>()->default_value(5), "RIFD maximum munber active sessions per registrar");
+      ("rifd.session_registrar_max", po::value<unsigned>()->default_value(5), "RIFD maximum munber active sessions per registrar")
+      ("rifd.epp_update_domain_keyset_clear", po::value<bool>()->default_value(false), "EPP command update domain will also clear keyset when changing NSSET");
     po::options_description adifd_opts("ADIFD specific");
     adifd_opts.add_options()
       ("adifd.session_max",     po::value<unsigned>()->default_value(0),    "ADIFD maximum number of sessions (0 mean not limited)")
