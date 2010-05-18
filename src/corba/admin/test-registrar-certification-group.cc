@@ -53,23 +53,8 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
 
+
         //deletion of test data
-
-        try
-        {
-        std::string query12 ("delete from files where id = 1 ");
-        conn.exec( query12 );
-        }
-        catch(const std::exception &)
-        {
-            //this may fail
-        }
-
-        std::string query13 (
-                "INSERT INTO files (id, name, path, filesize, filetype) "
-                " VALUES (1, 'test', 'test', 0,6)");
-        conn.exec( query13 );
-
         std::string query9 (
                 "delete from registrar_certification "
                 "where registrar_id = 1 ");
@@ -90,6 +75,22 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
                 " or short_name = '%2%' or short_name = '%3%' or short_name = '%4%' ")
                 % "testgroup1" % "testgroup2" % "testgroup3" % "testgroup4");
         conn.exec( query1 );
+
+
+        try
+        {
+        //test file of type 6
+        mf.setName("test_name");
+        mf.setPath("test");
+        mf.setFilesize(5);
+        mf.setFileTypeId(6);
+        mf.insert();
+        }
+        catch(const std::exception &)
+        {
+            //this may fail
+        }
+
 
         //group simple test
         std::cout << "admin_ref->getGroupManager()" << std::endl;
@@ -152,7 +153,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         ccReg::TID cid1 =
                 cert_manager_ref->createCertification(1
                 , makeCorbaDate(boost::gregorian::date(2010, 1, 30))
-                ,makeCorbaDate(boost::gregorian::date(2011, 1, 30)),3,1);
+                ,makeCorbaDate(boost::gregorian::date(2011, 1, 30)),3,mf.getId());
         std::string query8 (
                 "select * from registrar_certification "
                 "where registrar_id = 1  "
@@ -162,7 +163,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
         Database::Result res8 = conn.exec( query8 );
         BOOST_REQUIRE_EQUAL(6*res8.size() , 6);
 
-        cert_manager_ref->updateCertification(cid1,4,1);
+        cert_manager_ref->updateCertification(cid1,4,mf.getId());
         std::string query10 (
                 "select * from registrar_certification "
                 "where registrar_id = 1  "
