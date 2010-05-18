@@ -55,8 +55,15 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
 
         //deletion of test data
 
+        try
+        {
         std::string query12 ("delete from files where id = 1 ");
         conn.exec( query12 );
+        }
+        catch(const std::exception &)
+        {
+            //this may fail
+        }
 
         std::string query13 (
                 "INSERT INTO files (id, name, path, filesize, filetype) "
