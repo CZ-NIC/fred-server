@@ -391,6 +391,14 @@ main(int argc, char **argv)
         std::cerr << message.str() << std::endl;
         return 3;
     }
+    catch (Database::Exception &e) {
+        std::cerr << "SQL Error:" << e.what() << std::endl;
+        return 1;
+    }
+    catch (Register::SQL_ERROR) {
+        std::cerr << "SQL ERROR" << std::endl;
+        return 1;
+    }
     catch (std::exception &e) {
         std::stringstream message("Error: ");
         message << e.what();
@@ -399,10 +407,7 @@ main(int argc, char **argv)
         std::cerr << message.str() << std::endl;
         return 2;
     }
-    catch (Register::SQL_ERROR) {
-        std::cerr << "SQL ERROR" << std::endl;
-        return 1;
-    }
+    
 
     return 0;
 }

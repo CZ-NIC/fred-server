@@ -23,30 +23,13 @@
 #include <sstream>
 #include <boost/assign/list_of.hpp>
 
+using namespace Database;
+
 namespace Register
 {
   namespace Notify
   {
-    // Local transction needed for proper on commit handling of TEMP table
-    struct LocalTransaction {
-      DB *db;
-      bool closed;
-      LocalTransaction(DB *_db) : db(_db), closed(false)
-      {
-        (void)db->BeginTransaction();
-      }
-      ~LocalTransaction()
-      {
-        if (!closed)
-          db->RollbackTransaction();
-      }
-      void commit()
-      {
-        db->CommitTransaction();
-        closed = true;
-      }
-    };
-
+    
     class ManagerImpl : virtual public Manager
     {
       DB *db;
@@ -481,14 +464,75 @@ namespace Register
         }
         if (debugOutput) *debugOutput << "</notifications>" << std::endl;
       }
-#define XML_DB_OUT(x,y) "<![CDATA[" << db->GetFieldValue(x,y) << "]]>"
+
+      /** Controls output of notification letters into multiple files
+       */
 #define WARNING_LETTER_FILE_TYPE 5 // from enum_filetype table
+      class GenMultipleFiles {
+          private:
+              std::auto_ptr<Document::Generator> gPDF;
+              const std::string &exDate;
+              Transaction &trans;
+              TID holder_id;
+
+          public:
+            GenMultipleFiles(const std::string &exDate_, const TID holderid, 
+                    Document::Manager *docm, Transaction &tr) 
+                : exDate(exDate_), trans(tr), holder_id(holderid) {
+  
+              std::stringstream filename;
+              filename << "letter-" << exDate << "-" << holder_id << ".pdf";
+                  
+              gPDF.reset(
+                docm->createSavingGenerator(
+                  Document::GT_WARNING_LETTER,
+                  filename.str(), WARNING_LETTER_FILE_TYPE,
+                  "" // default language
+                )
+              );
+              std::ostream& out(gPDF->getInput());
+
+              out << "<messages>";
+              out << "<holder>";
+
+            }
+            
+            ~GenMultipleFiles() {
+                std::ostream& out(gPDF->getInput());
+                std::stringstream sql;
+
+                out << "</holder>";
+                out << "</messages>";
+
+                Connection conn = Database::Manager::acquire();
+                TID filePDF = gPDF->closeInput();
+                  sql.str("");
+                  sql << "INSERT INTO notify_letters "
+                      << "SELECT tnl.state_id, " << filePDF << " "
+                      << "FROM tmp_notify_letters tnl, object_state s, "
+                      << "domain_history dh "
+                      << "WHERE tnl.state_id=s.id AND s.ohid_from=dh.historyid "
+                      << "AND dh.registrant=" << holder_id  << " "
+                      << "AND dh.exdate::date='" << exDate << "'";
+
+                conn.exec(sql.str());
+                trans.savepoint();
+            }
+
+            std::ostream& getInput() {
+                return gPDF->getInput();
+            }
+      };
+
+#define XML_DB_OUT(x,y) "<![CDATA[" << (std::string)res[x][y] << "]]>"
       virtual void generateLetters()
         throw (SQL_ERROR)
       {
         TRACE("[CALL] Register::Notify::generateLetters()");
     	// transaction is needed for 'ON COMMIT DROP' functionality
-    	LocalTransaction trans(db);
+        
+        Connection conn = Database::Manager::acquire();
+        Database::Transaction trans(conn);
     	// because every expiration date is
         // generated into separate PDF, there are two SQL queries.
         // first for getting expiration dates and second for real data
@@ -500,35 +544,30 @@ namespace Register
           " state_id INTEGER PRIMARY KEY "
           ") ON COMMIT DROP ";
         // populate temporary table with states to notify
-        if (!db->ExecSQL(create)) throw SQL_ERROR();
+        conn.exec(create);
+
         const char *fixateStates =
           "INSERT INTO tmp_notify_letters "
           "SELECT s.id FROM object_state s "
           "LEFT JOIN notify_letters nl ON (s.id=nl.state_id) "
           "WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL ";
-        if (!db->ExecSQL(fixateStates)) throw SQL_ERROR();
+        conn.exec(fixateStates);
         // select all expiration dates of domain to notify
         const char *selectExDates =
           "SELECT DISTINCT dh.exdate::date "
           "FROM tmp_notify_letters tnl, object_state s, domain_history dh "
           "WHERE tnl.state_id=s.id AND s.ohid_from=dh.historyid ";
-        if (!db->ExecSelect(selectExDates)) throw SQL_ERROR();
+        Result res = conn.exec(selectExDates);
+
         std::vector<std::string> exDates;
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
-          exDates.push_back(db->GetFieldValue(i,0));
-        db->FreeSelect();
+        for (unsigned i=0; i < (unsigned)res.size(); i++) {
+          exDates.push_back(res[i][0]);
+        }
+
         // for every expiration date generate PDF
         for (unsigned j=0; j<exDates.size(); j++) {
-          std::stringstream filename;
-          filename << "letter-" << exDates[j] << ".pdf";
-          std::auto_ptr<Document::Generator> gPDF(
-            docm->createSavingGenerator(
-              Document::GT_WARNING_LETTER,
-              filename.str(),WARNING_LETTER_FILE_TYPE,
-              "" // default language
-            )
-          );
-          std::ostream& out(gPDF->getInput());
+
+   
           std::stringstream sql;
           sql << "SELECT dobr.name,r.name || ' (' || r.url || ')',CURRENT_DATE,"
               << "d.exdate::date + INTERVAL '45 days',cor.name,"
@@ -537,7 +576,7 @@ namespace Register
               << "TRIM(COALESCE(c.street1,'') || ' ' || "
               << "COALESCE(c.street2,'') || ' ' || "
               << "COALESCE(c.street3,'')), "
-              << "c.city, c.postalcode, ec.country "
+              << "c.city, c.postalcode, ec.country, d.registrant "
               << "FROM enum_country ec, contact_history c, "
               << "object_registry cor, registrar r, "
               << "object_registry dobr, object_history doh, domain_history d, "
@@ -549,37 +588,42 @@ namespace Register
               << "AND d.exdate::date='" << exDates[j] << "' AND doh.clid=r.id "
               << " ORDER BY CASE WHEN c.country='CZ' THEN 0 ELSE 1 END ASC, "
               << "          c.country, c.organization, c.name ";
-          if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-          out << "<messages>";
-          for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
-            out << "<message>"
+          res = conn.exec(sql.str());
+
+          std::auto_ptr<GenMultipleFiles> gen;
+          TID prev_holder;
+          for (unsigned i=0; i < (unsigned)res.size(); i++) {
+                TID holder_id = res[i][10];
+
+                if (prev_holder != holder_id) {
+                    gen.reset ( new GenMultipleFiles(exDates[j], holder_id, docm, trans));
+                    /*
+                    if(!prev_holder.empty()) {
+                        out << "</holder>";
+                    }
+                    */
+
+                    gen->getInput()
+                    << "<handle>" << XML_DB_OUT(i,4) << "</handle>"
+                    << "<name>" << XML_DB_OUT(i,5) << "</name>"
+                    << "<street>" << XML_DB_OUT(i,6) << "</street>"
+                    << "<city>" << XML_DB_OUT(i,7) << "</city>"
+                    << "<zip>" << XML_DB_OUT(i,8) << "</zip>"
+                    << "<country>" << XML_DB_OUT(i,9) << "</country>";
+                } 
+                gen->getInput()
+                << "<expiring_domain>"
                 << "<domain>" << XML_DB_OUT(i,0) << "</domain>"
                 << "<registrar>" << XML_DB_OUT(i,1) << "</registrar>"
                 << "<actual_date>" << XML_DB_OUT(i,2) << "</actual_date>"
-                << "<termination_date>" << XML_DB_OUT(i,3)
-                << "</termination_date>"
-                << "<holder>"
-                << "<handle>" << XML_DB_OUT(i,4) << "</handle>"
-                << "<name>" << XML_DB_OUT(i,5) << "</name>"
-                << "<street>" << XML_DB_OUT(i,6) << "</street>"
-                << "<city>" << XML_DB_OUT(i,7) << "</city>"
-                << "<zip>" << XML_DB_OUT(i,8) << "</zip>"
-                << "<country>" << XML_DB_OUT(i,9) << "</country>"
-                << "</holder>"
-                << "</message>";
-          db->FreeSelect();
-          out << "</messages>";
+                << "<termination_date>" << XML_DB_OUT(i,3) << "</termination_date>"
+                << "</expiring_domain>";
+
+                prev_holder = holder_id;
+          }
+
           // return id of generated PDF file
-          TID filePDF = gPDF->closeInput();
-          sql.str("");
-          sql << "INSERT INTO notify_letters "
-              << "SELECT tnl.state_id, " << filePDF << " "
-              << "FROM tmp_notify_letters tnl, object_state s, "
-              << "domain_history dh "
-              << "WHERE tnl.state_id=s.id AND s.ohid_from=dh.historyid "
-              << "AND dh.exdate::date='" << exDates[j] << "'";
-          if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
-        }
+          }
         trans.commit();
       }
     };
