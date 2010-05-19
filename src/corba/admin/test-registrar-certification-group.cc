@@ -76,20 +76,12 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
                 % "testgroup1" % "testgroup2" % "testgroup3" % "testgroup4");
         conn.exec( query1 );
 
-
-        try
-        {
         //test file of type 6
         mf.setName("test_name");
         mf.setPath("test");
         mf.setFilesize(5);
         mf.setFileTypeId(6);
         mf.insert();
-        }
-        catch(const std::exception &)
-        {
-            //this may fail
-        }
 
 
         //group simple test
