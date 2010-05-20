@@ -504,9 +504,11 @@ namespace Register
                 out << "</holder>";
                 out << "</messages>";
 
+                // there's still some room for more DB optimization if
+                // whole operation was made atomic and this query was run 
+                // only once with IDs taken from vector
                 Connection conn = Database::Manager::acquire();
                 TID filePDF = gPDF->closeInput();
-                  sql.str("");
                   sql << "INSERT INTO notify_letters "
                       << "SELECT tnl.state_id, " << filePDF << " "
                       << "FROM tmp_notify_letters tnl, object_state s, "
@@ -524,7 +526,7 @@ namespace Register
             }
       };
 
-#define XML_DB_OUT(x,y) "<![CDATA[" << (std::string)res[x][y] << "]]>"
+#define XML_DB_OUT(x,y) "<![CDATA[" << std::string(res[x][y]) << "]]>"
       virtual void generateLetters()
         throw (SQL_ERROR)
       {
@@ -569,14 +571,14 @@ namespace Register
 
    
           std::stringstream sql;
-          sql << "SELECT dobr.name,r.name || ' (' || r.url || ')',CURRENT_DATE,"
+          sql << "SELECT dobr.name,r.name,CURRENT_DATE,"
               << "d.exdate::date + INTERVAL '45 days',cor.name,"
-              << "CASE WHEN TRIM(COALESCE(c.organization,''))='' THEN c.name "
-              << "     ELSE c.organization END, "
+              << "c.name, c.organization, "
               << "TRIM(COALESCE(c.street1,'') || ' ' || "
               << "COALESCE(c.street2,'') || ' ' || "
               << "COALESCE(c.street3,'')), "
-              << "c.city, c.postalcode, ec.country, d.registrant "
+              << "c.city, c.postalcode, ec.country, d.registrant, "
+              << "r.url "
               << "FROM enum_country ec, contact_history c, "
               << "object_registry cor, registrar r, "
               << "object_registry dobr, object_history doh, domain_history d, "
@@ -593,9 +595,10 @@ namespace Register
           std::auto_ptr<GenMultipleFiles> gen;
           TID prev_holder;
           for (unsigned i=0; i < (unsigned)res.size(); i++) {
-                TID holder_id = res[i][10];
+                TID holder_id = res[i][11];
 
                 if (prev_holder != holder_id) {
+                    // in this case start creating a new file
                     gen.reset ( new GenMultipleFiles(exDates[j], holder_id, docm, trans));
                     /*
                     if(!prev_holder.empty()) {
@@ -606,17 +609,20 @@ namespace Register
                     gen->getInput()
                     << "<handle>" << XML_DB_OUT(i,4) << "</handle>"
                     << "<name>" << XML_DB_OUT(i,5) << "</name>"
-                    << "<street>" << XML_DB_OUT(i,6) << "</street>"
-                    << "<city>" << XML_DB_OUT(i,7) << "</city>"
-                    << "<zip>" << XML_DB_OUT(i,8) << "</zip>"
-                    << "<country>" << XML_DB_OUT(i,9) << "</country>";
+                    << "<organization>" << XML_DB_OUT(i,6) << "</organization>"
+
+                    << "<street>" << XML_DB_OUT(i,7) << "</street>"
+                    << "<city>" << XML_DB_OUT(i,8) << "</city>"
+                    << "<postal_code>" << XML_DB_OUT(i,9) << "</postal_code>"
+                    << "<country>" << XML_DB_OUT(i,10) << "</country>"
+                    << "<actual_date>" << XML_DB_OUT(i,2) << "</actual_date>"
+                    << "<termination_date>" << XML_DB_OUT(i,3) << "</termination_date>";
                 } 
                 gen->getInput()
                 << "<expiring_domain>"
                 << "<domain>" << XML_DB_OUT(i,0) << "</domain>"
                 << "<registrar>" << XML_DB_OUT(i,1) << "</registrar>"
-                << "<actual_date>" << XML_DB_OUT(i,2) << "</actual_date>"
-                << "<termination_date>" << XML_DB_OUT(i,3) << "</termination_date>"
+                << "<registrar_web>" << XML_DB_OUT(i,12) << "</registrar_web>"
                 << "</expiring_domain>";
 
                 prev_holder = holder_id;
