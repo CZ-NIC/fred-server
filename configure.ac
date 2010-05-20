@@ -56,6 +56,12 @@ AX_BOOST_DATE_TIME
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_REGEX
 
+#libcurl.a
+#checking for some function with C linkage (viz readelf -a /usr/lib/libcurl | less)
+#in ubuntu karmic libcurl4-openssl-dev file /usr/lib/libcurl.a
+AC_CHECK_LIB([curl], [curl_msnprintf],,[AC_MSG_ERROR([Library curl not found])])
+#lib curl headers check
+AC_CHECK_HEADER([curl/curl.h],,[AC_MSG_ERROR([Header curl/curl.h not found])])
 
 # For logger class when log type is console or custom file
 AX_BOOST_THREAD 
@@ -253,6 +259,7 @@ AC_CONFIG_FILES([Makefile
                  util/db/Makefile
                  util/log/Makefile
                  util/conf/Makefile
+                 util/hp/Makefile
                  src/Makefile
                  src/old_utils/Makefile
                  src/model/Makefile
