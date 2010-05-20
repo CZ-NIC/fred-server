@@ -3,6 +3,51 @@
 namespace Database {
 namespace Filters {
 
+/* Ticket #1878 
+ * for joining mail_handles table - hidden in addHandle() filter
+ */
+class MailHandles : virtual public Compound {
+public:
+    virtual ~MailHandles() {
+    }
+
+    virtual Table& joinMailHandlesTable() = 0;
+    virtual Value<std::string>& addHandle() = 0;
+
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive& _ar, const unsigned int _version) {
+      _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
+    }
+};
+
+class MailHandlesImpl : virtual public MailHandles {
+public:
+    MailHandlesImpl() : Compound() {
+        setName("MailHandles");
+        active = false;
+    }
+
+    virtual ~MailHandlesImpl() { }
+
+    virtual Table& joinMailHandlesTable() {
+        return joinTable("mail_handles");
+    }
+
+    virtual Value<std::string>& addHandle() {
+        Value<std::string> *tmp = new Value<std::string>(Column("associd", joinMailHandlesTable()));
+        add(tmp);
+        tmp->setName("Handle");
+        return *tmp;
+    }
+
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive& _ar,
+        const unsigned int _version) {
+      _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(MailHandles);
+    }
+};
+
+
 MailImpl::MailImpl() : 
   Compound() {
   setName("Mail");
@@ -31,15 +76,13 @@ Value<int>& MailImpl::addType() {
 }
 
 Value<std::string>& MailImpl::addHandle() {
-  addJoin(new Join(
-                   Column("id", joinMailTable()),
-                   SQL_OP_EQ,
-                   Column("mailid", joinTable("mail_handles"))
-                   ));
-  Value<std::string> *tmp = new Value<std::string>(Column("associd", joinTable("mail_handles")));
-  add(tmp);
-  tmp->setName("Handle");
-  return *tmp;
+    MailHandles *mh = new MailHandlesImpl();
+    mh->joinOn(new Join(Column("id", joinMailTable()), SQL_OP_EQ, Column("mailid", mh->joinMailHandlesTable())));
+    Value<std::string> *tmp = new Value<std::string>(Column("associd", mh->joinMailHandlesTable()));
+    tmp->setName("Handle");
+    mh->add(tmp);
+    add(mh);
+    return *tmp;
 }
 
 Interval<Database::DateTimeInterval>& MailImpl::addCreateTime() {
