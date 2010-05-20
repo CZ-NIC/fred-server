@@ -293,6 +293,7 @@ public:
 	query.select() << "t_2.name, t_1.value, t_1.output, (t_1.parent_id is not null)";
 	query.from()   << "request_property_value t_1 join request_property t_2 on t_1.name_id=t_2.id";
 	query.where()  << "and t_1.entry_id = " << id;
+    query.order_by() << "t_1.id";
 
     Database::Connection conn = Database::Manager::acquire();
  	Database::Result res = conn.exec(query);
