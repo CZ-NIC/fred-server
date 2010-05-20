@@ -59,6 +59,8 @@
      std::string data(static_cast<char *>(buffer), buffer_size);
      data.size();
 
+     PostDataResult::get()->append(data);
+
      std::cout << "\nData: " << data << std::endl;
 
      return buffer_size; //count bytes taken care of
@@ -113,10 +115,11 @@ int main ( int argc, char* argv[])
          curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);//use location
 
          //CURLOPT_RETURNTRANSFER
+         PostDataResult::set();//reset recv buffer
          curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 
          //to validate against stored certificate
-         // set the file with the certs vaildating the server
+         // set the file with the certs validating the server
          curl_easy_setopt(curl,CURLOPT_CAINFO,"./cert/postsignum_qca_root.pem");
          curl_easy_setopt(curl,CURLOPT_CAPATH,"./cert/");
          // cert is stored PEM coded in file...

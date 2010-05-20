@@ -24,5 +24,38 @@
 #ifndef HP_H_
 #define HP_H_
 
+#include <string>
+#include <memory>
+#include <stdexcept>
+
+#include <boost/utility.hpp>
+
+/**
+ * \class PostDataResult
+ * \brief global string buffer for post result returned by post write callback
+ */
+class PostDataResult : boost::noncopyable
+{
+    std::string buffer_;
+    static std::auto_ptr<PostDataResult> instance_ptr;
+    friend class std::auto_ptr<PostDataResult>;
+protected:
+    ~PostDataResult(){}
+private:
+    PostDataResult()
+    {
+        buffer_.clear();
+    }
+public:
+    static PostDataResult* set();
+    static PostDataResult* get();
+
+    void append(const std::string & str);
+    std::string getValueByKey(const std::string & str);
+
+
+
+
+};//class PostDataResult
 
 #endif // HP_H_
