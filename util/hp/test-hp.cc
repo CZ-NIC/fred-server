@@ -21,22 +21,6 @@
  *  test connection to postservice
  */
 
-/*
-    // Fill in the file
-     curl_formadd(&formpost,
-                  &lastptr,
-                  CURLFORM_COPYNAME, "sendfile",
-                  CURLFORM_FILE, "postit2.c",
-                  CURLFORM_END);
-
-     // Fill in the string
-     curl_formadd(&formpost,
-                  &lastptr,
-                  CURLFORM_COPYNAME, "filename",
-                  CURLFORM_COPYCONTENTS, "postit2.c",
-                  CURLFORM_END);
-*/
-
 #include "hp.h"
 
 #include <boost/lexical_cast.hpp>
@@ -48,6 +32,8 @@
 #include <ios>        // for std::ios_base, etc.
 #include <iostream>   // for std::cerr, std::cout
 #include <ostream>    // for std::endl
+#include <sstream>
+
 
 
 
@@ -55,7 +41,7 @@ int main ( int argc, char* argv[])
 {
     try
     {
-/*
+
         curl_global_init(CURL_GLOBAL_ALL);//once per process call
 
         // test overeni
@@ -154,77 +140,134 @@ int main ( int argc, char* argv[])
         if ((StringBuffer::get()->getValueByKey("UDRZBA", 6)).compare("on") == 0)
             throw std::runtime_error(std::string("udrzba on"));
 
+
+        std::cout << "\nInfolog2 reply: \n" << StringBuffer::get()->copy()
+                        <<  "\n" << std::endl;
+
         ////////////////////////
-*/
+
+
+        unsigned file_number=1;
+
+        std::string filename_to_upload("./data/file1.pdf");//file to send
+        //std::string filename_to_upload("./data/test.txt");//file to send
 
         boost::crc_32_type  result;
-
         std::streamsize const  buffer_size = 1024;
 
-        std::ifstream  ifs( "./data/test.txt", std::ios_base::binary );
+        std::ifstream  ifs( filename_to_upload.c_str(), std::ios_base::binary );
 
         if ( ifs )
         {
             do
             {
                 char  buffer[ buffer_size ];
-
                 ifs.read( buffer, buffer_size );
                 result.process_bytes( buffer, ifs.gcount() );
             } while ( ifs );
         }
         else
         {
-            std::cerr << "Failed to open file '" << "./data/test.txt" << "'."
-             << std::endl;
+            throw std::runtime_error( "Failed to open file '" +filename_to_upload + "'.");
         }
 
+        std::stringstream crc32_string;
+        crc32_string << std::hex << std::uppercase << result.checksum() << std::flush;
 
-        std::cout << std::hex << std::uppercase << result.checksum() << std::endl;
+        struct curl_httppost *formpost_command=NULL;
+        CFormSharedPtr  form_command_guard = CurlFormFreePtr(&formpost_command);
+
+        StringBuffer::set();//reset recv buffer
+
+        //fill in command
+        hp_form_command(&formpost_command //out parameter
+                , boost::lexical_cast<std::string>(file_number) //number of file
+                , crc32_string.str() //crc32
+                , filename_to_upload //filename
+                );
+
+        StringBuffer::set();//reset recv buffer, userp may be better
+        res = hp_form_post(formpost_command  //linked list ptr
+                    , "https://online.postservis.cz/Command/command.php" //url
+                    , "./cert/" //ended by slash
+                    , "PHPSESSID="+phpsessid //PHP session id in cookie
+                    , "CommandLine klient HP" //no useragent
+                    , 1); //verbose
+
+        if (res > 0)
+        {
+            throw std::runtime_error(
+                    std::string("form post command failed: ")
+                        + curl_easy_strerror(res));
+        }
+
+        //result parsing & detecting errors
+        if ((StringBuffer::get()->getValueByKey("OvereniCrc ", 2)).compare("KO") == 0)
+                    throw std::runtime_error(std::string("crc is KO"));
+        if ((StringBuffer::get()->getValueByKey("zaladr ", 2)).compare("KO") == 0)
+            throw std::runtime_error(std::string("zaladr is KO"));
+        //will never happen
+        if ((StringBuffer::get()->getValueByKey("UDRZBA", 6)).compare("on") == 0)
+            throw std::runtime_error(std::string("udrzba on"));
+
+        std::cout << "\n\nCommand reply: \n" << StringBuffer::get()->copy()
+                <<  "\n" << "crc32: " << crc32_string.str()
+                << "\nnumber: " << boost::lexical_cast<std::string>(file_number)
+                << std::endl;
+        ////////////////////////
+
+
+        struct curl_httppost *formpost_konec=NULL;
+        CFormSharedPtr  form_konec_guard = CurlFormFreePtr(&formpost_konec);
+
+        StringBuffer::set();//reset recv buffer
+
+        //fill in konec
+        hp_form_konec(&formpost_konec //out parameter
+                , filename_to_upload
+                , "1" //number of files
+                , "OK" //status
+                );
+
+        StringBuffer::set();//reset recv buffer, userp may be better
+        res = hp_form_post(formpost_konec  //linked list ptr
+                    , "https://online.postservis.cz/Command/konec.php" //url
+                    , "./cert/" //ended by slash
+                    , "PHPSESSID="+phpsessid //PHP session id in cookie
+                    , "CommandLine klient HP" //useragent
+                    , 1); //verbose
+
+        if (res > 0)
+        {
+            throw std::runtime_error(
+                    std::string("form post konec failed: ")
+                        + curl_easy_strerror(res));
+        }
+
+        //result parsing & detecting errors
+        if ((StringBuffer::get()->getValueByKey("zaladr ", 2)).compare("KO") == 0)
+            throw std::runtime_error(std::string("zaladr is KO"));
+        //will never happen
+        if ((StringBuffer::get()->getValueByKey("UDRZBA", 6)).compare("on") == 0)
+            throw std::runtime_error(std::string("udrzba on"));
+
+
+        std::cout << "\nKonec reply: \n" << StringBuffer::get()->copy()
+                        <<  "\n" << std::endl;
+
+
 
     }//try
     catch(std::exception& ex)
     {
         std::cout << "Error: " << ex.what() << std::endl;
         return EXIT_FAILURE;
-
     }
     catch(...)
     {
         std::cout << "Unknown Error" << std::endl;
         return EXIT_FAILURE;
-
     }
 
     return EXIT_SUCCESS;
 }
-
-
-/* Data Sample
-    StringBuffer::get()->append("HTTP/1.1 100 Continue\n");
-    StringBuffer::get()->append("HTTP/1.1 100 Continue\n");
-    StringBuffer::get()->append("\n");
-    StringBuffer::get()->append("\n");
-    StringBuffer::get()->append("HTTP/1.1 200 OK");
-    StringBuffer::get()->append("HTTP/1.1 200 OK");
-    StringBuffer::get()->append("Date: Thu, 20 May 2010 12:42:13 GMT\n");
-    StringBuffer::get()->append("Date: Thu, 20 May 2010 12:42:13 GMT\n");
-    StringBuffer::get()->append("Server: Apache/2.2.13\n");
-    StringBuffer::get()->append("Server: Apache/2.2.13\n");
-    StringBuffer::get()->append("X-Powered-By: PHP/5.2.11\n");
-    StringBuffer::get()->append("X-Powered-By: PHP/5.2.11\n");
-    StringBuffer::get()->append("Set-Cookie: PHPSESSID=6d8cbbd1e53b15aa0523f4579612f940; path=/\n");
-    StringBuffer::get()->append("Set-Cookie: PHPSESSID=6d8cbbd1e53b15aa0523f4579612f940; path=/\n");
-    StringBuffer::get()->append("Expires: Thu, 19 Nov 1981 08:52:00 GMT\n");
-    StringBuffer::get()->append("Expires: Thu, 19 Nov 1981 08:52:00 GMT\n");
-    StringBuffer::get()->append("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0\n");
-    StringBuffer::get()->append("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0\n");
-    StringBuffer::get()->append("Pragma: no-cache\n\n");
-    StringBuffer::get()->append("Pragma: no-cache\n\n");
-    StringBuffer::get()->append("Content-Length: 34\n\n");
-    StringBuffer::get()->append("Content-Length: 34\n\n");
-    StringBuffer::get()->append("Content-Type: text/html\n\n");
-    StringBuffer::get()->append("Content-Type: text/html\n\n");
-    StringBuffer::get()->append("Overeni OKcislozakazky201005201216\n");
-*/
-

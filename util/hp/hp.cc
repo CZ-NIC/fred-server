@@ -71,6 +71,13 @@ void StringBuffer::append(const char* str)
     this->append(tmp_str);
 }
 
+///buffer copy
+std::string StringBuffer::copy()
+{
+    return buffer_;
+}
+
+
 ///get fixed length value by key
 std::string StringBuffer::getValueByKey(const std::string & key_str
         , const std::size_t value_len)
@@ -185,7 +192,6 @@ void hp_form_infolog2(curl_httppost **formpost_pp //out parameter
     // Fill in overeni
     curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "cc"
             , CURLFORM_COPYCONTENTS, "us \n", CURLFORM_END);
-
     curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "text"
             , CURLFORM_COPYCONTENTS, (text + "\n").c_str(), CURLFORM_END);
     curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "cislo"
@@ -193,3 +199,43 @@ void hp_form_infolog2(curl_httppost **formpost_pp //out parameter
     curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "chyba"
             , CURLFORM_COPYCONTENTS, (chyba + "\n").c_str(), CURLFORM_END);
 }
+
+///file upload with order number and crc32 checksum
+void hp_form_command(curl_httppost **formpost_pp //out parameter
+        , const std::string& pocetupl //decremented number of file
+        , const std::string& file_crc //crc32 checksum
+        , const std::string& filename_to_upload
+        )
+{
+    struct curl_httppost *lastptr=NULL;
+    // Fill in command
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "cc"
+            , CURLFORM_COPYCONTENTS, "us \n", CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "pocetupl"
+            , CURLFORM_COPYCONTENTS, (pocetupl + "\n").c_str(), CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "crc"
+            , CURLFORM_COPYCONTENTS, file_crc.c_str(), CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "upfile"
+            , CURLFORM_FILE, filename_to_upload.c_str(), CURLFORM_END);
+}
+
+///upload end
+void hp_form_konec(curl_httppost **formpost_pp //out parameter
+        , const std::string& soubor //first file name
+        , const std::string& pocetsouboru //files number
+        , const std::string& stav //OK / KO
+        )
+{
+    struct curl_httppost *lastptr=NULL;
+    // Fill in konec
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "cc"
+            , CURLFORM_COPYCONTENTS, "us \n", CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "soubor"
+            , CURLFORM_COPYCONTENTS, (soubor + "\n").c_str(), CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "pocetsouboru"
+            , CURLFORM_COPYCONTENTS, (pocetsouboru  + "\n").c_str(), CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "stav"
+            , CURLFORM_COPYCONTENTS, (stav + "\n").c_str(), CURLFORM_END);
+}
+
+

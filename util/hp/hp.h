@@ -59,6 +59,7 @@ public:
 
     void append(std::string & str);
     void append(const char* str);
+    std::string copy();
     std::string getValueByKey(const std::string & key_str, const std::size_t value_len);
 };//class StringBuffer
 
@@ -137,6 +138,7 @@ struct CFormFree
 typedef CFormPtrT<CFormFree> CurlFormFreePtr;
 ///usage CFormSharedPtr  curl_form_guard = CurlFormFreePtr(formpost);
 
+///login getting sessionid
 void hp_form_overeni(curl_httppost **formpost_pp //out parameter
         , const std::string& loginame //"dreplech"
         , const std::string& password //"dreplech"
@@ -147,11 +149,25 @@ void hp_form_overeni(curl_httppost **formpost_pp //out parameter
         , const std::string& verzeProg //"20100315001"
         );
 
-
+///second log interface
 void hp_form_infolog2(curl_httppost **formpost_pp //out parameter
         , const std::string& text //"Pocet souboru uvedenych v hpcmd.cfg je: "
         , const std::string& cislo //files number
         , const std::string& chyba //0
+        );
+
+///file upload with order number and crc32 checksum
+void hp_form_command(curl_httppost **formpost_pp //out parameter
+        , const std::string& pocetupl //decremented number of file
+        , const std::string& file_crc //crc32 checksum
+        , const std::string& filename_to_upload //filename
+        );
+
+///upload end
+void hp_form_konec(curl_httppost **formpost_pp //out parameter
+        , const std::string& soubor //first file name
+        , const std::string& pocetsouboru //files number
+        , const std::string& stav //OK / KO
         );
 
 #endif // HP_H_
