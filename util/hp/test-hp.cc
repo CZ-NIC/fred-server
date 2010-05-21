@@ -186,7 +186,7 @@ int main ( int argc, char* argv[])
     std::cout << "PHPSESSID=" << StringBuffer::get()->getValueByKey("PHPSESSID=", 32) << std::endl;
     std::cout << "Overeni " << StringBuffer::get()->getValueByKey("Overeni ", 2) << std::endl;
     std::cout << "overenizak " << StringBuffer::get()->getValueByKey("overenizak ", 2) << std::endl;
-    std::cout << "zaladr " << StringBuffer::get()->getValueByKey("zaladr ", 2) << std::endl;
+    std::cout << "cislozak" << StringBuffer::get()->getValueByKey("cislozak", 12) << std::endl;
 
 
 
