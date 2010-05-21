@@ -473,12 +473,16 @@ namespace Register
               std::auto_ptr<Document::Generator> gPDF;
               const std::string &exDate;
               Transaction &trans;
-              TID holder_id;
+              std::vector<TID> holder_ids;
 
           public:
-            GenMultipleFiles(const std::string &exDate_, const TID holderid, 
+              /** holderid is only used for the filename
+               * to identify which contact id's are contained in the 
+               * individual file, call addHolderId 
+               */
+              GenMultipleFiles(const std::string &exDate_, const TID holder_id, 
                     Document::Manager *docm, Transaction &tr) 
-                : exDate(exDate_), trans(tr), holder_id(holderid) {
+                : exDate(exDate_), trans(tr)  {
   
               std::stringstream filename;
               filename << "letter-" << exDate << "-" << holder_id << ".pdf";
@@ -498,27 +502,49 @@ namespace Register
             }
             
             ~GenMultipleFiles() {
+                if (holder_ids.empty()) {
+                  std::string errmsg("ERROR: no registrant ID specified by caller. Wrong usage of API.");
+                  LOGGER(PACKAGE).error(errmsg);
+                  throw Exception(errmsg);
+                }
+
                 std::ostream& out(gPDF->getInput());
                 std::stringstream sql;
 
                 out << "</holder>";
                 out << "</messages>";
 
+                
+
                 // there's still some room for more DB optimization if
                 // whole operation was made atomic and this query was run 
                 // only once with IDs taken from vector
                 Connection conn = Database::Manager::acquire();
+                std::vector<TID>::iterator it = holder_ids.begin();
                 TID filePDF = gPDF->closeInput();
                   sql << "INSERT INTO notify_letters "
                       << "SELECT tnl.state_id, " << filePDF << " "
                       << "FROM tmp_notify_letters tnl, object_state s, "
                       << "domain_history dh "
                       << "WHERE tnl.state_id=s.id AND s.ohid_from=dh.historyid "
-                      << "AND dh.registrant=" << holder_id  << " "
-                      << "AND dh.exdate::date='" << exDate << "'";
+                      << "AND dh.registrant in (" << *it; 
+
+                      for (;it != holder_ids.end();it++) {
+                          sql << ", " << *it;
+                      }
+
+                      sql << ") AND dh.exdate::date='" << exDate << "'";
 
                 conn.exec(sql.str());
                 trans.savepoint();
+
+                if(holder_ids.size() > 1) {
+                  LOGGER(PACKAGE).debug(boost::format("File %1% contains several registrants") % filePDF);
+                }
+            }
+            
+            void addHolderId(TID id) {
+                holder_ids.push_back(id);
             }
 
             std::ostream& getInput() {
@@ -569,16 +595,59 @@ namespace Register
         // for every expiration date generate PDF
         for (unsigned j=0; j<exDates.size(); j++) {
 
-   
+            /*
+             
+               SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id) where s.state_id=19 and s.valid_to isnull and nl.state_id isnull
+            
+            SELECT dobr.name, d.exdate, cor.name, c.name, c.organization, d.registrant
+                   FROM
+                   object_state s 
+                   LEFT JOIN notify_letters nl  ON nl.state_id=s.id
+                   JOIN domain_history d             ON d.historyid = s.ohid_from
+                   JOIN object_registry dobr         ON dobr.id = d.id
+
+                   JOIN object_registry cor          ON cor.id = d.registrant
+                   JOIN contact_history c            ON c.historyid = cor.historyid
+                   WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL
+
+
+
+SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id) where s.state_id=19 and s.valid_to isnull and nl.state_id isnull
+            
+            SELECT dobr.name, d.exdate, cor.name, c.name, c.organization, d.registrant
+                   FROM
+                   object_state s 
+                   LEFT JOIN notify_letters nl  ON nl.state_id=s.id
+                   JOIN domain_history d             ON d.historyid = s.ohid_from
+                   JOIN object_registry dobr         ON dobr.id = d.id
+
+                   JOIN object_registry cor          ON cor.id = d.registrant
+                   JOIN contact_history c            ON c.historyid = cor.historyid
+                   WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL
+
+
+                */
+
           std::stringstream sql;
           sql << "SELECT dobr.name,r.name,CURRENT_DATE,"
-              << "d.exdate::date + INTERVAL '45 days',cor.name,"
+              << "d.exdate::date + INTERVAL '45 days',"
               << "c.name, c.organization, "
               << "TRIM(COALESCE(c.street1,'') || ' ' || "
               << "COALESCE(c.street2,'') || ' ' || "
               << "COALESCE(c.street3,'')), "
-              << "c.city, c.postalcode, ec.country, d.registrant, "
-              << "r.url "
+              << "c.city, c.postalcode, ec.country, "
+
+              << "TRIM( "
+               "COALESCE(c.country, '') || ' ' || " 
+               "COALESCE(c.organization, '') || ' ' || " 
+               "COALESCE(c.name, '') || ' ' || "
+               "COALESCE(c.postalcode,'') || ' ' || "
+               "COALESCE(c.street1,'') || ' ' || "
+               "COALESCE(c.street2,'') || ' ' || "
+               "COALESCE(c.street3, '') ) as distinction, "
+
+              << "r.url, d.registrant "
+
               << "FROM enum_country ec, contact_history c, "
               << "object_registry cor, registrar r, "
               << "object_registry dobr, object_history doh, domain_history d, "
@@ -589,32 +658,31 @@ namespace Register
               << "AND doh.historyid=d.historyid AND tnl.state_id=s.id "
               << "AND d.exdate::date='" << exDates[j] << "' AND doh.clid=r.id "
               << " ORDER BY CASE WHEN c.country='CZ' THEN 0 ELSE 1 END ASC, "
-              << "          c.country, c.organization, c.name ";
+              << "          distinction";
           res = conn.exec(sql.str());
 
           std::auto_ptr<GenMultipleFiles> gen;
-          TID prev_holder;
+          std::string prev_distinction;
           for (unsigned i=0; i < (unsigned)res.size(); i++) {
-                TID holder_id = res[i][11];
+                std::string distinction = res[i][10];
 
-                if (prev_holder != holder_id) {
+                if (prev_distinction != distinction) {
                     // in this case start creating a new file
-                    gen.reset ( new GenMultipleFiles(exDates[j], holder_id, docm, trans));
+                    gen.reset ( new GenMultipleFiles(exDates[j], res[i][12], docm, trans));
                     /*
-                    if(!prev_holder.empty()) {
+                    if(!prev_distinction.empty()) {
                         out << "</holder>";
                     }
                     */
 
                     gen->getInput()
-                    << "<handle>" << XML_DB_OUT(i,4) << "</handle>"
-                    << "<name>" << XML_DB_OUT(i,5) << "</name>"
-                    << "<organization>" << XML_DB_OUT(i,6) << "</organization>"
+                    << "<name>" << XML_DB_OUT(i,4) << "</name>"
+                    << "<organization>" << XML_DB_OUT(i,5) << "</organization>"
 
-                    << "<street>" << XML_DB_OUT(i,7) << "</street>"
-                    << "<city>" << XML_DB_OUT(i,8) << "</city>"
-                    << "<postal_code>" << XML_DB_OUT(i,9) << "</postal_code>"
-                    << "<country>" << XML_DB_OUT(i,10) << "</country>"
+                    << "<street>" << XML_DB_OUT(i,6) << "</street>"
+                    << "<city>" << XML_DB_OUT(i,7) << "</city>"
+                    << "<postal_code>" << XML_DB_OUT(i,8) << "</postal_code>"
+                    << "<country>" << XML_DB_OUT(i,9) << "</country>"
                     << "<actual_date>" << XML_DB_OUT(i,2) << "</actual_date>"
                     << "<termination_date>" << XML_DB_OUT(i,3) << "</termination_date>";
                 } 
@@ -622,10 +690,13 @@ namespace Register
                 << "<expiring_domain>"
                 << "<domain>" << XML_DB_OUT(i,0) << "</domain>"
                 << "<registrar>" << XML_DB_OUT(i,1) << "</registrar>"
-                << "<registrar_web>" << XML_DB_OUT(i,12) << "</registrar_web>"
+                << "<registrar_web>" << XML_DB_OUT(i,11) << "</registrar_web>"
                 << "</expiring_domain>";
 
-                prev_holder = holder_id;
+                // has to be called here so it applies to NEWLY CREATED object in if above
+                gen->addHolderId(res[i][12]);
+
+                prev_distinction = distinction; 
           }
 
           // return id of generated PDF file
