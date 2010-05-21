@@ -31,31 +31,32 @@
 #include <boost/utility.hpp>
 
 /**
- * \class PostDataResult
+ * \class StringBuffer
  * \brief global string buffer for post result returned by post write callback
  */
-class PostDataResult : boost::noncopyable
+class StringBuffer : boost::noncopyable
 {
     std::string buffer_;
-    static std::auto_ptr<PostDataResult> instance_ptr;
-    friend class std::auto_ptr<PostDataResult>;
+    static std::auto_ptr<StringBuffer> instance_ptr;
+    friend class std::auto_ptr<StringBuffer>;
 protected:
-    ~PostDataResult(){}
+    ~StringBuffer(){}
 private:
-    PostDataResult()
+    StringBuffer()
     {
         buffer_.clear();
     }
 public:
-    static PostDataResult* set();
-    static PostDataResult* get();
+    static StringBuffer* set();
+    static StringBuffer* get();
 
-    void append(const std::string & str);
-    std::string getValueByKey(const std::string & str);
+    void append(std::string & str);
+    void append(const char* str);
+    std::string getValueByKey(const std::string & key_str, const std::size_t value_len);
 
 
 
 
-};//class PostDataResult
+};//class StringBuffer
 
 #endif // HP_H_

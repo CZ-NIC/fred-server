@@ -23,51 +23,61 @@
 
 #include "hp.h"
 
-//class PostDataResult
+//class StringBuffer
 ///static instance init
-std::auto_ptr<PostDataResult> PostDataResult::instance_ptr(0);
+std::auto_ptr<StringBuffer> StringBuffer::instance_ptr(0);
 
 ///instance setter
-PostDataResult* PostDataResult::set()
+StringBuffer* StringBuffer::set()
 {
-    std::auto_ptr<PostDataResult>
-    tmp_instance(new PostDataResult);
+    std::auto_ptr<StringBuffer>
+    tmp_instance(new StringBuffer);
     instance_ptr = tmp_instance;
     if (instance_ptr.get() == 0)
         throw std::runtime_error(
-                "PostDataResult::set_instance error: instance not set");
+                "StringBuffer::set_instance error: instance not set");
     return instance_ptr.get();
 }
 
 ///instance  getter
-PostDataResult* PostDataResult::get()
+StringBuffer* StringBuffer::get()
 {
-    PostDataResult* ret = instance_ptr.get();
+    StringBuffer* ret = instance_ptr.get();
     if (ret == 0)
     {
         set();
         ret = instance_ptr.get();
         if (ret == 0)  throw std::runtime_error(
-                "PostDataResult::get_instance error: instance not set");
+                "StringBuffer::get_instance error: instance not set");
     }
     return ret;
 }
 
 ///buffer append
-void PostDataResult::append(const std::string & str)
+void StringBuffer::append(std::string & str)
 {
+    for(std::string::iterator i = str.begin(); i != str.end() ; ++i)
+        if (*i == '\0') *i = ' ';//replace null chars for spaces before append
+
     buffer_.append(str);
 }
 
-std::string PostDataResult::getValueByKey(const std::string & str)
+///buffer append
+void StringBuffer::append(const char* str)
 {
-    std::size_t str_pos = buffer_.find(str);
-    if(str_pos == std::string::npos)
-        throw std::runtime_error("PostDataResult::getValueByKey error: '"
-                + str + "' not found");
+    std::string tmp_str(str);
+    this->append(tmp_str);
+}
 
-
-    return str;
+///get fixed length value by key
+std::string StringBuffer::getValueByKey(const std::string & key_str
+        , const std::size_t value_len)
+{
+    std::size_t key_pos = buffer_.find(key_str);
+    //if key not found
+    if(key_pos == std::string::npos) return "";
+    //key found return value
+    return buffer_.substr(key_pos + key_str.length(), value_len);
 }
 
 

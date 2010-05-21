@@ -59,7 +59,7 @@
      std::string data(static_cast<char *>(buffer), buffer_size);
      data.size();
 
-     PostDataResult::get()->append(data);
+     StringBuffer::get()->append(data);
 
      std::cout << "\nData: " << data << std::endl;
 
@@ -70,6 +70,7 @@
 
 int main ( int argc, char* argv[])
 {
+    /* test overeni
     CURL* curl=0;
     CURLcode res;
 
@@ -115,7 +116,7 @@ int main ( int argc, char* argv[])
          curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);//use location
 
          //CURLOPT_RETURNTRANSFER
-         PostDataResult::set();//reset recv buffer
+         StringBuffer::set();//reset recv buffer
          curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 
          //to validate against stored certificate
@@ -141,17 +142,52 @@ int main ( int argc, char* argv[])
          curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
          res = curl_easy_perform(curl);
 
-         /* always cleanup */
+         // always cleanup
          curl_easy_cleanup(curl);
 
-         /* then cleanup the formpost chain */
+         // then cleanup the formpost chain
          curl_formfree(formpost);
-         /* free slist */
+         // free slist
          curl_slist_free_all (headerlist);
 
          //headerfile
          fclose(headerfile);
        }
+
+*/
+    StringBuffer::set();//reset recv buffer
+
+    StringBuffer::get()->append("HTTP/1.1 100 Continue\n");
+    StringBuffer::get()->append("HTTP/1.1 100 Continue\n");
+    StringBuffer::get()->append("\n");
+    StringBuffer::get()->append("\n");
+    StringBuffer::get()->append("HTTP/1.1 200 OK");
+    StringBuffer::get()->append("HTTP/1.1 200 OK");
+    StringBuffer::get()->append("Date: Thu, 20 May 2010 12:42:13 GMT\n");
+    StringBuffer::get()->append("Date: Thu, 20 May 2010 12:42:13 GMT\n");
+    StringBuffer::get()->append("Server: Apache/2.2.13\n");
+    StringBuffer::get()->append("Server: Apache/2.2.13\n");
+    StringBuffer::get()->append("X-Powered-By: PHP/5.2.11\n");
+    StringBuffer::get()->append("X-Powered-By: PHP/5.2.11\n");
+    StringBuffer::get()->append("Set-Cookie: PHPSESSID=6d8cbbd1e53b15aa0523f4579612f940; path=/\n");
+    StringBuffer::get()->append("Set-Cookie: PHPSESSID=6d8cbbd1e53b15aa0523f4579612f940; path=/\n");
+    StringBuffer::get()->append("Expires: Thu, 19 Nov 1981 08:52:00 GMT\n");
+    StringBuffer::get()->append("Expires: Thu, 19 Nov 1981 08:52:00 GMT\n");
+    StringBuffer::get()->append("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0\n");
+    StringBuffer::get()->append("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0\n");
+    StringBuffer::get()->append("Pragma: no-cache\n\n");
+    StringBuffer::get()->append("Pragma: no-cache\n\n");
+    StringBuffer::get()->append("Content-Length: 34\n\n");
+    StringBuffer::get()->append("Content-Length: 34\n\n");
+    StringBuffer::get()->append("Content-Type: text/html\n\n");
+    StringBuffer::get()->append("Content-Type: text/html\n\n");
+    StringBuffer::get()->append("Overeni OKcislozakazky201005201216\n");
+
+    std::cout << "PHPSESSID=" << StringBuffer::get()->getValueByKey("PHPSESSID=", 32) << std::endl;
+    std::cout << "Overeni " << StringBuffer::get()->getValueByKey("Overeni ", 2) << std::endl;
+    std::cout << "overenizak " << StringBuffer::get()->getValueByKey("overenizak ", 2) << std::endl;
+    std::cout << "zaladr " << StringBuffer::get()->getValueByKey("zaladr ", 2) << std::endl;
+
 
 
 
