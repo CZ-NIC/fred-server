@@ -35,128 +35,172 @@
                   CURLFORM_COPYNAME, "filename",
                   CURLFORM_COPYCONTENTS, "postit2.c",
                   CURLFORM_END);
-
-
 */
 
 #include "hp.h"
 
-#include <curl/curl.h>
-#include <curl/types.h>
-#include <curl/easy.h>
-
 #include <boost/lexical_cast.hpp>
-#include <iostream>
-#include <string>
+#include <boost/crc.hpp>
 
-//php invented CURLOPT_RETURNTRANSFER replacement callback
- static size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp)
- {
-     size_t buffer_size = 0;
-
-     buffer_size = size * nmemb;//number of bytes in buffer
-
-     std::string data(static_cast<char *>(buffer), buffer_size);
-     data.size();
-
-     StringBuffer::get()->append(data);
-
-     std::cout << "\nData: " << data << std::endl;
-
-     return buffer_size; //count bytes taken care of
- }
+#include <cstdlib>    // for EXIT_SUCCESS, EXIT_FAILURE
+#include <exception>  // for std::exception
+#include <fstream>    // for std::ifstream
+#include <ios>        // for std::ios_base, etc.
+#include <iostream>   // for std::cerr, std::cout
+#include <ostream>    // for std::endl
 
 
 
 int main ( int argc, char* argv[])
 {
-    /* test overeni
-    CURL* curl=0;
-    CURLcode res;
+    try
+    {
+/*
+        curl_global_init(CURL_GLOBAL_ALL);//once per process call
 
-    struct curl_httppost *formpost=NULL;
-    struct curl_httppost *lastptr=NULL;
-    struct curl_slist *headerlist=NULL;
-    static const char buf[] = "Expect:";
+        // test overeni
+        CURLcode res;
 
-    FILE *headerfile = fopen("./headers_dump", "w");//dump headers to it
+        struct curl_httppost *formpost_overeni=NULL;
+        CFormSharedPtr  form_overeni_guard = CurlFormFreePtr(&formpost_overeni);
+
+        // Fill in overeni
+        hp_form_overeni(&formpost_overeni //inout parameter
+                , "dreplech" //loginame
+                , "dreplech" //password
+                , "hpcb_Jednorazova_zakazka" //standzak
+                , "Testovaci prenos!!!" //poznamka
+                , "2010" //jobzak
+                , "Linux" //verzeOS
+                , "20100315001" //verzeProg
+                );
+
+        StringBuffer::set();//reset recv buffer, userp may be better
+        res = hp_form_post(formpost_overeni  //linked list ptr
+                    , "https://online.postservis.cz/Command/over.php" //url
+                    , "./cert/" //ended by slash
+                    , "" //no cookie
+                    , "" //no useragent
+                    , 1); //verbose
+
+        if (res > 0)
+        {
+            throw std::runtime_error(
+                    std::string("form post overeni failed: ")
+                        + curl_easy_strerror(res));
+        }
+
+        //result parsing
+        std::string phpsessid ( StringBuffer::get()->getValueByKey("PHPSESSID=", 32) );
+        std::string overeni ( StringBuffer::get()->getValueByKey("Overeni ", 2) );
+        std::string zaladr ( StringBuffer::get()->getValueByKey("zaladr ", 2) );
+        std::string overenizak ( StringBuffer::get()->getValueByKey("overenizak ", 2) );
+        std::string cislozak ( StringBuffer::get()->getValueByKey("cislozak", 12) );
+        std::string udrzba ( StringBuffer::get()->getValueByKey("UDRZBA", 6) ) ;//possible error in orig code
+
+        //detecting errors
+        if (cislozak.empty())
+            throw std::runtime_error(std::string("empty cislozak"));
+        if (overenizak.compare("KO") == 0)
+            throw std::runtime_error(std::string("overenizak is KO"));
+        if (zaladr.compare("KO") == 0)
+            throw std::runtime_error(std::string("zaladr is KO"));
+        if (overeni.compare("OK") != 0)
+            throw std::runtime_error(std::string("login failed"));
+        if (udrzba.compare("on") == 0)//will never happen
+            throw std::runtime_error(std::string("udrzba on"));
 
 
-    curl_global_init(CURL_GLOBAL_ALL);
+        //print
+        std::cout << "PHPSESSID=" << phpsessid << std::endl;
+        std::cout << "Overeni " << overeni << std::endl;
+        std::cout << "overenizak " << overenizak << std::endl;
+        std::cout << "cislozak" << cislozak << std::endl;
 
-    // Fill in overeni
-    curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "cc"
-            , CURLFORM_COPYCONTENTS, "us \n", CURLFORM_END);
-    curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "loginame"
-            , CURLFORM_COPYCONTENTS, "dreplech", CURLFORM_END);
-    curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "password"
-            , CURLFORM_COPYCONTENTS, "dreplech", CURLFORM_END);
-    curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "standzak"
-            , CURLFORM_COPYCONTENTS, "hpcb_Jednorazova_zakazka", CURLFORM_END);
-    curl_formadd(&formpost, &lastptr,CURLFORM_COPYNAME, "poznamka"
-            , CURLFORM_COPYCONTENTS, "Testovaci prenos!!!", CURLFORM_END);
-    curl_formadd(&formpost, &lastptr,CURLFORM_COPYNAME, "jobzak"
-            , CURLFORM_COPYCONTENTS, "2010", CURLFORM_END);
-    curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "verzeOS"
-            , CURLFORM_COPYCONTENTS, "Linux", CURLFORM_END);
-    curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "verzeProg"
-            , CURLFORM_COPYCONTENTS, "20100315001", CURLFORM_END);
 
-     curl = curl_easy_init();
+        ///////////////////////////////////////
 
-     // initalize custom header list
-     // optionally stating that Expect: 100-continue is not  wanted
+        struct curl_httppost *formpost_infolog2=NULL;
+        CFormSharedPtr  form_infolog2_guard = CurlFormFreePtr(&formpost_infolog2);
 
-     headerlist = curl_slist_append(headerlist, buf);
+        StringBuffer::set();//reset recv buffer
 
-     if(curl)
-     {
-         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);//talk to me
-         curl_easy_setopt(curl, CURLOPT_HEADER, 1);//out header
-         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);//use location
+        //fill in infolog2
+        hp_form_infolog2(&formpost_infolog2 //out parameter
+                , "Pocet souboru uvedenych v hpcmd.cfg je: "
+                , "3" //number of files
+                , "0" //err
+                );
 
-         //CURLOPT_RETURNTRANSFER
-         StringBuffer::set();//reset recv buffer
-         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+        StringBuffer::set();//reset recv buffer, userp may be better
+        res = hp_form_post(formpost_infolog2  //linked list ptr
+                    , "https://online.postservis.cz/Command/infolog2.php" //url
+                    , "./cert/" //ended by slash
+                    , "PHPSESSID="+phpsessid //PHP session id in cookie
+                    , "CommandLine klient HP" //no useragent
+                    , 1); //verbose
 
-         //to validate against stored certificate
-         // set the file with the certs validating the server
-         curl_easy_setopt(curl,CURLOPT_CAINFO,"./cert/postsignum_qca_root.pem");
-         curl_easy_setopt(curl,CURLOPT_CAPATH,"./cert/");
-         // cert is stored PEM coded in file...
-         // since PEM is default, we needn't set it for PEM
-         curl_easy_setopt(curl,CURLOPT_SSLCERTTYPE,"PEM");
-         // do not verify the authenticity of the peer's certificate
-         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,0L);
-         //server sends a certificate indicating its identity
-         //that certificate must indicate that the server is the server
-         //to which you meant to connect, or the connection fails.
-         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
-         //what URL that receives this RFC2388 POST
-         curl_easy_setopt(curl, CURLOPT_URL, "https://online.postservis.cz/Command/over.php");
+        if (res > 0)
+        {
+            throw std::runtime_error(
+                    std::string("form post infolog2 failed: ")
+                        + curl_easy_strerror(res));
+        }
 
-         curl_easy_setopt(curl, CURLOPT_WRITEHEADER, headerfile);//dump headers
+        //result parsing & detecting errors
+        if ((StringBuffer::get()->getValueByKey("zaladr ", 2)).compare("KO") == 0)
+            throw std::runtime_error(std::string("zaladr is KO"));
+        //will never happen
+        if ((StringBuffer::get()->getValueByKey("UDRZBA", 6)).compare("on") == 0)
+            throw std::runtime_error(std::string("udrzba on"));
 
-         //disable 100-continue header if explicitly requested
-         //curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
-         curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-         res = curl_easy_perform(curl);
-
-         // always cleanup
-         curl_easy_cleanup(curl);
-
-         // then cleanup the formpost chain
-         curl_formfree(formpost);
-         // free slist
-         curl_slist_free_all (headerlist);
-
-         //headerfile
-         fclose(headerfile);
-       }
-
+        ////////////////////////
 */
-    StringBuffer::set();//reset recv buffer
 
+        boost::crc_32_type  result;
+
+        std::streamsize const  buffer_size = 1024;
+
+        std::ifstream  ifs( "./data/test.txt", std::ios_base::binary );
+
+        if ( ifs )
+        {
+            do
+            {
+                char  buffer[ buffer_size ];
+
+                ifs.read( buffer, buffer_size );
+                result.process_bytes( buffer, ifs.gcount() );
+            } while ( ifs );
+        }
+        else
+        {
+            std::cerr << "Failed to open file '" << "./data/test.txt" << "'."
+             << std::endl;
+        }
+
+
+        std::cout << std::hex << std::uppercase << result.checksum() << std::endl;
+
+    }//try
+    catch(std::exception& ex)
+    {
+        std::cout << "Error: " << ex.what() << std::endl;
+        return EXIT_FAILURE;
+
+    }
+    catch(...)
+    {
+        std::cout << "Unknown Error" << std::endl;
+        return EXIT_FAILURE;
+
+    }
+
+    return EXIT_SUCCESS;
+}
+
+
+/* Data Sample
     StringBuffer::get()->append("HTTP/1.1 100 Continue\n");
     StringBuffer::get()->append("HTTP/1.1 100 Continue\n");
     StringBuffer::get()->append("\n");
@@ -182,14 +226,5 @@ int main ( int argc, char* argv[])
     StringBuffer::get()->append("Content-Type: text/html\n\n");
     StringBuffer::get()->append("Content-Type: text/html\n\n");
     StringBuffer::get()->append("Overeni OKcislozakazky201005201216\n");
+*/
 
-    std::cout << "PHPSESSID=" << StringBuffer::get()->getValueByKey("PHPSESSID=", 32) << std::endl;
-    std::cout << "Overeni " << StringBuffer::get()->getValueByKey("Overeni ", 2) << std::endl;
-    std::cout << "overenizak " << StringBuffer::get()->getValueByKey("overenizak ", 2) << std::endl;
-    std::cout << "cislozak" << StringBuffer::get()->getValueByKey("cislozak", 12) << std::endl;
-
-
-
-
-    return 0;
-}
