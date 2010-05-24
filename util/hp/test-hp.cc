@@ -33,6 +33,7 @@
 #include <iostream>   // for std::cerr, std::cout
 #include <ostream>    // for std::endl
 #include <sstream>
+#include <vector>
 
 
 
@@ -146,7 +147,6 @@ int main ( int argc, char* argv[])
 
         ////////////////////////
 
-
         unsigned file_number=1;
 
         std::string filename_to_upload("./data/file1.pdf");//file to send
@@ -154,6 +154,7 @@ int main ( int argc, char* argv[])
 
         boost::crc_32_type  result;
         std::streamsize const  buffer_size = 1024;
+        std::vector<char> char_vector;
 
         std::ifstream  ifs( filename_to_upload.c_str(), std::ios_base::binary );
 
@@ -163,13 +164,29 @@ int main ( int argc, char* argv[])
             {
                 char  buffer[ buffer_size ];
                 ifs.read( buffer, buffer_size );
-                result.process_bytes( buffer, ifs.gcount() );
+                std::streamsize read_bytes = ifs.gcount();
+
+                //alloc
+                if ( static_cast<std::streamsize>(char_vector.capacity()
+                        - char_vector.size()) < read_bytes)
+                {
+                    char_vector.reserve(char_vector.size() + read_bytes);
+                }
+
+                for (std::streamsize i = 0; i < read_bytes; ++i)
+                {
+                    char_vector.push_back(buffer[i]);
+                }
+
+
             } while ( ifs );
         }
         else
         {
             throw std::runtime_error( "Failed to open file '" +filename_to_upload + "'.");
         }
+
+        result.process_bytes( &char_vector[0],  char_vector.size());
 
         std::stringstream crc32_string;
         crc32_string << std::hex << std::uppercase << result.checksum() << std::flush;
@@ -178,13 +195,24 @@ int main ( int argc, char* argv[])
         CFormSharedPtr  form_command_guard = CurlFormFreePtr(&formpost_command);
 
         StringBuffer::set();//reset recv buffer
-
+/*
         //fill in command
         hp_form_command(&formpost_command //out parameter
                 , boost::lexical_cast<std::string>(file_number) //number of file
                 , crc32_string.str() //crc32
                 , filename_to_upload //filename
                 );
+*/
+
+        ///file upload from buffer with order number and crc32 checksum
+        hp_form_command_buffer(&formpost_command //out parameter
+                , boost::lexical_cast<std::string>(file_number) //decremented number of file
+                , crc32_string.str()  //crc32 checksum
+                , filename_to_upload //file name
+                , &char_vector[0] //pointer to file data in memory
+                , char_vector.size() //size of file data
+                );
+
 
         StringBuffer::set();//reset recv buffer, userp may be better
         res = hp_form_post(formpost_command  //linked list ptr

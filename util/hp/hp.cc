@@ -219,6 +219,31 @@ void hp_form_command(curl_httppost **formpost_pp //out parameter
             , CURLFORM_FILE, filename_to_upload.c_str(), CURLFORM_END);
 }
 
+///file upload from buffer with order number and crc32 checksum
+void hp_form_command_buffer(curl_httppost **formpost_pp //out parameter
+        , const std::string& pocetupl //decremented number of file
+        , const std::string& file_crc //crc32 checksum
+        , const std::string& file_name //file name
+        , const char * file_buffer //pointer to file data in memory
+        , const std::size_t file_buffer_length //size of file data
+        )
+{
+    struct curl_httppost *lastptr=NULL;
+    // Fill in command
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "cc"
+            , CURLFORM_COPYCONTENTS, "us \n", CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "pocetupl"
+            , CURLFORM_COPYCONTENTS, (pocetupl + "\n").c_str(), CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "crc"
+            , CURLFORM_COPYCONTENTS, file_crc.c_str(), CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "upfile"
+            , CURLFORM_BUFFER, file_name.c_str()
+            , CURLFORM_BUFFERPTR, file_buffer
+            , CURLFORM_BUFFERLENGTH, file_buffer_length
+            , CURLFORM_END);
+}
+
+
 ///upload end
 void hp_form_konec(curl_httppost **formpost_pp //out parameter
         , const std::string& soubor //first file name

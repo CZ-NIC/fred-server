@@ -163,6 +163,15 @@ void hp_form_command(curl_httppost **formpost_pp //out parameter
         , const std::string& filename_to_upload //filename
         );
 
+///file upload from buffer with order number and crc32 checksum
+void hp_form_command_buffer(curl_httppost **formpost_pp //out parameter
+        , const std::string& pocetupl //decremented number of file
+        , const std::string& file_crc //crc32 checksum
+        , const std::string& file_name //file name
+        , const char * file_buffer //pointer to file data in memory
+        , const std::size_t file_buffer_length //size of file data
+        );
+
 ///upload end
 void hp_form_konec(curl_httppost **formpost_pp //out parameter
         , const std::string& soubor //first file name
