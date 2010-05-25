@@ -514,26 +514,33 @@ namespace Register
                 out << "</holder>";
                 out << "</messages>";
 
-                
-
-                // there's still some room for more DB optimization if
+                // TODO there's still some room for more DB OPTIMIZATION if
                 // whole operation was made atomic and this query was run 
                 // only once with IDs taken from vector
+                // OR ----
+                // most of the inserted data could already be gathered 
+                // in the statement which generates the XML
+                // records stored in vector could be used in a simple insert
+                //
                 Connection conn = Database::Manager::acquire();
                 std::vector<TID>::iterator it = holder_ids.begin();
                 TID filePDF = gPDF->closeInput();
-                  sql << "INSERT INTO notify_letters "
-                      << "SELECT tnl.state_id, " << filePDF << " "
+                // status 1 represents 'ready generated - ready for sending
+                  sql << "INSERT INTO notify_letters (state_id, file_id, contact_id, status) "
+                      << "SELECT tnl.state_id, " << filePDF << ", dh.registrant, 1 "
                       << "FROM tmp_notify_letters tnl, object_state s, "
                       << "domain_history dh "
                       << "WHERE tnl.state_id=s.id AND s.ohid_from=dh.historyid "
-                      << "AND dh.registrant in (" << *it; 
+                      << "AND dh.exdate::date='" << exDate << "' "
+                      << "AND dh.registrant in (" 
+                      << *it; 
+
+                      it++;
 
                       for (;it != holder_ids.end();it++) {
                           sql << ", " << *it;
                       }
-
-                      sql << ") AND dh.exdate::date='" << exDate << "'";
+                      sql << ") ";
 
                 conn.exec(sql.str());
                 trans.savepoint();
@@ -578,7 +585,10 @@ namespace Register
           "INSERT INTO tmp_notify_letters "
           "SELECT s.id FROM object_state s "
           "LEFT JOIN notify_letters nl ON (s.id=nl.state_id) "
-          "WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL ";
+          " JOIN domain_history d      ON d.historyid = s.ohid_from "
+          " JOIN zone z                ON z.id = d.zone "
+          "WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL "
+          " AND z.warning_letter=true ";
         conn.exec(fixateStates);
         // select all expiration dates of domain to notify
         const char *selectExDates =
@@ -596,24 +606,8 @@ namespace Register
         for (unsigned j=0; j<exDates.size(); j++) {
 
             /*
-             
-               SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id) where s.state_id=19 and s.valid_to isnull and nl.state_id isnull
-            
-            SELECT dobr.name, d.exdate, cor.name, c.name, c.organization, d.registrant
-                   FROM
-                   object_state s 
-                   LEFT JOIN notify_letters nl  ON nl.state_id=s.id
-                   JOIN domain_history d             ON d.historyid = s.ohid_from
-                   JOIN object_registry dobr         ON dobr.id = d.id
-
-                   JOIN object_registry cor          ON cor.id = d.registrant
-                   JOIN contact_history c            ON c.historyid = cor.historyid
-                   WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL
-
-
-
 SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id) where s.state_id=19 and s.valid_to isnull and nl.state_id isnull
-            
+                -- general query for testing purposes
             SELECT dobr.name, d.exdate, cor.name, c.name, c.organization, d.registrant
                    FROM
                    object_state s 
@@ -625,8 +619,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                    JOIN contact_history c            ON c.historyid = cor.historyid
                    WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL
 
-
-                */
+                              */
 
           std::stringstream sql;
           sql << "SELECT dobr.name,r.name,CURRENT_DATE,"
@@ -636,7 +629,6 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
               << "COALESCE(c.street2,'') || ' ' || "
               << "COALESCE(c.street3,'')), "
               << "c.city, c.postalcode, ec.country, "
-
               << "TRIM( "
                "COALESCE(c.country, '') || ' ' || " 
                "COALESCE(c.organization, '') || ' ' || " 
@@ -645,20 +637,22 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                "COALESCE(c.street1,'') || ' ' || "
                "COALESCE(c.street2,'') || ' ' || "
                "COALESCE(c.street3, '') ) as distinction, "
-
               << "r.url, d.registrant "
 
-              << "FROM enum_country ec, contact_history c, "
-              << "object_registry cor, registrar r, "
-              << "object_registry dobr, object_history doh, domain_history d, "
-              << "object_state s, tmp_notify_letters tnl  "
-              << "WHERE ec.id=c.country AND c.historyid=cor.historyid "
-              << "AND cor.id=d.registrant "
-              << "AND d.historyid=s.ohid_from AND dobr.id=d.id "
-              << "AND doh.historyid=d.historyid AND tnl.state_id=s.id "
-              << "AND d.exdate::date='" << exDates[j] << "' AND doh.clid=r.id "
-              << " ORDER BY CASE WHEN c.country='CZ' THEN 0 ELSE 1 END ASC, "
-              << "          distinction";
+              << "FROM tmp_notify_letters tnl "
+                   "JOIN object_state s               ON tnl.state_id = s.id "
+                   "JOIN domain_history d             ON d.historyid = s.ohid_from "
+                   "JOIN object_history doh           ON doh.historyid = d.historyid "
+                   "JOIN object_registry dobr         ON dobr.id = d.id "
+                   "JOIN object_registry cor          ON cor.id = d.registrant "
+                   "JOIN contact_history c            ON c.historyid = cor.historyid "
+                   "JOIN enum_country ec              ON ec.id = c.country "
+                   "JOIN registrar r                  ON r.id = doh.clid "
+
+              << "WHERE "
+              << " d.exdate::date='" << exDates[j] << "' "
+              << "ORDER BY CASE WHEN c.country='CZ' THEN 0 ELSE 1 END ASC,"
+              << " distinction, dobr.name";
           res = conn.exec(sql.str());
 
           std::auto_ptr<GenMultipleFiles> gen;
