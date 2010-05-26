@@ -271,6 +271,7 @@ AC_CONFIG_FILES([Makefile
                  src/cli_admin/Makefile
                  tools/Makefile
                  tools/logd_migration/Makefile
+                 tests/Makefile
                  fred-server.spec
                  config/server.conf
                  init-scripts/fred-server

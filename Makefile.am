@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 include $(top_srcdir)/am_doxygen.am
-SUBDIRS=util src tools
+SUBDIRS=util src tools tests
 CLEANFILES=config/server.conf init-scripts/fred-server
 
 fredconfdir = $(sysconfdir)/fred

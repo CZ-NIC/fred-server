@@ -32,7 +32,7 @@
 
 #include <boost/utility.hpp>
 
-#include <corba/ccReg.hh>
+#include <omniORB4/CORBA.h>
 
 /**
  * \class CorbaContainer
