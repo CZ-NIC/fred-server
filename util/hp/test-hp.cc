@@ -26,12 +26,12 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/crc.hpp>
 
-#include <cstdlib>    // for EXIT_SUCCESS, EXIT_FAILURE
-#include <exception>  // for std::exception
-#include <fstream>    // for std::ifstream
-#include <ios>        // for std::ios_base, etc.
-#include <iostream>   // for std::cerr, std::cout
-#include <ostream>    // for std::endl
+#include <cstdlib>
+#include <exception>
+#include <fstream>
+#include <ios>
+#include <iostream>
+#include <ostream>
 #include <sstream>
 #include <vector>
 
@@ -149,37 +149,27 @@ int main ( int argc, char* argv[])
 
         unsigned file_number=1;
 
-        std::string filename_to_upload("./data/file1.pdf");//file to send
-        //std::string filename_to_upload("./data/test.txt");//file to send
+        //std::string filename_to_upload("./data/file1.pdf");//file to send
+        std::string filename_to_upload("./data/test.txt");//file to send
 
         boost::crc_32_type  result;
-        std::streamsize const  buffer_size = 1024;
+        //std::streamsize const  buffer_size = 10240;
         std::vector<char> char_vector;
 
         std::ifstream  ifs( filename_to_upload.c_str(), std::ios_base::binary );
 
         if ( ifs )
         {
-            do
-            {
-                char  buffer[ buffer_size ];
-                ifs.read( buffer, buffer_size );
-                std::streamsize read_bytes = ifs.gcount();
+            // get length of file:
+            ifs.seekg (0, std::ios::end);
+            long long ifs_length = ifs.tellg();
+            char_vector.resize(ifs_length,'\0');//buffer allocation
+            ifs.seekg (0, std::ios::beg);
+            ifs.read( &char_vector[0], ifs_length );//read whole file
 
-                //alloc
-                if ( static_cast<std::streamsize>(char_vector.capacity()
-                        - char_vector.size()) < read_bytes)
-                {
-                    char_vector.reserve(char_vector.size() + read_bytes);
-                }
-
-                for (std::streamsize i = 0; i < read_bytes; ++i)
-                {
-                    char_vector.push_back(buffer[i]);
-                }
+            std::ofstream ofs();
 
 
-            } while ( ifs );
         }
         else
         {
