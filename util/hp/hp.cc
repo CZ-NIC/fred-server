@@ -358,7 +358,7 @@ void HPMail::login(const std::string& loginame //postservice account name
 
     //result parsing
     phpsessid_ =  StringBuffer::get()->getValueByKey("PHPSESSID=", 32);
-    hp_batch_number_ = StringBuffer::get()->getValueByKey("cislozak", 12) ;
+    hp_batch_number_ = StringBuffer::get()->getValueByKey("cislozakazky", 12) ;
 
     //detecting errors
     if (hp_batch_number_.empty())
@@ -386,10 +386,10 @@ void HPMail::upload( const MailBatch& mb)
     for (unsigned i=0; i < mb.size(); ++i)
     {
         std::string letter_file_name(
-                mb_proc_tmp_dir_+"letter_"
+                "letter_"
                 +boost::lexical_cast<std::string>(i));
         std::ofstream letter_file;
-        letter_file.open (letter_file_name.c_str()
+        letter_file.open ((mb_proc_tmp_dir_+letter_file_name).c_str()
                 , std::ios::out | std::ios::binary);
         if(letter_file.is_open())
             {
@@ -399,9 +399,9 @@ void HPMail::upload( const MailBatch& mb)
     }//for mb files
 
     //save list of letter files
-    std::string file_list_name(mb_proc_tmp_dir_+"in.lst");
+    std::string file_list_name("in.lst");
     std::ofstream list_file;
-    list_file.open (file_list_name.c_str(), std::ios::out );
+    list_file.open ((mb_proc_tmp_dir_+file_list_name).c_str(), std::ios::out );
     if(list_file.is_open())
     {
         for(LetterFileNames::iterator i = letter_file_names.begin()
@@ -586,8 +586,12 @@ void HPMail::upload( const MailBatch& mb)
         throw std::runtime_error(std::string("udrzba on"));
 
 
-    std::cout << "\nKonec reply: \n" << StringBuffer::get()->copy()
-                    <<  "\n" << std::endl;
+    //log result
+    std::stringstream formpost_reply;
+        formpost_reply << "\nKonec reply: \n" << StringBuffer::get()->copy()
+                            <<  "\n" << std::endl;
+    fwrite (formpost_reply.str().c_str() , 1
+            , formpost_reply.str().size() , curl_log_file_guard_.get() );
 
     instance_ptr.reset(0);//end of session
 
