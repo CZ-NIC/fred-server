@@ -697,6 +697,50 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
           }
         trans.commit();
       }
+
+      virtual void sendLetters()
+      {
+         TRACE("[CALL] Register::Notify::sendLetters()");
+    	// transaction is needed for 'ON COMMIT DROP' functionality
+        
+         Connection conn = Database::Manager::acquire();
+         //Database::Transaction trans(conn);
+   
+         // set status of 
+         
+         
+         Result res = conn.exec("SELECT EXISTS (SELECT * FROM notify_letters WHERE status=6)");
+
+         if ((bool)res[0][0]) {
+                LOGGER(PACKAGE).notice("The files are already being processed.");           
+                // TODO what to do here? error message, exit, exception, whatever...
+                return;
+         }
+
+         Database::Transaction trans(conn);
+         conn.exec("LOCK TABLE notify_letters IN ACCESS EXCLUSIVE MODE");
+
+         if ((bool)res[0][0]) {
+                LOGGER(PACKAGE).notice("The files are already being processed.");           
+                // TODO what to do here? error message, exit, exception, whatever...
+                // transaction end here
+                return;
+         }
+
+         conn.exec("UPDATE notify_letters SET status=6 WHERE status=1");
+         
+         res = conn.exec("SELECT distinct(file_id) FROM notify_letters WHERE status=6");
+
+         // unlock the table
+         trans.commit();
+
+         std::vector<TID> file_list;
+         for (unsigned i=0;i<res.size();i++) {
+                file_list.push_back(res[i][0]);
+                LOGGER(PACKAGE).debug(boost::format ("sendLetters File ID: %1% ") % res[i][0]); 
+         }
+         // file_list is now filled with IDs of files which are ready to be processed 
+      }
     };
     Manager *Manager::create(
       DB *db,

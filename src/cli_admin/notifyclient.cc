@@ -37,6 +37,8 @@ NotifyClient::runMethod()
         state_changes();
     } else if (m_conf.hasOpt(NOTIFY_LETTERS_CREATE_NAME)) {
         letters_create();
+    } else if (m_conf.hasOpt(NOTIFY_LETTERS_SEND_NAME)) {
+        letters_send();
     } else if (m_conf.hasOpt(NOTIFY_SHOW_OPTS_NAME)) {
         show_opts();
     }
@@ -158,6 +160,62 @@ NotifyClient::letters_create()
     notifyMan->generateLetters();
 }
 
+void NotifyClient::letters_send()
+{
+    // TODO code duplicity except for the last line
+    // you can:
+    //          - move the body of the sendLetters() here
+    //          - separate constructor for Notify::Manager
+    //          - make sendLetters static
+    callHelp(m_conf, no_help);
+
+    std::auto_ptr<Register::Document::Manager> docMan(
+            Register::Document::Manager::create(
+                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
+                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
+                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
+                m_nsAddr)
+            );
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    MailerManager mailMan(cc.getNS());
+    std::auto_ptr<Register::Zone::Manager> zoneMan(
+            Register::Zone::Manager::create());
+    std::auto_ptr<Register::Domain::Manager> domMan(
+            Register::Domain::Manager::create(&m_db, zoneMan.get()));
+    std::auto_ptr<Register::Contact::Manager> conMan(
+            Register::Contact::Manager::create(
+                &m_db,
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+            );
+    std::auto_ptr<Register::NSSet::Manager> nssMan(
+            Register::NSSet::Manager::create(
+                &m_db,
+                zoneMan.get(),
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+            );
+    std::auto_ptr<Register::KeySet::Manager> keyMan(
+            Register::KeySet::Manager::create(
+                &m_db,
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+            );
+    std::auto_ptr<Register::Registrar::Manager> regMan(
+            Register::Registrar::Manager::create(&m_db));
+    std::auto_ptr<Register::Notify::Manager> notifyMan(
+            Register::Notify::Manager::create(
+                &m_db,
+                &mailMan,
+                conMan.get(),
+                nssMan.get(),
+                keyMan.get(),
+                domMan.get(),
+                docMan.get(),
+                regMan.get())
+            );
+
+    notifyMan->sendLetters();    
+
+}
+
 #define ADDOPT(name, type, callable, visible) \
     {CLIENT_NOTIFY, name, name##_DESC, type, callable, visible}
 
@@ -165,6 +223,7 @@ const struct options
 NotifyClient::m_opts[] = {
     ADDOPT(NOTIFY_STATE_CHANGES_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(NOTIFY_LETTERS_CREATE_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(NOTIFY_LETTERS_SEND_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(NOTIFY_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(NOTIFY_DEBUG_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(NOTIFY_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),

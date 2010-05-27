@@ -22,9 +22,11 @@
 #define NOTIFY_SHOW_OPTS_NAME           "notify_show_opts"
 #define NOTIFY_SHOW_OPTS_NAME_DESC      "show all notify command line options"
 #define NOTIFY_STATE_CHANGES_NAME       "notify_state_changes"
-#define NOTIFY_STATE_CHANGES_NAME_DESC  "send emails to contacts abou object state changes"
+#define NOTIFY_STATE_CHANGES_NAME_DESC  "send emails to contacts about object state changes"
 #define NOTIFY_LETTERS_CREATE_NAME      "notify_letters_create"
 #define NOTIFY_LETTERS_CREATE_NAME_DESC "generate pdf with domain registration warning"
+#define NOTIFY_LETTERS_SEND_NAME        "notify_letters_postservis_send"
+#define NOTIFY_LETTERS_SEND_NAME_DESC   "send generated PDF notification letters to postservis"
 
 #define NOTIFY_EXCEPT_TYPES_NAME        "notify_except_types"
 #define NOTIFY_EXCEPT_TYPES_NAME_DESC   "list of notification types ignored in notification"
@@ -77,6 +79,7 @@ public:
     void show_opts();
     void state_changes();
     void letters_create();
+    void letters_send();
 }; // class NotifyClient
 
 } // namespace Admin;
