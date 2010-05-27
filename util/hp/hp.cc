@@ -469,6 +469,22 @@ void HPMail::upload( const MailBatch& mb)
         throw std::runtime_error(
                 "HPMail::upload error: compressed_mail_batch.size() < 1");
 
+    //save compressed mail batch for test
+    for (unsigned i=0; i < compressed_mail_batch.size(); ++i)
+    {
+        std::string test_file_name(
+                "test_7z_"
+                +boost::lexical_cast<std::string>(i));
+        std::ofstream test_file;
+        test_file.open ((mb_proc_tmp_dir_+test_file_name).c_str()
+                , std::ios::out | std::ios::binary);
+        if(test_file.is_open())
+            {
+                test_file.write(&compressed_mail_batch[i][0], compressed_mail_batch[i].size());
+            }
+    }//for mb files
+
+
     //upload to postservice
     for(std::size_t i = compressed_mail_batch.size(); i > 0; --i)
     {
