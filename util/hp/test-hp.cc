@@ -21,7 +21,7 @@
  *  test connection to postservice
  */
 
-#include "hp.h"
+#include "hpmail.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/crc.hpp>
