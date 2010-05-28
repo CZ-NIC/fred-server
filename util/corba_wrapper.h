@@ -31,8 +31,9 @@
 #include <memory>
 
 #include <boost/utility.hpp>
-
 #include <omniORB4/CORBA.h>
+
+#include "corba/nameservice.h"
 
 /**
  * \class CorbaContainer
@@ -45,10 +46,8 @@ class CorbaContainer : boost::noncopyable
     CORBA::ORB_var orb;
     CORBA::Object_var root_poa_initial_ref;
     PortableServer::POA_var root_poa;
-    std::string name_service_corbaname;
-    std::string default_name_service_context;
-    CORBA::Object_var nameservice_initial_ref;
-    CosNaming::NamingContext_var root_nameservice_context;
+    NameService ns;
+
     static CorbaContainerPtr instance_ptr;
 
     CorbaContainer(int argc, char ** argv
@@ -58,15 +57,7 @@ class CorbaContainer : boost::noncopyable
     : orb(CORBA::ORB_init( argc,argv))
     , root_poa_initial_ref(orb->resolve_initial_references("RootPOA"))
     , root_poa(PortableServer::POA::_narrow(root_poa_initial_ref))
-    , name_service_corbaname(nameservice_host.empty() ? std::string("")
-        : "corbaname::" + nameservice_host + ":"
-          + boost::lexical_cast<std::string>(nameservice_port))
-    , default_name_service_context(nameservice_context)
-    , nameservice_initial_ref(name_service_corbaname.empty()
-        ? orb->resolve_initial_references("NameService")
-        : orb->string_to_object(name_service_corbaname.c_str()))
-    , root_nameservice_context(CosNaming::NamingContext::_narrow(
-        nameservice_initial_ref.in()))
+    , ns(orb, nameservice_host, nameservice_port, nameservice_context)
     {}
 friend class std::auto_ptr<CorbaContainer>;
 protected:
@@ -78,21 +69,12 @@ public:
     ///NameService resolve with simple
     CORBA::Object_var nsresolve(const std::string& context, const std::string& object_name)
     {
-        CORBA::Object_var obj;
-
-        CosNaming::Name context_name;
-        context_name.length(2);
-        context_name[0].id   = context.c_str();
-        context_name[0].kind = "context";
-        context_name[1].id   = object_name.c_str();
-        context_name[1].kind = "Object";
-        obj = root_nameservice_context->resolve(context_name);
-        return obj;
+        return ns.resolve(context, object_name);
     }
     ///NameService resolve using default context
     CORBA::Object_var nsresolve(const std::string& object_name)
     {
-        return nsresolve(default_name_service_context, object_name);
+        return ns.resolve(object_name);
     }
 
     //static interface

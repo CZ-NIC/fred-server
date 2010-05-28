@@ -32,13 +32,21 @@ public:
   /**
    * config rootContext from supplied orb and hostname
    */
-	NameService(CORBA::ORB_ptr orb, 
+  NameService(CORBA::ORB_ptr orb, 
               const std::string& hostname, 
               const std::string& _context) throw (NOT_RUNNING);
 
   /**
+   * config rootContext from supplied orb and hostname and port
+   */
+  NameService(CORBA::ORB_ptr orb, 
+              const std::string& hostname, 
+              const unsigned int _port,
+              const std::string& _context) throw (NOT_RUNNING);
+
+  /**
    * d-tor
-   */	
+   */
   virtual ~NameService();
 
   /**
@@ -53,9 +61,19 @@ public:
   CORBA::Object_ptr resolve(const std::string& name) throw (NOT_RUNNING, BAD_CONTEXT);
 
   /**
+   * resolve object from 'context'.context/'name'.Object get IOR
+   */
+  CORBA::Object_ptr resolve(const std::string& context,
+                            const std::string& name) throw (NOT_RUNNING, BAD_CONTEXT);
+
+  /**
    * get nameservice hostname used
    */
   const std::string& getHostName();
+
+
+private:
+  void _connect() throw (NOT_RUNNING);
 
 };
 

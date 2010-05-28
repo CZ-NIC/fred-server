@@ -17,34 +17,14 @@
  */
 
 #include <iostream>
+#include <boost/lexical_cast.hpp>
+
 #include "nameservice.h"
 #include "log/logger.h"
 #include "log/context.h"
 
-NameService::NameService(CORBA::ORB_ptr orb) throw (NOT_RUNNING) {
-  try {
-    /* Obtain a reference to the root context of the Name service */
-    CORBA::Object_var obj;
-    obj = orb->resolve_initial_references("NameService");
-
-    /* Narrow the reference returned */
-    rootContext = CosNaming::NamingContext::_narrow(obj);
-    if( CORBA::is_nil(rootContext) ) throw NOT_RUNNING();
-  }
-  catch (CORBA::NO_RESOURCES&) {
-    throw NOT_RUNNING();
-  }
-  catch (CORBA::ORB::InvalidName&) {
-    throw NOT_RUNNING();
-  }
-}
-
-
-NameService::NameService(CORBA::ORB_ptr orb,
-                         const std::string& _hostname,
-                         const std::string& _context) throw (NOT_RUNNING) 
-                                                      : hostname(_hostname),
-                                                        context(_context) {
+void NameService::_connect() throw (NOT_RUNNING)
+{
   try {
     CORBA::Object_var obj;
 
@@ -64,6 +44,37 @@ NameService::NameService(CORBA::ORB_ptr orb,
   catch (...) {
     throw NOT_RUNNING();
   }
+}
+
+
+NameService::NameService(CORBA::ORB_ptr orb) throw (NOT_RUNNING)
+                        : hostname(""),
+                          context("")
+{
+    _connect();
+}
+
+
+NameService::NameService(CORBA::ORB_ptr orb,
+                         const std::string& _hostname,
+                         const std::string& _context) throw (NOT_RUNNING) 
+                                                      : orb(orb),
+                                                        hostname(_hostname),
+                                                        context(_context)
+{
+    _connect();
+}
+
+
+NameService::NameService(CORBA::ORB_ptr orb,
+                         const std::string& _hostname,
+                         const unsigned int _port,
+                         const std::string& _context) throw (NOT_RUNNING)
+                        : orb(orb),
+                          hostname(_hostname + ":" + boost::lexical_cast<std::string>(_port)),
+                          context(_context) 
+{
+    _connect();
 }
 
 
@@ -122,19 +133,28 @@ void NameService::bind(const std::string& name,
 
 
 CORBA::Object_ptr NameService::resolve(const std::string& name)
-    throw (NOT_RUNNING, BAD_CONTEXT) {
+    throw (NOT_RUNNING, BAD_CONTEXT)
+{
+    return resolve(context, name);
+}
+
+
+CORBA::Object_ptr NameService::resolve(const std::string& nsctx,
+                                       const std::string& name)
+    throw (NOT_RUNNING, BAD_CONTEXT)
+{
 
   Logging::Context ctx("nameservice");
 
   LOGGER(PACKAGE).debug(boost::format("requested object resolve: %1%/%2%")
-                                      % context
+                                      % nsctx
                                       % name);
 
   /* Create a name object, containing the name test/context */
   CosNaming::Name contextName;
   contextName.length(2);
 
-  contextName[0].id   = (const char*) context.c_str(); 
+  contextName[0].id   = (const char*) nsctx.c_str(); 
   contextName[0].kind = (const char*) "context";
   contextName[1].id   = name.c_str();
   contextName[1].kind = (const char*) "Object";

@@ -67,8 +67,8 @@ test_registrar_certification_group_SOURCES = \
                      $(top_srcdir)/src/corba/admin/common.cc \
                      $(top_srcdir)/src/corba/admin/common.h
 
-nodist_test_registrar_certification_group_SOURCES = \
-                     $(top_builddir)/src/corba/ccRegSK.cc
+#nodist_test_registrar_certification_group_SOURCES = \
+#                     $(top_builddir)/src/corba/ccRegSK.cc
 
 test_registrar_certification_group_LDFLAGS = \
                      $(POSTGRESQL_LDFLAGS) \
@@ -88,7 +88,8 @@ test_registrar_certification_group_LDADD = \
                      $(top_builddir)/util/log/liblog.a \
                      $(top_builddir)/util/conf/libconf.a \
                      $(top_builddir)/util/types/libtypes.a \
-                     $(top_builddir)/src/old_utils/liboldutils.a
+                     $(top_builddir)/src/old_utils/liboldutils.a \
+                     $(top_builddir)/src/corba/libcorba.a
 
 
 
