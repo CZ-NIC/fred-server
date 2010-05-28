@@ -34,6 +34,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/crc.hpp>
+#include <boost/assign.hpp>
 
 #include "hp.h"
 #include "hpmail.h"
@@ -43,14 +44,40 @@
 ///static instance init
 std::auto_ptr<HPMail> HPMail::instance_ptr(0);
 
-///instance  setter
-HPMail* HPMail::set(const std::string& mb_proc_tmp_dir //tmp dir for 7z files ended by slash
-        , const std::string& postservice_cert_dir //postsignum_qca_root.pem server certificate dir ended by slash
-        , const std::string& hp_interface_url // ended by slash like: https://online.postservis.cz/Command/
-        )
+///required HPMail configuration init with default values
+HPCfgMap HPMail::required_config = boost::assign::map_list_of
+    ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed files
+    ("postservice_cert_dir","./cert/") //server certificate dir ended by slash
+    ("hp_login_job","2010")//set in orig config file like: jobzak="2010"
+    ("hp_login_osversion","Linux")//or "Windows"
+    ("hp_login_clientversion","20100315001")//orig "20100315001"
+    ("hp_login_interface_url","https://online.postservis.cz/Command/over.php")//login form url
+    ("hp_upload_interface_url","https://online.postservis.cz/Command/command.php")//upload form url
+    ("hp_ack_interface_url","https://online.postservis.cz/Command/konec.php")//end form url
+    ("hp_login_batch_id","hpcb_Jednorazova_zakazka")//some job identification,now login parameter
+    ("hp_upload_archiver_filename","7z")//it should be something 7z compatible for now
+    ("hp_upload_archiver_additional_options", "-mx5 -v5m -mmt=on") //5M volumes, multithreaded
+    ("postservice_cert_file","postsignum_qca_root.pem")//cert file name like "postsignum_qca_root.pem"
+    ("hp_useragent_id","CommandLine klient HP")
+    ("b","1");
+
+///instance set config and return if ok
+HPMail* HPMail::set(const HPCfgMap& config_changes)
 {
-    std::auto_ptr<HPMail> tmp_instance(new HPMail(mb_proc_tmp_dir
-            , postservice_cert_dir, hp_interface_url ));
+    //config
+    HPCfgMap config;
+    for(HPCfgMap::const_iterator default_it = HPMail::required_config.begin()
+            ; default_it != HPMail::required_config.end(); ++default_it)
+    {
+        HPCfgMap::const_iterator change_it
+            = config_changes.find(default_it->first);//look for change
+        if(change_it != config_changes.end())
+            config[change_it->first]= change_it->second;//change
+        else//nochange, using required default
+            config[default_it->first]=default_it->second;
+    }
+
+    std::auto_ptr<HPMail> tmp_instance(new HPMail(config));
     instance_ptr = tmp_instance;
     if (instance_ptr.get() == 0)
         throw std::runtime_error(
@@ -58,7 +85,7 @@ HPMail* HPMail::set(const std::string& mb_proc_tmp_dir //tmp dir for 7z files en
     return instance_ptr.get();
 }
 
-///instance  getter
+///instance getter
 HPMail* HPMail::get()
 {
     HPMail* ret = instance_ptr.get();
@@ -95,15 +122,16 @@ void HPMail::login(const std::string& loginame //postservice account name
             , password //password
             , batch_id //standzak
             , batch_note //poznamka
-            , "2010" //jobzak may be year, is set in orig config file like "2010"
-            , "Linux" //verzeOS
-            , "20100315001" //verzeProg orig was "20100315001"
+            , config_["hp_login_job"] //jobzak may be year, is set in orig config file like "2010"
+            , config_["hp_login_osversion"] //verzeOS "Linux"
+            , config_["hp_login_clientversion"] //verzeProg orig was "20100315001"
             );
 
     StringBuffer::set();//reset recv buffer, userp may be better
     CURLcode res = hp_form_post(formpost_overeni  //linked list ptr
-                , hp_interface_url_+"over.php" //form url
-                , postservice_cert_dir_ //ended by slash
+                , config_["hp_login_interface_url"] //form url
+                , config_["postservice_cert_dir"] //cert file dir ended by slash
+                , config_["postservice_cert_file"] //pem cert file name
                 , "" //no cookie
                 , "" //no useragent
                 , 1 //verbose
@@ -156,7 +184,7 @@ void HPMail::upload( const MailBatch& mb)
                 "letter_"
                 +boost::lexical_cast<std::string>(i));
         std::ofstream letter_file;
-        letter_file.open ((mb_proc_tmp_dir_+letter_file_name).c_str()
+        letter_file.open ((config_["mb_proc_tmp_dir"]+letter_file_name).c_str()
                 , std::ios::out | std::ios::binary);
         if(letter_file.is_open())
             {
@@ -168,7 +196,7 @@ void HPMail::upload( const MailBatch& mb)
     //save list of letter files
     std::string file_list_name("in.lst");
     std::ofstream list_file;
-    list_file.open ((mb_proc_tmp_dir_+file_list_name).c_str(), std::ios::out );
+    list_file.open ((config_["mb_proc_tmp_dir"]+file_list_name).c_str(), std::ios::out );
     if(list_file.is_open())
     {
         for(LetterFileNames::iterator i = letter_file_names.begin()
@@ -181,10 +209,13 @@ void HPMail::upload( const MailBatch& mb)
 
     //7z command
     std::string command_for_7z (
-            "cd " + mb_proc_tmp_dir_ //cd to set tmpdir
+            "cd " + config_["mb_proc_tmp_dir"] //cd to set tmpdir
             //compress letters to archive volume files
             //like: <hp_batch_number>.7z.001, ...002 ...
-            + " && 7z a "+hp_batch_number_+".7z @in.lst -mx5 -v5m -mmt=on");
+            + " && "+config_["hp_upload_archiver_filename"]+" a "
+            + hp_batch_number_+".7z @in.lst "
+            +config_["hp_upload_archiver_additional_options"]);
+
     int system_command_retcode =
     system(command_for_7z.c_str());//execute
 
@@ -206,7 +237,7 @@ void HPMail::upload( const MailBatch& mb)
         else
             order_number << i; //TODO: check behaviour over 1000 volumes
         std::string compressed_mail_volume_name(
-                mb_proc_tmp_dir_+hp_batch_number_+".7z."+order_number.str());
+                config_["mb_proc_tmp_dir"]+hp_batch_number_+".7z."+order_number.str());
 
         std::ifstream compressed_mail_volume_stream;
         compressed_mail_volume_stream.open (compressed_mail_volume_name.c_str()
@@ -236,6 +267,7 @@ void HPMail::upload( const MailBatch& mb)
         throw std::runtime_error(
                 "HPMail::upload error: compressed_mail_batch.size() < 1");
 
+/*
     //save compressed mail batch for test
     for (unsigned i=0; i < compressed_mail_batch.size(); ++i)
     {
@@ -243,14 +275,14 @@ void HPMail::upload( const MailBatch& mb)
                 "test_7z_"
                 +boost::lexical_cast<std::string>(i));
         std::ofstream test_file;
-        test_file.open ((mb_proc_tmp_dir_+test_file_name).c_str()
+        test_file.open ((config_["mb_proc_tmp_dir"]+test_file_name).c_str()
                 , std::ios::out | std::ios::binary);
         if(test_file.is_open())
             {
                 test_file.write(&compressed_mail_batch[i][0], compressed_mail_batch[i].size());
             }
     }//for mb files
-
+*/
 
     //upload to postservice
     for(std::size_t i = compressed_mail_batch.size(); i > 0; --i)
@@ -290,10 +322,11 @@ void HPMail::upload( const MailBatch& mb)
         //send form
         StringBuffer::set();//reset recv buffer, userp may be better
         CURLcode res = hp_form_post(formpost_command  //linked list ptr
-                    , hp_interface_url_+"command.php" //url
-                    , postservice_cert_dir_ //ended by slash
+                    , config_["hp_upload_interface_url"]//url
+                    , config_["postservice_cert_dir"] //ended by slash
+                    , config_["postservice_cert_file"] //pem cert file name
                     , "PHPSESSID="+phpsessid_//PHP session id in cookie
-                    , "CommandLine klient HP" //useragent id
+                    , config_["hp_useragent_id"] //useragent id
                     , 1 //verbose
                     , curl_log_file_guard_.get()//curl logfile
                     );
@@ -346,10 +379,11 @@ void HPMail::upload( const MailBatch& mb)
 
     StringBuffer::set();//reset recv buffer, userp may be better
     CURLcode res = hp_form_post(formpost_konec  //linked list ptr
-                , hp_interface_url_+"konec.php" //url
-                , postservice_cert_dir_ //ended by slash
+                , config_["hp_ack_interface_url"]//"konec.php" url
+                , config_["postservice_cert_dir"] //ended by slash
+                , config_["postservice_cert_file"] //pem cert file name
                 , "PHPSESSID="+phpsessid_//PHP session id in cookie
-                , "CommandLine klient HP" //useragent id
+                , config_["hp_useragent_id"] //useragent id
                 , 1 //verbose
                 , curl_log_file_guard_.get()//curl logfile
                 );

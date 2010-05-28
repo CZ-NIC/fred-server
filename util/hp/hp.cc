@@ -31,8 +31,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include <curl/curl.h>
-//#include <curl/types.h>
-//#include <curl/easy.h>
 
 #include "hp.h"
 
@@ -115,6 +113,7 @@ std::string StringBuffer::getValueByKey(const std::string & key_str
 CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         , const std::string& curlopt_url //url
         , const std::string& curlopt_capath //ended by slash
+        , const std::string& curlopt_cert_file //cert file name like "postsignum_qca_root.pem"
         , const std::string& curlopt_cookie //cookie NAME=CONTENTS, Set multiple cookies in one string like this: "name1=content1; name2=content2;" PHPSESSID=6d8cbbd1e53b15aa0523f4579612f940;
         , const std::string& curlopt_useragent //header "CommandLine klient HP"
         , long curlopt_verbose // 0 / 1
@@ -125,7 +124,7 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
     CURLcode ret = CURLE_FAILED_INIT;
     CURL* curl = curl_easy_guard.get();
 
-    std::string curlopt_cainfo(curlopt_capath+"postsignum_qca_root.pem");
+    std::string curlopt_cainfo(curlopt_capath+curlopt_cert_file);
     if(curl)//CURL*
     {
         curl_easy_setopt(curl, CURLOPT_VERBOSE, curlopt_verbose);//talk to me

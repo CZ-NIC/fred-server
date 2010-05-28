@@ -33,9 +33,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include <curl/curl.h>
-#include <curl/types.h>
-#include <curl/easy.h>
-
 
 /**
  * \class StringBuffer
@@ -135,6 +132,7 @@ typedef FILEPtrT<FileClose> FileClosePtr;
 CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         , const std::string& curlopt_url //url
         , const std::string& curlopt_capath //ended by slash
+        , const std::string& curlopt_cert_file //cert file name like "postsignum_qca_root.pem"
         , const std::string& curlopt_cookie //cookie NAME=CONTENTS, Set multiple cookies in one string like this: "name1=content1; name2=content2;" PHPSESSID=6d8cbbd1e53b15aa0523f4579612f940;
         , const std::string& curlopt_useragent //header "CommandLine klient HP"
         , long curlopt_verbose // 0 / 1

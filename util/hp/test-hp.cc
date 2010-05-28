@@ -25,6 +25,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/crc.hpp>
+#include <boost/assign.hpp>
 
 #include <cstdlib>
 #include <exception>
@@ -45,17 +46,17 @@ int main ( int argc, char* argv[])
 
         curl_global_init(CURL_GLOBAL_ALL);//once per process call
 
+        HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
+                ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed files
+                ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
-
-        HPMail::set("./tmpdir/","./cert/", "https://online.postservis.cz/Command/");
-        HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka", "Testovaci prenos!!!");
+        HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
 
         MailBatch mb;
         mb.push_back(MailFile(1,49));
         mb.push_back(MailFile(2,50));
         mb.push_back(MailFile(3,51));
         HPMail::get()->upload(mb);
-
 
     }//try
     catch(std::exception& ex)
