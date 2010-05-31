@@ -186,7 +186,7 @@ void HPMail::upload( const MailBatch& mb)
     for (unsigned i=0; i < mb.size(); ++i)
     {
         std::string letter_file_name(
-                command_["hp_upload_letter_file_prefix"]
+                config_["hp_upload_letter_file_prefix"]
                 +boost::lexical_cast<std::string>(i));
         std::ofstream letter_file;
         letter_file.open ((config_["mb_proc_tmp_dir"]+letter_file_name).c_str()
