@@ -199,7 +199,7 @@ void HPMail::upload( const MailBatch& mb)
     }//for mb files
 
     //save list of letter files
-    std::string file_list_name("in.lst");
+    std::string file_list_name(config_["hp_upload_archiver_input_list"].c_str() + 1/*no @*/));
     std::ofstream list_file;
     list_file.open ((config_["mb_proc_tmp_dir"]+file_list_name).c_str(), std::ios::out | std::ios::trunc);
     if(list_file.is_open())
