@@ -46,8 +46,9 @@ std::auto_ptr<HPMail> HPMail::instance_ptr(0);
 
 ///required HPMail configuration init with default values
 HPCfgMap HPMail::required_config = boost::assign::map_list_of
-    ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed files
+    ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed mail files or nonempty dir with set cleanup option
     ("postservice_cert_dir","./cert/") //server certificate dir ended by slash
+    ("postservice_cert_file","postsignum_qca_root.pem")//cert file name like "postsignum_qca_root.pem"
     ("hp_login_job","2010")//set in orig config file like: jobzak="2010"
     ("hp_login_osversion","Linux")//"Linux" or "Windows"
     ("hp_login_clientversion","20100315001")//orig "20100315001"
@@ -56,12 +57,14 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_ack_interface_url","https://online.postservis.cz/Command/konec.php")//end form url
     ("hp_login_batch_id","hpcb_Jednorazova_zakazka")//some job identification,now login parameter
     ("hp_upload_archiver_filename","7z")//it should be something 7z compatible for now
+    ("hp_upload_archiver_command_option","a")//add files to archive
+    ("hp_upload_archiver_input_list","@in.lst")//input list of files to compress
     ("hp_upload_archiver_additional_options", "-mx5 -v5m -mmt=on") //5M volumes, multithreaded
     ("hp_upload_archiv_filename_suffix",".7z")//volume number is appended after archiv filename suffix .7z for now
-    ("postservice_cert_file","postsignum_qca_root.pem")//cert file name like "postsignum_qca_root.pem"
     ("hp_useragent_id","CommandLine klient HP")//useragent id hardcoded in orig client
-    ("hp_upload_archiver_command_option","a")//add files to archive
-    ("hp_upload_archiver_input_list","@in.lst");//input list of files to compress
+    ("hp_cleanup_last_arch_volumes","rm -f *.7z*") // delete last archive volumes
+    ("hp_upload_letter_file_prefix","letter_")//for saved letter file to archive
+    ;
 
 ///instance set config and return if ok
 HPMail* HPMail::set(const HPCfgMap& config_changes)
@@ -183,11 +186,11 @@ void HPMail::upload( const MailBatch& mb)
     for (unsigned i=0; i < mb.size(); ++i)
     {
         std::string letter_file_name(
-                "letter_"
+                command_["hp_upload_letter_file_prefix"]
                 +boost::lexical_cast<std::string>(i));
         std::ofstream letter_file;
         letter_file.open ((config_["mb_proc_tmp_dir"]+letter_file_name).c_str()
-                , std::ios::out | std::ios::binary);
+                , std::ios::out | std::ios::trunc | std::ios::binary);
         if(letter_file.is_open())
             {
                 letter_file.write(&mb[i][0], mb[i].size());
@@ -198,7 +201,7 @@ void HPMail::upload( const MailBatch& mb)
     //save list of letter files
     std::string file_list_name("in.lst");
     std::ofstream list_file;
-    list_file.open ((config_["mb_proc_tmp_dir"]+file_list_name).c_str(), std::ios::out );
+    list_file.open ((config_["mb_proc_tmp_dir"]+file_list_name).c_str(), std::ios::out | std::ios::trunc);
     if(list_file.is_open())
     {
         for(LetterFileNames::iterator i = letter_file_names.begin()
@@ -214,6 +217,7 @@ void HPMail::upload( const MailBatch& mb)
             "cd " + config_["mb_proc_tmp_dir"] //cd to set tmpdir
             //compress letters to archive volume files
             //like: <hp_batch_number>.7z.001, ...002 ...
+            + " && "+config_["hp_cleanup_last_arch_volumes"]+" "
             + " && "+config_["hp_upload_archiver_filename"]+" "
             + config_["hp_upload_archiver_command_option"] + " "
             + hp_batch_number_+config_["hp_upload_archiv_filename_suffix"]
