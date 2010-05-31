@@ -314,7 +314,8 @@ void HPMail::upload( const MailBatch& mb)
         else
             order_number << i; //TODO: check behaviour over 1000 volumes
         std::string compressed_mail_volume_name(
-                hp_batch_number_+".7z."+order_number.str());
+                hp_batch_number_+ config_["hp_upload_archiv_filename_suffix"]
+                                          +"."+order_number.str());
 
         //make form for upload
         struct curl_httppost *formpost_command=NULL;
@@ -377,7 +378,7 @@ void HPMail::upload( const MailBatch& mb)
 
     //first archive volume file name
     std::string first_compressed_mail_volume_name(
-            hp_batch_number_+".7z.001");
+            hp_batch_number_+config_["hp_upload_archiv_filename_suffix"]+".001");
 
     //fill in konec
     hp_form_konec(&formpost_konec //out parameter
