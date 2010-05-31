@@ -49,7 +49,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed files
     ("postservice_cert_dir","./cert/") //server certificate dir ended by slash
     ("hp_login_job","2010")//set in orig config file like: jobzak="2010"
-    ("hp_login_osversion","Linux")//or "Windows"
+    ("hp_login_osversion","Linux")//"Linux" or "Windows"
     ("hp_login_clientversion","20100315001")//orig "20100315001"
     ("hp_login_interface_url","https://online.postservis.cz/Command/over.php")//login form url
     ("hp_upload_interface_url","https://online.postservis.cz/Command/command.php")//upload form url
@@ -57,9 +57,11 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_login_batch_id","hpcb_Jednorazova_zakazka")//some job identification,now login parameter
     ("hp_upload_archiver_filename","7z")//it should be something 7z compatible for now
     ("hp_upload_archiver_additional_options", "-mx5 -v5m -mmt=on") //5M volumes, multithreaded
+    ("hp_upload_archiv_filename_suffix",".7z")//volume number is appended after archiv filename suffix .7z for now
     ("postservice_cert_file","postsignum_qca_root.pem")//cert file name like "postsignum_qca_root.pem"
-    ("hp_useragent_id","CommandLine klient HP")
-    ("b","1");
+    ("hp_useragent_id","CommandLine klient HP")//useragent id hardcoded in orig client
+    ("hp_upload_archiver_command_option","a")//add files to archive
+    ("hp_upload_archiver_input_list","@in.lst");//input list of files to compress
 
 ///instance set config and return if ok
 HPMail* HPMail::set(const HPCfgMap& config_changes)
@@ -212,8 +214,10 @@ void HPMail::upload( const MailBatch& mb)
             "cd " + config_["mb_proc_tmp_dir"] //cd to set tmpdir
             //compress letters to archive volume files
             //like: <hp_batch_number>.7z.001, ...002 ...
-            + " && "+config_["hp_upload_archiver_filename"]+" a "
-            + hp_batch_number_+".7z @in.lst "
+            + " && "+config_["hp_upload_archiver_filename"]+" "
+            + config_["hp_upload_archiver_command_option"] + " "
+            + hp_batch_number_+config_["hp_upload_archiv_filename_suffix"]
+            +" " +config_["hp_upload_archiver_input_list"]+" "
             +config_["hp_upload_archiver_additional_options"]);
 
     int system_command_retcode =
