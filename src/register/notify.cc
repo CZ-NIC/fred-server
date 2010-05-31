@@ -637,7 +637,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                "COALESCE(c.street1,'') || ' ' || "
                "COALESCE(c.street2,'') || ' ' || "
                "COALESCE(c.street3, '') ) as distinction, "
-              << "r.url, d.registrant "
+              << "r.url, d.registrant, c.stateorprovince "
 
               << "FROM tmp_notify_letters tnl "
                    "JOIN object_state s               ON tnl.state_id = s.id "
@@ -675,6 +675,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
                     << "<street>" << XML_DB_OUT(i,6) << "</street>"
                     << "<city>" << XML_DB_OUT(i,7) << "</city>"
+                    << "<stateorprovince>" << XML_DB_OUT(i,13) << "</stateorprovince>"
                     << "<postal_code>" << XML_DB_OUT(i,8) << "</postal_code>"
                     << "<country>" << XML_DB_OUT(i,9) << "</country>"
                     << "<actual_date>" << XML_DB_OUT(i,2) << "</actual_date>"
