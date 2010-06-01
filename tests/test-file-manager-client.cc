@@ -32,8 +32,6 @@ boost::assign::list_of
 
 #include "test_custom_main.h"
 
-ccReg::TID gid3 = 0;
-
 BOOST_AUTO_TEST_CASE( test_fmc_simple )
 {
 ;
