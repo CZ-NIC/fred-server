@@ -85,6 +85,11 @@ public:
     static CorbaContainer* get_instance();
     static void destroy_instance();
 
+    NameService *getNS()
+    {
+        return &ns;
+    }
+
 };//class CorbaContainer
 
 //static init
