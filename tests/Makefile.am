@@ -14,7 +14,8 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 			  -I$(top_builddir)/src
 
 
-noinst_PROGRAMS = test_logd test-model test-registrar-certification-group
+noinst_PROGRAMS = test_logd test-model test-registrar-certification-group \
+					test-file-manager-client
 
 test_logd_SOURCES =  test_logd.cc \
                      $(top_srcdir)/src/register/request.h \
@@ -91,5 +92,22 @@ test_registrar_certification_group_LDADD = \
                      $(top_builddir)/src/old_utils/liboldutils.a \
                      $(top_builddir)/src/corba/libcorba.a
 
+test_file_manager_client_SOURCES = \
+					test-file-manager-client.cc \
+					test-file-manager-client.h
+					
+test_file_manager_client_LDFLAGS = \
+                     $(BOOST_LDFLAGS) \
+                     $(AM_LDFLAGS) \
+                     $(BOOST_PROGRAM_OPTIONS_LIB) \
+                     $(OMNIORB4_LIBS) \
+                     $(BOOST_DATE_TIME_LIB) \
+                     $(BOOST_REGEX_LIB) \
+                     $(BOOST_THREAD_LIB)
 
+test_file_manager_client_LDADD = \
+                     $(top_builddir)/util/log/liblog.a \
+                     $(top_builddir)/util/conf/libconf.a \
+                     $(top_builddir)/util/types/libtypes.a \
+                     $(top_builddir)/src/corba/libcorba.a
 
