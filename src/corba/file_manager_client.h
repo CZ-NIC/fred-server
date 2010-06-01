@@ -21,6 +21,10 @@ public:
     void download(const unsigned long long _id,
                   const std::string &_path);
 
+    void download(const unsigned long long _id,
+                  std::vector<char> &_buffer);
+
+
 
 private:
     NameService            *ns_;

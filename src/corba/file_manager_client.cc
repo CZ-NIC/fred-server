@@ -82,6 +82,35 @@ void FileManagerClient::download(const unsigned long long _id,
     throw std::runtime_error("not implemented");
 }
 
+void FileManagerClient::download(const unsigned long long _id,
+              std::vector<char> &_out_buffer)
+{
+    try
+    {
+        _resolve();
+        ccReg::FileInfo_var info = fmanager_->info(_id);//get info
+        _out_buffer.clear();
+        _out_buffer.reserve(info->size);//allocate buffer
+        ccReg::FileDownload_var downloader = fmanager_->load(_id);
+        ccReg::BinaryData_var file_data(new ccReg::BinaryData);
+        file_data = downloader->download(info->size);
+        //there is some server side GC in case of failure
+        downloader->finalize_download();
+        //copy data
+        for(std::size_t i = 0; i < info->size; ++i)
+            _out_buffer.push_back(file_data[i]);
+    }
+    catch (std::exception &ex)
+    {
+        throw std::runtime_error(str(boost::format("File download failed: %1%")
+                                     % ex.what()));
+    }
+    catch (...)
+    {
+        throw std::runtime_error("File download failed: unknown error");
+    }
+}//FileManagerClient::download
+
 
 void FileManagerClient::_resolve() {
     try {
