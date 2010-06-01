@@ -16,6 +16,9 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 
 noinst_PROGRAMS = test_logd test-model test-registrar-certification-group \
 					test-file-manager-client
+					
+#tests
+TESTS = $(noinst_PROGRAMS)
 
 test_logd_SOURCES =  test_logd.cc \
                      $(top_srcdir)/src/register/request.h \
@@ -111,3 +114,4 @@ test_file_manager_client_LDADD = \
                      $(top_builddir)/util/types/libtypes.a \
                      $(top_builddir)/src/corba/libcorba.a
 
+EXTRA_DIST = test-file.pdf

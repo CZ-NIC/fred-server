@@ -32,7 +32,20 @@ boost::assign::list_of
 
 #include "test_custom_main.h"
 
+#include "file_manager_client.h"
+
 BOOST_AUTO_TEST_CASE( test_fmc_simple )
 {
-;
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+        , ns_args_ptr->nameservice_host
+        , ns_args_ptr->nameservice_port
+        , ns_args_ptr->nameservice_context);
+
+    FileManagerClient fm_client(
+            CorbaContainer::get_instance()->getNS());
+    fm_client.upload("./test-file.pdf","application/pdf",6);
 }
