@@ -47,5 +47,18 @@ BOOST_AUTO_TEST_CASE( test_fmc_simple )
 
     FileManagerClient fm_client(
             CorbaContainer::get_instance()->getNS());
-    fm_client.upload("./test-file.pdf","application/pdf",6);
+    unsigned long long file_id
+        = fm_client.upload("./test-file.pdf","application/pdf",6);
+
+    std::vector<char> out_buffer;
+    fm_client.download(file_id, out_buffer);
+    //write to file
+    std::string test_file_name("./test-file2.pdf");
+    std::ofstream test_file;
+    test_file.open (test_file_name.c_str()
+            , std::ios::out | std::ios::trunc | std::ios::binary);
+    if(test_file.is_open())
+        {
+            test_file.write(&out_buffer[0], out_buffer.size());
+        }
 }
