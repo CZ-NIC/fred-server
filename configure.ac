@@ -18,7 +18,7 @@ DX_PDF_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN(fred-server, doxy.conf, [doc])
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([color-tests parallel-tests])
 m4_pattern_allow([^AC_MSG_])
 
 AC_DEFUN([AS_AC_TEST_CORBA_PORTS],
@@ -42,6 +42,7 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 PKG_PROG_PKG_CONFIG
+
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_exit])
