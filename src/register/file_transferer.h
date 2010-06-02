@@ -41,7 +41,12 @@ public:
                                       const unsigned int &_file_type) = 0;
 
     virtual void download(const unsigned long long _id,
-                  std::vector<char> &_buffer) = 0;
+                  std::vector<char> &_out_buffer) = 0;
+
+    virtual unsigned long long upload(std::vector<char> &_in_buffer
+                              , const std::string &_name
+                              , const std::string &_mime_type
+                              , const unsigned int &_file_type) = 0;
 
 };
 

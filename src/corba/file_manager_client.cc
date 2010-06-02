@@ -76,8 +76,8 @@ unsigned long long FileManagerClient::upload(const std::string &_name,
 }
 
 
-void FileManagerClient::download(const unsigned long long _id,
-              std::vector<char> &_out_buffer)
+void FileManagerClient::download(const unsigned long long _id
+        , std::vector<char> &_out_buffer)
 {
     try
     {
@@ -88,6 +88,11 @@ void FileManagerClient::download(const unsigned long long _id,
         ccReg::FileDownload_var downloader = fmanager_->load(_id);
         ccReg::BinaryData_var file_data(new ccReg::BinaryData);
         file_data = downloader->download(info->size);
+
+        if(file_data->length() !=  info->size)
+            throw std::runtime_error(
+                    "FileManagerClient::download error: size check failed");
+
         //there is some server side GC in case of failure
         downloader->finalize_download();
         //copy data
@@ -104,6 +109,41 @@ void FileManagerClient::download(const unsigned long long _id,
         throw std::runtime_error("File download failed: unknown error");
     }
 }//FileManagerClient::download
+
+unsigned long long FileManagerClient::upload(std::vector<char> &_in_buffer
+                                            , const std::string &_name
+                                            , const std::string &_mime_type
+                                            , const unsigned int &_file_type)
+{
+    try
+    {
+        _resolve();
+        /* contact file manager and get upload object */
+        std::string label = get_basename(_name);
+        ccReg::FileUpload_var uploader = fmanager_->save(label.c_str()
+                                , _mime_type.c_str()
+                                , static_cast<CORBA::Short>(_file_type));
+
+        std::size_t read_size = _in_buffer.size();
+        CORBA::Octet *buffer = ccReg::BinaryData::allocbuf(read_size);
+        for (int i = 0; i < read_size; ++i)
+        {
+            buffer[i] = _in_buffer[i];
+        }
+        ccReg::BinaryData data(read_size, read_size, buffer, 1);
+        uploader->upload(data);
+        return uploader->finalize_upload();
+    }
+    catch (std::exception &ex)
+    {
+        throw std::runtime_error(str(boost::format("File upload failed: %1%")
+                                     % ex.what()));
+    }
+    catch (...)
+    {
+        throw std::runtime_error("File upload failed: unknown error");
+    }
+}
 
 
 void FileManagerClient::_resolve() {
