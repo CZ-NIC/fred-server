@@ -175,15 +175,13 @@ Value<Database::ID>& RegistrarImpl::addGroupId() {
             "where member_from <= CURRENT_DATE "
             "and (member_until >= CURRENT_DATE or member_until is null) )";
 
-    const char* subselect_group = "(select id , short_name from registrar_group)";
-
     addJoin(new Join(
       Column("id", joinTable("registrar")),
       SQL_OP_EQ,
       Column("rid", joinTable(subselect_regingroup))
     ));
 
-    Value<std::string> *tmp = new Value<Database::ID>(Column("gid", joinTable(subselect_regingroup)));
+    Value<Database::ID> *tmp = new Value<Database::ID>(Column("gid", joinTable(subselect_regingroup)));
     tmp->setName("GroupId");
     add(tmp);
     return *tmp;
