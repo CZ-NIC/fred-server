@@ -18,7 +18,7 @@ noinst_PROGRAMS = test_logd test-model test-registrar-certification-group \
 					test-file-manager-client
 					
 #tests
-TESTS = $(noinst_PROGRAMS)
+#TESTS = $(noinst_PROGRAMS)
 
 test_logd_SOURCES =  test_logd.cc \
                      $(top_srcdir)/src/register/request.h \
