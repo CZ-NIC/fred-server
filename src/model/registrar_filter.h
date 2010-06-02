@@ -35,7 +35,7 @@ public:
   virtual Value<std::string>& addEmail() = 0;
   virtual Value<std::string>& addUrl() = 0;
   virtual Value<std::string>& addZoneFqdn() = 0;
-  virtual Value<std::string>& addGroupName() = 0;
+  virtual Value<Database::ID>& addGroupId() = 0;
 
 
   friend class boost::serialization::access;
@@ -70,7 +70,7 @@ public:
   virtual Value<std::string>& addEmail();
   virtual Value<std::string>& addUrl();
   virtual Value<std::string>& addZoneFqdn();
-  virtual Value<std::string>& addGroupName();
+  virtual Value<Database::ID>& addGroupId();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

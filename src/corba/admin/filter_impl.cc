@@ -358,7 +358,7 @@ COMPOUND_CLASS(Registrar, Registrar, Compound,
     FILTER_ADD(Str, addEmail);
     FILTER_ADD(Str, addUrl);
     FILTER_ADD(Str, addZoneFqdn);
-    FILTER_ADD(Str, addGroupName);
+    FILTER_ADD(Id, addGroupId);
 );
 
 

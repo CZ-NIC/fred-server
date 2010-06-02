@@ -166,7 +166,7 @@ Value<std::string>& RegistrarImpl::addZoneFqdn() {
     return *tmp;
 }
 
-Value<std::string>& RegistrarImpl::addGroupName() {
+Value<std::string>& RegistrarImpl::addGroupId() {
     joinRegistrarTable();
     this->active = true;
 
@@ -183,14 +183,8 @@ Value<std::string>& RegistrarImpl::addGroupName() {
       Column("rid", joinTable(subselect_regingroup))
     ));
 
-    addJoin(new Join(
-      Column("gid", joinTable(subselect_regingroup)),
-      SQL_OP_EQ,
-      Column("id", joinTable(subselect_group))
-    ));
-
-    Value<std::string> *tmp = new Value<std::string>(Column("short_name", joinTable(subselect_group)));
-    tmp->setName("GroupName");
+    Value<std::string> *tmp = new Value<Database::ID>(Column("gid", joinTable(subselect_regingroup)));
+    tmp->setName("GroupId");
     add(tmp);
     return *tmp;
 }
