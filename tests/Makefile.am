@@ -109,9 +109,10 @@ test_file_manager_client_LDFLAGS = \
                      $(BOOST_THREAD_LIB)
 
 test_file_manager_client_LDADD = \
+                     $(top_builddir)/src/corba/libcorba.a \
                      $(top_builddir)/util/log/liblog.a \
                      $(top_builddir)/util/conf/libconf.a \
-                     $(top_builddir)/util/types/libtypes.a \
-                     $(top_builddir)/src/corba/libcorba.a
+                     $(top_builddir)/util/types/libtypes.a
+                     
 
 EXTRA_DIST = test-file.pdf
