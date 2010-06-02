@@ -41,7 +41,8 @@ public:
                                       const unsigned int &_file_type) = 0;
 
     virtual void download(const unsigned long long _id,
-                          const std::string &_path) = 0;
+                  std::vector<char> &_buffer) = 0;
+
 };
 
 typedef std::auto_ptr<Transferer> TransfererPtr;

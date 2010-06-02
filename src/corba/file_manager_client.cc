@@ -77,12 +77,6 @@ unsigned long long FileManagerClient::upload(const std::string &_name,
 
 
 void FileManagerClient::download(const unsigned long long _id,
-                                 const std::string &_path)
-{
-    throw std::runtime_error("not implemented");
-}
-
-void FileManagerClient::download(const unsigned long long _id,
               std::vector<char> &_out_buffer)
 {
     try

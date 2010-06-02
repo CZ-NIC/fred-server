@@ -214,9 +214,9 @@ public:
     }
 
     void download(const unsigned long long _id,
-                  const std::string &_path)
+                  std::vector<char> &_buffer)
     {
-        transferer_->download(_id, _path);
+        transferer_->download(_id, _buffer);
     }
 
 };
