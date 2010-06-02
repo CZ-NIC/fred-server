@@ -166,7 +166,7 @@ Value<std::string>& RegistrarImpl::addZoneFqdn() {
     return *tmp;
 }
 
-Value<std::string>& RegistrarImpl::addGroupId() {
+Value<Database::ID>& RegistrarImpl::addGroupId() {
     joinRegistrarTable();
     this->active = true;
 
