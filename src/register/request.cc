@@ -468,6 +468,11 @@ public:
     explicit logd_auto_db() : Connection(Database::Manager::acquire()), tx(0) {
         // set constraint exclusion (needed for faster queries on partitioned tables)
         try {
+            /* In postgres version older than 8.3 constraint_exclusion=on posed a risk - it could even 
+             * lead to incorrect results (cached execution plans)
+             * But on new versions it can only mean a decrease of performance by few % if not used properly. 
+             * It was discussed that this option would be on by default 
+             */
             exec("set constraint_exclusion=on");
         } catch (Database::Exception &ex) {
             logger_error(boost::format("couldn't set constraint exclusion : %2%") % ex.what());
