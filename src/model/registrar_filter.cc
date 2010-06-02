@@ -166,6 +166,35 @@ Value<std::string>& RegistrarImpl::addZoneFqdn() {
     return *tmp;
 }
 
+Value<std::string>& RegistrarImpl::addGroupName() {
+    joinRegistrarTable();
+    this->active = true;
+
+    const char* subselect_regingroup = "(select distinct rgm.registrar_id as rid, rg.id as gid "
+            "from registrar_group_map rgm join registrar_group rg on rgm.registrar_group_id = rg.id "
+            "where member_from <= CURRENT_DATE "
+            "and (member_until >= CURRENT_DATE or member_until is null) )";
+
+    const char* subselect_group = "(select id , short_name from registrar_group)";
+
+    addJoin(new Join(
+      Column("id", joinTable("registrar")),
+      SQL_OP_EQ,
+      Column("rid", joinTable(subselect_regingroup))
+    ));
+
+    addJoin(new Join(
+      Column("gid", joinTable(subselect_regingroup)),
+      SQL_OP_EQ,
+      Column("id", joinTable(subselect_group))
+    ));
+
+    Value<std::string> *tmp = new Value<std::string>(Column("short_name", joinTable(subselect_group)));
+    tmp->setName("GroupName");
+    add(tmp);
+    return *tmp;
+}
+
 
 }
 }
