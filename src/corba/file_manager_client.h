@@ -18,15 +18,14 @@ public:
                               const std::string &_mime_type,
                               const unsigned int &_file_type);
 
-    unsigned long long upload(std::vector<char> &_in_buffer,
-                              const std::string &_name,
-                              const std::string &_mime_type,
-                              const unsigned int &_file_type);
 
-    void download(const unsigned long long _id,
-                  std::vector<char> &_buffer);
+    void download(const unsigned long long _id
+            , std::vector<char> &_out_buffer);
 
-
+    unsigned long long upload(std::vector<char> &_in_buffer
+                              , const std::string &_name
+                              , const std::string &_mime_type
+                              , const unsigned int &_file_type);
 
 private:
     NameService            *ns_;
@@ -36,7 +35,6 @@ private:
 
     void _resolve();
 };
-
 
 #endif /*FILE_MANAGER_CLIENT_H_*/
 
