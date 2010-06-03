@@ -202,10 +202,6 @@ void HPMail::upload( const MailBatch& mb)
 /// in loop save files for upload to postservice
 void HPMail::save_files_for_upload( const MailBatch& mb)
 {
-    if(compressed_file_for_upload_)
-        throw std::runtime_error("HPMail::save_files_for_upload error: "
-                "already compresssed, call upload");
-
 
     //save letter data to disk like: letter_<number>
     for (MailBatch::const_iterator mail_file = mb.begin()
