@@ -46,6 +46,7 @@ public:
   Database::ID i_CreateSession(Languages lang, const char *name);
   bool i_CloseSession(Database::ID id);
   Database::Result i_GetServiceActions(RequestServiceType service);
+  Database::Result i_GetServices();
 
  // for migration tool (util/logd_migration)
   void insert_props_pub(DateTime entry_time, RequestServiceType entry_service, bool monitoring, Database::ID entry_id, const Register::Logger::RequestProperties& props) {

@@ -36,6 +36,7 @@ public:
   // ccReg::TID new_dummy(const char *name, const char *clTRID);
   CORBA::Boolean CloseSession(ccReg::TID id);
   ccReg::RequestActionList *GetServiceActions(ccReg::RequestServiceType service);
+  ccReg::RequestServiceList* GetServices();
   Registry::PageTable_ptr createPageTable(const char *session_id);
   void deletePageTable(const char *session_id);
 

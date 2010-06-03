@@ -70,6 +70,21 @@ ccReg::RequestActionList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceTy
     return ret._retn();
 }
 
+ccReg::RequestServiceList* ccReg_Log_i::GetServices()
+{
+    Database::Result data = back->i_GetServices();
+    unsigned int size = data.size();
+
+    ccReg::RequestServiceList_var ret = new ccReg::RequestServiceList();
+    ret->length(size);
+    for (unsigned int i = 0; i < size; ++i) {
+        ret[i].id = static_cast<ccReg::RequestActionType>(data[i][0]);
+        ret[i].name = CORBA::string_dup(static_cast<std::string>(data[i][1]).c_str());
+    }
+
+    return ret._retn();
+}
+
 Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
 {    
     Registry::PageTable_ptr ret;

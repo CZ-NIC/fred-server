@@ -511,6 +511,16 @@ Result ManagerImpl::i_GetServiceActions(RequestServiceType service)
 	
 }
 
+Database::Result ManagerImpl::i_GetServices()
+{
+    logd_ctx_init ctx;
+    TRACE("[CALL] Register::Logger::ManagerImpl::i_GetServices()");
+
+    Database::Connection conn = Database::Manager::acquire();
+    std::string query = "SELECT id, name FROM service";
+    return conn.exec(query);
+}
+
 // ManagerImpl ctor: connect to the database and fill property_names map
 ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
       throw (DB_CONNECT_FAILED)
