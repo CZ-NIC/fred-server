@@ -102,11 +102,6 @@ HPMail* HPMail::get()
     return ret;
 }
 
-
-/*
-/// upload batch of mail files to postservice
-void upload_batch( MailBatch mb //mail files data
-*/
 ///postservice interface login, creating batch job and PHP session id
 void HPMail::login(const std::string& loginame //postservice account name
     , const std::string& password //postservice account password
@@ -174,47 +169,105 @@ void HPMail::login(const std::string& loginame //postservice account name
 }
 
 /// upload batch of mail files to postservice
+/// optionally no args required
+/// then use save_file_for_upload and optionally archiver_command before login
 void HPMail::upload( const MailBatch& mb)
 {
     if(phpsessid_.empty())
         throw std::runtime_error("HPMail::upload error: not logged in");
 
-    typedef std::vector<std::string> LetterFileNames;
-    LetterFileNames letter_file_names;//list file for 7z
+    save_files_for_upload(mb);//if mb empty may have no effect
+
+    if(!saved_file_for_upload_)
+        throw std::runtime_error("HPMail::upload error: "
+                "no files saved for upload by this interface");
+
+    if(!compressed_file_for_upload_)
+        archiver_command();
+
+    MailBatch compressed_mail_batch;
+    load_compressed_mail_batch(compressed_mail_batch);
+    if(compressed_mail_batch.size() < 1)
+        throw std::runtime_error(
+                "HPMail::upload error: compressed_mail_batch.size() < 1");
+    save_compressed_mail_batch_for_test(compressed_mail_batch);
+
+    upload_of_batch(compressed_mail_batch);
+
+    end_of_batch(compressed_mail_batch);//ack form for postservice
+    instance_ptr.reset(0);//end of session
+
+}//HPMail::upload
+
+/// in loop save files for upload to postservice
+void HPMail::save_files_for_upload( const MailBatch& mb)
+{
+    if(compressed_file_for_upload_)
+        throw std::runtime_error("HPMail::save_files_for_upload error: "
+                "already compresssed, call upload");
+
 
     //save letter data to disk like: letter_<number>
-    for (unsigned i=0; i < mb.size(); ++i)
-    {
-        std::string letter_file_name(
-                config_["hp_upload_letter_file_prefix"]
-                +boost::lexical_cast<std::string>(i));
-        std::ofstream letter_file;
-        letter_file.open ((config_["mb_proc_tmp_dir"]+letter_file_name).c_str()
-                , std::ios::out | std::ios::trunc | std::ios::binary);
-        if(letter_file.is_open())
-            {
-                letter_file.write(&mb[i][0], mb[i].size());
-                letter_file_names.push_back(letter_file_name);
-            }
-    }//for mb files
+    for (MailBatch::const_iterator mail_file = mb.begin()
+            ; mail_file != mb.end(); ++mail_file)
+                save_file_for_upload( *mail_file);
+}//HPMail::save_files_for_upload
 
-    //save list of letter files
+/// save one file for upload to postservice
+void HPMail::save_file_for_upload( const MailFile& mf)
+{
+    if(compressed_file_for_upload_)
+        throw std::runtime_error("HPMail::save_file_for_upload error: "
+                "already compresssed, call upload");
+
+    //save letter data to disk like: letter_<number>
+    std::string letter_file_name(
+            config_["hp_upload_letter_file_prefix"]
+            +boost::lexical_cast<std::string>(
+                    letter_file_number_++)); //updating class file counter
+    std::ofstream letter_file;
+    letter_file.open ((config_["mb_proc_tmp_dir"]+letter_file_name).c_str()
+            , std::ios::out | std::ios::trunc | std::ios::binary);
+    if(letter_file.is_open())
+    {
+        letter_file.write(&mf[0], mf.size());
+        letter_file_names_.push_back(letter_file_name);
+        saved_file_for_upload_ = true;//we have some file
+    }
+}//HPMail::save_file_for_upload
+
+///save list of files for archiver
+void HPMail::save_list_for_archiver()
+{
     std::string file_list_with_prefix(config_["hp_upload_archiver_input_list"]);
     std::string file_list_name( (file_list_with_prefix.substr(1,file_list_with_prefix.size() - 1 )).c_str());
     std::ofstream list_file;
     list_file.open ((config_["mb_proc_tmp_dir"]+file_list_name).c_str(), std::ios::out | std::ios::trunc);
     if(list_file.is_open())
     {
-        for(LetterFileNames::iterator i = letter_file_names.begin()
-                ; i != letter_file_names.end(); ++i )
+        for(LetterFileNames::iterator i = letter_file_names_.begin()
+                ; i != letter_file_names_.end(); ++i )
         {
             list_file << *i << "\n";
         }
     }
     list_file.close();//flush
+}//HPMail::save_list_for_archiver
 
-    //7z command
-    std::string command_for_7z (
+///compress saved letter files for upload to 5m volumes archive
+void HPMail::archiver_command()
+{
+    if(!saved_file_for_upload_)
+        throw std::runtime_error("HPMail::archiver_command error: "
+                "no files saved for upload by this interface");
+
+    if(compressed_file_for_upload_)
+        throw std::runtime_error("HPMail::archiver_command error: "
+                "already compresssed, call upload");
+
+    save_list_for_archiver();
+
+    std::string command_for_arch (
             "cd " + config_["mb_proc_tmp_dir"] //cd to set tmpdir
             //compress letters to archive volume files
             //like: <hp_batch_number>.7z.001, ...002 ...
@@ -226,19 +279,23 @@ void HPMail::upload( const MailBatch& mb)
             +config_["hp_upload_archiver_additional_options"]);
 
     int system_command_retcode =
-    system(command_for_7z.c_str());//execute
+    system(command_for_arch.c_str());//execute
 
     if(system_command_retcode != 0)
         throw std::runtime_error(
-                "HPMail::upload error: system command: "
-                + command_for_7z
+                "HPMail::archiver_command error: system command: "
+                + command_for_arch
                 + "failed with retcode: "
                 + boost::lexical_cast<std::string>(system_command_retcode));
 
-    //load 7z compressed mail batch
-    MailBatch compressed_mail_batch;
+    compressed_file_for_upload_ = true;//ok we have some
 
-    for(unsigned i = 1; i < std::numeric_limits<unsigned>::max(); ++i)
+}//HPMail::archiver_command
+
+///load compressed mail batch from disk to memory
+void HPMail::load_compressed_mail_batch(MailBatch& compressed_mail_batch)
+{
+    for(std::size_t i = 1; i < std::numeric_limits<std::size_t>::max(); ++i)
     {
         std::stringstream order_number;
         if(i < 1000)
@@ -246,7 +303,9 @@ void HPMail::upload( const MailBatch& mb)
         else
             order_number << i; //TODO: check behaviour over 1000 volumes
         std::string compressed_mail_volume_name(
-                config_["mb_proc_tmp_dir"]+hp_batch_number_+".7z."+order_number.str());
+                config_["mb_proc_tmp_dir"]+hp_batch_number_
+                +config_["hp_upload_archiv_filename_suffix"]
+                +"."+order_number.str());
 
         std::ifstream compressed_mail_volume_stream;
         compressed_mail_volume_stream.open (compressed_mail_volume_name.c_str()
@@ -272,27 +331,31 @@ void HPMail::upload( const MailBatch& mb)
             break;//for i loop
     }//for i
 
-    if(compressed_mail_batch.size() < 1)
-        throw std::runtime_error(
-                "HPMail::upload error: compressed_mail_batch.size() < 1");
+}//HPMail::load_compressed_mail_batch
 
-/*
-    //save compressed mail batch for test
+void HPMail::save_compressed_mail_batch_for_test(
+        MailBatch& compressed_mail_batch)
+{
+    //save compressed mail batch for comparsion
     for (unsigned i=0; i < compressed_mail_batch.size(); ++i)
     {
         std::string test_file_name(
-                "test_7z_"
+                "test_volume_"
                 +boost::lexical_cast<std::string>(i));
         std::ofstream test_file;
         test_file.open ((config_["mb_proc_tmp_dir"]+test_file_name).c_str()
                 , std::ios::out | std::ios::binary);
         if(test_file.is_open())
             {
-                test_file.write(&compressed_mail_batch[i][0], compressed_mail_batch[i].size());
+                test_file.write(&compressed_mail_batch[i][0]
+                    , compressed_mail_batch[i].size());
             }
-    }//for mb files
-*/
+    }//for compressed_mail_batch files
+}//HPMail::save_compressed_mail_batch_for_test
 
+///upload of compressed mail batch to postservice server
+void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
+{
     //upload to postservice
     for(std::size_t i = compressed_mail_batch.size(); i > 0; --i)
     {
@@ -344,7 +407,7 @@ void HPMail::upload( const MailBatch& mb)
         if (res > 0)
         {
             throw std::runtime_error(
-                    std::string("HPMail::upload error: form post command failed: ")
+                    std::string("HPMail::upload_of_batch error: form post command failed: ")
                         + curl_easy_strerror(res));
         }
 
@@ -362,16 +425,20 @@ void HPMail::upload( const MailBatch& mb)
 
         //result parsing & detecting errors
         if ((StringBuffer::get()->getValueByKey("OvereniCrc ", 2)).compare("KO") == 0)
-                    throw std::runtime_error(std::string("HPMail::upload error: crc check failed"));
+                    throw std::runtime_error(std::string("HPMail::upload_of_batch error: crc check failed"));
         if ((StringBuffer::get()->getValueByKey("zaladr ", 2)).compare("KO") == 0)
-            throw std::runtime_error(std::string("HPMail::upload error: mkdir failed"));
+            throw std::runtime_error(std::string("HPMail::upload_of_batch error: mkdir failed"));
         //will never happen
         if ((StringBuffer::get()->getValueByKey("UDRZBA", 2)).compare("on") == 0)
-            throw std::runtime_error(std::string("HPMail::upload error: server out of order"));
+            throw std::runtime_error(std::string("HPMail::upload_of_batch error: server out of order"));
 
     }//for compressed_mail_batch
 
+}//HPMail::upload_of_batch
 
+///signal end of batch to postservice server
+void HPMail::end_of_batch(MailBatch& compressed_mail_batch)
+{
     //end of batch form
     struct curl_httppost *formpost_konec=NULL;
     CFormSharedPtr  form_konec_guard = CurlFormFreePtr(&formpost_konec);
@@ -420,9 +487,4 @@ void HPMail::upload( const MailBatch& mb)
     fwrite (formpost_reply.str().c_str() , 1
             , formpost_reply.str().size() , curl_log_file_guard_.get() );
 
-    instance_ptr.reset(0);//end of session
-
-}//HPMail::upload
-
-
-
+}//HPMail::end_of_batch
