@@ -63,7 +63,9 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_upload_archiv_filename_suffix",".7z")//volume number is appended after archiv filename suffix .7z for now
     ("hp_useragent_id","CommandLine klient HP")//useragent id hardcoded in orig client
     ("hp_cleanup_last_arch_volumes","rm -f *.7z*") // delete last archive volumes
+    ("hp_cleanup_last_letter_files","rm -f letter_*") // delete last letter files
     ("hp_upload_letter_file_prefix","letter_")//for saved letter file to archive
+    ("hp_upload_archiv_filename_body","compressed_mail")//compressed mail file name body
     ;
 
 ///instance set config and return if ok
@@ -215,6 +217,23 @@ void HPMail::save_file_for_upload( const MailFile& mf)
     if(compressed_file_for_upload_)
         throw std::runtime_error("HPMail::save_file_for_upload error: "
                 "already compresssed, call upload");
+    if(!saved_file_for_upload_)
+    {//cleanup for the first time
+        std::string command_cleanup("cd " + config_["mb_proc_tmp_dir"]
+               + " && "+config_["hp_cleanup_last_arch_volumes"]
+               + " && "+config_["hp_cleanup_last_letter_files"]
+                );
+
+        int system_command_retcode =
+         system(command_cleanup.c_str());//execute
+
+         if(system_command_retcode != 0)
+             throw std::runtime_error(
+                     "HPMail::save_file_for_upload error: system command: "
+                     + command_cleanup
+                     + "failed with retcode: "
+                     + boost::lexical_cast<std::string>(system_command_retcode));
+    }
 
     //save letter data to disk like: letter_<number>
     std::string letter_file_name(
@@ -270,7 +289,8 @@ void HPMail::archiver_command()
             + " && "+config_["hp_cleanup_last_arch_volumes"]+" "
             + " && "+config_["hp_upload_archiver_filename"]+" "
             + config_["hp_upload_archiver_command_option"] + " "
-            + "compressed_mail"+config_["hp_upload_archiv_filename_suffix"]
+            + config_["hp_upload_archiv_filename_body"]
+            +config_["hp_upload_archiv_filename_suffix"]
             +" " +config_["hp_upload_archiver_input_list"]+" "
             +config_["hp_upload_archiver_additional_options"]);
 
@@ -299,7 +319,8 @@ void HPMail::load_compressed_mail_batch(MailBatch& compressed_mail_batch)
         else
             order_number << i; //TODO: check behaviour over 1000 volumes
         std::string compressed_mail_volume_name(
-                config_["mb_proc_tmp_dir"]+"compressed_mail"
+                config_["mb_proc_tmp_dir"]
+                +config_["hp_upload_archiv_filename_body"]
                 +config_["hp_upload_archiv_filename_suffix"]
                 +"."+order_number.str());
 

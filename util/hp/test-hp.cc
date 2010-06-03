@@ -36,6 +36,7 @@
 #include <sstream>
 #include <vector>
 
+#include "random_data_generator.h"
 
 
 
@@ -50,11 +51,11 @@ int main ( int argc, char* argv[])
 
         //HPMail instance configuration and initialization
         HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
-                ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed files
+                ("mb_proc_tmp_dir","/data/img/tmpdir/") //empty temp dir for compressed files
                 ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
-        //prepare large data
-        MailBatch mb;
+
+/*        MailBatch mb;
         mb.push_back(MailFile(1,49));
         mb.push_back(MailFile(2,50));
         mb.push_back(MailFile(3,51));
@@ -65,6 +66,15 @@ int main ( int argc, char* argv[])
 
         MailFile mf2 (5,53);
         HPMail::get()->save_file_for_upload(mf2);
+*/
+        //prepare large data
+        RandomDataGenerator rdg;
+        for(unsigned i = 0; i < 3000; ++i)
+        {
+            std::string tmp_str(rdg.xstring(1024*512));
+            MailFile tmp_mf (tmp_str.begin(), tmp_str.end());
+            HPMail::get()->save_file_for_upload(tmp_mf);
+        }
 
         //no more data optional call of archiver ahead
         HPMail::get()->archiver_command();
@@ -73,7 +83,7 @@ int main ( int argc, char* argv[])
         HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
         HPMail::get()->upload();
 
-
+/*
         //1st
         HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
                 ("mb_proc_tmp_dir","./tmpdir0/") //empty temp dir for compressed files
@@ -98,7 +108,7 @@ int main ( int argc, char* argv[])
         //mail batch prepared, upload to postservice
         HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
         HPMail::get()->upload(mb1);
-
+*/
 
 
     }//try

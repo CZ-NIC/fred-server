@@ -117,7 +117,13 @@ struct FileClose
     {
         try
         {
-            if(f) fclose(f);
+            if(f)
+            {
+                std::string msg("\n\n FileClose: deleter functor for FILE calling fclose \n\n");
+                fwrite (msg.c_str(), 1, msg.size(), f);
+                fflush(f);
+                fclose(f);
+            }
         }
         catch(...){}
     }
