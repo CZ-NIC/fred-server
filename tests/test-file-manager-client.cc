@@ -34,8 +34,17 @@ boost::assign::list_of
 
 #include "file_manager_client.h"
 
+
 BOOST_AUTO_TEST_CASE( test_fmc_simple )
 {
+
+    //test data
+    RandomDataGenerator rdg(0);
+
+    std::string test_data_str = rdg.xstring(1024*1024);
+    std::vector<char> in_test_data_vect(test_data_str.begin(), test_data_str.end());
+
+
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
     HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
@@ -48,17 +57,14 @@ BOOST_AUTO_TEST_CASE( test_fmc_simple )
     FileManagerClient fm_client(
             CorbaContainer::get_instance()->getNS());
     unsigned long long file_id
-        = fm_client.upload("./test-file.pdf","application/pdf",6);
+        //= fm_client.upload("./test-file.pdf","application/pdf",6);
+        = fm_client.upload(in_test_data_vect,"./test-file.pdf","application/pdf",6);
 
     std::vector<char> out_buffer;
     fm_client.download(file_id, out_buffer);
-    //write to file
-    std::string test_file_name("./test-file2.pdf");
-    std::ofstream test_file;
-    test_file.open (test_file_name.c_str()
-            , std::ios::out | std::ios::trunc | std::ios::binary);
-    if(test_file.is_open())
-        {
-            test_file.write(&out_buffer[0], out_buffer.size());
-        }
+
+    std::string out_test_data_str (out_buffer.begin(), out_buffer.end());
+
+    BOOST_REQUIRE_EQUAL( test_data_str.compare(out_test_data_str) , 0);
+
 }
