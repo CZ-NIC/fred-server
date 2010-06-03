@@ -270,7 +270,7 @@ void HPMail::archiver_command()
             + " && "+config_["hp_cleanup_last_arch_volumes"]+" "
             + " && "+config_["hp_upload_archiver_filename"]+" "
             + config_["hp_upload_archiver_command_option"] + " "
-            + hp_batch_number_+config_["hp_upload_archiv_filename_suffix"]
+            + "compressed_mail"+config_["hp_upload_archiv_filename_suffix"]
             +" " +config_["hp_upload_archiver_input_list"]+" "
             +config_["hp_upload_archiver_additional_options"]);
 
@@ -299,7 +299,7 @@ void HPMail::load_compressed_mail_batch(MailBatch& compressed_mail_batch)
         else
             order_number << i; //TODO: check behaviour over 1000 volumes
         std::string compressed_mail_volume_name(
-                config_["mb_proc_tmp_dir"]+hp_batch_number_
+                config_["mb_proc_tmp_dir"]+"compressed_mail"
                 +config_["hp_upload_archiv_filename_suffix"]
                 +"."+order_number.str());
 
