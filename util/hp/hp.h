@@ -143,6 +143,9 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         , const std::string& curlopt_useragent //header "CommandLine klient HP"
         , long curlopt_verbose // 0 / 1
         , FILE* curl_log_file = 0 //curl log file
+        , long curlopt_timeout = 0 //default is not set, maximum time in seconds that you allow the libcurl transfer operation to take
+        , long curlopt_connect_timeout = 0 //default is not set, maximum time in seconds that you allow the connection to the server to take
+        , long curlopt_maxconnect = 0 //default is not set, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
         );
 
 ///curl_httppost form free

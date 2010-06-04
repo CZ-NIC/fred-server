@@ -118,6 +118,10 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         , const std::string& curlopt_useragent //header "CommandLine klient HP"
         , long curlopt_verbose // 0 / 1
         , FILE* curl_log_file //curl log file
+        , long curlopt_timeout //default is not set, maximum time in seconds that you allow the libcurl transfer operation to take
+        , long curlopt_connect_timeout //default is not set, maximum time in seconds that you allow the connection to the server to take
+        , long curlopt_maxconnect //default is not set, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+
         )
 {
     CURLSharedPtr  curl_easy_guard = CurlEasyCleanupPtr(curl_easy_init());
@@ -131,8 +135,18 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         if(curl_log_file)//use stderr redirected to logfile if not null
             curl_easy_setopt(curl, CURLOPT_STDERR , curl_log_file);
 
+        if(curlopt_timeout)//curl operation tout
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT , curlopt_timeout);
+        if(curlopt_connect_timeout)//curl connection tout
+            curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT , curlopt_connect_timeout);
+        if(curlopt_maxconnect)//curl max connection
+            curl_easy_setopt(curl, CURLOPT_MAXCONNECTS , curlopt_maxconnect);
+
+
         curl_easy_setopt(curl, CURLOPT_HEADER, 1);//out header
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);//use location
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);//shut off the built-in progress meter completely
+
 
         //CURLOPT_RETURNTRANSFER
         StringBuffer::set();//reset recv buffer
