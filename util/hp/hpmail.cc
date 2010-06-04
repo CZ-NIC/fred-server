@@ -66,9 +66,9 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_cleanup_last_letter_files","rm -f letter_*") // delete last letter files
     ("hp_upload_letter_file_prefix","letter_")//for saved letter file to archive
     ("hp_upload_archiv_filename_body","compressed_mail")//compressed mail file name body
-    ("hp_upload_curlopt_timeout","1800") //maximum time in seconds that you allow the libcurl transfer operation to take
-    ("hp_upload_curlopt_connect_timeout","1800") //maximum time in seconds that you allow the connection to the server to take
-    ("hp_upload_curlopt_maxconnect","20") //maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+    ("hp_upload_curlopt_timeout","3600") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
+    ("hp_upload_curlopt_connect_timeout","3600") //orig 1800, maximum time in seconds that you allow the connection to the server to take
+    ("hp_upload_curlopt_maxconnect","40") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
     ;
 
 ///instance set config and return if ok
@@ -428,7 +428,7 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
             , boost::lexical_cast<long>(config_["hp_upload_curlopt_connect_timeout"])
             //maximum amount of simultaneously open connections that libcurl may cache in this easy handle
             , boost::lexical_cast<long>(config_["hp_upload_curlopt_maxconnect"])
-                    );
+            );
 
         if (res > 0)
         {
@@ -492,6 +492,12 @@ void HPMail::end_of_batch(MailBatch& compressed_mail_batch)
                 , config_["hp_useragent_id"] //useragent id
                 , 1 //verbose
                 , curl_log_file_guard_.get()//curl logfile
+                //maximum time in seconds that you allow the libcurl transfer operation to take
+                , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
+                //maximum time in seconds that you allow the connection to the server to take
+                , boost::lexical_cast<long>(config_["hp_upload_curlopt_connect_timeout"])
+                //maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+                , boost::lexical_cast<long>(config_["hp_upload_curlopt_maxconnect"])
                 );
 
     if (res > 0)

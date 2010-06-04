@@ -69,7 +69,7 @@ int main ( int argc, char* argv[])
 */
         //prepare large data
         RandomDataGenerator rdg;
-        for(unsigned i = 0; i < 100; ++i)
+        for(unsigned i = 0; i < 200; ++i)
         {
             std::string tmp_str(rdg.xstring(1024*512));
             MailFile tmp_mf (tmp_str.begin(), tmp_str.end());
