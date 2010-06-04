@@ -92,5 +92,9 @@ public:
     void save_file_for_upload( const MailFile& mf);
     void archiver_command();
 
+    static void init_connection();
+
 };//class HPMail
+
+
 #endif // HPMAIL_H_

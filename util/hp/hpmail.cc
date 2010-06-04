@@ -523,3 +523,16 @@ void HPMail::end_of_batch(MailBatch& compressed_mail_batch)
             , formpost_reply.str().size() , curl_log_file_guard_.get() );
 
 }//HPMail::end_of_batch
+
+void HPMail::init_connection()
+{
+        curl_global_init(CURL_GLOBAL_ALL);//once per process call
+
+        HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
+                ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed files
+                ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
+
+        HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
+ 
+}
+
