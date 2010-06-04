@@ -87,7 +87,7 @@ struct CurlEasyCleanup
         {
             if(c)
             {
-                std::cout << "CURLSharedPtr: functor curl_easy_cleanup: " << c <<  std::endl;
+                //std::cout << "CURLSharedPtr: functor curl_easy_cleanup: " << c <<  std::endl;
                 curl_easy_cleanup(c);
             }
         }
@@ -124,7 +124,7 @@ struct FileClose
         {
             if((f != 0) && (f != stderr))
             {
-                std::cout << "FileClose: deleter functor for FILE calling fclose" << std::endl;
+                //std::cout << "FileClose: deleter functor for FILE calling fclose" << std::endl;
                 std::string msg("\n\n FileClose: deleter functor for FILE calling fclose \n\n");
                 fwrite (msg.c_str(), 1, msg.size(), f);
                 fflush(f);
@@ -180,7 +180,7 @@ struct CFormFree
         {
             if(f && *f)
                 {
-                    std::cout << "CFormFree: functor curl_formfree: " << *f <<  std::endl;
+                    //std::cout << "CFormFree: functor curl_formfree: " << *f <<  std::endl;
                     curl_formfree(*f);
                 }
         }

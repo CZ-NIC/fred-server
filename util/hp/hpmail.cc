@@ -66,10 +66,10 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_cleanup_last_letter_files","rm -f letter_*") // delete last letter files
     ("hp_upload_letter_file_prefix","letter_")//for saved letter file to archive
     ("hp_upload_archiv_filename_body","compressed_mail")//compressed mail file name body
-    ("hp_upload_curlopt_timeout","3600") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
-    ("hp_upload_curlopt_connect_timeout","3600") //orig 1800, maximum time in seconds that you allow the connection to the server to take
-    ("hp_upload_curlopt_maxconnect","40") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
-    ("hp_upload_curlopt_stderr_log","curl_stderr.log")//if empty curl_formfree free() invalid pointer, curl log file name in mb_proc_tmp_dir, if empty redir is not set
+    ("hp_upload_curlopt_timeout","1800") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
+    ("hp_upload_curlopt_connect_timeout","1800") //orig 1800, maximum time in seconds that you allow the connection to the server to take
+    ("hp_upload_curlopt_maxconnect","20") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+    ("hp_upload_curlopt_stderr_log","curl_stderr.log")//if empty free() invalid pointer, curl log file name in mb_proc_tmp_dir, if empty redir is not set
     ;
 
 ///instance set config and return if ok
