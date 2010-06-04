@@ -69,6 +69,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_upload_curlopt_timeout","3600") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
     ("hp_upload_curlopt_connect_timeout","3600") //orig 1800, maximum time in seconds that you allow the connection to the server to take
     ("hp_upload_curlopt_maxconnect","40") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+    ("hp_upload_curlopt_stderr_log","curl_stderr.log")//optional curl log file name in mb_proc_tmp_dir, if empty redir not set
     ;
 
 ///instance set config and return if ok
@@ -511,7 +512,7 @@ void HPMail::end_of_batch(MailBatch& compressed_mail_batch)
     if ((StringBuffer::get()->getValueByKey("zaladr ", 2)).compare("KO") == 0)
         throw std::runtime_error(std::string("zaladr is KO"));
     //will never happen
-    if ((StringBuffer::get()->getValueByKey("UDRZBA", 6)).compare("on") == 0)
+    if ((StringBuffer::get()->getValueByKey("UDRZBA", 2)).compare("on") == 0)
         throw std::runtime_error(std::string("udrzba on"));
 
 

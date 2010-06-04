@@ -117,7 +117,7 @@ struct FileClose
     {
         try
         {
-            if(f)
+            if((f != 0) && (f != stderr))
             {
                 std::string msg("\n\n FileClose: deleter functor for FILE calling fclose \n\n");
                 fwrite (msg.c_str(), 1, msg.size(), f);

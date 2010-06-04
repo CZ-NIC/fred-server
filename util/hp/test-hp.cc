@@ -52,6 +52,8 @@ int main ( int argc, char* argv[])
         //HPMail instance configuration and initialization
         HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
                 ("mb_proc_tmp_dir","/data/img/tmpdir/") //empty temp dir for compressed files
+                ("hp_upload_archiver_additional_options", "-mx5 -v5m -mmt=on")//volumes size
+                ("hp_upload_curlopt_stderr_log","") //no curl log
                 ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
 
@@ -69,7 +71,7 @@ int main ( int argc, char* argv[])
 */
         //prepare large data
         RandomDataGenerator rdg;
-        for(unsigned i = 0; i < 200; ++i)
+        for(unsigned i = 0; i < 1; ++i)
         {
             std::string tmp_str(rdg.xstring(1024*512));
             MailFile tmp_mf (tmp_str.begin(), tmp_str.end());

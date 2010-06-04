@@ -132,7 +132,7 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
     if(curl)//CURL*
     {
         curl_easy_setopt(curl, CURLOPT_VERBOSE, curlopt_verbose);//talk to me
-        if(curl_log_file)//use stderr redirected to logfile if not null
+        if((curl_log_file)&& (curl_log_file != stderr))//use stderr redirected to logfile if not null
             curl_easy_setopt(curl, CURLOPT_STDERR , curl_log_file);
 
         if(curlopt_timeout)//curl operation tout
