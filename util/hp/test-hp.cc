@@ -53,11 +53,11 @@ int main ( int argc, char* argv[])
         HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
                 ("mb_proc_tmp_dir","/data/img/tmpdir/") //empty temp dir for compressed files
                 ("hp_upload_archiver_additional_options", "-mx5 -v5m -mmt=on")//volumes size
-                ("hp_upload_curlopt_stderr_log","") //no curl log
+                ("hp_upload_curlopt_stderr_log","curl_stderr.log") //no curl log
                 ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
 
-/*        MailBatch mb;
+/*      MailBatch mb;
         mb.push_back(MailFile(1,49));
         mb.push_back(MailFile(2,50));
         mb.push_back(MailFile(3,51));

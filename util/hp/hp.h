@@ -26,6 +26,7 @@
 
 
 #include <cstdio>
+#include <iostream>
 #include <memory>
 #include <string>
 
@@ -84,7 +85,11 @@ struct CurlEasyCleanup
     {
         try
         {
-            if(c) curl_easy_cleanup(c);
+            if(c)
+            {
+                std::cout << "CURLSharedPtr: functor curl_easy_cleanup: " << c <<  std::endl;
+                curl_easy_cleanup(c);
+            }
         }
         catch(...){}
     }
@@ -119,6 +124,7 @@ struct FileClose
         {
             if((f != 0) && (f != stderr))
             {
+                std::cout << "FileClose: deleter functor for FILE calling fclose" << std::endl;
                 std::string msg("\n\n FileClose: deleter functor for FILE calling fclose \n\n");
                 fwrite (msg.c_str(), 1, msg.size(), f);
                 fflush(f);
@@ -172,7 +178,11 @@ struct CFormFree
     {
         try
         {
-            if(f && *f) curl_formfree(*f);
+            if(f && *f)
+                {
+                    std::cout << "CFormFree: functor curl_formfree: " << *f <<  std::endl;
+                    curl_formfree(*f);
+                }
         }
         catch(...){}
     }
