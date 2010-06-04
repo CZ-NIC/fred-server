@@ -49,6 +49,8 @@ int main ( int argc, char* argv[])
         //viz http://curl.haxx.se/libcurl/c/curl_easy_init.html
         curl_global_init(CURL_GLOBAL_ALL);//once per process call
 
+        RandomDataGenerator rdg;
+
         //HPMail instance configuration and initialization
         HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
                 ("mb_proc_tmp_dir","/data/img/tmpdir/") //empty temp dir for compressed files
@@ -57,20 +59,6 @@ int main ( int argc, char* argv[])
                 ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
 
-/*      MailBatch mb;
-        mb.push_back(MailFile(1,49));
-        mb.push_back(MailFile(2,50));
-        mb.push_back(MailFile(3,51));
-        HPMail::get()->save_files_for_upload(mb);
-
-        MailFile mf1 (4,52);
-        HPMail::get()->save_file_for_upload(mf1);
-
-        MailFile mf2 (5,53);
-        HPMail::get()->save_file_for_upload(mf2);
-*/
-        //prepare large data
-        RandomDataGenerator rdg;
         for(unsigned i = 0; i < 1; ++i)
         {
             std::string tmp_str(rdg.xstring(1024*512));
@@ -84,6 +72,26 @@ int main ( int argc, char* argv[])
         //mail batch prepared, upload to postservice
         HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
         HPMail::get()->upload();
+
+
+        //large data
+        std::string tmp_str(rdg.xstring(1024*512));
+        MailFile mf (tmp_str.begin(), tmp_str.end());
+        MailBatch mb;
+        mb.push_back(mf);
+
+        //HPMail instance configuration and initialization
+        HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
+                ("mb_proc_tmp_dir","/data/img/tmpdir/") //empty temp dir for compressed files
+                ("hp_upload_archiver_additional_options", "-mx5 -v5m -mmt=on")//volumes size
+                ("hp_upload_curlopt_stderr_log","curl_stderr.log") //no curl log curl_stderr.log
+                ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
+
+        //mail batch prepared, upload to postservice
+        HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
+        HPMail::get()->upload(mb);
+
+
 
 /*
         //1st

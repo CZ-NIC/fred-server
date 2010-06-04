@@ -201,7 +201,7 @@ void HPMail::upload( const MailBatch& mb)
     upload_of_batch(compressed_mail_batch);
 
     end_of_batch(compressed_mail_batch);//ack form for postservice
-    instance_ptr.reset(0);//end of session
+    instance_ptr.reset(0);//end of session if no exception so far
 
 }//HPMail::upload
 
