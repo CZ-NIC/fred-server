@@ -179,10 +179,10 @@ struct CFormFree
         try
         {
             if(f && *f)
-                {
-                    //std::cout << "CFormFree: functor curl_formfree: " << *f <<  std::endl;
-                    curl_formfree(*f);
-                }
+            {
+                //std::cout << "CFormFree: functor curl_formfree: " << *f <<  std::endl;
+                curl_formfree(*f);
+            }
         }
         catch(...){}
     }
