@@ -28,7 +28,7 @@ namespace Register
         bool useHistory
       ) throw (SQL_ERROR) = 0;
       virtual void generateLetters() = 0;
-      virtual void sendLetters(Register::File::Transferer *fileman) = 0;
+      virtual void sendLetters(std::auto_ptr<Register::File::Transferer> fileman) = 0;
       /// factory method
       static Manager *create(
         DB *db, 
