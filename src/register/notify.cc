@@ -731,6 +731,10 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
          // unlock the table
          trans.commit();
 
+         if(res.size() == 0) {
+             LOGGER(PACKAGE).debug("Register::Notify::sendLetters(): No files ready for processing"); 
+             return;
+         }
 
          MailBatch batch;
          batch.reserve(res.size()); 
@@ -743,6 +747,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
                 LOGGER(PACKAGE).debug(boost::format ("sendLetters File ID: %1% ") % res[i][0]); 
          }
+         /// TODO handle no files
 
          // data's ready, we can send it
          try {
