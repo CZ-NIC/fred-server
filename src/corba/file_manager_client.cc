@@ -126,7 +126,7 @@ unsigned long long FileManagerClient::upload(std::vector<char> &_in_buffer
 
         std::size_t read_size = _in_buffer.size();
         CORBA::Octet *buffer = ccReg::BinaryData::allocbuf(read_size);
-        for (int i = 0; i < read_size; ++i)
+        for (unsigned i = 0; i < read_size; ++i)
         {
             buffer[i] = _in_buffer[i];
         }
