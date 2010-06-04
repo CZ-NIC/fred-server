@@ -9,6 +9,7 @@
 #include "documents.h"
 #include "exceptions.h"
 #include "registrar.h"
+#include "file_transferer.h"
 
 class DB;
 namespace Register
@@ -27,7 +28,7 @@ namespace Register
         bool useHistory
       ) throw (SQL_ERROR) = 0;
       virtual void generateLetters() = 0;
-      virtual void sendLetters() = 0;
+      virtual void sendLetters(Register::File::Transferer *fileman) = 0;
       /// factory method
       static Manager *create(
         DB *db, 

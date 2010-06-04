@@ -20,6 +20,8 @@
 #include "old_utils/dbsql.h"
 #include "old_utils/log.h"
 #include "sql.h"
+#include "util/hp/hpmail.h"
+
 #include <sstream>
 #include <boost/assign/list_of.hpp>
 
@@ -699,17 +701,18 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
         trans.commit();
       }
 
-      virtual void sendLetters()
+      virtual void sendLetters(std::auto_ptr<Register::File::Transferer> fileman)
       {
          TRACE("[CALL] Register::Notify::sendLetters()");
     	// transaction is needed for 'ON COMMIT DROP' functionality
         
          Connection conn = Database::Manager::acquire();
-         //Database::Transaction trans(conn);
    
-         // set status of 
-         
-         
+         /* now bail out if other process (presumably another instance of this
+          * method) is already doing something with this table. No support 
+          * for multithreaded access - we would have to remember which 
+          * records exactly are we processing
+          */ 
          Result res = conn.exec("SELECT EXISTS (SELECT * FROM notify_letters WHERE status=6)");
 
          if ((bool)res[0][0]) {
@@ -721,13 +724,6 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
          Database::Transaction trans(conn);
          conn.exec("LOCK TABLE notify_letters IN ACCESS EXCLUSIVE MODE");
 
-         if ((bool)res[0][0]) {
-                LOGGER(PACKAGE).notice("The files are already being processed.");           
-                // TODO what to do here? error message, exit, exception, whatever...
-                // transaction end here
-                return;
-         }
-
          conn.exec("UPDATE notify_letters SET status=6 WHERE status=1");
          
          res = conn.exec("SELECT distinct(file_id) FROM notify_letters WHERE status=6");
@@ -735,12 +731,35 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
          // unlock the table
          trans.commit();
 
-         std::vector<TID> file_list;
+
+         MailBatch batch;
+         batch.reserve(res.size()); 
+
          for (unsigned i=0;i<res.size();i++) {
-                file_list.push_back(res[i][0]);
+                MailFile one;
+
+                fileman->download(res[i][0], one);
+                batch.push_back(one);
+
                 LOGGER(PACKAGE).debug(boost::format ("sendLetters File ID: %1% ") % res[i][0]); 
          }
-         // file_list is now filled with IDs of files which are ready to be processed 
+
+         // data's ready, we can send it
+         try {
+             HPMail::init_connection();
+             HPMail::get()->upload(batch);
+         } catch(std::exception& ex) {
+             std::cout << "Error: " << ex.what() << std::endl;
+             conn.exec("UPDATE notify_letters SET status=4 WHERE status=6");
+             throw ;
+         } catch(...) {
+            std::cout << "Unknown Error" << std::endl;
+            conn.exec("UPDATE notify_letters SET status=4 WHERE status=6");
+            throw;
+         }
+
+        conn.exec("UPDATE notify_letters SET status=5 WHERE status=6");
+
       }
     };
     Manager *Manager::create(

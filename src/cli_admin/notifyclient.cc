@@ -212,8 +212,9 @@ void NotifyClient::letters_send()
                 regMan.get())
             );
 
-    notifyMan->sendLetters();    
+    std::auto_ptr<FileManagerClient> fileclient(new FileManagerClient(cc.getNS()));
 
+    fileclient->sendLetters(fileclient);
 }
 
 #define ADDOPT(name, type, callable, visible) \
