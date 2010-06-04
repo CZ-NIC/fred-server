@@ -59,7 +59,7 @@ int main ( int argc, char* argv[])
                 ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
 
-        for(unsigned i = 0; i < 1; ++i)
+        for(unsigned i = 0; i < 2; ++i)
         {
             std::string tmp_str(rdg.xstring(1024*512));
             MailFile tmp_mf (tmp_str.begin(), tmp_str.end());
