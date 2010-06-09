@@ -142,11 +142,9 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         if(curlopt_maxconnect)//curl max connection
             curl_easy_setopt(curl, CURLOPT_MAXCONNECTS , curlopt_maxconnect);
 
-
         curl_easy_setopt(curl, CURLOPT_HEADER, 1);//out header
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);//use location
         curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);//shut off the built-in progress meter completely
-
 
         //CURLOPT_RETURNTRANSFER
         StringBuffer::set();//reset recv buffer

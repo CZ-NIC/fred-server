@@ -52,9 +52,9 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_login_job","2010")//set in orig config file like: jobzak="2010"
     ("hp_login_osversion","Linux")//"Linux" or "Windows"
     ("hp_login_clientversion","20100315001")//orig "20100315001"
-    ("hp_login_interface_url","https://online.postservis.cz/Command/over.php")//login form url
-    ("hp_upload_interface_url","https://online.postservis.cz/Command/command.php")//upload form url
-    ("hp_ack_interface_url","https://online.postservis.cz/Command/konec.php")//end form url
+    ("hp_login_interface_url","https://online3.postservis.cz/Command/over.php")//login form url
+    ("hp_upload_interface_url","https://online3.postservis.cz/Command/command.php")//upload form url
+    ("hp_ack_interface_url","https://online3.postservis.cz/Command/konec.php")//end form url
     ("hp_login_batch_id","hpcb_Jednorazova_zakazka")//some job identification,now login parameter
     ("hp_upload_archiver_filename","7z")//it should be something 7z compatible for now
     ("hp_upload_archiver_command_option","a")//add files to archive
