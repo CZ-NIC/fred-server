@@ -42,6 +42,8 @@ RegistrarClient::runMethod()
         registrar_add();
     } else if (m_conf.hasOpt(REGISTRAR_REGISTRAR_ADD_ZONE_NAME)) {
         registrar_add_zone();
+    } else if (m_conf.hasOpt(REGISTRAR_REGISTRAR_CREATE_CERTIFICATION_NAME)) {
+        registrar_create_certification();
     } else if (m_conf.hasOpt(REGISTRAR_LIST_NAME)) {
         list();
     } else if (m_conf.hasOpt(REGISTRAR_SHOW_OPTS_NAME)) {
