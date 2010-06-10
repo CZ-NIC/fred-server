@@ -34,6 +34,7 @@
 #define REGISTRAR_REGISTRAR_ADD_ZONE_NAME       "registrar_add_zone"
 #define REGISTRAR_REGISTRAR_CREATE_CERTIFICATION_NAME  "registrar_create_certification"
 #define REGISTRAR_REGISTRAR_CREATE_GROUP_NAME  "registrar_create_group"
+#define REGISTRAR_REGISTRAR_INTO_GROUP_NAME  "registrar_into_group"
 #define REGISTRAR_REGISTRAR_ADD_ZONE_NAME_DESC  "add access right for registrar to zone"
 #define REGISTRAR_PRICE_ADD_NAME            "price_add"
 #define REGISTRAR_PRICE_ADD_NAME_DESC       "add price"
@@ -189,6 +190,7 @@ public:
     void registrar_add_zone();
     void registrar_create_certification();
     void registrar_create_group();
+    void registrar_into_group();
     void price_add();
 
     void zone_add_help();
@@ -198,6 +200,7 @@ public:
     void registrar_add_zone_help();
     void registrar_create_certification_help();
     void registrar_create_group_help();
+    void registrar_into_group_help();
     void price_add_help();
 }; // class RegistrarClient
 

@@ -518,6 +518,12 @@ public:
       , const TID& registrar_group_id
       , const Database::Date &member_from
       , const Database::Date &member_until) =0;
+  ///create membership of registrar in group
+  virtual unsigned long long createRegistrarGroupMembership( const std::string& registrar_handle
+      , const std::string& registrar_group
+      , const Database::Date &member_from
+      , const Database::Date &member_until) =0;
+
   ///update membership of registrar in group
   virtual void updateRegistrarGroupMembership( const TID& mebership_id
       , const TID& registrar_id

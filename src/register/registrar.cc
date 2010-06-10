@@ -2090,6 +2090,64 @@ public:
         }//catch (...)
     }
 
+    ///create membership of registrar in group by name
+    virtual unsigned long long createRegistrarGroupMembership( const std::string& registrar_handle
+        , const std::string& registrar_group
+        , const Database::Date &member_from
+        , const Database::Date &member_until)
+    {
+        try
+        {
+            TID registrar_id = 0;
+            TID registrar_group_id = 0;
+
+            Database::Connection conn = Database::Manager::acquire();
+
+            std::stringstream sql_registrar;
+            sql_registrar << "SELECT id FROM registrar WHERE handle = UPPER('"
+                    << conn.escape(registrar_handle) << "')";
+
+            Database::Result res_registrar = conn.exec(sql_registrar.str());
+            if((res_registrar.size() > 0)&&(res_registrar[0].size() > 0))
+            {
+                registrar_id = res_registrar[0][0];
+            }
+            else
+                throw std::runtime_error(
+                        "createRegistrarGroupMembership error: SELECT id "
+                        "FROM registrar "
+                        "returned empty result ");
+
+
+            std::stringstream sql_group;
+            sql_group << "SELECT id FROM registrar_group WHERE short_name = '"
+                    << conn.escape(registrar_group) << "')";
+
+            Database::Result res_group = conn.exec(sql_group.str());
+            if((res_group.size() > 0)&&(res_group[0].size() > 0))
+            {
+                registrar_group_id = res_group[0][0];
+            }
+            else
+                throw std::runtime_error(
+                        "createRegistrarGroupMembership error: SELECT id "
+                        "FROM registrar_group "
+                        "returned empty result ");
+
+
+            return createRegistrarGroupMembership( registrar_id
+                    , registrar_group_id
+                    , member_from
+                    , member_until);
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("createRegistrarGroupMembership: an error has occured");
+            throw;
+        }//catch (...)
+    }
+
+
     ///update membership of registrar in group
     virtual void updateRegistrarGroupMembership( const TID& mebership_id
         , const TID& registrar_id

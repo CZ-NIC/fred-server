@@ -345,6 +345,41 @@ RegistrarClient::registrar_create_group()
 }
 
 void
+RegistrarClient::registrar_into_group()
+{
+    callHelp(m_conf, registrar_into_group_help);
+
+    std::string registrar_handle
+        = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
+
+    Database::Date fromDate;
+    Database::Date toDate;
+    if (m_conf.hasOpt(REGISTRAR_FROM_DATE_NAME))
+    {
+        fromDate.from_string(
+                m_conf.get<std::string>(REGISTRAR_FROM_DATE_NAME));
+    }
+    if (m_conf.hasOpt(REGISTRAR_TO_DATE_NAME))
+    {
+        toDate.from_string(m_conf.get<std::string>(REGISTRAR_TO_DATE_NAME));
+    }
+
+    std::string group_name =
+            m_conf.get<std::string>(REGISTRAR_GROUP_NAME);
+
+    if(group_name.empty())
+        throw std::runtime_error("RegistrarClient::registrar_create_group "
+                "error: group name is empty");
+
+    Register::Registrar::Manager::AutoPtr regman(
+             Register::Registrar::Manager::create(0));
+     ///create registrar group membership
+     regman->createRegistrarGroupMembership(
+             registrar_handle,group_name,fromDate,toDate);
+    return;
+}
+
+void
 RegistrarClient::price_add()
 {
     callHelp(m_conf, price_add_help);
@@ -496,6 +531,20 @@ RegistrarClient::registrar_create_group_help()
         "** Create registrar group **\n\n"
         "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_CREATE_GROUP_NAME << " \\\n"
         "    --" << REGISTRAR_GROUP_NAME << "=<registrar_group_name> \\\n"
+        << std::endl;
+}
+
+
+void
+RegistrarClient::registrar_into_group_help()
+{
+    std::cout <<
+        "** Add registrar into group **\n\n"
+        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_INTO_GROUP_NAME << " \\\n"
+        "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
+        "    --" << REGISTRAR_GROUP_NAME << "=<registrar_group_name> \\\n"
+        "    --" << REGISTRAR_FROM_DATE_NAME << "=<from_date> \\\n"
+        "    [--" << REGISTRAR_TO_DATE_NAME << "=<to_date>]\n"
         << std::endl;
 }
 
