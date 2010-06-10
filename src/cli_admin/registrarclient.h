@@ -33,6 +33,7 @@
 #define REGISTRAR_REGISTRAR_ACL_ADD_NAME_DESC   "add new certificate for registrar"
 #define REGISTRAR_REGISTRAR_ADD_ZONE_NAME       "registrar_add_zone"
 #define REGISTRAR_REGISTRAR_CREATE_CERTIFICATION_NAME  "registrar_create_certification"
+#define REGISTRAR_REGISTRAR_CREATE_GROUP_NAME  "registrar_create_group"
 #define REGISTRAR_REGISTRAR_ADD_ZONE_NAME_DESC  "add access right for registrar to zone"
 #define REGISTRAR_PRICE_ADD_NAME            "price_add"
 #define REGISTRAR_PRICE_ADD_NAME_DESC       "add price"
@@ -49,6 +50,10 @@
 
 #define REGISTRAR_CERTIFICATION_SCORE_NAME        "certification_score"
 #define REGISTRAR_CERTIFICATION_SCORE_NAME_DESC   "registrar certification score"
+
+#define REGISTRAR_GROUP_NAME        "registrar_group"
+#define REGISTRAR_GROUP_NAME_DESC   "registrar group name"
+
 
 #define REGISTRAR_CERTIFICATION_EVALUATION_NAME        "certification_evaluation"
 #define REGISTRAR_CERTIFICATION_EVALUATION_NAME_DESC   "registrar certification evaluation pdf file"
@@ -183,6 +188,7 @@ public:
     void registrar_acl_add();
     void registrar_add_zone();
     void registrar_create_certification();
+    void registrar_create_group();
     void price_add();
 
     void zone_add_help();
@@ -191,6 +197,7 @@ public:
     void registrar_acl_add_help();
     void registrar_add_zone_help();
     void registrar_create_certification_help();
+    void registrar_create_group_help();
     void price_add_help();
 }; // class RegistrarClient
 

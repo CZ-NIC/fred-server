@@ -44,6 +44,8 @@ RegistrarClient::runMethod()
         registrar_add_zone();
     } else if (m_conf.hasOpt(REGISTRAR_REGISTRAR_CREATE_CERTIFICATION_NAME)) {
         registrar_create_certification();
+    } else if (m_conf.hasOpt(REGISTRAR_REGISTRAR_CREATE_GROUP_NAME)) {
+        registrar_create_group();
     } else if (m_conf.hasOpt(REGISTRAR_LIST_NAME)) {
         list();
     } else if (m_conf.hasOpt(REGISTRAR_SHOW_OPTS_NAME)) {
@@ -320,10 +322,27 @@ RegistrarClient::registrar_create_certification()
              , static_cast<Register::Registrar::RegCertClass>(score)
              , evaluation_file_id);
 
-    //Register::Registrar::addRegistrarZone(registrar, zone, fromDate, toDate);
     return;
 }
 
+void
+RegistrarClient::registrar_create_group()
+{
+    callHelp(m_conf, registrar_create_group_help);
+
+    std::string group_name =
+            m_conf.get<std::string>(REGISTRAR_GROUP_NAME);
+
+    if(group_name.empty())
+        throw std::runtime_error("RegistrarClient::registrar_create_group "
+                "error: group name is empty");
+
+    Register::Registrar::Manager::AutoPtr regman(
+             Register::Registrar::Manager::create(0));
+     ///create registrar certification
+     regman->createRegistrarGroup(group_name);
+    return;
+}
 
 void
 RegistrarClient::price_add()
@@ -467,6 +486,16 @@ RegistrarClient::registrar_create_certification_help()
         "    --" << REGISTRAR_CERTIFICATION_EVALUATION_NAME << "=<certification_evaluation_file_name> \\\n"
         "    --" << REGISTRAR_FROM_DATE_NAME << "=<valid_from_date> \\\n"
         "    --" << REGISTRAR_TO_DATE_NAME << "=<valid_to_date>\n"
+        << std::endl;
+}
+
+void
+RegistrarClient::registrar_create_group_help()
+{
+    std::cout <<
+        "** Create registrar group **\n\n"
+        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_CREATE_GROUP_NAME << " \\\n"
+        "    --" << REGISTRAR_GROUP_NAME << "=<registrar_group_name> \\\n"
         << std::endl;
 }
 
