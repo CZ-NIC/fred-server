@@ -1957,6 +1957,47 @@ public:
         }//catch (...)
     }
 
+    ///create registrar certification by handle
+    virtual unsigned long long createRegistrarCertification( const std::string& registrar_handle
+        , const Database::Date &valid_from
+        , const Database::Date &valid_until
+        , const RegCertClass classification
+        , const TID& eval_file_id)
+    {
+        try
+        {
+            TID registrar_id = 0;
+
+            Database::Connection conn = Database::Manager::acquire();
+
+            std::stringstream sql;
+            sql << "SELECT id FROM registrar WHERE handle = UPPER('"
+                    << conn.escape(registrar_handle) << "')";
+
+            Database::Result res = conn.exec(sql.str());
+            if((res.size() > 0)&&(res[0].size() > 0))
+            {
+                registrar_id = res[0][0];
+            }
+            else
+                throw std::runtime_error(
+                        "createRegistrarCertification error: SELECT id "
+                        "FROM registrar "
+                        "WHERE handle = UPPER(<registrar_handle>) "
+                        "returned empty result ");
+
+            return createRegistrarCertification(registrar_id
+                    , valid_from, valid_until
+                    , classification, eval_file_id);
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("createRegistrarCertification: an error has occured");
+            throw;
+        }//catch (...)
+    }
+
+
     ///shorten registrar certification
     virtual void shortenRegistrarCertification( const TID& certification_id
         , const Database::Date &valid_until)

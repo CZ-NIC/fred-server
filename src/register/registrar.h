@@ -497,6 +497,12 @@ public:
       , const Database::Date &valid_until
       , const RegCertClass classification
       , const TID& eval_file_id) =0;
+  ///create registrar certification by handle
+  virtual unsigned long long createRegistrarCertification( const std::string& registrar_handle
+          , const Database::Date &valid_from
+          , const Database::Date &valid_until
+          , const RegCertClass classification
+          , const TID& eval_file_id) =0;
   ///shorten registrar certification
   virtual void shortenRegistrarCertification( const TID& certification_id
       , const Database::Date &valid_until) =0;

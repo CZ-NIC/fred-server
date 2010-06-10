@@ -20,6 +20,8 @@
 #include "commonclient.h"
 #include "registrarclient.h"
 
+#include "corba/file_manager_client.h"
+
 #include <string>
 #include <vector>
 
@@ -271,6 +273,57 @@ RegistrarClient::registrar_add_zone()
 }
 
 void
+RegistrarClient::registrar_create_certification()
+{
+    callHelp(m_conf, registrar_create_certification_help);
+
+    std::string cert_eval_file =
+            m_conf.get<std::string>(REGISTRAR_CERTIFICATION_EVALUATION_NAME);
+
+    int score = m_conf.get<int>(REGISTRAR_CERTIFICATION_SCORE_NAME);
+    if((score < 0) || (score > 5))
+        throw std::runtime_error("Invalid value of score");
+
+    std::string registrar_handle = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
+    Database::Date fromDate;
+    Database::Date toDate;
+    if (m_conf.hasOpt(REGISTRAR_FROM_DATE_NAME))
+    {
+        fromDate.from_string(
+                m_conf.get<std::string>(REGISTRAR_FROM_DATE_NAME));
+    }
+    if (m_conf.hasOpt(REGISTRAR_TO_DATE_NAME))
+    {
+        toDate.from_string(m_conf.get<std::string>(REGISTRAR_TO_DATE_NAME));
+    }
+
+    // init file manager
+    CorbaClient corba_client(0, 0, m_nsAddr
+            , m_conf.get<std::string>(NS_CONTEXT_NAME));
+    FileManagerClient fm_client(corba_client.getNS());
+    Register::File::ManagerPtr file_manager(
+            Register::File::Manager::create(&fm_client));
+
+    unsigned long long evaluation_file_id
+        = file_manager->upload(cert_eval_file, "application/pdf", 6);
+    if(evaluation_file_id < 1)
+        throw std::runtime_error("Invalid value of evaluation_file_id");
+
+    Register::Registrar::Manager::AutoPtr regman(
+             Register::Registrar::Manager::create(0));
+     ///create registrar certification
+     regman->createRegistrarCertification( registrar_handle
+             , fromDate//Database::Date(makeBoostDate(from))
+             , toDate//Database::Date(makeBoostDate(to))
+             , static_cast<Register::Registrar::RegCertClass>(score)
+             , evaluation_file_id);
+
+    //Register::Registrar::addRegistrarZone(registrar, zone, fromDate, toDate);
+    return;
+}
+
+
+void
 RegistrarClient::price_add()
 {
     callHelp(m_conf, price_add_help);
@@ -400,6 +453,21 @@ RegistrarClient::registrar_add_zone_help()
         "    [--" << REGISTRAR_TO_DATE_NAME << "=<valid_to_date>]\n"
         << std::endl;
 }
+
+void
+RegistrarClient::registrar_create_certification_help()
+{
+    std::cout <<
+        "** Create registrar certification **\n\n"
+        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_CREATE_CERTIFICATION_NAME << " \\\n"
+        "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
+        "    --" << REGISTRAR_CERTIFICATION_SCORE_NAME << "=<certification_score> \\\n"
+        "    --" << REGISTRAR_CERTIFICATION_EVALUATION_NAME << "=<certification_evaluation_file_name> \\\n"
+        "    --" << REGISTRAR_FROM_DATE_NAME << "=<valid_from_date> \\\n"
+        "    --" << REGISTRAR_TO_DATE_NAME << "=<valid_to_date>\n"
+        << std::endl;
+}
+
 
 void
 RegistrarClient::price_add_help()
