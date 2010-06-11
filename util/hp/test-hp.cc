@@ -49,7 +49,7 @@ int main ( int argc, char* argv[])
         //viz http://curl.haxx.se/libcurl/c/curl_easy_init.html
         curl_global_init(CURL_GLOBAL_ALL);//once per process call
 
-        RandomDataGenerator rdg;
+        RandomDataGenerator rdg(1276348764);
 
         //HPMail instance configuration and initialization
         HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
@@ -59,9 +59,9 @@ int main ( int argc, char* argv[])
                 ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
 
-        for(unsigned i = 0; i < 2; ++i)
+        for(unsigned i = 0; i < 10; ++i)
         {
-            std::string tmp_str(rdg.xstring(1024*512));
+            std::string tmp_str(rdg.xstring(1024*1024*13));
             MailFile tmp_mf (tmp_str.begin(), tmp_str.end());
             HPMail::get()->save_file_for_upload(tmp_mf);
         }
@@ -73,25 +73,24 @@ int main ( int argc, char* argv[])
         HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
         HPMail::get()->upload();
 
-
         //large data
         std::string tmp_str(rdg.xstring(1024*512));
         MailFile mf (tmp_str.begin(), tmp_str.end());
         MailBatch mb;
         mb.push_back(mf);
 
+/* small test
         //HPMail instance configuration and initialization
         HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
                 ("mb_proc_tmp_dir","/data/img/tmpdir/") //empty temp dir for compressed files
                 ("hp_upload_archiver_additional_options", "-mx5 -v5m -mmt=on")//volumes size
-                ("hp_upload_curlopt_stderr_log","curl_stderr.log") //no curl log curl_stderr.log
+                ("hp_upload_curlopt_stderr_log","log curl_stderr.log") //no curl log curl_stderr.log
                 ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
         //mail batch prepared, upload to postservice
         HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
         HPMail::get()->upload(mb);
-
-
+*/
 
 /*
         //1st

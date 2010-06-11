@@ -55,6 +55,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_login_interface_url","https://online3.postservis.cz/Command/over.php")//login form url
     ("hp_upload_interface_url","https://online3.postservis.cz/Command/command.php")//upload form url
     ("hp_ack_interface_url","https://online3.postservis.cz/Command/konec.php")//end form url
+    ("hp_cancel_interface_url","https://online3.postservis.cz/Command/prubeh.php")//cancel form url
     ("hp_login_batch_id","hpcb_Jednorazova_zakazka")//some job identification,now login parameter
     ("hp_upload_archiver_filename","7z")//it should be something 7z compatible for now
     ("hp_upload_archiver_command_option","a")//add files to archive
@@ -70,6 +71,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_upload_curlopt_connect_timeout","1800") //orig 1800, maximum time in seconds that you allow the connection to the server to take
     ("hp_upload_curlopt_maxconnect","20") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
     ("hp_upload_curlopt_stderr_log","curl_stderr.log")//if empty free() invalid pointer, curl log file name in mb_proc_tmp_dir, if empty redir is not set
+    ("hp_upload_retry","10")//default number of upload retries
     ;
 
 ///instance set config and return if ok
@@ -198,7 +200,15 @@ void HPMail::upload( const MailBatch& mb)
                 "HPMail::upload error: compressed_mail_batch.size() < 1");
     save_compressed_mail_batch_for_test(compressed_mail_batch);
 
-    upload_of_batch(compressed_mail_batch);
+    try
+    {
+        upload_of_batch(compressed_mail_batch);
+    }
+    catch(const CrcFailedEx& ex)
+    {
+        std::cout << "CrcFailedEx caught: " << ex.what() << std::endl;
+        throw;
+    }
 
     end_of_batch(compressed_mail_batch);//ack form for postservice
     instance_ptr.reset(0);//end of session if no exception so far
@@ -383,13 +393,6 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
         //get file buffer
         MailFile& mail_archive_volume = compressed_mail_batch[i-1];
 
-        //crc32 checksum into string
-        boost::crc_32_type  crc32_checksum;
-        crc32_checksum.process_bytes( &mail_archive_volume[0]
-                                      , mail_archive_volume.size());
-        std::stringstream crc32_string;
-        crc32_string << std::hex << std::uppercase
-                << crc32_checksum.checksum() << std::flush;
 
         //archive volume file name
         std::stringstream order_number;
@@ -401,67 +404,105 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
                 hp_batch_number_+ config_["hp_upload_archiv_filename_suffix"]
                                           +"."+order_number.str());
 
-        //make form for upload
-        struct curl_httppost *formpost_command=NULL;
-        CFormSharedPtr  form_command_guard = CurlFormFreePtr(&formpost_command);
-        ///file upload from buffer with order number and crc32 checksum
-        hp_form_command_buffer(&formpost_command //out parameter
-                , boost::lexical_cast<std::string>(i) //decremented number of file
-                , crc32_string.str()  //crc32 checksum
-                , compressed_mail_volume_name //file name
-                , &mail_archive_volume[0] //pointer to file data
-                , mail_archive_volume.size() //size of file data
-                );
-
-        //send form
-        StringBuffer::set();//reset recv buffer, userp may be better
-        CURLcode res = hp_form_post(formpost_command  //linked list ptr
-            , config_["hp_upload_interface_url"]//url
-            , config_["postservice_cert_dir"] //ended by slash
-            , config_["postservice_cert_file"] //pem cert file name
-            , "PHPSESSID="+phpsessid_//PHP session id in cookie
-            , config_["hp_useragent_id"] //useragent id
-            , 1 //verbose
-            , curl_log_file_guard_.get()//curl logfile
-            //maximum time in seconds that you allow the libcurl transfer operation to take
-            , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
-            //maximum time in seconds that you allow the connection to the server to take
-            , boost::lexical_cast<long>(config_["hp_upload_curlopt_connect_timeout"])
-            //maximum amount of simultaneously open connections that libcurl may cache in this easy handle
-            , boost::lexical_cast<long>(config_["hp_upload_curlopt_maxconnect"])
-            );
-
-        if (res > 0)
+        unsigned max_retry_count
+            = boost::lexical_cast<unsigned>(config_["hp_upload_retry"]);
+        for(unsigned retry_count = 0; retry_count < max_retry_count
+            ; ++retry_count )
         {
-            throw std::runtime_error(
-                    std::string("HPMail::upload_of_batch error: form post command failed: ")
-                        + curl_easy_strerror(res));
-        }
+            try
+            {
+                //crc32 checksum into string
+                boost::crc_32_type  crc32_checksum;
+                crc32_checksum.process_bytes( &mail_archive_volume[0]
+                                              , mail_archive_volume.size());
+                std::stringstream crc32_string;
+                crc32_string << std::setw( 8 ) << std::setfill( '0' )
+                    << std::hex << std::uppercase << crc32_checksum.checksum()
+                    << std::flush;
 
-        //log result
-        std::stringstream formpost_reply;
-            formpost_reply << "\n\nCommand reply: \n"
-                << StringBuffer::get()->copy()
-                <<  "\n" << "crc32: "
-                << crc32_string.str()
-                << "\nfile number: "
-                << boost::lexical_cast<std::string>(i)
-                << std::endl;
-        fwrite (formpost_reply.str().c_str() , 1
-                , formpost_reply.str().size() , curl_log_file_guard_.get() );
+                std::cout << "upload: " << compressed_mail_volume_name
+                        << " crc32: " << crc32_string.str()
+                        << " retry_count: " << retry_count
+                        << std::endl;
 
-        //result parsing & detecting errors
-        if ((StringBuffer::get()->getValueByKey("OvereniCrc ", 2)).compare("KO") == 0)
+                //make form for upload
+                struct curl_httppost *formpost_command=NULL;
+                CFormSharedPtr  form_command_guard = CurlFormFreePtr(&formpost_command);
+                ///file upload from buffer with order number and crc32 checksum
+                hp_form_command_buffer(&formpost_command //out parameter
+                        , boost::lexical_cast<std::string>(i) //decremented number of file
+                        , crc32_string.str()  //crc32 checksum
+                        , compressed_mail_volume_name //file name
+                        , &mail_archive_volume[0] //pointer to file data
+                        , mail_archive_volume.size() //size of file data
+                        );
+
+                //send form
+                StringBuffer::set();//reset recv buffer, userp may be better
+                CURLcode res = hp_form_post(formpost_command  //linked list ptr
+                    , config_["hp_upload_interface_url"]//url
+                    , config_["postservice_cert_dir"] //ended by slash
+                    , config_["postservice_cert_file"] //pem cert file name
+                    , "PHPSESSID="+phpsessid_//PHP session id in cookie
+                    , config_["hp_useragent_id"] //useragent id
+                    , 1 //verbose
+                    , curl_log_file_guard_.get()//curl logfile
+                    //maximum time in seconds that you allow the libcurl transfer operation to take
+                    , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
+                    //maximum time in seconds that you allow the connection to the server to take
+                    , boost::lexical_cast<long>(config_["hp_upload_curlopt_connect_timeout"])
+                    //maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+                    , boost::lexical_cast<long>(config_["hp_upload_curlopt_maxconnect"])
+                    );
+
+                if (res > 0)
+                {
+                    throw std::runtime_error(
+                            std::string("HPMail::upload_of_batch error: form post command failed: ")
+                                + curl_easy_strerror(res));
+                }
+
+                //log result
+                std::stringstream formpost_reply;
+                    formpost_reply << "\n\nCommand reply: \n"
+                        << StringBuffer::get()->copy()
+                        <<  "\n" << "crc32: "
+                        << crc32_string.str()
+                        << "\nfile number: "
+                        << boost::lexical_cast<std::string>(i)
+                        << std::endl;
+                fwrite (formpost_reply.str().c_str() , 1
+                        , formpost_reply.str().size() , curl_log_file_guard_.get() );
+
+                //result parsing & detecting errors
+                if ((StringBuffer::get()->getValueByKey("OvereniCrc ", 2)).compare("KO") == 0)
+                            throw CrcFailedEx(std::string(
+                                    "HPMail::upload_of_batch error: crc check failed"));
+                if ((StringBuffer::get()->getValueByKey("zaladr ", 2)).compare("KO") == 0)
                     throw std::runtime_error(std::string(
-                            "HPMail::upload_of_batch error: crc check failed"));
-        if ((StringBuffer::get()->getValueByKey("zaladr ", 2)).compare("KO") == 0)
-            throw std::runtime_error(std::string(
-                    "HPMail::upload_of_batch error: mkdir failed"));
-        //will never happen
-        if ((StringBuffer::get()->getValueByKey("UDRZBA", 2)).compare("on") == 0)
-            throw std::runtime_error(std::string(
-                    "HPMail::upload_of_batch error: server out of order"));
+                            "HPMail::upload_of_batch error: mkdir failed"));
+                //will never happen
+                if ((StringBuffer::get()->getValueByKey("UDRZBA", 2)).compare("on") == 0)
+                    throw std::runtime_error(std::string(
+                            "HPMail::upload_of_batch error: server out of order"));
 
+                break;//no check failed - quit for loop
+            }//try for one upload volume
+
+            catch(const std::exception& ex)
+            {
+                std::stringstream errlogmsg;
+                errlogmsg << "HPMail::upload_of_batch: " << ex.what()
+                        << "retry_count: " << retry_count << std::flush;
+                std::cout << errlogmsg.str() << std::endl;
+                fwrite (errlogmsg.str().c_str() , 1
+                        , errlogmsg.str().size() , curl_log_file_guard_.get() );
+
+                if((retry_count + 1) >= max_retry_count)
+                    throw;//retry failed
+            }
+
+        }//for retry_count
     }//for compressed_mail_batch
 
 }//HPMail::upload_of_batch
@@ -535,5 +576,41 @@ void HPMail::init_connection()
 
         HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
  
+}
+
+void HPMail::send_storno()
+{
+    //attempt to send storno
+    struct curl_httppost *formpost_prubeh=NULL;
+    CFormSharedPtr  form_prubeh_guard = CurlFormFreePtr(&formpost_prubeh);
+
+    //send form
+    StringBuffer::set();//reset recv buffer, userp may be better
+    hp_prubeh_command(&formpost_prubeh //out parameter
+            , curl_log_file_name_ //failure errorlog filename
+            );
+
+    hp_form_post(formpost_prubeh  //linked list ptr
+        , config_["hp_cancel_interface_url"]//url
+        , config_["postservice_cert_dir"] //ended by slash
+        , config_["postservice_cert_file"] //pem cert file name
+        , "PHPSESSID="+phpsessid_//PHP session id in cookie
+        , config_["hp_useragent_id"] //useragent id
+        , 1 //verbose
+        , curl_log_file_guard_.get()//curl logfile
+        //maximum time in seconds that you allow the libcurl transfer operation to take
+        , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
+        //maximum time in seconds that you allow the connection to the server to take
+        , boost::lexical_cast<long>(config_["hp_upload_curlopt_connect_timeout"])
+        //maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+        , boost::lexical_cast<long>(config_["hp_upload_curlopt_maxconnect"])
+        );
+
+    //log result
+    std::stringstream formpost_reply;
+        formpost_reply << "\nPrubeh reply: \n" << StringBuffer::get()->copy()
+                            <<  "\n" << std::endl;
+    fwrite (formpost_reply.str().c_str() , 1
+            , formpost_reply.str().size() , curl_log_file_guard_.get() );
 }
 

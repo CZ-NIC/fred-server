@@ -29,6 +29,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <stdexcept>
 
 #include <boost/utility.hpp>
 
@@ -45,6 +46,14 @@ typedef std::vector<char> MailFile;//one mail file data
 typedef std::vector<MailFile> MailBatch;//all batch files
 typedef std::map<std::string, std::string> HPCfgMap;//postservice config map
 typedef std::vector<std::string> LetterFileNames; // vector of files to compress
+
+///uploaded data inconsistency exception
+class CrcFailedEx : public std::runtime_error
+{
+public:
+    explicit CrcFailedEx(const std::string& __arg)
+    : std::runtime_error(__arg) {}
+};//class CrcFailedEx
 
 class HPMail : boost::noncopyable
 {
@@ -85,6 +94,7 @@ private:
     void save_compressed_mail_batch_for_test(MailBatch& compressed_mail_batch);
     void upload_of_batch(MailBatch& compressed_mail_batch);
     void end_of_batch(MailBatch& compressed_mail_batch);
+    void send_storno();
 public:
     static HPMail* set(const HPCfgMap& config_changes);
     static HPMail* get();
