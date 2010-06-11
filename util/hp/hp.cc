@@ -290,6 +290,20 @@ void hp_form_konec(curl_httppost **formpost_pp //out parameter
             , CURLFORM_COPYCONTENTS, (stav + "\n").c_str(), CURLFORM_END);
 }
 
+///failure errorlog upload attempt with storno flag set
+void hp_prubeh_command(curl_httppost **formpost_pp //out parameter
+        , const std::string& filename_to_upload //failure errorlog filename
+        )
+{
+    struct curl_httppost *lastptr=NULL;
+    // Fill in command
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "cc"
+            , CURLFORM_COPYCONTENTS, "us \n", CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "storno"
+            , CURLFORM_COPYCONTENTS, "1\n", CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "upfile"
+            , CURLFORM_FILE, filename_to_upload.c_str(), CURLFORM_END);
+}
 
 
 

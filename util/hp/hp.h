@@ -232,4 +232,9 @@ void hp_form_konec(curl_httppost **formpost_pp //out parameter
         , const std::string& stav //OK / KO
         );
 
+///failure errorlog upload attempt with storno flag set
+void hp_prubeh_command(curl_httppost **formpost_pp //out parameter
+        , const std::string& filename_to_upload //failure errorlog filename
+        );
+
 #endif // HP_H_
