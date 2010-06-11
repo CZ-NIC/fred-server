@@ -59,9 +59,9 @@ int main ( int argc, char* argv[])
                 ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
 
-        for(unsigned i = 0; i < 10; ++i)
+        for(unsigned i = 0; i < 200; ++i)
         {
-            std::string tmp_str(rdg.xstring(1024*1024*13));
+            std::string tmp_str(rdg.xstring(1024*512));
             MailFile tmp_mf (tmp_str.begin(), tmp_str.end());
             HPMail::get()->save_file_for_upload(tmp_mf);
         }

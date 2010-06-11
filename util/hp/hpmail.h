@@ -47,14 +47,6 @@ typedef std::vector<MailFile> MailBatch;//all batch files
 typedef std::map<std::string, std::string> HPCfgMap;//postservice config map
 typedef std::vector<std::string> LetterFileNames; // vector of files to compress
 
-///uploaded data inconsistency exception
-class CrcFailedEx : public std::runtime_error
-{
-public:
-    explicit CrcFailedEx(const std::string& __arg)
-    : std::runtime_error(__arg) {}
-};//class CrcFailedEx
-
 class HPMail : boost::noncopyable
 {
     HPCfgMap config_; //runtime configuration

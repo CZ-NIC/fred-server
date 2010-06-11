@@ -67,7 +67,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_cleanup_last_letter_files","rm -f letter_*") // delete last letter files
     ("hp_upload_letter_file_prefix","letter_")//for saved letter file to archive
     ("hp_upload_archiv_filename_body","compressed_mail")//compressed mail file name body
-    ("hp_upload_curlopt_timeout","1800") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
+    ("hp_upload_curlopt_timeout","20") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
     ("hp_upload_curlopt_connect_timeout","1800") //orig 1800, maximum time in seconds that you allow the connection to the server to take
     ("hp_upload_curlopt_maxconnect","20") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
     ("hp_upload_curlopt_stderr_log","curl_stderr.log")//if empty free() invalid pointer, curl log file name in mb_proc_tmp_dir, if empty redir is not set
@@ -200,15 +200,7 @@ void HPMail::upload( const MailBatch& mb)
                 "HPMail::upload error: compressed_mail_batch.size() < 1");
     save_compressed_mail_batch_for_test(compressed_mail_batch);
 
-    try
-    {
-        upload_of_batch(compressed_mail_batch);
-    }
-    catch(const CrcFailedEx& ex)
-    {
-        std::cout << "CrcFailedEx caught: " << ex.what() << std::endl;
-        throw;
-    }
+    upload_of_batch(compressed_mail_batch);
 
     end_of_batch(compressed_mail_batch);//ack form for postservice
     instance_ptr.reset(0);//end of session if no exception so far
@@ -416,7 +408,7 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
                 crc32_checksum.process_bytes( &mail_archive_volume[0]
                                               , mail_archive_volume.size());
                 std::stringstream crc32_string;
-                crc32_string << std::setw( 8 ) << std::setfill( '0' )
+                crc32_string << std::setw( 8 ) << std::setfill( '0' ) //sometimes crc error when crc not starting with zero
                     << std::hex << std::uppercase << crc32_checksum.checksum()
                     << std::flush;
 
@@ -476,7 +468,7 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
 
                 //result parsing & detecting errors
                 if ((StringBuffer::get()->getValueByKey("OvereniCrc ", 2)).compare("KO") == 0)
-                            throw CrcFailedEx(std::string(
+                            throw std::runtime_error(std::string(
                                     "HPMail::upload_of_batch error: crc check failed"));
                 if ((StringBuffer::get()->getValueByKey("zaladr ", 2)).compare("KO") == 0)
                     throw std::runtime_error(std::string(
@@ -497,6 +489,8 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
                 std::cout << errlogmsg.str() << std::endl;
                 fwrite (errlogmsg.str().c_str() , 1
                         , errlogmsg.str().size() , curl_log_file_guard_.get() );
+
+                send_storno();//attempt to send storno
 
                 if((retry_count + 1) >= max_retry_count)
                     throw;//retry failed
