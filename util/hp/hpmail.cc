@@ -67,7 +67,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_cleanup_last_letter_files","rm -f letter_*") // delete last letter files
     ("hp_upload_letter_file_prefix","letter_")//for saved letter file to archive
     ("hp_upload_archiv_filename_body","compressed_mail")//compressed mail file name body
-    ("hp_upload_curlopt_timeout","20") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
+    ("hp_upload_curlopt_timeout","120") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
     ("hp_upload_curlopt_connect_timeout","1800") //orig 1800, maximum time in seconds that you allow the connection to the server to take
     ("hp_upload_curlopt_maxconnect","20") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
     ("hp_upload_curlopt_stderr_log","curl_stderr.log")//if empty free() invalid pointer, curl log file name in mb_proc_tmp_dir, if empty redir is not set
@@ -183,28 +183,21 @@ void HPMail::upload( const MailBatch& mb)
 {
     if(phpsessid_.empty())
         throw std::runtime_error("HPMail::upload error: not logged in");
-
     save_files_for_upload(mb);//if mb empty may have no effect
-
     if(!saved_file_for_upload_)
         throw std::runtime_error("HPMail::upload error: "
                 "no files saved for upload by this interface");
-
     if(!compressed_file_for_upload_)
         archiver_command();
-
-    MailBatch compressed_mail_batch;
-    load_compressed_mail_batch(compressed_mail_batch);
-    if(compressed_mail_batch.size() < 1)
+    //load archive volumes for upload
+    VolumeFileNames upload_filelist = load_compressed_mail_batch_filelist();
+    if(upload_filelist.empty())
         throw std::runtime_error(
-                "HPMail::upload error: compressed_mail_batch.size() < 1");
-    save_compressed_mail_batch_for_test(compressed_mail_batch);
-
-    upload_of_batch(compressed_mail_batch);
-
-    end_of_batch(compressed_mail_batch);//ack form for postservice
+                "HPMail::upload error: upload_filelist is empty");
+    //upload
+    upload_of_batch_by_filelist(upload_filelist);
+    end_of_batch(upload_filelist);//ack form for postservice
     instance_ptr.reset(0);//end of session if no exception so far
-
 }//HPMail::upload
 
 /// in loop save files for upload to postservice
@@ -314,9 +307,37 @@ void HPMail::archiver_command()
 
 }//HPMail::archiver_command
 
-///load compressed mail batch from disk to memory
-void HPMail::load_compressed_mail_batch(MailBatch& compressed_mail_batch)
+///load compressed mail volume using filename
+void HPMail::load_compressed_mail_volume(const std::string& compressed_mail_volume_filename, MailFile& out_mf)
 {
+    std::ifstream compressed_mail_volume_stream;
+    compressed_mail_volume_stream.open (compressed_mail_volume_filename.c_str()
+        , std::ios::in | std::ios::binary);
+
+    if(compressed_mail_volume_stream.is_open())
+    {//ok file is there
+        out_mf.clear();//remove previous content
+        // get length of file
+        compressed_mail_volume_stream.seekg (0, std::ios::end);
+        long long compressed_mail_volume_length =
+                compressed_mail_volume_stream.tellg();
+        compressed_mail_volume_stream.seekg (0, std::ios::beg);//reset
+        //allocate buffer
+        out_mf.resize(compressed_mail_volume_length,'\0');
+        //read whole file into the buffer
+        compressed_mail_volume_stream.read( &out_mf[0]
+            , compressed_mail_volume_length );
+    }
+    else //no more files
+        throw std::runtime_error("HPMail::load_compressed_mail_volume: "
+                "error - unable to access file: "
+                +  compressed_mail_volume_filename);
+}
+///load compressed mail batch filelist from disk
+VolumeFileNames HPMail::load_compressed_mail_batch_filelist()
+{
+    VolumeFileNames ret;
+
     for(std::size_t i = 1; i < std::numeric_limits<std::size_t>::max(); ++i)
     {
         std::stringstream order_number;
@@ -336,55 +357,41 @@ void HPMail::load_compressed_mail_batch(MailBatch& compressed_mail_batch)
 
         if(compressed_mail_volume_stream.is_open())
         {//ok file is there
-            compressed_mail_batch.push_back(MailFile());//add mail arch volume
-            // get length of file
-            compressed_mail_volume_stream.seekg (0, std::ios::end);
-            long long compressed_mail_volume_length =
-                    compressed_mail_volume_stream.tellg();
-            compressed_mail_volume_stream.seekg (0, std::ios::beg);//reset
-            //get new MailFile at the end of batch
-            MailFile& mail_archive_volume = *(--(compressed_mail_batch.end()));
-            //allocate buffer
-            mail_archive_volume.resize(compressed_mail_volume_length,'\0');
-            //read whole file into the buffer
-            compressed_mail_volume_stream.read( &mail_archive_volume[0]
-                , compressed_mail_volume_length );
+            ret.push_back(compressed_mail_volume_name);
         }
         else //no more files
             break;//for i loop
     }//for i
 
-}//HPMail::load_compressed_mail_batch
+    return ret;
+}//HPMail::load_compressed_mail_batch_filelist
 
-void HPMail::save_compressed_mail_batch_for_test(
-        MailBatch& compressed_mail_batch)
+///compute crc32 from MailFile&
+std::string HPMail::crc32_into_string(MailFile& mf)
 {
-    //save compressed mail batch for comparsion
-    for (unsigned i=0; i < compressed_mail_batch.size(); ++i)
-    {
-        std::string test_file_name(
-                "test_volume_"
-                +boost::lexical_cast<std::string>(i));
-        std::ofstream test_file;
-        test_file.open ((config_["mb_proc_tmp_dir"]+test_file_name).c_str()
-                , std::ios::out | std::ios::binary);
-        if(test_file.is_open())
-            {
-                test_file.write(&compressed_mail_batch[i][0]
-                    , compressed_mail_batch[i].size());
-            }
-    }//for compressed_mail_batch files
-}//HPMail::save_compressed_mail_batch_for_test
+    //crc32 checksum into string
+    boost::crc_32_type  crc32_checksum;
+    crc32_checksum.process_bytes( &mf[0]
+                                  , mf.size());
+    std::stringstream crc32_string;
+    crc32_string << std::setw( 8 ) << std::setfill( '0' ) //sometimes crc error when crc not starting with zero
+        << std::hex << std::uppercase << crc32_checksum.checksum()
+        << std::flush;
+    return crc32_string.str();
+}//HPMail::crc32_into_string
 
 ///upload of compressed mail batch to postservice server
-void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
+void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_filelist)
 {
     //upload to postservice
-    for(std::size_t i = compressed_mail_batch.size(); i > 0; --i)
+    for(std::size_t i = compressed_mail_batch_filelist.size(); i > 0; --i)
     {
         //get file buffer
-        MailFile& mail_archive_volume = compressed_mail_batch[i-1];
+        MailFile mail_archive_volume;
 
+        //load file buffer from file
+        load_compressed_mail_volume(compressed_mail_batch_filelist.at(i-1)
+                ,mail_archive_volume);
 
         //archive volume file name
         std::stringstream order_number;
@@ -392,6 +399,7 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
             order_number << std::setfill('0') << std::setw(3) << i << std::flush;
         else
             order_number << i; //TODO: check behaviour over 1000 volumes
+
         std::string compressed_mail_volume_name(
                 hp_batch_number_+ config_["hp_upload_archiv_filename_suffix"]
                                           +"."+order_number.str());
@@ -403,17 +411,11 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
         {
             try
             {
-                //crc32 checksum into string
-                boost::crc_32_type  crc32_checksum;
-                crc32_checksum.process_bytes( &mail_archive_volume[0]
-                                              , mail_archive_volume.size());
-                std::stringstream crc32_string;
-                crc32_string << std::setw( 8 ) << std::setfill( '0' ) //sometimes crc error when crc not starting with zero
-                    << std::hex << std::uppercase << crc32_checksum.checksum()
-                    << std::flush;
+                std::string crc32_string (//compute crc32
+                        crc32_into_string(mail_archive_volume));
 
                 std::cout << "upload: " << compressed_mail_volume_name
-                        << " crc32: " << crc32_string.str()
+                        << " crc32: " << crc32_string
                         << " retry_count: " << retry_count
                         << std::endl;
 
@@ -423,7 +425,7 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
                 ///file upload from buffer with order number and crc32 checksum
                 hp_form_command_buffer(&formpost_command //out parameter
                         , boost::lexical_cast<std::string>(i) //decremented number of file
-                        , crc32_string.str()  //crc32 checksum
+                        , crc32_string  //crc32 checksum
                         , compressed_mail_volume_name //file name
                         , &mail_archive_volume[0] //pointer to file data
                         , mail_archive_volume.size() //size of file data
@@ -459,7 +461,7 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
                     formpost_reply << "\n\nCommand reply: \n"
                         << StringBuffer::get()->copy()
                         <<  "\n" << "crc32: "
-                        << crc32_string.str()
+                        << crc32_string
                         << "\nfile number: "
                         << boost::lexical_cast<std::string>(i)
                         << std::endl;
@@ -499,10 +501,10 @@ void HPMail::upload_of_batch(MailBatch& compressed_mail_batch)
         }//for retry_count
     }//for compressed_mail_batch
 
-}//HPMail::upload_of_batch
+}//HPMail::upload_of_batch_by_filelist
 
 ///signal end of batch to postservice server
-void HPMail::end_of_batch(MailBatch& compressed_mail_batch)
+void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
 {
     //end of batch form
     struct curl_httppost *formpost_konec=NULL;
@@ -515,7 +517,7 @@ void HPMail::end_of_batch(MailBatch& compressed_mail_batch)
     //fill in konec
     hp_form_konec(&formpost_konec //out parameter
             , first_compressed_mail_volume_name
-            , boost::lexical_cast<std::string>(compressed_mail_batch.size()) //number of files
+            , boost::lexical_cast<std::string>(compressed_mail_batch_filelist.size()) //number of files
             , "OK" //status
             );
 

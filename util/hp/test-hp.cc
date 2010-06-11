@@ -49,7 +49,7 @@ int main ( int argc, char* argv[])
         //viz http://curl.haxx.se/libcurl/c/curl_easy_init.html
         curl_global_init(CURL_GLOBAL_ALL);//once per process call
 
-        RandomDataGenerator rdg(1276348764);
+        RandomDataGenerator rdg;
 
         //HPMail instance configuration and initialization
         HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
@@ -59,9 +59,9 @@ int main ( int argc, char* argv[])
                 ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
 
-        for(unsigned i = 0; i < 200; ++i)
+        for(unsigned i = 0; i < 3000; ++i)
         {
-            std::string tmp_str(rdg.xstring(1024*512));
+            std::string tmp_str(rdg.xstring(1024*1024*13));
             MailFile tmp_mf (tmp_str.begin(), tmp_str.end());
             HPMail::get()->save_file_for_upload(tmp_mf);
         }

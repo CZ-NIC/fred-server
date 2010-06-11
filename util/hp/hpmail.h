@@ -46,6 +46,7 @@ typedef std::vector<char> MailFile;//one mail file data
 typedef std::vector<MailFile> MailBatch;//all batch files
 typedef std::map<std::string, std::string> HPCfgMap;//postservice config map
 typedef std::vector<std::string> LetterFileNames; // vector of files to compress
+typedef std::vector<std::string> VolumeFileNames; // vector of files to upload
 
 class HPMail : boost::noncopyable
 {
@@ -82,11 +83,15 @@ private:
     , compressed_file_for_upload_(false)//initially no files
     {}
     void save_list_for_archiver();
-    void load_compressed_mail_batch(MailBatch& compressed_mail_batch);
-    void save_compressed_mail_batch_for_test(MailBatch& compressed_mail_batch);
-    void upload_of_batch(MailBatch& compressed_mail_batch);
-    void end_of_batch(MailBatch& compressed_mail_batch);
+    VolumeFileNames load_compressed_mail_batch_filelist();
+    void load_compressed_mail_volume(
+            const std::string& compressed_mail_volume_filename
+            , MailFile& out_mf);
+    void upload_of_batch_by_filelist(
+            VolumeFileNames& compressed_mail_batch_filelist);
+    void end_of_batch(VolumeFileNames& compressed_mail_batch_filelist);
     void send_storno();
+    std::string crc32_into_string(MailFile& mf);
 public:
     static HPMail* set(const HPCfgMap& config_changes);
     static HPMail* get();
