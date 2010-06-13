@@ -53,7 +53,6 @@ class HandleGeneralArgs : public HandleArgs
     ///options descriptions reference used to print help for all options
     typedef std::vector<boost::shared_ptr<boost::program_options::options_description> > PoDescs;
 
-
     void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
     {//options without values are ignored
         std::ifstream cfg_file(fname.c_str());
@@ -151,5 +150,51 @@ public:
         }
     }//handle
 };//class HandleGeneralArgs
+
+/////////////////////////////////////
+
+/**
+ * \class HandleHelpArg
+ * \brief common options and config file handler
+ */
+class HandleHelpArg : public HandleArgs
+{
+    ///options descriptions reference used to print help for all options
+    typedef std::vector<boost::shared_ptr<boost::program_options::options_description> > PoDescs;
+
+
+public:
+    PoDescs po_description;
+
+    boost::shared_ptr<boost::program_options::options_description>
+        get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> gen_opts(
+                new boost::program_options::options_description(
+                        std::string("General configuration")));
+        gen_opts->add_options()
+                ("help", "print this help message");
+        return gen_opts;
+    }//get_options_description
+    void handle( int argc, char* argv[],  FakedArgs &fa)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+        //general config actions
+        if (vm.count("help"))
+        {
+            std::cout << std::endl;
+            for(PoDescs::iterator it = po_description.begin(); it != po_description.end(); ++it)
+            {
+                std::cout << **it << std::endl;
+            }
+            throw ReturnFromMain("help called");
+        }
+
+    }//handle
+};//class HandleHelpArg
+
+
 
 #endif //HANDLE_GENERAL_ARGS_H_

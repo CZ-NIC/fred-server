@@ -53,7 +53,7 @@ boost::assign::list_of
 (HandleArgsPtr(new HandleCorbaNameServiceArgs));
 
 in UTF main
- fa = CfgArgs::instance(ghpv)->handle(argc, argv);
+ fa = CfgArgs::instance<HandleGeneralArgs>(ghpv)->handle(argc, argv);
 */
 
 /**
@@ -99,7 +99,7 @@ private:
     }
 
 public:
-    static CfgArgs * instance(const HandlerPtrVector& hpv);
+    template <class HELP> static  CfgArgs * instance(const HandlerPtrVector& hpv);
     static CfgArgs * instance();
 
     FakedArgs fa;
@@ -124,18 +124,20 @@ public:
 //static instance init
 std::auto_ptr<CfgArgs> CfgArgs::instance_ptr(0);
 
+
+
 //setter
-CfgArgs* CfgArgs::instance(const HandlerPtrVector& hpv)
+template <class HELP> CfgArgs* CfgArgs::instance(const HandlerPtrVector& hpv)
 {
     std::auto_ptr<CfgArgs>
     tmp_instance(new CfgArgs(hpv));
 
     //gather options_descriptions for help print if present
     HandleArgsPtr ha =
-            tmp_instance->get_handler_by_type<HandleGeneralArgs>();
+            tmp_instance->get_handler_by_type<HELP>();
     HandleGeneralArgs* hga = 0;//nonowning temp child
     if(ha.get() != 0)
-        hga = dynamic_cast<HandleGeneralArgs*>(ha.get());
+        hga = dynamic_cast<HELP*>(ha.get());
     if(hga != 0)
     {
         for(HandlerPtrVector::const_iterator i = hpv.begin()

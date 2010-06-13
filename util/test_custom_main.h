@@ -59,7 +59,7 @@ int main( int argc, char* argv[] )
     FakedArgs fa;
     try
     {
-        fa = CfgArgs::instance(global_hpv)->handle(argc, argv);
+        fa = CfgArgs::instance<HandleGeneralArgs>(global_hpv)->handle(argc, argv);
     }
     catch(const ReturnFromMain&)
     {
