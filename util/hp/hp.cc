@@ -147,9 +147,8 @@ std::string StringBuffer::getValueByKey(const std::string & key_str
 
            result_data << " ";
            result_data << std::setw( 2 ) << std::setfill( '0' )
-           << std::hex << std::uppercase << static_cast<unsigned short>(static_cast<unsigned char>(*i));
-
-
+               << std::hex << std::uppercase
+               << static_cast<unsigned short>(static_cast<unsigned char>(*i));
 
            ++format_counter;
        }
