@@ -25,6 +25,9 @@
 #include <cstdio>
 #include <memory>
 #include <string>
+#include <ios>
+#include <iomanip>
+#include <sstream>
 #include <stdexcept>
 
 #include <boost/utility.hpp>
@@ -40,8 +43,8 @@
 ///buffer append
 void StringBuffer::append(std::string & str)
 {
-    for(std::string::iterator i = str.begin(); i != str.end() ; ++i)
-        if (*i == '\0') *i = ' ';//replace null chars for spaces before append
+    //for(std::string::iterator i = str.begin(); i != str.end() ; ++i)
+    //    if (*i == '\0') *i = ' ';//replace null chars for spaces before append
 
     buffer_.append(str);
 }
@@ -84,6 +87,87 @@ std::string StringBuffer::getValueByKey(const std::string & key_str
      return buffer_size; //count bytes taken care of
  }
 
+ static int debug_trace(CURL *handle, curl_infotype type,
+              char *data, size_t size,
+              void *userp)
+ {
+   StringBuffer* sb = static_cast<StringBuffer*> (userp);
+   std::string strdata(static_cast<char *>(data), size);
+
+   const char *text;
+   (void)handle; // prevent compiler warning
+
+   switch (type) {
+   case CURLINFO_TEXT:
+     text = "\n== Info";
+     break;
+   default:
+     text = "\n=> Unknown header";
+     break;
+   case CURLINFO_HEADER_OUT:
+     text = "\n=> Send header";
+     break;
+   case CURLINFO_DATA_OUT:
+     text = "\n=> Send data";
+     break;
+   case CURLINFO_SSL_DATA_OUT:
+     text = "\n=> Send SSL data";
+     break;
+   case CURLINFO_HEADER_IN:
+     text = "\n<= Recv header";
+     break;
+   case CURLINFO_DATA_IN:
+     text = "\n<= Recv data";
+     break;
+   case CURLINFO_SSL_DATA_IN:
+     text = "\n<= Recv SSL data";
+     break;
+   }
+
+   std::stringstream result_data;
+   result_data << "\n" << text << "\n";// << strdata;
+   if((type == CURLINFO_DATA_OUT)
+           || (type == CURLINFO_DATA_IN)
+           || (type == CURLINFO_SSL_DATA_OUT)
+           || (type == CURLINFO_SSL_DATA_IN)
+           )
+    {//hexdump
+       std::size_t format_counter = 0;
+
+       result_data << "\nSize: " << strdata.size();
+
+       for(std::string::iterator i = strdata.begin(); i != strdata.end() ; ++i)
+       {
+
+           if (format_counter%64 == 0) result_data << "\n";
+
+           if (format_counter%(64*16) == 0) result_data << "\n";
+
+           if(format_counter%16 == 0) result_data << " ";
+
+           result_data << " ";
+           result_data << std::setw( 2 ) << std::setfill( '0' )
+           << std::hex << std::uppercase << static_cast<unsigned short>(static_cast<unsigned char>(*i));
+
+
+
+           ++format_counter;
+       }
+
+    }
+   else
+   {
+       result_data << strdata;
+   }
+
+
+   std::string result_string(result_data.str());
+
+   sb->append(result_string);//append to buffer
+   return 0;
+ }
+
+
 CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         , const std::string& curlopt_url //url
         , const std::string& curlopt_capath //ended by slash
@@ -106,7 +190,14 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
     std::string curlopt_cainfo(curlopt_capath+curlopt_cert_file);
     if(curl)//CURL*
     {
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, curlopt_verbose);//talk to me
+        //debug callback
+        if (debug_data_ptr)
+        {
+            curl_easy_setopt(curl, CURLOPT_DEBUGDATA , debug_data_ptr);
+            curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, debug_trace);
+        }
+
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, curlopt_verbose);//enable debug callback
         if((curl_log_file)&& (curl_log_file != stderr))//use stderr redirected to logfile if not null
             curl_easy_setopt(curl, CURLOPT_STDERR , curl_log_file);
 
@@ -124,13 +215,6 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         //CURLOPT_RETURNTRANSFER
         curl_easy_setopt(curl, CURLOPT_WRITEDATA , write_data_ptr);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-
-        //debug callback
-        if (debug_data_ptr)
-        {
-            curl_easy_setopt(curl, CURLOPT_DEBUGDATA , debug_data_ptr);
-            curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, write_data);
-        }
 
         //to validate against stored certificate
         // set the file with the certs validating the server
