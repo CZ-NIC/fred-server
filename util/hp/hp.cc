@@ -43,9 +43,6 @@
 ///buffer append
 void StringBuffer::append(std::string & str)
 {
-    //for(std::string::iterator i = str.begin(); i != str.end() ; ++i)
-    //    if (*i == '\0') *i = ' ';//replace null chars for spaces before append
-
     buffer_.append(str);
 }
 
@@ -158,7 +155,6 @@ std::string StringBuffer::getValueByKey(const std::string & key_str
    {
        result_data << strdata;
    }
-
 
    std::string result_string(result_data.str());
 

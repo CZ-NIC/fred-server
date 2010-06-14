@@ -71,6 +71,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_upload_curlopt_connect_timeout","1800") //orig 1800, maximum time in seconds that you allow the connection to the server to take
     ("hp_upload_curlopt_maxconnect","20") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
     ("hp_upload_curlopt_stderr_log","curl_stderr.log")//if empty free() invalid pointer, curl log file name in mb_proc_tmp_dir, if empty redir is not set
+    ("hp_upload_curl_verbose","1")//verbosity of communication dump 0/1
     ("hp_upload_retry","10")//default number of upload retries
     ;
 
@@ -143,7 +144,7 @@ void HPMail::login(const std::string& loginame //postservice account name
                 , config_["postservice_cert_file"] //pem cert file name
                 , "" //no cookie
                 , "" //no useragent
-                , 1 //verbose
+                , boost::lexical_cast<long>(config_["hp_upload_curl_verbose"]) //verbose
                 , &sb //response buffer
                 , &debugbuf //debug buffer
                 , curl_log_file_guard_.get() //curl logfile
@@ -158,7 +159,7 @@ void HPMail::login(const std::string& loginame //postservice account name
 
     //log result
         std::string form_reply("\n\nover reply: \n"
-                + sb.copy() + "\n\nDEBUGDATA:\n" + debugbuf.copy());
+                + sb.copy() + "\n\n" + debugbuf.copy());
         fwrite (form_reply.c_str() , 1, form_reply.size()
                 , curl_log_file_guard_.get() );
 
@@ -443,7 +444,7 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
                     , config_["postservice_cert_file"] //pem cert file name
                     , "PHPSESSID="+phpsessid_//PHP session id in cookie
                     , config_["hp_useragent_id"] //useragent id
-                    , 1 //verbose
+                    , boost::lexical_cast<long>(config_["hp_upload_curl_verbose"]) //verbose
                     , &sb //response buffer
                     , &debugbuf //debug buffer
                     , curl_log_file_guard_.get()//curl logfile
@@ -466,7 +467,7 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
                 std::stringstream formpost_reply;
                     formpost_reply << "\n\nCommand reply: \n"
                         << sb.copy()
-                        << "\n\nDEBUGDATA:\n" << debugbuf.copy()
+                        << "\n\n" << debugbuf.copy()
                         <<  "\n" << "crc32: "
                         << crc32_string
                         << "\nfile number: "
@@ -536,7 +537,7 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
                 , config_["postservice_cert_file"] //pem cert file name
                 , "PHPSESSID="+phpsessid_//PHP session id in cookie
                 , config_["hp_useragent_id"] //useragent id
-                , 1 //verbose
+                , boost::lexical_cast<long>(config_["hp_upload_curl_verbose"]) //verbose
                 , &sb
                 , &debugbuf//debug buffer
                 , curl_log_file_guard_.get()//curl logfile
@@ -566,7 +567,7 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
     //log result
     std::stringstream formpost_reply;
         formpost_reply << "\nKonec reply: \n" << sb.copy()
-                << + "\n\nDEBUGDATA:\n" << debugbuf.copy()
+                << + "\n\n" << debugbuf.copy()
                             <<  "\n" << std::endl;
     fwrite (formpost_reply.str().c_str() , 1
             , formpost_reply.str().size() , curl_log_file_guard_.get() );
@@ -604,7 +605,7 @@ void HPMail::send_storno()
         , config_["postservice_cert_file"] //pem cert file name
         , "PHPSESSID="+phpsessid_//PHP session id in cookie
         , config_["hp_useragent_id"] //useragent id
-        , 1 //verbose
+        , boost::lexical_cast<long>(config_["hp_upload_curl_verbose"]) //verbose
         , &sb
         , &debugbuf //debug buffer
         , curl_log_file_guard_.get()//curl logfile
@@ -619,7 +620,7 @@ void HPMail::send_storno()
     //log result
     std::stringstream formpost_reply;
         formpost_reply << "\nPrubeh reply: \n" << sb.copy()
-                << "\n\nDEBUGDATA:\n" << debugbuf.copy()
+                << "\n\n" << debugbuf.copy()
                             <<  "\n" << std::endl;
     fwrite (formpost_reply.str().c_str() , 1
             , formpost_reply.str().size() , curl_log_file_guard_.get() );
