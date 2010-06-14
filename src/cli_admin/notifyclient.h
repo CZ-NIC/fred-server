@@ -27,6 +27,8 @@
 #define NOTIFY_LETTERS_CREATE_NAME_DESC "generate pdf with domain registration warning"
 #define NOTIFY_LETTERS_SEND_NAME        "notify_letters_postservis_send"
 #define NOTIFY_LETTERS_SEND_NAME_DESC   "send generated PDF notification letters to postservis"
+#define NOTIFY_FILE_SEND                "notify_send_file"
+#define NOTIFY_FILE_SEND_DESC           "send specified PDF file via postservis"
 
 #define NOTIFY_EXCEPT_TYPES_NAME        "notify_except_types"
 #define NOTIFY_EXCEPT_TYPES_NAME_DESC   "list of notification types ignored in notification"
@@ -80,6 +82,7 @@ public:
     void state_changes();
     void letters_create();
     void letters_send();
+    void file_send();
 }; // class NotifyClient
 
 } // namespace Admin;

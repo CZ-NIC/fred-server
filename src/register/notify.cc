@@ -723,47 +723,99 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
          Database::Transaction trans(conn);
          conn.exec("LOCK TABLE notify_letters IN ACCESS EXCLUSIVE MODE");
-
-         conn.exec("UPDATE notify_letters SET status=6 WHERE status=1");
+                  
+         res = conn.exec("SELECT distinct(file_id) FROM notify_letters WHERE status=1");
          
-         res = conn.exec("SELECT distinct(file_id) FROM notify_letters WHERE status=6");
-
-         // unlock the table
-         trans.commit();
-
          if(res.size() == 0) {
              LOGGER(PACKAGE).debug("Register::Notify::sendLetters(): No files ready for processing"); 
              return;
          }
+         TID old_id = res[0][0];
+         int old_id_status = 6;
+         // we have to set application lock(status 6) somewhere while the table is locked in db
+         conn.exec(boost::format("UPDATE notify_letters SET status=6 WHERE file_id=%1%") % old_id) ;
+         
+         // unlock the table - from now we need to hold the app lock until the end of processing
+         trans.commit();
 
-         MailBatch batch;
-         batch.reserve(res.size()); 
+         for (unsigned int i=0;i<res.size(); i++) {
 
-         for (unsigned i=0;i<res.size();i++) {
-                MailFile one;
+             Database::Transaction t(conn);
 
-                fileman->download(res[i][0], one);
-                batch.push_back(one);
+             conn.exec(boost::format("UPDATE notify_letters SET status=%1% where file_id=%2%") % old_id_status % old_id);
 
-                LOGGER(PACKAGE).debug(boost::format ("sendLetters File ID: %1% ") % res[i][0]); 
+             old_id = res[i][0];
+             conn.exec(boost::format("UPDATE notify_letters SET status=6 where file_id=%1%") % old_id  );
+
+             t.savepoint();
+
+             // get the file from filemanager client and create the batch
+             MailFile one;
+             fileman->download(old_id, one);             
+
+             LOGGER(PACKAGE).debug(boost::format ("sendLetters File ID: %1% ") % res[i][0]);
+
+             MailBatch batch;
+             batch.push_back(one);
+
+             // data's ready, we can send it
+             old_id_status=5;
+             try {
+                 HPMail::init_connection();
+                 HPMail::get()->upload(batch);
+             } catch(std::exception& ex) {
+                 std::cout << "Error: " << ex.what() << " on file ID " << old_id << std::endl;
+                 old_id_status = 4; // set error status in database
+             } catch(...) {
+                 std::cout << "Unknown Error" << " on file ID " << old_id << std::endl;
+                 old_id_status = 4; // set error status in database
+             }
+
+             t.commit();
          }
-         /// TODO handle no files
+         // now we disable the application lock - no records will be set to status 6
+         conn.exec(boost::format("UPDATE notify_letters SET status=%1% where file_id=%2%") % old_id_status % old_id);
+       
+      }
 
-         // data's ready, we can send it
-         try {
+      virtual void sendFile(const std::string &filename) {
+
+          TRACE("[CALL] Register::Notify::sendFile()");
+
+          // TODO DEBUG
+          std::cout << "Filename: " << filename << std::endl;
+          LOGGER(PACKAGE).debug(boost::format("File to send %1% ") % filename);
+
+          std::ifstream infile(filename.c_str());
+
+          if(infile.fail()) {
+              std::cerr << "Failed to open file" << filename << std::endl;
+              throw;
+              return;
+          }
+
+          // TODO use this?
+          /// std::copy(istream_iterator(file), istream_iterator(), std::back_inserter(buffer));
+
+          MailFile f;
+          char ch;
+          while(infile.get(ch)) {
+              f.push_back(ch);
+          }
+          MailBatch batch;
+          batch.push_back(f);
+
+          try {
              HPMail::init_connection();
              HPMail::get()->upload(batch);
-         } catch(std::exception& ex) {
-             std::cout << "Error: " << ex.what() << std::endl;
-             conn.exec("UPDATE notify_letters SET status=4 WHERE status=6");
-             throw ;
-         } catch(...) {
-            std::cout << "Unknown Error" << std::endl;
-            conn.exec("UPDATE notify_letters SET status=4 WHERE status=6");
-            throw;
-         }
 
-        conn.exec("UPDATE notify_letters SET status=5 WHERE status=6");
+          } catch(std::exception& ex) {
+             std::cerr << "Error: " << ex.what() << std::endl;
+             throw;
+          } catch(...) {
+             std::cerr << "Unknown Error" << std::endl;
+             throw;
+          }
 
       }
     };
