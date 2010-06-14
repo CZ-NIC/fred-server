@@ -78,6 +78,19 @@ public:
     return this->exec(_stmt.toSql(boost::bind(&ConnectionBase_<connection_driver, manager_type>::escape, this, _1)));
   }
 
+  /**      
+   * @param _query boost::format representing query statement
+   * @return       result
+   */
+  virtual inline result_type exec(const boost::format &_fmt) throw (ResultFailed) {
+      try {
+        return exec(_fmt.str());
+      } catch (ResultFailed &rf) {
+          throw;
+      } catch (...) {
+          throw ResultFailed(">>Conversion error<<");
+      }
+  }
 
   /**
    * @param _query string representation of query statement
