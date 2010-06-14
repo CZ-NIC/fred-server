@@ -344,7 +344,7 @@ VolumeFileNames HPMail::load_compressed_mail_batch_filelist()
         if(i < 1000)
             order_number << std::setfill('0') << std::setw(3) << i;
         else
-            order_number << i; //TODO: check behaviour over 1000 volumes
+            order_number << i;
         std::string compressed_mail_volume_name(
                 config_["mb_proc_tmp_dir"]
                 +config_["hp_upload_archiv_filename_body"]
@@ -398,7 +398,7 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
         if(i < 1000)
             order_number << std::setfill('0') << std::setw(3) << i << std::flush;
         else
-            order_number << i; //TODO: check behaviour over 1000 volumes
+            order_number << i;
 
         std::string compressed_mail_volume_name(
                 hp_batch_number_+ config_["hp_upload_archiv_filename_suffix"]
