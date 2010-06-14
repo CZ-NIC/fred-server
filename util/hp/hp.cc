@@ -36,34 +36,6 @@
 
 
 //class StringBuffer
-///static instance init
-std::auto_ptr<StringBuffer> StringBuffer::instance_ptr(0);
-
-///instance setter
-StringBuffer* StringBuffer::set()
-{
-    std::auto_ptr<StringBuffer>
-    tmp_instance(new StringBuffer);
-    instance_ptr = tmp_instance;
-    if (instance_ptr.get() == 0)
-        throw std::runtime_error(
-                "StringBuffer::set_instance error: instance not set");
-    return instance_ptr.get();
-}
-
-///instance  getter
-StringBuffer* StringBuffer::get()
-{
-    StringBuffer* ret = instance_ptr.get();
-    if (ret == 0)
-    {
-        set();
-        ret = instance_ptr.get();
-        if (ret == 0)  throw std::runtime_error(
-                "StringBuffer::get_instance error: instance not set");
-    }
-    return ret;
-}
 
 ///buffer append
 void StringBuffer::append(std::string & str)
@@ -99,14 +71,16 @@ std::string StringBuffer::getValueByKey(const std::string & key_str
     return buffer_.substr(key_pos + key_str.length(), value_len);
 }
 
-///php invented curl option CURLOPT_RETURNTRANSFER replacement callback
+///form post callback
  static size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp)
  {
      size_t buffer_size = size * nmemb;//number of bytes in buffer
 
+     StringBuffer* sb = static_cast<StringBuffer*> (userp);
+
      //copy data from buffer into std string
      std::string data(static_cast<char *>(buffer), buffer_size);
-     StringBuffer::get()->append(data);//append to StringBuffer
+     sb->append(data);//append to StringBuffer
      return buffer_size; //count bytes taken care of
  }
 
@@ -117,11 +91,12 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         , const std::string& curlopt_cookie //cookie NAME=CONTENTS, Set multiple cookies in one string like this: "name1=content1; name2=content2;" PHPSESSID=6d8cbbd1e53b15aa0523f4579612f940;
         , const std::string& curlopt_useragent //header "CommandLine klient HP"
         , long curlopt_verbose // 0 / 1
+        , void * write_data_ptr //response data external storage, depends on write_data callback
+        , void * debug_data_ptr //debug data external storage, depends on write_data callback
         , FILE* curl_log_file //curl log file
         , long curlopt_timeout //default is not set, maximum time in seconds that you allow the libcurl transfer operation to take
         , long curlopt_connect_timeout //default is not set, maximum time in seconds that you allow the connection to the server to take
         , long curlopt_maxconnect //default is not set, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
-
         )
 {
     CURLSharedPtr  curl_easy_guard = CurlEasyCleanupPtr(curl_easy_init());
@@ -147,8 +122,15 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);//shut off the built-in progress meter completely
 
         //CURLOPT_RETURNTRANSFER
-        StringBuffer::set();//reset recv buffer
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA , write_data_ptr);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+
+        //debug callback
+        if (debug_data_ptr)
+        {
+            curl_easy_setopt(curl, CURLOPT_DEBUGDATA , debug_data_ptr);
+            curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, write_data);
+        }
 
         //to validate against stored certificate
         // set the file with the certs validating the server

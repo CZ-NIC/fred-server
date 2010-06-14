@@ -37,24 +37,17 @@
 
 /**
  * \class StringBuffer
- * \brief global string buffer for post result returned by post write callback
+ * \brief string buffer for curl callback
  */
-class StringBuffer : boost::noncopyable
+class StringBuffer
 {
     std::string buffer_;
-    static std::auto_ptr<StringBuffer> instance_ptr;
-    friend class std::auto_ptr<StringBuffer>;
-protected:
+public:
     ~StringBuffer(){}
-private:
     StringBuffer()
     {
         buffer_.clear();
     }
-public:
-    static StringBuffer* set();
-    static StringBuffer* get();
-
     void append(std::string & str);
     void append(const char* str);
     std::string copy();
@@ -148,6 +141,8 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         , const std::string& curlopt_cookie //cookie NAME=CONTENTS, Set multiple cookies in one string like this: "name1=content1; name2=content2;" PHPSESSID=6d8cbbd1e53b15aa0523f4579612f940;
         , const std::string& curlopt_useragent //header "CommandLine klient HP"
         , long curlopt_verbose // 0 / 1
+        , void * write_data_ptr //response data external storage, depends on write_data callback
+        , void * debug_data_ptr //debug data external storage, depends on write_data callback
         , FILE* curl_log_file = 0 //curl log file
         , long curlopt_timeout = 0 //default is not set, maximum time in seconds that you allow the libcurl transfer operation to take
         , long curlopt_connect_timeout = 0 //default is not set, maximum time in seconds that you allow the connection to the server to take

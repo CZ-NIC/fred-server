@@ -135,7 +135,8 @@ void HPMail::login(const std::string& loginame //postservice account name
             , config_["hp_login_clientversion"] //verzeProg orig was "20100315001"
             );
 
-    StringBuffer::set();//reset recv buffer, userp may be better
+    StringBuffer sb;//response buffer
+    StringBuffer debugbuf;//debug buffer
     CURLcode res = hp_form_post(formpost_overeni  //linked list ptr
                 , config_["hp_login_interface_url"] //form url
                 , config_["postservice_cert_dir"] //cert file dir ended by slash
@@ -143,6 +144,8 @@ void HPMail::login(const std::string& loginame //postservice account name
                 , "" //no cookie
                 , "" //no useragent
                 , 1 //verbose
+                , &sb //response buffer
+                , &debugbuf //debug buffer
                 , curl_log_file_guard_.get() //curl logfile
                 );
 
@@ -155,24 +158,24 @@ void HPMail::login(const std::string& loginame //postservice account name
 
     //log result
         std::string form_reply("\n\nover reply: \n"
-                + StringBuffer::get()->copy());
+                + sb.copy() + "\n\nDEBUGDATA:\n" + debugbuf.copy());
         fwrite (form_reply.c_str() , 1, form_reply.size()
                 , curl_log_file_guard_.get() );
 
     //result parsing
-    phpsessid_ =  StringBuffer::get()->getValueByKey("PHPSESSID=", 32);
-    hp_batch_number_ = StringBuffer::get()->getValueByKey("cislozakazky", 12) ;
+    phpsessid_ =  sb.getValueByKey("PHPSESSID=", 32);
+    hp_batch_number_ = sb.getValueByKey("cislozakazky", 12) ;
 
     //detecting errors
     if (hp_batch_number_.empty())
         throw std::runtime_error(std::string("HPMail::login error: empty batch number"));
-    if (StringBuffer::get()->getValueByKey("overenizak ", 2).compare("KO")==0)
+    if (sb.getValueByKey("overenizak ", 2).compare("KO")==0)
         throw std::runtime_error(std::string("HPMail::login error: batch validation failed"));
-    if (StringBuffer::get()->getValueByKey("zaladr ", 2).compare("KO") == 0)
+    if (sb.getValueByKey("zaladr ", 2).compare("KO") == 0)
         throw std::runtime_error(std::string("HPMail::login error: mkdir failed"));
-    if (StringBuffer::get()->getValueByKey("Overeni ", 2).compare("OK") != 0)
+    if (sb.getValueByKey("Overeni ", 2).compare("OK") != 0)
         throw std::runtime_error(std::string("HPMail::login error: login failed"));
-    if (StringBuffer::get()->getValueByKey("UDRZBA", 2).compare("on") == 0)
+    if (sb.getValueByKey("UDRZBA", 2).compare("on") == 0)
         throw std::runtime_error(std::string("HPMail::login error: server out of order"));
 }
 
@@ -432,7 +435,8 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
                         );
 
                 //send form
-                StringBuffer::set();//reset recv buffer, userp may be better
+                StringBuffer sb;//response buffer
+                StringBuffer debugbuf;//debug buffer
                 CURLcode res = hp_form_post(formpost_command  //linked list ptr
                     , config_["hp_upload_interface_url"]//url
                     , config_["postservice_cert_dir"] //ended by slash
@@ -440,6 +444,8 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
                     , "PHPSESSID="+phpsessid_//PHP session id in cookie
                     , config_["hp_useragent_id"] //useragent id
                     , 1 //verbose
+                    , &sb //response buffer
+                    , &debugbuf //debug buffer
                     , curl_log_file_guard_.get()//curl logfile
                     //maximum time in seconds that you allow the libcurl transfer operation to take
                     , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
@@ -459,7 +465,8 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
                 //log result
                 std::stringstream formpost_reply;
                     formpost_reply << "\n\nCommand reply: \n"
-                        << StringBuffer::get()->copy()
+                        << sb.copy()
+                        << "\n\nDEBUGDATA:\n" << debugbuf.copy()
                         <<  "\n" << "crc32: "
                         << crc32_string
                         << "\nfile number: "
@@ -469,14 +476,14 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
                         , formpost_reply.str().size() , curl_log_file_guard_.get() );
 
                 //result parsing & detecting errors
-                if ((StringBuffer::get()->getValueByKey("OvereniCrc ", 2)).compare("KO") == 0)
+                if ((sb.getValueByKey("OvereniCrc ", 2)).compare("KO") == 0)
                             throw std::runtime_error(std::string(
                                     "HPMail::upload_of_batch error: crc check failed"));
-                if ((StringBuffer::get()->getValueByKey("zaladr ", 2)).compare("KO") == 0)
+                if ((sb.getValueByKey("zaladr ", 2)).compare("KO") == 0)
                     throw std::runtime_error(std::string(
                             "HPMail::upload_of_batch error: mkdir failed"));
                 //will never happen
-                if ((StringBuffer::get()->getValueByKey("UDRZBA", 2)).compare("on") == 0)
+                if ((sb.getValueByKey("UDRZBA", 2)).compare("on") == 0)
                     throw std::runtime_error(std::string(
                             "HPMail::upload_of_batch error: server out of order"));
 
@@ -521,7 +528,8 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
             , "OK" //status
             );
 
-    StringBuffer::set();//reset recv buffer, userp may be better
+    StringBuffer sb;//response buffer
+    StringBuffer debugbuf;//debug buffer
     CURLcode res = hp_form_post(formpost_konec  //linked list ptr
                 , config_["hp_ack_interface_url"]//"konec.php" url
                 , config_["postservice_cert_dir"] //ended by slash
@@ -529,6 +537,8 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
                 , "PHPSESSID="+phpsessid_//PHP session id in cookie
                 , config_["hp_useragent_id"] //useragent id
                 , 1 //verbose
+                , &sb
+                , &debugbuf//debug buffer
                 , curl_log_file_guard_.get()//curl logfile
                 //maximum time in seconds that you allow the libcurl transfer operation to take
                 , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
@@ -546,16 +556,17 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
     }
 
     //result parsing & detecting errors
-    if ((StringBuffer::get()->getValueByKey("zaladr ", 2)).compare("KO") == 0)
+    if ((sb.getValueByKey("zaladr ", 2)).compare("KO") == 0)
         throw std::runtime_error(std::string("zaladr is KO"));
     //will never happen
-    if ((StringBuffer::get()->getValueByKey("UDRZBA", 2)).compare("on") == 0)
+    if ((sb.getValueByKey("UDRZBA", 2)).compare("on") == 0)
         throw std::runtime_error(std::string("udrzba on"));
 
 
     //log result
     std::stringstream formpost_reply;
-        formpost_reply << "\nKonec reply: \n" << StringBuffer::get()->copy()
+        formpost_reply << "\nKonec reply: \n" << sb.copy()
+                << + "\n\nDEBUGDATA:\n" << debugbuf.copy()
                             <<  "\n" << std::endl;
     fwrite (formpost_reply.str().c_str() , 1
             , formpost_reply.str().size() , curl_log_file_guard_.get() );
@@ -581,7 +592,8 @@ void HPMail::send_storno()
     CFormSharedPtr  form_prubeh_guard = CurlFormFreePtr(&formpost_prubeh);
 
     //send form
-    StringBuffer::set();//reset recv buffer, userp may be better
+    StringBuffer sb;//response buffer
+    StringBuffer debugbuf;//debug buffer
     hp_prubeh_command(&formpost_prubeh //out parameter
             , curl_log_file_name_ //failure errorlog filename
             );
@@ -593,6 +605,8 @@ void HPMail::send_storno()
         , "PHPSESSID="+phpsessid_//PHP session id in cookie
         , config_["hp_useragent_id"] //useragent id
         , 1 //verbose
+        , &sb
+        , &debugbuf //debug buffer
         , curl_log_file_guard_.get()//curl logfile
         //maximum time in seconds that you allow the libcurl transfer operation to take
         , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
@@ -604,7 +618,8 @@ void HPMail::send_storno()
 
     //log result
     std::stringstream formpost_reply;
-        formpost_reply << "\nPrubeh reply: \n" << StringBuffer::get()->copy()
+        formpost_reply << "\nPrubeh reply: \n" << sb.copy()
+                << "\n\nDEBUGDATA:\n" << debugbuf.copy()
                             <<  "\n" << std::endl;
     fwrite (formpost_reply.str().c_str() , 1
             , formpost_reply.str().size() , curl_log_file_guard_.get() );
