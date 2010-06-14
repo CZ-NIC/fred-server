@@ -230,7 +230,7 @@ void HPMail::save_file_for_upload( const MailFile& mf)
              throw std::runtime_error(
                      "HPMail::save_file_for_upload error: system command: "
                      + command_cleanup
-                     + "failed with retcode: "
+                     + " failed with retcode: "
                      + boost::lexical_cast<std::string>(system_command_retcode));
     }
 
@@ -300,7 +300,7 @@ void HPMail::archiver_command()
         throw std::runtime_error(
                 "HPMail::archiver_command error: system command: "
                 + command_for_arch
-                + "failed with retcode: "
+                + " failed with retcode: "
                 + boost::lexical_cast<std::string>(system_command_retcode));
 
     compressed_file_for_upload_ = true;//ok we have some
