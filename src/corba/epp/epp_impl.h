@@ -8,6 +8,9 @@
 #include "conf/manager.h"
 #include <vector>
 
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+
 struct Session
 {
   int clientID;
@@ -258,4 +261,6 @@ private:
   std::auto_ptr<CountryCode> CC;
   int max_zone;
   bool testInfo; // TODO: remove 
+
+  boost::mutex session_mutex_;
 };

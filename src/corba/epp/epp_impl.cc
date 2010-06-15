@@ -456,6 +456,8 @@ void ccReg_EPP_i::CreateSession(
 
   LOG( DEBUG_LOG , "SESSION CREATE max %d wait %ld" , max , wait );
 
+  boost::mutex::scoped_lock lock(session_mutex_);
+
   session = new Session[max];
   numSession=0; //  number of the active session
   maxSession=max; // maximum number of sessions
@@ -476,6 +478,8 @@ bool ccReg_EPP_i::LoginSession(
   int i;
 
   GarbageSesion();
+
+  boost::mutex::scoped_lock lock(session_mutex_);
 
   if (numSession < maxSession) {
     // count sessions for given registrar
@@ -513,6 +517,8 @@ bool ccReg_EPP_i::LogoutSession(
 {
   int i;
 
+  boost::mutex::scoped_lock lock(session_mutex_);
+
   for (i = 0; i < maxSession; i ++) {
     if (session[i].clientID== loginID) {
       session[i].clientID=0;
@@ -537,6 +543,8 @@ void ccReg_EPP_i::GarbageSesion()
 
   LOG( DEBUG_LOG , "SESSION GARBAGE" );
   t = ( long long ) time(NULL);
+
+  boost::mutex::scoped_lock lock(session_mutex_);
 
   for (i = 0; i < maxSession; i ++) {
 
@@ -567,6 +575,8 @@ int ccReg_EPP_i::GetRegistrarID(
 
   LOG( DEBUG_LOG , "SESSION GetRegistrarID %d" , clientID );
 
+  boost::mutex::scoped_lock lock(session_mutex_);
+
   for (i = 0; i < maxSession; i ++) {
 
     if (session[i].clientID==clientID) {
@@ -585,6 +595,8 @@ int ccReg_EPP_i::GetRegistrarLang(
   int clientID)
 {
   int i;
+
+  boost::mutex::scoped_lock lock(session_mutex_);
 
   for (i = 0; i < numSession; i ++) {
     if (session[i].clientID==clientID) {
