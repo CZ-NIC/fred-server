@@ -151,7 +151,6 @@ public:
     }//handle
 };//class HandleGeneralArgs
 
-/////////////////////////////////////
 
 /**
  * \class HandleHelpArg

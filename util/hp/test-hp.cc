@@ -37,13 +37,14 @@
 #include <vector>
 
 #include "random_data_generator.h"
+/*
 #include "handle_general_args.h"
 
 HandlerPtrVector global_hpv =
  boost::assign::list_of
  (HandleArgsPtr(new HandleHelpArg))
  ;
-
+*/
 int main ( int argc, char* argv[])
 {
     try
@@ -139,3 +140,58 @@ int main ( int argc, char* argv[])
 
     return EXIT_SUCCESS;
 }
+
+/**
+ * \class HandleHPMailArgs
+ * \brief postservice client cmdline options handler
+ */
+/*
+class HandleHPMailArgs : public HandleArgs
+{
+public:
+    std::string nameservice_host ;
+    unsigned nameservice_port;
+    std::string nameservice_context;
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> opts_descs(
+                new boost::program_options::options_description(
+                        std::string("Postservice client configuration")));
+
+
+        opts_descs->add_options()
+                ("nameservice.host", boost::program_options
+                            ::value<std::string>()->default_value(std::string("localhost"))
+                        , "nameservice host name")
+                ("nameservice.port", boost::program_options
+                            ::value<unsigned int>()->default_value(2809)
+                             , "nameservice port number")
+                ("nameservice.context", boost::program_options
+                         ::value<std::string>()->default_value(std::string("fred"))
+                     , "freds context in name service");
+
+
+        return opts_descs;
+    }//get_options_description
+    void handle( int argc, char* argv[],  FakedArgs &fa)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+
+
+        nameservice_host = (vm.count("nameservice.host") == 0
+                ? std::string("localhost") : vm["nameservice.host"].as<std::string>());
+        nameservice_port = (vm.count("nameservice.port") == 0
+                ? 2809 : vm["nameservice.port"].as<unsigned>());
+        nameservice_context = (vm.count("nameservice.context") == 0
+                ? std::string("fred") : vm["nameservice.context"].as<std::string>());
+
+
+
+    }//handle
+};//class HandleHPMailArgs
+*/
+
