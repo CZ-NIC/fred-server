@@ -37,8 +37,12 @@
 #include <vector>
 
 #include "random_data_generator.h"
+#include "handle_general_args.h"
 
-
+HandlerPtrVector global_hpv =
+ boost::assign::list_of
+ (HandleArgsPtr(new HandleHelpArg))
+ ;
 
 int main ( int argc, char* argv[])
 {
@@ -53,16 +57,16 @@ int main ( int argc, char* argv[])
 
         //HPMail instance configuration and initialization
         HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
-                ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed files
-                ("hp_upload_archiver_additional_options", "-mx5 -v5m -mmt=on")//volumes size
+                ("mb_proc_tmp_dir","/data/img/tmpdir/") //empty temp dir for compressed files
+                ("hp_upload_archiver_additional_options", "-mx5 -v20m -mmt=on")//volumes size
                 ("hp_upload_curlopt_stderr_log","curl_stderr.log") //no curl log curl_stderr.log
                 ("hp_upload_curl_verbose","1")//verbosity of communication dump 0/1
                 ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
 
-        for(unsigned i = 0; i < 3; ++i)
+        for(unsigned i = 0; i < 2000; ++i)
         {
-            std::string tmp_str(rdg.xstring(1024*13));
+            std::string tmp_str(rdg.xstring(1024*1024*3));
             MailFile tmp_mf (tmp_str.begin(), tmp_str.end());
             HPMail::get()->save_file_for_upload(tmp_mf);
         }
