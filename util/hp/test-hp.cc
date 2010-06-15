@@ -37,16 +37,27 @@
 #include <vector>
 
 #include "random_data_generator.h"
-/*
+#include "config_handler.h"
 #include "handle_general_args.h"
-
 HandlerPtrVector global_hpv =
- boost::assign::list_of
- (HandleArgsPtr(new HandleHelpArg))
- ;
-*/
+boost::assign::list_of
+(HandleArgsPtr(new HandleHelpArg))
+;
+
+
 int main ( int argc, char* argv[])
 {
+	//producing faked args with unrecognized ones
+	FakedArgs fa;
+	try
+	{
+		fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
+	}
+	catch(const ReturnFromMain&)
+	{
+		return 0;
+	}
+
     try
     {
 
