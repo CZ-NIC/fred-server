@@ -38,7 +38,7 @@
 
 #include "faked_args.h"
 #include "handle_args.h"
-#include "handle_general_args.h"
+//#include "handle_general_args.h"
 
 typedef std::map<std::string, HandleArgsPtr > HandlerPtrMap;
 
@@ -135,7 +135,7 @@ template <class HELP> CfgArgs* CfgArgs::instance(const HandlerPtrVector& hpv)
     //gather options_descriptions for help print if present
     HandleArgsPtr ha =
             tmp_instance->get_handler_by_type<HELP>();
-    HandleGeneralArgs* hga = 0;//nonowning temp child
+    HELP* hga = 0;//nonowning temp child
     if(ha.get() != 0)
         hga = dynamic_cast<HELP*>(ha.get());
     if(hga != 0)
