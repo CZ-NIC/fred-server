@@ -1886,6 +1886,7 @@ std::string ccReg_Admin_i::_createQueryForEnumDomainsByRegistrant(const std::str
   std::string query = "";
 
   std::string from_part = "domain d JOIN zone z ON (z.id = d.zone) " \
+              "JOIN enumval ev ON (d.id = ev.domainid) "             \
               "JOIN object_registry oreg ON (oreg.id = d.id) "       \
               "JOIN contact c ON (c.id = d.registrant)";
 
@@ -1905,19 +1906,17 @@ std::string ccReg_Admin_i::_createQueryForEnumDomainsByRegistrant(const std::str
   Database::Connection conn = Database::Manager::acquire();
   std::string ename = conn.escape(namecopy);
 
+  where_part = "ev.publish='t' AND z.enum_zone='t'";
   if (by_person && by_org) {
-    where_part = str(boost::format("z.enum_zone='t' " \
-                    "AND COALESCE(c.organization, c.name) ILIKE " + translate)
+    where_part += str(boost::format(" AND COALESCE(c.organization, c.name) ILIKE " + translate)
                     % ename);
   }
   else if (by_person) {
-    where_part = str(boost::format("z.enum_zone='t' " \
-                    "AND c.name ILIKE " + translate + " AND c.organization IS NULL")
+    where_part += str(boost::format(" AND c.name ILIKE " + translate + " AND c.organization IS NULL")
                     % ename);
   }
   else if (by_org) {
-    where_part = str(boost::format("z.enum_zone='t' " \
-                    "AND c.organization ILIKE " + translate)
+    where_part += str(boost::format(" AND c.organization ILIKE " + translate)
                     % ename);
   }
   return str(boost::format("SELECT %1% FROM %2% WHERE %3%")
@@ -2038,10 +2037,12 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsRecentEntries(::CORBA::Long co
                 "TRIM(COALESCE(c.postalcode, '')), "                                 \
                 "TRIM(COALESCE(c.stateorprovince, '')), "                            \
                 "TRIM(COALESCE(c.country, '')), oreg.name AS domain "                \
-                "FROM domain d join zone z ON (z.id = d.zone) "                      \
+                "FROM domain d JOIN zone z ON (z.id = d.zone) "                      \
+                "JOIN enumval ev ON (d.id = ev.domainid) "                           \
                 "JOIN object_registry oreg ON (oreg.id = d.id) "                     \
                 "JOIN contact c ON (c.id = d.registrant) "                           \
-                "WHERE z.enum_zone = 't' ORDER BY oreg.crdate DESC LIMIT %1%")
+                "WHERE z.enum_zone = 't' AND ev.publish = 't' "                      \
+                "ORDER BY oreg.crdate DESC LIMIT %1%")
                  % count;
 
     /* execute query */
