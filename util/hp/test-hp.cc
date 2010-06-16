@@ -37,12 +37,16 @@
 #include <vector>
 
 #include "random_data_generator.h"
+
 #include "config_handler.h"
 #include "handle_general_args.h"
+#include "handle_hpmail_args.h"
+
 HandlerPtrVector global_hpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleHelpArg))
-;
+	boost::assign::list_of
+	(HandleArgsPtr(new HandleHelpArg("\nUsage: test-hp <switches> [<file_names>...]\n")))
+	(HandleArgsPtr(new HandleHPMailArgs))
+	;
 
 
 int main ( int argc, char* argv[])
@@ -60,26 +64,76 @@ int main ( int argc, char* argv[])
 
     try
     {
+    	HandleHPMailArgs* hpm_cfg
+			= CfgArgs::instance()->get_handler_ptr_by_type<HandleHPMailArgs>();
+
+    	HPCfgMap set_cfg = boost::assign::map_list_of
+    	("mb_proc_tmp_dir",hpm_cfg->mb_proc_tmp_dir)
+    	("postservice_cert_dir",hpm_cfg->postservice_cert_dir)
+    	("postservice_cert_file", hpm_cfg->postservice_cert_file)
+    	("hp_login_interface_url",hpm_cfg->hp_login_interface_url)
+		("hp_upload_interface_url",hpm_cfg->hp_upload_interface_url)
+		("hp_ack_interface_url",hpm_cfg->hp_ack_interface_url)
+		("hp_cancel_interface_url",hpm_cfg->hp_cancel_interface_url)
+		("hp_upload_archiver_filename",hpm_cfg->hp_upload_archiver_filename)
+		("hp_upload_archiver_additional_options"
+				,hpm_cfg->hp_upload_archiver_additional_options)
+		("hp_upload_curlopt_timeout",hpm_cfg->hp_upload_curlopt_timeout )
+		("hp_upload_curlopt_connect_timeout"
+				,hpm_cfg->hp_upload_curlopt_connect_timeout)
+		("hp_upload_curl_verbose",hpm_cfg->hp_upload_curl_verbose )
+		("hp_upload_retry",hpm_cfg->hp_upload_retry );
+
+    	std::cout << "\nConfig print\n" << std::endl;
+    	for (HPCfgMap::const_iterator i = set_cfg.begin()
+    			; i !=  set_cfg.end(); ++i)
+    		std::cout	<< i->first << ": " << i->second << std::endl;
+
+    	std::cout
+    	<<"\nlogin: " << hpm_cfg->login
+    	<<" password: " << hpm_cfg->password
+    	<<" batchid: " << hpm_cfg->hp_login_batch_id
+    	<<" note: " << hpm_cfg->note
+    	<< std::endl;
+
+    	std::cout << "\nFile names\n" << std::endl;
+    	for (int i = 1; i < fa.get_argc(); ++i)
+    		std::cout << fa.get_argv()[i] << std::endl;
 
         //You are strongly advised to not allow this automatic behaviour, by calling curl_global_init(3) yourself properly.
         //viz http://curl.haxx.se/libcurl/c/curl_easy_init.html
         curl_global_init(CURL_GLOBAL_ALL);//once per process call
 
-        RandomDataGenerator rdg;
-
         //HPMail instance configuration and initialization
-        HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
-                ("mb_proc_tmp_dir","/data/img/tmpdir/") //empty temp dir for compressed files
-                ("hp_upload_archiver_additional_options", "-mx5 -v20m -mmt=on")//volumes size
-                ("hp_upload_curlopt_stderr_log","curl_stderr.log") //no curl log curl_stderr.log
-                ("hp_upload_curl_verbose","1")//verbosity of communication dump 0/1
-                ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
+        HPMail::set(set_cfg);
 
-
-        for(unsigned i = 0; i < 2000; ++i)
+        for (int i = 1; i < fa.get_argc(); ++i)
         {
-            std::string tmp_str(rdg.xstring(1024*1024*3));
-            MailFile tmp_mf (tmp_str.begin(), tmp_str.end());
+        	MailFile tmp_mf;
+        	std::ifstream letter_file;
+
+        	std::string letter_file_name(fa.get_argv()[i]);
+
+       	    letter_file.open (letter_file_name.c_str()
+       	        , std::ios::in | std::ios::binary);
+
+			if(letter_file.is_open())
+			{//ok file is there
+				// get length of file
+				letter_file.seekg (0, std::ios::end);
+				long long letter_file_length =
+						letter_file.tellg();
+				letter_file.seekg (0, std::ios::beg);//reset
+				//allocate buffer
+				tmp_mf.resize(letter_file_length,'\0');
+				//read whole file into the buffer
+				letter_file.read( &tmp_mf[0]
+					, letter_file_length );
+			}
+			else //no more files
+				throw std::runtime_error("Error - unable to access file: "
+						+  letter_file_name);
+
             HPMail::get()->save_file_for_upload(tmp_mf);
         }
 
@@ -87,55 +141,9 @@ int main ( int argc, char* argv[])
         HPMail::get()->archiver_command();
 
         //mail batch prepared, upload to postservice
-        HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
+        HPMail::get()->login(hpm_cfg->login,hpm_cfg->password
+        		,hpm_cfg->hp_login_batch_id,hpm_cfg->note);
         HPMail::get()->upload();
-
-        //large data
-        std::string tmp_str(rdg.xstring(1024*512));
-        MailFile mf (tmp_str.begin(), tmp_str.end());
-        MailBatch mb;
-        mb.push_back(mf);
-
-/* small test
-        //HPMail instance configuration and initialization
-        HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
-                ("mb_proc_tmp_dir","/data/img/tmpdir/") //empty temp dir for compressed files
-                ("hp_upload_archiver_additional_options", "-mx5 -v5m -mmt=on")//volumes size
-                ("hp_upload_curlopt_stderr_log","curl_stderr.log") //no curl log curl_stderr.log
-                ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
-
-        //mail batch prepared, upload to postservice
-        HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
-        HPMail::get()->upload(mb);
-*/
-
-/*
-        //1st
-        HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
-                ("mb_proc_tmp_dir","./tmpdir0/") //empty temp dir for compressed files
-                ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
-        MailBatch mb0;
-        mb0.push_back(MailFile(1,49));
-        mb0.push_back(MailFile(2,50));
-        mb0.push_back(MailFile(3,51));
-        //mail batch prepared, upload to postservice
-        HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
-        HPMail::get()->upload(mb0);
-
-
-        //2nd
-        HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
-                ("mb_proc_tmp_dir","./tmpdir1/") //empty temp dir for compressed files
-                ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
-        MailBatch mb1;
-        mb1.push_back(MailFile(1,49));
-        mb1.push_back(MailFile(2,50));
-        mb1.push_back(MailFile(3,51));
-        //mail batch prepared, upload to postservice
-        HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
-        HPMail::get()->upload(mb1);
-*/
-
 
     }//try
     catch(std::exception& ex)
@@ -152,57 +160,4 @@ int main ( int argc, char* argv[])
     return EXIT_SUCCESS;
 }
 
-/**
- * \class HandleHPMailArgs
- * \brief postservice client cmdline options handler
- */
-/*
-class HandleHPMailArgs : public HandleArgs
-{
-public:
-    std::string nameservice_host ;
-    unsigned nameservice_port;
-    std::string nameservice_context;
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> opts_descs(
-                new boost::program_options::options_description(
-                        std::string("Postservice client configuration")));
-
-
-        opts_descs->add_options()
-                ("nameservice.host", boost::program_options
-                            ::value<std::string>()->default_value(std::string("localhost"))
-                        , "nameservice host name")
-                ("nameservice.port", boost::program_options
-                            ::value<unsigned int>()->default_value(2809)
-                             , "nameservice port number")
-                ("nameservice.context", boost::program_options
-                         ::value<std::string>()->default_value(std::string("fred"))
-                     , "freds context in name service");
-
-
-        return opts_descs;
-    }//get_options_description
-    void handle( int argc, char* argv[],  FakedArgs &fa)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-
-
-
-        nameservice_host = (vm.count("nameservice.host") == 0
-                ? std::string("localhost") : vm["nameservice.host"].as<std::string>());
-        nameservice_port = (vm.count("nameservice.port") == 0
-                ? 2809 : vm["nameservice.port"].as<unsigned>());
-        nameservice_context = (vm.count("nameservice.context") == 0
-                ? std::string("fred") : vm["nameservice.context"].as<std::string>());
-
-
-
-    }//handle
-};//class HandleHPMailArgs
-*/
 

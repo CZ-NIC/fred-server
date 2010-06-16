@@ -103,7 +103,7 @@ public:
 
     void add_argv(std::string str)//add std::string
     {
-        std::cout << "add_argv str : " << str <<  std::endl;
+        //std::cout << "add_argv str : " << str <<  std::endl;
         argv_buffers.push_back(FakedArgs::char_vector_t());//added buffer
         std::size_t strsize = str.length();
         //argv size

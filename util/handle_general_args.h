@@ -164,6 +164,11 @@ class HandleHelpArg : public HandleArgs
 
 public:
     PoDescs po_description;
+    std::string usage_;
+
+    HandleHelpArg(){}
+    HandleHelpArg(const std::string& usage)
+		: usage_(usage){}
 
     boost::shared_ptr<boost::program_options::options_description>
         get_options_description()
@@ -172,7 +177,7 @@ public:
                 new boost::program_options::options_description(
                         std::string("General configuration")));
         gen_opts->add_options()
-                ("help", "print this help message");
+                ("help,h", "print this help message");
         return gen_opts;
     }//get_options_description
     void handle( int argc, char* argv[],  FakedArgs &fa)
@@ -183,7 +188,7 @@ public:
         //general config actions
         if (vm.count("help"))
         {
-            std::cout << std::endl;
+            std::cout << usage_ << std::endl;//print possible usage
             for(PoDescs::iterator it = po_description.begin(); it != po_description.end(); ++it)
             {
                 std::cout << **it << std::endl;
