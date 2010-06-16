@@ -36,8 +36,6 @@
 #include <sstream>
 #include <vector>
 
-#include "random_data_generator.h"
-
 #include "config_handler.h"
 #include "handle_general_args.h"
 #include "handle_hpmail_args.h"
