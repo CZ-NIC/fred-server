@@ -1,3 +1,17 @@
+2010-06-16 Jiri Sadek (2.3.11)
+
+  * fix enumdir to use publish flag correctly (forgotten from 2.2)
+
+2010-04-28 Juraj Vicenik, Jaromir Talir, Jiri Sadek, Jan Zima (2.3.10)
+
+  * fix/optimization invoice list (VAT)
+
+  * fix datetime column data convert in bank payment list
+
+  * fix union filter/sorting in epp actions and filters
+
+  * add psql notice handler for log
+
 2010-04-08 Jiri Sadek, Juraj Vicenik  (2.3.9)
 
   * fix content of notification emails
