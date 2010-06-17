@@ -574,14 +574,20 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
 
 }//HPMail::end_of_batch
 
-void HPMail::init_connection()
+void HPMail::init_curl()
 {
         curl_global_init(CURL_GLOBAL_ALL);//once per process call
+}
 
-        HPMail::set();
+void HPMail::login()
+{
+    
+        HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
+                ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed files
+                ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
 
         HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
- 
+
 }
 
 void HPMail::send_storno()
