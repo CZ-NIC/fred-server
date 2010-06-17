@@ -1,3 +1,25 @@
+2010-06-17 Jiri Sadek, Juraj Vicenik, Jan Zima (2.4.0)
+
+  * registrar groups and certification implemented
+
+  * expiration letters notification refactoring
+      - now sending with postservice - optional
+      - multiple domains in one letter (address grouping)
+	  - new letter format
+
+  * Epp update_domain command - changes behaviour
+      - if changing nsset and not keyset,
+	    keyset will be removed (to not break dnssec)
+
+  * Epp sessions - add locks (thread safe issue with session counter)
+
+  * Inactivation of domain from dns is now notified by mails with
+    generic addresses automatically (like kontakt@domena.cz, info@domena.cz..)
+
+  * fixes in logd component
+
+  * tests for model, groups, certifications
+
 2010-06-16 Jiri Sadek (2.3.11)
 
   * fix enumdir to use publish flag correctly (forgotten from 2.2)
