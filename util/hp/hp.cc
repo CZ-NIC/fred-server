@@ -241,8 +241,8 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
 }
 
 void hp_form_overeni(curl_httppost **formpost_pp //out parameter
-        , const std::string& loginame //"dreplech"
-        , const std::string& password //"dreplech"
+        , const std::string& loginame
+        , const std::string& password
         , const std::string& standzak //"hpcb_Jednorazova_zakazka"
         , const std::string& poznamka //"Testovaci prenos!!!"
         , const std::string& jobzak //"2010"
