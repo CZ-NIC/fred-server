@@ -3,7 +3,7 @@
 echo
 echo "#login start#"
 echo
-curl -F "cc=us  " -F "loginame=dreplech" -F "password=dreplech" \
+curl -F "cc=us  " -F loginame=$1 -F password=$2 \
 -F "standzak=hpcb_Jednorazova_zakazka" -F "poznamka=Testovaci prenos!!!" \
 -F "jobzak=2010" -F "verzeOS=Linux" -F "verzeProg=20100315001" -b ./tmpdir/phpcookie \
 -A '' --cacert ./cert/postsignum_qca_root.pem -i \
@@ -38,5 +38,5 @@ curl -F "cc=us \n" -F "soubor=./tmpdir/test.txt\n" -F "pocetsouboru=1\n" \
 -v https://online3.postservis.cz/Command/konec.php
 
 echo
-echo "#upload end#"
+echo "#konec end#"
 echo
