@@ -527,22 +527,30 @@ namespace Register
                 Connection conn = Database::Manager::acquire();
                 std::vector<TID>::iterator it = holder_ids.begin();
                 TID filePDF = gPDF->closeInput();
-                // status 1 represents 'ready generated - ready for sending
-                  sql << "INSERT INTO notify_letters (state_id, file_id, contact_id, status) "
-                      << "SELECT tnl.state_id, " << filePDF << ", dh.registrant, 1 "
-                      << "FROM tmp_notify_letters tnl, object_state s, "
-                      << "domain_history dh "
-                      << "WHERE tnl.state_id=s.id AND s.ohid_from=dh.historyid "
-                      << "AND dh.exdate::date='" << exDate << "' "
-                      << "AND dh.registrant in (" 
-                      << *it; 
+                    // status 1 represents 'ready generated - ready for sending
+                    sql << "INSERT INTO letter_archive (status, file_id) VALUES (1, "
+                      << filePDF << ")";
+                    conn.exec(sql.str());
+                    sql.str("");
 
-                      it++;
+                    Result res = conn.exec("select currval('letter_archive_id_seq'::regclass)");
+                    TID letter_id = res[0][0];
 
-                      for (;it != holder_ids.end();it++) {
-                          sql << ", " << *it;
-                      }
-                      sql << ") ";
+                    sql << "INSERT INTO notify_letters (state_id, contact_history_id, letter_id) "
+                    "SELECT tnl.state_id, cor.historyid, " << letter_id << " "
+                    "FROM tmp_notify_letters tnl "
+                    "JOIN object_state s ON tnl.state_id=s.id "
+                    "JOIN domain_history dh ON s.ohid_from=dh.historyid AND dh.exdate::date='" << exDate << "' "
+                    "JOIN object_registry cor ON cor.id = dh.registrant "
+                    "WHERE dh.registrant in ("
+                      << *it;
+
+                  it++;
+
+                  for (;it != holder_ids.end();it++) {
+                      sql << ", " << *it;
+                  }
+                  sql << ") ";
 
                 conn.exec(sql.str());
                 trans.savepoint();
@@ -701,6 +709,12 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
         trans.commit();
       }
 
+      /** This method sends letters from table letter_archive
+       * it sets current processed row to status=6 (under processing)
+       * and cancels execution at the beginning if any row in this table
+       * is already being processed.
+       *
+       */
       virtual void sendLetters(std::auto_ptr<Register::File::Transferer> fileman)
       {
          TRACE("[CALL] Register::Notify::sendLetters()");
@@ -713,27 +727,31 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
           * for multithreaded access - we would have to remember which 
           * records exactly are we processing
           */ 
-         Result res = conn.exec("SELECT EXISTS (SELECT * FROM notify_letters WHERE status=6)");
+         Result res = conn.exec("SELECT EXISTS "
+                 "(SELECT * FROM letter_archive WHERE status=6)");
 
          if ((bool)res[0][0]) {
-                LOGGER(PACKAGE).notice("The files are already being processed.");           
+                LOGGER(PACKAGE).notice("The files are already being processed. No action");
                 // TODO what to do here? error message, exit, exception, whatever...
                 return;
          }
 
          Database::Transaction trans(conn);
-         conn.exec("LOCK TABLE notify_letters IN ACCESS EXCLUSIVE MODE");
+
+         // acquire lock which conflicts with itself but not basic locks used
+         // by select and stuff..
+         conn.exec("LOCK TABLE letter_archive IN SHARE UPDATE EXCLUSIVE MODE");
                   
-         res = conn.exec("SELECT distinct(file_id) FROM notify_letters WHERE status=1");
+         res = conn.exec("SELECT file_id, attempt FROM letter_archive WHERE status=1 or status=4");
          
          if(res.size() == 0) {
              LOGGER(PACKAGE).debug("Register::Notify::sendLetters(): No files ready for processing"); 
              return;
          }
-         TID old_id = res[0][0];
-         int old_id_status = 6;
+         TID id = res[0][0];
+         int new_status = 6;
          // we have to set application lock(status 6) somewhere while the table is locked in db
-         conn.exec(boost::format("UPDATE notify_letters SET status=6 WHERE file_id=%1%") % old_id) ;
+         conn.exec(boost::format("UPDATE letter_archive SET status=6 WHERE file_id=%1%") % id) ;
          
          // unlock the table - from now we need to hold the app lock until the end of processing
          trans.commit();
@@ -741,17 +759,13 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
          for (unsigned int i=0;i<res.size(); i++) {
 
              Database::Transaction t(conn);
-
-             conn.exec(boost::format("UPDATE notify_letters SET status=%1% where file_id=%2%") % old_id_status % old_id);
-
-             old_id = res[i][0];
-             conn.exec(boost::format("UPDATE notify_letters SET status=6 where file_id=%1%") % old_id  );
-
-             t.savepoint();
+             // start processing the next record
+             id = res[i][0];             
+             int attempt = res[i][1];
 
              // get the file from filemanager client and create the batch
              MailFile one;
-             fileman->download(old_id, one);             
+             fileman->download(id, one);
 
              LOGGER(PACKAGE).debug(boost::format ("sendLetters File ID: %1% ") % res[i][0]);
 
@@ -759,23 +773,31 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
              batch.push_back(one);
 
              // data's ready, we can send it
-             old_id_status=5;
+             new_status=5;
              try {
-                 HPMail::init_connection();
+                 // TODO change interface
+                 HPMail::login();
                  HPMail::get()->upload(batch);
              } catch(std::exception& ex) {
-                 std::cout << "Error: " << ex.what() << " on file ID " << old_id << std::endl;
-                 old_id_status = 4; // set error status in database
+                 std::cout << "Error: " << ex.what() << " on file ID " << id << std::endl;
+                 new_status = 4; // set error status in database
              } catch(...) {
-                 std::cout << "Unknown Error" << " on file ID " << old_id << std::endl;
-                 old_id_status = 4; // set error status in database
+                 std::cout << "Unknown Error" << " on file ID " << id << std::endl;
+                 new_status = 4; // set error status in database
              }
 
+             // set status for next item first
+             if(i+1 < res.size()) {
+                 TID next_id = res[i+1][0];
+                conn.exec(boost::format("UPDATE letter_archive SET status=6 where file_id=%1%")
+                % next_id);
+             }
+
+             conn.exec(boost::format("UPDATE letter_archive SET status=%1%, moddate=now(), attempt=%2% "
+                    "where file_id=%3%") % new_status % (attempt+1) % id);
+            
              t.commit();
-         }
-         // now we disable the application lock - no records will be set to status 6
-         conn.exec(boost::format("UPDATE notify_letters SET status=%1% where file_id=%2%") % old_id_status % old_id);
-       
+         }                
       }
 
       virtual void sendFile(const std::string &filename) {
@@ -806,7 +828,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
           batch.push_back(f);
 
           try {
-             HPMail::init_connection();
+             HPMail::login();
              HPMail::get()->upload(batch);
 
           } catch(std::exception& ex) {
