@@ -42,7 +42,7 @@
 
 HandlerPtrVector global_hpv =
 	boost::assign::list_of
-	(HandleArgsPtr(new HandleHelpArg("\nUsage: test-hp <switches> [<file_names>...]\n")))
+	(HandleArgsPtr(new HandleHelpArg("\nUsage: client-hp <switches> [<file_names>...]\n")))
 	(HandleArgsPtr(new HandleHPMailArgs))
 	;
 
@@ -80,7 +80,13 @@ int main ( int argc, char* argv[])
 		("hp_upload_curlopt_connect_timeout"
 				,hpm_cfg->hp_upload_curlopt_connect_timeout)
 		("hp_upload_curl_verbose",hpm_cfg->hp_upload_curl_verbose )
-		("hp_upload_retry",hpm_cfg->hp_upload_retry );
+		("hp_upload_retry",hpm_cfg->hp_upload_retry )
+#ifdef WIN32
+        ("hp_login_osversion","Windows")//"Linux" or "Windows"
+        ("hp_cleanup_last_arch_volumes","del /F *.7z*") // delete last archive volumes
+        ("hp_cleanup_last_letter_files","del /F letter_*") // delete last letter files
+#endif
+		;
 
     	std::cout << "\nConfig print\n" << std::endl;
     	for (HPCfgMap::const_iterator i = set_cfg.begin()
@@ -98,7 +104,8 @@ int main ( int argc, char* argv[])
     	for (int i = 1; i < fa.get_argc(); ++i)
     		std::cout << fa.get_argv()[i] << std::endl;
 
-        //You are strongly advised to not allow this automatic behaviour, by calling curl_global_init(3) yourself properly.
+        //You are strongly advised to not allow this automatic behaviour,
+    	// by calling curl_global_init(3) yourself properly.
         //viz http://curl.haxx.se/libcurl/c/curl_easy_init.html
         curl_global_init(CURL_GLOBAL_ALL);//once per process call
 
@@ -123,10 +130,10 @@ int main ( int argc, char* argv[])
 						letter_file.tellg();
 				letter_file.seekg (0, std::ios::beg);//reset
 				//allocate buffer
-				tmp_mf.resize(letter_file_length,'\0');
+				tmp_mf.resize(static_cast<unsigned>(letter_file_length),'\0');
 				//read whole file into the buffer
 				letter_file.read( &tmp_mf[0]
-					, letter_file_length );
+					, static_cast<std::streamsize>(letter_file_length) );
 			}
 			else //no more files
 				throw std::runtime_error("Error - unable to access file: "
@@ -142,6 +149,8 @@ int main ( int argc, char* argv[])
         HPMail::get()->login(hpm_cfg->login,hpm_cfg->password
         		,hpm_cfg->hp_login_batch_id,hpm_cfg->note);
         HPMail::get()->upload();
+
+        std::cout << "The End" << std::endl;
 
     }//try
     catch(std::exception& ex)

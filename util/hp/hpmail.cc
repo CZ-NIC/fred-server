@@ -29,6 +29,7 @@
 #include <ios>
 #include <iomanip>
 #include <sstream>
+#include <limits>
 
 #include <curl/curl.h>
 
@@ -147,7 +148,7 @@ void HPMail::login(const std::string& loginame //postservice account name
                 , boost::lexical_cast<long>(config_["hp_upload_curl_verbose"]) //verbose
                 , &sb //response buffer
                 , &debugbuf //debug buffer
-                , curl_log_file_guard_.get() //curl logfile
+                , curl_log_file_ //curl logfile
                 );
 
     if (res > 0)
@@ -161,7 +162,7 @@ void HPMail::login(const std::string& loginame //postservice account name
         std::string form_reply("\n\nover reply: \n"
                 + sb.copy() + "\n\n" + debugbuf.copy());
         fwrite (form_reply.c_str() , 1, form_reply.size()
-                , curl_log_file_guard_.get() );
+                , curl_log_file_ );
 
     //result parsing
     phpsessid_ =  sb.getValueByKey("PHPSESSID=", 32);
@@ -327,10 +328,11 @@ void HPMail::load_compressed_mail_volume(const std::string& compressed_mail_volu
                 compressed_mail_volume_stream.tellg();
         compressed_mail_volume_stream.seekg (0, std::ios::beg);//reset
         //allocate buffer
-        out_mf.resize(compressed_mail_volume_length,'\0');
+        out_mf.resize(
+		    static_cast<unsigned>(compressed_mail_volume_length),'\0');
         //read whole file into the buffer
         compressed_mail_volume_stream.read( &out_mf[0]
-            , compressed_mail_volume_length );
+		, static_cast<std::streamsize>(compressed_mail_volume_length) );
     }
     else //no more files
         throw std::runtime_error("HPMail::load_compressed_mail_volume: "
@@ -342,7 +344,8 @@ VolumeFileNames HPMail::load_compressed_mail_batch_filelist()
 {
     VolumeFileNames ret;
 
-    for(std::size_t i = 1; i < std::numeric_limits<std::size_t>::max(); ++i)
+	//std::numeric_limits<std::size_t>::max()
+	for(std::size_t i = 1; i < static_cast<unsigned>(-1); ++i)
     {
         std::stringstream order_number;
         if(i < 1000)
@@ -447,7 +450,7 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
                     , boost::lexical_cast<long>(config_["hp_upload_curl_verbose"]) //verbose
                     , &sb //response buffer
                     , &debugbuf //debug buffer
-                    , curl_log_file_guard_.get()//curl logfile
+                    , curl_log_file_//curl logfile
                     //maximum time in seconds that you allow the libcurl transfer operation to take
                     , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
                     //maximum time in seconds that you allow the connection to the server to take
@@ -474,7 +477,7 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
                         << boost::lexical_cast<std::string>(i)
                         << std::endl;
                 fwrite (formpost_reply.str().c_str() , 1
-                        , formpost_reply.str().size() , curl_log_file_guard_.get() );
+                        , formpost_reply.str().size() , curl_log_file_ );
 
                 //result parsing & detecting errors
                 if ((sb.getValueByKey("OvereniCrc ", 2)).compare("KO") == 0)
@@ -498,7 +501,7 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
                         << "retry_count: " << retry_count << std::flush;
                 std::cout << errlogmsg.str() << std::endl;
                 fwrite (errlogmsg.str().c_str() , 1
-                        , errlogmsg.str().size() , curl_log_file_guard_.get() );
+                        , errlogmsg.str().size() , curl_log_file_ );
 
                 send_storno();//attempt to send storno
 
@@ -540,7 +543,7 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
                 , boost::lexical_cast<long>(config_["hp_upload_curl_verbose"]) //verbose
                 , &sb
                 , &debugbuf//debug buffer
-                , curl_log_file_guard_.get()//curl logfile
+                , curl_log_file_//curl logfile
                 //maximum time in seconds that you allow the libcurl transfer operation to take
                 , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
                 //maximum time in seconds that you allow the connection to the server to take
@@ -570,7 +573,7 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
                 << + "\n\n" << debugbuf.copy()
                             <<  "\n" << std::endl;
     fwrite (formpost_reply.str().c_str() , 1
-            , formpost_reply.str().size() , curl_log_file_guard_.get() );
+            , formpost_reply.str().size() , curl_log_file_ );
 
 }//HPMail::end_of_batch
 
@@ -612,7 +615,7 @@ void HPMail::send_storno()
         , boost::lexical_cast<long>(config_["hp_upload_curl_verbose"]) //verbose
         , &sb
         , &debugbuf //debug buffer
-        , curl_log_file_guard_.get()//curl logfile
+        , curl_log_file_//curl logfile
         //maximum time in seconds that you allow the libcurl transfer operation to take
         , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
         //maximum time in seconds that you allow the connection to the server to take
@@ -627,6 +630,6 @@ void HPMail::send_storno()
                 << "\n\n" << debugbuf.copy()
                             <<  "\n" << std::endl;
     fwrite (formpost_reply.str().c_str() , 1
-            , formpost_reply.str().size() , curl_log_file_guard_.get() );
+            , formpost_reply.str().size() , curl_log_file_ );
 }
 

@@ -91,48 +91,6 @@ struct CurlEasyCleanup
 typedef CURLPtrT<CurlEasyCleanup> CurlEasyCleanupPtr;
 ///usage CURLSharedPtr  curl_easy_cleanup_guard = CurlEasyCleanupPtr(curl_easy_init());
 
-
-///FILE easy cleanup
-typedef boost::shared_ptr<FILE> FILESharedPtr;
-template < typename DELETER >
-class FILEPtrT
-{
-protected:
-    FILESharedPtr m_ptr;
-public:
-    FILEPtrT(FILE* f) : m_ptr(f,DELETER()) {}
-    FILEPtrT() : m_ptr(0,DELETER()) {}
-
-    operator FILESharedPtr() const
-    {
-        return m_ptr;
-    }
-};
-///deleter functor for FILE calling fclose
-struct FileClose
-{
-    void operator()(FILE* f)
-    {
-        try
-        {
-            if((f != 0) && (f != stderr))
-            {
-                //std::cout << "FileClose: deleter functor for FILE calling fclose" << std::endl;
-                std::string msg("\n\n FileClose: deleter functor for FILE calling fclose \n\n");
-                fwrite (msg.c_str(), 1, msg.size(), f);
-                fflush(f);
-                fclose(f);
-            }
-        }
-        catch(...){}
-    }
-};
-///FILESharedPtr factory
-typedef FILEPtrT<FileClose> FileClosePtr;
-///usage FILESharedPtr  file_close_guard = FileClosePtr(fopen());
-
-
-
 ///send RFC2388 http post request for postservice
 CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         , const std::string& curlopt_url //url
