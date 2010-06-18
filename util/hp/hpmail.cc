@@ -599,37 +599,50 @@ void HPMail::send_storno()
     struct curl_httppost *formpost_prubeh=NULL;
     CFormSharedPtr  form_prubeh_guard = CurlFormFreePtr(&formpost_prubeh);
 
-    //send form
-    StringBuffer sb;//response buffer
-    StringBuffer debugbuf;//debug buffer
-    hp_prubeh_command(&formpost_prubeh //out parameter
-            , curl_log_file_name_ //failure errorlog filename
-            );
+    if(config_["hp_upload_curl_verbose"].compare("0") == 0)
+    {
+		//send form
+		StringBuffer sb;//response buffer
+		StringBuffer debugbuf;//debug buffer
+		hp_prubeh_command(&formpost_prubeh //out parameter
+				, curl_log_file_name_ //failure errorlog filename
+				);
 
-    hp_form_post(formpost_prubeh  //linked list ptr
-        , config_["hp_cancel_interface_url"]//url
-        , config_["postservice_cert_dir"] //ended by slash
-        , config_["postservice_cert_file"] //pem cert file name
-        , "PHPSESSID="+phpsessid_//PHP session id in cookie
-        , config_["hp_useragent_id"] //useragent id
-        , boost::lexical_cast<long>(config_["hp_upload_curl_verbose"]) //verbose
-        , &sb
-        , &debugbuf //debug buffer
-        , curl_log_file_//curl logfile
-        //maximum time in seconds that you allow the libcurl transfer operation to take
-        , boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
-        //maximum time in seconds that you allow the connection to the server to take
-        , boost::lexical_cast<long>(config_["hp_upload_curlopt_connect_timeout"])
-        //maximum amount of simultaneously open connections that libcurl may cache in this easy handle
-        , boost::lexical_cast<long>(config_["hp_upload_curlopt_maxconnect"])
-        );
+		hp_form_post(formpost_prubeh  //linked list ptr
+			, config_["hp_cancel_interface_url"]//url
+			, config_["postservice_cert_dir"] //ended by slash
+			, config_["postservice_cert_file"] //pem cert file name
+			, "PHPSESSID="+phpsessid_//PHP session id in cookie
+			, config_["hp_useragent_id"] //useragent id
+			, boost::lexical_cast<long>(config_["hp_upload_curl_verbose"]) //verbose
+			, &sb
+			, &debugbuf //debug buffer
+			, curl_log_file_//curl logfile
+			//maximum time in seconds that you allow the libcurl transfer operation to take
+			, boost::lexical_cast<long>(config_["hp_upload_curlopt_timeout"])
+			//maximum time in seconds that you allow the connection to the server to take
+			, boost::lexical_cast<long>(config_["hp_upload_curlopt_connect_timeout"])
+			//maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+			, boost::lexical_cast<long>(config_["hp_upload_curlopt_maxconnect"])
+			);
 
-    //log result
-    std::stringstream formpost_reply;
-        formpost_reply << "\nPrubeh reply: \n" << sb.copy()
-                << "\n\n" << debugbuf.copy()
-                            <<  "\n" << std::endl;
-    fwrite (formpost_reply.str().c_str() , 1
-            , formpost_reply.str().size() , curl_log_file_ );
+		//log result
+		std::stringstream formpost_reply;
+			formpost_reply << "\nPrubeh reply: \n" << sb.copy()
+					<< "\n\n" << debugbuf.copy()
+								<<  "\n" << std::endl;
+		fwrite (formpost_reply.str().c_str() , 1
+				, formpost_reply.str().size() , curl_log_file_ );
+    }
+    else
+    {
+		//log result
+		std::stringstream formpost_reply;
+			formpost_reply << "\nPrubeh send canceled due to verbose error log\n"
+					<< std::endl;
+		fwrite (formpost_reply.str().c_str() , 1
+				, formpost_reply.str().size() , curl_log_file_ );
+
+    }
 }
 
