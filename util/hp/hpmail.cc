@@ -456,8 +456,7 @@ void HPMail::upload_of_mail_file(std::size_t file_number
     std::string crc32_string (//compute crc32
             crc32_into_string(mail_archive_volume));
     std::cout << "upload: " << compressed_mail_volume_name
-            << " crc32: " << crc32_string
-            << std::endl;
+            << " crc32: " << crc32_string << std::endl;
     //make form for upload
     struct curl_httppost *formpost_command=NULL;
     CFormSharedPtr  form_command_guard = CurlFormFreePtr(&formpost_command);
