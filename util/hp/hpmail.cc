@@ -582,11 +582,6 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
 
 }//HPMail::end_of_batch
 
-void HPMail::init_curl()
-{
-        curl_global_init(CURL_GLOBAL_ALL);//once per process call
-}
-
 void HPMail::login()
 {
     

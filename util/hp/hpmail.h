@@ -104,7 +104,6 @@ public:
     static HPMail* set(const HPCfgMap& config_changes = HPCfgMap());
     static HPMail* get();
 
-    static void init_curl();
     static void login();
     void login(const std::string& loginame //postservice account name
         , const std::string& password //postservice account password
@@ -115,8 +114,6 @@ public:
     void save_files_for_upload( const MailBatch& mb);
     void save_file_for_upload( const MailFile& mf);
     void archiver_command();
-
-    static void init_connection();
 
 };//class HPMail
 
