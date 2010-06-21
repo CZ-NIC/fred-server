@@ -275,7 +275,7 @@ unsigned long addRegistrarZone(
           const std::string& registrarHandle,
           const std::string zone,
           const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR);
+          const Database::Date &toDate);
 
 
 /// member identification (i.e. for sorting)

@@ -128,7 +128,7 @@ unsigned long addRegistrarZone(
           const std::string& registrarHandle,
           const std::string zone,
           const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR)
+          const Database::Date &toDate)
   {///expecting external transaction, no transaction inside
       try
       {
@@ -180,7 +180,7 @@ unsigned long addRegistrarZone(
             "and ri.fromdate = date (" << fromStr << ") ";
 
         if(toStr.compare("NULL") == 0)
-            sql2 << "and ri.todate isnull ";
+            sql2 << "and ri.todate is null ";
         else
             sql2 <<  "and ri.todate = date(" << toStr << ") ";
 
@@ -199,14 +199,18 @@ unsigned long addRegistrarZone(
         }
         else
         {
-            LOGGER(PACKAGE).error("addRegistrarZone: an error has occured");
-            throw SQL_ERROR();
+            throw std::runtime_error("addRegistrarZone: invalid result size");
         }
       }//try
+      catch (const std::exception& ex)
+	  {
+	  	LOGGER(PACKAGE).error(std::string("addRegistrarZone: ") + ex.what());
+		throw;
+	  }//catch (const std::exception& ex)
       catch (...)
       {
           LOGGER(PACKAGE).error("addRegistrarZone: an error has occured");
-          throw SQL_ERROR();
+          throw;
       }//catch (...)
   }//addRegistrarZone
 
