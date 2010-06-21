@@ -59,6 +59,10 @@
 #define REGISTRAR_CERTIFICATION_EVALUATION_NAME        "certification_evaluation"
 #define REGISTRAR_CERTIFICATION_EVALUATION_NAME_DESC   "registrar certification evaluation pdf file"
 
+#define REGISTRAR_CERTIFICATION_EVALUATION_MIME_TYPE_NAME        "certification_evaluation_mime_type"
+#define REGISTRAR_CERTIFICATION_EVALUATION_MIME_TYPE_NAME_DESC   "registrar certification evaluation file MIME type"
+
+
 #define REGISTRAR_ZONE_ID_NAME          "zone_id"
 #define REGISTRAR_ZONE_ID_NAME_DESC     "zone id"
 
