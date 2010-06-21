@@ -270,6 +270,9 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_group_simple )
     }
 */
 
+        mfid =  mf.getId();
+        std::cout << " mfid: " << mfid << std::endl;
+
 
 }//test_registrar_certification_simple
 
@@ -355,7 +358,7 @@ public:
         }
         catch(const std::exception& ex)
         {
-            std::cout << "exception in operator() thread number: " << number_
+            std::cout << "exception 1 in operator() thread number: " << number_
                     << " reason: " << ex.what() << std::endl;
             res.ret = 1;
             res.desc = std::string(ex.what());
@@ -363,7 +366,7 @@ public:
         }
         catch(...)
         {
-            std::cout << "exception in operator() thread number: " << number_ << std::endl;
+            std::cout << "exception 2 in operator() thread number: " << number_ << std::endl;
             res.ret = 2;
             res.desc = std::string("unknown exception");
             return;
@@ -423,7 +426,7 @@ public:
         }
         catch(...)
         {
-            std::cout << "exception in operator() thread number: " << number_ << std::endl;
+            std::cout << "exception 4 in operator() thread number: " << number_ << std::endl;
             res.ret = 4;
             res.desc = std::string("unknown exception");
             return;
@@ -448,7 +451,7 @@ public:
         }
         catch(const std::exception& ex)
         {
-            std::cout << "exception in operator() thread number: " << number_
+            std::cout << "exception 5 in operator() thread number: " << number_
                     << " reason: " << ex.what() << std::endl;
             res.ret = 5;
             res.desc = std::string(ex.what());
@@ -456,7 +459,7 @@ public:
         }
         catch(...)
         {
-            std::cout << "exception in operator() thread number: " << number_ << std::endl;
+            std::cout << "exception 6 in operator() thread number: " << number_ << std::endl;
             res.ret = 6;
             res.desc = std::string("unknown exception");
             return;
@@ -475,7 +478,7 @@ public:
         }
         catch(...)
         {
-            std::cout << "exception in operator() thread number: " << number_ << std::endl;
+            std::cout << "exception 7 in operator() thread number: " << number_ << std::endl;
             res.ret = 7;
             res.desc = std::string("unknown exception");
             return;

@@ -56,7 +56,7 @@
 
 
 ModelFiles mf;
-
+unsigned long long mfid = 0;
 
 #ifdef BOOST_NO_STDC_NAMESPACE
 namespace std
