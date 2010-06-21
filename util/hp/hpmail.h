@@ -95,6 +95,9 @@ private:
             , MailFile& out_mf);
     void upload_of_batch_by_filelist(
             VolumeFileNames& compressed_mail_batch_filelist);
+    void upload_of_mail_file(std::size_t file_number,const std::string& compressed_mail_volume_name
+    		, MailFile& mail_archive_volume);
+
     void end_of_batch(VolumeFileNames& compressed_mail_batch_filelist);
     void send_storno();
     std::string crc32_into_string(MailFile& mf);
