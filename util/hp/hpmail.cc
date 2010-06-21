@@ -58,6 +58,12 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_ack_interface_url","https://online3.postservis.cz/Command/konec.php")//end form url
     ("hp_cancel_interface_url","https://online3.postservis.cz/Command/prubeh.php")//cancel form url
     ("hp_login_batch_id","hpcb_Jednorazova_zakazka")//some job identification,now login parameter
+    ("hp_login_note", "") // "Testovaci prenos!!!" for testing
+
+    ("hp_login_name", "") //  login name
+
+    ("hp_login_password", "") // password
+
     ("hp_upload_archiver_filename","7z")//it should be something 7z compatible for now
     ("hp_upload_archiver_command_option","a")//add files to archive
     ("hp_upload_archiver_input_list","@in.lst")//input list of files to compress
@@ -110,6 +116,12 @@ HPMail* HPMail::get()
              "HPMail::get error: instance not set");
     }
     return ret;
+}
+
+/// login using configuration
+void HPMail::login() 
+{
+        login(config_["hp_login_name"],config_["hp_login_password"], config_["hp_login_batch_id "], config_["hp_login_note"]); 
 }
 
 ///postservice interface login, creating batch job and PHP session id
@@ -582,15 +594,11 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
 
 }//HPMail::end_of_batch
 
-void HPMail::login()
+/// create instance with cfg and login with it
+void HPMail::init_session(HPCfgMap &cfg)
 {
-    
-        HPMail::set(boost::assign::map_list_of //some custom HPCfgMap config_changes
-                ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed files
-                ("postservice_cert_dir","./cert/")); //server certificate dir ended by slash
-
-        HPMail::get()->login("dreplech","dreplech","hpcb_Jednorazova_zakazka","Testovaci prenos!!!");
-
+        HPMail::set(cfg); 
+        HPMail::get()->login();
 }
 
 void HPMail::send_storno()

@@ -54,7 +54,6 @@ class NotifyClient : public BaseClient {
 private:
     CORBA::Long m_clientId;
     DB m_db;
-    boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
@@ -83,6 +82,8 @@ public:
     void letters_create();
     void letters_send();
     void file_send();
+
+    void readHPConfig();
 }; // class NotifyClient
 
 } // namespace Admin;

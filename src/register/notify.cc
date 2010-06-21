@@ -22,6 +22,13 @@
 #include "sql.h"
 #include "util/hp/hpmail.h"
 
+#include "faked_args.h"
+#include "handle_args.h"
+#include "config_handler.h"
+#include "handle_general_args.h"
+#include "hp/handle_hpmail_args.h"
+
+
 #include <sstream>
 #include <boost/assign/list_of.hpp>
 
@@ -709,6 +716,44 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
         trans.commit();
       }
 
+        HPCfgMap 
+        readHPConfig()
+        {
+
+            FakedArgs fa;
+
+            boost::shared_ptr<HandleHPMailArgs> hhp(new HandleHPMailArgs);
+
+            HandlerPtrVector handlers =
+            boost::assign::list_of
+            (HandleArgsPtr(new HandleGeneralArgs))
+            (HandleArgsPtr(hhp));
+
+
+            try
+            {
+                        // TODO this is just for testing
+                        // maybe create a class to specify a config file
+                int argc = 2;
+                char *argv[argc];
+                argv[0] = "";
+                argv[1] = "--config=test_hpconfig.cfg";  
+
+                fa = CfgArgs::instance<HandleGeneralArgs>(handlers)->handle(argc, argv);
+
+                std::cout << "fa: argc: " << fa.get_argc() << std::endl;
+
+                return hhp->getConfig();
+
+            }
+            catch(const ReturnFromMain&)
+            {
+                return HPCfgMap();
+                // return 0;
+            }
+        }
+
+
       /** This method sends letters from table letter_archive
        * it sets current processed row to status=6 (under processing)
        * and cancels execution at the beginning if any row in this table
@@ -720,6 +765,8 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
          TRACE("[CALL] Register::Notify::sendLetters()");
     	// transaction is needed for 'ON COMMIT DROP' functionality
         
+         HPCfgMap hpmail_config = readHPConfig();
+
          Connection conn = Database::Manager::acquire();
    
          /* now bail out if other process (presumably another instance of this
@@ -775,8 +822,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
              // data's ready, we can send it
              new_status=5;
              try {
-                 // TODO change interface
-                 HPMail::login();
+                 HPMail::init_session(hpmail_config);
                  HPMail::get()->upload(batch);
              } catch(std::exception& ex) {
                  std::cout << "Error: " << ex.what() << " on file ID " << id << std::endl;
@@ -804,8 +850,9 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
           TRACE("[CALL] Register::Notify::sendFile()");
 
-          // TODO DEBUG
-          std::cout << "Filename: " << filename << std::endl;
+
+          HPCfgMap hpmail_config = readHPConfig();
+
           LOGGER(PACKAGE).debug(boost::format("File to send %1% ") % filename);
 
           std::ifstream infile(filename.c_str());
@@ -816,8 +863,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
               return;
           }
 
-          // TODO use this?
-          /// std::copy(istream_iterator(file), istream_iterator(), std::back_inserter(buffer));
+          // TODO optimization (mentioned in ticket)
 
           MailFile f;
           char ch;
@@ -828,7 +874,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
           batch.push_back(f);
 
           try {
-             HPMail::login();
+             HPMail::init_session(hpmail_config);
              HPMail::get()->upload(batch);
 
           } catch(std::exception& ex) {

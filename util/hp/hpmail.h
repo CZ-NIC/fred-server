@@ -1,4 +1,4 @@
-/*
+jj/==/*
  * Copyright (C) 2010  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
@@ -104,7 +104,8 @@ public:
     static HPMail* set(const HPCfgMap& config_changes = HPCfgMap());
     static HPMail* get();
 
-    static void login();
+    static void init_session(HPCfgMap &cfg);
+    void login();
     void login(const std::string& loginame //postservice account name
         , const std::string& password //postservice account password
         , const std::string& batch_id //batch identificator like: "hpcb_Jednorazova_zakazka"
