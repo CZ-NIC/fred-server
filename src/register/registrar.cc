@@ -2125,7 +2125,7 @@ public:
 
             std::stringstream sql_group;
             sql_group << "SELECT id FROM registrar_group WHERE short_name = '"
-                    << conn.escape(registrar_group) << "')";
+                    << conn.escape(registrar_group) << "'";
 
             Database::Result res_group = conn.exec(sql_group.str());
             if((res_group.size() > 0)&&(res_group[0].size() > 0))
