@@ -416,6 +416,8 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
         for(unsigned retry_count = 0; retry_count < max_retry_count
             ; ++retry_count )
         {
+        	bool send_storno_flag = false;//set in case of exception
+
             try
             {
                 std::string crc32_string (//compute crc32
@@ -493,9 +495,10 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
 
                 break;//no check failed - quit for loop
             }//try for one upload volume
-
             catch(const std::exception& ex)
             {
+            	send_storno_flag = true;
+
                 std::stringstream errlogmsg;
                 errlogmsg << "HPMail::upload_of_batch: " << ex.what()
                         << "retry_count: " << retry_count << std::flush;
@@ -503,11 +506,13 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
                 fwrite (errlogmsg.str().c_str() , 1
                         , errlogmsg.str().size() , curl_log_file_ );
 
+            }
+
+            if(send_storno_flag)
                 send_storno();//attempt to send storno
 
-                if((retry_count + 1) >= max_retry_count)
-                    throw;//retry failed
-            }
+			if((retry_count + 1) >= max_retry_count)
+				throw std::runtime_error("HPMail::upload_of_batch error: retry failed");//retry failed
 
         }//for retry_count
     }//for compressed_mail_batch
