@@ -299,11 +299,10 @@ void HPMail::save_file_for_upload( const std::string& file_name)
                     letter_file_number_++)); //updating class file counter
 
     std::ifstream input_file;
-    input_file.open ((config_["mb_proc_tmp_dir"]+file_name).c_str()
-                , std::ios::in | std::ios::binary);
+    input_file.open (file_name.c_str(), std::ios::in | std::ios::binary);
     if(!input_file.is_open())
     	throw std::runtime_error("HPMail::save_file_for_upload error: "
-    	    "unable to open file:"+ config_["mb_proc_tmp_dir"]+file_name);
+    	    "unable to open file:"+ file_name);
 
     std::ofstream letter_file;
     letter_file.open ((config_["mb_proc_tmp_dir"]+letter_file_name).c_str()
