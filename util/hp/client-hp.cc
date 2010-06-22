@@ -116,34 +116,8 @@ int main ( int argc, char* argv[])
         {
         	MailFile tmp_mf;
         	std::ifstream letter_file;
-
         	std::string letter_file_name(fa.get_argv()[i]);
-
         	HPMail::get()->save_file_for_upload(letter_file_name);
-
-/*
-       	    letter_file.open (letter_file_name.c_str()
-       	        , std::ios::in | std::ios::binary);
-
-			if(letter_file.is_open())
-			{//ok file is there
-				// get length of file
-				letter_file.seekg (0, std::ios::end);
-				long long letter_file_length =
-						letter_file.tellg();
-				letter_file.seekg (0, std::ios::beg);//reset
-				//allocate buffer
-				tmp_mf.resize(static_cast<unsigned>(letter_file_length),'\0');
-				//read whole file into the buffer
-				letter_file.read( &tmp_mf[0]
-					, static_cast<std::streamsize>(letter_file_length) );
-			}
-			else //no more files
-				throw std::runtime_error("Error - unable to access file: "
-						+  letter_file_name);
-
-            HPMail::get()->save_file_for_upload(tmp_mf);
-*/
         }
 
         //no more data optional call of archiver ahead
