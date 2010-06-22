@@ -119,6 +119,9 @@ int main ( int argc, char* argv[])
 
         	std::string letter_file_name(fa.get_argv()[i]);
 
+        	HPMail::get()->save_file_for_upload(letter_file_name);
+
+        	/*
        	    letter_file.open (letter_file_name.c_str()
        	        , std::ios::in | std::ios::binary);
 
@@ -140,6 +143,7 @@ int main ( int argc, char* argv[])
 						+  letter_file_name);
 
             HPMail::get()->save_file_for_upload(tmp_mf);
+            */
         }
 
         //no more data optional call of archiver ahead

@@ -114,6 +114,7 @@ public:
     void upload( const MailBatch& mb = MailBatch());
     void save_files_for_upload( const MailBatch& mb);
     void save_file_for_upload( const MailFile& mf);
+    void save_file_for_upload( const std::string& file_name);
     void archiver_command();
 
 };//class HPMail

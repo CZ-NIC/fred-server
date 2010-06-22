@@ -267,6 +267,62 @@ void HPMail::save_file_for_upload( const MailFile& mf)
     }
 }//HPMail::save_file_for_upload
 
+/// save one big file for upload to postservice by file name
+void HPMail::save_file_for_upload( const std::string& file_name)
+{
+
+    if(compressed_file_for_upload_)
+        throw std::runtime_error("HPMail::save_file_for_upload error: "
+                "already compresssed, call upload");
+    if(!saved_file_for_upload_)
+    {//cleanup for the first time
+        std::string command_cleanup("cd " + config_["mb_proc_tmp_dir"]
+               + " && "+config_["hp_cleanup_last_arch_volumes"]
+               + " && "+config_["hp_cleanup_last_letter_files"]
+                );
+
+        int system_command_retcode =
+         system(command_cleanup.c_str());//execute
+
+         if(system_command_retcode != 0)
+             throw std::runtime_error(
+                     "HPMail::save_file_for_upload error: system command: "
+                     + command_cleanup
+                     + " failed with retcode: "
+                     + boost::lexical_cast<std::string>(system_command_retcode));
+    }
+
+    //save letter data to disk like: letter_<number>
+    std::string letter_file_name(
+            config_["hp_upload_letter_file_prefix"]
+            +boost::lexical_cast<std::string>(
+                    letter_file_number_++)); //updating class file counter
+
+    std::ifstream input_file;
+    input_file.open ((config_["mb_proc_tmp_dir"]+file_name).c_str()
+                , std::ios::in | std::ios::binary);
+    if(!input_file.is_open())
+    	throw std::runtime_error("HPMail::save_file_for_upload error: "
+    	    "unable to open file:"+ config_["mb_proc_tmp_dir"]+file_name);
+
+    std::ofstream letter_file;
+    letter_file.open ((config_["mb_proc_tmp_dir"]+letter_file_name).c_str()
+            , std::ios::out | std::ios::trunc | std::ios::binary);
+    if(!letter_file.is_open())
+    	throw std::runtime_error("HPMail::save_file_for_upload error: "
+    	    "unable to open file:"+ config_["mb_proc_tmp_dir"]+letter_file_name);
+
+    letter_file << input_file.rdbuf();//copy
+
+    letter_file_names_.push_back(letter_file_name);
+	saved_file_for_upload_ = true;//we have some file
+
+
+
+
+}//HPMail::save_file_for_upload
+
+
 ///save list of files for archiver
 void HPMail::save_list_for_archiver()
 {
