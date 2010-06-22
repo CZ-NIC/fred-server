@@ -359,7 +359,7 @@ RegistrarClient::registrar_into_group()
     std::string registrar_handle
         = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
 
-    Database::Date fromDate;
+    Database::Date fromDate = Database::Date(NOW);
     Database::Date toDate;
     if (m_conf.hasOpt(REGISTRAR_FROM_DATE_NAME))
     {
@@ -551,8 +551,8 @@ RegistrarClient::registrar_into_group_help()
         "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_INTO_GROUP_NAME << " \\\n"
         "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
         "    --" << REGISTRAR_GROUP_NAME << "=<registrar_group_name> \\\n"
-        "    --" << REGISTRAR_FROM_DATE_NAME << "=<from_date> \\\n"
-        "    [--" << REGISTRAR_TO_DATE_NAME << "=<to_date>]\n"
+        "    [--" << REGISTRAR_FROM_DATE_NAME << "=<from_date> default today] \\\n"
+        "    [--" << REGISTRAR_TO_DATE_NAME << "=<to_date> ]\n"
         << std::endl;
 }
 
