@@ -1,4 +1,4 @@
-jj/==/*
+/*
  * Copyright (C) 2010  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
