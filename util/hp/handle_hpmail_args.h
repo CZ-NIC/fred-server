@@ -82,7 +82,7 @@ public:
 
         // TODO add remaining options from hpmail.cc
         opts_descs->add_options()
-				("main.send,s", "upload to online.postservice.cz production instance"
+				("send,s", "upload to online.postservice.cz production instance"
 						", with right account sending mails"
 						"or if not set upload to online3.postservice.cz test instance"
 						", data dumped, default option")
@@ -143,12 +143,12 @@ public:
         }
 
         // TODO remove duplicated defaults
-        mb_proc_tmp_dir = (vm.count("mb_proc_tmp_dir") == 0
-                ? std::string("./tmpdir/") : vm["mb_proc_tmp_dir"].as<std::string>());
-        postservice_cert_dir  = (vm.count("postservice_cert_dir") == 0
-                ? std::string("./cert/") : vm["postservice_cert_dir"].as<std::string>());
-        postservice_cert_file = (vm.count("postservice_cert_file") == 0
-                ? std::string("") : vm["postservice_cert_file"].as<std::string>());
+        mb_proc_tmp_dir = (vm.count("main.mb_proc_tmp_dir") == 0
+                ? std::string("./tmpdir/") : vm["main.mb_proc_tmp_dir"].as<std::string>());
+        postservice_cert_dir  = (vm.count("main.postservice_cert_dir") == 0
+                ? std::string("./cert/") : vm["main.postservice_cert_dir"].as<std::string>());
+        postservice_cert_file = (vm.count("main.postservice_cert_file") == 0
+                ? std::string("") : vm["main.postservice_cert_file"].as<std::string>());
         if (vm.count("send"))
         {
             hp_login_interface_url = "https://online.postservis.cz/Command/over.php";//login form url
@@ -164,24 +164,24 @@ public:
             hp_cancel_interface_url = "https://online3.postservis.cz/Command/prubeh.php";//cancel form url
         }
 
-        hp_login_batch_id = (vm.count("hp_login_batch_id") == 0
-                ? std::string("") : vm["hp_login_batch_id"].as<std::string>());
-        login = (vm.count("hp_login_name") == 0
-                ? std::string("") : vm["hp_login_name"].as<std::string>());
-        password = (vm.count("hp_login_password") == 0
-                ? std::string("") : vm["hp_login_password"].as<std::string>());
-        note = (vm.count("hp_login_note") == 0
-                ? std::string("") : vm["hp_login_note"].as<std::string>());
-        hp_upload_archiver_filename = (vm.count("hp_upload_archiver_filename") == 0
-                ? std::string("7z") : vm["hp_upload_archiver_filename"].as<std::string>());
-        hp_upload_archiver_additional_options = (vm.count("hp_upload_archiver_additional_options") == 0
-                ? std::string("-mx5 -v5m") : vm["hp_upload_archiver_additional_options"].as<std::string>());
+        hp_login_batch_id = (vm.count("main.hp_login_batch_id") == 0
+                ? std::string("") : vm["main.hp_login_batch_id"].as<std::string>());
+        login = (vm.count("main.hp_login_name") == 0
+                ? std::string("") : vm["main.hp_login_name"].as<std::string>());
+        password = (vm.count("main.hp_login_password") == 0
+                ? std::string("") : vm["main.hp_login_password"].as<std::string>());
+        note = (vm.count("main.hp_login_note") == 0
+                ? std::string("") : vm["main.hp_login_note"].as<std::string>());
+        hp_upload_archiver_filename = (vm.count("main.hp_upload_archiver_filename") == 0
+                ? std::string("7z") : vm["main.hp_upload_archiver_filename"].as<std::string>());
+        hp_upload_archiver_additional_options = (vm.count("main.hp_upload_archiver_additional_options") == 0
+                ? std::string("-mx5 -v5m") : vm["main.hp_upload_archiver_additional_options"].as<std::string>());
         hp_upload_curlopt_timeout =
-		hp_upload_curlopt_connect_timeout = (vm.count("hp_upload_curlopt_timeout") == 0
-        		? std::string("1800") : vm["hp_upload_curlopt_timeout"].as<std::string>()) ;
-        hp_upload_curl_verbose = (vm.count("hp_upload_curl_verbose") == 0 ? "0" : "1");
-        hp_upload_retry= (vm.count("hp_upload_retry") == 0
-        		? std::string("10") : vm["hp_upload_retry"].as<std::string>()) ;
+		hp_upload_curlopt_connect_timeout = (vm.count("main.hp_upload_curlopt_timeout") == 0
+        		? std::string("1800") : vm["main.hp_upload_curlopt_timeout"].as<std::string>()) ;
+        hp_upload_curl_verbose = (vm.count("main.hp_upload_curl_verbose") == 0 ? "0" : "1");
+        hp_upload_retry= (vm.count("main.hp_upload_retry") == 0
+        		? std::string("10") : vm["main.hp_upload_retry"].as<std::string>()) ;
     }//handle
 };//class HandleHPMailArgs
 
