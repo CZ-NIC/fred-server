@@ -498,7 +498,7 @@ void HPMail::upload_of_batch_by_filelist(VolumeFileNames& compressed_mail_batch_
 
                 std::stringstream errlogmsg;
                 errlogmsg << "HPMail::upload_of_batch: " << ex.what()
-                        << "retry_count: " << retry_count << std::flush;
+                        << " retry_count: " << retry_count << std::flush;
                 std::cout << errlogmsg.str() << std::endl;
                 fwrite (errlogmsg.str().c_str() , 1
                         , errlogmsg.str().size() , curl_log_file_ );
