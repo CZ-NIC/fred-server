@@ -57,7 +57,6 @@ BOOST_AUTO_TEST_CASE( test_fmc_simple )
     FileManagerClient fm_client(
             CorbaContainer::get_instance()->getNS());
     unsigned long long file_id
-        //= fm_client.upload("./test-file.pdf","application/pdf",6);
         = fm_client.upload(in_test_data_vect,"./test-file.pdf","application/pdf",6);
 
     std::vector<char> out_buffer;
