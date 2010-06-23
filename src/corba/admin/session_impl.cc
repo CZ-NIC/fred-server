@@ -1101,6 +1101,7 @@ ccReg::NSSetDetail* ccReg_Session_i::createNSSetDetail(Register::NSSet::NSSet* _
   for (unsigned i = 0; i < status_list.size(); i++)
     detail->statusList[i] = status_list[i];
 
+  detail->reportLevel = _nsset->getCheckLevel();
   return detail;
 }
 
@@ -1182,6 +1183,8 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
       else {
         MODIFY_LAST_HISTORY_RECORD(admins)
       }
+
+      MAP_HISTORY_STRING(reportLevel, getCheckLevel)
     }
     catch (Register::NOT_FOUND) {
       LOGGER(PACKAGE).error(boost::format("nsset id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")

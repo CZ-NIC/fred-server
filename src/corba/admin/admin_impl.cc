@@ -676,6 +676,8 @@ void ccReg_Admin_i::fillNSSet(ccReg::NSSetDetail* cn, Register::NSSet::NSSet* n)
   cn->statusList.length(slist.size());
   for (unsigned i=0; i<slist.size(); i++)
     cn->statusList[i] = slist[i];
+
+  cn->reportLevel = n->getCheckLevel();
 }
 
 ccReg::NSSetDetail* ccReg_Admin_i::getNSSetByHandle(const char* handle)
