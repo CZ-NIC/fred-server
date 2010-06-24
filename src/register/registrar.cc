@@ -1698,12 +1698,18 @@ public:
 		    }
 		}
 		else
-			throw SQL_ERROR();
+			throw std::runtime_error("Registrar::ManagerImpl error: empty dbquery result");
       }//try
+      catch (const std::exception& ex)
+      {
+		LOGGER(PACKAGE).error(std::string("ManagerImpl error: ")+ex.what());
+		throw ;
+      }//catch std exception
+
       catch (...)
       {
           LOGGER(PACKAGE).error("ManagerImpl: an error has occured");
-          throw SQL_ERROR();
+          throw;
       }//catch (...)
   }
 
