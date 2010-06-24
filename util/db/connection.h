@@ -82,7 +82,7 @@ public:
    * @param _query boost::format representing query statement
    * @return       result
    */
-  virtual inline result_type exec(const boost::format &_fmt) throw (ResultFailed) {
+  virtual inline result_type exec(const boost::format &_fmt) /*throw (ResultFailed)*/ {
       try {
         return exec(_fmt.str());
       } catch (ResultFailed &rf) {
@@ -96,7 +96,7 @@ public:
    * @param _query string representation of query statement
    * @return       result
    */
-  virtual inline result_type exec(const std::string &_stmt) throw (ResultFailed) {
+  virtual inline result_type exec(const std::string &_stmt) /*throw (ResultFailed)*/ {
     try {
 #ifdef HAVE_LOGGER
       LOGGER(PACKAGE).debug(boost::format("exec query [%1%]") % _stmt);
@@ -202,7 +202,7 @@ public:
 
 
   Connection_(const std::string &_conn_info,
-              bool _lazy_connect = true) throw (ConnectionFailed)
+              bool _lazy_connect = true) //throw (ConnectionFailed)
             : super(0),
               trans_(0),
               conn_info_(_conn_info) {
@@ -231,7 +231,7 @@ public:
   /**
    * Open connection with specific connection string
    */
-  virtual void open(const std::string &_conn_info) throw (ConnectionFailed) {
+  virtual void open(const std::string &_conn_info) /* throw (ConnectionFailed) */{
     close();
     this->conn_info_ = _conn_info;
     /* TODO: this should be done by manager_type! */
@@ -261,7 +261,7 @@ public:
    * 
    * Need to check if connection was opened - support for lazy connection opening
    */
-  virtual inline result_type exec(Statement &_stmt) throw (ResultFailed) {
+  virtual inline result_type exec(Statement &_stmt) /*throw (ResultFailed)*/ {
     if (!this->conn_) {
       open(conn_info_);
     }
@@ -269,7 +269,7 @@ public:
   }
 
 
-  virtual inline result_type exec(const std::string &_stmt) throw (ResultFailed) {
+  virtual inline result_type exec(const std::string &_stmt) /*throw (ResultFailed)*/ {
     if (!this->conn_) {
       open(conn_info_);
     }
