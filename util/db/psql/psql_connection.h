@@ -92,8 +92,9 @@ public:
     close();
     psql_conn_ = PQconnectdb(_conn_info.c_str());
     if (PQstatus(psql_conn_) != CONNECTION_OK) {
+    	std::string err_msg =  PQerrorMessage(psql_conn_);
       PQfinish(psql_conn_);
-      throw ConnectionFailed(_conn_info);
+      throw ConnectionFailed(_conn_info + " errmsg: " + err_msg);
     }
 #ifdef HAVE_LOGGER
     // set notice processor
