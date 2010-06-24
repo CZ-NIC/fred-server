@@ -1702,13 +1702,13 @@ public:
       }//try
       catch (const std::exception& ex)
       {
-		LOGGER(PACKAGE).error(std::string("ManagerImpl error: ")+ex.what());
+		LOGGER(PACKAGE).error(std::string("Registrar::ManagerImpl error: ")+ex.what());
 		throw ;
       }//catch std exception
 
       catch (...)
       {
-          LOGGER(PACKAGE).error("ManagerImpl: an error has occured");
+          LOGGER(PACKAGE).error("Registrar::ManagerImpl: an error has occured");
           throw;
       }//catch (...)
   }
