@@ -13,8 +13,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
               -I$(top_srcdir)/util/db/model \
 			  -I$(top_builddir)/src
 
-
-noinst_PROGRAMS = test_logd test-model \
+check_PROGRAMS = test_logd test-model \
 					test-file-manager-client test-registrar-group \
 					test-registrar-certification
 					
@@ -134,5 +133,9 @@ test_registrar_certification_LDADD = \
                      $(top_builddir)/util/types/libtypes.a \
                      $(top_builddir)/src/old_utils/liboldutils.a \
                      $(top_builddir)/src/corba/libcorba.a
-                     
+
+install-check: check
+	$(INSTALL_PROGRAM) $(check_PROGRAMS) $(bindir)
+
+
 EXTRA_DIST = test-file.pdf
