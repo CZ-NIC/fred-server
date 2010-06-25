@@ -511,6 +511,7 @@ namespace Register
             }
             
             ~GenMultipleFiles() {
+                try {
                 if (holder_ids.empty()) {
                   std::string errmsg("ERROR: no registrant ID specified by caller. Wrong usage of API.");
                   LOGGER(PACKAGE).error(errmsg);
@@ -564,6 +565,13 @@ namespace Register
 
                 if(holder_ids.size() > 1) {
                   LOGGER(PACKAGE).debug(boost::format("File %1% contains several registrants") % filePDF);
+                }
+
+                } catch (std::exception &e) {
+                    LOGGER(PACKAGE).error(
+                            boost::format("~GenMultipleFiles() : caught exception: %1%") % e.what());
+                } catch (...) {
+                    LOGGER(PACKAGE).error("~GenMultipleFiles(): Caught unknown exception. ");
                 }
             }
             
@@ -719,32 +727,56 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
         HPCfgMap 
         readHPConfig()
         {
-
             FakedArgs fa;
 
             boost::shared_ptr<HandleHPMailArgs> hhp(new HandleHPMailArgs);
 
             HandlerPtrVector handlers =
             boost::assign::list_of
-            (HandleArgsPtr(new HandleGeneralArgs))
+            (HandleArgsPtr(new HandleGeneralArgs("test_hpconfig.cfg") ))
             (HandleArgsPtr(hhp));
-
 
             try
             {
-                        // TODO this is just for testing
-                        // maybe create a class to specify a config file
-                int argc = 2;
+                // CfgArgs always needs some argv vector, argc cannot be 0
+                int argc = 1;
                 char *argv[argc];
-                argv[0] = "";
-                argv[1] = "--config=test_hpconfig.cfg";  
+                argv[0] = new char [1];
+                // zero-length string into argv[0]
+                argv[0][0] = '\0';
 
                 fa = CfgArgs::instance<HandleGeneralArgs>(handlers)->handle(argc, argv);
 
-                std::cout << "fa: argc: " << fa.get_argc() << std::endl;
+                HPCfgMap set_cfg = boost::assign::map_list_of
+                // basic login parametres
+                ("hp_login_name",hhp->login)
+                ("hp_login_password",hhp->password)
+                ("hp_login_batch_id",hhp->hp_login_batch_id)
+                ("hp_login_note",hhp->note)
+                // from here it's a copy of map initialization from client-hp.cc
+                ("mb_proc_tmp_dir",hhp->mb_proc_tmp_dir)
+                ("postservice_cert_dir",hhp->postservice_cert_dir)
+                ("postservice_cert_file", hhp->postservice_cert_file)
+                ("hp_login_interface_url",hhp->hp_login_interface_url)
+		("hp_upload_interface_url",hhp->hp_upload_interface_url)
+		("hp_ack_interface_url",hhp->hp_ack_interface_url)
+		("hp_cancel_interface_url",hhp->hp_cancel_interface_url)
+		("hp_upload_archiver_filename",hhp->hp_upload_archiver_filename)
+		("hp_upload_archiver_additional_options"
+				,hhp->hp_upload_archiver_additional_options)
+		("hp_upload_curlopt_timeout",hhp->hp_upload_curlopt_timeout )
+		("hp_upload_curlopt_connect_timeout"
+				,hhp->hp_upload_curlopt_connect_timeout)
+		("hp_upload_curl_verbose",hhp->hp_upload_curl_verbose )
+		("hp_upload_retry",hhp->hp_upload_retry )
+#ifdef WIN32
+                ("hp_login_osversion","Windows")//"Linux" or "Windows"
+                ("hp_cleanup_last_arch_volumes","del /F *.7z*") // delete last archive volumes
+                ("hp_cleanup_last_letter_files","del /F letter_*") // delete last letter files
+#endif
+		;
 
-                return hhp->getConfig();
-
+                return set_cfg;
             }
             catch(const ReturnFromMain&)
             {
@@ -779,7 +811,6 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
          if ((bool)res[0][0]) {
                 LOGGER(PACKAGE).notice("The files are already being processed. No action");
-                // TODO what to do here? error message, exit, exception, whatever...
                 return;
          }
 
@@ -863,13 +894,13 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
               return;
           }
 
-          // TODO optimization (mentioned in ticket)
+          infile.seekg(0, std::ios::end);
+          std::streampos infile_size = infile.tellg();
+          infile.seekg(0, std::ios::beg);
+           
+          MailFile f(infile_size);
+          infile.read(&f[0], infile_size);
 
-          MailFile f;
-          char ch;
-          while(infile.get(ch)) {
-              f.push_back(ch);
-          }
           MailBatch batch;
           batch.push_back(f);
 

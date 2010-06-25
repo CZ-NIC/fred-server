@@ -50,6 +50,7 @@ public:
  */
 class HandleGeneralArgs : public HandleArgs
 {
+    std::string default_config;
     ///options descriptions reference used to print help for all options
     typedef std::vector<boost::shared_ptr<boost::program_options::options_description> > PoDescs;
 
@@ -91,6 +92,17 @@ class HandleGeneralArgs : public HandleArgs
 public:
     PoDescs po_description;
 
+
+#ifdef CONFIG_FILE
+    HandleGeneralArgs(const std::string def_cfg = std::string(CONFIG_FILE)) 
+        : default_config(def_cfg) {};
+#else
+    HandleGeneralArgs(const std::string def_cfg = std::string("")) 
+        : default_config(def_cfg) {};
+#endif
+
+
+
     boost::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
@@ -100,16 +112,9 @@ public:
         gen_opts->add_options()
                 ("help", "print this help message");
 
-        std::string default_config;
-
-#ifdef CONFIG_FILE
-        std::cout << "CONFIG_FILE: "<< CONFIG_FILE << std::endl;
-        default_config = std::string(CONFIG_FILE);
-#else
-        default_config = std::string("");
-#endif
         if(default_config.length() != 0)
         {
+std::cout << "Default for `--config' option: "<< default_config << std::endl;
             gen_opts->add_options()
                     ("config,C", boost::program_options
                             ::value<std::string>()->default_value(default_config)

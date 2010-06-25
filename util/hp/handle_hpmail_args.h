@@ -42,10 +42,6 @@
 class HandleHPMailArgs : public HandleArgs
 {
 
-private:
-    // all hpmail config option values
-    HPCfgMap cfg;
-
 public:
 	//selected hpmail config options values
     std::string mb_proc_tmp_dir ;
@@ -67,12 +63,6 @@ public:
     std::string hp_login_batch_id ;
     std::string note;
 
-    HPCfgMap 
-    getConfig() 
-    {
-        return cfg;
-    }
-
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
@@ -82,7 +72,7 @@ public:
 
         // TODO add remaining options from hpmail.cc
         opts_descs->add_options()
-				("send,s", "upload to online.postservice.cz production instance"
+				("main.send,s", "upload to online.postservice.cz production instance"
 						", with right account sending mails"
 						"or if not set upload to online3.postservice.cz test instance"
 						", data dumped, default option")
@@ -134,13 +124,6 @@ public:
     {
         boost::program_options::variables_map vm;
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
-
-        for (boost::program_options::variables_map::iterator it = vm.begin(); it != vm.end(); it++) {
-            cfg[it->first] = it->second.as<std::string>(); 
-
-            // TODO - debug output
-            std::cout << it->first << " = " << it->second.as<std::string>() << std::endl;        
-        }
 
         // TODO remove duplicated defaults
         mb_proc_tmp_dir = (vm.count("main.mb_proc_tmp_dir") == 0

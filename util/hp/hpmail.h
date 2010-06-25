@@ -33,6 +33,8 @@
 #include <iostream>
 #include <exception>
 #include <vector>
+#include <errno.h>
+#include <string.h>
 
 #include <boost/utility.hpp>
 
@@ -87,7 +89,18 @@ private:
     , letter_file_number_() //initially 0
     , saved_file_for_upload_(false)//initially no files
     , compressed_file_for_upload_(false)//initially no files
-    {}
+    {
+        if(curl_log_file_name_.empty()) {
+                curl_log_file_ = static_cast<FILE*>(stderr);
+        } else {
+                curl_log_file_ = fopen(curl_log_file_name_.c_str(),"w");  
+                if(curl_log_file_ == NULL) {
+                    std::string msg(strerror(errno));
+                    throw std::runtime_error(std::string("Error opening log file ") +  curl_log_file_name_ + " - " + msg);
+                }
+        }
+
+    }
     void save_list_for_archiver();
     VolumeFileNames load_compressed_mail_batch_filelist();
     void load_compressed_mail_volume(

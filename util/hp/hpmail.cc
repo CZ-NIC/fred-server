@@ -121,7 +121,8 @@ HPMail* HPMail::get()
 /// login using configuration
 void HPMail::login() 
 {
-        login(config_["hp_login_name"],config_["hp_login_password"], config_["hp_login_batch_id "], config_["hp_login_note"]); 
+        
+        login(config_["hp_login_name"],config_["hp_login_password"], config_["hp_login_batch_id"], config_["hp_login_note"]); 
 }
 
 ///postservice interface login, creating batch job and PHP session id
