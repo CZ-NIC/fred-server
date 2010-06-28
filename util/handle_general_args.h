@@ -114,7 +114,6 @@ public:
 
         if(default_config.length() != 0)
         {
-std::cout << "Default for `--config' option: "<< default_config << std::endl;
             gen_opts->add_options()
                     ("config,C", boost::program_options
                             ::value<std::string>()->default_value(default_config)

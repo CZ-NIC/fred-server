@@ -39,7 +39,7 @@ NotifyClient::runMethod()
         letters_create();
     } else if (m_conf.hasOpt(NOTIFY_LETTERS_SEND_NAME)) {
         letters_send();
-    } else if (m_conf.hasOpt(NOTIFY_FILE_SEND)) {
+    } else if (m_conf.hasOpt(NOTIFY_FILE_SEND_NAME)) {
         file_send();
     } else if (m_conf.hasOpt(NOTIFY_SHOW_OPTS_NAME)) {
         show_opts();
@@ -216,7 +216,12 @@ void NotifyClient::letters_send()
 
     std::auto_ptr<Register::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
 
-    notifyMan->sendLetters(fileclient);
+    notifyMan->sendLetters(
+           fileclient,
+           m_conf.hasOpt(NOTIFY_HPMAIL_CONFIG_NAME) ? 
+                m_conf.get<std::string> (NOTIFY_HPMAIL_CONFIG_NAME) :
+                HPMAIL_CONFIG        
+            );
 }
 
 void NotifyClient::file_send()
@@ -273,7 +278,12 @@ void NotifyClient::file_send()
 
     std::auto_ptr<Register::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
 
-    notifyMan->sendFile(m_conf.get<std::string> (NOTIFY_FILE_SEND));
+    notifyMan->sendFile(
+            m_conf.get<std::string> (NOTIFY_FILE_SEND_NAME),
+            m_conf.hasOpt(NOTIFY_HPMAIL_CONFIG_NAME) ? 
+                m_conf.get<std::string> (NOTIFY_HPMAIL_CONFIG_NAME) :
+                HPMAIL_CONFIG        
+            );
 }
 
 #define ADDOPT(name, type, callable, visible) \
@@ -289,7 +299,8 @@ NotifyClient::m_opts[] = {
     ADDOPT(NOTIFY_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),
     ADDOPT(NOTIFY_LIMIT_NAME, TYPE_UINT, false, false),
     ADDOPT(NOTIFY_USE_HISTORY_TABLES_NAME, TYPE_BOOL, false, false),
-    ADDOPT(NOTIFY_FILE_SEND, TYPE_STRING, true, true)
+    ADDOPT(NOTIFY_FILE_SEND_NAME, TYPE_STRING, true, true),
+    ADDOPT(NOTIFY_HPMAIL_CONFIG_NAME, TYPE_STRING, true, true)
 };
 
 #undef ADDOPT

@@ -725,7 +725,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
       }
 
         HPCfgMap 
-        readHPConfig()
+        readHPConfig(const std::string &conf_file)
         {
             FakedArgs fa;
 
@@ -733,7 +733,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
             HandlerPtrVector handlers =
             boost::assign::list_of
-            (HandleArgsPtr(new HandleGeneralArgs("test_hpconfig.cfg") ))
+            (HandleArgsPtr(new HandleGeneralArgs(conf_file) ))
             (HandleArgsPtr(hhp));
 
             try
@@ -745,8 +745,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                 // zero-length string into argv[0]
                 argv[0][0] = '\0';
 
-                fa = CfgArgs::instance<HandleGeneralArgs>(handlers)->handle(argc, argv);
-
+                fa = CfgArgs::instance<HandleHelpArg>(handlers)->handle(argc, argv);
                 HPCfgMap set_cfg = boost::assign::map_list_of
                 // basic login parametres
                 ("hp_login_name",hhp->login)
@@ -792,12 +791,12 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
        * is already being processed.
        *
        */
-      virtual void sendLetters(std::auto_ptr<Register::File::Transferer> fileman)
+      virtual void sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file)
       {
          TRACE("[CALL] Register::Notify::sendLetters()");
     	// transaction is needed for 'ON COMMIT DROP' functionality
         
-         HPCfgMap hpmail_config = readHPConfig();
+         HPCfgMap hpmail_config = readHPConfig(conf_file);
 
          Connection conn = Database::Manager::acquire();
    
@@ -877,12 +876,12 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
          }                
       }
 
-      virtual void sendFile(const std::string &filename) {
+      virtual void sendFile(const std::string &filename, const std::string &conf_file) {
 
           TRACE("[CALL] Register::Notify::sendFile()");
 
 
-          HPCfgMap hpmail_config = readHPConfig();
+          HPCfgMap hpmail_config = readHPConfig(conf_file);
 
           LOGGER(PACKAGE).debug(boost::format("File to send %1% ") % filename);
 

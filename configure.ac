@@ -189,6 +189,9 @@ AS_AC_EXPAND([PREFIX], [$prefix])
 #put context name into config.h file
 AC_DEFINE_UNQUOTED([CONFIG_FILE], [["]$SYSCONFDIR/fred/server.conf["]], [location of fred config file])
 
+# config file for hpmail (postservis)
+AC_DEFINE_UNQUOTED([HPMAIL_CONFIG], [["]$SYSCONFDIR/fred/hpmail.conf["]], [location of hpmail config file])
+
 AC_DEFINE_UNQUOTED([HAVE_LOGGER], [1], [compile libraries with logging messages])
 
 

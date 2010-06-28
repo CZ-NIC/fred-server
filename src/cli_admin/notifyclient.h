@@ -27,8 +27,8 @@
 #define NOTIFY_LETTERS_CREATE_NAME_DESC "generate pdf with domain registration warning"
 #define NOTIFY_LETTERS_SEND_NAME        "notify_letters_postservis_send"
 #define NOTIFY_LETTERS_SEND_NAME_DESC   "send generated PDF notification letters to postservis"
-#define NOTIFY_FILE_SEND                "notify_send_file"
-#define NOTIFY_FILE_SEND_DESC           "send specified PDF file via postservis"
+#define NOTIFY_FILE_SEND_NAME                "notify_send_file"
+#define NOTIFY_FILE_SEND_NAME_DESC           "send specified PDF file via postservis"
 
 #define NOTIFY_EXCEPT_TYPES_NAME        "notify_except_types"
 #define NOTIFY_EXCEPT_TYPES_NAME_DESC   "list of notification types ignored in notification"
@@ -38,6 +38,8 @@
 #define NOTIFY_LIMIT_NAME_DESC          "limit for nubmer of emails generated in one pass (0=no limit)"
 #define NOTIFY_DEBUG_NAME               "notify_debug"
 #define NOTIFY_DEBUG_NAME_DESC          "debug"
+#define NOTIFY_HPMAIL_CONFIG_NAME       "hpmail_config"
+#define NOTIFY_HPMAIL_CONFIG_NAME_DESC  "Configuration file for Postservis client (hpmail)"
 
 #include <boost/program_options.hpp>
 #include <iostream>
