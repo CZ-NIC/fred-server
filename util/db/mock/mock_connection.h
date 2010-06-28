@@ -123,10 +123,8 @@ public:
   }
 
   virtual inline result_type exec_params(const std::string& _query,//one command query
-          const std::vector< const char * > paramValues, //pointer to memory with parameters data
-          const std::vector<int> paramLengths, //sizes of memory with parameters data
-          const std::vector<int> paramFormats,//1-binary like int or double, 0- text like const char *
-          int resultFormat=0) //1-binary result so far not supported , 0- text result
+          const std::vector<std::string> params //pointer to memory with parameters data
+          )
   {
       DummyResult *tmp = 0;
       return MockResult(tmp);

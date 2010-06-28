@@ -130,26 +130,26 @@ public:
   }
 
   virtual inline result_type exec_params(const std::string& _query,//one command query
-          const std::vector< const char * > paramValues, //pointer to memory with parameters data
-          const std::vector<int> paramLengths, //sizes of memory with parameters data
-          const std::vector<int> paramFormats,//1-binary like int or double, 0- text like const char *
-          int resultFormat=0) //1-binary result so far not supported , 0- text result
+          const std::vector<std::string> params //parameters data
+	  )
   {
-      if(paramValues.size() != paramLengths.size())
-          throw std::runtime_error(
-                  "runtime error: paramValues and paramLengths have different size");
-      if(paramValues.size() != paramFormats.size())
-          throw std::runtime_error(
-                  "runtime error: paramValues and paramFormats have different size");
-  //example at:
-  //http://timmurphy.org/2009/11/19/pqexecparams-example-postgresql-query-execution-with-parameters
+
+      std::vector< const char * > paramValues; //pointer to memory with parameters data
+      std::vector<int> paramLengths; //sizes of memory with parameters data
+
+      for (std::vector< std::string>::const_iterator i = params.begin(); i != params.end() ; ++i)
+      {
+    	  paramValues.push_back((*i).c_str());
+    	  paramLengths.push_back((*i).size());
+      }
+
     PGresult *tmp = PQexecParams(psql_conn_, _query.c_str()//query buffer
         , paramValues.size()//number of parameters
         , 0 //not using Oids, use type in query like: WHERE id = $1::int4 and name = $2::varchar
         , &paramValues[0]//values to substitute $1 ... $n
         , &paramLengths[0]//the lengths, in bytes, of each of the parameter values
-        , &paramFormats[0]//whether the values are binary or not
-        , resultFormat);////we want the result in text format
+        , 0//param values are strings
+        , 0);//we want the result in text format
 
     ExecStatusType status = PQresultStatus(tmp);
     if (status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK)
