@@ -21,6 +21,7 @@
  *  test connection to postservice
  */
 
+#include "config.h"
 #include "hpmail.h"
 
 #include <boost/lexical_cast.hpp>
@@ -42,6 +43,7 @@
 
 HandlerPtrVector global_hpv =
 	boost::assign::list_of
+        (HandleArgsPtr(new HandleGeneralArgs(HPMAIL_CONFIG) ))
 	(HandleArgsPtr(new HandleHelpArg("\nUsage: client-hp <switches> [<file_names>...]\n")))
 	(HandleArgsPtr(new HandleHPMailArgs))
 	;
@@ -82,9 +84,12 @@ int main ( int argc, char* argv[])
 		("hp_upload_curl_verbose",hpm_cfg->hp_upload_curl_verbose )
 		("hp_upload_retry",hpm_cfg->hp_upload_retry )
 #ifdef WIN32
+        HPCfgMap ins = boost::assign::map_list_of
         ("hp_login_osversion","Windows")//"Linux" or "Windows"
         ("hp_cleanup_last_arch_volumes","del /F *.7z*") // delete last archive volumes
         ("hp_cleanup_last_letter_files","del /F letter_*") // delete last letter files
+
+        set_cfg.insert(ins.begin(), ins.end());
 #endif
 		;
 

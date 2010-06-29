@@ -768,11 +768,6 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 				,hhp->hp_upload_curlopt_connect_timeout)
 		("hp_upload_curl_verbose",hhp->hp_upload_curl_verbose )
 		("hp_upload_retry",hhp->hp_upload_retry )
-#ifdef WIN32
-                ("hp_login_osversion","Windows")//"Linux" or "Windows"
-                ("hp_cleanup_last_arch_volumes","del /F *.7z*") // delete last archive volumes
-                ("hp_cleanup_last_letter_files","del /F letter_*") // delete last letter files
-#endif
 		;
 
                 return set_cfg;
