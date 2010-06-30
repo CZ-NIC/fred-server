@@ -31,6 +31,24 @@
 #include <sstream>
 #include <stdexcept>
 
+
+//simple functor template for container initialization
+template <typename CONTAINER_OF_ELEMENTS_TYPE > struct list_of_params
+    : public CONTAINER_OF_ELEMENTS_TYPE
+{
+    typedef typename CONTAINER_OF_ELEMENTS_TYPE::value_type ELEMENT_TYPE;
+    list_of_params(const ELEMENT_TYPE& t)
+    {
+        (*this)(t);
+    }
+    list_of_params& operator()(const ELEMENT_TYPE& t)
+    {
+        this->push_back(t);
+        return *this;
+    }
+};
+
+
 //buffer type
 typedef std::vector<char> QueryParamData;
 
@@ -97,12 +115,12 @@ public:
     , buffer_(data_ptr, data_ptr + data_size)
     {}
 
-    explicit QueryParam(const char* data_ptr )
+    QueryParam(const char* data_ptr )
     : binary_(false)
     , buffer_(data_ptr, data_ptr + strlen(data_ptr))
     {}
 
-    explicit QueryParam(const std::string& text )
+    QueryParam(const std::string& text )
     : binary_(false)
     , buffer_(text.begin(), text.end())
     {}
@@ -133,18 +151,24 @@ public:
 
     void print_buffer()
     {
-        for (QueryParamData::const_iterator i = buffer_.begin()
-                ; i != buffer_.end(); ++i)
+        if(binary_)
         {
-            std::stringstream hexdump;
-            hexdump <<  std::setw( 2 ) << std::setfill( '0' )
-                << std::hex << std::uppercase
-                << static_cast<unsigned short>(static_cast<unsigned char>(*i));
-            std::cout << " " << hexdump.str();
+            std::cout << "Binary param: ";
+            for (QueryParamData::const_iterator i = buffer_.begin()
+                    ; i != buffer_.end(); ++i)
+            {
+                std::stringstream hexdump;
+                hexdump <<  std::setw( 2 ) << std::setfill( '0' )
+                    << std::hex << std::uppercase
+                    << static_cast<unsigned short>(static_cast<unsigned char>(*i));
+                std::cout << " " << hexdump.str();
+            }
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
-
-        std::cout << std::string(buffer_.begin(),buffer_.end()) << std::endl;
+        else
+        {
+            std::cout << "Text param: " << std::string(buffer_.begin(),buffer_.end()) << std::endl;
+        }
     }//print_buffer
 
     const QueryParamData& get_data() const
@@ -159,5 +183,7 @@ public:
 };//class QueryParam
 
 typedef std::vector<QueryParam> QueryParams;
+
+typedef list_of_params<QueryParams> query_param_list;
 
 #endif //QUERYPARAM_H_
