@@ -33,6 +33,7 @@ libdb_a_SOURCES = query/query_old.cc             \
                   connection_factory.h           \
                   transaction.h                  \
                   connection.h                   \
+                  query_parm.h                   \
                   result.h                       \
                   row.h                          \
                   value.h                        \
