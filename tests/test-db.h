@@ -77,17 +77,39 @@ unsigned exec_params_test()
         else ret+=8;
         if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
 
+
+        std::string qquery = "select $1::int as id, $2::bigint as data1, $3::int as data2"
+                ;
+
+        QueryParams qparams = boost::assign::list_of
+            (QueryParam(1))
+            (QueryParam(1ll))
+            (QueryParam(-1l))
+            ;
+
+        Database::Result qres = conn.exec_params( qquery, qparams );
+        if ((qres.size() > 0) && (qres[0].size() == 3))
+        {
+            //check data
+            if(1 != static_cast<long>(qres[0][0]) ) ret+=16;
+            if(1 != static_cast<long long>(qres[0][1])) ret+=32;
+            if(-1 != static_cast<long>(qres[0][2])) ret+=64;
+        }//if qres size
+        else ret+=128;
+        if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
+
+
     }
     catch(std::exception& ex)
     {
         std::cerr << "exec_params_test exception reason: "<< ex.what() << std::endl;
-        ret+=16;
+        ret+=256;
         throw;
     }
     catch(...)
     {
         std::cerr << "exec_params_test exception returning"<< std::endl;
-        ret+=32;
+        ret+=512;
         if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
     }
 

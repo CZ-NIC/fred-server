@@ -31,6 +31,7 @@
 #include "result.h"
 #include "statement.h"
 #include "connection_factory.h"
+#include "query_param.h"
 
 #include "config.h"
 
@@ -117,8 +118,34 @@ public:
    */
 
   virtual inline result_type exec_params(const std::string& _stmt,//one command query
-          const std::vector<std::string> params //parameters data
+          const std::vector<std::string>& params //parameters data
 		  )
+  {
+      try {
+  #ifdef HAVE_LOGGER
+        LOGGER(PACKAGE).debug(boost::format("exec query [%1%]") % _stmt);
+  #endif
+        return result_type(conn_->exec_params(_stmt//one command query
+                          , params //parameters data
+                          ));
+      }
+      catch (ResultFailed &rf) {
+        throw;
+      }
+      catch (...) {
+        throw ResultFailed(_stmt);
+      }
+    }
+
+  /**
+   * @param _stmt string representation of query statement with params
+   * @param params vector of query param data strings or binary
+   * @return result
+   */
+
+  virtual inline result_type exec_params(const std::string& _stmt,//one command query
+          const QueryParams& params //parameters data
+          )
   {
       try {
   #ifdef HAVE_LOGGER

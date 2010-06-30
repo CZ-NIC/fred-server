@@ -123,12 +123,20 @@ public:
   }
 
   virtual inline result_type exec_params(const std::string& _query,//one command query
-          const std::vector<std::string> params //pointer to memory with parameters data
+          const std::vector<std::string>& params //pointer to memory with parameters data
           )
   {
       DummyResult *tmp = 0;
       return MockResult(tmp);
-    }
+  }
+
+  virtual inline result_type exec_params(const std::string& _query,//one command query
+          const QueryParams& params //parameters data
+      )
+  {
+      DummyResult *tmp = 0;
+      return MockResult(tmp);
+  }
 
   virtual void reset() {
     //mock PQreset(psql_conn_);

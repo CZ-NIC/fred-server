@@ -130,7 +130,7 @@ public:
   }
 
   virtual inline result_type exec_params(const std::string& _query,//one command query
-          const std::vector<std::string> params //parameters data
+          const std::vector<std::string>& params //parameters data
 	  )
   {
 
@@ -149,6 +149,42 @@ public:
         , &paramValues[0]//values to substitute $1 ... $n
         , &paramLengths[0]//the lengths, in bytes, of each of the parameter values
         , 0//param values are strings
+        , 0);//we want the result in text format
+
+    ExecStatusType status = PQresultStatus(tmp);
+    if (status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK)
+    {
+      return PSQLResult(tmp);
+    }
+    else
+    {
+      PQclear(tmp);
+      throw ResultFailed(_query + " (" + PQerrorMessage(psql_conn_) + ")");
+    }
+  }//exec_params
+
+  virtual inline result_type exec_params(const std::string& _query,//one command query
+          const QueryParams& params //parameters data
+      )
+  {
+
+      std::vector< const char * > paramValues; //pointer to memory with parameters data
+      std::vector<int> paramLengths; //sizes of memory with parameters data
+      std::vector<int> paramFormats; //format of parameter data
+
+      for (QueryParams::const_iterator i = params.begin(); i != params.end() ; ++i)
+      {
+          paramValues.push_back(&(i->get_data())[0]);
+          paramLengths.push_back(i->get_data().size());
+          paramFormats.push_back(i->get_format());
+      }
+
+    PGresult *tmp = PQexecParams(psql_conn_, _query.c_str()//query buffer
+        , paramValues.size()//number of parameters
+        , 0 //not using Oids, use type in query like: WHERE id = $1::int4 and name = $2::varchar
+        , &paramValues[0]//values to substitute $1 ... $n
+        , &paramLengths[0]//the lengths, in bytes, of each of the parameter values
+        , &paramFormats[0]//param values formats
         , 0);//we want the result in text format
 
     ExecStatusType status = PQresultStatus(tmp);
