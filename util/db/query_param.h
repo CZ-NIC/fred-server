@@ -31,24 +31,6 @@
 #include <sstream>
 #include <stdexcept>
 
-
-//simple functor template for container initialization
-template <typename CONTAINER_OF_ELEMENTS_TYPE > struct list_of_params
-    : public CONTAINER_OF_ELEMENTS_TYPE
-{
-    typedef typename CONTAINER_OF_ELEMENTS_TYPE::value_type ELEMENT_TYPE;
-    list_of_params(const ELEMENT_TYPE& t)
-    {
-        (*this)(t);
-    }
-    list_of_params& operator()(const ELEMENT_TYPE& t)
-    {
-        this->push_back(t);
-        return *this;
-    }
-};
-
-
 //buffer type
 typedef std::vector<char> QueryParamData;
 
@@ -183,6 +165,22 @@ public:
 };//class QueryParam
 
 typedef std::vector<QueryParam> QueryParams;
+
+//simple functor template for container initialization
+template <typename CONTAINER_TYPE > struct list_of_params
+    : public CONTAINER_TYPE
+{
+    typedef typename CONTAINER_TYPE::value_type ELEMENT_TYPE;
+    list_of_params(const ELEMENT_TYPE& t)
+    {
+        (*this)(t);
+    }
+    list_of_params& operator()(const ELEMENT_TYPE& t)
+    {
+        this->push_back(t);
+        return *this;
+    }
+};
 
 typedef list_of_params<QueryParams> query_param_list;
 
