@@ -931,7 +931,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
                 
                 bool has_content = content_out != NULL && content_out[0] != '\0';
                 
-                if (has_content || props.size() > 1) {
+                if (has_content || props.size() > 0) {
                     // optimization
                     boost::format select = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
                     Result res = conn.exec(select.str());
