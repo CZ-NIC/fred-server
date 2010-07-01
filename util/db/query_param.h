@@ -31,6 +31,15 @@
 #include <sstream>
 #include <stdexcept>
 
+
+
+//compile time check - ok condition is true
+template <bool B> struct TAssert{};
+template <> struct TAssert<true>
+{
+    static void check() {};
+};
+
 //buffer type
 typedef std::vector<char> QueryParamData;
 
@@ -110,7 +119,7 @@ public:
     template <class T> QueryParam( T t )
     : binary_(true)
     {
-        std::size_t size_of_t = sizeof(t);
+        const std::size_t size_of_t = sizeof(t);
 
         if(size_of_t==1)
         {
@@ -118,16 +127,10 @@ public:
             return;
         }
 
-        if((//(size_of_t!=1)||
-                (size_of_t%2)) || (size_of_t > 8))
-        {
-            std::stringstream msg;
-            msg << "QueryParam error: use only for basic types"
-                    " up to 8 bytes current size: "
-                    << sizeof(t);
-            throw std::runtime_error( msg.str());
-        }
+        //QueryParam usage check: use only for basic types up to 8 bytes
+        TAssert<( ((size_of_t%2 == 0) || (size_of_t <= 8)) )>::check();
 
+        //TODO: check valid combinations of basic param types with database types in query
         hton_impl(t, size_of_t);
     }
 
