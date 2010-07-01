@@ -67,7 +67,11 @@ int main ( int argc, char* argv[])
     	HandleHPMailArgs* hpm_cfg
 			= CfgArgs::instance()->get_handler_ptr_by_type<HandleHPMailArgs>();
 
-    	HPCfgMap set_cfg = boost::assign::map_list_of
+    	HPCfgMap set_cfg = hpm_cfg->get_map(); 
+        
+        
+        /*
+        boost::assign::map_list_of
     	("mb_proc_tmp_dir",hpm_cfg->mb_proc_tmp_dir)
     	("postservice_cert_dir",hpm_cfg->postservice_cert_dir)
     	("postservice_cert_file", hpm_cfg->postservice_cert_file)
@@ -83,12 +87,13 @@ int main ( int argc, char* argv[])
 				,hpm_cfg->hp_upload_curlopt_connect_timeout)
 		("hp_upload_curl_verbose",hpm_cfg->hp_upload_curl_verbose )
 		("hp_upload_retry",hpm_cfg->hp_upload_retry )
+        */
+
 #ifdef WIN32
         HPCfgMap ins = boost::assign::map_list_of
         ("hp_login_osversion","Windows")//"Linux" or "Windows"
         ("hp_cleanup_last_arch_volumes","del /F *.7z*") // delete last archive volumes
         ("hp_cleanup_last_letter_files","del /F letter_*") // delete last letter files
-
         set_cfg.insert(ins.begin(), ins.end());
 #endif
 		;
@@ -99,10 +104,10 @@ int main ( int argc, char* argv[])
     		std::cout	<< i->first << ": " << i->second << std::endl;
 
     	std::cout
-    	<<"\nlogin: " << hpm_cfg->login
-    	<<" password: " << hpm_cfg->password
-    	<<" batchid: " << hpm_cfg->hp_login_batch_id
-    	<<" note: " << hpm_cfg->note
+    	<<"\nlogin: " << set_cfg["hp_login_name"]
+    	<<" password: " << set_cfg["hp_login_password"] 
+    	<<" batchid: " << set_cfg["hp_login_batch_id"] 
+    	<<" note: " << set_cfg["hp_login_note"] 
     	<< std::endl;
 
     	std::cout << "\nFile names\n" << std::endl;
@@ -129,8 +134,10 @@ int main ( int argc, char* argv[])
         HPMail::get()->archiver_command();
 
         //mail batch prepared, upload to postservice
-        HPMail::get()->login(hpm_cfg->login,hpm_cfg->password
-        		,hpm_cfg->hp_login_batch_id,hpm_cfg->note);
+        
+        // HPMail::get()->login(hpm_cfg->login,hpm_cfg->password
+        //		,hpm_cfg->hp_login_batch_id,hpm_cfg->note);
+        HPMail::get()->login();
         HPMail::get()->upload();
 
         std::cout << "The End" << std::endl;

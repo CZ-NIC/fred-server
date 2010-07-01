@@ -39,29 +39,18 @@
  * \brief postservice client cmdline options handler
  */
 
+
+
 class HandleHPMailArgs : public HandleArgs
 {
+    HPCfgMap hp_config;
 
 public:
 	//selected hpmail config options values
-    std::string mb_proc_tmp_dir ;
-    std::string postservice_cert_dir ;
-    std::string postservice_cert_file ;
-    std::string hp_login_interface_url ;
-    std::string hp_upload_interface_url ;
-    std::string hp_ack_interface_url ;
-    std::string hp_cancel_interface_url ;
-    std::string hp_upload_archiver_filename ;
-    std::string hp_upload_archiver_additional_options ;
-    std::string hp_upload_curlopt_timeout ;
-    std::string hp_upload_curlopt_connect_timeout ;
-    std::string hp_upload_curl_verbose ;
-    std::string hp_upload_retry ;
+   
+    const static std::string CONFIG_PREFIX;
 
-    std::string login;
-    std::string password;
-    std::string hp_login_batch_id ;
-    std::string note;
+    const HPCfgMap get_map() { return hp_config; };
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -145,6 +134,19 @@ public:
                 throw std::runtime_error("Required `hp_login_password' configuration option missing. Cannont continue");
         }
 
+        boost::program_options::variables_map::iterator it;
+        for(it = vm.begin(); it != vm.end(); it++) {
+                std::string key(it->first);
+                if (key.compare(0, CONFIG_PREFIX.length(), CONFIG_PREFIX)==0) {
+                        key = key.substr(CONFIG_PREFIX.length());
+                }
+
+                std::cout << key << " = " << it->second.as<std::string>() << std::endl;
+
+                hp_config [key] = (it->second).as<std::string>();
+        }
+
+        /*
         // set variables according to program options map
         hp_login_interface_url = vm["main.hp_login_interface_url"].as<std::string>(); 
         hp_upload_interface_url = vm["main.hp_upload_interface_url"].as<std::string>();
@@ -164,9 +166,11 @@ public:
         mb_proc_tmp_dir = vm["main.mb_proc_tmp_dir"].as<std::string>();
         postservice_cert_dir  = vm["main.postservice_cert_dir"].as<std::string>();
         postservice_cert_file = vm["main.postservice_cert_file"].as<std::string>();
-
+        */
 
     }//handle
 };//class HandleHPMailArgs
+
+const std::string HandleHPMailArgs::CONFIG_PREFIX("main.");
 
 #endif //HANDLE_HPMAIL_ARGS_H_

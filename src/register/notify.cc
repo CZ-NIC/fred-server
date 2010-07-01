@@ -746,6 +746,8 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                 argv[0][0] = '\0';
 
                 fa = CfgArgs::instance<HandleHelpArg>(handlers)->handle(argc, argv);
+                HPCfgMap set_cfg = hhp->get_map();
+                /*
                 HPCfgMap set_cfg = boost::assign::map_list_of
                 // basic login parametres
                 ("hp_login_name",hhp->login)
@@ -769,6 +771,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 		("hp_upload_curl_verbose",hhp->hp_upload_curl_verbose )
 		("hp_upload_retry",hhp->hp_upload_retry )
 		;
+                */
 
                 return set_cfg;
             }
