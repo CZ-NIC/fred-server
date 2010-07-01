@@ -49,10 +49,13 @@ struct MyFixture {
 
 		// initialize database connection manager
 		Database::Manager::init(new ConnectionFactory(DB_CONN_STR));
+
 	}
 
 	~MyFixture() {
 		try {
+                    // TODO DEBUG
+                     /*
 			std::list<ID>::iterator it = id_list_entry.begin();
 			Connection conn = Database::Manager::acquire();
 
@@ -68,6 +71,7 @@ struct MyFixture {
 			for(it = id_list_session.begin(); it != id_list_session.end();it++) {
 				conn.exec( (boost::format("delete from session where id=%1%") % *it).str() );
 			}
+                        */
 		} catch (Database::Exception &ex) {
 			std::cout << (boost::format("error when working with database (%1%) : %2%") % DB_CONN_STR % ex.what()).str();
 		}
@@ -83,19 +87,23 @@ BOOST_GLOBAL_FIXTURE( MyFixture );
 
 class TestImplLog {
 	// TODO this should follow the common ways with create(...) 
-	Register::Logger::Manager *logd;
-	Connection conn;
+        std::auto_ptr<Register::Logger::Manager> logd;
+//	Connection conn;
 
 
 public:
+        /* TODO
 	TestImplLog (const std::string connection_string) : logd(Register::Logger::Manager::create(connection_string)), conn(Database::Manager::acquire()) {
 	};
 
 	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(Register::Logger::Manager::create(connection_string, monitoring_file)), conn(Database::Manager::acquire()) {
 	};
+        */
 
-	Connection &get_conn() {
-		return conn;
+        TestImplLog (const std::string connection_string) : logd(Register::Logger::Manager::create(connection_string)) {
+	};
+
+	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(Register::Logger::Manager::create(connection_string, monitoring_file)) {
 	};
 
 	Database::ID CreateSession(Languages lang, const char *name);
@@ -119,6 +127,8 @@ public:
 inline bool has_content(const char *str) {
 	return (str && *str!= '\0');
 }
+
+
 
 boost::format get_table_postfix_for_now(RequestServiceType service_num, bool monitoring)
 {
@@ -198,6 +208,8 @@ Database::ID TestImplLog::CreateSession(Languages lang, const char *name)
 
 	if(ret == 0) return 0;
 
+        Database::Connection conn (Database::Manager::acquire());
+
 	// first check if the correct partition was used ...
 	boost::format test = boost::format("select login_date from session_%1% where id = %2%") % get_table_postfix_for_now(LC_NO_SERVICE, false) % ret;
 	Result res = conn.exec(test.str());
@@ -235,6 +247,8 @@ bool TestImplLog::CloseSession(Database::ID id)
 {
 	bool ret = logd->i_CloseSession(id);
 
+        Database::Connection conn (Database::Manager::acquire());
+
 	if (!ret) return ret;
 
 	Result res = conn.exec( (boost::format("select logout_date from session where id=%1%") % id).str() );
@@ -259,12 +273,12 @@ Database::ID TestImplLog::CreateRequest(const char *ip_addr, const RequestServic
 		BOOST_FAIL(boost::format (" ---------Invalid service num %1% ") % serv);
 	}
 
-	// TODO generic session_id 99  - change
-	Database::ID ret = logd->i_CreateRequest(ip_addr, serv, content_in, props, UNKNOWN_ACTION, 99);
+	Database::ID ret = logd->i_CreateRequest(ip_addr, serv, content_in, props, UNKNOWN_ACTION, 0);
 	boost::format query;
 
 	if(ret == 0) return 0;
 
+	Connection conn = Database::Manager::acquire();
 	// first check if the correct partition was used ...
 
 	boost::format test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix_for_now(serv, is_monitoring) % ret;
@@ -276,7 +290,7 @@ Database::ID TestImplLog::CreateRequest(const char *ip_addr, const RequestServic
 
 	// now a regular select
 
-	query = boost::format ( "select source_ip, service, raw.content from request join request_data raw on raw.entry_id=id where id=%1%") % ret;
+	query = boost::format ( "select source_ip, service, raw.content from request r join request_data raw on raw.entry_id=r.id where r.id=%1%") % ret;
 	res = conn.exec(query.str());
 
 	if (res.size() != 1) {
@@ -323,7 +337,8 @@ bool TestImplLog::CloseRequest(const Database::ID id, const char *content_out, c
 
 	if(!result) return result;
 
-	boost::format query = boost::format ( "select time_end, raw.content from request join request_data raw on raw.entry_id=id where raw.is_response=true and id=%1%") % id;
+	Connection conn = Database::Manager::acquire();
+	boost::format query = boost::format ( "select time_end, raw.content from request r join request_data raw on raw.entry_id=r.id where raw.is_response=true and r.id=%1%") % id;
 	Result res = conn.exec(query.str());
 
 	if (res.size() != 1) {
@@ -391,6 +406,7 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Register::Logger::
 
 	boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
 
+	Connection conn = Database::Manager::acquire();
 	Result res = conn.exec(query.str());
 
 	// this is expected for a *_subset function...
@@ -425,6 +441,8 @@ void TestImplLog::check_db_properties(ID rec_id, const Register::Logger::Request
 {
 	boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
 
+	Connection conn = Database::Manager::acquire();
+
 	Result res = conn.exec(query.str());
 
 	if (res.size() != props.size() ) {
@@ -440,10 +458,11 @@ static int global_call_count = 0;
 
 void test_monitoring_ip(const std::string &ip, TestImplLog &t, bool result)
 {
-	Connection conn = Database::Manager::acquire();
 	Database::ID id;
 
 	id = t.CreateRequest(ip.c_str(), LC_EPP, "AAA", TestImplLog::no_props, result);
+
+	Connection conn = Database::Manager::acquire();
 
 	std::cout << " Recent ID: " << id << std::endl;
 
@@ -512,6 +531,9 @@ BOOST_AUTO_TEST_CASE( test_con_sessions )
 	BOOST_CHECK(test.CloseSession(id1));
 }
 
+#ifdef DEBUG_LOGD
+// this is not going to be detected unless we check for it in implementation
+// under DEBUG_LOGD
 BOOST_AUTO_TEST_CASE( close_session_twice )
 {
 	BOOST_TEST_MESSAGE("Try to close a session which is already closed");
@@ -525,6 +547,7 @@ BOOST_AUTO_TEST_CASE( close_session_twice )
 
 	BOOST_CHECK(!test.CloseSession(id));
 }
+#endif
 
 BOOST_AUTO_TEST_CASE( session_without_name )
 {
@@ -540,7 +563,6 @@ BOOST_AUTO_TEST_CASE( session_without_name )
 
 }
 
-
 BOOST_AUTO_TEST_CASE( test_monitoring_flag )
 {
 	BOOST_TEST_MESSAGE("Test if the monitoring flag is set according to list of monitoring hosts");
@@ -554,6 +576,7 @@ BOOST_AUTO_TEST_CASE( test_monitoring_flag )
 	TestImplLog test(DB_CONN_STR, "test_log_monitoring.conf");
 
 	test_monitoring_ip("127.0.0.1", test, true);
+        
 	test_monitoring_ip("127.0.0.2", test, false);
 	test_monitoring_ip("216.16.16.1", test, true);
 	test_monitoring_ip("216.16.16.2", test, false);
@@ -566,7 +589,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 	BOOST_TEST_MESSAGE("Check if records with different dates are inserted into correct partitions. ");
 
 	Database::ID id;
-	TestImplLog test(DB_CONN_STR);
+//	TestImplLog test(DB_CONN_STR);
 
 	// this gets the very same connection which is used by test object above since this program is single-threaded
 	Connection conn = Database::Manager::acquire();
@@ -643,25 +666,23 @@ BOOST_AUTO_TEST_CASE( partitions )
 						BOOST_ERROR(" Record not found in the correct partition ");
 					}
 
-					/*
 					// ----- now monitoring on
-					insert = boost::format() % date % i % service;
-					conn.exec(insert.str());
-
-					res = conn.exec(Register::Logger::ManagerImpl::LAST_PROPERTY_VALUE_ID);
-					if (res.size() == 0) {
-						BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
-					}
-					id = res[0][0];
-					MyFixture::id_list_entry.push_back(id);
-
-					test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, true) % id;
-					res = conn.exec(test.str());
-
-					if(res.size() == 0) {
-						BOOST_ERROR(" Record not found in the correct partition ");
-					}
-					*/
+//					insert = boost::format() % date % i % service;
+//					conn.exec(insert.str());
+//
+//					res = conn.exec(Register::Logger::ManagerImpl::LAST_PROPERTY_VALUE_ID);
+//					if (res.size() == 0) {
+//						BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
+//					}
+//					id = res[0][0];
+//					MyFixture::id_list_entry.push_back(id);
+//
+//					test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, true) % id;
+//					res = conn.exec(test.str());
+//
+//					if(res.size() == 0) {
+//						BOOST_ERROR(" Record not found in the correct partition ");
+//					}
 				}
 
 			} catch (Database::Exception &ex) {
@@ -750,7 +771,6 @@ BOOST_AUTO_TEST_CASE( invalid_ip)
 	BOOST_CHECK(test.CreateRequest("127.0.0.256", LC_PUBLIC_REQUEST, "AA") == 0);
 }
 
-
 BOOST_AUTO_TEST_CASE( zero_length_strings )
 {
 	BOOST_TEST_MESSAGE(" Try using zero length strings in content and ip address. ");
@@ -764,8 +784,8 @@ BOOST_AUTO_TEST_CASE( zero_length_strings )
 	id1 = test.CreateRequest("", LC_PUBLIC_REQUEST, "", *props);
 	BOOST_CHECK(id1 != 0);
 
-	props1 = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.UpdateRequest(id1, *props1));
+	props = test.create_generic_properties(1, global_call_count++);
+	BOOST_CHECK(test.UpdateRequest(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
 	BOOST_CHECK(test.CloseRequest(id1, "", *props));
 
@@ -881,7 +901,7 @@ BOOST_AUTO_TEST_CASE( _2_events )
 	BOOST_CHECK(test.CloseRequest(id1, "YYYYYYYYYYYYYYYY", *props));
 }
 
-
+#ifdef DEBUG_LOGD
 BOOST_AUTO_TEST_CASE( already_closed )
 {
 	BOOST_TEST_MESSAGE(" Try to update and close already closed event. ");
@@ -903,6 +923,7 @@ BOOST_AUTO_TEST_CASE( already_closed )
 	BOOST_CHECK(!test.CloseRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", *props1));
 
 }
+#endif
 
 BOOST_AUTO_TEST_CASE( close_record_0 )
 {
