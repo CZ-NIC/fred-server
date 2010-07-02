@@ -10,16 +10,29 @@
  * #include <boost/test/unit_test.hpp>
  * */
 
-#include <boost/test/included/unit_test.hpp>
 #include <stdio.h>
 
 #include "request_impl.h"
+#include "handle_general_args.h"
+#include "handle_database_args.h"
 
 using namespace Database;
 using namespace Register::Logger;
 
+boost::shared_ptr<HandleDatabaseArgs> global_hdba(new HandleDatabaseArgs);
+
+HandlerPtrVector global_hpv =
+boost::assign::list_of
+(HandleArgsPtr(new HandleGeneralArgs))
+(HandleArgsPtr(global_hdba));
+
+
+#include "test_custom_main.h"
+
+
 namespace TestLogd {
 
+//args processing config for custom main
 // TODO this should be taken from the database 
 enum LogServiceType { LC_NO_SERVICE = -1, LC_UNIX_WHOIS=0, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN, LC_INTRANET, LC_MAX_SERVICE };
 
@@ -30,8 +43,6 @@ const int UNKNOWN_ACTION = 1000;
 
 //whether to test partitioning on request_property_value table
 const bool PARTITIONS_TEST_PROPERTIES = true;
-
-const std::string DB_CONN_STR("host=localhost port=22345 dbname=fred user=fred password=password connect_timeout=2");
 
 
 boost::format get_table_postfix(int year, int month, RequestServiceType service_num, bool monitoring);
@@ -47,15 +58,10 @@ struct MyFixture {
 		Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
 		LOGGER(PACKAGE).info("Logging initialized");
 
-		// initialize database connection manager
-		Database::Manager::init(new ConnectionFactory(DB_CONN_STR));
-
 	}
 
 	~MyFixture() {
 		try {
-                    // TODO DEBUG
-                     /*
 			std::list<ID>::iterator it = id_list_entry.begin();
 			Connection conn = Database::Manager::acquire();
 
@@ -71,9 +77,8 @@ struct MyFixture {
 			for(it = id_list_session.begin(); it != id_list_session.end();it++) {
 				conn.exec( (boost::format("delete from session where id=%1%") % *it).str() );
 			}
-                        */
 		} catch (Database::Exception &ex) {
-			std::cout << (boost::format("error when working with database (%1%) : %2%") % DB_CONN_STR % ex.what()).str();
+			std::cout << (boost::format("error when working with database (%1%) : %2%") % global_hdba->get_conn_info() % ex.what()).str();
 		}
 	}
 
@@ -502,7 +507,7 @@ BOOST_AUTO_TEST_CASE( test_session )
 {
 	BOOST_TEST_MESSAGE("Create and close single sessions with both available languages ");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 
 	Database::ID id = test.CreateSession(CS, "regid01");
 
@@ -519,7 +524,7 @@ BOOST_AUTO_TEST_CASE( test_con_sessions )
 {
 	BOOST_TEST_MESSAGE("Create two concurrent sessions and close them");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 
 	Database::ID id  = test.CreateSession(CS, "regid03");
 	Database::ID id1 = test.CreateSession(EN, "regid04");
@@ -538,7 +543,7 @@ BOOST_AUTO_TEST_CASE( close_session_twice )
 {
 	BOOST_TEST_MESSAGE("Try to close a session which is already closed");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 
 	Database::ID id = test.CreateSession(CS, "regid01");
 
@@ -553,7 +558,7 @@ BOOST_AUTO_TEST_CASE( session_without_name )
 {
 	BOOST_TEST_MESSAGE("Try to create a session without providing the name of registrar/user");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 
 	Database::ID id = test.CreateSession(CS, NULL);
 	BOOST_CHECK(id == 0);
@@ -573,7 +578,7 @@ BOOST_AUTO_TEST_CASE( test_monitoring_flag )
 	ConfigFile file(CONF_FILENAME,  "127.0.0.1 0.0.0.0 216.16.16.1");
 	// create an instance of TestImplLog
 
-	TestImplLog test(DB_CONN_STR, "test_log_monitoring.conf");
+	TestImplLog test(global_hdba->get_conn_info(), "test_log_monitoring.conf");
 
 	test_monitoring_ip("127.0.0.1", test, true);
         
@@ -589,7 +594,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 	BOOST_TEST_MESSAGE("Check if records with different dates are inserted into correct partitions. ");
 
 	Database::ID id;
-//	TestImplLog test(DB_CONN_STR);
+//	TestImplLog test(global_hdba->get_conn_info());
 
 	// this gets the very same connection which is used by test object above since this program is single-threaded
 	Connection conn = Database::Manager::acquire();
@@ -686,7 +691,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 				}
 
 			} catch (Database::Exception &ex) {
-				std::cout << (boost::format("error when working with database (%1%) : %2%") % DB_CONN_STR % ex.what()).str();
+				std::cout << (boost::format("error when working with database (%1%) : %2%") % global_hdba->get_conn_info() % ex.what()).str();
 			}
 		}
 	}
@@ -699,7 +704,7 @@ BOOST_AUTO_TEST_CASE( long_property_name)
 	BOOST_TEST_MESSAGE("Try to log a property with a very long name (which isn't in the database, also) and very long value");
 
 	Database::ID id;
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	std::auto_ptr<Register::Logger::RequestProperties> props;
 
 	props = test.create_generic_properties(2, global_call_count++);
@@ -719,7 +724,7 @@ BOOST_AUTO_TEST_CASE( zero_property_name)
 	BOOST_TEST_MESSAGE(" Try to add property with zero-length name or value");
 
 	Database::ID id;
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	std::auto_ptr<Register::Logger::RequestProperties> props;
 
 	props = test.create_generic_properties(2, global_call_count++);
@@ -743,7 +748,7 @@ BOOST_AUTO_TEST_CASE( without_properties )
 	BOOST_TEST_MESSAGE(" Create a simple message, update it multiple times, and close it without using any properties. ");
 
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	Database::ID id1;
 
 	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD");
@@ -756,7 +761,7 @@ BOOST_AUTO_TEST_CASE( service_types)
 {
 	BOOST_TEST_MESSAGE(" Try to use all possible service types");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	for (int i=LC_UNIX_WHOIS;i<LC_MAX_SERVICE;i++) {
 		BOOST_CHECK(test.CreateRequest("111.222.111.222", (RequestServiceType)i, "aaa"));
 	}
@@ -766,7 +771,7 @@ BOOST_AUTO_TEST_CASE( invalid_ip)
 {
 	BOOST_TEST_MESSAGE(" Try to send an invalid IP address");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	BOOST_CHECK(test.CreateRequest("ABC", LC_PUBLIC_REQUEST, "AA") == 0);
 	BOOST_CHECK(test.CreateRequest("127.0.0.256", LC_PUBLIC_REQUEST, "AA") == 0);
 }
@@ -775,10 +780,10 @@ BOOST_AUTO_TEST_CASE( zero_length_strings )
 {
 	BOOST_TEST_MESSAGE(" Try using zero length strings in content and ip address. ");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	Database::ID id1;
 
-	std::auto_ptr<Register::Logger::RequestProperties> props, props1;
+	std::auto_ptr<Register::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.CreateRequest("", LC_PUBLIC_REQUEST, "", *props);
@@ -795,17 +800,17 @@ BOOST_AUTO_TEST_CASE( null_strings )
 {
 	BOOST_TEST_MESSAGE(" Try using nulls length strings in content and ip address. ");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	Database::ID id1;
 
-	std::auto_ptr<Register::Logger::RequestProperties> props, props1;
+	std::auto_ptr<Register::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.CreateRequest(NULL, LC_PUBLIC_REQUEST, NULL, *props);
 	BOOST_CHECK(id1 != 0);
 
-	props1 = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.UpdateRequest(id1, *props1));
+	props = test.create_generic_properties(1, global_call_count++);
+	BOOST_CHECK(test.UpdateRequest(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
 	BOOST_CHECK(test.CloseRequest(id1, NULL, *props));
 }
@@ -814,10 +819,10 @@ BOOST_AUTO_TEST_CASE( long_strings )
 {
 	BOOST_TEST_MESSAGE(" Try using very long strings in content and ip address. ");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	Database::ID id1;
 
-	std::auto_ptr<Register::Logger::RequestProperties> props, props1;
+	std::auto_ptr<Register::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.CreateRequest(std::string(100, 'X').c_str(), LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
@@ -826,8 +831,8 @@ BOOST_AUTO_TEST_CASE( long_strings )
 	id1 = test.CreateRequest("122.123.124.125", LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
 	BOOST_CHECK(id1 != 0);
 
-	props1 = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.UpdateRequest(id1, *props1));
+	props = test.create_generic_properties(1, global_call_count++);
+	BOOST_CHECK(test.UpdateRequest(id1, *props));
 
 
 	props = test.create_generic_properties(1, global_call_count++);
@@ -839,19 +844,19 @@ BOOST_AUTO_TEST_CASE( normal_event )
 {
 	BOOST_TEST_MESSAGE(" Create a simple message, update it multiple times, and close it. ");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	Database::ID id1;
 
-	std::auto_ptr<Register::Logger::RequestProperties> props, props1, props2;
+	std::auto_ptr<Register::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
 	BOOST_CHECK(id1 != 0);
 
-	props1 = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.UpdateRequest(id1, *props1));
-	props2 = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.UpdateRequest(id1, *props2));
+	props = test.create_generic_properties(1, global_call_count++);
+	BOOST_CHECK(test.UpdateRequest(id1, *props));
+	props = test.create_generic_properties(1, global_call_count++);
+	BOOST_CHECK(test.UpdateRequest(id1, *props));
 
 	props = test.create_generic_properties(1, global_call_count++);
 
@@ -864,7 +869,7 @@ BOOST_AUTO_TEST_CASE( no_props )
 	BOOST_TEST_MESSAGE(" Create an event without any properties");
 
 	Register::Logger::RequestProperties no_props;
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	Database::ID id1;
 
 	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", no_props);
@@ -881,17 +886,17 @@ BOOST_AUTO_TEST_CASE( no_props )
 BOOST_AUTO_TEST_CASE( _2_events )
 {
 	BOOST_TEST_MESSAGE(" Create an event, create a second event, close the second, close the first...");
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	Database::ID id1, id2;
 
-	std::auto_ptr<Register::Logger::RequestProperties> props1, props2, props;
-	props1 = test.create_generic_properties(3, global_call_count++);
-	props2 = test.create_generic_properties(3, global_call_count++);
+	std::auto_ptr<Register::Logger::RequestProperties> props;
+	props = test.create_generic_properties(3, global_call_count++);
+	props = test.create_generic_properties(3, global_call_count++);
 
-	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props1);
+	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
 	BOOST_CHECK(id1 != 0);
 
-	id2 = test.CreateRequest("101.101.101.101", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props2);
+	id2 = test.CreateRequest("101.101.101.101", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
 	BOOST_CHECK(id2 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
@@ -906,9 +911,9 @@ BOOST_AUTO_TEST_CASE( already_closed )
 {
 	BOOST_TEST_MESSAGE(" Try to update and close already closed event. ");
 
-	TestImplLog test(DB_CONN_STR);
+	TestImplLog test(global_hdba->get_conn_info());
 	Database::ID id1, id2;
-	std::auto_ptr<Register::Logger::RequestProperties> props, props1;
+	std::auto_ptr<Register::Logger::RequestProperties> props;
 
 	props = test.create_generic_properties(3, global_call_count++);
 
@@ -917,10 +922,10 @@ BOOST_AUTO_TEST_CASE( already_closed )
 	BOOST_CHECK(test.CloseRequest(id1, "YYYYYYYYYYYYYYYY"));
 	// record closed here
 
-	props1 = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(!test.UpdateRequest(id1, *props1));
-	BOOST_CHECK(!test.UpdateRequest(id1, *props1));
-	BOOST_CHECK(!test.CloseRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", *props1));
+	props = test.create_generic_properties(1, global_call_count++);
+	BOOST_CHECK(!test.UpdateRequest(id1, *props));
+	BOOST_CHECK(!test.UpdateRequest(id1, *props));
+	BOOST_CHECK(!test.CloseRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", *props));
 
 }
 #endif
@@ -928,7 +933,7 @@ BOOST_AUTO_TEST_CASE( already_closed )
 BOOST_AUTO_TEST_CASE( close_record_0 )
 {
 	BOOST_TEST_MESSAGE(" Try to close record with id 0");
-	TestImplLog test (DB_CONN_STR);
+	TestImplLog test (global_hdba->get_conn_info());
 
 	BOOST_CHECK(!test.CloseRequest(0, "ZZZZ"));
 

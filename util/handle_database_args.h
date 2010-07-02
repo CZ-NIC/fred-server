@@ -42,6 +42,7 @@
  */
 class HandleDatabaseArgs : public HandleArgs
 {
+    std::string conn_info;
 public:
 
     boost::shared_ptr<boost::program_options::options_description>
@@ -88,7 +89,7 @@ public:
                 : "port=" + boost::lexical_cast<std::string>(vm["database.port"].as<unsigned>()) + " ");
         std::string dbtime = (vm.count("database.timeout") == 0 ? ""
                 : "connect_timeout=" + boost::lexical_cast<std::string>(vm["database.timeout"].as<unsigned>()) + " ");
-        std::string conn_info = str(boost::format("%1% %2% %3% %4% %5% %6%")
+        conn_info = str(boost::format("%1% %2% %3% %4% %5% %6%")
                                                   % dbhost
                                                   % dbport
                                                   % dbname
@@ -100,6 +101,13 @@ public:
         Database::Manager::init(new Database::ConnectionFactory(conn_info));
 
     }//handle
+
+    std::string get_conn_info() {
+        if(conn_info.empty()) {
+            throw std::runtime_error("Wrong usage: Connection info not initialized yet");
+        }
+        return conn_info;
+    }
 };
 
 #endif //HANDLE_DATABASE_ARGS_H_

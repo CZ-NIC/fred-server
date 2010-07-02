@@ -30,7 +30,8 @@ test_logd_SOURCES =  test_logd.cc \
 
 test_logd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
-                     $(AM_LDFLAGS)
+                     $(AM_LDFLAGS)    \
+                     $(BOOST_PROGRAM_OPTIONS_LIB)
 
 test_logd_LDADD =    $(top_builddir)/src/register/libfred.a \
                      $(top_builddir)/src/model/libmodel.a \
