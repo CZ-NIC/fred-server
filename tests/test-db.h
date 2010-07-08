@@ -92,7 +92,7 @@ unsigned exec_params_test()
         qparams[2].print_buffer();
         qparams[3].print_buffer();
 
-//  Text param is complaining about text encoding when called this way, above test is OK about it
+        //test simple binary params
         Database::Result qres = conn.exec_params( qquery, qparams );
 
         if ((qres.size() > 0) && (qres[0].size() == 5))
