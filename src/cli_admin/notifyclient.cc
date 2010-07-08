@@ -190,41 +190,6 @@ void NotifyClient::letters_send()
                 m_nsAddr)
             );
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-    MailerManager mailMan(cc.getNS());
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
-    std::auto_ptr<Register::Domain::Manager> domMan(
-            Register::Domain::Manager::create(&m_db, zoneMan.get()));
-    std::auto_ptr<Register::Contact::Manager> conMan(
-            Register::Contact::Manager::create(
-                &m_db,
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
-            );
-    std::auto_ptr<Register::NSSet::Manager> nssMan(
-            Register::NSSet::Manager::create(
-                &m_db,
-                zoneMan.get(),
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
-            );
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(
-                &m_db,
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
-            );
-    std::auto_ptr<Register::Registrar::Manager> regMan(
-            Register::Registrar::Manager::create(&m_db));
-    std::auto_ptr<Register::Notify::Manager> notifyMan(
-            Register::Notify::Manager::create(
-                &m_db,
-                &mailMan,
-                conMan.get(),
-                nssMan.get(),
-                keyMan.get(),
-                domMan.get(),
-                docMan.get(),
-                regMan.get())
-            );
-
     std::auto_ptr<Register::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
 
     sendLetters(
@@ -252,41 +217,7 @@ void NotifyClient::file_send()
                 m_nsAddr)
             );
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-    MailerManager mailMan(cc.getNS());
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
-    std::auto_ptr<Register::Domain::Manager> domMan(
-            Register::Domain::Manager::create(&m_db, zoneMan.get()));
-    std::auto_ptr<Register::Contact::Manager> conMan(
-            Register::Contact::Manager::create(
-                &m_db,
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
-            );
-    std::auto_ptr<Register::NSSet::Manager> nssMan(
-            Register::NSSet::Manager::create(
-                &m_db,
-                zoneMan.get(),
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
-            );
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(
-                &m_db,
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
-            );
-    std::auto_ptr<Register::Registrar::Manager> regMan(
-            Register::Registrar::Manager::create(&m_db));
-    std::auto_ptr<Register::Notify::Manager> notifyMan(
-            Register::Notify::Manager::create(
-                &m_db,
-                &mailMan,
-                conMan.get(),
-                nssMan.get(),
-                keyMan.get(),
-                domMan.get(),
-                docMan.get(),
-                regMan.get())
-            );
-
+    
     std::auto_ptr<Register::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
 
     sendFile(
@@ -453,32 +384,7 @@ void NotifyClient::file_send()
 
             fa = CfgArgs::instance<HandleHelpArg>(handlers)->handle(argc, argv);
             HPCfgMap set_cfg = hhp->get_map();
-            /*
-            HPCfgMap set_cfg = boost::assign::map_list_of
-            // basic login parametres
-            ("hp_login_name",hhp->login)
-            ("hp_login_password",hhp->password)
-            ("hp_login_batch_id",hhp->hp_login_batch_id)
-            ("hp_login_note",hhp->note)
-            // from here it's a copy of map initialization from client-hp.cc
-            ("mb_proc_tmp_dir",hhp->mb_proc_tmp_dir)
-            ("postservice_cert_dir",hhp->postservice_cert_dir)
-            ("postservice_cert_file", hhp->postservice_cert_file)
-            ("hp_login_interface_url",hhp->hp_login_interface_url)
-            ("hp_upload_interface_url",hhp->hp_upload_interface_url)
-            ("hp_ack_interface_url",hhp->hp_ack_interface_url)
-            ("hp_cancel_interface_url",hhp->hp_cancel_interface_url)
-            ("hp_upload_archiver_filename",hhp->hp_upload_archiver_filename)
-            ("hp_upload_archiver_additional_options"
-                            ,hhp->hp_upload_archiver_additional_options)
-            ("hp_upload_curlopt_timeout",hhp->hp_upload_curlopt_timeout )
-            ("hp_upload_curlopt_connect_timeout"
-                            ,hhp->hp_upload_curlopt_connect_timeout)
-            ("hp_upload_curl_verbose",hhp->hp_upload_curl_verbose )
-            ("hp_upload_retry",hhp->hp_upload_retry )
-            ;
-            */
-
+            
             return set_cfg;
         }
         catch(const ReturnFromMain&)
