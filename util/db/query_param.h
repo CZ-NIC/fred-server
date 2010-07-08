@@ -32,7 +32,6 @@
 #include <stdexcept>
 
 
-
 //compile time check - ok condition is true
 template <bool B> struct TAssert{};
 template <> struct TAssert<true>
@@ -57,26 +56,29 @@ class QueryParam
     //text plain or binary in network byte order
     QueryParamData buffer_;
 
-    //save binary type to buffer_ in network byte order
+    //append binary type to buffer_ in network byte order
     template <class T> void hton_impl(const T& t, std::size_t size_of_t)
     {
-        buffer_ = QueryParamData(size_of_t);
+        std::size_t buffer_initial_size = buffer_.size();
+        QueryParamData buffer_size_of_t (size_of_t);
+        buffer_.insert(buffer_.end(), buffer_size_of_t.begin(), buffer_size_of_t.end());
+
         QueryParamData etest(sizeof(long));
         *(reinterpret_cast<long*>(&etest[0])) = 1l;
 
         if(etest[0]) //host little endian
         {
             for (std::size_t i = 0; i < size_of_t; ++i)
-                buffer_[i] = reinterpret_cast
+                buffer_[buffer_initial_size+i] = reinterpret_cast
                     <const char*>(&t)[size_of_t-i-1];
         }
         else //host big endian
         {
             for (std::size_t i = 0; i < size_of_t; ++i)
-                buffer_[i] = reinterpret_cast
+                buffer_[buffer_initial_size+i] = reinterpret_cast
                     <const char*>(&t)[i];
         }
-    }
+    }//hton_impl
 
 public:
 
@@ -97,23 +99,23 @@ public:
     }//operator=
 
     //ctor
-    explicit QueryParam(const QueryParamData& data )
-    : binary_(false)
+    QueryParam(const bool binary, const QueryParamData& data  )
+    : binary_(binary)
     , buffer_(data)
     {}
-    explicit QueryParam(const char* data_ptr, std::size_t data_size )
+    QueryParam(const char* data_ptr, const std::size_t data_size )
     : binary_(false)
     , buffer_(data_ptr, data_ptr + data_size)
     {}
 
     QueryParam(const char* data_ptr )
     : binary_(false)
-    , buffer_(data_ptr, data_ptr + strlen(data_ptr))
+    , buffer_(data_ptr, data_ptr + strlen(data_ptr) + 1)
     {}
 
     QueryParam(const std::string& text )
     : binary_(false)
-    , buffer_(text.begin(), text.end())
+    , buffer_(text.c_str(), text.c_str() + text.length() + 1)
     {}
 
     template <class T> QueryParam( T t )
@@ -139,20 +141,21 @@ public:
         if(binary_)
         {
             std::cout << "Binary param: ";
-            for (QueryParamData::const_iterator i = buffer_.begin()
-                    ; i != buffer_.end(); ++i)
-            {
-                std::stringstream hexdump;
-                hexdump <<  std::setw( 2 ) << std::setfill( '0' )
-                    << std::hex << std::uppercase
-                    << static_cast<unsigned short>(static_cast<unsigned char>(*i));
-                std::cout << " " << hexdump.str();
-            }
-            std::cout << std::endl;
+             for (QueryParamData::const_iterator i = buffer_.begin()
+                     ; i != buffer_.end(); ++i)
+             {
+                 std::stringstream hexdump;
+                 hexdump <<  std::setw( 2 ) << std::setfill( '0' )
+                     << std::hex << std::uppercase
+                     << static_cast<unsigned short>(static_cast<unsigned char>(*i));
+                 std::cout << " " << hexdump.str();
+             }
+             std::cout << std::endl;
         }
         else
         {
-            std::cout << "Text param: " << std::string(buffer_.begin(),buffer_.end()) << std::endl;
+            std::cout << "Text param: " <<  std::string(buffer_.begin() ,buffer_.end())
+                     << std::endl;
         }
     }//print_buffer
 

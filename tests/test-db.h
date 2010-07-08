@@ -79,7 +79,7 @@ unsigned exec_params_test()
         if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
 
 
-        std::string qquery = "select $1::int as id, $2::bigint as data1, $3::int as data2, $4::text as data3 "
+        std::string qquery = "select $1::int as id, $2::bigint as data1, $3::int as data2, $4::text as data3, $4::text = 'Kuk' as data4 "
                 ;
 
         QueryParams qparams = query_param_list
@@ -92,22 +92,26 @@ unsigned exec_params_test()
         qparams[2].print_buffer();
         qparams[3].print_buffer();
 
-/*  Text param is complaining about text encoding when called this way, above test is ok about it
+//  Text param is complaining about text encoding when called this way, above test is OK about it
         Database::Result qres = conn.exec_params( qquery, qparams );
 
-        if ((qres.size() > 0) && (qres[0].size() == 4))
+        if ((qres.size() > 0) && (qres[0].size() == 5))
         {
             //check data
             if(1 != static_cast<long>(qres[0][0]) ) ret+=16;
             if(1 != static_cast<long long>(qres[0][1])) ret+=32;
             if(-1 != static_cast<long>(qres[0][2])) ret+=64;
 
-            std::cout << "test string: " << std::string(qres[0][3]) << std::endl;
+            //std::cout << "test string: " << std::string(qres[0][3])
+            //<< " data4: " << std::string(qres[0][4]) <<std::endl;
+
+            if(std::string(qres[0][3]).compare("Kuk")!=0) ret+=1024;
+            if(true != static_cast<bool>(qres[0][4])) ret+=2048;
 
         }//if qres size
         else ret+=128;
         if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
-*/
+
 
     }
     catch(std::exception& ex)
