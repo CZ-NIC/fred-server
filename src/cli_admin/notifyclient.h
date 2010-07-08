@@ -19,6 +19,8 @@
 #ifndef _NOTIFYCLIENT_H_
 #define _NOTIFYCLIENT_H_
 
+#include "util/hp/hpmail.h"
+
 #define NOTIFY_SHOW_OPTS_NAME           "notify_show_opts"
 #define NOTIFY_SHOW_OPTS_NAME_DESC      "show all notify command line options"
 #define NOTIFY_STATE_CHANGES_NAME       "notify_state_changes"
@@ -84,8 +86,10 @@ public:
     void letters_create();
     void letters_send();
     void file_send();
+    void sendFile(const std::string &filename, const std::string &conf_file); 
+    void sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file);
 
-    void readHPConfig();
+    HPCfgMap readHPConfig(const std::string &conf_file);
 }; // class NotifyClient
 
 } // namespace Admin;

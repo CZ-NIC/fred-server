@@ -112,7 +112,6 @@ struct options {
         return;                                                             \
     }
 
-#define HELP                    "help"
 #define CLI_HELP_NAME           "help,h"
 #define CLI_VERSION_NAME        "version,V"
 #define CLI_VERSION_NAME_DESC   "print version and licence information"
