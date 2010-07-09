@@ -57,7 +57,9 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> opts_descs(
                 new boost::program_options::options_description(
-                        std::string("Postservice client configuration")));
+                        std::string("Postservice client configuration")
+                        , 140 //width of help print in cols
+                        ));
 
         // TODO add remaining options from hpmail.cc
         opts_descs->add_options()
