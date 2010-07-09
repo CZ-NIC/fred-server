@@ -197,7 +197,6 @@ public:
         //general config actions
         if (vm.count("help"))
         {
-            std::cout << usage_ << std::endl;//print possible usage
             for(PoDescs::iterator it = po_description.begin(); it != po_description.end(); ++it)
             {
                 std::cout << **it << std::endl;
