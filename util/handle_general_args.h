@@ -44,6 +44,43 @@ public:
   }
 };
 
+///fred-server config file format parser
+void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
+{//options without values are ignored
+    std::ifstream cfg_file(fname.c_str());
+    if (cfg_file.fail())
+      throw std::runtime_error("config file '" + fname + "' not found");
+
+    std::string line, opt_prefix;
+    while (std::getline(cfg_file, line))
+    {
+      boost::algorithm::trim(line);// strip whitespace
+      if (!line.empty() && line[0] != '#')// ignore empty line and comments
+      {
+        if (line[0] == '[' && line[line.size() - 1] == ']')
+        {// this is option prefix
+          opt_prefix = line;
+          boost::algorithm::erase_first(opt_prefix, "[");
+          boost::algorithm::erase_last(opt_prefix,  "]");
+        }//if [opt_prefix]
+        else
+        {// this is normal option
+          std::string::size_type sep = line.find("=");
+          if (sep != std::string::npos)
+          {// get name and value couple without any whitespace
+            std::string name  = boost::algorithm::trim_copy(line.substr(0, sep));
+            std::string value = boost::algorithm::trim_copy(line.substr(sep + 1, line.size() - 1));
+            if (!value.empty())
+            {// push appropriate commnad-line string
+                fa.add_argv("--" + opt_prefix + "." + name + "=" + value);
+            }//if value not empty
+          }// if '=' found
+        }//else - option
+      }//if not empty line
+    }//while getline
+}//parse_config_file_to_faked_args
+
+
 /**
  * \class HandleGeneralArgs
  * \brief common options and config file handler
@@ -54,44 +91,8 @@ class HandleGeneralArgs : public HandleArgs
     ///options descriptions reference used to print help for all options
     typedef std::vector<boost::shared_ptr<boost::program_options::options_description> > PoDescs;
 
-    void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
-    {//options without values are ignored
-        std::ifstream cfg_file(fname.c_str());
-        if (cfg_file.fail())
-          throw std::runtime_error("config file '" + fname + "' not found");
-
-        std::string line, opt_prefix;
-        while (std::getline(cfg_file, line))
-        {
-          boost::algorithm::trim(line);// strip whitespace
-          if (!line.empty() && line[0] != '#')// ignore empty line and comments
-          {
-            if (line[0] == '[' && line[line.size() - 1] == ']')
-            {// this is option prefix
-              opt_prefix = line;
-              boost::algorithm::erase_first(opt_prefix, "[");
-              boost::algorithm::erase_last(opt_prefix,  "]");
-            }//if [opt_prefix]
-            else
-            {// this is normal option
-              std::string::size_type sep = line.find("=");
-              if (sep != std::string::npos)
-              {// get name and value couple without any whitespace
-                std::string name  = boost::algorithm::trim_copy(line.substr(0, sep));
-                std::string value = boost::algorithm::trim_copy(line.substr(sep + 1, line.size() - 1));
-                if (!value.empty())
-                {// push appropriate commnad-line string
-                    fa.add_argv("--" + opt_prefix + "." + name + "=" + value);
-                }//if value not empty
-              }// if '=' found
-            }//else - option
-          }//if not empty line
-        }//while getline
-    }//parse_config_file_to_faked_args
-
 public:
     PoDescs po_description;
-
 
 #ifdef CONFIG_FILE
     HandleGeneralArgs(const std::string def_cfg = std::string(CONFIG_FILE)) 
@@ -100,8 +101,6 @@ public:
     HandleGeneralArgs(const std::string def_cfg = std::string("")) 
         : default_config(def_cfg) {};
 #endif
-
-
 
     boost::shared_ptr<boost::program_options::options_description>
         get_options_description()
@@ -171,7 +170,6 @@ class HandleHelpArg : public HandleArgs
     ///options descriptions reference used to print help for all options
     typedef std::vector<boost::shared_ptr<boost::program_options::options_description> > PoDescs;
 
-
 public:
     PoDescs po_description;
     std::string usage_;
@@ -208,6 +206,59 @@ public:
 
     }//handle
 };//class HandleHelpArg
+
+
+/**
+ * \class HandleConfigFileArgs
+ * \brief config file handler
+ */
+class HandleConfigFileArgs : public HandleArgs
+{
+    std::string default_config;
+
+public:
+
+    HandleConfigFileArgs(const std::string def_cfg)
+        : default_config(def_cfg) {};
+
+    boost::shared_ptr<boost::program_options::options_description>
+        get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> gen_opts(
+                new boost::program_options::options_description(
+                        std::string("Configfile configuration")));
+
+        if(default_config.length() != 0)
+        {
+            gen_opts->add_options()
+                    ("config,C", boost::program_options
+                            ::value<std::string>()->default_value(default_config)
+                    , "path to configuration file");
+        }
+        else
+        {
+            gen_opts->add_options()
+                    ("config,C", boost::program_options
+                            ::value<std::string>(), "path to configuration file");
+        }
+
+        return gen_opts;
+    }//get_options_description
+    void handle( int argc, char* argv[],  FakedArgs &fa)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+        //read config file if configured and append content to fa
+        if (vm.count("config"))
+        {
+            std::string fname = vm["config"].as<std::string>();
+            std::cout << "HandleConfigFileArgs::handle config file: " << fname << std::endl;
+            if(fname.length())
+                parse_config_file_to_faked_args(fname, fa );
+        }
+    }//handle
+};//class HandleConfigFileArgs
 
 
 
