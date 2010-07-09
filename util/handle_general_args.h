@@ -183,7 +183,8 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> gen_opts(
                 new boost::program_options::options_description(
-                        std::string("Help")));
+                        usage_//std::string("Help")
+                        ));
         gen_opts->add_options()
                 ("help,h", "print this help message");
         return gen_opts;
