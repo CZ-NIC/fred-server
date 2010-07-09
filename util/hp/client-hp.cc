@@ -53,14 +53,24 @@ int main ( int argc, char* argv[])
 {
 	//producing faked args with unrecognized ones
 	FakedArgs fa;
-	try
-	{
-		fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
-	}
-	catch(const ReturnFromMain&)
-	{
-		return 0;
-	}
+    try
+    {
+        fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
+    }
+    catch(const ReturnFromMain&)
+    {
+        return 0;
+    }
+    catch(std::exception& ex)
+    {
+        std::cout << "Error: " << ex.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch(...)
+    {
+        std::cout << "Unknown Error" << std::endl;
+        return EXIT_FAILURE;
+    }
 
     try
     {
@@ -68,35 +78,14 @@ int main ( int argc, char* argv[])
 			= CfgArgs::instance()->get_handler_ptr_by_type<HandleHPMailArgs>();
 
     	HPCfgMap set_cfg = hpm_cfg->get_map(); 
-        
-        
-        /*
-        boost::assign::map_list_of
-    	("mb_proc_tmp_dir",hpm_cfg->mb_proc_tmp_dir)
-    	("postservice_cert_dir",hpm_cfg->postservice_cert_dir)
-    	("postservice_cert_file", hpm_cfg->postservice_cert_file)
-    	("hp_login_interface_url",hpm_cfg->hp_login_interface_url)
-		("hp_upload_interface_url",hpm_cfg->hp_upload_interface_url)
-		("hp_ack_interface_url",hpm_cfg->hp_ack_interface_url)
-		("hp_cancel_interface_url",hpm_cfg->hp_cancel_interface_url)
-		("hp_upload_archiver_filename",hpm_cfg->hp_upload_archiver_filename)
-		("hp_upload_archiver_additional_options"
-				,hpm_cfg->hp_upload_archiver_additional_options)
-		("hp_upload_curlopt_timeout",hpm_cfg->hp_upload_curlopt_timeout )
-		("hp_upload_curlopt_connect_timeout"
-				,hpm_cfg->hp_upload_curlopt_connect_timeout)
-		("hp_upload_curl_verbose",hpm_cfg->hp_upload_curl_verbose )
-		("hp_upload_retry",hpm_cfg->hp_upload_retry )
-        */
 
 #ifdef WIN32
         HPCfgMap ins = boost::assign::map_list_of
         ("hp_login_osversion","Windows")//"Linux" or "Windows"
         ("hp_cleanup_last_arch_volumes","del /F *.7z*") // delete last archive volumes
-        ("hp_cleanup_last_letter_files","del /F letter_*") // delete last letter files
+        ("hp_cleanup_last_letter_files","del /F letter_*"); // delete last letter files
         set_cfg.insert(ins.begin(), ins.end());
 #endif
-		;
 
     	std::cout << "\nConfig print\n" << std::endl;
     	for (HPCfgMap::const_iterator i = set_cfg.begin()
