@@ -89,30 +89,21 @@ public:
         return *this;
     }//operator=
 
-    //ctor
+    //ctors
+
+    //null
     explicit QueryParam(const NullQueryParamType )
     : binary_(false)
     , null_ (true)
     {}
-
+    //custom init
     QueryParam(const bool binary, const QueryParamData& data  )
     : binary_(binary)
     , null_(false)
     , buffer_(data)
     {}
 
-    QueryParam(const char* data_ptr )
-    : binary_(false)
-    , null_(false)
-    , buffer_(data_ptr)
-    {}
-
-    QueryParam(const std::string& text )
-    : binary_(false)
-    , null_(false)
-    , buffer_(text)
-    {}
-
+    //blob
     QueryParam( const std::vector<unsigned char>& blob )
     : binary_(true)
     , null_(false)
@@ -121,6 +112,7 @@ public:
         memcpy(const_cast<char *>(buffer_.data()), &(*blob.begin()), blob.size());
     }
 
+    //posix time
     QueryParam(const boost::posix_time::ptime& value )
     : binary_(false)
     , null_(false)
@@ -129,13 +121,14 @@ public:
         buffer_[buffer_.find('T')] = ' ';
     }
 
-    //QueryParam(const boost::posix_time::ptime::date_type& value )
+    //gregorian date
     QueryParam(const boost::gregorian::date& value )
     : binary_(false)
     , null_(false)
     , buffer_( boost::gregorian::to_iso_extended_string(value))
     {}
 
+    //all others
     template <class T> QueryParam( T t )
     : binary_(false)
     , null_(false)
@@ -167,11 +160,12 @@ public:
         }
         else
         {
-            std::cout << "Text param: " <<  buffer_ //std::string(buffer_.begin() ,buffer_.end())
+            std::cout << "Text param: " <<  buffer_
                      << std::endl;
         }
     }//print_buffer
 
+    //getters
     const QueryParamData& get_data() const
     {
         return buffer_;
@@ -188,9 +182,10 @@ public:
     }
 };//class QueryParam
 
+//vector od query params initializable by query_param_list
 typedef std::vector<QueryParam> QueryParams;
 
-//simple functor template for container initialization
+//template for initialization of container with push_back and value_type
 template <typename CONTAINER_TYPE > struct list_of_params
     : public CONTAINER_TYPE
 {
@@ -206,6 +201,7 @@ template <typename CONTAINER_TYPE > struct list_of_params
     }
 };
 
+//boost assign list_of like initialization of params
 typedef list_of_params<QueryParams> query_param_list;
 
 };//namespace Database
