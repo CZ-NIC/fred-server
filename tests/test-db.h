@@ -79,14 +79,17 @@ unsigned exec_params_test()
         if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
 
 
-        std::string qquery = "select $1::int as id, $2::bigint as data1, $3::int as data2, $4::text as data3, $4::text = 'Kuk' as data4 "
+        std::string qquery = "select $1::int as id, $2::bigint as data1"
+            ", $3::int as data2, $4::text as data3, $4::text = 'Kuk' as data4"
+            ", $5::int as data5"
                 ;
 
         QueryParams qparams = query_param_list
-            (1)//(QueryParam(1))
-            (1ll)//(QueryParam(1ll))
-            (-1l)//(QueryParam(-1l))
-            ("Kuk")
+            (1)//$1
+            (1ll)//$2
+            (-1l)//$3
+            ("Kuk")//$4
+            (QPNull)//$5
             ;
 
         qparams[2].print_buffer();
@@ -95,7 +98,7 @@ unsigned exec_params_test()
         //test simple binary params
         Database::Result qres = conn.exec_params( qquery, qparams );
 
-        if ((qres.size() > 0) && (qres[0].size() == 5))
+        if ((qres.size() > 0) && (qres[0].size() == 6))
         {
             //check data
             if(1 != static_cast<long>(qres[0][0]) ) ret+=16;
@@ -107,6 +110,9 @@ unsigned exec_params_test()
 
             if(std::string(qres[0][3]).compare("Kuk")!=0) ret+=1024;
             if(true != static_cast<bool>(qres[0][4])) ret+=2048;
+
+            std::cout << "test null: " << std::string(qres[0][5])
+                      <<std::endl;
 
         }//if qres size
         else ret+=128;

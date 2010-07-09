@@ -31,8 +31,13 @@
 #include <sstream>
 #include <stdexcept>
 
+#include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
-//compile time check - ok condition is true
+
+
+//compile time check - OK condition is true
 template <bool B> struct TAssert{};
 template <> struct TAssert<true>
 {
@@ -40,51 +45,34 @@ template <> struct TAssert<true>
 };
 
 //buffer type
-typedef std::vector<char> QueryParamData;
+typedef std::string QueryParamData;
+
+//db null defs
+typedef int NullQueryParamType;
+const NullQueryParamType QPNull =0;
+const NullQueryParamType NullQueryParam =0;
 
 /**
  * \class  QueryParam
- * \brief  query parameter text or binary container
- * endian conversion implementation is more easy than perfectly efficient
- * but for database operations it's fast enough
+ * \brief  query parameter text , binary or null container
  */
 
 class QueryParam
 {
     //text or binary data flag
     bool binary_;
-    //text plain or binary in network byte order
+    //isnull flag
+    bool null_;
+
+    //text or binary
     QueryParamData buffer_;
-
-    //append binary type to buffer_ in network byte order
-    template <class T> void hton_impl(const T& t, std::size_t size_of_t)
-    {
-        std::size_t buffer_initial_size = buffer_.size();
-        QueryParamData buffer_size_of_t (size_of_t);
-        buffer_.insert(buffer_.end(), buffer_size_of_t.begin(), buffer_size_of_t.end());
-
-        QueryParamData etest(sizeof(long));
-        *(reinterpret_cast<long*>(&etest[0])) = 1l;
-
-        if(etest[0]) //host little endian
-        {
-            for (std::size_t i = 0; i < size_of_t; ++i)
-                buffer_[buffer_initial_size+i] = reinterpret_cast
-                    <const char*>(&t)[size_of_t-i-1];
-        }
-        else //host big endian
-        {
-            for (std::size_t i = 0; i < size_of_t; ++i)
-                buffer_[buffer_initial_size+i] = reinterpret_cast
-                    <const char*>(&t)[i];
-        }
-    }//hton_impl
 
 public:
 
     //copy
     QueryParam(const QueryParam& param )
     : binary_(param.binary_)
+    , null_(false)
     , buffer_(param.buffer_)
     {}
 
@@ -93,47 +81,76 @@ public:
         if (this != &param)
         {
             binary_=param.binary_;
+            null_=param.null_;
             buffer_=param.buffer_;
         }
         return *this;
     }//operator=
 
     //ctor
+    explicit QueryParam(const NullQueryParamType )
+    : binary_(false)
+    , null_ (true)
+    {}
+
     QueryParam(const bool binary, const QueryParamData& data  )
     : binary_(binary)
+    , null_(false)
     , buffer_(data)
     {}
     QueryParam(const char* data_ptr, const std::size_t data_size )
     : binary_(false)
+    , null_(false)
     , buffer_(data_ptr, data_ptr + data_size)
     {}
 
     QueryParam(const char* data_ptr )
     : binary_(false)
-    , buffer_(data_ptr, data_ptr + strlen(data_ptr) + 1)
+    , null_(false)
+    , buffer_(data_ptr)
     {}
 
     QueryParam(const std::string& text )
     : binary_(false)
-    , buffer_(text.c_str(), text.c_str() + text.length() + 1)
+    , null_(false)
+    , buffer_(text)
     {}
 
-    template <class T> QueryParam( T t )
+    QueryParam( const std::vector<unsigned char>& blob )
     : binary_(true)
+    , null_(false)
+    {
+        buffer_.resize(blob.size());
+        memcpy(const_cast<char *>(buffer_.data()), &(*blob.begin()), blob.size());
+    }
+
+    QueryParam(const boost::posix_time::ptime& value )
+    : binary_(false)
+    , null_(false)
+    {
+        buffer_ = boost::posix_time::to_iso_extended_string(value);
+        buffer_[buffer_.find('T')] = ' ';
+    }
+
+    //QueryParam(const boost::posix_time::ptime::date_type& value )
+    QueryParam(const boost::gregorian::date& value )
+    : binary_(false)
+    , null_(false)
+    , buffer_( boost::gregorian::to_iso_extended_string(value))
+    {}
+
+
+    template <class T> QueryParam( T t )
+    : binary_(false)
+    , null_(false)
     {
         const std::size_t size_of_t = sizeof(t);
 
-        if(size_of_t==1)
-        {
-            buffer_.push_back(t);
-            return;
-        }
-
         //QueryParam usage check: use only for basic types up to 8 bytes
-        TAssert<( ((size_of_t%2 == 0) || (size_of_t <= 8)) )>::check();
+        TAssert<( ((size_of_t==1) || (size_of_t%2 == 0) || (size_of_t <= 8)) )>::check();
 
         //TODO: check valid combinations of basic param types with database types in query
-        hton_impl(t, size_of_t);
+        buffer_ = boost::lexical_cast<std::string>(t);
     }
 
     void print_buffer()
@@ -154,7 +171,7 @@ public:
         }
         else
         {
-            std::cout << "Text param: " <<  std::string(buffer_.begin() ,buffer_.end())
+            std::cout << "Text param: " <<  buffer_ //std::string(buffer_.begin() ,buffer_.end())
                      << std::endl;
         }
     }//print_buffer
@@ -164,9 +181,14 @@ public:
         return buffer_;
     }
 
-    bool get_format() const
+    bool is_binary() const
     {
         return binary_;
+    }
+
+    bool is_null() const
+    {
+        return null_;
     }
 };//class QueryParam
 

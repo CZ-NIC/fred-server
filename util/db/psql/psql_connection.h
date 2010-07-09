@@ -167,21 +167,24 @@ public:
           const QueryParams& params //parameters data
       )
   {
+      const Oid BYTEAOID = 17;//binary param type
 
+      std::vector<Oid> paramTypes;//types of query parameters
       std::vector< const char * > paramValues; //pointer to memory with parameters data
       std::vector<int> paramLengths; //sizes of memory with parameters data
       std::vector<int> paramFormats; //format of parameter data
 
       for (QueryParams::const_iterator i = params.begin(); i != params.end() ; ++i)
       {
-          paramValues.push_back(&(i->get_data())[0]);
+          paramTypes.push_back(i->is_binary() ? BYTEAOID : 0);
+          paramValues.push_back(i->is_null() ? 0 : &(i->get_data())[0] );
           paramLengths.push_back(i->get_data().size());
-          paramFormats.push_back(i->get_format());
+          paramFormats.push_back(i->is_binary() ? 1 : 0 );
       }
 
     PGresult *tmp = PQexecParams(psql_conn_, _query.c_str()//query buffer
         , paramValues.size()//number of parameters
-        , 0 //not using Oids, use type in query like: WHERE id = $1::int4 and name = $2::varchar
+        , paramTypes.size() ? &paramTypes[0] : 0
         , &paramValues[0]//values to substitute $1 ... $n
         , &paramLengths[0]//the lengths, in bytes, of each of the parameter values
         , &paramFormats[0]//param values formats
