@@ -47,7 +47,7 @@ template <> struct TAssert<true>
 //buffer type
 typedef std::string QueryParamData;
 
-//db null defs
+//db null
 typedef int NullQueryParamType;
 const NullQueryParamType QPNull =0;
 const NullQueryParamType NullQueryParam =0;
@@ -98,11 +98,6 @@ public:
     , null_(false)
     , buffer_(data)
     {}
-    QueryParam(const char* data_ptr, const std::size_t data_size )
-    : binary_(false)
-    , null_(false)
-    , buffer_(data_ptr, data_ptr + data_size)
-    {}
 
     QueryParam(const char* data_ptr )
     : binary_(false)
@@ -138,7 +133,6 @@ public:
     , null_(false)
     , buffer_( boost::gregorian::to_iso_extended_string(value))
     {}
-
 
     template <class T> QueryParam( T t )
     : binary_(false)
