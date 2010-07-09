@@ -615,12 +615,11 @@ BOOST_AUTO_TEST_CASE( partitions )
                                 req1.setServiceId(service);
                                 req1.setIsMonitoring(false);
                                 req1.insert();
-                                id = req1.getId();
-                                entry_id = id;
+                                Database::ID rid1 = req1.getId();
 
-                                MyFixture::id_list_entry.push_back(id);
+                                MyFixture::id_list_entry.push_back(rid1);
 
-                                boost::format test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType) service, false) % id;
+                                boost::format test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType) service, false) % rid1;
                                 Database::Result res = conn.exec(test.str());
 
                                 if (res.size() == 0) {
@@ -636,12 +635,11 @@ BOOST_AUTO_TEST_CASE( partitions )
                                 req.setServiceId(service);
                                 req.setIsMonitoring(true);
                                 req.insert();
-                                id = req.getId();
-                                entry_id = id;
+                                Database::ID rid2 = req.getId();
 
-				MyFixture::id_list_entry.push_back(id);
+				MyFixture::id_list_entry.push_back(rid2);
 
-				test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, true) % id;
+				test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, true) % rid2;
 				res = conn.exec(test.str());
 
 				if(res.size() == 0) {
@@ -649,45 +647,43 @@ BOOST_AUTO_TEST_CASE( partitions )
 				}
 
 				if(PARTITIONS_TEST_PROPERTIES) {
-
                                         fmt = boost::format("%1% 9:%2%:00") % date % i;
 
                                         ModelRequestPropertyValue pv;
                                         pv.setEntryTimeBegin(fmt.str());
                                         pv.setEntryService(service);
                                         pv.setEntryMonitoring(false);
-                                        pv.setEntry(entry_id);
+                                        pv.setEntry(rid1);
                                         pv.setName(13);
                                         pv.setValue ("valuevalue");
                                         pv.insert();
-                                        id = pv.getId();
 
-					MyFixture::id_list_entry.push_back(id);
+                                        Database::ID prop_id1 = pv.getId();
 
-					boost::format test = boost::format("select entry_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, false) % id;
-					res = conn.exec(test.str());
+					boost::format test1 = boost::format("select entry_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, false) % prop_id1;
+					res = conn.exec(test1.str());
 
 					if(res.size() == 0) {
 						BOOST_ERROR(" Record not found in the correct partition ");
 					}
 
-					// ----- now monitoring on
-//					insert = boost::format() % date % i % service;
-//					conn.exec(insert.str());
-//
-//					res = conn.exec(Register::Logger::ManagerImpl::LAST_PROPERTY_VALUE_ID);
-//					if (res.size() == 0) {
-//						BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
-//					}
-//					id = res[0][0];
-//					MyFixture::id_list_entry.push_back(id);
-//
-//					test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, true) % id;
-//					res = conn.exec(test.str());
-//
-//					if(res.size() == 0) {
-//						BOOST_ERROR(" Record not found in the correct partition ");
-//					}
+                                        pv.setEntryTimeBegin(fmt.str());
+                                        pv.setEntryService(service);
+                                        pv.setEntryMonitoring(true);
+                                        pv.setEntry(rid2);
+                                        pv.setName(13);
+                                        pv.setValue ("valuevalue");
+                                        pv.insert();
+
+                                        Database::ID prop_id2 = pv.getId();
+
+					boost::format test2 = boost::format("select entry_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, false) % prop_id2;
+					res = conn.exec(test2.str());
+
+					if(res.size() == 0) {
+						BOOST_ERROR(" Record not found in the correct partition ");
+					}
+
 				}
 
 			} catch (Database::Exception &ex) {
