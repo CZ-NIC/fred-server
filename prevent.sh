@@ -1,8 +1,8 @@
 #!/bin/sh
 PRODUCT="`basename \`dirname \\\`pwd\\\`\``"
-WORKDIR="/tmp/${PRODUCT}/"
-COVDB="/opt/prevent-database-dir"
-COVROOT="/opt/prevent-linux-4.5.0/"
+WORKDIR="/var/home/coverity/intermediate/${PRODUCT}/"
+COVDB="/var/home/coverity/prevent-database"
+COVROOT="/opt/prevent-linux64-4.5.1/"
 
 echo "product name:     $PRODUCT"
 echo "intermediate dir: $WORKDIR"
