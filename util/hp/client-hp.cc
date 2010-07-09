@@ -43,8 +43,8 @@
 
 HandlerPtrVector global_hpv =
 	boost::assign::list_of
-        (HandleArgsPtr(new HandleGeneralArgs(HPMAIL_CONFIG) ))
 	(HandleArgsPtr(new HandleHelpArg("\nUsage: client-hp <switches> [<file_names>...]\n")))
+	(HandleArgsPtr(new HandleConfigFileArgs(HPMAIL_CONFIG) ))
 	(HandleArgsPtr(new HandleHPMailArgs))
 	;
 
