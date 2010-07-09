@@ -84,12 +84,12 @@ unsigned exec_params_test()
             ", $5::int as data5"
                 ;
 
-        QueryParams qparams = query_param_list
+        Database::QueryParams qparams = Database::query_param_list
             (1)//$1
             (1ll)//$2
             (-1l)//$3
             ("Kuk")//$4
-            (QPNull)//$5
+            (Database::QPNull)//$5
             ;
 
         qparams[2].print_buffer();

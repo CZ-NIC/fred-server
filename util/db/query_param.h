@@ -36,6 +36,8 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 
+namespace Database
+{
 
 //compile time check - OK condition is true
 template <bool B> struct TAssert{};
@@ -205,5 +207,7 @@ template <typename CONTAINER_TYPE > struct list_of_params
 };
 
 typedef list_of_params<QueryParams> query_param_list;
+
+};//namespace Database
 
 #endif //QUERYPARAM_H_
