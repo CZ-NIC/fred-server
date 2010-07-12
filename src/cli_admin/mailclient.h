@@ -55,7 +55,6 @@ namespace Admin {
 
 class MailClient : public BaseClient {
 private:
-    CORBA::Long m_clientId;
     DB m_db;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;

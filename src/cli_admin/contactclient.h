@@ -42,7 +42,6 @@ namespace Admin {
 class ContactClient : public BaseClient {
 private:
     Config::Conf m_conf;
-    CORBA::Long m_clientId;
     DB m_db;
     ccReg::EPP_var m_epp;
 
