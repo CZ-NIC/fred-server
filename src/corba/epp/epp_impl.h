@@ -19,6 +19,19 @@ struct Session
   long long timestamp;
 };
 
+//value class to fix return of local char*
+class EppString
+{
+    std::string string_;
+public:
+    // conversion
+    operator const char * () const { return string_.c_str(); }
+    //ctor
+    EppString(const char * str)
+    : string_(str) {}
+};//class EppString
+
+
 class Conf;
 //
 //  class implementing IDL interface ccReg::EPP
@@ -143,11 +156,11 @@ public:
 
   // load and get message of lang from enum_error
   int LoadErrorMessages();
-  const char * GetErrorMessage(int err, int lang);
+  EppString GetErrorMessage(int err, int lang);
 
   // load and get message of lang from enum_reason
   int LoadReasonMessages();
-  const char * GetReasonMessage(int err, int lang);
+  EppString GetReasonMessage(int err, int lang);
 
   // reason handle
   short SetErrorReason(ccReg::Errors_var& errors, short errCode, ccReg::ParamError paramCode, short position, int reasonMsg, int lang);

@@ -662,7 +662,7 @@ int ccReg_EPP_i::LoadErrorMessages()
   return rows;
 }
 
-const char * ccReg_EPP_i::GetReasonMessage(
+EppString ccReg_EPP_i::GetReasonMessage(
   int err, int lang)
 {
   if (lang == LANG_CS)
@@ -671,7 +671,7 @@ const char * ccReg_EPP_i::GetReasonMessage(
     return ReasonMsg->GetMesg(err).c_str();
 }
 
-const char * ccReg_EPP_i::GetErrorMessage(
+EppString ccReg_EPP_i::GetErrorMessage(
   int err, int lang)
 {
   if (lang == LANG_CS)
