@@ -19,6 +19,7 @@ template <typename T> struct CheckIdNew
 	{}
     bool operator()(Register::CommonObjectNew* _object)
     {
+        if(_object == 0) throw std::runtime_error("operator() Register::CommonObjectNew* _object is null");
       return (dynamic_cast<T*>(_object))->getId() == find_id_;
     }
 };
