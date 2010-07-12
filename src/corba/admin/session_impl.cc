@@ -1849,6 +1849,13 @@ Registry::EPPAction::Detail* ccReg_Session_i::createEppActionDetail(Register::Re
 Registry::Zone::Detail* ccReg_Session_i::createZoneDetail(Register::Zone::Zone* _zone)
 {
   TRACE("[CALL] ccReg_Session_i::createZoneDetail()");
+
+  if (_zone == 0)
+  {
+      LOGGER(PACKAGE).error("_zone is null");
+      throw ccReg::Admin::OBJECT_NOT_FOUND();
+  }
+
   LOGGER(PACKAGE).debug(boost::format("generating zone detail for object id=%1%")
       % _zone->getId());
   Registry::Zone::Detail *detail = new Registry::Zone::Detail();
