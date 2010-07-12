@@ -23,7 +23,7 @@
 #include "log/logger.h"
 #include "log/context.h"
 
-void NameService::_connect() throw (NOT_RUNNING)
+void NameService::_connect()// throw (NOT_RUNNING)
 {
   try {
     CORBA::Object_var obj;
@@ -47,7 +47,7 @@ void NameService::_connect() throw (NOT_RUNNING)
 }
 
 
-NameService::NameService(CORBA::ORB_ptr orb) throw (NOT_RUNNING)
+NameService::NameService(CORBA::ORB_ptr orb)// throw (NOT_RUNNING)
                         : hostname(""),
                           context("")
 {
@@ -57,7 +57,7 @@ NameService::NameService(CORBA::ORB_ptr orb) throw (NOT_RUNNING)
 
 NameService::NameService(CORBA::ORB_ptr orb,
                          const std::string& _hostname,
-                         const std::string& _context) throw (NOT_RUNNING) 
+                         const std::string& _context)// throw (NOT_RUNNING)
                                                       : orb(orb),
                                                         hostname(_hostname),
                                                         context(_context)
@@ -69,7 +69,7 @@ NameService::NameService(CORBA::ORB_ptr orb,
 NameService::NameService(CORBA::ORB_ptr orb,
                          const std::string& _hostname,
                          const unsigned int _port,
-                         const std::string& _context) throw (NOT_RUNNING)
+                         const std::string& _context)// throw (NOT_RUNNING)
                         : orb(orb),
                           hostname(_hostname + ":" + boost::lexical_cast<std::string>(_port)),
                           context(_context) 
@@ -83,7 +83,8 @@ NameService::~NameService() {
 
 
 void NameService::bind(const std::string& name, 
-                       CORBA::Object_ptr objref) throw (NOT_RUNNING, BAD_CONTEXT) {
+                       CORBA::Object_ptr objref)// throw (NOT_RUNNING, BAD_CONTEXT)
+{
   try {
     Logging::Context ctx("nameservice");
 
@@ -133,7 +134,7 @@ void NameService::bind(const std::string& name,
 
 
 CORBA::Object_ptr NameService::resolve(const std::string& name)
-    throw (NOT_RUNNING, BAD_CONTEXT)
+    //throw (NOT_RUNNING, BAD_CONTEXT)
 {
     return resolve(context, name);
 }
@@ -141,7 +142,7 @@ CORBA::Object_ptr NameService::resolve(const std::string& name)
 
 CORBA::Object_ptr NameService::resolve(const std::string& nsctx,
                                        const std::string& name)
-    throw (NOT_RUNNING, BAD_CONTEXT)
+    //throw (NOT_RUNNING, BAD_CONTEXT)
 {
 
   Logging::Context ctx("nameservice");
