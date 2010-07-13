@@ -290,14 +290,13 @@ void NotifyClient::file_send()
 
          LOGGER(PACKAGE).debug(boost::format ("sendLetters File ID: %1% ") % res[i][0]);
 
-         MailBatch batch;
-         batch.push_back(one);
-
          // data's ready, we can send it
          new_status=5;
          try {
              HPMail::init_session(hpmail_config);
-             HPMail::get()->upload(batch);
+             std::string filename( (boost::format("Letter_%1%.pdf") % id).str());
+
+             HPMail::get()->upload(one, filename);
          } catch(std::exception& ex) {
              std::cout << "Error: " << ex.what() << " on file ID " << id << std::endl;
              new_status = 4; // set error status in database
@@ -341,16 +340,12 @@ void NotifyClient::file_send()
       std::streampos infile_size = infile.tellg();
       infile.seekg(0, std::ios::beg);
        
-      MailFile f(infile_size);
-      infile.read(&f[0], infile_size);
-
-      MailBatch batch;
-      batch.push_back(f);
+      MailFile file(infile_size);
+      infile.read(&file[0], infile_size);
 
       try {
          HPMail::init_session(hpmail_config);
-         HPMail::get()->upload(batch);
-
+         HPMail::get()->upload(file, filename);
       } catch(std::exception& ex) {
          std::cerr << "Error: " << ex.what() << std::endl;
          throw;
