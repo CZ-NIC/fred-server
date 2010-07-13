@@ -116,6 +116,7 @@ appendOptions(
                     visible.add_options()
                         ADDOPT_ULONGLONG(opts[i].name, opts[i].description);
                 }
+                break;
             case TYPE_BOOL:
                 all.add_options()
                     ADDOPT_BOOL(opts[i].name, opts[i].description);
