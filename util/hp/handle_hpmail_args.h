@@ -86,6 +86,9 @@ public:
 							::value<std::string>()->default_value(std::string("./tmpdir/"))
 						, "path for letters archiving and errlog temporary "
 						"and possibly large data, ended by slash")
+                ("main.mb_curl_log_dir,e", boost::program_options
+                            ::value<std::string>()->default_value(std::string("./logdir/"))
+                        , "path for curl stderr log ended by slash")
 				("main.postservice_cert_dir,c", boost::program_options
 							::value<std::string>()->default_value(std::string("./cert/"))
 						, "path for PEM certificates, ended by slash")
