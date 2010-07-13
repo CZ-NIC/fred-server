@@ -74,7 +74,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_upload_archiv_filename_suffix",".7z")//volume number is appended after archiv filename suffix .7z for now
     ("hp_useragent_id","CommandLine klient HP")//useragent id hardcoded in orig client
     ("hp_cleanup_last_arch_volumes","rm -f *.7z*") // delete last archive volumes
-    ("hp_cleanup_last_letter_files","rm -f *.pdf && rm -f *.PDF") // delete last letter files
+    ("hp_cleanup_last_letter_files","rm -f *.pdf") // delete last letter files
     ("hp_upload_archiv_filename_body","compressed_mail")//compressed mail file name body
     ("hp_upload_curlopt_timeout","120") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
     ("hp_upload_curlopt_connect_timeout","1800") //orig 1800, maximum time in seconds that you allow the connection to the server to take
