@@ -71,13 +71,12 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_upload_archiv_filename_suffix",".7z")//volume number is appended after archiv filename suffix .7z for now
     ("hp_useragent_id","CommandLine klient HP")//useragent id hardcoded in orig client
     ("hp_cleanup_last_arch_volumes","rm -f *.7z*") // delete last archive volumes
-    ("hp_cleanup_last_letter_files","rm -f letter_*") // delete last letter files
-    ("hp_upload_letter_file_prefix","letter_")//for saved letter file to archive
+    ("hp_cleanup_last_letter_files","rm -f *.pdf && rm -f *.PDF") // delete last letter files
     ("hp_upload_archiv_filename_body","compressed_mail")//compressed mail file name body
     ("hp_upload_curlopt_timeout","120") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
     ("hp_upload_curlopt_connect_timeout","1800") //orig 1800, maximum time in seconds that you allow the connection to the server to take
     ("hp_upload_curlopt_maxconnect","20") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
-    ("hp_upload_curlopt_stderr_log","curl_stderr.log")//if empty free() invalid pointer, curl log file name in mb_proc_tmp_dir, if empty redir is not set
+    ("hp_upload_curlopt_stderr_log","curl_stderr.log")//curl log file name in mb_proc_tmp_dir, if empty redir is not set
     ("hp_upload_curl_verbose","1")//verbosity of communication dump 0/1
     ("hp_upload_retry","10")//default number of upload retries
     ;
@@ -183,7 +182,7 @@ void HPMail::login(const std::string& loginame //postservice account name
 
     //detecting errors
     if (hp_batch_number_.empty())
-        throw std::runtime_error(std::string("HPMail::login error: empty batch number"));
+        throw std::runtime_error(std::string("HPMail::login error: not logged in - empty batch number"));
     if (sb.getValueByKey("overenizak ", 2).compare("KO")==0)
         throw std::runtime_error(std::string("HPMail::login error: batch validation failed"));
     if (sb.getValueByKey("zaladr ", 2).compare("KO") == 0)
@@ -197,7 +196,7 @@ void HPMail::login(const std::string& loginame //postservice account name
 /// upload batch of mail files to postservice
 /// optionally no args required
 /// then use save_file_for_upload and optionally archiver_command before login
-void HPMail::upload( const MailBatch& mb)
+void HPMail::upload( const NamedMailBatch& mb)
 {
     if(phpsessid_.empty())
         throw std::runtime_error("HPMail::upload error: not logged in");
@@ -218,18 +217,24 @@ void HPMail::upload( const MailBatch& mb)
     instance_ptr.reset(0);//end of session if no exception so far
 }//HPMail::upload
 
-/// in loop save files for upload to postservice
-void HPMail::save_files_for_upload( const MailBatch& mb)
+void HPMail::upload( const MailFile& mf , const std::string & file_name )
 {
+    NamedMailFile nmf = {mf, file_name };
+    NamedMailBatch nmb (1,nmf);
+    upload(nmb);
+}//HPMail::upload
 
-    //save letter data to disk like: letter_<number>
-    for (MailBatch::const_iterator mail_file = mb.begin()
+/// in loop save files for upload to postservice
+void HPMail::save_files_for_upload( const NamedMailBatch& mb)
+{
+    //save letter data to disk
+    for (NamedMailBatch::const_iterator mail_file = mb.begin()
             ; mail_file != mb.end(); ++mail_file)
                 save_file_for_upload( *mail_file);
 }//HPMail::save_files_for_upload
 
 /// save one file for upload to postservice
-void HPMail::save_file_for_upload( const MailFile& mf)
+void HPMail::save_file_for_upload( const NamedMailFile& mf)
 {
     if(compressed_file_for_upload_)
         throw std::runtime_error("HPMail::save_file_for_upload error: "
@@ -252,29 +257,78 @@ void HPMail::save_file_for_upload( const MailFile& mf)
                      + boost::lexical_cast<std::string>(system_command_retcode));
     }
 
-    //save letter data to disk like: letter_<number>
-    std::string letter_file_name(
-            config_["hp_upload_letter_file_prefix"]
-            +boost::lexical_cast<std::string>(
-                    letter_file_number_++)); //updating class file counter
-    std::ofstream letter_file;
-    letter_file.open ((config_["mb_proc_tmp_dir"]+letter_file_name).c_str()
-            , std::ios::out | std::ios::trunc | std::ios::binary);
-    if(letter_file.is_open())
+    //if file name not empty
+    if (mf.name.empty())
     {
-        letter_file.write(&mf[0], mf.size());
-        letter_file_names_.push_back(letter_file_name);
-        saved_file_for_upload_ = true;//we have some file
+        throw std::runtime_error(
+            "HPMail::save_file_for_upload error: file not saved - file name is empty");
+    }
+
+    //if file name long enough
+    if (mf.name.length() < 5)
+    {
+        throw std::runtime_error(
+            "HPMail::save_file_for_upload error: file not saved - file name is empty");
+    }
+
+    //if suffix pdf
+    std::string mail_file_suffix (mf.name.end() - 4, mf.name.end());//suffix check
+    if ((mail_file_suffix.compare(".pdf") != 0)
+            || (mail_file_suffix.compare(".PDF") != 0))
+    {
+        throw std::runtime_error(std::string(
+            "HPMail::save_file_for_upload error: file not saved - file suffix have to be .pdf: ") + mf.name);
+    }
+
+    //if name unique and inserted to list
+    if(letter_file_names_.insert(mf.name).second)
+    {
+        std::ofstream letter_file;
+        letter_file.open ((config_["mb_proc_tmp_dir"]+mf.name).c_str()
+                , std::ios::out | std::ios::trunc | std::ios::binary);
+        if(letter_file.is_open())
+        {
+            letter_file.write(&(mf.data[0]), mf.data.size());
+            saved_file_for_upload_ = true;//we have some file
+        }
+    }
+    else
+    {
+        //name error , not inserted to list
+        throw std::runtime_error(std::string(
+            "HPMail::save_file_for_upload error: file not saved - non-unique file name: ") + mf.name);
     }
 }//HPMail::save_file_for_upload
 
 /// save one big file for upload to postservice by file name
 void HPMail::save_file_for_upload( const std::string& file_name)
 {
-
     if(compressed_file_for_upload_)
         throw std::runtime_error("HPMail::save_file_for_upload error: "
                 "already compresssed, call upload");
+    //if file name not empty
+    if (file_name.empty())
+    {
+        throw std::runtime_error(
+            "HPMail::save_file_for_upload error: file not saved - file name is empty");
+    }
+
+    //if file name long enough
+    if (file_name.length() < 5)
+    {
+        throw std::runtime_error(
+            "HPMail::save_file_for_upload error: file not saved - file name is empty");
+    }
+
+    //if suffix pdf
+    std::string mail_file_suffix (file_name.end() - 4, file_name.end());//suffix check
+    if ((mail_file_suffix.compare(".pdf") != 0)
+            || (mail_file_suffix.compare(".PDF") != 0))
+    {
+        throw std::runtime_error(std::string(
+            "HPMail::save_file_for_upload error: file not saved - file suffix have to be .pdf: ") + file_name);
+    }
+
     if(!saved_file_for_upload_)
     {//cleanup for the first time
         std::string command_cleanup("cd " + config_["mb_proc_tmp_dir"]
@@ -293,33 +347,41 @@ void HPMail::save_file_for_upload( const std::string& file_name)
                      + boost::lexical_cast<std::string>(system_command_retcode));
     }
 
-    //save letter data to disk like: letter_<number>
-    std::string letter_file_name(
-            config_["hp_upload_letter_file_prefix"]
-            +boost::lexical_cast<std::string>(
-                    letter_file_number_++)); //updating class file counter
+    //look for last slash in file_name
+    std::size_t slash_position = file_name.find_last_of("/\\");
+    std::string letter_file_name;
 
-    std::ifstream input_file;
-    input_file.open (file_name.c_str(), std::ios::in | std::ios::binary);
-    if(!input_file.is_open())
-    	throw std::runtime_error("HPMail::save_file_for_upload error: "
-    	    "unable to open file:"+ file_name);
+    //take file name only
+    if(slash_position == std::string::npos)
+        letter_file_name = file_name;
+    else
+        letter_file_name = file_name.substr(slash_position+1);
 
-    std::ofstream letter_file;
-    letter_file.open ((config_["mb_proc_tmp_dir"]+letter_file_name).c_str()
-            , std::ios::out | std::ios::trunc | std::ios::binary);
-    if(!letter_file.is_open())
-    	throw std::runtime_error("HPMail::save_file_for_upload error: "
-    	    "unable to open file:"+ config_["mb_proc_tmp_dir"]+letter_file_name);
+    //if name unique and inserted to list
+    if(letter_file_names_.insert(letter_file_name).second)
+    {
+        std::ifstream input_file;
+        input_file.open (file_name.c_str(), std::ios::in | std::ios::binary);
+        if(!input_file.is_open())
+            throw std::runtime_error("HPMail::save_file_for_upload error: "
+                "unable to open file:"+ file_name);
 
-    letter_file << input_file.rdbuf();//copy
+        std::ofstream letter_file;
+        letter_file.open ((config_["mb_proc_tmp_dir"]+letter_file_name).c_str()
+                , std::ios::out | std::ios::trunc | std::ios::binary);
+        if(!letter_file.is_open())
+            throw std::runtime_error("HPMail::save_file_for_upload error: "
+                "unable to open file:"+ config_["mb_proc_tmp_dir"]+letter_file_name);
 
-    letter_file_names_.push_back(letter_file_name);
-	saved_file_for_upload_ = true;//we have some file
-
-
-
-
+        letter_file << input_file.rdbuf();//copy
+        saved_file_for_upload_ = true;//we have some file
+    }
+    else
+    {
+        //name error , not inserted to list
+        throw std::runtime_error(std::string(
+            "HPMail::save_file_for_upload error: file not saved - non-unique file name: ") + letter_file_name);
+    }
 }//HPMail::save_file_for_upload
 
 
@@ -332,7 +394,7 @@ void HPMail::save_list_for_archiver()
     list_file.open ((config_["mb_proc_tmp_dir"]+file_list_name).c_str(), std::ios::out | std::ios::trunc);
     if(list_file.is_open())
     {
-        for(LetterFileNames::iterator i = letter_file_names_.begin()
+        for(LetterFileNames::const_iterator i = letter_file_names_.begin()
                 ; i != letter_file_names_.end(); ++i )
         {
             list_file << *i << "\n";
