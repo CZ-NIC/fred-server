@@ -46,8 +46,11 @@
 std::auto_ptr<HPMail> HPMail::instance_ptr(0);
 
 ///required HPMail configuration init with default values
+///HPMail::set is ending values of keys containing "_dir" substring with '/' or '\' for win32
+///so don't use key containing "_dir" substring for anything not ended by slash !
 HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("mb_proc_tmp_dir","./tmpdir/") //empty temp dir for compressed mail files or nonempty dir with set cleanup option
+    ("mb_curl_log_dir","./tmpdir/") //log dir for curl stderr logfile
     ("postservice_cert_dir","./cert/") //server certificate dir ended by slash
     ("postservice_cert_file","postsignum_qca_root.pem")//cert file name like "postsignum_qca_root.pem"
     ("hp_login_job","2010")//set in orig config file like: jobzak="2010"
@@ -95,7 +98,22 @@ HPMail* HPMail::set(const HPCfgMap& config_changes)
             config[change_it->first]= change_it->second;//change
         else//nochange, using required default
             config[default_it->first]=default_it->second;
-    }
+
+        //if it's directory name, check slash at the end
+        if(default_it->first.find("_dir") !=  std::string::npos)
+        {
+            char ending_sl = '/';
+#ifdef WIN32
+            ending_sl = '\\';
+#endif
+
+            if((*((config[default_it->first]).end() - 1)) != ending_sl)
+                config[default_it->first]+= ending_sl;//add ending slash
+
+            //std::cout << "\nslashed: " << default_it->first
+            //<< " " << config[default_it->first] << std::endl;
+        }
+    }//for default_it
 
     std::auto_ptr<HPMail> tmp_instance(new HPMail(config));
     instance_ptr = tmp_instance;
