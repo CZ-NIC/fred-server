@@ -74,8 +74,10 @@ public:
               } else {
                   omg = opts[i].name;
               }
+              std::ios_base::fmtflags state = std::cout.flags();
               std::cout.width(24);
               std::cout << std::left << omg << " - " << opts[i].description << std::endl;
+              std::cout.flags(state);
           }
       }
       std::cout << std::endl << "Other parametrs:" << std::endl;
@@ -86,9 +88,11 @@ public:
               } else {
                   omg = opts[i].name;
               }
+              std::ios_base::fmtflags state = std::cout.flags();
               std::cout.width(24);
               std::cout << std::left << omg;
               std::cout << " - " << opts[i].description << std::endl;
+              std::cout.flagse(state);
           }
       }
   }
