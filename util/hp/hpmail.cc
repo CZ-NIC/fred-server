@@ -273,8 +273,7 @@ void HPMail::save_file_for_upload( const NamedMailFile& mf)
 
     //if suffix pdf
     std::string mail_file_suffix (mf.name.end() - 4, mf.name.end());//suffix check
-    if ((mail_file_suffix.compare(".pdf") != 0)
-            || (mail_file_suffix.compare(".PDF") != 0))
+    if(mail_file_suffix.compare(".pdf") != 0)
     {
         throw std::runtime_error(std::string(
             "HPMail::save_file_for_upload error: file not saved - file suffix have to be .pdf: ") + mf.name);
@@ -322,8 +321,7 @@ void HPMail::save_file_for_upload( const std::string& file_name)
 
     //if suffix pdf
     std::string mail_file_suffix (file_name.end() - 4, file_name.end());//suffix check
-    if ((mail_file_suffix.compare(".pdf") != 0)
-            || (mail_file_suffix.compare(".PDF") != 0))
+    if(mail_file_suffix.compare(".pdf") != 0)
     {
         throw std::runtime_error(std::string(
             "HPMail::save_file_for_upload error: file not saved - file suffix have to be .pdf: ") + file_name);

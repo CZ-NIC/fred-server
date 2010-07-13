@@ -84,7 +84,8 @@ public:
 							 , "archive volume upload retries number")
 				("main.mb_proc_tmp_dir,d", boost::program_options
 							::value<std::string>()->default_value(std::string("./tmpdir/"))
-						, "path for letters archiving and errlog temporary and possibly large data, ended by slash")
+						, "path for letters archiving and errlog temporary "
+						"and possibly large data, ended by slash")
 				("main.postservice_cert_dir,c", boost::program_options
 							::value<std::string>()->default_value(std::string("./cert/"))
 						, "path for PEM certificates, ended by slash")
@@ -97,14 +98,20 @@ public:
 				("main.hp_upload_archiver_additional_options,o", boost::program_options
 						::value<std::string>()->default_value(std::string("-mx5 -v5m"))
 					, "7z hp_upload_archiver_filename additional options")
-				("main.hp_upload_curl_verbose,v", boost::program_options::value<std::string>()->default_value(std::string("0")), "enable additional debug data in tmpdir error log")
+				("main.hp_upload_curl_verbose,v", boost::program_options
+				        ::value<std::string>()->default_value(std::string("0"))
+				         , "enable additional debug data in tmpdir error log")
 				("main.hp_upload_curlopt_timeout,t", boost::program_options
 							::value<std::string>()->default_value("100")
 							 , "curl connect timeout and transfer timeout [s]")
-                                ("main.hp_login_interface_url", boost::program_options::value<std::string>(), "login form url")
-                                ("main.hp_upload_interface_url", boost::program_options::value<std::string>(), "upload form url")
-                                ("main.hp_ack_interface_url", boost::program_options::value<std::string>(), "end form url")
-                                ("main.hp_cancel_interface_url", boost::program_options::value<std::string>(),  "cancel form url")
+                ("main.hp_login_interface_url", boost::program_options
+                        ::value<std::string>()->zero_tokens(), "optional login form url")
+                ("main.hp_upload_interface_url", boost::program_options
+                        ::value<std::string>()->zero_tokens(), "optional upload form url")
+                ("main.hp_ack_interface_url", boost::program_options
+                        ::value<std::string>()->zero_tokens(), "optional end form url")
+                ("main.hp_cancel_interface_url", boost::program_options
+                        ::value<std::string>()->zero_tokens(),  "optional cancel form url")
 				;
 
 
@@ -116,19 +123,8 @@ public:
         boost::program_options::variables_map vm;
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
 
-        // Check required parametres 
-        if(vm.count("main.hp_login_interface_url") == 0) {
-                throw std::runtime_error("Required `hp_login_interface_url' configuration option missing. Cannont continue");
-        }
-        if(vm.count("main.hp_upload_interface_url") == 0) {
-                throw std::runtime_error("Required `hp_upload_interface_url' configuration option missing. Cannont continue");
-        }
-        if(vm.count("main.hp_ack_interface_url") == 0) {
-                throw std::runtime_error("Required `hp_ack_interface_url' configuration option missing. Cannont continue");
-        }
-        if(vm.count("main.hp_cancel_interface_url") == 0) {
-                throw std::runtime_error("Required `hp_cancel_interface_url' configuration option missing. Cannont continue");
-        }
+        // Check required parametres
+
         if(vm.count("main.hp_login_name") == 0) {
                 throw std::runtime_error("Required `hp_login_name' configuration option missing. Cannont continue");
         }
@@ -147,28 +143,6 @@ public:
 
                 hp_config [key] = (it->second).as<std::string>();
         }
-
-        /*
-        // set variables according to program options map
-        hp_login_interface_url = vm["main.hp_login_interface_url"].as<std::string>(); 
-        hp_upload_interface_url = vm["main.hp_upload_interface_url"].as<std::string>();
-        hp_ack_interface_url = vm["main.hp_ack_interface_url"].as<std::string>();
-        hp_cancel_interface_url = vm["main.hp_cancel_interface_url"].as<std::string>();
-
-
-        hp_login_batch_id = vm["main.hp_login_batch_id"].as<std::string>();
-        login = vm["main.hp_login_name"].as<std::string>();
-        password = vm["main.hp_login_password"].as<std::string>();
-        note = vm["main.hp_login_note"].as<std::string>();
-        hp_upload_archiver_filename = vm["main.hp_upload_archiver_filename"].as<std::string>();
-        hp_upload_archiver_additional_options = vm["main.hp_upload_archiver_additional_options"].as<std::string>();
-        hp_upload_curlopt_timeout = hp_upload_curlopt_connect_timeout = vm["main.hp_upload_curlopt_timeout"].as<std::string>();
-        hp_upload_retry= vm["main.hp_upload_retry"].as<std::string>();
-        hp_upload_curl_verbose = vm["main.hp_upload_curl_verbose"].as<std::string>();
-        mb_proc_tmp_dir = vm["main.mb_proc_tmp_dir"].as<std::string>();
-        postservice_cert_dir  = vm["main.postservice_cert_dir"].as<std::string>();
-        postservice_cert_file = vm["main.postservice_cert_file"].as<std::string>();
-        */
 
     }//handle
 };//class HandleHPMailArgs

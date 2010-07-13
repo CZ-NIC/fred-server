@@ -83,7 +83,7 @@ int main ( int argc, char* argv[])
         HPCfgMap ins = boost::assign::map_list_of
         ("hp_login_osversion","Windows")//"Linux" or "Windows"
         ("hp_cleanup_last_arch_volumes","del /F *.7z*") // delete last archive volumes
-        ("hp_cleanup_last_letter_files","del /F letter_*"); // delete last letter files
+        ("hp_cleanup_last_letter_files","del /F *.pdf"); // delete last letter files
         set_cfg.insert(ins.begin(), ins.end());
 #endif
 

@@ -155,13 +155,6 @@ void hp_form_overeni(curl_httppost **formpost_pp //out parameter
         , const std::string& verzeProg //"20100315001"
         );
 
-///second log interface
-void hp_form_infolog2(curl_httppost **formpost_pp //out parameter
-        , const std::string& text //"Pocet souboru uvedenych v hpcmd.cfg je: "
-        , const std::string& cislo //files number
-        , const std::string& chyba //0
-        );
-
 ///file upload with order number and crc32 checksum
 void hp_form_command(curl_httppost **formpost_pp //out parameter
         , const std::string& pocetupl //decremented number of file

@@ -270,24 +270,6 @@ void hp_form_overeni(curl_httppost **formpost_pp //out parameter
             , CURLFORM_COPYCONTENTS, verzeProg.c_str(), CURLFORM_END);
 }
 
-void hp_form_infolog2(curl_httppost **formpost_pp //out parameter
-        , const std::string& text //"Pocet souboru uvedenych v hpcmd.cfg je: "
-        , const std::string& cislo //files number
-        , const std::string& chyba //0
-        )
-{
-    struct curl_httppost *lastptr=NULL;
-    // Fill in overeni
-    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "cc"
-            , CURLFORM_COPYCONTENTS, "us \n", CURLFORM_END);
-    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "text"
-            , CURLFORM_COPYCONTENTS, (text + "\n").c_str(), CURLFORM_END);
-    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "cislo"
-            , CURLFORM_COPYCONTENTS, (cislo  + "\n").c_str(), CURLFORM_END);
-    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "chyba"
-            , CURLFORM_COPYCONTENTS, (chyba + "\n").c_str(), CURLFORM_END);
-}
-
 ///file upload with order number and crc32 checksum
 void hp_form_command(curl_httppost **formpost_pp //out parameter
         , const std::string& pocetupl //decremented number of file
