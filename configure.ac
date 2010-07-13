@@ -175,6 +175,23 @@ AC_ARG_WITH([logdport], [AS_HELP_STRING([--with-logdport],
 			[AC_SUBST([LOGDPORT], [$withval])],
 			[AC_SUBST([LOGDPORT], [2226])])
 
+#hp login name
+AC_ARG_WITH([hp_login_name], [AS_HELP_STRING([--with-hp_login_name],
+			[Postservice login name])],
+			[AC_SUBST([HP_LOGIN_NAME], [$withval])],
+			[AC_SUBST([HP_LOGIN_NAME], [fred])])
+
+#hp login password
+AC_ARG_WITH([hp_login_password], [AS_HELP_STRING([--with-hp_login_password],
+			[Postservice password])],
+			[AC_SUBST([HP_LOGIN_PASSWORD], [$withval])],
+			[AC_SUBST([HP_LOGIN_PASSWORD], [fred])])
+
+#hp login note
+AC_ARG_WITH([hp_login_note], [AS_HELP_STRING([--with-hp_login_note],
+			[Postservice batch note - optional])],
+			[AC_SUBST([HP_LOGIN_NOTE], [$withval])],
+			[AC_SUBST([HP_LOGIN_NOTE], [fred])])
 
 AS_AC_TEST_CORBA_PORTS()
 
@@ -278,6 +295,7 @@ AC_CONFIG_FILES([Makefile
                  tests/Makefile
                  fred-server.spec
                  config/server.conf
+                 config/hpmail.conf                 
                  init-scripts/fred-server
                  src/cli_admin/banking.sh
                  ])

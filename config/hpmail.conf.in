@@ -1,0 +1,18 @@
+[main]
+hp_login_name = @HP_LOGIN_NAME@
+hp_login_password = @HP_LOGIN_PASSWORD@
+hp_login_note = @HP_LOGIN_NOTE@
+hp_login_batch_id =  hpcb_Jednorazova_zakazka
+hp_upload_retry = 10
+mb_proc_tmp_dir = @PREFIX@/tmp/hpmail/
+mb_curl_log_dir = @LOCALSTATEDIR@/log/hpmail/
+postservice_cert_dir = @PREFIX@/etc/fred/cert/
+postservice_cert_file = postsignum_qca_root.pem
+hp_upload_archiver_filename = 7z
+hp_upload_archiver_additional_options = -mx5 -v5m
+hp_upload_curl_verbose = 0
+hp_upload_curlopt_timeout = 100
+hp_login_interface_url = "https://online.postservis.cz/Command/over.php"
+hp_upload_interface_url = "https://online.postservis.cz/Command/command.php"
+hp_ack_interface_url = "https://online.postservis.cz/Command/konec.php"
+hp_cancel_interface_url = "https://online.postservis.cz/Command/prubeh.php"
