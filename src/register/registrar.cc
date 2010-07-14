@@ -848,7 +848,7 @@ public:
     if (ptr_idx_ == m_data_size
     		|| (ret_ptr = dynamic_cast<RegistrarImpl* >(m_data[ptr_idx_]))->getId() != _id)
     {
-      LOGGER(PACKAGE).debug(boost::format("find id sequence: not found in result set. (id=%1%, ptr_idx=%2%)")
+      TRACE(boost::format("find id sequence: not found in result set. (id=%1%, ptr_idx=%2%)")
                                           % _id % ptr_idx_);
       resetIDSequence();
       return NULL;
