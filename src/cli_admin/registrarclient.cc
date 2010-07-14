@@ -366,6 +366,8 @@ RegistrarClient::registrar_into_group()
         fromDate.from_string(
                 m_conf.get<std::string>(REGISTRAR_FROM_DATE_NAME));
     }
+
+
     if (m_conf.hasOpt(REGISTRAR_TO_DATE_NAME))
     {
         toDate.from_string(m_conf.get<std::string>(REGISTRAR_TO_DATE_NAME));
@@ -374,6 +376,9 @@ RegistrarClient::registrar_into_group()
     if (fromDate > toDate)
         throw std::runtime_error("RegistrarClient::registrar_into_group "
                         "error: from_date > to_date");
+
+    std::cout << "\nfrom_date: " << fromDate.to_string() << "to_date: " <<  toDate.to_string() << std::endl;
+
     std::string group_name =
             m_conf.get<std::string>(REGISTRAR_GROUP_NAME);
 
