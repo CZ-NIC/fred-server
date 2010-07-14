@@ -371,11 +371,14 @@ RegistrarClient::registrar_into_group()
         toDate.from_string(m_conf.get<std::string>(REGISTRAR_TO_DATE_NAME));
     }
 
+    if (fromDate > toDate)
+        throw std::runtime_error("RegistrarClient::registrar_into_group "
+                        "error: from_date > to_date");
     std::string group_name =
             m_conf.get<std::string>(REGISTRAR_GROUP_NAME);
 
     if(group_name.empty())
-        throw std::runtime_error("RegistrarClient::registrar_create_group "
+        throw std::runtime_error("RegistrarClient::registrar_into_group "
                 "error: group name is empty");
 
     Register::Registrar::Manager::AutoPtr regman(
