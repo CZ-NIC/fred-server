@@ -153,7 +153,7 @@ public:
 
 
 protected:
-  inline const savepoint_list::size_type getNextSavepointNum() const {
+  inline savepoint_list::size_type getNextSavepointNum() const {
     return savepoints_.size();
   }
 
