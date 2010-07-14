@@ -21,7 +21,7 @@ public:
     is_null(_null), t_value(_value) {
   }
   Null() :
-    is_null(true) {
+    is_null(true), t_value() {
   }
   Null(const Null<Tp>& _src) {
     t_value = _src.t_value;
