@@ -157,6 +157,8 @@ struct options {
 #define REG_DOCGEN_PATH_NAME_DESC           "PDF generator path"
 #define REG_DOCGEN_TEMPLATE_PATH_NAME       "registry.docgen_template_path"
 #define REG_DOCGEN_TEMPLATE_PATH_NAME_DESC  "PDF generator template path"
+#define REG_DOCGEN_DOMAIN_COUNT_LIMIT       "registry.docgen_domain_count_limit"
+#define REG_DOCGEN_DOMAIN_COUNT_LIMIT_DESC  "Maximum number of expired domains per letter addressed to registrant"
 #define REG_FILECLIENT_PATH_NAME            "registry.fileclient_path"
 #define REG_FILECLIENT_PATH_NAME_DESC       "file manager client path"
 

@@ -160,6 +160,8 @@ int main(int argc, char** argv) {
       ("registry.nsset_level",          po::value<unsigned>()->default_value(3), "Default report level of new NSSET")
       ("registry.docgen_path",          po::value<std::string>()->default_value("/usr/local/bin/fred-doc2pdf"),       "PDF generator path")
       ("registry.docgen_template_path", po::value<std::string>()->default_value("/usr/local/share/fred-doc2pdf/"),    "PDF generator template path")
+      ("registry.docgen_domain_count_limit", 
+                                        po::value<unsigned>()->default_value(100), "Maximum number of expired domains per letter addressed to registrant")
       ("registry.fileclient_path",      po::value<std::string>()->default_value("/usr/local/bin/filemanager_client"), "File manager client path");
     po::options_description rifd_opts("RIFD specific");
     rifd_opts.add_options()
@@ -377,15 +379,15 @@ int main(int argc, char** argv) {
 
     try
     {
-  	  if (cfg.hasOpt("daemonize"))
-	  {
-	    daemonize();
-	  }
-	  else
-	  {
-        /* disconnect from terminal */
+      if (cfg.hasOpt("daemonize"))
+      {
+        daemonize();
+      }
+      else
+      {
+    /* disconnect from terminal */
         setsid();
-	  }
+      }
 
       /* manage pidfile */
       if(cfg.hasOpt("pidfile"))

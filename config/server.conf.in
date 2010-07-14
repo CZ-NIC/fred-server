@@ -63,6 +63,7 @@ nsset_level = 3
 
 docgen_path = @BINDIR@/fred-doc2pdf
 docgen_template_path = @DATAROOTDIR@/fred-doc2pdf/
+docgen_domain_count_limit = 100
 
 fileclient_path = @BINDIR@/filemanager_client
 

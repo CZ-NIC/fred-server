@@ -170,7 +170,7 @@ NotifyClient::letters_create()
                 docMan.get(),
                 regMan.get())
             );
-    notifyMan->generateLetters();
+    notifyMan->generateLetters(m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT));
 }
 
 void NotifyClient::letters_send()

@@ -424,7 +424,7 @@ ObjectClient::regular_procedure()
         notifyMan->notifyStateChanges(notifyExcept, 0, NULL, true);
 
         pollMan->createLowCreditMessages();
-        notifyMan->generateLetters();
+        notifyMan->generateLetters(m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT));
     } catch (ccReg::Admin::SQL_ERROR) {
         LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): SQL_ERROR catched");
     } catch (NameService::NOT_RUNNING) {

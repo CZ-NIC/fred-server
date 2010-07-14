@@ -179,6 +179,7 @@ main(int argc, char **argv)
         addOptBool(REG_RESTRICTED_HANDLES_NAME)
         addOptStr(REG_DOCGEN_PATH_NAME)
         addOptStr(REG_DOCGEN_TEMPLATE_PATH_NAME)
+        addOptUInt(REG_DOCGEN_DOMAIN_COUNT_LIMIT)
         addOptStr(LOGIN_REGISTRAR_NAME);
 
     boost::program_options::options_description fileOpts("");

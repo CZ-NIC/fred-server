@@ -1651,7 +1651,7 @@ void ccReg_Admin_i::generateLetters() {
                                           domMan.get(), 
                                           docman.get(),
                                           rMan.get()));
-    notifyMan->generateLetters();
+    notifyMan->generateLetters(cfg.get<unsigned>("registry.docgen_domain_count_limit"));
     ldb.Disconnect();
   }
   catch (...) {

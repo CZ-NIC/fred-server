@@ -27,7 +27,7 @@ namespace Register
     	std::ostream *debugOutput,
         bool useHistory
       ) throw (SQL_ERROR) = 0;
-      virtual void generateLetters() = 0;
+      virtual void generateLetters(unsigned item_count_limit) = 0;
       /// factory method
       static Manager *create(
         DB *db, 

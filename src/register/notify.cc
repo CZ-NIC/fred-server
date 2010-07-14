@@ -577,7 +577,7 @@ namespace Register
       };
 
 #define XML_DB_OUT(x,y) "<![CDATA[" << std::string(res[x][y]) << "]]>"
-      virtual void generateLetters()
+      virtual void generateLetters(unsigned item_count_limit)
         throw (SQL_ERROR)
       {
         TRACE("[CALL] Register::Notify::generateLetters()");
@@ -674,12 +674,14 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
           std::auto_ptr<GenMultipleFiles> gen;
           std::string prev_distinction;
+          unsigned item_count = 0;
           for (unsigned i=0; i < (unsigned)res.size(); i++) {
                 std::string distinction = res[i][10];
 
-                if (prev_distinction != distinction) {
+                if ((prev_distinction != distinction) || (item_count >= item_count_limit)) {
                     // in this case start creating a new file
                     gen.reset ( new GenMultipleFiles(exDates[j], res[i][12], docm, trans));
+                    item_count = 0;
                     /*
                     if(!prev_distinction.empty()) {
                         out << "</holder>";
@@ -709,6 +711,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                 gen->addHolderId(res[i][12]);
 
                 prev_distinction = distinction; 
+                item_count++;
           }
 
           // return id of generated PDF file
