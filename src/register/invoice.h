@@ -192,7 +192,7 @@ public:
     // const Database::Date getTaxDate() const = 0;
     virtual TID getPrefix() const = 0;
     virtual TID getRegistrarId() const = 0;
-    virtual const int &getVat() const = 0;
+    virtual int getVat() const = 0;
     virtual const Database::Money getTotalVat() const = 0;
     // const TID getPrefixTypeId() const = 0;
     virtual TID getFileId() const = 0;
