@@ -64,11 +64,11 @@ namespace Register
                ModelZoneNs::setFqdn(fqdn);
                ModelZoneNs::setAddrs(addrs);
            }
-           const TID getId() const
+           const TID &getId() const
            {
                return ModelZoneNs::getId();
            }
-           const TID getZoneId() const
+           const TID &getZoneId() const
            {
                return ModelZoneNs::getZoneId();
            }
@@ -265,7 +265,7 @@ namespace Register
       }//save
 
       //ModelZone
-      const TID getId() const
+      const TID &getId() const
       {
           return ModelZone::getId();
       }
@@ -281,7 +281,7 @@ namespace Register
       {
           ModelZone::setFqdn(fqdn);
       }
-      const int getExPeriodMin() const
+      const int &getExPeriodMin() const
       {
           return ModelZone::getExPeriodMin();
       }
@@ -289,7 +289,7 @@ namespace Register
       {
           ModelZone::setExPeriodMin(exPeriodMin);
       }
-      const int getExPeriodMax() const
+      const int &getExPeriodMax() const
       {
           return ModelZone::getExPeriodMax();
       }
@@ -297,7 +297,7 @@ namespace Register
       {
           ModelZone::setExPeriodMax(exPeriodMax);
       }
-      const int getValPeriod() const
+      const int &getValPeriod() const
       {
           return ModelZone::getValPeriod();
       }
@@ -305,7 +305,7 @@ namespace Register
       {
           ModelZone::setValPeriod(valPeriod);
       }
-      const int getDotsMax() const
+      const int &getDotsMax() const
       {
           return ModelZone::getDotsMax();
       }
@@ -313,11 +313,11 @@ namespace Register
       {
           ModelZone::setDotsMax(dotsMax);
       }
-      const bool getEnumZone() const
+      const bool &getEnumZone() const
       {
           return ModelZone::getEnumZone();
       }
-      const bool isEnumZone() const
+      const bool &isEnumZone() const
       {
           return getEnumZone();
       }
@@ -326,7 +326,7 @@ namespace Register
           ModelZone::setEnumZone(enumZone);
       }
       //ModelZoneSoa
-      const int getTtl() const
+      const int &getTtl() const
       {
           return ModelZoneSoa::getTtl();
       }
@@ -334,23 +334,23 @@ namespace Register
       {
           return ModelZoneSoa::getHostmaster();
       }
-      const int getSerial() const
+      const int &getSerial() const
       {
           return ModelZoneSoa::getSerial();
       }
-      const int getRefresh() const
+      const int &getRefresh() const
       {
           return ModelZoneSoa::getRefresh();
       }
-      const int getUpdateRetr() const
+      const int &getUpdateRetr() const
       {
           return ModelZoneSoa::getUpdateRetr();
       }
-      const int getExpiry() const
+      const int &getExpiry() const
       {
           return ModelZoneSoa::getExpiry();
       }
-      const int getMinimum() const
+      const int &getMinimum() const
       {
           return ModelZoneSoa::getMinimum();
       }

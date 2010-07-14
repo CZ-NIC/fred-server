@@ -59,11 +59,11 @@ namespace Register
          virtual ~ZoneNs() {}
     public:
          ///get zonens id
-         virtual const TID getId() const = 0;
+         virtual const TID &getId() const = 0;
          ///set zonens id
          virtual void setId(const TID id) = 0;
          ///get zone id
-         virtual const TID getZoneId() const = 0;
+         virtual const TID &getZoneId() const = 0;
          ///set zone id
          virtual void setZoneId(const TID id) = 0;
          ///get zonens name
@@ -84,7 +84,7 @@ namespace Register
      /// public virtual destructor
       virtual ~Zone() {}
       ///get zone id
-      virtual const TID getId() const = 0;
+      virtual const TID &getId() const = 0;
       ///set zone id
       virtual void setId(const TID id) = 0;
       ///get zone name
@@ -92,48 +92,48 @@ namespace Register
       ///set zone name
       virtual void setFqdn(const std::string &fqdn) = 0;
       ///get zone min exp
-      virtual const int getExPeriodMin() const = 0;
+      virtual const int &getExPeriodMin() const = 0;
       ///set zone min exp
       virtual void setExPeriodMin(const int exPeriodMin) = 0;
       ///get zone max exp
-      virtual const int getExPeriodMax() const = 0;
+      virtual const int &getExPeriodMax() const = 0;
       ///set zone max exp
       virtual void setExPeriodMax(const int exPeriodMax) = 0;
       ///get zone ValPeriod
-      virtual const int getValPeriod() const = 0;
+      virtual const int &getValPeriod() const = 0;
       ///set zone ValPeriod
       virtual void setValPeriod(const int valPeriod) = 0;
       ///get zone max dots
-      virtual const int getDotsMax() const = 0;
+      virtual const int &getDotsMax() const = 0;
       ///set zone max dots
       virtual void setDotsMax(const int dotsMax) = 0;
       ///get zone is_enum
-      virtual const bool getEnumZone() const = 0;
-      virtual const bool isEnumZone() const = 0;
+      virtual const bool &getEnumZone() const = 0;
+      virtual const bool &isEnumZone() const = 0;
       ///set zone is_enum
       virtual void setEnumZone(const bool enumZone) = 0;
       ///return maximal level of domains in this zone
       virtual unsigned getMaxLevel() const = 0;
 
-      virtual const int getTtl() const = 0;
+      virtual const int &getTtl() const = 0;
       virtual void setTtl(const int ttl) = 0;
 
       virtual const std::string &getHostmaster() const = 0;
       virtual void setHostmaster(const std::string &hostmaster) = 0;
 
-      virtual const int getSerial() const = 0;
+      virtual const int &getSerial() const = 0;
       virtual void setSerial(const int serial) = 0;
 
-      virtual const int getRefresh() const = 0;
+      virtual const int &getRefresh() const = 0;
       virtual void setRefresh(const int refresh) = 0;
 
-      virtual const int getUpdateRetr() const = 0;
+      virtual const int &getUpdateRetr() const = 0;
       virtual void setUpdateRetr(const int updateRetr) = 0;
 
-      virtual const int getExpiry() const = 0;
+      virtual const int &getExpiry() const = 0;
       virtual void setExpiry(const int expiry) = 0;
 
-      virtual const int getMinimum() const = 0;
+      virtual const int &getMinimum() const = 0;
       virtual void setMinimum(const int minimum) = 0;
 
       virtual const std::string &getNsFqdn() const = 0;
