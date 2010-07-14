@@ -41,7 +41,7 @@ public:
     return mod_time_;
   }
   
-  virtual const long getType() const {
+  virtual const long &getType() const {
     return type_;
   }
   
@@ -49,7 +49,7 @@ public:
     return type_desc_;
   }
   
-  virtual const long getStatus() const {
+  virtual const long &getStatus() const {
     return status_;
   }
   

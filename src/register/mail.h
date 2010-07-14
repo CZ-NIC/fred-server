@@ -20,9 +20,9 @@ class Mail : virtual public Register::CommonObject {
 public:
   virtual const Database::DateTime& getCreateTime() const = 0;
   virtual const Database::DateTime& getModTime() const = 0;
-  virtual const long getType() const = 0;
+  virtual const long &getType() const = 0;
   virtual const std::string& getTypeDesc() const = 0;
-  virtual const long getStatus() const = 0;
+  virtual const long &getStatus() const = 0;
   virtual const std::string& getContent() const = 0;
   
   virtual void addHandle(const std::string& _handle) = 0;
