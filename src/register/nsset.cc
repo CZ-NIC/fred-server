@@ -119,7 +119,7 @@ public:
   const std::string& getHandle() const {
     return handle;
   }
-  virtual const unsigned getCheckLevel() const {
+  virtual const unsigned &getCheckLevel() const {
     return checkLevel;
   }
   unsigned getAdminCount() const {
