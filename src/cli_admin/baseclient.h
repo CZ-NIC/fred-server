@@ -92,7 +92,7 @@ public:
               std::cout.width(24);
               std::cout << std::left << omg;
               std::cout << " - " << opts[i].description << std::endl;
-              std::cout.flagse(state);
+              std::cout.flags(state);
           }
       }
   }
