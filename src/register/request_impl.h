@@ -49,10 +49,7 @@ public:
   Database::Result i_GetServices();
 
  // for migration tool (util/logd_migration)
-  void insert_props_pub(DateTime entry_time, RequestServiceType entry_service, bool monitoring, Database::ID entry_id, const Register::Logger::RequestProperties& props) {
-        boost::mutex::scoped_lock props_lock(properties_mutex);
-	insert_props(entry_time, entry_service, monitoring, entry_id, props, get_connection(), props_lock);
-  }
+ void insert_props_pub(DateTime entry_time, RequestServiceType entry_service, bool monitoring, Database::ID entry_id, const Register::Logger::RequestProperties& props);
   
   List* createList() const;
 

@@ -731,6 +731,16 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 
 }
 
+void ManagerImpl::insert_props_pub(DateTime entry_time, RequestServiceType entry_service, bool monitoring, Database::ID entry_id, const Register::Logger::RequestProperties& props) {
+#if ( BOOST_VERSION < 103500 ) 
+        boost::mutex::scoped_lock prop_lock(properties_mutex, false);
+#else 
+        boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
+#endif
+	insert_props(entry_time, entry_service, monitoring, entry_id, props, get_connection(), prop_lock);
+}
+
+
 // log a new event, return the database ID of the record
 ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service, const char *content_in, const Register::Logger::RequestProperties& props, RequestActionType action_type, ID session_id)
 {
