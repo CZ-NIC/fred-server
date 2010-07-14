@@ -1074,7 +1074,7 @@ public:
     virtual  TID getPrefix() const {
         return getNumber();
     };
-    virtual const int getVat() const {
+    virtual const int &getVat() const {
         return getVatRate();
     };
     virtual const Database::Money getTotalVat() const {
