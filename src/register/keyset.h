@@ -29,17 +29,17 @@ public:
     /// public d-tor
     virtual ~DSRecord() {}
     /// return dsrecord's id
-    virtual const unsigned int getId() const = 0;
+    virtual const unsigned int &getId() const = 0;
     /// return keytag
-    virtual const unsigned int getKeyTag() const = 0;
+    virtual const unsigned int &getKeyTag() const = 0;
     /// return used algorithm
-    virtual const unsigned int getAlg() const = 0;
+    virtual const unsigned int &getAlg() const = 0;
     /// return digest type
-    virtual const unsigned int getDigestType() const = 0;
+    virtual const unsigned int &getDigestType() const = 0;
     /// return digest
-    virtual const std::string getDigest() const = 0;
+    virtual const std::string &getDigest() const = 0;
     /// return record's time to live
-    virtual const unsigned int getMaxSigLife() const = 0;
+    virtual const unsigned int &getMaxSigLife() const = 0;
     // comparison operators
     virtual bool operator==(const DSRecord& _other) const = 0; 
     virtual bool operator!=(const DSRecord& _other) const = 0;
@@ -49,16 +49,16 @@ class DNSKey {
 public:
     virtual ~DNSKey() {}
     /* return id of dnskey */
-    virtual const unsigned int getId() const = 0;
+    virtual const Database::ID &getId() const = 0;
     /* following refer to RFC 4034 - DNSKEY RDATA format */
     /* return dnskey flags */
-    virtual const unsigned int getFlags() const = 0;
+    virtual const unsigned int &getFlags() const = 0;
     /* return protocol */
-    virtual const unsigned int getProtocol() const = 0;
+    virtual const unsigned int &getProtocol() const = 0;
     /* return used algorithm */
-    virtual const unsigned int getAlg() const = 0;
+    virtual const unsigned int &getAlg() const = 0;
     /* return public key */
-    virtual const std::string  getKey() const = 0;
+    virtual const std::string  &getKey() const = 0;
     /* comparison operators */
     virtual bool operator==(const DNSKey& _other) const = 0;
     virtual bool operator!=(const DNSKey& _other) const = 0;

@@ -63,27 +63,27 @@ public:
         m_maxSigLife(maxSigLife)
     {
     }
-    virtual const unsigned int getId() const
+    virtual const unsigned int &getId() const
     {
         return m_id;
     }
-    virtual const unsigned int getKeyTag() const
+    virtual const unsigned int &getKeyTag() const
     {
         return m_keyTag;
     }
-    virtual const unsigned int getAlg() const
+    virtual const unsigned int &getAlg() const
     {
         return m_alg;
     }
-    virtual const unsigned int getDigestType() const
+    virtual const unsigned int &getDigestType() const
     {
         return m_digestType;
     }
-    virtual const std::string getDigest() const
+    virtual const std::string &getDigest() const
     {
         return m_digest;
     }
-    virtual const unsigned int getMaxSigLife() const
+    virtual const unsigned int &getMaxSigLife() const
     {
         return m_maxSigLife;
     }
@@ -117,23 +117,23 @@ public:
                                            alg_(_alg),
                                            key_(_key) {}
     virtual ~DNSKeyImpl() {}
-    virtual const unsigned int getId() const {
+    virtual const Database::ID &getId() const {
         return id_;
     }
 
-    virtual const unsigned int getFlags() const {
+    virtual const unsigned int &getFlags() const {
         return flags_;
     }
 
-    virtual const unsigned int getProtocol() const {
+    virtual const unsigned int &getProtocol() const {
         return protocol_;
     }
 
-    virtual const unsigned int getAlg() const {
+    virtual const unsigned int &getAlg() const {
         return alg_;
     }
 
-    virtual const std::string  getKey() const {
+    virtual const std::string  &getKey() const {
         return key_;
     }
 
