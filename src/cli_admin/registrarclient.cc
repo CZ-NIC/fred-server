@@ -526,8 +526,8 @@ RegistrarClient::registrar_add_zone_help()
         "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ADD_ZONE_NAME << " \\\n"
         "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
         "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
-        "    [--" << REGISTRAR_FROM_DATE_NAME << "=<valid_from_date>] \\\n"
-        "    [--" << REGISTRAR_TO_DATE_NAME << "=<valid_to_date>]\n"
+        "    [--" << REGISTRAR_FROM_DATE_NAME << "=<YYYY-MM-DD>] \\\n"
+        "    [--" << REGISTRAR_TO_DATE_NAME << "=<YYYY-MM-DD>]\n"
         << std::endl;
 }
 
@@ -541,8 +541,8 @@ RegistrarClient::registrar_create_certification_help()
         "    --" << REGISTRAR_CERTIFICATION_SCORE_NAME << "=<certification_score> \\\n"
         "    --" << REGISTRAR_CERTIFICATION_EVALUATION_NAME << "=<certification_evaluation_file_name> \\\n"
         "    --" << REGISTRAR_CERTIFICATION_EVALUATION_MIME_TYPE_NAME << "=<certification_evaluation_file_MIME_type> \\\n"
-        "    --" << REGISTRAR_FROM_DATE_NAME << "=<valid_from_date> \\\n"
-        "    --" << REGISTRAR_TO_DATE_NAME << "=<valid_to_date>\n"
+        "    --" << REGISTRAR_FROM_DATE_NAME << "=<YYYY-MM-DD> \\\n"
+        "    --" << REGISTRAR_TO_DATE_NAME << "=<YYYY-MM-DD>\n"
         << std::endl;
 }
 
@@ -565,8 +565,8 @@ RegistrarClient::registrar_into_group_help()
         "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_INTO_GROUP_NAME << " \\\n"
         "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
         "    --" << REGISTRAR_GROUP_NAME << "=<registrar_group_name> \\\n"
-        "    [--" << REGISTRAR_FROM_DATE_NAME << "=<from_date> default today] \\\n"
-        "    [--" << REGISTRAR_TO_DATE_NAME << "=<to_date> ]\n"
+        "    [--" << REGISTRAR_FROM_DATE_NAME << "=<YYYY-MM-DD> default today] \\\n"
+        "    [--" << REGISTRAR_TO_DATE_NAME << "=<YYYY-MM-DD> ]\n"
         << std::endl;
 }
 
