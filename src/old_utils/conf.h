@@ -62,7 +62,7 @@ public:
   ~Conf()
   {
   }
-  ; // empty
+
 
   bool ReadConfigFile(
     const char *filename)
@@ -73,7 +73,7 @@ public:
     return ReadConfigFileTXT(filename);
 #endif
   }
-  ;
+
 
 #ifdef XMLCONF
   void get_element_names(xmlNode * a_node);
@@ -86,17 +86,17 @@ public:
   {
     return session_max;
   }
-  ;
+
   int GetSessionRegistrarMax()
   {
     return session_registrar_max;
   }
-  ;
+
   int GetSessionWait()
   {
     return session_wait;
   }
-  ;
+
 
   const char *GetDBhost()
   {
@@ -105,7 +105,7 @@ public:
     else
       return host;
   }
-  ;
+
   const char *GetDBname()
   {
     if (dbname[0] == 0)
@@ -113,7 +113,7 @@ public:
     else
       return dbname;
   }
-  ;
+
   const char *GetDBuser()
   {
     if (user[0] == 0)
@@ -121,7 +121,7 @@ public:
     else
       return user;
   }
-  ;
+
   const char *GetDBpass()
   {
     if (password[0] == 0)
@@ -129,7 +129,7 @@ public:
     else
       return password;
   }
-  ;
+
   const char *GetDBport()
   {
     if (port[0] == 0)
@@ -137,7 +137,7 @@ public:
     else
       return port;
   }
-  ;
+
   const char *GetDBtimeout()
   {
     if (timeout[0] == 0)
@@ -145,7 +145,7 @@ public:
     else
       return timeout;
   }
-  ;
+
   const char *GetDBconninfo();
   const char *GetNameServiceHost()
   {
@@ -184,12 +184,12 @@ public:
   {
     return log_level;
   }
-  ;
+
   int GetSYSLOGlocal()
   {
     return log_local;
   }
-  ;
+
   int GetSYSLOGfacility()
   {
     switch (log_local) {
@@ -214,7 +214,7 @@ public:
     }
 
   }
-  ;
+
   unsigned GetLockEPPCommands()
   {
     return lockEPPCommands;
