@@ -265,7 +265,7 @@ bool factoring_all(const char *database, const char *zone_fqdn, const char *taxd
       LOGGER(PACKAGE).debug ( boost::format("successfully  connect to DATABASE %1%") % database);
 
     if (db.BeginTransaction() ) {
-      get_timestamp(timestampStr, get_utctime_from_localdate(todateStr) );
+      get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr) );
 
       if ( (zone = db.GetNumericFromTable("zone", "id", "fqdn", zone_fqdn) )) {
         std::stringstream sql;
@@ -333,7 +333,7 @@ int factoring(const char *database, const char *registrarHandle, const char *zon
       if ( (regID = db.GetRegistrarID(  registrarHandle ) )) {
         if ( (zone = db.GetNumericFromTable("zone", "id", "fqdn", zone_fqdn) )) {
 
-          get_timestamp(timestampStr, get_utctime_from_localdate(todateStr) );
+          get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr) );
           // make invoice
           invoiceID = db.MakeFactoring(regID, zone, timestampStr, taxdateStr);
 

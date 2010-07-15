@@ -6952,7 +6952,7 @@ ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
     }
 
     // list all objects of registrar
-    sprintf(sqlString,
+    snprintf(sqlString, sizeof(sqlString),
             "SELECT obr.name FROM  object_registry obr, object o "
             "WHERE obr.id=o.id AND o.clid=%d AND obr.type=%d", action.getRegistrar(), type);
 

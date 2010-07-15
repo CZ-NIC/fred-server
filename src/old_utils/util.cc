@@ -426,14 +426,6 @@ long get_price(
   return price;
 }
 
-// convert price in pennies to string
-// return currency in long to string
-void get_priceStr(
-  char *priceStr, long price)
-{
-  sprintf(priceStr, "%ld%c%02ld", price/100, '.', price %100);
-}
-
 // convert local format time in string to time_t
 time_t get_local_format_time_t(
   const char *string)
@@ -584,7 +576,7 @@ void get_rfc3339_timestamp(
 
 // function forconvert timestamp  time_t -> SQL string
 void get_timestamp(
-  char *string, time_t t)
+  char *string, size_t len, time_t t)
 {
   struct tm *dt;
 
@@ -593,7 +585,7 @@ void get_timestamp(
   dt = gmtime_r( &t, &result);
 
   // get SQL string
-  sprintf(string, "%4d-%02d-%02d %02d:%02d:%02d", dt->tm_year+1900, dt->tm_mon
+  snprintf(string, len, "%4d-%02d-%02d %02d:%02d:%02d", dt->tm_year+1900, dt->tm_mon
       +1, dt->tm_mday, dt->tm_hour, dt->tm_min, dt->tm_sec);
 
 }

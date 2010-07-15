@@ -88,10 +88,6 @@ long count_dph(
 long get_price(
   const char *priceStr);
 
-// reverse operation convert long to  currency  string 120000 -> 12000.00
-void get_priceStr(
-  char *priceStr, long price);
-
 // convert local date  to  UTC timestamp for SQL
 time_t get_utctime_from_localdate(
   const char *dateStr);
@@ -118,5 +114,5 @@ void get_rfc3339_timestamp(
 
 // convert  time_t to SQL  string  timestamp
 void get_timestamp(
-  char *string, time_t t);
+  char *string, size_t len, time_t t);
 

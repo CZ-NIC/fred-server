@@ -198,7 +198,7 @@ void EPPNotifier::AddNSSetTech(
   int i, num;
   char sqlString[128];
 
-  sprintf(sqlString,
+  snprintf(sqlString, sizeof(sqlString), 
       "SELECT  contactid  from nsset_contact_map where nssetid=%d", nssetID);
 
   if (db->ExecSelect(sqlString) ) {
@@ -222,7 +222,7 @@ EPPNotifier::AddKeySetTech(ID keysetID)
     int i, num;
     char sqlString[128];
 
-    sprintf(sqlString,
+    snprintf(sqlString, sizeof(sqlString),
             "SELECT contactid FROM keyset_contact_map WHERE keysetid=%d",
             keysetID);
 
@@ -241,7 +241,7 @@ void EPPNotifier::AddDomainAdmin(
   int i, num;
   char sqlString[128];
 
-  sprintf(sqlString,
+  snprintf(sqlString, sizeof(sqlString),
       "SELECT  contactid  from domain_contact_map where domainid=%d", domainID);
 
   if (db->ExecSelect(sqlString) ) {
