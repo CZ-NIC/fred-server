@@ -55,19 +55,28 @@ struct TestContext {
   int id_;
 };
 
-int main() {
+int main()
+{
+  try {
+    Logging::Logger &l = Logging::Manager::instance_ref();
+    l.get("test-log").addHandler(Logging::Log::LT_CONSOLE);
+    l.get("test-log").setLevel(Logging::Log::LL_TRACE);
 
-  Logging::Logger &l = Logging::Manager::instance_ref();
-  l.get("test-log").addHandler(Logging::Log::LT_CONSOLE);
-  l.get("test-log").setLevel(Logging::Log::LL_TRACE);
+    LOGGER("test-log").trace("creating threads");
 
-  LOGGER("test-log").trace("creating threads");
-
-  boost::thread_group threads;
-  for (int i = 0; i < 5; ++i) {
-  	threads.create_thread(TestContext(i)); 
+    boost::thread_group threads;
+    for (int i = 0; i < 5; ++i) {
+        threads.create_thread(TestContext(i)); 
+    }
+    threads.join_all();
+    return 0;
   }
-  threads.join_all();
-	
-	return 0;
+  catch (std::exception &_e) {
+    std::cerr << "error occured (" << _e.what() << ")" << std::endl;
+    return 1;
+  }
+  catch (...) {
+    std::cerr << "exception occured" << std::endl;
+    return 2;
+  }
 }
