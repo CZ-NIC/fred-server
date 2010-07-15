@@ -813,7 +813,8 @@ public:
              db->GetFieldValue(l,24)[0] == 't'), 
       storeFileFlag(false), 
       ap(_man), 
-      man(_man) {
+      man(_man),
+      id(0) {
   }
 
      
@@ -824,6 +825,7 @@ public:
               Money _totalVAT, TID _filePDF, TID _fileXML, std::string& _varSymbol,
               SubjectImpl& _client, const std::string &_filepdf_name, const std::string &_filexml_name,
               ManagerImpl *_manager) : CommonObjectImpl(_id),
+                                       dbc(0),
                                        zone(_zone),
                                        zoneName(_zoneName),
                                        crTime(_crTime),
