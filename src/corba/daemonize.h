@@ -50,9 +50,9 @@ static void daemonize(void)
 
 
     /* Redirect standard files to /dev/null */
-    (void*)freopen( "/dev/null", "r", stdin);
-    (void*)freopen( "/dev/null", "w", stdout);
-    (void*)freopen( "/dev/null", "w", stderr);
+    if(freopen( "/dev/null", "r", stdin) == NULL) exit(DAE_FAIL);
+    if(freopen( "/dev/null", "w", stdout) == NULL) exit(DAE_FAIL);
+    if(freopen( "/dev/null", "w", stderr) == NULL) exit(DAE_FAIL);
 }
 
 #endif //DAEMONIZE_H
