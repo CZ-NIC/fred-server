@@ -107,7 +107,7 @@ static void sigterm_handler(int signal) {
 }
 
 int main(int argc, char** argv) {
-
+try {
   /* initialize orb, eat all omniorb program options */
   CORBA::ORB_var orb;
   try {
@@ -465,6 +465,19 @@ int main(int argc, char** argv) {
 
   /* do a cleanup */
   LOGGER(PACKAGE).info("exiting...");
-  return 0;
+
+}//try
+catch (std::exception& e)
+{
+  std::cerr << "server main std::exception: " << e.what() << std::endl;
+  exit (-1);
+}
+catch (...)
+{
+  std::cerr << "server main nonstd exception." << std::endl;
+  exit (-1);
+}
+
+return 0;
 }
 
