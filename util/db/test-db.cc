@@ -47,14 +47,6 @@ int main() {
   try {
     using namespace Database;
 
-
-    Value v("231");
-    unsigned int t = v;
-
-    std::cout << t << std::endl;
-
-    return 1;
-
     Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_CONSOLE); 
     Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
 
