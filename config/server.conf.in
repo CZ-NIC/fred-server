@@ -95,14 +95,3 @@ session_garbage = 150
 [logd]
 monitoring_hosts_file = @MONITORINGIPS@
 
-##
-# fred-banking specific options (until merged with fred-admin)
-##
-
-[banking]
-host=@DBHOST@
-port=@DBPORT@
-dbname=@DBNAME@
-log_level=7
-log_local=1
-

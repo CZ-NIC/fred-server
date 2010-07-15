@@ -297,7 +297,6 @@ AC_CONFIG_FILES([Makefile
                  config/server.conf
                  config/hpmail.conf                 
                  init-scripts/fred-server
-                 src/cli_admin/banking.sh
                  ])
 AC_OUTPUT
 

@@ -26,8 +26,6 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB)
 
-CLEANFILES=banking.sh
-
 sbin_PROGRAMS = fred-admin
 
 fred_admin_SOURCES = simple.cc            \
