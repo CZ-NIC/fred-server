@@ -76,15 +76,14 @@ int main(int argc, char *argv[]) {
 			}
 			sleep(3);
 		}
-		
+        return 0;
 	}
-	catch (Config::Manager::ConfigParseError& ex) {
-		std::cerr << "ERROR: " << ex.what() << std::endl;
-		std::cerr << "Exiting." << std::endl;
-	}
-	catch (Config::Conf::OptionNotFound& ex) {
-		std::cerr << ex.what() << std::endl;
-		return 1;
-	}
-	return 0;
+    catch (std::exception &_e) {
+        std::cerr << "error occured (" << _e.what() << ")" << std::endl;
+        return 1;
+    }
+    catch (...) {
+        std::cerr << "exception occured" << std::endl;
+        return 2;
+    }
 }
