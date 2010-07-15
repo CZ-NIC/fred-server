@@ -263,16 +263,17 @@ void NotifyClient::file_send()
      // by select and stuff..
      conn.exec("LOCK TABLE letter_archive IN SHARE UPDATE EXCLUSIVE MODE");
               
-     res = conn.exec("SELECT file_id, attempt FROM letter_archive WHERE status=1 or status=4");
+     res = conn.exec("SELECT file_id, attempt, id FROM letter_archive WHERE status=1 or status=4");
      
      if(res.size() == 0) {
          LOGGER(PACKAGE).debug("Register::Notify::sendLetters(): No files ready for processing"); 
          return;
      }
-     ID id = res[0][0];
+     ID file_id = res[0][0];
+     ID letter_id = res[0][2];
      int new_status = 6;
      // we have to set application lock(status 6) somewhere while the table is locked in db
-     conn.exec(boost::format("UPDATE letter_archive SET status=6 WHERE file_id=%1%") % id) ;
+     conn.exec(boost::format("UPDATE letter_archive SET status=6 WHERE file_id=%1%") % file_id) ;
      
      // unlock the table - from now we need to hold the app lock until the end of processing
      trans.commit();
@@ -281,12 +282,13 @@ void NotifyClient::file_send()
 
          Database::Transaction t(conn);
          // start processing the next record
-         id = res[i][0];             
+         file_id = res[i][0];             
          int attempt = res[i][1];
+         letter_id = res[i][2];
 
          // get the file from filemanager client and create the batch
          MailFile one;
-         fileman->download(id, one);
+         fileman->download(file_id, one);
 
          LOGGER(PACKAGE).debug(boost::format ("sendLetters File ID: %1% ") % res[i][0]);
 
@@ -294,14 +296,14 @@ void NotifyClient::file_send()
          new_status=5;
          try {
              HPMail::init_session(hpmail_config);
-             std::string filename( (boost::format("Letter_%1%.pdf") % id).str());
+             std::string filename( (boost::format("Letter_%1%.pdf") % letter_id).str());
 
              HPMail::get()->upload(one, filename);
          } catch(std::exception& ex) {
-             std::cout << "Error: " << ex.what() << " on file ID " << id << std::endl;
+             std::cout << "Error: " << ex.what() << " on file ID " << file_id << std::endl;
              new_status = 4; // set error status in database
          } catch(...) {
-             std::cout << "Unknown Error" << " on file ID " << id << std::endl;
+             std::cout << "Unknown Error" << " on file ID " << file_id << std::endl;
              new_status = 4; // set error status in database
          }
 
@@ -313,10 +315,10 @@ void NotifyClient::file_send()
          }
 
          conn.exec(boost::format("UPDATE letter_archive SET status=%1%, moddate=now(), attempt=%2% "
-                "where file_id=%3%") % new_status % (attempt+1) % id);
+                "where id=%3%") % new_status % (attempt+1) % letter_id);
         
          t.commit();
-     }                
+     }
   }
 
   void NotifyClient::sendFile(const std::string &filename, const std::string &conf_file) {
