@@ -175,12 +175,12 @@ CORBA::Object_ptr NameService::resolve(const std::string& nsctx,
      * This exception is thrown if any of the components of the
      * path [contexts or the object] aren't found
      */
-    CosNaming::Name name = ex.rest_of_name;
-    std::string name_str;
-    for (unsigned i = 0; i < name.length(); ++i) {
-      name_str += std::string(name[i].id) + "(" + std::string(name[i].kind) + ")" + (name.length() != i + 1 ? "/" : "" );
+    CosNaming::Name cname = ex.rest_of_name;
+    std::string cname_str;
+    for (unsigned i = 0; i < cname.length(); ++i) {
+      cname_str += std::string(cname[i].id) + "(" + std::string(cname[i].kind) + ")" + (cname.length() != i + 1 ? "/" : "" );
     }
-    LOGGER(PACKAGE).error(boost::format("Context [%1%] not found.") % name_str);
+    LOGGER(PACKAGE).error(boost::format("Context [%1%] not found.") % cname_str);
     throw BAD_CONTEXT();
   }
 
