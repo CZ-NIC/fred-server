@@ -475,13 +475,13 @@ namespace Register
 			    for ( ; ptr_idx_ < m_data_size
 			            ; ptr_idx_++)
 			    {
-			        ZoneImpl* tmp = dynamic_cast<ZoneImpl* >(m_data.at(ptr_idx_));
-			        if (tmp == 0) throw std::runtime_error("ZoneImpl* findIDSequence: not a ZoneImpl pointer");
-			        if (tmp->getId() >=  _id) break;
+			        ret_ptr = dynamic_cast<ZoneImpl* >(m_data.at(ptr_idx_));
+			        if (ret_ptr == 0) throw std::runtime_error("ZoneImpl* findIDSequence: not a ZoneImpl pointer");
+			        if (ret_ptr->getId() >=  _id) break;
 			    }
 
 			    if (ptr_idx_ == m_data_size
-			            || (ret_ptr = dynamic_cast<ZoneImpl* >(m_data[ptr_idx_]))->getId() != _id)
+			            || ret_ptr->getId() != _id)
 			    {
 			      LOGGER(PACKAGE).debug(boost::format("find id sequence: not found in result set. (id=%1%, ptr_idx=%2%)")
 			                                          % _id % ptr_idx_);
