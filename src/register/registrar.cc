@@ -837,7 +837,6 @@ public:
     RegistrarImpl* ret_ptr=0;
 
     for ( ; ptr_idx_ < m_data_size
-
 			; ptr_idx_++)
     {
         RegistrarImpl* tmpreg = dynamic_cast<RegistrarImpl* >(m_data.at(ptr_idx_));
