@@ -12,7 +12,8 @@ CommonObjectImplNew::~CommonObjectImplNew()
 
 CommonListImplNew::CommonListImplNew():
     m_realSizeInitialized(false),
-    m_realSize(0)
+    m_realSize(0),
+    m_loadLimitActive()
 {
     setLimit(1000);
 }
