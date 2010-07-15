@@ -728,6 +728,8 @@ namespace Register
                   for ( unsigned i = 0; i < m_data.size(); i++)
                   {
                       z = dynamic_cast<Zone*>(m_data[i]);
+                      if (z == 0)
+                            throw std::runtime_error("ZoneListImpl* findApplicableZoneByDomainFqdn: not a Zone pointer");
                       if(z->isDomainApplicable(domain_fqdn))
                       {
                           ret=z;
