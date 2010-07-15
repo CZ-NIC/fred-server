@@ -48,7 +48,8 @@ void NameService::_connect()// throw (NOT_RUNNING)
 
 
 NameService::NameService(CORBA::ORB_ptr orb)// throw (NOT_RUNNING)
-                        : hostname(""),
+                        : orb(orb),
+                          hostname(""),
                           context("")
 {
     _connect();
