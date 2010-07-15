@@ -422,27 +422,29 @@ class logd_ctx_init { };
 
 inline void logger_notice(const char *str);
 inline void logger_error(const char *str);
-inline void logger_notice(boost::format fmt);
-inline void logger_error(boost::format fmt);
+inline void logger_notice(boost::format &fmt);
+inline void logger_error(boost::format &fmt);
 
 inline void logger_notice(const char *str)
 {
-	logger_notice(boost::format(str));
+        boost::format fmt(str);
+        logger_notice(fmt);
 }
 
 inline void logger_error(const char *str)
 {
-	logger_error(boost::format(str));
+        boost::format fmt(str);
+	logger_error(fmt);
 }
 
-inline void logger_notice(boost::format fmt)
+inline void logger_notice(boost::format &fmt)
 {
 #ifdef HAVE_LOGGER
 	LOGGER("fred-server").notice(fmt);
 #endif
 }
 
-inline void logger_error(boost::format fmt)
+inline void logger_error(boost::format &fmt)
 {
 #ifdef HAVE_LOGGER
 	LOGGER("fred-server").error(fmt);
