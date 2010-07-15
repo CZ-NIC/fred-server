@@ -472,9 +472,14 @@ namespace Register
 			    long long m_data_size = m_data.size();
 			    ZoneImpl* ret_ptr=0;
 
-			    for (; ptr_idx_ < m_data_size
-			            && ((dynamic_cast<ZoneImpl* >(m_data[ptr_idx_]))->getId()<_id)
-			            ; ptr_idx_++);
+			    for ( ; ptr_idx_ < m_data_size
+			            ; ptr_idx_++)
+			    {
+			        ZoneImpl* tmp = dynamic_cast<ZoneImpl* >(m_data.at(ptr_idx_));
+			        if (tmp == 0) throw std::runtime_error("ZoneImpl* findIDSequence: not a ZoneImpl pointer");
+			        if (tmp->getId() >=  _id) break;
+			    }
+
 			    if (ptr_idx_ == m_data_size
 			            || (ret_ptr = dynamic_cast<ZoneImpl* >(m_data[ptr_idx_]))->getId() != _id)
 			    {
