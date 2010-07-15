@@ -744,6 +744,8 @@ namespace Register
 		          for ( unsigned i = 0; i < m_data.size(); i++)
 		          {
 		              z = dynamic_cast<Zone*>(m_data[i]);
+		              if (z == 0)
+		                  throw std::runtime_error("ZoneListImpl* findZoneByFqdn: not a Zone pointer");
 		              if(z->getFqdn().compare(fqdn) == 0 )
 		              {
 		                  ret=z;
