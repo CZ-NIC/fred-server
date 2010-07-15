@@ -108,13 +108,13 @@ public:
 							::value<std::string>()->default_value("100")
 							 , "curl connect timeout and transfer timeout [s]")
                 ("main.hp_login_interface_url", boost::program_options
-                        ::value<std::string>()->zero_tokens(), "optional login form url")
+                        ::value<std::string>(), "optional login form url")
                 ("main.hp_upload_interface_url", boost::program_options
-                        ::value<std::string>()->zero_tokens(), "optional upload form url")
+                        ::value<std::string>(), "optional upload form url")
                 ("main.hp_ack_interface_url", boost::program_options
-                        ::value<std::string>()->zero_tokens(), "optional end form url")
+                        ::value<std::string>(), "optional end form url")
                 ("main.hp_cancel_interface_url", boost::program_options
-                        ::value<std::string>()->zero_tokens(),  "optional cancel form url")
+                        ::value<std::string>(),  "optional cancel form url")
 				;
 
 
