@@ -238,6 +238,7 @@ public:
   RegistrarImpl()
   : CommonObjectImplNew()
   , ModelRegistrar()
+  , credit(0)
 
   {}
   RegistrarImpl(TID _id,
@@ -817,9 +818,15 @@ class RegistrarListImpl : public Register::CommonListImplNew,
   std::string zoneFilter;
   long long ptr_idx_;//from CommonListImpl
 public:
-  RegistrarListImpl() :
-    CommonListImplNew(), idFilter(0) {
-  }
+  RegistrarListImpl()
+      : CommonListImplNew()
+      , name("")
+      , handle("")
+      , xml("")
+      , idFilter(0)
+      , zoneFilter("")
+      , ptr_idx_(-1)
+  {}
   ~RegistrarListImpl() {
     clear();
   }
