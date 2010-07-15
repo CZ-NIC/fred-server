@@ -135,7 +135,7 @@ main(int argc, char *argv[])
         // bla->pairInvoices();
         // delete bla;
         return 0;
-
+    }
     catch (std::exception &_e) {
         std::cerr << "error - exception occured! (" << _e.what() << ")" << std::endl;
     }
