@@ -2516,7 +2516,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                 snum = c.Streets.length();
 
                 for (s = 0; s < 3; s ++) {
-                    sprintf(streetStr, "Street%d", s +1);
+                    snprintf(streetStr, sizeof(streetStr), "Street%d", s +1);
                     if (s < snum)
                         action.getDB()->SET(streetStr, c.Streets[s]);
                     else
@@ -2714,7 +2714,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
             // insert streets
             snum = c.Streets.length();
             for (s = 0; s < snum; s ++) {
-                sprintf(streetStr, "Street%d", s +1);
+                snprintf(streetStr, sizeof(streetStr), "Street%d", s +1);
                 action.getDB()->INTOVAL(streetStr, c.Streets[s]);
             }
 
@@ -2748,7 +2748,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
             action.getDB()->VAL(c.Organization);
             snum = c.Streets.length();
             for (s = 0; s < snum; s ++) {
-                sprintf(streetStr, "Street%d", s +1);
+                snprintf(streetStr, sizeof(streetStr), "Street%d", s +1);
                 action.getDB()->VAL(c.Streets[s]);
             }
 
@@ -4869,12 +4869,12 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     // if in year
     if (period.unit == ccReg::unit_year) {
         period_count = period.count * 12;
-        sprintf(periodStr, "y%d", period.count);
+        snprintf(periodStr, sizeof(periodStr), "y%d", period.count);
     }
     // if in month
     else if (period.unit == ccReg::unit_month) {
         period_count = period.count;
-        sprintf(periodStr, "m%d", period.count);
+        snprintf(periodStr, sizeof(periodStr), "m%d", period.count);
     } else
         period_count = 0;
 

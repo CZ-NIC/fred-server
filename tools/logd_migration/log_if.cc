@@ -24,7 +24,7 @@ char * wrap_str(const char *str)
 	if (ret == NULL) return NULL;
 
 	mem_pool->push_back(ret);
-	strcpy(ret, str);
+	strncpy(ret, str, len);
 	return ret;
 }
 
