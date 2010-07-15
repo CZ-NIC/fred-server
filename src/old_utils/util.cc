@@ -508,7 +508,7 @@ time_t get_utctime_from_localdate(
 
 //  convert date  from database  ( int UTC date ) to local  date
 void convert_rfc3339_date(
-  char *dateStr, const char *string)
+  char *dateStr, size_t len, const char *string)
 {
   time_t t;
 
@@ -517,12 +517,12 @@ void convert_rfc3339_date(
     dateStr[0] = (char)NULL; //  ERROR
 
   else
-    get_rfc3339_timestamp(t, dateStr, true); // return  local date
+    get_rfc3339_timestamp(t, dateStr, len, true); // return  local date
 }
 
 // convert timestamp from database  ( int UTC ) to local date time
 void convert_rfc3339_timestamp(
-  char *dateStr, const char *string)
+  char *dateStr, size_t len, const char *string)
 {
   time_t t;
 
@@ -531,11 +531,11 @@ void convert_rfc3339_timestamp(
     dateStr[0] = (char)NULL; //  ERROR
     // return string in rfc3339  like a date time with time zone
   else
-    get_rfc3339_timestamp(t, dateStr, false);
+    get_rfc3339_timestamp(t, dateStr, len, false);
 }
 
 void get_rfc3339_timestamp(
-  time_t t, char *string, bool day)
+  time_t t, char *string, size_t string_len, bool day)
 {
   struct tm *dt;
   int diff;
@@ -558,16 +558,16 @@ void get_rfc3339_timestamp(
 
   // convert only date
   if (day)
-    sprintf(string, "%4d-%02d-%02d", dt->tm_year + 1900, dt->tm_mon + 1,
+    snprintf(string, string_len, "%4d-%02d-%02d", dt->tm_year + 1900, dt->tm_mon + 1,
         dt->tm_mday);
   else {
-    sprintf(string, "%4d-%02d-%02dT%02d:%02d:%02d%c", dt->tm_year + 1900,
+    snprintf(string, string_len, "%4d-%02d-%02dT%02d:%02d:%02d%c", dt->tm_year + 1900,
         dt->tm_mon + 1, dt->tm_mday, dt->tm_hour, dt->tm_min, dt->tm_sec, sign);
 
     if (diff != 0) {
-      sprintf(tzstr, "%02d:%02d", diff / SECSPERHOUR, (diff % SECSPERHOUR )
+      snprintf(tzstr, sizeof(tzstr), "%02d:%02d", diff / SECSPERHOUR, (diff % SECSPERHOUR )
           / MINSPERHOUR); // get timezone
-      strcat(string, tzstr);
+      strncat(string, tzstr, string_len-strlen(string)-1);
     }
 
   }

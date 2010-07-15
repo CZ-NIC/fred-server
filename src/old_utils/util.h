@@ -94,11 +94,11 @@ time_t get_utctime_from_localdate(
 
 // convert dateg from SQL result to  date
 void convert_rfc3339_date(
-  char *dateStr, const char *string);
+  char *dateStr, size_t len, const char *string);
 
 // convert UTC string timestamop to local time  rfc3339 with time zon
 void convert_rfc3339_timestamp(
-  char *dateStr, const char *string);
+  char *dateStr, size_t len, const char *string);
 
 // convert local  format of date date (CZ) DD.MM.YYYY to UTC time  
 time_t get_local_format_time_t(
@@ -110,7 +110,7 @@ time_t get_time_t(
 
 // convert time_t to  timestamp   rfc3339 with timezone ( true day ) for conver only date 
 void get_rfc3339_timestamp(
-  time_t t, char *string, bool day);
+  time_t t, char *string, size_t string_len, bool day);
 
 // convert  time_t to SQL  string  timestamp
 void get_timestamp(

@@ -44,8 +44,9 @@ namespace Register
       {
         mode_t _umask;
         int fd;
-        name = (char *)malloc(strlen(NAME_TEMPLATE)+1);
-        strcpy(name,NAME_TEMPLATE);
+        int len = strlen(NAME_TEMPLATE)+1;
+        name = (char *)malloc(len);
+        strncpy(name,NAME_TEMPLATE, len);
         _umask = umask(0077);
         fd = mkstemp(name);
         umask(_umask);

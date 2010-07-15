@@ -284,7 +284,7 @@ static std::string formatTime(
   boost::posix_time::ptime tm)
 {
   char buffer[100];
-  convert_rfc3339_timestamp(buffer, to_iso_extended_string(tm).c_str());
+  convert_rfc3339_timestamp(buffer, sizeof(buffer), to_iso_extended_string(tm).c_str());
   return buffer;
 }
 
@@ -783,7 +783,7 @@ char* ccReg_EPP_i::version(
 
   // return  actual time (local time)
   t = time(NULL);
-  get_rfc3339_timestamp(t, dateStr, false);
+  get_rfc3339_timestamp(t, dateStr, MAX_DATE+1, false);
   datetime = CORBA::string_dup(dateStr);
 
   return CORBA::string_dup("DSDng");

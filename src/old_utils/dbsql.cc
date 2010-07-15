@@ -88,7 +88,7 @@ long DB::GetRegistrarCredit(
   long price=0;
   char sqlString[128];
 
-  sprintf(sqlString,
+  snprintf(sqlString, sizeof(sqlString), 
       "SELECT sum( credit) FROM invoice  WHERE  registrarid=%d and zone=%d; ",
       regID, zoneID);
 
@@ -111,8 +111,7 @@ bool DB::TestRegistrarACL(
   char sqlString[512];
   bool ret =false;
 
-  sprintf(
-      sqlString,
+  snprintf( sqlString, sizeof(sqlString), 
       "SELECT  registrarid FROM registraracl WHERE registrarid=%d and cert=\'%s\' and password=\'%s\'; ",
       regID, cert, pass);
   if (ExecSelect(sqlString) ) {
@@ -352,7 +351,7 @@ bool DB::InvoiceCountCredit(
     return true;
   } else {
     // count credit on the advance invoice
-    sprintf(sqlString,
+    snprintf(sqlString, sizeof(sqlString), 
         "UPDATE invoice SET  credit=credit-%ld%c%02ld  WHERE id=%d;", price
             /100, '.', price %100, invoiceID);
     if (ExecSQL(sqlString) )
@@ -529,7 +528,7 @@ bool DB::BeginAction(
       svrTRID= new char[MAX_SVTID];
 
       // create  server ticket
-      sprintf(svrTRID, "ccReg-%010d", actionID);
+      snprintf(svrTRID, sizeof(svrTRID), "ccReg-%010d", actionID);
       LOG( SQL_LOG , "Make svrTRID: %s" , svrTRID );
     }
 
@@ -609,7 +608,7 @@ const char * DB::EndAction(
 const char * DB::GetObjectCrDateTime(
   int id)
 {
-  convert_rfc3339_timestamp(dtStr, GetValueFromTable("OBJECT_registry",
+  convert_rfc3339_timestamp(dtStr, MAX_DATE+1, GetValueFromTable("OBJECT_registry",
       "CrDate", "id", id) );
   return dtStr;
 }
@@ -636,14 +635,14 @@ const char * DB::GetDomainValExDate(
 char * DB::GetFieldDateTimeValueName(
   const char *fname, int row)
 {
-  convert_rfc3339_timestamp(dtStr, GetFieldValueName( (char * ) fname , row) ) ;
+  convert_rfc3339_timestamp(dtStr, MAX_DATE+1, GetFieldValueName( (char * ) fname , row) ) ;
   return dtStr;
 }
 
 char * DB::GetFieldDateValueName(
   const char *fname, int row)
 {
-  convert_rfc3339_date(dtStr, GetFieldValueName( (char * ) fname , row) ) ;
+  convert_rfc3339_date(dtStr, MAX_DATE+1, GetFieldValueName( (char * ) fname , row) ) ;
   return dtStr;
 }
 
@@ -654,7 +653,7 @@ int DB::GetNSSetHosts(
   char sqlString[128];
   int num=0;
 
-  sprintf(sqlString, "SELECT id FROM host  WHERE nssetID=%d;", nssetID);
+  snprintf(sqlString, sizeof(sqlString), "SELECT id FROM host  WHERE nssetID=%d;", nssetID);
 
   if (ExecSelect(sqlString) ) {
     num = GetSelectRows();
@@ -672,7 +671,7 @@ DB::GetKeySetDSRecords(int keysetID)
     char sqlString[128];
     int num = 0;
 
-    sprintf(sqlString, "SELECT id FROM dsrecord WHERE keysetid=%d;", keysetID);
+    snprintf(sqlString, sizeof(sqlString), "SELECT id FROM dsrecord WHERE keysetid=%d;", keysetID);
 
     if (ExecSelect(sqlString)) {
         num = GetSelectRows();
@@ -830,7 +829,7 @@ bool DB::TestObjectClientID(
   if (GetRegistrarSystem(regID) == true)
     return true; // has rights for all object
   else {
-    sprintf(sqlString, "SELECT id FROM  object WHERE id=%d and clID=%d ", id,
+    snprintf(sqlString, sizeof(sqlString), "SELECT id FROM  object WHERE id=%d and clID=%d ", id,
         regID);
     if (ExecSelect(sqlString) ) {
       if (GetSelectRows() == 1)
@@ -888,8 +887,7 @@ int DB::GetObjectID(
   char sqlString[512];
   int id=0;
 
-  sprintf(
-      sqlString,
+  snprintf( sqlString, sizeof(sqlString), 
       "SELECT object.id FROM object_registry , object WHERE object_registry.type=%d AND object_registry.id=object.id AND object_registry.name=\'%s\';",
       type, name);
   if (ExecSelect(sqlString) ) {
@@ -911,7 +909,7 @@ int DB::GetNSSetContacts(
   char sqlString[128];
   int num=0;
 
-  sprintf(sqlString, "SELECT * FROM nsset_contact_map  WHERE nssetID=%d;",
+  snprintf(sqlString, sizeof(sqlString), "SELECT * FROM nsset_contact_map  WHERE nssetID=%d;",
       nssetID);
 
   if (ExecSelect(sqlString) ) {
@@ -929,7 +927,7 @@ DB::GetKeySetContacts(int keysetid)
 {
     char sqlString[128];
     int num = 0;
-    sprintf(sqlString, "SELECT * FROM keyset_contact_map WHERE keysetid=%d;",
+    snprintf(sqlString, sizeof(sqlString), "SELECT * FROM keyset_contact_map WHERE keysetid=%d;",
             keysetid);
 
     if (ExecSelect(sqlString)) {
@@ -1001,7 +999,7 @@ bool DB::TestObjectHistory(
    if( days > 0 )
    {
    // it doesn't depend if lowercase or uppercase 
-   sprintf( sqlString , "SELECT count( id ) FROM object_delete  WHERE name ILIKE \'%s\' and  deltime  > current_timestamp - interval\'%d days\';"  , name , days );
+   snprintf( sqlString , "SELECT count( id ) FROM object_delete  WHERE name ILIKE \'%s\' and  deltime  > current_timestamp - interval\'%d days\';"  , name , days );
 
    if( ExecSelect( sqlString ) )
    {
@@ -1078,7 +1076,7 @@ bool DB::GetRegistrarSystem(
   char sqlString[128];
   bool ret=false;
 
-  sprintf(sqlString, "SELECT system FROM registrar where id=%d;", regID);
+  snprintf(sqlString, sizeof(sqlString), "SELECT system FROM registrar where id=%d;", regID);
   if (ExecSelect(sqlString) ) {
     if (GetSelectRows() == 1) {
       ret = GetFieldBooleanValueName("system", 0);
@@ -1107,8 +1105,7 @@ bool DB::TestRegistrarZone(
   if (GetRegistrarSystem(regID) == true)
     return true;
 
-  sprintf(
-      sqlString,
+  snprintf( sqlString, sizeof(sqlString), 
       "SELECT  id  FROM  registrarinvoice  WHERE registrarid=%d and zone=%d and fromdate <= CURRENT_DATE and (todate >= CURRENT_DATE or todate is null);",
       regID, zone);
 
@@ -1146,7 +1143,7 @@ bool DB::AddContactMap(
 {
   char sqlString[128];
 
-  sprintf(sqlString, "INSERT INTO %s_contact_map VALUES ( %d , %d );", table,
+  snprintf(sqlString, sizeof(sqlString), "INSERT INTO %s_contact_map VALUES ( %d , %d );", table,
       id, contactid);
 
   return ExecSQL(sqlString);
@@ -1163,7 +1160,7 @@ bool DB::TestValExDate(
   // std::stringstream sql;
 
   // actual local date based on the timezone
-  get_rfc3339_timestamp(time(NULL) , currentDate, true);
+  get_rfc3339_timestamp(time(NULL) , currentDate, MAX_DATE+1, true);
 
   if (id) // if ValExDate already exist and updated 
   {
@@ -1268,7 +1265,7 @@ int DB::GetHostID(
   char sqlString[128];
   int hostID=0;
 
-  sprintf(sqlString, "SELECT id FROM HOST WHERE fqdn=\'%s\' AND nssetid=%d;",
+  snprintf(sqlString, sizeof(sqlString), "SELECT id FROM HOST WHERE fqdn=\'%s\' AND nssetid=%d;",
       fqdn, nssetID);
 
   if (ExecSelect(sqlString) ) {
@@ -1292,7 +1289,7 @@ bool DB::TestNSSetRelations(
   bool ret = false;
   char sqlString[128];
 
-  sprintf(sqlString, "SELECT id from DOMAIN WHERE nsset=%d;", id);
+  snprintf(sqlString, sizeof(sqlString), "SELECT id from DOMAIN WHERE nsset=%d;", id);
   if (ExecSelect(sqlString) ) {
     if (GetSelectRows() > 0)
       ret=true;
@@ -1309,7 +1306,7 @@ DB::TestKeySetRelations(int id)
     bool ret = false;
     char sqlString[128];
 
-    sprintf(sqlString, "SELECT id FROM DOMAIN WHERE keyset=%d;", id);
+    snprintf(sqlString, sizeof(sqlString), "SELECT id FROM DOMAIN WHERE keyset=%d;", id);
     if (ExecSelect(sqlString)) {
         if (GetSelectRows() > 0)
             ret = true;
@@ -1324,7 +1321,7 @@ bool DB::TestContactRelations(
   int count=0;
   char sqlString[128];
 
-  sprintf(sqlString, "SELECT count(id) from DOMAIN WHERE Registrant=%d;", id);
+  snprintf(sqlString, sizeof(sqlString), "SELECT count(id) from DOMAIN WHERE Registrant=%d;", id);
   if (ExecSelect(sqlString) ) {
     count = atoi(GetFieldValue( 0, 0) );
     FreeSelect();
@@ -1333,7 +1330,7 @@ bool DB::TestContactRelations(
   if (count > 0)
     return true;
 
-  sprintf(sqlString,
+  snprintf(sqlString, sizeof(sqlString),
       "SELECT count(nssetID ) from NSSET_CONTACT_MAP WHERE contactid=%d;", id);
   if (ExecSelect(sqlString) ) {
     count = atoi(GetFieldValue( 0, 0) );
@@ -1343,7 +1340,7 @@ bool DB::TestContactRelations(
   if (count > 0)
     return true;
 
-  sprintf(sqlString,
+  snprintf(sqlString, sizeof(sqlString), 
           "SELECT count(keysetID) from KEYSET_CONTACT_MAP WHERE contactid=%d;", id);
   if (ExecSelect(sqlString)) {
       count = atoi(GetFieldValue(0, 0));
@@ -1353,7 +1350,7 @@ bool DB::TestContactRelations(
   if (count > 0)
     return true;
 
-  sprintf(sqlString,
+  snprintf(sqlString, sizeof(sqlString), 
       "SELECT count( domainID)  from DOMAIN_CONTACT_MAP WHERE contactid=%d;",
       id);
   if (ExecSelect(sqlString) ) {
@@ -1376,7 +1373,7 @@ bool DB::AuthTable(
   const char *pass;
   char sqlString[128];
 
-  sprintf(sqlString, "SELECT authinfopw from %s WHERE id=%d", table, id);
+  snprintf(sqlString, sizeof(sqlString), "SELECT authinfopw from %s WHERE id=%d", table, id);
 
   if (ExecSelect(sqlString) ) {
     if (GetSelectRows() == 1) {
@@ -1456,7 +1453,7 @@ int DB::GetBankAccountZone(
   int zone=0;
 
   LOG( LOG_DEBUG ,"GetBankAccountZone accountID %d" , accountID );
-  sprintf(sqlString, "SELECT  zone  FROM bank_account WHERE id=%d", accountID);
+  snprintf(sqlString, sizeof(sqlString), "SELECT  zone  FROM bank_account WHERE id=%d", accountID);
 
   if (ExecSelect(sqlString) ) {
     if (GetSelectRows() == 1) {
@@ -1622,7 +1619,7 @@ int DB::TestEBankaList(
   char sqlString[128];
   int id=0;
 
-  sprintf(sqlString, "SELECT  id    from BANK_EBANKA_LIST where ident=\'%s\'",
+  snprintf(sqlString, sizeof(sqlString), "SELECT  id    from BANK_EBANKA_LIST where ident=\'%s\'",
       ident);
 
   if (ExecSelect(sqlString) ) {
@@ -1702,15 +1699,14 @@ long DB::GetInvoiceBalance(
 
   LOG( NOTICE_LOG , "GetInvoiceBalance: zalohova FA %d" , aID );
 
-  sprintf(sqlString, "select total from invoice where id=%d", aID);
+  snprintf(sqlString, sizeof(sqlString), "select total from invoice where id=%d", aID);
 
   if (ExecSelect(sqlString) ) {
     total = (long) rint( 100.0 * atof(GetFieldValue( 0, 0) ) );
     LOG( NOTICE_LOG , "celkovy zaklad faktury %ld" , total );
     FreeSelect();
 
-    sprintf(
-        sqlString,
+    snprintf( sqlString, sizeof(sqlString), 
         "SELECT sum( credit ) FROM invoice_credit_payment_map where ainvoiceid=%d;",
         aID);
     if (ExecSelect(sqlString) ) {
@@ -1736,8 +1732,7 @@ long DB::GetInvoiceSumaPrice(
   long price=-1; // err value
   LOG( NOTICE_LOG , "GetInvoiceSumaPrice invoiceID %d zalohova FA %d" , iID , aID );
 
-  sprintf(
-      sqlString,
+  snprintf( sqlString, sizeof(sqlString), 
       "SELECT  sum( invoice_object_registry_price_map.price ) FROM invoice_object_registry ,  invoice_object_registry_price_map\
                  WHERE invoice_object_registry.id=invoice_object_registry_price_map.id AND invoice_object_registry.invoiceid=%d AND \
                    invoice_object_registry_price_map.invoiceid=%d; ",
@@ -1794,8 +1789,7 @@ int DB::MakeFactoring(
 
   if (fromdateStr[0]== 0) {
     // find out fromdate from tabel registrarinvoice from when invoicing 
-    sprintf(
-        sqlString,
+    snprintf( sqlString, sizeof(sqlString), 
         "SELECT  fromdate  from registrarinvoice  WHERE zone=%d and registrarid=%d;",
         zone, regID);
     if (ExecSelect(sqlString) ) {
@@ -1816,8 +1810,7 @@ int DB::MakeFactoring(
   LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todateStr , timestampStr );
 
   // find out amount of item for invoicing
-  sprintf(
-      sqlString,
+  snprintf( sqlString, sizeof(sqlString), 
       "SELECT count( id)  from invoice_object_registry  where crdate < \'%s\' AND  zone=%d AND registrarid=%d AND invoiceid IS NULL;",
       timestampStr, zone, regID);
   if (ExecSelect(sqlString) ) {
@@ -1829,8 +1822,7 @@ int DB::MakeFactoring(
 
   // find out total invoiced price if it exists al least one record
   if (count > 0) {
-    sprintf(
-        sqlString,
+    snprintf( sqlString, sizeof(sqlString), 
         "SELECT sum( price ) FROM invoice_object_registry , invoice_object_registry_price_map  WHERE   invoice_object_registry_price_map.id=invoice_object_registry.id AND  crdate < \'%s\' AND zone=%d and registrarid=%d AND  invoice_object_registry.invoiceid is null ;",
         timestampStr, zone, regID);
     if (ExecSelect(sqlString) ) {
@@ -1849,8 +1841,7 @@ int DB::MakeFactoring(
 
     if (count > 0) // mark item of invoice
     {
-      sprintf(
-          sqlString,
+      snprintf( sqlString, sizeof(sqlString),
           "UPDATE invoice_object_registry set invoiceid=%d  WHERE crdate < \'%s\' AND zone=%d and registrarid=%d AND invoiceid IS NULL;",
           invoiceID, timestampStr, zone, regID);
       if (ExecSQL(sqlString) == false)
@@ -1859,8 +1850,7 @@ int DB::MakeFactoring(
     }
 
     // set last date into tabel registrarinvoice
-    sprintf(
-        sqlString,
+    snprintf( sqlString, sizeof(sqlString), 
         "UPDATE registrarinvoice SET lastdate=\'%s\' WHERE zone=%d and registrarid=%d;",
         todateStr, zone, regID);
     if (ExecSQL(sqlString) == false)
@@ -2113,8 +2103,8 @@ int DB::GetPrefixType(
   year= atoi(yearStr);
   LOG( LOG_DEBUG ,"GetPrefixType  date[%s]  year %d typ %d zone %d\n" , dateStr , year , typ , zone );
 
-  sprintf(
-      sqlString,
+  snprintf(
+      sqlString, sizeof(sqlString),
       "SELECT id  FROM invoice_prefix WHERE zone=%d AND  typ=%d AND year=\'%s\';",
       zone, typ, yearStr);
   if (ExecSelect(sqlString) ) {
@@ -2151,8 +2141,7 @@ long DB::GetInvoicePrefix(
 
   LOG( LOG_DEBUG ,"GetInvoicePrefix date[%s]  year %d typ %d zone %d\n" , dateStr , year , typ , zone );
 
-  sprintf(
-      sqlString,
+  snprintf( sqlString, sizeof(sqlString), 
       "SELECT id , prefix   FROM invoice_prefix WHERE zone=%d AND  typ=%d AND year=\'%s\';",
       zone, typ, yearStr);
 
@@ -2189,7 +2178,7 @@ int DB::GetClientDomainRegistrant(
   int regID=0;
   char sqlString[128];
 
-  sprintf(sqlString,
+  snprintf(sqlString, sizeof(sqlString), 
       "SELECT  clID FROM DOMAIN WHERE Registrant=%d AND clID=%d", contactID,
       clID);
   if (ExecSelect(sqlString) ) {
@@ -2209,7 +2198,7 @@ const char * DB::GetValueFromTable(
   char sqlString[512];
   int size;
 
-  sprintf(sqlString, "SELECT  %s FROM %s WHERE %s=\'%s\';", vname, table,
+  snprintf(sqlString, sizeof(sqlString), "SELECT  %s FROM %s WHERE %s=\'%s\';", vname, table,
       fname, value);
 
   if (ExecSelect(sqlString) ) {
@@ -2244,7 +2233,7 @@ const char * DB::GetValueFromTable(
 {
   char value[16];
 
-  sprintf(value, "%d", numeric);
+  snprintf(value, sizeof(value), "%d", numeric);
 
   return GetValueFromTable(table, vname, fname, value);
 }
@@ -2260,7 +2249,7 @@ int DB::GetNumericFromTable(
 {
   char value[16];
 
-  sprintf(value, "%d", numeric);
+  snprintf(value, sizeof(value), "%d", numeric);
 
   return GetNumericFromTable(table, vname, fname, value);
 }
@@ -2273,7 +2262,7 @@ bool DB::DeleteFromTable(
 
   LOG( SQL_LOG , "DeleteFromTable %s fname %s id -> %d" , table , fname , id );
 
-  sprintf(sqlString, "DELETE FROM %s  WHERE %s=%d;", table, fname, id);
+  snprintf(sqlString, sizeof(sqlString), "DELETE FROM %s  WHERE %s=%d;", table, fname, id);
   return ExecSQL(sqlString);
 }
 
@@ -2285,7 +2274,7 @@ bool DB::DeleteFromTableMap(
 
   LOG( SQL_LOG , "DeleteFrom  %s_contact_map  id  %d contactID %d" , map ,id , contactid );
 
-  sprintf(sqlString,
+  snprintf(sqlString, sizeof(sqlString), 
       "DELETE FROM %s_contact_map WHERE  %sid=%d AND contactid=%d;", map, map,
       id, contactid);
 
@@ -2298,7 +2287,7 @@ int DB::GetSequenceID(
   char sqlString[128];
   int id=0;
 
-  sprintf(sqlString, "SELECT  NEXTVAL( \'%s_id_seq\'  );", sequence);
+  snprintf(sqlString, sizeof(sqlString), "SELECT  NEXTVAL( \'%s_id_seq\'  );", sequence);
 
   if (ExecSelect(sqlString) ) {
     id = atoi(GetFieldValue( 0, 0) );
@@ -2428,14 +2417,14 @@ int DB::MakeHistory(
     historyID = GetSequenceID("HISTORY");
     if (historyID) {
       LOG( SQL_LOG , "MakeHistory actionID -> %d " , actionID);
-      sprintf(sqlString,
+      snprintf(sqlString, sizeof(sqlString), 
           "INSERT INTO HISTORY ( id , action ) VALUES ( %d  , %d );",
           historyID, actionID);
       if (ExecSQL(sqlString) ) {
         if (SaveHistory("OBJECT", "id", objectID) ) // save object table to history 
         {
           LOG( SQL_LOG , "Update objectID  %d -> historyID %d " , objectID , historyID );
-          sprintf(sqlString,
+          snprintf(sqlString, sizeof(sqlString), 
               "UPDATE OBJECT_registry set historyID=%d WHERE id=%d;",
               historyID, objectID);
           if (ExecSQL(sqlString) )
@@ -2551,11 +2540,11 @@ void DB::SQLCat(
 
   //  test for length buffer
   if (len + length < MAX_SQLBUFFER)
-    strcat(sqlBuffer, str);
+    strncat(sqlBuffer, str, MAX_SQLBUFFER - len - 1);
   else
     // if sql buffer would be valid sql query at this place
     // and something fail to append it could have very bad consequences
-    throw;
+    throw std::runtime_error("DB::SQLCat: string too long.");
 }
 
 void DB::SQLCatLower(
@@ -2622,7 +2611,7 @@ void DB::SETPRICE(
 {
   char priceStr[16];
 
-  sprintf(priceStr, "%ld.%02ld", price /100, price %100);
+  snprintf(priceStr, sizeof(priceStr), "%ld.%02ld", price /100, price %100);
   SETS(fname, priceStr, false); //without ESC
 }
 
@@ -2678,7 +2667,7 @@ void DB::SET(
   SQLCat("  ");
   SQLCat(fname);
   SQLCat("=");
-  sprintf(numStr, "%ld", value);
+  snprintf(numStr, sizeof(numStr), "%ld", value);
   SQLCat(numStr);
   SQLCat(" ,");
 }
@@ -2691,7 +2680,7 @@ void DB::SET(
   SQLCat("  ");
   SQLCat(fname);
   SQLCat("=");
-  sprintf(numStr, "%d", value);
+  snprintf(numStr, sizeof(numStr), "%d", value);
   SQLCat(numStr);
   SQLCat(" ,");
 }
@@ -2790,7 +2779,7 @@ void DB::WHERE(
   const char *fname, int value)
 {
   char numStr[16];
-  sprintf(numStr, "%d", value);
+  snprintf(numStr, sizeof(numStr), "%d", value);
   WHERE(fname, numStr);
 }
 
@@ -2901,7 +2890,7 @@ void DB::VALUES(
 
   if (amp)
     SQLCat("'");
-  strcat(sqlBuffer, " );"); // vmake on the end
+  strncat(sqlBuffer, " );", MAX_SQLBUFFER - len - 1); // vmake on the end
 
 }
 
@@ -2922,7 +2911,7 @@ void DB::VALUEPERIOD(
 {
   char str[80];
 
-  sprintf(str, "current_timestamp + interval\'%d month\' ", period);
+  snprintf(str, sizeof(str), "current_timestamp + interval\'%d month\' ", period);
   VALUES(str, false, false, 0);
 }
 
@@ -2944,7 +2933,7 @@ void DB::VALUE(
   int value)
 {
   char numStr[16];
-  sprintf(numStr, "%d", value);
+  snprintf(numStr, sizeof(numStr), "%d", value);
   VALUES(numStr, false, false, 0); // without ESC
 }
 
@@ -2952,7 +2941,7 @@ void DB::VALUE(
   long value)
 {
   char numStr[100];
-  sprintf(numStr, "%ld", value);
+  snprintf(numStr, sizeof(numStr), "%ld", value);
   VALUES(numStr, false, false, 0); // without ESC
 }
 
@@ -2960,7 +2949,7 @@ void DB::VALUE(
   unsigned long long value)
 {
   char numStr[100];
-  sprintf(numStr, "%llu", value);
+  snprintf(numStr, sizeof(numStr), "%llu", value);
   VALUES(numStr, false, false, 0); // without ESC
 }
 
@@ -2979,7 +2968,7 @@ void DB::VALPRICE(
 {
   char priceStr[16];
   // currency in penny 
-  sprintf(priceStr, "%ld.%02ld", price /100, price %100);
+  snprintf(priceStr, sizeof(priceStr), "%ld.%02ld", price /100, price %100);
   VALUES(priceStr, false, false, 0); // without ESC
 }
 bool DB::EXEC()
@@ -3056,7 +3045,7 @@ bool DB::SELECTOBJECTID(
   SQLCat(" WHERE Object.id= object_registry.id");
   SQLCat(" AND Object.id");
   SQLCat("=");
-  sprintf(numStr, "%d", id);
+  snprintf(numStr, sizeof(numStr), "%d", id);
   SQLCat(numStr);
   SQLCat(" AND ");
   SQLCat("Object.id=");
