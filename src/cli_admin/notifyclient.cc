@@ -235,6 +235,7 @@ void NotifyClient::file_send()
        * is already being processed.
        *
        */
+/*
   void NotifyClient::sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file)
   {
      TRACE("[CALL] Register::Notify::sendLetters()");
@@ -244,11 +245,6 @@ void NotifyClient::file_send()
 
      Connection conn = Database::Manager::acquire();
 
-     /* now bail out if other process (presumably another instance of this
-      * method) is already doing something with this table. No support 
-      * for multithreaded access - we would have to remember which 
-      * records exactly are we processing
-      */ 
      Result res = conn.exec("SELECT EXISTS "
              "(SELECT * FROM letter_archive WHERE status=6)");
 
@@ -320,8 +316,83 @@ void NotifyClient::file_send()
          t.commit();
      }
   }
+*/
 
-  void NotifyClient::sendFile(const std::string &filename, const std::string &conf_file) {
+  void NotifyClient::sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file)
+  {
+      TRACE("[CALL] Register::Notify::sendLetters()");
+    // transaction is needed for 'ON COMMIT DROP' functionality
+    
+     HPCfgMap hpmail_config = readHPConfig(conf_file);
+
+     Connection conn = Database::Manager::acquire();
+
+     /* now bail out if other process (presumably another instance of this
+      * method) is already doing something with this table. No support 
+      * for multithreaded access - we would have to remember which 
+      * records exactly are we processing
+      */ 
+     Result res = conn.exec("SELECT EXISTS "
+             "(SELECT * FROM letter_archive WHERE status=6)");
+
+     if ((bool)res[0][0]) {
+            LOGGER(PACKAGE).notice("The files are already being processed. No action");
+            return;
+     }
+
+     Database::Transaction trans(conn);
+
+     // acquire lock which conflicts with itself but not basic locks used
+     // by select and stuff..
+     conn.exec("LOCK TABLE letter_archive IN SHARE UPDATE EXCLUSIVE MODE");
+     // application level lock and notification about data processing
+     conn.exec("UPDATE letter_archive SET status = 6 WHERE status = 1 OR status = 4"); 
+
+     res = conn.exec("SELECT file_id, id FROM letter_archive WHERE status=6");
+     
+     if(res.size() == 0) {
+         LOGGER(PACKAGE).debug("Register::Notify::sendLetters(): No files ready for processing"); 
+         return;
+     }
+        
+     int new_status = 5;
+     std::string batch_id;
+
+     ID file_id = 0;
+     ID letter_id = 0;
+     try {
+
+         HPMail::init_session(hpmail_config);
+         for(unsigned i=0;i<res.size();i++) {
+             NamedMailFile smail;
+             file_id = res[i][0];
+             letter_id = res[i][1];
+
+             fileman->download(file_id, smail.data);
+
+             LOGGER(PACKAGE).debug(boost::format ("sendLetters File ID: %1% ") % file_id);
+
+             smail.name = (boost::format("Letter_%1%.pdf") % letter_id).str();
+
+             HPMail::get()->save_file_for_upload(smail);
+         }
+         batch_id = HPMail::get()->upload();
+     } catch(std::exception& ex) {
+         std::cout << "Error: " << ex.what() << " on file ID " << file_id << std::endl;
+         new_status = 4; // set error status in database
+     } catch(...) {
+         std::cout << "Unknown Error" << " on file ID " << file_id << std::endl;
+         new_status = 4; // set error status in database
+     }
+  
+     // TODO detailed - attempts
+     conn.exec(boost::format("UPDATE letter_archive SET status = %1%, batch_id = %2% WHERE status = 6") % new_status % batch_id);
+
+     trans.commit();
+
+  }
+
+  void NotifyClient::sendFile(const std::string &filename, const std::string &conf_file)  {
 
       TRACE("[CALL] Register::Notify::sendFile()");
 

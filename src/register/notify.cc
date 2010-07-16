@@ -536,12 +536,11 @@ namespace Register
                     Result res = conn.exec("select currval('letter_archive_id_seq'::regclass)");
                     TID letter_id = res[0][0];
 
-                    sql << "INSERT INTO notify_letters (state_id, contact_history_id, letter_id) "
-                    "SELECT tnl.state_id, cor.historyid, " << letter_id << " "
+                    sql << "INSERT INTO notify_letters (state_id, letter_id) "
+                    "SELECT tnl.state_id, " << letter_id << " "
                     "FROM tmp_notify_letters tnl "
                     "JOIN object_state s ON tnl.state_id=s.id "
                     "JOIN domain_history dh ON s.ohid_from=dh.historyid AND dh.exdate::date='" << exDate << "' "
-                    "JOIN object_registry cor ON cor.id = dh.registrant "
                     "WHERE dh.registrant in ("
                       << *it;
 
