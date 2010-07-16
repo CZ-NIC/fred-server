@@ -148,6 +148,8 @@ BOOST_AUTO_TEST_CASE( test_registrar_group_simple )
         Registry::Registrar::Group::MembershipByGroupList_var
             mem_by_grp(new Registry::Registrar::Group::MembershipByGroupList);
         mem_by_grp = group_manager_ref->getMembershipsByGroup(gid1);
+
+        /*print
         const Registry::Registrar::Group::MembershipByGroupList& mem_by_grp_ref
             = mem_by_grp.in();
         std::cout << "\nMembershipByGroup" << std::endl;
@@ -160,10 +162,13 @@ BOOST_AUTO_TEST_CASE( test_registrar_group_simple )
                     << " to date: " << mbg.toDate.day << ". " << mbg.toDate.month << ". " << mbg.toDate.year << "\n"
                     << std::endl;
         }
+        */
 
         Registry::Registrar::Group::MembershipByRegistrarList_var
             mem_by_reg (new Registry::Registrar::Group::MembershipByRegistrarList);
         mem_by_reg = group_manager_ref->getMembershipsByRegistar(1);
+
+        /*print
         const Registry::Registrar::Group::MembershipByRegistrarList& mem_by_reg_ref
             = mem_by_reg.in();
         std::cout << "\nMembershipByRegistrar" << std::endl;
@@ -176,6 +181,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_group_simple )
                     << " to date: " << mbr.toDate.day << ". " << mbr.toDate.month << ". " << mbr.toDate.year << "\n"
                     << std::endl;
         }
+         */
 
         CorbaContainer::destroy_instance();
 

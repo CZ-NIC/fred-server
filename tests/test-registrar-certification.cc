@@ -297,7 +297,7 @@ public:
         }
 
         if(rsq_ptr) rsq_ptr->push(res);
-        std::cout << "end: " << number_ << std::endl;
+        //std::cout << "end: " << number_ << std::endl;
     }
 
 private:
