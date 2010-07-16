@@ -51,7 +51,7 @@ namespace Register
         Domain::Manager *_dm,
         Document::Manager *_docm,
         Registrar::Manager *_rm
-      ): db(_db), mm(_mm), cm(_cm), nm(_nm), dm(_dm), docm(_docm), rm(_rm)
+      ): db(_db), mm(_mm), cm(_cm), nm(_nm), km(_km), dm(_dm), docm(_docm), rm(_rm)
       {}
       std::string getEmailList(const std::stringstream& sql) throw (SQL_ERROR)
       {
