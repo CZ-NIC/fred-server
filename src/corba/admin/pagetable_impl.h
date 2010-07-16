@@ -23,7 +23,6 @@
 
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"
-#include "old_utils/conf.h"
 
 #include "log/logger.h"
 #include "log/context.h"

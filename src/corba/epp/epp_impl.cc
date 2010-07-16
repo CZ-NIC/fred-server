@@ -49,8 +49,6 @@
 // logger
 #include "old_utils/log.h"
 
-//config
-#include "old_utils/conf.h"
 
 // MailerManager is connected in constructor
 #include "register/domain.h"

@@ -34,7 +34,6 @@
 #include "corba/file_manager_client.h"
 #include "register/register.h"
 #include "old_utils/dbsql.h"
-#include "old_utils/conf.h"
 #include "model/model_filters.h"
 
 #include "conf/manager.h"

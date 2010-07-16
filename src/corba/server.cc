@@ -48,7 +48,7 @@
 #include <errno.h>
 
 #include "old_utils/log.h"
-#include "old_utils/conf.h"
+
 #include "nameservice.h"
 
 #include "conf/manager.h"

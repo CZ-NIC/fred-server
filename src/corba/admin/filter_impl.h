@@ -9,7 +9,6 @@
 #include "corba/mailer_manager.h"
 #include "register/register.h"
 #include "old_utils/dbsql.h"
-#include "old_utils/conf.h"
 #include "model/model_filters.h"
 
 class FilterBaseImpl;

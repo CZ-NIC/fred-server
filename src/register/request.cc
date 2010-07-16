@@ -12,8 +12,7 @@
 #include <pthread.h>
 // logger
 #include "old_utils/log.h"
-//config
-#include "old_utils/conf.h"
+
 // util (for escape)
 #include "util.h"
 

@@ -15,7 +15,6 @@
 #include "register/register.h"
 #include "register/invoice.h"
 #include "old_utils/dbsql.h"
-#include "old_utils/conf.h"
 #include "model/model_filters.h"
 #include "bankinginvoicing_impl.h"
 
