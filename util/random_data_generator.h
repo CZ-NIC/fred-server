@@ -96,7 +96,7 @@ public:
         , greal(rng, gen_real)
         , gtime(rng, gen_time)
     {
-        std::cout << "RandomDataGenerator using seed: " << seed_ << std::endl;
+        //std::cout << "RandomDataGenerator using seed: " << seed_ << std::endl;
     }
 
     ///used seed getter

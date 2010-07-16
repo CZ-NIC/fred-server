@@ -99,13 +99,13 @@ public:
 
             if(number_%tgd_)//if synchronized thread
             {
-                std::cout << "waiting: " << number_ << std::endl;
+                //std::cout << "waiting: " << number_ << std::endl;
                 if(sb_ptr_)
                     sb_ptr_->insert_barrier.wait();//wait for other synced threads
             }
             else
             {//non-synchronized thread
-                std::cout << "NOwaiting: " << number_ << std::endl;
+                //std::cout << "NOwaiting: " << number_ << std::endl;
             }
 
             //std::cout << "start: " << number_ << std::endl;
