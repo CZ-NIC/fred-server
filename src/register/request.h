@@ -47,7 +47,7 @@ struct RequestProperty {
   bool output;
   bool child;
 
-  RequestProperty() : name(), value() {
+  RequestProperty() : name(), value(), output(), child() {
   }
 
   RequestProperty(const RequestProperty &p) : name(p.name), value(p.value),
