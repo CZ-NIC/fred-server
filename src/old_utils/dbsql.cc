@@ -150,6 +150,7 @@ bool DB::SaveEPPTransferMessage(
 
   // get registrar handle 
   strncpy(regHandle, GetRegistrarHandle(regID), sizeof(regHandle) - 1);
+  regHandle[sizeof(regHandle)-1] = '\0';
 
   switch (type) {
     case 1: // contact
@@ -1166,6 +1167,7 @@ bool DB::TestValExDate(
   {
     // copy current Exdate during update 
     strncpy(exDate, GetDomainValExDate(id), MAX_DATE) ;
+    exDate[MAX_DATE] = '\0';
 
     // USE SQL for calculate
     // test if the ExDate is lager then actual date and less or equal to protected period (interval days)
@@ -1779,6 +1781,7 @@ int DB::MakeFactoring(
   if (ExecSelect(sqlString) ) {
     if (GetSelectRows() == 1) {
       strncpy(fromdateStr, GetFieldValue( 0, 0), MAX_DATE);
+      fromdateStr[MAX_DATE] = '\0';
     }
     FreeSelect();
   } else
@@ -1796,6 +1799,7 @@ int DB::MakeFactoring(
 
       if (IsNotNull( 0, 0) ) {
         strncpy(fromdateStr, GetFieldValue( 0, 0), MAX_DATE);
+        fromdateStr[MAX_DATE] = '\0';
       }
 
       FreeSelect();
@@ -2216,6 +2220,7 @@ const char * DB::GetValueFromTable(
       }
 
       strncpy(memHandle, GetFieldValue( 0, 0), size + 1);
+      memHandle[size] = '\0';
       LOG( SQL_LOG , "GetValueFromTable \'%s\' field %s  value  %s ->  %s" , table , fname , value , memHandle );
       FreeSelect();
       return memHandle;
