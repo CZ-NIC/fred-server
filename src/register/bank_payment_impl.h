@@ -20,7 +20,7 @@ private:
 
 
 public:
-    PaymentImpl() : ModelBankPayment()
+    PaymentImpl() : ModelBankPayment(), iprefix_(0)
     {
     }
 
