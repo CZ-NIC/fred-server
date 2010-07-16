@@ -528,7 +528,7 @@ bool DB::BeginAction(
       svrTRID= new char[MAX_SVTID];
 
       // create  server ticket
-      snprintf(svrTRID, sizeof(svrTRID), "ccReg-%010d", actionID);
+      snprintf(svrTRID, MAX_SVTID, "ccReg-%010d", actionID);
       LOG( SQL_LOG , "Make svrTRID: %s" , svrTRID );
     }
 
