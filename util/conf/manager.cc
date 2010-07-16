@@ -14,7 +14,11 @@ Manager::Manager(int _argc,
 	_init();
 }
 
-Manager::Manager() : initialized_(false) {
+Manager::Manager() : initialized_(false)
+, argc()
+, argv()
+, allow_file_opts_override_()
+{
 }
 
 Manager::~Manager() {
