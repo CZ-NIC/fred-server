@@ -196,7 +196,8 @@ public:
               email_to_answer_(_email_to_answer), answer_email_id_(_answer_email_id), 
               svtrid_(_svtrid), registrar_id_(_registrar_id), 
               registrar_handle_(_registrar_handle), 
-              registrar_name_(_registrar_name), registrar_url_(_registrar_url) {
+              registrar_name_(_registrar_name), registrar_url_(_registrar_url),
+              man_() {
   }
   
   void setManager(Manager* _man) {
