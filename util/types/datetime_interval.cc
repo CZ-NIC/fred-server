@@ -7,12 +7,12 @@ namespace Database {
  */
 
 DateTimeInterval::DateTimeInterval() : value(ptime(neg_infin), ptime(pos_infin)), 
-                                       special(NONE) {
+                                       special(NONE), offset() {
 }
 
 
 DateTimeInterval::DateTimeInterval(const DateTime& _start, const DateTime& _stop) : value(_start.get(), _stop.get()),
-                                                                                    special(INTERVAL) {
+                                                                                    special(INTERVAL), offset() {
 }
 
 
@@ -34,7 +34,7 @@ DateTimeInterval::DateTimeInterval(DateTimeIntervalSpecial _s,
  */
 
 DateTimeInterval::DateTimeInterval(const time_period& _v) : value(_v), 
-                                                            special(INTERVAL) {
+                                                            special(INTERVAL), offset() {
 }
 
 
