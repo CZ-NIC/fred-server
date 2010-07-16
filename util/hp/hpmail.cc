@@ -214,7 +214,7 @@ void HPMail::login(const std::string& loginame //postservice account name
 /// upload batch of mail files to postservice
 /// optionally no args required
 /// then use save_file_for_upload and optionally archiver_command before login
-void HPMail::upload( const NamedMailBatch& mb)
+std::string HPMail::upload( const NamedMailBatch& mb)
 {
     if(phpsessid_.empty())
         throw std::runtime_error("HPMail::upload error: not logged in");
@@ -232,14 +232,16 @@ void HPMail::upload( const NamedMailBatch& mb)
     //upload
     upload_of_batch_by_filelist(upload_filelist);
     end_of_batch(upload_filelist);//ack form for postservice
+    std::string ret(hp_batch_number_);//copy batch number from instance
     instance_ptr.reset(0);//end of session if no exception so far
+    return ret;
 }//HPMail::upload
 
-void HPMail::upload( const MailFile& mf , const std::string & file_name )
+std::string HPMail::upload( const MailFile& mf , const std::string & file_name )
 {
     NamedMailFile nmf = {mf, file_name };
     NamedMailBatch nmb (1,nmf);
-    upload(nmb);
+    return upload(nmb);
 }//HPMail::upload
 
 /// in loop save files for upload to postservice

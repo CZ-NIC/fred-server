@@ -132,8 +132,8 @@ public:
         , const std::string& batch_id //batch identificator like: "hpcb_Jednorazova_zakazka"
         , const std::string& batch_note //batch note like: "Testovaci prenos!!!" or anything else you need to tell here
         );
-    void upload( const NamedMailBatch& mb = NamedMailBatch());
-    void upload( const MailFile& mf , const std::string & file_name );
+    std::string upload( const NamedMailBatch& mb = NamedMailBatch());
+    std::string upload( const MailFile& mf , const std::string & file_name );
     void save_files_for_upload( const NamedMailBatch& mb);
     void save_file_for_upload( const NamedMailFile& mf);
     void save_file_for_upload( const std::string& file_name);
