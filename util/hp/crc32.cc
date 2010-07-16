@@ -49,7 +49,9 @@ int main(int argc, char** argv)
                 std::cerr << "Unable to open file: " << argv[i] << std::endl;
         }//for i
 
+        std::ios_base::fmtflags state = std::cout.flags();//save state
         std::cout << std::hex << std::uppercase << crc32.checksum() << std::endl;
+        std::cout.flags(state);//restore state
         return EXIT_SUCCESS;
     }
     catch (std::exception &ex)
