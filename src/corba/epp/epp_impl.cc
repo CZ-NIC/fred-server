@@ -393,9 +393,21 @@ ccReg_EPP_i::ccReg_EPP_i(
   const std::string &_db, MailerManager *_mm, NameService *_ns, Config::Conf& _conf)
     throw (DB_CONNECT_FAILED) : database(_db),
                                 mm(_mm),
+                                dbman(),
                                 ns(_ns),
                                 conf(_conf),
-                                testInfo(false)
+                                db(),
+                                regMan(),
+                                session(),
+                                numSession(),
+                                maxSession(),
+                                maxWaitClient(),
+                                ErrorMsg(),
+                                ReasonMsg(),
+                                CC(),
+                                max_zone(),
+                                testInfo(false),
+                                session_mutex_()
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
