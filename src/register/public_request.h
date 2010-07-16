@@ -75,7 +75,7 @@ std::string ObjectType2Str(ObjectType type);
  * Object info
  */
 struct OID {
-  OID(Database::ID _id) : id(_id) { }
+  OID(Database::ID _id) : id(_id), handle(), type() { }
   OID(Database::ID _id, std::string _handle, ObjectType _type) : id(_id),
                                                               handle(_handle),
                                                               type(_type) { }
