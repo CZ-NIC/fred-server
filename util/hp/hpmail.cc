@@ -815,7 +815,7 @@ HPMailBatchState* HPMailBatchState::get()
 }
 
 ///postservice interface prehledZak
-std::string HPMailBatchState::prehledzak(
+std::string HPMailBatchState::check(
         const std::string& batch_number //batch number
         , const std::string& date //date in format yyyymmdd
     )

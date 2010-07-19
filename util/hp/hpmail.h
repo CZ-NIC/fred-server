@@ -160,7 +160,7 @@ public:
     static HPMailBatchState* get();
 
     ///postservice interface prehledZak
-    std::string prehledzak(
+    std::string check(
             const std::string& batch_number //batch number, if date set, this should be empty ""
             , const std::string& date = "" //date in format yyyymmdd, default empty
         );
