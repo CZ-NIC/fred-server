@@ -58,6 +58,7 @@ class RandomDataGenerator //data generator is actually pseudo-random
     base_generator_t rng;
     int_distribution_t gen_letter52;//both case letters
     int_distribution_t gen_numletter10;//any number
+    int_distribution_t gen_letter62;//both case letters or any number
     int_distribution_t gen_num1_5;//number 1-5
     int_distribution_t gen_num1_6;//number 1-6
     int_distribution_t gen_int;//signed integer
@@ -65,6 +66,7 @@ class RandomDataGenerator //data generator is actually pseudo-random
     int_distribution_t gen_time;//from 1.1.1990 to the end of unix time (19.01.2038 04:14:07 (CET))
     boost::variate_generator<base_generator_t, int_distribution_t > letter52;
     boost::variate_generator<base_generator_t, int_distribution_t > numletter10;
+    boost::variate_generator<base_generator_t, int_distribution_t > letter62;
     boost::variate_generator<base_generator_t, int_distribution_t > num1_5;
     boost::variate_generator<base_generator_t, int_distribution_t > num1_6;
     boost::variate_generator<base_generator_t, int_distribution_t > gint;
@@ -80,6 +82,7 @@ public:
           //ranges definitions
         , gen_letter52(0,51)
         , gen_numletter10(0,9)
+        , gen_letter62(0,62)
         , gen_num1_5(1,5)
         , gen_num1_6(1,6)
         , gen_int(std::numeric_limits<int>::min(), std::numeric_limits<int>::max())
@@ -90,6 +93,7 @@ public:
           //generator instances
         , letter52(rng, gen_letter52)
         , numletter10(rng, gen_numletter10)
+        , letter62(rng,gen_letter62)
         , num1_5(rng, gen_num1_5)
         , num1_6(rng, gen_num1_6)
         , gint(rng, gen_int)
@@ -121,6 +125,19 @@ public:
         return static_cast<char>(numletter10() + 48);
     }
 
+    ///generate some letter A-Z a-z 0-9
+    char xnletter()
+    {
+        unsigned rnumber = letter62();
+        char ret = rnumber < 26
+            ? static_cast<char>(rnumber + 65) //A-Z
+            : ( rnumber < 52
+                ? static_cast<char>(rnumber + 71) //a-z
+                : static_cast<char>(rnumber + 48) //0-9
+              );
+        return ret;
+    }
+
 
     ///generate some string of given length
     std::string xstring(std::size_t length)
@@ -141,6 +158,17 @@ public:
             ret.push_back(xnumletter());
         return ret;
     }
+
+    ///generate some string of given length
+    std::string xnstring(std::size_t length)
+    {
+        std::string ret;
+        ret.reserve(length);//allocation
+        for(std::size_t i = 0; i < length; ++i)
+            ret.push_back(xnletter());
+        return ret;
+    }
+
 
     ///generate signed integer 1-5
     int xnum1_5()
