@@ -79,7 +79,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_upload_curlopt_timeout","120") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
     ("hp_upload_curlopt_connect_timeout","1800") //orig 1800, maximum time in seconds that you allow the connection to the server to take
     ("hp_upload_curlopt_maxconnect","20") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
-    ("hp_upload_curlopt_stderr_log","curl_stderr.log")//curl log file name in mb_proc_tmp_dir, if empty redir is not set
+    ("hp_upload_curlopt_stderr_log","curl_stderr.log")//curl log filename suffix in mb_curl_log_dir, if empty redir is not set
     ("hp_upload_curl_verbose","1")//verbosity of communication dump 0/1
     ("hp_upload_retry","10")//default number of upload retries
     ;
@@ -88,32 +88,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
 HPMail* HPMail::set(const HPCfgMap& config_changes)
 {
     //config
-    HPCfgMap config;
-    for(HPCfgMap::const_iterator default_it = HPMail::required_config.begin()
-            ; default_it != HPMail::required_config.end(); ++default_it)
-    {
-        HPCfgMap::const_iterator change_it
-            = config_changes.find(default_it->first);//look for change
-        if(change_it != config_changes.end())
-            config[change_it->first]= change_it->second;//change
-        else//nochange, using required default
-            config[default_it->first]=default_it->second;
-
-        //if it's directory name, check slash at the end
-        if(default_it->first.find("_dir") !=  std::string::npos)
-        {
-            char ending_sl = '/';
-#ifdef WIN32
-            ending_sl = '\\';
-#endif
-
-            if((*((config[default_it->first]).end() - 1)) != ending_sl)
-                config[default_it->first]+= ending_sl;//add ending slash
-
-            //std::cout << "\nslashed: " << default_it->first
-            //<< " " << config[default_it->first] << std::endl;
-        }
-    }//for default_it
+    HPCfgMap config = hp_create_config_map(HPMail::required_config, config_changes );
 
     std::auto_ptr<HPMail> tmp_instance(new HPMail(config));
     instance_ptr = tmp_instance;
@@ -402,7 +377,6 @@ void HPMail::save_file_for_upload( const std::string& file_name)
     }
 }//HPMail::save_file_for_upload
 
-
 ///save list of files for archiver
 void HPMail::save_list_for_archiver()
 {
@@ -487,6 +461,7 @@ void HPMail::load_compressed_mail_volume(const std::string& compressed_mail_volu
                 "error - unable to access file: "
                 +  compressed_mail_volume_filename);
 }
+
 ///load compressed mail batch filelist from disk
 VolumeFileNames HPMail::load_compressed_mail_batch_filelist()
 {
@@ -719,7 +694,6 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
     if ((sb.getValueByKey("UDRZBA", 2)).compare("on") == 0)
         throw std::runtime_error(std::string("udrzba on"));
 
-
     //log result
     std::stringstream formpost_reply;
         formpost_reply << "\nKonec reply: \n" << sb.copy()
@@ -788,5 +762,113 @@ void HPMail::send_storno()
 				, formpost_reply.str().size() , curl_log_file_ );
 
     }
+}
+
+//class HPMailBatchState implementation
+
+///static instance init
+std::auto_ptr<HPMailBatchState> HPMailBatchState::instance_ptr(0);
+
+///required HPMailBatchState configuration init with default values
+///HPMailBatchState::set is ending values of keys containing "_dir" substring with '/' or '\' for win32
+///so don't use key containing "_dir" substring for anything not ended by slash !
+HPCfgMap HPMailBatchState::required_config = boost::assign::map_list_of
+    ("hp_curlopt_log_dir","./tmpdir/") //log dir for curl stderr logfile
+    ("postservice_cert_dir","./cert/") //server certificate dir ended by slash
+    ("postservice_cert_file","postsignum_qca_root.pem")//cert file name like "postsignum_qca_root.pem"
+    ("hp_prehledzak_interface_url","https://online3.postservis.cz/prehledZak.php")//prehledzak form url
+    ("hp_prehledzak_user", "") //  login name
+    ("hp_prehledzak_password", "") // password
+    ("hp_prehledzak_typ", "txt") // txt, csv
+
+    ("hp_curlopt_timeout","120") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
+    ("hp_curlopt_connect_timeout","1800") //orig 1800, maximum time in seconds that you allow the connection to the server to take
+    ("hp_curlopt_maxconnect","20") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+    ("hp_curlopt_stderr_log","curl_stderr.log")//curl log file name suffix in hp_curlopt_log_dir, if empty redir is not set
+    ("hp_curlopt_verbose","1")//verbosity of communication dump 0/1
+    ;
+
+///instance set config and return if ok
+HPMailBatchState* HPMailBatchState::set(const HPCfgMap& config_changes)
+{
+    //config
+    HPCfgMap config = hp_create_config_map(HPMailBatchState::required_config, config_changes );
+
+    std::auto_ptr<HPMailBatchState> tmp_instance(new HPMailBatchState(config));
+    instance_ptr = tmp_instance;
+    if (instance_ptr.get() == 0)
+        throw std::runtime_error(
+                "HPMailBatchState::set error: instance not set");
+    return instance_ptr.get();
+}
+
+///instance getter
+HPMailBatchState* HPMailBatchState::get()
+{
+    HPMailBatchState* ret = instance_ptr.get();
+    if (ret == 0)
+    {
+     throw std::runtime_error(
+             "HPMailBatchState::get error: instance not set");
+    }
+    return ret;
+}
+
+///postservice interface prehledZak
+std::string HPMailBatchState::prehledzak(
+        const std::string& batch_number //batch number
+        , const std::string& date //date in format yyyymmdd
+    )
+{
+    //recycle logfile
+    close_curl_log_file(curl_log_file_);//close log
+    curl_log_file_name_ = //log file name
+            make_curl_log_file_name(config_["hp_curlopt_log_dir"]
+                                        ,config_["hp_curlopt_stderr_log"]);
+    curl_log_file_ = open_curl_log_file(curl_log_file_name_);//open logfile
+
+    struct curl_httppost *formpost_prehledzak=NULL;
+    //release the form going out of scope
+    CFormSharedPtr  form_overeni_guard = CurlFormFreePtr(&formpost_prehledzak);
+
+    // Fill in form prehledZak
+    hp_form_prehledzak(&formpost_prehledzak //inout parameter
+            , config_["hp_prehledzak_user"] //loginame
+            , config_ ["hp_prehledzak_password"] //password
+            , config_["hp_prehledzak_typ"] //txt or csv
+            , batch_number //cislozak
+            , date//date in format yyyymmdd
+            );
+
+    StringBuffer sb;//response buffer
+    StringBuffer debugbuf;//debug buffer
+    CURLcode res = hp_form_post(formpost_prehledzak  //linked list ptr
+        , config_["hp_prehledzak_interface_url"] //form url
+        , config_["postservice_cert_dir"] //cert file dir ended by slash
+        , config_["postservice_cert_file"] //pem cert file name
+        , "" //no cookie
+        , "" //no useragent
+        , boost::lexical_cast<long>(config_["hp_curlopt_verbose"]) //verbose
+        , &sb //response buffer
+        , &debugbuf //debug buffer
+        , curl_log_file_  //curl logfile
+        );
+    if (res > 0)
+    {
+        throw std::runtime_error(
+                std::string("prehledzak error: form failed: ")
+                    + curl_easy_strerror(res));
+    }
+    //log result
+        std::string form_reply("\n\nreply: \n"
+                + sb.copy() + "\n\n" + debugbuf.copy());
+        fwrite (form_reply.c_str() , 1, form_reply.size()
+                , curl_log_file_ );
+
+
+        close_curl_log_file(curl_log_file_);//close log
+        curl_log_file_ = 0;
+        //result
+       return sb.copy();
 }
 

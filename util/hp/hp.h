@@ -29,11 +29,29 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <map>
 
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <curl/curl.h>
+
+//close curl logfile
+void close_curl_log_file(FILE* curl_log_file );
+
+//open curl logfile or set stderr
+FILE* open_curl_log_file(const std::string& curl_log_file_name);
+
+//make curl logfile name with timestamp
+std::string make_curl_log_file_name(const std::string& dir_name //ended with slash
+        , const std::string& file_name_suffix);
+
+typedef std::map<std::string, std::string> HPCfgMap;//config map
+//common config map processing
+//required default is modified with changes
+//"_dir" names are ended with slashes
+//giving config
+HPCfgMap hp_create_config_map(const HPCfgMap& required_config, const HPCfgMap& config_changes);
 
 /**
  * \class StringBuffer
@@ -181,6 +199,16 @@ void hp_form_konec(curl_httppost **formpost_pp //out parameter
 ///failure errorlog upload attempt with storno flag set
 void hp_prubeh_command(curl_httppost **formpost_pp //out parameter
         , const std::string& filename_to_upload //failure errorlog filename
+        );
+
+void hp_form_prehledzak(curl_httppost **formpost_pp //out parameter
+        , const std::string& user
+        , const std::string& passwd
+        , const std::string& typ //txt csv
+        //enter cislozak or datum
+        //if filled both "cislozak" and "datum" , "cislozak" will be used
+        , const std::string& cislozak //batch number
+        , const std::string& datum = std::string("") //date in format yyyymmdd, default none
         );
 
 #endif // HP_H_

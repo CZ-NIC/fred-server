@@ -29,13 +29,95 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
+#include <errno.h>
 
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <curl/curl.h>
 
 #include "hp.h"
+
+
+//close curl logfile
+void close_curl_log_file(FILE* curl_log_file )
+{
+    if((curl_log_file != stderr) && (curl_log_file != 0))
+        fclose(curl_log_file);
+}//close_curl_log_file
+
+//open curl logfile or set stderr
+FILE* open_curl_log_file(const std::string& curl_log_file_name)
+{
+    FILE* curl_log_file = 0;
+
+    if(curl_log_file_name.empty())
+        curl_log_file = static_cast<FILE*>(stderr);
+    else
+        curl_log_file = fopen(curl_log_file_name.c_str(),"w");
+
+    if(curl_log_file == 0)
+    {
+        std::string msg(strerror(errno));
+        throw std::runtime_error(std::string("Error opening log file ")
+            +  curl_log_file_name + " - " + msg);
+    }
+
+    return curl_log_file;
+}//open_curl_log_file
+
+//make curl logfile name with timestamp
+std::string make_curl_log_file_name(const std::string& dir_name
+        , const std::string& file_name_suffix)
+{
+    return
+        (file_name_suffix.empty()
+            ? std::string("")
+            : (dir_name
+                + boost::posix_time::to_iso_string(
+                    boost::posix_time::microsec_clock().local_time()
+                    )
+                +file_name_suffix)
+            );
+}//make_curl_log_file_name
+
+//common config map processing
+//required default is modified with changes
+//"_dir" names are ended with slashes
+//giving config
+HPCfgMap hp_create_config_map(const HPCfgMap& required_config, const HPCfgMap& config_changes)
+{
+    //config
+    HPCfgMap config;
+    for(HPCfgMap::const_iterator default_it = required_config.begin()
+            ; default_it != required_config.end(); ++default_it)
+    {
+        HPCfgMap::const_iterator change_it
+            = config_changes.find(default_it->first);//look for change
+        if(change_it != config_changes.end())
+            config[change_it->first]= change_it->second;//change
+        else//nochange, using required default
+            config[default_it->first]=default_it->second;
+
+        //if it's directory name, check slash at the end
+        if(default_it->first.find("_dir") !=  std::string::npos)
+        {
+            char ending_sl = '/';
+#ifdef WIN32
+            ending_sl = '\\';
+#endif
+
+            if((*((config[default_it->first]).end() - 1)) != ending_sl)
+                config[default_it->first]+= ending_sl;//add ending slash
+
+            //std::cout << "\nslashed: " << default_it->first
+            //<< " " << config[default_it->first] << std::endl;
+        }
+    }//for default_it
+
+    return config;
+}//hp_create_config_map
 
 
 //class StringBuffer
@@ -346,6 +428,34 @@ void hp_prubeh_command(curl_httppost **formpost_pp //out parameter
             , CURLFORM_COPYCONTENTS, "1\n", CURLFORM_END);
     curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "upfile"
             , CURLFORM_FILE, filename_to_upload.c_str(), CURLFORM_END);
+}
+
+
+void hp_form_prehledzak(curl_httppost **formpost_pp //out parameter
+        , const std::string& user
+        , const std::string& passwd
+        , const std::string& typ //txt csv
+        , const std::string& cislozak //batch number
+        , const std::string& datum //date in format yyyymmdd
+        )
+{
+    if(cislozak.empty() && datum.empty())
+        throw std::runtime_error("hp_form_prehledzak error: zadejte cislo zakazky nebo datum yyyymmdd");
+
+    struct curl_httppost *lastptr=NULL;
+    // Fill in prehledZak
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "user"
+            , CURLFORM_COPYCONTENTS, user.c_str(), CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "passwd"
+            , CURLFORM_COPYCONTENTS, passwd.c_str(), CURLFORM_END);
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "typ"
+            , CURLFORM_COPYCONTENTS, typ.c_str(), CURLFORM_END);
+    if(!cislozak.empty())
+    curl_formadd(formpost_pp, &lastptr,CURLFORM_COPYNAME, "cislozak"
+            , CURLFORM_COPYCONTENTS, cislozak.c_str(), CURLFORM_END);
+    if(!datum.empty())
+    curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "datum"
+            , CURLFORM_COPYCONTENTS, datum.c_str(), CURLFORM_END);
 }
 
 
