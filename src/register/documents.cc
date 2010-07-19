@@ -22,6 +22,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <map>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -34,24 +35,24 @@ namespace Register
     /// temporary file with unique filename generation and final remove
     class TmpFile : public std::fstream
     {
-      #define NAME_TEMPLATE "/tmp/fred-gendoc-XXXXXX"
-      char *name; ///< unique name in tmp directory
+      const std::string name_str; ///< template of unique name in tmp directory
+      std::vector<char> name; ///< buffer of unique name in tmp directory
      public:
       class OPEN_ERROR {}; ///< error in file opening
       class NAME_ERROR {}; ///< error in name generation
       /// initialize unique name 
       TmpFile() throw (OPEN_ERROR)
+          : name_str("/tmp/fred-gendoc-XXXXXX")
+          , name(name_str.begin(), name_str.end())
       {
+          name.push_back('\0');//C string end
+
         mode_t _umask;
         int fd;
-        int len = strlen(NAME_TEMPLATE)+1;
-        name = (char *)malloc(len);
-        strncpy(name,NAME_TEMPLATE, len);
         _umask = umask(0077);
-        fd = mkstemp(name);
+        fd = mkstemp(&name[0]);
         umask(_umask);
         if (fd < 0) {
-            free(name);
             throw NAME_ERROR();
         }
         ::close(fd);
@@ -59,19 +60,18 @@ namespace Register
       /// try to delete file (if exist) and free memory for unique name  
       ~TmpFile()
       {
-        remove(name);
-        free(name);
+        remove(&name[0]);
       }
       /// open file with unique name in given mode
       void open(std::ios::openmode mode) throw (OPEN_ERROR)
       {
-        std::fstream::open(name,mode);
+        std::fstream::open(&name[0],mode);
         if (!is_open()) throw OPEN_ERROR();
       }
       /// return unique name
       const char *getName() const
       {
-        return name;
+        return &name[0];
       }
     };
     /// description of process of generation
