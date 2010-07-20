@@ -171,15 +171,16 @@ Registry::Request::Detail *ccReg_Log_i::createRequestDetail(Register::Logger::Re
 	// TODO should it contain ID?
 	// detail->id		= req->id;
 
-	detail->timeBegin 	= DUPSTRDATE(req->getTimeBegin);
-	detail->timeEnd		= DUPSTRDATE(req->getTimeEnd);
-	detail->sourceIp	= DUPSTRFUN(req->getSourceIp);
-	detail->service_type	= DUPSTRFUN(req->getServiceType);
-	detail->action_type	= DUPSTRFUN(req->getActionType);
-	detail->session_id	= req->getSessionId();
-	detail->is_monitoring	= req->getIsMonitoring();
-	detail->raw_request	= DUPSTRFUN(req->getRawRequest);
-	detail->raw_response	= DUPSTRFUN(req->getRawResponse);
+        detail->timeBegin       = DUPSTRDATE(req->getTimeBegin);
+        detail->timeEnd         = DUPSTRDATE(req->getTimeEnd); 
+        detail->sourceIp        = DUPSTRFUN(req->getSourceIp);
+        detail->service_type    = DUPSTRFUN(req->getServiceType);
+        detail->action_type     = DUPSTRFUN(req->getActionType);
+        detail->session_id      = req->getSessionId();
+        detail->user_name       = DUPSTRFUN(req->getUserName);
+        detail->is_monitoring   = req->getIsMonitoring();
+        detail->raw_request     = DUPSTRFUN(req->getRawRequest);
+        detail->raw_response    = DUPSTRFUN(req->getRawResponse);
 
         // TODO refactor - this convert function could be moved here (or sw else)
 	detail->props		= convert_properties_d2c(req->getProperties());
