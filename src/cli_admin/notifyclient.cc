@@ -182,13 +182,6 @@ void NotifyClient::letters_send()
     //          - make sendLetters static
     callHelp(m_conf, no_help);
 
-    std::auto_ptr<Register::Document::Manager> docMan(
-            Register::Document::Manager::create(
-                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
-                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
-                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
-                m_nsAddr)
-            );
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     std::auto_ptr<Register::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
 
@@ -318,6 +311,11 @@ void NotifyClient::file_send()
   }
 */
 
+  struct message_proc {
+      ID id;
+      unsigned attempt;
+  };
+
   void NotifyClient::sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file)
   {
       TRACE("[CALL] Register::Notify::sendLetters()");
@@ -348,7 +346,11 @@ void NotifyClient::file_send()
      // application level lock and notification about data processing
      conn.exec("UPDATE letter_archive SET status = 6 WHERE status = 1 OR status = 4"); 
 
-     res = conn.exec("SELECT file_id, id FROM letter_archive WHERE status=6");
+     // TODO try to enable this
+     trans.commit();
+     Database::Transaction trans2(conn);
+
+     res = conn.exec("SELECT file_id, id, attempt FROM letter_archive WHERE status=6");
      
      if(res.size() == 0) {
          LOGGER(PACKAGE).debug("Register::Notify::sendLetters(): No files ready for processing"); 
@@ -357,9 +359,12 @@ void NotifyClient::file_send()
         
      int new_status = 5;
      std::string batch_id;
+     // store IDs and attempt counts of records being processed
+     std::vector<message_proc> processed;
 
      ID file_id = 0;
      ID letter_id = 0;
+     processed.reserve(res.size());
      try {
 
          HPMail::init_session(hpmail_config);
@@ -367,6 +372,11 @@ void NotifyClient::file_send()
              NamedMailFile smail;
              file_id = res[i][0];
              letter_id = res[i][1];
+
+             message_proc mp;
+             mp.id = letter_id;
+             mp.attempt = res[i][2];
+             processed.push_back(mp);
 
              fileman->download(file_id, smail.data);
 
@@ -381,15 +391,23 @@ void NotifyClient::file_send()
          std::cout << "Error: " << ex.what() << " on file ID " << file_id << std::endl;
          new_status = 4; // set error status in database
      } catch(...) {
-         std::cout << "Unknown Error" << " on file ID " << file_id << std::endl;
+         std::cout << "Unknown Error on file ID " << file_id << std::endl;
          new_status = 4; // set error status in database
      }
-  
-     // TODO detailed - attempts
-     conn.exec(boost::format("UPDATE letter_archive SET status = %1%, batch_id = %2% WHERE status = 6") % new_status % batch_id);
 
-     trans.commit();
+     res = conn.exec("SELECT id, attempt FROM letter_archive WHERE status = 6");
 
+     for (std::vector<message_proc>::iterator it = processed.begin(); it!=processed.end(); it++) {
+           unsigned new_attempt;
+           if(new_status == 4) {
+                new_attempt = (*it).attempt + 1; 
+           } else {
+                new_attempt = (*it).attempt;
+           }
+           conn.exec(boost::format("UPDATE letter_archive SET status = %1%, batch_id = %2%, attempt = %3% WHERE id = %4%" ) % new_status % batch_id % new_attempt % (*it).id);
+     }
+
+     trans2.commit();
   }
 
   void NotifyClient::sendFile(const std::string &filename, const std::string &conf_file)  {
@@ -405,7 +423,6 @@ void NotifyClient::file_send()
 
       if(infile.fail()) {
           std::cerr << "Failed to open file" << filename << std::endl;
-          throw;
           return;
       }
 
