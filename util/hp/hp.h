@@ -123,6 +123,8 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         , long curlopt_timeout = 0 //default is not set, maximum time in seconds that you allow the libcurl transfer operation to take
         , long curlopt_connect_timeout = 0 //default is not set, maximum time in seconds that you allow the connection to the server to take
         , long curlopt_maxconnect = 0 //default is not set, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+        , long curlopt_ssl_verifypeer =0 //verify the authenticity of the peer's certificate, 1 - verify, default: 0 - no verify
+        , long curlopt_ssl_verifyhost =2 // 0, 1 , default: 2 - server certificate must indicate that the server is the server to which you meant to connect, or the connection fails
         );
 
 ///curl_httppost form free

@@ -159,7 +159,9 @@ public:
     static HPMailBatchState* set(const HPCfgMap& config_changes = HPCfgMap());
     static HPMailBatchState* get();
 
-    ///postservice interface prehledZak
+    //postservice interface prehledZak
+    //may be called repeatedly with same instance
+    //each call have its own curl logfile
     std::string check(
             const std::string& batch_number //batch number, if date set, this should be empty ""
             , const std::string& date = "" //date in format yyyymmdd, default empty

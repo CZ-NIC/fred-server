@@ -258,6 +258,8 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         , long curlopt_timeout //default is not set, maximum time in seconds that you allow the libcurl transfer operation to take
         , long curlopt_connect_timeout //default is not set, maximum time in seconds that you allow the connection to the server to take
         , long curlopt_maxconnect //default is not set, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
+        , long curlopt_ssl_verifypeer //verify the authenticity of the peer's certificate, 1 - verify, default: 0 - no verify
+        , long curlopt_ssl_verifyhost // 0, 1 , 2 - server certificate must indicate that the server is the server to which you meant to connect, or the connection fails
         )
 {
     CURLSharedPtr  curl_easy_guard = CurlEasyCleanupPtr(curl_easy_init());
@@ -301,11 +303,11 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
         // since PEM is default, we needn't set it for PEM
         curl_easy_setopt(curl,CURLOPT_SSLCERTTYPE,"PEM");
         // do not verify the authenticity of the peer's certificate
-        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,0L);
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,curlopt_ssl_verifypeer);
         //server sends a certificate indicating its identity
         //that certificate must indicate that the server is the server
         //to which you meant to connect, or the connection fails.
-        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,curlopt_ssl_verifyhost);
         //what URL that receives this RFC2388 POST
         curl_easy_setopt(curl, CURLOPT_URL, curlopt_url.c_str());//https://online.postservis.cz/Command/over.php
         curl_easy_setopt(curl, CURLOPT_HTTPPOST, form);

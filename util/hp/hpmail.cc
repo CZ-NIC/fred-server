@@ -82,6 +82,8 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_upload_curlopt_stderr_log","curl_stderr.log")//curl log filename suffix in mb_curl_log_dir, if empty redir is not set
     ("hp_upload_curl_verbose","1")//verbosity of communication dump 0/1
     ("hp_upload_retry","10")//default number of upload retries
+    ("hp_curlopt_ssl_verifypeer","0") //verify the authenticity of the peer's certificate, 1 - verify, default: 0 - no verify
+    ("hp_curlopt_ssl_verifyhost","2") // 0, 1 , default: 2 - server certificate must indicate that the server is the server to which you meant to connect, or the connection fails
     ;
 
 ///instance set config and return if ok
@@ -154,6 +156,9 @@ void HPMail::login(const std::string& loginame //postservice account name
                 , &sb //response buffer
                 , &debugbuf //debug buffer
                 , curl_log_file_ //curl logfile
+                , 0, 0, 0 //disabled timeouts
+                , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifypeer"]) //ssl config
+                , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifyhost"])
                 );
 
     if (res > 0)
@@ -610,6 +615,8 @@ void HPMail::upload_of_mail_file(std::size_t file_number
         , boost::lexical_cast<long>(config_["hp_upload_curlopt_connect_timeout"])
         //maximum amount of simultaneously open connections that libcurl may cache in this easy handle
         , boost::lexical_cast<long>(config_["hp_upload_curlopt_maxconnect"])
+        , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifypeer"]) //ssl config
+        , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifyhost"])
         );
     if (res > 0)
     {
@@ -678,6 +685,8 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
                 , boost::lexical_cast<long>(config_["hp_upload_curlopt_connect_timeout"])
                 //maximum amount of simultaneously open connections that libcurl may cache in this easy handle
                 , boost::lexical_cast<long>(config_["hp_upload_curlopt_maxconnect"])
+                , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifypeer"]) //ssl config
+                , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifyhost"])
                 );
 
     if (res > 0)
@@ -742,6 +751,8 @@ void HPMail::send_storno()
 			, boost::lexical_cast<long>(config_["hp_upload_curlopt_connect_timeout"])
 			//maximum amount of simultaneously open connections that libcurl may cache in this easy handle
 			, boost::lexical_cast<long>(config_["hp_upload_curlopt_maxconnect"])
+	        , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifypeer"]) //ssl config
+	        , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifyhost"])
 			);
 
 		//log result
@@ -786,6 +797,8 @@ HPCfgMap HPMailBatchState::required_config = boost::assign::map_list_of
     ("hp_curlopt_maxconnect","20") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
     ("hp_curlopt_stderr_log","curl_stderr.log")//curl log file name suffix in hp_curlopt_log_dir, if empty redir is not set
     ("hp_curlopt_verbose","1")//verbosity of communication dump 0/1
+    ("hp_curlopt_ssl_verifypeer","0") //verify the authenticity of the peer's certificate, 1 - verify, default: 0 - no verify
+    ("hp_curlopt_ssl_verifyhost","2") // 0, 1 , default: 2 - server certificate must indicate that the server is the server to which you meant to connect, or the connection fails
     ;
 
 ///instance set config and return if ok
@@ -852,6 +865,9 @@ std::string HPMailBatchState::check(
         , &sb //response buffer
         , &debugbuf //debug buffer
         , curl_log_file_  //curl logfile
+        , 0, 0, 0 //disabled timeouts
+        , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifypeer"]) //ssl config
+        , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifyhost"])
         );
     if (res > 0)
     {
