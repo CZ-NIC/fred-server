@@ -55,13 +55,17 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> opts_descs(
                 new boost::program_options::options_description(
-                        std::string("Postservice client state check configuration")
+                        std::string("Postservice client state check configuration\n * file_names make no sence here ")
                         , 140 //width of help print in cols
                         ));
 
         opts_descs->add_options()
                                 // following are the options taken from 
                                 // hpmailbatchstate.cc source
+
+               // ((CONFIG_PREFIX+"hp_login_batch_id,b").c_str(), boost::program_options
+                 //           ::value<std::string>()->default_value(std::string(""))
+
 
                 ((CONFIG_PREFIX+"hp_statecheck_user").c_str(), boost::program_options
                             ::value<std::string>()
@@ -72,6 +76,13 @@ public:
                 ((CONFIG_PREFIX+"hp_statecheck_typ").c_str(), boost::program_options
                             ::value<std::string>()->default_value(std::string("csv"))
                         , "returned status format: csv or txt")
+
+                ((CONFIG_PREFIX+"hp_statecheck_batchnumber").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "number of mailbatch returned by upload, prefered before batchdate if both set")
+                ((CONFIG_PREFIX+"hp_statecheck_batchdate").c_str(), boost::program_options
+                            ::value<std::string>()->default_value(std::string(""))
+                        , "date of batch in format: yyyymmdd")
 
                 ((CONFIG_PREFIX+"hp_curlopt_log_dir").c_str(), boost::program_options
                             ::value<std::string>()->default_value(std::string("./logdir/"))
@@ -90,7 +101,8 @@ public:
 							::value<std::string>()->default_value("100")
 							 , "curl connect timeout and transfer timeout [s]")
                 ((CONFIG_PREFIX+"hp_statecheck_interface_url").c_str(), boost::program_options
-                        ::value<std::string>(), "optional statecheck form url")
+                        ::value<std::string>()
+                         , "optional statecheck form url")
 				;
 
 
@@ -101,15 +113,6 @@ public:
     {
         boost::program_options::variables_map vm;
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
-
-        // Check required parametres
-
-        if(vm.count((CONFIG_PREFIX+"hp_statecheck_user").c_str()) == 0) {
-                throw std::runtime_error("Required `hp_statecheck_user' configuration option missing. Cannont continue");
-        }
-        if(vm.count((CONFIG_PREFIX+"hp_statecheck_password").c_str()) == 0) {
-                throw std::runtime_error("Required `hp_statecheck_password' configuration option missing. Cannont continue");
-        }
 
         boost::program_options::variables_map::iterator it;
         for(it = vm.begin(); it != vm.end(); it++) {

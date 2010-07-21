@@ -71,11 +71,11 @@ public:
 							::value<std::string>()
 						, "upload account password")
                 ((CONFIG_PREFIX+"hp_login_batch_id,b").c_str(), boost::program_options
-							::value<std::string>()->default_value(std::string(""))
-						, "batch identificator like \"hpcb_Jednorazova_zakazka\"")
+							::value<std::string>()->default_value(std::string("hpcb_Jednorazova_zakazka"))
+						, "batch identificator")
 				((CONFIG_PREFIX+"hp_login_note,n").c_str(), boost::program_options
 							::value<std::string>()->default_value(std::string(""))
-						, "batch note like \"Testovaci prenos!!!\"")
+						, "note for processing of the batch")
 
                 ((CONFIG_PREFIX+"hp_upload_retry,r").c_str(), boost::program_options
 							::value<std::string>()->default_value("10")
@@ -123,15 +123,6 @@ public:
     {
         boost::program_options::variables_map vm;
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
-
-        // Check required parametres
-
-        if(vm.count((CONFIG_PREFIX+"hp_login_name").c_str()) == 0) {
-                throw std::runtime_error("Required `hp_login_name' configuration option missing. Cannont continue");
-        }
-        if(vm.count((CONFIG_PREFIX+"hp_login_password").c_str()) == 0) {
-                throw std::runtime_error("Required `hp_login_password' configuration option missing. Cannont continue");
-        }
 
         boost::program_options::variables_map::iterator it;
         for(it = vm.begin(); it != vm.end(); it++) {

@@ -18,11 +18,11 @@
 
 /**
  *  @hpmail.h
- *  hybrid postservice upload interface header
+ *  hybrid postservice mailbatch state check interface header
  */
 
-#ifndef HPMAIL_H_
-#define HPMAIL_H_
+#ifndef HPMAILBATCHSTATE_H_
+#define HPMAILBATCHSTATE_H_
 
 #include <cstdio>
 #include <memory>
@@ -42,8 +42,6 @@
 
 
 #include "hp.h"
-
-
 
 /**
  * \class HPMailBatchState
@@ -88,4 +86,4 @@ public:
         );
 
 };
-#endif // HPMAIL_H_
+#endif // HPMAILBATCHSTATE_H_

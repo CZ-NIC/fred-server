@@ -58,6 +58,9 @@ HPCfgMap HPMailBatchState::required_config = boost::assign::map_list_of
     ("hp_statecheck_password", "") // password
     ("hp_statecheck_typ", "txt") // txt, csv
 
+    ("hp_statecheck_batchnumber", "") //  batch number, prefered
+    ("hp_statecheck_batchdate", "") //  batch date in format yyyymmdd, default empty
+
     ("hp_curlopt_timeout","120") //orig 1800, maximum time in seconds that you allow the libcurl transfer operation to take
     ("hp_curlopt_connect_timeout","1800") //orig 1800, maximum time in seconds that you allow the connection to the server to take
     ("hp_curlopt_maxconnect","20") //orig 20, maximum amount of simultaneously open connections that libcurl may cache in this easy handle
