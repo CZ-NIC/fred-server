@@ -452,10 +452,10 @@ void hp_form_prehledzak(curl_httppost **formpost_pp //out parameter
             , CURLFORM_COPYCONTENTS, passwd.c_str(), CURLFORM_END);
     curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "typ"
             , CURLFORM_COPYCONTENTS, typ.c_str(), CURLFORM_END);
-    if(!cislozak.empty())
-    curl_formadd(formpost_pp, &lastptr,CURLFORM_COPYNAME, "cislozak"
+    //if(!cislozak.empty())
+    curl_formadd(formpost_pp, &lastptr,CURLFORM_COPYNAME, "zakazka"
             , CURLFORM_COPYCONTENTS, cislozak.c_str(), CURLFORM_END);
-    if(!datum.empty())
+    //if(!datum.empty())
     curl_formadd(formpost_pp, &lastptr, CURLFORM_COPYNAME, "datum"
             , CURLFORM_COPYCONTENTS, datum.c_str(), CURLFORM_END);
 }
