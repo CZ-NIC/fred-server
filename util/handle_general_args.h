@@ -261,5 +261,105 @@ public:
 };//class HandleConfigFileArgs
 
 
+/**
+ * \class HandleHelpArgGrp
+ * \brief common options and config file handler
+ */
+class HandleHelpArgGrp : public HandleGrpArgs
+{
+    ///options descriptions reference used to print help for all options
+    typedef std::vector<boost::shared_ptr<boost::program_options::options_description> > PoDescs;
+
+public:
+    PoDescs po_description;
+    std::string usage_;
+
+    HandleHelpArgGrp(){}
+    HandleHelpArgGrp(const std::string& usage)
+        : usage_(usage){}
+
+    boost::shared_ptr<boost::program_options::options_description>
+        get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> gen_opts(
+                new boost::program_options::options_description(
+                        usage_//std::string("Help")
+                        ));
+        gen_opts->add_options()
+                ("help,h", "print this help message");
+        return gen_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+        //general config actions
+        if (vm.count("help"))
+        {
+            for(PoDescs::iterator it = po_description.begin(); it != po_description.end(); ++it)
+            {
+                std::cout << **it << std::endl;
+            }
+            throw ReturnFromMain("help called");
+        }
+
+        return option_group_index;
+    }//handle
+};//class HandleHelpArgGrp
+
+/**
+ * \class HandleConfigFileArgsGrp
+ * \brief config file handler
+ */
+class HandleConfigFileArgsGrp : public HandleArgs
+{
+    std::string default_config;
+
+public:
+
+    HandleConfigFileArgsGrp(const std::string def_cfg)
+        : default_config(def_cfg) {};
+
+    boost::shared_ptr<boost::program_options::options_description>
+        get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> gen_opts(
+                new boost::program_options::options_description(
+                        std::string("Configfile configuration")));
+
+        if(default_config.length() != 0)
+        {
+            gen_opts->add_options()
+                    ("config,C", boost::program_options
+                            ::value<std::string>()->default_value(default_config)
+                    , "path to configuration file");
+        }
+        else
+        {
+            gen_opts->add_options()
+                    ("config,C", boost::program_options
+                            ::value<std::string>(), "path to configuration file");
+        }
+
+        return gen_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+        //read config file if configured and append content to fa
+        if (vm.count("config"))
+        {
+            std::string fname = vm["config"].as<std::string>();
+            std::cout << "HandleConfigFileArgsGrp::handle config file: " << fname << std::endl;
+            if(fname.length())
+                parse_config_file_to_faked_args(fname, fa );
+        }
+        return option_group_index;
+    }//handle
+};//class HandleConfigFileArgsGrp
+
 
 #endif //HANDLE_GENERAL_ARGS_H_

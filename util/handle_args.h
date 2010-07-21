@@ -48,6 +48,24 @@ public:
 };
 HandleArgs::~HandleArgs(){}
 
+/**
+ * \class HandleGrpArgs
+ * \brief interface for option group handlers
+ */
+class HandleGrpArgs
+{
+public:
+    virtual ~HandleGrpArgs()=0;
+    virtual boost::shared_ptr<boost::program_options::options_description>
+        get_options_description()=0;
+
+    //handle returning option group index
+    virtual std::size_t handle( int argc, char* argv[], FakedArgs &fa , std::size_t option_group_index ) = 0;
+};
+HandleGrpArgs::~HandleGrpArgs(){}
+
+
+
 ///common parsing using program_options
 void handler_parse_args(
         boost::shared_ptr<boost::program_options::options_description> opts_descs
@@ -82,5 +100,9 @@ void handler_parse_args(
 //owning container of handlers
 typedef boost::shared_ptr<HandleArgs> HandleArgsPtr;
 typedef std::vector<HandleArgsPtr > HandlerPtrVector;
+
+typedef boost::shared_ptr<HandleGrpArgs> HandleGrpArgsPtr;//group args ptr
+typedef std::vector<HandleGrpArgsPtr > HandlerGrpVector;//vector of arg groups
+typedef std::vector<HandlerGrpVector > HandlerPtrGrid;//grid of grouped args
 
 #endif //HANDLE_ARGS_H_

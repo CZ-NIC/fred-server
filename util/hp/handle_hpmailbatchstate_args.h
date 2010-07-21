@@ -131,4 +131,103 @@ public:
 
 const std::string HandleHPMailBatchStateArgs::CONFIG_PREFIX("statecheck.");
 
+/**
+ * \class HandleHPMailBatchStateArgsGrp
+ * \brief postservice client cmdline options handler
+ */
+
+class HandleHPMailBatchStateArgsGrp : public HandleArgs
+{
+    HPCfgMap hp_config;
+
+public:
+    //selected hpmail config options values
+
+    const static std::string CONFIG_PREFIX;
+
+    const HPCfgMap get_map() { return hp_config; };
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> opts_descs(
+                new boost::program_options::options_description(
+                        std::string("Postservice client state check configuration\n * file_names make no sence here ")
+                        , 140 //width of help print in cols
+                        ));
+
+        opts_descs->add_options()
+                                // following are the options taken from
+                                // hpmailbatchstate.cc source
+
+               // ((CONFIG_PREFIX+"hp_login_batch_id,b").c_str(), boost::program_options
+                 //           ::value<std::string>()->default_value(std::string(""))
+
+
+                ((CONFIG_PREFIX+"hp_statecheck_user").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "state check account login name")
+                ((CONFIG_PREFIX+"hp_statecheck_password").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "state check account password")
+                ((CONFIG_PREFIX+"hp_statecheck_typ").c_str(), boost::program_options
+                            ::value<std::string>()->default_value(std::string("csv"))
+                        , "returned status format: csv or txt")
+
+                ((CONFIG_PREFIX+"hp_statecheck_batchnumber").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "number of mailbatch returned by upload, prefered before batchdate if both set")
+                ((CONFIG_PREFIX+"hp_statecheck_batchdate").c_str(), boost::program_options
+                            ::value<std::string>()->default_value(std::string(""))
+                        , "date of batch in format: yyyymmdd")
+
+                ((CONFIG_PREFIX+"hp_curlopt_log_dir").c_str(), boost::program_options
+                            ::value<std::string>()->default_value(std::string("./logdir/"))
+                        , "path for curl stderr logfile")
+                ((CONFIG_PREFIX+"postservice_cert_dir").c_str(), boost::program_options
+                            ::value<std::string>()->default_value(std::string("./cert/"))
+                        , "path for PEM certificates")
+                ((CONFIG_PREFIX+"postservice_cert_file").c_str(), boost::program_options
+                            ::value<std::string>()->default_value(std::string("cert.pem"))
+                        , "PEM host certificates file name like \"postsignum_qca_root.pem\"")
+
+                ((CONFIG_PREFIX+"hp_curlopt_verbose").c_str(), boost::program_options
+                    ::value<std::string>()->default_value(std::string("0"))
+                     , "enable additional debug data in stderr logfile")
+                ((CONFIG_PREFIX+"hp_curlopt_timeout").c_str(), boost::program_options
+                            ::value<std::string>()->default_value("100")
+                             , "curl connect timeout and transfer timeout [s]")
+                ((CONFIG_PREFIX+"hp_statecheck_interface_url").c_str(), boost::program_options
+                        ::value<std::string>()
+                         , "optional statecheck form url")
+                ;
+
+
+        return opts_descs;
+    }//get_options_description
+
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+        boost::program_options::variables_map::iterator it;
+        for(it = vm.begin(); it != vm.end(); it++) {
+                std::string key(it->first);
+                if (key.compare(0, CONFIG_PREFIX.length(), CONFIG_PREFIX)==0) {
+                        key = key.substr(CONFIG_PREFIX.length());
+                }
+
+                std::cout << key << " = " << it->second.as<std::string>() << std::endl;
+
+                hp_config [key] = (it->second).as<std::string>();
+        }
+
+        return option_group_index;
+    }//handle
+};//class HandleHPMailBatchStateArgsGrp
+
+const std::string HandleHPMailBatchStateArgsGrp::CONFIG_PREFIX("statecheck.");
+
+
 #endif //HANDLE_HPMAILBATCHSTATE_ARGS_H_

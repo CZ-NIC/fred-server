@@ -66,4 +66,41 @@ public:
     }//handle
 };
 
+/**
+ * \class HandleClientHPArgsGrp
+ * \brief client-hp options handler
+ */
+class HandleClientHPArgsGrp : public HandleGrpArgs
+{
+public:
+    std::string do_action ;//action to perform
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> opts(
+                new boost::program_options::options_description(
+                        std::string("ClientHP configuration")));
+        opts->add_options()
+                ("do", boost::program_options
+                            ::value<std::string>()->default_value(std::string("upload"))
+                             , "what to do \"upload\" or \"statecheck\"");
+        return opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+        do_action = (vm.count("do") == 0 ? "" : vm["do"].as<std::string>());
+
+        //option group selection
+        if(do_action.compare("upload") == 0) option_group_index = 0;
+        if(do_action.compare("statecheck") == 0) option_group_index = 1;
+
+        return option_group_index;
+    }//handle
+};
+
+
 #endif //HANDLE_CLIENTHP_ARGS_H_

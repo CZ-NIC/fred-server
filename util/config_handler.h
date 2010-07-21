@@ -156,4 +156,116 @@ CfgArgs* CfgArgs::instance()
     return ret;
 }
 
+
+typedef std::map<std::string, HandleGrpArgsPtr > HandlerGrpPtrMap;
+
+/**
+ * \class CfgArgGroups
+ * \brief groupable handlers container and processor
+ */
+class CfgArgGroups : boost::noncopyable
+{
+    HandlerPtrGrid hpg_;
+    HandlerGrpPtrMap hpm_;
+    static std::auto_ptr<CfgArgGroups> instance_ptr;
+public:
+    template <class T> HandleGrpArgsPtr get_handler_by_type()
+    {
+        HandlerGrpPtrMap::const_iterator it;
+        it = hpm_.find( typeid(T).name() );
+        if(it != hpm_.end())//if found
+            return it->second;
+        //not found
+        return HandleGrpArgsPtr(static_cast<HandleGrpArgs*>(0));
+    }
+
+    template <class T> T* get_handler_ptr_by_type()
+    {
+        HandlerGrpPtrMap::const_iterator it;
+        it = hpm_.find( typeid(T).name() );
+        if(it != hpm_.end())//if found
+            return dynamic_cast<T*>(it->second.get());
+        //not found
+        throw std::runtime_error("error: handler not found");
+    }
+    friend class std::auto_ptr<CfgArgGroups>;
+protected:
+    ~CfgArgGroups(){}
+private:
+    CfgArgGroups(const HandlerPtrGrid& hpg)
+        : hpg_(hpg) //grid init
+    {
+        //map init
+        for(HandlerPtrGrid::const_iterator i = hpg_.begin()
+                ; i != hpg_.end(); ++i )
+            for(HandlerGrpVector::const_iterator j = i->begin()
+                    ; j != i->end(); ++j )
+                hpm_[typeid( *((*j).get()) ).name()] = *j;
+    }
+
+public:
+    template <class HELP> static  CfgArgGroups * instance(const HandlerPtrGrid& hpg);
+    static CfgArgGroups * instance();
+
+    FakedArgs fa;
+    FakedArgs handle( int argc, char* argv[])
+    {
+        //initial fa
+        fa.prealocate_for_argc(argc);
+        for (int i = 0; i < argc ; ++i)
+            fa.add_argv(argv[i]);
+
+        std::size_t group_index = 0;//start index
+
+        for(HandlerPtrGrid::const_iterator i = hpg_.begin()
+                ; i != hpg_.end(); ++i )
+        {
+            FakedArgs fa_out;
+            group_index = i->at(group_index)//option group selection
+                    ->handle( fa.get_argc(), fa.get_argv(), fa_out, group_index);
+            fa=fa_out;//last output to next input
+        }//for HandlerPtrGrid
+        return fa;
+    }//handle
+};//class CfgArgGroups
+
+//static instance init
+std::auto_ptr<CfgArgGroups> CfgArgGroups::instance_ptr(0);
+
+
+
+//setter
+template <class HELP> CfgArgGroups* CfgArgGroups::instance(const HandlerPtrGrid& hpg)
+{
+    std::auto_ptr<CfgArgGroups>
+    tmp_instance(new CfgArgGroups(hpg));
+
+    //gather options_descriptions for help print if present
+    HandleGrpArgsPtr ha =
+            tmp_instance->get_handler_by_type<HELP>();
+    HELP* hga = 0;//nonowning temp child
+    if(ha.get() != 0)
+        hga = dynamic_cast<HELP*>(ha.get());
+    if(hga != 0)
+    {
+        for(HandlerPtrGrid::const_iterator i = hpg.begin()
+                ; i != hpg.end(); ++i )
+            for(HandlerGrpVector::const_iterator j = i->begin()
+                    ; j != i->end(); ++j )
+                hga->po_description.push_back((*j)->get_options_description());
+    }
+    instance_ptr = tmp_instance;
+    return instance_ptr.get();
+}
+
+//getter
+CfgArgGroups* CfgArgGroups::instance()
+{
+    CfgArgGroups* ret = instance_ptr.get();
+    if (ret == 0) throw std::runtime_error("error: CfgArgGroups instance not set");
+    return ret;
+}
+
+
+
 #endif //CONFIG_HANDLER_H_
