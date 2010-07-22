@@ -8,6 +8,8 @@
 	  - batch processing
 	  - configuration and logging fixes
 
+  * old banking client removed
+
 2010-06-17 Jiri Sadek, Juraj Vicenik, Jan Zima (2.4.0)
 
   * registrar groups and certification implemented
