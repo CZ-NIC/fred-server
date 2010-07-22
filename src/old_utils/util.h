@@ -54,10 +54,6 @@ bool get_HANDLE(
 bool get_handle(
   char * HANDLE, const char *handle, int typ);
 
-// generate ROID 
-void get_roid(
-  char *roid, char *prefix, int id);
-
 // convert  DNS host  to lower case 
 bool convert_hostname(
   char *HOST, const char *fqdn);

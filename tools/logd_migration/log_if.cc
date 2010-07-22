@@ -219,7 +219,6 @@ Register::Logger::RequestProperties *epp_property_push_ds(Register::Logger::Requ
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
 	epp_ds *value;				/* ds record data structure */
-	Register::Logger::RequestProperties *ret;	/* return value in case the list is not empty	*/
 
 	if (q_length(*list) > 0) {
 
@@ -228,38 +227,36 @@ Register::Logger::RequestProperties *epp_property_push_ds(Register::Logger::Requ
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "keytag");
-			if ((ret = epp_property_push_int(c_props, str, value->keytag, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->keytag, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "alg");
-			if ((ret = epp_property_push_int(c_props, str, value->alg, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->alg, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "digestType");
-			if ((ret = epp_property_push_int(c_props, str, value->digestType, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->digestType, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "digest");
-			if ((ret = epp_property_push(c_props, str, value->digest, false, false)) == NULL) {
+			if ((c_props = epp_property_push(c_props, str, value->digest, false, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "maxSigLife");
-			if ((ret = epp_property_push_int(c_props, str, value->maxSigLife, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->maxSigLife, false)) == NULL) {
 				return NULL;
 			}
 		}
-		return ret;
-	} else {
-		return c_props;
-	}
+        }
+        return c_props;
 
 }
 
@@ -280,7 +277,6 @@ Register::Logger::RequestProperties *epp_property_push_valerr(Register::Logger::
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
 	epp_error *value;			/* ds record data structure */
-	Register::Logger::RequestProperties *ret;	/* return value in case the list is not empty	*/
 
 	if (q_length(*list) > 0) {
 
@@ -289,21 +285,19 @@ Register::Logger::RequestProperties *epp_property_push_valerr(Register::Logger::
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "element");
-			if ((ret = epp_property_push(c_props, str, value->value, true, false)) == NULL) {
+			if ((c_props = epp_property_push(c_props, str, value->value, true, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "reason");
-			if ((ret = epp_property_push(c_props, str, value->reason, true, false)) == NULL) {
+			if ((c_props = epp_property_push(c_props, str, value->reason, true, false)) == NULL) {
 				return NULL;
 			}
 
 		}
-		return ret;
-	} else {
-		return c_props;
-	}
+        }
+        return c_props;
 
 }
 
@@ -323,7 +317,6 @@ Register::Logger::RequestProperties *epp_property_push_nsset(Register::Logger::R
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
 	epp_ns *value;				/* ds record data structure */
-	Register::Logger::RequestProperties *ret;	/* return value in case the list is not empty	*/
 
 	if (q_length(*list) > 0) {
 
@@ -332,20 +325,18 @@ Register::Logger::RequestProperties *epp_property_push_nsset(Register::Logger::R
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "name");
-			if ((ret = epp_property_push(c_props, str, value->name, false, false)) == NULL) {
+			if ((c_props = epp_property_push(c_props, str, value->name, false, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "addr");
-			if ((ret = epp_property_push_qhead(c_props, &value->addr, str, false, true)) == NULL) {
+			if ((c_props = epp_property_push_qhead(c_props, &value->addr, str, false, true)) == NULL) {
 				return NULL;
 			}
 		}
-		return ret;
-	} else {
-		return c_props;
-	}
+        }
+        return c_props;
 
 }
 
@@ -364,7 +355,6 @@ Register::Logger::RequestProperties *epp_property_push_dnskey(Register::Logger::
 {
 	char str[LOG_PROP_NAME_LENGTH];
 	epp_dnskey *value;
-	Register::Logger::RequestProperties *ret;
 
 	if (q_length(*list) > 0) {
 		q_foreach(list) {
@@ -372,34 +362,31 @@ Register::Logger::RequestProperties *epp_property_push_dnskey(Register::Logger::
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "flags");
-			if ((ret = epp_property_push_int(c_props, str, value->flags, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->flags, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "protocol");
-			if ((ret = epp_property_push_int(c_props, str, value->protocol, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->protocol, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "alg");
-			if ((ret = epp_property_push_int(c_props, str, value->alg, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->alg, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "publicKey");
-			if ((ret = epp_property_push(c_props, str, value->public_key, false, false)) == NULL) {
+			if ((c_props = epp_property_push(c_props, str, value->public_key, false, false)) == NULL) {
 				return NULL;
 			}
 
 		}
-		return ret;
-
-	} else {
-		return c_props;
-	}
+        }
+        return c_props;
 
 }
 

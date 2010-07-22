@@ -157,14 +157,6 @@ int atoh(
   return Value;
 }
 
-// generate roid started with prefix unique indentificator of object
-void get_roid(
-  char *roid, char *prefix, int id)
-{
-  sprintf(roid, "%s%010d-CZ", prefix, id);
-  LOG( LOG_DEBUG , "get_ROID [%s] from prefix %s  id %d" , roid , prefix , id );
-
-}
 // contact handle
 bool get_CONTACTHANDLE(
   char * HANDLE, const char *handle)
