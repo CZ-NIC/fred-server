@@ -1,3 +1,13 @@
+2010-07-22 Jiri Sadek, Juraj Vicenik, Jan Zima (2.4.1)
+
+  * Coverity errors fixes
+
+  * postservice
+      - order state check
+	  - limit for domains per letter
+	  - batch processing
+	  - configuration and logging fixes
+
 2010-06-17 Jiri Sadek, Juraj Vicenik, Jan Zima (2.4.0)
 
   * registrar groups and certification implemented
