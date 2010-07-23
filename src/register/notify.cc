@@ -474,19 +474,19 @@ namespace Register
               std::auto_ptr<Document::Generator> gPDF;
               const std::string &exDate;
               Transaction &trans;
-              std::vector<TID> holder_ids;
+              std::vector<TID> state_ids;
 
           public:
               /** holderid is only used for the filename
                * to identify which contact id's are contained in the 
-               * individual file, call addHolderId 
+               * individual file, call addStateId 
                */
-              GenMultipleFiles(const std::string &exDate_, const TID holder_id, 
+              GenMultipleFiles(const std::string &exDate_, const TID state_id, 
                     Document::Manager *docm, Transaction &tr) 
                 : exDate(exDate_), trans(tr)  {
   
               std::stringstream filename;
-              filename << "letter-" << exDate << "-" << holder_id << ".pdf";
+              filename << "letter-" << exDate << "-" << state_id << ".pdf";
                   
               gPDF.reset(
                 docm->createSavingGenerator(
@@ -504,7 +504,7 @@ namespace Register
             
             ~GenMultipleFiles() {
                 try {
-                if (holder_ids.empty()) {
+                if (state_ids.empty()) {
                   std::string errmsg("ERROR: no registrant ID specified by caller. Wrong usage of API.");
                   LOGGER(PACKAGE).error(errmsg);
                   throw Exception(errmsg);
@@ -525,7 +525,7 @@ namespace Register
                 // records stored in vector could be used in a simple insert
                 //
                 Connection conn = Database::Manager::acquire();
-                std::vector<TID>::iterator it = holder_ids.begin();
+                std::vector<TID>::iterator it = state_ids.begin();
                 TID filePDF = gPDF->closeInput();
                     // status 1 represents 'ready generated - ready for sending
                     sql << "INSERT INTO letter_archive (status, file_id) VALUES (1, "
@@ -535,28 +535,17 @@ namespace Register
 
                     Result res = conn.exec("select currval('letter_archive_id_seq'::regclass)");
                     TID letter_id = res[0][0];
-
-                    sql << "INSERT INTO notify_letters (state_id, letter_id) "
-                    "SELECT tnl.state_id, " << letter_id << " "
-                    "FROM tmp_notify_letters tnl "
-                    "JOIN object_state s ON tnl.state_id=s.id "
-                    "JOIN domain_history dh ON s.ohid_from=dh.historyid AND dh.exdate::date='" << exDate << "' "
-                    "WHERE dh.registrant in ("
-                      << *it;
-
-                  it++;
-
-                  for (;it != holder_ids.end();it++) {
-                      sql << ", " << *it;
-                  }
-                  sql << ") ";
-
+        
+                    sql << "INSERT INTO notify_letters (state_id, letter_id) VALUES (" 
+                        << *it << ", " << letter_id << ")";
+                        
+                    it++;
+                    for (;it != state_ids.end();it++) {
+                        sql << ", (" << *it << ", " << letter_id << ")";
+                    }
+                    
                 conn.exec(sql.str());
                 trans.savepoint();
-
-                if(holder_ids.size() > 1) {
-                  LOGGER(PACKAGE).debug(boost::format("File %1% contains several registrants") % filePDF);
-                }
 
                 } catch (std::exception &e) {
                     LOGGER(PACKAGE).error(
@@ -566,8 +555,8 @@ namespace Register
                 }
             }
             
-            void addHolderId(TID id) {
-                holder_ids.push_back(id);
+            void addStateId(TID id) {
+                state_ids.push_back(id);
             }
 
             std::ostream& getInput() {
@@ -653,7 +642,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                "COALESCE(c.street1,'') || ' ' || "
                "COALESCE(c.street2,'') || ' ' || "
                "COALESCE(c.street3, '') ) as distinction, "
-              << "r.url, d.registrant, c.stateorprovince "
+              << "r.url, tnl.state_id, c.stateorprovince "
 
               << "FROM tmp_notify_letters tnl "
                    "JOIN object_state s               ON tnl.state_id = s.id "
@@ -707,7 +696,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                 << "</expiring_domain>";
 
                 // has to be called here so it applies to NEWLY CREATED object in if above
-                gen->addHolderId(res[i][12]);
+                gen->addStateId(res[i][12]);
 
                 prev_distinction = distinction; 
                 item_count++;
