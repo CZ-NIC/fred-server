@@ -1,3 +1,9 @@
+2010-07-23 Jiri Sadek, Juraj Vicenik (2.4.2)
+
+  * generation of expiration letters fix
+
+  * logger request detail minor fix (id)
+
 2010-07-22 Jiri Sadek, Juraj Vicenik, Jan Zima (2.4.1)
 
   * Coverity errors fixes
