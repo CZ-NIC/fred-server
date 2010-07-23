@@ -168,9 +168,7 @@ Registry::Request::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id) {
 Registry::Request::Detail *ccReg_Log_i::createRequestDetail(Register::Logger::Request *req) {
 	Registry::Request::Detail *detail = new Registry::Request::Detail();
 
-	// TODO should it contain ID?
-	// detail->id		= req->id;
-
+        detail->id		        = req->getId();
         detail->timeBegin       = DUPSTRDATE(req->getTimeBegin);
         detail->timeEnd         = DUPSTRDATE(req->getTimeEnd); 
         detail->sourceIp        = DUPSTRFUN(req->getSourceIp);
