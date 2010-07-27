@@ -166,6 +166,7 @@ public:
 
 	// make an id query according to the filters
     id_query.order_by() << "id DESC";
+    id_query.offset(load_offset_);
     id_query.limit(load_limit_);
     _filter.serialize(id_query);
 
@@ -340,6 +341,8 @@ public:
 	    		    query.order_by() << "t_1.time_begin desc";
 
 	    }
+
+
 
         Database::Connection conn = Database::Manager::acquire();
 	    try {

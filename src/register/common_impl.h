@@ -62,6 +62,7 @@ protected:
   DB *db;
 
   list_type data_;
+  unsigned load_offset_;
   unsigned load_limit_;
   unsigned long long real_size_;
   bool real_size_initialized_;
@@ -80,6 +81,7 @@ public:
   
   size_type size() const;
   unsigned long long sizeDb();
+  void setOffset(unsigned _offset);
   virtual void setLimit(unsigned _limit);
   virtual unsigned getLimit() const;
   virtual bool isLimited() const;

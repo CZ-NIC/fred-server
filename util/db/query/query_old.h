@@ -92,7 +92,7 @@ protected:
 class SelectQuery : public Query {
 public:
 	SelectQuery() :
-			Query(), limit_r(0) {
+			Query(), offset_r(0), limit_r(0) {
 	}
 
 
@@ -126,6 +126,9 @@ public:
 		return order_by_s;
 	}
 
+        void offset(unsigned _n) {
+                offset_r = _n;
+        }
 
 	void limit(unsigned _n) {
 	  /*
@@ -177,6 +180,7 @@ protected:
 	std::stringstream         where_s;
 	std::stringstream         group_by_s;
 	std::stringstream         order_by_s;
+        unsigned                  offset_r;
 	unsigned                  limit_r;
 	std::vector<Column*>      select_v;
 	prepared_values_string    m_where_prepared_string;

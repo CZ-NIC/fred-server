@@ -71,6 +71,8 @@ public:
   virtual size_type size() const = 0;
   /// return count of objects in database
   virtual unsigned long long sizeDb() = 0;
+  /// set offset for result 
+  virtual void setOffset(unsigned _offset) = 0;
   /// set limit for result
   virtual void setLimit(unsigned _limit) = 0;
   /// get load lomit

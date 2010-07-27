@@ -49,12 +49,12 @@ void CommonObjectImpl::setId(TID id) {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 CommonListImpl::CommonListImpl(DB *_db) :
-  db(_db), load_limit_(1000), real_size_(0), real_size_initialized_(false)
+  db(_db), load_offset_(0), load_limit_(1000), real_size_(0), real_size_initialized_(false)
     , load_limit_active_(), ptr_idx_(-1), add(false), wcheck(true), idFilter(0)
 {}
 
 CommonListImpl::CommonListImpl() :
-  db(), load_limit_(1000), real_size_(0), real_size_initialized_(false),
+  db(), load_offset_(0), load_limit_(1000), real_size_(0), real_size_initialized_(false),
   load_limit_active_(), ptr_idx_(-1), add(false), wcheck(true), idFilter(0)
 {}
 
@@ -83,6 +83,10 @@ unsigned long long CommonListImpl::sizeDb() {
     makeRealCount();
 
   return real_size_;
+}
+
+void CommonListImpl::setOffset(unsigned _offset) {
+  load_offset_ = _offset;
 }
 
 void CommonListImpl::setLimit(unsigned _limit) {
