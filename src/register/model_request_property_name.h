@@ -5,12 +5,12 @@
 #include "model.h"
 
 
-class ModelRequestProperty:
+class ModelRequestPropertyName:
     public Model::Base {
 public:
-    ModelRequestProperty()
+    ModelRequestPropertyName()
     { }
-    virtual ~ModelRequestProperty()
+    virtual ~ModelRequestPropertyName()
     { }
     const unsigned long long &getId() const {
         return m_id.get();
@@ -50,7 +50,7 @@ public:
         return Model::Base::toString(this);
     }
 
-    typedef Model::Field::List<ModelRequestProperty>  field_list;
+    typedef Model::Field::List<ModelRequestPropertyName>  field_list;
     static const field_list& getFields() {
         return fields;
     }
@@ -61,14 +61,14 @@ protected:
 
 
 public:
-    static Model::Field::PrimaryKey<ModelRequestProperty, unsigned long long> id;
-    static Model::Field::Basic<ModelRequestProperty, std::string> name;
+    static Model::Field::PrimaryKey<ModelRequestPropertyName, unsigned long long> id;
+    static Model::Field::Basic<ModelRequestPropertyName, std::string> name;
 
 
 private:
     static std::string table_name;  /** < model table name */
     static field_list  fields;      /** < list of all model fields */
-}; // class ModelRequestProperty
+}; // class ModelRequestPropertyName
 
 #endif // _MODEL_REQUESTPROPERTY_H_
 

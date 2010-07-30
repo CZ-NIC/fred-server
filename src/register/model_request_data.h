@@ -14,21 +14,21 @@ public:
     const unsigned long long &getId() const {
         return m_id.get();
     }
-    const Database::DateTime &getEntryTimeBegin() const {
-        return m_entryTimeBegin.get();
+    const Database::DateTime &getRequestTimeBegin() const {
+        return m_requestTimeBegin.get();
     }
-    const int &getEntryService() const {
-        return m_entryService.get();
+    const int &getRequestServiceId() const {
+        return m_requestServiceId.get();
     }
-    const bool &getEntryMonitoring() const {
-        return m_entryMonitoring.get();
+    const bool &getRequestMonitoring() const {
+        return m_requestMonitoring.get();
     }
-    const unsigned long long &getEntryId() const {
-        return m_entryId.get();
+    const unsigned long long &getRequestId() const {
+        return m_requestId.get();
     }
 /*
-    ModelRequest *getEntry() {
-        return entry.getRelated(this);
+    ModelRequest *getRequest() {
+        return request.getRelated(this);
     }
     */
     const std::string &getContent() const {
@@ -40,21 +40,21 @@ public:
     void setId(const unsigned long long &id) {
         m_id = id;
     }
-    void setEntryTimeBegin(const Database::DateTime &entryTimeBegin) {
-        m_entryTimeBegin = entryTimeBegin;
+    void setRequestTimeBegin(const Database::DateTime &requestTimeBegin) {
+        m_requestTimeBegin = requestTimeBegin;
     }
-    void setEntryService(const int &entryService) {
-        m_entryService = entryService;
+    void setRequestServiceId(const int &requestServiceId) {
+        m_requestServiceId = requestServiceId;
     }
-    void setEntryMonitoring(const bool &entryMonitoring) {
-        m_entryMonitoring = entryMonitoring;
+    void setRequestMonitoring(const bool &requestMonitoring) {
+        m_requestMonitoring = requestMonitoring;
     }
-    void setEntryId(const unsigned long long &entryId) {
-        m_entryId = entryId;
+    void setRequestId(const unsigned long long &requestId) {
+        m_requestId = requestId;
     }
     /*
-    void setEntry(ModelRequest *foreign_value) {
-        entry.setRelated(this, foreign_value);
+    void setRequest(ModelRequest *foreign_value) {
+        request.setRelated(this, foreign_value);
     }
     */
     void setContent(const std::string &content) {
@@ -96,25 +96,25 @@ public:
 
 protected:
     Field::Field<unsigned long long> m_id;
-    Field::Field<Database::DateTime> m_entryTimeBegin;
-    Field::Field<int> m_entryService;
-    Field::Field<bool> m_entryMonitoring;
-    Field::Field<unsigned long long> m_entryId;
+    Field::Field<Database::DateTime> m_requestTimeBegin;
+    Field::Field<int> m_requestServiceId;
+    Field::Field<bool> m_requestMonitoring;
+    Field::Field<unsigned long long> m_requestId;
     Field::Field<std::string> m_content;
     Field::Field<bool> m_isResponse;
 
-    //Field::Lazy::Field<ModelRequest *> m_entry;
+    //Field::Lazy::Field<ModelRequest *> m_request;
 
 public:
     static Model::Field::PrimaryKey<ModelRequestData, unsigned long long> id;
-    static Model::Field::Basic<ModelRequestData, Database::DateTime> entryTimeBegin;
-    static Model::Field::Basic<ModelRequestData, int> entryService;
-    static Model::Field::Basic<ModelRequestData, bool> entryMonitoring;
-    static Model::Field::Basic<ModelRequestData, unsigned long long> entryId;
+    static Model::Field::Basic<ModelRequestData, Database::DateTime> requestTimeBegin;
+    static Model::Field::Basic<ModelRequestData, int> requestServiceId;
+    static Model::Field::Basic<ModelRequestData, bool> requestMonitoring;
+    static Model::Field::Basic<ModelRequestData, unsigned long long> requestId;
     static Model::Field::Basic<ModelRequestData, std::string> content;
     static Model::Field::Basic<ModelRequestData, bool> isResponse;
 
-    //static Model::Field::Related::OneToOne<ModelRequestData, unsigned long long, ModelRequest> entry;
+    //static Model::Field::Related::OneToOne<ModelRequestData, unsigned long long, ModelRequest> request;
 
 private:
     static std::string table_name;  /** < model table name */

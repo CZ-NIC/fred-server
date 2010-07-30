@@ -41,7 +41,7 @@ static const std::string LOG_FILENAME = "log_migration_log.txt";
 
 pool_subst *mem_pool;
 
-/** EPP service code; according to service table 
+/** EPP service_id code; according to service_id table 
  */
 const int LC_EPP = 3;
 
@@ -131,7 +131,7 @@ int main()
 
             std::string id_str = line.substr(0, INPUT_ID_LENGTH);
             line = line.substr(INPUT_ID_LENGTH + 1);
-            TID entry_id = strtoull(id_str.c_str(), &end, 10);
+            TID request_id = strtoull(id_str.c_str(), &end, 10);
 
             if(line[INPUT_DATE_LENGTH] != '|') {
                 logger("Error in input line: Date at the beginning doesn't have proper length");
@@ -177,15 +177,15 @@ int main()
             }
             time2 = clock();
 
-            // we don't care about the action_type - it's already in the request table
-            epp_action_type action_type = UnknownAction;
-            std::auto_ptr<Register::Logger::RequestProperties> props = log_epp_command(cdata, cmd_type, -1, &action_type);
+            // we don't care about the request_type_id - it's already in the request table
+            epp_action_type request_type_id = UnknownAction;
+            std::auto_ptr<Register::Logger::RequestProperties> props = log_epp_command(cdata, cmd_type, -1, &request_type_id);
 
             time3 = clock();
             t_logcomm += time3 - time2;
             epp_parser_request_cleanup(cdata);
 
-            serv.insert_props_pub(date_str, LC_EPP, mon_flag, entry_id, *props);
+            serv.insert_props_pub(date_str, LC_EPP, mon_flag, request_id, *props);
             trans_count++;
 
             if((trans_count % COMMIT_INTERVAL) == 0) {

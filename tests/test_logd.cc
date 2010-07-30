@@ -67,8 +67,8 @@ struct MyFixture {
 
 			std::cout << "Deleting database records from request and related. " << std::endl;
 			while(it != id_list_entry.end()) {
-				conn.exec( (boost::format("delete from request_data where entry_id=%1%") % *it).str() );
-				conn.exec( (boost::format("delete from request_property_value where entry_id=%1%") % *it).str() );
+				conn.exec( (boost::format("delete from request_data where request_id=%1%") % *it).str() );
+				conn.exec( (boost::format("delete from request_property_value where request_id=%1%") % *it).str() );
 				conn.exec( (boost::format("delete from request where id=%1%") % *it).str() );
 				it++;
 			}
@@ -295,11 +295,11 @@ Database::ID TestImplLog::CreateRequest(const char *ip_addr, const RequestServic
 
 	// now a regular select
 
-	query = boost::format ( "select source_ip, service, raw.content from request r join request_data raw on raw.entry_id=r.id where r.id=%1%") % ret;
+	query = boost::format ( "select source_ip, service_id, raw.content from request r join request_data raw on raw.request_id=r.id where r.id=%1%") % ret;
 	res = conn.exec(query.str());
 
 	if (res.size() != 1) {
-		res = conn.exec( (boost::format("select source_ip, service from request where id=%1%") % ret).str() );
+		res = conn.exec( (boost::format("select source_ip, service_id from request where id=%1%") % ret).str() );
 
 		if (res.size() != 1) {
 			if (res.size() == 0) {
@@ -343,7 +343,7 @@ bool TestImplLog::CloseRequest(const Database::ID id, const char *content_out, c
 	if(!result) return result;
 
 	Connection conn = Database::Manager::acquire();
-	boost::format query = boost::format ( "select time_end, raw.content from request r join request_data raw on raw.entry_id=r.id where raw.is_response=true and r.id=%1%") % id;
+	boost::format query = boost::format ( "select time_end, raw.content from request r join request_data raw on raw.request_id=r.id where raw.is_response=true and r.id=%1%") % id;
 	Result res = conn.exec(query.str());
 
 	if (res.size() != 1) {
@@ -386,7 +386,7 @@ std::auto_ptr<Register::Logger::RequestProperties> TestImplLog::create_generic_p
 }
 
 // r is row produced by:
-// boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
+// boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 // p is single property
 // these two are compared :)
 bool TestImplLog::property_match(const Row r, const Register::Logger::RequestProperty &p)
@@ -409,7 +409,7 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Register::Logger::
 {
 	if (props.size() == 0) return;
 
-	boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
+	boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 
 	Connection conn = Database::Manager::acquire();
 	Result res = conn.exec(query.str());
@@ -441,10 +441,10 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Register::Logger::
 
 // this func relies that the order of properties in the database
 // (sorted by their ids) is the same as in the array
-// the properties in the database with entry_id=rec_id must match props exactly
+// the properties in the database with request_id=rec_id must match props exactly
 void TestImplLog::check_db_properties(ID rec_id, const Register::Logger::RequestProperties & props)
 {
-	boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
+	boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 
 	Connection conn = Database::Manager::acquire();
 
@@ -599,27 +599,27 @@ BOOST_AUTO_TEST_CASE( partitions )
 	// this gets the very same connection which is used by test object above since this program is single-threaded
 	Connection conn = Database::Manager::acquire();
 	boost::format insert;
-	int service;
+	int service_id;
 
 	// i is also used as minutes in time
-	for(service = LC_UNIX_WHOIS; service < LC_MAX_SERVICE; service++) {
+	for(service_id = LC_UNIX_WHOIS; service_id < LC_MAX_SERVICE; service_id++) {
 		for(int i=1;i<MONTHS_COUNT;i++) {
 			std::string date = create_date_str(2009, i);
 			try {
-                                Database::ID entry_id;                                
+                                Database::ID request_id;                                
 
                                 boost::format fmt = boost::format("%1% 9:%2%:00") % date % i;
 
                                 ModelRequest req1;
                                 req1.setTimeBegin(Database::DateTime(fmt.str()));
-                                req1.setServiceId(service);
+                                req1.setServiceId(service_id);
                                 req1.setIsMonitoring(false);
                                 req1.insert();
                                 Database::ID rid1 = req1.getId();
 
                                 MyFixture::id_list_entry.push_back(rid1);
 
-                                boost::format test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType) service, false) % rid1;
+                                boost::format test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType) service_id, false) % rid1;
                                 Database::Result res = conn.exec(test.str());
 
                                 if (res.size() == 0) {
@@ -632,14 +632,14 @@ BOOST_AUTO_TEST_CASE( partitions )
 
                                 ModelRequest req;
                                 req.setTimeBegin(Database::DateTime(fmt.str()));
-                                req.setServiceId(service);
+                                req.setServiceId(service_id);
                                 req.setIsMonitoring(true);
                                 req.insert();
                                 Database::ID rid2 = req.getId();
 
 				MyFixture::id_list_entry.push_back(rid2);
 
-				test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, true) % rid2;
+				test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service_id, true) % rid2;
 				res = conn.exec(test.str());
 
 				if(res.size() == 0) {
@@ -650,34 +650,34 @@ BOOST_AUTO_TEST_CASE( partitions )
                                         fmt = boost::format("%1% 9:%2%:00") % date % i;
 
                                         ModelRequestPropertyValue pv;
-                                        pv.setEntryTimeBegin(fmt.str());
-                                        pv.setEntryService(service);
-                                        pv.setEntryMonitoring(false);
-                                        pv.setEntry(rid1);
-                                        pv.setName(13);
+                                        pv.setRequestTimeBegin(fmt.str());
+                                        pv.setRequestServiceId(service_id);
+                                        pv.setRequestMonitoring(false);
+                                        pv.setRequestId(rid1);
+                                        pv.setPropertyNameId(13);
                                         pv.setValue ("valuevalue");
                                         pv.insert();
 
                                         Database::ID prop_id1 = pv.getId();
 
-					boost::format test1 = boost::format("select entry_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, false) % prop_id1;
+					boost::format test1 = boost::format("select request_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service_id, false) % prop_id1;
 					res = conn.exec(test1.str());
 
 					if(res.size() == 0) {
 						BOOST_ERROR(" Record not found in the correct partition ");
 					}
 
-                                        pv.setEntryTimeBegin(fmt.str());
-                                        pv.setEntryService(service);
-                                        pv.setEntryMonitoring(true);
-                                        pv.setEntry(rid2);
-                                        pv.setName(13);
+                                        pv.setRequestTimeBegin(fmt.str());
+                                        pv.setRequestServiceId(service_id);
+                                        pv.setRequestMonitoring(true);
+                                        pv.setRequestId(rid2);
+                                        pv.setPropertyNameId(13);
                                         pv.setValue ("valuevalue");
                                         pv.insert();
 
                                         Database::ID prop_id2 = pv.getId();
 
-					boost::format test2 = boost::format("select entry_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, false) % prop_id2;
+					boost::format test2 = boost::format("select request_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service_id, false) % prop_id2;
 					res = conn.exec(test2.str());
 
 					if(res.size() == 0) {

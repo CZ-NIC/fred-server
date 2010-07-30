@@ -31,15 +31,15 @@ public:
     }
     /*
     ModelService *getService() {
-        return service.getRelated(this);
+        return service_id.getRelated(this);
     }
     */
-    const unsigned long long &getActionTypeId() const {
-        return m_actionTypeId.get();
+    const unsigned long long &getRequestTypeId() const {
+        return m_requestTypeId.get();
     }
     /*
-    ModelRequestType *getActionType() {
-        return actionType.getRelated(this);
+    ModelRequestType *getRequestType() {
+        return requestType.getRelated(this);
     }
     */
     const unsigned long long &getSessionId() const {
@@ -73,15 +73,15 @@ public:
     }
     /*
     void setService(ModelService *foreign_value) {
-        service.setRelated(this, foreign_value);
+        service_id.setRelated(this, foreign_value);
     }
     */
-    void setActionTypeId(const unsigned long long &actionTypeId) {
-        m_actionTypeId = actionTypeId;
+    void setRequestTypeId(const unsigned long long &requestTypeId) {
+        m_requestTypeId = requestTypeId;
     }
     /*
-    void setActionType(ModelRequestType *foreign_value) {
-        actionType.setRelated(this, foreign_value);
+    void setRequestType(ModelRequestType *foreign_value) {
+        requestType.setRelated(this, foreign_value);
     }
     */
     void setSessionId(const unsigned long long &sessionId) {
@@ -134,12 +134,12 @@ protected:
     Field::Field<std::string> m_sourceIp;
     Field::Field<std::string> m_userName;
     Field::Field<unsigned long long> m_serviceId;
-    Field::Field<unsigned long long> m_actionTypeId;
+    Field::Field<unsigned long long> m_requestTypeId;
     Field::Field<unsigned long long> m_sessionId;
     Field::Field<bool> m_isMonitoring;
 
     //Field::Lazy::Field<ModelService *> m_service;
-    //Field::Lazy::Field<ModelRequestType *> m_actionType;
+    //Field::Lazy::Field<ModelRequestType *> m_requestType;
     //Field::Lazy::Field<ModelSession *> m_session;
 
 public:
@@ -149,12 +149,12 @@ public:
     static Model::Field::Basic<ModelRequest, std::string> sourceIp;
     static Model::Field::Basic<ModelRequest, std::string> userName;
     static Model::Field::Basic<ModelRequest, unsigned long long> serviceId;
-    static Model::Field::Basic<ModelRequest, unsigned long long> actionTypeId;
+    static Model::Field::Basic<ModelRequest, unsigned long long> requestTypeId;
     static Model::Field::Basic<ModelRequest, unsigned long long> sessionId;
     static Model::Field::Basic<ModelRequest, bool> isMonitoring;
 
-    //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelService> service;
-    //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelRequestType> actionType;
+    //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelService> service_id;
+    //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelRequestType> requestType;
     //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelSession> session;
 
 private:

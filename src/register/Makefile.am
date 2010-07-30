@@ -44,8 +44,8 @@ libfred_a_SOURCES = register.cc \
 					model_request_data.cc \
 					model_request_data.h \
 					model_request.h \
-					model_request_property.cc \
-					model_request_property.h \
+					model_request_property_name.cc \
+					model_request_property_name.h \
 					model_request_property_value.cc \
 					model_request_property_value.h \
 					model_session.cc \

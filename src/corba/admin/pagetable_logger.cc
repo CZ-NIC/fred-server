@@ -27,7 +27,7 @@ Registry::Table::ColumnHeaders* ccReg_Logger_i::getColumnHeaders() {
   COLHEAD(ch,1,"time_end",CT_OTHER);
   COLHEAD(ch,2,"serv_type",CT_OTHER);
   COLHEAD(ch,3,"source_ip",CT_OTHER);
-  COLHEAD(ch,4,"action_type",CT_OTHER);  
+  COLHEAD(ch,4,"request_type_id",CT_OTHER);  
   COLHEAD(ch,5,"user_name",CT_OTHER);
   COLHEAD(ch,6,"is_monitoring",CT_OTHER);
   return ch;

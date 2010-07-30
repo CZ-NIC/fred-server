@@ -27,7 +27,7 @@ public:
   // ccReg_Log_i(const std::string database) throw (Impl_Log_If::DB_CONNECT_FAILED): Impl_Log_If(database) {};
   virtual ~ccReg_Log_i();
 
-  ccReg::TID CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long action_type, ccReg::TID session_id);
+  ccReg::TID CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long request_type_id, ccReg::TID session_id);
 
   CORBA::Boolean UpdateRequest(ccReg::TID id, const ccReg::RequestProperties &props);
   CORBA::Boolean CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props);

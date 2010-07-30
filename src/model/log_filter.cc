@@ -67,7 +67,7 @@ Value<bool>& RequestImpl::addIsMonitoring()
 
 RequestServiceType& RequestImpl::addService()
 {
-  RequestServiceType *tmp = new RequestServiceType(Column("service", joinRequestTable()));
+  RequestServiceType *tmp = new RequestServiceType(Column("service_id", joinRequestTable()));
   tmp->setName("Service");
   add(tmp);
   return *tmp;
@@ -76,7 +76,7 @@ RequestServiceType& RequestImpl::addService()
 
 RequestActionType& RequestImpl::addActionType()
 {
-  RequestActionType *tmp = new RequestActionType (Column("action_type", joinRequestTable()));
+  RequestActionType *tmp = new RequestActionType (Column("request_type_id", joinRequestTable()));
   tmp->setName("ActionType");
   add(tmp);
   return *tmp;
@@ -87,7 +87,7 @@ RequestPropertyValue& RequestImpl::addRequestPropertyValue()
   RequestPropertyValue *tmp = new RequestPropertyValueImpl(true);
   tmp->setName("RequestPropertyValue");
 
-  tmp->joinOn(new Join(Column("id", joinRequestTable()), SQL_OP_EQ,  Column("entry_id", tmp->joinRequestPropertyValueTable())));
+  tmp->joinOn(new Join(Column("id", joinRequestTable()), SQL_OP_EQ,  Column("request_id", tmp->joinRequestPropertyValueTable())));
   add(tmp);
   return *tmp;
 }
@@ -97,7 +97,7 @@ RequestData& RequestImpl::addRequestData()
 	RequestData *tmp = new RequestDataImpl(true);
 	tmp->setName("RequestData");
 
-	tmp->joinOn(new Join(Column("id", joinRequestTable()), SQL_OP_EQ, Column("entry_id", tmp->joinRequestDataTable())));
+	tmp->joinOn(new Join(Column("id", joinRequestTable()), SQL_OP_EQ, Column("request_id", tmp->joinRequestDataTable())));
 	add(tmp);
 	return *tmp;
 }
@@ -135,13 +135,13 @@ Value<bool>& RequestPropertyValueImpl::addOutputFlag()
 
 Table &RequestPropertyValueImpl::joinRequestPropertyTable()
 {
-	return joinTable("request_property");
+	return joinTable("request_property_name");
 }
 
 Value<std::string>& RequestPropertyValueImpl::addName()
 {
   addJoin(new Join(
-	Column("name_id", joinRequestPropertyValueTable()),
+	Column("property_name_id", joinRequestPropertyValueTable()),
 	SQL_OP_EQ,
 	Column("id", joinRequestPropertyTable())
   ));

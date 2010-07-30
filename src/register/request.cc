@@ -38,7 +38,7 @@ private:
   std::string source_ip;
   // types changed from RequestServiceType and RequestActionType to std::string because pagetable should now return it as strings
   std::string serv_type;
-  std::string action_type;
+  std::string request_type_id;
   Database::ID session_id;
   std::string user_name;
   bool is_monitoring;
@@ -47,13 +47,13 @@ private:
   boost::shared_ptr<RequestProperties> props;
 
 public:
-  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, std::string &_serv_type, std::string &_source_ip,  std::string &_action_type, Database::ID &_session_id, std::string &_user_name, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
+  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, std::string &_serv_type, std::string &_source_ip,  std::string &_request_type_id, Database::ID &_session_id, std::string &_user_name, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
 	CommonObjectImpl(_id),
 	time_begin(_time_begin),
 	time_end(_time_end),
 	source_ip(_source_ip),
 	serv_type(_serv_type),
-	action_type(_action_type),
+	request_type_id(_request_type_id),
 	session_id(_session_id),
         user_name(_user_name),
 	is_monitoring(_is_monitoring),
@@ -78,7 +78,7 @@ public:
         return user_name;
   }
   virtual const std::string& getActionType() const {
-	return action_type;
+	return request_type_id;
   }
   virtual const Database::ID& getSessionId() const {
 	return session_id;
@@ -178,14 +178,14 @@ public:
 
     if(partialLoad) {
 	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.status, t_1.session_id, t_1.user_name, t_1.is_monitoring";
-	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id join request_type t_2 on t_2.id=t_1.action_type join service t_3 on t_3.id=t_1.service";
+	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id join request_type t_2 on t_2.id=t_1.request_type_id join service t_3 on t_3.id=t_1.service_id";
 	    query.order_by() << "t_1.time_begin desc";
     } else {
 // hardcore optimizations have to be done on this statement
 	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.status, t_1.session_id, t_1.user_name, t_1.is_monitoring, "
-						" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=tmp.id and is_response=false limit 1) as request, "
-						" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=tmp.id and is_response=true  limit 1) as response ";
-	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id  join request_type t_2 on t_2.id=t_1.action_type join service t_3 on t_3.id=t_1.service";
+						" (select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=false limit 1) as request, "
+						" (select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=true  limit 1) as response ";
+	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id  join request_type t_2 on t_2.id=t_1.request_type_id join service t_3 on t_3.id=t_1.service_id";
 	    query.order_by() << "t_1.time_begin desc";
     }
 
@@ -207,7 +207,7 @@ public:
     		Database::DateTime 	time_end  	= *(++col);
                 std::string             serv_type  	= *(++col);
     		std::string 		source_ip  	= *(++col);
-                std::string             action_type     = *(++col);
+                std::string             request_type_id     = *(++col);
 		Database::ID		session_id	= *(++col);
                 std::string             user_name       = *(++col);
 		bool			is_monitoring	= *(++col);
@@ -228,7 +228,7 @@ public:
 				time_end,
 				serv_type,
 				source_ip,
-				action_type,
+				request_type_id,
 				session_id,
                                 user_name,
 				is_monitoring,
@@ -291,8 +291,8 @@ public:
 	Database::SelectQuery query;
 
 	query.select() << "t_2.name, t_1.value, t_1.output, (t_1.parent_id is not null)";
-	query.from()   << "request_property_value t_1 join request_property t_2 on t_1.name_id=t_2.id";
-	query.where()  << "and t_1.entry_id = " << id;
+	query.from()   << "request_property_value t_1 join request_property_name t_2 on t_1.property_name_id=t_2.id";
+	query.where()  << "and t_1.request_id = " << id;
     query.order_by() << "t_1.id";
 
     Database::Connection conn = Database::Manager::acquire();
@@ -330,13 +330,13 @@ public:
 	    Database::SelectQuery query;
 
 	 if(partialLoad) {
-		    query.select() << "t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.action_type, t_1.session_id, t_1.is_monitoring";
+		    query.select() << "t_1.time_begin, t_1.time_end, t_1.service_id, t_1.source_ip, t_1.request_type_id, t_1.session_id, t_1.is_monitoring";
 		    query.from() << "request t_1";
 		    query.order_by() << "t_1.time_begin desc";
 	    } else {
-	    	   query.select() << "t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.user_name, t_1.action_type, t_1.session_id, t_1.is_monitoring, "
-	    							" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=t_1.id and is_response=false limit 1) as request, "
-	    							" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=t_1.id and is_response=true  limit 1) as response ";
+	    	   query.select() << "t_1.time_begin, t_1.time_end, t_1.service_id, t_1.source_ip, t_1.user_name, t_1.request_type_id, t_1.session_id, t_1.is_monitoring, "
+	    							" (select content from request_data where request_time_begin=t_1.time_begin and request_id=t_1.id and is_response=false limit 1) as request, "
+	    							" (select content from request_data where request_time_begin=t_1.time_begin and request_id=t_1.id and is_response=true  limit 1) as response ";
 	    		    query.from() << getTempTableName() << "request t_1";
 	    		    query.order_by() << "t_1.time_begin desc";
 
@@ -357,7 +357,7 @@ public:
 				std::string             serv_type  = *(++col);
 				std::string 		source_ip  	= *(++col);
                                 std::string             user_name       = *(++col);
-				std::string  		action_type = *(++col);
+				std::string  		request_type_id = *(++col);
 				Database::ID		session_id	= *(++col);
 				bool			is_monitoring	= *(++col);
 				std::string		request;
@@ -376,7 +376,7 @@ public:
 							time_end,
 							serv_type,
 							source_ip,
-							action_type,
+							request_type_id,
 							session_id,
                                                         user_name,
 							is_monitoring,
@@ -509,7 +509,7 @@ Result ManagerImpl::i_GetServiceActions(RequestServiceType service)
 	
 	TRACE("[CALL] Register::Logger::ManagerImpl::i_GetServiceActions");
 
-	boost::format query = boost::format("select id, status from request_type where service = %1%") % service;
+	boost::format query = boost::format("select id, status from request_type where service_id = %1%") % service;
 
         return conn.exec(query.str());
 	
@@ -558,10 +558,10 @@ ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
 	// now fill the property_names map:
 
 	try {
-		Result res = conn.exec("select id, name from request_property");
+		Result res = conn.exec("select id, name from request_property_name");
 
 		if (res.size() > PROP_NAMES_SIZE_LIMIT) {
-			logger_error(" Number of entries in request_property is over the limit.");
+			logger_error(" Number of entries in request_property_name is over the limit.");
 
 			return;
 		}
@@ -614,7 +614,7 @@ bool ManagerImpl::record_check(ID id, Connection &conn)
 ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db)
 {
         TRACE("[CALL] Register::Logger::ManagerImpl::find_property_name_id");
-	ID name_id;
+	ID property_name_id;
 	std::map<std::string, ID>::iterator iter;
 
 	std::string name_trunc = name.substr(0, MAX_NAME_LENGTH);
@@ -633,7 +633,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
 	iter = property_names.find(name_trunc);
 
 	if(iter != property_names.end()) {
-		name_id = iter->second;
+		property_name_id = iter->second;
 
                 prop_add2db.unlock();
                 // unlock
@@ -642,21 +642,21 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
 
             std::string s_name = conn.escape(name_trunc);
 
-            boost::format query = boost::format("select id from request_property where name='%1%'") % s_name;
+            boost::format query = boost::format("select id from request_property_name where name='%1%'") % s_name;
             Result res = conn.exec(query.str());
            
             if (res.size() > 0) {
                 // okay, it was found in the database
-                name_id = res[0][0];
+                property_name_id = res[0][0];
             } else {
                 // not found, we're under lock, so we can add it now
                 // and let the lock release after commiting the transaction
-                ModelRequestProperty pn;
+                ModelRequestPropertyName pn;
                 pn.setName(name_trunc);
 
                 try {
                     pn.insert();
-                    name_id = pn.getId();
+                    property_name_id = pn.getId();
                 } catch (Database::Exception &ex) {
                     logger_error(ex.what());
                     prop_add2db.unlock();
@@ -667,40 +667,40 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
         
             // now that we know the right database id of the name
             // we can add it to the map
-            property_names[name_trunc] = name_id;
+            property_names[name_trunc] = property_name_id;
             
             // if the name was inserted into database, we have to keep it locked
             // until commit
             if (!db_insert) prop_add2db.unlock();
 	}
         
-	return name_id;
+	return property_name_id;
 }
 
 // insert properties for the given request record
-void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id,  const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock)
+void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID request_id,  const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock)
 {
         TRACE("[CALL] Register::Logger::ManagerImpl::insert_props");
-	ID name_id, last_id = 0;
+	ID property_name_id, last_id = 0;
 
 	if(props.size() == 0) {
 		return;
 	}
 
 	// process the first record
-	name_id = find_property_name_id(props[0].name, conn, prop_lock);
+	property_name_id = find_property_name_id(props[0].name, conn, prop_lock);
 
 	if (props[0].child) {
 		// the first property is set to child - this is an error
-		logger_error(boost::format("entry ID %1%: first property marked as child. Ignoring this flag ") % entry_id);
+		logger_error(boost::format("entry ID %1%: first property marked as child. Ignoring this flag ") % request_id);
 	}
 
 	ModelRequestPropertyValue pv_first;
-	pv_first.setEntryTimeBegin(entry_time);
-	pv_first.setEntryService(service);
-	pv_first.setEntryMonitoring(monitoring);
-	pv_first.setEntry(entry_id);
-	pv_first.setName(name_id);
+	pv_first.setRequestTimeBegin(entry_time);
+	pv_first.setRequestServiceId(service);
+	pv_first.setRequestMonitoring(monitoring);
+	pv_first.setRequestId(request_id);
+	pv_first.setPropertyNameId(property_name_id);
 	pv_first.setValue (props[0].value);
 	pv_first.setOutput(props[0].output);
 
@@ -709,16 +709,16 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 
 	// process the rest of the sequence
 	for (unsigned i = 1; i < props.size(); i++) {
-		name_id = find_property_name_id(props[i].name, conn, prop_lock);
+		property_name_id = find_property_name_id(props[i].name, conn, prop_lock);
 
 		// create a new object for each iteration
 		// because ParentId must alternate between NULL and some value
 		ModelRequestPropertyValue pv;
-		pv.setEntryTimeBegin(entry_time);
-		pv.setEntryService(service);
-		pv.setEntryMonitoring(monitoring);
-		pv.setEntry(entry_id);
-		pv.setName(name_id);
+		pv.setRequestTimeBegin(entry_time);
+		pv.setRequestServiceId(service);
+		pv.setRequestMonitoring(monitoring);
+		pv.setRequestId(request_id);
+		pv.setPropertyNameId(property_name_id);
 		pv.setValue (props[i].value);
 		pv.setOutput(props[i].output);
 
@@ -735,18 +735,18 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 
 }
 
-void ManagerImpl::insert_props_pub(DateTime entry_time, RequestServiceType entry_service, bool monitoring, Database::ID entry_id, const Register::Logger::RequestProperties& props) {
+void ManagerImpl::insert_props_pub(DateTime entry_time, RequestServiceType request_service_id, bool monitoring, Database::ID request_id, const Register::Logger::RequestProperties& props) {
 #if ( BOOST_VERSION < 103500 ) 
         boost::mutex::scoped_lock prop_lock(properties_mutex, false);
 #else 
         boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
 #endif
-	insert_props(entry_time, entry_service, monitoring, entry_id, props, get_connection(), prop_lock);
+	insert_props(entry_time, request_service_id, monitoring, request_id, props, get_connection(), prop_lock);
 }
 
 
 // log a new event, return the database ID of the record
-ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service, const char *content_in, const Register::Logger::RequestProperties& props, RequestActionType action_type, ID session_id)
+ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service, const char *content_in, const Register::Logger::RequestProperties& props, RequestActionType request_type_id, ID session_id)
 {
      	logd_ctx_init ctx;        
 #ifdef HAVE_LOGGER
@@ -765,7 +765,7 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 
         logd_auto_db db;
 
-	ID entry_id;
+	ID request_id;
 
 	// get UTC with microseconds
 	DateTime time(microsec_clock::universal_time());
@@ -785,7 +785,7 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 	req.setTimeBegin(time);
 	// watch out, these 2 values are passed by reference
 	req.setServiceId(service);
-	req.setActionTypeId(action_type);
+	req.setRequestTypeId(request_type_id);
 
         if (session_id != 0){
                 req.setSessionId(session_id);
@@ -803,10 +803,10 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 		}
 
 		req.insert();
-                entry_id = req.getId();
+                request_id = req.getId();
 
 #ifdef HAVE_LOGGER
-                boost::format entry_fmt = boost::format("entry-%1%") % entry_id;
+                boost::format entry_fmt = boost::format("entry-%1%") % request_id;
                 ctx_entry.reset(new Logging::Context(entry_fmt.str()));
                 
 #endif
@@ -823,10 +823,10 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 
 		// insert into request_data
 		if(content_in != NULL && content_in[0] != '\0') {
-			data.setEntryTimeBegin(time);
-			data.setEntryService(service);
-			data.setEntryMonitoring(monitoring);
-			data.setEntryId(entry_id);
+			data.setRequestTimeBegin(time);
+			data.setRequestServiceId(service);
+			data.setRequestMonitoring(monitoring);
+			data.setRequestId(request_id);
 			data.setContent(content_in);
 			data.setIsResponse(false);
 
@@ -834,7 +834,7 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 		}
 
 		// inserting properties
-		insert_props(time, service, monitoring, entry_id, props, db, prop_lock);
+		insert_props(time, service, monitoring, request_id, props, db, prop_lock);
 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
@@ -842,7 +842,7 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 	}
 
         db.commit();
-	return entry_id;
+	return request_id;
 }
 
 // optimization
@@ -894,7 +894,7 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 
 		// TODO think about some other way - i don't like this
                 // optimization
-		boost::format query = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
+		boost::format query = boost::format("select time_begin, service_id, is_monitoring from request where id = %1%") % id;
 		Result res = db.exec(query.str());
 
 		if(res.size() == 0) {
@@ -904,9 +904,9 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 		// end of TODO
 
 		DateTime time = res[0][0].operator ptime();
-		RequestServiceType service = (RequestServiceType)(int)res[0][1];
+		RequestServiceType service_id = (RequestServiceType)(int)res[0][1];
 		bool monitoring        = (bool)res[0][2];
-		insert_props(time, service, monitoring, id, props, db, prop_lock);
+		insert_props(time, service_id, monitoring, id, props, db, prop_lock);
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
 		return false;
@@ -921,7 +921,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 {
     TRACE("[CALL] Register::Logger::ManagerImpl::close_request_worker");
 	std::string time;
-	RequestServiceType service;
+	RequestServiceType service_id;
 	bool monitoring;
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
@@ -947,7 +947,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
                 
                 if (has_content || props.size() > 0) {
                     // optimization
-                    boost::format select = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
+                    boost::format select = boost::format("select time_begin, service_id, is_monitoring from request where id = %1%") % id;
                     Result res = conn.exec(select.str());
                     if(res.size() == 0) {
                             logger_error(boost::format("Record  with ID %1% not found in request table.") % id );
@@ -955,7 +955,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
                     }
 
                     DateTime entry_time = res[0][0].operator ptime();
-                    service = (RequestServiceType)(int) res[0][1];
+                    service_id = (RequestServiceType)(int) res[0][1];
                     monitoring = (bool)res[0][2];
 
                     
@@ -964,10 +964,10 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
                             ModelRequestData data;
 
                             // insert into request_data
-                            data.setEntryTimeBegin(entry_time);
-                            data.setEntryService(service);
-                            data.setEntryMonitoring(monitoring);
-                            data.setEntryId(id);
+                            data.setRequestTimeBegin(entry_time);
+                            data.setRequestServiceId(service_id);
+                            data.setRequestMonitoring(monitoring);
+                            data.setRequestId(id);
                             data.setContent(content_out);
                             data.setIsResponse(true);
 
@@ -975,7 +975,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
                     }
 
                     // inserting properties
-                    insert_props(res[0][0].operator ptime(), service, monitoring, id, props, conn, prop_lock);
+                    insert_props(res[0][0].operator ptime(), service_id, monitoring, id, props, conn, prop_lock);
 
                 }
 

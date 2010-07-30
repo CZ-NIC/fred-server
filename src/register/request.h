@@ -13,7 +13,7 @@
 
 #include "model_request_data.h"
 #include "model_request.h"
-#include "model_request_property.h"
+#include "model_request_property_name.h"
 #include "model_request_property_value.h"
 #include "model_session.h"
 
@@ -120,7 +120,7 @@ public:
   /** Used only in migration  - return a connection used by the connection manager
 	it's meant to be used only in single-threaded environment
   */
-virtual  Database::ID i_CreateRequest(const char *sourceIP, RequestServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestActionType action_type, Database::ID session_id) = 0;
+virtual  Database::ID i_CreateRequest(const char *sourceIP, RequestServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestActionType request_type_id, Database::ID session_id) = 0;
 virtual  bool i_UpdateRequest(Database::ID id, const Register::Logger::RequestProperties &props) = 0;
 virtual  bool i_CloseRequest(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props) = 0;
 virtual  bool i_CloseRequestLogin(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, Database::ID session_id) = 0;

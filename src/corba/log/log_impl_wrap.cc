@@ -26,9 +26,9 @@ ccReg_Log_i::~ccReg_Log_i()
     }
 }
 
-ccReg::TID ccReg_Log_i::CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long action_type, ccReg::TID session_id) {    
+ccReg::TID ccReg_Log_i::CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long request_type_id, ccReg::TID session_id) {    
     std::auto_ptr<Register::Logger::RequestProperties> p(convert_properties(props));
-    return back->i_CreateRequest(sourceIP, (Database::Filters::RequestServiceType)service, content_in, *(p.get()), action_type, session_id);
+    return back->i_CreateRequest(sourceIP, (Database::Filters::RequestServiceType)service, content_in, *(p.get()), request_type_id, session_id);
 }
 
 CORBA::Boolean ccReg_Log_i::UpdateRequest(ccReg::TID id, const ccReg::RequestProperties &props) {

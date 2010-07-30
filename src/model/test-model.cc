@@ -383,7 +383,7 @@ int main(int argc, char *argv[]) {
 /*
     le->addJoin (new Join( Column("id", le->joinTable("request")),
 			SQL_OP_EQ,
-			Column("entry_id", le->joinTable("property_value"))
+			Column("request_id", le->joinTable("property_value"))
 			));
     le->addJoin (new Join( Column("property_id", le->joinTable("property_value")),
 			SQL_OP_EQ,
@@ -394,7 +394,7 @@ int main(int argc, char *argv[]) {
     sq1->addSelect("name", pv.joinRequestPropertyTable());
     sq1->addSelect("value", pv.joinRequestPropertyValueTable());
 
-    sq1->addSelect("time_begin source_ip is_monitoring service", le->joinRequestTable());
+    sq1->addSelect("time_begin source_ip is_monitoring service_id", le->joinRequestTable());
 
     uf.addQuery(sq1);
 

@@ -11,23 +11,23 @@ public:
     { }
     virtual ~ModelRequestPropertyValue()
     { }
-    const Database::DateTime &getEntryTimeBegin() const {
-        return m_entryTimeBegin.get();
+    const Database::DateTime &getRequestTimeBegin() const {
+        return m_requestTimeBegin.get();
     }
-    const int &getEntryService() const {
-        return m_entryService.get();
+    const int &getRequestService() const {
+        return m_requestServiceId.get();
     }
-    const bool &getEntryMonitoring() const {
-        return m_entryMonitoring.get();
+    const bool &getRequestMonitoring() const {
+        return m_requestMonitoring.get();
     }
     const unsigned long long &getId() const {
         return m_id.get();
     }
-    const int &getEntry() const {
-        return m_entry.get();
+    const int &getRequestId() const {
+        return m_requestId.get();
     }
-    const int &getName() const {
-        return m_name.get();
+    const int &getPropertyNameId() const {
+        return m_propertyNameId.get();
     }
     const std::string &getValue() const {
         return m_value.get();
@@ -43,23 +43,23 @@ public:
         return parent.getRelated(this);
     }
     */
-    void setEntryTimeBegin(const Database::DateTime &entryTimeBegin) {
-        m_entryTimeBegin = entryTimeBegin;
+    void setRequestTimeBegin(const Database::DateTime &requestTimeBegin) {
+        m_requestTimeBegin = requestTimeBegin;
     }
-    void setEntryService(const int &entryService) {
-        m_entryService = entryService;
+    void setRequestServiceId(const int &requestServiceId) {
+        m_requestServiceId = requestServiceId;
     }
-    void setEntryMonitoring(const bool &entryMonitoring) {
-        m_entryMonitoring = entryMonitoring;
+    void setRequestMonitoring(const bool &requestMonitoring) {
+        m_requestMonitoring = requestMonitoring;
     }
     void setId(const unsigned long long &id) {
         m_id = id;
     }
-    void setEntry(const int &entry) {
-        m_entry = entry;
+    void setRequestId(const int &requestId) {
+        m_requestId = requestId;
     }
-    void setName(const int &name) {
-        m_name = name;
+    void setPropertyNameId(const int &propertyNameId) {
+        m_propertyNameId = propertyNameId;
     }
     void setValue(const std::string &value) {
         m_value = value;
@@ -106,12 +106,12 @@ public:
     }
 
 protected:
-    Field::Field<Database::DateTime> m_entryTimeBegin;
-    Field::Field<int> m_entryService;
-    Field::Field<bool> m_entryMonitoring;
+    Field::Field<Database::DateTime> m_requestTimeBegin;
+    Field::Field<int> m_requestServiceId;
+    Field::Field<bool> m_requestMonitoring;
     Field::Field<unsigned long long> m_id;
-    Field::Field<int> m_entry;
-    Field::Field<int> m_name;
+    Field::Field<int> m_requestId;
+    Field::Field<int> m_propertyNameId;
     Field::Field<std::string> m_value;
     Field::Field<bool> m_output;
     Field::Field<unsigned long long> m_parentId;
@@ -119,12 +119,12 @@ protected:
     //Field::Lazy::Field<ModelRequestPropertyValue *> m_parent;
 
 public:
-    static Model::Field::Basic<ModelRequestPropertyValue, Database::DateTime> entryTimeBegin;
-    static Model::Field::Basic<ModelRequestPropertyValue, int> entryService;
-    static Model::Field::Basic<ModelRequestPropertyValue, bool> entryMonitoring;
+    static Model::Field::Basic<ModelRequestPropertyValue, Database::DateTime> requestTimeBegin;
+    static Model::Field::Basic<ModelRequestPropertyValue, int> requestServiceId;
+    static Model::Field::Basic<ModelRequestPropertyValue, bool> requestMonitoring;
     static Model::Field::PrimaryKey<ModelRequestPropertyValue, unsigned long long> id;
-    static Model::Field::Basic<ModelRequestPropertyValue, int> entry;
-    static Model::Field::Basic<ModelRequestPropertyValue, int> name;
+    static Model::Field::Basic<ModelRequestPropertyValue, int> requestId;
+    static Model::Field::Basic<ModelRequestPropertyValue, int> propertyNameId;
     static Model::Field::Basic<ModelRequestPropertyValue, std::string> value;
     static Model::Field::Basic<ModelRequestPropertyValue, bool> output;
     static Model::Field::Basic<ModelRequestPropertyValue, unsigned long long> parentId;
