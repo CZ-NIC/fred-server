@@ -177,12 +177,12 @@ public:
     Database::SelectQuery query;
 
     if(partialLoad) {
-	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.status, t_1.session_id, t_1.user_name, t_1.is_monitoring";
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.name, t_1.session_id, t_1.user_name, t_1.is_monitoring";
 	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id join request_type t_2 on t_2.id=t_1.request_type_id join service t_3 on t_3.id=t_1.service_id";
 	    query.order_by() << "t_1.time_begin desc";
     } else {
 // hardcore optimizations have to be done on this statement
-	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.status, t_1.session_id, t_1.user_name, t_1.is_monitoring, "
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.name, t_1.session_id, t_1.user_name, t_1.is_monitoring, "
 						" (select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=false limit 1) as request, "
 						" (select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=true  limit 1) as response ";
 	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id  join request_type t_2 on t_2.id=t_1.request_type_id join service t_3 on t_3.id=t_1.service_id";
@@ -509,7 +509,7 @@ Result ManagerImpl::i_GetServiceActions(RequestServiceType service)
 	
 	TRACE("[CALL] Register::Logger::ManagerImpl::i_GetServiceActions");
 
-	boost::format query = boost::format("select id, status from request_type where service_id = %1%") % service;
+	boost::format query = boost::format("select id, name from request_type where service_id = %1%") % service;
 
         return conn.exec(query.str());
 	
