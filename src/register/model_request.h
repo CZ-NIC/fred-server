@@ -53,6 +53,11 @@ public:
     const bool &getIsMonitoring() const {
         return m_isMonitoring.get();
     }
+    const int &getResultCodeId() const {
+        return m_resultCodeId.get();
+    }
+
+
     void setId(const unsigned long long &id) {
         m_id = id;
     }
@@ -96,6 +101,9 @@ public:
     void setIsMonitoring(const bool &isMonitoring) {
         m_isMonitoring = isMonitoring;
     }
+    void setResultCodeId(const int &resultCodeId) {
+        m_resultCodeId = resultCodeId;
+    }
 
     friend class Model::Base;
 
@@ -137,6 +145,7 @@ protected:
     Field::Field<unsigned long long> m_requestTypeId;
     Field::Field<unsigned long long> m_sessionId;
     Field::Field<bool> m_isMonitoring;
+    Field::Field<int> m_resultCodeId;
 
     //Field::Lazy::Field<ModelService *> m_service;
     //Field::Lazy::Field<ModelRequestType *> m_requestType;
@@ -152,6 +161,7 @@ public:
     static Model::Field::Basic<ModelRequest, unsigned long long> requestTypeId;
     static Model::Field::Basic<ModelRequest, unsigned long long> sessionId;
     static Model::Field::Basic<ModelRequest, bool> isMonitoring;
+    static Model::Field::Basic<ModelRequest, int> resultCodeId;
 
     //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelService> service_id;
     //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelRequestType> requestType;

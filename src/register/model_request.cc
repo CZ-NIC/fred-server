@@ -11,6 +11,10 @@ DEFINE_BASIC_FIELD(ModelRequest, unsigned long long, requestTypeId, m_requestTyp
 DEFINE_BASIC_FIELD(ModelRequest, unsigned long long, sessionId, m_sessionId, table_name, "session_id", .setForeignKey())
 DEFINE_BASIC_FIELD(ModelRequest, unsigned long long, serviceId, m_serviceId, table_name, "service_id", .setNotNull().setForeignKey())
 DEFINE_BASIC_FIELD(ModelRequest, bool, isMonitoring, m_isMonitoring, table_name, "is_monitoring", .setNotNull())
+DEFINE_BASIC_FIELD(ModelRequest, int, resultCodeId, m_resultCodeId, table_name, "result_code_id", .setForeignKey())
+
+
+
 
 //DEFINE_ONE_TO_ONE(ModelRequest, ModelService, service_id, m_service, unsigned long long, serviceId, m_serviceId)
 //DEFINE_ONE_TO_ONE(ModelRequest, ModelRequestType, requestType, m_requestType, unsigned long long, requestTypeId, m_requestTypeId)
@@ -26,5 +30,6 @@ ModelRequest::field_list ModelRequest::fields = list_of<ModelRequest::field_list
     (&ModelRequest::requestTypeId)
     (&ModelRequest::sessionId)
     (&ModelRequest::isMonitoring)
+    (&ModelRequest::resultCodeId)
 ;
 
