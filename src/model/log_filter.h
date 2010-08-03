@@ -30,24 +30,24 @@ namespace Database {
 
 namespace Filters {
 
-class RequestServiceType : public Database::Filters::Value<long> {
+class ServiceType : public Database::Filters::Value<long> {
 public:
-	RequestServiceType(const long val = 0) : Value<long>() {
+	ServiceType(const long val = 0) : Value<long>() {
 		setValue(val);
 	}	
-	RequestServiceType(const Column &col) : Database::Filters::Value<long>(col) {
+	ServiceType(const Column &col) : Database::Filters::Value<long>(col) {
 	}
 /*
-	void setValue(RequestServiceType &val) {
+	void setValue(ServiceType &val) {
 		// use Null<long> to exchange value
 		setValue( val.getValue());
 	}
 */
 	
-	friend std::ostream& operator<<(std::ostream &_os, const RequestServiceType& _v);
-	friend std::istream& operator>>(std::istream &_is, RequestServiceType& _v);
-	friend bool operator<(const RequestServiceType &_left, const RequestServiceType &_right);
-	friend bool operator>(const RequestServiceType &_left, const RequestServiceType &_right);
+	friend std::ostream& operator<<(std::ostream &_os, const ServiceType& _v);
+	friend std::istream& operator>>(std::istream &_is, ServiceType& _v);
+	friend bool operator<(const ServiceType &_left, const ServiceType &_right);
+	friend bool operator>(const ServiceType &_left, const ServiceType &_right);
 
 	operator long() const {
 		return getValue().getValue();
@@ -63,17 +63,17 @@ public:
     }
 };
 
-class RequestActionType : public Database::Filters::Value<long> {
+class RequestType : public Database::Filters::Value<long> {
 public:
-	RequestActionType(const long val = 0) : Value<long>() {
+	RequestType(const long val = 0) : Value<long>() {
 		setValue(val);
 	}	
-	RequestActionType(const Column &col) : Database::Filters::Value<long>(col) {
+	RequestType(const Column &col) : Database::Filters::Value<long>(col) {
 	}
-	friend std::ostream& operator<<(std::ostream &_os, const RequestActionType& _v); 
-	friend std::istream& operator>>(std::istream &_is, RequestActionType& _v);
-	friend bool operator<(const RequestActionType &_left, const RequestActionType &_right);
-	friend bool operator>(const RequestActionType &_left, const RequestActionType &_right);
+	friend std::ostream& operator<<(std::ostream &_os, const RequestType& _v); 
+	friend std::istream& operator>>(std::istream &_is, RequestType& _v);
+	friend bool operator<(const RequestType &_left, const RequestType &_right);
+	friend bool operator>(const RequestType &_left, const RequestType &_right);
 	operator long() const {
 		return getValue().getValue();
 	}
@@ -179,8 +179,8 @@ public:
   virtual Value<std::string>& addSourceIp() = 0;
   virtual Value<std::string>& addUserName() = 0;
   virtual Value<bool>& addIsMonitoring() = 0;
-  virtual RequestServiceType& addService() = 0;
-  virtual RequestActionType&  addActionType() = 0;
+  virtual ServiceType& addServiceType() = 0;
+  virtual RequestType&  addRequestType() = 0;
   virtual RequestData& addRequestData() = 0;
   virtual RequestPropertyValue&   addRequestPropertyValue() = 0;
 
@@ -206,8 +206,8 @@ public:
   virtual Value<std::string>& addSourceIp();
   virtual Value<std::string>& addUserName();
   virtual Value<bool>& addIsMonitoring();
-  virtual RequestServiceType& addService();
-  virtual RequestActionType& addActionType();
+  virtual ServiceType& addServiceType();
+  virtual RequestType& addRequestType();
   virtual RequestData& addRequestData();
   virtual RequestPropertyValue& addRequestPropertyValue();
 

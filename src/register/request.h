@@ -23,8 +23,8 @@ using namespace Database;
 namespace Register {
 namespace Logger {
 
-typedef long int RequestServiceType;
-typedef long int RequestActionType;
+typedef long int ServiceType;
+typedef long int RequestType;
 
 enum MemberType {
   MT_TIME_BEGIN,
@@ -120,13 +120,13 @@ public:
   /** Used only in migration  - return a connection used by the connection manager
 	it's meant to be used only in single-threaded environment
   */
-virtual  Database::ID i_CreateRequest(const char *sourceIP, RequestServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestActionType request_type_id, Database::ID session_id) = 0;
+virtual  Database::ID i_CreateRequest(const char *sourceIP, ServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestType request_type_id, Database::ID session_id) = 0;
 virtual  bool i_UpdateRequest(Database::ID id, const Register::Logger::RequestProperties &props) = 0;
 virtual  bool i_CloseRequest(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props) = 0;
 virtual  bool i_CloseRequestLogin(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, Database::ID session_id) = 0;
   virtual Database::ID i_CreateSession(Languages lang, const char *name) = 0;
 virtual  bool i_CloseSession(Database::ID id) = 0;
-  virtual Database::Result i_GetServiceActions(RequestServiceType service) = 0;
+  virtual Database::Result i_GetServiceActions(ServiceType service) = 0;
   virtual Database::Result i_GetServices() = 0;
 
   virtual List* createList() const = 0;

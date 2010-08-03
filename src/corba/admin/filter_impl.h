@@ -47,10 +47,10 @@ public:
   ccReg::Filters::Session_ptr addE(Database::Filters::Session* f);
    
 
-  // ccReg::Filters::RequestServiceType_ptr addE(Database::Filters::Value<Database::Filters::RequestServiceType> *f);
-  // ccReg::Filters::RequestActionType_ptr addE(Database::Filters::Value<Database::Filters::RequestActionType> *f);
-  ccReg::Filters::RequestServiceType_ptr addE(Database::Filters::RequestServiceType *f);
-  ccReg::Filters::RequestActionType_ptr addE(Database::Filters::RequestActionType *f);
+  // ccReg::Filters::ServiceType_ptr addE(Database::Filters::Value<Database::Filters::ServiceType> *f);
+  // ccReg::Filters::RequestType_ptr addE(Database::Filters::Value<Database::Filters::RequestType> *f);
+  ccReg::Filters::ServiceType_ptr addE(Database::Filters::ServiceType *f);
+  ccReg::Filters::RequestType_ptr addE(Database::Filters::RequestType *f);
   ccReg::Filters::StatementItem_ptr addE(Database::Filters::BankPayment *f);
   ccReg::Filters::StatementHead_ptr addE(Database::Filters::BankStatement *f);
 

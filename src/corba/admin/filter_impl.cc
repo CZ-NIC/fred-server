@@ -120,13 +120,13 @@ public:
   }
 };
 
-class FilterRequestServiceTypeImpl : virtual public POA_ccReg::Filters::RequestServiceType, public FilterSimpleImpl {
-  Database::Filters::RequestServiceType* get() {
-    return dynamic_cast<Database::Filters::RequestServiceType*>(f);
+class FilterServiceTypeImpl : virtual public POA_ccReg::Filters::ServiceType, public FilterSimpleImpl {
+  Database::Filters::ServiceType* get() {
+    return dynamic_cast<Database::Filters::ServiceType*>(f);
   }
 
 public:
-  FilterRequestServiceTypeImpl(Database::Filters::RequestServiceType* f) :
+  FilterServiceTypeImpl(Database::Filters::ServiceType* f) :
     FilterSimpleImpl(f) {
   }
 
@@ -141,23 +141,23 @@ public:
   }
 };
 
-class FilterRequestActionTypeImpl : virtual public POA_ccReg::Filters::RequestActionType, public FilterSimpleImpl {
-  Database::Filters::RequestActionType* get() {
-    return dynamic_cast<Database::Filters::RequestActionType*>(f);
+class FilterRequestTypeImpl : virtual public POA_ccReg::Filters::RequestType, public FilterSimpleImpl {
+  Database::Filters::RequestType* get() {
+    return dynamic_cast<Database::Filters::RequestType*>(f);
   }
 
 public:
-  FilterRequestActionTypeImpl(Database::Filters::RequestActionType* f) :
+  FilterRequestTypeImpl(Database::Filters::RequestType* f) :
     FilterSimpleImpl(f) {
   }
 
-  ccReg::RequestActionType value() {
+  ccReg::RequestType value() {
     long int val;
     val = (long int)get()->getValue().getValue();
-    return ccReg::RequestActionType(val);
+    return ccReg::RequestType(val);
   }
 
-  void value(ccReg::RequestActionType v) {
+  void value(ccReg::RequestType v) {
     get()->setValue(Database::Null<long int>(v));
   }
 };
@@ -493,8 +493,8 @@ COMPOUND_CLASS(Request, Request, Compound,
     FILTER_ADD(Str, addSourceIp);
     FILTER_ADD(Str, addUserName);
     FILTER_ADD(Bool, addIsMonitoring);
-    FILTER_ADD(RequestServiceType, addService);
-    FILTER_ADD(RequestActionType, addActionType);
+    FILTER_ADD(ServiceType, addServiceType);
+    FILTER_ADD(RequestType, addRequestType);
     FILTER_ADD(RequestData, addRequestData);
     FILTER_ADD(RequestPropertyValue, addRequestPropertyValue);
 );
@@ -635,8 +635,8 @@ ITERATOR_ADD_E_METHOD_IMPL(Id,Value<Database::ID>);
 ITERATOR_ADD_E_METHOD_IMPL(Action,EppAction);
 ITERATOR_ADD_E_METHOD_IMPL(Date,Interval<Database::DateInterval>);
 ITERATOR_ADD_E_METHOD_IMPL(DateTime,Interval<Database::DateTimeInterval>);
-ITERATOR_ADD_E_METHOD_IMPL(RequestServiceType,RequestServiceType);
-ITERATOR_ADD_E_METHOD_IMPL(RequestActionType,RequestActionType);
+ITERATOR_ADD_E_METHOD_IMPL(ServiceType,ServiceType);
+ITERATOR_ADD_E_METHOD_IMPL(RequestType,RequestType);
 ITERATOR_ADD_E_METHOD_IMPL(Obj,Object);
 ITERATOR_ADD_E_METHOD_IMPL(Registrar,Registrar);
 ITERATOR_ADD_E_METHOD_IMPL(Filter,FilterFilter);
@@ -694,11 +694,11 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Session,Session);
   ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
 /*
-  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestServiceType,Value<Database::Filters::RequestServiceType>);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestActionType,Value<Database::Filters::RequestActionType>);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(ServiceType,Value<Database::Filters::ServiceType>);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestType,Value<Database::Filters::RequestType>);
 */
-  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestServiceType,RequestServiceType);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestActionType,RequestActionType);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(ServiceType,ServiceType);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestType,RequestType);
   ITERATOR_ADD_FILTER_METHOD_IMPL(StatementItem, BankPayment);
   ITERATOR_ADD_FILTER_METHOD_IMPL(StatementHead, BankStatement);
 

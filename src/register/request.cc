@@ -36,7 +36,7 @@ private:
   Database::DateTime time_begin;
   Database::DateTime time_end;
   std::string source_ip;
-  // types changed from RequestServiceType and RequestActionType to std::string because pagetable should now return it as strings
+  // types changed from ServiceType and RequestType to std::string because pagetable should now return it as strings
   std::string serv_type;
   std::string request_type_id;
   Database::ID session_id;
@@ -501,7 +501,7 @@ List *ManagerImpl::createList() const {
 	return new ListImpl((Manager *)this);
 }
 
-Result ManagerImpl::i_GetServiceActions(RequestServiceType service)
+Result ManagerImpl::i_GetServiceActions(ServiceType service)
 {
         logd_ctx_init ctx;
 
@@ -678,7 +678,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
 }
 
 // insert properties for the given request record
-void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID request_id,  const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock)
+void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock)
 {
         TRACE("[CALL] Register::Logger::ManagerImpl::insert_props");
 	ID property_name_id, last_id = 0;
@@ -735,7 +735,7 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 
 }
 
-void ManagerImpl::insert_props_pub(DateTime entry_time, RequestServiceType request_service_id, bool monitoring, Database::ID request_id, const Register::Logger::RequestProperties& props) {
+void ManagerImpl::insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Register::Logger::RequestProperties& props) {
 #if ( BOOST_VERSION < 103500 ) 
         boost::mutex::scoped_lock prop_lock(properties_mutex, false);
 #else 
@@ -746,7 +746,7 @@ void ManagerImpl::insert_props_pub(DateTime entry_time, RequestServiceType reque
 
 
 // log a new event, return the database ID of the record
-ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service, const char *content_in, const Register::Logger::RequestProperties& props, RequestActionType request_type_id, ID session_id)
+ID ManagerImpl::i_CreateRequest(const char *sourceIP, ServiceType service, const char *content_in, const Register::Logger::RequestProperties& props, RequestType request_type_id, ID session_id)
 {
      	logd_ctx_init ctx;        
 #ifdef HAVE_LOGGER
@@ -904,7 +904,7 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 		// end of TODO
 
 		DateTime time = res[0][0].operator ptime();
-		RequestServiceType service_id = (RequestServiceType)(int)res[0][1];
+		ServiceType service_id = (ServiceType)(int)res[0][1];
 		bool monitoring        = (bool)res[0][2];
 		insert_props(time, service_id, monitoring, id, props, db, prop_lock);
 	} catch (Database::Exception &ex) {
@@ -921,7 +921,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 {
     TRACE("[CALL] Register::Logger::ManagerImpl::close_request_worker");
 	std::string time;
-	RequestServiceType service_id;
+	ServiceType service_id;
 	bool monitoring;
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
@@ -955,7 +955,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
                     }
 
                     DateTime entry_time = res[0][0].operator ptime();
-                    service_id = (RequestServiceType)(int) res[0][1];
+                    service_id = (ServiceType)(int) res[0][1];
                     monitoring = (bool)res[0][2];
 
                     

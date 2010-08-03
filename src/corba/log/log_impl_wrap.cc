@@ -28,7 +28,7 @@ ccReg_Log_i::~ccReg_Log_i()
 
 ccReg::TID ccReg_Log_i::CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long request_type_id, ccReg::TID session_id) {    
     std::auto_ptr<Register::Logger::RequestProperties> p(convert_properties(props));
-    return back->i_CreateRequest(sourceIP, (Database::Filters::RequestServiceType)service, content_in, *(p.get()), request_type_id, session_id);
+    return back->i_CreateRequest(sourceIP, (Database::Filters::ServiceType)service, content_in, *(p.get()), request_type_id, session_id);
 }
 
 CORBA::Boolean ccReg_Log_i::UpdateRequest(ccReg::TID id, const ccReg::RequestProperties &props) {
@@ -54,17 +54,17 @@ CORBA::Boolean ccReg_Log_i::CloseSession(ccReg::TID id) {
     return back->i_CloseSession(id);
 }
 
-ccReg::RequestActionList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceType service) {    
-    Database::Result res = back->i_GetServiceActions((Database::Filters::RequestServiceType)service);
+ccReg::RequestTypeList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceType service) {    
+    Database::Result res = back->i_GetServiceActions((Database::Filters::ServiceType)service);
 
     int size = res.size();
-    ccReg::RequestActionList_var ret = new ccReg::RequestActionList();
+    ccReg::RequestTypeList_var ret = new ccReg::RequestTypeList();
 
     ret->length(size);
 
     for (int i = 0; i < size; i++) {
-        ret[i].id = (ccReg::RequestActionType)res[i][0];
-        ret[i].status = CORBA::string_dup(((std::string)res[i][1]).c_str());
+        ret[i].id = (ccReg::RequestType)res[i][0];
+        ret[i].name = CORBA::string_dup(((std::string)res[i][1]).c_str());
     }
 
     return ret._retn();
@@ -78,7 +78,7 @@ ccReg::RequestServiceList* ccReg_Log_i::GetServices()
     ccReg::RequestServiceList_var ret = new ccReg::RequestServiceList();
     ret->length(size);
     for (unsigned int i = 0; i < size; ++i) {
-        ret[i].id = static_cast<ccReg::RequestActionType>(data[i][0]);
+        ret[i].id = static_cast<ccReg::RequestType>(data[i][0]);
         ret[i].name = CORBA::string_dup(static_cast<std::string>(data[i][1]).c_str());
     }
 

@@ -111,8 +111,8 @@ public:
     _ar.register_type(static_cast<RequestImpl *>(NULL));
     _ar.register_type(static_cast<RequestDataImpl *>(NULL));
     _ar.register_type(static_cast<RequestPropertyValueImpl *>(NULL));
-    _ar.register_type(static_cast<RequestServiceType *>(NULL));
-    _ar.register_type(static_cast<RequestActionType *>(NULL));
+    _ar.register_type(static_cast<ServiceType *>(NULL));
+    _ar.register_type(static_cast<RequestType *>(NULL));
 
     _ar & BOOST_SERIALIZATION_NVP(filter_list);
   }

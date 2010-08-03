@@ -39,24 +39,24 @@ public:
 	return Database::Manager::acquire();
   }
 
-  Database::ID i_CreateRequest(const char *sourceIP, RequestServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestActionType request_type_id, Database::ID session_id);
+  Database::ID i_CreateRequest(const char *sourceIP, ServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestType request_type_id, Database::ID session_id);
   bool i_UpdateRequest(Database::ID id, const Register::Logger::RequestProperties &props);
   bool i_CloseRequest(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props);
   bool i_CloseRequestLogin(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, Database::ID session_id);
   Database::ID i_CreateSession(Languages lang, const char *name);
   bool i_CloseSession(Database::ID id);
-  Database::Result i_GetServiceActions(RequestServiceType service);
+  Database::Result i_GetServiceActions(ServiceType service);
   Database::Result i_GetServices();
 
  // for migration tool (util/logd_migration)
- void insert_props_pub(DateTime entry_time, RequestServiceType request_service_id, bool monitoring, Database::ID request_id, const Register::Logger::RequestProperties& props);
+ void insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Register::Logger::RequestProperties& props);
   
   List* createList() const;
 
 private:
   bool close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props);
   
-  void insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID request_id, const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock);
+  void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock);
   bool record_check(Database::ID id, Connection &conn);
   Database::ID find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db);
   inline Database::ID find_last_property_value_id(Connection &conn);

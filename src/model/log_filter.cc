@@ -65,18 +65,18 @@ Value<bool>& RequestImpl::addIsMonitoring()
   return *tmp;
 }
 
-RequestServiceType& RequestImpl::addService()
+ServiceType& RequestImpl::addServiceType()
 {
-  RequestServiceType *tmp = new RequestServiceType(Column("service_id", joinRequestTable()));
+  ServiceType *tmp = new ServiceType(Column("service_id", joinRequestTable()));
   tmp->setName("Service");
   add(tmp);
   return *tmp;
 }
 
 
-RequestActionType& RequestImpl::addActionType()
+RequestType& RequestImpl::addRequestType()
 {
-  RequestActionType *tmp = new RequestActionType (Column("request_type_id", joinRequestTable()));
+  RequestType *tmp = new RequestType (Column("request_type_id", joinRequestTable()));
   tmp->setName("ActionType");
   add(tmp);
   return *tmp;
@@ -232,22 +232,22 @@ Value<std::string>& SessionImpl::addLang()
   return *tmp;
 }
 
-std::ostream& operator<<(std::ostream &_os, const RequestServiceType& _v) {
+std::ostream& operator<<(std::ostream &_os, const ServiceType& _v) {
   return _os << _v.getValue().getValue();
 }
 
-std::istream& operator>>(std::istream &_is, RequestServiceType& _v) {
+std::istream& operator>>(std::istream &_is, ServiceType& _v) {
   long int tmp;
   _is >> tmp;
   _v.setValue(Database::Null<long>(tmp));
   return _is;
 }
 
-std::ostream& operator<<(std::ostream &_os, const RequestActionType& _v) {
+std::ostream& operator<<(std::ostream &_os, const RequestType& _v) {
   return _os << _v.getValue().getValue();
 }
 
-std::istream& operator>>(std::istream &_is, RequestActionType& _v) {
+std::istream& operator>>(std::istream &_is, RequestType& _v) {
   long int tmp;
   _is >> tmp;
   _v.setValue(Database::Null<long>(tmp));
@@ -255,22 +255,22 @@ std::istream& operator>>(std::istream &_is, RequestActionType& _v) {
 
 }
 
-bool operator<(const RequestServiceType &_left, const RequestServiceType &_right) 
+bool operator<(const ServiceType &_left, const ServiceType &_right) 
 {
 	return _left.getValue().getValue() < _right.getValue().getValue();
 }
 
-bool operator>(const RequestServiceType &_left, const RequestServiceType &_right)
+bool operator>(const ServiceType &_left, const ServiceType &_right)
 {
 	return _left.getValue().getValue() > _right.getValue().getValue();
 }
 
-bool operator<(const RequestActionType &_left, const RequestActionType &_right) 
+bool operator<(const RequestType &_left, const RequestType &_right) 
 {
 	return _left.getValue().getValue() < _right.getValue().getValue();
 }
 
-bool operator>(const RequestActionType &_left, const RequestActionType &_right)
+bool operator>(const RequestType &_left, const RequestType &_right)
 {
 	return _left.getValue().getValue() > _right.getValue().getValue();
 }

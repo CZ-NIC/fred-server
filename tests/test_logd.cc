@@ -45,8 +45,8 @@ const int UNKNOWN_ACTION = 1000;
 const bool PARTITIONS_TEST_PROPERTIES = true;
 
 
-boost::format get_table_postfix(int year, int month, RequestServiceType service_num, bool monitoring);
-boost::format get_table_postfix_for_now(RequestServiceType service_num, bool monitoring);
+boost::format get_table_postfix(int year, int month, ServiceType service_num, bool monitoring);
+boost::format get_table_postfix_for_now(ServiceType service_num, bool monitoring);
 std::string create_date_str(int y, int m);
 
 struct MyFixture {
@@ -115,7 +115,7 @@ public:
 	bool         CloseSession(Database::ID id);
 
 	// TODO change this and test combination of session / request (session)
-	Database::ID CreateRequest(const char *ip_addr, const RequestServiceType serv, const char * content_in, const Register::Logger::RequestProperties &props = TestImplLog::no_props, bool is_monitoring = false);
+	Database::ID CreateRequest(const char *ip_addr, const ServiceType serv, const char * content_in, const Register::Logger::RequestProperties &props = TestImplLog::no_props, bool is_monitoring = false);
 	bool UpdateRequest(const Database::ID id, const Register::Logger::RequestProperties &props = TestImplLog::no_props);
 	bool CloseRequest(const Database::ID id, const char * content_out, const Register::Logger::RequestProperties &props = TestImplLog::no_props);
 	std::auto_ptr<Register::Logger::RequestProperties> create_generic_properties(int number, int value_id);
@@ -135,7 +135,7 @@ inline bool has_content(const char *str) {
 
 
 
-boost::format get_table_postfix_for_now(RequestServiceType service_num, bool monitoring)
+boost::format get_table_postfix_for_now(ServiceType service_num, bool monitoring)
 {
 	boost::posix_time::ptime utime = microsec_clock::universal_time();
 	tm str_time = boost::posix_time::to_tm(utime);
@@ -147,7 +147,7 @@ boost::format get_table_postfix_for_now(RequestServiceType service_num, bool mon
 
 }
 
-boost::format get_table_postfix(int year, int month, RequestServiceType service_num, bool monitoring)
+boost::format get_table_postfix(int year, int month, ServiceType service_num, bool monitoring)
 {
 	int shortyear = (year - 2000) % 100;
 	std::string service_name("UNKNOWN");
@@ -271,7 +271,7 @@ bool TestImplLog::CloseSession(Database::ID id)
 	return ret;
 }
 
-Database::ID TestImplLog::CreateRequest(const char *ip_addr, const RequestServiceType serv, const char * content_in, const Register::Logger::RequestProperties &props, bool is_monitoring)
+Database::ID TestImplLog::CreateRequest(const char *ip_addr, const ServiceType serv, const char * content_in, const Register::Logger::RequestProperties &props, bool is_monitoring)
 {
 
 	if(serv > LC_MAX_SERVICE) {
@@ -619,7 +619,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 
                                 MyFixture::id_list_entry.push_back(rid1);
 
-                                boost::format test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType) service_id, false) % rid1;
+                                boost::format test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (ServiceType) service_id, false) % rid1;
                                 Database::Result res = conn.exec(test.str());
 
                                 if (res.size() == 0) {
@@ -639,7 +639,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 
 				MyFixture::id_list_entry.push_back(rid2);
 
-				test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service_id, true) % rid2;
+				test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (ServiceType)service_id, true) % rid2;
 				res = conn.exec(test.str());
 
 				if(res.size() == 0) {
@@ -660,7 +660,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 
                                         Database::ID prop_id1 = pv.getId();
 
-					boost::format test1 = boost::format("select request_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service_id, false) % prop_id1;
+					boost::format test1 = boost::format("select request_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (ServiceType)service_id, false) % prop_id1;
 					res = conn.exec(test1.str());
 
 					if(res.size() == 0) {
@@ -677,7 +677,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 
                                         Database::ID prop_id2 = pv.getId();
 
-					boost::format test2 = boost::format("select request_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service_id, false) % prop_id2;
+					boost::format test2 = boost::format("select request_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (ServiceType)service_id, false) % prop_id2;
 					res = conn.exec(test2.str());
 
 					if(res.size() == 0) {
@@ -759,7 +759,7 @@ BOOST_AUTO_TEST_CASE( service_types)
 
 	TestImplLog test(global_hdba->get_conn_info());
 	for (int i=LC_UNIX_WHOIS;i<LC_MAX_SERVICE;i++) {
-		BOOST_CHECK(test.CreateRequest("111.222.111.222", (RequestServiceType)i, "aaa"));
+		BOOST_CHECK(test.CreateRequest("111.222.111.222", (ServiceType)i, "aaa"));
 	}
 }
 
