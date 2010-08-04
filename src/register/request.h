@@ -126,7 +126,7 @@ virtual  bool i_CloseRequest(Database::ID id, const char *content_out, const Reg
 virtual  bool i_CloseRequestLogin(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, Database::ID session_id) = 0;
   virtual Database::ID i_CreateSession(Languages lang, const char *name) = 0;
 virtual  bool i_CloseSession(Database::ID id) = 0;
-  virtual Database::Result i_GetServiceActions(ServiceType service) = 0;
+  virtual Database::Result i_GetRequestTypesByService(ServiceType service) = 0;
   virtual Database::Result i_GetServices() = 0;
 
   virtual List* createList() const = 0;

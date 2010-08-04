@@ -54,8 +54,8 @@ CORBA::Boolean ccReg_Log_i::CloseSession(ccReg::TID id) {
     return back->i_CloseSession(id);
 }
 
-ccReg::RequestTypeList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceType service) {    
-    Database::Result res = back->i_GetServiceActions((Database::Filters::ServiceType)service);
+ccReg::RequestTypeList *ccReg_Log_i::GetRequestTypesByService(ccReg::RequestServiceType service) {    
+    Database::Result res = back->i_GetRequestTypesByService((Database::Filters::ServiceType)service);
 
     int size = res.size();
     ccReg::RequestTypeList_var ret = new ccReg::RequestTypeList();

@@ -45,7 +45,7 @@ public:
   bool i_CloseRequestLogin(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, Database::ID session_id);
   Database::ID i_CreateSession(Languages lang, const char *name);
   bool i_CloseSession(Database::ID id);
-  Database::Result i_GetServiceActions(ServiceType service);
+  Database::Result i_GetRequestTypesByService(ServiceType service);
   Database::Result i_GetServices();
 
  // for migration tool (util/logd_migration)

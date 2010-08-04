@@ -501,13 +501,13 @@ List *ManagerImpl::createList() const {
 	return new ListImpl((Manager *)this);
 }
 
-Result ManagerImpl::i_GetServiceActions(ServiceType service)
+Result ManagerImpl::i_GetRequestTypesByService(ServiceType service)
 {
         logd_ctx_init ctx;
 
         Connection conn = Database::Manager::acquire();
 	
-	TRACE("[CALL] Register::Logger::ManagerImpl::i_GetServiceActions");
+	TRACE("[CALL] Register::Logger::ManagerImpl::i_GetRequestTypesByService");
 
 	boost::format query = boost::format("select id, name from request_type where service_id = %1%") % service;
 

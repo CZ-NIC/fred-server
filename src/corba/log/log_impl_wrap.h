@@ -35,7 +35,7 @@ public:
   ccReg::TID CreateSession(ccReg::Languages lang, const char *name);
   // ccReg::TID new_dummy(const char *name, const char *clTRID);
   CORBA::Boolean CloseSession(ccReg::TID id);
-  ccReg::RequestTypeList *GetServiceActions(ccReg::RequestServiceType service);
+  ccReg::RequestTypeList *GetRequestTypesByService(ccReg::RequestServiceType service);
   ccReg::RequestServiceList* GetServices();
   Registry::PageTable_ptr createPageTable(const char *session_id);
   void deletePageTable(const char *session_id);
