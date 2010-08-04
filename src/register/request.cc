@@ -960,9 +960,8 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
                     monitoring = (bool)res[0][2];
 
                     boost::format update_result_code_id = boost::format(
-                            "update request set result_code_id="
-                            "(select id from result_code where service_id=%2% and result_code=%3% )"
-                            " where id=%1%")
+                            "update request set result_code_id=get_result_code_id( %2% , %3% )"
+                            "    where id=%1%")
                         % id % service_id % result_code;
                     conn.exec(update_result_code_id.str());
 
