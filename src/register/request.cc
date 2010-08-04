@@ -923,6 +923,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 	std::string time;
 	ServiceType service_id;
 	bool monitoring;
+	long result_code = 0;//change dummy init value
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
 
@@ -957,6 +958,13 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
                     DateTime entry_time = res[0][0].operator ptime();
                     service_id = (ServiceType)(int) res[0][1];
                     monitoring = (bool)res[0][2];
+
+                    boost::format update_result_code_id = boost::format(
+                            "update request set result_code_id="
+                            "(select id from result_code where service_id=%2% and result_code=%3% )"
+                            " where id=%1%")
+                        % id % service_id % result_code;
+                    conn.exec(update_result_code_id.str());
 
                     
 
