@@ -917,13 +917,13 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 
 }
 
-bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props)
+bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props, const long result_code)
 {
     TRACE("[CALL] Register::Logger::ManagerImpl::close_request_worker");
 	std::string time;
 	ServiceType service_id;
 	bool monitoring;
-	long result_code = 0;//change dummy init value
+	//long result_code = 0;//change dummy init value
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
 
@@ -994,7 +994,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 }
 
 // close the record with given ID (end time is filled thus no further modification is possible after this call )
-bool ManagerImpl::i_CloseRequest(ID id, const char *content_out, const Register::Logger::RequestProperties &props)
+bool ManagerImpl::i_CloseRequest(ID id, const char *content_out, const Register::Logger::RequestProperties &props, const long result_code)
 {	
 	logd_ctx_init ctx;
 #ifdef HAVE_LOGGER       
@@ -1005,7 +1005,7 @@ bool ManagerImpl::i_CloseRequest(ID id, const char *content_out, const Register:
 
         logd_auto_db db;
 
-        if (close_request_worker(db, id, content_out, props)) {
+        if (close_request_worker(db, id, content_out, props, result_code)) {
             db.commit();
             return true;
         } else {
@@ -1014,7 +1014,7 @@ bool ManagerImpl::i_CloseRequest(ID id, const char *content_out, const Register:
 }
 
 
-bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Register::Logger::RequestProperties &props, ID session_id)
+bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Register::Logger::RequestProperties &props, ID session_id, const long result_code)
 {	
 	logd_ctx_init ctx;
 #ifdef HAVE_LOGGER
@@ -1030,7 +1030,7 @@ bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Regi
 
 	logd_auto_db db;
 
-	ret = close_request_worker(db, id, content_out, props);
+	ret = close_request_worker(db, id, content_out, props, result_code);
 	if (!ret) return false;
 
 	// fill in the session ID

@@ -338,7 +338,7 @@ bool TestImplLog::UpdateRequest(const Database::ID id, const Register::Logger::R
 
 bool TestImplLog::CloseRequest(const Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props)
 {
-	bool result = logd->i_CloseRequest(id, content_out, props);
+	bool result = logd->i_CloseRequest(id, content_out, props, 0);
 
 	if(!result) return result;
 

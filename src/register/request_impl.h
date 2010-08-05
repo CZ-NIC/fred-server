@@ -41,8 +41,8 @@ public:
 
   Database::ID i_CreateRequest(const char *sourceIP, ServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestType request_type_id, Database::ID session_id);
   bool i_UpdateRequest(Database::ID id, const Register::Logger::RequestProperties &props);
-  bool i_CloseRequest(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props);
-  bool i_CloseRequestLogin(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, Database::ID session_id);
+  bool i_CloseRequest(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, const long result_code);
+  bool i_CloseRequestLogin(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, Database::ID session_id, const long result_code);
   Database::ID i_CreateSession(Languages lang, const char *name);
   bool i_CloseSession(Database::ID id);
   Database::Result i_GetRequestTypesByService(ServiceType service);
@@ -54,7 +54,7 @@ public:
   List* createList() const;
 
 private:
-  bool close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props);
+  bool close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props, const long result_code);
   
   void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock);
   bool record_check(Database::ID id, Connection &conn);

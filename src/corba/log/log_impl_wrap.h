@@ -30,8 +30,8 @@ public:
   ccReg::TID CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long request_type_id, ccReg::TID session_id);
 
   CORBA::Boolean UpdateRequest(ccReg::TID id, const ccReg::RequestProperties &props);
-  CORBA::Boolean CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props);
-  CORBA::Boolean CloseRequestLogin(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, ccReg::TID session_id);
+  CORBA::Boolean CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, const CORBA::Long result_code);
+  CORBA::Boolean CloseRequestLogin(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, ccReg::TID session_id, const CORBA::Long result_code);
   ccReg::TID CreateSession(ccReg::Languages lang, const char *name);
   // ccReg::TID new_dummy(const char *name, const char *clTRID);
   CORBA::Boolean CloseSession(ccReg::TID id);

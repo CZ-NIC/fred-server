@@ -36,14 +36,14 @@ CORBA::Boolean ccReg_Log_i::UpdateRequest(ccReg::TID id, const ccReg::RequestPro
     return back->i_UpdateRequest(id, *(p.get()));
 }
 
-CORBA::Boolean ccReg_Log_i::CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props) {    
+CORBA::Boolean ccReg_Log_i::CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, const CORBA::Long result_code) {
     std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
-    return back->i_CloseRequest(id, content_out, *(p.get()));
+    return back->i_CloseRequest(id, content_out, *(p.get()), result_code);
 }
 
-CORBA::Boolean ccReg_Log_i::CloseRequestLogin(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, ccReg::TID session_id) {    
+CORBA::Boolean ccReg_Log_i::CloseRequestLogin(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, ccReg::TID session_id, const CORBA::Long result_code) {
     std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
-    return back->i_CloseRequestLogin(id, content_out, *(p.get()), session_id);
+    return back->i_CloseRequestLogin(id, content_out, *(p.get()), session_id, result_code);
 }
 
 ccReg::TID ccReg_Log_i::CreateSession(ccReg::Languages lang, const char *name) {    
