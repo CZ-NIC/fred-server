@@ -37,6 +37,7 @@ public:
   CORBA::Boolean CloseSession(ccReg::TID id);
   ccReg::RequestTypeList *GetRequestTypesByService(ccReg::RequestServiceType service);
   ccReg::RequestServiceList* GetServices();
+  ccReg::ResultCodeList* GetResultCodeByService(ccReg::RequestServiceType service);
   Registry::PageTable_ptr createPageTable(const char *session_id);
   void deletePageTable(const char *session_id);
 

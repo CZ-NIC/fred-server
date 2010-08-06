@@ -525,6 +525,16 @@ Database::Result ManagerImpl::i_GetServices()
     return conn.exec(query);
 }
 
+Result ManagerImpl::i_GetResultCodeByService(ServiceType service)
+{
+    logd_ctx_init ctx;
+    Connection conn = Database::Manager::acquire();
+    TRACE("[CALL] Register::Logger::ManagerImpl::i_GetResultCodeByService");
+    boost::format query = boost::format("select result_code, name from result_code where service_id = %1%") % service;
+    return conn.exec(query.str());
+}
+
+
 // ManagerImpl ctor: connect to the database and fill property_names map
 ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
       throw (DB_CONNECT_FAILED)

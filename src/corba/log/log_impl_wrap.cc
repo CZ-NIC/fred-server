@@ -85,6 +85,21 @@ ccReg::RequestServiceList* ccReg_Log_i::GetServices()
     return ret._retn();
 }
 
+ccReg::ResultCodeList* ccReg_Log_i::GetResultCodeByService(ccReg::RequestServiceType service)
+{
+    Database::Result res = back->i_GetResultCodeByService
+            (static_cast<Database::Filters::ServiceType>(service));
+    int size = res.size();
+    ccReg::ResultCodeList_var ret = new ccReg::ResultCodeList();
+    ret->length(size);
+    for (int i = 0; i < size; i++)
+    {
+        ret[i].result_code = static_cast<ccReg::ResultCode>(res[i][0]);
+        ret[i].name = CORBA::string_dup(std::string(res[i][1]).c_str());
+    }
+    return ret._retn();
+}
+
 Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
 {    
     Registry::PageTable_ptr ret;
