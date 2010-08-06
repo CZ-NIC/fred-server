@@ -47,7 +47,7 @@ public:
   bool i_CloseSession(Database::ID id);
   Database::Result i_GetRequestTypesByService(ServiceType service);
   Database::Result i_GetServices();
-  Database::Result i_GetResultCodeByService(ServiceType service);
+  Database::Result i_GetResultCodesByService(ServiceType service);
 
  // for migration tool (util/logd_migration)
  void insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Register::Logger::RequestProperties& props);

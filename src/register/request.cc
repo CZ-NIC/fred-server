@@ -525,11 +525,11 @@ Database::Result ManagerImpl::i_GetServices()
     return conn.exec(query);
 }
 
-Result ManagerImpl::i_GetResultCodeByService(ServiceType service)
+Result ManagerImpl::i_GetResultCodesByService(ServiceType service)
 {
     logd_ctx_init ctx;
     Connection conn = Database::Manager::acquire();
-    TRACE("[CALL] Register::Logger::ManagerImpl::i_GetResultCodeByService");
+    TRACE("[CALL] Register::Logger::ManagerImpl::i_GetResultCodesByService");
     boost::format query = boost::format("select result_code, name from result_code where service_id = %1%") % service;
     return conn.exec(query.str());
 }

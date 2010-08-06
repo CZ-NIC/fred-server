@@ -85,9 +85,9 @@ ccReg::RequestServiceList* ccReg_Log_i::GetServices()
     return ret._retn();
 }
 
-ccReg::ResultCodeList* ccReg_Log_i::GetResultCodeByService(ccReg::RequestServiceType service)
+ccReg::ResultCodeList* ccReg_Log_i::GetResultCodesByService(ccReg::RequestServiceType service)
 {
-    Database::Result res = back->i_GetResultCodeByService
+    Database::Result res = back->i_GetResultCodesByService
             (static_cast<Database::Filters::ServiceType>(service));
     int size = res.size();
     ccReg::ResultCodeList_var ret = new ccReg::ResultCodeList();
