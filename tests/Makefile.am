@@ -31,7 +31,8 @@ test_logd_SOURCES =  test_logd.cc \
 test_logd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
                      $(AM_LDFLAGS)    \
-                     $(BOOST_PROGRAM_OPTIONS_LIB)
+                     $(BOOST_PROGRAM_OPTIONS_LIB) \
+                     $(OMNIORB4_LIBS) 
 
 test_logd_LDADD =    $(top_builddir)/src/register/libfred.a \
                      $(top_builddir)/src/model/libmodel.a \
@@ -39,6 +40,7 @@ test_logd_LDADD =    $(top_builddir)/src/register/libfred.a \
                      $(top_builddir)/util/types/libtypes.a \
                      $(top_builddir)/util/log/liblog.a \
                      $(top_builddir)/src/old_utils/liboldutils.a \
+                     $(top_builddir)/src/corba/libcorba.a \
                      $(BOOST_DATE_TIME_LIB) \
                      $(BOOST_THREAD_LIB)
 

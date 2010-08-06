@@ -13,8 +13,13 @@
 #include <stdio.h>
 
 #include "request_impl.h"
+
+#include "corba_wrapper.h"
+#include <corba/ccReg.hh>
+
 #include "handle_general_args.h"
 #include "handle_database_args.h"
+#include "handle_corbanameservice_args.h"
 
 using namespace Database;
 using namespace Register::Logger;
@@ -24,7 +29,9 @@ boost::shared_ptr<HandleDatabaseArgs> global_hdba(new HandleDatabaseArgs);
 HandlerPtrVector global_hpv =
 boost::assign::list_of
 (HandleArgsPtr(new HandleGeneralArgs))
-(HandleArgsPtr(global_hdba));
+(HandleArgsPtr(global_hdba))
+(HandleArgsPtr(new HandleCorbaNameServiceArgs))
+;
 
 
 #include "test_custom_main.h"
@@ -933,6 +940,48 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 
 	BOOST_CHECK(!test.CloseRequest(0, "ZZZZ"));
 
+}
+
+
+BOOST_AUTO_TEST_CASE( GetResultCodesByService )
+{
+    //  try
+    //  {
+
+        //CORBA init
+        FakedArgs fa = CfgArgs::instance()->fa;
+        HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+        CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+        std::cout << "ccReg::Logger::_narrow" << std::endl;
+        ccReg::Logger_var logger_ref;
+        logger_ref = ccReg::Logger::_narrow(CorbaContainer::get_instance()->nsresolve("Logger"));
+
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+
+        //simple test
+        ccReg::ResultCodeList_var result_codes_var(new ccReg::ResultCodeList);
+        const ccReg::ResultCodeList& result_codes_ref = result_codes_var.in();
+
+        result_codes_var = logger_ref->GetResultCodesByService(0);
+
+        std::cout << "\nGetResultCodesByService" << std::endl;
+           for (CORBA::ULong i=0; i < result_codes_ref.length(); ++i)
+           {
+               const ccReg::ResultCodeListItem& rc = result_codes_ref[i];
+               std::cout << " result_code: " << rc.result_code << "\n"
+                       << " name: " << rc.name << "\n"
+                       << std::endl;
+           }
+
+
+        BOOST_REQUIRE_EQUAL(1 , 1);
+        CorbaContainer::destroy_instance();
 }
 
 
