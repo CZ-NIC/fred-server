@@ -68,7 +68,7 @@ Value<bool>& RequestImpl::addIsMonitoring()
 ServiceType& RequestImpl::addServiceType()
 {
   ServiceType *tmp = new ServiceType(Column("service_id", joinRequestTable()));
-  tmp->setName("Service");
+  tmp->setName("ServiceType");
   add(tmp);
   return *tmp;
 }
@@ -77,7 +77,7 @@ ServiceType& RequestImpl::addServiceType()
 RequestType& RequestImpl::addRequestType()
 {
   RequestType *tmp = new RequestType (Column("request_type_id", joinRequestTable()));
-  tmp->setName("ActionType");
+  tmp->setName("RequestType");
   add(tmp);
   return *tmp;
 }
