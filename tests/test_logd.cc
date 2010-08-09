@@ -966,9 +966,10 @@ BOOST_AUTO_TEST_CASE( GetResultCodesByService )
 
         //simple test
         ccReg::ResultCodeList_var result_codes_var(new ccReg::ResultCodeList);
-        const ccReg::ResultCodeList& result_codes_ref = result_codes_var.in();
 
         result_codes_var = logger_ref->GetResultCodesByService(0);
+
+        const ccReg::ResultCodeList& result_codes_ref = result_codes_var.in();
 
         std::cout << "\nGetResultCodesByService" << std::endl;
            for (CORBA::ULong i=0; i < result_codes_ref.length(); ++i)
