@@ -951,31 +951,33 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 		if (!record_check(id, conn)) return false;
 #endif
 
-                boost::format update = boost::format("update request set time_end=E'%1%' where id=%2%") % time % id;
+        boost::format update = boost::format("update request set time_end=E'%1%' where id=%2%") % time % id;
 		conn.exec(update.str());
-                
+
+
+        boost::format select = boost::format("select time_begin, service_id, is_monitoring from request where id = %1%") % id;
+        Result res = conn.exec(select.str());
+        if(res.size() == 0) {
+                logger_error(boost::format("Record  with ID %1% not found in request table.") % id );
+                return false;
+        }
+
+        DateTime entry_time = res[0][0].operator ptime();
+        service_id = (ServiceType)(int) res[0][1];
+        monitoring = (bool)res[0][2];
+
+        boost::format update_result_code_id = boost::format(
+                "update request set result_code_id=get_result_code_id( %2% , %3% )"
+                "    where id=%1%")
+            % id % service_id % result_code;
+        conn.exec(update_result_code_id.str());
+
+
+
                 bool has_content = content_out != NULL && content_out[0] != '\0';
                 
-                if (has_content || props.size() > 0) {
+                if (has_content || props.size() > 0){
                     // optimization
-                    boost::format select = boost::format("select time_begin, service_id, is_monitoring from request where id = %1%") % id;
-                    Result res = conn.exec(select.str());
-                    if(res.size() == 0) {
-                            logger_error(boost::format("Record  with ID %1% not found in request table.") % id );
-                            return false;
-                    }
-
-                    DateTime entry_time = res[0][0].operator ptime();
-                    service_id = (ServiceType)(int) res[0][1];
-                    monitoring = (bool)res[0][2];
-
-                    boost::format update_result_code_id = boost::format(
-                            "update request set result_code_id=get_result_code_id( %2% , %3% )"
-                            "    where id=%1%")
-                        % id % service_id % result_code;
-                    conn.exec(update_result_code_id.str());
-
-                    
 
                     if(has_content) {
                             ModelRequestData data;
