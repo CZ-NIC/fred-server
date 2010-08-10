@@ -14,6 +14,8 @@ public:
 	~ccReg_Logger_i();
 	DECL_PAGETABLE_I;
 
+        void setOffset(CORBA::Long _offset);
+        void setLimit(CORBA::Long _limit);
 	ccReg::Filters::Compound_ptr add();
 	Register::Logger::Request *findId(ccReg::TID _id);
 

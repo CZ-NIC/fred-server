@@ -97,6 +97,8 @@ public:
   void pageSize(CORBA::Short _v);
   CORBA::Short page();
   void setPage(CORBA::Short page) throw (ccReg::PageTable::INVALID_PAGE);
+  virtual void setOffset(CORBA::Long _offset);
+  virtual void setLimit(CORBA::Long _limit);
   CORBA::Short start();
   CORBA::Short numPages();
   Registry::TableRow* getPageRow(CORBA::Short pageRow) throw (ccReg::Table::INVALID_ROW);

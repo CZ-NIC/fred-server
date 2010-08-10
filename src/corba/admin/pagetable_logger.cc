@@ -191,4 +191,13 @@ CORBA::Boolean ccReg_Logger_i::numRowsOverLimit() {
   return m_lel->isLimited();
 }
 
+void ccReg_Logger_i::setOffset(CORBA::Long _offset)
+{
+    m_lel->setOffset(_offset);
+}
+
+void ccReg_Logger_i::setLimit(CORBA::Long _limit)
+{
+    m_lel->setLimit(_limit);
+}
 

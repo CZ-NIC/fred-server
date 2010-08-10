@@ -43,6 +43,14 @@ ccReg_PageTable_i::setPage(CORBA::Short _v)
   aPage = _v;
 }
 
+void 
+ccReg_PageTable_i::setOffset(CORBA::Long _offset)
+{}
+
+void 
+ccReg_PageTable_i::setLimit(CORBA::Long _limit)
+{}
+
 CORBA::Short 
 ccReg_PageTable_i::start()
 {
