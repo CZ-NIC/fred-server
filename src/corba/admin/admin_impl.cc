@@ -1723,8 +1723,8 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  TRACE(boost::format("[CALL] ccReg_Admin_i::createPublicRequest(%1%, '%2%', '%3%, %4%)") % 
-        _type %  _reason % _email_to_answer % &_object_ids);
+  TRACE(boost::format("[CALL] ccReg_Admin_i::createPublicRequest(%1%, '%2%', '%3%, %4%, %5%)") %
+        _type %  _reason % _email_to_answer % &_object_ids % requestId);
   
   MailerManager mailer_manager(ns);
   
