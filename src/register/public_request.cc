@@ -153,6 +153,7 @@ class PublicRequestImpl : public Register::CommonObjectImpl,
 private:
   Register::PublicRequest::Type type_;
   Database::ID epp_action_id_;
+  Database::ID logd_request_id_;
   Database::DateTime create_time_;
   Register::PublicRequest::Status status_;
   Database::DateTime resolve_time_;
@@ -208,6 +209,7 @@ public:
   void init(Database::Row::Iterator& _it) {
     id_               = (unsigned long long)*_it;
     epp_action_id_    = *(++_it);
+    logd_request_id_  = *(++_it);
     create_time_      = *(++_it);
     status_           = (Register::PublicRequest::Status)(int)*(++_it);
     resolve_time_     = *(++_it);
@@ -258,6 +260,7 @@ public:
       
       insert_request.add("request_type", type_);
       insert_request.add("epp_action_id", epp_action_id_);
+      insert_request.add("request_id", logd_request_id_);
       insert_request.add("status", status_);
       insert_request.add("reason", reason_);
       insert_request.add("email_to_answer", email_to_answer_);
@@ -353,6 +356,15 @@ public:
 
   virtual void setEppActionId(const Database::ID& _epp_action_id) {
     epp_action_id_ = _epp_action_id;
+    modified_ = true;
+  }
+
+  virtual const Database::ID getRequestId() const {
+    return logd_request_id_;
+  }
+
+  virtual void setRequestId(const Database::ID& _logd_request_id) {
+    logd_request_id_ = _logd_request_id;
     modified_ = true;
   }
   
@@ -839,7 +851,7 @@ public:
         % getTempTableName() % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
-    object_info_query.select() << "t_1.request_type, t_1.id, t_1.epp_action_id, "
+    object_info_query.select() << "t_1.request_type, t_1.id, t_1.epp_action_id, t_1.request_id, "
                                << "t_1.create_time, t_1.status, t_1.resolve_time, "
                                << "t_1.reason, t_1.email_to_answer, t_1.answer_email_id, "
                                << "'ccReg-' || to_char(t_1.epp_action_id, 'FM0999999999'), t_4.id, t_4.handle, t_4.name, t_4.url";

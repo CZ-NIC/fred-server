@@ -1713,7 +1713,8 @@ ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
 ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
                                               const char *_reason,
                                               const char *_email_to_answer,
-                                              const ccReg::Admin::ObjectIdList& _object_ids) 
+                                              const ccReg::Admin::ObjectIdList& _object_ids,
+                                              const ccReg::TID requestId) 
   throw (
     ccReg::Admin::BAD_EMAIL, ccReg::Admin::OBJECT_NOT_FOUND,
     ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR,
@@ -1788,8 +1789,8 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
   }
 }
 
-void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
-  throw (
+void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid) 
+    throw (
     ccReg::Admin::SQL_ERROR, ccReg::Admin::OBJECT_NOT_FOUND, 
     ccReg::Admin::MAILER_ERROR, ccReg::Admin::REQUEST_BLOCKED
   ) {

@@ -167,7 +167,8 @@ public:
   ccReg::TID createPublicRequest(ccReg::PublicRequest::Type _type,
                                  const char *_reason,
                                  const char *_email_to_answer,
-                                 const ccReg::Admin::ObjectIdList& _object_ids)
+                                 const ccReg::Admin::ObjectIdList& _object_ids,
+                                 const ccReg::TID requestId)
     throw (ccReg::Admin::BAD_EMAIL, ccReg::Admin::OBJECT_NOT_FOUND,
     ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR,
     ccReg::Admin::INVALID_INPUT, ccReg::Admin::REQUEST_BLOCKED);
