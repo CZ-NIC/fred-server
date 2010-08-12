@@ -175,7 +175,7 @@ protected:
   
 public:
   PublicRequestImpl() : CommonObjectImpl(0), type_(), status_(PRS_NEW)
-      , man_() {
+      , man_(), epp_action_id_(0), logd_request_id_(0), answer_email_id_(0), registrar_id_(0)  {
   }
   
   PublicRequestImpl(Database::ID _id,
@@ -238,10 +238,15 @@ public:
       Database::Query update_request;
       update_request.buffer() << "UPDATE public_request SET "
                               << "status = " << status_ << ", "
-                              << "resolve_time = now(), "
-                              << "answer_email_id = " << Database::Value(answer_email_id_) << ", "
-                              << "request_id = " << logd_request_id_ << " "
-                              << "WHERE id = " << id_;
+                              << "resolve_time = now()";
+        if(answer_email_id_ != 0) {
+            update_request.buffer() << ", answer_email_id = " << Database::Value(answer_email_id_) << ", ";
+        }
+        if(logd_request_id_) {
+            update_request.buffer()  << ", logd_request_id = " << logd_request_id_ << " ";
+        }
+        update_request.buffer() << "WHERE id = " << id_;
+
       try {
         conn.exec(update_request);
   
@@ -264,7 +269,7 @@ public:
       
       insert_request.add("request_type", type_);
       insert_request.add("epp_action_id", epp_action_id_);
-      insert_request.add("request_id", logd_request_id_);
+      insert_request.add("logd_request_id", logd_request_id_);
       insert_request.add("status", status_);
       insert_request.add("reason", reason_);
       insert_request.add("email_to_answer", email_to_answer_);
@@ -855,7 +860,7 @@ public:
         % getTempTableName() % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
-    object_info_query.select() << "t_1.request_type, t_1.id, t_1.epp_action_id, t_1.request_id, "
+    object_info_query.select() << "t_1.request_type, t_1.id, t_1.epp_action_id, t_1.logd_request_id, "
                                << "t_1.create_time, t_1.status, t_1.resolve_time, "
                                << "t_1.reason, t_1.email_to_answer, t_1.answer_email_id, "
                                << "'ccReg-' || to_char(t_1.epp_action_id, 'FM0999999999'), t_4.id, t_4.handle, t_4.name, t_4.url";
