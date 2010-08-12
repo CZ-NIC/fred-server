@@ -1774,6 +1774,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
   new_request->setRegistrarId(0);
   new_request->setReason(_reason);
   new_request->setEmailToAnswer(_email_to_answer);
+  new_request->setRequestId(requestId);
   for (unsigned i=0; i<_object_ids.length(); i++)
     new_request->addObject(Register::PublicRequest::OID(_object_ids[i]));
   try {

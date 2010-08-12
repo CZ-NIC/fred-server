@@ -111,6 +111,8 @@ public:
   virtual const Database::ID getEppActionId() const = 0;
   virtual void setEppActionId(const Database::ID& _epp_action_id) = 0;
   virtual void setRegistrarId(const Database::ID& _registrar_id) = 0;
+
+  virtual void setRequestId(const Database::ID& _request_id) = 0;
   
   virtual void addObject(const OID& _oid) = 0;
   virtual const OID& getObject(unsigned _idx) const = 0;
@@ -122,6 +124,8 @@ public:
   virtual const std::string getRegistrarHandle() const = 0;
   virtual const std::string getRegistrarName() const = 0;
   virtual const std::string getRegistrarUrl() const = 0;
+
+  virtual const Database::ID getRequestId() const = 0;
 
   /// check if request can be handles
   virtual bool check() const = 0;

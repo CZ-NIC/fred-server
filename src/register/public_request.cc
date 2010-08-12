@@ -167,6 +167,7 @@ private:
   std::string registrar_name_;
   std::string registrar_url_;
 
+
   std::vector<OID> objects_;
   
 protected:
@@ -180,6 +181,7 @@ public:
   PublicRequestImpl(Database::ID _id,
               Register::PublicRequest::Type _type,
               Database::ID _epp_action_id,
+              Database::ID _logd_request_id,
               Database::DateTime _create_time,
               Register::PublicRequest::Status _status,
               Database::DateTime _resolve_time,
@@ -193,6 +195,7 @@ public:
               std::string _registrar_url
               ) :
               CommonObjectImpl(_id), type_(_type), epp_action_id_(_epp_action_id), 
+              logd_request_id_(_logd_request_id),
               create_time_(_create_time), status_(_status),
               resolve_time_(_resolve_time), reason_(_reason), 
               email_to_answer_(_email_to_answer), answer_email_id_(_answer_email_id), 
@@ -236,7 +239,8 @@ public:
       update_request.buffer() << "UPDATE public_request SET "
                               << "status = " << status_ << ", "
                               << "resolve_time = now(), "
-                              << "answer_email_id = " << Database::Value(answer_email_id_) << " "
+                              << "answer_email_id = " << Database::Value(answer_email_id_) << ", "
+                              << "request_id = " << logd_request_id_ << " "
                               << "WHERE id = " << id_;
       try {
         conn.exec(update_request);
