@@ -174,8 +174,8 @@ protected:
   Manager* man_;
   
 public:
-  PublicRequestImpl() : CommonObjectImpl(0), type_(), status_(PRS_NEW)
-      , man_(), epp_action_id_(0), logd_request_id_(0), answer_email_id_(0), registrar_id_(0)  {
+  PublicRequestImpl() : CommonObjectImpl(0), type_(), 
+      epp_action_id_(0), logd_request_id_(0), status_(PRS_NEW), answer_email_id_(0), registrar_id_(0), man_() {
   }
   
   PublicRequestImpl(Database::ID _id,
