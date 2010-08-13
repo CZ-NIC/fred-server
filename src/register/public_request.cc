@@ -240,12 +240,12 @@ public:
                               << "status = " << status_ << ", "
                               << "resolve_time = now()";
         if(answer_email_id_ != 0) {
-            update_request.buffer() << ", answer_email_id = " << Database::Value(answer_email_id_) << ", ";
+            update_request.buffer() << ", answer_email_id = " << Database::Value(answer_email_id_);
         }
         if(logd_request_id_) {
-            update_request.buffer()  << ", logd_request_id = " << logd_request_id_ << " ";
+            update_request.buffer()  << ", logd_request_id = " << logd_request_id_;
         }
-        update_request.buffer() << "WHERE id = " << id_;
+        update_request.buffer() << " WHERE id = " << id_;
 
       try {
         conn.exec(update_request);
