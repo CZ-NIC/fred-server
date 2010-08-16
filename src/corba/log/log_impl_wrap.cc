@@ -26,36 +26,38 @@ ccReg_Log_i::~ccReg_Log_i()
     }
 }
 
-ccReg::TID ccReg_Log_i::CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long request_type_id, ccReg::TID session_id) {    
+ccReg::TID ccReg_Log_i::createRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content, const ccReg::RequestProperties& props, const ccReg::Logger::ObjectReferences &refs, CORBA::Long request_type_id, ccReg::TID session_id) {    
     std::auto_ptr<Register::Logger::RequestProperties> p(convert_properties(props));
-    return back->i_CreateRequest(sourceIP, (Database::Filters::ServiceType)service, content_in, *(p.get()), request_type_id, session_id);
+    std::auto_ptr<Register::Logger::ObjectReferences> r(convert_obj_references(refs));
+    return back->i_createRequest(sourceIP, (Database::Filters::ServiceType)service, content, *(p.get()), *(r.get()), request_type_id, session_id);
 }
 
-CORBA::Boolean ccReg_Log_i::UpdateRequest(ccReg::TID id, const ccReg::RequestProperties &props) {
+void ccReg_Log_i::addRequestProperties(ccReg::TID id, const ccReg::RequestProperties &props) {
     std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
-    return back->i_UpdateRequest(id, *(p.get()));
+    if( back->i_addRequestProperties(id, *(p.get())) == false) {
+        throw ccReg::Logger::REQUEST_NOT_EXISTS();
+    }
 }
 
-CORBA::Boolean ccReg_Log_i::CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, const CORBA::Long result_code) {
+void ccReg_Log_i::closeRequest(ccReg::TID id, const char *content, const ccReg::RequestProperties &props, const ccReg::Logger::ObjectReferences &refs, const CORBA::Long result_code, ccReg::TID session_id) {
     std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
-    return back->i_CloseRequest(id, content_out, *(p.get()), result_code);
+    std::auto_ptr<Register::Logger::ObjectReferences> r(convert_obj_references(refs));
+    if( back->i_closeRequest(id, content, *(p.get()), *(r.get()), result_code, session_id) == false) throw ccReg::Logger::REQUEST_NOT_EXISTS();
+
 }
 
-CORBA::Boolean ccReg_Log_i::CloseRequestLogin(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, ccReg::TID session_id, const CORBA::Long result_code) {
-    std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
-    return back->i_CloseRequestLogin(id, content_out, *(p.get()), session_id, result_code);
+ccReg::TID ccReg_Log_i::createSession(ccReg::TID user_id, const char *name) {    
+    return back->i_createSession(user_id, name);
 }
 
-ccReg::TID ccReg_Log_i::CreateSession(ccReg::Languages lang, const char *name) {    
-    return back->i_CreateSession((Languages) lang, name);
+void ccReg_Log_i::closeSession(ccReg::TID id) {    
+    if( back->i_closeSession(id) == false) {
+        throw ccReg::Logger::SESSION_NOT_EXISTS();
+    }
 }
 
-CORBA::Boolean ccReg_Log_i::CloseSession(ccReg::TID id) {    
-    return back->i_CloseSession(id);
-}
-
-ccReg::RequestTypeList *ccReg_Log_i::GetRequestTypesByService(ccReg::RequestServiceType service) {    
-    Database::Result res = back->i_GetRequestTypesByService((Database::Filters::ServiceType)service);
+ccReg::RequestTypeList *ccReg_Log_i::getRequestTypesByService(ccReg::RequestServiceType service) {    
+    Database::Result res = back->i_getRequestTypesByService((Database::Filters::ServiceType)service);
 
     int size = res.size();
     ccReg::RequestTypeList_var ret = new ccReg::RequestTypeList();
@@ -70,9 +72,9 @@ ccReg::RequestTypeList *ccReg_Log_i::GetRequestTypesByService(ccReg::RequestServ
     return ret._retn();
 }
 
-ccReg::RequestServiceList* ccReg_Log_i::GetServices()
+ccReg::RequestServiceList* ccReg_Log_i::getServices()
 {
-    Database::Result data = back->i_GetServices();
+    Database::Result data = back->i_getServices();
     unsigned int size = data.size();
 
     ccReg::RequestServiceList_var ret = new ccReg::RequestServiceList();
@@ -85,9 +87,9 @@ ccReg::RequestServiceList* ccReg_Log_i::GetServices()
     return ret._retn();
 }
 
-ccReg::ResultCodeList* ccReg_Log_i::GetResultCodesByService(ccReg::RequestServiceType service)
+ccReg::ResultCodeList* ccReg_Log_i::getResultCodesByService(ccReg::RequestServiceType service)
 {
-    Database::Result res = back->i_GetResultCodesByService
+    Database::Result res = back->i_getResultCodesByService
             (static_cast<Database::Filters::ServiceType>(service));
     int size = res.size();
     ccReg::ResultCodeList_var ret = new ccReg::ResultCodeList();
@@ -97,6 +99,14 @@ ccReg::ResultCodeList* ccReg_Log_i::GetResultCodesByService(ccReg::RequestServic
         ret[i].result_code = static_cast<ccReg::ResultCode>(res[i][0]);
         ret[i].name = CORBA::string_dup(std::string(res[i][1]).c_str());
     }
+    return ret._retn();
+}
+
+ccReg::Logger::ObjectTypeList* ccReg_Log_i::getObjectTypes()
+{
+    ccReg::Logger::ObjectTypeList_var ret = new ccReg::Logger::ObjectTypeList();
+    ret->length(0);
+    // TODO impl
     return ret._retn();
 }
 

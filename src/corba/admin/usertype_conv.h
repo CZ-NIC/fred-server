@@ -5,7 +5,18 @@
 #include <corba/ccReg.hh>
 #include "register/request.h"
 
+inline std::auto_ptr<Register::Logger::ObjectReferences> convert_obj_references(const ccReg::Logger::ObjectReferences &r) 
+{
+    std::auto_ptr<Register::Logger::ObjectReferences> ret_ptr(new Register::Logger::ObjectReferences());
+    Register::Logger::ObjectReferences &ret = *(ret_ptr.get());
 
+    for(unsigned i=0;i<r.length();i++) {
+        ret[i].type = r[i].type;
+        ret[i].id = r[i].id;
+    }
+
+    return ret_ptr;
+}
 
 inline std::auto_ptr<Register::Logger::RequestProperties> convert_properties(const ccReg::RequestProperties &p)
 {

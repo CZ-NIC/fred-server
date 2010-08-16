@@ -27,17 +27,17 @@ public:
   // ccReg_Log_i(const std::string database) throw (Impl_Log_If::DB_CONNECT_FAILED): Impl_Log_If(database) {};
   virtual ~ccReg_Log_i();
 
-  ccReg::TID CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long request_type_id, ccReg::TID session_id);
+  ccReg::TID createRequest(const char *source_ip, ccReg::RequestServiceType service, const char *content, const ccReg::RequestProperties& props, const ccReg::Logger::ObjectReferences &refs, CORBA::Long request_type_id, ccReg::TID session_id);
 
-  CORBA::Boolean UpdateRequest(ccReg::TID id, const ccReg::RequestProperties &props);
-  CORBA::Boolean CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, const CORBA::Long result_code);
-  CORBA::Boolean CloseRequestLogin(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, ccReg::TID session_id, const CORBA::Long result_code);
-  ccReg::TID CreateSession(ccReg::Languages lang, const char *name);
+  void addRequestProperties(ccReg::TID id, const ccReg::RequestProperties &props);
+  void closeRequest(ccReg::TID id, const char *content, const ccReg::RequestProperties &props, const ccReg::Logger::ObjectReferences &refs, const CORBA::Long result_code, ccReg::TID session_id);
+  ccReg::TID createSession(ccReg::TID user_id, const char *name);
   // ccReg::TID new_dummy(const char *name, const char *clTRID);
-  CORBA::Boolean CloseSession(ccReg::TID id);
-  ccReg::RequestTypeList *GetRequestTypesByService(ccReg::RequestServiceType service);
-  ccReg::RequestServiceList* GetServices();
-  ccReg::ResultCodeList* GetResultCodesByService(ccReg::RequestServiceType service);
+  void closeSession(ccReg::TID id);
+  ccReg::RequestTypeList *getRequestTypesByService(ccReg::RequestServiceType service);
+  ccReg::RequestServiceList* getServices();
+  ccReg::ResultCodeList* getResultCodesByService(ccReg::RequestServiceType service);
+  ccReg::Logger::ObjectTypeList* getObjectTypes();
   Registry::PageTable_ptr createPageTable(const char *session_id);
   void deletePageTable(const char *session_id);
 

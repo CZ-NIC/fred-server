@@ -39,7 +39,12 @@ enum MemberType {
   MT_RAW_RESPONSE
 };
 
+struct ObjectReference {
+  std::string type;
+  Database::ID id;
+};
 
+typedef std::vector<ObjectReference> ObjectReferences;
 
 struct RequestProperty {
   std::string name;
@@ -120,15 +125,14 @@ public:
   /** Used only in migration  - return a connection used by the connection manager
 	it's meant to be used only in single-threaded environment
   */
-virtual  Database::ID i_CreateRequest(const char *sourceIP, ServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestType request_type_id, Database::ID session_id) = 0;
-virtual  bool i_UpdateRequest(Database::ID id, const Register::Logger::RequestProperties &props) = 0;
-virtual  bool i_CloseRequest(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, const long result_code) = 0;
-virtual  bool i_CloseRequestLogin(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, Database::ID session_id, const long result_code) = 0;
-  virtual Database::ID i_CreateSession(Languages lang, const char *name) = 0;
-virtual  bool i_CloseSession(Database::ID id) = 0;
-  virtual Database::Result i_GetRequestTypesByService(ServiceType service) = 0;
-  virtual Database::Result i_GetServices() = 0;
-  virtual Database::Result i_GetResultCodesByService(ServiceType service) = 0;
+virtual  Database::ID i_createRequest(const char *sourceIP, ServiceType service, const  char *content, const Register::Logger::RequestProperties& props, const Register::Logger::ObjectReferences &refs, RequestType request_type_id, Database::ID session_id) = 0;
+virtual  bool i_addRequestProperties(Database::ID id, const Register::Logger::RequestProperties &props) = 0;
+virtual  bool i_closeRequest(Database::ID id, const char *content, const Register::Logger::RequestProperties &props, const Register::Logger::ObjectReferences &refs, const long result_code, Database::ID session_id) = 0;
+  virtual Database::ID i_createSession(Database::ID id, const char *name) = 0;
+virtual  bool i_closeSession(Database::ID id) = 0;
+  virtual Database::Result i_getRequestTypesByService(ServiceType service) = 0;
+  virtual Database::Result i_getServices() = 0;
+  virtual Database::Result i_getResultCodesByService(ServiceType service) = 0;
 
   virtual List* createList() const = 0;
 

@@ -51,6 +51,7 @@ const int UNKNOWN_ACTION = 1000;
 //whether to test partitioning on request_property_value table
 const bool PARTITIONS_TEST_PROPERTIES = true;
 
+const std::string LOG_FILE_NAME("log_test_logd.txt");
 
 boost::format get_table_postfix(int year, int month, ServiceType service_num, bool monitoring);
 boost::format get_table_postfix_for_now(ServiceType service_num, bool monitoring);
@@ -61,7 +62,7 @@ struct MyFixture {
 	static std::list<ID> id_list_session;
 
 	MyFixture() {
-		Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string("log_test_logd.txt"));
+		Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string(LOG_FILE_NAME));
 		Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
 		LOGGER(PACKAGE).info("Logging initialized");
 
@@ -118,15 +119,18 @@ public:
 	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(Register::Logger::Manager::create(connection_string, monitoring_file)) {
 	};
 
-	Database::ID CreateSession(Languages lang, const char *name);
-	bool         CloseSession(Database::ID id);
+	Database::ID createSession(Database::ID user_id, const char *user_name);
+	bool         closeSession(Database::ID id);
 
 	// TODO change this and test combination of session / request (session)
-	Database::ID CreateRequest(const char *ip_addr, const ServiceType serv, const char * content_in, const Register::Logger::RequestProperties &props = TestImplLog::no_props, bool is_monitoring = false);
-	bool UpdateRequest(const Database::ID id, const Register::Logger::RequestProperties &props = TestImplLog::no_props);
-	bool CloseRequest(const Database::ID id, const char * content_out, const Register::Logger::RequestProperties &props = TestImplLog::no_props);
+	Database::ID createRequest(const char *ip_addr, const ServiceType serv, const char * content, const Register::Logger::RequestProperties &props = TestImplLog::no_props, bool is_monitoring = false, const Register::Logger::ObjectReferences &refs = TestImplLog::no_objs, Database::ID session_id=0);
+
+	bool addRequestProperties(const Database::ID id, const Register::Logger::RequestProperties &props = TestImplLog::no_props);
+	bool closeRequest(const Database::ID id, const char * content, const Register::Logger::RequestProperties &props = TestImplLog::no_props, const Register::Logger::ObjectReferences &refs = TestImplLog::no_objs, long result_code = 1000, Database::ID session_id = 0);
 	std::auto_ptr<Register::Logger::RequestProperties> create_generic_properties(int number, int value_id);
 
+        void check_obj_references(ID rec_id, const Register::Logger::ObjectReferences &refs);
+        void check_obj_references_subset(ID rec_id, const Register::Logger::ObjectReferences &refs);
 	void check_db_properties_subset(ID rec_id, const Register::Logger::RequestProperties &props);
 	bool property_match(const Row r, const Register::Logger::RequestProperty &p) ;
 
@@ -134,6 +138,7 @@ public:
 	void check_db_properties(ID rec_id, const Register::Logger::RequestProperties & props);
 
 	static Register::Logger::RequestProperties no_props;
+        static Register::Logger::ObjectReferences no_objs;
 };
 
 inline bool has_content(const char *str) {
@@ -154,6 +159,7 @@ boost::format get_table_postfix_for_now(ServiceType service_num, bool monitoring
 
 }
 
+// TODO - rewrite - use strings from database 
 boost::format get_table_postfix(int year, int month, ServiceType service_num, bool monitoring)
 {
 	int shortyear = (year - 2000) % 100;
@@ -188,6 +194,7 @@ boost::format get_table_postfix(int year, int month, ServiceType service_num, bo
 				break;
 			case LC_INTRANET:
 				service_name = std::string("intranet");
+                                break;
 		}
 	}
 
@@ -212,11 +219,12 @@ std::string create_date_str(int y, int m)
 struct MyFixture;
 
 Register::Logger::RequestProperties TestImplLog::no_props;
+Register::Logger::ObjectReferences TestImplLog::no_objs;
 
 
-Database::ID TestImplLog::CreateSession(Languages lang, const char *name)
+Database::ID TestImplLog::createSession(Database::ID user_id, const char *user_name)
 {
-	Database::ID ret = logd->i_CreateSession(lang, name);
+	Database::ID ret = logd->i_createSession(user_id, user_name);
 
 	if(ret == 0) return 0;
 
@@ -231,23 +239,18 @@ Database::ID TestImplLog::CreateSession(Languages lang, const char *name)
 	}
 
 	// now do a regular select from session
-	res = conn.exec((boost::format("select lang, name from session where id=%1%") % ret).str());
+        // res = conn.exec((boost::format("select user_id, name from session where id=%1%") % ret).str());
+	res = conn.exec((boost::format("select name from session where id=%1%") % ret).str());
 
 	if (res.size() != 1) {
 		if (res.size() == 0) {
-			BOOST_ERROR(boost::format(" Record created with CreateSession with id %1% doesn't exist in the database! ") % ret);
+			BOOST_ERROR(boost::format(" Record created with createSession with id %1% doesn't exist in the database! ") % ret);
 		} else if(res.size() > 1) {
-			BOOST_ERROR(boost::format(" Multiple records with id %1% after call to CreateSession! ") % ret);
+			BOOST_ERROR(boost::format(" Multiple records with id %1% after call to createSession! ") % ret);
 		}
 	} else {
-		if(lang == CS) {
-			BOOST_CHECK("cs" == (std::string)res[0][0]);
-		} else if(lang == EN) {
-			BOOST_CHECK("en" == (std::string)res[0][0]);
-		} else {
-			BOOST_FAIL(" Unknown language given. ");
-		}
-		BOOST_CHECK(std::string(name) == (std::string)res[0][1]);
+            // TODO
+                BOOST_CHECK(std::string(user_name) == (std::string)res[0][0]);
 	}
 
 	MyFixture::id_list_session.push_back(ret);
@@ -255,9 +258,9 @@ Database::ID TestImplLog::CreateSession(Languages lang, const char *name)
 	return ret;
 }
 
-bool TestImplLog::CloseSession(Database::ID id)
+bool TestImplLog::closeSession(Database::ID id)
 {
-	bool ret = logd->i_CloseSession(id);
+	bool ret = logd->i_closeSession(id);
 
         Database::Connection conn (Database::Manager::acquire());
 
@@ -267,9 +270,9 @@ bool TestImplLog::CloseSession(Database::ID id)
 
 	if (res.size() != 1) {
 		if (res.size() == 0) {
-			BOOST_ERROR(boost::format(" Record created with CreateRequest with id %1% doesn't exist in the database! ") % id);
+			BOOST_ERROR(boost::format(" Record created with createRequest with id %1% doesn't exist in the database! ") % id);
 		} else if(res.size() > 1) {
-			BOOST_ERROR(boost::format(" Multiple records with id %1% after call to CreateRequest! ") % id);
+			BOOST_ERROR(boost::format(" Multiple records with id %1% after call to createRequest! ") % id);
 		}
 	} else {
 		BOOST_CHECK (!res[0][0].isnull());
@@ -278,15 +281,15 @@ bool TestImplLog::CloseSession(Database::ID id)
 	return ret;
 }
 
-Database::ID TestImplLog::CreateRequest(const char *ip_addr, const ServiceType serv, const char * content_in, const Register::Logger::RequestProperties &props, bool is_monitoring)
+//TODO check object refs
+Database::ID TestImplLog::createRequest(const char *ip_addr, const ServiceType serv, const char * content, const Register::Logger::RequestProperties &props, bool is_monitoring, const Register::Logger::ObjectReferences &refs, Database::ID session_id)
 {
 
 	if(serv > LC_MAX_SERVICE) {
 		BOOST_FAIL(boost::format (" ---------Invalid service num %1% ") % serv);
 	}
 
-	Database::ID ret = logd->i_CreateRequest(ip_addr, serv, content_in, props, UNKNOWN_ACTION, 0);
-	boost::format query;
+	Database::ID ret = logd->i_createRequest(ip_addr, serv, content, props, refs, UNKNOWN_ACTION, session_id); boost::format query;
 
 	if(ret == 0) return 0;
 
@@ -302,39 +305,45 @@ Database::ID TestImplLog::CreateRequest(const char *ip_addr, const ServiceType s
 
 	// now a regular select
 
-	query = boost::format ( "select source_ip, service_id, raw.content from request r join request_data raw on raw.request_id=r.id where r.id=%1%") % ret;
+	query = boost::format ( "select source_ip, service_id, raw.content, session_id from request r join request_data raw on raw.request_id=r.id where r.id=%1%") % ret;
 	res = conn.exec(query.str());
 
 	if (res.size() != 1) {
-		res = conn.exec( (boost::format("select source_ip, service_id from request where id=%1%") % ret).str() );
+		res = conn.exec( (boost::format("select source_ip, service_id, session_id from request where id=%1%") % ret).str() );
 
 		if (res.size() != 1) {
 			if (res.size() == 0) {
-				BOOST_ERROR(boost::format(" Record created with CreateRequest with id %1% doesn't exist in the database! ") % ret);
+				BOOST_ERROR(boost::format(" Record created with createRequest with id %1% doesn't exist in the database! ") % ret);
 			} else if(res.size() > 1) {
-				BOOST_ERROR(boost::format(" Multiple records with id %1% after call to CreateRequest! ") % ret);
+				BOOST_ERROR(boost::format(" Multiple records with id %1% after call to createRequest! ") % ret);
 			}
 		} else {
 			if(has_content(ip_addr)) BOOST_CHECK(std::string(ip_addr) 	== (std::string)res[0][0]);
 			BOOST_CHECK((int)serv 			== (int)res[0][1]);
+                        Database::ID db_id = res[0][2];
+                        BOOST_CHECK(session_id                  == db_id);
 		}
 
 	} else {
 		if(has_content(ip_addr)) BOOST_CHECK(std::string(ip_addr) 	== (std::string)res[0][0]);
 		BOOST_CHECK((int)serv 			== (int)res[0][1]);
-		BOOST_CHECK(std::string(content_in) 	== (std::string)res[0][2]);
+		BOOST_CHECK(std::string(content) 	== (std::string)res[0][2]);
+                Database::ID db_id = res[0][3];
+                BOOST_CHECK(session_id                  == db_id);
 	}
 
 	check_db_properties(ret, props);
+        // TODO
+        check_obj_references(ret, refs);
 
 	MyFixture::id_list_entry.push_back(ret);
 
 	return ret;
 }
 
-bool TestImplLog::UpdateRequest(const Database::ID id, const Register::Logger::RequestProperties &props)
+bool TestImplLog::addRequestProperties(const Database::ID id, const Register::Logger::RequestProperties &props)
 {
-	bool result = logd->i_UpdateRequest(id, props);
+	bool result = logd->i_addRequestProperties(id, props);
 
 	if (!result) return result;
 
@@ -343,35 +352,41 @@ bool TestImplLog::UpdateRequest(const Database::ID id, const Register::Logger::R
 	return result;
 }
 
-bool TestImplLog::CloseRequest(const Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props)
+bool TestImplLog::closeRequest(const Database::ID id, const char *content, const Register::Logger::RequestProperties &props, const Register::Logger::ObjectReferences &refs, long result_code, Database::ID session_id)
 {
-	bool result = logd->i_CloseRequest(id, content_out, props, 0);
+	bool result = logd->i_closeRequest(id, content, props, refs, result_code, session_id);
 
 	if(!result) return result;
 
 	Connection conn = Database::Manager::acquire();
-	boost::format query = boost::format ( "select time_end, raw.content from request r join request_data raw on raw.request_id=r.id where raw.is_response=true and r.id=%1%") % id;
+	boost::format query = boost::format ( "select time_end, raw.content, session_id from request r join request_data raw on raw.request_id=r.id where raw.is_response=true and r.id=%1%") % id;
 	Result res = conn.exec(query.str());
 
 	if (res.size() != 1) {
-		res = conn.exec( (boost::format("select time_end from request where id=%1%") % id).str() );
+		res = conn.exec( (boost::format("select time_end, session_id from request where id=%1%") % id).str() );
 
 		if (res.size() != 1) {
 			if (res.size() == 0) {
-				BOOST_ERROR(boost::format(" Record created with CreateRequest with id %1% doesn't exist in the database! ") % id);
+				BOOST_ERROR(boost::format(" Record created with createRequest with id %1% doesn't exist in the database! ") % id);
 			} else if(res.size() > 1) {
-				BOOST_ERROR(boost::format(" Multiple records with id %1% after call to CreateRequest! ") % id);
+				BOOST_ERROR(boost::format(" Multiple records with id %1% after call to createRequest! ") % id);
 			}
 		} else {
 			BOOST_CHECK(!res[0][0].isnull());
+                        Database::ID db_id = res[0][1];
+                        BOOST_CHECK(session_id == db_id);
 		}
 
 	} else {
 		BOOST_CHECK(!res[0][0].isnull());
-		BOOST_CHECK(std::string(content_out) == (std::string)res[0][1]);
+		BOOST_CHECK(std::string(content) == (std::string)res[0][1]);
+                Database::ID db_id = res[0][2];
+                BOOST_CHECK(session_id == db_id);
 	}
 
 	check_db_properties_subset(id, props);
+        // TODO 
+        check_obj_references_subset(id, refs);
 
 	return result;
 }
@@ -466,13 +481,36 @@ void TestImplLog::check_db_properties(ID rec_id, const Register::Logger::Request
 	}
 }
 
+
+void TestImplLog::check_obj_references_subset(ID rec_id, const Register::Logger::ObjectReferences &refs) {}
+void TestImplLog::check_obj_references(ID rec_id, const Register::Logger::ObjectReferences &refs) 
+{
+    // TODO check object_references
+    /*
+        boost::format query = boost::format(" ") % rec_id;
+
+        Connection conn = Database::Manager::acquire();
+
+        res = conn.exec(query.str());
+
+        if(res.size() != refs.size()) {
+            BOOST_ERROR( boost::format(" Number of object references for request ID %1% doesn't match.") % rec_id);
+        }
+
+        for (unsigned i =0; i<res.size(); i++) {
+                BOOST_CHECK( res[i] ==  refs[i] );
+        }
+        */
+        
+}
+
 static int global_call_count = 0;
 
 void test_monitoring_ip(const std::string &ip, TestImplLog &t, bool result)
 {
 	Database::ID id;
 
-	id = t.CreateRequest(ip.c_str(), LC_EPP, "AAA", TestImplLog::no_props, result);
+	id = t.createRequest(ip.c_str(), LC_EPP, "AAA", TestImplLog::no_props, result);
 
 	Connection conn = Database::Manager::acquire();
 
@@ -481,7 +519,7 @@ void test_monitoring_ip(const std::string &ip, TestImplLog &t, bool result)
 	boost::format query = boost::format ( "select is_monitoring from request where id=%1%") % id;
 	Result res = conn.exec(query.str());
 
-	// since the request table is partitioned according to monitoring flag, it is already tested in CreateRequest
+	// since the request table is partitioned according to monitoring flag, it is already tested in createRequest
 	if(res.size() == 0) {
 		BOOST_ERROR(" Record wasn't found. ");
 	} else {
@@ -516,15 +554,15 @@ BOOST_AUTO_TEST_CASE( test_session )
 
 	TestImplLog test(global_hdba->get_conn_info());
 
-	Database::ID id = test.CreateSession(CS, "regid01");
+	Database::ID id = test.createSession(CS, "regid01");
 
 	BOOST_CHECK(id != 0);
-	BOOST_CHECK(test.CloseSession(id));
+	BOOST_CHECK(test.closeSession(id));
 
-	id = test.CreateSession(EN, "regid02");
+	id = test.createSession(EN, "regid02");
 
 	BOOST_CHECK(id != 0);
-	BOOST_CHECK(test.CloseSession(id));
+	BOOST_CHECK(test.closeSession(id));
 }
 
 BOOST_AUTO_TEST_CASE( test_con_sessions )
@@ -533,14 +571,14 @@ BOOST_AUTO_TEST_CASE( test_con_sessions )
 
 	TestImplLog test(global_hdba->get_conn_info());
 
-	Database::ID id  = test.CreateSession(CS, "regid03");
-	Database::ID id1 = test.CreateSession(EN, "regid04");
+	Database::ID id  = test.createSession(CS, "regid03");
+	Database::ID id1 = test.createSession(EN, "regid04");
 
 	BOOST_CHECK(id  != 0);
 	BOOST_CHECK(id1 != 0);
 
-	BOOST_CHECK(test.CloseSession(id));
-	BOOST_CHECK(test.CloseSession(id1));
+	BOOST_CHECK(test.closeSession(id));
+	BOOST_CHECK(test.closeSession(id1));
 }
 
 #ifdef DEBUG_LOGD
@@ -552,12 +590,12 @@ BOOST_AUTO_TEST_CASE( close_session_twice )
 
 	TestImplLog test(global_hdba->get_conn_info());
 
-	Database::ID id = test.CreateSession(CS, "regid01");
+	Database::ID id = test.createSession(CS, "regid01");
 
 	BOOST_CHECK(id != 0);
-	BOOST_CHECK(test.CloseSession(id));
+	BOOST_CHECK(test.closeSession(id));
 
-	BOOST_CHECK(!test.CloseSession(id));
+	BOOST_CHECK(!test.closeSession(id));
 }
 #endif
 
@@ -567,10 +605,10 @@ BOOST_AUTO_TEST_CASE( session_without_name )
 
 	TestImplLog test(global_hdba->get_conn_info());
 
-	Database::ID id = test.CreateSession(CS, NULL);
+	Database::ID id = test.createSession(CS, NULL);
 	BOOST_CHECK(id == 0);
 
-	id = test.CreateSession(CS, "");
+	id = test.createSession(CS, "");
 	BOOST_CHECK(id == 0);
 
 }
@@ -718,7 +756,7 @@ BOOST_AUTO_TEST_CASE( long_property_name)
 	(*props)[0].name = "name - very long value";
 	(*props)[0].value = std::string(8000, 'X');
 
-	id = test.CreateRequest("100.100.100.100", LC_EPP, "AAA", *props);
+	id = test.createRequest("100.100.100.100", LC_EPP, "AAA", *props);
 	BOOST_CHECK(id != 0);
 }
 
@@ -738,7 +776,7 @@ BOOST_AUTO_TEST_CASE( zero_property_name)
 	(*props)[0].name = "name zero length value";
 	(*props)[0].value = "";
 
-	id = test.CreateRequest("100.100.100.100", LC_EPP, "CCC", *props);
+	id = test.createRequest("100.100.100.100", LC_EPP, "CCC", *props);
 
 	BOOST_CHECK(id != 0);
 }
@@ -754,10 +792,10 @@ BOOST_AUTO_TEST_CASE( without_properties )
 	TestImplLog test(global_hdba->get_conn_info());
 	Database::ID id1;
 
-	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD");
+	id1 = test.createRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD");
 	BOOST_CHECK(id1 != 0);
-	BOOST_CHECK(test.UpdateRequest(id1));
-	BOOST_CHECK(test.CloseRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ"));
+	BOOST_CHECK(test.addRequestProperties(id1));
+	BOOST_CHECK(test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ"));
 }
 
 BOOST_AUTO_TEST_CASE( service_types)
@@ -766,7 +804,7 @@ BOOST_AUTO_TEST_CASE( service_types)
 
 	TestImplLog test(global_hdba->get_conn_info());
 	for (int i=LC_UNIX_WHOIS;i<LC_MAX_SERVICE;i++) {
-		BOOST_CHECK(test.CreateRequest("111.222.111.222", (ServiceType)i, "aaa"));
+		BOOST_CHECK(test.createRequest("111.222.111.222", (ServiceType)i, "aaa"));
 	}
 }
 
@@ -775,8 +813,8 @@ BOOST_AUTO_TEST_CASE( invalid_ip)
 	BOOST_TEST_MESSAGE(" Try to send an invalid IP address");
 
 	TestImplLog test(global_hdba->get_conn_info());
-	BOOST_CHECK(test.CreateRequest("ABC", LC_PUBLIC_REQUEST, "AA") == 0);
-	BOOST_CHECK(test.CreateRequest("127.0.0.256", LC_PUBLIC_REQUEST, "AA") == 0);
+	BOOST_CHECK(test.createRequest("ABC", LC_PUBLIC_REQUEST, "AA") == 0);
+	BOOST_CHECK(test.createRequest("127.0.0.256", LC_PUBLIC_REQUEST, "AA") == 0);
 }
 
 BOOST_AUTO_TEST_CASE( zero_length_strings )
@@ -789,13 +827,13 @@ BOOST_AUTO_TEST_CASE( zero_length_strings )
 	std::auto_ptr<Register::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
-	id1 = test.CreateRequest("", LC_PUBLIC_REQUEST, "", *props);
+	id1 = test.createRequest("", LC_PUBLIC_REQUEST, "", *props);
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.UpdateRequest(id1, *props));
+	BOOST_CHECK(test.addRequestProperties(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.CloseRequest(id1, "", *props));
+	BOOST_CHECK(test.closeRequest(id1, "", *props));
 
 }
 
@@ -809,13 +847,13 @@ BOOST_AUTO_TEST_CASE( null_strings )
 	std::auto_ptr<Register::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
-	id1 = test.CreateRequest(NULL, LC_PUBLIC_REQUEST, NULL, *props);
+	id1 = test.createRequest(NULL, LC_PUBLIC_REQUEST, NULL, *props);
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.UpdateRequest(id1, *props));
+	BOOST_CHECK(test.addRequestProperties(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.CloseRequest(id1, NULL, *props));
+	BOOST_CHECK(test.closeRequest(id1, NULL, *props));
 }
 
 BOOST_AUTO_TEST_CASE( long_strings )
@@ -828,19 +866,19 @@ BOOST_AUTO_TEST_CASE( long_strings )
 	std::auto_ptr<Register::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
-	id1 = test.CreateRequest(std::string(100, 'X').c_str(), LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
+	id1 = test.createRequest(std::string(100, 'X').c_str(), LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
 	BOOST_CHECK(id1 == 0);
 
-	id1 = test.CreateRequest("122.123.124.125", LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
+	id1 = test.createRequest("122.123.124.125", LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.UpdateRequest(id1, *props));
+	BOOST_CHECK(test.addRequestProperties(id1, *props));
 
 
 	props = test.create_generic_properties(1, global_call_count++);
 
-	BOOST_CHECK(test.CloseRequest(id1, std::string(5000, 'X').c_str(), *props));
+	BOOST_CHECK(test.closeRequest(id1, std::string(5000, 'X').c_str(), *props));
 }
 
 BOOST_AUTO_TEST_CASE( normal_event )
@@ -853,17 +891,17 @@ BOOST_AUTO_TEST_CASE( normal_event )
 	std::auto_ptr<Register::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
-	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
+	id1 = test.createRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.UpdateRequest(id1, *props));
+	BOOST_CHECK(test.addRequestProperties(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.UpdateRequest(id1, *props));
+	BOOST_CHECK(test.addRequestProperties(id1, *props));
 
 	props = test.create_generic_properties(1, global_call_count++);
 
-	BOOST_CHECK(test.CloseRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", *props));
+	BOOST_CHECK(test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", *props));
 
 }
 
@@ -875,15 +913,15 @@ BOOST_AUTO_TEST_CASE( no_props )
 	TestImplLog test(global_hdba->get_conn_info());
 	Database::ID id1;
 
-	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", no_props);
+	id1 = test.createRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", no_props);
 	BOOST_CHECK(id1 != 0);
 
-	BOOST_CHECK(test.UpdateRequest(id1, no_props));
+	BOOST_CHECK(test.addRequestProperties(id1, no_props));
 
-	BOOST_CHECK(test.UpdateRequest(id1, no_props));
+	BOOST_CHECK(test.addRequestProperties(id1, no_props));
 
 
-	BOOST_CHECK(test.CloseRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", no_props));
+	BOOST_CHECK(test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", no_props));
 }
 
 BOOST_AUTO_TEST_CASE( _2_events )
@@ -896,17 +934,17 @@ BOOST_AUTO_TEST_CASE( _2_events )
 	props = test.create_generic_properties(3, global_call_count++);
 	props = test.create_generic_properties(3, global_call_count++);
 
-	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
+	id1 = test.createRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
 	BOOST_CHECK(id1 != 0);
 
-	id2 = test.CreateRequest("101.101.101.101", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
+	id2 = test.createRequest("101.101.101.101", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
 	BOOST_CHECK(id2 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
 
-	BOOST_CHECK(test.CloseRequest(id2, "ZZZZZZZZZZZZZZZZZZZZZ", *props));
+	BOOST_CHECK(test.closeRequest(id2, "ZZZZZZZZZZZZZZZZZZZZZ", *props));
 
-	BOOST_CHECK(test.CloseRequest(id1, "YYYYYYYYYYYYYYYY", *props));
+	BOOST_CHECK(test.closeRequest(id1, "YYYYYYYYYYYYYYYY", *props));
 }
 
 #ifdef DEBUG_LOGD
@@ -920,15 +958,15 @@ BOOST_AUTO_TEST_CASE( already_closed )
 
 	props = test.create_generic_properties(3, global_call_count++);
 
-	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
+	id1 = test.createRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
 	BOOST_CHECK(id1 != 0);
-	BOOST_CHECK(test.CloseRequest(id1, "YYYYYYYYYYYYYYYY"));
+	BOOST_CHECK(test.closeRequest(id1, "YYYYYYYYYYYYYYYY"));
 	// record closed here
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(!test.UpdateRequest(id1, *props));
-	BOOST_CHECK(!test.UpdateRequest(id1, *props));
-	BOOST_CHECK(!test.CloseRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", *props));
+	BOOST_CHECK(!test.addRequestProperties(id1, *props));
+	BOOST_CHECK(!test.addRequestProperties(id1, *props));
+	BOOST_CHECK(!test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", *props));
 
 }
 #endif
@@ -938,15 +976,13 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 	BOOST_TEST_MESSAGE(" Try to close record with id 0");
 	TestImplLog test (global_hdba->get_conn_info());
 
-	BOOST_CHECK(!test.CloseRequest(0, "ZZZZ"));
+	BOOST_CHECK(!test.closeRequest(0, "ZZZZ"));
 
 }
 
 
-BOOST_AUTO_TEST_CASE( GetResultCodesByService )
+BOOST_AUTO_TEST_CASE( getResultCodesByService )
 {
-    //  try
-    //  {
 
         //CORBA init
         FakedArgs fa = CfgArgs::instance()->fa;
@@ -967,11 +1003,11 @@ BOOST_AUTO_TEST_CASE( GetResultCodesByService )
         //simple test
         ccReg::ResultCodeList_var result_codes_var(new ccReg::ResultCodeList);
 
-        result_codes_var = logger_ref->GetResultCodesByService(0);
+        result_codes_var = logger_ref->getResultCodesByService(0);
 
         const ccReg::ResultCodeList& result_codes_ref = result_codes_var.in();
 
-        std::cout << "\nGetResultCodesByService" << std::endl;
+        std::cout << "\ngetResultCodesByService" << std::endl;
            for (CORBA::ULong i=0; i < result_codes_ref.length(); ++i)
            {
                const ccReg::ResultCodeListItem& rc = result_codes_ref[i];
@@ -984,6 +1020,14 @@ BOOST_AUTO_TEST_CASE( GetResultCodesByService )
         BOOST_REQUIRE_EQUAL(1 , 1);
         CorbaContainer::destroy_instance();
 }
+
+/*
+// TODO testcases
+BOOST_AUTO_TEST_CASE(tryOverwriting session_id at the end)
+BOOST_AUTO_TEST_CASE(tryOverwriting session_id at the end with the same value)
+BOOST_AUTO_TEST_CASE(checkResultCodeSaving)
+BOOST_AUTO_TEST_CASE(checkObjRefsSaving)
+*/
 
 
 }  // namespace TestLogd
