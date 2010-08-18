@@ -2,6 +2,8 @@
 #define _REQUEST_IMPL_H_
 #include "request.h"
 
+#define LOGD_DEBUG_MODE
+
 namespace Register {
 namespace Logger {
 

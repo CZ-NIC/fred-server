@@ -595,7 +595,7 @@ ManagerImpl::~ManagerImpl() {
 
 // check if a log record with the specified ID exists and if it can be modified (time_end isn't set yet)
 
-#ifdef DEBUG_LOGD
+#ifdef LOGD_DEBUG_MODE
 // optimization
 bool ManagerImpl::record_check(ID id, Connection &conn)
 {
@@ -617,7 +617,7 @@ bool ManagerImpl::record_check(ID id, Connection &conn)
 
 	return true;
 }
-#endif //DEBUG_LOGD
+#endif //LOGD_DEBUG_MODE
 
 // find ID for the given name of a property
 // if the name is tool long, it's truncated to the maximal length allowed by the database
@@ -898,7 +898,7 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Register::Logger::RequestP
 
 	try {
 		// perform check
-#ifdef DEBUG_LOGD
+#ifdef LOGD_DEBUG_MODE
 		if (!record_check(id, db)) return false;
 #endif
 
@@ -947,7 +947,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 
 	try {
 		// first perform checks:
-#ifdef DEBUG_LOGD
+#ifdef LOGD_DEBUG_MODE
 		if (!record_check(id, conn)) return false;
 #endif
 
@@ -1034,7 +1034,7 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
 #endif
 
 	try {
-#ifdef DEBUG_LOGD
+#ifdef LOGD_DEBUG_MODE
 		Result res = db.exec(query.str());
 
 		// if there is no record with specified ID
@@ -1050,17 +1050,22 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
                                 return false;
                         }
 		}
-#endif // DEBUG_LOGD
+#endif // LOGD_DEBUG_MODE
 
-                std::string user_name = getSessionUserName(db, session_id);
+                // if session_id is set update the request with that session_id (possibly adding name as well)
+                if(session_id != 0) {
+                        std::string user_name = getSessionUserName(db, session_id);
+                        boost::format query;
 
-                if(user_name != std::string()) {
-                    query = boost::format("update request set session_id = %1%, user_name='%2%' where id=%3%") % session_id % user_name % id;
-                } else {
-                    query = boost::format("update request set session_id = %1% where id=%2%") % session_id % id;
+                        if(!user_name.empty()) {
+                                query = boost::format("update request set session_id = %1%, user_name='%2%' where id=%3%") % session_id % user_name % id;
+                        } else {
+                                query = boost::format("update request set session_id = %1% where id=%2%") % session_id % id;
+                        }
+
+                        db.exec(query.str());
                 }
-		db.exec(query.str());
-
+                
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
 		return false;
@@ -1070,7 +1075,7 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
         return true;
 }
 
-ID ManagerImpl::i_createSession(ID id, const char *name)
+ID ManagerImpl::i_createSession(ID user_id, const char *name)
 {	
 	logd_ctx_init ctx;
         TRACE("[CALL] Register::Logger::ManagerImpl::i_createSession");
@@ -1080,7 +1085,7 @@ ID ManagerImpl::i_createSession(ID id, const char *name)
 	std::string time;
 	ID session_id;
 
-	logger_notice(boost::format("createSession: username-> [%1%] id [%2%]") % name %  id);
+	logger_notice(boost::format("createSession: username-> [%1%] user_id [%2%]") % name %  user_id);
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
 
@@ -1125,13 +1130,13 @@ bool ManagerImpl::i_closeSession(ID id)
 
 	logger_notice(boost::format("closeSession: session_id -> [%1%] ") % id );
 
-#ifdef DEBUG_LOGD
+#ifdef LOGD_DEBUG_MODE
 	boost::format query = boost::format("select logout_date from session where id=%1%") % id;
 #endif
 
 	try {
 
-#ifdef DEBUG_LOGD
+#ifdef LOGD_DEBUG_MODE
 		Result res = db.exec(query.str());
 
 		if(res.size() == 0) {
@@ -1143,7 +1148,7 @@ bool ManagerImpl::i_closeSession(ID id)
 			logger_error(boost::format("record in session with ID %1% already closed") % id);
 			return false;
 		}
-#endif //DEBUG_LOGD
+#endif //LOGD_DEBUG_MODE
 
 		boost::format update;
 		time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
