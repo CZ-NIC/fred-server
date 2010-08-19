@@ -15,8 +15,11 @@ public:
     const unsigned long long &getId() const {
         return m_id.get();
     }
-    const std::string &getName() const {
-        return m_name.get();
+    const std::string &getUserName() const {
+        return m_userName.get();
+    }
+    const unsigned long long &getUserId() const {
+        return m_userId.get();
     }
     const Database::DateTime &getLoginDate() const {
         return m_loginDate.get();
@@ -24,23 +27,20 @@ public:
     const Database::DateTime &getLogoutDate() const {
         return m_logoutDate.get();
     }
-    const std::string &getLang() const {
-        return m_lang.get();
-    }
     void setId(const unsigned long long &id) {
         m_id = id;
     }
-    void setName(const std::string &name) {
-        m_name = name;
+    void setUserName(const std::string &userName) {
+        m_userName = userName;
+    }
+    void setUserId(const unsigned long long &userId) {
+        m_userId = userId;
     }
     void setLoginDate(const Database::DateTime &loginDate) {
         m_loginDate = loginDate;
     }
     void setLogoutDate(const Database::DateTime &logoutDate) {
         m_logoutDate = logoutDate;
-    }
-    void setLang(const std::string &lang) {
-        m_lang = lang;
     }
 
     friend class Model::Base;
@@ -75,18 +75,18 @@ public:
 
 protected:
     Field::Field<unsigned long long> m_id;
-    Field::Field<std::string> m_name;
+    Field::Field<std::string> m_userName;
+    Field::Field<unsigned long long> m_userId;
     Field::Field<Database::DateTime> m_loginDate;
     Field::Field<Database::DateTime> m_logoutDate;
-    Field::Field<std::string> m_lang;
 
 
 public:
     static Model::Field::PrimaryKey<ModelSession, unsigned long long> id;
-    static Model::Field::Basic<ModelSession, std::string> name;
+    static Model::Field::Basic<ModelSession, std::string> userName;
+    static Model::Field::Basic<ModelSession, unsigned long long> userId;
     static Model::Field::Basic<ModelSession, Database::DateTime> loginDate;
     static Model::Field::Basic<ModelSession, Database::DateTime> logoutDate;
-    static Model::Field::Basic<ModelSession, std::string> lang;
 
 
 private:

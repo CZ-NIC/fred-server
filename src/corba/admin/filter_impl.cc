@@ -506,10 +506,10 @@ COMPOUND_CLASS(RequestData, RequestData, Compound,
 
 COMPOUND_CLASS(Session, Session, Compound,
     FILTER_ADD(Id, addId);
-    FILTER_ADD(Str, addName);
+    FILTER_ADD(Str, addUserName);
+    FILTER_ADD(Id, addUserId);
     FILTER_ADD(DateTime, addLoginDate);
     FILTER_ADD(DateTime, addLogoutDate);
-    FILTER_ADD(Str, addLang);
 );
 
 COMPOUND_CLASS(StatementItem, BankPayment, Compound,

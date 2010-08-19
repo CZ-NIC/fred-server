@@ -504,7 +504,7 @@ void TestImplLog::check_obj_references(ID rec_id, const Register::Logger::Object
         
 }
 
-static int global_call_count = 0;
+// static int global_call_count = 0;
 
 void test_monitoring_ip(const std::string &ip, TestImplLog &t, bool result)
 {
@@ -547,7 +547,7 @@ public:
 	}
 };
 
-
+/*
 BOOST_AUTO_TEST_CASE( test_session )
 {
 	BOOST_TEST_MESSAGE("Create and close single sessions with both available languages ");
@@ -581,9 +581,9 @@ BOOST_AUTO_TEST_CASE( test_con_sessions )
 	BOOST_CHECK(test.closeSession(id1));
 }
 
-#ifdef DEBUG_LOGD
+#ifdef LOGD_DEBUG_MODE
 // this is not going to be detected unless we check for it in implementation
-// under DEBUG_LOGD
+// under LOGD_DEBUG_MODE
 BOOST_AUTO_TEST_CASE( close_session_twice )
 {
 	BOOST_TEST_MESSAGE("Try to close a session which is already closed");
@@ -947,7 +947,7 @@ BOOST_AUTO_TEST_CASE( _2_events )
 	BOOST_CHECK(test.closeRequest(id1, "YYYYYYYYYYYYYYYY", *props));
 }
 
-#ifdef DEBUG_LOGD
+#ifdef LOGD_DEBUG_MODE
 BOOST_AUTO_TEST_CASE( already_closed )
 {
 	BOOST_TEST_MESSAGE(" Try to update and close already closed event. ");
@@ -980,6 +980,7 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 
 }
 
+*/
 
 BOOST_AUTO_TEST_CASE( getResultCodesByService )
 {

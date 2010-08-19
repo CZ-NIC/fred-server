@@ -200,10 +200,18 @@ Value<Database::ID>& SessionImpl::addId()
   return *tmp;
 }
 
-Value<std::string>& SessionImpl::addName()
+Value<std::string>& SessionImpl::addUserName()
 {
-  Value<std::string>* tmp  = new Value<std::string>(Column("name", joinSessionTable())); 
-  tmp->setName("Name");
+  Value<std::string>* tmp  = new Value<std::string>(Column("user_name", joinSessionTable())); 
+  tmp->setName("UserName");
+  add(tmp);
+  return *tmp;
+}
+
+Value<Database::ID>& SessionImpl::addUserId()
+{
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("user_id", joinSessionTable()));
+  tmp->setName("UserId");
   add(tmp);
   return *tmp;
 }
@@ -220,14 +228,6 @@ Interval<Database::DateTimeInterval>& SessionImpl::addLogoutDate()
 {
   Interval<Database::DateTimeInterval>* tmp  = new Interval<Database::DateTimeInterval>(Column("logout_date", joinSessionTable()));
   tmp->setName("LogoutDate");
-  add(tmp);
-  return *tmp;
-}
-
-Value<std::string>& SessionImpl::addLang()
-{
-  Value<std::string>* tmp  = new Value<std::string>(Column("lang", joinSessionTable())); 
-  tmp->setName("Lang");
   add(tmp);
   return *tmp;
 }

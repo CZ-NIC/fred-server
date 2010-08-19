@@ -227,10 +227,10 @@ public:
  
   virtual Table& joinSessionTable() = 0;
   virtual Value<Database::ID>& addId() = 0;
-  virtual Value<std::string>& addName() = 0;
+  virtual Value<std::string>& addUserName() = 0;
+  virtual Value<Database::ID>& addUserId() = 0;
   virtual Interval<Database::DateTimeInterval>& addLoginDate() = 0;
   virtual Interval<Database::DateTimeInterval>& addLogoutDate() = 0;
-  virtual Value<std::string>& addLang() = 0;
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -250,10 +250,10 @@ public:
 
   virtual Table& joinSessionTable();
   virtual Value<Database::ID>& addId();
-  virtual Value<std::string>& addName();
+  virtual Value<std::string>& addUserName();
+  virtual Value<Database::ID>& addUserId();
   virtual Interval<Database::DateTimeInterval>& addLoginDate();
   virtual Interval<Database::DateTimeInterval>& addLogoutDate();
-  virtual Value<std::string>& addLang();
  
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

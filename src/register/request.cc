@@ -861,7 +861,7 @@ std::string ManagerImpl::getSessionUserName(Connection &conn, Database::ID sessi
     TRACE("[CALL] Register::Logger::ManagerImpl::getSessionUserName");
     
 	if (session_id != 0) {
-                boost::format query = boost::format("select name from session where id = %1%") % session_id;
+                boost::format query = boost::format("select user_name from session where id = %1%") % session_id;
 		Result res = conn.exec(query.str());
 
 		if(res.size() == 0) {
@@ -919,7 +919,7 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Register::Logger::RequestP
 		insert_props(time, service_id, monitoring, id, props, db, prop_lock);
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
-		return false;
+                throw InternalServerError(ex.what());
 	}
 
         db.commit();
@@ -1000,7 +1000,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
-		return false;
+                throw InternalServerError(ex.what());
 	}
 	return true;
 }
@@ -1029,7 +1029,7 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
 	// fill in the session ID
 
         boost::format query;
-#ifdef DEUBG_LOGD
+#ifdef LOGD_DEBUG_MODE
 	query = boost::format("select session_id from request where id=%1%") % id;
 #endif
 
@@ -1043,11 +1043,11 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
 			return false;
 		}
 
-		if(!res[0][0].isnull()) {
+		if(session_id != 0 && !res[0][0].isnull()) {
 		        ID filled = res[0][0];
                         if(filled != 0) {
                                 logger_error(boost::format("record with ID %1% already has session_id filled") % id);
-                                return false;
+                                throw WrongUsageError(" session_id already set. ");
                         }
 		}
 #endif // LOGD_DEBUG_MODE
@@ -1068,7 +1068,7 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
                 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
-		return false;
+                throw InternalServerError(ex.what());
 	}
 
         db.commit();
@@ -1092,10 +1092,10 @@ ID ManagerImpl::i_createSession(ID user_id, const char *name)
 	ModelSession sess;
 
 	if (name != NULL && *name != '\0') {
-		sess.setName(name);
+		sess.setUserName(name);
 	} else {
 		logger_error("createSession: name is empty!");
-		return 0;
+                throw WrongUsageError ("User name is empty");
 	}
 
 	try {
@@ -1110,7 +1110,7 @@ ID ManagerImpl::i_createSession(ID user_id, const char *name)
                 
         } catch (Database::Exception &ex) {
                 logger_error(ex.what());
-                return 0;
+                throw InternalServerError(ex.what());
 	}
 	return session_id;
 }
@@ -1158,7 +1158,7 @@ bool ManagerImpl::i_closeSession(ID id)
 		db.exec(update.str());
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
-		return false;
+                throw InternalServerError(ex.what());
 	}
 
         db.commit();

@@ -7,6 +7,16 @@
 namespace Register {
 namespace Logger {
 
+class InternalServerError : std::runtime_error {
+public:
+    InternalServerError(const std::string msg) : std::runtime_error(msg) {};
+};
+
+class WrongUsageError : std::runtime_error {
+public:
+    WrongUsageError(const std::string msg) : std::runtime_error(msg) {};
+};
+
 class ManagerImpl : public Manager {
 private:
     boost::mutex properties_mutex;

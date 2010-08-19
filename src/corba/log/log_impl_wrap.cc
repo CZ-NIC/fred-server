@@ -42,12 +42,21 @@ void ccReg_Log_i::addRequestProperties(ccReg::TID id, const ccReg::RequestProper
 void ccReg_Log_i::closeRequest(ccReg::TID id, const char *content, const ccReg::RequestProperties &props, const ccReg::Logger::ObjectReferences &refs, const CORBA::Long result_code, ccReg::TID session_id) {
     std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
     std::auto_ptr<Register::Logger::ObjectReferences> r(convert_obj_references(refs));
-    if( back->i_closeRequest(id, content, *(p.get()), *(r.get()), result_code, session_id) == false) throw ccReg::Logger::REQUEST_NOT_EXISTS();
+
+    if( back->i_closeRequest(id, content, *(p.get()), *(r.get()), result_code, session_id) == false) {
+        throw ccReg::Logger::REQUEST_NOT_EXISTS();
+    }
 
 }
 
 ccReg::TID ccReg_Log_i::createSession(ccReg::TID user_id, const char *name) {    
-    return back->i_createSession(user_id, name);
+    ccReg::TID ret = back->i_createSession(user_id, name);
+
+    if(ret == 0) {
+        throw ccReg::Logger::SESSION_NOT_EXISTS();
+    } else {
+        return ret;
+    }
 }
 
 void ccReg_Log_i::closeSession(ccReg::TID id) {    
