@@ -113,8 +113,20 @@ ccReg::ResultCodeList* ccReg_Log_i::getResultCodesByService(ccReg::RequestServic
 
 ccReg::Logger::ObjectTypeList* ccReg_Log_i::getObjectTypes()
 {
+    Database::Result res = back->i_getObjectTypes();
+
     ccReg::Logger::ObjectTypeList_var ret = new ccReg::Logger::ObjectTypeList();
-    ret->length(0);
+    ret->length(res.size());
+
+    for (unsigned i=0; i<res.size(); i++) {
+        /*
+         * TODO
+        ret[i].id =   static_cast<ccReg::TID>(res[i][0]);
+        ret[i].type = CORBA::string_dup(res[i][1]);
+        */
+        ret[i]  = CORBA::string_dup((std::string(res[i][0])).c_str());
+    }
+
     // TODO impl
     return ret._retn();
 }

@@ -2,7 +2,7 @@
 #define _REQUEST_IMPL_H_
 #include "request.h"
 
-#define LOGD_DEBUG_MODE
+#define LOGD_VERIFY_INPUT
 
 namespace Register {
 namespace Logger {
@@ -40,7 +40,7 @@ private:
 public:
 
   
-  ManagerImpl(const std::string &monitoring_hosts_file = std::string()) throw(DB_CONNECT_FAILED);
+  ManagerImpl(const std::string &monitoring_hosts_file = std::string());
 
   virtual ~ManagerImpl();
 
@@ -59,6 +59,7 @@ public:
   Database::Result i_getRequestTypesByService(ServiceType service);
   Database::Result i_getServices();
   Database::Result i_getResultCodesByService(ServiceType service);
+  Database::Result i_getObjectTypes();
 
  // for migration tool (util/logd_migration)
  void insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Register::Logger::RequestProperties& props);

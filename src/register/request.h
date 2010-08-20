@@ -133,6 +133,7 @@ virtual  bool i_closeSession(Database::ID id) = 0;
   virtual Database::Result i_getRequestTypesByService(ServiceType service) = 0;
   virtual Database::Result i_getServices() = 0;
   virtual Database::Result i_getResultCodesByService(ServiceType service) = 0;
+  virtual Database::Result i_getObjectTypes() = 0;
 
   virtual List* createList() const = 0;
 
