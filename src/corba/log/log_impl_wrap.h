@@ -14,7 +14,6 @@
 
 using namespace Register::Logger;
 
-std::auto_ptr<Register::Logger::RequestProperties> convert_properties(const ccReg::RequestProperties &p);
 
 class ccReg_Log_i : public POA_ccReg::Logger,
   public PortableServer::RefCountServantBase
