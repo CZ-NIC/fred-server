@@ -67,9 +67,9 @@ public:
   List* createList() const;
 
 private:
-  bool close_request_worker(Connection &conn, ID id, const char *content, const Register::Logger::RequestProperties &props, const long result_code);
   
-  void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock);
+  void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Register::Logger::RequestProperties& props, Connection &conn, boost::mutex::scoped_lock &prop_lock);
+  void insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Register::Logger::ObjectReferences& props, Connection &conn);
   bool record_check(Database::ID id, Connection &conn);
   Database::ID find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db);
   inline Database::ID find_last_property_value_id(Connection &conn);

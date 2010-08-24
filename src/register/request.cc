@@ -700,7 +700,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
 }
 
 // insert properties for the given request record
-void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock)
+void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Register::Logger::RequestProperties& props, Connection &conn, boost::mutex::scoped_lock &prop_lock)
 {
         TRACE("[CALL] Register::Logger::ManagerImpl::insert_props");
 	ID property_name_id, last_id = 0;
@@ -757,13 +757,41 @@ void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool mo
 
 }
 
+void ManagerImpl::insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Register::Logger::ObjectReferences &refs, Connection &conn) 
+{
+
+    for (unsigned i = 0; i<refs.size(); i++) {
+    // for (std::vector<Register::Logger::ObjectReference>::iterator it = refs.begin(); it!=refs.end(); it++) {
+        const std::string & obj_type = refs[i].type;
+        int type_id;
+
+        boost::format find_type_query = boost::format("select id from request_object_type where name='%1%'") % obj_type;
+
+        Result res_type = conn.exec(find_type_query.str());
+        if (res_type.size() == 0) {
+                boost::format msg = boost::format("Object type with name '%1%' does not exist") % obj_type;
+		logger_error(msg);
+                throw InternalServerError(msg.str());
+        } else {
+                type_id = res_type[0][0];
+        }
+
+        boost::format insert_query  = boost::format("INSERT INTO request_object_ref (request_time_begin, request_service_id, request_monitoring, request_id, object_type_id, object_id) VALUES ('%1%', %2%, %3%, %4%, %5%, %6%)") % entry_time % service % (monitoring ? "true" : "false") % request_id % type_id % refs[i].id;
+
+        conn.exec(insert_query.str());
+
+    }
+
+}
+
 void ManagerImpl::insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, ID request_id, const Register::Logger::RequestProperties& props) {
 #if ( BOOST_VERSION < 103500 ) 
         boost::mutex::scoped_lock prop_lock(properties_mutex, false);
 #else 
         boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
 #endif
-	insert_props(entry_time, request_service_id, monitoring, request_id, props, get_connection(), prop_lock);
+        Connection conn = get_connection();
+	insert_props(entry_time, request_service_id, monitoring, request_id, props, conn, prop_lock);
 }
 
 
@@ -855,8 +883,12 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
 			data.insert();
 		}
 
-		// inserting properties
-		insert_props(time, service, monitoring, request_id, props, db, prop_lock);
+                if(props.size() > 0) {
+                        insert_props(time, service, monitoring, request_id, props, db, prop_lock);
+                }
+                if(refs.size() > 0) {
+                        insert_obj_ref(time, service, monitoring, request_id, refs, db);
+                }
 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
@@ -1039,7 +1071,11 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
 
                 // insert properties 
                 if(props.size() > 0) {
-                        insert_props(res[0][0].operator ptime(), service_id, monitoring, id, props, db, prop_lock);
+                        insert_props(entry_time, service_id, monitoring, id, props, db, prop_lock);
+                }
+
+                if(refs.size() > 0) {
+                        insert_obj_ref(entry_time, service_id, monitoring, id, refs, db);
                 }
 
 	} catch (Database::Exception &ex) {
