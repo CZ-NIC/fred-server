@@ -236,6 +236,16 @@ AC_CHECK_FILE(
 	)]
 )
 
+AC_CHECK_FILE(
+	[$IDLDIR/Messages.idl], 
+	[], 
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain Messages.idl 
+		(use --with-idldir)]
+	)]
+)
+
+
 AC_ARG_WITH(
   [libidn], 
   [AC_HELP_STRING(
@@ -285,10 +295,12 @@ AC_CONFIG_FILES([Makefile
                  src/old_utils/Makefile
                  src/model/Makefile
                  src/register/Makefile
+                 src/register/messages/Makefile
                  src/corba/Makefile
                  src/corba/admin/Makefile
                  src/corba/epp/Makefile
                  src/corba/log/Makefile
+                 src/corba/messages/Makefile
                  src/cli_admin/Makefile
                  tools/Makefile
                  tools/logd_migration/Makefile

@@ -1,3 +1,5 @@
+SUBDIRS = messages
+
 noinst_LIBRARIES = libfred.a
 
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(LIBIDN_CFLAGS) \
