@@ -39,7 +39,7 @@
 #include "handle_corbanameservice_args.h"
 
 //code for implementing IDL interfaces in file /usr/local/share/idl/fred//Messages.idl
-#include <Messages.hh>
+#include "corba/Messages.hh"
 
 //class implementing IDL interface Registry::Messages
 class Registry_Messages_i: public POA_Registry::Messages
