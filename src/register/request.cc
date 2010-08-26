@@ -840,9 +840,16 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
         if (session_id != 0){
                 req.setSessionId(session_id);
                 
-                std::string user_name = getSessionUserName(db, session_id);
+                std::string user_name;
+                Database::ID user_id;
+
+                getSessionUser(db, session_id, &user_name, &user_id);
+
                 if(user_name != std::string()) {
                     req.setUserName(user_name);
+                }
+                if(user_id != 0) {
+                    req.setUserId(user_id);
                 }
         }
 
@@ -900,23 +907,31 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
 }
 
 // optimization
-std::string ManagerImpl::getSessionUserName(Connection &conn, ID session_id) 
+void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *user_name, Database::ID *user_id) 
 {
-    TRACE("[CALL] Register::Logger::ManagerImpl::getSessionUserName");
+        TRACE("[CALL] Register::Logger::ManagerImpl::getSessionUser");
     
 	if (session_id != 0) {
-                boost::format query = boost::format("select user_name from session where id = %1%") % session_id;
+                boost::format query = boost::format("select user_name, user_id from session where id = %1%") % session_id;
 		Result res = conn.exec(query.str());
 
 		if(res.size() == 0) {
-			logger_error(boost::format("Session with ID %1% does not exist.") % session_id);
+                        boost::format msg = boost::format("Session with ID %1% does not exist.") % session_id;
+			logger_error(msg);
+                        throw InternalServerError(msg.str());
 		}
 
-                if(res[0][0].isnull()) return std::string(); 
-                else return (std::string)res[0][0];
-	}
+                if(res[0][0].isnull()) *user_name = std::string();
+                else *user_name = (std::string)res[0][0];
 
-        return std::string();
+                if(res[0][1].isnull()) *user_id = 0;
+                else *user_id = res[0][1];
+
+	} else {
+                *user_name = std::string();
+                *user_id = 0;
+        }
+
 }
 
 // update existing log record with given ID
@@ -1027,10 +1042,15 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
                 if(session_id != 0) {
 
                         query = query + ", session_id=" + boost::lexical_cast<std::string>(session_id);
-                        std::string user_name = getSessionUserName(db, session_id);
+                        std::string user_name;
+                        Database::ID user_id;
+                        getSessionUser(db, session_id, &user_name, &user_id);
 
                         if(!user_name.empty()) {
                                 query = query +  (boost::format(", user_name='%1%'") % user_name ).str();
+                        }
+                        if(user_id != 0) {
+                                query = query + (boost::format(", user_id=%1%") % user_id).str();
                         }
                 }
                 query = query + " WHERE id=" + boost::lexical_cast<std::string>(id);

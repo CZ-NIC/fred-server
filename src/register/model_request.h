@@ -26,6 +26,9 @@ public:
     const std::string &getUserName() const {
         return m_userName.get();
     }
+    const unsigned long long &getUserId() const {
+        return m_userId.get();
+    }
     const unsigned long long &getServiceId() const {
         return m_serviceId.get();
     }
@@ -72,6 +75,9 @@ public:
     }
     void setUserName(const std::string &userName) {
         m_userName = userName;
+    }
+    void setUserId(const unsigned long long &userId) {
+        m_userId = userId;
     }
     void setServiceId(const unsigned long long &serviceId) {
         m_serviceId = serviceId;
@@ -141,6 +147,7 @@ protected:
     Field::Field<Database::DateTime> m_timeEnd;
     Field::Field<std::string> m_sourceIp;
     Field::Field<std::string> m_userName;
+    Field::Field<unsigned long long> m_userId;
     Field::Field<unsigned long long> m_serviceId;
     Field::Field<unsigned long long> m_requestTypeId;
     Field::Field<unsigned long long> m_sessionId;
@@ -157,6 +164,7 @@ public:
     static Model::Field::Basic<ModelRequest, Database::DateTime> timeEnd;
     static Model::Field::Basic<ModelRequest, std::string> sourceIp;
     static Model::Field::Basic<ModelRequest, std::string> userName;
+    static Model::Field::Basic<ModelRequest, unsigned long long> userId;
     static Model::Field::Basic<ModelRequest, unsigned long long> serviceId;
     static Model::Field::Basic<ModelRequest, unsigned long long> requestTypeId;
     static Model::Field::Basic<ModelRequest, unsigned long long> sessionId;

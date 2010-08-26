@@ -74,7 +74,7 @@ private:
   Database::ID find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db);
   inline Database::ID find_last_property_value_id(Connection &conn);
   inline Database::ID find_last_request_id(Connection &conn);
-  inline std::string getSessionUserName(Connection &conn, Database::ID session_id);
+  inline void getSessionUser(Connection &conn, Database::ID session_id, std::string *user_name, Database::ID *user_id);
 
 public:
   static const std::string LAST_PROPERTY_VALUE_ID;
