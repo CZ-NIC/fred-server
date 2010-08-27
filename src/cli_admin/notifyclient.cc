@@ -398,13 +398,12 @@ void NotifyClient::file_send()
      res = conn.exec("SELECT id, attempt FROM letter_archive WHERE status = 6");
 
      for (std::vector<message_proc>::iterator it = processed.begin(); it!=processed.end(); it++) {
-           unsigned new_attempt;
-           if(new_status == 4) {
-                new_attempt = (*it).attempt + 1; 
-           } else {
-                new_attempt = (*it).attempt;
-           }
-           conn.exec(boost::format("UPDATE letter_archive SET status = %1%, batch_id = %2%, attempt = %3% WHERE id = %4%" ) % new_status % batch_id % new_attempt % (*it).id);
+           unsigned int new_attempt = (*it).attempt + 1;
+           conn.exec(boost::format("UPDATE letter_archive SET status = %1%, "
+                                   "batch_id = '%2%', attempt = %3%, "
+                                   "moddate = CURRENT_TIMESTAMP WHERE id = %4%")
+                                    % new_status % conn.escape(batch_id)
+                                    % new_attempt % (*it).id);
      }
 
      trans2.commit();
