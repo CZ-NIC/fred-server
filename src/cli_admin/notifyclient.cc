@@ -395,7 +395,7 @@ void NotifyClient::file_send()
          new_status = 4; // set error status in database
      }
 
-     res = conn.exec("SELECT id, attempt FROM letter_archive WHERE status = 6");
+
 
      for (std::vector<message_proc>::iterator it = processed.begin(); it!=processed.end(); it++) {
            unsigned int new_attempt = (*it).attempt + 1;
@@ -405,7 +405,8 @@ void NotifyClient::file_send()
                                     % new_status % conn.escape(batch_id)
                                     % new_attempt % (*it).id);
      }
-
+     // not processed letters should have status set back (set moddate? status?)
+     conn.exec("UPDATE letter_archive SET status = 1 WHERE status = 6");
      trans2.commit();
   }
 
