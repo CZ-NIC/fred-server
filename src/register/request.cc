@@ -45,9 +45,17 @@ private:
   std::string raw_request;
   std::string raw_response;
   boost::shared_ptr<RequestProperties> props;
+  int rc_code;
+  std::string rc_name;
 
 public:
-  RequestImpl(ID &_id, DateTime &_time_begin, DateTime &_time_end, std::string &_serv_type, std::string &_source_ip,  std::string &_request_type_id, ID &_session_id, std::string &_user_name, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
+  RequestImpl(ID &_id, DateTime &_time_begin, DateTime &_time_end,
+          std::string &_serv_type, std::string &_source_ip,
+          std::string &_request_type_id, ID &_session_id,
+          std::string &_user_name, bool &_is_monitoring,
+          std::string & _raw_request, std::string & _raw_response,
+          std::auto_ptr<RequestProperties>  _props,
+          const int _rc_code = 0, const std::string &_rc_name = std::string()) :
 	CommonObjectImpl(_id),
 	time_begin(_time_begin),
 	time_end(_time_end),
@@ -59,7 +67,10 @@ public:
 	is_monitoring(_is_monitoring),
 	raw_request(_raw_request),
 	raw_response(_raw_response),
-	props(_props) {
+	props(_props),
+    rc_code(_rc_code),
+    rc_name(_rc_name)
+  {
   }
 
   virtual const ptime  getTimeBegin() const {
@@ -92,8 +103,11 @@ public:
   virtual const std::string& getRawResponse() const {
 	return raw_response;
   }
-  virtual       boost::shared_ptr<RequestProperties> getProperties() {
+  virtual boost::shared_ptr<RequestProperties> getProperties() {
 	return props;
+  }
+  virtual const std::pair<int, std::string> getResultCode() const {
+    return std::make_pair(rc_code, rc_name);
   }
 };
 
@@ -177,70 +191,86 @@ public:
     Database::SelectQuery query;
 
     if(partialLoad) {
-	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.name, t_1.session_id, t_1.user_name, t_1.is_monitoring";
-	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id join request_type t_2 on t_2.id=t_1.request_type_id join service t_3 on t_3.id=t_1.service_id";
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, "
+                       << "t_1.source_ip, t_2.name, t_1.session_id, "
+                       << "t_1.user_name, t_1.is_monitoring, "
+                       << "t_4.result_code, t_4.name";
+	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id = t_1.id "
+                     << "join request_type t_2 on t_2.id = t_1.request_type_id "
+                     << "join service t_3 on t_3.id = t_1.service_id "
+                     << "join result_code t_4 on t_4.id = t_1.result_code_id";
 	    query.order_by() << "t_1.time_begin desc";
     } else {
 // hardcore optimizations have to be done on this statement
-	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.name, t_1.session_id, t_1.user_name, t_1.is_monitoring, "
-						" (select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=false limit 1) as request, "
-						" (select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=true  limit 1) as response ";
-	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id  join request_type t_2 on t_2.id=t_1.request_type_id join service t_3 on t_3.id=t_1.service_id";
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, "
+                       << "t_1.source_ip, t_2.name, t_1.session_id, "
+                       << "t_1.user_name, t_1.is_monitoring, "
+                       << "t_4.result_code, t_4.name, "
+                       << "(select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=false limit 1) as request, "
+                       << "(select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=true  limit 1) as response ";
+	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id "
+                     << "join request_type t_2 on t_2.id=t_1.request_type_id "
+                     << "join service t_3 on t_3.id=t_1.service_id "
+                     << "join result_code t_4 on t_4.id = t_1.result_code_id";
 	    query.order_by() << "t_1.time_begin desc";
     }
 
     Database::Connection conn = Database::Manager::acquire();
     try {
 
-	// run all the queries
-    	Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
+        // run all the queries
+        Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
         conn.exec(create_tmp_table);
         conn.exec(tmp_table_query);
 
-    	Result res = conn.exec(query);
+        Result res = conn.exec(query);
+        for (Result::Iterator it = res.begin(); it != res.end(); ++it) {
+            Database::Row::Iterator col = (*it).begin();
 
-    	for(Result::Iterator it = res.begin(); it != res.end(); ++it) {
-    		Database::Row::Iterator col = (*it).begin();
+            ID id                 = *col;
+            DateTime time_begin   = *(++col);
+            DateTime time_end     = *(++col);
+            std::string serv_type = *(++col);
+            std::string	source_ip = *(++col);
+            std::string request_type_id = *(++col);
+            ID session_id         = *(++col);
+            std::string user_name = *(++col);
+            bool is_monitoring	  = *(++col);
+            int rc_code           = *(++col);
+            std::string rc_name   = *(++col);
 
-    		ID 		id 		= *col;
-    		DateTime 	time_begin  	= *(++col);
-    		DateTime 	time_end  	= *(++col);
-                std::string             serv_type  	= *(++col);
-    		std::string 		source_ip  	= *(++col);
-                std::string             request_type_id     = *(++col);
-		ID		session_id	= *(++col);
-                std::string             user_name       = *(++col);
-		bool			is_monitoring	= *(++col);
-		// fields dependent on partialLoad
-		std::string			request;
-		std::string			response;
+            // fields dependent on partialLoad
+            std::string	request;
+            std::string	response;
 
-		std::auto_ptr<RequestProperties> props;
+            std::auto_ptr<RequestProperties> props;
 
-		if(!partialLoad) {
-			request		= (std::string)*(++col);
-			response	= (std::string)*(++col);
-			props 		= getPropsForId(id);
-		}
+            if(!partialLoad) {
+                request  = (std::string)*(++col);
+                response = (std::string)*(++col);
+                props    = getPropsForId(id);
+            }
 
-		data_.push_back(new RequestImpl(id,
-				time_begin,
-				time_end,
-				serv_type,
-				source_ip,
-				request_type_id,
-				session_id,
-                                user_name,
-				is_monitoring,
-				request,
-				response,
-				props));
+            data_.push_back(new RequestImpl(
+                    id,
+                    time_begin,
+                    time_end,
+                    serv_type,
+                    source_ip,
+                    request_type_id,
+                    session_id,
+                    user_name,
+                    is_monitoring,
+                    request,
+                    response,
+                    props,
+                    rc_code,
+                    rc_name));
+        }
 
-    	}
-
-    	if(data_.empty()) {
-    		return;
-    	}
+        if(data_.empty()) {
+            return;
+        }
     }
     catch (Database::Exception& ex) {
       LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());

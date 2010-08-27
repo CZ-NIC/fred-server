@@ -1,6 +1,6 @@
 #include "pagetable_logger.h"
 
-const int ccReg_Logger_i::NUM_COLUMNS = 7;
+const int ccReg_Logger_i::NUM_COLUMNS = 8;
 
 ccReg_Logger_i::ccReg_Logger_i(Register::Logger::List *_list) : m_lel (_list)  {
 }
@@ -30,6 +30,8 @@ Registry::Table::ColumnHeaders* ccReg_Logger_i::getColumnHeaders() {
   COLHEAD(ch,4,"request_type_id",CT_OTHER);  
   COLHEAD(ch,5,"user_name",CT_OTHER);
   COLHEAD(ch,6,"is_monitoring",CT_OTHER);
+  COLHEAD(ch,7,"result",CT_OTHER);
+
   return ch;
 }
 
@@ -49,6 +51,7 @@ Registry::TableRow* ccReg_Logger_i::getRow(CORBA::UShort row)
     (*tr)[4] <<= C_STR(a->getActionType());    
     (*tr)[5] <<= C_STR(a->getUserName());
     (*tr)[6] <<= C_STR(a->getIsMonitoring());
+    (*tr)[7] <<= C_STR((a->getResultCode()).second);
     return tr;
   }
   catch (...) {
