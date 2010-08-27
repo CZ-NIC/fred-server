@@ -12,10 +12,10 @@ hp_upload_archiver_filename = 7z
 hp_upload_archiver_additional_options = -mx5 -v5m
 hp_upload_curl_verbose = 0
 hp_upload_curlopt_timeout = 100
-hp_login_interface_url = "https://online.postservis.cz/Command/over.php"
-hp_upload_interface_url = "https://online.postservis.cz/Command/command.php"
-hp_ack_interface_url = "https://online.postservis.cz/Command/konec.php"
-hp_cancel_interface_url = "https://online.postservis.cz/Command/prubeh.php"
+hp_login_interface_url = "https://online3.postservis.cz/Command/over.php"
+hp_upload_interface_url = "https://online3.postservis.cz/Command/command.php"
+hp_ack_interface_url = "https://online3.postservis.cz/Command/konec.php"
+hp_cancel_interface_url = "https://online3.postservis.cz/Command/prubeh.php"
 
 [statecheck]
 hp_statecheck_user = @HP_LOGIN_NAME@
@@ -26,4 +26,4 @@ postservice_cert_dir = @PREFIX@/etc/fred
 postservice_cert_file = postsignum_qca_root.pem
 hp_curlopt_verbose = 0
 hp_curlopt_timeout = 100
-hp_statecheck_interface_url = "https://online.postservis.cz/prehledZak.php"
+hp_statecheck_interface_url = "https://online3.postservis.cz/prehledZak.php"

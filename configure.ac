@@ -179,19 +179,19 @@ AC_ARG_WITH([logdport], [AS_HELP_STRING([--with-logdport],
 AC_ARG_WITH([hp_login_name], [AS_HELP_STRING([--with-hp_login_name],
 			[Postservice login name])],
 			[AC_SUBST([HP_LOGIN_NAME], [$withval])],
-			[AC_SUBST([HP_LOGIN_NAME], [fred])])
+			[AC_SUBST([HP_LOGIN_NAME], [dreplech])])
 
 #hp login password
 AC_ARG_WITH([hp_login_password], [AS_HELP_STRING([--with-hp_login_password],
 			[Postservice password])],
 			[AC_SUBST([HP_LOGIN_PASSWORD], [$withval])],
-			[AC_SUBST([HP_LOGIN_PASSWORD], [fred])])
+			[AC_SUBST([HP_LOGIN_PASSWORD], [dreplech])])
 
 #hp login note
 AC_ARG_WITH([hp_login_note], [AS_HELP_STRING([--with-hp_login_note],
 			[Postservice batch note - optional])],
 			[AC_SUBST([HP_LOGIN_NOTE], [$withval])],
-			[AC_SUBST([HP_LOGIN_NOTE], [fred])])
+			[AC_SUBST([HP_LOGIN_NOTE], [test_fred])])
 
 AS_AC_TEST_CORBA_PORTS()
 
