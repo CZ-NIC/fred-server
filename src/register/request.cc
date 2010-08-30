@@ -198,7 +198,7 @@ public:
 	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id = t_1.id "
                      << "join request_type t_2 on t_2.id = t_1.request_type_id "
                      << "join service t_3 on t_3.id = t_1.service_id "
-                     << "join result_code t_4 on t_4.id = t_1.result_code_id";
+                     << "left join result_code t_4 on t_4.id = t_1.result_code_id";
 	    query.order_by() << "t_1.time_begin desc";
     } else {
 // hardcore optimizations have to be done on this statement
@@ -211,7 +211,7 @@ public:
 	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id "
                      << "join request_type t_2 on t_2.id=t_1.request_type_id "
                      << "join service t_3 on t_3.id=t_1.service_id "
-                     << "join result_code t_4 on t_4.id = t_1.result_code_id";
+                     << "left join result_code t_4 on t_4.id = t_1.result_code_id";
 	    query.order_by() << "t_1.time_begin desc";
     }
 
