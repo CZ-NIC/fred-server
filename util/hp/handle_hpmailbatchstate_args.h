@@ -103,8 +103,14 @@ public:
                 ((CONFIG_PREFIX+"hp_statecheck_interface_url").c_str(), boost::program_options
                         ::value<std::string>()
                          , "optional statecheck form url")
-				;
 
+                ((CONFIG_PREFIX+"hp_curlopt_ssl_verifypeer").c_str(), boost::program_options
+                      ::value<std::string>()->default_value("0")
+                       , "verify the authenticity of the peer's certificate, 1 - verify, default: 0 - no verify")
+                ((CONFIG_PREFIX+"hp_curlopt_ssl_verifyhost").c_str(), boost::program_options
+                       ::value<std::string>()->default_value("2")
+                        , "0, 1 , default: 2 - server certificate must indicate that the server is the server to which you meant to connect, or the connection fails")
+                 ;
 
         return opts_descs;
     }//get_options_description
@@ -200,6 +206,13 @@ public:
                 ((CONFIG_PREFIX+"hp_statecheck_interface_url").c_str(), boost::program_options
                         ::value<std::string>()
                          , "optional statecheck form url")
+
+                ((CONFIG_PREFIX+"hp_curlopt_ssl_verifypeer").c_str(), boost::program_options
+                      ::value<std::string>()->default_value("0")
+                       , "verify the authenticity of the peer's certificate, 1 - verify, default: 0 - no verify")
+                ((CONFIG_PREFIX+"hp_curlopt_ssl_verifyhost").c_str(), boost::program_options
+                       ::value<std::string>()->default_value("2")
+                        , "0, 1 , default: 2 - server certificate must indicate that the server is the server to which you meant to connect, or the connection fails")
                 ;
 
 
