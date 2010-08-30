@@ -20,13 +20,7 @@ noinst_PROGRAMS = test_logd test-model test-db\
 #tests
 #TESTS = $(noinst_PROGRAMS)
 
-test_logd_SOURCES =  test_logd.cc \
-                     $(top_srcdir)/src/register/request.h \
-                     $(top_srcdir)/src/register/model_request.h \
-                     $(top_srcdir)/src/register/model_request_property.h \
-                     $(top_srcdir)/src/register/model_request_property_value.h \
-                     $(top_srcdir)/src/register/model_request_data.h \
-                     $(top_srcdir)/src/register/model_session.h
+test_logd_SOURCES =  test_logd.cc
 
 test_logd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
