@@ -9,21 +9,55 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+
+#include "file_manager_client.h"
+
 namespace Registry
 {
 namespace MessagesImpl
 {
 
-
-void send_sms_impl(const char* contact_handle
-        , const char* phone
-        , const char* content)
+//insert data into message_archive and optionally into message_contact_history_map
+//return new message_archive id
+unsigned long long save_message(Database::QueryParam moddate = Database::QPNull
+        , Database::QueryParam attempt = 0
+        , Database::QueryParam status = 1
+        , Database::QueryParam message_type_id = Database::QPNull
+        , const std::string comm_type = std::string("")//sms, letter, email
+        , bool save_contact_reference = true
+        , const std::string contact_handle = std::string("")
+        )
 {
-    try
-    {//TODO: turn impl into private methods
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
+    Database::Connection conn = Database::Manager::acquire();
 
+    std::string msg_query
+        = "INSERT INTO message_archive"
+          " (crdate, moddate, attempt, status, comm_type_id, message_type_id)"
+          " VALUES (CURRENT_TIMESTAMP, $1::timestamp without time zone "
+          " , $2::smallint, $3::integer,"
+          " (SELECT id FROM comm_type WHERE type = $4::text), $5::integer)";
+    Database::QueryParams msg_qparams
+        = Database::query_param_list
+          (moddate)//$1 moddate
+          (attempt)//$2 attempt
+          (status)//$3 status
+          (comm_type)//$4 comm_type
+          (message_type_id)//$5 message_type_id
+        ;
+
+    conn.exec_params( msg_query, msg_qparams );
+
+    std::string msgid_query
+        = "SELECT currval('message_archive_id_seq') AS id";
+    Database::Result msgid_res = conn.exec( msgid_query);
+    unsigned long long message_archive_id = 0;
+
+    if (msgid_res.size() == 1)
+        message_archive_id
+            = static_cast<unsigned long long>(msgid_res[0][0]);
+
+    if(save_contact_reference)
+    {
         std::string cid_query
             = "SELECT id, historyid FROM object_registry WHERE name=$1::text";
         Database::QueryParams cid_qparams
@@ -39,33 +73,39 @@ void send_sms_impl(const char* contact_handle
         }//if cid_res size
         else
             throw std::runtime_error
-                (std::string("MessagesImpl::send_sms_impl: unexpected cid_query"
+                (std::string("MessagesImpl::save_message: unexpected cid_query"
                         " result, invalid contact_handle: ") + contact_handle);
 
-        std::string msg_query
-            = "INSERT INTO message_archive"
-              " (crdate, moddate, attempt, status, comm_type_id, message_type_id)"
-              " VALUES (CURRENT_TIMESTAMP, $1::timestamp without time zone "
-              " , $2::smallint, $3::integer,"
-              " (SELECT id FROM comm_type WHERE type ='sms'), $4::integer)";
-        Database::QueryParams msg_qparams
+        std::string msg_contact_query
+            = "INSERT INTO message_contact_history_map"
+              " (contact_object_registry_id, contact_history_historyid"
+              " , message_archive_id)"
+              " VALUES ( $1::integer, $2::integer, $3::integer)";
+        Database::QueryParams msg_contact_qparams
             = Database::query_param_list
-              (Database::QPNull)//$1 moddate
-              (0)//$2 attempt
-              (1)//$3 status
-              (Database::QPNull)//$4 message_type_id
+              (contact_id)//$1 object_registry id
+              (contact_historyid)//$2 object_registry historyid
+              (message_archive_id)//$3 message_archive id
             ;
 
-        conn.exec_params( msg_query, msg_qparams );
+        conn.exec_params( msg_contact_query, msg_contact_qparams );
+    }//if(save_contact_reference)
 
-        std::string msgid_query
-            = "SELECT currval('message_archive_id_seq') AS id";
-        Database::Result msgid_res = conn.exec( msgid_query);
-        unsigned long long message_archive_id = 0;
+    return message_archive_id;
+}
 
-        if (msgid_res.size() == 1)
-            message_archive_id
-                = static_cast<unsigned long long>(msgid_res[0][0]);
+void send_sms_impl(const char* contact_handle
+        , const char* phone
+        , const char* content)
+{
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
+        unsigned long long message_archive_id
+        = save_message(Database::QPNull, 0, 1,Database::QPNull,"sms", true
+                , contact_handle);
 
         std::string sms_query
             = "INSERT INTO sms_archive"
@@ -84,7 +124,8 @@ void send_sms_impl(const char* contact_handle
     }//try
     catch(const std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("MessagesImpl::send_sms_impl exception: %1%") % ex.what());
+        LOGGER(PACKAGE).error(boost::format(
+                "MessagesImpl::send_sms_impl exception: %1%") % ex.what());
     }
     catch(...)
     {
@@ -100,11 +141,67 @@ void send_letter_impl(const char* contact_handle
     try
     {
         Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
+        unsigned long long message_archive_id
+        = save_message(Database::QPNull, 0, 1,Database::QPNull, "letter", true
+                , contact_handle);
+
+        unsigned long long file_id = 0;
+
+
+///call filemanager client
+//        FileManagerClient fm_client(
+//                   CorbaContainer::get_instance()->getNS());
+
+        std::string letter_query
+            = "INSERT INTO letter_archive"
+              " (id, file_id" //$1 $2
+              "  , postal_address_name"//$3
+              "  , postal_address_organization"//$4
+              "  , postal_address_street1"//$5
+              "  , postal_address_street2"//$6
+              "  , postal_address_street3"//$7
+              "  , postal_address_city"//$8
+              "  , postal_address_stateorprovince"//$9
+              "  , postal_address_postalcode"//$10
+              "  , postal_address_country"//$11
+              " )"
+              " VALUES ( $1::integer,$2::integer"
+              ", $3::text"
+              ", $4::text"
+              ", $5::text"
+              ", $6::text"
+              ", $7::text"
+              ", $8::text"
+              ", $9::text"
+              ", $10::text"
+              ", $11::text"
+              ")";
+
+        Database::QueryParams letter_qparams
+            = Database::query_param_list
+              (message_archive_id)//$1 id
+              (file_id)//$2 file_id
+              (address.name)//$3
+              (address.org)//$4
+              (address.street1)//$5
+              (address.street2)//$6
+              (address.street3)//$7
+              (address.city)//$8
+              (address.state)//$9
+              (address.code)//$10
+              (address.county)//$11
+            ;
+
+        conn.exec_params( letter_query, letter_qparams );
+        tx.commit();
 
     }//try
     catch(const std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("MessagesImpl::send_letter_impl exception: %1%") % ex.what());
+        LOGGER(PACKAGE).error(boost::format(
+                "MessagesImpl::send_letter_impl exception: %1%") % ex.what());
     }
     catch(...)
     {

@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+
+
 namespace Registry
 {
 namespace MessagesImpl
