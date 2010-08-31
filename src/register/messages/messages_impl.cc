@@ -10,7 +10,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 
-#include "file_manager_client.h"
+//#include "file_manager_client.h"
 
 namespace Registry
 {
