@@ -1,0 +1,5 @@
+#ifndef MESSAGES_CORBA_IMPL_H_
+#define MESSAGES_CORBA_IMPL_H_
+
+
+#endif // MESSAGES_CORBA_IMPL_H_
