@@ -19,7 +19,7 @@ fred_msgd_SOURCES = ../MessagesSK.cc ../MessagesDynSK.cc \
 					../ccRegSK.cc ../ccRegDynSK.cc \
                     ../nameservice.cc messages.cc messages.h \
                     messages_corba_impl.cc messages_corba_impl.h \
-                    file_manager_client.cc 
+                    ../file_manager_client.cc 
 
 fred_msgd_LDFLAGS =   $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
