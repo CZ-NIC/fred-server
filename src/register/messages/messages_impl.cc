@@ -1,6 +1,6 @@
 //messages_impl.cc
 #include "messages_impl.h"
-
+#include "messages/messages_corba_impl.h"
 #include "db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
@@ -8,9 +8,6 @@
 #include <stdexcept>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-
-
-//#include "file_manager_client.h"
 
 namespace Registry
 {
@@ -147,12 +144,27 @@ void send_letter_impl(const char* contact_handle
         = save_message(Database::QPNull, 0, 1,Database::QPNull, "letter", true
                 , contact_handle);
 
+        std::string filetype_id_query
+            = "SELECT id FROM enum_filetype WHERE \"name\"= $1::text";
+        Database::QueryParams  filetype_id_qparams = Database::query_param_list
+                (file_type);
+        Database::Result filetype_id_res = conn.exec_params( filetype_id_query
+                , filetype_id_qparams);
+        unsigned long long filetype_id = 0;
+        if (filetype_id_res.size() == 1)
+            filetype_id
+                = static_cast<unsigned long long>(filetype_id_res[0][0]);
+
+        std::vector<char> file_buffer(file_content) ;
+
         unsigned long long file_id = 0;
 
+        //call filemanager client
+        file_id = save_file(file_buffer
+                , "letter"
+                , "application/pdf"
+                , filetype_id );
 
-///call filemanager client
-//        FileManagerClient fm_client(
-//                   CorbaContainer::get_instance()->getNS());
 
         std::string letter_query
             = "INSERT INTO letter_archive"

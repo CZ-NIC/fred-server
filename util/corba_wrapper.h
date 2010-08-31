@@ -30,81 +30,54 @@
 #include <vector>
 #include <memory>
 
-#include <boost/utility.hpp>
 #include <omniORB4/CORBA.h>
-
 #include "corba/nameservice.h"
 
-/**
- * \class CorbaContainer
- * \brief for manipulation with CORBA orb poa and nameservice
- */
-
-class CorbaContainer : boost::noncopyable
-{
-    typedef std::auto_ptr<CorbaContainer> CorbaContainerPtr;
-public:
-    CORBA::ORB_var orb;
-    CORBA::Object_var root_poa_initial_ref;
-    PortableServer::POA_var root_poa;
-    PortableServer::POAManager_var poa_mgr;
-    NameService ns;
-    PortableServer::POA_var poa_persistent;
-private:
-    static CorbaContainerPtr instance_ptr;
-
-    CorbaContainer(int argc, char ** argv
-            , const std::string& nameservice_host
-            , unsigned nameservice_port
-            , const std::string& nameservice_context)
-    : orb(CORBA::ORB_init( argc,argv))
-    , root_poa_initial_ref(orb->resolve_initial_references("RootPOA"))
-    , root_poa(PortableServer::POA::_narrow(root_poa_initial_ref))
-    , poa_mgr(root_poa->the_POAManager())
-    , ns(orb, nameservice_host, nameservice_port, nameservice_context)
-    {
-        //poa for persistent refs
-        CORBA::PolicyList pols;
-        pols.length(2);
-        pols[0] = root_poa->create_lifespan_policy(PortableServer::PERSISTENT);
-        pols[1] = root_poa->create_id_assignment_policy(PortableServer::USER_ID);
-        poa_persistent = root_poa->create_POA("RegistryPOA", poa_mgr.in(), pols);
-    }
-friend class std::auto_ptr<CorbaContainer>;
-protected:
-    ~CorbaContainer()
-    {
-        orb->destroy();
-    }
-public:
-    ///NameService resolve with simple
-    CORBA::Object_var nsresolve(const std::string& context, const std::string& object_name)
-    {
-        return ns.resolve(context, object_name);
-    }
-    ///NameService resolve using default context
-    CORBA::Object_var nsresolve(const std::string& object_name)
-    {
-        return ns.resolve(object_name);
-    }
-
-    //static interface
-    static void set_instance(int argc , char** argv
-            , const std::string& nameservice_host
-            , unsigned nameservice_port
-            , const std::string& nameservice_context);
-    static CorbaContainer* get_instance();
-    static void destroy_instance();
-
-    NameService *getNS()
-    {
-        return &ns;
-    }
-
-};//class CorbaContainer
+#include "corba_wrapper_decl.h"
 
 //static init
 CorbaContainer::CorbaContainerPtr CorbaContainer::instance_ptr(0);
+
+//impl
+CorbaContainer::CorbaContainer(int argc, char ** argv
+        , const std::string& nameservice_host
+        , unsigned nameservice_port
+        , const std::string& nameservice_context)
+: orb(CORBA::ORB_init( argc,argv))
+, root_poa_initial_ref(orb->resolve_initial_references("RootPOA"))
+, root_poa(PortableServer::POA::_narrow(root_poa_initial_ref))
+, poa_mgr(root_poa->the_POAManager())
+, ns(orb, nameservice_host, nameservice_port, nameservice_context)
+{
+    //poa for persistent refs
+    CORBA::PolicyList pols;
+    pols.length(2);
+    pols[0] = root_poa->create_lifespan_policy(PortableServer::PERSISTENT);
+    pols[1] = root_poa->create_id_assignment_policy(PortableServer::USER_ID);
+    poa_persistent = root_poa->create_POA("RegistryPOA", poa_mgr.in(), pols);
+}
+
+CorbaContainer::~CorbaContainer()
+{
+    orb->destroy();
+}
+
+///NameService resolve with simple
+CORBA::Object_var CorbaContainer::nsresolve(const std::string& context, const std::string& object_name)
+{
+    return ns.resolve(context, object_name);
+}
+
+///NameService resolve using default context
+CORBA::Object_var CorbaContainer::nsresolve(const std::string& object_name)
+{
+    return ns.resolve(object_name);
+}
+
+NameService* CorbaContainer::getNS()
+{
+    return &ns;
+}
 
 void CorbaContainer::set_instance(int argc, char** argv
         , const std::string& nameservice_host
