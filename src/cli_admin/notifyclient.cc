@@ -318,45 +318,44 @@ void NotifyClient::file_send()
 
   void NotifyClient::sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file)
   {
-      TRACE("[CALL] Register::Notify::sendLetters()");
-    // transaction is needed for 'ON COMMIT DROP' functionality
-    
+     Logging::Context ctx("send letters");
+     TRACE("[CALL] Register::Notify::sendLetters()");
+
      HPCfgMap hpmail_config = readHPConfig(conf_file);
 
      Connection conn = Database::Manager::acquire();
-
      /* now bail out if other process (presumably another instance of this
       * method) is already doing something with this table. No support 
       * for multithreaded access - we would have to remember which 
       * records exactly are we processing
-      */ 
+      */
      Result res = conn.exec("SELECT EXISTS "
              "(SELECT * FROM letter_archive WHERE status=6)");
 
      if ((bool)res[0][0]) {
-            LOGGER(PACKAGE).notice("The files are already being processed. No action");
+            LOGGER(PACKAGE).notice("the files are already being processed. "
+                    "no action; exiting");
             return;
      }
 
+     // transaction is needed for 'ON COMMIT DROP' functionality
      Database::Transaction trans(conn);
-
      // acquire lock which conflicts with itself but not basic locks used
      // by select and stuff..
      conn.exec("LOCK TABLE letter_archive IN SHARE UPDATE EXCLUSIVE MODE");
      // application level lock and notification about data processing
-     conn.exec("UPDATE letter_archive SET status = 6 WHERE status = 1 OR status = 4"); 
-
+     conn.exec("UPDATE letter_archive SET status = 6 WHERE status = 1 OR status = 4");
      // TODO try to enable this
      trans.commit();
-     Database::Transaction trans2(conn);
 
+     Database::Transaction trans2(conn);
+     // is there anything to send?
      res = conn.exec("SELECT file_id, id, attempt FROM letter_archive WHERE status=6");
-     
      if(res.size() == 0) {
-         LOGGER(PACKAGE).debug("Register::Notify::sendLetters(): No files ready for processing"); 
+         LOGGER(PACKAGE).notice("no files ready for processing; exiting");
          return;
      }
-        
+
      int new_status = 5;
      std::string batch_id;
      // store IDs and attempt counts of records being processed
@@ -366,10 +365,10 @@ void NotifyClient::file_send()
      ID letter_id = 0;
      processed.reserve(res.size());
      try {
-
+         LOGGER(PACKAGE).info("logging in to postservice...");
          HPMail::init_session(hpmail_config);
+
          for(unsigned i=0;i<res.size();i++) {
-             NamedMailFile smail;
              file_id = res[i][0];
              letter_id = res[i][1];
 
@@ -378,25 +377,30 @@ void NotifyClient::file_send()
              mp.attempt = res[i][2];
              processed.push_back(mp);
 
+             NamedMailFile smail;
+             smail.name = str((boost::format("Letter_%1%.pdf") % letter_id));
              fileman->download(file_id, smail.data);
 
-             LOGGER(PACKAGE).debug(boost::format ("sendLetters File ID: %1% ") % file_id);
-
-             smail.name = (boost::format("Letter_%1%.pdf") % letter_id).str();
-
+             LOGGER(PACKAGE).debug(boost::format(
+                         "adding file (id=%1%) to batch") % file_id);
              HPMail::get()->save_file_for_upload(smail);
          }
          batch_id = HPMail::get()->upload();
-     } catch(std::exception& ex) {
-         std::cout << "Error: " << ex.what() << " on file ID " << file_id << std::endl;
+     }
+     catch (std::exception& ex) {
+         std::string msg = str(boost::format("error occured (%1%)") % ex.what());
+         LOGGER(PACKAGE).error(msg);
+         std::cerr << msg << std::endl;
          new_status = 4; // set error status in database
-     } catch(...) {
-         std::cout << "Unknown Error on file ID " << file_id << std::endl;
+     }
+     catch (...) {
+         std::string msg = "unknown error occured"; 
+         LOGGER(PACKAGE).error(msg);
+         std::cerr << msg << std::endl;
          new_status = 4; // set error status in database
      }
 
-
-
+     // processed letters update
      for (std::vector<message_proc>::iterator it = processed.begin(); it!=processed.end(); it++) {
            unsigned int new_attempt = (*it).attempt + 1;
            conn.exec(boost::format("UPDATE letter_archive SET status = %1%, "
