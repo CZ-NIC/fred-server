@@ -290,6 +290,10 @@ void HPMail::save_file_for_upload( const NamedMailFile& mf)
             letter_file.write(&(mf.data[0]), mf.data.size());
             saved_file_for_upload_ = true;//we have some file
         }
+        else
+            throw std::runtime_error(std::string(
+                "HPMail::save_file_for_upload error: file not saved - unable to open file: ")
+                + config_["mb_proc_tmp_dir"] + mf.name);
     }
     else
     {
