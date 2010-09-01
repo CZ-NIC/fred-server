@@ -133,6 +133,7 @@ void send_sms_impl(const char* contact_handle
 void send_letter_impl(const char* contact_handle
         , const PostalAddress& address
         , const ByteBuffer& file_content
+        , const char* file_name
         , const char* file_type)
 {
     try
@@ -161,7 +162,7 @@ void send_letter_impl(const char* contact_handle
 
         //call filemanager client
         file_id = save_file(file_buffer
-                , "letter"
+                , file_name
                 , "application/pdf"
                 , filetype_id );
 

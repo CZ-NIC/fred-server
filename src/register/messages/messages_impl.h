@@ -35,6 +35,7 @@ typedef std::vector<char> ByteBuffer;
 void send_letter_impl(const char* contact_handle
         , const PostalAddress& address
         , const ByteBuffer& file_content
+        , const char* file_name
         , const char* file_type);
 
 }//namespace MessagesImpl

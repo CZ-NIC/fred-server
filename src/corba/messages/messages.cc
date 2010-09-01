@@ -43,6 +43,7 @@ void Registry_Messages_i::sendSms(const char* contact_handle
 void Registry_Messages_i::sendLetter(const char* contact_handle
         , const Registry::Messages::PostalAddress& address
         , const Registry::Messages::ByteBuffer& file_content
+        , const char* file_name
         , const char* file_type)
 {
     try
@@ -67,6 +68,7 @@ void Registry_Messages_i::sendLetter(const char* contact_handle
         Registry::MessagesImpl::send_letter_impl(contact_handle
                 , address_impl
                 , buffer_impl
+                , file_name
                 , file_type );//call of impl
     }//try
     catch(std::exception& ex)

@@ -60,6 +60,7 @@ public:
   void sendLetter(const char* contact_handle
           ,const Registry::Messages::PostalAddress& address
           ,const Registry::Messages::ByteBuffer& file_content
+          ,const char* file_name
           ,const char* file_type);
 
 };//class Registry_Messages_i
