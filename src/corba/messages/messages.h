@@ -56,6 +56,7 @@
 
 #include "config_handler.h"
 #include "handle_general_args.h"
+#include "handle_server_args.h"
 #include "handle_database_args.h"
 #include "handle_corbanameservice_args.h"
 

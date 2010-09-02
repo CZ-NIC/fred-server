@@ -31,6 +31,7 @@ boost::assign::list_of
 
 (HandleArgsPtr(new HandleHelpArg("\nUsage: fred-msgd <switches>\n")))
 (HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
+(HandleArgsPtr(new HandleServerArgs))
 (HandleArgsPtr(new HandleDatabaseArgs))
 (HandleArgsPtr(new HandleCorbaNameServiceArgs));
 
@@ -110,6 +111,9 @@ int main(int argc, char** argv)
     {   //config
         fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
+
+
+
         //db connection
         Database::Connection conn = Database::Manager::acquire();
 
@@ -135,8 +139,18 @@ int main(int argc, char** argv)
             ->activate();
 
         //run server
-        daemonize();//TODO: config options for daemonize and pidfile
-        PidFileNS::PidFileS::writePid(getpid(), "msgdpid");
+        if (CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
+                ->do_daemonize)
+            daemonize();
+
+        std::string pidfile_name
+            = CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
+                                ->pidfile_name;
+        if (!pidfile_name.empty())
+            PidFileNS::PidFileS::writePid(getpid(), pidfile_name);
+
+
+
         CorbaContainer::get_instance()->orb->run();
         CorbaContainer::get_instance()->orb->destroy();
 
