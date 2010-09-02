@@ -51,7 +51,12 @@ BOOST_AUTO_TEST_CASE( test_exec )
         messages_ref = Registry::Messages::_narrow(
                 CorbaContainer::get_instance()->nsresolve("Messages"));
 
-        messages_ref->sendSms("REG-FRED_A", "+420123456789", "Ahoj!");
+
+        CORBA::String_var contact = CORBA::string_dup("REG-FRED_A");
+        CORBA::String_var phone = CORBA::string_dup("+420123456789");
+        CORBA::String_var content = CORBA::string_dup("Ahoj!");
+
+        messages_ref->sendSms(contact, phone , content);
 
 
         Registry::Messages::ByteBuffer_var file_content( new Registry::Messages::ByteBuffer(3) );//prealocate
