@@ -70,6 +70,13 @@ BOOST_AUTO_TEST_CASE( test_exec )
         BOOST_REQUIRE_EQUAL(0//sms_test()
                 , 0);
     }
+    catch(Registry::Messages::ErrorReport& er)
+    {
+        std::cerr << "Caught exception ErrorReport: "
+             << er.reason.in() << std::endl;
+
+    }
+
     catch(CORBA::TRANSIENT&)
     {
         std::cerr << "Caught system exception TRANSIENT -- unable to contact the "
