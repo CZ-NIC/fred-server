@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
 
         Registry::Messages::PostalAddress_var paddr( new Registry::Messages::PostalAddress);
 
-        paddr->city = "Praha";
+        paddr->city = CORBA::string_dup("Praha");
 
         messages_ref->sendLetter("REG-FRED_B", paddr, file_content, "test1.pdf","expiration warning letter");
 
