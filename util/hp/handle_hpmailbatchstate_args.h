@@ -106,10 +106,10 @@ public:
 
                 ((CONFIG_PREFIX+"hp_curlopt_ssl_verifypeer").c_str(), boost::program_options
                       ::value<std::string>()->default_value("0")
-                       , "verify the authenticity of the peer's certificate, 1 - verify, default: 0 - no verify")
+                       , "verify the authenticity of the peer's certificate, 1 - verify, default: 0 - no verify http://curl.haxx.se/libcurl/c/curl_easy_setopt.html#CURLOPTSSLVERIFYPEER")
                 ((CONFIG_PREFIX+"hp_curlopt_ssl_verifyhost").c_str(), boost::program_options
-                       ::value<std::string>()->default_value("2")
-                        , "0, 1 , default: 2 - server certificate must indicate that the server is the server to which you meant to connect, or the connection fails")
+                       ::value<std::string>()->default_value("0")
+                        , "default:0 - no verify, 1 , 2 - verify viz http://curl.haxx.se/libcurl/c/curl_easy_setopt.html#CURLOPTSSLVERIFYHOST")
                  ;
 
         return opts_descs;
@@ -208,11 +208,12 @@ public:
                          , "optional statecheck form url")
 
                 ((CONFIG_PREFIX+"hp_curlopt_ssl_verifypeer").c_str(), boost::program_options
-                      ::value<std::string>()->default_value("0")
-                       , "verify the authenticity of the peer's certificate, 1 - verify, default: 0 - no verify")
+                   ::value<std::string>()->default_value("0")
+                    , "verify the authenticity of the peer's certificate, 1 - verify, default: 0 - no verify http://curl.haxx.se/libcurl/c/curl_easy_setopt.html#CURLOPTSSLVERIFYPEER")
                 ((CONFIG_PREFIX+"hp_curlopt_ssl_verifyhost").c_str(), boost::program_options
-                       ::value<std::string>()->default_value("2")
-                        , "0, 1 , default: 2 - server certificate must indicate that the server is the server to which you meant to connect, or the connection fails")
+                    ::value<std::string>()->default_value("0")
+                     , "default:0 - no verify, 1 , 2 - verify viz http://curl.haxx.se/libcurl/c/curl_easy_setopt.html#CURLOPTSSLVERIFYHOST")
+
                 ;
 
 
