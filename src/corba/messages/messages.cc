@@ -126,7 +126,7 @@ int main(int argc, char** argv)
 
         if(fa.get_argc() > 1)
         {
-            std::cout << "unrecognized params: \n";
+            std::cout << "unrecognized params passed to ORB_init: \n";
             for(int i = 0; i < fa.get_argc(); ++i)
                 std::cout << "\t" << fa.get_argv()[i] << "\n";
             ;
