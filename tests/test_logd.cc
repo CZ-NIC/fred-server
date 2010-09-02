@@ -17,9 +17,9 @@
 #include "corba_wrapper.h"
 #include <corba/ccReg.hh>
 
-#include "handle_general_args.h"
-#include "handle_database_args.h"
-#include "handle_corbanameservice_args.h"
+#include "cfg/handle_general_args.h"
+#include "cfg/handle_database_args.h"
+#include "cfg/handle_corbanameservice_args.h"
 
 using namespace Database;
 using namespace Register::Logger;
@@ -34,7 +34,7 @@ boost::assign::list_of
 ;
 
 
-#include "test_custom_main.h"
+#include "cfg/test_custom_main.h"
 
 
 namespace TestLogd {

@@ -291,6 +291,7 @@ AC_CONFIG_FILES([Makefile
                  util/log/Makefile
                  util/conf/Makefile
                  util/hp/Makefile
+                 util/cfg/Makefile
                  src/Makefile
                  src/old_utils/Makefile
                  src/model/Makefile
@@ -307,7 +308,7 @@ AC_CONFIG_FILES([Makefile
                  tests/Makefile
                  fred-server.spec
                  config/server.conf
-                 config/hpmail.conf                 
+                 config/hpmail.conf
                  init-scripts/fred-server
                  ])
 AC_OUTPUT

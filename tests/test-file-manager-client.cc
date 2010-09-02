@@ -30,7 +30,7 @@ boost::assign::list_of
 (HandleArgsPtr(new HandleCorbaNameServiceArgs))
 ;
 
-#include "test_custom_main.h"
+#include "cfg/test_custom_main.h"
 
 #include "file_manager_client.h"
 

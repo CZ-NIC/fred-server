@@ -22,10 +22,10 @@
 #include "register/info_buffer.h"
 
 
-#include "faked_args.h"
-#include "handle_args.h"
-#include "config_handler.h"
-#include "handle_general_args.h"
+#include "cfg/faked_args.h"
+#include "cfg/handle_args.h"
+#include "cfg/config_handler.h"
+#include "cfg/handle_general_args.h"
 #include "hp/handle_hpmail_args.h"
 
 #include "register/db_settings.h"

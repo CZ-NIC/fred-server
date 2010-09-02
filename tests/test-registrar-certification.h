@@ -50,10 +50,10 @@
 #include "common.h"
 #include "register/model_files.h"
 
-#include "handle_general_args.h"
-#include "handle_database_args.h"
-#include "handle_threadgroup_args.h"
-#include "handle_corbanameservice_args.h"
+#include "cfg/handle_general_args.h"
+#include "cfg/handle_database_args.h"
+#include "cfg/handle_threadgroup_args.h"
+#include "cfg/handle_corbanameservice_args.h"
 
 
 ModelFiles mf;

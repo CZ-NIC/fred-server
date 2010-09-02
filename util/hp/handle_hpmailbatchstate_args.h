@@ -31,8 +31,8 @@
 
 #include <boost/program_options.hpp>
 
-#include "faked_args.h"
-#include "handle_args.h"
+#include "cfg/faked_args.h"
+#include "cfg/handle_args.h"
 
 /**
  * \class HandleHPMailBatchStateArgs

@@ -29,7 +29,7 @@ boost::assign::list_of
 (HandleArgsPtr(new HandleThreadGroupArgs))
 (HandleArgsPtr(new HandleCorbaNameServiceArgs));
 
-#include "test_custom_main.h"
+#include "cfg/test_custom_main.h"
 
 
 BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )

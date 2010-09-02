@@ -43,8 +43,8 @@
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
-#include "handle_general_args.h"
-#include "handle_database_args.h"
+#include "cfg/handle_general_args.h"
+#include "cfg/handle_database_args.h"
 
 
 #ifdef BOOST_NO_STDC_NAMESPACE

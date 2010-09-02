@@ -54,11 +54,11 @@
 #include "pidfile.h"
 #include "daemonize.h"
 
-#include "config_handler.h"
-#include "handle_general_args.h"
-#include "handle_server_args.h"
-#include "handle_database_args.h"
-#include "handle_corbanameservice_args.h"
+#include "cfg/config_handler.h"
+#include "cfg/handle_general_args.h"
+#include "cfg/handle_server_args.h"
+#include "cfg/handle_database_args.h"
+#include "cfg/handle_corbanameservice_args.h"
 
 //code for implementing IDL interfaces in file /usr/local/share/idl/fred//Messages.idl
 #include "corba/Messages.hh"

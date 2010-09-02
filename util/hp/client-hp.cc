@@ -38,8 +38,8 @@
 #include <sstream>
 #include <vector>
 
-#include "config_handler.h"
-#include "handle_general_args.h"
+#include "cfg/config_handler.h"
+#include "cfg/handle_general_args.h"
 #include "handle_clienthp_args.h"
 #include "handle_hpmail_args.h"
 #include "handle_hpmailbatchstate_args.h"

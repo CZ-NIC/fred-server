@@ -49,8 +49,8 @@
 #include "concurrent_queue.h"
 #include "common.h"
 
-#include "handle_general_args.h"
-#include "handle_corbanameservice_args.h"
+#include "cfg/handle_general_args.h"
+#include "cfg/handle_corbanameservice_args.h"
 
 
 #endif //TESTFILEMANAGERCLIENT_H_

@@ -26,7 +26,7 @@ boost::assign::list_of
 (HandleArgsPtr(new HandleDatabaseArgs))
 (HandleArgsPtr(new HandleThreadGroupArgs));
 
-#include "test_custom_main.h"
+#include "cfg/test_custom_main.h"
 
     /*
      * to log queries:
