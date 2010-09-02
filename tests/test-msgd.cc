@@ -54,12 +54,15 @@ BOOST_AUTO_TEST_CASE( test_exec )
         messages_ref->sendSms("REG-FRED_A", "+420123456789", "Ahoj!");
 
 
-        Registry::Messages::ByteBuffer_var file_content( new Registry::Messages::ByteBuffer );
+        Registry::Messages::ByteBuffer_var file_content( new Registry::Messages::ByteBuffer(3) );//prealocate
 
-        file_content->length(3);
-        file_content[0] = 'p';
-        file_content[1] = 'd';
-        file_content[2] = 'f';
+        file_content->length(3);//set/alocate
+
+        CORBA::Octet* data = file_content->get_buffer();
+
+        data[0] = 'p';
+        data[1] = 'd';
+        data[2] = 'f';
 
         Registry::Messages::PostalAddress_var paddr( new Registry::Messages::PostalAddress);
 
