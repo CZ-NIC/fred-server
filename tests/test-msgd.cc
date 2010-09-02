@@ -46,8 +46,24 @@ BOOST_AUTO_TEST_CASE( test_exec )
 
     std::cout << "Registry::Messages::_narrow" << std::endl;
     Registry::Messages_var messages_ref;
-    messages_ref = Registry::Messages::_narrow(CorbaContainer::get_instance()->nsresolve("Messages"));
+    messages_ref = Registry::Messages::_narrow(
+            CorbaContainer::get_instance()->nsresolve("Messages"));
 
+    messages_ref->sendSms("REG-FRED_A", "+420123456789", "Ahoj!");
+
+
+    Registry::Messages::ByteBuffer_var file_content( new Registry::Messages::ByteBuffer );
+
+    file_content->length(3);
+    file_content[0] = 'p';
+    file_content[1] = 'd';
+    file_content[2] = 'f';
+
+    Registry::Messages::PostalAddress paddr;
+
+    paddr.city = "Praha";
+
+    messages_ref->sendLetter("REG-FRED_B", paddr, file_content, "test1.pdf","expiration warning letter");
 
     BOOST_REQUIRE_EQUAL(0//sms_test()
             , 0);
