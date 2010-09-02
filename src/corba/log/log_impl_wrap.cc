@@ -24,7 +24,7 @@ ccReg_Log_i::~ccReg_Log_i()
     }
 }
 
-ccReg::TID ccReg_Log_i::createRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content, const ccReg::RequestProperties& props, const ccReg::Logger::ObjectReferences &refs, CORBA::Long request_type_id, ccReg::TID session_id)
+ccReg::TID ccReg_Log_i::createRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content, const ccReg::RequestProperties& props, const ccReg::ObjectReferences &refs, CORBA::Long request_type_id, ccReg::TID session_id)
 {
     try {
         std::auto_ptr<Register::Logger::RequestProperties> p(convert_properties(props));
@@ -49,7 +49,7 @@ void ccReg_Log_i::addRequestProperties(ccReg::TID id, const ccReg::RequestProper
     }
 }
 
-void ccReg_Log_i::closeRequest(ccReg::TID id, const char *content, const ccReg::RequestProperties &props, const ccReg::Logger::ObjectReferences &refs, const CORBA::Long result_code, ccReg::TID session_id)
+void ccReg_Log_i::closeRequest(ccReg::TID id, const char *content, const ccReg::RequestProperties &props, const ccReg::ObjectReferences &refs, const CORBA::Long result_code, ccReg::TID session_id)
 {
     try {
         std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);

@@ -480,6 +480,17 @@ COMPOUND_CLASS(Mail, Mail, Compound,
     FILTER_ADD(File, addAttachment);
 );
 
+COMPOUND_CLASS(ResultCode, ResultCode, Compound,
+    FILTER_ADD(Id, addServiceId);
+    FILTER_ADD(Int, addResultCode);
+    FILTER_ADD(Str, addName);
+);
+
+COMPOUND_CLASS(RequestObjectRef, RequestObjectRef, Compound, 
+    FILTER_ADD(Str, addObjectType);
+    FILTER_ADD(Id, addObjectId);
+);
+
 COMPOUND_CLASS(RequestPropertyValue, RequestPropertyValue, Compound,
     FILTER_ADD(Str, addName);
     FILTER_ADD(Str, addValue);
@@ -492,11 +503,14 @@ COMPOUND_CLASS(Request, Request, Compound,
     FILTER_ADD(DateTime, addTimeEnd);
     FILTER_ADD(Str, addSourceIp);
     FILTER_ADD(Str, addUserName);
+    FILTER_ADD(Id, addUserId);
     FILTER_ADD(Bool, addIsMonitoring);
     FILTER_ADD(ServiceType, addServiceType);
     FILTER_ADD(RequestType, addRequestType);
     FILTER_ADD(RequestData, addRequestData);
     FILTER_ADD(RequestPropertyValue, addRequestPropertyValue);
+    FILTER_ADD(ResultCode, addResultCode);
+    FILTER_ADD(RequestObjectRef, addRequestObjectRef);
 );
 
 COMPOUND_CLASS(RequestData, RequestData, Compound,
@@ -649,6 +663,8 @@ ITERATOR_ADD_E_METHOD_IMPL(File,File);
 ITERATOR_ADD_E_METHOD_IMPL(Invoice,Invoice);
 ITERATOR_ADD_E_METHOD_IMPL(Mail,Mail);
 ITERATOR_ADD_E_METHOD_IMPL(ObjectState,ObjectState);
+ITERATOR_ADD_E_METHOD_IMPL(ResultCode,ResultCode);
+ITERATOR_ADD_E_METHOD_IMPL(RequestObjectRef,RequestObjectRef);
 ITERATOR_ADD_E_METHOD_IMPL(RequestPropertyValue,RequestPropertyValue);
 ITERATOR_ADD_E_METHOD_IMPL(RequestData,RequestData);
 ITERATOR_ADD_E_METHOD_IMPL(Request,Request);
@@ -687,7 +703,8 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Invoice,Invoice);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Mail,Mail);
   ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(ResultCode,ResultCode);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestObjectRef,RequestObjectRef);
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestPropertyValue,RequestPropertyValue);
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestData,RequestData);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Request,Request);

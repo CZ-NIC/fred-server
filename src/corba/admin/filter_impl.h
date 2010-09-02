@@ -45,6 +45,8 @@ public:
   ccReg::Filters::RequestPropertyValue_ptr addE(Database::Filters::RequestPropertyValue *f);
   ccReg::Filters::RequestData_ptr addE(Database::Filters::RequestData* f);
   ccReg::Filters::Session_ptr addE(Database::Filters::Session* f);
+  ccReg::Filters::ResultCode_ptr addE(Database::Filters::ResultCode* f);
+  ccReg::Filters::RequestObjectRef_ptr addE(Database::Filters::RequestObjectRef* f);
    
 
   // ccReg::Filters::ServiceType_ptr addE(Database::Filters::Value<Database::Filters::ServiceType> *f);

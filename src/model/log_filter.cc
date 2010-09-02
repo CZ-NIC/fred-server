@@ -3,6 +3,89 @@ namespace Database {
 
 namespace Filters {
 
+ResultCode *ResultCode::create() {
+        return new ResultCodeImpl(true);
+}
+
+ResultCodeImpl::ResultCodeImpl(bool set_active) : Compound() {
+        setName("ResultCode");
+        active = set_active;
+}
+
+Table &ResultCodeImpl::joinResultCodeTable()
+{
+    return joinTable("result_code");
+}
+
+Value<Database::ID>& ResultCodeImpl::addServiceId() 
+{
+    Value<Database::ID> *tmp = new Value<Database::ID>(Column("service_id", joinResultCodeTable()));
+    tmp->setName("ServiceId");
+    add(tmp);
+    return *tmp;
+}
+
+Value<int>& ResultCodeImpl::addResultCode() 
+{
+    Value<int> *tmp = new Value<int>(Column("result_code", joinResultCodeTable()));
+    tmp->setName("ResultCode");
+    add(tmp);
+    return *tmp;
+}
+
+Value<std::string>& ResultCodeImpl::addName()
+{
+    Value<std::string> *tmp = new Value<std::string>(Column("name", joinResultCodeTable()));
+    tmp->setName("Name");
+    add(tmp);
+    return *tmp;
+}
+
+RequestObjectRef* RequestObjectRef::create() {
+        return new RequestObjectRefImpl(true);
+}
+
+RequestObjectRefImpl::RequestObjectRefImpl(bool set_active) : Compound() {
+        setName("RequestObjectRef");
+        active = set_active;
+}
+
+Table& RequestObjectRefImpl::joinRequestObjectRefTable()
+{
+    return joinTable("request_object_ref");
+}
+
+Table& RequestObjectRefImpl::joinRequestObjectTypeTable()
+{
+    return joinTable("request_object_type");
+}
+
+Value<std::string>& RequestObjectRefImpl::addObjectType()
+{
+  addJoin(new Join(
+        Column("object_type_id", joinRequestObjectRefTable()),
+        SQL_OP_EQ,
+        Column("id", joinRequestObjectTypeTable())
+    ));
+    // TODO tricky...
+  Value<std::string> *tmp = new Value<std::string>(Column("name", joinRequestObjectTypeTable()));
+  tmp->setName("ObjectType");
+  add(tmp);
+  return *tmp;
+}
+
+Value<Database::ID>& RequestObjectRefImpl::addObjectId()
+{
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("object_id", joinRequestObjectRefTable()));
+  tmp->setName("ObjectId");
+  add(tmp);
+  return *tmp;
+}
+
+
+
+
+
 Request* Request::create() {
 	return new RequestImpl(true);
 }
@@ -57,6 +140,14 @@ Value<std::string>& RequestImpl::addUserName()
   return *tmp;
 }
 
+Value<Database::ID>& RequestImpl::addUserId()
+{
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("user_id", joinRequestTable()));
+  tmp->setName("UserId");
+  add(tmp);
+  return *tmp;
+}
+
 Value<bool>& RequestImpl::addIsMonitoring()
 {
   Value<bool> *tmp = new Value<bool>(Column("is_monitoring", joinRequestTable()));
@@ -101,6 +192,33 @@ RequestData& RequestImpl::addRequestData()
 	add(tmp);
 	return *tmp;
 }
+
+ResultCode& RequestImpl::addResultCode()
+{
+  ResultCode *tmp = new ResultCodeImpl(true);
+  tmp->setName("ResultCode");
+  
+  tmp->joinOn(new Join(Column("result_code_id", joinRequestTable()), SQL_OP_EQ,
+        Column("id", tmp->joinResultCodeTable())));              
+
+  // tmp->joinOn(new Join(Column("id", tmp->joinResultCodeTable()), SQL_OP_EQ, 
+  //        Column("result_code_id", joinRequestTable())));
+  add(tmp);
+  return *tmp;
+}
+
+RequestObjectRef& RequestImpl::addRequestObjectRef()
+{
+  RequestObjectRef *tmp = new RequestObjectRefImpl(true);
+  tmp->setName("RequestObjectRef");
+  
+  tmp->joinOn(new Join(Column("request_id", tmp->joinRequestObjectRefTable()), SQL_OP_EQ, Column("id", joinRequestTable())));  
+  add(tmp);
+  return *tmp;
+}
+
+
+
 
 RequestPropertyValueImpl::RequestPropertyValueImpl(bool set_active) {
   setName("RequestPropertyValue");

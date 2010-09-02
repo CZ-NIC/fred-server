@@ -88,6 +88,84 @@ public:
     }
 };
 
+class ResultCode : virtual public Compound
+{
+public:
+    virtual ~ResultCode() {
+    }
+
+    virtual Table& joinResultCodeTable() = 0;
+    virtual Value<Database::ID>& addServiceId() = 0;
+    virtual Value<int>& addResultCode() = 0;
+    virtual Value<std::string>& addName() = 0;
+
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive& _ar,
+        const unsigned int _version) {
+      _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
+    }
+
+    static ResultCode *create();
+};
+
+class ResultCodeImpl : virtual public ResultCode
+{
+public:
+    ResultCodeImpl(bool set_active = false);
+    virtual ~ResultCodeImpl() {
+    }
+
+
+    virtual Table& joinResultCodeTable();
+    virtual Value<Database::ID>& addServiceId();
+    virtual Value<int>& addResultCode();
+    virtual Value<std::string>& addName();
+
+    friend class boost::serialization::access;
+	template<class Archive> void serialize(Archive& _ar,
+		const unsigned int _version) {
+	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ResultCode);
+	}
+};
+
+class RequestObjectRef : virtual public Compound 
+{
+public:
+    virtual ~RequestObjectRef() {
+    }
+       
+    virtual Table& joinRequestObjectRefTable() = 0;
+    virtual Value<std::string>& addObjectType() = 0;
+    virtual Value<Database::ID>& addObjectId() = 0;
+
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive& _ar,
+        const unsigned int _version) {
+      _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
+    }
+
+    static RequestObjectRef *create();
+};
+
+class RequestObjectRefImpl : virtual public RequestObjectRef
+{
+public:
+    RequestObjectRefImpl(bool set_active = false);
+    virtual ~RequestObjectRefImpl() {
+    }
+
+    virtual Table& joinRequestObjectRefTable();
+    Table& joinRequestObjectTypeTable();
+    virtual Value<std::string>& addObjectType();
+    virtual Value<Database::ID>& addObjectId();
+
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive& _ar,
+        const unsigned int _version) {
+      _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(RequestObjectRef);
+    }
+};
+
 class RequestPropertyValue : virtual public Compound
 {
 	public:
@@ -178,11 +256,14 @@ public:
   virtual Interval<Database::DateTimeInterval>& addTimeEnd() = 0;
   virtual Value<std::string>& addSourceIp() = 0;
   virtual Value<std::string>& addUserName() = 0;
+  virtual Value<Database::ID>& addUserId() = 0;
   virtual Value<bool>& addIsMonitoring() = 0;
   virtual ServiceType& addServiceType() = 0;
   virtual RequestType&  addRequestType() = 0;
   virtual RequestData& addRequestData() = 0;
   virtual RequestPropertyValue&   addRequestPropertyValue() = 0;
+  virtual ResultCode& addResultCode() = 0;
+  virtual RequestObjectRef& addRequestObjectRef() = 0;
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -205,12 +286,14 @@ public:
   virtual Interval<Database::DateTimeInterval>& addTimeEnd();
   virtual Value<std::string>& addSourceIp();
   virtual Value<std::string>& addUserName();
+  virtual Value<Database::ID>& addUserId();
   virtual Value<bool>& addIsMonitoring();
   virtual ServiceType& addServiceType();
   virtual RequestType& addRequestType();
   virtual RequestData& addRequestData();
   virtual RequestPropertyValue& addRequestPropertyValue();
-
+  virtual ResultCode& addResultCode();
+  virtual RequestObjectRef& addRequestObjectRef();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

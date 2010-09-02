@@ -26,10 +26,10 @@ public:
   // ccReg_Log_i(const std::string database) throw (Impl_Log_If::DB_CONNECT_FAILED): Impl_Log_If(database) {};
   virtual ~ccReg_Log_i();
 
-  ccReg::TID createRequest(const char *source_ip, ccReg::RequestServiceType service, const char *content, const ccReg::RequestProperties& props, const ccReg::Logger::ObjectReferences &refs, CORBA::Long request_type_id, ccReg::TID session_id);
+  ccReg::TID createRequest(const char *source_ip, ccReg::RequestServiceType service, const char *content, const ccReg::RequestProperties& props, const ccReg::ObjectReferences &refs, CORBA::Long request_type_id, ccReg::TID session_id);
 
   void addRequestProperties(ccReg::TID id, const ccReg::RequestProperties &props);
-  void closeRequest(ccReg::TID id, const char *content, const ccReg::RequestProperties &props, const ccReg::Logger::ObjectReferences &refs, const CORBA::Long result_code, ccReg::TID session_id);
+  void closeRequest(ccReg::TID id, const char *content, const ccReg::RequestProperties &props, const ccReg::ObjectReferences &refs, const CORBA::Long result_code, ccReg::TID session_id);
   ccReg::TID createSession(ccReg::TID user_id, const char *name);
   // ccReg::TID new_dummy(const char *name, const char *clTRID);
   void closeSession(ccReg::TID id);
