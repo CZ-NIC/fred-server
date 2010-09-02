@@ -111,9 +111,6 @@ int main(int argc, char** argv)
     {   //config
         fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
-
-
-
         //db connection
         Database::Connection conn = Database::Manager::acquire();
 
@@ -121,10 +118,20 @@ int main(int argc, char** argv)
         FakedArgs fa = CfgArgs::instance()->fa;
         HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
               get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+
         CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
           , ns_args_ptr->nameservice_host
           , ns_args_ptr->nameservice_port
           , ns_args_ptr->nameservice_context);
+
+        if(fa.get_argc() > 1)
+        {
+            std::cout << "unrecognized params: \n";
+            for(int i = 0; i < fa.get_argc(); ++i)
+                std::cout << "\t" << fa.get_argv()[i] << "\n";
+            ;
+            std::cout << std::endl;
+        }//if unrecognized params
 
         //create server
         Registry_Messages_i* myRegistry_Messages_i = new Registry_Messages_i();

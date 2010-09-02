@@ -15,7 +15,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 
 noinst_PROGRAMS = test_logd test-model test-db\
 					test-file-manager-client test-registrar-group \
-					test-registrar-certification
+					test-registrar-certification test-msgd
 					
 #tests
 #TESTS = $(noinst_PROGRAMS)
@@ -149,6 +149,29 @@ test_registrar_certification_LDADD = \
                      $(top_builddir)/util/types/libtypes.a \
                      $(top_builddir)/src/old_utils/liboldutils.a \
                      $(top_builddir)/src/corba/libcorba.a
+                     
+test_msgd_SOURCES = test-msgd.cc test-msgd.h
+test_msgd_LDFLAGS = \
+                     $(POSTGRESQL_LDFLAGS) \
+                     $(BOOST_LDFLAGS) \
+                     $(AM_LDFLAGS) \
+                     $(BOOST_PROGRAM_OPTIONS_LIB) \
+                     $(OMNIORB4_LIBS) \
+                     $(BOOST_DATE_TIME_LIB) \
+                     $(BOOST_REGEX_LIB) \
+                     $(BOOST_THREAD_LIB) \
+                     $(XML2_LIBS)
+
+test_msgd_LDADD = \
+                     $(top_builddir)/src/register/libfred.a \
+                     $(top_builddir)/src/model/libmodel.a \
+                     $(top_builddir)/util/db/libdb.a \
+                     $(top_builddir)/util/log/liblog.a \
+                     $(top_builddir)/util/conf/libconf.a \
+                     $(top_builddir)/util/types/libtypes.a \
+                     $(top_builddir)/src/old_utils/liboldutils.a \
+                     $(top_builddir)/src/corba/libcorba.a \
+                     $(top_builddir)/src/corba/libcorbamessages.a
 
 install-tests: $(noinst_PROGRAMS)
 	$(INSTALL_PROGRAM) $(noinst_PROGRAMS) $(bindir)
