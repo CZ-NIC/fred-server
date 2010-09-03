@@ -53,7 +53,7 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("Common server process configuration")));
+                        std::string("Logging configuration")));
         cfg_opts->add_options()
                 ("log.type", boost::program_options
                             ::value<unsigned int>()->default_value(1)
