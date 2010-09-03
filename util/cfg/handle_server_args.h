@@ -48,15 +48,15 @@ public:
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> thread_opts(
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("Common server process configuration")));
-        thread_opts->add_options()
+        cfg_opts->add_options()
                 ("daemonize", "turn foreground process into daemon")
                 ("pidfile", boost::program_options
                         ::value<std::string>()
                              , "process id file location");
-        return thread_opts;
+        return cfg_opts;
     }//get_options_description
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {

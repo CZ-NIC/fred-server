@@ -32,6 +32,7 @@ boost::assign::list_of
 (HandleArgsPtr(new HandleHelpArg("\nUsage: fred-msgd <switches>\n")))
 (HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
 (HandleArgsPtr(new HandleServerArgs))
+(HandleArgsPtr(new HandleLoggingArgs))
 (HandleArgsPtr(new HandleDatabaseArgs))
 (HandleArgsPtr(new HandleCorbaNameServiceArgs));
 
@@ -111,6 +112,27 @@ int main(int argc, char** argv)
     {   //config
         fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
+        // setting up logger
+        Logging::Log::Type  log_type  = static_cast<Logging::Log::Type>(CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleLoggingArgs>()->log_type);
+
+        boost::any param;
+        if (log_type == Logging::Log::LT_FILE) param = CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleLoggingArgs>()->log_file;
+
+        if (log_type == Logging::Log::LT_SYSLOG) param = CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleLoggingArgs>()
+            ->log_syslog_facility;
+
+        Logging::Manager::instance_ref().get(PACKAGE)
+            .addHandler(log_type, param);
+
+        Logging::Manager::instance_ref().get(PACKAGE).setLevel(
+                static_cast<Logging::Log::Level>(
+                CfgArgs::instance()->get_handler_ptr_by_type
+                <HandleLoggingArgs>()->log_level));
+
+
         //db connection
         Database::Connection conn = Database::Manager::acquire();
 
@@ -149,7 +171,6 @@ int main(int argc, char** argv)
         if (CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
                 ->do_daemonize)
             daemonize();
-
         std::string pidfile_name
             = CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
                                 ->pidfile_name;
