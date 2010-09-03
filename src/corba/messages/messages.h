@@ -50,6 +50,7 @@
 #include "corba_wrapper.h"
 #include "log/logger.h"
 #include "log/context.h"
+#include "corba/connection_releaser.h"
 
 #include "pidfile.h"
 #include "daemonize.h"

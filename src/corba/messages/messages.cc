@@ -50,6 +50,9 @@ void Registry_Messages_i::sendSms(const char* contact_handle
         , const char* phone
         , const char* content)
 {
+    Logging::Context ctx("msgd");
+    ConnectionReleaser releaser;
+
     try
     {
         Registry::MessagesImpl::send_sms_impl(contact_handle,phone, content);//call of impl
@@ -70,6 +73,9 @@ void Registry_Messages_i::sendLetter(const char* contact_handle
         , const char* file_name
         , const char* file_type)
 {
+    Logging::Context ctx("msgd");
+    ConnectionReleaser releaser;
+
     try
     {
         Registry::MessagesImpl::PostalAddress address_impl;
@@ -113,7 +119,7 @@ int main(int argc, char** argv)
         fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
         // setting up logger
-        Logging::Log::Type  log_type  = static_cast<Logging::Log::Type>(CfgArgs::instance()
+        Logging::Log::Type  log_type = static_cast<Logging::Log::Type>(CfgArgs::instance()
             ->get_handler_ptr_by_type<HandleLoggingArgs>()->log_type);
 
         boost::any param;
@@ -131,6 +137,8 @@ int main(int argc, char** argv)
                 static_cast<Logging::Log::Level>(
                 CfgArgs::instance()->get_handler_ptr_by_type
                 <HandleLoggingArgs>()->log_level));
+
+        Logging::Context ctx("msgd");
 
 
         //db connection

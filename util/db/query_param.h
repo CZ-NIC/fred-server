@@ -74,7 +74,7 @@ public:
     //copy
     QueryParam(const QueryParam& param )
     : binary_(param.binary_)
-    , null_(false)
+    , null_(param.null_)
     , buffer_(param.buffer_)
     {}
 
@@ -95,7 +95,16 @@ public:
     explicit QueryParam(const NullQueryParamType )
     : binary_(false)
     , null_ (true)
+    , buffer_("")
     {}
+    //null
+    QueryParam()
+    : binary_(false)
+    , null_ (true)
+    , buffer_("")
+    {}
+
+
     //custom init
     QueryParam(const bool binary, const QueryParamData& data  )
     : binary_(binary)
@@ -142,27 +151,37 @@ public:
         buffer_ = boost::lexical_cast<std::string>(t);
     }
 
-    void print_buffer()
+    std::string print_buffer()
     {
-        if(binary_)
+        std::string ret = "not set";
+        if (null_)
         {
-            std::cout << "Binary param: ";
-             for (QueryParamData::const_iterator i = buffer_.begin()
-                     ; i != buffer_.end(); ++i)
-             {
-                 std::stringstream hexdump;
-                 hexdump <<  std::setw( 2 ) << std::setfill( '0' )
-                     << std::hex << std::uppercase
-                     << static_cast<unsigned short>(static_cast<unsigned char>(*i));
-                 std::cout << " " << hexdump.str();
-             }
-             std::cout << std::endl;
+            ret = std::string("null");
         }
         else
         {
-            std::cout << "Text param: " <<  buffer_
-                     << std::endl;
-        }
+            if(binary_)
+            {
+                //std::cout << "Binary param: ";
+                 for (QueryParamData::const_iterator i = buffer_.begin()
+                         ; i != buffer_.end(); ++i)
+                 {
+                     std::stringstream hexdump;
+                     hexdump <<  std::setw( 2 ) << std::setfill( '0' )
+                         << std::hex << std::uppercase
+                         << static_cast<unsigned short>(static_cast<unsigned char>(*i));
+                     //std::cout << " " << hexdump.str();
+                     ret = hexdump.str();
+                 }
+                 //std::cout << std::endl;
+            }
+            else
+            {
+                //std::cout << "Text param: " <<  buffer_<< std::endl;
+                ret=buffer_;
+            }
+        }//if not null
+        return ret;
     }//print_buffer
 
     //getters

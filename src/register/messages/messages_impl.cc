@@ -38,26 +38,46 @@ namespace MessagesImpl
 
 //insert data into message_archive and optionally into message_contact_history_map
 //return new message_archive id
-unsigned long long save_message(Database::QueryParam moddate = Database::QPNull
-        , Database::QueryParam attempt = 0
-        , Database::QueryParam status = 1
-        , Database::QueryParam message_type_id = Database::QPNull
-        , const std::string comm_type = std::string("")//sms, letter, email
-        , bool save_contact_reference = true
-        , const std::string contact_handle = std::string("")
+unsigned long long save_message(Database::QueryParam moddate// = Database::QPNull
+        , Database::QueryParam attempt// = 0
+        , Database::QueryParam status// = 1
+        , Database::QueryParam message_type_id// = Database::QPNull
+        , const std::string comm_type// = std::string("")//sms, letter, email
+        , bool save_contact_reference// = true
+        , const std::string contact_handle// = std::string("")
         )
 {
+    LOGGER(PACKAGE).debug(boost::format(
+            "MessagesImpl::save_message "
+            " moddate: %1% "
+            " attempt: %2% "
+            " status: %3% "
+            " message_type_id: %4% "
+            " comm_type: %5% "
+            " save_contact_reference: %6% "
+            " contact_handle: %7% "
+            )
+                  % moddate.print_buffer()
+                  % attempt.print_buffer()
+                  % status.print_buffer()
+                  % message_type_id.print_buffer()
+                  % comm_type
+                  % save_contact_reference
+                  % contact_handle
+
+                  );
+
     Database::Connection conn = Database::Manager::acquire();
 
     std::string msg_query
         = "INSERT INTO message_archive"
           " (crdate, moddate, attempt, status, comm_type_id, message_type_id)"
-          " VALUES (CURRENT_TIMESTAMP, $1::timestamp without time zone "
+          " VALUES (CURRENT_TIMESTAMP, $1::timestamp"// without time zone "
           " , $2::smallint, $3::integer,"
           " (SELECT id FROM comm_type WHERE type = $4::text), $5::integer)";
     Database::QueryParams msg_qparams
         = Database::query_param_list
-          (moddate)//$1 moddate
+          (Database::QueryParam())//$1 moddate
           (attempt)//$2 attempt
           (status)//$3 status
           (comm_type)//$4 comm_type
@@ -119,12 +139,45 @@ void send_sms_impl(const char* contact_handle
 {
     try
     {
+        LOGGER(PACKAGE).debug(boost::format(
+                "MessagesImpl::send_sms_impl "
+                " contact_handle: %1% "
+                " phone: %2% "
+                " content: %3% "
+                )
+                      % contact_handle
+                      % phone
+                      % content
+                      );
+
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
+        Database::QueryParam param1(Database::QPNull);
+        LOGGER(PACKAGE).debug(boost::format(
+                "MessagesImpl::send_sms_impl param1: %1%"
+                )% param1.print_buffer());
+
+        Database::QueryParam param2;
+
+        LOGGER(PACKAGE).debug(boost::format(
+                "MessagesImpl::send_sms_impl param2: %1%"
+                )% param2.print_buffer());
+
+
+
+
+
         unsigned long long message_archive_id
-        = save_message(Database::QPNull, 0, 1,Database::QPNull,"sms", true
-                , contact_handle);
+        = save_message(
+                Database::QueryParam()
+                , 0
+                , 1
+                ,Database::QueryParam()
+                ,"sms"
+                , true
+                , contact_handle
+                );
 
         std::string sms_query
             = "INSERT INTO sms_archive"
