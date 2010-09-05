@@ -791,7 +791,6 @@ void ManagerImpl::insert_obj_ref(DateTime entry_time, ServiceType service, bool 
 {
 
     for (unsigned i = 0; i<refs.size(); i++) {
-    // for (std::vector<Register::Logger::ObjectReference>::iterator it = refs.begin(); it!=refs.end(); it++) {
         const std::string & obj_type = refs[i].type;
         int type_id;
 
@@ -1060,7 +1059,7 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
 
 		if(session_id != 0 && !res_check[0][0].isnull()) {
 		        ID filled = res_check[0][0];
-                        if(filled != 0) {
+                        if(filled != 0 && filled != session_id) {
                                 logger_error(boost::format("record with ID %1% already has session_id filled") % id);
                                 throw WrongUsageError(" session_id already set. ");
                         }

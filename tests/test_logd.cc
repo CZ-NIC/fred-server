@@ -240,7 +240,7 @@ Database::ID TestImplLog::createSession(Database::ID user_id, const char *user_n
 
 	// now do a regular select from session
         // res = conn.exec((boost::format("select user_id, name from session where id=%1%") % ret).str());
-	res = conn.exec((boost::format("select name from session where id=%1%") % ret).str());
+	res = conn.exec((boost::format("select user_name from session where id=%1%") % ret).str());
 
 	if (res.size() != 1) {
 		if (res.size() == 0) {
@@ -504,7 +504,7 @@ void TestImplLog::check_obj_references(ID rec_id, const Register::Logger::Object
         
 }
 
-// static int global_call_count = 0;
+static int global_call_count = 0;
 
 void test_monitoring_ip(const std::string &ip, TestImplLog &t, bool result)
 {
@@ -547,7 +547,6 @@ public:
 	}
 };
 
-/*
 BOOST_AUTO_TEST_CASE( test_session )
 {
 	BOOST_TEST_MESSAGE("Create and close single sessions with both available languages ");
@@ -980,7 +979,6 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 
 }
 
-*/
 
 BOOST_AUTO_TEST_CASE( getResultCodesByService )
 {
@@ -1021,6 +1019,29 @@ BOOST_AUTO_TEST_CASE( getResultCodesByService )
         BOOST_REQUIRE_EQUAL(1 , 1);
         CorbaContainer::destroy_instance();
 }
+
+
+
+BOOST_AUTO_TEST_CASE ( test_rewrite_same_session )
+{
+
+        BOOST_TEST_MESSAGE("Try closing request with same session ID as used when creating");
+
+        TestImplLog test(global_hdba->get_conn_info());
+
+        Database::ID ids = test.createSession(CS, "username");
+
+        BOOST_CHECK(ids != 0);
+
+        Database::ID idr = test.createRequest("100.99.98.97", LC_EPP, "AAA", TestImplLog::no_props, false, TestImplLog::no_objs, ids);
+
+
+        test.closeRequest(idr, "ZZZ", TestImplLog::no_props, TestImplLog::no_objs, 1000, ids);
+
+        test.closeSession(ids);
+}
+
+
 
 /*
 // TODO testcases
