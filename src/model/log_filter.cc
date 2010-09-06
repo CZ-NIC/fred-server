@@ -67,7 +67,6 @@ Value<std::string>& RequestObjectRefImpl::addObjectType()
         SQL_OP_EQ,
         Column("id", joinRequestObjectTypeTable())
     ));
-    // TODO tricky...
   Value<std::string> *tmp = new Value<std::string>(Column("name", joinRequestObjectTypeTable()));
   tmp->setName("ObjectType");
   add(tmp);
