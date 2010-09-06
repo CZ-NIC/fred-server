@@ -41,7 +41,7 @@ namespace MessagesImpl
 unsigned long long save_message(Database::QueryParam moddate// = Database::QPNull
         , Database::QueryParam attempt// = 0
         , Database::QueryParam status// = 1
-        , Database::QueryParam message_type_id// = Database::QPNull
+        , const std::string message_type// = Database::QPNull
         , const std::string comm_type// = std::string("")//sms, letter, email
         , bool save_contact_reference// = true
         , const std::string contact_handle// = std::string("")
@@ -52,7 +52,7 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
             " moddate: %1% "
             " attempt: %2% "
             " status: %3% "
-            " message_type_id: %4% "
+            " message_type: %4% "
             " comm_type: %5% "
             " save_contact_reference: %6% "
             " contact_handle: %7% "
@@ -60,7 +60,7 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
                   % moddate.print_buffer()
                   % attempt.print_buffer()
                   % status.print_buffer()
-                  % message_type_id.print_buffer()
+                  % message_type
                   % comm_type
                   % save_contact_reference
                   % contact_handle
@@ -68,6 +68,17 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
                   );
 
     Database::Connection conn = Database::Manager::acquire();
+
+    std::string message_type_id_query
+        = "SELECT id FROM message_type WHERE type= $1::text";
+    Database::QueryParams  message_type_id_qparams = Database::query_param_list
+            (message_type);
+    Database::Result message_type_id_res = conn.exec_params( message_type_id_query
+            , message_type_id_qparams);
+    unsigned long long message_type_id = 0;
+    if (message_type_id_res.size() == 1)
+        message_type_id
+            = static_cast<unsigned long long>(message_type_id_res[0][0]);
 
     std::string msg_query
         = "INSERT INTO message_archive"
@@ -135,7 +146,9 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
 
 void send_sms_impl(const char* contact_handle
         , const char* phone
-        , const char* content)
+        , const char* content
+        , const char* message_type
+        )
 {
     try
     {
@@ -173,7 +186,7 @@ void send_sms_impl(const char* contact_handle
                 Database::QueryParam()
                 , 0
                 , 1
-                ,Database::QueryParam()
+                , message_type
                 ,"sms"
                 , true
                 , contact_handle
@@ -209,7 +222,9 @@ void send_letter_impl(const char* contact_handle
         , const PostalAddress& address
         , const ByteBuffer& file_content
         , const char* file_name
-        , const char* file_type)
+        , const char* file_type
+        , const char* message_type
+        )
 {
     try
     {
@@ -217,7 +232,7 @@ void send_letter_impl(const char* contact_handle
         Database::Transaction tx(conn);
 
         unsigned long long message_archive_id
-        = save_message(Database::QPNull, 0, 1,Database::QPNull, "letter", true
+        = save_message(Database::QPNull, 0, 1,message_type, "letter", true
                 , contact_handle);
 
         std::string filetype_id_query

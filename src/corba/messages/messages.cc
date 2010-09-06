@@ -48,14 +48,16 @@ Registry_Messages_i::~Registry_Messages_i()
 //   Methods corresponding to IDL attributes and operations
 void Registry_Messages_i::sendSms(const char* contact_handle
         , const char* phone
-        , const char* content)
+        , const char* content
+        , const char* message_type
+       )
 {
     Logging::Context ctx("msgd");
     ConnectionReleaser releaser;
 
     try
     {
-        Registry::MessagesImpl::send_sms_impl(contact_handle,phone, content);//call of impl
+        Registry::MessagesImpl::send_sms_impl(contact_handle,phone, content, message_type);//call of impl
     }//try
     catch(std::exception& ex)
     {
@@ -71,7 +73,9 @@ void Registry_Messages_i::sendLetter(const char* contact_handle
         , const Registry::Messages::PostalAddress& address
         , const Registry::Messages::ByteBuffer& file_content
         , const char* file_name
-        , const char* file_type)
+        , const char* file_type
+        , const char* message_type
+        )
 {
     Logging::Context ctx("msgd");
     ConnectionReleaser releaser;
@@ -99,7 +103,9 @@ void Registry_Messages_i::sendLetter(const char* contact_handle
                 , address_impl
                 , buffer_impl
                 , file_name
-                , file_type );//call of impl
+                , file_type
+                , message_type
+                );//call of impl
     }//try
     catch(std::exception& ex)
     {

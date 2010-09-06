@@ -52,28 +52,33 @@ BOOST_AUTO_TEST_CASE( test_exec )
                 CorbaContainer::get_instance()->nsresolve("Messages"));
 
 
-        CORBA::String_var contact = CORBA::string_dup("REG-FRED_A");
+        CORBA::String_var sms_contact = CORBA::string_dup("REG-FRED_A");
         CORBA::String_var phone = CORBA::string_dup("+420123456789");
         CORBA::String_var content = CORBA::string_dup("Ahoj!");
+        CORBA::String_var sms_message_type = CORBA::string_dup("password_reset");
 
-        messages_ref->sendSms(contact, phone , content);
+        messages_ref->sendSms(sms_contact, phone , content, sms_message_type);
 
+
+
+        CORBA::String_var letter_contact = CORBA::string_dup("REG-FRED_B");
+
+        Registry::Messages::PostalAddress_var paddr( new Registry::Messages::PostalAddress);
+        paddr->city = CORBA::string_dup("Praha");
 
         Registry::Messages::ByteBuffer_var file_content( new Registry::Messages::ByteBuffer(3) );//prealocate
-
         file_content->length(3);//set/alocate
-
         CORBA::Octet* data = file_content->get_buffer();
-
         data[0] = 'p';
         data[1] = 'd';
         data[2] = 'f';
 
-        Registry::Messages::PostalAddress_var paddr( new Registry::Messages::PostalAddress);
+        CORBA::String_var file_name = CORBA::string_dup("test1.pdf");
 
-        paddr->city = CORBA::string_dup("Praha");
+        CORBA::String_var file_type = CORBA::string_dup("expiration warning letter");
+        CORBA::String_var letter_message_type = CORBA::string_dup("password_reset");
 
-        messages_ref->sendLetter("REG-FRED_B", paddr, file_content, "test1.pdf","expiration warning letter");
+        messages_ref->sendLetter(letter_contact, paddr, file_content, file_name,file_type, letter_message_type);
 
         BOOST_REQUIRE_EQUAL(0//sms_test()
                 , 0);

@@ -37,7 +37,9 @@ namespace MessagesImpl
 
 void send_sms_impl(const char* contact_handle
         , const char* phone
-        , const char* content);
+        , const char* content
+        , const char* message_type
+        );
 
 struct PostalAddress
 {
@@ -58,7 +60,9 @@ void send_letter_impl(const char* contact_handle
         , const PostalAddress& address
         , const ByteBuffer& file_content
         , const char* file_name
-        , const char* file_type);
+        , const char* file_type
+        , const char* message_type
+        );
 
 }//namespace MessagesImpl
 }//namespace Registry
