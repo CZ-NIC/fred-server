@@ -50,6 +50,8 @@ void Registry_Messages_i::sendSms(const char* contact_handle
         , const char* phone
         , const char* content
         , const char* message_type
+        , CORBA::ULong contact_object_registry_id
+        , CORBA::ULong contact_history_historyid
        )
 {
     Logging::Context ctx("msgd");
@@ -57,7 +59,11 @@ void Registry_Messages_i::sendSms(const char* contact_handle
 
     try
     {
-        Registry::MessagesImpl::send_sms_impl(contact_handle,phone, content, message_type);//call of impl
+        Registry::MessagesImpl::send_sms_impl(contact_handle,phone, content
+                , message_type
+                , contact_object_registry_id
+                , contact_history_historyid
+                );//call of impl
     }//try
     catch(std::exception& ex)
     {
@@ -75,6 +81,8 @@ void Registry_Messages_i::sendLetter(const char* contact_handle
         , const char* file_name
         , const char* file_type
         , const char* message_type
+        , CORBA::ULong contact_object_registry_id
+        , CORBA::ULong contact_history_historyid
         )
 {
     Logging::Context ctx("msgd");
@@ -105,6 +113,9 @@ void Registry_Messages_i::sendLetter(const char* contact_handle
                 , file_name
                 , file_type
                 , message_type
+                , contact_object_registry_id
+                , contact_history_historyid
+
                 );//call of impl
     }//try
     catch(std::exception& ex)

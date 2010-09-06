@@ -81,6 +81,8 @@ public:
           ,const char* phone
           ,const char* content
           ,const char* message_type
+          , CORBA::ULong contact_object_registry_id
+          , CORBA::ULong contact_history_historyid
           );
 
   void sendLetter(const char* contact_handle
@@ -89,6 +91,8 @@ public:
           ,const char* file_name
           ,const char* file_type
           ,const char* message_type
+          , CORBA::ULong contact_object_registry_id
+          , CORBA::ULong contact_history_historyid
           );
 
 };//class Registry_Messages_i

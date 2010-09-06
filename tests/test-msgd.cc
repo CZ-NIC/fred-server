@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
         CORBA::String_var content = CORBA::string_dup("Ahoj!");
         CORBA::String_var sms_message_type = CORBA::string_dup("password_reset");
 
-        messages_ref->sendSms(sms_contact, phone , content, sms_message_type);
+        messages_ref->sendSms(sms_contact, phone , content, sms_message_type, 1, 1);
 
 
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
         CORBA::String_var file_type = CORBA::string_dup("expiration warning letter");
         CORBA::String_var letter_message_type = CORBA::string_dup("password_reset");
 
-        messages_ref->sendLetter(letter_contact, paddr, file_content, file_name,file_type, letter_message_type);
+        messages_ref->sendLetter(letter_contact, paddr, file_content, file_name,file_type, letter_message_type, 1, 1);
 
         BOOST_REQUIRE_EQUAL(0//sms_test()
                 , 0);

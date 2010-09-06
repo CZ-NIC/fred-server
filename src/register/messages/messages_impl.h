@@ -39,6 +39,8 @@ void send_sms_impl(const char* contact_handle
         , const char* phone
         , const char* content
         , const char* message_type
+        , unsigned long contact_object_registry_id
+        , unsigned long contact_history_historyid
         );
 
 struct PostalAddress
@@ -62,6 +64,8 @@ void send_letter_impl(const char* contact_handle
         , const char* file_name
         , const char* file_type
         , const char* message_type
+        , unsigned long contact_object_registry_id
+        , unsigned long contact_history_historyid
         );
 
 }//namespace MessagesImpl
