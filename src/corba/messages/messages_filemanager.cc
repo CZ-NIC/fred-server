@@ -17,14 +17,14 @@
  */
 
 /**
- *  @messages_corba_impl.cc
+ *  @messages_filemanager.cc
  *  corba client imementation for registry messages
  */
 
 #include <vector>
 #include <string>
 
-#include "messages_corba_impl.h"
+#include "messages_filemanager.h"
 #include "corba_wrapper_decl.h"
 
 #include <corba/ccReg.hh>

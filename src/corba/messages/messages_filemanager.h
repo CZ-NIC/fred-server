@@ -17,7 +17,7 @@
  */
 
 /**
- *  @messages_corba_impl.cc
+ *  @messages_filemanager.h
  *  corba client header for registry messages
  */
 
