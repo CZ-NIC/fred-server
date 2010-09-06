@@ -68,7 +68,7 @@ public:
 
 private:
   
-  void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Register::Logger::RequestProperties& props, Connection &conn, boost::mutex::scoped_lock &prop_lock);
+  void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Register::Logger::RequestProperties& props, Connection &conn, bool output, boost::mutex::scoped_lock &prop_lock);
   void insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Register::Logger::ObjectReferences& props, Connection &conn);
   bool record_check(Database::ID id, Connection &conn);
   Database::ID find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db);
@@ -77,10 +77,6 @@ private:
   inline void getSessionUser(Connection &conn, Database::ID session_id, std::string *user_name, Database::ID *user_id);
 
 public:
-  static const std::string LAST_PROPERTY_VALUE_ID;
-  static const std::string LAST_PROPERTY_NAME_ID;
-  static const std::string LAST_ENTRY_ID;
-  static const std::string LAST_SESSION_ID;
   static const int MAX_NAME_LENGTH;
 
 };
