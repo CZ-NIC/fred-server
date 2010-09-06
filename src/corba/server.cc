@@ -327,7 +327,7 @@ try {
 
     CORBA::string_free(version);
 
-    /* load all county code from table enum_country */
+    /* load all country code from table enum_country */
     if (myccReg_EPP_i->LoadCountryCode() <= 0) {
       LOGGER(PACKAGE).alert("database error: load country code");
       exit(-5);

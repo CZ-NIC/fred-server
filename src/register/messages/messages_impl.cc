@@ -164,18 +164,6 @@ void send_sms_impl(const char* contact_handle
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        Database::QueryParam param1(Database::QPNull);
-        LOGGER(PACKAGE).debug(boost::format(
-                "MessagesImpl::send_sms_impl param1: %1%"
-                )% param1.print_buffer());
-
-        Database::QueryParam param2;
-
-        LOGGER(PACKAGE).debug(boost::format(
-                "MessagesImpl::send_sms_impl param2: %1%"
-                )% param2.print_buffer());
-
-
         unsigned long long message_archive_id
         = save_message(
                 Database::QueryParam()
@@ -247,7 +235,7 @@ void send_letter_impl(const char* contact_handle
                 " contact_history_historyid: %16%"
                 )
                       % contact_handle
-                      % file_content.size()
+                      % file_content.size
                       % address.name
                       % address.org
                       % address.street1
@@ -256,7 +244,7 @@ void send_letter_impl(const char* contact_handle
                       % address.city
                       % address.state
                       % address.code
-                      % address.county
+                      % address.country
                       % file_name
                       % file_type
                       % message_type
@@ -286,7 +274,7 @@ void send_letter_impl(const char* contact_handle
             filetype_id
                 = static_cast<unsigned long long>(filetype_id_res[0][0]);
 
-        std::vector<char> file_buffer(file_content) ;
+        std::vector<char> file_buffer(file_content.buffer, file_content.buffer+file_content.size) ;
 
         unsigned long long file_id = 0;
 
@@ -334,7 +322,7 @@ void send_letter_impl(const char* contact_handle
               (address.city)//$8
               (address.state)//$9
               (address.code)//$10
-              (address.county)//$11
+              (address.country)//$11
             ;
 
         conn.exec_params( letter_query, letter_qparams );

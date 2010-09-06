@@ -54,7 +54,7 @@ void Registry_Messages_i::sendSms(const char* contact_handle
         , CORBA::ULong contact_history_historyid
        )
 {
-    Logging::Context ctx("msgd");
+    Logging::Context ctx(server_name);
     ConnectionReleaser releaser;
 
     try
@@ -85,27 +85,31 @@ void Registry_Messages_i::sendLetter(const char* contact_handle
         , CORBA::ULong contact_history_historyid
         )
 {
-    Logging::Context ctx("msgd");
+    Logging::Context ctx(server_name);
     ConnectionReleaser releaser;
 
     try
     {
+        LOGGER(PACKAGE).debug(boost::format(
+                  "Registry_Messages_i::sendLetter"
+                " contact_handle: %1%")
+            % contact_handle);
+
         Registry::MessagesImpl::PostalAddress address_impl;
-        address_impl.name = address.name;
-        address_impl.org = address.org;
-        address_impl.street1 = address.street1;
-        address_impl.street2 = address.street2;
-        address_impl.street3 = address.street3;
-        address_impl.city = address.city;
-        address_impl.state = address.state;
-        address_impl.code = address.code;
-        address_impl.county = address.county;
+        address_impl.name = std::string(address.name.in());
+        address_impl.org = std::string(address.org.in());
+        address_impl.street1 = std::string(address.street1.in());
+        address_impl.street2 = std::string(address.street2.in());
+        address_impl.street3 = std::string(address.street3.in());
+        address_impl.city = std::string(address.city.in());
+        address_impl.state = std::string(address.state.in());
+        address_impl.code = std::string(address.code.in());
+        address_impl.country = std::string(address.country.in());
 
         Registry::MessagesImpl::ByteBuffer buffer_impl;
 
-        CORBA::ULong file_content_length = file_content.length();
-        for(CORBA::ULong i = 0; i < file_content_length; ++i)
-            buffer_impl.push_back(buffer_impl[i]);
+        buffer_impl.size = file_content.length();
+        buffer_impl.buffer = const_cast<unsigned char*>(file_content.get_buffer());
 
         Registry::MessagesImpl::send_letter_impl(contact_handle
                 , address_impl
@@ -115,8 +119,8 @@ void Registry_Messages_i::sendLetter(const char* contact_handle
                 , message_type
                 , contact_object_registry_id
                 , contact_history_historyid
-
                 );//call of impl
+
     }//try
     catch(std::exception& ex)
     {
@@ -127,6 +131,8 @@ void Registry_Messages_i::sendLetter(const char* contact_handle
         throw Registry::Messages::ErrorReport("unknown exception");
     }
 }//Registry_Messages_i::sendLetter
+
+const char* server_name = "msgd";//for logging contxt
 
 int main(int argc, char** argv)
 {
@@ -155,7 +161,7 @@ int main(int argc, char** argv)
                 CfgArgs::instance()->get_handler_ptr_by_type
                 <HandleLoggingArgs>()->log_level));
 
-        Logging::Context ctx("msgd");
+        Logging::Context ctx(server_name);
 
 
         //db connection

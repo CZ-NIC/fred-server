@@ -97,4 +97,6 @@ public:
 
 };//class Registry_Messages_i
 
+extern const char* server_name;//for logging contxt
+
 #endif //MESSAGES_H_

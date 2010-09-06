@@ -53,10 +53,10 @@ struct PostalAddress
     std::string city;
     std::string state;
     std::string code;
-    std::string county;
+    std::string country;
 };//struct PostalAddress
 
-typedef std::vector<char> ByteBuffer;
+typedef struct { unsigned char* buffer; unsigned long long size;} ByteBuffer;
 
 void send_letter_impl(const char* contact_handle
         , const PostalAddress& address
