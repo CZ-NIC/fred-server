@@ -22,7 +22,7 @@
  */
 
 #include "messages_impl.h"
-#include "messages/messages_corba_impl.h"
+#include "messages/messages_filemanager.h"
 #include "db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
