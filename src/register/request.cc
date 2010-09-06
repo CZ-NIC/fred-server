@@ -730,7 +730,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
 }
 
 // insert properties for the given request record
-void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Register::Logger::RequestProperties& props, Connection &conn, boost::mutex::scoped_lock &prop_lock)
+void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Register::Logger::RequestProperties& props, Connection &conn, bool output, boost::mutex::scoped_lock &prop_lock)
 {
         TRACE("[CALL] Register::Logger::ManagerImpl::insert_props");
 	ID property_name_id, last_id = 0;
@@ -754,7 +754,7 @@ void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool mo
 	pv_first.setRequestId(request_id);
 	pv_first.setPropertyNameId(property_name_id);
 	pv_first.setValue (props[0].value);
-	pv_first.setOutput(props[0].output);
+	pv_first.setOutput(output);
 
 	pv_first.insert();
         last_id = pv_first.getId();	
@@ -772,7 +772,7 @@ void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool mo
 		pv.setRequestId(request_id);
 		pv.setPropertyNameId(property_name_id);
 		pv.setValue (props[i].value);
-		pv.setOutput(props[i].output);
+		pv.setOutput(output);
 
 		if(props[i].child) {
 			pv.setParentId(last_id);
@@ -820,7 +820,8 @@ void ManagerImpl::insert_props_pub(DateTime entry_time, ServiceType request_serv
         boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
 #endif
         Connection conn = get_connection();
-	insert_props(entry_time, request_service_id, monitoring, request_id, props, conn, prop_lock);
+        // insert_props for migration is not going to be so simple, TODO - true here is just TEMP
+	insert_props(entry_time, request_service_id, monitoring, request_id, props, conn, true, prop_lock);
 }
 
 
@@ -920,7 +921,7 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
 		}
 
                 if(props.size() > 0) {
-                        insert_props(time, service, monitoring, request_id, props, db, prop_lock);
+                        insert_props(time, service, monitoring, request_id, props, db, false, prop_lock);
                 }
                 if(refs.size() > 0) {
                         insert_obj_ref(time, service, monitoring, request_id, refs, db);
@@ -1004,7 +1005,7 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Register::Logger::RequestP
 		DateTime time = res[0][0].operator ptime();
 		ServiceType service_id = (ServiceType)(int)res[0][1];
 		bool monitoring        = (bool)res[0][2];
-		insert_props(time, service_id, monitoring, id, props, db, prop_lock);
+		insert_props(time, service_id, monitoring, id, props, db, true, prop_lock);
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
                 throw InternalServerError(ex.what());
@@ -1120,7 +1121,7 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
 
                 // insert properties 
                 if(props.size() > 0) {
-                        insert_props(entry_time, service_id, monitoring, id, props, db, prop_lock);
+                        insert_props(entry_time, service_id, monitoring, id, props, db, true, prop_lock);
                 }
 
                 if(refs.size() > 0) {

@@ -131,11 +131,11 @@ public:
 
         void check_obj_references(ID rec_id, const Register::Logger::ObjectReferences &refs);
         void check_obj_references_subset(ID rec_id, const Register::Logger::ObjectReferences &refs);
-	void check_db_properties_subset(ID rec_id, const Register::Logger::RequestProperties &props);
-	bool property_match(const Row r, const Register::Logger::RequestProperty &p) ;
+	void check_db_properties_subset(ID rec_id, const Register::Logger::RequestProperties &props, bool output);
+	bool property_match(const Row r, const Register::Logger::RequestProperty &p, bool output) ;
 
 // different tests
-	void check_db_properties(ID rec_id, const Register::Logger::RequestProperties & props);
+	void check_db_properties(ID rec_id, const Register::Logger::RequestProperties & props, bool output);
 
 	static Register::Logger::RequestProperties no_props;
         static Register::Logger::ObjectReferences no_objs;
@@ -332,7 +332,7 @@ Database::ID TestImplLog::createRequest(const char *ip_addr, const ServiceType s
                 BOOST_CHECK(session_id                  == db_id);
 	}
 
-	check_db_properties(ret, props);
+	check_db_properties(ret, props, false);
         // TODO
         check_obj_references(ret, refs);
 
@@ -341,13 +341,14 @@ Database::ID TestImplLog::createRequest(const char *ip_addr, const ServiceType s
 	return ret;
 }
 
+        // to be removed 
 bool TestImplLog::addRequestProperties(const Database::ID id, const Register::Logger::RequestProperties &props)
 {
 	bool result = logd->i_addRequestProperties(id, props);
 
 	if (!result) return result;
 
-	check_db_properties_subset(id, props);
+	check_db_properties_subset(id, props, true);
 
 	return result;
 }
@@ -384,7 +385,7 @@ bool TestImplLog::closeRequest(const Database::ID id, const char *content, const
                 BOOST_CHECK(session_id == db_id);
 	}
 
-	check_db_properties_subset(id, props);
+	check_db_properties_subset(id, props, true);
         // TODO 
         check_obj_references_subset(id, refs);
 
@@ -411,12 +412,12 @@ std::auto_ptr<Register::Logger::RequestProperties> TestImplLog::create_generic_p
 // boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 // p is single property
 // these two are compared :)
-bool TestImplLog::property_match(const Row r, const Register::Logger::RequestProperty &p)
+bool TestImplLog::property_match(const Row r, const Register::Logger::RequestProperty &p, bool output)
 {
 
 	if ( (std::string)r[0] != p.name.substr(0, Register::Logger::ManagerImpl::MAX_NAME_LENGTH))  return false;
 	if ( (std::string)r[1] != p.value) return false;
-	if ( (bool)r[3] != p.output) return false;
+        if ( (bool)r[3] != output) return false;
 
 	if ( p.child ) {
 		if (r[2].isnull()) return false;
@@ -427,7 +428,7 @@ bool TestImplLog::property_match(const Row r, const Register::Logger::RequestPro
 	return true;
 }
 
-void TestImplLog::check_db_properties_subset(ID rec_id, const Register::Logger::RequestProperties &props)
+void TestImplLog::check_db_properties_subset(ID rec_id, const Register::Logger::RequestProperties &props, bool output)
 {
 	if (props.size() == 0) return;
 
@@ -440,7 +441,7 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Register::Logger::
 	unsigned pind = 0;
 	if(res.size() > props.size()) {
 		for(unsigned i=0; i<res.size(); i++) {
-			if(property_match(res[i], props[pind])) {
+			if(property_match(res[i], props[pind], output)) {
 				// property pind found in the sql result, proceed to another item in the list
 				pind++;
 			} else {
@@ -457,14 +458,14 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Register::Logger::
 		BOOST_ERROR(" Some properties were not stored... ");
 	} else if(res.size() == props.size()) {
 		// TODO something can be saved here - we have Result res already done
-		check_db_properties(rec_id, props);
+		check_db_properties(rec_id, props, output);
 	}
 }
 
 // this func relies that the order of properties in the database
 // (sorted by their ids) is the same as in the array
 // the properties in the database with request_id=rec_id must match props exactly
-void TestImplLog::check_db_properties(ID rec_id, const Register::Logger::RequestProperties & props)
+void TestImplLog::check_db_properties(ID rec_id, const Register::Logger::RequestProperties & props, bool output)
 {
 	boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 
@@ -477,7 +478,7 @@ void TestImplLog::check_db_properties(ID rec_id, const Register::Logger::Request
 	}
 
 	for(unsigned i=0; i<res.size(); i++) {
-		BOOST_CHECK( property_match(res[i], props[i]));
+		BOOST_CHECK( property_match(res[i], props[i], output));
 	}
 }
 
@@ -604,11 +605,22 @@ BOOST_AUTO_TEST_CASE( session_without_name )
 
 	TestImplLog test(global_hdba->get_conn_info());
 
-	Database::ID id = test.createSession(CS, NULL);
-	BOOST_CHECK(id == 0);
+        Database::ID id;
+        bool caught=false;
+        try {
+            id = test.createSession(CS, NULL);
+        } catch (WrongUsageError &e) {
+            caught = true;
+        }
+	BOOST_CHECK(caught);
 
-	id = test.createSession(CS, "");
-	BOOST_CHECK(id == 0);
+        caught = false;
+        try {
+            id = test.createSession(CS, "");
+        } catch (WrongUsageError &e) {
+            caught = true;
+        }
+	BOOST_CHECK(caught);
 
 }
 
