@@ -335,6 +335,7 @@ void MessageUpdateChanges::_diffDomain(ChangesMap &_changes,
   if (upcast_prev != 0 && upcast_act != 0)
     _diffObject(_changes, upcast_prev, upcast_act);
 
+  compare_and_fill(_changes, "domain.publish", _prev->getPublish(), _act->getPublish());
   compare_and_fill(_changes, "domain.val_ex_date", _prev->getValExDate(), _act->getValExDate());
   compare_and_fill(_changes, "domain.registrant", _prev->getRegistrantHandle(), _act->getRegistrantHandle());
   compare_and_fill(_changes, "domain.nsset", _prev->getNSSetHandle(), _act->getNSSetHandle());
