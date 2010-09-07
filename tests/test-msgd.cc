@@ -51,47 +51,48 @@ BOOST_AUTO_TEST_CASE( test_exec )
         messages_ref = Registry::Messages::_narrow(
                 CorbaContainer::get_instance()->nsresolve("Messages"));
 
-        //sms test
-        CORBA::String_var sms_contact = CORBA::string_dup("REG-FRED_A");
-        CORBA::String_var phone = CORBA::string_dup("+420123456789");
-        CORBA::String_var content = CORBA::string_dup("Ahoj!");
-        CORBA::String_var sms_message_type = CORBA::string_dup("password_reset");
+        for (int i = 0; i < 1000000; ++i)
+        {
+            //sms test
+            CORBA::String_var sms_contact = CORBA::string_dup("REG-FRED_A");
+            CORBA::String_var phone = CORBA::string_dup("+420123456789");
+            CORBA::String_var content = CORBA::string_dup("Ahoj!");
+            CORBA::String_var sms_message_type = CORBA::string_dup("password_reset");
 
-        messages_ref->sendSms(sms_contact, phone , content, sms_message_type, 1, 1);
+            messages_ref->sendSms(sms_contact, phone , content, sms_message_type, 1, 1);
 
+            //letter test
+            CORBA::String_var letter_contact = CORBA::string_dup("REG-FRED_B");
 
-        //letter test
-        CORBA::String_var letter_contact = CORBA::string_dup("REG-FRED_B");
+            Registry::Messages::PostalAddress_var paddr( new Registry::Messages::PostalAddress);
 
-        Registry::Messages::PostalAddress_var paddr( new Registry::Messages::PostalAddress);
+            paddr->name = CORBA::string_dup("");
+            paddr->org = CORBA::string_dup("");
+            paddr->street1 = CORBA::string_dup("");
+            paddr->street2 = CORBA::string_dup("");
+            paddr->street3 = CORBA::string_dup("");
+            paddr->city = CORBA::string_dup("");
+            paddr->state = CORBA::string_dup("");
+            paddr->code = CORBA::string_dup("");
+            paddr->city = CORBA::string_dup("Praha");
+            paddr->country = CORBA::string_dup("");
 
-        paddr->name = CORBA::string_dup("");
-        paddr->org = CORBA::string_dup("");
-        paddr->street1 = CORBA::string_dup("");
-        paddr->street2 = CORBA::string_dup("");
-        paddr->street3 = CORBA::string_dup("");
-        paddr->city = CORBA::string_dup("");
-        paddr->state = CORBA::string_dup("");
-        paddr->code = CORBA::string_dup("");
-        paddr->city = CORBA::string_dup("Praha");
-        paddr->country = CORBA::string_dup("");
+            Registry::Messages::ByteBuffer_var file_content( new Registry::Messages::ByteBuffer(3) );//prealocate
+            file_content->length(3);//set/alocate
+            CORBA::Octet* data = file_content->get_buffer();
+            data[0] = 'p';
+            data[1] = 'd';
+            data[2] = 'f';
 
-        Registry::Messages::ByteBuffer_var file_content( new Registry::Messages::ByteBuffer(3) );//prealocate
-        file_content->length(3);//set/alocate
-        CORBA::Octet* data = file_content->get_buffer();
-        data[0] = 'p';
-        data[1] = 'd';
-        data[2] = 'f';
+            CORBA::String_var file_name = CORBA::string_dup("test1.pdf");
 
-        CORBA::String_var file_name = CORBA::string_dup("test1.pdf");
+            CORBA::String_var file_type = CORBA::string_dup("expiration warning letter");
+            CORBA::String_var letter_message_type = CORBA::string_dup("password_reset");
 
-        CORBA::String_var file_type = CORBA::string_dup("expiration warning letter");
-        CORBA::String_var letter_message_type = CORBA::string_dup("password_reset");
-
-        messages_ref->sendLetter(letter_contact, paddr.in()
-                , file_content, file_name,file_type
-                , letter_message_type, 1, 1);
-
+            messages_ref->sendLetter(letter_contact, paddr.in()
+                    , file_content, file_name,file_type
+                    , letter_message_type, 1, 1);
+        }
         BOOST_REQUIRE_EQUAL(0//sms_test()
                 , 0);
     }
