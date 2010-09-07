@@ -51,7 +51,8 @@ BOOST_AUTO_TEST_CASE( test_exec )
         messages_ref = Registry::Messages::_narrow(
                 CorbaContainer::get_instance()->nsresolve("Messages"));
 
-        for (int i = 0; i < 1000000; ++i)
+        int i = 0;
+        for (; i < 1000; ++i)
         {
             //sms test
             CORBA::String_var sms_contact = CORBA::string_dup("REG-FRED_A");
@@ -93,8 +94,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
                     , file_content, file_name,file_type
                     , letter_message_type, 1, 1);
         }
-        BOOST_REQUIRE_EQUAL(0//sms_test()
-                , 0);
+        BOOST_REQUIRE_EQUAL(i, 1000);
     }
     catch(Registry::Messages::ErrorReport& er)
     {
