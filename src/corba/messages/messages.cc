@@ -168,30 +168,30 @@ int main(int argc, char** argv)
         Database::Connection conn = Database::Manager::acquire();
 
         //CORBA init
-        FakedArgs fa = CfgArgs::instance()->fa;
+        FakedArgs orb_fa = CfgArgs::instance()->fa;
         HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
               get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
 
-        if(fa.get_argc() > 1)
+        if(orb_fa.get_argc() > 1)
         {
             std::cout << "unrecognized params passed to ORB_init before: \n";
-            for(int i = 0; i < fa.get_argc(); ++i)
-                std::cout << "\t" << fa.get_argv()[i] << "\n";
+            for(int i = 0; i < orb_fa.get_argc(); ++i)
+                std::cout << "\t" << orb_fa.get_argv()[i] << "\n";
             ;
             std::cout << std::endl;
         }//if unrecognized params
 
 
-        CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+        CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
           , ns_args_ptr->nameservice_host
           , ns_args_ptr->nameservice_port
           , ns_args_ptr->nameservice_context);
 
-        if(fa.get_argc() > 1)
+        if(orb_fa.get_argc() > 1)
         {
             std::cout << "unrecognized params passed to ORB_init after: \n";
-            for(int i = 0; i < fa.get_argc(); ++i)
-                std::cout << "\t" << fa.get_argv()[i] << "\n";
+            for(int i = 0; i < orb_fa.get_argc(); ++i)
+                std::cout << "\t" << orb_fa.get_argv()[i] << "\n";
             ;
             std::cout << std::endl;
         }//if unrecognized params

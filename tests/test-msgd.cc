@@ -38,10 +38,10 @@ BOOST_AUTO_TEST_CASE( test_exec )
     try
     {
         //CORBA init
-        FakedArgs fa = CfgArgs::instance()->fa;
+        FakedArgs orb_fa = CfgArgs::instance()->fa;
         HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
                 get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-        CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+        CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
             , ns_args_ptr->nameservice_host
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
