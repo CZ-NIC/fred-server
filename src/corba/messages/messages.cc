@@ -172,6 +172,16 @@ int main(int argc, char** argv)
         HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
               get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
 
+        if(fa.get_argc() > 1)
+        {
+            std::cout << "unrecognized params passed to ORB_init before: \n";
+            for(int i = 0; i < fa.get_argc(); ++i)
+                std::cout << "\t" << fa.get_argv()[i] << "\n";
+            ;
+            std::cout << std::endl;
+        }//if unrecognized params
+
+
         CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
           , ns_args_ptr->nameservice_host
           , ns_args_ptr->nameservice_port
@@ -179,12 +189,13 @@ int main(int argc, char** argv)
 
         if(fa.get_argc() > 1)
         {
-            std::cout << "unrecognized params passed to ORB_init: \n";
+            std::cout << "unrecognized params passed to ORB_init after: \n";
             for(int i = 0; i < fa.get_argc(); ++i)
                 std::cout << "\t" << fa.get_argv()[i] << "\n";
             ;
             std::cout << std::endl;
         }//if unrecognized params
+
 
         //create server
         Registry_Messages_i* myRegistry_Messages_i = new Registry_Messages_i();
