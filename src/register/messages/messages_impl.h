@@ -27,15 +27,12 @@
 #include <string>
 #include <vector>
 
-
-
 namespace Registry
 {
 namespace MessagesImpl
 {
 
-
-void send_sms_impl(const char* contact_handle
+unsigned long long send_sms_impl(const char* contact_handle
         , const char* phone
         , const char* content
         , const char* message_type
@@ -58,7 +55,7 @@ struct PostalAddress
 
 typedef struct { unsigned char* buffer; unsigned long long size;} ByteBuffer;
 
-void send_letter_impl(const char* contact_handle
+unsigned long long send_letter_impl(const char* contact_handle
         , const PostalAddress& address
         , const ByteBuffer& file_content
         , const char* file_name

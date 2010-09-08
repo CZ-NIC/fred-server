@@ -57,45 +57,4 @@ namespace std
 #endif
 
 
-unsigned sms_test()
-{
-    unsigned ret=0;
-    try
-    {
-        Database::Connection conn = Database::Manager::acquire();
-        std::string query = "select 1 as id, $1::bigint as data1, $2::bigint as data2, $3::text as data3";
-
-        std::vector<std::string> params = boost::assign::list_of("2")("3")("Kuk");
-
-
-        Database::Result res = conn.exec_params( query, params );
-        if ((res.size() > 0) && (res[0].size() == 4))
-        {
-        	//check data
-            if(1 != static_cast<unsigned long long>(res[0][0]) ) ret+=1;
-            if(2 != static_cast<unsigned long long>(res[0][1])) ret+=2;
-            if(3 != static_cast<unsigned long long>(res[0][2])) ret+=4;
-            std::cout << "test string: " << std::string(res[0][3]) << std::endl;
-        }//if res size
-        else ret+=8;
-        if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
-
-
-    }
-    catch(std::exception& ex)
-    {
-        std::cerr << "exec_params_test exception reason: "<< ex.what() << std::endl;
-        ret+=256;
-        throw;
-    }
-    catch(...)
-    {
-        std::cerr << "exec_params_test exception returning"<< std::endl;
-        ret+=512;
-        if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
-    }
-
-    return ret;
-}
-
 #endif // TEST_MSGD_H_

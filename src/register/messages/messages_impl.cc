@@ -133,7 +133,8 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
     return message_archive_id;
 }
 
-void send_sms_impl(const char* contact_handle
+//return new message_archive id
+unsigned long long send_sms_impl(const char* contact_handle
         , const char* phone
         , const char* content
         , const char* message_type
@@ -142,6 +143,7 @@ void send_sms_impl(const char* contact_handle
 
         )
 {
+    unsigned long long message_archive_id =0;
     try
     {
         LOGGER(PACKAGE).debug(boost::format(
@@ -164,8 +166,7 @@ void send_sms_impl(const char* contact_handle
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        unsigned long long message_archive_id
-        = save_message(
+        message_archive_id= save_message(
                 Database::QueryParam()
                 , 0
                 , 1
@@ -190,7 +191,6 @@ void send_sms_impl(const char* contact_handle
 
         conn.exec_params( sms_query, sms_qparams );
         tx.commit();
-
     }//try
     catch(const std::exception& ex)
     {
@@ -201,9 +201,11 @@ void send_sms_impl(const char* contact_handle
     {
         LOGGER(PACKAGE).error("MessagesImpl::send_sms_impl error");
     }
+    return message_archive_id;
 }
 
-void send_letter_impl(const char* contact_handle
+//return new message_archive id
+unsigned long long send_letter_impl(const char* contact_handle
         , const PostalAddress& address
         , const ByteBuffer& file_content
         , const char* file_name
@@ -213,6 +215,7 @@ void send_letter_impl(const char* contact_handle
         , unsigned long contact_history_historyid
         )
 {
+    unsigned long long message_archive_id=0;
     try
     {
         LOGGER(PACKAGE).debug(boost::format(
@@ -257,7 +260,7 @@ void send_letter_impl(const char* contact_handle
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        unsigned long long message_archive_id
+        message_archive_id
         = save_message(Database::QPNull, 0, 1,message_type, "letter", true
                 , contact_handle, contact_object_registry_id
                 , contact_history_historyid
@@ -338,6 +341,8 @@ void send_letter_impl(const char* contact_handle
     {
         LOGGER(PACKAGE).error("MessagesImpl::send_letter_impl error");
     }
+
+    return message_archive_id;
 }
 
 }//namespace MessagesImpl

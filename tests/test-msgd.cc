@@ -60,7 +60,8 @@ BOOST_AUTO_TEST_CASE( test_exec )
             CORBA::String_var content = CORBA::string_dup("Ahoj!");
             CORBA::String_var sms_message_type = CORBA::string_dup("password_reset");
 
-            messages_ref->sendSms(sms_contact, phone , content, sms_message_type, 1, 1);
+            unsigned long message_archive_id = 0;
+            messages_ref->sendSms(sms_contact, phone , content, sms_message_type, 1, 1, message_archive_id);
 
             //letter test
             CORBA::String_var letter_contact = CORBA::string_dup("REG-FRED_B");
@@ -92,7 +93,8 @@ BOOST_AUTO_TEST_CASE( test_exec )
 
             messages_ref->sendLetter(letter_contact, paddr.in()
                     , file_content, file_name,file_type
-                    , letter_message_type, 1, 1);
+                    , letter_message_type, 1, 1
+                    , message_archive_id);
         }
         BOOST_REQUIRE_EQUAL(i, 1000);
     }

@@ -83,6 +83,7 @@ public:
           ,const char* message_type
           , CORBA::ULong contact_object_registry_id
           , CORBA::ULong contact_history_historyid
+          , CORBA::ULong& message_archive_id
           );
 
   void sendLetter(const char* contact_handle
@@ -93,6 +94,7 @@ public:
           ,const char* message_type
           , CORBA::ULong contact_object_registry_id
           , CORBA::ULong contact_history_historyid
+          , CORBA::ULong& message_archive_id
           );
 
 };//class Registry_Messages_i
