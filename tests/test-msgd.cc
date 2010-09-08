@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
             CORBA::String_var content = CORBA::string_dup("Ahoj!");
             CORBA::String_var sms_message_type = CORBA::string_dup("password_reset");
 
-            unsigned long message_archive_id = 0;
+            CORBA::ULong message_archive_id = 0;
             messages_ref->sendSms(sms_contact, phone , content, sms_message_type, 1, 1, message_archive_id);
 
             //letter test
