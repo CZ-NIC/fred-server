@@ -470,63 +470,83 @@ namespace Register
        */
 #define WARNING_LETTER_FILE_TYPE 5 // from enum_filetype table
       class GenMultipleFiles {
-          private:
+private:
               std::auto_ptr<Document::Generator> gPDF;
-              const std::string &exDate;
-              Transaction &trans;
+              // TODO this might as well been a pointer
+              const std::string *exDate;
+              Transaction *trans;
               std::vector<TID> state_ids;
 
-          public:
+public:
               /** holderid is only used for the filename
                * to identify which contact id's are contained in the 
                * individual file, call addStateId 
                */
-              GenMultipleFiles(const std::string &exDate_, const TID state_id, 
-                    Document::Manager *docm, Transaction &tr) 
-                : exDate(exDate_), trans(tr)  {
-  
-              std::stringstream filename;
-              filename << "letter-" << exDate << "-" << state_id << ".pdf";
-                  
-              gPDF.reset(
-                docm->createSavingGenerator(
-                  Document::GT_WARNING_LETTER,
-                  filename.str(), WARNING_LETTER_FILE_TYPE,
-                  "" // default language
-                )
-              );
-              std::ostream& out(gPDF->getInput());
-
-              out << "<messages>";
-              out << "<holder>";
-
+            GenMultipleFiles() : gPDF(NULL), trans(NULL) { 
             }
-            
-            ~GenMultipleFiles() {
-                try {
-                if (state_ids.empty()) {
-                  std::string errmsg("ERROR: no registrant ID specified by caller. Wrong usage of API.");
-                  LOGGER(PACKAGE).error(errmsg);
-                  throw Exception(errmsg);
-                }
 
+            void addStateId(TID id) {
+                state_ids.push_back(id);
+            }
+
+            std::ostream& getInput() {
+                return gPDF->getInput();
+            }
+
+            void newFile(const std::string *exD, const TID state_id, Document::Manager *docm, Transaction *tr) {
+                endFile();
+                initFile(exD, state_id, docm, tr);
+            }
+ 
+
+private:
+            void initFile(const std::string *exD, const TID state_id, Document::Manager *docm, Transaction *tr) 
+            {
+                exDate = exD;
+                trans = tr;
+
+                std::stringstream filename;
+                filename << "letter-" << *exDate << "-" << state_id << ".pdf";
+                    
+                gPDF.reset(
+                  docm->createSavingGenerator(
+                    Document::GT_WARNING_LETTER,
+                    filename.str(), WARNING_LETTER_FILE_TYPE,
+                    "" // default language
+                  )
+                );
                 std::ostream& out(gPDF->getInput());
-                std::stringstream sql;
+  
+                out << "<messages>";
+                out << "<holder>";
+            } 
+         
+            void endFile() {
+                if(gPDF.get() == NULL || trans == NULL) return;
+                try {
+                    if (state_ids.empty()) {
+                      std::string errmsg("ERROR: no registrant ID specified by caller. Wrong usage of API.");
+                      LOGGER(PACKAGE).error(errmsg);
+                      throw Exception(errmsg);
+                    }
 
-                out << "</holder>";
-                out << "</messages>";
+                    std::ostream& out(gPDF->getInput());
+                    std::stringstream sql;
 
-                // TODO there's still some room for more DB OPTIMIZATION if
-                // whole operation was made atomic and this query was run 
-                // only once with IDs taken from vector
-                // OR ----
-                // most of the inserted data could already be gathered 
-                // in the statement which generates the XML
-                // records stored in vector could be used in a simple insert
-                //
-                Connection conn = Database::Manager::acquire();
-                std::vector<TID>::iterator it = state_ids.begin();
-                TID filePDF = gPDF->closeInput();
+                    out << "</holder>";
+                    out << "</messages>";
+
+                    // TODO there's still some room for more DB OPTIMIZATION if
+                    // whole operation was made atomic and this query was run 
+                    // only once with IDs taken from vector
+                    // OR ----
+                    // most of the inserted data could already be gathered 
+                    // in the statement which generates the XML
+                    // records stored in vector could be used in a simple insert
+                    //
+                    Connection conn = Database::Manager::acquire();
+                    std::vector<TID>::iterator it = state_ids.begin();
+                    TID filePDF = gPDF->closeInput();
                     // status 1 represents 'ready generated - ready for sending
                     sql << "INSERT INTO letter_archive (status, file_id) VALUES (1, "
                       << filePDF << ")";
@@ -544,8 +564,11 @@ namespace Register
                         sql << ", (" << *it << ", " << letter_id << ")";
                     }
                     
-                conn.exec(sql.str());
-                trans.savepoint();
+                    conn.exec(sql.str());
+                    trans->savepoint();
+
+                    gPDF.reset(NULL);
+                    state_ids.clear();
 
                 } catch (std::exception &e) {
                     LOGGER(PACKAGE).error(
@@ -554,14 +577,7 @@ namespace Register
                     LOGGER(PACKAGE).error("~GenMultipleFiles(): Caught unknown exception. ");
                 }
             }
-            
-            void addStateId(TID id) {
-                state_ids.push_back(id);
-            }
-
-            std::ostream& getInput() {
-                return gPDF->getInput();
-            }
+           
       };
 
 #define XML_DB_OUT(x,y) "<![CDATA[" << std::string(res[x][y]) << "]]>"
@@ -668,7 +684,11 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
                 if ((prev_distinction != distinction) || (item_count >= item_count_limit)) {
                     // in this case start creating a new file
-                    gen.reset ( new GenMultipleFiles(exDates[j], res[i][12], docm, trans));
+
+                    gen->newFile(&exDates[j], res[i][12], docm, &trans);
+                    // GenMultipleFiles::new_file(exDates[j], res[i][12], docm, trans);
+
+                    // gen.reset ( new GenMultipleFiles(exDates[j], res[i][12], docm, trans));
                     item_count = 0;
                     /*
                     if(!prev_distinction.empty()) {
