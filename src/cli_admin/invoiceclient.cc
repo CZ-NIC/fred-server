@@ -235,7 +235,7 @@ InvoiceClient::list_filters()
         }
         for (unsigned int j = 0; j < inv->getPaymentCount(); j++) {
             Register::Invoicing::Payment *pay = 
-                (Register::Invoicing::Payment *)inv->getPayment(j);
+                (Register::Invoicing::Payment *)inv->getPaymentByIdx(j);
             std::cout
                 << "\t\t<payment>\n"
                 << "\t\t\t<price>" << pay->getPrice() << "</price>\n"
