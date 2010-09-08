@@ -77,24 +77,22 @@ public:
   Registry_Messages_i();
 
   // methods corresponding to defined IDL attributes and operations
-  void sendSms(const char* contact_handle
+  CORBA::ULongLong sendSms(const char* contact_handle
           ,const char* phone
           ,const char* content
           ,const char* message_type
-          , CORBA::ULong contact_object_registry_id
-          , CORBA::ULong contact_history_historyid
-          , CORBA::ULong& message_archive_id
+          , CORBA::ULongLong contact_object_registry_id
+          , CORBA::ULongLong contact_history_historyid
           );
 
-  void sendLetter(const char* contact_handle
+  CORBA::ULongLong sendLetter(const char* contact_handle
           ,const Registry::Messages::PostalAddress& address
           ,const Registry::Messages::ByteBuffer& file_content
           ,const char* file_name
           ,const char* file_type
           ,const char* message_type
-          , CORBA::ULong contact_object_registry_id
-          , CORBA::ULong contact_history_historyid
-          , CORBA::ULong& message_archive_id
+          , CORBA::ULongLong contact_object_registry_id
+          , CORBA::ULongLong contact_history_historyid
           );
 
 };//class Registry_Messages_i

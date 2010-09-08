@@ -46,13 +46,12 @@ Registry_Messages_i::~Registry_Messages_i()
   // add extra destructor code here
 }
 //   Methods corresponding to IDL attributes and operations
-void Registry_Messages_i::sendSms(const char* contact_handle
+CORBA::ULongLong Registry_Messages_i::sendSms(const char* contact_handle
         , const char* phone
         , const char* content
         , const char* message_type
-        , CORBA::ULong contact_object_registry_id
-        , CORBA::ULong contact_history_historyid
-        , CORBA::ULong& message_archive_id
+        , CORBA::ULongLong contact_object_registry_id
+        , CORBA::ULongLong contact_history_historyid
        )
 {
     Logging::Context ctx(server_name);
@@ -60,7 +59,7 @@ void Registry_Messages_i::sendSms(const char* contact_handle
 
     try
     {
-        message_archive_id =
+        return
         Registry::MessagesImpl::send_sms_impl(contact_handle,phone, content
                 , message_type
                 , contact_object_registry_id
@@ -77,15 +76,14 @@ void Registry_Messages_i::sendSms(const char* contact_handle
     }
 }//Registry_Messages_i::sendSms
 
-void Registry_Messages_i::sendLetter(const char* contact_handle
+CORBA::ULongLong Registry_Messages_i::sendLetter(const char* contact_handle
         , const Registry::Messages::PostalAddress& address
         , const Registry::Messages::ByteBuffer& file_content
         , const char* file_name
         , const char* file_type
         , const char* message_type
-        , CORBA::ULong contact_object_registry_id
-        , CORBA::ULong contact_history_historyid
-        , CORBA::ULong& message_archive_id
+        , CORBA::ULongLong contact_object_registry_id
+        , CORBA::ULongLong contact_history_historyid
         )
 {
     Logging::Context ctx(server_name);
@@ -114,7 +112,7 @@ void Registry_Messages_i::sendLetter(const char* contact_handle
         buffer_impl.size = file_content.length();
         buffer_impl.buffer = const_cast<unsigned char*>(file_content.get_buffer());
 
-        message_archive_id =
+        return
         Registry::MessagesImpl::send_letter_impl(contact_handle
                 , address_impl
                 , buffer_impl
