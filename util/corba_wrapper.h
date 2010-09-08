@@ -25,7 +25,7 @@
 #define CORBA_WRAPPER_H_
 
 #include <iostream>
-#include <exception>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <memory>
@@ -39,6 +39,18 @@
 CorbaContainer::CorbaContainerPtr CorbaContainer::instance_ptr(0);
 
 //impl
+PortableServer::POA_var CorbaContainer::create_persistent_poa()
+{
+    //poa for persistent refs
+    CORBA::PolicyList pols;
+    pols.length(2);
+    pols[0] = root_poa->create_lifespan_policy(PortableServer::PERSISTENT);
+    pols[1] = root_poa->create_id_assignment_policy(PortableServer::USER_ID);
+
+    PortableServer::POA_var persistent_poa = root_poa->create_POA("RegistryPOA", poa_mgr.in(), pols);
+    return persistent_poa;
+}
+
 CorbaContainer::CorbaContainer(int argc, char ** argv
         , const std::string& nameservice_host
         , unsigned nameservice_port
@@ -47,15 +59,31 @@ CorbaContainer::CorbaContainer(int argc, char ** argv
 , root_poa_initial_ref(orb->resolve_initial_references("RootPOA"))
 , root_poa(PortableServer::POA::_narrow(root_poa_initial_ref))
 , poa_mgr(root_poa->the_POAManager())
-, ns(orb, nameservice_host, nameservice_port, nameservice_context)
+, ns_ptr(new NameService(orb, nameservice_host, nameservice_port, nameservice_context))
 {
     //poa for persistent refs
-    CORBA::PolicyList pols;
-    pols.length(2);
-    pols[0] = root_poa->create_lifespan_policy(PortableServer::PERSISTENT);
-    pols[1] = root_poa->create_id_assignment_policy(PortableServer::USER_ID);
-    poa_persistent = root_poa->create_POA("RegistryPOA", poa_mgr.in(), pols);
+    poa_persistent = create_persistent_poa();
 }
+
+CorbaContainer::CorbaContainer(int& argc, char ** argv)
+: orb(CORBA::ORB_init( argc,argv))
+, root_poa_initial_ref(orb->resolve_initial_references("RootPOA"))
+, root_poa(PortableServer::POA::_narrow(root_poa_initial_ref))
+, poa_mgr(root_poa->the_POAManager())
+, ns_ptr(0)
+{
+    //poa for persistent refs
+    poa_persistent = create_persistent_poa();
+}
+
+void CorbaContainer::setNameService ( const std::string& nameservice_host
+, unsigned nameservice_port
+, const std::string& nameservice_context)
+{
+    ns_ptr.reset( new NameService(orb, nameservice_host, nameservice_port, nameservice_context));
+}
+
+
 
 CorbaContainer::~CorbaContainer()
 {
@@ -65,18 +93,30 @@ CorbaContainer::~CorbaContainer()
 ///NameService resolve with simple
 CORBA::Object_var CorbaContainer::nsresolve(const std::string& context, const std::string& object_name)
 {
-    return ns.resolve(context, object_name);
+    if(ns_ptr.get() == 0)
+        throw std::runtime_error(
+                "CorbaContainer::nsresolve error: NameService not set");
+
+    return ns_ptr->resolve(context, object_name);
 }
 
 ///NameService resolve using default context
 CORBA::Object_var CorbaContainer::nsresolve(const std::string& object_name)
 {
-    return ns.resolve(object_name);
+    if(ns_ptr.get() == 0)
+        throw std::runtime_error(
+                "CorbaContainer::nsresolve error: NameService not set");
+
+    return ns_ptr->resolve(object_name);
 }
 
 NameService* CorbaContainer::getNS()
 {
-    return &ns;
+    if(ns_ptr.get() == 0)
+        throw std::runtime_error(
+                "CorbaContainer::getNS error: NameService not set");
+
+    return ns_ptr.get();
 }
 
 void CorbaContainer::set_instance(int argc, char** argv

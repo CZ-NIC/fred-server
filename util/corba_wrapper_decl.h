@@ -49,7 +49,9 @@ public:
     CORBA::Object_var root_poa_initial_ref;
     PortableServer::POA_var root_poa;
     PortableServer::POAManager_var poa_mgr;
-    NameService ns;
+private:
+    std::auto_ptr<NameService> ns_ptr;
+public:
     PortableServer::POA_var poa_persistent;
 private:
     static CorbaContainerPtr instance_ptr;
@@ -59,18 +61,29 @@ private:
             , unsigned nameservice_port
             , const std::string& nameservice_context);
 
+    CorbaContainer(int& argc, char ** argv);
+
 friend class std::auto_ptr<CorbaContainer>;
 protected:
     ~CorbaContainer();
+private:
+    PortableServer::POA_var create_persistent_poa();
 
 public:
     ///NameService resolve with simple
-    CORBA::Object_var nsresolve(const std::string& context, const std::string& object_name);
+    CORBA::Object_var nsresolve(
+            const std::string& context, const std::string& object_name);
 
     ///NameService resolve using default context
     CORBA::Object_var nsresolve(const std::string& object_name);
 
+    //set NameService after set_instance
+    void setNameService ( const std::string& nameservice_host
+    , unsigned nameservice_port
+    , const std::string& nameservice_context);
+
     //static interface
+    static void set_instance(int& argc , char** argv);
     static void set_instance(int argc , char** argv
             , const std::string& nameservice_host
             , unsigned nameservice_port
