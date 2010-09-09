@@ -60,7 +60,7 @@ CORBA::ULongLong Registry_Messages_i::sendSms(const char* contact_handle
     try
     {
         return
-        Registry::MessagesImpl::send_sms_impl(contact_handle,phone, content
+        Register::Messages::send_sms_impl(contact_handle,phone, content
                 , message_type
                 , contact_object_registry_id
                 , contact_history_historyid
@@ -96,7 +96,7 @@ CORBA::ULongLong Registry_Messages_i::sendLetter(const char* contact_handle
                 " contact_handle: %1%")
             % contact_handle);
 
-        Registry::MessagesImpl::PostalAddress address_impl;
+        Register::Messages::PostalAddress address_impl;
         address_impl.name = std::string(address.name.in());
         address_impl.org = std::string(address.org.in());
         address_impl.street1 = std::string(address.street1.in());
@@ -107,13 +107,13 @@ CORBA::ULongLong Registry_Messages_i::sendLetter(const char* contact_handle
         address_impl.code = std::string(address.code.in());
         address_impl.country = std::string(address.country.in());
 
-        Registry::MessagesImpl::ByteBuffer buffer_impl;
+        Register::Messages::ByteBuffer buffer_impl;
 
         buffer_impl.size = file_content.length();
         buffer_impl.buffer = const_cast<unsigned char*>(file_content.get_buffer());
 
         return
-        Registry::MessagesImpl::send_letter_impl(contact_handle
+        Register::Messages::send_letter_impl(contact_handle
                 , address_impl
                 , buffer_impl
                 , file_name

@@ -27,9 +27,9 @@
 #include <string>
 #include <vector>
 
-namespace Registry
+namespace Register
 {
-namespace MessagesImpl
+namespace Messages
 {
 
 unsigned long long send_sms_impl(const char* contact_handle
@@ -65,6 +65,6 @@ unsigned long long send_letter_impl(const char* contact_handle
         , unsigned long contact_history_historyid
         );
 
-}//namespace MessagesImpl
-}//namespace Registry
+}//namespace Messages
+}//namespace Register
 #endif //MESSAGES_IMPL_H_

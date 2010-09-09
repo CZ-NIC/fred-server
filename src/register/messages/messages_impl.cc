@@ -31,9 +31,9 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-namespace Registry
+namespace Register
 {
-namespace MessagesImpl
+namespace Messages
 {
 
 //insert data into message_archive and optionally into message_contact_history_map
@@ -50,7 +50,7 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
         )
 {
     LOGGER(PACKAGE).debug(boost::format(
-            "MessagesImpl::save_message "
+            "Messages::save_message "
             " moddate: %1% "
             " attempt: %2% "
             " status: %3% "
@@ -147,7 +147,7 @@ unsigned long long send_sms_impl(const char* contact_handle
     try
     {
         LOGGER(PACKAGE).debug(boost::format(
-                "MessagesImpl::send_sms_impl "
+                "Messages::send_sms_impl "
                 " contact_handle: %1% "
                 " phone: %2% "
                 " content: %3% "
@@ -195,11 +195,11 @@ unsigned long long send_sms_impl(const char* contact_handle
     catch(const std::exception& ex)
     {
         LOGGER(PACKAGE).error(boost::format(
-                "MessagesImpl::send_sms_impl exception: %1%") % ex.what());
+                "Messages::send_sms_impl exception: %1%") % ex.what());
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("MessagesImpl::send_sms_impl error");
+        LOGGER(PACKAGE).error("Messages::send_sms_impl error");
     }
     return message_archive_id;
 }
@@ -219,7 +219,7 @@ unsigned long long send_letter_impl(const char* contact_handle
     try
     {
         LOGGER(PACKAGE).debug(boost::format(
-                "MessagesImpl::send_letter_impl "
+                "Messages::send_letter_impl "
                 " contact_handle: %1% "
                 " file_content.size(): %2%"
                 " address.name: %3%"
@@ -335,15 +335,15 @@ unsigned long long send_letter_impl(const char* contact_handle
     catch(const std::exception& ex)
     {
         LOGGER(PACKAGE).error(boost::format(
-                "MessagesImpl::send_letter_impl exception: %1%") % ex.what());
+                "Messages::send_letter_impl exception: %1%") % ex.what());
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("MessagesImpl::send_letter_impl error");
+        LOGGER(PACKAGE).error("Messages::send_letter_impl error");
     }
 
     return message_archive_id;
 }
 
-}//namespace MessagesImpl
-}//namespace Registry
+}//namespace Messages
+}//namespace Register
