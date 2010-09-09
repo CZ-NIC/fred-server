@@ -25,10 +25,163 @@
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
+using namespace Database::Filters;
 using namespace Database;
 
 namespace Register {
 namespace Logger {
+
+
+// TODO:
+// * central configuration which types have to be treated like this
+// * separate tree browsing & functor(visitor) parts
+
+class CustomPartitioningTweak {
+private:
+  CustomPartitioningTweak() {};
+
+public:
+
+  static void process_filters(Database::Filters::Filter *f) {
+        time_begin = NULL;
+        service  = NULL;
+        is_monitoring = NULL; 
+
+        RequestImpl *ri = dynamic_cast<RequestImpl*> (f);
+        if(ri != NULL) {
+            find_values_recurs (ri);
+    
+            if(time_begin     != NULL || 
+              service         != NULL ||
+              is_monitoring   != NULL) {
+              add_conds_recurs(ri);
+            }
+        }
+  }
+
+private:
+  static void find_values_recurs (Filter *f) {
+    // This check can be moved to the higher level
+    if(!f->isActive()) return;
+
+    Compound *c = dynamic_cast<Compound*>(f); 
+    if (c == NULL) {
+            if(f->getName() == "TimeBegin") {
+                if(time_begin != NULL) {
+                    LOGGER(PACKAGE).error("Duplicity TimeBegin found in filters.");
+                    return;
+                }
+                time_begin = dynamic_cast< Interval<Database::DateTimeInterval>* >(f);
+                if(time_begin == NULL) {
+                    LOGGER(PACKAGE).error("TimeBegin: Inconsistency in filters.");
+                    std::cout << "TimeBegin: Inconsistency in filters." << std::endl;
+                }
+      
+            } else if(f->getName() == "ServiceType") {
+                if(service != NULL) {
+                    LOGGER(PACKAGE).error("Duplicity ServiceType found in filters.");
+                    return;
+                }
+      
+                service = dynamic_cast<Database::Filters::ServiceType*>(f);
+                if(service == NULL) {
+                    LOGGER(PACKAGE).error("ServiceType: Inconsistency in filters.");
+                }
+      
+            } else if(f->getName() == "IsMonitoring") {
+                if(is_monitoring != NULL) {
+                    LOGGER(PACKAGE).error("Duplicity IsMonitoring found in filters.");
+                    return;
+                }
+      
+                is_monitoring = dynamic_cast< Database::Filters::Value<bool>* >(f);
+                if(is_monitoring == NULL) {
+                    LOGGER(PACKAGE).error("IsMonitoring: Inconsistency in filters.");
+                }
+            }
+    }  else  {
+        std::vector<Filter*>::iterator it = c->begin();  
+      
+        for(; it != c->end(); it++) {
+            find_values_recurs(*it);
+        }
+    }
+  }
+
+  static void add_conds_recurs(Compound *c) {
+
+      std::vector<Filter*>::iterator it = c->begin();
+      for(; it != c->end(); it++) {
+          Compound *child = dynamic_cast<Compound*> (*it);
+          if(child != NULL) {
+              add_conds_recurs(child);
+          }
+      }
+
+      RequestDataImpl *request_data;
+      RequestPropertyValueImpl *request_property_value;
+      RequestObjectRefImpl *request_object_ref;
+
+      Table *tbl = NULL;
+
+      if((request_data = dynamic_cast<RequestDataImpl*>(c)) != NULL) {
+          tbl = &request_data->joinRequestDataTable();
+      } else if((request_property_value = dynamic_cast<RequestPropertyValueImpl*>(c)) != NULL) {
+          tbl = &request_property_value->joinRequestPropertyValueTable();
+      } else if((request_object_ref = dynamic_cast<RequestObjectRefImpl*>(c)) != NULL) {
+          tbl = &request_object_ref->joinRequestObjectRefTable();
+      }
+
+      if(tbl != NULL) {
+
+          if(time_begin != NULL) {
+              Interval<Database::DateTimeInterval> *copy_time_begin = new Interval<Database::DateTimeInterval>(Column("request_time_begin", *tbl));
+              copy_time_begin->setName("RequestTimeBegin");
+              copy_time_begin->setValue(time_begin->getValue());
+              // TODO  - this should be done via c-tors
+              copy_time_begin->setNOT(time_begin->getNOT());
+              // copy_time_begin->setConjuction(time_begin->getConjuction());
+              // we never run into non-active record, no need to handle this field
+              c->add(copy_time_begin);
+          }
+
+          if(service != NULL) {
+              Database::Filters::ServiceType *copy_service = new Database::Filters::ServiceType(Column("request_service_id", *tbl));
+              copy_service->setName("RequestService");
+              copy_service->setValue(service->getValue());
+              copy_service->setNOT(service->getNOT());
+              // copy_service->setConjuction(service->getConjuction());
+              // we never run into non-active record, no need to handle this field
+
+              c->add(copy_service);
+          } 
+
+          if(is_monitoring != NULL) {
+              Database::Filters::Value<bool> *copy_monitoring = new Database::Filters::Value<bool>(Column("request_monitoring", *tbl));
+              copy_monitoring->setName("RequestIsMonitoring");
+              copy_monitoring->setValue(is_monitoring->getValue());
+              copy_monitoring->setNOT(is_monitoring->getNOT());
+              // copy_monitoring->setConjuction(is_monitoring->getConjuction());
+              // we never run into non-active record, no need to handle this field
+              
+              c->add(copy_monitoring);
+          }
+      }
+  }
+
+private:
+  Interval<Database::DateTimeInterval> static * time_begin;
+  Database::Filters::ServiceType static * service;
+  Database::Filters::Value<bool> static * is_monitoring; 
+  
+};
+
+Interval<Database::DateTimeInterval> * CustomPartitioningTweak::time_begin = NULL;
+Database::Filters::ServiceType * CustomPartitioningTweak::service = NULL;
+Database::Filters::Value<bool> * CustomPartitioningTweak::is_monitoring = NULL;
+
+
+
 
 class RequestImpl : public Register::CommonObjectImpl,
                  virtual public Request {
@@ -168,6 +321,8 @@ public:
       if (!mf)
         continue;
 
+      CustomPartitioningTweak::process_filters(mf);
+
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect(new Database::Column("id", mf->joinRequestTable(), "DISTINCT"));      
       _filter.addQuery(tmp);
@@ -215,7 +370,8 @@ public:
 	    query.order_by() << "t_1.time_begin desc";
     }
 
-    Database::Connection conn = Database::Manager::acquire();
+    Database::Connection conn = connectionSetup();
+    
     try {
 
         // run all the queries
@@ -374,7 +530,7 @@ public:
 
 
 
-            Database::Connection conn = Database::Manager::acquire();
+            Database::Connection conn = connectionSetup();
 	    try {
             Result res = conn.exec(query);
 
@@ -427,6 +583,16 @@ public:
 	      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
 	      clear();
 	    }
+  }
+
+private:
+  Database::Connection connectionSetup() {
+      Database::Connection conn = Database::Manager::acquire();
+
+      conn.exec("set constraint_exclusion=ON");
+      conn.exec("set statement_timeout=15000");
+
+      return conn;
   }
 };
 

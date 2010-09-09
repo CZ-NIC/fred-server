@@ -2,6 +2,7 @@
 
 const int ccReg_Logger_i::NUM_COLUMNS = 8;
 
+
 ccReg_Logger_i::ccReg_Logger_i(Register::Logger::List *_list) : m_lel (_list)  {
 }
 
@@ -126,6 +127,9 @@ void ccReg_Logger_i::reload() {
   TRACE("[CALL] ccReg_Logger_i::reload()");
   m_lel->setPartialLoad(true);
 //  m_lel->reload(uf);
+
+  // CustomPartitioningTweak::process_filters(uf.begin(), uf.end()); 
+
   m_lel->reload(uf);
 }
 
