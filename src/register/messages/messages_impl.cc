@@ -345,5 +345,50 @@ unsigned long long send_letter_impl(const char* contact_handle
     return message_archive_id;
 }
 
+class ManagerImpl : virtual public Manager
+{
+public:
+
+  unsigned long long send_sms(const char* contact_handle
+          , const char* phone
+          , const char* content
+          , const char* message_type
+          , unsigned long contact_object_registry_id
+          , unsigned long contact_history_historyid
+          )
+  {
+      return send_sms_impl(contact_handle
+                , phone
+                , content
+                , message_type
+                , contact_object_registry_id
+                , contact_history_historyid
+                );
+  }
+
+  unsigned long long send_letter(const char* contact_handle
+          , const PostalAddress& address
+          , const ByteBuffer& file_content
+          , const char* file_name
+          , const char* file_type
+          , const char* message_type
+          , unsigned long contact_object_registry_id
+          , unsigned long contact_history_historyid
+          )
+  {
+      return send_letter_impl(contact_handle
+              , address
+              , file_content
+              , file_name
+              , file_type
+              , message_type
+              , contact_object_registry_id
+              , contact_history_historyid
+              );
+  }
+};//class ManagerImpl
+
+
+
 }//namespace Messages
 }//namespace Register

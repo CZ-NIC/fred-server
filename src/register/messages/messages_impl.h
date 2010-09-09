@@ -65,6 +65,33 @@ unsigned long long send_letter_impl(const char* contact_handle
         , unsigned long contact_history_historyid
         );
 
+//Required pointless entry point for namespace
+class Manager
+{
+public:
+
+  virtual ~Manager() {}
+
+  virtual unsigned long long send_sms(const char* contact_handle
+          , const char* phone
+          , const char* content
+          , const char* message_type
+          , unsigned long contact_object_registry_id
+          , unsigned long contact_history_historyid
+          )=0;
+
+  virtual unsigned long long send_letter(const char* contact_handle
+          , const PostalAddress& address
+          , const ByteBuffer& file_content
+          , const char* file_name
+          , const char* file_type
+          , const char* message_type
+          , unsigned long contact_object_registry_id
+          , unsigned long contact_history_historyid
+          )=0;
+};
+
+
 }//namespace Messages
 }//namespace Register
 #endif //MESSAGES_IMPL_H_
