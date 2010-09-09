@@ -314,15 +314,12 @@ public:
                         cpayment->setId(conflict_pid);
                         cpayment->reload();
                         /* compare major attributes which should never change */
-                        if (payment->getAccountDate() != cpayment->getAccountDate()
-                                || payment->getAccountNumber() != cpayment->getAccountNumber()
+                        if (payment->getAccountNumber() != cpayment->getAccountNumber()
                                 || payment->getBankCode() != cpayment->getBankCode()
                                 || payment->getCode() != cpayment->getCode()
                                 || payment->getKonstSym() != cpayment->getKonstSym()
                                 || payment->getVarSymb() != cpayment->getVarSymb()
                                 || payment->getSpecSymb() != cpayment->getSpecSymb()
-                                || payment->getPrice() != cpayment->getPrice()
-                                || payment->getAccountDate() != cpayment->getAccountDate()
                                 || payment->getAccountMemo() != cpayment->getAccountMemo()) {
 
                             LOGGER(PACKAGE).debug(boost::format("imported payment: %1%")
@@ -342,13 +339,17 @@ public:
                         else if (payment->getStatus() != cpayment->getStatus()) {
                             LOGGER(PACKAGE).info(boost::format(
                                     "already imported payment -- status changed "
-                                    "%1% => %2%")
+                                    "%1% => %2% (price %3% => %4%; account_date %5% => %6%)")
                                     % cpayment->getStatus()
-                                    % payment->getStatus());
+                                    % payment->getStatus()
+                                    % cpayment->getPrice()
+                                    % payment->getPrice()
+                                    % cpayment->getAccountDate()
+                                    % payment->getAccountDate());
 
-                            // payment->setId(conflict_pid);
-                            // payment->save();
                             cpayment->setStatus(payment->getStatus());
+                            cpayment->setAccountDate(payment->getAccountDate());
+                            cpayment->setPrice(payment->getPrice());
                             cpayment->save();
                             processPayment(cpayment.get());
                         }
