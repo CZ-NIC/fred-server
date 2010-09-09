@@ -110,7 +110,7 @@ void FileManagerClient::download(const unsigned long long _id
     }
 }//FileManagerClient::download
 
-unsigned long long FileManagerClient::upload(std::vector<char> &_in_buffer
+unsigned long long FileManagerClient::upload( std::vector<char> &_in_buffer
                                             , const std::string &_name
                                             , const std::string &_mime_type
                                             , const unsigned int &_file_type)
@@ -125,12 +125,11 @@ unsigned long long FileManagerClient::upload(std::vector<char> &_in_buffer
                                 , static_cast<CORBA::Short>(_file_type));
 
         std::size_t read_size = _in_buffer.size();
-        CORBA::Octet *buffer = ccReg::BinaryData::allocbuf(read_size);
-        for (unsigned i = 0; i < read_size; ++i)
-        {
-            buffer[i] = _in_buffer[i];
-        }
-        ccReg::BinaryData data(read_size, read_size, buffer, 1);
+
+        ccReg::BinaryData data(read_size, read_size
+            , reinterpret_cast<CORBA::Octet*>( &_in_buffer[0])
+            , 0);
+
         uploader->upload(data);
         return uploader->finalize_upload();
     }
