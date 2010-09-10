@@ -2,8 +2,6 @@
 #define _REQUEST_IMPL_H_
 #include "request.h"
 
-#define LOGD_VERIFY_INPUT
-
 namespace Register {
 namespace Logger {
 

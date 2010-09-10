@@ -31,6 +31,9 @@ using namespace Database;
 namespace Register {
 namespace Logger {
 
+#ifdef LOGD_VERIFY_INPUT
+#error "LOGD_VERIFY_INPUT should be off because of performance improvement."
+#endif
 
 // TODO:
 // * central configuration which types have to be treated like this
