@@ -87,6 +87,7 @@ public:
   virtual const boost::posix_time::ptime  getTimeEnd() const = 0;
   virtual const std::string&		getSourceIp() const = 0;
   virtual const std::string&    getUserName() const = 0;
+  virtual const Database::ID&    getUserId() const = 0;
   virtual const std::string& getServiceType() const = 0;
   virtual const std::string& getActionType() const = 0;
   virtual const Database::ID& getSessionId() const = 0;

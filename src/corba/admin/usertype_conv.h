@@ -51,5 +51,19 @@ inline ccReg::RequestProperties convert_properties_d2c(boost::shared_ptr<Registe
 	return res;
 }
 
+inline ccReg::ObjectReferences convert_obj_references_d2c(boost::shared_ptr<Register::Logger::ObjectReferences> refs)
+{
+        ccReg::ObjectReferences ret;
+
+        ret.length(refs->size());
+
+        for(unsigned i=0;i<refs->size();i++) {
+                ret[i].type = CORBA::string_dup(refs->at(i).type.c_str());
+                ret[i].id = refs->at(i).id;
+        }
+
+        return ret;
+}
+
 #endif // USERTYPE_CONV_H_
 

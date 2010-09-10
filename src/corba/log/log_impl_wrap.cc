@@ -265,7 +265,7 @@ Registry::Request::Detail *ccReg_Log_i::createRequestDetail(Register::Logger::Re
 {
 	Registry::Request::Detail *detail = new Registry::Request::Detail();
 
-        detail->id		        = req->getId();
+        detail->id              = req->getId();
         detail->timeBegin       = DUPSTRDATE(req->getTimeBegin);
         detail->timeEnd         = DUPSTRDATE(req->getTimeEnd);
         detail->sourceIp        = DUPSTRFUN(req->getSourceIp);
@@ -273,12 +273,18 @@ Registry::Request::Detail *ccReg_Log_i::createRequestDetail(Register::Logger::Re
         detail->action_type     = DUPSTRFUN(req->getActionType);
         detail->session_id      = req->getSessionId();
         detail->user_name       = DUPSTRFUN(req->getUserName);
+        detail->user_id         = req->getUserId();
         detail->is_monitoring   = req->getIsMonitoring();
         detail->raw_request     = DUPSTRFUN(req->getRawRequest);
         detail->raw_response    = DUPSTRFUN(req->getRawResponse);
 
+        std::pair<int , std::string> rc = req->getResultCode();
+        detail->result_code     = rc.first;
+        detail->result_name     = CORBA::string_dup(rc.second.c_str());
+
         // TODO refactor - this convert function could be moved here (or sw else)
 	detail->props		= convert_properties_d2c(req->getProperties());
+        detail->refs            = convert_obj_references_d2c(req->getReferences());
 
 	return detail;
 }

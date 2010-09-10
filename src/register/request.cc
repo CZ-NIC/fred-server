@@ -197,10 +197,12 @@ private:
   std::string request_type_id;
   ID session_id;
   std::string user_name;
+  ID user_id;
   bool is_monitoring;
   std::string raw_request;
   std::string raw_response;
   boost::shared_ptr<RequestProperties> props;
+  boost::shared_ptr<ObjectReferences> refs;
   int rc_code;
   std::string rc_name;
 
@@ -208,9 +210,11 @@ public:
   RequestImpl(ID &_id, DateTime &_time_begin, DateTime &_time_end,
           std::string &_serv_type, std::string &_source_ip,
           std::string &_request_type_id, ID &_session_id,
-          std::string &_user_name, bool &_is_monitoring,
+          std::string &_user_name, ID &_user_id, 
+          bool &_is_monitoring,
           std::string & _raw_request, std::string & _raw_response,
           std::auto_ptr<RequestProperties>  _props,
+          std::auto_ptr<ObjectReferences>   _refs,
           const int _rc_code = 0, const std::string &_rc_name = std::string()) :
 	CommonObjectImpl(_id),
 	time_begin(_time_begin),
@@ -220,12 +224,14 @@ public:
 	request_type_id(_request_type_id),
 	session_id(_session_id),
         user_name(_user_name),
+        user_id(_user_id),
 	is_monitoring(_is_monitoring),
 	raw_request(_raw_request),
 	raw_response(_raw_response),
 	props(_props),
-    rc_code(_rc_code),
-    rc_name(_rc_name)
+        refs(_refs),
+        rc_code(_rc_code),
+        rc_name(_rc_name)
   {
   }
 
@@ -244,6 +250,9 @@ public:
   virtual const std::string& getUserName() const {
         return user_name;
   }
+  virtual const ID& getUserId() const {
+        return user_id;
+  }
   virtual const std::string& getActionType() const {
 	return request_type_id;
   }
@@ -261,6 +270,9 @@ public:
   }
   virtual boost::shared_ptr<RequestProperties> getProperties() {
 	return props;
+  }
+  virtual boost::shared_ptr<ObjectReferences> getReferences() {
+        return refs;
   }
   virtual const std::pair<int, std::string> getResultCode() const {
     return std::make_pair(rc_code, rc_name);
@@ -362,7 +374,7 @@ public:
 // hardcore optimizations have to be done on this statement
 	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, "
                        << "t_1.source_ip, t_2.name, t_1.session_id, "
-                       << "t_1.user_name, t_1.is_monitoring, "
+                       << "t_1.user_name, t_1.user_id, t_1.is_monitoring, "
                        << "t_4.result_code, t_4.name, "
                        << "(select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=false limit 1) as request, "
                        << "(select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=true  limit 1) as response ";
@@ -394,6 +406,11 @@ public:
             std::string request_type_id = *(++col);
             ID session_id         = *(++col);
             std::string user_name = *(++col);
+
+            ID user_id;
+            if(!partialLoad) {
+                user_id           = *(++col);
+            }
             bool is_monitoring	  = *(++col);
             int rc_code           = *(++col);
             std::string rc_name   = *(++col);
@@ -403,11 +420,13 @@ public:
             std::string	response;
 
             std::auto_ptr<RequestProperties> props;
+            std::auto_ptr<ObjectReferences> refs;
 
             if(!partialLoad) {
                 request  = (std::string)*(++col);
                 response = (std::string)*(++col);
                 props    = getPropsForId(id);
+                refs     = getObjectRefsForId(id);
             }
 
             data_.push_back(new RequestImpl(
@@ -419,10 +438,12 @@ public:
                     request_type_id,
                     session_id,
                     user_name,
+                    user_id,
                     is_monitoring,
                     request,
                     response,
                     props,
+                    refs,
                     rc_code,
                     rc_name));
         }
@@ -474,20 +495,20 @@ public:
 
   }
 
+        // TODO performance optimization using patitioning criteria
   virtual std::auto_ptr<RequestProperties> getPropsForId(ID id) {
-	// TODO
 	std::auto_ptr<RequestProperties> ret(new RequestProperties());
 	Database::SelectQuery query;
 
 	query.select() << "t_2.name, t_1.value, t_1.output, (t_1.parent_id is not null)";
 	query.from()   << "request_property_value t_1 join request_property_name t_2 on t_1.property_name_id=t_2.id";
 	query.where()  << "and t_1.request_id = " << id;
-    query.order_by() << "t_1.id";
+        query.order_by() << "t_1.id";
 
-    Database::Connection conn = Database::Manager::acquire();
+        Database::Connection conn = Database::Manager::acquire();
  	Result res = conn.exec(query);
 
-    for(Result::Iterator it = res.begin(); it != res.end(); ++it) {
+        for(Result::Iterator it = res.begin(); it != res.end(); ++it) {
     	Database::Row::Iterator col = (*it).begin();
 
 		std::string 		name   = *col;
@@ -501,10 +522,29 @@ public:
 	return ret;
   }
 
+  virtual std::auto_ptr<ObjectReferences> getObjectRefsForId(ID id) {
+        std::auto_ptr<ObjectReferences> ret(new ObjectReferences());
+
+        Connection conn = Database::Manager::acquire();
+        // TODO performance optimization using patitioning criteria
+        Result res = conn.exec((boost::format
+                ("SELECT name, object_id FROM request_object_ref oref "
+                "JOIN request_object_type ot ON ot.id = oref.object_type_id "
+                "WHERE request_id = %1%") % id).str());
+
+        for(unsigned i=0;i<res.size();i++) {
+                ObjectReference oref;
+                oref.type = (std::string)res[i][0];
+                oref.id = res[i][1];
+                ret->push_back(oref);
+        }
+
+        return ret;
+  }
+
   /// from CommonList; propably will be removed in future
   virtual const char* getTempTableName() const {
 	return "tmp_request_filter_result";
-	// TODO
   }
 
   virtual void makeQuery(bool, bool, std::stringstream&) const {
@@ -546,6 +586,11 @@ public:
 				std::string             serv_type  = *(++col);
 				std::string 		source_ip  	= *(++col);
                                 std::string             user_name       = *(++col);
+
+                                ID              user_id;
+                                if(!partialLoad) {
+                                                        user_id = *(++col);
+                                }
 				std::string  		request_type_id = *(++col);
 				ID		session_id	= *(++col);
 				bool			is_monitoring	= *(++col);
@@ -553,11 +598,13 @@ public:
 				std::string		response;
 
 				std::auto_ptr<RequestProperties> props;
+                                std::auto_ptr<ObjectReferences> refs;
 
 				if(!partialLoad) {
 					request		= (std::string)*(++col);
 					response	= (std::string)*(++col);
 					props  		= getPropsForId(id);
+                                        refs            = getObjectRefsForId(id);
 				}
 
 				data_.push_back(new RequestImpl(id,
@@ -568,10 +615,12 @@ public:
 							request_type_id,
 							session_id,
                                                         user_name,
+                                                        user_id,
 							is_monitoring,
 							request,
 							response,
-							props));
+							props,
+                                                        refs));
 			}
 
 			if(data_.empty()) {
