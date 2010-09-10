@@ -22,13 +22,11 @@
  */
 
 #include "messages_impl.h"
-#include "messages/messages_filemanager.h"
 #include "db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
 
 #include <stdexcept>
-
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Register
@@ -207,9 +205,7 @@ unsigned long long send_sms_impl(const char* contact_handle
 //return new message_archive id
 unsigned long long send_letter_impl(const char* contact_handle
         , const PostalAddress& address
-        , const ByteBuffer& file_content
-        , const char* file_name
-        , const char* file_type
+        , const unsigned long long file_id
         , const char* message_type
         , unsigned long contact_object_registry_id
         , unsigned long contact_history_historyid
@@ -221,7 +217,7 @@ unsigned long long send_letter_impl(const char* contact_handle
         LOGGER(PACKAGE).debug(boost::format(
                 "Messages::send_letter_impl "
                 " contact_handle: %1% "
-                " file_content.size(): %2%"
+                " file_id: %2%"
                 " address.name: %3%"
                 " address.org: %4%"
                 " address.street1: %5%"
@@ -231,14 +227,12 @@ unsigned long long send_letter_impl(const char* contact_handle
                 " address.state: %9%"
                 " address.code: %10%"
                 " address.county: %11%"
-                " file_name: %12% "
-                " file_type: %13% "
-                " message_type: %14% "
-                " contact_object_registry_id: %15%"
-                " contact_history_historyid: %16%"
+                " message_type: %12% "
+                " contact_object_registry_id: %13%"
+                " contact_history_historyid: %14%"
                 )
                       % contact_handle
-                      % file_content.size
+                      % file_id
                       % address.name
                       % address.org
                       % address.street1
@@ -248,8 +242,6 @@ unsigned long long send_letter_impl(const char* contact_handle
                       % address.state
                       % address.code
                       % address.country
-                      % file_name
-                      % file_type
                       % message_type
                       % contact_object_registry_id
                       % contact_history_historyid
@@ -264,29 +256,7 @@ unsigned long long send_letter_impl(const char* contact_handle
         = save_message(Database::QPNull, 0, 1,message_type, "letter", true
                 , contact_handle, contact_object_registry_id
                 , contact_history_historyid
-);
-
-        std::string filetype_id_query
-            = "SELECT id FROM enum_filetype WHERE \"name\"= $1::text";
-        Database::QueryParams  filetype_id_qparams = Database::query_param_list
-                (file_type);
-        Database::Result filetype_id_res = conn.exec_params( filetype_id_query
-                , filetype_id_qparams);
-        unsigned long long filetype_id = 0;
-        if (filetype_id_res.size() == 1)
-            filetype_id
-                = static_cast<unsigned long long>(filetype_id_res[0][0]);
-
-        std::vector<char> file_buffer(file_content.buffer, file_content.buffer+file_content.size) ;
-
-        unsigned long long file_id = 0;
-
-        //call filemanager client
-        file_id = save_file(file_buffer
-                , file_name
-                , "application/pdf"
-                , filetype_id );
-
+                );
 
         std::string letter_query
             = "INSERT INTO letter_archive"
@@ -345,48 +315,85 @@ unsigned long long send_letter_impl(const char* contact_handle
     return message_archive_id;
 }
 
-class ManagerImpl : virtual public Manager
+unsigned long long get_filetype_id(std::string file_type)
 {
-public:
+    unsigned long long filetype_id=0;
+    try
+    {
+        LOGGER(PACKAGE).debug(boost::format(
+                "Messages::get_file_type_id "
+                " file_type: %1% "
+                )% file_type);
 
-  unsigned long long send_sms(const char* contact_handle
-          , const char* phone
-          , const char* content
-          , const char* message_type
-          , unsigned long contact_object_registry_id
-          , unsigned long contact_history_historyid
-          )
-  {
-      return send_sms_impl(contact_handle
-                , phone
-                , content
-                , message_type
-                , contact_object_registry_id
-                , contact_history_historyid
-                );
-  }
+        Database::Connection conn = Database::Manager::acquire();
 
-  unsigned long long send_letter(const char* contact_handle
-          , const PostalAddress& address
-          , const ByteBuffer& file_content
-          , const char* file_name
-          , const char* file_type
-          , const char* message_type
-          , unsigned long contact_object_registry_id
-          , unsigned long contact_history_historyid
-          )
-  {
-      return send_letter_impl(contact_handle
-              , address
-              , file_content
-              , file_name
-              , file_type
-              , message_type
-              , contact_object_registry_id
-              , contact_history_historyid
-              );
-  }
-};//class ManagerImpl
+        Database::Result filetype_id_res = conn.exec_params(
+            "SELECT id FROM enum_filetype WHERE \"name\"= $1::text"
+            , Database::query_param_list
+                (file_type)
+            );
+
+        if (filetype_id_res.size() == 1)
+            filetype_id
+                = static_cast<unsigned long long>(filetype_id_res[0][0]);
+
+    }//try
+    catch(const std::exception& ex)
+    {
+        LOGGER(PACKAGE).error(boost::format(
+                "Messages::get_filetype_id exception: %1%") % ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("Messages::get_filetype_id error");
+    }
+
+    return filetype_id;
+}
+
+
+//Manager factory
+ManagerPtr create_manager()
+{
+    return ManagerPtr(new Manager);
+}
+
+//Manager impl
+
+unsigned long long Manager::send_sms(const char* contact_handle
+        , const char* phone
+        , const char* content
+        , const char* message_type
+        , unsigned long contact_object_registry_id
+        , unsigned long contact_history_historyid
+        )
+{
+    return send_sms_impl(contact_handle
+            , phone
+            , content
+            , message_type
+            , contact_object_registry_id
+            , contact_history_historyid
+            );
+}
+
+unsigned long long Manager::send_letter(const char* contact_handle
+        , const PostalAddress& address
+        , unsigned long long file_id
+        , const char* message_type
+        , unsigned long contact_object_registry_id
+        , unsigned long contact_history_historyid
+        )
+{
+    return send_letter_impl(contact_handle
+            , address
+            , file_id
+            , message_type
+            , contact_object_registry_id
+            , contact_history_historyid
+            );
+}
+
 
 
 

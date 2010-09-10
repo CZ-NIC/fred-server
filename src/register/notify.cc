@@ -41,6 +41,8 @@ namespace Register
       Domain::Manager *dm;
       Document::Manager *docm;
       Registrar::Manager *rm;
+      Messages::ManagerPtr msgm;
+
      public:
       ManagerImpl(
         DB *_db,
@@ -50,8 +52,10 @@ namespace Register
         KeySet::Manager *_km,
         Domain::Manager *_dm,
         Document::Manager *_docm,
-        Registrar::Manager *_rm
+        Registrar::Manager *_rm,
+        Messages::ManagerPtr _msgm
       ): db(_db), mm(_mm), cm(_cm), nm(_nm), km(_km), dm(_dm), docm(_docm), rm(_rm)
+          , msgm(_msgm)
       {}
       std::string getEmailList(const std::stringstream& sql) throw (SQL_ERROR)
       {
@@ -737,10 +741,11 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
       KeySet::Manager *km,
       Domain::Manager *dm,
       Document::Manager *docm,
-      Registrar::Manager *rm
+      Registrar::Manager *rm,
+      Messages::ManagerPtr msgm
     )
     {
-      return new ManagerImpl(db,mm,cm,nm, km, dm,docm,rm);
+      return new ManagerImpl(db,mm,cm,nm, km, dm,docm,rm, msgm);
     }
   }
 }

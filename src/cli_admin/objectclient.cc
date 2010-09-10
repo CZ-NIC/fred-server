@@ -358,6 +358,11 @@ ObjectClient::regular_procedure()
 
         std::auto_ptr<Register::Zone::Manager> zoneMan(
                 Register::Zone::Manager::create());
+
+        Register::Messages::ManagerPtr msgMan
+            = Register::Messages::create_manager();
+
+
         std::auto_ptr<Register::Domain::Manager> domMan(
                 Register::Domain::Manager::create(&m_db, zoneMan.get()));
 
@@ -397,8 +402,8 @@ ObjectClient::regular_procedure()
                     keyMan.get(),
                     domMan.get(),
                     docMan.get(),
-                    regMan.get())
-                );
+                    regMan.get(),
+                    msgMan));
 
         registerMan->updateObjectStates();
         registerMan->updateObjectStates();

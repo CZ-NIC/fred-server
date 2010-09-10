@@ -20,6 +20,7 @@
 #include "commonclient.h"
 #include "notifyclient.h"
 #include "register/info_buffer.h"
+#include "register/messages/messages_impl.h"
 
 
 #include "cfg/faked_args.h"
@@ -79,6 +80,11 @@ NotifyClient::state_changes()
     MailerManager mailMan(cc.getNS());
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create());
+
+    Register::Messages::ManagerPtr msgMan
+        = Register::Messages::create_manager();
+
+
     std::auto_ptr<Register::Domain::Manager> domMan(
             Register::Domain::Manager::create(&m_db, zoneMan.get()));
     std::auto_ptr<Register::Contact::Manager> conMan(
@@ -108,8 +114,9 @@ NotifyClient::state_changes()
                 keyMan.get(),
                 domMan.get(),
                 docMan.get(),
-                regMan.get())
-            );
+                regMan.get(),
+                msgMan));
+
     std::string exceptTypes("");
     if (m_conf.hasOpt(NOTIFY_EXCEPT_TYPES_NAME)) {
         exceptTypes = m_conf.get<std::string>(NOTIFY_EXCEPT_TYPES_NAME);
@@ -139,6 +146,11 @@ NotifyClient::letters_create()
     MailerManager mailMan(cc.getNS());
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create());
+
+    Register::Messages::ManagerPtr msgMan
+        = Register::Messages::create_manager();
+
+
     std::auto_ptr<Register::Domain::Manager> domMan(
             Register::Domain::Manager::create(&m_db, zoneMan.get()));
     std::auto_ptr<Register::Contact::Manager> conMan(
@@ -168,8 +180,9 @@ NotifyClient::letters_create()
                 keyMan.get(),
                 domMan.get(),
                 docMan.get(),
-                regMan.get())
-            );
+                regMan.get(),
+                msgMan));
+
     notifyMan->generateLetters(m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT));
 }
 

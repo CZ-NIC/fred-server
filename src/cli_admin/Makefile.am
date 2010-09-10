@@ -23,6 +23,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(top_builddir)/util/log/liblog.a \
 		$(top_builddir)/util/conf/libconf.a \
 		$(top_builddir)/util/hp/libhp.a \
+		$(top_builddir)/src/register/messages/libmessages.a \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB)
 

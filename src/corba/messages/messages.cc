@@ -22,6 +22,7 @@
  */
 
 #include "messages.h"
+#include "messages_filemanager.h"
 
 using namespace std;
 
@@ -107,17 +108,26 @@ CORBA::ULongLong Registry_Messages_i::sendLetter(const char* contact_handle
         address_impl.code = std::string(address.code.in());
         address_impl.country = std::string(address.country.in());
 
-        Register::Messages::ByteBuffer buffer_impl;
+        std::size_t file_content_size= file_content.length();
+        unsigned char* file_content_buffer
+            = const_cast<unsigned char*>(file_content.get_buffer());
 
-        buffer_impl.size = file_content.length();
-        buffer_impl.buffer = const_cast<unsigned char*>(file_content.get_buffer());
+        unsigned long long filetype_id = Register::Messages::get_filetype_id(file_type);
+
+        std::vector<char> file_buffer(file_content_buffer, file_content_buffer+file_content_size) ;
+
+        unsigned long long file_id = 0;
+
+        //call filemanager client
+        file_id = save_file(file_buffer
+                , file_name
+                , "application/pdf"
+                , filetype_id );
 
         return
         Register::Messages::send_letter_impl(contact_handle
                 , address_impl
-                , buffer_impl
-                , file_name
-                , file_type
+                , file_id
                 , message_type
                 , contact_object_registry_id
                 , contact_history_historyid
@@ -173,31 +183,11 @@ int main(int argc, char** argv)
         FakedArgs orb_fa = CfgArgs::instance()->fa;
         HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
               get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-/*
-        if(orb_fa.get_argc() > 1)
-        {
-            std::cout << "unrecognized params passed to ORB_init before: \n";
-            for(int i = 0; i < orb_fa.get_argc(); ++i)
-                std::cout << "\t" << orb_fa.get_argv()[i] << "\n";
-            ;
-            std::cout << std::endl;
-        }//if unrecognized params
-*/
 
         CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
           , ns_args_ptr->nameservice_host
           , ns_args_ptr->nameservice_port
           , ns_args_ptr->nameservice_context);
-/*
-        if(orb_fa.get_argc() > 1)
-        {
-            std::cout << "unrecognized params passed to ORB_init after: \n";
-            for(int i = 0; i < orb_fa.get_argc(); ++i)
-                std::cout << "\t" << orb_fa.get_argv()[i] << "\n";
-            ;
-            std::cout << std::endl;
-        }//if unrecognized params
-*/
 
         //create server
         Registry_Messages_i* myRegistry_Messages_i = new Registry_Messages_i();

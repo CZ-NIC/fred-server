@@ -10,6 +10,8 @@
 #include "exceptions.h"
 #include "registrar.h"
 #include "file_transferer.h"
+#include "messages/messages_impl.h"
+
 
 class DB;
 namespace Register
@@ -37,7 +39,8 @@ namespace Register
         KeySet::Manager *km,
         Domain::Manager *dm,
         Document::Manager *docm,
-        Registrar::Manager *rm
+        Registrar::Manager *rm,
+        Messages::ManagerPtr msgm
       );
     };
   }

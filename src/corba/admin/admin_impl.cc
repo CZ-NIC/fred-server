@@ -36,6 +36,7 @@
 #include "register/register.h"
 #include "register/notify.h"
 #include "corba/mailer_manager.h"
+#include "register/messages/messages_impl.h"
 
 #include "log/logger.h"
 #include "log/context.h"
@@ -1626,6 +1627,11 @@ void ccReg_Admin_i::generateLetters() {
                                             ns->getHostName()));
     std::auto_ptr<Register::Zone::Manager> zoneMan(
         Register::Zone::Manager::create());
+
+    Register::Messages::ManagerPtr msgMan
+        = Register::Messages::create_manager();
+
+
     std::auto_ptr<Register::Domain::Manager> domMan(
         Register::Domain::Manager::create(&ldb,
                                           zoneMan.get()));
@@ -1650,7 +1656,9 @@ void ccReg_Admin_i::generateLetters() {
                                           keyMan.get(),
                                           domMan.get(), 
                                           docman.get(),
-                                          rMan.get()));
+                                          rMan.get(),
+                                          msgMan
+                                          ));
     notifyMan->generateLetters(cfg.get<unsigned>("registry.docgen_domain_count_limit"));
     ldb.Disconnect();
   }

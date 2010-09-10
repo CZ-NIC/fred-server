@@ -26,6 +26,8 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+#include <boost/utility.hpp>
 
 namespace Register
 {
@@ -53,43 +55,42 @@ struct PostalAddress
     std::string country;
 };//struct PostalAddress
 
-typedef struct { unsigned char* buffer; unsigned long long size;} ByteBuffer;
 
 unsigned long long send_letter_impl(const char* contact_handle
         , const PostalAddress& address
-        , const ByteBuffer& file_content
-        , const char* file_name
-        , const char* file_type
+        , unsigned long long file_id
         , const char* message_type
         , unsigned long contact_object_registry_id
         , unsigned long contact_history_historyid
         );
 
-//Required pointless entry point for namespace
-class Manager
+
+unsigned long long get_filetype_id(std::string file_type);
+
+class Manager : boost::noncopyable
 {
 public:
 
-  virtual ~Manager() {}
+    unsigned long long send_sms(const char* contact_handle
+            , const char* phone
+            , const char* content
+            , const char* message_type
+            , unsigned long contact_object_registry_id
+            , unsigned long contact_history_historyid
+            );
 
-  virtual unsigned long long send_sms(const char* contact_handle
-          , const char* phone
-          , const char* content
-          , const char* message_type
-          , unsigned long contact_object_registry_id
-          , unsigned long contact_history_historyid
-          )=0;
+    unsigned long long send_letter(const char* contact_handle
+            , const PostalAddress& address
+            , unsigned long long file_id
+            , const char* message_type
+            , unsigned long contact_object_registry_id
+            , unsigned long contact_history_historyid
+            );
 
-  virtual unsigned long long send_letter(const char* contact_handle
-          , const PostalAddress& address
-          , const ByteBuffer& file_content
-          , const char* file_name
-          , const char* file_type
-          , const char* message_type
-          , unsigned long contact_object_registry_id
-          , unsigned long contact_history_historyid
-          )=0;
 };
+
+typedef std::auto_ptr<Manager> ManagerPtr;
+ManagerPtr create_manager();
 
 
 }//namespace Messages
