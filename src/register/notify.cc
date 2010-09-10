@@ -497,13 +497,6 @@ public:
                 return gPDF->getInput();
             }
 
-            void newFile(const std::string *exD, const TID state_id, Document::Manager *docm, Transaction *tr) {
-                endFile();
-                initFile(exD, state_id, docm, tr);
-            }
- 
-
-private:
             void initFile(const std::string *exD, const TID state_id, Document::Manager *docm, Transaction *tr) 
             {
                 exDate = exD;
@@ -689,7 +682,10 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                 if ((prev_distinction != distinction) || (item_count >= item_count_limit)) {
                     // in this case start creating a new file
 
-                    gen->newFile(&exDates[j], res[i][12], docm, &trans);
+                    if (i>0) {
+                        gen->endFile();
+                    }
+                    gen->initFile(&exDates[j], res[i][12], docm, &trans);
                     // GenMultipleFiles::new_file(exDates[j], res[i][12], docm, trans);
 
                     // gen.reset ( new GenMultipleFiles(exDates[j], res[i][12], docm, trans));
@@ -724,6 +720,9 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
                 prev_distinction = distinction; 
                 item_count++;
+          }
+          if(res.size() > 0) {
+              gen->endFile();
           }
 
           // return id of generated PDF file
