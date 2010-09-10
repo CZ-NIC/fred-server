@@ -327,13 +327,16 @@ public:
                             LOGGER(PACKAGE).debug(boost::format("conflict payment: %1%")
                                                                 % cpayment->toString());
 
-                            throw std::runtime_error(str(boost::format(
+                            LOGGER(PACKAGE).error(boost::format(
                                             "oops! found conflict payment with "
                                             "INCONSISTENT DATA (id=%1% account_evid=%2%) "
-                                            "importing file=%3%")
+                                            "importing file=%3% -- please make manual checking"
+                                            "; skipping payment")
                                             % cpayment->getId()
                                             % cpayment->getAccountEvid()
-                                            % _file_path));
+                                            % _file_path);
+                            /* lets do another payment */
+                            continue;
                         }
                         /* compare changable attributes for futher processing */
                         else if (payment->getStatus() != cpayment->getStatus()) {
