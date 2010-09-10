@@ -15,6 +15,12 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 
 sbin_PROGRAMS = fred-msgd
 
+noinst_LIBRARIES = libmessages_filemanager.a
+
+libmessages_filemanager_a_SOURCES = messages_filemanager.cc \
+                          			messages_filemanager.h
+
+
 fred_msgd_SOURCES = ../MessagesSK.cc ../MessagesDynSK.cc \
 					../ccRegSK.cc ../ccRegDynSK.cc \
                     ../nameservice.cc messages.cc messages.h \
@@ -34,5 +40,6 @@ fred_msgd_LDFLAGS =   $(POSTGRESQL_LDFLAGS) \
 fred_msgd_LDADD = \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \
-                     $(top_builddir)/src/register/messages/libmessages.a
+                     $(top_builddir)/src/register/messages/libmessages.a \
+                     $(top_builddir)/src/corba/messages/libmessages_filemanager.a
 
