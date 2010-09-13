@@ -16,6 +16,7 @@
 #include "log/logger.h"
 #include "util.h"
 #include "base_exception.h"
+#include "util/types/convert_sql_db_types.h"
 
 namespace Database {
 namespace Filters {
@@ -284,15 +285,22 @@ public:
   
         if (!t_value.begin().is_special()) {
           prep << getConjuction() << "( ";
-          prep << column.str() << SQL_OP_GE << "((%" << store.size() + 1 << "% || ' Europe/Prague')::timestamptz AT TIME ZONE 'UTC')" + value_post_;
-          store.push_back(t_value.begin());
+          prep << column.str() << SQL_OP_GE << "(('%" << store.size() + 1 << "% Europe/Prague') AT TIME ZONE 'UTC')" + value_post_;
+          // we want to format date in the DateTime in the right way but without quotes
+          // so we need to bypass the Database::Value(DateTime) constructor
+          std::string conversion  = SqlConvert<DateTime>::to(t_value.begin());
+          store.push_back(Value(conversion, false , false, true));
+
           b = true;
         }
         if (!t_value.end().is_special()) {
           prep << (b ? SQL_OP_AND : getConjuction() + "( ") << column.str()
-              << second_operator << "((%" << store.size() + 1 << "% || ' Europe/Prague')::timestamptz AT TIME ZONE 'UTC')" + value_post_;
+              << second_operator << "(('%" << store.size() + 1 << "% Europe/Prague') AT TIME ZONE 'UTC')" + value_post_;
           prep << " )";
-          store.push_back(t_value.end());
+          // we want to format date in the DateTime in the right way but without quotes
+          // so we need to bypass the Database::Value(DateTime) constructor
+          std::string conversion = SqlConvert<DateTime>::to(t_value.end());
+          store.push_back(Value(conversion, false, false, true));
         } else if (b) {
           prep << " )";
         }
