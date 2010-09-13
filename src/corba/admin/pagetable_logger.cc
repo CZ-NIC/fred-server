@@ -208,3 +208,8 @@ void ccReg_Logger_i::setLimit(CORBA::Long _limit)
     m_lel->setLimit(_limit);
 }
 
+// set Timeout in miliseconds (statement_timeout in postgres)
+void ccReg_Logger_i::setTimeout(CORBA::Long _timeout)
+{
+    m_lel->setTimeout(_timeout);
+}

@@ -99,6 +99,7 @@ public:
   void setPage(CORBA::Short page) throw (ccReg::PageTable::INVALID_PAGE);
   virtual void setOffset(CORBA::Long _offset);
   virtual void setLimit(CORBA::Long _limit);
+  virtual void setTimeout(CORBA::Long _timeout);
   CORBA::Short start();
   CORBA::Short numPages();
   Registry::TableRow* getPageRow(CORBA::Short pageRow) throw (ccReg::Table::INVALID_ROW);

@@ -101,6 +101,10 @@ bool CommonListImpl::isLimited() const {
   return load_limit_active_;
 }
 
+void CommonListImpl::setTimeout(unsigned _timeout) {
+  query_timeout = _timeout;
+}
+
 CommonObject* CommonListImpl::get(unsigned _idx) const {
   return _idx >= getCount() ? NULL : data_[_idx];
 }

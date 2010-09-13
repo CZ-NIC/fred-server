@@ -79,6 +79,8 @@ public:
   virtual unsigned getLimit() const = 0;
   /// true if result size has been limited by load_limit_ value
   virtual bool isLimited() const = 0;
+  /// set Maximum time for a query
+  virtual void setTimeout(unsigned _timeout) = 0;
 
   /// get detail of loaded objects  
   virtual CommonObject *get(unsigned _idx) const = 0;

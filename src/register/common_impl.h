@@ -64,6 +64,7 @@ protected:
   list_type data_;
   unsigned load_offset_;
   unsigned load_limit_;
+  unsigned query_timeout;
   unsigned long long real_size_;
   bool real_size_initialized_;
   bool load_limit_active_;
@@ -85,6 +86,7 @@ public:
   virtual void setLimit(unsigned _limit);
   virtual unsigned getLimit() const;
   virtual bool isLimited() const;
+  virtual void setTimeout(unsigned _timeout);
   
   CommonObject* get(unsigned _idx) const;
   CommonObject* findId(TID _id) const throw (Register::NOT_FOUND);

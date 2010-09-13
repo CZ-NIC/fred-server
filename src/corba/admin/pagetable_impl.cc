@@ -51,6 +51,10 @@ void
 ccReg_PageTable_i::setLimit(CORBA::Long _limit)
 {}
 
+void
+ccReg_PageTable_i::setTimeout(CORBA::Long _timeout)
+{}
+
 CORBA::Short 
 ccReg_PageTable_i::start()
 {

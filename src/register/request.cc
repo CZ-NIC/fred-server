@@ -642,7 +642,10 @@ private:
       Database::Connection conn = Database::Manager::acquire();
 
       conn.exec("set constraint_exclusion=ON");
-      conn.exec("set statement_timeout=15000");
+
+      boost::format fmt_timeout =  boost::format("set statement_timeout=%1%") 
+          % query_timeout;
+      conn.exec(fmt_timeout.str());
 
       return conn;
   }
