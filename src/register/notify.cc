@@ -518,7 +518,20 @@ public:
                 out << "<holder>";
             } 
          
-            void endFile() {
+            void endFile(Messages::Manager* msgm
+                    , const std::string& contact_handle
+                    , const std::string& contact_name
+                    , const std::string& contact_org
+                    , const std::string& contact_street1
+                    , const std::string& contact_street2
+                    , const std::string& contact_street3
+                    , const std::string& contact_city
+                    , const std::string& contact_state
+                    , const std::string& contact_code
+                    , const std::string& contact_country
+                    , unsigned long long contact_object_registry_id
+                    , unsigned long long contact_history_historyid
+                    ) {
                 if(gPDF.get() == NULL || trans == NULL) return;
                 try {
                     if (state_ids.empty()) {
@@ -544,14 +557,23 @@ public:
                     Connection conn = Database::Manager::acquire();
                     std::vector<TID>::iterator it = state_ids.begin();
                     TID filePDF = gPDF->closeInput();
-                    // status 1 represents 'ready generated - ready for sending
-                    sql << "INSERT INTO letter_archive (status, file_id) VALUES (1, "
-                      << filePDF << ")";
-                    conn.exec(sql.str());
-                    sql.str("");
 
-                    Result res = conn.exec("select currval('letter_archive_id_seq'::regclass)");
-                    TID letter_id = res[0][0];
+                    Register::Messages::PostalAddress pa;
+                    pa.name = contact_name;
+                    pa.org = contact_org;
+                    pa.street1 = contact_street1;
+                    pa.street2 = contact_street2;
+                    pa.street3 = contact_street3;
+                    pa.city = contact_city;
+                    pa.state = contact_state;
+                    pa.code = contact_code;
+                    pa.country = contact_country;
+
+                    TID letter_id = msgm->send_letter(contact_handle.c_str()
+                            , pa,filePDF
+                            ,"domain_expiration"
+                            ,contact_object_registry_id
+                            , contact_history_historyid);
         
                     sql << "INSERT INTO notify_letters (state_id, letter_id) VALUES (" 
                         << *it << ", " << letter_id << ")";
@@ -640,13 +662,13 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                               */
 
           std::stringstream sql;
-          sql << "SELECT dobr.name,r.name,CURRENT_DATE,"
-              << "d.exdate::date + INTERVAL '45 days',"
-              << "c.name, c.organization, "
+          sql << "SELECT dobr.name,r.name,CURRENT_DATE," // 0 1 2
+              << "d.exdate::date + INTERVAL '45 days'," // 3
+              << "c.name, c.organization, " // 4 5
               << "TRIM(COALESCE(c.street1,'') || ' ' || "
               << "COALESCE(c.street2,'') || ' ' || "
-              << "COALESCE(c.street3,'')), "
-              << "c.city, c.postalcode, ec.country, "
+              << "COALESCE(c.street3,'')), " //6
+              << "c.city, c.postalcode, ec.country, " // 7 8 9
               << "TRIM( "
                "COALESCE(c.country, '') || ' ' || " 
                "COALESCE(c.organization, '') || ' ' || " 
@@ -654,9 +676,10 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                "COALESCE(c.postalcode,'') || ' ' || "
                "COALESCE(c.street1,'') || ' ' || "
                "COALESCE(c.street2,'') || ' ' || "
-               "COALESCE(c.street3, '') ) as distinction, "
-              << "r.url, tnl.state_id, c.stateorprovince "
-
+               "COALESCE(c.street3, '') ) as distinction, " // 10
+              << "r.url, tnl.state_id, c.stateorprovince, " // 11 12 13
+              << "c.street1, c.street2, c.street3, cor.name, " // 14 15 16 17
+              << "cor.id, cor.historyid " //18 19
               << "FROM tmp_notify_letters tnl "
                    "JOIN object_state s               ON tnl.state_id = s.id "
                    "JOIN domain_history d             ON d.historyid = s.ohid_from "
@@ -676,16 +699,30 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
           std::auto_ptr<GenMultipleFiles> gen;
           std::string prev_distinction;
           unsigned item_count = 0;
-          for (unsigned i=0; i < (unsigned)res.size(); i++) {
-                std::string distinction = res[i][10];
+          unsigned k=0;
+          for (; k < (unsigned)res.size(); k++) {
+                std::string distinction = res[k][10];
 
                 if ((prev_distinction != distinction) || (item_count >= item_count_limit)) {
                     // in this case start creating a new file
 
-                    if (i>0) {
-                        gen->endFile();
+                    if (k>0) {
+                        gen->endFile(msgm.get()
+                                , res[k][17] //const std::string& contact_handle
+                                , res[k][4] //const std::string& contact_name
+                                , res[k][5] //const std::string& contact_org
+                                , res[k][14] //const std::string& contact_street1
+                                , res[k][15] //const std::string& contact_street2
+                                , res[k][16] //const std::string& contact_street3
+                                , res[k][7] //const std::string& contact_city
+                                , res[k][13] //const std::string& contact_state
+                                , res[k][8] //const std::string& contact_code
+                                , res[k][9] //const std::string& contact_country
+                                , res[k][18] //unsigned long long contact_object_registry_id
+                                , res[k][19] //unsigned long long contact_history_historyid
+                        );
                     }
-                    gen->initFile(&exDates[j], res[i][12], docm, &trans);
+                    gen->initFile(&exDates[j], res[k][12], docm, &trans);
                     // GenMultipleFiles::new_file(exDates[j], res[i][12], docm, trans);
 
                     // gen.reset ( new GenMultipleFiles(exDates[j], res[i][12], docm, trans));
@@ -697,32 +734,45 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                     */
 
                     gen->getInput()
-                    << "<name>" << XML_DB_OUT(i,4) << "</name>"
-                    << "<organization>" << XML_DB_OUT(i,5) << "</organization>"
+                    << "<name>" << XML_DB_OUT(k,4) << "</name>"
+                    << "<organization>" << XML_DB_OUT(k,5) << "</organization>"
 
-                    << "<street>" << XML_DB_OUT(i,6) << "</street>"
-                    << "<city>" << XML_DB_OUT(i,7) << "</city>"
-                    << "<stateorprovince>" << XML_DB_OUT(i,13) << "</stateorprovince>"
-                    << "<postal_code>" << XML_DB_OUT(i,8) << "</postal_code>"
-                    << "<country>" << XML_DB_OUT(i,9) << "</country>"
-                    << "<actual_date>" << XML_DB_OUT(i,2) << "</actual_date>"
-                    << "<termination_date>" << XML_DB_OUT(i,3) << "</termination_date>";
+                    << "<street>" << XML_DB_OUT(k,6) << "</street>"
+                    << "<city>" << XML_DB_OUT(k,7) << "</city>"
+                    << "<stateorprovince>" << XML_DB_OUT(k,13) << "</stateorprovince>"
+                    << "<postal_code>" << XML_DB_OUT(k,8) << "</postal_code>"
+                    << "<country>" << XML_DB_OUT(k,9) << "</country>"
+                    << "<actual_date>" << XML_DB_OUT(k,2) << "</actual_date>"
+                    << "<termination_date>" << XML_DB_OUT(k,3) << "</termination_date>";
                 } 
                 gen->getInput()
                 << "<expiring_domain>"
-                << "<domain>" << XML_DB_OUT(i,0) << "</domain>"
-                << "<registrar>" << XML_DB_OUT(i,1) << "</registrar>"
-                << "<registrar_web>" << XML_DB_OUT(i,11) << "</registrar_web>"
+                << "<domain>" << XML_DB_OUT(k,0) << "</domain>"
+                << "<registrar>" << XML_DB_OUT(k,1) << "</registrar>"
+                << "<registrar_web>" << XML_DB_OUT(k,11) << "</registrar_web>"
                 << "</expiring_domain>";
 
                 // has to be called here so it applies to NEWLY CREATED object in if above
-                gen->addStateId(res[i][12]);
+                gen->addStateId(res[k][12]);
 
                 prev_distinction = distinction; 
                 item_count++;
           }
           if(res.size() > 0) {
-              gen->endFile();
+              gen->endFile(msgm.get()
+                      , res[k][17] //const std::string& contact_handle
+                      , res[k][4] //const std::string& contact_name
+                      , res[k][5] //const std::string& contact_org
+                      , res[k][14] //const std::string& contact_street1
+                      , res[k][15] //const std::string& contact_street2
+                      , res[k][16] //const std::string& contact_street3
+                      , res[k][7] //const std::string& contact_city
+                      , res[k][13] //const std::string& contact_state
+                      , res[k][8] //const std::string& contact_code
+                      , res[k][9] //const std::string& contact_country
+                      , res[k][18] //unsigned long long contact_object_registry_id
+                      , res[k][19] //unsigned long long contact_history_historyid
+                      );
           }
 
           // return id of generated PDF file
