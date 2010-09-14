@@ -261,7 +261,9 @@ void NotifyClient::file_send()
       * records exactly are we processing
       */
      Result res = conn.exec("SELECT EXISTS "
-             "(SELECT * FROM letter_archive WHERE status=6)");
+             "(SELECT * FROM message_archive ma "
+             "JOIN comm_type ct ON ma.comm_type_id = ct.id "
+             " WHERE ma.status=6 AND ct.type = 'letter')");
 
      if ((bool)res[0][0]) {
             LOGGER(PACKAGE).notice("the files are already being processed. "
@@ -273,15 +275,20 @@ void NotifyClient::file_send()
      Database::Transaction trans(conn);
      // acquire lock which conflicts with itself but not basic locks used
      // by select and stuff..
-     conn.exec("LOCK TABLE letter_archive IN SHARE UPDATE EXCLUSIVE MODE");
+     conn.exec("LOCK TABLE message_archive IN SHARE UPDATE EXCLUSIVE MODE");
      // application level lock and notification about data processing
-     conn.exec("UPDATE letter_archive SET status = 6 WHERE status = 1 OR status = 4");
+     conn.exec("UPDATE message_archive SET status = 6 "
+             " WHERE (status = 1 OR status = 4) "
+             " AND comm_type_id = (SELECT id FROM comm_type "
+             " WHERE type = 'letter')");
      // TODO try to enable this
      trans.commit();
 
      Database::Transaction trans2(conn);
      // is there anything to send?
-     res = conn.exec("SELECT file_id, id, attempt FROM letter_archive WHERE status=6");
+     res = conn.exec("SELECT la.file_id, la.id, ma.attempt "
+         " FROM message_archive ma JOIN letter_archive la ON ma.id = la.id "
+         " WHERE ma.status=6");
      if(res.size() == 0) {
          LOGGER(PACKAGE).notice("no files ready for processing; exiting");
          return;
@@ -334,14 +341,26 @@ void NotifyClient::file_send()
      // processed letters update
      for (std::vector<message_proc>::iterator it = processed.begin(); it!=processed.end(); it++) {
            unsigned int new_attempt = (*it).attempt + 1;
-           conn.exec(boost::format("UPDATE letter_archive SET status = %1%, "
-                                   "batch_id = '%2%', attempt = %3%, "
-                                   "moddate = CURRENT_TIMESTAMP WHERE id = %4%")
-                                    % new_status % conn.escape(batch_id)
+           conn.exec(boost::format("UPDATE message_archive SET status = %1%, "
+                                   "attempt = %2%, "
+                                   "moddate = CURRENT_TIMESTAMP WHERE id = %3%"
+                                   " AND comm_type_id = (SELECT id FROM comm_type "
+                                   " WHERE type = 'letter')")
+                                    % new_status
                                     % new_attempt % (*it).id);
+
+           conn.exec(boost::format("UPDATE letter_archive SET  "
+                                   "batch_id = '%1%' "
+                                   " WHERE id = %2%"
+                                   " AND comm_type_id = (SELECT id FROM comm_type "
+                                   " WHERE type = 'letter')")
+                                    % conn.escape(batch_id)
+                                    % (*it).id);
      }
      // not processed letters should have status set back (set moddate? status?)
-     conn.exec("UPDATE letter_archive SET status = 1 WHERE status = 6");
+     conn.exec("UPDATE message_archive SET status = 1 WHERE status = 6 "
+             " AND comm_type_id = (SELECT id FROM comm_type "
+             " WHERE type = 'letter')");
      trans2.commit();
   }
 
