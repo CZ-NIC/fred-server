@@ -923,6 +923,10 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
             if (res.size() > 0) {
                 // okay, it was found in the database
                 property_name_id = res[0][0];
+
+                // now that we know the right database id of the name
+                // we can add it to the map
+                property_names[name_trunc] = property_name_id;
             } else {
                 // not found, we're under lock, so we can add it now
                 // and let the lock release after commiting the transaction
@@ -938,14 +942,11 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
                     return 0;
                 }
                 db_insert = true;
+                // we don't add the value to the map - that has to happen after the commit of this transaction
             }
         
-            // now that we know the right database id of the name
-            // we can add it to the map
-            property_names[name_trunc] = property_name_id;
             
-            // if the name was inserted into database, we have to keep it locked
-            // until commit
+            // if the name was inserted into database, we have to keep it locked until commit
             if (!db_insert) prop_add2db.unlock();
 	}
         
