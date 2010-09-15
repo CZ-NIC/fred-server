@@ -696,7 +696,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
               << " distinction, dobr.name";
           res = conn.exec(sql.str());
 
-          std::auto_ptr<GenMultipleFiles> gen;
+          std::auto_ptr<GenMultipleFiles> gen(new GenMultipleFiles);
           std::string prev_distinction;
           unsigned item_count = 0;
           unsigned k=0;
