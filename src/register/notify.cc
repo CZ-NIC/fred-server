@@ -699,8 +699,8 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
           std::auto_ptr<GenMultipleFiles> gen(new GenMultipleFiles);
           std::string prev_distinction;
           unsigned item_count = 0;
-          unsigned k=0;
-          for (; k < (unsigned)res.size(); k++) {
+
+          for (unsigned k=0; k < (unsigned)res.size(); k++) {
                 std::string distinction = res[k][10];
 
                 if ((prev_distinction != distinction) || (item_count >= item_count_limit)) {
@@ -723,15 +723,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                         );
                     }
                     gen->initFile(exDates[j], res[k][12], docm, &trans);
-                    // GenMultipleFiles::new_file(exDates[j], res[i][12], docm, trans);
-
-                    // gen.reset ( new GenMultipleFiles(exDates[j], res[i][12], docm, trans));
                     item_count = 0;
-                    /*
-                    if(!prev_distinction.empty()) {
-                        out << "</holder>";
-                    }
-                    */
 
                     gen->getInput()
                     << "<name>" << XML_DB_OUT(k,4) << "</name>"
@@ -759,19 +751,20 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                 item_count++;
           }
           if(res.size() > 0) {
+              unsigned result_end = res.size() - 1;
               gen->endFile(msgm
-                      , res[k][17] //const std::string& contact_handle
-                      , res[k][4] //const std::string& contact_name
-                      , res[k][5] //const std::string& contact_org
-                      , res[k][14] //const std::string& contact_street1
-                      , res[k][15] //const std::string& contact_street2
-                      , res[k][16] //const std::string& contact_street3
-                      , res[k][7] //const std::string& contact_city
-                      , res[k][13] //const std::string& contact_state
-                      , res[k][8] //const std::string& contact_code
-                      , res[k][9] //const std::string& contact_country
-                      , res[k][18] //unsigned long long contact_object_registry_id
-                      , res[k][19] //unsigned long long contact_history_historyid
+                      , res[result_end][17] //const std::string& contact_handle
+                      , res[result_end][4] //const std::string& contact_name
+                      , res[result_end][5] //const std::string& contact_org
+                      , res[result_end][14] //const std::string& contact_street1
+                      , res[result_end][15] //const std::string& contact_street2
+                      , res[result_end][16] //const std::string& contact_street3
+                      , res[result_end][7] //const std::string& contact_city
+                      , res[result_end][13] //const std::string& contact_state
+                      , res[result_end][8] //const std::string& contact_code
+                      , res[result_end][9] //const std::string& contact_country
+                      , res[result_end][18] //unsigned long long contact_object_registry_id
+                      , res[result_end][19] //unsigned long long contact_history_historyid
                       );
           }
 
