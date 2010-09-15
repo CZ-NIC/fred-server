@@ -643,9 +643,11 @@ private:
 
       conn.exec("set constraint_exclusion=ON");
 
-      boost::format fmt_timeout =  boost::format("set statement_timeout=%1%") 
-          % query_timeout;
-      conn.exec(fmt_timeout.str());
+      if(query_timeout != 0) {
+          boost::format fmt_timeout =  boost::format("set statement_timeout=%1%") 
+              % query_timeout;
+          conn.exec(fmt_timeout.str());
+      }
 
       return conn;
   }
