@@ -30,6 +30,7 @@
 #include "psql_result.h"
 #include "../statement.h"
 #include "../db_exceptions.h"
+#include "boost/lexical_cast.hpp"
 
 namespace Database {
 
@@ -137,7 +138,8 @@ public:
       std::vector< const char * > paramValues; //pointer to memory with parameters data
       std::vector<int> paramLengths; //sizes of memory with parameters data
 
-      for (std::vector< std::string>::const_iterator i = params.begin(); i != params.end() ; ++i)
+      for (std::vector< std::string>::const_iterator i = params.begin()
+              ; i != params.end() ; ++i)
       {
     	  paramValues.push_back((*i).c_str());
     	  paramLengths.push_back((*i).size());
@@ -159,7 +161,19 @@ public:
     else
     {
       PQclear(tmp);
-      throw ResultFailed(_query + " (" + PQerrorMessage(psql_conn_) + ")");
+      std::string params_dump;
+      std::size_t params_counter =0;
+      for (std::vector< std::string>::const_iterator i = params.begin()
+              ; i != params.end() ; ++i)
+      {
+          ++params_counter;
+          params_dump += std::string(" ")
+              + boost::lexical_cast<std::string>(params_counter) + "$: " + *i;
+      }//for params
+
+      throw ResultFailed(std::string("query: ") + _query
+              + " params:" + params_dump
+              + " (" + PQerrorMessage(psql_conn_) + ")");
     }
   }//exec_params
 
@@ -198,7 +212,22 @@ public:
     else
     {
       PQclear(tmp);
-      throw ResultFailed(_query + " (" + PQerrorMessage(psql_conn_) + ")");
+
+      std::string params_dump;
+      std::size_t params_counter =0;
+
+      for (QueryParams::const_iterator i = params.begin(); i != params.end() ; ++i)
+      {
+          ++params_counter;
+          params_dump += std::string(" ")
+              + boost::lexical_cast<std::string>(params_counter) + "$: "
+              + (i->is_null() ? std::string("null")
+                  : (i->is_binary() ? std::string("binary") : i->get_data()));
+      }//for params
+
+      throw ResultFailed(std::string("query: ") + _query
+              + " params:" + params_dump
+              + " (" + PQerrorMessage(psql_conn_) + ")");
     }
   }//exec_params
 
