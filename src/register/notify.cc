@@ -477,16 +477,16 @@ namespace Register
 private:
               std::auto_ptr<Document::Generator> gPDF;
               // TODO this might as well been a pointer
-              const std::string *exDate;
+              std::string exDate;
               Transaction *trans;
               std::vector<TID> state_ids;
 
 public:
               /** holderid is only used for the filename
-               * to identify which contact id's are contained in the 
-               * individual file, call addStateId 
+               * to identify which contact id's are contained in the
+               * individual file, call addStateId
                */
-            GenMultipleFiles() : gPDF(NULL), trans(NULL) { 
+            GenMultipleFiles() : gPDF(NULL), trans(NULL) {
             }
 
             void addStateId(TID id) {
@@ -497,14 +497,14 @@ public:
                 return gPDF->getInput();
             }
 
-            void initFile(const std::string *exD, const TID state_id, Document::Manager *docm, Transaction *tr) 
+            void initFile(const std::string& exD, const TID state_id, Document::Manager *docm, Transaction *tr)
             {
                 exDate = exD;
                 trans = tr;
 
                 std::stringstream filename;
-                filename << "letter-" << *exDate << "-" << state_id << ".pdf";
-                    
+                filename << "letter-" << exDate << "-" << state_id << ".pdf";
+
                 gPDF.reset(
                   docm->createSavingGenerator(
                     Document::GT_WARNING_LETTER,
@@ -513,11 +513,11 @@ public:
                   )
                 );
                 std::ostream& out(gPDF->getInput());
-  
+
                 out << "<messages>";
                 out << "<holder>";
-            } 
-         
+            }
+
             void endFile(Messages::ManagerPtr msgm
                     , const std::string& contact_handle
                     , const std::string& contact_name
@@ -547,10 +547,10 @@ public:
                     out << "</messages>";
 
                     // TODO there's still some room for more DB OPTIMIZATION if
-                    // whole operation was made atomic and this query was run 
+                    // whole operation was made atomic and this query was run
                     // only once with IDs taken from vector
                     // OR ----
-                    // most of the inserted data could already be gathered 
+                    // most of the inserted data could already be gathered
                     // in the statement which generates the XML
                     // records stored in vector could be used in a simple insert
                     //
@@ -574,15 +574,15 @@ public:
                             ,"domain_expiration"
                             ,contact_object_registry_id
                             , contact_history_historyid);
-        
-                    sql << "INSERT INTO notify_letters (state_id, letter_id) VALUES (" 
+
+                    sql << "INSERT INTO notify_letters (state_id, letter_id) VALUES ("
                         << *it << ", " << letter_id << ")";
-                        
+
                     it++;
                     for (;it != state_ids.end();it++) {
                         sql << ", (" << *it << ", " << letter_id << ")";
                     }
-                    
+
                     conn.exec(sql.str());
                     trans->savepoint();
 
@@ -596,7 +596,7 @@ public:
                     LOGGER(PACKAGE).error("~GenMultipleFiles(): Caught unknown exception. ");
                 }
             }
-           
+
       };
 
 #define XML_DB_OUT(x,y) "<![CDATA[" << std::string(res[x][y]) << "]]>"
@@ -722,7 +722,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                                 , res[k][19] //unsigned long long contact_history_historyid
                         );
                     }
-                    gen->initFile(&exDates[j], res[k][12], docm, &trans);
+                    gen->initFile(exDates[j], res[k][12], docm, &trans);
                     // GenMultipleFiles::new_file(exDates[j], res[i][12], docm, trans);
 
                     // gen.reset ( new GenMultipleFiles(exDates[j], res[i][12], docm, trans));
