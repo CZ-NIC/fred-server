@@ -351,9 +351,7 @@ void NotifyClient::file_send()
 
            conn.exec(boost::format("UPDATE letter_archive SET  "
                                    "batch_id = '%1%' "
-                                   " WHERE id = %2%"
-                                   " AND comm_type_id = (SELECT id FROM comm_type "
-                                   " WHERE type = 'letter')")
+                                   " WHERE id = %2%")
                                     % conn.escape(batch_id)
                                     % (*it).id);
      }
