@@ -518,7 +518,7 @@ public:
                 out << "<holder>";
             } 
          
-            void endFile(Messages::Manager* msgm
+            void endFile(Messages::ManagerPtr msgm
                     , const std::string& contact_handle
                     , const std::string& contact_name
                     , const std::string& contact_org
@@ -707,7 +707,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                     // in this case start creating a new file
 
                     if (k>0) {
-                        gen->endFile(msgm.get()
+                        gen->endFile(msgm
                                 , res[k][17] //const std::string& contact_handle
                                 , res[k][4] //const std::string& contact_name
                                 , res[k][5] //const std::string& contact_org
@@ -759,7 +759,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                 item_count++;
           }
           if(res.size() > 0) {
-              gen->endFile(msgm.get()
+              gen->endFile(msgm
                       , res[k][17] //const std::string& contact_handle
                       , res[k][4] //const std::string& contact_name
                       , res[k][5] //const std::string& contact_org

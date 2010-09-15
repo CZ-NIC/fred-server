@@ -28,6 +28,7 @@
 #include <vector>
 #include <memory>
 #include <boost/utility.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace Register
 {
@@ -89,7 +90,7 @@ public:
 
 };
 
-typedef std::auto_ptr<Manager> ManagerPtr;
+typedef boost::shared_ptr<Manager> ManagerPtr;
 ManagerPtr create_manager();
 
 
