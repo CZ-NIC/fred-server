@@ -252,7 +252,14 @@ Registry::Request::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
 	// TODO make sure the db_manager is OK
 	//
 	// request_list->reload(union_filter, &m_db_manager);
-	request_list->reload(union_filter);
+        try {
+                request_list->reload(union_filter);
+        } catch(Database::Exception &ex) {
+                std::string message = ex.what();
+                if(message.find("statement timeout") != std::string::npos) {
+                        throw ccReg::SqlQueryTimeout();
+                }
+        }
 
 	if(request_list->size() != 1) {
 		throw ccReg::Admin::ObjectNotFound();

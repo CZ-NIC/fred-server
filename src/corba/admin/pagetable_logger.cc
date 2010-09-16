@@ -130,7 +130,14 @@ void ccReg_Logger_i::reload() {
 
   // CustomPartitioningTweak::process_filters(uf.begin(), uf.end()); 
 
-  m_lel->reload(uf);
+  try {
+        m_lel->reload(uf);
+  } catch(Database::Exception &ex) {
+        std::string message = ex.what();
+        if(message.find("statement timeout") != std::string::npos) {
+            throw ccReg::SqlQueryTimeout();
+        }
+  }
 }
 
 void ccReg_Logger_i::clear() {

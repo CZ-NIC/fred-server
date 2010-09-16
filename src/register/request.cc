@@ -372,7 +372,7 @@ public:
 	    query.order_by() << "t_1.time_begin desc";
     } else {
 // hardcore optimizations have to be done on this statement
-	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, "
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.service_id, "
                        << "t_1.source_ip, t_2.name, t_1.session_id, "
                        << "t_1.user_name, t_1.user_id, t_1.is_monitoring, "
                        << "t_4.result_code, t_4.name, "
@@ -402,12 +402,16 @@ public:
             DateTime time_begin   = *(++col);
             DateTime time_end     = *(++col);
             std::string serv_type = *(++col);
+            int serv_id = 0;
+            if(!partialLoad) {
+                serv_id           = *(++col);
+            }
             std::string	source_ip = *(++col);
             std::string request_type_id = *(++col);
             ID session_id         = *(++col);
             std::string user_name = *(++col);
 
-            ID user_id;
+            ID user_id = 0;
             if(!partialLoad) {
                 user_id           = *(++col);
             }
@@ -425,8 +429,8 @@ public:
             if(!partialLoad) {
                 request  = (std::string)*(++col);
                 response = (std::string)*(++col);
-                props    = getPropsForId(id);
-                refs     = getObjectRefsForId(id);
+                props    = getPropsForId(id, time_begin, serv_id, is_monitoring);
+                refs     = getObjectRefsForId(id, time_begin, serv_id, is_monitoring);
             }
 
             data_.push_back(new RequestImpl(
@@ -496,13 +500,13 @@ public:
   }
 
         // TODO performance optimization using patitioning criteria
-  virtual std::auto_ptr<RequestProperties> getPropsForId(ID id) {
+  virtual std::auto_ptr<RequestProperties> getPropsForId(ID id, DateTime time_begin, int sid, bool mon) {
 	std::auto_ptr<RequestProperties> ret(new RequestProperties());
 	Database::SelectQuery query;
 
 	query.select() << "t_2.name, t_1.value, t_1.output, (t_1.parent_id is not null)";
 	query.from()   << "request_property_value t_1 join request_property_name t_2 on t_1.property_name_id=t_2.id";
-	query.where()  << "and t_1.request_id = " << id;
+	query.where()  << (boost::format("and t_1.request_id = '%1%' and t_1.request_time_begin = '%2%' and t_1.request_service_id = %3% and t_1.request_monitoring = %4%") % id % time_begin % sid % (mon ? "true" : "false")).str();
         query.order_by() << "t_1.id";
 
         Database::Connection conn = Database::Manager::acquire();
@@ -522,7 +526,7 @@ public:
 	return ret;
   }
 
-  virtual std::auto_ptr<ObjectReferences> getObjectRefsForId(ID id) {
+  virtual std::auto_ptr<ObjectReferences> getObjectRefsForId(ID id, DateTime time_begin, int sid, bool mon) {
         std::auto_ptr<ObjectReferences> ret(new ObjectReferences());
 
         Connection conn = Database::Manager::acquire();
@@ -530,7 +534,7 @@ public:
         Result res = conn.exec((boost::format
                 ("SELECT name, object_id FROM request_object_ref oref "
                 "JOIN request_object_type ot ON ot.id = oref.object_type_id "
-                "WHERE request_id = %1%") % id).str());
+                "WHERE oref.request_id = %1% and oref.request_time_begin = '%2%' and oref.request_service_id = %3% and oref.request_monitoring = %4%") % id % time_begin % sid % (mon ? "true" : "false")).str());
 
         for(unsigned i=0;i<res.size();i++) {
                 ObjectReference oref;
@@ -559,19 +563,19 @@ public:
 	    Database::SelectQuery query;
 
 	 if(partialLoad) {
-		    query.select() << "t_1.time_begin, t_1.time_end, t_1.service_id, t_1.source_ip, t_1.request_type_id, t_1.session_id, t_1.is_monitoring";
-		    query.from() << "request t_1";
+		    query.select() << "t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_1.request_type_id, t_1.session_id, t_1.is_monitoring";
+		    query.from() << " tmp JOIN request t_1"
+                                 << " join service t_3 on t_3.id=t_1.service_id ";
 		    query.order_by() << "t_1.time_begin desc";
 	    } else {
-	    	   query.select() << "t_1.time_begin, t_1.time_end, t_1.service_id, t_1.source_ip, t_1.user_name, t_1.request_type_id, t_1.session_id, t_1.is_monitoring, "
+	    	   query.select() << "t_1.time_begin, t_1.time_end, t_3.name, t_1.service_id, t_1.source_ip, t_1.user_name, t_1.request_type_id, t_1.session_id, t_1.is_monitoring, "
 	    							" (select content from request_data where request_time_begin=t_1.time_begin and request_id=t_1.id and is_response=false limit 1) as request, "
 	    							" (select content from request_data where request_time_begin=t_1.time_begin and request_id=t_1.id and is_response=true  limit 1) as response ";
-	    		    query.from() << getTempTableName() << "request t_1";
-	    		    query.order_by() << "t_1.time_begin desc";
+                    query.from() << getTempTableName() << " tmp JOIN request t_1 "
+                                         << "join service t_3 on t_3.id=t_1.service_id ";
+                    query.order_by() << "t_1.time_begin desc";
 
 	    }
-
-
 
             Database::Connection conn = connectionSetup();
 	    try {
@@ -584,6 +588,10 @@ public:
 				DateTime 	time_begin  	= *(++col);
 				DateTime 	time_end  	= *(++col);
 				std::string             serv_type  = *(++col);
+                                int serv_id;
+                                if(!partialLoad) {
+                                                        serv_id         = *(++col);
+                                }
 				std::string 		source_ip  	= *(++col);
                                 std::string             user_name       = *(++col);
 
@@ -592,7 +600,7 @@ public:
                                                         user_id = *(++col);
                                 }
 				std::string  		request_type_id = *(++col);
-				ID		session_id	= *(++col);
+				ID		        session_id	= *(++col);
 				bool			is_monitoring	= *(++col);
 				std::string		request;
 				std::string		response;
@@ -603,8 +611,8 @@ public:
 				if(!partialLoad) {
 					request		= (std::string)*(++col);
 					response	= (std::string)*(++col);
-					props  		= getPropsForId(id);
-                                        refs            = getObjectRefsForId(id);
+					props  		= getPropsForId(id, time_begin, serv_id, is_monitoring);
+                                        refs            = getObjectRefsForId(id, time_begin, serv_id, is_monitoring);
 				}
 
 				data_.push_back(new RequestImpl(id,

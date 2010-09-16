@@ -49,12 +49,12 @@ void CommonObjectImpl::setId(TID id) {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 CommonListImpl::CommonListImpl(DB *_db) :
-  db(_db), load_offset_(0), load_limit_(1000), query_timeout(0), real_size_(0), real_size_initialized_(false)
+  db(_db), load_offset_(0), load_limit_(1000), query_timeout(5000), real_size_(0), real_size_initialized_(false)
     , load_limit_active_(), ptr_idx_(-1), add(false), wcheck(true), idFilter(0)
 {}
 
 CommonListImpl::CommonListImpl() :
-  db(), load_offset_(0), load_limit_(1000), query_timeout(0), real_size_(0), real_size_initialized_(false),
+  db(), load_offset_(0), load_limit_(1000), query_timeout(5000), real_size_(0), real_size_initialized_(false),
   load_limit_active_(), ptr_idx_(-1), add(false), wcheck(true), idFilter(0)
 {}
 
