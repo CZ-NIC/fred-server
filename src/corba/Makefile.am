@@ -1,6 +1,7 @@
-SUBDIRS = admin epp log messages
+SUBDIRS = admin epp log messages mojeid
 CLEANFILES=ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh \
-MessagesSK.cc MessagesDynSK.cc MessagesSK.h Messages.hh
+MessagesSK.cc MessagesDynSK.cc MessagesSK.h Messages.hh \
+MojeIDSK.cc MojeIDDynSK.cc MojeIDSK.h MojeID.hh
 
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) 		\
@@ -36,14 +37,14 @@ IDLFILE = $(IDLDIR)/ccReg.idl
 
 sbin_PROGRAMS = fred-rifd fred-adifd fred-pifd fred-logd
 
-noinst_LIBRARIES   = libcorba.a libcorbamessages.a
+noinst_LIBRARIES   = libcorba.a libcorbamessages.a libcorbamojeid.a
 
 noinst_PROGRAMS = test
 
 test_SOURCES = test-admin.cc
 test_LDADD = $(XML2_LIBS) $(LDADD)
 
-BUILT_SOURCES      = ccRegSK.cc MessagesSK.cc
+BUILT_SOURCES      = ccRegSK.cc MessagesSK.cc MojeIDSK.cc
 libcorba_a_SOURCES = nameservice.cc         \
 					 mailer_manager.cc      \
 					 nameservice.h          \
@@ -58,6 +59,8 @@ libcorba_a_SOURCES = nameservice.cc         \
 nodist_libcorba_a_SOURCES = ccRegSK.cc ccRegDynSK.cc
 
 nodist_libcorbamessages_a_SOURCES = MessagesSK.cc MessagesDynSK.cc
+
+nodist_libcorbamojeid_a_SOURCES = MojeIDSK.cc MojeIDDynSK.cc
 
 fred_rifd_SOURCES   = server.cc
 fred_rifd_CPPFLAGS  = $(AM_CPPFLAGS) -DRIFD
@@ -80,3 +83,8 @@ ccRegSK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/ccReg.idl $(IDLDIR)/EPP.idl $(IDLDIR)/
 
 MessagesSK.cc: $(IDLDIR)/Messages.idl
 	omniidl -bcxx -Wba -Wbinline $(IDLDIR)/Messages.idl
+
+MojeIDSK.cc: $(IDLDIR)/MojeID.idl
+	omniidl -bcxx -Wba -Wbinline $(IDLDIR)/MojeID.idl
+
+

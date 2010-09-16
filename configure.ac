@@ -218,7 +218,7 @@ AC_DEFINE_UNQUOTED([HAVE_LOGGER], [1], [compile libraries with logging messages]
 #and prefix is by default `/usr/local'. So whole path is
 #`/usr/local/share/idl/fred/'
 AC_ARG_WITH(
-	[idldir], 
+	[idldir],
 	[AS_HELP_STRING(
 		[--with-idldir],
 		[location of idl directory containing IDL interfaces [DATAROOTDIR/idl/fred/]]
@@ -228,23 +228,31 @@ AC_ARG_WITH(
 )
 
 AC_CHECK_FILE(
-	[$IDLDIR/ccReg.idl], 
-	[], 
+	[$IDLDIR/ccReg.idl],
+	[],
 	[AC_MSG_ERROR(
-		[directory "$IDLDIR" does not contain ccReg.idl 
+		[directory "$IDLDIR" does not contain ccReg.idl
 		(use --with-idldir)]
 	)]
 )
 
 AC_CHECK_FILE(
-	[$IDLDIR/Messages.idl], 
-	[], 
+	[$IDLDIR/Messages.idl],
+	[],
 	[AC_MSG_ERROR(
-		[directory "$IDLDIR" does not contain Messages.idl 
+		[directory "$IDLDIR" does not contain Messages.idl
 		(use --with-idldir)]
 	)]
 )
 
+AC_CHECK_FILE(
+	[$IDLDIR/MojeID.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain MojeID.idl
+		(use --with-idldir)]
+	)]
+)
 
 AC_ARG_WITH(
   [libidn], 
@@ -302,6 +310,7 @@ AC_CONFIG_FILES([Makefile
                  src/corba/epp/Makefile
                  src/corba/log/Makefile
                  src/corba/messages/Makefile
+                 src/corba/mojeid/Makefile
                  src/cli_admin/Makefile
                  tools/Makefile
                  tools/logd_migration/Makefile
