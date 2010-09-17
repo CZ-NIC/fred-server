@@ -109,7 +109,6 @@ public:
     static HPMail* set(const HPCfgMap& config_changes = HPCfgMap());
     static HPMail* get();
 
-    static void init_session(HPCfgMap &cfg);
     void login();
     void login(const std::string& loginame //postservice account name
         , const std::string& password //postservice account password

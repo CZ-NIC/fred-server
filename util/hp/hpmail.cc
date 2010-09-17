@@ -86,6 +86,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_curlopt_ssl_verifyhost","0") // default:0 - no verify, 1 ,  2 - server certificate must indicate that the server is the server to which you meant to connect, or the connection fails
     ;
 
+
 ///instance set config and return if ok
 HPMail* HPMail::set(const HPCfgMap& config_changes)
 {
@@ -179,6 +180,8 @@ void HPMail::login(const std::string& loginame //postservice account name
     hp_batch_number_ = sb.getValueByKey("cislozakazky", 12) ;
 
     //detecting errors
+    if (phpsessid_.empty())
+        throw std::runtime_error(std::string("HPMail::login error: not logged in - empty phpsessid"));
     if (hp_batch_number_.empty())
         throw std::runtime_error(std::string("HPMail::login error: not logged in - empty batch number"));
     if (sb.getValueByKey("overenizak ", 2).compare("KO")==0)
@@ -196,8 +199,7 @@ void HPMail::login(const std::string& loginame //postservice account name
 /// then use save_file_for_upload and optionally archiver_command before login
 std::string HPMail::upload( const NamedMailBatch& mb)
 {
-    if(phpsessid_.empty())
-        throw std::runtime_error("HPMail::upload error: not logged in");
+
     save_files_for_upload(mb);//if mb empty may have no effect
     if(!saved_file_for_upload_)
         throw std::runtime_error("HPMail::upload error: "
@@ -209,6 +211,11 @@ std::string HPMail::upload( const NamedMailBatch& mb)
     if(upload_filelist.empty())
         throw std::runtime_error(
                 "HPMail::upload error: upload_filelist is empty");
+    //check login
+    if (phpsessid_.empty())
+        login(); // try login from configuration
+    if(phpsessid_.empty())
+        throw std::runtime_error("HPMail::upload error: not logged in");
     //upload
     upload_of_batch_by_filelist(upload_filelist);
     end_of_batch(upload_filelist);//ack form for postservice
@@ -716,13 +723,6 @@ void HPMail::end_of_batch(VolumeFileNames& compressed_mail_batch_filelist)
             , formpost_reply.str().size() , curl_log_file_ );
 
 }//HPMail::end_of_batch
-
-/// create instance with cfg and login with it
-void HPMail::init_session(HPCfgMap &cfg)
-{
-        HPMail::set(cfg); 
-        HPMail::get()->login();
-}
 
 void HPMail::send_storno()
 {

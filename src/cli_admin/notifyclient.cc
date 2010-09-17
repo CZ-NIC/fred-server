@@ -242,10 +242,6 @@ void NotifyClient::file_send()
        *
        */
 
-  struct message_proc {
-      ID id;
-      unsigned attempt;
-  };
 
   void NotifyClient::sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file)
   {
@@ -255,79 +251,28 @@ void NotifyClient::file_send()
      Register::Messages::ManagerPtr messages_manager
          = Register::Messages::create_manager();
 
-     ////////////////////////
-
      HPCfgMap hpmail_config = readHPConfig(conf_file);
-
-
-
-     Connection conn = Database::Manager::acquire();
-     /* now bail out if other process (presumably another instance of this
-      * method) is already doing something with this table. No support 
-      * for multithreaded access - we would have to remember which 
-      * records exactly are we processing
-      */
-     Result res = conn.exec("SELECT EXISTS "
-             "(SELECT * FROM message_archive ma "
-             "JOIN comm_type ct ON ma.comm_type_id = ct.id "
-             " WHERE ma.status=6 AND ct.type = 'letter')");
-
-     if ((bool)res[0][0]) {
-            LOGGER(PACKAGE).notice("the files are already being processed. "
-                    "no action; exiting");
-            return;
-     }
-
-     // transaction is needed for 'ON COMMIT DROP' functionality
-     Database::Transaction trans(conn);
-     // acquire lock which conflicts with itself but not basic locks used
-     // by select and stuff..
-     conn.exec("LOCK TABLE message_archive IN SHARE UPDATE EXCLUSIVE MODE");
-     // application level lock and notification about data processing
-     conn.exec("UPDATE message_archive SET status = 6 "
-             " WHERE (status = 1 OR status = 4) "
-             " AND comm_type_id = (SELECT id FROM comm_type "
-             " WHERE type = 'letter')");
-     // TODO try to enable this
-     trans.commit();
-
-     Database::Transaction trans2(conn);
-     // is there anything to send?
-     res = conn.exec("SELECT la.file_id, la.id, ma.attempt "
-         " FROM message_archive ma JOIN letter_archive la ON ma.id = la.id "
-         " WHERE ma.status=6");
-     if(res.size() == 0) {
-         LOGGER(PACKAGE).notice("no files ready for processing; exiting");
-         return;
-     }
+     Register::Messages::LetterProcInfo proc_messages = messages_manager->processLetters(0);
 
      int new_status = 5;
      std::string batch_id;
-     // store IDs and attempt counts of records being processed
-     std::vector<message_proc> processed;
 
-     ID file_id = 0;
-     ID letter_id = 0;
-     processed.reserve(res.size());
-     try {
-         LOGGER(PACKAGE).info("logging in to postservice...");
-         HPMail::init_session(hpmail_config);
 
-         for(unsigned i=0;i<res.size();i++) {
-             file_id = res[i][0];
-             letter_id = res[i][1];
+     try
+     {
+         LOGGER(PACKAGE).info("init postservice upload");
+         HPMail::set(hpmail_config);
 
-             message_proc mp;
-             mp.id = letter_id;
-             mp.attempt = res[i][2];
-             processed.push_back(mp);
+         for(unsigned i=0;i<proc_messages.size();i++)
+         {
+             Register::Messages::message_proc mp = proc_messages.at(i);
 
              NamedMailFile smail;
-             smail.name = str((boost::format("Letter_%1%.pdf") % letter_id));
-             fileman->download(file_id, smail.data);
+             smail.name = mp.fname;
+             fileman->download(mp.file_id, smail.data);
 
              LOGGER(PACKAGE).debug(boost::format(
-                         "adding file (id=%1%) to batch") % file_id);
+                         "adding file (id=%1%) to batch") % mp.file_id);
              HPMail::get()->save_file_for_upload(smail);
          }
          batch_id = HPMail::get()->upload();
@@ -345,8 +290,13 @@ void NotifyClient::file_send()
          new_status = 4; // set error status in database
      }
 
+     Database::Connection conn = Database::Manager::acquire();
+     Database::Transaction trans2(conn);
+
      // processed letters update
-     for (std::vector<message_proc>::iterator it = processed.begin(); it!=processed.end(); it++) {
+     for (Register::Messages::LetterProcInfo::iterator it = proc_messages.begin()
+             ; it!=proc_messages.end(); it++)
+     {
            unsigned int new_attempt = (*it).attempt + 1;
            conn.exec(boost::format("UPDATE message_archive SET status = %1%, "
                                    "attempt = %2%, "
@@ -354,13 +304,13 @@ void NotifyClient::file_send()
                                    " AND comm_type_id = (SELECT id FROM comm_type "
                                    " WHERE type = 'letter')")
                                     % new_status
-                                    % new_attempt % (*it).id);
+                                    % new_attempt % (*it).letter_id);
 
            conn.exec(boost::format("UPDATE letter_archive SET  "
                                    "batch_id = '%1%' "
                                    " WHERE id = %2%")
                                     % conn.escape(batch_id)
-                                    % (*it).id);
+                                    % (*it).letter_id);
      }
      // not processed letters should have status set back (set moddate? status?)
      conn.exec("UPDATE message_archive SET status = 1 WHERE status = 6 "
@@ -393,7 +343,7 @@ void NotifyClient::file_send()
       infile.read(&file[0], infile_size);
 
       try {
-         HPMail::init_session(hpmail_config);
+         HPMail::set(hpmail_config);
          HPMail::get()->upload(file, filename);
       } catch(std::exception& ex) {
          std::cerr << "Error: " << ex.what() << std::endl;

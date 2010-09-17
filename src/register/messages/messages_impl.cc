@@ -341,9 +341,71 @@ unsigned long long Manager::send_letter(const char* contact_handle
     return message_archive_id;
 }
 
-void Manager::processLetters(std::size_t batch_size_limit)
+LetterProcInfo Manager::processLetters(std::size_t batch_size_limit)
 {
     Database::Connection conn = Database::Manager::acquire();
+
+    // return info of records being processed
+    LetterProcInfo proc_messages;
+
+    /* now bail out if other process (presumably another instance of this
+     * method) is already doing something with this table. No support
+     * for multithreaded access - we would have to remember which
+     * records exactly are we processing
+     */
+    Database::Result res = conn.exec("SELECT EXISTS "
+            "(SELECT * FROM message_archive ma "
+            "JOIN comm_type ct ON ma.comm_type_id = ct.id "
+            " WHERE ma.status=6 AND ct.type = 'letter')");
+
+    if ((bool)res[0][0])
+    {
+           LOGGER(PACKAGE).notice("the files are already being processed. "
+                   "no action; exiting");
+           return proc_messages;
+    }
+
+    // transaction is needed for 'ON COMMIT DROP' functionality
+    Database::Transaction trans(conn);
+    // acquire lock which conflicts with itself but not basic locks used
+    // by select and stuff..
+    conn.exec("LOCK TABLE message_archive IN SHARE UPDATE EXCLUSIVE MODE");
+    // application level lock and notification about data processing
+    conn.exec("UPDATE message_archive SET status = 6 "
+            " WHERE (status = 1 OR status = 4) "
+            " AND comm_type_id = (SELECT id FROM comm_type "
+            " WHERE type = 'letter') "
+
+
+    );
+    // TODO try to enable this
+    trans.commit();
+
+
+    // is there anything to send?
+    res = conn.exec("SELECT la.file_id, la.id, ma.attempt , f.name "
+        " FROM message_archive ma JOIN letter_archive la ON ma.id = la.id "
+        " JOIN files f ON la.file_id = f.id "
+        " WHERE ma.status=6");
+    if(res.size() == 0) {
+        LOGGER(PACKAGE).notice("no files ready for processing; exiting");
+        return proc_messages;
+    }
+
+
+    proc_messages.reserve(res.size());
+
+    for(unsigned i=0;i<res.size();i++)
+    {
+             message_proc mp;
+             mp.file_id = res[i][0];
+             mp.letter_id = res[i][1];
+             mp.attempt = res[i][2];
+             mp.fname = std::string(res[i][3]);
+             proc_messages.push_back(mp);
+    }
+
+    return proc_messages;
 }
 
 void Manager::processSMS(std::size_t batch_size_limit)

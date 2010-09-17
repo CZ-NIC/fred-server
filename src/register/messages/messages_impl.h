@@ -51,6 +51,16 @@ struct PostalAddress
 
 unsigned long long get_filetype_id(std::string file_type);
 
+struct message_proc {
+    unsigned long long file_id;
+    unsigned long long letter_id;
+    unsigned attempt;
+    std::string fname;
+};//info for letter processing
+
+typedef std::vector<message_proc> LetterProcInfo;
+
+
 class Manager : boost::noncopyable
 {
 public:
@@ -74,7 +84,7 @@ public:
             );
 
     //send saved letters
-    void processLetters(std::size_t batch_size_limit);
+    LetterProcInfo processLetters(std::size_t batch_size_limit);
 
     //send saved sms
     void processSMS(std::size_t batch_size_limit);
