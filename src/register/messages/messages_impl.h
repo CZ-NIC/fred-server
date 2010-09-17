@@ -30,18 +30,11 @@
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>
 
+
 namespace Register
 {
 namespace Messages
 {
-
-unsigned long long send_sms_impl(const char* contact_handle
-        , const char* phone
-        , const char* content
-        , const char* message_type
-        , unsigned long contact_object_registry_id
-        , unsigned long contact_history_historyid
-        );
 
 struct PostalAddress
 {
@@ -56,22 +49,13 @@ struct PostalAddress
     std::string country;
 };//struct PostalAddress
 
-
-unsigned long long send_letter_impl(const char* contact_handle
-        , const PostalAddress& address
-        , unsigned long long file_id
-        , const char* message_type
-        , unsigned long contact_object_registry_id
-        , unsigned long contact_history_historyid
-        );
-
-
 unsigned long long get_filetype_id(std::string file_type);
 
 class Manager : boost::noncopyable
 {
 public:
 
+    //save message for later send
     unsigned long long send_sms(const char* contact_handle
             , const char* phone
             , const char* content
@@ -80,6 +64,7 @@ public:
             , unsigned long contact_history_historyid
             );
 
+    //save message for later send
     unsigned long long send_letter(const char* contact_handle
             , const PostalAddress& address
             , unsigned long long file_id
@@ -87,6 +72,12 @@ public:
             , unsigned long contact_object_registry_id
             , unsigned long contact_history_historyid
             );
+
+    //send saved letters
+    void processLetters(std::size_t batch_size_limit);
+
+    //send saved sms
+    void processSMS(std::size_t batch_size_limit);
 
 };
 

@@ -38,7 +38,8 @@ boost::assign::list_of
 (HandleArgsPtr(new HandleCorbaNameServiceArgs));
 
 //implementational code for IDL interface Registry::Messages
-Registry_Messages_i::Registry_Messages_i()
+Registry_Messages_i::Registry_Messages_i(Register::Messages::ManagerPtr msgmgr)
+    : msgmgr_(msgmgr)
 {
   // add extra constructor code here
 }
@@ -60,8 +61,7 @@ CORBA::ULongLong Registry_Messages_i::sendSms(const char* contact_handle
 
     try
     {
-        return
-        Register::Messages::send_sms_impl(contact_handle,phone, content
+        return msgmgr_->send_sms(contact_handle,phone, content
                 , message_type
                 , contact_object_registry_id
                 , contact_history_historyid
@@ -124,8 +124,7 @@ CORBA::ULongLong Registry_Messages_i::sendLetter(const char* contact_handle
                 , "application/pdf"
                 , filetype_id );
 
-        return
-        Register::Messages::send_letter_impl(contact_handle
+        return msgmgr_->send_letter(contact_handle
                 , address_impl
                 , file_id
                 , message_type
@@ -189,8 +188,12 @@ int main(int argc, char** argv)
           , ns_args_ptr->nameservice_port
           , ns_args_ptr->nameservice_context);
 
+        //Messages Manager
+        Register::Messages::ManagerPtr msgmgr
+            = Register::Messages::create_manager();
+
         //create server
-        Registry_Messages_i* myRegistry_Messages_i = new Registry_Messages_i();
+        Registry_Messages_i* myRegistry_Messages_i = new Registry_Messages_i(msgmgr);
         PortableServer::ObjectId_var msgObjectId
             = PortableServer::string_to_ObjectId("Messages");
         CorbaContainer::get_instance()->poa_persistent

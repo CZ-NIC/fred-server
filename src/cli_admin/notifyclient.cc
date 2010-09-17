@@ -252,7 +252,14 @@ void NotifyClient::file_send()
      Logging::Context ctx("send letters");
      TRACE("[CALL] Register::Notify::sendLetters()");
 
+     Register::Messages::ManagerPtr messages_manager
+         = Register::Messages::create_manager();
+
+     ////////////////////////
+
      HPCfgMap hpmail_config = readHPConfig(conf_file);
+
+
 
      Connection conn = Database::Manager::acquire();
      /* now bail out if other process (presumably another instance of this

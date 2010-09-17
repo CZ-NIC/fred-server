@@ -29,6 +29,8 @@
 #include <stdexcept>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include "register/db_settings.h"
+
 namespace Register
 {
 namespace Messages
@@ -73,37 +75,31 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
 
     Database::Connection conn = Database::Manager::acquire();
 
-    std::string message_type_id_query
-        = "SELECT id FROM message_type WHERE type= $1::text";
-    Database::QueryParams  message_type_id_qparams = Database::query_param_list
-            (message_type);
-    Database::Result message_type_id_res = conn.exec_params( message_type_id_query
-            , message_type_id_qparams);
+    Database::Result message_type_id_res = conn.exec_params(
+            "SELECT id FROM message_type WHERE type= $1::text"
+            , Database::query_param_list (message_type));
+
     unsigned long long message_type_id = 0;
     if (message_type_id_res.size() == 1)
         message_type_id
             = static_cast<unsigned long long>(message_type_id_res[0][0]);
 
-    std::string msg_query
-        = "INSERT INTO message_archive"
-          " (crdate, moddate, attempt, status, comm_type_id, message_type_id)"
-          " VALUES (CURRENT_TIMESTAMP, $1::timestamp"// without time zone "
-          " , $2::smallint, $3::integer,"
-          " (SELECT id FROM comm_type WHERE type = $4::text), $5::integer)";
-    Database::QueryParams msg_qparams
-        = Database::query_param_list
+    conn.exec_params(
+        "INSERT INTO message_archive"
+        " (crdate, moddate, attempt, status, comm_type_id, message_type_id)"
+        " VALUES (CURRENT_TIMESTAMP, $1::timestamp"// without time zone "
+        " , $2::smallint, $3::integer,"
+        " (SELECT id FROM comm_type WHERE type = $4::text), $5::integer)"
+        , Database::query_param_list
           (Database::QueryParam())//$1 moddate
           (attempt)//$2 attempt
           (status)//$3 status
           (comm_type)//$4 comm_type
           (message_type_id)//$5 message_type_id
-        ;
+          );
 
-    conn.exec_params( msg_query, msg_qparams );
-
-    std::string msgid_query
-        = "SELECT currval('message_archive_id_seq') AS id";
-    Database::Result msgid_res = conn.exec( msgid_query);
+    Database::Result msgid_res = conn.exec(
+            "SELECT currval('message_archive_id_seq') AS id");
     unsigned long long message_archive_id = 0;
 
     if (msgid_res.size() == 1)
@@ -112,40 +108,79 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
 
     if(save_contact_reference)
     {
-
-        std::string msg_contact_query
-            = "INSERT INTO message_contact_history_map"
-              " (contact_object_registry_id, contact_history_historyid"
-              " , message_archive_id)"
-              " VALUES ( $1::integer, $2::integer, $3::integer)";
-        Database::QueryParams msg_contact_qparams
-            = Database::query_param_list
-              (contact_object_registry_id)//$1 object_registry id
-              (contact_history_historyid)//$2 object_registry historyid
-              (message_archive_id)//$3 message_archive id
-            ;
-
-        conn.exec_params( msg_contact_query, msg_contact_qparams );
+        conn.exec_params(
+            "INSERT INTO message_contact_history_map"
+            " (contact_object_registry_id, contact_history_historyid"
+            " , message_archive_id)"
+            " VALUES ( $1::integer, $2::integer, $3::integer)"
+            , Database::query_param_list
+            (contact_object_registry_id)//$1 object_registry id
+            (contact_history_historyid)//$2 object_registry historyid
+            (message_archive_id)//$3 message_archive id
+        );
     }//if(save_contact_reference)
 
     return message_archive_id;
 }
 
-//return new message_archive id
-unsigned long long send_sms_impl(const char* contact_handle
+
+
+unsigned long long get_filetype_id(std::string file_type)
+{
+    unsigned long long filetype_id=0;
+    try
+    {
+        LOGGER(PACKAGE).debug(boost::format(
+                "Messages::get_file_type_id "
+                " file_type: %1% "
+                )% file_type);
+
+        Database::Connection conn = Database::Manager::acquire();
+
+        Database::Result filetype_id_res = conn.exec_params(
+            "SELECT id FROM enum_filetype WHERE \"name\"= $1::text"
+            , Database::query_param_list (file_type));
+
+        if (filetype_id_res.size() == 1)
+            filetype_id
+                = static_cast<unsigned long long>(filetype_id_res[0][0]);
+
+    }//try
+    catch(const std::exception& ex)
+    {
+        LOGGER(PACKAGE).error(boost::format(
+                "Messages::get_filetype_id exception: %1%") % ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("Messages::get_filetype_id error");
+    }
+
+    return filetype_id;
+}
+
+
+//Manager factory
+ManagerPtr create_manager()
+{
+    return ManagerPtr(new Manager);
+}
+
+//Manager impl
+
+unsigned long long Manager::send_sms(const char* contact_handle
         , const char* phone
         , const char* content
         , const char* message_type
         , unsigned long contact_object_registry_id
         , unsigned long contact_history_historyid
-
         )
 {
     unsigned long long message_archive_id =0;
     try
     {
         LOGGER(PACKAGE).debug(boost::format(
-                "Messages::send_sms_impl "
+                "Messages::send_sms "
                 " contact_handle: %1% "
                 " phone: %2% "
                 " content: %3% "
@@ -176,36 +211,33 @@ unsigned long long send_sms_impl(const char* contact_handle
                 , contact_history_historyid
                 );
 
-        std::string sms_query
-            = "INSERT INTO sms_archive"
-              " (id, phone_number, content)"
-              " VALUES ( $1::integer, $2::varchar(64), $3::text)";
-        Database::QueryParams sms_qparams
-            = Database::query_param_list
-              (message_archive_id)//$1 id
-              (phone)//$2 phone_number
-              (content)//$3 status
-            ;
-
-        conn.exec_params( sms_query, sms_qparams );
+        conn.exec_params(
+                "INSERT INTO sms_archive"
+                " (id, phone_number, content)"
+                " VALUES ( $1::integer, $2::varchar(64), $3::text)"
+                , Database::query_param_list
+                (message_archive_id)//$1 id
+                (phone)//$2 phone_number
+                (content)//$3 status
+        );
         tx.commit();
     }//try
     catch(const std::exception& ex)
     {
         LOGGER(PACKAGE).error(boost::format(
-                "Messages::send_sms_impl exception: %1%") % ex.what());
+                "Messages::send_sms exception: %1%") % ex.what());
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("Messages::send_sms_impl error");
+        LOGGER(PACKAGE).error("Messages::send_sms error");
     }
     return message_archive_id;
 }
 
-//return new message_archive id
-unsigned long long send_letter_impl(const char* contact_handle
+
+unsigned long long Manager::send_letter(const char* contact_handle
         , const PostalAddress& address
-        , const unsigned long long file_id
+        , unsigned long long file_id
         , const char* message_type
         , unsigned long contact_object_registry_id
         , unsigned long contact_history_historyid
@@ -247,8 +279,6 @@ unsigned long long send_letter_impl(const char* contact_handle
                       % contact_history_historyid
                       );
 
-
-
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
@@ -258,49 +288,45 @@ unsigned long long send_letter_impl(const char* contact_handle
                 , contact_history_historyid
                 );
 
-        std::string letter_query
-            = "INSERT INTO letter_archive"
-              " (id, file_id" //$1 $2
-              "  , postal_address_name"//$3
-              "  , postal_address_organization"//$4
-              "  , postal_address_street1"//$5
-              "  , postal_address_street2"//$6
-              "  , postal_address_street3"//$7
-              "  , postal_address_city"//$8
-              "  , postal_address_stateorprovince"//$9
-              "  , postal_address_postalcode"//$10
-              "  , postal_address_country"//$11
-              " )"
-              " VALUES ( $1::integer,$2::integer"
-              ", $3::text"
-              ", $4::text"
-              ", $5::text"
-              ", $6::text"
-              ", $7::text"
-              ", $8::text"
-              ", $9::text"
-              ", $10::text"
-              ", $11::text"
-              ")";
+        conn.exec_params(
+                "INSERT INTO letter_archive"
+                 " (id, file_id" //$1 $2
+                 "  , postal_address_name"//$3
+                 "  , postal_address_organization"//$4
+                 "  , postal_address_street1"//$5
+                 "  , postal_address_street2"//$6
+                 "  , postal_address_street3"//$7
+                 "  , postal_address_city"//$8
+                 "  , postal_address_stateorprovince"//$9
+                 "  , postal_address_postalcode"//$10
+                 "  , postal_address_country"//$11
+                 " )"
+                 " VALUES ( $1::integer,$2::integer"
+                 ", $3::text"
+                 ", $4::text"
+                 ", $5::text"
+                 ", $6::text"
+                 ", $7::text"
+                 ", $8::text"
+                 ", $9::text"
+                 ", $10::text"
+                 ", $11::text"
+                 ")"
+                , Database::query_param_list
+                (message_archive_id)//$1 id
+                (file_id)//$2 file_id
+                (address.name)//$3
+                (address.org)//$4
+                (address.street1)//$5
+                (address.street2)//$6
+                (address.street3)//$7
+                (address.city)//$8
+                (address.state)//$9
+                (address.code)//$10
+                (address.country)//$11
+                );
 
-        Database::QueryParams letter_qparams
-            = Database::query_param_list
-              (message_archive_id)//$1 id
-              (file_id)//$2 file_id
-              (address.name)//$3
-              (address.org)//$4
-              (address.street1)//$5
-              (address.street2)//$6
-              (address.street3)//$7
-              (address.city)//$8
-              (address.state)//$9
-              (address.code)//$10
-              (address.country)//$11
-            ;
-
-        conn.exec_params( letter_query, letter_qparams );
         tx.commit();
-
     }//try
     catch(const std::exception& ex)
     {
@@ -315,83 +341,14 @@ unsigned long long send_letter_impl(const char* contact_handle
     return message_archive_id;
 }
 
-unsigned long long get_filetype_id(std::string file_type)
+void Manager::processLetters(std::size_t batch_size_limit)
 {
-    unsigned long long filetype_id=0;
-    try
-    {
-        LOGGER(PACKAGE).debug(boost::format(
-                "Messages::get_file_type_id "
-                " file_type: %1% "
-                )% file_type);
-
-        Database::Connection conn = Database::Manager::acquire();
-
-        Database::Result filetype_id_res = conn.exec_params(
-            "SELECT id FROM enum_filetype WHERE \"name\"= $1::text"
-            , Database::query_param_list
-                (file_type)
-            );
-
-        if (filetype_id_res.size() == 1)
-            filetype_id
-                = static_cast<unsigned long long>(filetype_id_res[0][0]);
-
-    }//try
-    catch(const std::exception& ex)
-    {
-        LOGGER(PACKAGE).error(boost::format(
-                "Messages::get_filetype_id exception: %1%") % ex.what());
-    }
-    catch(...)
-    {
-        LOGGER(PACKAGE).error("Messages::get_filetype_id error");
-    }
-
-    return filetype_id;
+    Database::Connection conn = Database::Manager::acquire();
 }
 
-
-//Manager factory
-ManagerPtr create_manager()
+void Manager::processSMS(std::size_t batch_size_limit)
 {
-    return ManagerPtr(new Manager);
-}
 
-//Manager impl
-
-unsigned long long Manager::send_sms(const char* contact_handle
-        , const char* phone
-        , const char* content
-        , const char* message_type
-        , unsigned long contact_object_registry_id
-        , unsigned long contact_history_historyid
-        )
-{
-    return send_sms_impl(contact_handle
-            , phone
-            , content
-            , message_type
-            , contact_object_registry_id
-            , contact_history_historyid
-            );
-}
-
-unsigned long long Manager::send_letter(const char* contact_handle
-        , const PostalAddress& address
-        , unsigned long long file_id
-        , const char* message_type
-        , unsigned long contact_object_registry_id
-        , unsigned long contact_history_historyid
-        )
-{
-    return send_letter_impl(contact_handle
-            , address
-            , file_id
-            , message_type
-            , contact_object_registry_id
-            , contact_history_historyid
-            );
 }
 
 
