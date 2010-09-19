@@ -8,7 +8,7 @@
 
 #include "db/transaction.h"
 
-#include "src/register/request_impl.h"
+#include "src/register/requests/request_impl.h"
 
 #include "util/types/id.h"
 

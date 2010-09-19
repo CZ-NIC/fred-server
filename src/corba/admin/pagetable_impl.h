@@ -19,7 +19,7 @@
 #include "register/notify.h"
 #include "register/mail.h"
 #include "register/filter.h"
-#include "register/request.h"
+#include "register/requests/request.h"
 
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"

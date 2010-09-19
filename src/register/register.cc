@@ -99,7 +99,6 @@ class ManagerImpl : virtual public Manager {
   std::auto_ptr<NSSet::Manager> m_nsset_manager;
   std::auto_ptr<KeySet::Manager> m_keyset_manager;
   std::auto_ptr<Filter::Manager> m_filter_manager;
-  std::auto_ptr<Logger::Manager> m_request_manager;
 
   std::vector<CountryDesc> m_countries;
   std::vector<StatusDescImpl> statusList;
@@ -118,8 +117,6 @@ public:
                                                  m_restricted_handles));
     m_keyset_manager.reset(KeySet::Manager::create(db, m_restricted_handles));
 	
-    // m_request_manager.reset(Logger::Manager::create(db));
-    
     // TEMP: this will be ok when DBase::Manager ptr will be initilized
     // here in constructor (not in dbManagerInit method)
     // m_filter_manager.reset(Filter::Manager::create(m_db_manager));
@@ -160,10 +157,6 @@ public:
 
   Filter::Manager* getFilterManager() const {
     return m_filter_manager.get();
-  }
-
-  Logger::Manager* getRequestManager() const {
-    return m_request_manager.get();
   }
 
   /// interface method implementation

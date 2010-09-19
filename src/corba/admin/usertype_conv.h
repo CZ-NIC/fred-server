@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <corba/ccReg.hh>
-#include "register/request.h"
+#include "register/requests/request.h"
 
 inline std::auto_ptr<Register::Logger::ObjectReferences> convert_obj_references(const ccReg::ObjectReferences &r) 
 {

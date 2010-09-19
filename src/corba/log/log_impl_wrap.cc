@@ -1,5 +1,5 @@
 #include "log_impl_wrap.h"
-#include "register/request.h"
+#include "register/requests/request.h"
 
 #include <corba/ccReg.hh>
 #include <boost/thread.hpp>

@@ -305,6 +305,7 @@ AC_CONFIG_FILES([Makefile
                  src/model/Makefile
                  src/register/Makefile
                  src/register/messages/Makefile
+                 src/register/requests/Makefile
                  src/corba/Makefile
                  src/corba/admin/Makefile
                  src/corba/epp/Makefile

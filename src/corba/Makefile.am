@@ -12,7 +12,8 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) 		\
 			  -I$(top_srcdir)/src 		\
 			  -I$(top_builddir)/src 	\
 			  -I$(top_srcdir)			\
-			  -I$(top_srcdir)/util/db/model
+			  -I$(top_srcdir)/util/db/model \
+			  -I$(top_srcdir)/src/register
 
 LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
@@ -29,6 +30,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/src/register/messages/libmessages.a \
+	$(top_builddir)/src/register/requests/librequests.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
 	
 	

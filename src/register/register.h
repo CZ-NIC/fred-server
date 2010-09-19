@@ -13,8 +13,6 @@
 #include "mail.h"
 #include "file.h"
 #include "filter.h"
-#include "request.h"
-#include "session.h"
 
 /// forward declared parameter type
 class DB;
@@ -81,8 +79,6 @@ public:
   virtual KeySet::Manager *getKeySetManager() const = 0;
   /// return filter manager
   virtual Filter::Manager* getFilterManager() const = 0;
-  /// return request manager 
-  virtual Logger::Manager* getRequestManager() const = 0;
   /// loads country codes description from database
   virtual void loadCountryDesc() = 0;
   /// return size of country description list

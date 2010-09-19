@@ -16,7 +16,6 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 noinst_PROGRAMS = test_logd test-model test-db\
 					test-file-manager-client test-registrar-group \
 					test-registrar-certification test-msgd
-					
 #tests
 #TESTS = $(noinst_PROGRAMS)
 
@@ -28,7 +27,8 @@ test_logd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_PROGRAM_OPTIONS_LIB) \
                      $(OMNIORB4_LIBS) 
 
-test_logd_LDADD =    $(top_builddir)/src/register/libfred.a \
+test_logd_LDADD =    $(top_builddir)/src/register/requests/librequests.a \
+                     $(top_builddir)/src/register/libfred.a \
                      $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/types/libtypes.a \
@@ -80,7 +80,7 @@ test_db_LDADD =   $(top_builddir)/src/register/libfred.a \
 test_file_manager_client_SOURCES = \
 					test-file-manager-client.cc \
 					test-file-manager-client.h
-					
+
 test_file_manager_client_LDFLAGS = \
                      $(BOOST_LDFLAGS) \
                      $(AM_LDFLAGS) \

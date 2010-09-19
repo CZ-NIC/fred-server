@@ -280,15 +280,15 @@ public:
             Register::TID m_id = regman->createRegistrarGroupMembership(
                     1
                     , gid3
-                    , Database::Date(NOW)
-                    , Database::Date(POS_INF));
+                    , Database::Date(Database::NOW)
+                    , Database::Date(Database::POS_INF));
 
             regman->updateRegistrarGroupMembership(
                     m_id
                     , 1
                     , gid3
-                    , Database::Date(NOW)
-                    , Database::Date(NOW) );
+                    , Database::Date(Database::NOW)
+                    , Database::Date(Database::NOW) );
 
 
         }

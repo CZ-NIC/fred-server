@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 
-#include "request_impl.h"
+#include "requests/request_impl.h"
 
 #include "corba_wrapper.h"
 #include <corba/ccReg.hh>

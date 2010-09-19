@@ -1,4 +1,4 @@
-SUBDIRS = messages
+SUBDIRS = messages requests
 
 noinst_LIBRARIES = libfred.a
 
@@ -42,16 +42,6 @@ libfred_a_SOURCES = register.cc \
 					model_zone_soa.h \
 					model_price_list.cc \
 					model_price_list.h \
-					model_request.cc \
-					model_request_data.cc \
-					model_request_data.h \
-					model_request.h \
-					model_request_property_name.cc \
-					model_request_property_name.h \
-					model_request_property_value.cc \
-					model_request_property_value.h \
-					model_session.cc \
-					model_session.h \
 					model_registrar_certification.h \
 					model_registrar_certification.cc \
 					model_registrar_group.h \
@@ -107,11 +97,6 @@ libfred_a_SOURCES = register.cc \
 					file.h \
 					filter.cc \
 					filter.h \
-					request.cc \
-					request.h \
-					request_impl.h \
-					session.cc \
-					session.h \
 					mailer.h \
 					sql.h \
 					exceptions.h \

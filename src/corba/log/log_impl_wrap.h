@@ -5,7 +5,7 @@
 
 // #include "request.h"
 // even better:
-#include "register/request.h"
+#include "register/requests/request.h"
 #include "src/corba/admin/usertype_conv.h"
 #include "src/corba/admin/pagetable_logger.h"
 #include "src/corba/admin/common.h"
