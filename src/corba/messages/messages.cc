@@ -48,7 +48,7 @@ Registry_Messages_i::~Registry_Messages_i()
   // add extra destructor code here
 }
 //   Methods corresponding to IDL attributes and operations
-CORBA::ULongLong Registry_Messages_i::sendSms(const char* contact_handle
+CORBA::ULongLong Registry_Messages_i::saveSmsToSend(const char* contact_handle
         , const char* phone
         , const char* content
         , const char* message_type
@@ -75,9 +75,9 @@ CORBA::ULongLong Registry_Messages_i::sendSms(const char* contact_handle
     {
         throw Registry::Messages::ErrorReport("unknown exception");
     }
-}//Registry_Messages_i::sendSms
+}//Registry_Messages_i::saveSmsToSend
 
-CORBA::ULongLong Registry_Messages_i::sendLetter(const char* contact_handle
+CORBA::ULongLong Registry_Messages_i::saveLetterToSend(const char* contact_handle
         , const Registry::Messages::PostalAddress& address
         , const Registry::Messages::ByteBuffer& file_content
         , const char* file_name
@@ -93,7 +93,7 @@ CORBA::ULongLong Registry_Messages_i::sendLetter(const char* contact_handle
     try
     {
         LOGGER(PACKAGE).debug(boost::format(
-                  "Registry_Messages_i::sendLetter"
+                  "Registry_Messages_i::saveLetterToSend"
                 " contact_handle: %1%")
             % contact_handle);
 
@@ -141,7 +141,7 @@ CORBA::ULongLong Registry_Messages_i::sendLetter(const char* contact_handle
     {
         throw Registry::Messages::ErrorReport("unknown exception");
     }
-}//Registry_Messages_i::sendLetter
+}//Registry_Messages_i::saveLetterToSend
 
 const char* server_name = "msgd";//for logging contxt
 

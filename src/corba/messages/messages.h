@@ -78,7 +78,7 @@ public:
   Registry_Messages_i(Register::Messages::ManagerPtr msgmgr);
 
   // methods corresponding to defined IDL attributes and operations
-  CORBA::ULongLong sendSms(const char* contact_handle
+  CORBA::ULongLong saveSmsToSend(const char* contact_handle
           ,const char* phone
           ,const char* content
           ,const char* message_type
@@ -86,7 +86,7 @@ public:
           , CORBA::ULongLong contact_history_historyid
           );
 
-  CORBA::ULongLong sendLetter(const char* contact_handle
+  CORBA::ULongLong saveLetterToSend(const char* contact_handle
           ,const Registry::Messages::PostalAddress& address
           ,const Registry::Messages::ByteBuffer& file_content
           ,const char* file_name

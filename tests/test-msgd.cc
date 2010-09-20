@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
 
             CORBA::ULongLong message_archive_id = 0;
 
-            message_archive_id = messages_ref->sendSms(
+            message_archive_id = messages_ref->saveSmsToSend(
                     sms_contact, phone , content, sms_message_type, 1, 1);
 
             //letter test
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
             CORBA::String_var letter_message_type = CORBA::string_dup("password_reset");
 
 
-            message_archive_id = messages_ref->sendLetter(
+            message_archive_id = messages_ref->saveLetterToSend(
                     letter_contact, paddr.in()
                     , file_content, file_name,file_type
                     , letter_message_type, 1, 1);
