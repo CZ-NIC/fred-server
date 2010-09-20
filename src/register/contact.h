@@ -147,6 +147,8 @@ public:
   static Manager *create(DB *db, bool restrictedHandle);
 };
 
+typedef std::auto_ptr<Manager> ManagerPtr;
+
 } // namespace Contact
 } // namespace Register
 

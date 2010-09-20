@@ -22,6 +22,7 @@
 #include "old_utils/dbsql.h"
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
 #include <vector>
 #include "old_utils/log.h"
 #include "model/model_filters.h"
@@ -623,36 +624,69 @@ class ManagerImpl : public virtual Manager {
   }
   /// check if object is in database
   bool checkHandleRegistration(const std::string& handle, NameIdPair& conflict,
-      bool lock) const throw (SQL_ERROR) {
-    std::ostringstream sql;
-    sql << "SELECT id,name FROM object_registry "
-        << "WHERE type=1 AND erDate ISNULL AND " << "UPPER(name)=UPPER('"
-        << handle << "')";
-    if (lock)
-      sql << " FOR UPDATE ";
-    if (!db->ExecSelect(sql.str().c_str()))
-      throw SQL_ERROR();
-    bool result = db->GetSelectRows() >= 1;
-    conflict.id = result ? STR_TO_ID(db->GetFieldValue(0, 0)) : 0;
-    conflict.name = result ? db->GetFieldValue(0, 1) : "";
-    db->FreeSelect();
-    return result;
+                               bool lock) const throw (SQL_ERROR)
+  {
+      try {
+          std::ostringstream sql;
+          sql << "SELECT id,name FROM object_registry "
+              << "WHERE type=1 AND erDate ISNULL AND " << "UPPER(name)=UPPER('"
+              << handle << "')";
+          if (lock)
+            sql << " FOR UPDATE ";
+
+          /* we really don't want to break epp because of different transaction */
+          if (db) {
+              if (!db->ExecSelect(sql.str().c_str()))
+                  throw SQL_ERROR();
+              bool result = db->GetSelectRows() >= 1;
+              conflict.id = result ? STR_TO_ID(db->GetFieldValue(0, 0)) : 0;
+              conflict.name = result ? db->GetFieldValue(0, 1) : "";
+              db->FreeSelect();
+              return result;
+          }
+          else {
+              Database::Connection conn = Database::Manager::acquire();
+              Database::Result result = conn.exec(sql.str());
+              bool result_ok = result.size() >= 1;
+              conflict.id = result_ok ? static_cast<unsigned long long>(result[0][0]) : 0;
+              conflict.name = result_ok ? static_cast<std::string>(result[0][1]) : "";
+              return result_ok;
+          }
+      }
+      catch (...) {
+          throw SQL_ERROR();
+      }
   }
   /// check if object handle is in protection period (true=protected)
   bool checkProtection(const std::string& name, unsigned type,
-      const std::string& monthPeriodSQL) const throw (SQL_ERROR) {
-    std::stringstream sql;
-    sql << "SELECT COALESCE(" << "MAX(erdate) + (" << monthPeriodSQL
-        << ")::interval" << " > CURRENT_TIMESTAMP, false) " << "FROM object_registry "
-        << "WHERE NOT(erdate ISNULL) " << "AND type=" << type << " "
-        << "AND UPPER(name)=UPPER('" << name << "')";
-    if (!db->ExecSelect(sql.str().c_str())) {
-      db->FreeSelect();
-      throw SQL_ERROR();
-    }
-    bool ret = (db->GetFieldValue(0,0)[0] == 't');
-    db->FreeSelect();
-    return ret;
+                       const std::string& monthPeriodSQL) const throw (SQL_ERROR)
+  {
+      try {
+          std::stringstream sql;
+          sql << "SELECT COALESCE(" << "MAX(erdate) + (" << monthPeriodSQL
+              << ")::interval" << " > CURRENT_TIMESTAMP, false) " << "FROM object_registry "
+              << "WHERE NOT(erdate ISNULL) " << "AND type=" << type << " "
+              << "AND UPPER(name)=UPPER('" << name << "')";
+
+          /* we really don't want to break epp because of different transaction */
+          if (db) {
+              if (!db->ExecSelect(sql.str().c_str())) {
+                db->FreeSelect();
+                throw SQL_ERROR();
+              }
+              bool ret = (db->GetFieldValue(0,0)[0] == 't');
+              db->FreeSelect();
+              return ret;
+          }
+          else {
+              Database::Connection conn = Database::Manager::acquire();
+              Database::Result result = conn.exec(sql.str());
+              return static_cast<bool>(result[0][0]) == true;
+          }
+      }
+      catch (...) {
+          throw SQL_ERROR();
+      }
   }
 public:
   ManagerImpl(DB *_db, bool _restrictedHandle) :
