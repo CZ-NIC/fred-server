@@ -60,6 +60,15 @@ struct letter_proc {
 
 typedef std::vector<letter_proc> LetterProcInfo;
 
+struct sms_proc {
+    unsigned long long sms_id;
+    unsigned attempt;
+    std::string phone_number;
+    std::string content;
+};//info for sms processing
+
+typedef std::vector<sms_proc> SmsProcInfo;
+
 
 class Manager : boost::noncopyable
 {
@@ -87,10 +96,13 @@ public:
     LetterProcInfo load_letters_to_send(std::size_t batch_size_limit);
 
     //load saved sms
-    void load_sms_to_send(std::size_t batch_size_limit);
+    SmsProcInfo load_sms_to_send(std::size_t batch_size_limit);
 
     //set send result into letter status
     void set_letter_status(const LetterProcInfo& letters,long new_status, const std::string& batch_id);
+
+    //set send result into sms status
+    void set_sms_status(const SmsProcInfo& messages,long new_status);
 
 };
 

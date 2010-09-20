@@ -390,17 +390,14 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
                 , Database::query_param_list (batch_size_limit)
         );
     }
-
-
-    // TODO try to enable this
-    trans.commit();
-
-
     // is there anything to send?
     res = conn.exec("SELECT la.file_id, la.id, ma.attempt , f.name "
         " FROM message_archive ma JOIN letter_archive la ON ma.id = la.id "
         " JOIN files f ON la.file_id = f.id "
         " WHERE ma.status=6");
+
+    trans.commit();
+
     if(res.size() == 0) {
         LOGGER(PACKAGE).notice("no files ready for processing; exiting");
         return proc_letters;
@@ -422,9 +419,81 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
     return proc_letters;
 }
 
-void Manager::load_sms_to_send(std::size_t batch_size_limit)
+SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit)
 {
 
+    Database::Connection conn = Database::Manager::acquire();
+
+    // return info of records being processed
+    SmsProcInfo proc_sms;
+
+    /* now bail out if other process (presumably another instance of this
+     * method) is already doing something with this table. No support
+     * for multithreaded access - we would have to remember which
+     * records exactly are we processing
+     */
+    Database::Result res = conn.exec("SELECT EXISTS "
+            "(SELECT * FROM message_archive ma "
+            "JOIN comm_type ct ON ma.comm_type_id = ct.id "
+            " WHERE ma.status=6 AND ct.type = 'sms')");
+
+    if ((bool)res[0][0])
+    {
+           LOGGER(PACKAGE).notice("the messages are already being processed. "
+                   "no action; exiting");
+           return proc_sms;
+    }
+
+    // transaction is needed for 'ON COMMIT DROP' functionality and lock
+    Database::Transaction trans(conn);
+    // acquire lock which conflicts with itself but not basic locks used
+    // by select and stuff..
+    conn.exec("LOCK TABLE message_archive IN SHARE UPDATE EXCLUSIVE MODE");
+    // application level lock and notification about data processing
+
+    if(batch_size_limit == 0)//unlimited batch
+    {
+        conn.exec("UPDATE message_archive SET status = 6 "
+                " WHERE (status = 1 OR status = 4) "
+                " AND comm_type_id = (SELECT id FROM comm_type "
+                " WHERE type = 'sms') "
+        );
+    }
+    else//limited batch
+    {
+        conn.exec_params("UPDATE message_archive SET status = 6 "
+                " WHERE id IN (SELECT id FROM message_archive "
+                "   WHERE (status = 1 OR status = 4) "
+                " AND comm_type_id = (SELECT id FROM comm_type "
+                " WHERE type = 'sms') ORDER BY id LIMIT $1::integer) "
+                , Database::query_param_list (batch_size_limit)
+        );
+    }
+
+    // is there anything to send?
+    res = conn.exec("SELECT  sa.id, ma.attempt, sa.phone_number, sa.content  "
+        " FROM message_archive ma JOIN sms_archive sa ON ma.id = sa.id "
+        " WHERE ma.status=6");
+
+    trans.commit();
+
+    if(res.size() == 0) {
+        LOGGER(PACKAGE).notice("no messages ready for processing; exiting");
+        return proc_sms;
+    }
+
+    proc_sms.reserve(res.size());
+
+    for(unsigned i=0;i<res.size();i++)
+    {
+             sms_proc mp;
+             mp.sms_id = res[i][0];
+             mp.attempt = res[i][1];
+             mp.phone_number = std::string(res[i][2]);
+             mp.content = std::string(res[i][3]);
+             proc_sms.push_back(mp);
+    }
+    return proc_sms;
 }
 
 
@@ -466,6 +535,34 @@ void Manager::set_letter_status(const LetterProcInfo& letters,long new_status, c
 
 }
 
+//set send result into sms status
+void Manager::set_sms_status(const SmsProcInfo& messages,long new_status)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction trans2(conn);
+
+    // processed sms update
+    for (Register::Messages::SmsProcInfo::const_iterator it = messages.begin()
+            ; it!=messages.end(); ++it)
+    {
+          unsigned int new_attempt = it->attempt + 1;
+          conn.exec_params("UPDATE message_archive SET status = $1::integer, "
+                              "attempt = $2::integer, "
+                              "moddate = CURRENT_TIMESTAMP WHERE id = $3::integer"
+                              " AND comm_type_id = (SELECT id FROM comm_type "
+                              " WHERE type = 'sms')"
+                          , Database::query_param_list
+                                   (new_status)
+                                   (new_attempt)
+                                   (it->sms_id)
+                          );
+    }
+    // not processed letters should have status set back (set moddate? status?)
+    conn.exec("UPDATE message_archive SET status = 1 WHERE status = 6 "
+            " AND comm_type_id = (SELECT id FROM comm_type "
+            " WHERE type = 'sms')");
+    trans2.commit();
+}
 
 }//namespace Messages
 }//namespace Register
