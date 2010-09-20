@@ -167,12 +167,12 @@ public:
               ; i != params.end() ; ++i)
       {
           ++params_counter;
-          params_dump += std::string(" ")
-              + boost::lexical_cast<std::string>(params_counter) + "$: " + *i;
+          params_dump += std::string(" $")
+              + boost::lexical_cast<std::string>(params_counter) + ": " + *i;
       }//for params
 
       throw ResultFailed(std::string("query: ") + _query
-              + " params:" + params_dump
+              + " Params:" + params_dump
               + " (" + PQerrorMessage(psql_conn_) + ")");
     }
   }//exec_params
@@ -219,14 +219,14 @@ public:
       for (QueryParams::const_iterator i = params.begin(); i != params.end() ; ++i)
       {
           ++params_counter;
-          params_dump += std::string(" ")
-              + boost::lexical_cast<std::string>(params_counter) + "$: "
+          params_dump += std::string(" $")
+              + boost::lexical_cast<std::string>(params_counter) + ": "
               + (i->is_null() ? std::string("null")
                   : (i->is_binary() ? std::string("binary") : i->get_data()));
       }//for params
 
       throw ResultFailed(std::string("query: ") + _query
-              + " params:" + params_dump
+              + " Params:" + params_dump
               + " (" + PQerrorMessage(psql_conn_) + ")");
     }
   }//exec_params
