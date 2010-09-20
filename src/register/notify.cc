@@ -569,7 +569,7 @@ public:
                     pa.code = contact_code;
                     pa.country = contact_country;
 
-                    TID letter_id = msgm->send_letter(contact_handle.c_str()
+                    TID letter_id = msgm->save_letter_to_send(contact_handle.c_str()
                             , pa,filePDF
                             ,"domain_expiration"
                             ,contact_object_registry_id

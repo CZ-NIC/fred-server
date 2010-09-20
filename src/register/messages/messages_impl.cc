@@ -168,7 +168,7 @@ ManagerPtr create_manager()
 
 //Manager impl
 
-unsigned long long Manager::send_sms(const char* contact_handle
+unsigned long long Manager::save_sms_to_send(const char* contact_handle
         , const char* phone
         , const char* content
         , const char* message_type
@@ -180,7 +180,7 @@ unsigned long long Manager::send_sms(const char* contact_handle
     try
     {
         LOGGER(PACKAGE).debug(boost::format(
-                "Messages::send_sms "
+                "Messages::save_sms_to_send "
                 " contact_handle: %1% "
                 " phone: %2% "
                 " content: %3% "
@@ -225,17 +225,17 @@ unsigned long long Manager::send_sms(const char* contact_handle
     catch(const std::exception& ex)
     {
         LOGGER(PACKAGE).error(boost::format(
-                "Messages::send_sms exception: %1%") % ex.what());
+                "Messages::save_sms_to_send exception: %1%") % ex.what());
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("Messages::send_sms error");
+        LOGGER(PACKAGE).error("Messages::save_sms_to_send error");
     }
     return message_archive_id;
 }
 
 
-unsigned long long Manager::send_letter(const char* contact_handle
+unsigned long long Manager::save_letter_to_send(const char* contact_handle
         , const PostalAddress& address
         , unsigned long long file_id
         , const char* message_type
@@ -247,7 +247,7 @@ unsigned long long Manager::send_letter(const char* contact_handle
     try
     {
         LOGGER(PACKAGE).debug(boost::format(
-                "Messages::send_letter_impl "
+                "Messages::save_letter_to_send "
                 " contact_handle: %1% "
                 " file_id: %2%"
                 " address.name: %3%"
@@ -331,17 +331,17 @@ unsigned long long Manager::send_letter(const char* contact_handle
     catch(const std::exception& ex)
     {
         LOGGER(PACKAGE).error(boost::format(
-                "Messages::send_letter_impl exception: %1%") % ex.what());
+                "Messages::save_letter_to_send exception: %1%") % ex.what());
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("Messages::send_letter_impl error");
+        LOGGER(PACKAGE).error("Messages::save_letter_to_send error");
     }
 
     return message_archive_id;
 }
 
-LetterProcInfo Manager::processLetters(std::size_t batch_size_limit)
+LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -422,7 +422,7 @@ LetterProcInfo Manager::processLetters(std::size_t batch_size_limit)
     return proc_messages;
 }
 
-void Manager::processSMS(std::size_t batch_size_limit)
+void Manager::load_sms_to_send(std::size_t batch_size_limit)
 {
 
 }

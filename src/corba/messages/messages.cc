@@ -61,7 +61,7 @@ CORBA::ULongLong Registry_Messages_i::saveSmsToSend(const char* contact_handle
 
     try
     {
-        return msgmgr_->send_sms(contact_handle,phone, content
+        return msgmgr_->save_sms_to_send(contact_handle,phone, content
                 , message_type
                 , contact_object_registry_id
                 , contact_history_historyid
@@ -124,7 +124,7 @@ CORBA::ULongLong Registry_Messages_i::saveLetterToSend(const char* contact_handl
                 , "application/pdf"
                 , filetype_id );
 
-        return msgmgr_->send_letter(contact_handle
+        return msgmgr_->save_letter_to_send(contact_handle
                 , address_impl
                 , file_id
                 , message_type

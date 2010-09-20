@@ -252,7 +252,7 @@ void NotifyClient::file_send()
          = Register::Messages::create_manager();
 
      HPCfgMap hpmail_config = readHPConfig(conf_file);
-     Register::Messages::LetterProcInfo proc_messages = messages_manager->processLetters(0);
+     Register::Messages::LetterProcInfo proc_messages = messages_manager->load_letters_to_send(0);
 
      int new_status = 5;
      std::string batch_id;

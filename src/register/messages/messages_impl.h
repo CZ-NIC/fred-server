@@ -66,7 +66,7 @@ class Manager : boost::noncopyable
 public:
 
     //save message for later send
-    unsigned long long send_sms(const char* contact_handle
+    unsigned long long save_sms_to_send(const char* contact_handle
             , const char* phone
             , const char* content
             , const char* message_type
@@ -75,7 +75,7 @@ public:
             );
 
     //save message for later send
-    unsigned long long send_letter(const char* contact_handle
+    unsigned long long save_letter_to_send(const char* contact_handle
             , const PostalAddress& address
             , unsigned long long file_id
             , const char* message_type
@@ -83,11 +83,11 @@ public:
             , unsigned long contact_history_historyid
             );
 
-    //send saved letters
-    LetterProcInfo processLetters(std::size_t batch_size_limit);
+    //load saved letters
+    LetterProcInfo load_letters_to_send(std::size_t batch_size_limit);
 
-    //send saved sms
-    void processSMS(std::size_t batch_size_limit);
+    //load saved sms
+    void load_sms_to_send(std::size_t batch_size_limit);
 
 };
 
