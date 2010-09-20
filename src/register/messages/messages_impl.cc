@@ -519,7 +519,7 @@ void Manager::set_letter_status(const LetterProcInfo& letters,long new_status, c
                           );
 
           conn.exec_params("UPDATE letter_archive SET  "
-                              "batch_id = '$1::text' "
+                              "batch_id = $1::text "
                               " WHERE id = $2::integer"
                           , Database::query_param_list
                                    (batch_id)
