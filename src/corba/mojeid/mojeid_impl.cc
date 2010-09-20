@@ -43,7 +43,8 @@ MojeIDImpl::~MojeIDImpl()
 }
 
 
-CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact)
+CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
+                                           IdentificationMethod _method)
 {
     Logging::Context ctx_server(server_name_);
     Logging::Context ctx(create_ctx_name("contact-create"));
@@ -62,6 +63,15 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact)
     }
 
     return 0;
+}
+
+
+void MojeIDImpl::processIdentification(const char* _process_id,
+                                       const char* _password)
+{
+    Logging::Context ctx_server(server_name_);
+    Logging::Context ctx(create_ctx_name("process-identification"));
+    ConnectionReleaser releaser;
 }
 
 
