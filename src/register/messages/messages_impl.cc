@@ -428,6 +428,43 @@ void Manager::load_sms_to_send(std::size_t batch_size_limit)
 }
 
 
+void Manager::set_letter_status(LetterProcInfo& letters,long new_status, const std::string& batch_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction trans2(conn);
+
+    // processed letters update
+    for (Register::Messages::LetterProcInfo::iterator it = letters.begin()
+            ; it!=letters.end(); ++it)
+    {
+          unsigned int new_attempt = it->attempt + 1;
+          conn.exec_params("UPDATE message_archive SET status = $1::integer, "
+                              "attempt = $2::integer, "
+                              "moddate = CURRENT_TIMESTAMP WHERE id = $3::integer"
+                              " AND comm_type_id = (SELECT id FROM comm_type "
+                              " WHERE type = 'letter')"
+                          , Database::query_param_list
+                                   (new_status)
+                                   (new_attempt)
+                                   (it->letter_id)
+                          );
+
+          conn.exec_params("UPDATE letter_archive SET  "
+                              "batch_id = '$1::text' "
+                              " WHERE id = $2::integer"
+                          , Database::query_param_list
+                                   (batch_id)
+                                   (it->letter_id)
+                          );
+    }
+    // not processed letters should have status set back (set moddate? status?)
+    conn.exec("UPDATE message_archive SET status = 1 WHERE status = 6 "
+            " AND comm_type_id = (SELECT id FROM comm_type "
+            " WHERE type = 'letter')");
+
+    trans2.commit();
+
+}
 
 
 }//namespace Messages

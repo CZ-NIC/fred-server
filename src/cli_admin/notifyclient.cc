@@ -290,34 +290,10 @@ void NotifyClient::file_send()
          new_status = 4; // set error status in database
      }
 
-     Database::Connection conn = Database::Manager::acquire();
-     Database::Transaction trans2(conn);
+     //set status
+     messages_manager->set_letter_status(proc_messages,new_status,batch_id);
 
-     // processed letters update
-     for (Register::Messages::LetterProcInfo::iterator it = proc_messages.begin()
-             ; it!=proc_messages.end(); it++)
-     {
-           unsigned int new_attempt = (*it).attempt + 1;
-           conn.exec(boost::format("UPDATE message_archive SET status = %1%, "
-                                   "attempt = %2%, "
-                                   "moddate = CURRENT_TIMESTAMP WHERE id = %3%"
-                                   " AND comm_type_id = (SELECT id FROM comm_type "
-                                   " WHERE type = 'letter')")
-                                    % new_status
-                                    % new_attempt % (*it).letter_id);
-
-           conn.exec(boost::format("UPDATE letter_archive SET  "
-                                   "batch_id = '%1%' "
-                                   " WHERE id = %2%")
-                                    % conn.escape(batch_id)
-                                    % (*it).letter_id);
-     }
-     // not processed letters should have status set back (set moddate? status?)
-     conn.exec("UPDATE message_archive SET status = 1 WHERE status = 6 "
-             " AND comm_type_id = (SELECT id FROM comm_type "
-             " WHERE type = 'letter')");
-     trans2.commit();
-  }
+  }//sendLetters
 
   void NotifyClient::sendFile(const std::string &filename, const std::string &conf_file)  {
 
