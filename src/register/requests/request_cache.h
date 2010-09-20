@@ -22,6 +22,7 @@
 
 #include "request.h"
 #include <map>
+#include <boost/thread/mutex.hpp>
 
 namespace Register {
 
@@ -32,12 +33,13 @@ namespace Logger {
  * not from database.
  */
 class RequestCache {
+  boost::mutex cache_mutex;
 	typedef std::map<unsigned long long, ModelRequest> CacheImpl;
 	CacheImpl cache;
 public:
-    /// Exception thrown in case no record is found in cache
-    struct NOT_EXISTS {};
-    /// Insert just saved request into cache during createRequest
+  /// Exception thrown in case no record is found in cache
+  struct NOT_EXISTS {};
+  /// Insert just saved request into cache during createRequest
 	void insert(const ModelRequest& mr);
 	/// Remove request from cache during closeRequest
 	void remove(unsigned long long requestId) throw (NOT_EXISTS);

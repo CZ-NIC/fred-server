@@ -21,7 +21,10 @@
 void
 Register::Logger::RequestCache::insert(const ModelRequest& mr)
 {
-	// TODO: lock before this call, cache is shared resource
+  boost::mutex::scoped_lock lock(cache_mutex);
+  // TODO: now using auto_generated copy constructor. it's ok because only
+  // fields used are begin_time, is_monitoring, service_id and session_id
+  // if adding field, check if copy constructor works fine
 	cache[mr.getId()] = mr;
 }
 
@@ -29,7 +32,7 @@ void
 Register::Logger::RequestCache::remove(unsigned long long requestId)
 throw (NOT_EXISTS)
 {
-	// TODO: lock before this call, cache is shared resource
+  boost::mutex::scoped_lock lock(cache_mutex);
 	CacheImpl::const_iterator m = cache.find(requestId);
 	if (m == cache.end()) throw NOT_EXISTS();
 	cache.erase(requestId);
@@ -39,7 +42,7 @@ const ModelRequest&
 Register::Logger::RequestCache::get(unsigned long long requestId)
 throw (NOT_EXISTS)
 {
-	// TODO: lock before this call, cache is shared resource
+  boost::mutex::scoped_lock lock(cache_mutex);
 	CacheImpl::const_iterator m = cache.find(requestId);
 	if (m == cache.end()) throw NOT_EXISTS();
 	return m->second;
@@ -48,13 +51,13 @@ throw (NOT_EXISTS)
 void
 Register::Logger::RequestCache::clean()
 {
-	// TODO: lock before this call, cache is shared resource
+  boost::mutex::scoped_lock lock(cache_mutex);
 	cache.clear();
 }
 
 unsigned
 Register::Logger::RequestCache::count()
 {
-	// TODO: lock before this call, cache is shared resource
+  boost::mutex::scoped_lock lock(cache_mutex);
 	return cache.size();
 }
