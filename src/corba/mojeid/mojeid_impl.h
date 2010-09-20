@@ -20,8 +20,8 @@ class MojeIDImpl : public POA_Registry::MojeID,
 
         CORBA::ULongLong contactCreate(const Contact &_contact);
 
-        CORBA::ULongLong contactUpdatePrepare(const Contact &_contact,
-                                              const char* _trans_id);
+        void contactUpdatePrepare(const Contact &_contact,
+                                  const char* _trans_id);
 
         Registry::Contact* contactInfo(const char* _handle);
 

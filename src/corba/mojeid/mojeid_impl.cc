@@ -65,14 +65,13 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact)
 }
 
 
-CORBA::ULongLong MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
+void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
                                                   const char* _trans_id)
 {
     Logging::Context ctx_server(server_name_);
     Logging::Context ctx(create_ctx_name("contact-update"));
 
     LOGGER(PACKAGE).debug("transaction id = " + std::string(_trans_id));
-    return 0;
 }
 
 
