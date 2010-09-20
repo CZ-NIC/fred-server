@@ -411,7 +411,7 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
 
     for(unsigned i=0;i<res.size();i++)
     {
-             message_proc mp;
+             letter_proc mp;
              mp.file_id = res[i][0];
              mp.letter_id = res[i][1];
              mp.attempt = res[i][2];

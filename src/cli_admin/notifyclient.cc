@@ -265,7 +265,7 @@ void NotifyClient::file_send()
 
          for(unsigned i=0;i<proc_messages.size();i++)
          {
-             Register::Messages::message_proc mp = proc_messages.at(i);
+             Register::Messages::letter_proc mp = proc_messages.at(i);
 
              NamedMailFile smail;
              smail.name = mp.fname;

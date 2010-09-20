@@ -51,14 +51,14 @@ struct PostalAddress
 
 unsigned long long get_filetype_id(std::string file_type);
 
-struct message_proc {
+struct letter_proc {
     unsigned long long file_id;
     unsigned long long letter_id;
     unsigned attempt;
     std::string fname;
 };//info for letter processing
 
-typedef std::vector<message_proc> LetterProcInfo;
+typedef std::vector<letter_proc> LetterProcInfo;
 
 
 class Manager : boost::noncopyable
