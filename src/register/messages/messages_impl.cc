@@ -346,7 +346,7 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
     Database::Connection conn = Database::Manager::acquire();
 
     // return info of records being processed
-    LetterProcInfo proc_messages;
+    LetterProcInfo proc_letters;
 
     /* now bail out if other process (presumably another instance of this
      * method) is already doing something with this table. No support
@@ -362,7 +362,7 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
     {
            LOGGER(PACKAGE).notice("the files are already being processed. "
                    "no action; exiting");
-           return proc_messages;
+           return proc_letters;
     }
 
     // transaction is needed for 'ON COMMIT DROP' functionality
@@ -403,11 +403,11 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
         " WHERE ma.status=6");
     if(res.size() == 0) {
         LOGGER(PACKAGE).notice("no files ready for processing; exiting");
-        return proc_messages;
+        return proc_letters;
     }
 
 
-    proc_messages.reserve(res.size());
+    proc_letters.reserve(res.size());
 
     for(unsigned i=0;i<res.size();i++)
     {
@@ -416,10 +416,10 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
              mp.letter_id = res[i][1];
              mp.attempt = res[i][2];
              mp.fname = std::string(res[i][3]);
-             proc_messages.push_back(mp);
+             proc_letters.push_back(mp);
     }
 
-    return proc_messages;
+    return proc_letters;
 }
 
 void Manager::load_sms_to_send(std::size_t batch_size_limit)

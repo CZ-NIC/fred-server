@@ -252,7 +252,7 @@ void NotifyClient::file_send()
          = Register::Messages::create_manager();
 
      HPCfgMap hpmail_config = readHPConfig(conf_file);
-     Register::Messages::LetterProcInfo proc_messages = messages_manager->load_letters_to_send(0);
+     Register::Messages::LetterProcInfo proc_letters = messages_manager->load_letters_to_send(0);
 
      int new_status = 5;
      std::string batch_id;
@@ -263,9 +263,9 @@ void NotifyClient::file_send()
          LOGGER(PACKAGE).info("init postservice upload");
          HPMail::set(hpmail_config);
 
-         for(unsigned i=0;i<proc_messages.size();i++)
+         for(unsigned i=0;i<proc_letters.size();i++)
          {
-             Register::Messages::letter_proc mp = proc_messages.at(i);
+             Register::Messages::letter_proc mp = proc_letters.at(i);
 
              NamedMailFile smail;
              smail.name = mp.fname;
@@ -291,7 +291,7 @@ void NotifyClient::file_send()
      }
 
      //set status
-     messages_manager->set_letter_status(proc_messages,new_status,batch_id);
+     messages_manager->set_letter_status(proc_letters,new_status,batch_id);
 
   }//sendLetters
 
