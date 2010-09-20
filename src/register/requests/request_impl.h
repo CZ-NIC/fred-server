@@ -1,6 +1,7 @@
 #ifndef _REQUEST_IMPL_H_
 #define _REQUEST_IMPL_H_
 #include "request.h"
+#include "request_cache.h"
 
 namespace Register {
 namespace Logger {
@@ -34,6 +35,7 @@ private:
   */
   std::map<std::string, Database::ID, strCmp> property_names;
   std::list<std::string> monitoring_ips;
+  RequestCache rcache;
 
 public:
 

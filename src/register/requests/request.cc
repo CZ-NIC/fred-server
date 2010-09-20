@@ -1165,6 +1165,7 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
 	}
 
         db.commit();
+    rcache.insert(req);
 	return request_id;
 }
 
@@ -1248,27 +1249,66 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Register::Logger::RequestP
 
 }
 
-// close the record with given ID (end time is filled thus no further modification is possible after this call )
-//TODO session_id is optional - refactor code
-bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Logger::RequestProperties &props, const Register::Logger::ObjectReferences &refs, const long result_code, ID session_id)
+// close the record with given ID (end time is filled thus no further
+// modification is possible after this call)
+// TODO session_id is optional - refactor code
+bool ManagerImpl::i_closeRequest(
+		ID id,
+		const char *content,
+		const Register::Logger::RequestProperties &props,
+		const Register::Logger::ObjectReferences &refs,
+		const long result_code,
+		ID session_id
+)
 {	
+	logd_auto_db db;
+    DateTime entry_time;
+    ServiceType service_id;
+    bool monitoring;
+    ID old_session_id;
+    try {
+		const ModelRequest& mr = rcache.get(id);
+		entry_time = mr.getTimeBegin();
+		service_id = mr.getServiceId();
+		monitoring = mr.getIsMonitoring();
+		old_session_id = mr.getSessionId();
+		rcache.remove(id);
+    }
+    catch (RequestCache::NOT_EXISTS)
+    {
+    	boost::format select = boost::format(
+    			"SELECT time_begin, service_id, is_monitoring, "
+    			"COALESCE(session_id,0) "
+    			"FROM request where id = %1%") % id;
+    	Result res = db.exec(select.str());
+    	if (res.size() == 0) {
+            logger_error(boost::format(
+            		"Record with ID %1% not found in request table.") % id );
+            return false;
+    	}
+    	entry_time = res[0][0].operator ptime();
+    	service_id = (ServiceType)(int) res[0][1];
+    	monitoring = (bool)res[0][2];
+    	old_session_id = (unsigned)res[0][3];
+    }
 	logd_ctx_init ctx;
 #ifdef HAVE_LOGGER
-        boost::format sess_fmt = boost::format("session-%1%") % session_id;
-        Logging::Context ctx_sess(sess_fmt.str());
-        boost::format entry_fmt = boost::format("entry-%1%") % id;
-        Logging::Context ctx_entry(entry_fmt.str());
+	boost::format sess_fmt = boost::format("session-%1%") %
+			(session_id ? session_id : old_session_id);
+	Logging::Context ctx_sess(sess_fmt.str());
+	boost::format entry_fmt = boost::format("entry-%1%") % id;
+	Logging::Context ctx_entry(entry_fmt.str());
 #endif
         
-        TRACE("[CALL] Register::Logger::ManagerImpl::i_closeRequest");
-	logd_auto_db db;
+	TRACE("[CALL] Register::Logger::ManagerImpl::i_closeRequest");
 
-        // THIS lock is used for inserting new properties. It MUST be unlocked (if it gets locked at all)
-        // after the transaction is commited
+    // THIS lock is used for inserting new properties. It MUST be
+	// unlocked (if it gets locked at all)
+    // after the transaction is commited
 #if ( BOOST_VERSION < 103500 ) 
-        boost::mutex::scoped_lock prop_lock(properties_mutex, false);
+	boost::mutex::scoped_lock prop_lock(properties_mutex, false);
 #else 
-        boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
+	boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
 #endif
 
 	try {
@@ -1299,66 +1339,46 @@ bool ManagerImpl::i_closeRequest(ID id, const char *content, const Register::Log
 		}
 #endif // LOGD_VERIFY_INPUT
 
-                std::string query("UPDATE request SET time_end=now()");
+	std::string query("UPDATE request SET time_end=now()");
                 
-                if(session_id != 0) {
+	if(session_id != 0) {
 
-                        query = query + ", session_id=" + boost::lexical_cast<std::string>(session_id);
-                        std::string user_name;
-                        Database::ID user_id;
-                        getSessionUser(db, session_id, &user_name, &user_id);
+		query = query + ", session_id=" + boost::lexical_cast<std::string>(session_id);
+		std::string user_name;
+		Database::ID user_id;
+		getSessionUser(db, session_id, &user_name, &user_id);
 
-                        if(!user_name.empty()) {
-                                query = query +  (boost::format(", user_name='%1%'") % user_name ).str();
-                        }
-                        if(user_id != 0) {
-                                query = query + (boost::format(", user_id=%1%") % user_id).str();
-                        }
-                }
-                query = query + " WHERE id=" + boost::lexical_cast<std::string>(id);
-                db.exec(query);
+		if(!user_name.empty()) {
+			query = query +  (boost::format(", user_name='%1%'") % user_name ).str();
+		}
+		if(user_id != 0) {
+			query = query + (boost::format(", user_id=%1%") % user_id).str();
+		}
+	}
+	query = query + (boost::format(
+		", result_code_id=get_result_code_id( %1% , %2% )")
+		% service_id % result_code).str();
+	query = query + " WHERE id=" + boost::lexical_cast<std::string>(id);
+	db.exec(query);
 
-                // TODO how about a savepoint
-                boost::format select = boost::format("select time_begin, service_id, is_monitoring from request where id = %1%") % id;
-                Result res = db.exec(select.str());
-                if(res.size() == 0) {
-                        logger_error(boost::format("Record  with ID %1% not found in request table.") % id );
-                        return false;
-                }
+	// insert output content
+	if(content != NULL && content[0] != '\0') {
+		ModelRequestData data;
+		// insert into request_data
+		data.setRequestTimeBegin(entry_time);
+		data.setRequestServiceId(service_id);
+		data.setRequestMonitoring(monitoring);
+		data.setRequestId(id);
+		data.setContent(content);
+		data.setIsResponse(true);
+		data.insert();
+	}
 
-                DateTime entry_time = res[0][0].operator ptime();
-                ServiceType service_id = (ServiceType)(int) res[0][1];
-                bool monitoring = (bool)res[0][2];
-
-                boost::format update_result_code_id = boost::format(
-                        "update request set result_code_id=get_result_code_id( %2% , %3% )"
-                        "    where id=%1%")
-                    % id % service_id % result_code;
-                db.exec(update_result_code_id.str());
-
-                // insert output content
-                if(content != NULL && content[0] != '\0') {
-                        ModelRequestData data;
-
-                        // insert into request_data
-                        data.setRequestTimeBegin(entry_time);
-                        data.setRequestServiceId(service_id);
-                        data.setRequestMonitoring(monitoring);
-                        data.setRequestId(id);
-                        data.setContent(content);
-                        data.setIsResponse(true);
-
-                        data.insert();
-                }
-
-                // insert properties 
-                if(props.size() > 0) {
-                        insert_props(entry_time, service_id, monitoring, id, props, db, true, prop_lock);
-                }
-
-                if(refs.size() > 0) {
-                        insert_obj_ref(entry_time, service_id, monitoring, id, refs, db);
-                }
+	// insert properties
+	if(props.size() > 0)
+		insert_props(entry_time, service_id, monitoring, id, props, db, true, prop_lock);
+	if(refs.size() > 0)
+		insert_obj_ref(entry_time, service_id, monitoring, id, refs, db);
 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
