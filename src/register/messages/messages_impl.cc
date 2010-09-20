@@ -371,13 +371,27 @@ LetterProcInfo Manager::processLetters(std::size_t batch_size_limit)
     // by select and stuff..
     conn.exec("LOCK TABLE message_archive IN SHARE UPDATE EXCLUSIVE MODE");
     // application level lock and notification about data processing
-    conn.exec("UPDATE message_archive SET status = 6 "
-            " WHERE (status = 1 OR status = 4) "
-            " AND comm_type_id = (SELECT id FROM comm_type "
-            " WHERE type = 'letter') "
+
+    if(batch_size_limit == 0)//unlimited batch
+    {
+        conn.exec("UPDATE message_archive SET status = 6 "
+                " WHERE (status = 1 OR status = 4) "
+                " AND comm_type_id = (SELECT id FROM comm_type "
+                " WHERE type = 'letter') "
+        );
+    }
+    else//limited batch
+    {
+        conn.exec_params("UPDATE message_archive SET status = 6 "
+                " WHERE id IN (SELECT id FROM message_archive "
+                "   WHERE (status = 1 OR status = 4) "
+                " AND comm_type_id = (SELECT id FROM comm_type "
+                " WHERE type = 'letter') ORDER BY id LIMIT $1::integer) "
+                , Database::query_param_list (batch_size_limit)
+        );
+    }
 
 
-    );
     // TODO try to enable this
     trans.commit();
 
