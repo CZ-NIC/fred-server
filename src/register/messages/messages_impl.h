@@ -90,7 +90,7 @@ public:
     void load_sms_to_send(std::size_t batch_size_limit);
 
     //set send result into letter status
-    void set_letter_status(LetterProcInfo& letters,long new_status, const std::string& batch_id);
+    void set_letter_status(const LetterProcInfo& letters,long new_status, const std::string& batch_id);
 
 };
 

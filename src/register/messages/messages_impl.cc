@@ -428,13 +428,13 @@ void Manager::load_sms_to_send(std::size_t batch_size_limit)
 }
 
 
-void Manager::set_letter_status(LetterProcInfo& letters,long new_status, const std::string& batch_id)
+void Manager::set_letter_status(const LetterProcInfo& letters,long new_status, const std::string& batch_id)
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction trans2(conn);
 
     // processed letters update
-    for (Register::Messages::LetterProcInfo::iterator it = letters.begin()
+    for (Register::Messages::LetterProcInfo::const_iterator it = letters.begin()
             ; it!=letters.end(); ++it)
     {
           unsigned int new_attempt = it->attempt + 1;
