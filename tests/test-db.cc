@@ -36,7 +36,7 @@ boost::assign::list_of
 
 BOOST_AUTO_TEST_CASE( test_exec )
 {
-    Database::QueryParam qp = Database::QPNull();
+    Database::QueryParam qp = Database::QPNull;
     qp.print_buffer();
 
     BOOST_REQUIRE_EQUAL(exec_params_test() , 0);
