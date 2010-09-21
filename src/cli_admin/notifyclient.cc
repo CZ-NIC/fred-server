@@ -270,6 +270,8 @@ void NotifyClient::file_send()
      HPCfgMap hpmail_config = readHPConfig(conf_file);
      Register::Messages::LetterProcInfo proc_letters = messages_manager->load_letters_to_send(0);
 
+     if(proc_letters.empty()) return;
+
      int new_status = 5;
      std::string batch_id;
 
@@ -320,6 +322,8 @@ void NotifyClient::file_send()
           = Register::Messages::create_manager();
 
       Register::Messages::SmsProcInfo proc_sms = messages_manager->load_sms_to_send(0);
+
+      if(proc_sms.empty()) return;
 
       int new_status = 5;
 
