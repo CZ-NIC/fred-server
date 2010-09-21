@@ -96,7 +96,7 @@ public:
                                                   % dbuser
                                                   % dbpass
                                                   % dbtime);
-        std::cout << "database connection set to: " << conn_info << std::endl;
+        // std::cout << "database connection set to: " << conn_info << std::endl;
 
         Database::Manager::init(new Database::ConnectionFactory(conn_info));
 
