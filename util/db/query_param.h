@@ -141,7 +141,7 @@ public:
         buffer_ = boost::lexical_cast<std::string>(t);
     }
 
-   std::string print_buffer()
+   std::string print_buffer() const
     {
         std::string ret = "not set";
         if (null_)
