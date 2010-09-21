@@ -11,6 +11,7 @@ class MojeIDImpl : public POA_Registry::MojeID,
 {
     private:
         const std::string server_name_;
+        unsigned long long mojeid_registrar_id_;
 
         virtual ~MojeIDImpl();
 

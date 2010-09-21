@@ -71,8 +71,6 @@ int main(int argc, char *argv[])
                 CfgArgs::instance()->get_handler_ptr_by_type
                 <HandleLoggingArgs>()->log_level));
 
-        Logging::Context ctx(server_name);
-
         //CORBA init
         FakedArgs orb_fa = CfgArgs::instance()->fa;
         HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->

@@ -1,5 +1,6 @@
 #include "mojeid_impl.h"
 #include "corba_wrap.h"
+#include "mojeid_request.h"
 
 #include "log/logger.h"
 #include "log/context.h"
@@ -33,8 +34,26 @@ namespace Registry {
 
 
 MojeIDImpl::MojeIDImpl(const std::string &_server_name)
-    : server_name_(_server_name)
+    : server_name_(_server_name),
+      mojeid_registrar_id_(0)
 {
+    Logging::Context ctx_server(server_name_);
+    Logging::Context ctx("init");
+
+    try {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result result = conn.exec_params(
+                "SELECT id FROM registrar WHERE handle = $1::text",
+                Database::query_param_list("REG-MOJEID"));
+
+        if (result.size() != 1 || (mojeid_registrar_id_ = result[0][0]) == 0) {
+            throw std::runtime_error("failed to find dedicated registrar in database");
+        }
+    }
+    catch (std::exception &_ex) {
+        LOGGER(PACKAGE).alert(_ex.what());
+        throw;
+    }
 }
 
 
@@ -51,15 +70,10 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
     ConnectionReleaser releaser;
 
     try {
-        if (_contact.addresses.length() == 0) {
-            throw std::runtime_error("contact has no address");
-        }
-        if (_contact.emails.length() == 0) {
-            throw std::runtime_error("contact has no email");
-        }
-
-        /* TODO: get mojeid registrar id from database (may be in server init phase) */
-        unsigned long long mojeid_registrar_id = 1;
+        /* start new request - here for logging into action table - until 
+         * fred-logd fully migrated */
+        Registry::MojeIDRequest request(204);
+        Logging::Context ctx_request(request.get_servertrid());
 
         std::string handle = static_cast<std::string>(_contact.username);
         try {
@@ -95,23 +109,28 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
             throw std::runtime_error("contact handle availability check failed");
         }
 
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
+        if (_contact.addresses.length() == 0) {
+            throw std::runtime_error("contact has no address");
+        }
+        if (_contact.emails.length() == 0) {
+            throw std::runtime_error("contact has no email");
+        }
+
 
         /* object_registry record */
-        Database::Result roreg = conn.exec_params(
+        Database::Result roreg = request.conn.exec_params(
                 "SELECT create_object($1::integer, $2::text, $3::integer)",
-                Database::query_param_list(mojeid_registrar_id)(handle)(1));
+                Database::query_param_list(mojeid_registrar_id_)(handle)(1));
         if (roreg.size() != 1) {
             throw std::runtime_error("create object failed");
         }
         unsigned long long id = static_cast<unsigned long long>(roreg[0][0]);
 
         /* object record */
-        Database::Result robject = conn.exec_params(
+        Database::Result robject = request.conn.exec_params(
                 "INSERT INTO object (id, clid, authinfopw) VALUES ($1::integer, $2::integer,"
                     " $3::text)",
-                Database::query_param_list(id)(mojeid_registrar_id)("TODO: random string"));
+                Database::query_param_list(id)(mojeid_registrar_id_)("TODO: random string"));
 
         std::string qcontact = "INSERT INTO contact ("
                                     "id, name, organization, street1, street2, street3,"
@@ -193,28 +212,29 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
                                     (corba_unwrap_nullable_boolean(_contact.disclose_vat))
                                     (corba_unwrap_nullable_boolean(_contact.disclose_ident));
         /* contact record */
-        Database::Result rcontact = conn.exec_params(qcontact, pcontact);
+        Database::Result rcontact = request.conn.exec_params(qcontact, pcontact);
 
         /* save history */
-        conn.exec("INSERT INTO history (id) VALUES (DEFAULT)");
-        Database::Result rhistory = conn.exec("SELECT currval('history_id_seq')");
+        request.conn.exec_params("INSERT INTO history (id, action) VALUES (DEFAULT, $1::integer)",
+                                 Database::query_param_list(request.get_id()));
+        Database::Result rhistory = request.conn.exec("SELECT currval('history_id_seq')");
         unsigned long long history_id = 0;
         history_id = rhistory[0][0];
         if (!history_id) {
             throw std::runtime_error("cannot save new history");
         }
 
-        conn.exec_params("UPDATE object_registry SET crhistoryid = $1::integer,"
+        request.conn.exec_params("UPDATE object_registry SET crhistoryid = $1::integer,"
                 " historyid = $2::integer WHERE id = $3::integer",
                 Database::query_param_list(history_id)(history_id)(id));
 
-        Database::Result robject_history = conn.exec_params(
+        Database::Result robject_history = request.conn.exec_params(
                 "INSERT INTO object_history (historyid, id, clid, upid, trdate, update, authinfopw)"
                 " SELECT $1::integer, o.id, o.clid, o.upid, o.trdate, o.update, o.authinfopw FROM object o"
                 " WHERE o.id = $2::integer",
                 Database::query_param_list(history_id)(id));
 
-        Database::Result rcontact_history = conn.exec_params(
+        Database::Result rcontact_history = request.conn.exec_params(
                 "INSERT INTO contact_history (historyid, id, name, organization, street1, street2, street3,"
                 " city, stateorprovince, postalcode, country, telephone, fax, email, disclosename,"
                 " discloseorganization, discloseaddress, disclosetelephone, disclosefax, discloseemail,"
@@ -226,7 +246,7 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
                 " c.disclosenotifyemail FROM contact c WHERE c.id = $2::integer",
                 Database::query_param_list(history_id)(id));
 
-        tx.commit();
+        request.end_success();
         return id;
     }
     catch (std::exception &_ex) {
