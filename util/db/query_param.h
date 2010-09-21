@@ -49,10 +49,6 @@ template <> struct TAssert<true>
 //buffer type
 typedef std::string QueryParamData;
 
-//db null
-typedef int NullQueryParamType;
-const NullQueryParamType QPNull =0;
-const NullQueryParamType NullQueryParam =0;
 
 /**
  * \class  QueryParam
@@ -91,12 +87,6 @@ public:
 
     //ctors
 
-    //null
-    explicit QueryParam(const NullQueryParamType )
-    : binary_(false)
-    , null_ (true)
-    , buffer_("")
-    {}
     //null
     QueryParam()
     : binary_(false)
@@ -222,6 +212,11 @@ template <typename CONTAINER_TYPE > struct list_of_params
 
 //boost assign list_of like initialization of params
 typedef list_of_params<QueryParams> query_param_list;
+
+
+const QueryParam QPNull;
+const QueryParam NullQueryParam;
+
 
 };//namespace Database
 
