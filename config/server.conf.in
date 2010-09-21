@@ -95,3 +95,6 @@ session_garbage = 150
 [logd]
 monitoring_hosts_file = @MONITORINGIPS@
 
+[sms]
+command = echo
+

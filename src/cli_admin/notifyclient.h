@@ -44,8 +44,9 @@
 #define NOTIFY_DEBUG_NAME_DESC          "debug"
 #define NOTIFY_HPMAIL_CONFIG_NAME       "hpmail_config"
 #define NOTIFY_HPMAIL_CONFIG_NAME_DESC  "Configuration file for Postservis client (hpmail)"
-#define NOTIFY_SMS_COMMAND_NAME         "sms_command"
+#define NOTIFY_SMS_COMMAND_NAME         "sms.command"
 #define NOTIFY_SMS_COMMAND_NAME_DESC    "Command to send saved sms messages"
+
 
 #include <boost/program_options.hpp>
 #include <iostream>
