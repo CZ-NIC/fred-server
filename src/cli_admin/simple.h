@@ -151,6 +151,10 @@ struct options {
 #define LOG_SYSLOG_NAME     "log.syslog_facility"
 #define LOG_SYSLOG_NAME_DESC "syslog facility (for log.type==2)"
 
+#define SMS_COMMAND_NAME     "sms.command"
+#define SMS_COMMAND_NAME_DESC     "sms command"
+
+
 #define REG_RESTRICTED_HANDLES_NAME         "registry.restricted_handles"
 #define REG_RESTRICTED_HANDLES_NAME_DESC    "force using restricted handles for NSSETs, KEYSETs and CONTACTs"
 #define REG_DOCGEN_PATH_NAME                "registry.docgen_path"

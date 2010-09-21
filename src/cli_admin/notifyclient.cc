@@ -213,9 +213,12 @@ void NotifyClient::sms_send()
 
     callHelp(m_conf, no_help);
 
-    sendSMS(m_conf.hasOpt(NOTIFY_SMS_COMMAND_NAME) ?
-            m_conf.get<std::string> (NOTIFY_SMS_COMMAND_NAME) :
-            "exit 1 ");
+    sendSMS(m_conf.hasOpt(NOTIFY_SMS_COMMAND_NAME)
+            ? m_conf.get<std::string> (NOTIFY_SMS_COMMAND_NAME)
+            : ( m_conf.hasOpt(SMS_COMMAND_NAME)
+                ? m_conf.get<std::string> (SMS_COMMAND_NAME)
+                : std::string("exit 1 "))
+                  );
 }
 
 
