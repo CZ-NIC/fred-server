@@ -51,6 +51,8 @@ NotifyClient::runMethod()
         letters_create();
     } else if (m_conf.hasOpt(NOTIFY_LETTERS_SEND_NAME)) {
         letters_send();
+    } else if (m_conf.hasOpt(NOTIFY_SMS_SEND_NAME)) {
+        sms_send();
     } else if (m_conf.hasOpt(NOTIFY_FILE_SEND_NAME)) {
         file_send();
     } else if (m_conf.hasOpt(NOTIFY_SHOW_OPTS_NAME)) {
@@ -206,6 +208,17 @@ void NotifyClient::letters_send()
             );
 }
 
+void NotifyClient::sms_send()
+{
+
+    callHelp(m_conf, no_help);
+
+    sendSMS(m_conf.hasOpt(NOTIFY_SMS_COMMAND_NAME) ?
+            m_conf.get<std::string> (NOTIFY_SMS_COMMAND_NAME) :
+            "exit 1 ");
+}
+
+
 void NotifyClient::file_send()
 {
     // TODO code duplicity except for the last line
@@ -295,6 +308,63 @@ void NotifyClient::file_send()
 
   }//sendLetters
 
+  void NotifyClient::sendSMS(const std::string& command )
+  {
+      Logging::Context ctx("send sms");
+      TRACE("[CALL] Register::Notify::sendSMS()");
+
+      Register::Messages::ManagerPtr messages_manager
+          = Register::Messages::create_manager();
+
+      Register::Messages::SmsProcInfo proc_sms = messages_manager->load_sms_to_send(0);
+
+      int new_status = 5;
+
+      try
+      {
+          LOGGER(PACKAGE).info("sms sending");
+
+          for(unsigned i=0;i<proc_sms.size();i++)
+          {
+              Register::Messages::sms_proc mp = proc_sms.at(i);
+
+              std::string command_with_params
+                  = command + " " + mp.phone_number + " " + mp.content;
+
+              if(!system(command_with_params.c_str()))
+              {
+                  LOGGER(PACKAGE).error(
+                          std::string("NotifyClient::sendSMS error command: ")
+                              + command_with_params + "failed.");
+              }//if failed
+              else
+              {
+                  LOGGER(PACKAGE).info(
+                          std::string("NotifyClient::sendSMS command: ")
+                              + command_with_params + " OK");
+
+
+              }//if ok
+
+
+          }//for i
+      }
+      catch (std::exception& ex) {
+          std::string msg = str(boost::format("error occured (%1%)") % ex.what());
+          LOGGER(PACKAGE).error(msg);
+          std::cerr << msg << std::endl;
+          new_status = 4; // set error status in database
+      }
+      catch (...) {
+          std::string msg = "unknown error occured";
+          LOGGER(PACKAGE).error(msg);
+          std::cerr << msg << std::endl;
+          new_status = 4; // set error status in database
+      }
+      //set status
+      messages_manager->set_sms_status(proc_sms,new_status);
+  }//sendSMS
+
   void NotifyClient::sendFile(const std::string &filename, const std::string &conf_file)  {
 
       TRACE("[CALL] Register::Notify::sendFile()");
@@ -372,13 +442,15 @@ NotifyClient::m_opts[] = {
     ADDOPT(NOTIFY_STATE_CHANGES_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(NOTIFY_LETTERS_CREATE_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(NOTIFY_LETTERS_SEND_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(NOTIFY_SMS_SEND_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(NOTIFY_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(NOTIFY_DEBUG_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(NOTIFY_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),
     ADDOPT(NOTIFY_LIMIT_NAME, TYPE_UINT, false, false),
     ADDOPT(NOTIFY_USE_HISTORY_TABLES_NAME, TYPE_BOOL, false, false),
     ADDOPT(NOTIFY_FILE_SEND_NAME, TYPE_STRING, true, true),
-    ADDOPT(NOTIFY_HPMAIL_CONFIG_NAME, TYPE_STRING, true, true)
+    ADDOPT(NOTIFY_HPMAIL_CONFIG_NAME, TYPE_STRING, true, true),
+    ADDOPT(NOTIFY_SMS_COMMAND_NAME, TYPE_STRING, true, true)
 };
 
 #undef ADDOPT

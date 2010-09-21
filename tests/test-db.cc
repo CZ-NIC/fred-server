@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
     const Database::QueryParam qp1 = Database::QPNull;
     std::cerr << "QPNull: " << qp1.print_buffer() << std::endl;
 
-    const Database::QueryParam qp2 = Database::QueryParam(true,"abc");
+    const Database::QueryParam qp2 = Database::QueryParam(true,Database::QueryParamData("abc"));
     std::cerr << "QueryParam binary: " << qp2.print_buffer() << std::endl;
 
     const Database::QueryParam qp3 = "abc";

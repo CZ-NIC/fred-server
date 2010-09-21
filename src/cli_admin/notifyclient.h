@@ -29,8 +29,10 @@
 #define NOTIFY_LETTERS_CREATE_NAME_DESC "generate pdf with domain registration warning"
 #define NOTIFY_LETTERS_SEND_NAME        "notify_letters_postservis_send"
 #define NOTIFY_LETTERS_SEND_NAME_DESC   "send generated PDF notification letters to postservis"
-#define NOTIFY_FILE_SEND_NAME                "notify_send_file"
-#define NOTIFY_FILE_SEND_NAME_DESC           "send specified PDF file via postservis"
+#define NOTIFY_SMS_SEND_NAME            "notify_sms_send"
+#define NOTIFY_SMS_SEND_NAME_DESC       "send generated SMS notification messages"
+#define NOTIFY_FILE_SEND_NAME           "notify_send_file"
+#define NOTIFY_FILE_SEND_NAME_DESC      "send specified PDF file via postservis"
 
 #define NOTIFY_EXCEPT_TYPES_NAME        "notify_except_types"
 #define NOTIFY_EXCEPT_TYPES_NAME_DESC   "list of notification types ignored in notification"
@@ -42,6 +44,8 @@
 #define NOTIFY_DEBUG_NAME_DESC          "debug"
 #define NOTIFY_HPMAIL_CONFIG_NAME       "hpmail_config"
 #define NOTIFY_HPMAIL_CONFIG_NAME_DESC  "Configuration file for Postservis client (hpmail)"
+#define NOTIFY_SMS_COMMAND_NAME         "sms_command"
+#define NOTIFY_SMS_COMMAND_NAME_DESC    "Command to send saved sms messages"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -84,9 +88,11 @@ public:
     void state_changes();
     void letters_create();
     void letters_send();
+    void sms_send();
     void file_send();
     void sendFile(const std::string &filename, const std::string &conf_file); 
     void sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file);
+    void sendSMS(const std::string& command );
 
     HPCfgMap readHPConfig(const std::string &conf_file);
 }; // class NotifyClient
