@@ -22,11 +22,10 @@ boost::mt19937 gen;
 
 const std::string create_ctx_name(const std::string &_name)
 {
-    boost::uniform_int<unsigned int> ruint(std::numeric_limits<unsigned int>::min(),
-                                           std::numeric_limits<unsigned int>::max());
+    boost::uniform_int<unsigned int> ruint(1, 10000);
     boost::variate_generator<boost::mt19937&, boost::uniform_int<unsigned int> > gen_uint(gen, ruint);
 
-    return str(boost::format("<%2%> %1%") % _name % gen_uint());
+    return str(boost::format("%1%-<%2%>") % _name % gen_uint());
 }
 
 
@@ -65,8 +64,8 @@ MojeIDImpl::~MojeIDImpl()
 CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
                                            IdentificationMethod _method)
 {
-    Logging::Context ctx_server(server_name_);
-    Logging::Context ctx(create_ctx_name("contact-create"));
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("contact-create");
     ConnectionReleaser releaser;
 
     try {
@@ -261,8 +260,8 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
 void MojeIDImpl::processIdentification(const char* _process_id,
                                        const char* _password)
 {
-    Logging::Context ctx_server(server_name_);
-    Logging::Context ctx(create_ctx_name("process-identification"));
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("process-identification");
     ConnectionReleaser releaser;
 }
 
@@ -270,8 +269,8 @@ void MojeIDImpl::processIdentification(const char* _process_id,
 void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
                                                   const char* _trans_id)
 {
-    Logging::Context ctx_server(server_name_);
-    Logging::Context ctx(create_ctx_name("contact-update"));
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("contact-update");
 
     LOGGER(PACKAGE).debug("transaction id = " + std::string(_trans_id));
 }
@@ -279,8 +278,8 @@ void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
 
 Contact* MojeIDImpl::contactInfo(const char* _handle)
 {
-    Logging::Context ctx_server(server_name_);
-    Logging::Context ctx(create_ctx_name("contact-info"));
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("contact-info");
     ConnectionReleaser releaser;
 
     try {
@@ -379,8 +378,8 @@ Contact* MojeIDImpl::contactInfo(const char* _handle)
 
 void MojeIDImpl::commitPreparedTransaction(const char* _trans_id)
 {
-    Logging::Context ctx_server(server_name_);
-    Logging::Context ctx(create_ctx_name("commit-prepared"));
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("commit-prepared");
 
     LOGGER(PACKAGE).debug("transaction id = " + std::string(_trans_id));
 }
@@ -388,8 +387,8 @@ void MojeIDImpl::commitPreparedTransaction(const char* _trans_id)
 
 void MojeIDImpl::rollbackPreparedTransaction(const char* _trans_id)
 {
-    Logging::Context ctx_server(server_name_);
-    Logging::Context ctx(create_ctx_name("rollback-prepared"));
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("rollback-prepared");
 
     LOGGER(PACKAGE).debug("transaction id = " + std::string(_trans_id));
 }
