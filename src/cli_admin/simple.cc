@@ -181,7 +181,9 @@ main(int argc, char **argv)
         addOptStr(REG_DOCGEN_TEMPLATE_PATH_NAME)
         addOptUInt(REG_DOCGEN_DOMAIN_COUNT_LIMIT)
         addOptStr(LOGIN_REGISTRAR_NAME)
-        addOptStr(SMS_COMMAND_NAME);
+        addOptStr(SMS_COMMAND_NAME)
+        addOptStr(SMS_PARAM_QUOTE_BY_NAME);
+
 
 
 

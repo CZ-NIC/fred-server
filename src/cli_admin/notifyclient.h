@@ -46,7 +46,8 @@
 #define NOTIFY_HPMAIL_CONFIG_NAME_DESC  "Configuration file for Postservis client (hpmail)"
 #define NOTIFY_SMS_COMMAND_NAME         "sms_command"
 #define NOTIFY_SMS_COMMAND_NAME_DESC    "Command to send saved sms messages"
-
+#define NOTIFY_SMS_PARAM_QUOTE_BY_NAME         "sms_param_quote_by"
+#define NOTIFY_SMS_PARAM_QUOTE_BY_NAME_DESC    "String used to quote script params"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -93,7 +94,7 @@ public:
     void file_send();
     void sendFile(const std::string &filename, const std::string &conf_file); 
     void sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file);
-    void sendSMS(const std::string& command );
+    void sendSMS(const std::string& command , const std::string& param_quote_by);
 
     HPCfgMap readHPConfig(const std::string &conf_file);
 }; // class NotifyClient

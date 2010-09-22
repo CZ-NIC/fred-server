@@ -313,7 +313,7 @@ void NotifyClient::file_send()
 
   }//sendLetters
 
-  void NotifyClient::sendSMS(const std::string& command )
+  void NotifyClient::sendSMS(const std::string& command , const std::string& param_quote_by )
   {
       Logging::Context ctx("send sms");
       TRACE("[CALL] Register::Notify::sendSMS()");
@@ -332,7 +332,8 @@ void NotifyClient::file_send()
           {
               Register::Messages::sms_proc mp = proc_sms.at(i);
               std::string command_with_params
-                  = command + " " + mp.phone_number + " " + mp.content;
+                  = command + " " + param_quote_by + mp.phone_number + param_quote_by
+                  + " " + param_quote_by + mp.content + param_quote_by;
               if(!system(command_with_params.c_str()))
               {
                   LOGGER(PACKAGE).error(
@@ -454,7 +455,8 @@ NotifyClient::m_opts[] = {
     ADDOPT(NOTIFY_USE_HISTORY_TABLES_NAME, TYPE_BOOL, false, false),
     ADDOPT(NOTIFY_FILE_SEND_NAME, TYPE_STRING, true, true),
     ADDOPT(NOTIFY_HPMAIL_CONFIG_NAME, TYPE_STRING, true, true),
-    ADDOPT(NOTIFY_SMS_COMMAND_NAME, TYPE_STRING, true, true)
+    ADDOPT(NOTIFY_SMS_COMMAND_NAME, TYPE_STRING, true, true),
+    ADDOPT(NOTIFY_SMS_PARAM_QUOTE_BY_NAME, TYPE_STRING, true, true)
 };
 
 #undef ADDOPT

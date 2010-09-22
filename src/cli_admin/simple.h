@@ -153,6 +153,10 @@ struct options {
 
 #define SMS_COMMAND_NAME     "sms.command"
 #define SMS_COMMAND_NAME_DESC     "sms command"
+#define SMS_PARAM_QUOTE_BY_NAME     "sms.param_quote_by"
+#define SMS_PARAM_QUOTE_BY_NAME_DESC     "string used to quote script params"
+
+
 
 
 #define REG_RESTRICTED_HANDLES_NAME         "registry.restricted_handles"
