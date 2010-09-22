@@ -341,7 +341,7 @@ Contact* MojeIDImpl::contactInfo(const CORBA::ULongLong _id)
             " c.city, c.stateorprovince, c.postalcode, c.country,"
             " c.email, c.notifyemail, c.telephone, c.fax"
             " FROM object_registry oreg JOIN contact c ON c.id = oreg.id"
-            " WHERE id = $1::integer AND oreg.erdate IS NULL";
+            " WHERE oreg.id = $1::integer AND oreg.erdate IS NULL";
         Database::QueryParams pinfo = Database::query_param_list(_id);
 
         Database::Result rinfo = conn.exec_params(qinfo, pinfo);
