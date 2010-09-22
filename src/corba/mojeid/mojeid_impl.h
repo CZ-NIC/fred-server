@@ -20,13 +20,15 @@ class MojeIDImpl : public POA_Registry::MojeID,
         MojeIDImpl(const std::string &_server_name);
 
         CORBA::ULongLong contactCreate(const Contact &_contact,
-                                       IdentificationMethod _method);
+                                       IdentificationMethod _method,
+                                       const CORBA::ULongLong _request_id);
 
         void processIdentification(const char* _request_id,
                                    const char* _password);
 
         void contactUpdatePrepare(const Contact &_contact,
-                                  const char* _trans_id);
+                                  const char* _trans_id,
+                                  const CORBA::ULongLong _request_id);
 
         Registry::Contact* contactInfo(const char* _handle);
 

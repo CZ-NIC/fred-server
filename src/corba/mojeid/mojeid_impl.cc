@@ -62,7 +62,8 @@ MojeIDImpl::~MojeIDImpl()
 
 
 CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
-                                           IdentificationMethod _method)
+                                           IdentificationMethod _method,
+                                           const CORBA::ULongLong _request_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-create");
@@ -267,7 +268,8 @@ void MojeIDImpl::processIdentification(const char* _process_id,
 
 
 void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
-                                                  const char* _trans_id)
+                                      const char* _trans_id,
+                                      const CORBA::ULongLong _request_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-update");
