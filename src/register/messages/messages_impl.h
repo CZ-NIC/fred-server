@@ -65,6 +65,7 @@ struct sms_proc {
     unsigned attempt;
     std::string phone_number;
     std::string content;
+    int new_status;
 };//info for sms processing
 
 typedef std::vector<sms_proc> SmsProcInfo;
@@ -102,7 +103,7 @@ public:
     void set_letter_status(const LetterProcInfo& letters,long new_status, const std::string& batch_id);
 
     //set send result into sms status
-    void set_sms_status(const SmsProcInfo& messages,long new_status);
+    void set_sms_status(const SmsProcInfo& messages);
 
 };
 

@@ -536,7 +536,7 @@ void Manager::set_letter_status(const LetterProcInfo& letters,long new_status, c
 }
 
 //set send result into sms status
-void Manager::set_sms_status(const SmsProcInfo& messages,long new_status)
+void Manager::set_sms_status(const SmsProcInfo& messages)
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction trans2(conn);
@@ -552,7 +552,7 @@ void Manager::set_sms_status(const SmsProcInfo& messages,long new_status)
                               " AND comm_type_id = (SELECT id FROM comm_type "
                               " WHERE type = 'sms')"
                           , Database::query_param_list
-                                   (new_status)
+                                   (it->new_status)
                                    (new_attempt)
                                    (it->sms_id)
                           );

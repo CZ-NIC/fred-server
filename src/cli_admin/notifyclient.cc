@@ -322,54 +322,51 @@ void NotifyClient::file_send()
           = Register::Messages::create_manager();
 
       Register::Messages::SmsProcInfo proc_sms = messages_manager->load_sms_to_send(0);
-
       if(proc_sms.empty()) return;
+      LOGGER(PACKAGE).info("sms sending");
 
-      int new_status = 5;
-
-      try
+      for(unsigned i=0;i<proc_sms.size();i++)
       {
-          LOGGER(PACKAGE).info("sms sending");
-
-          for(unsigned i=0;i<proc_sms.size();i++)
+          int new_status = 5;//ok status
+          try
           {
               Register::Messages::sms_proc mp = proc_sms.at(i);
-
               std::string command_with_params
                   = command + " " + mp.phone_number + " " + mp.content;
-
               if(!system(command_with_params.c_str()))
               {
                   LOGGER(PACKAGE).error(
                           std::string("NotifyClient::sendSMS error command: ")
                               + command_with_params + "failed.");
+                  new_status = 4; // set error status
               }//if failed
               else
               {
                   LOGGER(PACKAGE).info(
                           std::string("NotifyClient::sendSMS command: ")
                               + command_with_params + " OK");
-
-
               }//if ok
+          }//try
+          catch (std::exception& ex) {
+              std::string msg = str(boost::format("error occured (%1%)") % ex.what());
+              LOGGER(PACKAGE).error(msg);
+              std::cerr << msg << std::endl;
+              new_status = 4; // set error status in database
+          }
+          catch (...) {
+              std::string msg = "unknown error occured";
+              LOGGER(PACKAGE).error(msg);
+              std::cerr << msg << std::endl;
+              new_status = 4; // set error status in database
+          }
+
+          proc_sms.at(i).new_status = new_status;//seting new status
+
+      }//for i
 
 
-          }//for i
-      }
-      catch (std::exception& ex) {
-          std::string msg = str(boost::format("error occured (%1%)") % ex.what());
-          LOGGER(PACKAGE).error(msg);
-          std::cerr << msg << std::endl;
-          new_status = 4; // set error status in database
-      }
-      catch (...) {
-          std::string msg = "unknown error occured";
-          LOGGER(PACKAGE).error(msg);
-          std::cerr << msg << std::endl;
-          new_status = 4; // set error status in database
-      }
       //set status
-      messages_manager->set_sms_status(proc_sms,new_status);
+      messages_manager->set_sms_status(proc_sms);
   }//sendSMS
 
   void NotifyClient::sendFile(const std::string &filename, const std::string &conf_file)  {
