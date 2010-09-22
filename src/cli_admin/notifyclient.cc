@@ -218,6 +218,12 @@ void NotifyClient::sms_send()
             : ( m_conf.hasOpt(SMS_COMMAND_NAME)
                 ? m_conf.get<std::string> (SMS_COMMAND_NAME)
                 : std::string("exit 1 "))
+            , m_conf.hasOpt(NOTIFY_SMS_PARAM_QUOTE_BY_NAME)
+            ? m_conf.get<std::string> (NOTIFY_SMS_PARAM_QUOTE_BY_NAME)
+            : ( m_conf.hasOpt(SMS_PARAM_QUOTE_BY_NAME)
+                ? m_conf.get<std::string> (SMS_PARAM_QUOTE_BY_NAME)
+                : std::string(""))
+
                   );
 }
 
