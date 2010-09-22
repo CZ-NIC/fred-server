@@ -197,7 +197,7 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
                                     (corba_unwrap_string(_contact.addresses[0].city))
                                     (corba_unwrap_nullable_string(_contact.addresses[0].state))
                                     (corba_unwrap_string(_contact.addresses[0].postal_code))
-                                    (corba_unwrap_string(_contact.addresses[0].country_code))
+                                    (corba_unwrap_string(_contact.addresses[0].country))
                                     (telephone)
                                     (fax)
                                     (email)
@@ -382,7 +382,7 @@ Contact* MojeIDImpl::contactInfo(const CORBA::ULongLong _id)
         data->addresses[0].city         = corba_wrap_string(rinfo[0][20]);
         data->addresses[0].state        = corba_wrap_nullable_string(rinfo[0][21]);
         data->addresses[0].postal_code  = corba_wrap_string(rinfo[0][22]);
-        data->addresses[0].country_code = corba_wrap_string(rinfo[0][23]);
+        data->addresses[0].country      = corba_wrap_string(rinfo[0][23]);
 
         data->emails.length(1);
         data->emails[0].type = "DEFAULT";
