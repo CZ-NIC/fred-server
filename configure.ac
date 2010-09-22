@@ -179,6 +179,11 @@ AC_ARG_WITH([mifdport], [AS_HELP_STRING([--with-mifdport],
 			[CORBA fred-mifd port [2227]])],
 			[AC_SUBST([MIFDPORT], [$withval])],
 			[AC_SUBST([MIFDPORT], [2227])])
+#msgd port
+AC_ARG_WITH([msgdport], [AS_HELP_STRING([--with-msgdport],
+			[CORBA fred-msgd port [2228]])],
+			[AC_SUBST([MSGDPORT], [$withval])],
+			[AC_SUBST([MSGDPORT], [2228])])
 
 
 #hp login name
