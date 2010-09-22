@@ -264,8 +264,9 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
 }
 
 
-void MojeIDImpl::processIdentification(const char* _process_id,
-                                       const char* _password)
+void MojeIDImpl::processIdentification(const char* _ident_request_id,
+                                       const char* _password,
+                                       const CORBA::ULongLong _request_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("process-identification");
@@ -273,8 +274,8 @@ void MojeIDImpl::processIdentification(const char* _process_id,
 
     try {
         LOGGER(PACKAGE).info(boost::format("request data --"
-                    "  identification_id: %1%  password: %2%")
-                % _process_id % _password);
+                    "  identification_id: %1%  password: %2%  request_id: %3%")
+                % _ident_request_id % _password % _request_id);
 
         throw std::runtime_error("not implemented");
     }
@@ -317,14 +318,14 @@ void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
 }
 
 
-Contact* MojeIDImpl::contactInfo(const char* _handle)
+Contact* MojeIDImpl::contactInfo(const CORBA::ULongLong _id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-info");
     ConnectionReleaser releaser;
 
     try {
-        LOGGER(PACKAGE).info(boost::format("request data -- handle: %1%") % _handle);
+        LOGGER(PACKAGE).info(boost::format("request data -- id: %1%") % _id);
         Database::Connection conn = Database::Manager::acquire();
 
         std::string qinfo = "SELECT oreg.id, oreg.name,"
@@ -340,8 +341,8 @@ Contact* MojeIDImpl::contactInfo(const char* _handle)
             " c.city, c.stateorprovince, c.postalcode, c.country,"
             " c.email, c.notifyemail, c.telephone, c.fax"
             " FROM object_registry oreg JOIN contact c ON c.id = oreg.id"
-            " WHERE oreg.name = UPPER($1::text) AND oreg.erdate IS NULL";
-        Database::QueryParams pinfo = Database::query_param_list(_handle);
+            " WHERE id = $1::integer AND oreg.erdate IS NULL";
+        Database::QueryParams pinfo = Database::query_param_list(_id);
 
         Database::Result rinfo = conn.exec_params(qinfo, pinfo);
         if (!rinfo.size()) {

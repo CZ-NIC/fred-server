@@ -23,14 +23,15 @@ class MojeIDImpl : public POA_Registry::MojeID,
                                        IdentificationMethod _method,
                                        const CORBA::ULongLong _request_id);
 
-        void processIdentification(const char* _request_id,
-                                   const char* _password);
+        void processIdentification(const char* _ident_request_id,
+                                   const char* _password,
+                                   const CORBA::ULongLong _request_id);
 
         void contactUpdatePrepare(const Contact &_contact,
                                   const char* _trans_id,
                                   const CORBA::ULongLong _request_id);
 
-        Registry::Contact* contactInfo(const char* _handle);
+        Registry::Contact* contactInfo(const CORBA::ULongLong _id);
 
         void commitPreparedTransaction(const char* _trans_id);
 
