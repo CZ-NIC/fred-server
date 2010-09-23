@@ -300,8 +300,13 @@ public:
   }
 
 
-	inline std::string commit() {
+  inline std::string commit() {
     return "COMMIT TRANSACTION";
+  }
+
+
+  inline std::string prepare(const std::string &_id) {
+    return "PREPARE TRANSACTION '" + _id + "'";
   }
 };
 

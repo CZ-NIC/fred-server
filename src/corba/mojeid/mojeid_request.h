@@ -1,3 +1,7 @@
+#ifndef MOJEID_REQUEST_H_
+#define MOJEID_REQUEST_H_
+
+
 #include "register/db_settings.h"
 
 namespace Registry {
@@ -7,6 +11,7 @@ class MojeIDRequest
 {
 private:
     unsigned int request_code_;
+    unsigned long long registrar_id_;
     unsigned long long id_;
     int status_;
 
@@ -17,8 +22,10 @@ public:
     Database::Connection conn;
 
 
-    MojeIDRequest(const unsigned int &_request_code)
+    MojeIDRequest(const unsigned int &_request_code,
+                  const unsigned long long &_registrar_id)
         : request_code_(_request_code),
+          registrar_id_(_registrar_id),
           id_(0),
           status_(0),
           tx_(0),
@@ -69,6 +76,21 @@ public:
     }
 
 
+    const unsigned long long& get_registrar_id() const
+    {
+        return registrar_id_;
+    }
+
+
+    void end_prepare(const std::string &_id)
+    {
+        if (status_ == 0) {
+            tx_->prepare(_id);
+            status_ = 3;
+        }
+    }
+
+
     void end_success()
     {
         if (status_ == 0) {
@@ -98,4 +120,6 @@ public:
 
 
 }
+
+#endif /*MOJEID_REQUEST_H_*/
 

@@ -1,6 +1,7 @@
 #include "mojeid_impl.h"
 #include "corba_wrap.h"
 #include "mojeid_request.h"
+#include "mojeid_contact.h"
 
 #include "log/logger.h"
 #include "log/context.h"
@@ -75,9 +76,9 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
                     "  handle: %1%  identification_method: %2%  request_id: %3%")
                 % handle % _method % _request_id);
 
-        /* start new request - here for logging into action table - until 
+        /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        Registry::MojeIDRequest request(204);
+        Registry::MojeIDRequest request(204, mojeid_registrar_id_);
         Logging::Context ctx_request(request.get_servertrid());
 
         try {
@@ -112,6 +113,7 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
             throw std::runtime_error("contact handle availability check failed");
         }
 
+        /* TODO: more checking? */
         if (_contact.addresses.length() == 0) {
             throw std::runtime_error("contact has no address");
         }
@@ -119,137 +121,18 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
             throw std::runtime_error("contact has no email");
         }
 
+        Database::QueryParams pcontact = corba_unwrap_contact(_contact);
 
-        /* object_registry record */
-        Database::Result roreg = request.conn.exec_params(
-                "SELECT create_object($1::integer, $2::text, $3::integer)",
-                Database::query_param_list(mojeid_registrar_id_)(handle)(1));
-        if (roreg.size() != 1) {
-            throw std::runtime_error("create object failed");
-        }
-        unsigned long long id = static_cast<unsigned long long>(roreg[0][0]);
-
-        /* object record */
-        Database::Result robject = request.conn.exec_params(
-                "INSERT INTO object (id, clid, authinfopw) VALUES ($1::integer, $2::integer,"
-                    " $3::text)",
-                Database::query_param_list(id)(mojeid_registrar_id_)("TODO: random string"));
-
-        std::string qcontact = "INSERT INTO contact ("
-                                    "id, name, organization, street1, street2, street3,"
-                                    " city, stateorprovince, postalcode, country, telephone,"
-                                    " fax, email, notifyemail, vat, ssn, ssntype,"
-                                    " disclosename, discloseorganization, discloseaddress,"
-                                    " disclosetelephone, disclosefax, discloseemail,"
-                                    " disclosenotifyemail, disclosevat, discloseident"
-                               ") VALUES ("
-                                    "$1::integer, $2::text, $3::text, $4::text, $5::text,"
-                                    " $6::text, $7::text, $8::text, $9::text, $10::text,"
-                                    " $11::text, $12::text, $13::text, $14::text, $15::text,"
-                                    " $16::text, $17::integer, $18::boolean, $19::boolean,"
-                                    " $20::boolean, $21::boolean, $22::boolean, $23::boolean,"
-                                    " $24::boolean, $25::boolean, $26::boolean)";
-
-        Database::QueryParam telephone = Database::QueryParam();
-        Database::QueryParam fax = Database::QueryParam();
-        for (unsigned int i = 0; i <  _contact.phones.length(); ++i) {
-            std::string type = corba_unwrap_string(_contact.phones[i].type);
-            if (type == "DEFAULT") {
-                telephone = corba_unwrap_string(_contact.phones[i].number);
-            }
-            else if (type == "FAX") {
-                fax = corba_unwrap_string(_contact.phones[i].number);
-            }
-        }
-
-        Database::QueryParam email = Database::QueryParam();
-        Database::QueryParam notify_email = Database::QueryParam();
-        for (unsigned int i = 0; i < _contact.emails.length(); ++i) {
-            std::string type = corba_unwrap_string(_contact.emails[i].type);
-            if (type == "DEFAULT") {
-                email = corba_unwrap_string(_contact.emails[i].email_address);
-            }
-            else if (type == "NOTIFY") {
-                notify_email = corba_unwrap_string(_contact.emails[i].email_address);
-            }
-        }
-
-        Database::QueryParam ssn = Database::QueryParam();
-        Database::QueryParam ssn_type = Database::QueryParam();
-        if (_contact.ssn_type) {
-            int type = boost::lexical_cast<int>(_contact.ssn_type->_value());
-            ssn_type = type;
-            if (type == 2) ssn = corba_unwrap_nullable_string(_contact.id_card_num);
-            if (type == 3) ssn = corba_unwrap_nullable_string(_contact.passport_num);
-            if (type == 4) ssn = corba_unwrap_nullable_string(_contact.vat_id_num);
-            if (type == 5) ssn = corba_unwrap_nullable_string(_contact.ssn_id_num);
-            if (type == 6) ssn = corba_unwrap_nullable_date(_contact.birth_date);
-        }
-
-        Database::QueryParams pcontact = Database::query_param_list
-                                    (id)
-                                    (corba_unwrap_string(_contact.first_name)
-                                        + " " + corba_unwrap_string(_contact.last_name))
-                                    (corba_unwrap_nullable_string(_contact.organization))
-                                    (corba_unwrap_string(_contact.addresses[0].street1))
-                                    (corba_unwrap_nullable_string(_contact.addresses[0].street2))
-                                    (corba_unwrap_nullable_string(_contact.addresses[0].street3))
-                                    (corba_unwrap_string(_contact.addresses[0].city))
-                                    (corba_unwrap_nullable_string(_contact.addresses[0].state))
-                                    (corba_unwrap_string(_contact.addresses[0].postal_code))
-                                    (corba_unwrap_string(_contact.addresses[0].country))
-                                    (telephone)
-                                    (fax)
-                                    (email)
-                                    (notify_email)
-                                    (corba_unwrap_nullable_string(_contact.vat_reg_num))
-                                    (ssn)
-                                    (ssn_type)
-                                    (corba_unwrap_nullable_boolean(_contact.disclose_name))
-                                    (corba_unwrap_nullable_boolean(_contact.disclose_organization))
-                                    (corba_unwrap_nullable_boolean(_contact.disclose_address))
-                                    (corba_unwrap_nullable_boolean(_contact.disclose_phone))
-                                    (corba_unwrap_nullable_boolean(_contact.disclose_fax))
-                                    (corba_unwrap_nullable_boolean(_contact.disclose_email))
-                                    (corba_unwrap_nullable_boolean(_contact.disclose_notify_email))
-                                    (corba_unwrap_nullable_boolean(_contact.disclose_vat))
-                                    (corba_unwrap_nullable_boolean(_contact.disclose_ident));
-        /* contact record */
-        Database::Result rcontact = request.conn.exec_params(qcontact, pcontact);
-
-        /* save history */
-        request.conn.exec_params("INSERT INTO history (id, action) VALUES (DEFAULT, $1::integer)",
-                                 Database::query_param_list(request.get_id()));
-        Database::Result rhistory = request.conn.exec("SELECT currval('history_id_seq')");
-        unsigned long long history_id = 0;
-        history_id = rhistory[0][0];
-        if (!history_id) {
-            throw std::runtime_error("cannot save new history");
-        }
-
-        request.conn.exec_params("UPDATE object_registry SET crhistoryid = $1::integer,"
-                " historyid = $1::integer WHERE id = $2::integer",
-                Database::query_param_list(history_id)(id));
-
-        Database::Result robject_history = request.conn.exec_params(
-                "INSERT INTO object_history (historyid, id, clid, upid, trdate, update, authinfopw)"
-                " SELECT $1::integer, o.id, o.clid, o.upid, o.trdate, o.update, o.authinfopw FROM object o"
-                " WHERE o.id = $2::integer",
-                Database::query_param_list(history_id)(id));
-
-        Database::Result rcontact_history = request.conn.exec_params(
-                "INSERT INTO contact_history (historyid, id, name, organization, street1, street2, street3,"
-                " city, stateorprovince, postalcode, country, telephone, fax, email, disclosename,"
-                " discloseorganization, discloseaddress, disclosetelephone, disclosefax, discloseemail,"
-                " notifyemail, vat, ssn, ssntype, disclosevat, discloseident, disclosenotifyemail)"
-                " SELECT $1::integer, c.id, c.name, c.organization, c.street1, c.street2, c.street3,"
-                " c.city, c.stateorprovince, c.postalcode, c.country, c.telephone, c.fax, c.email,"
-                " c.disclosename, c.discloseorganization, c.discloseaddress, c.disclosetelephone, c.disclosefax,"
-                " c.discloseemail, c.notifyemail, c.vat, c.ssn, c.ssntype, c.disclosevat, c.discloseident,"
-                " c.disclosenotifyemail FROM contact c WHERE c.id = $2::integer",
-                Database::query_param_list(history_id)(id));
+        unsigned long long id = create_object(request, handle);
+        insert_contact(request, id, pcontact);
+        unsigned long long hid = insert_contact_history(request, id);
 
         request.end_success();
+
+        LOGGER(PACKAGE).info(boost::format(
+                "contact saved -- handle: %1%  id: %2%  history_id: %3%")
+                % handle % id % hid);
+
         LOGGER(PACKAGE).info("request completed successfully");
         return id;
     }
@@ -304,7 +187,42 @@ void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
                     "  request_id: %3%")  % static_cast<std::string>(_contact.username)
                     % _trans_id % _request_id);
 
-        throw std::runtime_error("not implemented");
+        /* start new request - here for logging into action table - until
+         * fred-logd fully migrated */
+        Registry::MojeIDRequest request(203, mojeid_registrar_id_);
+        Logging::Context ctx_request(request.get_servertrid());
+
+        if (_contact.id == 0) {
+            throw std::runtime_error("contact.id is null");
+        }
+
+        Database::Result rid = request.conn.exec_params(
+                "SELECT id, name FROM object_registry WHERE id = $1::integer AND erdate IS NULL",
+                Database::query_param_list(corba_unwrap_nullable_ulonglong(_contact.id)));
+        if (rid.size() != 1) {
+            throw std::runtime_error("not found");
+        }
+
+        unsigned long long db_id = static_cast<unsigned long long>(rid[0][0]);
+        std::string db_handle = static_cast<std::string>(rid[0][1]);
+        unsigned long long id = _contact.id->_value();
+        std::string handle = corba_unwrap_string(_contact.username);
+
+        if (db_handle != handle) {
+            throw std::runtime_error(str(boost::format(
+                        "inconsistency in parameter --"
+                        " passed: (id: %1%, handle: %2%), database (id: %3%, handle: %4%)")
+                    % id % handle % db_id % db_handle));
+        }
+
+        /* TODO: checking for prohibited states */
+
+        Database::QueryParams pcontact = corba_unwrap_contact(_contact);
+        update_contact(request, id, pcontact);
+        unsigned long long hid = insert_contact_history(request, id);
+
+        request.end_prepare(_trans_id);
+        LOGGER(PACKAGE).info("request completed successfully");
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -350,6 +268,7 @@ Contact* MojeIDImpl::contactInfo(const CORBA::ULongLong _id)
         }
 
         Contact *data = new Contact();
+        data->id           = corba_wrap_nullable_ulonglong(rinfo[0][0]);
         data->username     = corba_wrap_string(rinfo[0][1]);
         data->first_name   = corba_wrap_string(rinfo[0][2]);
         data->last_name    = corba_wrap_string(rinfo[0][3]);
@@ -428,10 +347,13 @@ void MojeIDImpl::commitPreparedTransaction(const char* _trans_id)
     Logging::Context ctx("commit-prepared");
 
     try {
-        LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: ")
+        LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
                 % _trans_id);
 
-        throw std::runtime_error("not implemented");
+        Database::Connection conn = Database::Manager::acquire();
+        conn.exec("COMMIT PREPARED '" + conn.escape(_trans_id) + "'");
+
+        LOGGER(PACKAGE).info("request completed successfully");
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -453,7 +375,10 @@ void MojeIDImpl::rollbackPreparedTransaction(const char* _trans_id)
         LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
                 % _trans_id);
 
-        throw std::runtime_error("not implemented");
+        Database::Connection conn = Database::Manager::acquire();
+        conn.exec("ROLLBACK PREPARED '" + conn.escape(_trans_id) + "'");
+
+        LOGGER(PACKAGE).info("request completed successfully");
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());

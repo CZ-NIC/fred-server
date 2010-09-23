@@ -132,7 +132,23 @@ public:
     }
   }
 
-  
+
+  virtual void prepare(const std::string &_id) {
+    if (ptransaction_) {
+        throw std::runtime_error("cannot call prepare transaction on nested transaction");
+    }
+    if (_id.empty()) {
+        throw std::runtime_error("cannot call prepare transaction without id");
+    }
+
+    if (!exited_) {
+        exec(transaction_.prepare(_id));
+        conn_.unsetTransaction();
+        exited_ = true;
+    }
+  }
+
+
   inline result_type exec(const std::string &_query) {
     return conn_.exec(_query);
   }
