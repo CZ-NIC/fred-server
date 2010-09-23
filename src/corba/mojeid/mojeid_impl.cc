@@ -465,6 +465,11 @@ void MojeIDImpl::rollbackPreparedTransaction(const char* _trans_id)
     }
 }
 
+char* MojeIDImpl::getIdentificationInfo(CORBA::ULongLong)
+{
+    return 0;
+}
+
 
 }
 

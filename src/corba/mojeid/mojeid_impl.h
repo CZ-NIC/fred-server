@@ -37,6 +37,8 @@ class MojeIDImpl : public POA_Registry::MojeID,
 
         void rollbackPreparedTransaction(const char* _trans_id);
 
+        char* getIdentificationInfo(CORBA::ULongLong);
+
 };
 
 }
