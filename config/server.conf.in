@@ -96,6 +96,6 @@ session_garbage = 150
 monitoring_hosts_file = @MONITORINGIPS@
 
 [sms]
-command = ./test.sh
-param_quote_by = "
+command = ./test_sms.sh
+param_quote_by = '
 
