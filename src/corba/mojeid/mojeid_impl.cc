@@ -277,7 +277,7 @@ CORBA::ULongLong MojeIDImpl::processIdentification(const char* _ident_request_id
                     "  identification_id: %1%  password: %2%  request_id: %3%")
                 % _ident_request_id % _password % _request_id);
 
-        throw std::runtime_error("not implemented");
+        return boost::lexical_cast<unsigned long long>(_ident_request_id);
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -465,9 +465,9 @@ void MojeIDImpl::rollbackPreparedTransaction(const char* _trans_id)
     }
 }
 
-char* MojeIDImpl::getIdentificationInfo(CORBA::ULongLong)
+char* MojeIDImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
 {
-    return 0;
+    return CORBA::string_dup(boost::lexical_cast<std::string>(_contact_id).c_str());
 }
 
 
