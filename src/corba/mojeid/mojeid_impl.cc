@@ -8,7 +8,6 @@
 #include "register/db_settings.h"
 #include "register/contact.h"
 #include "corba/connection_releaser.h"
-#include "contact_conv.h"
 
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
