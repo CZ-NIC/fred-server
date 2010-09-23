@@ -8,6 +8,7 @@
 #include "register/db_settings.h"
 #include "register/contact.h"
 #include "corba/connection_releaser.h"
+#include "contact_conv.h"
 
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
@@ -264,7 +265,7 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
 }
 
 
-void MojeIDImpl::processIdentification(const char* _ident_request_id,
+CORBA::ULongLong MojeIDImpl::processIdentification(const char* _ident_request_id,
                                        const char* _password,
                                        const CORBA::ULongLong _request_id)
 {
