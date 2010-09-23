@@ -229,8 +229,8 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
         }
 
         request.conn.exec_params("UPDATE object_registry SET crhistoryid = $1::integer,"
-                " historyid = $2::integer WHERE id = $3::integer",
-                Database::query_param_list(history_id)(history_id)(id));
+                " historyid = $1::integer WHERE id = $2::integer",
+                Database::query_param_list(history_id)(id));
 
         Database::Result robject_history = request.conn.exec_params(
                 "INSERT INTO object_history (historyid, id, clid, upid, trdate, update, authinfopw)"
@@ -451,7 +451,7 @@ void MojeIDImpl::rollbackPreparedTransaction(const char* _trans_id)
     Logging::Context ctx("rollback-prepared");
 
     try {
-        LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: ")
+        LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
                 % _trans_id);
 
         throw std::runtime_error("not implemented");
