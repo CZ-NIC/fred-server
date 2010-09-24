@@ -177,10 +177,68 @@ CORBA::ULongLong MojeIDImpl::transferContact(const char* _handle,
                                              IdentificationMethod _method,
                                              const CORBA::ULongLong _request_id)
 {
-    // TODO: implement transfer
-    return _request_id;
-}
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("contact-transfer");
+    ConnectionReleaser releaser;
 
+    try {
+        std::string handle = static_cast<std::string>(_handle);
+        LOGGER(PACKAGE).info(boost::format("request data --"
+                    "  handle: %1%  identification_method: %2%  request_id: %3%")
+                % handle % _method % _request_id);
+
+        /* start new request - here for logging into action table - until
+         * fred-logd fully migrated */
+        Registry::MojeIDRequest request(204, mojeid_registrar_id_);
+        Logging::Context ctx_request(request.get_servertrid());
+
+        Register::NameIdPair cinfo;
+        try {
+            /* TODO: 2nd parameter should be from configuration */
+            Register::Contact::ManagerPtr contact_mgr(Register::Contact::Manager::create(0, false));
+            LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
+                    % handle);
+
+            Register::Contact::Manager::CheckAvailType check_result;
+            check_result = contact_mgr->checkAvail(handle, cinfo);
+
+            if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+                throw std::runtime_error(str(boost::format("handle '%1%' is not registered")
+                            % handle));
+            }
+            LOGGER(PACKAGE).debug(boost::format("handle '%1%' check passed")
+                    % handle);
+
+        }
+        catch (std::exception &_ex) {
+            throw;
+        }
+        catch (...) {
+            throw std::runtime_error("contact handle availability check failed");
+        }
+
+        /* TODO: more checking? */
+
+        unsigned long long hid = insert_contact_history(request, cinfo.id);
+
+        request.end_success();
+
+        LOGGER(PACKAGE).info(boost::format(
+                "contact saved -- handle: %1%  id: %2%  history_id: %3%")
+                % handle % cinfo.id % hid);
+
+        LOGGER(PACKAGE).info("request completed successfully");
+        return cinfo.id;
+    }
+    catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        throw Registry::MojeID::ErrorReport(_ex.what());
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::ErrorReport();
+    }
+}
 
 
 void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
@@ -229,6 +287,9 @@ void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
         Database::QueryParams pcontact = corba_unwrap_contact(_contact);
         update_contact(request, id, pcontact);
         unsigned long long hid = insert_contact_history(request, id);
+        LOGGER(PACKAGE).info(boost::format(
+                "contact updated -- handle: %1%  id: %2%  history_id: %3%")
+                % handle % id % hid);
 
         request.end_prepare(_trans_id);
         LOGGER(PACKAGE).info("request completed successfully");
