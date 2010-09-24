@@ -143,6 +143,25 @@ CORBA::ULongLong Registry_Messages_i::saveLetterToSend(const char* contact_handl
     }
 }//Registry_Messages_i::saveLetterToSend
 
+Registry::Messages::EnumList* Registry_Messages_i::getStatusList()
+{
+    Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
+    ret->length(0);
+    return ret._retn();
+}
+Registry::Messages::EnumList* Registry_Messages_i::getCommTypeList()
+{
+    Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
+    ret->length(0);
+    return ret._retn();
+}
+Registry::Messages::EnumList* Registry_Messages_i::getMessageTypeList()
+{
+    Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
+    ret->length(0);
+    return ret._retn();
+}
+
 const char* server_name = "msgd";//for logging contxt
 
 int main(int argc, char** argv)

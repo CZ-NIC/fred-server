@@ -96,6 +96,10 @@ public:
           , CORBA::ULongLong contact_history_historyid
           );
 
+  Registry::Messages::EnumList* getStatusList();
+  Registry::Messages::EnumList* getCommTypeList();
+  Registry::Messages::EnumList* getMessageTypeList();
+
 };//class Registry_Messages_i
 
 extern const char* server_name;//for logging contxt
