@@ -43,6 +43,8 @@ class MojeIDImpl : public POA_Registry::MojeID,
 
         char* getIdentificationInfo(CORBA::ULongLong);
 
+        Registry::ContactStateChangeList*
+            getContactStateChanges(const Registry::Date& since);
 };
 
 }
