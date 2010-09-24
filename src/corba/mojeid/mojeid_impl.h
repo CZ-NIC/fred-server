@@ -23,6 +23,10 @@ class MojeIDImpl : public POA_Registry::MojeID,
                                        IdentificationMethod _method,
                                        const CORBA::ULongLong _request_id);
 
+        CORBA::ULongLong transferContact(const char* _handle,
+                                         IdentificationMethod _method,
+                                         const CORBA::ULongLong _request_id);
+
         CORBA::ULongLong processIdentification(const char* _ident_request_id,
                                                const char* _password,
                                                const CORBA::ULongLong _request_id);

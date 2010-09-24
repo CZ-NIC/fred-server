@@ -173,6 +173,15 @@ CORBA::ULongLong MojeIDImpl::processIdentification(const char* _ident_request_id
 
 }
 
+CORBA::ULongLong MojeIDImpl::transferContact(const char* _handle,
+                                             IdentificationMethod _method,
+                                             const CORBA::ULongLong _request_id)
+{
+    // TODO: implement transfer
+    return _request_id;
+}
+
+
 
 void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
                                       const char* _trans_id,
