@@ -404,9 +404,12 @@ char* MojeIDImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
     return CORBA::string_dup(boost::lexical_cast<std::string>(_contact_id).c_str());
 }
 
-Registry::ContactStateChangeList* MojeIDImpl::getContactStateChanges(const Registry::Date& since)
+Registry::ContactStateChangeList*
+MojeIDImpl::getContactStateChanges(const Registry::Date& since)
 {
-    return 0;
+    Registry::ContactStateChangeList_var ret = new Registry::ContactStateChangeList();
+    ret->length(0);
+    return ret;
 }
 
 
