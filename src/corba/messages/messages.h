@@ -46,21 +46,10 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "register/db_settings.h"
-#include "corba_wrapper.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "corba/connection_releaser.h"
 
-#include "pidfile.h"
-#include "daemonize.h"
-
-#include "cfg/config_handler.h"
-#include "cfg/handle_general_args.h"
-#include "cfg/handle_server_args.h"
-#include "cfg/handle_logging_args.h"
-#include "cfg/handle_database_args.h"
-#include "cfg/handle_corbanameservice_args.h"
 
 //code for implementing IDL interfaces in file /usr/local/share/idl/fred//Messages.idl
 #include "corba/Messages.hh"

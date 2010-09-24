@@ -16,7 +16,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 sbin_PROGRAMS = fred-msgd
 
 
-fred_msgd_SOURCES = ../MessagesSK.cc ../MessagesDynSK.cc \
+fred_msgd_SOURCES = fred-msgd.cc ../MessagesSK.cc ../MessagesDynSK.cc \
 					../ccRegSK.cc ../ccRegDynSK.cc \
                     ../nameservice.cc messages.cc messages.h \
                     messages_filemanager.cc messages_filemanager.h \
