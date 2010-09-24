@@ -40,9 +40,9 @@ namespace Messages
 //return new message_archive id
 unsigned long long save_message(Database::QueryParam moddate// = Database::QPNull
         , Database::QueryParam attempt// = 0
-        , Database::QueryParam status// = 1
-        , const std::string message_type// = Database::QPNull
-        , const std::string comm_type// = std::string("")//sms, letter, email
+        , const std::string& status_name
+        , const std::string& message_type// = Database::QPNull
+        , const std::string& comm_type// = std::string("")//sms, letter, email
         , bool save_contact_reference// = true
         , const std::string contact_handle// = std::string("")
         , unsigned long contact_object_registry_id
@@ -53,7 +53,7 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
             "Messages::save_message "
             " moddate: %1% "
             " attempt: %2% "
-            " status: %3% "
+            " status_name: %3% "
             " message_type: %4% "
             " comm_type: %5% "
             " save_contact_reference: %6% "
@@ -64,7 +64,7 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
             )
                   % moddate.print_buffer()
                   % attempt.print_buffer()
-                  % status.print_buffer()
+                  % status_name
                   % message_type
                   % comm_type
                   % save_contact_reference
@@ -86,14 +86,15 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
 
     conn.exec_params(
         "INSERT INTO message_archive"
-        " (crdate, moddate, attempt, status, comm_type_id, message_type_id)"
+        " (crdate, moddate, attempt, status_id, comm_type_id, message_type_id)"
         " VALUES (CURRENT_TIMESTAMP, $1::timestamp"// without time zone "
-        " , $2::smallint, $3::integer,"
-        " (SELECT id FROM comm_type WHERE type = $4::text), $5::integer)"
+        " , $2::smallint"
+        " , (SELECT id FROM message_status WHERE status_name = $3::text)"
+        " , (SELECT id FROM comm_type WHERE type = $4::text), $5::integer)"
         , Database::query_param_list
           (Database::QueryParam())//$1 moddate
           (attempt)//$2 attempt
-          (status)//$3 status
+          (status_name)//$3 status
           (comm_type)//$4 comm_type
           (message_type_id)//$5 message_type_id
           );
@@ -121,7 +122,7 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
     }//if(save_contact_reference)
 
     return message_archive_id;
-}
+}//save_message
 
 
 
@@ -159,6 +160,17 @@ unsigned long long get_filetype_id(std::string file_type)
     return filetype_id;
 }
 
+// not processed letters should have status set back
+void set_status_back(const std::string& comm_type)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    conn.exec_params("UPDATE message_archive SET "
+            "status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
+            " WHERE status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
+            " AND comm_type_id = (SELECT id FROM comm_type "
+            " WHERE type = $1::text)"
+            , Database::query_param_list(comm_type));
+}
 
 //Manager factory
 ManagerPtr create_manager()
@@ -202,7 +214,7 @@ unsigned long long Manager::save_sms_to_send(const char* contact_handle
         message_archive_id= save_message(
                 Database::QueryParam()
                 , 0
-                , 1
+                , "ready"
                 , message_type
                 ,"sms"
                 , true
@@ -283,7 +295,7 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
         Database::Transaction tx(conn);
 
         message_archive_id
-        = save_message(Database::QPNull, 0, 1,message_type, "letter", true
+        = save_message(Database::QPNull, 0, "ready",message_type, "letter", true
                 , contact_handle, contact_object_registry_id
                 , contact_history_historyid
                 );
@@ -356,7 +368,8 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
     Database::Result res = conn.exec("SELECT EXISTS "
             "(SELECT * FROM message_archive ma "
             "JOIN comm_type ct ON ma.comm_type_id = ct.id "
-            " WHERE ma.status=6 AND ct.type = 'letter')");
+            "JOIN message_status ms ON ma.status_id = ms.id "
+            " WHERE ms.status_name = 'being_sent' AND ct.type = 'letter')");
 
     if ((bool)res[0][0])
     {
@@ -374,19 +387,22 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
 
     if(batch_size_limit == 0)//unlimited batch
     {
-        conn.exec("UPDATE message_archive SET status = 6 "
-                " WHERE (status = 1 OR status = 4) "
-                " AND comm_type_id = (SELECT id FROM comm_type "
-                " WHERE type = 'letter') "
+        conn.exec("UPDATE message_archive SET "
+            "status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
+            " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
+            " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
+            " AND comm_type_id = (SELECT id FROM comm_type WHERE type = 'letter') "
         );
     }
     else//limited batch
     {
-        conn.exec_params("UPDATE message_archive SET status = 6 "
-                " WHERE id IN (SELECT id FROM message_archive "
-                "   WHERE (status = 1 OR status = 4) "
-                " AND comm_type_id = (SELECT id FROM comm_type "
-                " WHERE type = 'letter') ORDER BY id LIMIT $1::integer) "
+        conn.exec_params("UPDATE message_archive SET "
+            "status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
+            " WHERE id IN (SELECT id FROM message_archive "
+            " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
+            " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
+            " AND comm_type_id = (SELECT id FROM comm_type "
+            " WHERE type = 'letter') ORDER BY id LIMIT $1::integer) "
                 , Database::query_param_list (batch_size_limit)
         );
     }
@@ -394,7 +410,8 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
     res = conn.exec("SELECT la.file_id, la.id, ma.attempt , f.name "
         " FROM message_archive ma JOIN letter_archive la ON ma.id = la.id "
         " JOIN files f ON la.file_id = f.id "
-        " WHERE ma.status=6");
+        " JOIN message_status ms ON ma.status_id = ms.id "
+        " WHERE ms.status_name='being_sent'");
 
     trans.commit();
 
@@ -435,7 +452,8 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit)
     Database::Result res = conn.exec("SELECT EXISTS "
             "(SELECT * FROM message_archive ma "
             "JOIN comm_type ct ON ma.comm_type_id = ct.id "
-            " WHERE ma.status=6 AND ct.type = 'sms')");
+            "JOIN message_status ms ON ma.status_id = ms.id "
+            " WHERE ms.status_name = 'being_sent' AND ct.type = 'sms')");
 
     if ((bool)res[0][0])
     {
@@ -453,19 +471,22 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit)
 
     if(batch_size_limit == 0)//unlimited batch
     {
-        conn.exec("UPDATE message_archive SET status = 6 "
-                " WHERE (status = 1 OR status = 4) "
-                " AND comm_type_id = (SELECT id FROM comm_type "
-                " WHERE type = 'sms') "
+        conn.exec("UPDATE message_archive SET "
+            "status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
+            " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
+            " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
+            " AND comm_type_id = (SELECT id FROM comm_type WHERE type = 'sms') "
         );
     }
     else//limited batch
     {
-        conn.exec_params("UPDATE message_archive SET status = 6 "
-                " WHERE id IN (SELECT id FROM message_archive "
-                "   WHERE (status = 1 OR status = 4) "
-                " AND comm_type_id = (SELECT id FROM comm_type "
-                " WHERE type = 'sms') ORDER BY id LIMIT $1::integer) "
+        conn.exec_params("UPDATE message_archive SET "
+            "status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
+            " WHERE id IN (SELECT id FROM message_archive "
+            " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
+            " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
+            " AND comm_type_id = (SELECT id FROM comm_type "
+            " WHERE type = 'sms') ORDER BY id LIMIT $1::integer) "
                 , Database::query_param_list (batch_size_limit)
         );
     }
@@ -473,7 +494,8 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit)
     // is there anything to send?
     res = conn.exec("SELECT  sa.id, ma.attempt, sa.phone_number, sa.content  "
         " FROM message_archive ma JOIN sms_archive sa ON ma.id = sa.id "
-        " WHERE ma.status=6");
+        " JOIN message_status ms ON ma.status_id = ms.id "
+        " WHERE ms.status_name='being_sent'");
 
     trans.commit();
 
@@ -497,7 +519,8 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit)
 }
 
 
-void Manager::set_letter_status(const LetterProcInfo& letters,long new_status, const std::string& batch_id)
+void Manager::set_letter_status(const LetterProcInfo& letters
+        ,const std::string& new_status, const std::string& batch_id)
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction trans2(conn);
@@ -507,16 +530,17 @@ void Manager::set_letter_status(const LetterProcInfo& letters,long new_status, c
             ; it!=letters.end(); ++it)
     {
           unsigned int new_attempt = it->attempt + 1;
-          conn.exec_params("UPDATE message_archive SET status = $1::integer, "
-                              "attempt = $2::integer, "
-                              "moddate = CURRENT_TIMESTAMP WHERE id = $3::integer"
-                              " AND comm_type_id = (SELECT id FROM comm_type "
-                              " WHERE type = 'letter')"
-                          , Database::query_param_list
-                                   (new_status)
-                                   (new_attempt)
-                                   (it->letter_id)
-                          );
+          conn.exec_params("UPDATE message_archive SET "
+              "status_id = (SELECT id FROM message_status WHERE status_name = $1::text), "
+              "attempt = $2::integer, "
+              "moddate = CURRENT_TIMESTAMP WHERE id = $3::integer"
+              " AND comm_type_id = (SELECT id FROM comm_type "
+              " WHERE type = 'letter')"
+              , Database::query_param_list
+                   (new_status)
+                   (new_attempt)
+                   (it->letter_id)
+              );
 
           conn.exec_params("UPDATE letter_archive SET  "
                               "batch_id = $1::text "
@@ -527,9 +551,7 @@ void Manager::set_letter_status(const LetterProcInfo& letters,long new_status, c
                           );
     }
     // not processed letters should have status set back (set moddate? status?)
-    conn.exec("UPDATE message_archive SET status = 1 WHERE status = 6 "
-            " AND comm_type_id = (SELECT id FROM comm_type "
-            " WHERE type = 'letter')");
+    set_status_back("letter");
 
     trans2.commit();
 
@@ -546,22 +568,27 @@ void Manager::set_sms_status(const SmsProcInfo& messages)
             ; it!=messages.end(); ++it)
     {
           unsigned int new_attempt = it->attempt + 1;
-          conn.exec_params("UPDATE message_archive SET status = $1::integer, "
-                              "attempt = $2::integer, "
-                              "moddate = CURRENT_TIMESTAMP WHERE id = $3::integer"
-                              " AND comm_type_id = (SELECT id FROM comm_type "
-                              " WHERE type = 'sms')"
-                          , Database::query_param_list
-                                   (it->new_status)
-                                   (new_attempt)
-                                   (it->sms_id)
-                          );
+          conn.exec_params("UPDATE message_archive SET "
+                  "status_id = (SELECT id FROM message_status WHERE status_name = $1::text), "
+                      "attempt = $2::integer, "
+                      "moddate = CURRENT_TIMESTAMP WHERE id = $3::integer"
+                      " AND comm_type_id = (SELECT id FROM comm_type "
+                      " WHERE type = 'sms')"
+                  , Database::query_param_list
+                   (it->new_status)
+                   (new_attempt)
+                   (it->sms_id)
+                  );
     }
     // not processed letters should have status set back (set moddate? status?)
-    conn.exec("UPDATE message_archive SET status = 1 WHERE status = 6 "
-            " AND comm_type_id = (SELECT id FROM comm_type "
-            " WHERE type = 'sms')");
+    set_status_back("sms");
+
     trans2.commit();
+}
+
+Manager::MessageListPtr Manager::createList()
+{
+    return Manager::MessageListPtr(new MessageList());
 }
 
 }//namespace Messages

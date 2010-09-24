@@ -278,7 +278,7 @@ void NotifyClient::file_send()
 
      if(proc_letters.empty()) return;
 
-     int new_status = 5;
+     std::string new_status = "sent";
      std::string batch_id;
 
 
@@ -305,13 +305,13 @@ void NotifyClient::file_send()
          std::string msg = str(boost::format("error occured (%1%)") % ex.what());
          LOGGER(PACKAGE).error(msg);
          std::cerr << msg << std::endl;
-         new_status = 4; // set error status in database
+         new_status = "send_failed"; // set error status in database
      }
      catch (...) {
          std::string msg = "unknown error occured"; 
          LOGGER(PACKAGE).error(msg);
          std::cerr << msg << std::endl;
-         new_status = 4; // set error status in database
+         new_status = "send_failed"; // set error status in database
      }
 
      //set status
@@ -333,7 +333,7 @@ void NotifyClient::file_send()
 
       for(unsigned i=0;i<proc_sms.size();i++)
       {
-          int new_status = 5;//ok status
+          std::string new_status = "sent";//ok status
           try
           {
               Register::Messages::sms_proc mp = proc_sms.at(i);
@@ -345,7 +345,7 @@ void NotifyClient::file_send()
                   LOGGER(PACKAGE).error(
                           std::string("NotifyClient::sendSMS error command: ")
                               + command_with_params + "failed.");
-                  new_status = 4; // set error status
+                  new_status = "send_failed"; // set error status
               }//if failed
               else
               {
@@ -358,13 +358,13 @@ void NotifyClient::file_send()
               std::string msg = str(boost::format("error occured (%1%)") % ex.what());
               LOGGER(PACKAGE).error(msg);
               std::cerr << msg << std::endl;
-              new_status = 4; // set error status in database
+              new_status = "send_failed"; // set error status in database
           }
           catch (...) {
               std::string msg = "unknown error occured";
               LOGGER(PACKAGE).error(msg);
               std::cerr << msg << std::endl;
-              new_status = 4; // set error status in database
+              new_status = "send_failed"; // set error status in database
           }
 
           proc_sms.at(i).new_status = new_status;//seting new status

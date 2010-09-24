@@ -29,6 +29,11 @@
 #include <memory>
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/time_period.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+
+#include "common_new.h"
 
 
 namespace Register
@@ -65,10 +70,29 @@ struct sms_proc {
     unsigned attempt;
     std::string phone_number;
     std::string content;
-    int new_status;
+    std::string new_status;
 };//info for sms processing
 
 typedef std::vector<sms_proc> SmsProcInfo;
+
+
+/// message attributes and specific parameters
+struct Message
+{
+    unsigned long long id;
+    boost::posix_time::ptime crdate;
+    boost::posix_time::ptime moddate;
+    unsigned attempt;
+    std::string status;
+    std::string comm_type;
+    std::string message_type;
+};
+
+class MessageList
+{
+    public:
+
+};
 
 
 class Manager : boost::noncopyable
@@ -100,10 +124,16 @@ public:
     SmsProcInfo load_sms_to_send(std::size_t batch_size_limit);
 
     //set send result into letter status
-    void set_letter_status(const LetterProcInfo& letters,long new_status, const std::string& batch_id);
+    void set_letter_status(const LetterProcInfo& letters
+            ,const std::string& new_status, const std::string& batch_id);
 
     //set send result into sms status
     void set_sms_status(const SmsProcInfo& messages);
+
+    ///list factory
+    typedef std::auto_ptr<MessageList> MessageListPtr;
+    MessageListPtr createList();
+
 
 };
 
