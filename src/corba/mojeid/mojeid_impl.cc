@@ -407,9 +407,9 @@ char* MojeIDImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
 Registry::ContactStateChangeList*
 MojeIDImpl::getContactStateChanges(const Registry::Date& since)
 {
-    Registry::ContactStateChangeList* ret = new Registry::ContactStateChangeList();
+    Registry::ContactStateChangeList_var ret = new Registry::ContactStateChangeList;
     ret->length(0);
-    return ret;
+    return ret._retn();
 }
 
 
