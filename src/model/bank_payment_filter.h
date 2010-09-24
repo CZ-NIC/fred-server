@@ -1,5 +1,5 @@
-#ifndef _STATEMENT_ITEM_FILTER_H_
-#define _STATEMENT_ITEM_FILTER_H_
+#ifndef _BANK_PAYMENT_FILTER_H_
+#define _BANK_PAYMENT_FILTER_H_
 
 #include "db/query/base_filters.h"
 #include "bank_statement_filter.h"
@@ -70,4 +70,4 @@ public:
 } // namespace Filters
 } // namespace Database
 
-#endif // _STATEMENT_ITEM_FILTER_H_
+#endif // _BANK_PAYMENT_FILTER_H_
