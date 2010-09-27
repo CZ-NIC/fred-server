@@ -28,6 +28,7 @@
 // #include "pagetable_logger.h"
 #include "pagetable_logsession.h"
 #include "pagetable_zones.h"
+#include "pagetable_messages.h"
 
 #include "user_impl.h"
 #include "corba/mailer_manager.h"
@@ -54,6 +55,7 @@ private:
 
   ccReg::BankingInvoicing_ptr m_banking_invoicing;
 
+  ccReg_Messages_i* m_messages;
   ccReg_Zones_i* m_zones;
   ccReg_Registrars_i* m_registrars;
   ccReg_EPPActions_i* m_eppactions;
