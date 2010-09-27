@@ -16,11 +16,14 @@ sbin_PROGRAMS = fred-mifd
 
 
 fred_mifd_SOURCES = ../MojeIDSK.cc \
-                      ../MojeIDDynSK.cc \
-                      ../nameservice.cc \
-					  mojeid_impl.h \
-                      mojeid_impl.cc \
-                      fred-mifd.cc
+                    ../MojeIDDynSK.cc \
+                    ../nameservice.cc \
+                    mojeid_impl.h \
+                    mojeid_impl.cc \
+                    mojeid_contact.h \
+                    mojeid_request.h \
+                    corba_wrap.h \
+                    fred-mifd.cc
 
 
 fred_mifd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
