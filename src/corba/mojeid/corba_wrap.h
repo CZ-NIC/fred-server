@@ -4,6 +4,8 @@
 #include "corba/MojeID.hh"
 #include "register/db_settings.h"
 #include <string>
+#include <boost/algorithm/string.hpp>
+
 
 
 const char* corba_wrap_string(const char* _s)
@@ -154,13 +156,13 @@ Database::QueryParams corba_unwrap_contact(const Registry::Contact &_contact)
     Database::QueryParam ssn = Database::QueryParam();
     Database::QueryParam ssn_type = Database::QueryParam();
     if (_contact.ssn_type) {
-        int type = boost::lexical_cast<int>(_contact.ssn_type->_value());
+        std::string type = boost::to_upper_copy(static_cast<std::string>(_contact.ssn_type->_value()));
         ssn_type = type;
-        if (type == 2) ssn = corba_unwrap_nullable_string(_contact.id_card_num);
-        if (type == 3) ssn = corba_unwrap_nullable_string(_contact.passport_num);
-        if (type == 4) ssn = corba_unwrap_nullable_string(_contact.vat_id_num);
-        if (type == 5) ssn = corba_unwrap_nullable_string(_contact.ssn_id_num);
-        if (type == 6) ssn = corba_unwrap_nullable_date(_contact.birth_date);
+        if (type == "OP")            ssn = corba_unwrap_nullable_string(_contact.id_card_num);
+        else if (type == "PASS")     ssn = corba_unwrap_nullable_string(_contact.passport_num);
+        else if (type == "ICO")      ssn = corba_unwrap_nullable_string(_contact.vat_id_num);
+        else if (type == "MPSV")     ssn = corba_unwrap_nullable_string(_contact.ssn_id_num);
+        else if (type == "BIRTHDAY") ssn = corba_unwrap_nullable_date(_contact.birth_date);
     }
 
     Database::QueryParams pcontact = Database::query_param_list

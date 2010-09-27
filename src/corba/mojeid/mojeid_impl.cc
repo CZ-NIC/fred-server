@@ -330,8 +330,9 @@ Contact* MojeIDImpl::contactInfo(const CORBA::ULongLong _id)
             " c.disclosefax,"
             " c.street1, c.street2, c.street3,"
             " c.city, c.stateorprovince, c.postalcode, c.country,"
-            " c.email, c.notifyemail, c.telephone, c.fax"
+            " c.email, c.notifyemail, c.telephone, c.fax, est.type"
             " FROM object_registry oreg JOIN contact c ON c.id = oreg.id"
+            " LEFT JOIN enum_ssntype est ON est.id = c.ssntype"
             " WHERE oreg.id = $1::integer AND oreg.erdate IS NULL";
         Database::QueryParams pinfo = Database::query_param_list(_id);
 
@@ -347,14 +348,14 @@ Contact* MojeIDImpl::contactInfo(const CORBA::ULongLong _id)
         data->last_name    = corba_wrap_string(rinfo[0][3]);
         data->organization = corba_wrap_nullable_string(rinfo[0][4]);
         data->vat_reg_num  = corba_wrap_nullable_string(rinfo[0][5]);
-        data->ssn_type     = corba_wrap_nullable_string(rinfo[0][6]);
+        data->ssn_type     = corba_wrap_nullable_string(rinfo[0][28]);
 
-        int ident_type = static_cast<int>(rinfo[0][6]);
-        data->id_card_num  = ident_type == 2 ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
-        data->passport_num = ident_type == 3 ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
-        data->vat_id_num   = ident_type == 4 ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
-        data->ssn_id_num   = ident_type == 5 ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
-        data->birth_date   = ident_type == 6 ? corba_wrap_nullable_date(rinfo[0][7]) : 0;
+        std::string type = static_cast<std::string>(rinfo[0][28]);
+        data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
+        data->passport_num = type == "PASS"     ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
+        data->vat_id_num   = type == "ICO"      ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
+        data->ssn_id_num   = type == "MPSV"     ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
+        data->birth_date   = type == "BIRTHDAY" ? corba_wrap_nullable_date(rinfo[0][7]) : 0;
 
         data->disclose_name         = corba_wrap_nullable_boolean(rinfo[0][8]);
         data->disclose_organization = corba_wrap_nullable_boolean(rinfo[0][9]);

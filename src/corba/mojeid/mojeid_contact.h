@@ -48,7 +48,8 @@ void insert_contact(MojeIDRequest &_request,
                  " $26::integer, $1::text, $2::text, $3::text, $4::text,"
                  " $5::text, $6::text, $7::text, $8::text, $9::text,"
                  " $10::text, $11::text, $12::text, $13::text, $14::text,"
-                 " $15::text, $16::integer, $17::boolean, $18::boolean,"
+                 " $15::text, (SELECT id FROM enum_ssntype WHERE type = $16::text),"
+                 " $17::boolean, $18::boolean,"
                  " $19::boolean, $20::boolean, $21::boolean, $22::boolean,"
                  " $23::boolean, $24::boolean, $25::boolean)";
 
@@ -69,7 +70,8 @@ void update_contact(MojeIDRequest &_request,
                  " stateorprovince = $7::text, postalcode = $8::text,"
                  " country = $9::text, telephone = $10::text,"
                  " fax = $11::text, email = $12::text, notifyemail = $13::text,"
-                 " vat = $14::text, ssn = $15::text, ssntype = $16::integer,"
+                 " vat = $14::text, ssn = $15::text,"
+                 " ssntype = (SELECT id FROM enum_ssntype WHERE type = $16::text),"
                  " disclosename = $17::boolean, discloseorganization = $18::boolean,"
                  " discloseaddress = $19::boolean, disclosetelephone = $20::boolean,"
                  " disclosefax = $21::boolean, discloseemail = $22::boolean,"
