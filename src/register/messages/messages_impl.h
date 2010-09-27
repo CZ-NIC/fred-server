@@ -33,7 +33,7 @@
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "common_new.h"
+//#include "common_new.h"
 
 
 namespace Register
