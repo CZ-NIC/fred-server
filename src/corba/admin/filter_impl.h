@@ -61,6 +61,8 @@ public:
   ccReg::Filters::ZoneNs_ptr addE(Database::Filters::ZoneNs *f);
   ccReg::Filters::Zone_ptr addE(Database::Filters::Zone *f);
 
+  ccReg::Filters::Message_ptr addE(Database::Filters::Message *f);
+
 
   void addFilter(Database::Filters::Filter* f);
 

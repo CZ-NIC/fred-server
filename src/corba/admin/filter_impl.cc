@@ -588,6 +588,15 @@ COMPOUND_CLASS(ZoneSoa, ZoneSoa , Zone,
     FILTER_ADD(Str, addNsFqdn);
 );
 
+COMPOUND_CLASS(Message, Message , Compound,
+    FILTER_ADD(Id, addId);
+    FILTER_ADD(DateTime, addCrDate);
+    FILTER_ADD(DateTime, addModDate);
+    FILTER_ADD(Int, addAttempt);
+    FILTER_ADD(Int, addStatus);
+    FILTER_ADD(Int, addCommType);
+    FILTER_ADD(Int, addMessageType);
+);
 
 FilterIteratorImpl::FilterIteratorImpl() :
   i(flist.end()) {
@@ -676,6 +685,8 @@ ITERATOR_ADD_E_METHOD_IMPL(ZoneSoa, ZoneSoa);
 ITERATOR_ADD_E_METHOD_IMPL(ZoneNs, ZoneNs);
 ITERATOR_ADD_E_METHOD_IMPL(Zone, Zone);
 
+ITERATOR_ADD_E_METHOD_IMPL(Message, Message);
+
 
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
   { Database::Filters::dt *rf = dynamic_cast<Database::Filters::dt *>(f); \
@@ -722,6 +733,7 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(ZoneSoa, ZoneSoa);
   ITERATOR_ADD_FILTER_METHOD_IMPL(ZoneNs, ZoneNs);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Zone, Zone);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(Message, Message);
 
 
 
