@@ -216,6 +216,12 @@ CORBA::ULongLong MojeIDImpl::transferContact(const char* _handle,
 
         /* TODO: more checking? */
 
+        request.conn.exec_params("UPDATE object SET clid = $1::integer, trdate = now(),"
+                " authinfopw = $2::text WHERE id = $3::integer",
+                Database::query_param_list
+                    (mojeid_registrar_id_)
+                    (Random::string_alphanum(8))
+                    (cinfo.id));
         unsigned long long hid = insert_contact_history(request, cinfo.id);
 
         request.end_success();
