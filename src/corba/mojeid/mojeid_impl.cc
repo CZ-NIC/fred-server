@@ -17,6 +17,7 @@
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/algorithm/string.hpp>
 
 
 
@@ -269,7 +270,7 @@ void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
         unsigned long long db_id = static_cast<unsigned long long>(rid[0][0]);
         std::string db_handle = static_cast<std::string>(rid[0][1]);
         unsigned long long id = _contact.id->_value();
-        std::string handle = corba_unwrap_string(_contact.username);
+        std::string handle = boost::to_upper_copy(corba_unwrap_string(_contact.username));
 
         if (db_handle != handle) {
             throw std::runtime_error(str(boost::format(
