@@ -41,7 +41,7 @@
 #include "log/logger.h"
 #include "log/context.h"
 
-#include "rand_string.h"
+#include "random.h"
 
 #include "corba/connection_releaser.h"
 
@@ -238,7 +238,7 @@ char* ccReg_Admin_i::createSession(const char* username) {
 
   ccReg_User_i *user_info = new ccReg_User_i(1 /* dummy id until user management */, username, username, username);
 
-  std::string session_id = "sessid#" + RandStringGenerator::generate(5) + "-" + username;
+  std::string session_id = "sessid#" + Random::string_alphanum(5) + "-" + username;
 
   
   ccReg_Session_i *session = new ccReg_Session_i(session_id, m_connection_string, ns, cfg, bankingInvoicing._this(), user_info);
