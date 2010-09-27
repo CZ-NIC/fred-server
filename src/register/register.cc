@@ -92,6 +92,8 @@ class ManagerImpl : virtual public Manager {
   DB *db;
   bool m_restricted_handles;
 
+
+  Messages::ManagerPtr m_message_manager;
   Zone::Manager::ZoneManagerPtr m_zone_manager;
   std::auto_ptr<Domain::Manager> m_domain_manager;
   Registrar::Manager::AutoPtr m_registrar_manager;
@@ -129,6 +131,11 @@ public:
     cd.name = "Slovak Republic";
     m_countries.push_back(cd);
   }//ManagerImpl
+
+
+  Messages::ManagerPtr getMessageManager() const {
+    return m_message_manager;
+  }
 
   Zone::Manager *getZoneManager() const {
     return m_zone_manager.get();

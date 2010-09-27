@@ -13,6 +13,7 @@
 #include "mail.h"
 #include "file.h"
 #include "filter.h"
+#include "messages/messages_impl.h"
 
 /// forward declared parameter type
 class DB;
@@ -65,7 +66,9 @@ public:
   virtual void checkHandle(const std::string& handle, 
   											   CheckHandleList& ch, 
   											   bool allowIDN) const = 0;
-    /// return zone manager
+  /// return message manager
+  virtual Messages::ManagerPtr getMessageManager() const = 0;
+  /// return zone manager
   virtual Zone::Manager *getZoneManager() const = 0;
   /// return domain manager
   virtual Domain::Manager *getDomainManager() const = 0;
