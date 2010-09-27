@@ -81,7 +81,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_files = new ccReg_Files_i(file_manager_->createList());  
   m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
   m_zones = new ccReg_Zones_i(m_register_manager->getZoneManager()->createList());
-  m_messages = new ccReg_Messages_i(m_register_manager->getMessageManager()->createList());
+  //m_messages = new ccReg_Messages_i(m_register_manager->getMessageManager()->createList());
    
   m_eppactions->setDB();
   m_registrars->setDB();
