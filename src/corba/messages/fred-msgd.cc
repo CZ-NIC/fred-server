@@ -89,8 +89,9 @@ int main(int argc, char** argv)
         Logging::Context ctx(server_name);
 
 
-        //db connection
-        Database::Connection conn = Database::Manager::acquire();
+        {//db connection, test only
+            Database::Connection conn = Database::Manager::acquire();
+        }
 
         //CORBA init
         FakedArgs orb_fa = CfgArgs::instance()->fa;
