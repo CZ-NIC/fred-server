@@ -53,6 +53,8 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
 						  pagetable_bank_statements.h   \
                           pagetable_zones.cc            \
                           pagetable_zones.h             \
+                          pagetable_messages.cc            \
+                          pagetable_messages.h             \
                           str_corbaout.h                \
 						  usertype_conv.h				\
                           common.cc                     \
