@@ -189,7 +189,7 @@ CORBA::ULongLong MojeIDImpl::transferContact(const char* _handle,
 
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        Registry::MojeIDRequest request(204, mojeid_registrar_id_);
+        Registry::MojeIDRequest request(205, mojeid_registrar_id_);
         Logging::Context ctx_request(request.get_servertrid());
 
         Register::NameIdPair cinfo;
