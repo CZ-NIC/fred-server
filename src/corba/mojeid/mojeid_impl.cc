@@ -5,6 +5,7 @@
 
 #include "log/logger.h"
 #include "log/context.h"
+#include "random.h"
 
 #include "register/db_settings.h"
 #include "register/contact.h"
@@ -19,14 +20,9 @@
 
 
 
-boost::mt19937 gen;
-
 const std::string create_ctx_name(const std::string &_name)
 {
-    boost::uniform_int<unsigned int> ruint(1, 10000);
-    boost::variate_generator<boost::mt19937&, boost::uniform_int<unsigned int> > gen_uint(gen, ruint);
-
-    return str(boost::format("%1%-<%2%>") % _name % gen_uint());
+    return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
 }
 
 

@@ -1,6 +1,7 @@
 #ifndef MOJEID_CONTACT_H_
 #define MOJEID_CONTACT_H_
 
+#include "random.h"
 #include "register/db_settings.h"
 #include "mojeid_request.h"
 
@@ -23,7 +24,9 @@ unsigned long long create_object(MojeIDRequest &_request,
     Database::Result robject = _request.conn.exec_params(
             "INSERT INTO object (id, clid, authinfopw) VALUES ($1::integer, $2::integer,"
                 " $3::text)",
-            Database::query_param_list(id)(_request.get_registrar_id())("TODO: random string"));
+            Database::query_param_list(id)
+                (_request.get_registrar_id())
+                (Random::string_alphanum(8)));
 
     return id;
 }
