@@ -28,7 +28,7 @@
 // #include "pagetable_logger.h"
 #include "pagetable_logsession.h"
 #include "pagetable_zones.h"
-#include "pagetable_messages.h"
+//#include "pagetable_messages.h"
 
 #include "user_impl.h"
 #include "corba/mailer_manager.h"
