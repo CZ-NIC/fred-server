@@ -265,24 +265,38 @@ void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
         if (_contact.id == 0) {
             throw std::runtime_error("contact.id is null");
         }
-
-        Database::Result rid = request.conn.exec_params(
-                "SELECT id, name FROM object_registry WHERE id = $1::integer AND erdate IS NULL",
-                Database::query_param_list(corba_unwrap_nullable_ulonglong(_contact.id)));
-        if (rid.size() != 1) {
-            throw std::runtime_error("not found");
-        }
-
-        unsigned long long db_id = static_cast<unsigned long long>(rid[0][0]);
-        std::string db_handle = static_cast<std::string>(rid[0][1]);
         unsigned long long id = _contact.id->_value();
         std::string handle = boost::to_upper_copy(corba_unwrap_string(_contact.username));
 
-        if (db_handle != handle) {
+        Register::NameIdPair cinfo;
+        try {
+            /* TODO: 2nd parameter should be from configuration */
+            Register::Contact::ManagerPtr contact_mgr(Register::Contact::Manager::create(0, false));
+            LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
+                    % handle);
+
+            Register::Contact::Manager::CheckAvailType check_result;
+            check_result = contact_mgr->checkAvail(handle, cinfo);
+
+            if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+                throw std::runtime_error(str(boost::format("handle '%1%' is not registered")
+                            % handle));
+            }
+            LOGGER(PACKAGE).debug(boost::format("handle '%1%' check passed")
+                    % handle);
+        }
+        catch (std::exception &_ex) {
+            throw;
+        }
+        catch (...) {
+            throw std::runtime_error("contact handle availability check failed");
+        }
+
+        if (cinfo.name != handle || cinfo.id != id) {
             throw std::runtime_error(str(boost::format(
                         "inconsistency in parameter --"
                         " passed: (id: %1%, handle: %2%), database (id: %3%, handle: %4%)")
-                    % id % handle % db_id % db_handle));
+                    % id % handle % cinfo.id % cinfo.name));
         }
 
         /* TODO: checking for prohibited states */
