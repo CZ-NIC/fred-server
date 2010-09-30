@@ -109,6 +109,7 @@ public:
   ManagerImpl(DB *_db, bool _restrictedHandles)
     : db(_db)
     , m_restricted_handles(_restrictedHandles)
+    , m_message_manager(Messages::create_manager())
     , m_zone_manager(Zone::Manager::create())
     , m_registrar_manager(Registrar::Manager::create(db))
   {
