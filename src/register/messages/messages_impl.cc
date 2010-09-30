@@ -659,5 +659,73 @@ Manager::MessageListPtr Manager::createList()
     return Manager::MessageListPtr(new MessageList());
 }
 
+///status names
+EnumList Manager::getStatusList()
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec("SELECT  id, status_name FROM message_status "
+            "ORDER BY id");
+    if(res.size() == 0)
+    {
+        const char* err_msg = "getStatusList: no data in table message_status";
+        LOGGER(PACKAGE).error(err_msg);
+        throw std::runtime_error(err_msg);
+    }
+    EnumList el;
+    for(unsigned i=0;i<res.size();i++)
+    {
+        EnumListItem eli;
+        eli.id = res[i][0];
+        eli.name = std::string(res[i][1]);
+        el.push_back(eli);
+    }
+    return el;
+}//Manager::getStatusList
+
+///communication types
+EnumList Manager::getCommTypeList()
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec("SELECT  id, type FROM comm_type "
+            "ORDER BY id");
+    if(res.size() == 0)
+    {
+        const char* err_msg = "getCommTypeList: no data in table comm_type";
+        LOGGER(PACKAGE).error(err_msg);
+        throw std::runtime_error(err_msg);
+    }
+    EnumList el;
+    for(unsigned i=0;i<res.size();i++)
+    {
+        EnumListItem eli;
+        eli.id = res[i][0];
+        eli.name = std::string(res[i][1]);
+        el.push_back(eli);
+    }
+    return el;
+}//Manager::getCommTypeList
+///message types
+EnumList Manager::getMessageTypeList()
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec("SELECT  id, type FROM message_type "
+            "ORDER BY id");
+    if(res.size() == 0)
+    {
+        const char* err_msg = "getMessageTypeList: no data in table message_type";
+        LOGGER(PACKAGE).error(err_msg);
+        throw std::runtime_error(err_msg);
+    }
+    EnumList el;
+    for(unsigned i=0;i<res.size();i++)
+    {
+        EnumListItem eli;
+        eli.id = res[i][0];
+        eli.name = std::string(res[i][1]);
+        el.push_back(eli);
+    }
+    return el;
+}//Manager::getMessageTypeList
+
 }//namespace Messages
 }//namespace Register

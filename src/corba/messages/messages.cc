@@ -140,8 +140,14 @@ Registry::Messages::EnumList* Registry_Messages_i::getStatusList()
     LOGGER(PACKAGE).debug("Registry_Messages_i::getStatusList");
     try
     {
+        Register::Messages::EnumList el = msgmgr_->getStatusList();
         Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
-        ret->length(0);
+        ret->length(el.size());
+        for(std::size_t i = 0; i < el.size(); ++i)
+        {
+            ret[i].id = el[i].id;
+            ret[i].name = CORBA::string_dup(el[i].name.c_str());
+        }
         return ret._retn();
     }//try
     catch(std::exception& ex)
@@ -162,8 +168,14 @@ Registry::Messages::EnumList* Registry_Messages_i::getCommTypeList()
     LOGGER(PACKAGE).debug("Registry_Messages_i::getCommTypeList");
     try
     {
+        Register::Messages::EnumList el = msgmgr_->getCommTypeList();
         Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
-        ret->length(0);
+        ret->length(el.size());
+        for(std::size_t i = 0; i < el.size(); ++i)
+        {
+            ret[i].id = el[i].id;
+            ret[i].name = CORBA::string_dup(el[i].name.c_str());
+        }
         return ret._retn();
     }//try
     catch(std::exception& ex)
@@ -184,8 +196,14 @@ Registry::Messages::EnumList* Registry_Messages_i::getMessageTypeList()
     LOGGER(PACKAGE).debug("Registry_Messages_i::getMessageTypeList");
     try
     {
+        Register::Messages::EnumList el = msgmgr_->getMessageTypeList();
         Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
-        ret->length(0);
+        ret->length(el.size());
+        for(std::size_t i = 0; i < el.size(); ++i)
+        {
+            ret[i].id = el[i].id;
+            ret[i].name = CORBA::string_dup(el[i].name.c_str());
+        }
         return ret._retn();
     }//try
     catch(std::exception& ex)

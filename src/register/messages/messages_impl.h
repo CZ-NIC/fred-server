@@ -98,8 +98,16 @@ typedef boost::shared_ptr<Message> MessagePtr;//template param OBJ_PTR made from
 typedef ObjList<MemberType,MessagePtr> MessageList;//need reload_impl function implementation
 
 //TODO better interface
-void reload_impl(Database::Filters::Union &uf, std::vector<MessagePtr>& list , std::size_t& limit_,  bool& loadLimitActive_);
+void reload_impl(Database::Filters::Union &uf, std::vector<MessagePtr>& list
+        , std::size_t& limit_,  bool& loadLimitActive_);
 
+struct EnumListItem
+{
+  unsigned long long id;
+  std::string name;
+};
+
+typedef std::vector<EnumListItem> EnumList;
 
 class Manager : boost::noncopyable
 {
@@ -139,6 +147,15 @@ public:
     ///list factory
     typedef std::auto_ptr<MessageList> MessageListPtr;
     MessageListPtr createList();
+
+    ///status names
+    EnumList getStatusList();
+
+    ///communication types
+    EnumList getCommTypeList();
+
+    ///message types
+    EnumList getMessageTypeList();
 };
 
 typedef boost::shared_ptr<Manager> ManagerPtr;
