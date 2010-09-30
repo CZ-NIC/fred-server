@@ -265,6 +265,16 @@ AC_CHECK_FILE(
 	)]
 )
 
+AC_CHECK_FILE(
+	[$IDLDIR/FileManager.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain Messages.idl
+		(use --with-idldir)]
+	)]
+)
+
+
 AC_ARG_WITH(
   [libidn], 
   [AC_HELP_STRING(
