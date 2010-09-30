@@ -32,9 +32,15 @@ fred_msgd_LDFLAGS =   $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_THREAD_LIB)
 
 
-fred_msgd_LDADD = \
+fred_msgd_LDADD = 	 $(top_builddir)/src/register/messages/libmessages.a \
+                     $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \
-                     $(top_builddir)/src/register/messages/libmessages.a 
+                     $(top_builddir)/util/types/libtypes.a \
+                     $(top_builddir)/src/old_utils/liboldutils.a
+                      
+                     
+                     
+                     
 
 

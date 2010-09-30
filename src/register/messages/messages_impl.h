@@ -26,15 +26,19 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <memory>
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "register/db_settings.h"
 #include "model/model_filters.h"
+
+#include "util/obj_types.h"
 
 
 namespace Register
@@ -78,19 +82,6 @@ typedef std::vector<sms_proc> SmsProcInfo;
 
 
 /// message attributes and specific parameters
-struct Message
-{
-    unsigned long long id;
-    boost::posix_time::ptime crdate;
-    boost::posix_time::ptime moddate;
-    unsigned attempt;
-    std::string status;
-    std::string comm_type;
-    std::string message_type;
-};
-
-typedef boost::shared_ptr<Message> MessagePtr;
-
 /// member identification (i.e. for sorting)
 enum MemberType {
   MT_ID, ///< id
@@ -100,179 +91,14 @@ enum MemberType {
   MT_STATUS, ///< message status
   MT_COMMTYPE, ///< type of communication channel
   MT_MSGTYPE ///< type of message
-};
+};//template param MEMBER_TYPE for columns identification
 
+typedef ObjType<MemberType> Message;//object type used by pagetable
+typedef boost::shared_ptr<Message> MessagePtr;//template param OBJ_PTR made from shared_ptr
+typedef ObjList<MemberType,MessagePtr> MessageList;//need reload_impl function implementation
 
-class CompareId
-{
-    bool asc_;
-public:
-    CompareId(bool _asc)
-      : asc_(_asc) { }
-  bool operator()(MessagePtr _left, MessagePtr _right) const
-  {
-    return (asc_ ? (_left->id < _right->id) : (_left->id > _right->id));
-  }
-};//class CompareId
-
-class CompareCrDate
-{
-    bool asc_;
-public:
-    CompareCrDate(bool _asc)
-      : asc_(_asc) { }
-  bool operator()(MessagePtr _left, MessagePtr _right) const
-  {
-    return (asc_ ? (_left->crdate < _right->crdate) : (_left->crdate > _right->crdate));
-  }
-};//class CompareCrDate
-
-class CompareModDate
-{
-    bool asc_;
-public:
-    CompareModDate(bool _asc)
-      : asc_(_asc) { }
-  bool operator()(MessagePtr _left, MessagePtr _right) const
-  {
-    return (asc_ ? (_left->moddate < _right->moddate) : (_left->moddate > _right->moddate));
-  }
-};//class CompareModDate
-
-class CompareAttempt
-{
-    bool asc_;
-public:
-    CompareAttempt(bool _asc)
-      : asc_(_asc) { }
-  bool operator()(MessagePtr _left, MessagePtr _right) const
-  {
-    return (asc_ ? (_left->attempt < _right->attempt) : (_left->attempt > _right->attempt));
-  }
-};//class CompareAttempt
-
-class CompareStatus
-{
-    bool asc_;
-public:
-    CompareStatus(bool _asc)
-      : asc_(_asc) { }
-  bool operator()(MessagePtr _left, MessagePtr _right) const
-  {
-    return (asc_ ? (_left->status < _right->status) : (_left->status > _right->status));
-  }
-};//class CompareStatus
-
-class CompareCommType
-{
-    bool asc_;
-public:
-    CompareCommType(bool _asc)
-      : asc_(_asc) { }
-  bool operator()(MessagePtr _left, MessagePtr _right) const
-  {
-    return (asc_ ? (_left->comm_type < _right->comm_type) : (_left->comm_type > _right->comm_type));
-  }
-};//class CompareCommType
-
-class CompareMsgType
-{
-    bool asc_;
-public:
-    CompareMsgType(bool _asc)
-      : asc_(_asc) { }
-  bool operator()(MessagePtr _left, MessagePtr _right) const
-  {
-    return (asc_ ? (_left->message_type < _right->message_type) : (_left->message_type > _right->message_type));
-  }
-};//class CompareMsgType
-
-
-
-class MessageList
-{
-    typedef std::vector<MessagePtr> ListType;
-    ListType ml_;
-
-    bool m_loadLimitActive;
-
-    public:
-    MessagePtr get(std::size_t row)
-    {
-        return ml_.at(row);
-    }
-
-    std::size_t size()
-    {
-        return ml_.size();
-    }
-
-    void sort(MemberType _member, bool _asc)
-    {
-        switch (_member)
-        {
-          case MT_ID:
-            std::stable_sort(ml_.begin(), ml_.end(), CompareId(_asc));
-            break;
-          case MT_CRDATE:
-            std::stable_sort(ml_.begin(), ml_.end(), CompareCrDate(_asc));
-            break;
-          case MT_MODDATE:
-            std::stable_sort(ml_.begin(), ml_.end(), CompareModDate(_asc));
-            break;
-          case MT_ATTEMPT:
-            std::stable_sort(ml_.begin(), ml_.end(), CompareAttempt(_asc));
-            break;
-          case MT_STATUS:
-            std::stable_sort(ml_.begin(), ml_.end(), CompareAttempt(_asc));
-            break;
-          case MT_COMMTYPE:
-            std::stable_sort(ml_.begin(), ml_.end(), CompareCommType(_asc));
-            break;
-          case MT_MSGTYPE:
-            std::stable_sort(ml_.begin(), ml_.end(), CompareMsgType(_asc));
-            break;
-        }
-
-    }
-
-    void reload(Database::Filters::Union &uf)
-    {
-
-
-    }
-
-    void clear()
-    {
-        ml_.clear();
-    }
-
-    unsigned long long getRealCount(Database::Filters::Union &filter)
-    {
-
-        return 0;
-    }
-
-    virtual Register::Messages::MessagePtr findId(unsigned long long id) const
-    {
-        for(ListType::const_iterator it =ml_.begin()
-                ; it != ml_.end(); ++it)
-        {
-            if((*it)->id == id)
-                return *it;
-        }
-
-        LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% not found")
-        % id);
-        throw std::runtime_error("message id not found");
-    }
-
-    bool isLimited() const
-    {
-        return m_loadLimitActive;
-    }
-
-};
+//TODO better interface
+void reload_impl(Database::Filters::Union &uf, std::vector<MessagePtr>& list , std::size_t& limit_,  bool& loadLimitActive_);
 
 
 class Manager : boost::noncopyable

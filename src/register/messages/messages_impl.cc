@@ -23,6 +23,7 @@
 
 #include "messages_impl.h"
 #include "db_settings.h"
+#include "model/model_filters.h"
 #include "log/logger.h"
 #include "log/context.h"
 
@@ -171,6 +172,73 @@ void set_status_back(const std::string& comm_type)
             " WHERE type = $1::text)"
             , Database::query_param_list(comm_type));
 }
+
+//Message list reload implementation
+void reload_impl(Database::Filters::Union &uf, std::vector<MessagePtr>& list, std::size_t& _limit, bool& loadLimitActive_ )
+{
+    list.clear();
+    uf.clearQueries();
+
+    bool at_least_one = false;
+    Database::SelectQuery info_query;
+    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    for (fit->first(); !fit->isDone(); fit->next())
+    {
+      Database::Filters::Message *mf =
+          dynamic_cast<Database::Filters::Message*>(fit->get());
+      if (!mf)
+        continue;
+
+      Database::SelectQuery *tmp = new Database::SelectQuery();
+        tmp->select() << "ma.id, ma.crdate, ma.moddate, ma.attempt, ma.status"
+          ", ct.type, mt.type";
+        tmp->from() << "message_archive ma "
+                "JOIN comm_type ct ON ma.comm_type_id = ct.id"
+                "JOIN message_type mt ON ma.message_type_id = mt.id";
+        tmp->order_by() << "ma.id DESC";
+        //tmp->limit(_limit);//have limit+1 feature working with load limit active
+
+      uf.addQuery(tmp);
+      at_least_one = true;
+    }//for filters
+    if (!at_least_one) {
+      LOGGER(PACKAGE).error("wrong filter passed for reload!");
+      return;
+    }
+    uf.serialize(info_query);
+    std::string info_query_str = str(boost::format("%1% LIMIT %2%") % info_query.str() % (_limit+1));//try select more than limit
+    LOGGER(PACKAGE).debug(boost::format("reload(uf) MessageList query: %1%") % info_query_str);
+    try
+    {
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result res = conn.exec(info_query_str);
+
+      std::size_t result_size = res.size();
+
+      if( result_size > _limit )//check if selected mode than limit
+      {
+          loadLimitActive_ = true;
+          result_size = _limit;//copy only limited number of rows
+      }
+      else
+      loadLimitActive_= false;
+
+      for (std::size_t i=0; i < result_size; i++)
+      {
+          MessagePtr msgptr(new Message(res[i].size()));
+          for (std::size_t j=0; j < res[i].size(); j++)
+              msgptr->set(static_cast<MemberType>(j),res[i][j]);//for j col
+      }// for i row
+    }//try
+    catch (std::exception& ex)
+    {
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+    }
+
+}//reload_impl
+
+
+
 
 //Manager factory
 ManagerPtr create_manager()

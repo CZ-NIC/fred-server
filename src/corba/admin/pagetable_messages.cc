@@ -58,19 +58,26 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
 
     Registry::TableRow *tr = new Registry::TableRow;
 
-    tr->length(7);
+    tr->length(numColumns());
 
-    MAKE_OID(oid_message, msg->id, "", FT_MESSAGE)
+    MAKE_OID(oid_message, msg->get_id(), "", FT_MESSAGE)
 
     (*tr)[0] <<= oid_message;
-    (*tr)[1] <<= C_STR(msg->crdate);
-    (*tr)[2] <<= C_STR(msg->moddate);
-    (*tr)[3] <<= C_STR(msg->attempt);
-    (*tr)[4] <<= C_STR(msg->status);
-    (*tr)[5] <<= C_STR(msg->comm_type);
-    (*tr)[6] <<= C_STR(msg->message_type);
+    (*tr)[1] <<= C_STR(msg->get(Register::Messages::MT_CRDATE));
+    (*tr)[2] <<= C_STR(msg->get(Register::Messages::MT_MODDATE));
+    (*tr)[3] <<= C_STR(msg->get(Register::Messages::MT_ATTEMPT));
+    (*tr)[4] <<= C_STR(msg->get(Register::Messages::MT_STATUS));
+    (*tr)[5] <<= C_STR(msg->get(Register::Messages::MT_COMMTYPE));
+    (*tr)[6] <<= C_STR(msg->get(Register::Messages::MT_MSGTYPE));
     return tr;
 }
+
+CORBA::Short
+ccReg_Messages_i::numColumns()
+{
+    return 7;
+}
+
 
 void
 ccReg_Messages_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
@@ -82,29 +89,7 @@ ccReg_Messages_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
             % column % dir);
     ccReg_PageTable_i::sortByColumn(column, dir);
 
-    switch (column) {
-        case 0:
-            ml->sort(Register::Messages::MT_ID, dir);
-            break;
-        case 1:
-            ml->sort(Register::Messages::MT_CRDATE, dir);
-            break;
-        case 2:
-            ml->sort(Register::Messages::MT_MODDATE, dir);
-            break;
-        case 3:
-            ml->sort(Register::Messages::MT_ATTEMPT, dir);
-            break;
-        case 4:
-            ml->sort(Register::Messages::MT_STATUS, dir);
-            break;
-        case 5:
-            ml->sort(Register::Messages::MT_COMMTYPE, dir);
-            break;
-        case 6:
-            ml->sort(Register::Messages::MT_MSGTYPE, dir);
-            break;
-    }
+    ml->sort(static_cast<Register::Messages::MemberType>(column), dir);
 }
 
 ccReg::TID
@@ -113,7 +98,7 @@ ccReg_Messages_i::getRowId(CORBA::UShort row)
 {
     Logging::Context ctx(base_context_);
 
-    return ml->get(row)->id;
+    return ml->get(row)->get_id();
 
 }
 
@@ -129,12 +114,6 @@ ccReg_Messages_i::numRows()
     Logging::Context ctx(base_context_);
 
     return ml->size();
-}
-
-CORBA::Short
-ccReg_Messages_i::numColumns()
-{
-    return 7;
 }
 
 void
