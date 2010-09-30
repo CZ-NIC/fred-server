@@ -122,7 +122,7 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_payments;
     // delete m_statementheads;
   delete m_zones;
-  delete m_messages;
+  //delete m_messages;
 
     try {
         ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
