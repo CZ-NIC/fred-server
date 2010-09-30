@@ -18,7 +18,7 @@ sbin_PROGRAMS = fred-msgd
 
 fred_msgd_SOURCES = fred-msgd.cc ../MessagesSK.cc ../MessagesDynSK.cc \
                     ../FileManagerSK.cc ../FileManagerDynSK.cc \
-                     messages_filemanager.cc messages_filemanager.cc \
+                     messages_filemanager.cc messages_filemanager.h \
                     ../nameservice.cc messages.cc messages.h \
                     ../file_manager_client.cc 
 
