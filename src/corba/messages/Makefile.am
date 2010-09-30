@@ -19,7 +19,6 @@ sbin_PROGRAMS = fred-msgd
 fred_msgd_SOURCES = fred-msgd.cc ../MessagesSK.cc ../MessagesDynSK.cc \
                     ../FileManagerSK.cc ../FileManagerDynSK.cc \
                     ../nameservice.cc messages.cc messages.h \
-                    messages_filemanager.cc messages_filemanager.h \
                     ../file_manager_client.cc 
 
 fred_msgd_LDFLAGS =   $(POSTGRESQL_LDFLAGS) \
@@ -33,6 +32,7 @@ fred_msgd_LDFLAGS =   $(POSTGRESQL_LDFLAGS) \
 
 
 fred_msgd_LDADD = 	 $(top_builddir)/src/register/messages/libmessages.a \
+                     $(top_builddir)/src/corba/messages/libmessages_filemanager.a \
                      $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \

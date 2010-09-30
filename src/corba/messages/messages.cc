@@ -134,19 +134,66 @@ CORBA::ULongLong Registry_Messages_i::saveLetterToSend(const char* contact_handl
 
 Registry::Messages::EnumList* Registry_Messages_i::getStatusList()
 {
-    Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
-    ret->length(0);
-    return ret._retn();
-}
+    Logging::Context ctx(server_name);
+    ConnectionReleaser releaser;
+
+    LOGGER(PACKAGE).debug("Registry_Messages_i::getStatusList");
+    try
+    {
+        Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
+        ret->length(0);
+        return ret._retn();
+    }//try
+    catch(std::exception& ex)
+    {
+        throw Registry::Messages::ErrorReport(ex.what());
+    }
+    catch(...)
+    {
+        throw Registry::Messages::ErrorReport("unknown exception");
+    }
+}//Registry_Messages_i::getStatusList
+
 Registry::Messages::EnumList* Registry_Messages_i::getCommTypeList()
 {
-    Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
-    ret->length(0);
-    return ret._retn();
-}
+    Logging::Context ctx(server_name);
+    ConnectionReleaser releaser;
+
+    LOGGER(PACKAGE).debug("Registry_Messages_i::getCommTypeList");
+    try
+    {
+        Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
+        ret->length(0);
+        return ret._retn();
+    }//try
+    catch(std::exception& ex)
+    {
+        throw Registry::Messages::ErrorReport(ex.what());
+    }
+    catch(...)
+    {
+        throw Registry::Messages::ErrorReport("unknown exception");
+    }
+}//Registry_Messages_i::getCommTypeList
+
 Registry::Messages::EnumList* Registry_Messages_i::getMessageTypeList()
 {
-    Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
-    ret->length(0);
-    return ret._retn();
-}
+    Logging::Context ctx(server_name);
+    ConnectionReleaser releaser;
+
+    LOGGER(PACKAGE).debug("Registry_Messages_i::getMessageTypeList");
+    try
+    {
+        Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
+        ret->length(0);
+        return ret._retn();
+    }//try
+    catch(std::exception& ex)
+    {
+        throw Registry::Messages::ErrorReport(ex.what());
+    }
+    catch(...)
+    {
+        throw Registry::Messages::ErrorReport("unknown exception");
+    }
+}//Registry_Messages_i::getMessageTypeList
