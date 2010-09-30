@@ -219,6 +219,8 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
       return getLoggerPageTable();
     case ccReg::FT_ZONE:
       return m_zones->_this();
+    case ccReg::FT_MESSAGE:
+      return m_messages->_this();
 
     default:
       break;
