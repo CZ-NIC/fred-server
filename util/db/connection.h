@@ -149,7 +149,25 @@ public:
   {
       try {
   #ifdef HAVE_LOGGER
-        LOGGER(PACKAGE).debug(boost::format("exec query [%1%]") % _stmt);
+
+          if(LOGGER(PACKAGE).getLevel() > Logging::Log::LL_INFO)
+          {
+              std::string params_dump;
+              std::size_t params_counter =0;
+              for (QueryParams::const_iterator i = params.begin()
+                      ; i != params.end() ; ++i)
+              {
+                  ++params_counter;
+                  params_dump += std::string(" $")
+                      + boost::lexical_cast<std::string>(params_counter) + ": "
+                      + i->print_buffer();
+              }//for params
+
+              LOGGER(PACKAGE).debug(
+                      boost::format("exec query [%1%] params %2%")
+                  % _stmt % params_dump);
+          }//if debug
+
   #endif
         return result_type(conn_->exec_params(_stmt//one command query
                           , params //parameters data
