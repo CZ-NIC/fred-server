@@ -150,17 +150,19 @@ public:
       try {
   #ifdef HAVE_LOGGER
 
-          if(LOGGER(PACKAGE).getLevel() > Logging::Log::LL_INFO)
+          if(LOGGER(PACKAGE).getLevel() >= Logging::Log::LL_DEBUG)
           {
+              std::string value;
               std::string params_dump;
               std::size_t params_counter =0;
               for (QueryParams::const_iterator i = params.begin()
                       ; i != params.end() ; ++i)
               {
                   ++params_counter;
+                  value = i->is_null() ? "[null]" : "'" + i->print_buffer() + "'";
                   params_dump += std::string(" $")
                       + boost::lexical_cast<std::string>(params_counter) + ": "
-                      + i->print_buffer();
+                      + value;
               }//for params
 
               LOGGER(PACKAGE).debug(
