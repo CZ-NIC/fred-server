@@ -163,7 +163,7 @@ class ObjList //type for object list
 public:
     ObjList()
     : loadLimitActive_(false)
-    , limit_(0)
+    , limit_(1000)
     , realSizeInitialized_(false)
     , realSize_(0)
     {}
