@@ -190,9 +190,9 @@ void reload_impl(Database::Filters::Union &uf, std::vector<MessagePtr>& list, st
         continue;
 
       Database::SelectQuery *tmp = new Database::SelectQuery();
-        tmp->select() << "id, crdate, moddate, attempt, status_id, comm_type_id, message_type_id";
-        tmp->from() << "message_archive";
-        tmp->order_by() << "id DESC";
+        tmp->addSelect("id crdate moddate attempt status_id comm_type_id message_type_id"
+                ,mf->joinMessageArchiveTable());
+        tmp->order_by() << "1 DESC";
         //tmp->limit(_limit);//have limit+1 feature working with load limit active
 
       uf.addQuery(tmp);
