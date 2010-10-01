@@ -75,7 +75,7 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
 
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        Registry::MojeIDRequest request(204, mojeid_registrar_id_);
+        Registry::MojeIDRequest request(204, mojeid_registrar_id_, _request_id);
         Logging::Context ctx_request(request.get_servertrid());
 
         try {
@@ -186,7 +186,7 @@ CORBA::ULongLong MojeIDImpl::transferContact(const char* _handle,
 
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        Registry::MojeIDRequest request(205, mojeid_registrar_id_);
+        Registry::MojeIDRequest request(205, mojeid_registrar_id_, _request_id);
         Logging::Context ctx_request(request.get_servertrid());
 
         Register::NameIdPair cinfo;
@@ -259,7 +259,7 @@ void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
 
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        Registry::MojeIDRequest request(203, mojeid_registrar_id_);
+        Registry::MojeIDRequest request(203, mojeid_registrar_id_, _request_id, _trans_id);
         Logging::Context ctx_request(request.get_servertrid());
 
         if (_contact.id == 0) {

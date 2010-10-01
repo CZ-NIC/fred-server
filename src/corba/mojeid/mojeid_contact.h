@@ -88,8 +88,9 @@ void update_contact(MojeIDRequest &_request,
 unsigned long long insert_contact_history(MojeIDRequest &_request,
                                           const unsigned long long &_contact_id)
 {
-    _request.conn.exec_params("INSERT INTO history (id, action) VALUES (DEFAULT, $1::integer)",
-                             Database::query_param_list(_request.get_id()));
+    _request.conn.exec_params("INSERT INTO history (id, action, request_id)"
+            " VALUES (DEFAULT, $1::integer, $2::integer)",
+            Database::query_param_list(_request.get_id())(_request.get_request_id()));
     Database::Result rhistory = _request.conn.exec("SELECT currval('history_id_seq')");
     unsigned long long history_id = 0;
     history_id = rhistory[0][0];
