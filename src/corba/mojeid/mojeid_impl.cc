@@ -441,6 +441,28 @@ void MojeIDImpl::commitPreparedTransaction(const char* _trans_id)
         Database::Connection conn = Database::Manager::acquire();
         conn.exec("COMMIT PREPARED '" + conn.escape(_trans_id) + "'");
 
+        /* TEMP: until we finish migration to request logger */
+        try {
+            Database::Result result = conn.exec_params(
+                    "SELECT id FROM action WHERE"
+                    " enddate IS NULL AND response IS NULL"
+                    " AND clienttrid = $1::text",
+                    Database::query_param_list(_trans_id));
+
+            unsigned long long id = 0;
+            if (result.size() != 1 || (id = result[0][0]) == 0) {
+                LOGGER(PACKAGE).warning("unable to find unique action with given"
+                        " transaction id as clienttrid");
+            }
+            else {
+                conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
+                        " WHERE id = $1::integer", Database::query_param_list(id));
+            }
+        }
+        catch (...) {
+            LOGGER(PACKAGE).error("error occured when updating action response");
+        }
+
         LOGGER(PACKAGE).info("request completed successfully");
     }
     catch (std::exception &_ex) {
@@ -466,6 +488,28 @@ void MojeIDImpl::rollbackPreparedTransaction(const char* _trans_id)
         Database::Connection conn = Database::Manager::acquire();
         conn.exec("ROLLBACK PREPARED '" + conn.escape(_trans_id) + "'");
 
+        /* TEMP: until we finish migration to request logger */
+        try {
+            Database::Result result = conn.exec_params(
+                    "SELECT id FROM action WHERE"
+                    " enddate IS NULL AND response IS NULL"
+                    " AND clienttrid = $1::text",
+                    Database::query_param_list(_trans_id));
+
+            unsigned long long id = 0;
+            if (result.size() != 1 || (id = result[0][0]) == 0) {
+                LOGGER(PACKAGE).warning("unable to find unique action with given"
+                        " transaction id as clienttrid");
+            }
+            else {
+                conn.exec_params("UPDATE action SET response = 2400, enddate = now()"
+                        " WHERE id = $1::integer", Database::query_param_list(id));
+            }
+        }
+        catch (...) {
+            LOGGER(PACKAGE).error("error occured when updating action response");
+        }
+
         LOGGER(PACKAGE).info("request completed successfully");
     }
     catch (std::exception &_ex) {
@@ -477,6 +521,7 @@ void MojeIDImpl::rollbackPreparedTransaction(const char* _trans_id)
         throw Registry::MojeID::ErrorReport();
     }
 }
+
 
 char* MojeIDImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
 {
