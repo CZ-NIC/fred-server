@@ -190,11 +190,12 @@ void reload_impl(Database::Filters::Union &uf, std::vector<MessagePtr>& list, st
         continue;
 
       Database::SelectQuery *tmp = new Database::SelectQuery();
-        tmp->addSelect (
-                "id crdate moddate attempt status_id comm_type_id message_type_id"
-                ,mf->joinMessageArchiveTable());
-        tmp->order_by() << "id DESC";
-        tmp->limit(_limit);//have limit+1 feature working with load limit active
+        tmp->select() << "ma.id, ma.crdate, ma.moddate, ma.attempt, ma.status, ct.type, mt.type";
+        tmp->from() << "message_archive ma JOIN comm_type ct ON ma.comm_type_id = ct.id JOIN message_type mt ON ma.message_type_id = mt.id";
+        tmp->order_by() << "ma.id DESC";
+        //tmp->limit(_limit);//have limit+1 feature working with load limit active
+
+
 
       uf.addQuery(tmp);
       at_least_one = true;
@@ -204,7 +205,7 @@ void reload_impl(Database::Filters::Union &uf, std::vector<MessagePtr>& list, st
       return;
     }
     uf.serialize(info_query);
-    std::string info_query_str = info_query.str(); //str(boost::format("%1% LIMIT %2%") % info_query.str() % (_limit+1));//try select more than limit
+    std::string info_query_str = str(boost::format("%1% LIMIT %2%") % info_query.str() % (_limit+1));//try select more than limit =info_query.str();
     LOGGER(PACKAGE).debug(boost::format("reload(uf) MessageList query: %1%") % info_query_str);
     try
     {
