@@ -81,25 +81,112 @@ struct sms_proc {
 typedef std::vector<sms_proc> SmsProcInfo;
 
 
-/// message attributes and specific parameters
-/// member identification (i.e. for sorting)
-enum MemberType {
-  MT_ID, ///< id
-  MT_CRDATE, ///< create datetime
-  MT_MODDATE, ///< modification datetime
-  MT_ATTEMPT, ///< send attempt
-  MT_STATUS, ///< message status
-  MT_COMMTYPE, ///< type of communication channel
-  MT_MSGTYPE ///< type of message
-};//template param MEMBER_TYPE for columns identification
 
-typedef ObjType<MemberType> Message;//object type used by pagetable
-typedef boost::shared_ptr<Message> MessagePtr;//template param OBJ_PTR made from shared_ptr
-typedef ObjList<MemberType,MessagePtr> MessageList;//need reload_impl function implementation
+/// template param OBJECT_META_INFO implementation
+struct MessageMetaInfo
+{
+	enum MemberType {
+	  MT_ID, ///< id
+	  MT_CRDATE, ///< create datetime
+	  MT_MODDATE, ///< modification datetime
+	  MT_ATTEMPT, ///< send attempt
+	  MT_STATUS, ///< message status
+	  MT_COMMTYPE, ///< type of communication channel
+	  MT_MSGTYPE ///< type of message
+	};// columns identification
+	enum Columns { columns = 7};//number of columns
+};//struct MessageMetaInfo
 
-//TODO better interface
-void reload_impl(Database::Filters::Union &uf, std::vector<MessagePtr>& list
-        , std::size_t& limit_,  bool& loadLimitActive_);
+typedef ObjType<MessageMetaInfo> Message;//object type used by pagetable
+typedef Message::ObjPtr MessagePtr;// made from shared_ptr
+
+class MessageReload //RELOAD_FUNCTOR for messages
+{
+	typedef ObjType<MessageMetaInfo> Object;
+	typedef Object::ObjPtr  ObjPtr;
+	typedef std::vector<ObjPtr> ListType;
+
+public:
+	MessageReload()
+	{}
+
+	void operator()(Database::Filters::Union &uf
+			, ListType& list
+			, std::size_t& _limit
+			,  bool& loadLimitActive_)
+	{
+	    list.clear();
+	    uf.clearQueries();
+
+	    bool at_least_one = false;
+	    Database::SelectQuery info_query;
+	    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+	    for (fit->first(); !fit->isDone(); fit->next())
+	    {
+	    	Database::Filters::Message *f =
+	          dynamic_cast<Database::Filters::Message*>(fit->get());
+	      if (!f)
+	        continue;
+
+	      Database::SelectQuery *tmp = new Database::SelectQuery();
+	        tmp->addSelect(
+				"id crdate moddate attempt status_id comm_type_id message_type_id"
+				,f->joinMessageArchiveTable());
+	        tmp->order_by() << "1 DESC";
+
+	      uf.addQuery(tmp);
+	      at_least_one = true;
+	    }//for filters
+	    if (!at_least_one) {
+	      LOGGER(PACKAGE).error("wrong filter passed for reload!");
+	      return;
+	    }
+	    uf.serialize(info_query);
+	    std::string info_query_str = str(boost::format("%1% LIMIT %2%")
+			% info_query.str() % (_limit+1));//try select more than limit
+	    LOGGER(PACKAGE).debug(boost::format("reload(uf) ObjList query: %1%")
+			% info_query_str);
+	    try
+	    {
+	      Database::Connection conn = Database::Manager::acquire();
+	      Database::Result res = conn.exec(info_query_str);
+
+	      std::size_t result_size = res.size();
+
+	      if( result_size > _limit )//check if selected more than limit
+	      {
+	          loadLimitActive_ = true;
+	          result_size = _limit;//copy only limited number of rows
+	      }
+	      else
+	      loadLimitActive_= false;
+
+	      list.reserve(result_size);//allocate list by size
+	      list.clear();
+	      for (std::size_t i=0; i < result_size; i++)
+	      {
+	          ObjPtr objptr(new Object);
+	          for (std::size_t j=0; j < res[i].size(); j++)
+	          {/*
+	        	  LOGGER(PACKAGE).debug(
+	        			  boost::format("i: %1% j: %2% data: %3%")
+						  % i % j % res[i][j]);
+	        	  */
+	        	  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+	            		  ,res[i][j]);//for j col
+	          }
+	          list.push_back(objptr);
+	      }//for i row
+	    }//try
+	    catch (std::exception& ex)
+	    {
+	      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+	    }
+	}
+};//class MessageReload
+
+typedef ObjList<MessageMetaInfo
+	, MessageReload > MessageList;
 
 struct EnumListItem
 {

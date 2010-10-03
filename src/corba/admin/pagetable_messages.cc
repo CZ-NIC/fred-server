@@ -18,10 +18,12 @@ ccReg_Messages_i::~ccReg_Messages_i()
 ccReg::Filters::Compound_ptr
 ccReg_Messages_i::add()
 {
-    TRACE("[CALL] ccReg_Messages_i::add()");
+	TRACE("[CALL] ccReg_Messages_i::add()");
     Database::Filters::Message *filter =
         new Database::Filters::MessageImpl();
     uf.addFilter(filter);
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::add uf.empty %1%")
+		% uf.empty());
     return it.addE(filter);
 }
 
@@ -29,7 +31,7 @@ Registry::Table::ColumnHeaders *
 ccReg_Messages_i::getColumnHeaders()
 {
     Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
-    ch->length(7);
+    ch->length(numColumns());
     COLHEAD(ch, 0, "Message", CT_OID);
     COLHEAD(ch, 1, "Create date", CT_OTHER);
     COLHEAD(ch, 2, "Modification date", CT_OTHER);
@@ -37,6 +39,10 @@ ccReg_Messages_i::getColumnHeaders()
     COLHEAD(ch, 4, "Status", CT_OTHER);
     COLHEAD(ch, 5, "Communication channel", CT_OTHER);
     COLHEAD(ch, 6, "Message type", CT_OTHER);
+
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::getColumnHeaders"
+    		" numColumns %1%")
+		% numColumns());
     return ch;
 }
 
@@ -56,6 +62,26 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
         throw ccReg::Table::INVALID_ROW();
     }
 
+    LOGGER(PACKAGE).debug(boost::format(
+    		"getRow %1%"
+    		" MT_ID %2%"
+    		" MT_CRDATE %3%"
+    		" MT_MODDATE %4%"
+    		" MT_ATTEMPT %5%"
+    		" MT_STATUS %6%"
+    		" MT_COMMTYPE  %7%"
+    		" MT_MSGTYPE  %8%"
+		)
+    % row
+    % msg->get_id()
+    % msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE)
+    % msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE)
+    % msg->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT)
+    % msg->get(Register::Messages::MessageMetaInfo::MT_STATUS)
+    % msg->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)
+    % msg->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)
+    );
+
     Registry::TableRow *tr = new Registry::TableRow;
 
     tr->length(numColumns());
@@ -63,21 +89,24 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
     MAKE_OID(oid_message, msg->get_id(), "", FT_MESSAGE)
 
     (*tr)[0] <<= oid_message;
-    (*tr)[1] <<= C_STR(msg->get(Register::Messages::MT_CRDATE));
-    (*tr)[2] <<= C_STR(msg->get(Register::Messages::MT_MODDATE));
-    (*tr)[3] <<= C_STR(msg->get(Register::Messages::MT_ATTEMPT));
-    (*tr)[4] <<= C_STR(msg->get(Register::Messages::MT_STATUS));
-    (*tr)[5] <<= C_STR(msg->get(Register::Messages::MT_COMMTYPE));
-    (*tr)[6] <<= C_STR(msg->get(Register::Messages::MT_MSGTYPE));
+    (*tr)[1] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE));
+    (*tr)[2] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE));
+    (*tr)[3] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
+    (*tr)[4] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_STATUS));
+    (*tr)[5] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
+    (*tr)[6] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE));
     return tr;
 }
 
 CORBA::Short
 ccReg_Messages_i::numColumns()
 {
-    return 7;
-}
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::numColumns"
+    		" numColumns %1%")
+		% Register::Messages::MessageMetaInfo::columns);
 
+    return Register::Messages::MessageMetaInfo::columns;
+}
 
 void
 ccReg_Messages_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
@@ -89,7 +118,7 @@ ccReg_Messages_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
             % column % dir);
     ccReg_PageTable_i::sortByColumn(column, dir);
 
-    ml->sort(static_cast<Register::Messages::MemberType>(column), dir);
+    ml->sort(static_cast<Register::Messages::MessageMetaInfo::MemberType>(column), dir);
 }
 
 ccReg::TID
@@ -98,8 +127,12 @@ ccReg_Messages_i::getRowId(CORBA::UShort row)
 {
     Logging::Context ctx(base_context_);
 
-    return ml->get(row)->get_id();
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::getRowId"
+    		" row %1% id %2%")
+		% row
+		% ml->get(row)->get_id());
 
+    return ml->get(row)->get_id();
 }
 
 char *
@@ -112,7 +145,10 @@ CORBA::Short
 ccReg_Messages_i::numRows()
 {
     Logging::Context ctx(base_context_);
-
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::numRows"
+    		" numRows %1%")
+		% ml->size()
+		);
     return ml->size();
 }
 
@@ -122,6 +158,7 @@ ccReg_Messages_i::reload()
     Logging::Context ctx(base_context_);
     ConnectionReleaser releaser;
 
+    LOGGER(PACKAGE).debug("ccReg_Messages_i::reload");
     ml->reload(uf);
 }
 
@@ -141,6 +178,12 @@ ccReg_Messages_i::resultSize()
     ConnectionReleaser releaser;
 
     TRACE("[CALL] ccReg_Messages_i::resultSize()");
+
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::resultSize"
+    		" getRealCount %1%")
+		% ml->getRealCount(uf)
+		);
+
     return ml->getRealCount(uf);
 }
 
@@ -201,6 +244,9 @@ CORBA::Boolean
 ccReg_Messages_i::numRowsOverLimit()
 {
     Logging::Context ctx(base_context_);
-
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::numRowsOverLimit"
+        		" %1%")
+    		% ml->isLimited()
+    		);
     return ml->isLimited();
 }

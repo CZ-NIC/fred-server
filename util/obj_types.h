@@ -42,57 +42,23 @@
 namespace Register
 {
 
-typedef std::vector<std::string> ObjData;//type for object data
-
-template<typename MEMBER_TYPE>
-class ObjType //type for object
+template<typename OBJECT_META_INFO>
+class ObjType : boost::noncopyable //type for object
 {
+	typedef std::vector<std::string> ObjData;//type for object data
     //index 0 of data_ member is for "id"
     ObjData data_;
     std::size_t id_;
 public:
+	typedef typename boost::shared_ptr<ObjType<OBJECT_META_INFO> >ObjPtr;
+	typedef  OBJECT_META_INFO ObjMetaInfo;
+
     ~ObjType(){}//nv public dtor
-
-    ObjType()
-    : data_(0)
-    , id_(0)
-    {}
-
-    //ctor
-    ObjType(std::size_t cols)
-    : data_(cols)
-    , id_(0)
-    {}
-    //copy
-    ObjType(const ObjType& param )
-    : data_(param.data_)
-    , id_(param.id_)
-    {}
-    //operators
-    ObjType& operator=(const ObjType& param)
-    {
-        if (this != &param)
-        {
-            data_=param.data_;
-            id_=param.id_;
-        }
-        return *this;
-    }//operator=
-
-    bool operator< (const ObjType& param) const
-    {
-        return
-            this->id_ < param.id_;
-    }//operator<
-
-    bool operator== (const ObjType& param) const
-    {
-        return
-            this->id_ == param.id_;
-    }//operator==
+    //ctors
+    ObjType() : data_(OBJECT_META_INFO::columns), id_(0) {}
 
     //checking column set
-    void set(MEMBER_TYPE col,const std::string& value)
+    void set(typename OBJECT_META_INFO::MemberType col,const std::string& value)
     {
         if (data_.size() <= static_cast<std::size_t>(col))
             data_.resize(static_cast<std::size_t>(col + 1));
@@ -101,10 +67,28 @@ public:
             id_ = boost::lexical_cast<std::size_t>(value);
 
         data_[col] = value;
+/*
+#ifdef HAVE_LOGGER
+        if(LOGGER(PACKAGE).getLevel() >= Logging::Log::LL_DEBUG)
+        {
+        	std::string members;
+        	for (std::size_t i = 0; i < data_.size(); ++i)
+        	{
+        	members += 	std::string(" #")
+				+ boost::lexical_cast<std::string>(i)
+        		+ std::string(" : ") +  data_[i];
+        	}
+
+            LOGGER(PACKAGE).debug(
+                    boost::format("ObjType::set current object state: id %1% members %2%")
+                % id_ % members);
+        }//id debug
+#endif //HAVE_LOGGER
+*/
     }
 
     //checking column get
-    const std::string& get(MEMBER_TYPE col) const
+    const std::string& get(typename OBJECT_META_INFO::MemberType col) const
     {
         return data_.at(static_cast<std::size_t>(col));
     }
@@ -117,20 +101,26 @@ public:
     {
         return id_;
     }
+    std::size_t get_columns() const
+    {
+    	return OBJECT_META_INFO::columns;
+    }
 };
 
-template<typename MEMBER_TYPE, typename OBJ_PTR>
+template<typename OBJECT_META_INFO>
 class CompareObj //functor for sorting
 {
     bool asc_;
     std::size_t col_;
 public:
-    CompareObj(bool _asc, MEMBER_TYPE _col)
+    typedef typename ObjType<OBJECT_META_INFO>::ObjPtr  ObjPtr;
+
+    CompareObj(bool _asc, typename OBJECT_META_INFO::MemberType _col)
     : asc_(_asc)
     , col_(static_cast<std::size_t>(_col))
     { }
 
-  bool operator()(OBJ_PTR _left, OBJ_PTR _right) const
+  bool operator()(ObjPtr _left, ObjPtr _right) const
   {
       if(col_ == 0) //id
           return (asc_
@@ -143,29 +133,31 @@ public:
                    : (_left->get(col_) > _right->get(col_))
                  );
   }//operator()
-
 };//class CompareObj
 
 typedef std::map<std::size_t, std::size_t> ObjIdx;//object list search by index type
 
-template<typename MEMBER_TYPE, typename OBJ_PTR>
+template<typename OBJECT_META_INFO
+, typename RELOAD_FUNCTOR
+>
 class ObjList //type for object list
 {
-    typedef std::vector<OBJ_PTR> ListType;
-    ListType ml_;
+	typedef typename ObjType<OBJECT_META_INFO>::ObjPtr  ObjPtr;
+    typedef std::vector<ObjPtr> ListType;
+    ListType list_;
     ObjIdx by_id_;
     bool loadLimitActive_;
     std::size_t limit_;
     bool realSizeInitialized_;
     std::size_t realSize_;
-
-
+    std::auto_ptr<RELOAD_FUNCTOR> reload_impl_;
 public:
-    ObjList()
+    ObjList(std::auto_ptr<RELOAD_FUNCTOR> reload_impl)
     : loadLimitActive_(false)
     , limit_(1000)
     , realSizeInitialized_(false)
     , realSize_(0)
+    , reload_impl_(reload_impl)
     {}
 
     bool isLimited() const
@@ -183,36 +175,40 @@ public:
         limit_ = limit;
     }
 
-    OBJ_PTR get(std::size_t row) const
+    ObjPtr get(std::size_t row) const
     {
-        return ml_.at(row);
+        return list_.at(row);
     }
 
     std::size_t size() const
     {
-        return ml_.size();
+        return list_.size();
     }
 
-    void sort(MEMBER_TYPE _member, bool _asc)
+    void sort(typename OBJECT_META_INFO::MemberType _member, bool _asc)
     {
-        std::stable_sort(ml_.begin(), ml_.end(), CompareObj<MEMBER_TYPE,OBJ_PTR>(_asc, _member));
+        std::stable_sort(list_.begin(), list_.end()
+        		, CompareObj<OBJECT_META_INFO>(_asc, _member));
     }
 
     void reload(Database::Filters::Union &uf)
-    {
-        reload_impl(uf,ml_, limit_, loadLimitActive_);
+    {	//RELOAD_FUNCTOR call
+        (*reload_impl_)(uf,list_, limit_, loadLimitActive_);
+
+        if(OBJECT_META_INFO::columns != list_.size())
+        	throw std::runtime_error("list size is different from number of columns");
 
         //fill index by id
-        for(std::size_t i = 0; i < ml_.size(); ++i)
+        for(std::size_t i = 0; i < list_.size(); ++i)
         {
-            by_id_[boost::lexical_cast<std::size_t>(ml_.at(i)->get(0))//id
+            by_id_[boost::lexical_cast<std::size_t>(list_.at(i)->get(0))//id
                   ] =i;//list idx
         }
     }
 
     void clear()
     {
-        ml_.clear();
+        list_.clear();
     }
 
     void makeRealCount(Database::Filters::Union &filter)
@@ -261,12 +257,12 @@ public:
         return realSize_;
     }
 
-    OBJ_PTR findId(unsigned long long id) const
+    ObjPtr findId(unsigned long long id) const
     {
         ObjIdx::const_iterator it;
          it = by_id_.find(id);
          if(it != by_id_.end())
-             return ml_.at(it->second);
+             return list_.at(it->second);
 
         LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% not found")
         % id);
