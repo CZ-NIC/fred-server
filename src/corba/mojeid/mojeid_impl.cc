@@ -2,7 +2,6 @@
 #include "corba_wrap.h"
 #include "mojeid_request.h"
 #include "mojeid_contact.h"
-#include "mojeid_identification.h"
 
 #include "log/logger.h"
 #include "log/context.h"
