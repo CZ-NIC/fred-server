@@ -80,7 +80,19 @@ struct sms_proc {
 
 typedef std::vector<sms_proc> SmsProcInfo;
 
+struct EnumListItem
+{
+  unsigned long long id;
+  std::string name;
+};
+typedef std::vector<EnumListItem> EnumList;
 
+//status names
+EnumList getStatusListImpl();
+//communication types
+EnumList getCommTypeListImpl();
+//message types
+EnumList getMessageTypeListImpl();
 
 /// template param OBJECT_META_INFO implementation
 struct MessageMetaInfo
@@ -161,6 +173,29 @@ public:
 	      else
 	      loadLimitActive_= false;
 
+	      //enumlists
+	      //status names
+	      EnumList status_names_ = getStatusListImpl();
+	      std::map<std::size_t, std::string> status_names;
+	      for (EnumList::const_iterator i = status_names_.begin()
+	    		  ; i != status_names_.end(); ++i)
+			  status_names[i->id] = i->name;
+
+	      //communication types
+	      EnumList comm_types_ = getCommTypeListImpl();
+	      std::map<std::size_t, std::string> comm_types;
+	      for (EnumList::const_iterator i = comm_types_.begin()
+	    		  ; i != comm_types_.end(); ++i)
+	    	  comm_types[i->id] = i->name;
+
+	      //message types
+	      EnumList msg_types_ = getMessageTypeListImpl();
+	      std::map<std::size_t, std::string> msg_types;
+	      for (EnumList::const_iterator i = msg_types_.begin()
+	    		  ; i != msg_types_.end(); ++i)
+	    	  msg_types[i->id] = i->name;
+
+
 	      list.reserve(result_size);//allocate list by size
 	      list.clear();
 	      for (std::size_t i=0; i < result_size; i++)
@@ -172,8 +207,28 @@ public:
 	        			  boost::format("i: %1% j: %2% data: %3%")
 						  % i % j % res[i][j]);
 	        	  */
-	        	  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
-	            		  ,res[i][j]);//for j col
+
+	        	  switch(j)
+	        	  {
+	        	  case MessageMetaInfo::MT_STATUS :
+		        	  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+		            		  ,status_names[static_cast<std::size_t>(res[i][j])]);//for j col
+		        	  break;
+	        	  case MessageMetaInfo::MT_COMMTYPE :
+		        	  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+		            		  ,comm_types[static_cast<std::size_t>(res[i][j])]);//for j col
+		        	  break;
+	        	  case MessageMetaInfo::MT_MSGTYPE :
+		        	  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+		            		  ,msg_types[static_cast<std::size_t>(res[i][j])]);//for j col
+		        	  break;
+				  default :
+		        	  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+		            		  ,res[i][j]);//for j col
+		        	  break;
+	        	  }
+
+
 	          }
 	          list.push_back(objptr);
 	      }//for i row
@@ -188,13 +243,6 @@ public:
 typedef ObjList<MessageMetaInfo
 	, MessageReload > MessageList;
 
-struct EnumListItem
-{
-  unsigned long long id;
-  std::string name;
-};
-
-typedef std::vector<EnumListItem> EnumList;
 
 class Manager : boost::noncopyable
 {

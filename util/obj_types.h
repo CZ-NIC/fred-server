@@ -195,9 +195,6 @@ public:
     {	//RELOAD_FUNCTOR call
         (*reload_impl_)(uf,list_, limit_, loadLimitActive_);
 
-        if(OBJECT_META_INFO::columns != list_.size())
-        	throw std::runtime_error("list size is different from number of columns");
-
         //fill index by id
         for(std::size_t i = 0; i < list_.size(); ++i)
         {

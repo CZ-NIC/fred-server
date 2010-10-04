@@ -597,6 +597,23 @@ Manager::MessageListPtr Manager::createList()
 ///status names
 EnumList Manager::getStatusList()
 {
+    return getStatusListImpl();
+}//Manager::getStatusList
+
+///communication types
+EnumList Manager::getCommTypeList()
+{
+    return getCommTypeListImpl();
+}//Manager::getCommTypeList
+///message types
+EnumList Manager::getMessageTypeList()
+{
+    return getMessageTypeListImpl();
+}//Manager::getMessageTypeList
+
+///status names
+EnumList getStatusListImpl()
+{
     Database::Connection conn = Database::Manager::acquire();
     Database::Result res = conn.exec("SELECT  id, status_name FROM message_status "
             "ORDER BY id");
@@ -615,10 +632,9 @@ EnumList Manager::getStatusList()
         el.push_back(eli);
     }
     return el;
-}//Manager::getStatusList
-
+}
 ///communication types
-EnumList Manager::getCommTypeList()
+EnumList getCommTypeListImpl()
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result res = conn.exec("SELECT  id, type FROM comm_type "
@@ -638,9 +654,9 @@ EnumList Manager::getCommTypeList()
         el.push_back(eli);
     }
     return el;
-}//Manager::getCommTypeList
+}
 ///message types
-EnumList Manager::getMessageTypeList()
+EnumList getMessageTypeListImpl()
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result res = conn.exec("SELECT  id, type FROM message_type "
@@ -660,7 +676,7 @@ EnumList Manager::getMessageTypeList()
         el.push_back(eli);
     }
     return el;
-}//Manager::getMessageTypeList
+}
 
 }//namespace Messages
 }//namespace Register
