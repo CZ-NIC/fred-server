@@ -41,12 +41,11 @@
 class HandleArgs
 {
 public:
-    virtual ~HandleArgs()=0;
+    virtual ~HandleArgs() { };
     virtual boost::shared_ptr<boost::program_options::options_description>
         get_options_description()=0;
     virtual void handle( int argc, char* argv[], FakedArgs &fa ) = 0;
 };
-HandleArgs::~HandleArgs(){}
 
 /**
  * \class HandleGrpArgs
@@ -55,19 +54,18 @@ HandleArgs::~HandleArgs(){}
 class HandleGrpArgs
 {
 public:
-    virtual ~HandleGrpArgs()=0;
+    virtual ~HandleGrpArgs() { };
     virtual boost::shared_ptr<boost::program_options::options_description>
         get_options_description()=0;
 
     //handle returning option group index
     virtual std::size_t handle( int argc, char* argv[], FakedArgs &fa , std::size_t option_group_index ) = 0;
 };
-HandleGrpArgs::~HandleGrpArgs(){}
 
 
 
 ///common parsing using program_options
-void handler_parse_args(
+static void handler_parse_args(
         boost::shared_ptr<boost::program_options::options_description> opts_descs
         , boost::program_options::variables_map& vm
         , int argc, char* argv[],  FakedArgs &fa)
