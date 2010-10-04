@@ -100,5 +100,6 @@ libfred_a_SOURCES = register.cc \
 					mailer.h \
 					sql.h \
 					exceptions.h \
-					types.h
+					types.h \
+					obj_types.h
 

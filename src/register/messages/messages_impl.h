@@ -38,7 +38,7 @@
 #include "register/db_settings.h"
 #include "model/model_filters.h"
 
-#include "util/obj_types.h"
+#include "register/obj_types.h"
 
 
 namespace Register
