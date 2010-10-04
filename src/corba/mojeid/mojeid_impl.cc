@@ -83,7 +83,7 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
 
         try {
             Register::Contact::ManagerPtr contact_mgr(
-                    Register::Contact::Manager::create(0, server_conf->restricted_handles));
+                    Register::Contact::Manager::create(0, server_conf_->restricted_handles));
             LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
                     % handle);
 
@@ -195,7 +195,7 @@ CORBA::ULongLong MojeIDImpl::transferContact(const char* _handle,
         Register::NameIdPair cinfo;
         try {
             Register::Contact::ManagerPtr contact_mgr(
-                    Register::Contact::Manager::create(0, server_conf->restricted_handles));
+                    Register::Contact::Manager::create(0, server_conf_->restricted_handles));
 
             LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
                     % handle);
@@ -275,7 +275,7 @@ void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
         Register::NameIdPair cinfo;
         try {
             Register::Contact::ManagerPtr contact_mgr(
-                    Register::Contact::Manager::create(0, server_conf->restricted_handles));
+                    Register::Contact::Manager::create(0, server_conf_->restricted_handles));
 
             LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
                     % handle);
