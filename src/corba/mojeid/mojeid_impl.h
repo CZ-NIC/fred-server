@@ -2,7 +2,10 @@
 #define MOJEID_IMPL_H_
 
 #include <string>
+
+#include "cfg/handle_registry_args.h"
 #include "corba/MojeID.hh"
+
 
 namespace Registry {
 
@@ -10,6 +13,7 @@ class MojeIDImpl : public POA_Registry::MojeID,
                    public PortableServer::RefCountServantBase
 {
     private:
+        const HandleRegistryArgs *server_conf_;
         const std::string server_name_;
         unsigned long long mojeid_registrar_id_;
 
@@ -17,7 +21,8 @@ class MojeIDImpl : public POA_Registry::MojeID,
 
 
     public:
-        MojeIDImpl(const std::string &_server_name);
+        MojeIDImpl(const HandleRegistryArgs *_server_conf,
+                   const std::string &_server_name);
 
         CORBA::ULongLong contactCreate(const Contact &_contact,
                                        IdentificationMethod _method,

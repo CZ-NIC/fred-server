@@ -2,6 +2,7 @@
 #include "corba_wrap.h"
 #include "mojeid_request.h"
 #include "mojeid_contact.h"
+#include "mojeid_identification.h"
 
 #include "log/logger.h"
 #include "log/context.h"
@@ -30,8 +31,10 @@ const std::string create_ctx_name(const std::string &_name)
 namespace Registry {
 
 
-MojeIDImpl::MojeIDImpl(const std::string &_server_name)
-    : server_name_(_server_name),
+MojeIDImpl::MojeIDImpl(const HandleRegistryArgs *_server_conf,
+                       const std::string &_server_name)
+    : server_conf_(_server_conf),
+      server_name_(_server_name),
       mojeid_registrar_id_(0)
 {
     Logging::Context ctx_server(server_name_);
@@ -79,8 +82,8 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
         Logging::Context ctx_request(request.get_servertrid());
 
         try {
-            /* TODO: 2nd parameter should be from configuration */
-            Register::Contact::ManagerPtr contact_mgr(Register::Contact::Manager::create(0, false));
+            Register::Contact::ManagerPtr contact_mgr(
+                    Register::Contact::Manager::create(0, server_conf->restricted_handles));
             LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
                     % handle);
 
@@ -129,8 +132,8 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
         LOGGER(PACKAGE).info(boost::format(
                 "contact saved -- handle: %1%  id: %2%  history_id: %3%")
                 % handle % id % hid);
-
         LOGGER(PACKAGE).info("request completed successfully");
+
         return id;
     }
     catch (std::exception &_ex) {
@@ -191,8 +194,9 @@ CORBA::ULongLong MojeIDImpl::transferContact(const char* _handle,
 
         Register::NameIdPair cinfo;
         try {
-            /* TODO: 2nd parameter should be from configuration */
-            Register::Contact::ManagerPtr contact_mgr(Register::Contact::Manager::create(0, false));
+            Register::Contact::ManagerPtr contact_mgr(
+                    Register::Contact::Manager::create(0, server_conf->restricted_handles));
+
             LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
                     % handle);
 
@@ -270,8 +274,9 @@ void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
 
         Register::NameIdPair cinfo;
         try {
-            /* TODO: 2nd parameter should be from configuration */
-            Register::Contact::ManagerPtr contact_mgr(Register::Contact::Manager::create(0, false));
+            Register::Contact::ManagerPtr contact_mgr(
+                    Register::Contact::Manager::create(0, server_conf->restricted_handles));
+
             LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
                     % handle);
 

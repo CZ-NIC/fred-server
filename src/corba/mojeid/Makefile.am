@@ -33,17 +33,18 @@ fred_mifd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
                      $(OMNIORB4_LIBS) \
                      $(BOOST_DATE_TIME_LIB) \
                      $(BOOST_REGEX_LIB) \
-                     $(BOOST_THREAD_LIB)
+                     $(BOOST_THREAD_LIB) \
+                     $(BOOST_SERIALIZATION_LIB)
 
 
-fred_mifd_LDADD =    $(top_builddir)/src/register/libfred.a \
+fred_mifd_LDADD =    $(LIBIDN_LIBS) \
+                     $(top_builddir)/src/register/libfred.a \
                      $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/types/libtypes.a \
                      $(top_builddir)/src/old_utils/liboldutils.a \
-                     $(top_builddir)/util/log/liblog.a
-
-
-
+                     $(top_builddir)/util/log/liblog.a \
+                     $(top_builddir)/util/libutils.a \
+                     $(top_builddir)/src/register/messages/libmessages.a
 
 

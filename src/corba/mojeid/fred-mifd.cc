@@ -25,6 +25,7 @@
 #include "cfg/handle_server_args.h"
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_database_args.h"
+#include "cfg/handle_registry_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
 
@@ -40,7 +41,8 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleServerArgs))
     (HandleArgsPtr(new HandleLoggingArgs))
     (HandleArgsPtr(new HandleDatabaseArgs))
-    (HandleArgsPtr(new HandleCorbaNameServiceArgs));
+    (HandleArgsPtr(new HandleCorbaNameServiceArgs))
+    (HandleArgsPtr(new HandleRegistryArgs));
 
 
 
@@ -82,7 +84,9 @@ int main(int argc, char *argv[])
           , ns_args_ptr->nameservice_context);
 
         //create server
-        Registry::MojeIDImpl* server = new Registry::MojeIDImpl(server_name);
+        HandleRegistryArgs *server_conf = CfgArgs::instance()->
+            get_handler_ptr_by_type<HandleRegistryArgs>();
+        Registry::MojeIDImpl* server = new Registry::MojeIDImpl(server_conf, server_name);
         PortableServer::ObjectId_var server_obj_id
             = PortableServer::string_to_ObjectId("MojeID");
         CorbaContainer::get_instance()->poa_persistent
