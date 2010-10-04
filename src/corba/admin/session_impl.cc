@@ -287,6 +287,11 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
       *result <<= getPaymentDetail(_id);
       break;
 
+    case ccReg::FT_MESSAGE:
+      *result <<= getMessageDetail(_id);
+      break;
+
+
     case ccReg::FT_FILTER:
     case ccReg::FT_OBJ:
     case ccReg::FT_FILE:
@@ -482,6 +487,29 @@ Registry::Registrar::Detail* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id)
     return createRegistrarDetail(tmp_registrar_list->get(0));
   }
 }
+
+
+Registry::Message::Detail* ccReg_Session_i::getMessageDetail(ccReg::TID _id)
+{
+
+    LOGGER(PACKAGE).debug(boost::format("constructing message filter for object id=%1%' detail")
+        % _id);
+    Register::Messages::Manager::MessageListPtr tmp_message_list =
+            m_register_manager->getMessageManager()->createList();
+
+    Database::Filters::Union uf;
+    Database::Filters::Message *filter = new Database::Filters::MessageImpl();
+    filter->addId().setValue(Database::ID(_id));
+    uf.addFilter(filter);
+
+    tmp_message_list->reload(uf);
+
+    if (tmp_message_list->size() != 1) {
+      throw ccReg::Admin::ObjectNotFound();
+    }
+    return createMessageDetail(tmp_message_list->get(0));
+}
+
 
 Registry::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::TID _id) {
   // Register::PublicRequest::PublicRequest *request = m_publicrequests->findId(_id);
@@ -1886,6 +1914,68 @@ Registry::Zone::Detail* ccReg_Session_i::createZoneDetail(Register::Zone::Zone* 
 
   return detail;
 }
+
+Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messages::MessagePtr _message) {
+  TRACE("[CALL] ccReg_Session_i::createMessageDetail()");
+  LOGGER(PACKAGE).debug(boost::format("generating message detail for object id=%1%")
+      % _message->get_id());
+  Registry::Message::Detail *detail = new Registry::Message::Detail();
+
+  detail->id = _message->get_id();
+  detail->createDate = CORBA::string_dup(_message->get(Register::Messages::MessageMetaInfo::MT_CRDATE).c_str());
+  detail->modifyDate = CORBA::string_dup(_message->get(Register::Messages::MessageMetaInfo::MT_MODDATE).c_str());
+  detail->attempt = boost::lexical_cast<long>(_message->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
+  detail->status_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_STATUS));
+  detail->comm_type_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
+  detail->message_type_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE));
+
+  //detail->message_content = new Registry::Message::MessageContent();
+
+  //message types
+  Register::Messages::EnumList msg_types_ = Register::Messages::getMessageTypeListImpl();
+    std::map<std::size_t, std::string> msg_types;
+    for (Register::Messages::EnumList::const_iterator i = msg_types_.begin()
+            ; i != msg_types_.end(); ++i)
+        msg_types[i->id] = i->name;
+
+    if(msg_types[detail->message_type_id].compare("sms") == 0)
+    {
+        //detail->message_content._d(1);//sms
+        Registry::Message::SMSDetail sms_detail;
+
+        //load from db
+        sms_detail.content = CORBA::string_dup("content");
+        sms_detail.phone_number = CORBA::string_dup("phone_number");
+
+        detail->message_content.sms(sms_detail);
+    }
+
+    if(msg_types[detail->message_type_id].compare("letter") == 0)
+    {
+        //detail->message_content._d(2);//letter
+        Registry::Message::LetterDetail letter_detail;
+
+        //load from db
+        letter_detail.file.id = 0;
+        letter_detail.file.handle = CORBA::string_dup("");//filename
+        letter_detail.file.type = ccReg::FT_FILE;
+
+        letter_detail.batch_id = CORBA::string_dup("");
+        letter_detail.postal_address_name = CORBA::string_dup("");
+        letter_detail.postal_address_organization = CORBA::string_dup("");
+        letter_detail.postal_address_street1 = CORBA::string_dup("");
+        letter_detail.postal_address_street2 = CORBA::string_dup("");
+        letter_detail.postal_address_street3 = CORBA::string_dup("");
+        letter_detail.postal_address_city = CORBA::string_dup("");
+        letter_detail.postal_address_stateorprovince = CORBA::string_dup("");
+        letter_detail.postal_address_postalcode = CORBA::string_dup("");
+        letter_detail.postal_address_country = CORBA::string_dup("");
+
+        detail->message_content.letter(letter_detail);
+    }
+  return detail;
+}
+
 
 
 void ccReg_Session_i::setHistory(CORBA::Boolean _flag) {

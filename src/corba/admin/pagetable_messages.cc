@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 ccReg_Messages_i::ccReg_Messages_i(
         Register::Messages::Manager::MessageListPtr message_list)
 	: ml(message_list)
@@ -51,13 +53,13 @@ ccReg_Messages_i::getColumnHeaders()
 
     Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
     ch->length(numColumns());
-    COLHEAD(ch, 0, "Message", CT_OID);
-    COLHEAD(ch, 1, "Create date", CT_OTHER);
-    COLHEAD(ch, 2, "Modification date", CT_OTHER);
-    COLHEAD(ch, 3, "Attempt", CT_OTHER);
-    COLHEAD(ch, 4, "Status", CT_OTHER);
-    COLHEAD(ch, 5, "Communication channel", CT_OTHER);
-    COLHEAD(ch, 6, "Message type", CT_OTHER);
+
+    COLHEAD(ch, 0, "Creation date", CT_OTHER);
+    COLHEAD(ch, 1, "Channel", CT_OTHER);
+    COLHEAD(ch, 2, "Message type", CT_OTHER);
+    COLHEAD(ch, 3, "Status", CT_OTHER);
+    COLHEAD(ch, 4, "Modification date", CT_OTHER);
+    COLHEAD(ch, 5, "Attempt", CT_OTHER);
 
     LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::getColumnHeaders"
     		" numColumns %1%")
@@ -118,18 +120,22 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
     );
 
     Registry::TableRow *tr = new Registry::TableRow;
-
     tr->length(numColumns());
 
-    MAKE_OID(oid_message, msg->get_id(), "", FT_MESSAGE)
+    boost::posix_time::ptime crdate
+        = boost::posix_time::time_from_string(
+                msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE));
+    boost::posix_time::ptime moddate
+        = boost::posix_time::time_from_string(
+                msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE));
 
-    (*tr)[0] <<= oid_message;
-    (*tr)[1] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE));
-    (*tr)[2] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE));
-    (*tr)[3] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
-    (*tr)[4] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_STATUS));
-    (*tr)[5] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
-    (*tr)[6] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE));
+    (*tr)[0] <<= C_STR(formatTime(crdate,true,true));
+    (*tr)[1] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
+    (*tr)[2] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE));
+    (*tr)[3] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_STATUS));
+    (*tr)[4] <<= C_STR(formatTime(moddate,true,true));
+    (*tr)[5] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
+
     return tr;
     }//try
     catch(std::exception& ex)
@@ -152,9 +158,9 @@ ccReg_Messages_i::numColumns()
 	{
     LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::numColumns"
     		" numColumns %1%")
-		% Register::Messages::MessageMetaInfo::columns);
+		% (Register::Messages::MessageMetaInfo::columns - 1));
 
-    return Register::Messages::MessageMetaInfo::columns;
+    return Register::Messages::MessageMetaInfo::columns - 1;
     }//try
     catch(std::exception& ex)
     {
@@ -182,7 +188,30 @@ ccReg_Messages_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
             % column % dir);
     ccReg_PageTable_i::sortByColumn(column, dir);
 
-    ml->sort(static_cast<Register::Messages::MessageMetaInfo::MemberType>(column), dir);
+    switch (column)
+    {
+    case 0 :
+        ml->sort(Register::Messages::MessageMetaInfo::MT_CRDATE, dir);
+        break;
+    case 1 :
+        ml->sort(Register::Messages::MessageMetaInfo::MT_COMMTYPE, dir);
+        break;
+    case 2 :
+        ml->sort(Register::Messages::MessageMetaInfo::MT_MSGTYPE, dir);
+        break;
+    case 3 :
+        ml->sort(Register::Messages::MessageMetaInfo::MT_STATUS, dir);
+        break;
+    case 4 :
+        ml->sort(Register::Messages::MessageMetaInfo::MT_MODDATE, dir);
+        break;
+    case 5 :
+        ml->sort(Register::Messages::MessageMetaInfo::MT_ATTEMPT, dir);
+        break;
+    default:
+        throw std::runtime_error("ccReg_Messages_i::sortByColumn invalid column");
+    }
+
     }//try
     catch(std::exception& ex)
     {

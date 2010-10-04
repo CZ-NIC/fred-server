@@ -111,7 +111,7 @@ private:
   Registry::Zone::Detail* getZoneDetail(ccReg::TID _id);
   Registry::Banking::BankItem::Detail * getPaymentDetail(ccReg::TID _id);
   //Registry::Banking::BankHead::Detail * getStatementDetail(ccReg::TID _id);
-
+  Registry::Message::Detail* getMessageDetail(ccReg::TID _id);
 
   /*
    * TODO:
@@ -134,7 +134,7 @@ private:
   Registry::Zone::Detail* createZoneDetail(Register::Zone::Zone* _registrar);
   Registry::Banking::BankItem::Detail *createPaymentDetail(Register::Banking::Payment *_payment);
   //Registry::Banking::BankHead::Detail *createStatementDetail(Register::Banking::Statement *_statement);
-
+  Registry::Message::Detail* createMessageDetail(Register::Messages::MessagePtr _message);
 
  
   void _createUpdateRegistrar(const ccReg::Registrar& _registrar);
