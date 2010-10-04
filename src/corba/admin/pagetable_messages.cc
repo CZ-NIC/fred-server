@@ -23,7 +23,7 @@ ccReg_Messages_i::add()
 
 	TRACE("[CALL] ccReg_Messages_i::add()");
     Database::Filters::Message *filter =
-        new Database::Filters::MessageImpl();
+        new Database::Filters::MessageImpl(true);
     uf.addFilter(filter);
     LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::add uf.empty %1%")
 		% uf.empty());
