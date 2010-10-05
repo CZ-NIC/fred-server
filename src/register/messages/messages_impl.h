@@ -229,9 +229,7 @@ public:
                       boost::posix_time::ptime tmp_ptime;
                       tmp_ptime = res[i][j];
                       objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
-                              ,boost::lexical_cast<std::string>(tmp_ptime
-                              - boost::posix_time::ptime(date(1970,1,1)))
-                      );//for j col
+                              ,boost::posix_time::to_iso_string(tmp_ptime));
                   }
                       break;
 
