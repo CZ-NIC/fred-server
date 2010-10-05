@@ -121,19 +121,19 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
 
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(numColumns());
-/*
+
     boost::posix_time::ptime crdate
-        = boost::posix_time::from_time_t(boost::lexical_cast<unsigned long long>(
-                msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE)));
+        = boost::posix_time::from_iso_string(
+                msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE));
     boost::posix_time::ptime moddate
-    = boost::posix_time::from_time_t(boost::lexical_cast<unsigned long long>(
-                msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE)));
-*/
-    (*tr)[0] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE));//formatTime(crdate,true,true));
+        = boost::posix_time::from_iso_string(
+                msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE));
+
+    (*tr)[0] <<= C_STR(formatTime(crdate,true,true));
     (*tr)[1] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
     (*tr)[2] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE));
     (*tr)[3] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_STATUS));
-    (*tr)[4] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE));//formatTime(moddate,true,true));
+    (*tr)[4] <<= C_STR(formatTime(moddate,true,true));
     (*tr)[5] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
 
     return tr;
