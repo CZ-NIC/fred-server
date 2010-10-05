@@ -123,11 +123,11 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
     tr->length(numColumns());
 
     boost::posix_time::ptime crdate
-        = boost::posix_time::time_from_string(
-                msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE));
+        = boost::posix_time::from_time_t(boost::lexical_cast<std::time_t>(
+                msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE)));
     boost::posix_time::ptime moddate
-        = boost::posix_time::time_from_string(
-                msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE));
+    = boost::posix_time::from_time_t(boost::lexical_cast<std::time_t>(
+                msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE)));
 
     (*tr)[0] <<= C_STR(formatTime(crdate,true,true));
     (*tr)[1] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
