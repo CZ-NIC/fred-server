@@ -125,7 +125,19 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
     return message_archive_id;
 }//save_message
 
-
+std::string get_file_name_by_file_id(unsigned long long file_id)
+{
+    std::string fname;
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec_params(
+        "SELECT \"name\" FROM files WHERE id= $1::integer"
+        , Database::query_param_list (file_id));
+    if (res.size() == 1)
+    {
+        fname = std::string(res[0][0]);
+    }
+    return fname;
+}
 
 unsigned long long get_filetype_id(std::string file_type)
 {
@@ -610,6 +622,62 @@ EnumList Manager::getMessageTypeList()
 {
     return getMessageTypeListImpl();
 }//Manager::getMessageTypeList
+
+
+//get sms data by id
+SmsInfo Manager::get_sms_info_by_id(unsigned long long id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    SmsInfo si;
+    Database::Result res = conn.exec_params(
+        "SELECT phone_number, content FROM sms_archive WHERE id= $1::integer"
+        , Database::query_param_list (id));
+    if (res.size() == 1)
+    {
+        si.phone_number = std::string(res[0][0]);
+        si.content = std::string(res[0][1]);
+    }
+    return si;
+}
+//get letter data by id
+LetterInfo Manager::get_letter_info_by_id(unsigned long long id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    LetterInfo li;
+    Database::Result res = conn.exec_params(
+        "SELECT file_id, batch_id"
+         "  , postal_address_name"
+         "  , postal_address_organization"
+         "  , postal_address_street1"
+         "  , postal_address_street2"
+         "  , postal_address_street3"
+         "  , postal_address_city"
+         "  , postal_address_stateorprovince"
+         "  , postal_address_postalcode"
+         "  , postal_address_country"
+         " FROM letter_archive WHERE id= $1::integer"
+        , Database::query_param_list (id));
+    if (res.size() == 1)
+    {
+        li.file_id = res[0][0];
+        li.batch_id = std::string(res[0][1]);
+        li.postal_address.name = std::string(res[0][2]);
+        li.postal_address.org = std::string(res[0][3]);
+        li.postal_address.street1 = std::string(res[0][4]);
+        li.postal_address.street2 = std::string(res[0][5]);
+        li.postal_address.street3 = std::string(res[0][6]);
+        li.postal_address.city = std::string(res[0][7]);
+        li.postal_address.state = std::string(res[0][8]);
+        li.postal_address.code = std::string(res[0][9]);
+        li.postal_address.country = std::string(res[0][10]);
+
+        li.fname = get_file_name_by_file_id(li.file_id);
+    }
+
+    return li;
+}
+
+
 
 ///status names
 EnumList getStatusListImpl()

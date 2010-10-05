@@ -1938,38 +1938,49 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
             ; i != msg_types_.end(); ++i)
         msg_types[i->id] = i->name;
 
-    if(msg_types[detail->message_type_id].compare("sms") == 0)
+    Register::Messages::ManagerPtr msg_mgr
+        = m_register_manager->getMessageManager();
+
+    if((msg_types[detail->message_type_id]).compare("sms") == 0)
     {
         //detail->message_content._d(1);//sms
         Registry::Message::SMSDetail sms_detail;
 
         //load from db
-        sms_detail.content = CORBA::string_dup("content");
-        sms_detail.phone_number = CORBA::string_dup("phone_number");
+        Register::Messages::SmsInfo si
+            = msg_mgr->get_sms_info_by_id(_message->get_id());
+
+        sms_detail.content = CORBA::string_dup(si.content.c_str());
+        sms_detail.phone_number = CORBA::string_dup(si.phone_number.c_str());
 
         detail->message_content.sms(sms_detail);
     }
 
-    if(msg_types[detail->message_type_id].compare("letter") == 0)
+    if((msg_types[detail->message_type_id]).compare("letter") == 0)
     {
         //detail->message_content._d(2);//letter
         Registry::Message::LetterDetail letter_detail;
 
         //load from db
-        letter_detail.file.id = 0;
-        letter_detail.file.handle = CORBA::string_dup("");//filename
+
+        Register::Messages::LetterInfo li
+            = msg_mgr->get_letter_info_by_id(_message->get_id());
+
+
+        letter_detail.file.id = li.file_id;
+        letter_detail.file.handle = CORBA::string_dup(li.fname.c_str());//filename
         letter_detail.file.type = ccReg::FT_FILE;
 
-        letter_detail.batch_id = CORBA::string_dup("");
-        letter_detail.postal_address_name = CORBA::string_dup("");
-        letter_detail.postal_address_organization = CORBA::string_dup("");
-        letter_detail.postal_address_street1 = CORBA::string_dup("");
-        letter_detail.postal_address_street2 = CORBA::string_dup("");
-        letter_detail.postal_address_street3 = CORBA::string_dup("");
-        letter_detail.postal_address_city = CORBA::string_dup("");
-        letter_detail.postal_address_stateorprovince = CORBA::string_dup("");
-        letter_detail.postal_address_postalcode = CORBA::string_dup("");
-        letter_detail.postal_address_country = CORBA::string_dup("");
+        letter_detail.batch_id = CORBA::string_dup(li.batch_id.c_str());
+        letter_detail.postal_address_name = CORBA::string_dup(li.postal_address.name.c_str());
+        letter_detail.postal_address_organization = CORBA::string_dup(li.postal_address.org.c_str());
+        letter_detail.postal_address_street1 = CORBA::string_dup(li.postal_address.street1.c_str());
+        letter_detail.postal_address_street2 = CORBA::string_dup(li.postal_address.street2.c_str());
+        letter_detail.postal_address_street3 = CORBA::string_dup(li.postal_address.street3.c_str());
+        letter_detail.postal_address_city = CORBA::string_dup(li.postal_address.city.c_str());
+        letter_detail.postal_address_stateorprovince = CORBA::string_dup(li.postal_address.state.c_str());
+        letter_detail.postal_address_postalcode = CORBA::string_dup(li.postal_address.code.c_str());
+        letter_detail.postal_address_country = CORBA::string_dup(li.postal_address.country.c_str());
 
         detail->message_content.letter(letter_detail);
     }

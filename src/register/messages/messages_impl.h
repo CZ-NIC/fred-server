@@ -80,6 +80,21 @@ struct sms_proc {
 
 typedef std::vector<sms_proc> SmsProcInfo;
 
+//for detail
+struct SmsInfo
+{
+    std::string phone_number;
+    std::string content;
+};
+struct LetterInfo
+{
+    unsigned long long file_id;
+    std::string fname;
+    std::string batch_id;
+    PostalAddress postal_address;
+};
+
+
 struct EnumListItem
 {
   unsigned long long id;
@@ -240,8 +255,6 @@ public:
 		            		  ,res[i][j]);//for j col
 		        	  break;
 	        	  }
-
-
 	          }
 	          list.push_back(objptr);
 	      }//for i row
@@ -291,6 +304,11 @@ public:
 
     //set send result into sms status
     void set_sms_status(const SmsProcInfo& messages);
+
+    //get sms data by id
+    SmsInfo get_sms_info_by_id(unsigned long long id);
+    //get letter data by id
+    LetterInfo get_letter_info_by_id(unsigned long long id);
 
     ///list factory
     typedef std::auto_ptr<MessageList> MessageListPtr;

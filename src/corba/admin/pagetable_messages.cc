@@ -122,6 +122,7 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(numColumns());
 
+    //date time conversion from iso string
     boost::posix_time::ptime crdate
         = msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE).empty()
                 ? boost::posix_time::ptime()
