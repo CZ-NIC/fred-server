@@ -229,7 +229,9 @@ public:
                       boost::posix_time::ptime tmp_ptime;
                       tmp_ptime = res[i][j];
                       objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
-                              ,boost::posix_time::to_iso_string(tmp_ptime));
+                              ,tmp_ptime.is_special()
+                                  ? std::string("")
+                                  : boost::posix_time::to_iso_string(tmp_ptime));
                   }
                       break;
 
