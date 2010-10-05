@@ -634,7 +634,51 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
 
 char* ServerImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
 {
-    return CORBA::string_dup(boost::lexical_cast<std::string>(_contact_id).c_str());
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("get-identification");
+    ConnectionReleaser releaser;
+
+    try {
+        LOGGER(PACKAGE).info(boost::format("get_identification --"
+                    "  _contact_id: %1% ")
+                % _contact_id);
+
+        NameService *ns = CorbaContainer::get_instance()->getNS();
+        MailerManager mailer_manager(ns);
+
+        std::auto_ptr<Register::Manager> register_manager(
+                Register::Manager::create(0, server_conf_->restricted_handles));
+
+        std::auto_ptr<Register::Document::Manager> doc_manager(
+                Register::Document::Manager::create(
+                    server_conf_->docgen_path,
+                    server_conf_->docgen_template_path,
+                    server_conf_->fileclient_path,
+                    ns->getHostName())
+                 );
+
+        std::auto_ptr<Register::PublicRequest::Manager> request_manager(
+                Register::PublicRequest::Manager::create(
+                    register_manager->getDomainManager(),
+                    register_manager->getContactManager(),
+                    register_manager->getNSSetManager(),
+                    register_manager->getKeySetManager(),
+                    &mailer_manager,
+                    doc_manager.get())
+                );
+
+        return CORBA::string_dup(
+        	request_manager->getIdentification(_contact_id).c_str()
+        );
+    }
+    catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        throw Registry::MojeID::Server::ErrorReport(_ex.what());
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::Server::ErrorReport();
+    }
 }
 
 ContactStateChangeList* ServerImpl::getContactStateChanges(const Date& since)

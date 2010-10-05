@@ -210,6 +210,8 @@ public:
           const std::string &_identification,
           const std::string &_password) = 0;
 
+  virtual std::string getIdentification(
+          Database::ID contact) = 0;
 }; 
 
 }
