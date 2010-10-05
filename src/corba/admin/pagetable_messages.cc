@@ -123,12 +123,12 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
     tr->length(numColumns());
 
     boost::posix_time::ptime crdate
-        = msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE).compare("not-a-date-time") == 0
+        = msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE).empty()
                 ? boost::posix_time::ptime()
                 : boost::posix_time::from_iso_string(msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE));
 
     boost::posix_time::ptime moddate
-        = msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE).compare("not-a-date-time") == 0
+        = msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE).empty()
                 ? boost::posix_time::ptime()
                 : boost::posix_time::from_iso_string(msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE));
 
