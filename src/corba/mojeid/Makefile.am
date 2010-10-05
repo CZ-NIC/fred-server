@@ -17,7 +17,10 @@ sbin_PROGRAMS = fred-mifd
 
 fred_mifd_SOURCES = ../MojeIDSK.cc \
                     ../MojeIDDynSK.cc \
+                    ../MailerSK.cc \
+                    ../MailerDynSK.cc \
                     ../nameservice.cc \
+                    ../mailer_manager.cc \
                     mojeid_impl.h \
                     mojeid_impl.cc \
                     mojeid_contact.h \

@@ -8,6 +8,8 @@
 #include "db_settings.h"
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
+#include "random.h"
+#include <boost/lexical_cast.hpp>
 
 
 namespace Register {
@@ -150,7 +152,7 @@ static bool queryBlockRequest(Database::ID objectId,
  
 class PublicRequestImpl : public Register::CommonObjectImpl,
                           virtual public PublicRequest {
-private:
+protected:
   Register::PublicRequest::Type type_;
   Database::ID epp_action_id_;
   Database::ID logd_request_id_;
@@ -160,7 +162,7 @@ private:
   std::string reason_;
   std::string email_to_answer_;
   Database::ID answer_email_id_;
-  
+
   std::string svtrid_;
   Database::ID registrar_id_;
   std::string registrar_handle_;
@@ -209,7 +211,7 @@ public:
     man_ = _man;
   }
   
-  void init(Database::Row::Iterator& _it) {
+  virtual void init(Database::Row::Iterator& _it) {
     id_               = (unsigned long long)*_it;
     epp_action_id_    = *(++_it);
     logd_request_id_  = *(++_it);
@@ -225,7 +227,7 @@ public:
     registrar_name_   = (std::string)*(++_it);
     registrar_url_    = (std::string)*(++_it);
   }
-  
+
   virtual void save() {
     TRACE("[CALL] Register::Request::RequestImpl::save()");
     if (objects_.empty()) {
@@ -487,13 +489,12 @@ public:
   }
 
   /// concrete resolution action
-  virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception) {
+  virtual void processAction(bool check) {
     // default is to do nothing special
   }
 
   /// process request (or just close in case of invalid flag)
-  virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED, Mailer::NOT_SEND, Database::Exception) {
-
+  virtual void process(bool invalid, bool check) {
     if (invalid) {
       status_ = PRS_INVALID;
     }
@@ -533,7 +534,7 @@ public:
      res = !checkState(getObject(i).id,SERVER_TRANSFER_PROHIBITED);
     return res;
   }
-  virtual void processAction(bool _check) throw (REQUEST_BLOCKED, Database::Exception) {
+  virtual void processAction(bool _check) {
     if (_check && !check()) throw REQUEST_BLOCKED();
   }
   std::string getAuthInfo() const throw (Database::Exception) {
@@ -667,7 +668,7 @@ public:
   virtual short blockAction() const {
   	return 2;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception){
+	virtual void processAction(bool check) {
     Database::Connection conn = Database::Manager::acquire();
     for (unsigned i = 0; i < getObjectSize(); i++) {
     	if (!checkState(getObject(i).id, SERVER_UPDATE_PROHIBITED) &&
@@ -697,7 +698,7 @@ public:
   virtual short blockAction() const {
   	return 1;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception){
+	virtual void processAction(bool check) {
     Database::Connection conn = Database::Manager::acquire();
     for (unsigned i = 0; i < getObjectSize(); i++) {
     	if (!checkState(getObject(i).id, SERVER_UPDATE_PROHIBITED) &&
@@ -726,7 +727,7 @@ public:
   virtual short blockAction() const {
   	return 2;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception){
+	virtual void processAction(bool check) {
     Database::Connection conn = Database::Manager::acquire();
     for (unsigned i = 0; i < getObjectSize(); i++) {
     	if (!queryBlockRequest(getObject(i).id, getId(), "3", true))
@@ -752,7 +753,7 @@ public:
   virtual short blockAction() const {
   	return 1;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception){
+	virtual void processAction(bool check) {
     Database::Connection conn = Database::Manager::acquire();
     for (unsigned i = 0; i < getObjectSize(); i++) {
     	if (!queryBlockRequest(getObject(i).id, getId(), "3,4", true))
@@ -797,41 +798,254 @@ public:
 };
 
 
+class PublicRequestAuthImpl
+    : virtual public PublicRequestAuth,
+      public PublicRequestImpl
+{
+protected:
+    bool authenticated_;
+    std::string identification_;
+    std::string password_;
+
+
+public:
+    PublicRequestAuthImpl()
+        : PublicRequestImpl(),
+          authenticated_(false)
+    {
+    }
+
+    virtual ~PublicRequestAuthImpl()
+    {
+    }
+
+    virtual void init(Database::Row::Iterator& _it)
+    {
+        PublicRequestImpl::init(_it);
+        identification_ = static_cast<std::string>(*(++_it));
+        password_ = static_cast<std::string>(*(++_it));
+    }
+
+    bool authenticate(const std::string &_password)
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result rcheck = conn.exec_params(
+                "SELECT password = $1::text FROM public_request_auth"
+                " WHERE identification = $2::text",
+                Database::query_param_list(_password)(identification_));
+        if (rcheck.size() == 1 && static_cast<bool>(rcheck[0][0]) == true) {
+            authenticated_ = true;
+            return true;
+        }
+        return false;
+    }
+
+    void save()
+    {
+
+        if (id_) {
+            PublicRequestImpl::save();
+            /* don't need update */
+            return;
+        }
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        PublicRequestImpl::save();
+
+        if (!id_) {
+            throw std::runtime_error("cannot save authenticated public request"
+                    " without base request (id not set)");
+        }
+
+        identification_ = Random::string_alpha(32);
+        password_ = Random::string_alpha(32);
+
+        conn.exec_params(
+                "INSERT INTO public_request_auth (id, identification, password)"
+                " VALUES ($1::integer, $2::text, $3::text)",
+                Database::query_param_list
+                    (id_)
+                    (identification_)
+                    (password_));
+        tx.commit();
+    }
+
+    void process(bool _invalid, bool _check)
+    {
+        if (status_ != PRS_NEW) {
+            throw std::runtime_error("already processed");
+        }
+        if (authenticated_) {
+            if (_invalid) {
+                status_ = PRS_INVALID;
+            }
+            else {
+                processAction(_check);
+                status_ = PRS_ANSWERED;
+            }
+            resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
+            save();
+        }
+        else {
+            throw NOT_AUTHENTICATED();
+        }
+    }
+
+    /* just to be sure of empty impl (if someone would change base impl) */
+    virtual void postCreate() { }
+
+    /* don't use this methods for constucting email so far */
+    std::string getTemplateName() const
+    {
+        return std::string();
+    }
+
+    void fillTemplateParams(Mailer::Parameters& params) const
+    {
+    }
+
+    /* helper method for sending passwords */
+    void sendPassword(const std::string &_template, const std::string &_type)
+    {
+        LOGGER(PACKAGE).debug("public request auth - send pasword");
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result res = conn.exec_params(
+                "SELECT create_time FROM public_request WHERE id = $1::integer",
+                Database::query_param_list(id_));
+        if (res.size() == 1)
+            create_time_ = res[0][0];
+        else
+            create_time_ = ptime(boost::posix_time::second_clock::local_time());
+
+        Mailer::Attachments attach;
+        Mailer::Handles handles;
+        Mailer::Parameters params;
+
+        handles.push_back(getObject(0).handle);
+
+        std::ostringstream buf;
+        buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
+        buf << getCreateTime().date();
+        params["reqdate"] = buf.str();
+        params["rtype"] = _type;
+        params["handle"] = getObject(0).handle;
+        params["passwd"] = password_;
+
+        unsigned long long id = man_->getMailerManager()->sendEmail(
+                "",           /* default sender */
+                getEmails(),
+                "",           /* default subject */
+                _template,
+                params,
+                handles,
+                attach
+                );
+    }
+};
+
+
+class ConditionalContactIdentificationImpl
+    : public PublicRequestAuthImpl
+{
+public:
+    bool check() const
+    {
+        return true;
+    }
+
+    void processAction(bool _check)
+    {
+        LOGGER(PACKAGE).debug(boost::format(
+                "processing public request id=%1%")
+                % getId());
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
+        insertNewStateRequest(getId(), getObject(0).id, 21);
+        conn.exec_params(
+                "SELECT update_object_states($1::integer)",
+                Database::query_param_list(getObject(0).id));
+        tx.commit();
+    }
+
+    void sendPassword()
+    {
+        PublicRequestAuthImpl::sendPassword("mojeid_identification", "1");
+    }
+};
+
+
+class ContactIdentificationImpl
+    : public PublicRequestAuthImpl
+{
+public:
+    bool check() const
+    {
+        return true;
+    }
+
+    void processAction(bool _check)
+    {
+        LOGGER(PACKAGE).debug(boost::format(
+                "processing public request id=%1%")
+                % getId());
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
+        insertNewStateRequest(getId(), getObject(0).id, 22);
+        conn.exec_params(
+                "SELECT update_object_states($1::integer)",
+                Database::query_param_list(getObject(0).id));
+        tx.commit();
+    }
+
+    void sendPassword()
+    {
+        PublicRequestAuthImpl::sendPassword("mojeid_identification", "2");
+    }
+};
+
+
+
 class ListImpl : public Register::CommonListImpl,
                  virtual public List {
 private:
   Manager *manager_;
-  
+
 public:
   ListImpl(Manager *_manager) : CommonListImpl(),
                                                              manager_(_manager) {
   }
-  
+
   virtual ~ListImpl() {
   }
-  
+
   virtual const char* getTempTableName() const {
     return "tmp_public_request_filter_result";
   }
-  
+
   virtual PublicRequest* get(unsigned _idx) const {
     try {
       PublicRequest *request = dynamic_cast<PublicRequest* >(data_.at(_idx));
-      if (request) 
+      if (request)
         return request;
       else
         throw std::exception();
     }
     catch (...) {
       throw std::exception();
-    } 
+    }
   }
-  
+
   virtual void reload(Database::Filters::Union& _filter) {
     TRACE("[CALL] Register::Request::ListImpl::reload()");
     clear();
     _filter.clearQueries();
-    
+
     bool at_least_one = false;
     Database::SelectQuery id_query;
     Database::Filters::Compound::iterator fit = _filter.begin();
@@ -853,7 +1067,7 @@ public:
     id_query.order_by() << "id DESC";
     id_query.limit(load_limit_);
     _filter.serialize(id_query);
-    
+
     Database::InsertQuery tmp_table_query = Database::InsertQuery(getTempTableName(),
                                                             id_query);
     LOGGER(PACKAGE).debug(boost::format("temporary table '%1%' generated sql = %2%")
@@ -863,16 +1077,18 @@ public:
     object_info_query.select() << "t_1.request_type, t_1.id, t_1.epp_action_id, t_1.logd_request_id, "
                                << "t_1.create_time, t_1.status, t_1.resolve_time, "
                                << "t_1.reason, t_1.email_to_answer, t_1.answer_email_id, "
-                               << "'ccReg-' || to_char(t_1.epp_action_id, 'FM0999999999'), t_4.id, t_4.handle, t_4.name, t_4.url";
-    object_info_query.from() << getTempTableName() << " tmp " 
+                               << "'ccReg-' || to_char(t_1.epp_action_id, 'FM0999999999'), t_4.id, t_4.handle, t_4.name, t_4.url, "
+                               << "t_5.identification, t_5.password";
+    object_info_query.from() << getTempTableName() << " tmp "
                              << "JOIN public_request t_1 ON (t_1.id = tmp.id) "
-                             << "LEFT JOIN registrar t_4 ON (t_1.registrar_id = t_4.id) ";
+                             << "LEFT JOIN registrar t_4 ON (t_1.registrar_id = t_4.id) "
+                             << "LEFT JOIN public_request_auth t_5 ON (t_5.id = t_1.id) ";
     object_info_query.order_by() << "t_1.id";
-    
+
     Database::Connection conn = Database::Manager::acquire();
     try {
       fillTempTable(tmp_table_query);
-      
+
       Database::Result r_info = conn.exec(object_info_query);
       for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
@@ -882,15 +1098,15 @@ public:
         request->init(++col);
         data_.push_back(request);
       }
-      
+
       if (data_.empty())
         return;
 
       /*
        * load objects details for requests
-       */      
+       */
       resetIDSequence();
-      
+
       Database::SelectQuery objects_query;
       objects_query.select() << "tmp.id, t_1.object_id, t_2.name, t_2.type";
       objects_query.from() << getTempTableName() << " tmp "
@@ -904,14 +1120,14 @@ public:
 
         Database::ID request_id    = *col;
         Database::ID object_id     = *(++col);
-        std::string  object_handle = *(++col); 
+        std::string  object_handle = *(++col);
         ObjectType   object_type   = (ObjectType)(int)*(++col);
-             
+
         PublicRequestImpl *request_ptr = dynamic_cast<PublicRequestImpl *>(findIDSequence(request_id));
         if (request_ptr)
           request_ptr->addObject(OID(object_id, object_handle, object_type));
       }
-      /* checks if row number result load limit is active and set flag */ 
+      /* checks if row number result load limit is active and set flag */
       CommonListImpl::reload();
     }
     catch (Database::Exception& ex) {
@@ -922,7 +1138,7 @@ public:
       LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
       clear();
     }
-    
+
 
   }
 
@@ -942,13 +1158,11 @@ public:
 	break;
     }
   }
-  
+
   virtual void reload() {
-      
   }
-  
+
   virtual void makeQuery(bool, bool, std::stringstream&) const {
-    
   }
 };
 
@@ -961,8 +1175,8 @@ private:
   KeySet::Manager   *keyset_manager_;
   Mailer::Manager   *mailer_manager_;
   Document::Manager *doc_manager_;
-  
-    
+
+
 public:
   ManagerImpl(Domain::Manager   *_domain_manager,
               Contact::Manager  *_contact_manager,
@@ -980,11 +1194,11 @@ public:
 
   virtual ~ManagerImpl() {
   }
-  
+
   virtual Mailer::Manager* getMailerManager() const {
     return mailer_manager_;
   }
-  
+
   virtual List* createList() const {
     TRACE("[CALL] Register::Request::Manager::createList()");
     /*
@@ -996,9 +1210,9 @@ public:
     // return new ListImpl(db_manager_->getConnection(), (Manager *)this);
     return new ListImpl((Manager *)this);
   }
-  
-  virtual void getPdf(Database::ID _id, 
-                      const std::string& _lang, 
+
+  virtual void getPdf(Database::ID _id,
+                      const std::string& _lang,
                       std::ostream& _output) const
     throw (NOT_FOUND, SQL_ERROR, Document::Generator::ERROR) {
     TRACE(boost::format("[CALL] Register::Request::Manager::getPdf(%1%, '%2%')") %
@@ -1017,8 +1231,8 @@ public:
                   << "<enum_whois>"
                   << "<public_request>"
                   << "<type>" << p->getPDFType() << "</type>"
-                  << "<handle type='" 
-                  << (p->getObjectSize() ? p->getObject(0).type : 0) 
+                  << "<handle type='"
+                  << (p->getObjectSize() ? p->getObject(0).type : 0)
                   << "'>"
                   << (p->getObjectSize() ? p->getObject(0).handle : "")
                   << "</handle>"
@@ -1028,14 +1242,14 @@ public:
                   << "<id>"
                   << p->getId()
                   << "</id>"
-                  << "<replymail>" 
+                  << "<replymail>"
                   << p->getEmailToAnswer()
                   << "</replymail>"
                   << "</public_request>"
                   << "</enum_whois>";
     g->closeInput();
   }
-  
+
   virtual PublicRequest* createRequest(
     Type _type
   ) const throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) {
@@ -1051,27 +1265,33 @@ public:
       case PRT_AUTHINFO_POST_PIF :
         request = new AuthInfoRequestPIFPostImpl(); break;
       case PRT_BLOCK_TRANSFER_EMAIL_PIF :
-      	request = new BlockTransferRequestPIFImpl(); break;
+        request = new BlockTransferRequestPIFImpl(); break;
       case PRT_BLOCK_CHANGES_EMAIL_PIF :
-      	request = new BlockUpdateRequestPIFImpl(); break;
+        request = new BlockUpdateRequestPIFImpl(); break;
       case PRT_UNBLOCK_TRANSFER_EMAIL_PIF :
-      	request = new UnBlockTransferRequestPIFImpl(); break;
+        request = new UnBlockTransferRequestPIFImpl(); break;
       case PRT_UNBLOCK_CHANGES_EMAIL_PIF :
-      	request = new UnBlockUpdateRequestPIFImpl(); break;
+        request = new UnBlockUpdateRequestPIFImpl(); break;
       case PRT_BLOCK_TRANSFER_POST_PIF :
-      	request = new BlockTransferRequestPIFPostImpl(); break;
+        request = new BlockTransferRequestPIFPostImpl(); break;
       case PRT_BLOCK_CHANGES_POST_PIF :
-      	request = new BlockUpdateRequestPIFPostImpl(); break;
+        request = new BlockUpdateRequestPIFPostImpl(); break;
       case PRT_UNBLOCK_TRANSFER_POST_PIF :
-      	request = new UnBlockTransferRequestPIFPostImpl(); break;
+        request = new UnBlockTransferRequestPIFPostImpl(); break;
       case PRT_UNBLOCK_CHANGES_POST_PIF :
-      	request = new UnBlockUpdateRequestPIFPostImpl(); break;
+        request = new UnBlockUpdateRequestPIFPostImpl(); break;
+      case PRT_CONDITIONAL_CONTACT_IDENTIFICATION:
+        request = new ConditionalContactIdentificationImpl(); break;
+      case PRT_CONTACT_IDENTIFICATION:
+        request = new ContactIdentificationImpl(); break;
+      case PRT_CONTACT_VALIDATION:
+        throw std::runtime_error("not implemented"); break;
     }
     request->setType(_type);
     request->setManager((Manager *)this);
     return request;
   }
-  
+
   List *loadRequest(Database::ID id) const throw (NOT_FOUND) {
     Database::Filters::PublicRequest *prf = new Database::Filters::PublicRequestImpl();
     prf->addId().setValue(id);
@@ -1082,19 +1302,42 @@ public:
     if (l->getCount() != 1) throw NOT_FOUND();
     return l;
   }
-  
-  virtual void processRequest(Database::ID _id, bool _invalidate, 
-                              bool check) const 
+
+  virtual void processRequest(Database::ID _id, bool _invalidate,
+                              bool check) const
     throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) {
     TRACE(boost::format("[CALL] Register::Request::Manager::processRequest(%1%, %2%)") %
           _id % _invalidate);
     try {
       std::auto_ptr<List> l(loadRequest(_id));
       l->get(0)->process(_invalidate,check);
-    } 
+    }
     catch (Database::Exception) { throw SQL_ERROR(); }
   }
-  
+
+  virtual unsigned long long processAuthRequest(
+          const std::string &_identification,
+          const std::string &_password)
+  {
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result rid = conn.exec_params(
+              "SELECT id FROM public_request_auth WHERE identification = $1::text",
+              Database::query_param_list(_identification));
+      if (rid.size() != 1)
+          throw NOT_FOUND();
+
+      unsigned long long id = rid[0][0];
+      std::auto_ptr<List> list(loadRequest(id));
+      PublicRequestAuth *request = dynamic_cast<PublicRequestAuth*>(list->get(0));
+      if (!request) {
+          throw NOT_FOUND();
+      }
+
+      request->authenticate(_password);
+      request->process(false, true);
+      return request->getObject(0).id;
+  }
+
 };
 
 Manager* Manager::create(Domain::Manager    *_domain_manager,
@@ -1103,11 +1346,11 @@ Manager* Manager::create(Domain::Manager    *_domain_manager,
                          KeySet::Manager    *_keyset_manager,
                          Mailer::Manager    *_mailer_manager,
                          Document::Manager  *_doc_manager) {
-    
+
     TRACE("[CALL] Register::Request::Manager::create()");
     return new ManagerImpl(
       _domain_manager,
-      _contact_manager, 
+      _contact_manager,
       _nsset_manager,
       _keyset_manager,
       _mailer_manager,

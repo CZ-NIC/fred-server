@@ -1738,7 +1738,15 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
     case Register::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF:
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
       break;
-
+    case Register::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION:
+      detail->type = Registry::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+      break;
+    case Register::PublicRequest::PRT_CONTACT_IDENTIFICATION:
+      detail->type = Registry::PublicRequest::PRT_CONTACT_IDENTIFICATION;
+      break;
+    case Register::PublicRequest::PRT_CONTACT_VALIDATION:
+      detail->type = Registry::PublicRequest::PRT_CONTACT_VALIDATION;
+      break;
   }
 
   detail->createTime = DUPSTRDATE(_request->getCreateTime);

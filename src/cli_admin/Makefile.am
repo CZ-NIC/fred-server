@@ -24,6 +24,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(top_builddir)/util/log/liblog.a \
 		$(top_builddir)/util/conf/libconf.a \
 		$(top_builddir)/util/hp/libhp.a \
+		$(top_builddir)/util/libutils.a \
 		$(top_builddir)/src/register/messages/libmessages.a \
 		$(top_builddir)/src/register/requests/librequests.a \
 		$(BOOST_THREAD_LIB) \

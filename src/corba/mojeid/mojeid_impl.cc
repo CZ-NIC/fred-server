@@ -6,10 +6,15 @@
 #include "log/logger.h"
 #include "log/context.h"
 #include "random.h"
+#include "corba_wrapper_decl.h"
 
 #include "register/db_settings.h"
+#include "register/register.h"
 #include "register/contact.h"
+#include "register/public_request.h"
+
 #include "corba/connection_releaser.h"
+#include "corba/mailer_manager.h"
 
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
@@ -62,8 +67,8 @@ ServerImpl::~ServerImpl()
 
 
 CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
-                                                 IdentificationMethod _method,
-                                                 const CORBA::ULongLong _request_id)
+                                           IdentificationMethod _method,
+                                           const CORBA::ULongLong _request_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-create");
@@ -126,6 +131,59 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         insert_contact(request, id, pcontact);
         unsigned long long hid = insert_contact_history(request, id);
 
+        /* create public request
+         * we cannot move it to separate function because of livetime of managers
+         * - we need to save request in same transaction as request is and then
+         *   send generated password */
+        NameService *ns = CorbaContainer::get_instance()->getNS();
+        MailerManager mailer_manager(ns);
+    
+        std::auto_ptr<Register::Manager> register_manager(
+                Register::Manager::create(0, server_conf_->restricted_handles));
+    
+        std::auto_ptr<Register::Document::Manager> doc_manager(
+                Register::Document::Manager::create(
+                    server_conf_->docgen_path,
+                    server_conf_->docgen_template_path,
+                    server_conf_->fileclient_path,
+                    ns->getHostName())
+                 );
+    
+        std::auto_ptr<Register::PublicRequest::Manager> request_manager(
+                Register::PublicRequest::Manager::create(
+                    register_manager->getDomainManager(),
+                    register_manager->getContactManager(),
+                    register_manager->getNSSetManager(),
+                    register_manager->getKeySetManager(),
+                    &mailer_manager,
+                    doc_manager.get())
+                );
+    
+        Register::PublicRequest::PublicRequestPtr new_request;
+        if (_method == Registry::MojeID::SMS) {
+            new_request.reset(
+               request_manager->createRequest(
+                   Register::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION));
+        }
+        else if (_method == Registry::MojeID::LETTER) {
+            new_request.reset(
+               request_manager->createRequest(
+                   Register::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+        }
+        else if (_method == Registry::MojeID::CERTIFICATE) {
+            throw std::runtime_error("not implemented");
+        }
+        else {
+            throw std::runtime_error("unknown identification method");
+        }
+    
+        new_request->setRegistrarId(request.get_registrar_id());
+        new_request->setRequestId(request.get_request_id());
+        new_request->setEppActionId(request.get_id());
+        new_request->addObject(Register::PublicRequest::OID(id, handle, Register::PublicRequest::OT_CONTACT));
+        new_request->save();
+
+        /* save contact and request (one transaction) */
         request.end_success();
 
         LOGGER(PACKAGE).info(boost::format(
@@ -133,6 +191,25 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
                 % handle % id % hid);
         LOGGER(PACKAGE).info("request completed successfully");
 
+        try {
+            Register::PublicRequest::PublicRequestAuthPtr identification_request
+                = boost::dynamic_pointer_cast<Register::PublicRequest::PublicRequestAuth>(new_request);
+            if (identification_request) {
+                identification_request->sendPassword();
+                LOGGER(PACKAGE).info("identification password sent");
+            }
+            else {
+                throw;
+            }
+        }
+        catch (...) {
+            LOGGER(PACKAGE).error(boost::format(
+                        "error when sending identification password"
+                        " (contact_id=%1% public_request_id=%2%)")
+                    % id % new_request->getId());
+        }
+
+        /* return new contact id */
         return id;
     }
     catch (std::exception &_ex) {
@@ -147,8 +224,8 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
 
 CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id,
-                                       const char* _password,
-                                       const CORBA::ULongLong _request_id)
+                                                   const char* _password,
+                                                   const CORBA::ULongLong _request_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("process-identification");
@@ -159,7 +236,35 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
                     "  identification_id: %1%  password: %2%  request_id: %3%")
                 % _ident_request_id % _password % _request_id);
 
-        return boost::lexical_cast<unsigned long long>(_ident_request_id);
+        NameService *ns = CorbaContainer::get_instance()->getNS();
+        MailerManager mailer_manager(ns);
+    
+        std::auto_ptr<Register::Manager> register_manager(
+                Register::Manager::create(0, server_conf_->restricted_handles));
+    
+        std::auto_ptr<Register::Document::Manager> doc_manager(
+                Register::Document::Manager::create(
+                    server_conf_->docgen_path,
+                    server_conf_->docgen_template_path,
+                    server_conf_->fileclient_path,
+                    ns->getHostName())
+                 );
+    
+        std::auto_ptr<Register::PublicRequest::Manager> request_manager(
+                Register::PublicRequest::Manager::create(
+                    register_manager->getDomainManager(),
+                    register_manager->getContactManager(),
+                    register_manager->getNSSetManager(),
+                    register_manager->getKeySetManager(),
+                    &mailer_manager,
+                    doc_manager.get())
+                );
+
+        return request_manager->processAuthRequest(_ident_request_id, _password);
+    }
+    catch (Register::PublicRequest::PublicRequestAuth::NOT_AUTHENTICATED&) {
+        LOGGER(PACKAGE).info("request authentication failed (bad password)");
+        throw Registry::MojeID::Server::ErrorReport("not authenticated");
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());

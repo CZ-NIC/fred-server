@@ -1,6 +1,7 @@
 #ifndef PUBLIC_REQUEST_H_
 #define PUBLIC_REQUEST_H_
 
+#include <exception>
 #include <string>
 #include <vector>
 #include <boost/date_time/posix_time/ptime.hpp>
@@ -47,7 +48,10 @@ enum Type {
   PRT_UNBLOCK_CHANGES_EMAIL_PIF,    ///< Request for unblock update object waiting for autorization by signed email
   PRT_UNBLOCK_CHANGES_POST_PIF,     ///< Request for unblock update object waiting for autorization by checked letter
   PRT_UNBLOCK_TRANSFER_EMAIL_PIF,   ///< Request for unblock transfer object waiting for autorization by signed email
-  PRT_UNBLOCK_TRANSFER_POST_PIF     ///< Request for unblock transfer object waiting for autorization by checked letter
+  PRT_UNBLOCK_TRANSFER_POST_PIF,    ///< Request for unblock transfer object waiting for autorization by checked letter
+  PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
+  PRT_CONTACT_IDENTIFICATION,
+  PRT_CONTACT_VALIDATION
 };
 
 std::string Type2Str(Type _type); 
@@ -93,10 +97,10 @@ class PublicRequest : virtual public Register::CommonObject {
 public:
   virtual ~PublicRequest() {
   }
-  
-  virtual void init(Database::Row::Iterator& _it) = 0; 
+
+  virtual void init(Database::Row::Iterator& _it) = 0;
   virtual void save() = 0;
-  
+
   virtual Register::PublicRequest::Type getType() const = 0;
   virtual void setType(Register::PublicRequest::Type _type) = 0;
   virtual Register::PublicRequest::Status getStatus() const = 0;
@@ -111,39 +115,54 @@ public:
   virtual const Database::ID getEppActionId() const = 0;
   virtual void setEppActionId(const Database::ID& _epp_action_id) = 0;
   virtual void setRegistrarId(const Database::ID& _registrar_id) = 0;
-
   virtual void setRequestId(const Database::ID& _request_id) = 0;
-  
   virtual void addObject(const OID& _oid) = 0;
   virtual const OID& getObject(unsigned _idx) const = 0;
   virtual unsigned getObjectSize() const = 0;
-  
   virtual const std::string getSvTRID() const = 0;
-
   virtual const Database::ID getRegistrarId() const = 0;
   virtual const std::string getRegistrarHandle() const = 0;
   virtual const std::string getRegistrarName() const = 0;
   virtual const std::string getRegistrarUrl() const = 0;
-
   virtual const Database::ID getRequestId() const = 0;
-
   /// check if request can be handles
   virtual bool check() const = 0;
   /// return name of mailtemplate for answer email
-	virtual std::string getTemplateName() const = 0;
-	/// fill all mailtemplate parameters
-	virtual void fillTemplateParams(Mailer::Parameters& params) const = 0;
-	/// return list of destination email addresses for answer email
+  virtual std::string getTemplateName() const = 0;
+  /// fill all mailtemplate parameters
+  virtual void fillTemplateParams(Mailer::Parameters& params) const = 0;
+  /// return list of destination email addresses for answer email
   virtual std::string getEmails() const = 0;
   /// send email with answer 
-	virtual TID sendEmail() const throw (Mailer::NOT_SEND) = 0;
-	/// process request (or just close in case of invalid flag)
-	virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED, Mailer::NOT_SEND, Database::Exception)= 0;
-	/// concrete action taken during request processing
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception) = 0;
-	/// return proper type for PDF template generation
-	virtual unsigned getPDFType() const = 0;
+  virtual TID sendEmail() const throw (Mailer::NOT_SEND) = 0;
+  /// process request (or just close in case of invalid flag)
+  virtual void process(bool invalid, bool check) = 0;
+  /// concrete action taken during request processing
+  virtual void processAction(bool check) = 0;
+  /// return proper type for PDF template generation
+  virtual unsigned getPDFType() const = 0;
 };
+
+typedef boost::shared_ptr<PublicRequest> PublicRequestPtr;
+
+
+class PublicRequestAuth : virtual public PublicRequest
+{
+public:
+    struct NOT_AUTHENTICATED : private std::exception { };
+
+    virtual ~PublicRequestAuth() { }
+
+    /* try to authenticate public request by comparing _password with the one
+     * stored in database. it should save it to internal state and processAction(...)
+     * should be checking */
+    virtual bool authenticate(const std::string &_password) = 0;
+
+    virtual void sendPassword() = 0;
+};
+
+typedef boost::shared_ptr<PublicRequestAuth> PublicRequestAuthPtr;
+
 
 class List : virtual public Register::CommonList {
 public:
@@ -187,7 +206,12 @@ public:
                               bool _invalidate, bool _check) const 
     throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) = 0;
 
+  virtual unsigned long long processAuthRequest(
+          const std::string &_identification,
+          const std::string &_password) = 0;
+
 }; 
+
 }
 }
 
