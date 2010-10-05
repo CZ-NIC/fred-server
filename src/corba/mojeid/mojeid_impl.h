@@ -6,10 +6,10 @@
 #include "cfg/handle_registry_args.h"
 #include "corba/MojeID.hh"
 
-
 namespace Registry {
+namespace MojeID {
 
-class MojeIDImpl : public POA_Registry::MojeID,
+class ServerImpl : public POA_Registry::MojeID::Server,
                    public PortableServer::RefCountServantBase
 {
     private:
@@ -17,11 +17,11 @@ class MojeIDImpl : public POA_Registry::MojeID,
         const std::string server_name_;
         unsigned long long mojeid_registrar_id_;
 
-        virtual ~MojeIDImpl();
+        virtual ~ServerImpl();
 
 
     public:
-        MojeIDImpl(const HandleRegistryArgs *_server_conf,
+        ServerImpl(const HandleRegistryArgs *_server_conf,
                    const std::string &_server_name);
 
         CORBA::ULongLong contactCreate(const Contact &_contact,
@@ -40,7 +40,7 @@ class MojeIDImpl : public POA_Registry::MojeID,
                                   const char* _trans_id,
                                   const CORBA::ULongLong _request_id);
 
-        Registry::Contact* contactInfo(const CORBA::ULongLong _id);
+        Contact* contactInfo(const CORBA::ULongLong _id);
 
         void commitPreparedTransaction(const char* _trans_id);
 
@@ -48,10 +48,10 @@ class MojeIDImpl : public POA_Registry::MojeID,
 
         char* getIdentificationInfo(CORBA::ULongLong);
 
-        Registry::ContactStateChangeList*
-            getContactStateChanges(const Registry::Date& since);
+        ContactStateChangeList* getContactStateChanges(const Date& since);
 };
 
+}
 }
 
 #endif /*MOJEID_IMPL_H_*/

@@ -6,7 +6,7 @@
 #include <string>
 #include <boost/algorithm/string.hpp>
 
-
+using namespace Registry::MojeID;
 
 const char* corba_wrap_string(const char* _s)
 {
@@ -20,41 +20,41 @@ const char* corba_wrap_string(const std::string &_s)
 }
 
 
-Registry::NullableString* corba_wrap_nullable_string(const Database::Value &_v)
+NullableString* corba_wrap_nullable_string(const Database::Value &_v)
 {
     if (_v.isnull()) {
         return 0;
     }
     else {
-        return new Registry::NullableString(
+        return new NullableString(
                 static_cast<std::string>(_v).c_str());
     }
 }
 
 
-Registry::NullableULongLong* corba_wrap_nullable_ulonglong(const Database::Value &_v)
+NullableULongLong* corba_wrap_nullable_ulonglong(const Database::Value &_v)
 {
     if (_v.isnull()) {
         return 0;
     }
     else {
-        return new Registry::NullableULongLong(static_cast<unsigned long long>(_v));
+        return new NullableULongLong(static_cast<unsigned long long>(_v));
     }
 }
 
 
-Registry::NullableBoolean* corba_wrap_nullable_boolean(const Database::Value &_v)
+NullableBoolean* corba_wrap_nullable_boolean(const Database::Value &_v)
 {
     if (_v.isnull()) {
         return 0;
     }
     else {
-        return new Registry::NullableBoolean(static_cast<bool>(_v));
+        return new NullableBoolean(static_cast<bool>(_v));
     }
 }
 
 
-Registry::NullableDate* corba_wrap_nullable_date(const Database::Value &_v)
+NullableDate* corba_wrap_nullable_date(const Database::Value &_v)
 {
     if (_v.isnull()) {
         return 0;
@@ -65,11 +65,11 @@ Registry::NullableDate* corba_wrap_nullable_date(const Database::Value &_v)
             return 0;
         }
         else {
-            Registry::Date d;
+            Date d;
             d.year  = static_cast<int>(tmp.year());
             d.month = static_cast<int>(tmp.month());
             d.day   = static_cast<int>(tmp.day());
-            return new Registry::NullableDate(d);
+            return new NullableDate(d);
         }
     }
 }
@@ -81,7 +81,7 @@ std::string corba_unwrap_string(const CORBA::String_member &_s)
 }
 
 
-Database::QueryParam corba_unwrap_nullable_ulonglong(const Registry::NullableULongLong *_v)
+Database::QueryParam corba_unwrap_nullable_ulonglong(const NullableULongLong *_v)
 {
     if (_v) {
         return static_cast<unsigned long long>(_v->_value());
@@ -92,7 +92,7 @@ Database::QueryParam corba_unwrap_nullable_ulonglong(const Registry::NullableULo
 }
 
 
-Database::QueryParam corba_unwrap_nullable_string(const Registry::NullableString *_v)
+Database::QueryParam corba_unwrap_nullable_string(const NullableString *_v)
 {
     if (_v) {
         return std::string(_v->_value());
@@ -103,7 +103,7 @@ Database::QueryParam corba_unwrap_nullable_string(const Registry::NullableString
 }
 
 
-Database::QueryParam corba_unwrap_nullable_boolean(const Registry::NullableBoolean *_v)
+Database::QueryParam corba_unwrap_nullable_boolean(const NullableBoolean *_v)
 {
     if (_v) {
         return _v->_value();
@@ -114,7 +114,7 @@ Database::QueryParam corba_unwrap_nullable_boolean(const Registry::NullableBoole
 }
 
 
-Database::QueryParam corba_unwrap_nullable_date(const Registry::NullableDate *_v)
+Database::QueryParam corba_unwrap_nullable_date(const NullableDate *_v)
 {
     if (_v) {
         return boost::gregorian::date(_v->_value().year,
@@ -127,7 +127,7 @@ Database::QueryParam corba_unwrap_nullable_date(const Registry::NullableDate *_v
 }
 
 
-Database::QueryParams corba_unwrap_contact(const Registry::Contact &_contact)
+Database::QueryParams corba_unwrap_contact(const Contact &_contact)
 {
     Database::QueryParam telephone = Database::QueryParam();
     Database::QueryParam fax = Database::QueryParam();

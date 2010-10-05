@@ -86,7 +86,8 @@ int main(int argc, char *argv[])
         //create server
         HandleRegistryArgs *server_conf = CfgArgs::instance()->
             get_handler_ptr_by_type<HandleRegistryArgs>();
-        Registry::MojeIDImpl* server = new Registry::MojeIDImpl(server_conf, server_name);
+        Registry::MojeID::ServerImpl* server =
+            new Registry::MojeID::ServerImpl(server_conf, server_name);
         PortableServer::ObjectId_var server_obj_id
             = PortableServer::string_to_ObjectId("MojeID");
         CorbaContainer::get_instance()->poa_persistent

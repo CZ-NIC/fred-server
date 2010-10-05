@@ -26,11 +26,11 @@ const std::string create_ctx_name(const std::string &_name)
     return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
 }
 
-
 namespace Registry {
+namespace MojeID {
 
 
-MojeIDImpl::MojeIDImpl(const HandleRegistryArgs *_server_conf,
+ServerImpl::ServerImpl(const HandleRegistryArgs *_server_conf,
                        const std::string &_server_name)
     : server_conf_(_server_conf),
       server_name_(_server_name),
@@ -56,14 +56,14 @@ MojeIDImpl::MojeIDImpl(const HandleRegistryArgs *_server_conf,
 }
 
 
-MojeIDImpl::~MojeIDImpl()
+ServerImpl::~ServerImpl()
 {
 }
 
 
-CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
-                                           IdentificationMethod _method,
-                                           const CORBA::ULongLong _request_id)
+CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
+                                                 IdentificationMethod _method,
+                                                 const CORBA::ULongLong _request_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-create");
@@ -137,16 +137,16 @@ CORBA::ULongLong MojeIDImpl::contactCreate(const Contact &_contact,
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::ErrorReport(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::ErrorReport();
+        throw Registry::MojeID::Server::ErrorReport();
     }
 }
 
 
-CORBA::ULongLong MojeIDImpl::processIdentification(const char* _ident_request_id,
+CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id,
                                        const char* _password,
                                        const CORBA::ULongLong _request_id)
 {
@@ -163,16 +163,16 @@ CORBA::ULongLong MojeIDImpl::processIdentification(const char* _ident_request_id
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::ErrorReport(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::ErrorReport();
+        throw Registry::MojeID::Server::ErrorReport();
     }
 
 }
 
-CORBA::ULongLong MojeIDImpl::transferContact(const char* _handle,
+CORBA::ULongLong ServerImpl::transferContact(const char* _handle,
                                              IdentificationMethod _method,
                                              const CORBA::ULongLong _request_id)
 {
@@ -238,16 +238,16 @@ CORBA::ULongLong MojeIDImpl::transferContact(const char* _handle,
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::ErrorReport(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::ErrorReport();
+        throw Registry::MojeID::Server::ErrorReport();
     }
 }
 
 
-void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
+void ServerImpl::contactUpdatePrepare(const Contact &_contact,
                                       const char* _trans_id,
                                       const CORBA::ULongLong _request_id)
 {
@@ -317,17 +317,17 @@ void MojeIDImpl::contactUpdatePrepare(const Contact &_contact,
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::ErrorReport(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::ErrorReport();
+        throw Registry::MojeID::Server::ErrorReport();
     }
 
 }
 
 
-Contact* MojeIDImpl::contactInfo(const CORBA::ULongLong _id)
+Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-info");
@@ -424,16 +424,16 @@ Contact* MojeIDImpl::contactInfo(const CORBA::ULongLong _id)
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::ErrorReport(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::ErrorReport();
+        throw Registry::MojeID::Server::ErrorReport();
     }
 }
 
 
-void MojeIDImpl::commitPreparedTransaction(const char* _trans_id)
+void ServerImpl::commitPreparedTransaction(const char* _trans_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("commit-prepared");
@@ -471,16 +471,16 @@ void MojeIDImpl::commitPreparedTransaction(const char* _trans_id)
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::ErrorReport(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::ErrorReport();
+        throw Registry::MojeID::Server::ErrorReport();
     }
 }
 
 
-void MojeIDImpl::rollbackPreparedTransaction(const char* _trans_id)
+void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("rollback-prepared");
@@ -518,28 +518,28 @@ void MojeIDImpl::rollbackPreparedTransaction(const char* _trans_id)
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::ErrorReport(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::ErrorReport();
+        throw Registry::MojeID::Server::ErrorReport();
     }
 }
 
 
-char* MojeIDImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
+char* ServerImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
 {
     return CORBA::string_dup(boost::lexical_cast<std::string>(_contact_id).c_str());
 }
 
-Registry::ContactStateChangeList*
-MojeIDImpl::getContactStateChanges(const Registry::Date& since)
+ContactStateChangeList* ServerImpl::getContactStateChanges(const Date& since)
 {
-    Registry::ContactStateChangeList_var ret = new Registry::ContactStateChangeList;
+    ContactStateChangeList_var ret = new ContactStateChangeList;
     ret->length(0);
     return ret._retn();
 }
 
 
+}
 }
 
