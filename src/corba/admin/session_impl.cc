@@ -231,6 +231,7 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
 }
 
 CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) {
+    try {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
@@ -302,6 +303,28 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
   }
 
   return result;
+    }//try
+    catch(ccReg::SqlQueryTimeout& ex)
+    {
+        LOGGER(PACKAGE).error("ccReg_Session_i::getDetail ex: ccReg::SqlQueryTimeout");
+        throw;
+    }
+    catch(ccReg::Admin::ServiceUnavailable& ex)
+    {
+        LOGGER(PACKAGE).error("ccReg_Session_i::getDetail ex: ccReg::Admin::ServiceUnavailable");
+        throw;
+    }
+    catch(ccReg::Admin::ObjectNotFound& ex)
+    {
+        LOGGER(PACKAGE).error("ccReg_Session_i::getDetail ex: ccReg::Admin::ObjectNotFound");
+        throw;
+    }
+    catch(std::exception& ex)
+    {
+        LOGGER(PACKAGE).error(boost::format("ccReg_Session_i::getDetail ex: %1%")
+            % ex.what());
+        throw ccReg::Admin::ServiceUnavailable();
+    }
 }
 
 const std::string& ccReg_Session_i::getId() const {
