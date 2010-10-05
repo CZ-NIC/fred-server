@@ -917,7 +917,7 @@ public:
         if (res.size() == 1)
             create_time_ = res[0][0];
         else
-            create_time_ = ptime(boost::posix_time::second_clock::local_time());
+            throw std::runtime_error("unable to find public request");
 
         Mailer::Attachments attach;
         Mailer::Handles handles;
