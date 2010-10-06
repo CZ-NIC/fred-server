@@ -45,6 +45,7 @@ class HandleMojeIDArgs : public HandleArgs
 public:
     std::string registrar_handle;
     std::string svtrid_prefix;
+    std::string redirect_url_hostname;
     std::string redirect_url;
 
     boost::shared_ptr<boost::program_options::options_description>
@@ -61,6 +62,9 @@ public:
                 ("mojeid.svtrid_prefix",
                  po::value<std::string>()->default_value("MojeID"),
                  "prefix for action servertrid (it will looks like svtrid_prefix-0000000001)")
+                ("mojeid.redirect_url_hostname",
+                 po::value<std::string>()->default_value("demo.mojeid.cz"),
+                 "hostname for url redirect");
                 ("mojeid.redirect_url",
                  po::value<std::string>()->default_value("https://%1%/identification/%2%/"),
                  "email password redirect url");
@@ -74,6 +78,7 @@ public:
 
         registrar_handle = vm["mojeid.registrar_handle"].as<std::string>();
         svtrid_prefix = vm["mojeid.svtrid_prefix"].as<std::string>();
+        redirect_url_hostname = vm["mojeid.redirect_url_hostname"].as<std::string>();
         redirect_url = vm["mojeid.redirect_url"].as<std::string>();
     }//handle
 };

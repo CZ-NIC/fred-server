@@ -105,5 +105,8 @@ param_quote_by = '
 ##
 [mojeid]
 registrar_handle = REG-MOJEID
+# %1% = redirect_url_hostname
+# %2% = identification request id
+redirect_url_hostname = demo.mojeid.cz
 redirect_url = https://%1%/identification/%2%/
 
