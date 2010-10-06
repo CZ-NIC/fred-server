@@ -1841,6 +1841,11 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
   catch (Register::PublicRequest::REQUEST_BLOCKED) {
     throw ccReg::Admin::REQUEST_BLOCKED();
   }
+  catch (...) {
+    /* this also catches when try to process request which
+     * need to be authenticated */
+    throw ccReg::Admin::OBJECT_NOT_FOUND();
+  }
 }
 
 ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,

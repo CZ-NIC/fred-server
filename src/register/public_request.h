@@ -204,8 +204,7 @@ public:
     throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) = 0;
 
   virtual void processRequest(Database::ID _id, 
-                              bool _invalidate, bool _check) const 
-    throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) = 0;
+                              bool _invalidate, bool _check) const = 0; 
 
   virtual unsigned long long processAuthRequest(
           const std::string &_identification,

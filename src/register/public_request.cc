@@ -1325,7 +1325,7 @@ public:
 
   virtual void processRequest(Database::ID _id, bool _invalidate,
                               bool check) const
-    throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) {
+  {
     TRACE(boost::format("[CALL] Register::Request::Manager::processRequest(%1%, %2%)") %
           _id % _invalidate);
     try {
