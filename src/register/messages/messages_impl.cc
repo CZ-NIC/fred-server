@@ -609,18 +609,70 @@ Manager::MessageListPtr Manager::createList()
 ///status names
 EnumList Manager::getStatusList()
 {
-    return getStatusListImpl();
-}//Manager::getStatusList
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec("SELECT  id, status_name FROM message_status "
+            "ORDER BY id");
+    if(res.size() == 0)
+    {
+        const char* err_msg = "getStatusList: no data in table message_status";
+        LOGGER(PACKAGE).error(err_msg);
+        throw std::runtime_error(err_msg);
+    }
+    EnumList el;
+    for(unsigned i=0;i<res.size();i++)
+    {
+        EnumListItem eli;
+        eli.id = res[i][0];
+        eli.name = std::string(res[i][1]);
+        el.push_back(eli);
+    }
+    return el;
+}
+//Manager::getStatusList
 
 ///communication types
 EnumList Manager::getCommTypeList()
 {
-    return getCommTypeListImpl();
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec("SELECT  id, type FROM comm_type "
+            "ORDER BY id");
+    if(res.size() == 0)
+    {
+        const char* err_msg = "getCommTypeList: no data in table comm_type";
+        LOGGER(PACKAGE).error(err_msg);
+        throw std::runtime_error(err_msg);
+    }
+    EnumList el;
+    for(unsigned i=0;i<res.size();i++)
+    {
+        EnumListItem eli;
+        eli.id = res[i][0];
+        eli.name = std::string(res[i][1]);
+        el.push_back(eli);
+    }
+    return el;
 }//Manager::getCommTypeList
 ///message types
 EnumList Manager::getMessageTypeList()
 {
-    return getMessageTypeListImpl();
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec("SELECT  id, type FROM message_type "
+            "ORDER BY id");
+    if(res.size() == 0)
+    {
+        const char* err_msg = "getMessageTypeList: no data in table message_type";
+        LOGGER(PACKAGE).error(err_msg);
+        throw std::runtime_error(err_msg);
+    }
+    EnumList el;
+    for(unsigned i=0;i<res.size();i++)
+    {
+        EnumListItem eli;
+        eli.id = res[i][0];
+        eli.name = std::string(res[i][1]);
+        el.push_back(eli);
+    }
+    return el;
 }//Manager::getMessageTypeList
 
 
@@ -677,74 +729,138 @@ LetterInfo Manager::get_letter_info_by_id(unsigned long long id)
     return li;
 }
 
+void MessageReload::operator ()
+        (Database::Filters::Union &uf
+        , ListType& list
+        , std::size_t& _limit
+        ,  bool& loadLimitActive_)
+{
+    list.clear();
+    uf.clearQueries();
+
+    bool at_least_one = false;
+    Database::SelectQuery info_query;
+    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    for (fit->first(); !fit->isDone(); fit->next())
+    {
+        Database::Filters::Message *f =
+          dynamic_cast<Database::Filters::Message*>(fit->get());
+      if (!f)
+        continue;
+
+      Database::SelectQuery *tmp = new Database::SelectQuery();
+        tmp->addSelect(
+            "id crdate moddate attempt status_id comm_type_id message_type_id"
+            ,f->joinMessageArchiveTable());
+        tmp->order_by() << "1 DESC";
+
+      uf.addQuery(tmp);
+      at_least_one = true;
+    }//for filters
+    if (!at_least_one) {
+      LOGGER(PACKAGE).error("wrong filter passed for reload!");
+      return;
+    }
+    uf.serialize(info_query);
+    std::string info_query_str = str(boost::format("%1% LIMIT %2%")
+        % info_query.str() % (_limit+1));//try select more than limit
+    LOGGER(PACKAGE).debug(boost::format("reload(uf) ObjList query: %1%")
+        % info_query_str);
+    try
+    {
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result res = conn.exec(info_query_str);
+
+      std::size_t result_size = res.size();
+
+      if( result_size > _limit )//check if selected more than limit
+      {
+          loadLimitActive_ = true;
+          result_size = _limit;//copy only limited number of rows
+      }
+      else
+      loadLimitActive_= false;
+
+      Register::Messages::ManagerPtr msg_mgr
+          = Register::Messages::create_manager();
+
+      //enumlists
+      //status names
+      EnumList status_names_ = msg_mgr->getStatusList();
+      std::map<std::size_t, std::string> status_names;
+      for (EnumList::const_iterator i = status_names_.begin()
+              ; i != status_names_.end(); ++i)
+          status_names[i->id] = i->name;
+
+      //communication types
+      EnumList comm_types_ = msg_mgr->getCommTypeList();
+      std::map<std::size_t, std::string> comm_types;
+      for (EnumList::const_iterator i = comm_types_.begin()
+              ; i != comm_types_.end(); ++i)
+          comm_types[i->id] = i->name;
+
+      //message types
+      EnumList msg_types_ = msg_mgr->getMessageTypeList();
+      std::map<std::size_t, std::string> msg_types;
+      for (EnumList::const_iterator i = msg_types_.begin()
+              ; i != msg_types_.end(); ++i)
+          msg_types[i->id] = i->name;
 
 
-///status names
-EnumList getStatusListImpl()
-{
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result res = conn.exec("SELECT  id, status_name FROM message_status "
-            "ORDER BY id");
-    if(res.size() == 0)
+      list.reserve(result_size);//allocate list by size
+      list.clear();
+      for (std::size_t i=0; i < result_size; i++)
+      {
+          ObjPtr objptr(new Object);
+          for (std::size_t j=0; j < res[i].size(); j++)
+          {/*
+              LOGGER(PACKAGE).debug(
+                      boost::format("i: %1% j: %2% data: %3%")
+                      % i % j % res[i][j]);
+              */
+
+              switch(j)
+              {
+              case MessageMetaInfo::MT_STATUS :
+                  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+                          ,status_names[static_cast<std::size_t>(res[i][j])]);//for j col
+                  break;
+              case MessageMetaInfo::MT_COMMTYPE :
+                  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+                          ,comm_types[static_cast<std::size_t>(res[i][j])]);//for j col
+                  break;
+              case MessageMetaInfo::MT_MSGTYPE :
+                  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+                          ,msg_types[static_cast<std::size_t>(res[i][j])]);//for j col
+                  break;
+
+              case MessageMetaInfo::MT_CRDATE :
+              case MessageMetaInfo::MT_MODDATE :
+              {
+                  boost::posix_time::ptime tmp_ptime;
+                  tmp_ptime = res[i][j];
+                  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+                          ,tmp_ptime.is_special()
+                              ? std::string("")
+                              : boost::posix_time::to_iso_string(tmp_ptime));
+              }
+                  break;
+
+              default :
+                  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+                          ,res[i][j]);//for j col
+                  break;
+              }
+          }
+          list.push_back(objptr);
+      }//for i row
+    }//try
+    catch (std::exception& ex)
     {
-        const char* err_msg = "getStatusList: no data in table message_status";
-        LOGGER(PACKAGE).error(err_msg);
-        throw std::runtime_error(err_msg);
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
-    EnumList el;
-    for(unsigned i=0;i<res.size();i++)
-    {
-        EnumListItem eli;
-        eli.id = res[i][0];
-        eli.name = std::string(res[i][1]);
-        el.push_back(eli);
-    }
-    return el;
 }
-///communication types
-EnumList getCommTypeListImpl()
-{
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result res = conn.exec("SELECT  id, type FROM comm_type "
-            "ORDER BY id");
-    if(res.size() == 0)
-    {
-        const char* err_msg = "getCommTypeList: no data in table comm_type";
-        LOGGER(PACKAGE).error(err_msg);
-        throw std::runtime_error(err_msg);
-    }
-    EnumList el;
-    for(unsigned i=0;i<res.size();i++)
-    {
-        EnumListItem eli;
-        eli.id = res[i][0];
-        eli.name = std::string(res[i][1]);
-        el.push_back(eli);
-    }
-    return el;
-}
-///message types
-EnumList getMessageTypeListImpl()
-{
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result res = conn.exec("SELECT  id, type FROM message_type "
-            "ORDER BY id");
-    if(res.size() == 0)
-    {
-        const char* err_msg = "getMessageTypeList: no data in table message_type";
-        LOGGER(PACKAGE).error(err_msg);
-        throw std::runtime_error(err_msg);
-    }
-    EnumList el;
-    for(unsigned i=0;i<res.size();i++)
-    {
-        EnumListItem eli;
-        eli.id = res[i][0];
-        eli.name = std::string(res[i][1]);
-        el.push_back(eli);
-    }
-    return el;
-}
+
 
 }//namespace Messages
 }//namespace Register
