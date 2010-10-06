@@ -274,6 +274,15 @@ AC_CHECK_FILE(
 	)]
 )
 
+AC_CHECK_FILE(
+	[$IDLDIR/Mailer.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain Mailer.idl
+		(use --with-idldir)]
+	)]
+)
+
 
 AC_ARG_WITH(
   [libidn], 
