@@ -64,7 +64,7 @@ public:
                  "prefix for action servertrid (it will looks like svtrid_prefix-0000000001)")
                 ("mojeid.redirect_url_hostname",
                  po::value<std::string>()->default_value("demo.mojeid.cz"),
-                 "hostname for url redirect");
+                 "hostname for url redirect")
                 ("mojeid.redirect_url",
                  po::value<std::string>()->default_value("https://%1%/identification/%2%/"),
                  "email password redirect url");
