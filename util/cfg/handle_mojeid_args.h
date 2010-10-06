@@ -45,8 +45,8 @@ class HandleMojeIDArgs : public HandleArgs
 public:
     std::string registrar_handle;
     std::string svtrid_prefix;
-    std::string redirect_url_hostname;
     std::string redirect_url;
+    bool demo_mode;
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -62,12 +62,12 @@ public:
                 ("mojeid.svtrid_prefix",
                  po::value<std::string>()->default_value("MojeID"),
                  "prefix for action servertrid (it will looks like svtrid_prefix-0000000001)")
-                ("mojeid.redirect_url_hostname",
-                 po::value<std::string>()->default_value("demo.mojeid.cz"),
-                 "hostname for url redirect")
                 ("mojeid.redirect_url",
-                 po::value<std::string>()->default_value("https://%1%/identification/%2%/"),
-                 "email password redirect url");
+                 po::value<std::string>()->default_value("https://demo.mojeid.cz/identification/%1%/"),
+                 "email password redirect url")
+                ("mojeid.demo_mode",
+                 po::value<bool>()->default_value(false),
+                 "turn demo mode on/off");
 
         return cfg_opts;
     }//get_options_description
@@ -78,8 +78,8 @@ public:
 
         registrar_handle = vm["mojeid.registrar_handle"].as<std::string>();
         svtrid_prefix = vm["mojeid.svtrid_prefix"].as<std::string>();
-        redirect_url_hostname = vm["mojeid.redirect_url_hostname"].as<std::string>();
         redirect_url = vm["mojeid.redirect_url"].as<std::string>();
+        demo_mode = vm["mojeid.demo_mode"].as<bool>();
     }//handle
 };
 

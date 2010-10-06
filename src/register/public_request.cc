@@ -908,10 +908,10 @@ public:
     /* helper method for sending email password */
     void sendEmailPassword(const std::string &_template,
                            const std::string &_type,
-                           const std::string &_redirect_url_hostname,
-                           const std::string &_redirect_url)
+                           const std::string &_redirect_url,
+                           bool _demo_mode)
     {
-        LOGGER(PACKAGE).debug("public request auth - send email pasword");
+        LOGGER(PACKAGE).debug("public request auth - send email password");
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Result res = conn.exec_params(
@@ -930,13 +930,16 @@ public:
         buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
         buf << getCreateTime().date();
 
-        /* to email we put first half of password string */
-        params["passwd"] = password_.substr(0, password_.size() / 2);
-        params["url"] = str(boost::format(_redirect_url)
-                            % _redirect_url_hostname % identification_);
+        params["url"] = str(boost::format(_redirect_url) % identification_);
         params["reqdate"] = buf.str();
         params["rtype"] = _type;
         params["handle"] = getObject(0).handle;
+        /* to email we put first half of password string */
+        params["passwd"] = password_.substr(0, password_.size() / 2);
+        /* for demo purpose we send second half of password as well */
+        if (_demo_mode) {
+            params["passwd2"] = password_.substr(password_.size() / 2, password_.size());
+        }
 
         handles.push_back(getObject(0).handle);
 
@@ -978,14 +981,14 @@ public:
         tx.commit();
     }
 
-    void sendPasswords(const std::string &_redirect_url_hostname,
-                       const std::string &_redirect_url)
+    void sendPasswords(const std::string &_redirect_url,
+                       bool _demo_mode)
     {
         PublicRequestAuthImpl::sendEmailPassword(
                 "mojeid_identification",
                 "1",
-                _redirect_url_hostname,
-                _redirect_url);
+                _redirect_url,
+                _demo_mode);
     }
 };
 
@@ -1015,14 +1018,14 @@ public:
         tx.commit();
     }
 
-    void sendPasswords(const std::string &_redirect_url_hostname,
-                       const std::string &_redirect_url)
+    void sendPasswords(const std::string &_redirect_url,
+                       bool _demo_mode)
     {
         PublicRequestAuthImpl::sendEmailPassword(
                 "mojeid_identification",
                 "2",
-                _redirect_url_hostname,
-                _redirect_url);
+                _redirect_url,
+                _demo_mode);
     }
 };
 
