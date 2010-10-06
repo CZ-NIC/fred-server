@@ -1962,15 +1962,16 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
 
   //detail->message_content = new Registry::Message::MessageContent();
 
+  Register::Messages::ManagerPtr msg_mgr
+      = m_register_manager->getMessageManager();
+
   //message types
-  Register::Messages::EnumList msg_types_ = Register::Messages::getMessageTypeListImpl();
+  Register::Messages::EnumList msg_types_ = msg_mgr->getMessageTypeList();
     std::map<std::size_t, std::string> msg_types;
     for (Register::Messages::EnumList::const_iterator i = msg_types_.begin()
             ; i != msg_types_.end(); ++i)
         msg_types[i->id] = i->name;
 
-    Register::Messages::ManagerPtr msg_mgr
-        = m_register_manager->getMessageManager();
 
     if((msg_types[detail->message_type_id]).compare("sms") == 0)
     {

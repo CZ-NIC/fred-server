@@ -96,9 +96,9 @@ MessagesSK.cc: $(IDLDIR)/Messages.idl
 MojeIDSK.cc: $(IDLDIR)/MojeID.idl
 	omniidl -bcxx -Wba -Wbinline $(IDLDIR)/MojeID.idl
 
-FileManagerSK.cc: $(IDLDIR)/FileManager.idl
+FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_FileManager.idl $(IDLDIR)/_dataTypes.idl
 	omniidl -bcxx -Wba -Wbinline $(IDLDIR)/FileManager.idl
 
-MailerSK.cc: $(IDLDIR)/Mailer.idl
+MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/_dataTypes.idl
 	omniidl -bcxx -Wba -Wbinline $(IDLDIR)/Mailer.idl
 
