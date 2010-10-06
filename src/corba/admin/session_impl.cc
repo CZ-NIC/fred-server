@@ -1989,22 +1989,38 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
   detail->modifyDate = CORBA::string_dup(formatTime(moddate,true,true).c_str());
 
   detail->attempt = boost::lexical_cast<long>(_message->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
-  detail->status_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_STATUS));
-  detail->comm_type_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
-  detail->message_type_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE));
 
   Register::Messages::ManagerPtr msg_mgr
       = m_register_manager->getMessageManager();
 
+  //enumlists
+  //status names
+  Register::Messages::EnumList status_names_ = msg_mgr->getStatusList();
+  std::map<std::string, std::size_t > status_id;
+  for (Register::Messages::EnumList::const_iterator i = status_names_.begin()
+          ; i != status_names_.end(); ++i)
+      status_id[i->name] = i->id;
+
+  //communication types
+  Register::Messages::EnumList comm_types_ = msg_mgr->getCommTypeList();
+  std::map< std::string, std::size_t> comm_type_id;
+  for (Register::Messages::EnumList::const_iterator i = comm_types_.begin()
+          ; i != comm_types_.end(); ++i)
+      comm_type_id[i->name] = i->id;
+
   //message types
   Register::Messages::EnumList msg_types_ = msg_mgr->getMessageTypeList();
-    std::map<std::size_t, std::string> msg_types;
-    for (Register::Messages::EnumList::const_iterator i = msg_types_.begin()
-            ; i != msg_types_.end(); ++i)
-        msg_types[i->id] = i->name;
+  std::map<std::string, std::size_t > msg_type_id;
+  for (Register::Messages::EnumList::const_iterator i = msg_types_.begin()
+          ; i != msg_types_.end(); ++i)
+      msg_type_id[i->name] = i->id;
 
+  detail->status_id = status_id[_message->get(Register::Messages::MessageMetaInfo::MT_STATUS)];
+  detail->comm_type_id = comm_type_id[_message->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)];
+  detail->message_type_id = msg_type_id[_message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)];
 
-    if((msg_types[detail->message_type_id]).compare("sms") == 0)
+  //message types
+    if((_message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)).compare("sms") == 0)
     {
         //detail->message_content._d(1);//sms
         Registry::Message::SMSDetail sms_detail;
@@ -2019,7 +2035,7 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
         detail->message_content.sms(sms_detail);
     }
 
-    if((msg_types[detail->message_type_id]).compare("letter") == 0)
+    if((_message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)).compare("letter") == 0)
     {
         //detail->message_content._d(2);//letter
         Registry::Message::LetterDetail letter_detail;
