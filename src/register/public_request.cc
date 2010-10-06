@@ -859,7 +859,7 @@ public:
         }
 
         identification_ = Random::string_alpha(32);
-        password_ = Random::string_alpha(32);
+        password_ = Random::string_alpha(16);
 
         conn.exec_params(
                 "INSERT INTO public_request_auth (id, identification, password)"
@@ -930,8 +930,8 @@ public:
         buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
         buf << getCreateTime().date();
 
-        /* to email we put first 16 characters of password */
-        params["passwd"] = password_.substr(0, 16);
+        /* to email we put first half of password string */
+        params["passwd"] = password_.substr(0, password_.size() / 2);
         params["url"] = str(boost::format(_redirect_url)
                             % _redirect_url_hostname % identification_);
         params["reqdate"] = buf.str();
