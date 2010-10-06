@@ -112,7 +112,7 @@ EnumList getMessageTypeListImpl();
 /// template param OBJECT_META_INFO implementation
 struct MessageMetaInfo
 {
-	enum MemberType {
+	enum MemberOrderType {
 	  MT_ID, ///< id
 	  MT_CRDATE, ///< create datetime
 	  MT_MODDATE, ///< modification datetime
@@ -120,8 +120,25 @@ struct MessageMetaInfo
 	  MT_STATUS, ///< message status
 	  MT_COMMTYPE, ///< type of communication channel
 	  MT_MSGTYPE ///< type of message
-	};// columns identification
+	};// columns order identification
 	enum Columns { columns = 7};//number of columns
+
+	//member conversion type specification
+	static ObjMemberConversion::Type member_conversion_type(MemberOrderType col)
+	{
+	    ObjMemberConversion::Type mct[columns];
+
+        mct[MT_ID] = ObjMemberConversion::MC_NONE; //id
+        mct[MT_CRDATE] = ObjMemberConversion::MC_DATETIME; //crdate
+        mct[MT_MODDATE] = ObjMemberConversion::MC_DATETIME; //moddate
+        mct[MT_ATTEMPT] = ObjMemberConversion::MC_NONE; //attempt
+        mct[MT_STATUS] = ObjMemberConversion::MC_NONE; //status
+        mct[MT_COMMTYPE] = ObjMemberConversion::MC_NONE; //commtype
+        mct[MT_MSGTYPE] = ObjMemberConversion::MC_NONE; //msgtype
+
+	    return mct[col];
+	}//member_conversion_type
+
 };//struct MessageMetaInfo
 
 typedef ObjType<MessageMetaInfo> Message;//object type used by pagetable

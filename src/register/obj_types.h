@@ -42,6 +42,14 @@
 namespace Register
 {
 
+struct ObjMemberConversion
+{
+    enum Type{
+          MC_NONE //no member conversion
+        , MC_DATETIME //member conversion of datetime
+    };
+};
+
 template<typename OBJECT_META_INFO>
 class ObjType : boost::noncopyable //type for object
 {
@@ -58,7 +66,8 @@ public:
     ObjType() : data_(OBJECT_META_INFO::columns), id_(0) {}
 
     //checking column set
-    void set(typename OBJECT_META_INFO::MemberType col,const std::string& value)
+    void set(typename OBJECT_META_INFO::MemberOrderType col
+            ,const std::string& value)
     {
         if (data_.size() <= static_cast<std::size_t>(col))
             data_.resize(static_cast<std::size_t>(col + 1));
@@ -88,7 +97,7 @@ public:
     }
 
     //checking column get
-    const std::string& get(typename OBJECT_META_INFO::MemberType col) const
+    const std::string& get(typename OBJECT_META_INFO::MemberOrderType col) const
     {
         return data_.at(static_cast<std::size_t>(col));
     }
@@ -115,7 +124,7 @@ class CompareObj //functor for sorting
 public:
     typedef typename ObjType<OBJECT_META_INFO>::ObjPtr  ObjPtr;
 
-    CompareObj(bool _asc, typename OBJECT_META_INFO::MemberType _col)
+    CompareObj(bool _asc, typename OBJECT_META_INFO::MemberOrderType _col)
     : asc_(_asc)
     , col_(static_cast<std::size_t>(_col))
     { }
@@ -185,7 +194,7 @@ public:
         return list_.size();
     }
 
-    void sort(typename OBJECT_META_INFO::MemberType _member, bool _asc)
+    void sort(typename OBJECT_META_INFO::MemberOrderType _member, bool _asc)
     {
         std::stable_sort(list_.begin(), list_.end()
         		, CompareObj<OBJECT_META_INFO>(_asc, _member));

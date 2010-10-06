@@ -822,15 +822,15 @@ void MessageReload::operator ()
               switch(j)
               {
               case MessageMetaInfo::MT_STATUS :
-                  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
                           ,status_names[static_cast<std::size_t>(res[i][j])]);//for j col
                   break;
               case MessageMetaInfo::MT_COMMTYPE :
-                  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
                           ,comm_types[static_cast<std::size_t>(res[i][j])]);//for j col
                   break;
               case MessageMetaInfo::MT_MSGTYPE :
-                  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
                           ,msg_types[static_cast<std::size_t>(res[i][j])]);//for j col
                   break;
 
@@ -839,7 +839,7 @@ void MessageReload::operator ()
               {
                   boost::posix_time::ptime tmp_ptime;
                   tmp_ptime = res[i][j];
-                  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
                           ,tmp_ptime.is_special()
                               ? std::string("")
                               : boost::posix_time::to_iso_string(tmp_ptime));
@@ -847,7 +847,7 @@ void MessageReload::operator ()
                   break;
 
               default :
-                  objptr->set(static_cast<MessageMetaInfo::MemberType>(j)
+                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
                           ,res[i][j]);//for j col
                   break;
               }
