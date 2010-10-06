@@ -1974,8 +1974,20 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
 
 
   detail->id = _message->get_id();
-  detail->createDate = CORBA::string_dup(_message->get(Register::Messages::MessageMetaInfo::MT_CRDATE).c_str());
-  detail->modifyDate = CORBA::string_dup(_message->get(Register::Messages::MessageMetaInfo::MT_MODDATE).c_str());
+
+  //date time conversion from iso string
+   boost::posix_time::ptime crdate
+       = _message->get(Register::Messages::MessageMetaInfo::MT_CRDATE).empty()
+               ? boost::posix_time::ptime()
+               : boost::posix_time::from_iso_string(_message->get(Register::Messages::MessageMetaInfo::MT_CRDATE));
+  detail->createDate = CORBA::string_dup(formatTime(crdate,true,true).c_str());
+
+  boost::posix_time::ptime moddate
+      = _message->get(Register::Messages::MessageMetaInfo::MT_MODDATE).empty()
+              ? boost::posix_time::ptime()
+              : boost::posix_time::from_iso_string(_message->get(Register::Messages::MessageMetaInfo::MT_MODDATE));
+  detail->modifyDate = CORBA::string_dup(formatTime(moddate,true,true).c_str());
+
   detail->attempt = boost::lexical_cast<long>(_message->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
   detail->status_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_STATUS));
   detail->comm_type_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
