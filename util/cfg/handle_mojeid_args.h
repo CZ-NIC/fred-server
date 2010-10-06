@@ -72,8 +72,9 @@ public:
         boost::program_options::variables_map vm;
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
 
-        redirect_url = (vm.count("redirect_url") == 0
-                ? std::string("") : vm["redirect_url"].as<std::string>());
+        registrar_handle = vm["mojeid.registrar_handle"].as<std::string>();
+        svtrid_prefix = vm["mojeid.svtrid_prefix"].as<std::string>();
+        redirect_url = vm["mojeid.redirect_url"].as<std::string>();
     }//handle
 };
 
