@@ -1343,10 +1343,11 @@ public:
   {
       Database::Connection conn = Database::Manager::acquire();
       Database::Result rid = conn.exec_params(
-              "SELECT identification FROM public_request_auth pra "
-    		  "JOIN public_request pr ON (pra.id=pr.id) "
-    		  "JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
-    		  "WHERE object_id = $1::integer",
+              "SELECT identification FROM public_request_auth pra"
+              " JOIN public_request pr ON (pra.id=pr.id)"
+              " JOIN public_request_objects_map prom ON (prom.request_id=pr.id)"
+              " WHERE pr.resolve_time IS NULL AND pr.status = 0"
+              " AND object_id = $1::integer",
               Database::query_param_list(_contact_id));
       if (rid.size() != 1)
           throw NOT_FOUND();
