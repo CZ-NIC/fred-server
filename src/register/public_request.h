@@ -158,7 +158,7 @@ public:
      * should be checking */
     virtual bool authenticate(const std::string &_password) = 0;
 
-    virtual void sendPassword() = 0;
+    virtual void sendPasswords() = 0;
 };
 
 typedef boost::shared_ptr<PublicRequestAuth> PublicRequestAuthPtr;

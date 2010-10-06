@@ -906,7 +906,7 @@ public:
     }
 
     /* helper method for sending passwords */
-    void sendPassword(const std::string &_template, const std::string &_type)
+    void sendPasswords(const std::string &_template, const std::string &_type)
     {
         LOGGER(PACKAGE).debug("public request auth - send pasword");
 
@@ -971,9 +971,9 @@ public:
         tx.commit();
     }
 
-    void sendPassword()
+    void sendPasswords()
     {
-        PublicRequestAuthImpl::sendPassword("mojeid_identification", "1");
+        PublicRequestAuthImpl::sendPasswords("mojeid_identification", "1");
     }
 };
 
@@ -1003,9 +1003,9 @@ public:
         tx.commit();
     }
 
-    void sendPassword()
+    void sendPasswords()
     {
-        PublicRequestAuthImpl::sendPassword("mojeid_identification", "2");
+        PublicRequestAuthImpl::sendPasswords("mojeid_identification", "2");
     }
 };
 

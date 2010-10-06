@@ -196,7 +196,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
             Register::PublicRequest::PublicRequestAuthPtr identification_request
                 = boost::dynamic_pointer_cast<Register::PublicRequest::PublicRequestAuth>(new_request);
             if (identification_request) {
-                identification_request->sendPassword();
+                identification_request->sendPasswords();
                 LOGGER(PACKAGE).info("identification password sent");
             }
             else {
