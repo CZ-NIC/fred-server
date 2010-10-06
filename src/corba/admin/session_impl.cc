@@ -1952,6 +1952,27 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
       % _message->get_id());
   Registry::Message::Detail *detail = new Registry::Message::Detail();
 
+  LOGGER(PACKAGE).debug(boost::format(
+          "ccReg_Session_i::createMessageDetail "
+          " id: %1% "
+          " crdate: %2% "
+          " moddate: %3% "
+          " attempt: %4% "
+          " status_name: %5% "
+          " message_type: %6% "
+          " comm_type: %7% "
+
+          )
+                % _message->get(Register::Messages::MessageMetaInfo::MT_ID)
+                % _message->get(Register::Messages::MessageMetaInfo::MT_CRDATE)
+                % _message->get(Register::Messages::MessageMetaInfo::MT_MODDATE)
+                % _message->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT)
+                % _message->get(Register::Messages::MessageMetaInfo::MT_STATUS)
+                % _message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)
+                % _message->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)
+                );
+
+
   detail->id = _message->get_id();
   detail->createDate = CORBA::string_dup(_message->get(Register::Messages::MessageMetaInfo::MT_CRDATE).c_str());
   detail->modifyDate = CORBA::string_dup(_message->get(Register::Messages::MessageMetaInfo::MT_MODDATE).c_str());
@@ -1959,8 +1980,6 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
   detail->status_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_STATUS));
   detail->comm_type_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
   detail->message_type_id = boost::lexical_cast<unsigned long long>(_message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE));
-
-  //detail->message_content = new Registry::Message::MessageContent();
 
   Register::Messages::ManagerPtr msg_mgr
       = m_register_manager->getMessageManager();
