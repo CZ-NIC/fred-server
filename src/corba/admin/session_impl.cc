@@ -2063,6 +2063,8 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
 
         detail->message_content.letter(letter_detail);
     }
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::createMessageDetail return detail for object id=%1%")
+          % _message->get_id());
   return detail;
 }
 
