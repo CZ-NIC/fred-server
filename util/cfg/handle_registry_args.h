@@ -95,10 +95,13 @@ public:
         disable_epp_notifier = vm["registry.disable_epp_notifier"].as<bool>();
         lock_epp_commands = vm["registry.lock_epp_commands"].as<bool>();
         nsset_level = vm["registry.nsset_level"].as<unsigned int>();
-        docgen_path = vm["registry.docgen_path"].as<std::string>();
-        docgen_template_path = vm["registry.docgen_template_path"].as<std::string>();
         docgen_domain_count_limit = vm["registry.docgen_domain_count_limit"].as<unsigned int>();
-        fileclient_path = vm["registry.fileclient_path"].as<std::string>();
+        docgen_path = (vm.count("registry.docgen_path") == 0
+                ? std::string() : vm["registry.docgen_path"].as<std::string>());
+        docgen_template_path = (vm.count("registry.docgen_template_path") == 0
+                ? std::string() : vm["registry.docgen_template_path"].as<std::string>());
+        fileclient_path = (vm.count("registry.fileclient_path") == 0
+                ? std::string() : vm["registry.fileclient_path"].as<std::string>());
     }//handle
 };
 
