@@ -3,6 +3,7 @@
 #include "mojeid_request.h"
 #include "mojeid_contact.h"
 
+#include "cfg/config_handler_decl.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "random.h"
@@ -35,9 +36,9 @@ namespace Registry {
 namespace MojeID {
 
 
-ServerImpl::ServerImpl(const HandleRegistryArgs *_server_conf,
-                       const std::string &_server_name)
-    : server_conf_(_server_conf),
+ServerImpl::ServerImpl(const std::string &_server_name)
+    : registry_conf_(CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()),
+      server_conf_(CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()),
       server_name_(_server_name),
       mojeid_registrar_id_(0)
 {
@@ -48,7 +49,7 @@ ServerImpl::ServerImpl(const HandleRegistryArgs *_server_conf,
         Database::Connection conn = Database::Manager::acquire();
         Database::Result result = conn.exec_params(
                 "SELECT id FROM registrar WHERE handle = $1::text",
-                Database::query_param_list("REG-MOJEID"));
+                Database::query_param_list(server_conf_->registrar_handle));
 
         if (result.size() != 1 || (mojeid_registrar_id_ = result[0][0]) == 0) {
             throw std::runtime_error("failed to find dedicated registrar in database");
@@ -87,7 +88,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
         try {
             Register::Contact::ManagerPtr contact_mgr(
-                    Register::Contact::Manager::create(0, server_conf_->restricted_handles));
+                    Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
             LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
                     % handle);
 
@@ -139,13 +140,13 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         MailerManager mailer_manager(ns);
     
         std::auto_ptr<Register::Manager> register_manager(
-                Register::Manager::create(0, server_conf_->restricted_handles));
+                Register::Manager::create(0, registry_conf_->restricted_handles));
     
         std::auto_ptr<Register::Document::Manager> doc_manager(
                 Register::Document::Manager::create(
-                    server_conf_->docgen_path,
-                    server_conf_->docgen_template_path,
-                    server_conf_->fileclient_path,
+                    registry_conf_->docgen_path,
+                    registry_conf_->docgen_template_path,
+                    registry_conf_->fileclient_path,
                     ns->getHostName())
                  );
     
@@ -240,13 +241,13 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
         MailerManager mailer_manager(ns);
     
         std::auto_ptr<Register::Manager> register_manager(
-                Register::Manager::create(0, server_conf_->restricted_handles));
+                Register::Manager::create(0, registry_conf_->restricted_handles));
     
         std::auto_ptr<Register::Document::Manager> doc_manager(
                 Register::Document::Manager::create(
-                    server_conf_->docgen_path,
-                    server_conf_->docgen_template_path,
-                    server_conf_->fileclient_path,
+                    registry_conf_->docgen_path,
+                    registry_conf_->docgen_template_path,
+                    registry_conf_->fileclient_path,
                     ns->getHostName())
                  );
     
@@ -299,7 +300,7 @@ CORBA::ULongLong ServerImpl::transferContact(const char* _handle,
         Register::NameIdPair cinfo;
         try {
             Register::Contact::ManagerPtr contact_mgr(
-                    Register::Contact::Manager::create(0, server_conf_->restricted_handles));
+                    Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
 
             LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
                     % handle);
@@ -379,7 +380,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         Register::NameIdPair cinfo;
         try {
             Register::Contact::ManagerPtr contact_mgr(
-                    Register::Contact::Manager::create(0, server_conf_->restricted_handles));
+                    Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
 
             LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
                     % handle);
@@ -647,13 +648,13 @@ char* ServerImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
         MailerManager mailer_manager(ns);
 
         std::auto_ptr<Register::Manager> register_manager(
-                Register::Manager::create(0, server_conf_->restricted_handles));
+                Register::Manager::create(0, registry_conf_->restricted_handles));
 
         std::auto_ptr<Register::Document::Manager> doc_manager(
                 Register::Document::Manager::create(
-                    server_conf_->docgen_path,
-                    server_conf_->docgen_template_path,
-                    server_conf_->fileclient_path,
+                    registry_conf_->docgen_path,
+                    registry_conf_->docgen_template_path,
+                    registry_conf_->fileclient_path,
                     ns->getHostName())
                  );
 

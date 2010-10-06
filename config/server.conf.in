@@ -99,3 +99,11 @@ monitoring_hosts_file = @MONITORINGIPS@
 command = ./test_sms.sh
 param_quote_by = '
 
+
+##
+# MIFD specific settings
+##
+[mojeid]
+registrar_handle = REG-MOJEID
+redirect_url = https://%1%/identification/%2%/
+
