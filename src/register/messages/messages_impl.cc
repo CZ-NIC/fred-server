@@ -844,6 +844,21 @@ void MessageReload::operator ()
                           ,tmp_ptime.is_special()
                               ? std::string("")
                               : boost::posix_time::to_iso_string(tmp_ptime));
+                  try
+                  {
+                  LOGGER(PACKAGE).debug(boost::format("MessageReload "
+                          "\n res[i][j].str()        %1%"
+                          "\n std::string(res[i][j]) %2%"
+                          )
+                      % res[i][j].str()
+                      % std::string(res[i][j])
+                      );
+                  }
+                  catch(const std::exception& ex)
+                  {
+                      LOGGER(PACKAGE).error(boost::format("MessageReload Log ex: %1%")
+                                            % ex.what());
+                  }
 
 
               }
