@@ -845,7 +845,9 @@ void MessageReload::operator ()
                               ? std::string("")
                               : boost::posix_time::to_iso_string(tmp_ptime));
                   */
-                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j),std::string(res[i][j]));
+                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
+                          ,boost::posix_time::to_iso_string(boost::posix_time::time_from_string(res[i][j]))
+                  );
               }
                   break;
 
