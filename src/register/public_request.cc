@@ -922,16 +922,27 @@ public:
         else
             throw std::runtime_error("unable to find public request");
 
+        Database::Result rname = conn.exec_params(
+                "SELECT name FROM contact WHERE id = $1::integer",
+                Database::query_param_list(getObject(0).id));
+        if (rname.size() != 1)
+            throw std::runtime_error("unable to get contact data");
+        std::string name = static_cast<std::string>(rname[0][0]);
+
         Mailer::Attachments attach;
         Mailer::Handles handles;
         Mailer::Parameters params;
 
-        std::ostringstream buf;
-        buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
-        buf << getCreateTime().date();
+        //std::ostringstream buf;
+        //buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
+        //buf << getCreateTime().date();
+        //params["reqdate"] = buf.str();
 
+        std::size_t pos = name.find_last_of(" ");
+        params["firstname"] = name.substr(0, pos);
+        params["lastname"] = name.substr(pos + 1);
+        params["email"] = getEmails();
         params["url"] = str(boost::format(_redirect_url) % identification_);
-        params["reqdate"] = buf.str();
         params["rtype"] = _type;
         params["handle"] = getObject(0).handle;
         /* to email we put first half of password string */
@@ -945,7 +956,7 @@ public:
 
         unsigned long long id = man_->getMailerManager()->sendEmail(
                 "",           /* default sender */
-                getEmails(),
+                params["email"],
                 "",           /* default subject */
                 _template,
                 params,
