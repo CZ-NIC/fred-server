@@ -445,8 +445,7 @@ Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
         Database::Connection conn = Database::Manager::acquire();
 
         std::string qinfo = "SELECT oreg.id, oreg.name,"
-            " SPLIT_PART(c.name, ' ', 1) as first_name,"
-            " SPLIT_PART(c.name, ' ', 2) as last_name,"
+            " c.name,"
             " c.organization, c.vat, c.ssntype, c.ssn,"
             " c.disclosename, c.discloseorganization,"
             " c.disclosevat, c.discloseident,"
@@ -469,51 +468,55 @@ Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
         Contact *data = new Contact();
         data->id           = corba_wrap_nullable_ulonglong(rinfo[0][0]);
         data->username     = corba_wrap_string(rinfo[0][1]);
-        data->first_name   = corba_wrap_string(rinfo[0][2]);
-        data->last_name    = corba_wrap_string(rinfo[0][3]);
-        data->organization = corba_wrap_nullable_string(rinfo[0][4]);
-        data->vat_reg_num  = corba_wrap_nullable_string(rinfo[0][5]);
-        data->ssn_type     = corba_wrap_nullable_string(rinfo[0][28]);
 
-        std::string type = static_cast<std::string>(rinfo[0][28]);
-        data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
-        data->passport_num = type == "PASS"     ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
-        data->vat_id_num   = type == "ICO"      ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
-        data->ssn_id_num   = type == "MPSV"     ? corba_wrap_nullable_string(rinfo[0][7]) : 0;
-        data->birth_date   = type == "BIRTHDAY" ? corba_wrap_nullable_date(rinfo[0][7]) : 0;
+        std::string name = static_cast<std::string>(rinfo[0][2]);
+        std::size_t pos = name.find_last_of(" ");
+        data->first_name   = corba_wrap_string(name.substr(0, pos));
+        data->last_name    = corba_wrap_string(name.substr(pos + 1));
 
-        data->disclose_name         = corba_wrap_nullable_boolean(rinfo[0][8]);
-        data->disclose_organization = corba_wrap_nullable_boolean(rinfo[0][9]);
-        data->disclose_vat          = corba_wrap_nullable_boolean(rinfo[0][10]);
-        data->disclose_ident        = corba_wrap_nullable_boolean(rinfo[0][11]);
-        data->disclose_email        = corba_wrap_nullable_boolean(rinfo[0][12]);
-        data->disclose_notify_email = corba_wrap_nullable_boolean(rinfo[0][13]);
-        data->disclose_address      = corba_wrap_nullable_boolean(rinfo[0][14]);
-        data->disclose_phone        = corba_wrap_nullable_boolean(rinfo[0][15]);
-        data->disclose_fax          = corba_wrap_nullable_boolean(rinfo[0][16]);
+        data->organization = corba_wrap_nullable_string(rinfo[0][3]);
+        data->vat_reg_num  = corba_wrap_nullable_string(rinfo[0][4]);
+        data->ssn_type     = corba_wrap_nullable_string(rinfo[0][27]);
+
+        std::string type = static_cast<std::string>(rinfo[0][27]);
+        data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(rinfo[0][6]) : 0;
+        data->passport_num = type == "PASS"     ? corba_wrap_nullable_string(rinfo[0][6]) : 0;
+        data->vat_id_num   = type == "ICO"      ? corba_wrap_nullable_string(rinfo[0][6]) : 0;
+        data->ssn_id_num   = type == "MPSV"     ? corba_wrap_nullable_string(rinfo[0][6]) : 0;
+        data->birth_date   = type == "BIRTHDAY" ? corba_wrap_nullable_date(rinfo[0][6]) : 0;
+
+        data->disclose_name         = corba_wrap_nullable_boolean(rinfo[0][7]);
+        data->disclose_organization = corba_wrap_nullable_boolean(rinfo[0][8]);
+        data->disclose_vat          = corba_wrap_nullable_boolean(rinfo[0][9]);
+        data->disclose_ident        = corba_wrap_nullable_boolean(rinfo[0][10]);
+        data->disclose_email        = corba_wrap_nullable_boolean(rinfo[0][11]);
+        data->disclose_notify_email = corba_wrap_nullable_boolean(rinfo[0][12]);
+        data->disclose_address      = corba_wrap_nullable_boolean(rinfo[0][13]);
+        data->disclose_phone        = corba_wrap_nullable_boolean(rinfo[0][14]);
+        data->disclose_fax          = corba_wrap_nullable_boolean(rinfo[0][15]);
 
         data->addresses.length(1);
         data->addresses[0].type         = "DEFAULT";
-        data->addresses[0].street1      = corba_wrap_string(rinfo[0][17]);
-        data->addresses[0].street2      = corba_wrap_nullable_string(rinfo[0][18]);
-        data->addresses[0].street3      = corba_wrap_nullable_string(rinfo[0][19]);
-        data->addresses[0].city         = corba_wrap_string(rinfo[0][20]);
-        data->addresses[0].state        = corba_wrap_nullable_string(rinfo[0][21]);
-        data->addresses[0].postal_code  = corba_wrap_string(rinfo[0][22]);
-        data->addresses[0].country      = corba_wrap_string(rinfo[0][23]);
+        data->addresses[0].street1      = corba_wrap_string(rinfo[0][16]);
+        data->addresses[0].street2      = corba_wrap_nullable_string(rinfo[0][17]);
+        data->addresses[0].street3      = corba_wrap_nullable_string(rinfo[0][18]);
+        data->addresses[0].city         = corba_wrap_string(rinfo[0][19]);
+        data->addresses[0].state        = corba_wrap_nullable_string(rinfo[0][20]);
+        data->addresses[0].postal_code  = corba_wrap_string(rinfo[0][21]);
+        data->addresses[0].country      = corba_wrap_string(rinfo[0][22]);
 
         data->emails.length(1);
         data->emails[0].type = "DEFAULT";
-        data->emails[0].email_address = corba_wrap_string(rinfo[0][24]);
-        std::string notify_email = static_cast<std::string>(rinfo[0][25]);
+        data->emails[0].email_address = corba_wrap_string(rinfo[0][23]);
+        std::string notify_email = static_cast<std::string>(rinfo[0][24]);
         if (notify_email.size()) {
             data->emails.length(2);
             data->emails[1].type = "NOTIFY";
             data->emails[1].email_address = corba_wrap_string(notify_email);
         }
 
-        std::string telephone = static_cast<std::string>(rinfo[0][26]);
-        std::string fax = static_cast<std::string>(rinfo[0][27]);
+        std::string telephone = static_cast<std::string>(rinfo[0][25]);
+        std::string fax = static_cast<std::string>(rinfo[0][26]);
         if (telephone.size()) {
             data->phones.length(1);
             data->phones[0].type = "DEFAULT";
