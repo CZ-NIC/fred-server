@@ -822,50 +822,19 @@ void MessageReload::operator ()
               switch(j)
               {
               case MessageMetaInfo::MT_STATUS :
-                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
+                  objptr->conv_set(static_cast<MessageMetaInfo::MemberOrderType>(j)
                           ,status_names[static_cast<std::size_t>(res[i][j])]);//for j col
                   break;
               case MessageMetaInfo::MT_COMMTYPE :
-                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
+                  objptr->conv_set(static_cast<MessageMetaInfo::MemberOrderType>(j)
                           ,comm_types[static_cast<std::size_t>(res[i][j])]);//for j col
                   break;
               case MessageMetaInfo::MT_MSGTYPE :
-                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
+                  objptr->conv_set(static_cast<MessageMetaInfo::MemberOrderType>(j)
                           ,msg_types[static_cast<std::size_t>(res[i][j])]);//for j col
                   break;
-
-              case MessageMetaInfo::MT_CRDATE :
-              case MessageMetaInfo::MT_MODDATE :
-              {
-
-                  boost::posix_time::ptime tmp_ptime;
-                  tmp_ptime = res[i][j];
-                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
-                          ,tmp_ptime.is_special()
-                              ? std::string("")
-                              : boost::posix_time::to_iso_string(tmp_ptime));
-                  try
-                  {
-                  LOGGER(PACKAGE).debug(boost::format("MessageReload "
-                          "\n res[i][j].str()        %1%"
-                          "\n std::string(res[i][j]) %2%"
-                          )
-                      % res[i][j].str()
-                      % std::string(res[i][j])
-                      );
-                  }
-                  catch(const std::exception& ex)
-                  {
-                      LOGGER(PACKAGE).error(boost::format("MessageReload Log ex: %1%")
-                                            % ex.what());
-                  }
-
-
-              }
-                  break;
-
               default :
-                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
+                  objptr->conv_set(static_cast<MessageMetaInfo::MemberOrderType>(j)
                           ,res[i][j]);//for j col
                   break;
               }

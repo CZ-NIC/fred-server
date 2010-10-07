@@ -111,34 +111,23 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
 		)
     % row
     % msg->get_id()
-    % msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE)
-    % msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE)
-    % msg->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT)
-    % msg->get(Register::Messages::MessageMetaInfo::MT_STATUS)
-    % msg->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)
-    % msg->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)
+    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_CRDATE)
+    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_MODDATE)
+    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_ATTEMPT)
+    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_STATUS)
+    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)
+    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)
     );
 
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(numColumns());
 
-    //date time conversion from iso string
-    boost::posix_time::ptime crdate
-        = msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE).empty()
-                ? boost::posix_time::ptime()
-                : boost::posix_time::from_iso_string(msg->get(Register::Messages::MessageMetaInfo::MT_CRDATE));
-
-    boost::posix_time::ptime moddate
-        = msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE).empty()
-                ? boost::posix_time::ptime()
-                : boost::posix_time::from_iso_string(msg->get(Register::Messages::MessageMetaInfo::MT_MODDATE));
-
-    (*tr)[0] <<= C_STR(formatTime(crdate,true,true));
-    (*tr)[1] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
-    (*tr)[2] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE));
-    (*tr)[3] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_STATUS));
-    (*tr)[4] <<= C_STR(formatTime(moddate,true,true));
-    (*tr)[5] <<= C_STR(msg->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
+    (*tr)[0] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_CRDATE));
+    (*tr)[1] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
+    (*tr)[2] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE));
+    (*tr)[3] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_STATUS));
+    (*tr)[4] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_MODDATE));
+    (*tr)[5] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
 
     return tr;
     }//try

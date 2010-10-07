@@ -1963,32 +1963,24 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
           " comm_type: %7% "
 
           )
-                % _message->get(Register::Messages::MessageMetaInfo::MT_ID)
-                % _message->get(Register::Messages::MessageMetaInfo::MT_CRDATE)
-                % _message->get(Register::Messages::MessageMetaInfo::MT_MODDATE)
-                % _message->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT)
-                % _message->get(Register::Messages::MessageMetaInfo::MT_STATUS)
-                % _message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)
-                % _message->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)
+                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_ID)
+                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_CRDATE)
+                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_MODDATE)
+                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_ATTEMPT)
+                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_STATUS)
+                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)
+                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)
                 );
 
 
   detail->id = _message->get_id();
 
   //date time conversion from iso string
-   boost::posix_time::ptime crdate
-       = _message->get(Register::Messages::MessageMetaInfo::MT_CRDATE).empty()
-               ? boost::posix_time::ptime()
-               : boost::posix_time::from_iso_string(_message->get(Register::Messages::MessageMetaInfo::MT_CRDATE));
-  detail->createDate = CORBA::string_dup(formatTime(crdate,true,true).c_str());
 
-  boost::posix_time::ptime moddate
-      = _message->get(Register::Messages::MessageMetaInfo::MT_MODDATE).empty()
-              ? boost::posix_time::ptime()
-              : boost::posix_time::from_iso_string(_message->get(Register::Messages::MessageMetaInfo::MT_MODDATE));
-  detail->modifyDate = CORBA::string_dup(formatTime(moddate,true,true).c_str());
+  detail->createDate = CORBA::string_dup((_message->conv_get(Register::Messages::MessageMetaInfo::MT_CRDATE)).c_str());
+  detail->modifyDate = CORBA::string_dup((_message->conv_get(Register::Messages::MessageMetaInfo::MT_MODDATE)).c_str());
 
-  detail->attempt = boost::lexical_cast<long>(_message->get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
+  detail->attempt = boost::lexical_cast<long>(_message->conv_get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
 
   Register::Messages::ManagerPtr msg_mgr
       = m_register_manager->getMessageManager();
@@ -2015,12 +2007,12 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
           ; i != msg_types_.end(); ++i)
       msg_type_id[i->name] = i->id;
 
-  detail->status_id = status_id[_message->get(Register::Messages::MessageMetaInfo::MT_STATUS)];
-  detail->comm_type_id = comm_type_id[_message->get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)];
-  detail->message_type_id = msg_type_id[_message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)];
+  detail->status_id = status_id[_message->conv_get(Register::Messages::MessageMetaInfo::MT_STATUS)];
+  detail->comm_type_id = comm_type_id[_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)];
+  detail->message_type_id = msg_type_id[_message->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)];
 
   //message types
-    if((_message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)).compare("sms") == 0)
+    if((_message->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)).compare("sms") == 0)
     {
         //detail->message_content._d(1);//sms
         Registry::Message::SMSDetail sms_detail;
@@ -2035,7 +2027,7 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
         detail->message_content.sms(sms_detail);
     }
 
-    if((_message->get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)).compare("letter") == 0)
+    if((_message->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)).compare("letter") == 0)
     {
         //detail->message_content._d(2);//letter
         Registry::Message::LetterDetail letter_detail;

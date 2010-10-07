@@ -123,9 +123,11 @@ public:
         {
         case ObjMemberConversion::MC_DATETIME:
             {
-                set(col, boost::posix_time::to_iso_string( value.empty()
-                    ? boost::posix_time::ptime()
-                    : boost::posix_time::time_from_string(value)));
+	        if(value.empty())
+		    set(col,value);
+		else
+                    set(col, boost::posix_time::to_iso_string(
+                        boost::posix_time::time_from_string(value)));
             }
             break;
         default:
@@ -142,9 +144,10 @@ public:
         {
         case ObjMemberConversion::MC_DATETIME:
         {
-            return formatTime(get(col).empty()
-                    ? boost::posix_time::ptime()
-                    : boost::posix_time::from_iso_string(get(col)), true, true);
+            if(get(col).empty())
+                return std::string("");
+            else
+	        return formatTime(boost::posix_time::from_iso_string(get(col)), true, true);
         }
             break;
         default:
