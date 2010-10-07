@@ -108,5 +108,5 @@ registrar_handle = REG-MOJEID
 # %1% = identification request id
 redirect_url = https://demo.mojeid.cz/identification/%1%/
 # demo mode true - send both passwords via email
-demo_mode = false
+demo_mode = true
 
