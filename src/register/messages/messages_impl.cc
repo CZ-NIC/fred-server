@@ -837,17 +837,15 @@ void MessageReload::operator ()
               case MessageMetaInfo::MT_CRDATE :
               case MessageMetaInfo::MT_MODDATE :
               {
-                  /*this is working ok
+
                   boost::posix_time::ptime tmp_ptime;
                   tmp_ptime = res[i][j];
                   objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
                           ,tmp_ptime.is_special()
                               ? std::string("")
                               : boost::posix_time::to_iso_string(tmp_ptime));
-                  */
-                  objptr->set(static_cast<MessageMetaInfo::MemberOrderType>(j)
-                          ,boost::posix_time::to_iso_string(boost::posix_time::time_from_string(res[i][j]))
-                  );
+
+
               }
                   break;
 
