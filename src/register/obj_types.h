@@ -114,6 +114,47 @@ public:
     {
     	return OBJECT_META_INFO::columns;
     }
+
+    //member conversion and set
+    void conv_set(typename OBJECT_META_INFO::MemberOrderType col
+            ,const std::string& value)
+    {
+        switch(OBJECT_META_INFO::member_conversion_type(col))
+        {
+        case ObjMemberConversion::MC_DATETIME:
+            {
+                set(col, boost::posix_time::to_iso_string( value.empty()
+                    ? boost::posix_time::ptime()
+                    : boost::posix_time::time_from_string(value)));
+            }
+            break;
+        default:
+        case ObjMemberConversion::MC_NONE:
+            set(col,value);
+            break;
+        }
+    }
+    //member get and conversion
+     std::string conv_get(
+             typename OBJECT_META_INFO::MemberOrderType col) const
+    {
+        switch(OBJECT_META_INFO::member_conversion_type(col))
+        {
+        case ObjMemberConversion::MC_DATETIME:
+        {
+            return formatTime(get(col).empty()
+                    ? boost::posix_time::ptime()
+                    : boost::posix_time::from_iso_string(get(col)), true, true);
+        }
+            break;
+        default:
+        case ObjMemberConversion::MC_NONE:
+            return get(col);
+            break;
+        }
+    }
+
+
 };
 
 template<typename OBJECT_META_INFO>
