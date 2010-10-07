@@ -2026,6 +2026,18 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
         sms_detail.phone_number = CORBA::string_dup(si.phone_number.c_str());
 
         detail->message_content.sms(sms_detail);
+
+        LOGGER(PACKAGE).debug(boost::format(
+                "ccReg_Session_i::createMessageDetail sms content "
+                " _d(): %1% "
+                " content: %2% "
+                " phone_number: %3% "
+                )
+                      % detail->message_content._d()
+                      % detail->message_content.sms().content
+                      % detail->message_content.sms().phone_number
+              );
+
     }//if sms
     else
     if((_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)).compare("letter") == 0)
@@ -2055,6 +2067,40 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
         letter_detail.postal_address_country = CORBA::string_dup(li.postal_address.country.c_str());
 
         detail->message_content.letter(letter_detail);
+
+        LOGGER(PACKAGE).debug(boost::format(
+                "ccReg_Session_i::createMessageDetail letter content "
+                " _d(): %1% "
+                " file.id: %2% "
+                " file.handle: %3% "
+                " file.type: %4% "
+                " batch_id: %5% "
+                " postal_address_name: %6% "
+                " postal_address_organization: %7% "
+                " postal_address_street1: %8% "
+                " postal_address_street2: %9% "
+                " postal_address_street3: %10% "
+                " postal_address_city: %11% "
+                " postal_address_stateorprovince: %12% "
+                " postal_address_postalcode: %13% "
+                " postal_address_country: %14% "
+                )
+              % detail->message_content._d()
+              % detail->message_content.letter().file.id
+              % detail->message_content.letter().file.handle
+              % detail->message_content.letter().file.type
+              % detail->message_content.letter().batch_id
+              % detail->message_content.letter().postal_address_name
+              % detail->message_content.letter().postal_address_organization
+              % detail->message_content.letter().postal_address_street1
+              % detail->message_content.letter().postal_address_street2
+              % detail->message_content.letter().postal_address_street3
+              % detail->message_content.letter().postal_address_city
+              % detail->message_content.letter().postal_address_stateorprovince
+              % detail->message_content.letter().postal_address_postalcode
+              % detail->message_content.letter().postal_address_country
+              );
+
     }//if letter
     else
     {
