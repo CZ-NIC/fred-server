@@ -2012,8 +2012,9 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
   detail->message_type_id = msg_type_id[_message->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)];
 
   //message types
-    if((_message->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)).compare("sms") == 0)
+    if((_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)).compare("sms") == 0)
     {
+
         //detail->message_content._d(1);//sms
         Registry::Message::SMSDetail sms_detail;
 
@@ -2025,9 +2026,9 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
         sms_detail.phone_number = CORBA::string_dup(si.phone_number.c_str());
 
         detail->message_content.sms(sms_detail);
-    }
-
-    if((_message->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)).compare("letter") == 0)
+    }//if sms
+    else
+    if((_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)).compare("letter") == 0)
     {
         //detail->message_content._d(2);//letter
         Registry::Message::LetterDetail letter_detail;
@@ -2054,7 +2055,11 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
         letter_detail.postal_address_country = CORBA::string_dup(li.postal_address.country.c_str());
 
         detail->message_content.letter(letter_detail);
-    }
+    }//if letter
+    else
+    {
+        throw std::runtime_error("ccReg_Session_i::createMessageDetail message_content");
+    }//union set error
     LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::createMessageDetail return detail for object id=%1%")
           % _message->get_id());
   return detail;
