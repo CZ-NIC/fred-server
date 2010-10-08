@@ -30,6 +30,7 @@
 #include "corba/epp/action.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 using namespace boost::posix_time;
 
 void
@@ -1106,9 +1107,11 @@ bool DB::TestRegistrarZone(
   if (GetRegistrarSystem(regID) == true)
     return true;
 
+  std::string today = boost::gregorian::to_iso_extended_string(boost::gregorian::day_clock::local_day());
+
   snprintf( sqlString, sizeof(sqlString), 
-      "SELECT  id  FROM  registrarinvoice  WHERE registrarid=%d and zone=%d and fromdate <= CURRENT_DATE and (todate >= CURRENT_DATE or todate is null);",
-      regID, zone);
+      "SELECT  id  FROM  registrarinvoice  WHERE registrarid=%d and zone=%d and fromdate <= '%s' and (todate >= '%s' or todate is null);",
+      regID, zone, today.c_str(), today.c_str());
 
   if (ExecSelect(sqlString) ) {
     if (GetSelectRows() > 0) {
