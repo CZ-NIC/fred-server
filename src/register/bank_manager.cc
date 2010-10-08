@@ -639,13 +639,13 @@ public:
 
             }
         }
-        catch (std::exception &ex) {
-            throw std::runtime_error(str(boost::format(
-                            "set payment type: %1%") % ex.what()));
-        }
         catch (NOT_FOUND) {
             throw std::runtime_error(str(boost::format("set payment type: "
                             "payment id=%1% not found") % payment_id));
+        }
+        catch (std::exception &ex) {
+            throw std::runtime_error(str(boost::format(
+                            "set payment type: %1%") % ex.what()));
         }
         catch (...) {
             throw std::runtime_error("set payment type: unknown error occured");
