@@ -537,7 +537,7 @@ public:
                     if (state_ids.empty()) {
                       std::string errmsg("ERROR: no registrant ID specified by caller. Wrong usage of API.");
                       LOGGER(PACKAGE).error(errmsg);
-                      throw Exception(errmsg);
+                      throw std::runtime_error(errmsg);
                     }
 
                     std::ostream& out(gPDF->getInput());

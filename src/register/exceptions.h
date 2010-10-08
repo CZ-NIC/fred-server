@@ -3,46 +3,28 @@
 
 #include <string>
 #include <exception>
+#include <stdexcept>
 
 namespace Register {
 
-/*
- * Base exception;
- * all register exception should be inherited from this
- */
-class Exception : public std::exception {
-public:
-  Exception(const Exception& _ex) throw() :
-    std::exception(_ex), what_(_ex.what_) {
-  }
-  Exception& operator=(const Exception& _ex) throw() {
-    what_ = _ex.what_;
-    return *this;
-  }
-  ~Exception() throw() {
-  }
-  virtual const char* what() const throw() {
-    return what_.c_str();
-  }
-  Exception(const std::string& _what) throw() :
-    what_(_what) {
-  }
-protected:
-  std::string what_;
-};
-
 /// Exception when SQL error
-class SQL_ERROR {
+struct SQL_ERROR : public std::runtime_error
+{
+    SQL_ERROR() : std::runtime_error("sql error") { }
 };
 
 
 /// Exception when specified object is not found
-class NOT_FOUND {
+struct NOT_FOUND : public std::runtime_error
+{
+    NOT_FOUND() : std::runtime_error("not found") { }
 };
 
 
 /// Exception when specified object already exists
-class ALREADY_EXISTS {
+struct ALREADY_EXISTS : public std::runtime_error
+{
+    ALREADY_EXISTS() : std::runtime_error("already exists") { }
 };
 
 }
