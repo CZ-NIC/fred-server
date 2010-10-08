@@ -17,7 +17,8 @@ namespace Register
       GT_PUBLIC_REQUEST_PDF, ///< generate PDF with any public request
       GT_INVOICE_OUT_XML, ///< generate exporting XML of invoice
       GT_ACCOUNTING_XML, ///< generate accounting XML
-      GT_WARNING_LETTER ///< generate PDF with expiration warning letters
+      GT_WARNING_LETTER, ///< generate PDF with expiration warning letters
+      GT_CONTACT_IDENTIFICATION_LETTER
     };
     /// generator that has to be filled with stream of data
     class Generator {

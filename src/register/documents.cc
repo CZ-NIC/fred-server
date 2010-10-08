@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "log/logger.h"
 #include "documents.h"
 #include <stdio.h>
 #include <string.h>
@@ -157,6 +158,7 @@ namespace Register
         }     
         cmd << " > "
             << outputFile.getName();
+        LOGGER(PACKAGE).debug(boost::format("running shell command: %1%") % cmd.str());
         if (system(cmd.str().c_str())) throw Generator::ERROR();
         outputFile.open(std::ios::in);
         // TODO: filemanager_client has to annouce id better
@@ -211,6 +213,9 @@ namespace Register
         );
         templateMap[GT_WARNING_LETTER] = GenProcType(
           "warning_letter.xsl", true, "application/pdf"
+        );
+        templateMap[GT_CONTACT_IDENTIFICATION_LETTER] = GenProcType(
+          "mojeid_auth_user.xsl", true, "application/pdf"
         );
       }      
       virtual Generator *createOutputGenerator(

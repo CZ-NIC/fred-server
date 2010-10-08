@@ -905,51 +905,78 @@ public:
     {
     }
 
-    /* helper method for sending email password */
-    void sendEmailPassword(const std::string &_template,
-                           const std::string &_type,
-                           const std::string &_redirect_url,
-                           bool _demo_mode)
-    {
-        LOGGER(PACKAGE).debug("public request auth - send email password");
+    typedef std::map<std::string, std::string> MessageData;
 
+    const MessageData collectMessageData(const std::string &_url)
+    {
         Database::Connection conn = Database::Manager::acquire();
+        Database::Result result = conn.exec_params(
+                "SELECT name, organization, street1, city,"
+                " stateorprovince, postalcode, country, email"
+                " FROM contact WHERE id = $1::integer",
+                Database::query_param_list(getObject(0).id));
+        if (result.size() != 1)
+            throw std::runtime_error("unable to get data for"
+                    " password messages");
+
         Database::Result res = conn.exec_params(
-                "SELECT create_time FROM public_request WHERE id = $1::integer",
-                Database::query_param_list(id_));
+               "SELECT create_time FROM public_request WHERE id = $1::integer",
+               Database::query_param_list(id_));
         if (res.size() == 1)
             create_time_ = res[0][0];
         else
             throw std::runtime_error("unable to find public request");
 
-        Database::Result rname = conn.exec_params(
-                "SELECT name FROM contact WHERE id = $1::integer",
-                Database::query_param_list(getObject(0).id));
-        if (rname.size() != 1)
-            throw std::runtime_error("unable to get contact data");
-        std::string name = static_cast<std::string>(rname[0][0]);
+
+        MessageData data;
+
+        std::string name = static_cast<std::string>(result[0][0]);
+        std::size_t pos = name.find_last_of(" ");
+        data["firstname"] = name.substr(0, pos);
+        data["lastname"] = name.substr(pos + 1);
+        data["organization"] = static_cast<std::string>(result[0][1]);
+        data["street"] = static_cast<std::string>(result[0][2]);
+        data["city"] = static_cast<std::string>(result[0][3]);
+        data["stateorprovince"] = static_cast<std::string>(result[0][4]);
+        data["postalcode"] = static_cast<std::string>(result[0][5]);
+        data["country"] = static_cast<std::string>(result[0][6]);
+        data["email"] = static_cast<std::string>(result[0][7]);
+        data["url"] = str(boost::format(_url) % identification_);
+        data["handle"] = getObject(0).handle;
+        /* password split */
+        data["pin1"] = password_.substr(0, password_.size() / 2);
+        data["pin2"] = password_.substr(password_.size() / 2, password_.size());
+        /* yuck */
+        std::ostringstream buf;
+        buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
+        buf << getCreateTime().date();
+        data["reqdate"] = buf.str();
+
+        return data;
+    }
+
+    /* helper method for sending email password */
+    void sendEmailPassword(MessageData &_data,
+                           const std::string &_template,
+                           const std::string &_type,
+                           bool _demo_mode) const
+    {
+        LOGGER(PACKAGE).debug("public request auth - send email password");
 
         Mailer::Attachments attach;
         Mailer::Handles handles;
         Mailer::Parameters params;
 
-        //std::ostringstream buf;
-        //buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
-        //buf << getCreateTime().date();
-        //params["reqdate"] = buf.str();
-
-        std::size_t pos = name.find_last_of(" ");
-        params["firstname"] = name.substr(0, pos);
-        params["lastname"] = name.substr(pos + 1);
-        params["email"] = getEmails();
-        params["url"] = str(boost::format(_redirect_url) % identification_);
         params["rtype"] = _type;
-        params["handle"] = getObject(0).handle;
-        /* to email we put first half of password string */
-        params["passwd"] = password_.substr(0, password_.size() / 2);
+        params["firstname"] = _data["firstname"];
+        params["lastname"] = _data["lastname"];
+        params["email"] = _data["email"];
+        params["url"] = _data["url"];
+        params["handle"] = _data["handle"];
+        params["passwd"] = _data["pin1"];
         /* for demo purpose we send second half of password as well */
         if (_demo_mode) {
-            params["passwd2"] = password_.substr(password_.size() / 2, password_.size());
+            params["passwd2"] = _data["pin2"];
         }
 
         handles.push_back(getObject(0).handle);
@@ -963,6 +990,46 @@ public:
                 handles,
                 attach
                 );
+    }
+
+    void sendLetterPassword(MessageData &_data) const
+    {
+        LOGGER(PACKAGE).debug("public request auth - send letter password");
+        std::stringstream xml_data;
+
+        xml_data << "<?xml version='1.0' encoding='utf-8'?>"
+                << "<mojeid_auth>"
+                << "<user>"
+                << "<actual_date>" << _data["reqdate"] << "</actual_date>"
+                << "<name>" << _data["firstname"] << " " << _data["lastname"] << "</name>"
+                << "<organization>" << _data["organization"] << "</organization>"
+                << "<street>" << _data["street"] << "</street>"
+                << "<city>" << _data["city"] << "</city>"
+                << "<stateorprovince>" << _data["stateorprovince"] << "</stateorprovince>"
+                << "<postal_code>" << _data["postalcode"] << "</postal_code>"
+                << "<country>" << _data["country"] << "</country>"
+                << "<account>"
+                << "<username>" << _data["handle"] << "</username>"
+                << "<first_name>" << _data["firstname"] << "</first_name>"
+                << "<last_name>" << _data["lastname"] << "</last_name>"
+                << "<email>" << _data["email"] << "</email>"
+                << "</account>"
+                << "<auth>"
+                << "<codes>"
+                << "<pin2>" << _data["pin2"] << "</pin2>"
+                << "<pin3>" << "" << "</pin3>"
+                << "</codes>"
+                << "<link>" << _data["url"] << "</link>"
+                << "</auth>"
+                << "</user>"
+                << "</mojeid_auth>";
+
+            unsigned long long file_id = man_->getDocumentManager()->generateDocumentAndSave(
+                Document::GT_CONTACT_IDENTIFICATION_LETTER,
+                xml_data,
+                "identification_request-" + boost::lexical_cast<std::string>(id_),
+                7,
+                "");
     }
 };
 
@@ -995,10 +1062,11 @@ public:
     void sendPasswords(const std::string &_redirect_url,
                        bool _demo_mode)
     {
+        MessageData data = PublicRequestAuthImpl::collectMessageData(_redirect_url);
         PublicRequestAuthImpl::sendEmailPassword(
+                data,
                 "mojeid_identification",
                 "1",
-                _redirect_url,
                 _demo_mode);
     }
 };
@@ -1032,11 +1100,13 @@ public:
     void sendPasswords(const std::string &_redirect_url,
                        bool _demo_mode)
     {
+        MessageData data = PublicRequestAuthImpl::collectMessageData(_redirect_url);
         PublicRequestAuthImpl::sendEmailPassword(
+                data,
                 "mojeid_identification",
                 "2",
-                _redirect_url,
                 _demo_mode);
+        PublicRequestAuthImpl::sendLetterPassword(data);
     }
 };
 
@@ -1228,6 +1298,10 @@ public:
 
   virtual Mailer::Manager* getMailerManager() const {
     return mailer_manager_;
+  }
+
+  virtual Document::Manager* getDocumentManager() const {
+    return doc_manager_;
   }
 
   virtual List* createList() const {
