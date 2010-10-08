@@ -288,6 +288,8 @@ CORBA::ULongLong ServerImpl::transferContact(const char* _handle,
     ConnectionReleaser releaser;
 
     try {
+        throw Registry::MojeID::Server::ErrorReport("not implemented");
+
         std::string handle = static_cast<std::string>(_handle);
         LOGGER(PACKAGE).info(boost::format("request data --"
                     "  handle: %1%  identification_method: %2%  request_id: %3%")
