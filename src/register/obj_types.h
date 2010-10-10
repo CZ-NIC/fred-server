@@ -188,7 +188,6 @@ public:
   }//operator()
 };//class CompareObj
 
-typedef std::map<std::size_t, std::size_t> ObjIdx;//object list search by index type
 
 template<typename OBJECT_META_INFO
 , typename RELOAD_FUNCTOR
@@ -197,6 +196,8 @@ class ObjList //type for object list
 {
 	typedef typename ObjType<OBJECT_META_INFO>::ObjPtr  ObjPtr;
     typedef std::vector<ObjPtr> ListType;
+    typedef std::map<std::size_t, ObjPtr> ObjIdx;//object list search by index type
+
     ListType list_;
     ObjIdx by_id_;
     bool loadLimitActive_;
@@ -251,8 +252,8 @@ public:
         //fill index by id
         for(std::size_t i = 0; i < list_.size(); ++i)
         {
-            by_id_[boost::lexical_cast<std::size_t>(list_.at(i)->get(0))//id
-                  ] =i;//list idx
+            by_id_[list_.at(i)->get_id()//id
+                  ] =list_.at(i);//list obj ptr
         }
     }
 
@@ -309,12 +310,12 @@ public:
 
     ObjPtr findId(unsigned long long id) const
     {
-        ObjIdx::const_iterator it;
+        typename ObjIdx::const_iterator it;
          it = by_id_.find(id);
          if(it != by_id_.end())
-             return list_.at(it->second);
+             return it->second;
 
-        LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% not found")
+    	LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% not found")
         % id);
         throw std::runtime_error("id not found");
     }
