@@ -1030,6 +1030,26 @@ public:
                 "identification_request-" + boost::lexical_cast<std::string>(id_),
                 7,
                 "");
+
+            Register::Messages::PostalAddress pa;
+            //pa.name = _data["handle"];
+            //pa.org = contact_org;
+            //pa.street1 = contact_street1;
+            //pa.street2 = contact_street2;
+            //pa.street3 = contact_street3;
+            //pa.city = contact_city;
+            //pa.state = contact_state;
+            //pa.code = contact_code;
+            //pa.country = contact_country;
+
+            man_->getMessagesManager()->save_letter_to_send(
+                    "TODO: contact handle"//contact handle
+                    ,pa,file_id
+                    ,"TODO: message type" //message type
+                    , 0//contact object_registry.id
+                    ,0//contact_history.historyid
+                    ,"registered_letter"//comm_type
+                    );
     }
 };
 
@@ -1305,6 +1325,11 @@ public:
 
   virtual Document::Manager* getDocumentManager() const {
     return doc_manager_;
+  }
+
+  Messages::ManagerPtr getMessagesManager() const
+  {
+      return messages_manager;
   }
 
   virtual List* createList() const {

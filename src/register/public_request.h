@@ -197,6 +197,7 @@ public:
   
   virtual Mailer::Manager* getMailerManager() const = 0;
   virtual Document::Manager* getDocumentManager() const = 0;
+  virtual Messages::ManagerPtr getMessagesManager() const =0;
   virtual List* createList() const = 0;
   virtual void getPdf(Database::ID _id, 
                       const std::string& _lang, 
