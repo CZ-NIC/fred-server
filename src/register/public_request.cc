@@ -1051,7 +1051,20 @@ public:
                     ,"letter"//comm_type letter or registered_letter
                     );
     }
+
+    void sendSmsPassword(MessageData &_data) const
+    {
+        LOGGER(PACKAGE).debug("public request auth - send sms password");
+        man_->getMessagesManager()->save_sms_to_send("contact_handle"
+                , "phone"
+                , "content"
+                , "message_type"
+                , 0 //contact_object_registry_id
+                , 0 //contact_history_historyid
+                );
+    }
 };
+
 
 
 class ConditionalContactIdentificationImpl
