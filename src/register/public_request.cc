@@ -1032,23 +1032,23 @@ public:
                 "");
 
             Register::Messages::PostalAddress pa;
-            //pa.name = _data["handle"];
-            //pa.org = contact_org;
-            //pa.street1 = contact_street1;
-            //pa.street2 = contact_street2;
-            //pa.street3 = contact_street3;
-            //pa.city = contact_city;
-            //pa.state = contact_state;
-            //pa.code = contact_code;
-            //pa.country = contact_country;
+            pa.name =  _data["firstname"] + " " + _data["lastname"];
+            pa.org = _data["organization"];
+            pa.street1 = _data["street"];
+            pa.street2 = std::string("");
+            pa.street3 = std::string("");
+            pa.city = _data["city"];
+            pa.state = _data["stateorprovince"];
+            pa.code = _data["postalcode"];
+            pa.country = _data["country"];
 
             man_->getMessagesManager()->save_letter_to_send(
                     "TODO: contact handle"//contact handle
                     ,pa,file_id
                     ,"TODO: message type" //message type
                     , 0//contact object_registry.id
-                    ,0//contact_history.historyid
-                    ,"registered_letter"//comm_type
+                    , 0//contact_history.historyid
+                    ,"letter"//comm_type letter or registered_letter
                     );
     }
 };
