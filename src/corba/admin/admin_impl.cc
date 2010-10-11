@@ -1750,7 +1750,8 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
               register_manager_->getNSSetManager(),
               register_manager_->getKeySetManager(),
               &mailer_manager,
-              doc_manager.get())
+              doc_manager.get(),
+              register_manager_->getMessageManager())
           );
   
 #define REQUEST_TYPE_CORBA2DB_CASE(type)            \
@@ -1824,7 +1825,8 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
               register_manager_->getNSSetManager(),
               register_manager_->getKeySetManager(),
               &mailer_manager,
-              doc_manager.get())
+              doc_manager.get(),
+              register_manager_->getMessageManager())
           );
   try {
     request_manager->processRequest(id,invalid,true);
@@ -1872,8 +1874,9 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
               register_manager_->getNSSetManager(),
               register_manager_->getKeySetManager(),
               &mailer_manager,
-              doc_manager.get())
-          );  
+              doc_manager.get(),
+              register_manager_->getMessageManager())
+          );
   DB db;
   try {
     std::stringstream outstr;

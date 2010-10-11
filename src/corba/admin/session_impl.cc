@@ -57,7 +57,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                                                          m_register_manager->getNSSetManager(),
                                                                          m_register_manager->getKeySetManager(),
                                                                          &m_mailer_manager,
-                                                                         m_document_manager.get()));
+                                                                         m_document_manager.get(),
+                                                                         m_register_manager->getMessageManager()));
   m_invoicing_manager.reset(Register::Invoicing::Manager::create(m_document_manager.get(),
                                                                  &m_mailer_manager));
 

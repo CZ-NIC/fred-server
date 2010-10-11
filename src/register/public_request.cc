@@ -1276,6 +1276,7 @@ private:
   KeySet::Manager   *keyset_manager_;
   Mailer::Manager   *mailer_manager_;
   Document::Manager *doc_manager_;
+  Messages::ManagerPtr messages_manager;
 
 
 public:
@@ -1284,14 +1285,16 @@ public:
               NSSet::Manager    *_nsset_manager,
               KeySet::Manager   *_keyset_manager,
               Mailer::Manager   *_mailer_manager,
-              Document::Manager *_doc_manager) :
+              Document::Manager *_doc_manager,
+              Messages::ManagerPtr _messages_manager) :
               domain_manager_(_domain_manager),
               contact_manager_(_contact_manager),
               nsset_manager_(_nsset_manager),
               keyset_manager_(_keyset_manager),
               mailer_manager_(_mailer_manager),
-              doc_manager_(_doc_manager) {
-  }
+              doc_manager_(_doc_manager),
+              messages_manager(_messages_manager)
+              {}
 
   virtual ~ManagerImpl() {
   }
@@ -1466,7 +1469,8 @@ Manager* Manager::create(Domain::Manager    *_domain_manager,
                          NSSet::Manager     *_nsset_manager,
                          KeySet::Manager    *_keyset_manager,
                          Mailer::Manager    *_mailer_manager,
-                         Document::Manager  *_doc_manager) {
+                         Document::Manager  *_doc_manager,
+                         Messages::ManagerPtr _messages_manager) {
 
     TRACE("[CALL] Register::Request::Manager::create()");
     return new ManagerImpl(
@@ -1475,7 +1479,8 @@ Manager* Manager::create(Domain::Manager    *_domain_manager,
       _nsset_manager,
       _keyset_manager,
       _mailer_manager,
-      _doc_manager
+      _doc_manager,
+      _messages_manager
     );
 }
 

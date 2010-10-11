@@ -17,6 +17,7 @@
 #include "keyset.h"
 #include "mailer.h"
 #include "documents.h"
+#include "messages/messages_impl.h"
 
 #include "db_settings.h"
 #include "model/model_filters.h"
@@ -191,7 +192,8 @@ public:
                          NSSet::Manager     *_nsset_manager,
                          KeySet::Manager    *_keyset_manager,
                          Mailer::Manager    *_mailer_manager,
-                         Document::Manager  *_doc_manager);
+                         Document::Manager  *_doc_manager,
+                         Messages::ManagerPtr _messages_manager);
   
   virtual Mailer::Manager* getMailerManager() const = 0;
   virtual Document::Manager* getDocumentManager() const = 0;

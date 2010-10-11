@@ -157,7 +157,8 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
                     register_manager->getNSSetManager(),
                     register_manager->getKeySetManager(),
                     &mailer_manager,
-                    doc_manager.get())
+                    doc_manager.get(),
+                    register_manager->getMessageManager())
                 );
     
         Register::PublicRequest::PublicRequestPtr new_request;
@@ -259,7 +260,8 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
                     register_manager->getNSSetManager(),
                     register_manager->getKeySetManager(),
                     &mailer_manager,
-                    doc_manager.get())
+                    doc_manager.get(),
+                    register_manager->getMessageManager())
                 );
 
         return request_manager->processAuthRequest(_ident_request_id, _password);
@@ -671,7 +673,8 @@ char* ServerImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
                     register_manager->getNSSetManager(),
                     register_manager->getKeySetManager(),
                     &mailer_manager,
-                    doc_manager.get())
+                    doc_manager.get(),
+                    register_manager->getMessageManager())
                 );
 
         return CORBA::string_dup(

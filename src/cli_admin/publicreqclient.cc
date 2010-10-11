@@ -20,6 +20,7 @@
 #include "commonclient.h"
 #include "publicreqclient.h"
 #include "register/public_request.h"
+#include "register/messages/messages_impl.h"
 
 namespace Admin {
 
@@ -52,6 +53,10 @@ PublicRequestClient::list()
     callHelp(m_conf, list_help);
     Database::Filters::PublicRequest *prFilter;
     prFilter = new Database::Filters::PublicRequestImpl();
+
+    Register::Messages::ManagerPtr msgMan
+        = Register::Messages::create_manager();
+
 
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
@@ -93,7 +98,8 @@ PublicRequestClient::list()
                 nssMan.get(),
                 keyMan.get(),
                 &mailMan,
-                docMan.get())
+                docMan.get(),
+                msgMan)
             );
     std::auto_ptr<Register::PublicRequest::List> prList(
             prMan->createList());

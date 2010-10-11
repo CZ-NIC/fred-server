@@ -7198,7 +7198,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                     regMan->getNSSetManager(),
                     regMan->getKeySetManager(),
                     mm,
-                    doc_manager.get()
+                    doc_manager.get(),
+                    regMan->getMessageManager()
                     )
                 );
         try {
