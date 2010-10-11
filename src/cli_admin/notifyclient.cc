@@ -204,8 +204,16 @@ void NotifyClient::letters_send()
            fileclient,
            m_conf.hasOpt(NOTIFY_HPMAIL_CONFIG_NAME) ? 
                 m_conf.get<std::string> (NOTIFY_HPMAIL_CONFIG_NAME) :
-                HPMAIL_CONFIG        
+                HPMAIL_CONFIG
+                , "letter"
             );
+    sendLetters(
+               fileclient,
+               m_conf.hasOpt(NOTIFY_HPMAIL_CONFIG_NAME) ?
+                    m_conf.get<std::string> (NOTIFY_HPMAIL_CONFIG_NAME) :
+                    HPMAIL_CONFIG
+                    , "registered_letter"
+                );
 }
 
 void NotifyClient::sms_send()
@@ -265,7 +273,8 @@ void NotifyClient::file_send()
        */
 
 
-  void NotifyClient::sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file)
+  void NotifyClient::sendLetters(std::auto_ptr<Register::File::Transferer> fileman
+          , const std::string &conf_file, const std::string &comm_type)
   {
      Logging::Context ctx("send letters");
      TRACE("[CALL] Register::Notify::sendLetters()");
@@ -274,13 +283,19 @@ void NotifyClient::file_send()
          = Register::Messages::create_manager();
 
      HPCfgMap hpmail_config = readHPConfig(conf_file);
-     Register::Messages::LetterProcInfo proc_letters = messages_manager->load_letters_to_send(0);
+
+     if(comm_type.compare("registered_letter") == 0)
+     {
+         hpmail_config["hp_login_batch_id"]
+                       = hpmail_config["hp_login_registered_letter_batch_id"];
+     }
+
+     Register::Messages::LetterProcInfo proc_letters = messages_manager->load_letters_to_send(0, comm_type);
 
      if(proc_letters.empty()) return;
 
      std::string new_status = "sent";
      std::string batch_id;
-
 
      try
      {
@@ -315,7 +330,7 @@ void NotifyClient::file_send()
      }
 
      //set status
-     messages_manager->set_letter_status(proc_letters,new_status,batch_id);
+     messages_manager->set_letter_status(proc_letters,new_status,batch_id, comm_type);
 
   }//sendLetters
 

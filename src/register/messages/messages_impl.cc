@@ -266,6 +266,7 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
         , const char* message_type
         , unsigned long contact_object_registry_id
         , unsigned long contact_history_historyid
+        , const std::string& comm_type //letter , registered_letter
         )
 {
     unsigned long long message_archive_id=0;
@@ -287,6 +288,7 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
                 " message_type: %12% "
                 " contact_object_registry_id: %13%"
                 " contact_history_historyid: %14%"
+                " comm_type: %15%"
                 )
                       % contact_handle
                       % file_id
@@ -302,13 +304,14 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
                       % message_type
                       % contact_object_registry_id
                       % contact_history_historyid
+                      % comm_type
                       );
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
         message_archive_id
-        = save_message(Database::QPNull, 0, "ready",message_type, "letter", true
+        = save_message(Database::QPNull, 0, "ready",message_type, comm_type, true
                 , contact_handle, contact_object_registry_id
                 , contact_history_historyid
                 );
@@ -366,7 +369,8 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
     return message_archive_id;
 }
 
-LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
+LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
+        , const std::string &comm_type)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -378,11 +382,13 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
      * for multithreaded access - we would have to remember which
      * records exactly are we processing
      */
-    Database::Result res = conn.exec("SELECT EXISTS "
+    Database::Result res = conn.exec_params("SELECT EXISTS "
             "(SELECT * FROM message_archive ma "
             "JOIN comm_type ct ON ma.comm_type_id = ct.id "
             "JOIN message_status ms ON ma.status_id = ms.id "
-            " WHERE ms.status_name = 'being_sent' AND ct.type = 'letter')");
+            " WHERE ms.status_name = 'being_sent' AND ct.type = $1::text)"
+            , Database::query_param_list (comm_type)
+            );
 
     if ((bool)res[0][0])
     {
@@ -400,11 +406,12 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
 
     if(batch_size_limit == 0)//unlimited batch
     {
-        conn.exec("UPDATE message_archive SET "
+        conn.exec_params("UPDATE message_archive SET "
             "status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
             " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
             " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
-            " AND comm_type_id = (SELECT id FROM comm_type WHERE type = 'letter') "
+            " AND comm_type_id = (SELECT id FROM comm_type WHERE type = $1::text) "
+            , Database::query_param_list (comm_type)
         );
     }
     else//limited batch
@@ -415,16 +422,19 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit)
             " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
             " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
             " AND comm_type_id = (SELECT id FROM comm_type "
-            " WHERE type = 'letter') ORDER BY id LIMIT $1::integer) "
-                , Database::query_param_list (batch_size_limit)
+            " WHERE type = $1::text) ORDER BY id LIMIT $2::integer) "
+            , Database::query_param_list (comm_type) (batch_size_limit)
         );
     }
     // is there anything to send?
-    res = conn.exec("SELECT la.file_id, la.id, ma.attempt , f.name "
+    res = conn.exec_params("SELECT la.file_id, la.id, ma.attempt , f.name "
         " FROM message_archive ma JOIN letter_archive la ON ma.id = la.id "
         " JOIN files f ON la.file_id = f.id "
         " JOIN message_status ms ON ma.status_id = ms.id "
-        " WHERE ms.status_name='being_sent'");
+        " JOIN comm_type ct ON ma.comm_type_id = ct.id "
+        " WHERE ms.status_name='being_sent' "
+        " AND ct.type = $1::text "
+        , Database::query_param_list (comm_type));
 
     trans.commit();
 
@@ -533,7 +543,8 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit)
 
 
 void Manager::set_letter_status(const LetterProcInfo& letters
-        ,const std::string& new_status, const std::string& batch_id)
+        ,const std::string& new_status, const std::string& batch_id
+        , const std::string &comm_type)
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction trans2(conn);
@@ -548,11 +559,12 @@ void Manager::set_letter_status(const LetterProcInfo& letters
               "attempt = $2::integer, "
               "moddate = CURRENT_TIMESTAMP WHERE id = $3::integer"
               " AND comm_type_id = (SELECT id FROM comm_type "
-              " WHERE type = 'letter')"
+              " WHERE type = $4::text)"
               , Database::query_param_list
                    (new_status)
                    (new_attempt)
                    (it->letter_id)
+                   (comm_type)
               );
 
           conn.exec_params("UPDATE letter_archive SET  "
@@ -564,7 +576,7 @@ void Manager::set_letter_status(const LetterProcInfo& letters
                           );
     }
     // not processed letters should have status set back (set moddate? status?)
-    set_status_back("letter");
+    set_status_back(comm_type);
 
     trans2.commit();
 

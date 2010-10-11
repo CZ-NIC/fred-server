@@ -178,17 +178,20 @@ public:
             , const char* message_type
             , unsigned long contact_object_registry_id
             , unsigned long contact_history_historyid
+            , const std::string& comm_type //letter or registered_letter
             );
 
     //load saved letters
-    LetterProcInfo load_letters_to_send(std::size_t batch_size_limit);
+    LetterProcInfo load_letters_to_send(std::size_t batch_size_limit
+            , const std::string &comm_type);
 
     //load saved sms
     SmsProcInfo load_sms_to_send(std::size_t batch_size_limit);
 
     //set send result into letter status
     void set_letter_status(const LetterProcInfo& letters
-            ,const std::string& new_status, const std::string& batch_id);
+            ,const std::string& new_status, const std::string& batch_id
+            , const std::string &comm_type);
 
     //set send result into sms status
     void set_sms_status(const SmsProcInfo& messages);

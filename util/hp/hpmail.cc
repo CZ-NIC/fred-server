@@ -61,6 +61,7 @@ HPCfgMap HPMail::required_config = boost::assign::map_list_of
     ("hp_ack_interface_url","https://online3.postservis.cz/Command/konec.php")//end form url
     ("hp_cancel_interface_url","https://online3.postservis.cz/Command/prubeh.php")//cancel form url
     ("hp_login_batch_id","hpcb_Jednorazova_zakazka")//some job identification,now login parameter
+    ("hp_login_registered_letter_batch_id", "hpcb_Jednorazova_zakazka")//job batch_id for registered letters, actual value not known yet
     ("hp_login_note", "") // "Testovaci prenos!!!" for testing
 
     ("hp_login_name", "") //  login name

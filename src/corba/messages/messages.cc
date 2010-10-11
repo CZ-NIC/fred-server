@@ -74,6 +74,7 @@ CORBA::ULongLong Registry_Messages_i::saveLetterToSend(const char* contact_handl
         , const char* message_type
         , CORBA::ULongLong contact_object_registry_id
         , CORBA::ULongLong contact_history_historyid
+        , const char* comm_type //letter or registered_letter
         )
 {
     Logging::Context ctx(server_name);
@@ -119,6 +120,7 @@ CORBA::ULongLong Registry_Messages_i::saveLetterToSend(const char* contact_handl
                 , message_type
                 , contact_object_registry_id
                 , contact_history_historyid
+                , comm_type
                 );//call of impl
 
     }//try

@@ -573,7 +573,8 @@ public:
                             , pa,filePDF
                             ,"domain_expiration"
                             ,contact_object_registry_id
-                            , contact_history_historyid);
+                            , contact_history_historyid
+                            , "letter");
 
                     sql << "INSERT INTO notify_letters (state_id, letter_id) VALUES ("
                         << *it << ", " << letter_id << ")";

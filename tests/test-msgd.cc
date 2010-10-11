@@ -93,11 +93,17 @@ BOOST_AUTO_TEST_CASE( test_exec )
             CORBA::String_var file_type = CORBA::string_dup("expiration warning letter");
             CORBA::String_var letter_message_type = CORBA::string_dup("password_reset");
 
-
-            message_archive_id = messages_ref->saveLetterToSend(
+            if(i%2)
+                message_archive_id = messages_ref->saveLetterToSend(
                     letter_contact, paddr.in()
                     , file_content, file_name,file_type
-                    , letter_message_type, 1, 1);
+                    , letter_message_type, 1, 1, "registered_letter");
+            else
+                message_archive_id = messages_ref->saveLetterToSend(
+                    letter_contact, paddr.in()
+                    , file_content, file_name,file_type
+                    , letter_message_type, 1, 1, "letter");
+
         }
         BOOST_REQUIRE_EQUAL(i, 1000);
     }

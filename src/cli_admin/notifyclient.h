@@ -93,7 +93,8 @@ public:
     void sms_send();
     void file_send();
     void sendFile(const std::string &filename, const std::string &conf_file); 
-    void sendLetters(std::auto_ptr<Register::File::Transferer> fileman, const std::string &conf_file);
+    void sendLetters(std::auto_ptr<Register::File::Transferer> fileman
+            , const std::string &conf_file, const std::string &comm_type);
     void sendSMS(const std::string& command , const std::string& param_quote_by);
 
     HPCfgMap readHPConfig(const std::string &conf_file);

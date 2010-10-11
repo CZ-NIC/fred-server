@@ -83,6 +83,7 @@ public:
           ,const char* message_type
           , CORBA::ULongLong contact_object_registry_id
           , CORBA::ULongLong contact_history_historyid
+          ,const char* comm_type
           );
 
   Registry::Messages::EnumList* getStatusList();
