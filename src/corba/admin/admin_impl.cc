@@ -1590,6 +1590,7 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
   ConnectionReleaser releaser;
 
       ccReg::ObjectStatusDescSeq_var o = new ccReg::ObjectStatusDescSeq;
+      o->length(0);
   try
   {
       unsigned states_count = register_manager_->getStatusDescCount();
@@ -1604,7 +1605,8 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
     }//try
     catch(const std::exception& ex)
     {
-        LOGGER(PACKAGE).error((std::string("ccReg_Admin_i::getObjectStatusDescList ex: ")+ex.what()).c_str());
+        std::string msg = std::string("ccReg_Admin_i::getObjectStatusDescList ex: ")+ex.what();
+        LOGGER(PACKAGE).error(msg.c_str());
         return o._retn();
     }
     catch(...)
