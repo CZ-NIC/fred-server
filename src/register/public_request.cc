@@ -913,7 +913,7 @@ public:
         Database::Result result = conn.exec_params(
                 "SELECT c.name, c.organization, c.street1, c.city,"
                 " c.stateorprovince, c.postalcode, c.country, c.email"
-                " , or.historyid "
+                " , or.historyid, c.telephone "
                 " FROM contact c"
                 " JOIN object_registry or ON or.id = c.id "
                 " WHERE c.id = $1::integer",
@@ -956,6 +956,7 @@ public:
         data["reqdate"] = buf.str();
         data["object_id"]=boost::lexical_cast<std::string>(getObject(0).id);
         data["object_registry_historyid"]= static_cast<std::string>(result[0][8]);
+        data["phone"]= static_cast<std::string>(result[0][9]);
 
         return data;
     }
@@ -1061,7 +1062,7 @@ public:
     {
         LOGGER(PACKAGE).debug("public request auth - send sms password");
         man_->getMessagesManager()->save_sms_to_send( _data["handle"].c_str()
-                , "phone"
+                , _data["phone"].c_str()
                 , "content"
                 , "password_reset"
                 , boost::lexical_cast<unsigned long >(_data["object_id"])//contact object_registry.id
