@@ -1586,16 +1586,19 @@ ccReg_Admin_i::getKeySetStatusDescList(const char *lang)
 }
 
 ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *lang) {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
 
-      ccReg::ObjectStatusDescSeq_var o = new ccReg::ObjectStatusDescSeq;
+    try
+    {
+        Logging::Context ctx(server_name_);
+        ConnectionReleaser releaser;
 
-  try
-  {
-      unsigned states_count = register_manager_->getStatusDescCount();
-      o->length(states_count);
-      for (unsigned i = 0; i < states_count; ++i) {
+        ccReg::ObjectStatusDescSeq_var o = new ccReg::ObjectStatusDescSeq;
+        const ccReg::ObjectStatusDescSeq* optr = &(o.in());
+        if(optr == 0) throw ccReg::Admin::InternalServerError();
+
+        unsigned states_count = register_manager_->getStatusDescCount();
+        o->length(states_count);
+        for (unsigned i = 0; i < states_count; ++i) {
         const Register::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
         o[i].id    = sd->getId();
         o[i].shortName = DUPSTRFUN(sd->getName);
@@ -1607,12 +1610,12 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
     {
         std::string msg = std::string("ccReg_Admin_i::getObjectStatusDescList ex: ")+ex.what();
         LOGGER(PACKAGE).error(msg.c_str());
-        return o._retn();
+        throw ccReg::Admin::InternalServerError();
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Admin_i::getObjectStatusDescList unknown exception ");
-        return o._retn();
+        LOGGER(PACKAGE).error("ccReg_Admin_i::getObjectStatusDescList error ");
+        throw ccReg::Admin::InternalServerError();
     }
 }
 
