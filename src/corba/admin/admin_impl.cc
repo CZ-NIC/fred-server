@@ -1590,7 +1590,7 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
   ConnectionReleaser releaser;
 
       ccReg::ObjectStatusDescSeq_var o = new ccReg::ObjectStatusDescSeq;
-      o->length(0);
+
   try
   {
       unsigned states_count = register_manager_->getStatusDescCount();
