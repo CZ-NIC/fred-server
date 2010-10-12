@@ -1063,7 +1063,7 @@ public:
         LOGGER(PACKAGE).debug("public request auth - send sms password");
         man_->getMessagesManager()->save_sms_to_send( _data["handle"].c_str()
                 , _data["phone"].c_str()
-                , "content"
+                , _data["pin2"].c_str()
                 , "password_reset"
                 , boost::lexical_cast<unsigned long >(_data["object_id"])//contact object_registry.id
                 , boost::lexical_cast<unsigned long >(_data["object_registry_historyid"])//contact_history.historyid
