@@ -33,7 +33,8 @@ protected:
 
 public:
   /// exception thrown in case of invalid language specification
-  struct BAD_LANG {
+  struct BAD_LANG : public std::runtime_error {
+      BAD_LANG() : std::runtime_error("bad lang"){}
   };
   /// return id of status
   virtual TID getId() const = 0;
