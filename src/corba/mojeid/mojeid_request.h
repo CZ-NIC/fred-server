@@ -5,9 +5,9 @@
 #include "register/db_settings.h"
 
 namespace Registry {
+namespace MojeID {
 
-
-class MojeIDRequest
+class Request
 {
 private:
     unsigned int request_code_;
@@ -28,10 +28,10 @@ public:
     Database::Connection conn;
 
 
-    MojeIDRequest(const unsigned int &_request_code,
-                  const unsigned long long &_registrar_id,
-                  const unsigned long long &_request_id,
-                  const std::string &_clienttrid = std::string())
+    Request(const unsigned int &_request_code,
+            const unsigned long long &_registrar_id,
+            const unsigned long long &_request_id,
+            const std::string &_clienttrid = std::string())
         : request_code_(_request_code),
           registrar_id_(_registrar_id),
           clienttrid_(_clienttrid),
@@ -73,7 +73,7 @@ public:
     }
 
 
-    ~MojeIDRequest()
+    ~Request()
     {
         end_failure();
     }
@@ -140,6 +140,7 @@ public:
 };
 
 
+}
 }
 
 #endif /*MOJEID_REQUEST_H_*/

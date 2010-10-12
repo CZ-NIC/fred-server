@@ -23,9 +23,9 @@ fred_mifd_SOURCES = ../MojeIDSK.cc \
                     ../mailer_manager.cc \
                     mojeid_impl.h \
                     mojeid_impl.cc \
-                    mojeid_contact.h \
                     mojeid_request.h \
-                    corba_wrap.h \
+                    mojeid_identification.h \
+                    corba_conversion.h \
                     fred-mifd.cc
 
 
@@ -48,6 +48,7 @@ fred_mifd_LDADD =    $(LIBIDN_LIBS) \
                      $(top_builddir)/src/old_utils/liboldutils.a \
                      $(top_builddir)/util/log/liblog.a \
                      $(top_builddir)/util/libutils.a \
+                     $(top_builddir)/src/register/mojeid/libmojeid.a \
                      $(top_builddir)/src/register/messages/libmessages.a
 
 

@@ -1,7 +1,8 @@
+
+#include "corba_conversion.h"
 #include "mojeid_impl.h"
-#include "corba_wrap.h"
 #include "mojeid_request.h"
-#include "mojeid_contact.h"
+#include "mojeid_identification.h"
 
 #include "cfg/config_handler_decl.h"
 #include "log/logger.h"
@@ -83,7 +84,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        Registry::MojeIDRequest request(204, mojeid_registrar_id_, _request_id);
+        Registry::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
         Logging::Context ctx_request(request.get_servertrid());
 
         try {
@@ -126,51 +127,21 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
             throw std::runtime_error("contact has no email");
         }
 
-        Database::QueryParams pcontact = corba_unwrap_contact(_contact);
+        ::MojeID::Contact data = corba_unwrap_contact(_contact);
+        unsigned long long hid = ::MojeID::contact_create(
+                request.get_id(),
+                request.get_request_id(),
+                request.get_registrar_id(),
+                data);
+        unsigned long long id = data.id;
 
-        unsigned long long id = create_object(request, handle);
-        insert_contact(request, id, pcontact);
-        unsigned long long hid = insert_contact_history(request, id);
-
-        /* create public request
-         * we cannot move it to separate function because of livetime of managers
-         * - we need to save request in same transaction as request is and then
-         *   send generated password */
-        NameService *ns = CorbaContainer::get_instance()->getNS();
-        MailerManager mailer_manager(ns);
-    
-        std::auto_ptr<Register::Manager> register_manager(
-                Register::Manager::create(0, registry_conf_->restricted_handles));
-    
-        std::auto_ptr<Register::Document::Manager> doc_manager(
-                Register::Document::Manager::create(
-                    registry_conf_->docgen_path,
-                    registry_conf_->docgen_template_path,
-                    registry_conf_->fileclient_path,
-                    ns->getHostName())
-                 );
-    
-        std::auto_ptr<Register::PublicRequest::Manager> request_manager(
-                Register::PublicRequest::Manager::create(
-                    register_manager->getDomainManager(),
-                    register_manager->getContactManager(),
-                    register_manager->getNSSetManager(),
-                    register_manager->getKeySetManager(),
-                    &mailer_manager,
-                    doc_manager.get(),
-                    register_manager->getMessageManager())
-                );
-    
-        Register::PublicRequest::PublicRequestPtr new_request;
+        /* create public request */
+        Register::PublicRequest::Type type;
         if (_method == Registry::MojeID::SMS) {
-            new_request.reset(
-               request_manager->createRequest(
-                   Register::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION));
+            type = Register::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
         }
         else if (_method == Registry::MojeID::LETTER) {
-            new_request.reset(
-               request_manager->createRequest(
-                   Register::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+            type = Register::PublicRequest::PRT_CONTACT_IDENTIFICATION;
         }
         else if (_method == Registry::MojeID::CERTIFICATE) {
             throw std::runtime_error("not implemented");
@@ -178,7 +149,8 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         else {
             throw std::runtime_error("unknown identification method");
         }
-    
+
+        IdentificationRequest new_request(type);
         new_request->setRegistrarId(request.get_registrar_id());
         new_request->setRequestId(request.get_request_id());
         new_request->setEppActionId(request.get_id());
@@ -193,17 +165,11 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
                 % handle % id % hid);
         LOGGER(PACKAGE).info("request completed successfully");
 
+        /* send identification passwords */
         try {
-            Register::PublicRequest::PublicRequestAuthPtr identification_request
-                = boost::dynamic_pointer_cast<Register::PublicRequest::PublicRequestAuth>(new_request);
-            if (identification_request) {
-                identification_request->sendPasswords(server_conf_->redirect_url,
-                                                      server_conf_->demo_mode);
-                LOGGER(PACKAGE).info("identification password sent");
-            }
-            else {
-                throw;
-            }
+            new_request->sendPasswords(server_conf_->redirect_url,
+                                       server_conf_->demo_mode);
+            LOGGER(PACKAGE).info("identification password sent");
         }
         catch (...) {
             LOGGER(PACKAGE).error(boost::format(
@@ -239,31 +205,7 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
                     "  identification_id: %1%  password: %2%  request_id: %3%")
                 % _ident_request_id % _password % _request_id);
 
-        NameService *ns = CorbaContainer::get_instance()->getNS();
-        MailerManager mailer_manager(ns);
-    
-        std::auto_ptr<Register::Manager> register_manager(
-                Register::Manager::create(0, registry_conf_->restricted_handles));
-    
-        std::auto_ptr<Register::Document::Manager> doc_manager(
-                Register::Document::Manager::create(
-                    registry_conf_->docgen_path,
-                    registry_conf_->docgen_template_path,
-                    registry_conf_->fileclient_path,
-                    ns->getHostName())
-                 );
-    
-        std::auto_ptr<Register::PublicRequest::Manager> request_manager(
-                Register::PublicRequest::Manager::create(
-                    register_manager->getDomainManager(),
-                    register_manager->getContactManager(),
-                    register_manager->getNSSetManager(),
-                    register_manager->getKeySetManager(),
-                    &mailer_manager,
-                    doc_manager.get(),
-                    register_manager->getMessageManager())
-                );
-
+        IdentificationRequestManager request_manager;
         return request_manager->processAuthRequest(_ident_request_id, _password);
     }
     catch (Register::PublicRequest::PublicRequestAuth::NOT_AUTHENTICATED&) {
@@ -299,7 +241,7 @@ CORBA::ULongLong ServerImpl::transferContact(const char* _handle,
 
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        Registry::MojeIDRequest request(205, mojeid_registrar_id_, _request_id);
+        Registry::MojeID::Request request(205, mojeid_registrar_id_, _request_id);
         Logging::Context ctx_request(request.get_servertrid());
 
         Register::NameIdPair cinfo;
@@ -330,19 +272,15 @@ CORBA::ULongLong ServerImpl::transferContact(const char* _handle,
 
         /* TODO: more checking? */
 
-        request.conn.exec_params("UPDATE object SET clid = $1::integer, trdate = now(),"
-                " authinfopw = $2::text WHERE id = $3::integer",
-                Database::query_param_list
-                    (mojeid_registrar_id_)
-                    (Random::string_alphanum(8))
-                    (cinfo.id));
-        unsigned long long hid = insert_contact_history(request, cinfo.id);
+        /* create identification request - transfer will be done when processed */
+
 
         request.end_success();
 
         LOGGER(PACKAGE).info(boost::format(
-                "contact saved -- handle: %1%  id: %2%  history_id: %3%")
-                % handle % cinfo.id % hid);
+                "identification request with contact transfert saved"
+                " -- handle: %1%  id: %2%")
+                % handle % cinfo.id);
 
         LOGGER(PACKAGE).info("request completed successfully");
         return cinfo.id;
@@ -373,7 +311,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
 
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        Registry::MojeIDRequest request(203, mojeid_registrar_id_, _request_id, _trans_id);
+        Registry::MojeID::Request request(203, mojeid_registrar_id_, _request_id, _trans_id);
         Logging::Context ctx_request(request.get_servertrid());
 
         if (_contact.id == 0) {
@@ -416,9 +354,12 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
 
         /* TODO: checking for prohibited states */
 
-        Database::QueryParams pcontact = corba_unwrap_contact(_contact);
-        update_contact(request, id, pcontact);
-        unsigned long long hid = insert_contact_history(request, id);
+        ::MojeID::Contact data = corba_unwrap_contact(_contact);
+        unsigned long long hid = ::MojeID::contact_update(
+                request.get_id(),
+                request.get_request_id(),
+                data);
+
         LOGGER(PACKAGE).info(boost::format(
                 "contact updated -- handle: %1%  id: %2%  history_id: %3%")
                 % handle % id % hid);
@@ -446,92 +387,8 @@ Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
 
     try {
         LOGGER(PACKAGE).info(boost::format("request data -- id: %1%") % _id);
-        Database::Connection conn = Database::Manager::acquire();
 
-        std::string qinfo = "SELECT oreg.id, oreg.name,"
-            " c.name,"
-            " c.organization, c.vat, c.ssntype, c.ssn,"
-            " c.disclosename, c.discloseorganization,"
-            " c.disclosevat, c.discloseident,"
-            " c.discloseemail, c.disclosenotifyemail,"
-            " c.discloseaddress, c.disclosetelephone,"
-            " c.disclosefax,"
-            " c.street1, c.street2, c.street3,"
-            " c.city, c.stateorprovince, c.postalcode, c.country,"
-            " c.email, c.notifyemail, c.telephone, c.fax, est.type"
-            " FROM object_registry oreg JOIN contact c ON c.id = oreg.id"
-            " LEFT JOIN enum_ssntype est ON est.id = c.ssntype"
-            " WHERE oreg.id = $1::integer AND oreg.erdate IS NULL";
-        Database::QueryParams pinfo = Database::query_param_list(_id);
-
-        Database::Result rinfo = conn.exec_params(qinfo, pinfo);
-        if (!rinfo.size()) {
-            throw std::runtime_error("not found");
-        }
-
-        Contact *data = new Contact();
-        data->id           = corba_wrap_nullable_ulonglong(rinfo[0][0]);
-        data->username     = corba_wrap_string(rinfo[0][1]);
-
-        std::string name = static_cast<std::string>(rinfo[0][2]);
-        std::size_t pos = name.find_last_of(" ");
-        data->first_name   = corba_wrap_string(name.substr(0, pos));
-        data->last_name    = corba_wrap_string(name.substr(pos + 1));
-
-        data->organization = corba_wrap_nullable_string(rinfo[0][3]);
-        data->vat_reg_num  = corba_wrap_nullable_string(rinfo[0][4]);
-        data->ssn_type     = corba_wrap_nullable_string(rinfo[0][27]);
-
-        std::string type = static_cast<std::string>(rinfo[0][27]);
-        data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(rinfo[0][6]) : 0;
-        data->passport_num = type == "PASS"     ? corba_wrap_nullable_string(rinfo[0][6]) : 0;
-        data->vat_id_num   = type == "ICO"      ? corba_wrap_nullable_string(rinfo[0][6]) : 0;
-        data->ssn_id_num   = type == "MPSV"     ? corba_wrap_nullable_string(rinfo[0][6]) : 0;
-        data->birth_date   = type == "BIRTHDAY" ? corba_wrap_nullable_date(rinfo[0][6]) : 0;
-
-        data->disclose_name         = corba_wrap_nullable_boolean(rinfo[0][7]);
-        data->disclose_organization = corba_wrap_nullable_boolean(rinfo[0][8]);
-        data->disclose_vat          = corba_wrap_nullable_boolean(rinfo[0][9]);
-        data->disclose_ident        = corba_wrap_nullable_boolean(rinfo[0][10]);
-        data->disclose_email        = corba_wrap_nullable_boolean(rinfo[0][11]);
-        data->disclose_notify_email = corba_wrap_nullable_boolean(rinfo[0][12]);
-        data->disclose_address      = corba_wrap_nullable_boolean(rinfo[0][13]);
-        data->disclose_phone        = corba_wrap_nullable_boolean(rinfo[0][14]);
-        data->disclose_fax          = corba_wrap_nullable_boolean(rinfo[0][15]);
-
-        data->addresses.length(1);
-        data->addresses[0].type         = "DEFAULT";
-        data->addresses[0].street1      = corba_wrap_string(rinfo[0][16]);
-        data->addresses[0].street2      = corba_wrap_nullable_string(rinfo[0][17]);
-        data->addresses[0].street3      = corba_wrap_nullable_string(rinfo[0][18]);
-        data->addresses[0].city         = corba_wrap_string(rinfo[0][19]);
-        data->addresses[0].state        = corba_wrap_nullable_string(rinfo[0][20]);
-        data->addresses[0].postal_code  = corba_wrap_string(rinfo[0][21]);
-        data->addresses[0].country      = corba_wrap_string(rinfo[0][22]);
-
-        data->emails.length(1);
-        data->emails[0].type = "DEFAULT";
-        data->emails[0].email_address = corba_wrap_string(rinfo[0][23]);
-        std::string notify_email = static_cast<std::string>(rinfo[0][24]);
-        if (notify_email.size()) {
-            data->emails.length(2);
-            data->emails[1].type = "NOTIFY";
-            data->emails[1].email_address = corba_wrap_string(notify_email);
-        }
-
-        std::string telephone = static_cast<std::string>(rinfo[0][25]);
-        std::string fax = static_cast<std::string>(rinfo[0][26]);
-        if (telephone.size()) {
-            data->phones.length(1);
-            data->phones[0].type = "DEFAULT";
-            data->phones[0].number = corba_wrap_string(telephone);
-        }
-        if (fax.size()) {
-            unsigned int s = data->phones.length();
-            data->phones.length(s + 1);
-            data->phones[s].type = "FAX";
-            data->phones[s].number = corba_wrap_string(fax);
-        }
+        Contact *data = corba_wrap_contact(::MojeID::contact_info(_id));
 
         LOGGER(PACKAGE).info("request completed successfully");
         return data;
@@ -652,34 +509,8 @@ char* ServerImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
                     "  _contact_id: %1% ")
                 % _contact_id);
 
-        NameService *ns = CorbaContainer::get_instance()->getNS();
-        MailerManager mailer_manager(ns);
-
-        std::auto_ptr<Register::Manager> register_manager(
-                Register::Manager::create(0, registry_conf_->restricted_handles));
-
-        std::auto_ptr<Register::Document::Manager> doc_manager(
-                Register::Document::Manager::create(
-                    registry_conf_->docgen_path,
-                    registry_conf_->docgen_template_path,
-                    registry_conf_->fileclient_path,
-                    ns->getHostName())
-                 );
-
-        std::auto_ptr<Register::PublicRequest::Manager> request_manager(
-                Register::PublicRequest::Manager::create(
-                    register_manager->getDomainManager(),
-                    register_manager->getContactManager(),
-                    register_manager->getNSSetManager(),
-                    register_manager->getKeySetManager(),
-                    &mailer_manager,
-                    doc_manager.get(),
-                    register_manager->getMessageManager())
-                );
-
-        return CORBA::string_dup(
-        	request_manager->getIdentification(_contact_id).c_str()
-        );
+        IdentificationRequestManager request_manager;
+        return corba_wrap_string(request_manager->getIdentification(_contact_id).c_str());
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -690,6 +521,7 @@ char* ServerImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
         throw Registry::MojeID::Server::ErrorReport();
     }
 }
+
 
 ContactStateChangeList* ServerImpl::getContactStateChanges(const Date& since)
 {

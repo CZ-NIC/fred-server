@@ -1,4 +1,4 @@
-SUBDIRS = messages requests
+SUBDIRS = messages requests mojeid
 
 noinst_LIBRARIES = libfred.a
 
