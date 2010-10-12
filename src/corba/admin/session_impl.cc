@@ -2041,7 +2041,10 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
 
     }//if sms
     else
-    if((_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)).compare("letter") == 0)
+    if(((_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE))
+            .compare("letter") == 0)
+        || ((_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE))
+                .compare("registered_letter") == 0))
     {
         //detail->message_content._d(2);//letter
         Registry::Message::LetterDetail letter_detail;
