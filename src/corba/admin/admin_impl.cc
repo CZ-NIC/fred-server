@@ -1604,6 +1604,13 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
         o->length(states_count);
         for (unsigned i = 0; i < states_count; ++i) {
         const Register::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
+        if(sd == 0)
+        {
+            LOGGER(PACKAGE).error((std::string(
+                    "ccReg_Admin_i::getObjectStatusDescList error register_manager_->getStatusDescByIdx(i) i: "
+                    +boost::lexical_cast<std::string>(i))).c_str());
+            throw ccReg::Admin::InternalServerError();
+        }
         o[i].id    = sd->getId();
         o[i].shortName = DUPSTRFUN(sd->getName);
         o[i].name  = DUPSTRC(sd->getDesc(lang));
