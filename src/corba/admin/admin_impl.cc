@@ -1594,7 +1594,11 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
 
         ccReg::ObjectStatusDescSeq_var o = new ccReg::ObjectStatusDescSeq;
         const ccReg::ObjectStatusDescSeq* optr = &(o.in());
-        if(optr == 0) throw ccReg::Admin::InternalServerError();
+        if(optr == 0)
+        {
+            LOGGER(PACKAGE).error("ccReg_Admin_i::getObjectStatusDescList error new ccReg::ObjectStatusDescSeq failed ");
+            throw ccReg::Admin::InternalServerError();
+        }
 
         unsigned states_count = register_manager_->getStatusDescCount();
         o->length(states_count);
