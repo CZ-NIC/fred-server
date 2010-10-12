@@ -1589,16 +1589,29 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  ccReg::ObjectStatusDescSeq *o = new ccReg::ObjectStatusDescSeq;
-  unsigned states_count = register_manager_->getStatusDescCount();
-  o->length(states_count);
-  for (unsigned i = 0; i < states_count; ++i) {
-    const Register::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
-    (*o)[i].id    = sd->getId();
-    (*o)[i].shortName = DUPSTRFUN(sd->getName);
-    (*o)[i].name  = DUPSTRC(sd->getDesc(lang));
-  }
-  return o;
+      ccReg::ObjectStatusDescSeq_var o = new ccReg::ObjectStatusDescSeq;
+  try
+  {
+      unsigned states_count = register_manager_->getStatusDescCount();
+      o->length(states_count);
+      for (unsigned i = 0; i < states_count; ++i) {
+        const Register::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
+        o[i].id    = sd->getId();
+        o[i].shortName = DUPSTRFUN(sd->getName);
+        o[i].name  = DUPSTRC(sd->getDesc(lang));
+      }
+      return o._retn();
+    }//try
+    catch(const std::exception& ex)
+    {
+        LOGGER(PACKAGE).error((std::string("ccReg_Admin_i::getObjectStatusDescList ex: ")+ex.what()).c_str());
+        return o._retn();
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("ccReg_Admin_i::getObjectStatusDescList unknown exception ");
+        return o._retn();
+    }
 }
 
 char* ccReg_Admin_i::getCreditByZone(const char*registrarHandle, ccReg::TID zone) {
