@@ -131,7 +131,7 @@ struct MessageMetaInfo
         mct[MT_ID] = ObjMemberConversion::MC_NONE; //id
         mct[MT_CRDATE] = ObjMemberConversion::MC_DATETIME; //crdate
         mct[MT_MODDATE] = ObjMemberConversion::MC_DATETIME; //moddate
-        mct[MT_ATTEMPT] = ObjMemberConversion::MC_NUMBER; //attempt
+        mct[MT_ATTEMPT] = ObjMemberConversion::MC_NONE; //attempt
         mct[MT_STATUS] = ObjMemberConversion::MC_NONE; //status
         mct[MT_COMMTYPE] = ObjMemberConversion::MC_NONE; //commtype
         mct[MT_MSGTYPE] = ObjMemberConversion::MC_NONE; //msgtype
