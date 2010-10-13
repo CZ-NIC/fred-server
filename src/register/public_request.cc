@@ -996,6 +996,17 @@ public:
                 handles,
                 attach
                 );
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        conn.exec_params("INSERT INTO public_request_messages_map "
+                " (public_request_id, message_archive_id, mail_archive_id) "
+                " VALUES ($1::integer, $2::integer, $3::integer)",
+                Database::query_param_list
+                    (this->getId())
+                    (Database::QPNull)
+                    (id));
+        tx.commit();
     }
 
     void sendLetterPassword(MessageData &_data) const
@@ -1048,6 +1059,7 @@ public:
             pa.code = _data["postalcode"];
             pa.country = _data["country"];
 
+            unsigned long long message_id =
             man_->getMessagesManager()->save_letter_to_send(
                     _data["handle"].c_str()//contact handle
                     ,pa,file_id
@@ -1056,11 +1068,23 @@ public:
                     , boost::lexical_cast<unsigned long >(_data["contact_hid"])//contact_history.historyid
                     ,"letter"//comm_type letter or registered_letter
                     );
+
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Transaction tx(conn);
+            conn.exec_params("INSERT INTO public_request_messages_map "
+                    " (public_request_id, message_archive_id, mail_archive_id) "
+                    " VALUES ($1::integer, $2::integer, $3::integer)",
+                    Database::query_param_list
+                        (this->getId())
+                        (message_id)
+                        (Database::QPNull));
+            tx.commit();
     }
 
     void sendSmsPassword(MessageData &_data) const
     {
         LOGGER(PACKAGE).debug("public request auth - send sms password");
+        unsigned long long message_id =
         man_->getMessagesManager()->save_sms_to_send( _data["handle"].c_str()
                 , _data["phone"].c_str()
                 , _data["pin2"].c_str()
@@ -1068,6 +1092,17 @@ public:
                 , boost::lexical_cast<unsigned long >(_data["contact_id"])//contact object_registry.id
                 , boost::lexical_cast<unsigned long >(_data["contact_hid"])//contact_history.historyid
                 );
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        conn.exec_params("INSERT INTO public_request_messages_map "
+                " (public_request_id, message_archive_id, mail_archive_id) "
+                " VALUES ($1::integer, $2::integer, $3::integer)",
+                Database::query_param_list
+                    (this->getId())
+                    (message_id)
+                    (Database::QPNull));
+        tx.commit();
     }
 };
 
