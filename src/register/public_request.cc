@@ -1,6 +1,3 @@
-
-#include <boost/utility.hpp>
-
 #include "common_impl.h"
 #include "public_request.h"
 #include "log/logger.h"
@@ -9,6 +6,9 @@
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
 #include "random.h"
+#include "throwable_map_find.h"
+
+#include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 
 
@@ -973,16 +973,16 @@ public:
         Mailer::Handles handles;
         Mailer::Parameters params;
 
-        params["rtype"] = _type;
-        params["firstname"] = _data["firstname"];
-        params["lastname"] = _data["lastname"];
-        params["email"] = _data["email"];
-        params["url"] = _data["url"];
-        params["handle"] = _data["handle"];
-        params["passwd"] = _data["pin1"];
+        params["rtype"]     = _type;
+        params["firstname"] = throwable_map_find(_data, "firstname");
+        params["lastname"]  = throwable_map_find(_data, "lastname");
+        params["email"]     = throwable_map_find(_data, "email");
+        params["url"]       = throwable_map_find(_data, "url");
+        params["handle"]    = throwable_map_find(_data, "handle");
+        params["passwd"]    = throwable_map_find(_data, "pin1");
         /* for demo purpose we send second half of password as well */
         if (_demo_mode) {
-            params["passwd2"] = _data["pin2"];
+            params["passwd2"] = throwable_map_find(_data, "pin2");
         }
 
         handles.push_back(getObject(0).handle);
@@ -1017,26 +1017,27 @@ public:
         xml_data << "<?xml version='1.0' encoding='utf-8'?>"
                 << "<mojeid_auth>"
                 << "<user>"
-                << "<actual_date>" << _data["reqdate"] << "</actual_date>"
-                << "<name>" << _data["firstname"] << " " << _data["lastname"] << "</name>"
-                << "<organization>" << _data["organization"] << "</organization>"
-                << "<street>" << _data["street"] << "</street>"
-                << "<city>" << _data["city"] << "</city>"
-                << "<stateorprovince>" << _data["stateorprovince"] << "</stateorprovince>"
-                << "<postal_code>" << _data["postalcode"] << "</postal_code>"
-                << "<country>" << _data["country"] << "</country>"
+                << "<actual_date>" << throwable_map_find(_data, "reqdate") << "</actual_date>"
+                << "<name>" << throwable_map_find(_data, "firstname")
+                            << " " << throwable_map_find(_data, "lastname") << "</name>"
+                << "<organization>" << throwable_map_find(_data, "organization") << "</organization>"
+                << "<street>" << throwable_map_find(_data, "street") << "</street>"
+                << "<city>" << throwable_map_find(_data, "city") << "</city>"
+                << "<stateorprovince>" << throwable_map_find(_data, "stateorprovince") << "</stateorprovince>"
+                << "<postal_code>" << throwable_map_find(_data, "postalcode") << "</postal_code>"
+                << "<country>" << throwable_map_find(_data, "country") << "</country>"
                 << "<account>"
-                << "<username>" << _data["handle"] << "</username>"
-                << "<first_name>" << _data["firstname"] << "</first_name>"
-                << "<last_name>" << _data["lastname"] << "</last_name>"
-                << "<email>" << _data["email"] << "</email>"
+                << "<username>" << throwable_map_find(_data, "handle") << "</username>"
+                << "<first_name>" << throwable_map_find(_data, "firstname") << "</first_name>"
+                << "<last_name>" << throwable_map_find(_data, "lastname") << "</last_name>"
+                << "<email>" << throwable_map_find(_data, "email") << "</email>"
                 << "</account>"
                 << "<auth>"
                 << "<codes>"
-                << "<pin2>" << _data["pin2"] << "</pin2>"
+                << "<pin2>" << throwable_map_find(_data, "pin2") << "</pin2>"
                 << "<pin3>" << "" << "</pin3>"
                 << "</codes>"
-                << "<link>" << _data["url"] << "</link>"
+                << "<link>" << throwable_map_find(_data, "url") << "</link>"
                 << "</auth>"
                 << "</user>"
                 << "</mojeid_auth>";
@@ -1049,24 +1050,26 @@ public:
                 "");
 
             Register::Messages::PostalAddress pa;
-            pa.name =  _data["firstname"] + " " + _data["lastname"];
-            pa.org = _data["organization"];
-            pa.street1 = _data["street"];
+            pa.name    =  throwable_map_find(_data, "firstname") 
+                        + " " + throwable_map_find(_data, "lastname");
+            pa.org     = throwable_map_find(_data, "organization");
+            pa.street1 = throwable_map_find(_data, "street");
             pa.street2 = std::string("");
             pa.street3 = std::string("");
-            pa.city = _data["city"];
-            pa.state = _data["stateorprovince"];
-            pa.code = _data["postalcode"];
-            pa.country = _data["country"];
+            pa.city    = throwable_map_find(_data, "city");
+            pa.state   = throwable_map_find(_data, "stateorprovince");
+            pa.code    = throwable_map_find(_data, "postalcode");
+            pa.country = throwable_map_find(_data, "country");
 
             unsigned long long message_id =
             man_->getMessagesManager()->save_letter_to_send(
-                    _data["handle"].c_str()//contact handle
-                    ,pa,file_id
-                    ,"password_reset" //message type
-                    , boost::lexical_cast<unsigned long >(_data["contact_id"])//contact object_registry.id
-                    , boost::lexical_cast<unsigned long >(_data["contact_hid"])//contact_history.historyid
-                    ,"letter"//comm_type letter or registered_letter
+                    throwable_map_find(_data, "handle").c_str()//contact handle
+                    , pa
+                    , file_id
+                    , "password_reset" //message type
+                    , boost::lexical_cast<unsigned long >(throwable_map_find(_data, "contact_id"))//contact object_registry.id
+                    , boost::lexical_cast<unsigned long >(throwable_map_find(_data, "contact_hid"))//contact_history.historyid
+                    , "letter"//comm_type letter or registered_letter
                     );
 
             Database::Connection conn = Database::Manager::acquire();
@@ -1085,12 +1088,13 @@ public:
     {
         LOGGER(PACKAGE).debug("public request auth - send sms password");
         unsigned long long message_id =
-        man_->getMessagesManager()->save_sms_to_send( _data["handle"].c_str()
-                , _data["phone"].c_str()
-                , _data["pin2"].c_str()
+        man_->getMessagesManager()->save_sms_to_send(
+                throwable_map_find(_data, "handle").c_str()
+                , throwable_map_find(_data, "phone").c_str()
+                , throwable_map_find(_data, "pin2").c_str()
                 , "password_reset"
-                , boost::lexical_cast<unsigned long >(_data["contact_id"])//contact object_registry.id
-                , boost::lexical_cast<unsigned long >(_data["contact_hid"])//contact_history.historyid
+                , boost::lexical_cast<unsigned long >(throwable_map_find(_data, "contact_id"))//contact object_registry.id
+                , boost::lexical_cast<unsigned long >(throwable_map_find(_data, "contact_hid"))//contact_history.historyid
                 );
 
         Database::Connection conn = Database::Manager::acquire();
