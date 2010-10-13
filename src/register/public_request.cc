@@ -807,6 +807,12 @@ protected:
     std::string identification_;
     std::string password_;
 
+    enum LetterType
+    {
+        LETTER_PIN2,
+        LETTER_PIN3
+    };
+
 
 public:
     PublicRequestAuthImpl()
@@ -949,6 +955,7 @@ public:
         /* password split */
         data["pin1"] = password_.substr(0, password_.size() / 2);
         data["pin2"] = password_.substr(password_.size() / 2, password_.size());
+        data["pin3"] = password_;
         /* yuck */
         std::ostringstream buf;
         buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
@@ -963,8 +970,7 @@ public:
 
     /* helper method for sending email password */
     void sendEmailPassword(MessageData &_data,
-                           const std::string &_template,
-                           const std::string &_type,
+                           const unsigned short &_type,
                            bool _demo_mode) const
     {
         LOGGER(PACKAGE).debug("public request auth - send email password");
@@ -973,7 +979,7 @@ public:
         Mailer::Handles handles;
         Mailer::Parameters params;
 
-        params["rtype"]     = _type;
+        params["rtype"]     = boost::lexical_cast<std::string>(_type);
         params["firstname"] = map_at(_data, "firstname");
         params["lastname"]  = map_at(_data, "lastname");
         params["email"]     = map_at(_data, "email");
@@ -991,7 +997,7 @@ public:
                 "",           /* default sender */
                 params["email"],
                 "",           /* default subject */
-                _template,
+                "mojeid_identification",
                 params,
                 handles,
                 attach
@@ -1009,49 +1015,62 @@ public:
         tx.commit();
     }
 
-    void sendLetterPassword(MessageData &_data) const
+    void sendLetterPassword(MessageData &_data, const LetterType &_type) const
     {
         LOGGER(PACKAGE).debug("public request auth - send letter password");
-        std::stringstream xml_data;
+
+        std::stringstream xml_data, xml_part_code;
+        Document::GenerationType doc_type;
+
+        if (_type == LETTER_PIN2) {
+            xml_part_code << "<pin2>" << map_at(_data, "pin2") << "</pin2>";
+            doc_type = Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN2;
+        }
+        else if (_type == LETTER_PIN3) {
+            xml_part_code << "<pin3>" << map_at(_data, "pin3") << "</pin3>";
+            doc_type = Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3;
+        }
+        else {
+            throw std::runtime_error("unknown letter type");
+        }
+
 
         xml_data << "<?xml version='1.0' encoding='utf-8'?>"
-                << "<mojeid_auth>"
-                << "<user>"
-                << "<actual_date>" << map_at(_data, "reqdate") << "</actual_date>"
-                << "<name>" << map_at(_data, "firstname")
-                            << " " << map_at(_data, "lastname") << "</name>"
-                << "<organization>" << map_at(_data, "organization") << "</organization>"
-                << "<street>" << map_at(_data, "street") << "</street>"
-                << "<city>" << map_at(_data, "city") << "</city>"
-                << "<stateorprovince>" << map_at(_data, "stateorprovince") << "</stateorprovince>"
-                << "<postal_code>" << map_at(_data, "postalcode") << "</postal_code>"
-                << "<country>" << map_at(_data, "country") << "</country>"
-                << "<account>"
-                << "<username>" << map_at(_data, "handle") << "</username>"
-                << "<first_name>" << map_at(_data, "firstname") << "</first_name>"
-                << "<last_name>" << map_at(_data, "lastname") << "</last_name>"
-                << "<email>" << map_at(_data, "email") << "</email>"
-                << "</account>"
-                << "<auth>"
-                << "<codes>"
-                << "<pin2>" << map_at(_data, "pin2") << "</pin2>"
-                << "<pin3>" << "" << "</pin3>"
-                << "</codes>"
-                << "<link>" << map_at(_data, "url") << "</link>"
-                << "</auth>"
-                << "</user>"
-                << "</mojeid_auth>";
+                 << "<mojeid_auth>"
+                 << "<user>"
+                 << "<actual_date>" << map_at(_data, "reqdate") << "</actual_date>"
+                 << "<name>" << map_at(_data, "firstname")
+                             << " " << map_at(_data, "lastname") << "</name>"
+                 << "<organization>" << map_at(_data, "organization") << "</organization>"
+                 << "<street>" << map_at(_data, "street") << "</street>"
+                 << "<city>" << map_at(_data, "city") << "</city>"
+                 << "<stateorprovince>" << map_at(_data, "stateorprovince") << "</stateorprovince>"
+                 << "<postal_code>" << map_at(_data, "postalcode") << "</postal_code>"
+                 << "<country>" << map_at(_data, "country") << "</country>"
+                 << "<account>"
+                 << "<username>" << map_at(_data, "handle") << "</username>"
+                 << "<first_name>" << map_at(_data, "firstname") << "</first_name>"
+                 << "<last_name>" << map_at(_data, "lastname") << "</last_name>"
+                 << "<email>" << map_at(_data, "email") << "</email>"
+                 << "</account>"
+                 << "<auth>"
+                 << "<codes>"
+                 << xml_part_code.str()
+                 << "</codes>"
+                 << "<link>" << map_at(_data, "url") << "</link>"
+                 << "</auth>"
+                 << "</user>"
+                 << "</mojeid_auth>";
 
             unsigned long long file_id = man_->getDocumentManager()->generateDocumentAndSave(
-                Document::GT_CONTACT_IDENTIFICATION_LETTER,
+                doc_type,
                 xml_data,
-                "identification_request-" + boost::lexical_cast<std::string>(id_),
+                "identification_request-" + boost::lexical_cast<std::string>(this->getId()),
                 7,
                 "");
 
             Register::Messages::PostalAddress pa;
-            pa.name    =  map_at(_data, "firstname") 
-                        + " " + map_at(_data, "lastname");
+            pa.name    = map_at(_data, "firstname") + " " + map_at(_data, "lastname");
             pa.org     = map_at(_data, "organization");
             pa.street1 = map_at(_data, "street");
             pa.street2 = std::string("");
@@ -1062,7 +1081,7 @@ public:
             pa.country = map_at(_data, "country");
 
             unsigned long long message_id =
-            man_->getMessagesManager()->save_letter_to_send(
+                man_->getMessagesManager()->save_letter_to_send(
                     map_at(_data, "handle").c_str()//contact handle
                     , pa
                     , file_id
@@ -1087,6 +1106,7 @@ public:
     void sendSmsPassword(MessageData &_data) const
     {
         LOGGER(PACKAGE).debug("public request auth - send sms password");
+
         unsigned long long message_id =
         man_->getMessagesManager()->save_sms_to_send(
                 map_at(_data, "handle").c_str()
@@ -1130,10 +1150,26 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
+        /* set state */
         insertNewStateRequest(getId(), getObject(0).id, 21);
         conn.exec_params(
                 "SELECT update_object_states($1::integer)",
                 Database::query_param_list(getObject(0).id));
+
+        /* make new request for finishing contact identification */
+        PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
+                man_->createRequest(PRT_CONTACT_IDENTIFICATION)));
+        if (new_request) {
+            new_request->setRegistrarId(this->getRegistrarId());
+            new_request->setRequestId(this->getRequestId());
+            new_request->setEppActionId(this->getEppActionId());
+            new_request->addObject(this->getObject(0));
+            new_request->save();
+            new_request->sendPasswords("%1%" /* hmm sigh !HACK!*/);
+        }
+
+        /* check if need to transfer and do so */
+
         tx.commit();
     }
 
@@ -1141,11 +1177,7 @@ public:
                        bool _demo_mode)
     {
         MessageData data = PublicRequestAuthImpl::collectMessageData(_redirect_url);
-        PublicRequestAuthImpl::sendEmailPassword(
-                data,
-                "mojeid_identification",
-                "1",
-                _demo_mode);
+        PublicRequestAuthImpl::sendEmailPassword(data, 1, _demo_mode);
         PublicRequestAuthImpl::sendSmsPassword(data);
     }
 };
@@ -1169,10 +1201,14 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
+        /* set state */
         insertNewStateRequest(getId(), getObject(0).id, 22);
         conn.exec_params(
                 "SELECT update_object_states($1::integer)",
                 Database::query_param_list(getObject(0).id));
+
+        /* check if need to transfer and do so */
+
         tx.commit();
     }
 
@@ -1180,12 +1216,16 @@ public:
                        bool _demo_mode)
     {
         MessageData data = PublicRequestAuthImpl::collectMessageData(_redirect_url);
-        PublicRequestAuthImpl::sendEmailPassword(
-                data,
-                "mojeid_identification",
-                "2",
-                _demo_mode);
-        PublicRequestAuthImpl::sendLetterPassword(data);
+
+        if (checkState(getObject(0).id, 21) == true) {
+            /* contact is already conditionally identified - send pin3 */
+            PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN3);
+        }
+        else {
+            /* contact is fresh - send pin2 */
+            PublicRequestAuthImpl::sendEmailPassword(data, 2, _demo_mode);
+            PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN2);
+        }
     }
 };
 

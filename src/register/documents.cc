@@ -214,8 +214,11 @@ namespace Register
         templateMap[GT_WARNING_LETTER] = GenProcType(
           "warning_letter.xsl", true, "application/pdf"
         );
-        templateMap[GT_CONTACT_IDENTIFICATION_LETTER] = GenProcType(
+        templateMap[GT_CONTACT_IDENTIFICATION_LETTER_PIN2] = GenProcType(
           "mojeid_auth_user.xsl", true, "application/pdf"
+        );
+        templateMap[GT_CONTACT_IDENTIFICATION_LETTER_PIN3] = GenProcType(
+          "mojeid_auth_owner.xsl", true, "application/pdf"
         );
       }      
       virtual Generator *createOutputGenerator(

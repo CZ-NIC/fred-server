@@ -18,7 +18,8 @@ namespace Register
       GT_INVOICE_OUT_XML, ///< generate exporting XML of invoice
       GT_ACCOUNTING_XML, ///< generate accounting XML
       GT_WARNING_LETTER, ///< generate PDF with expiration warning letters
-      GT_CONTACT_IDENTIFICATION_LETTER
+      GT_CONTACT_IDENTIFICATION_LETTER_PIN2, ///< mojeid identificaton letter with pin2 code
+      GT_CONTACT_IDENTIFICATION_LETTER_PIN3  ///< mojeid identificaton letter with pin3 code
     };
     /// generator that has to be filled with stream of data
     class Generator {
