@@ -47,7 +47,7 @@ struct ObjMemberConversion
     enum Type{
           MC_NONE //no member conversion
         , MC_DATETIME //member conversion of datetime
-        , MC_NUMBER // int 12 chars
+        , MC_ULONG // ulong 11 chars
     };
 };
 
@@ -122,16 +122,23 @@ public:
     {
         switch(OBJECT_META_INFO::member_conversion_type(col))
         {
-        case ObjMemberConversion::MC_NUMBER:
+        case ObjMemberConversion::MC_ULONG:
             {
             if(value.empty())
             set(col,value);
         else
                 {
+		    try
+		    {
                     char new_value[13] ={0};
-                    snprintf (new_value, 12 ,"%011d"
-                            , static_cast<int>(boost::lexical_cast<long>(value)));
+                    snprintf (new_value, 12 ,"%011u"
+                            , static_cast<unsigned>(boost::lexical_cast<unsigned long>(value)));
                     set(col,std::string(new_value));
+		    }
+		    catch(const std::exception& ex)
+		    {
+		        set(col,std::string("set invalid value: ") + value);
+		    }
                 }
             }
             break;
@@ -156,16 +163,22 @@ public:
     {
         switch(OBJECT_META_INFO::member_conversion_type(col))
         {
-        case ObjMemberConversion::MC_NUMBER:
+        case ObjMemberConversion::MC_ULONG:
         {
             if(get(col).empty())
                 return std::string("");
             else
             {
-	        //return get(col);
+	        try
+		{
                 return boost::lexical_cast<std::string>(
-		boost::lexical_cast<long>(get(col))
-		);
+		boost::lexical_cast<unsigned long>(get(col)));
+		}
+		catch(const std::exception& ex)
+		{
+		    return(std::string("got invalid value: ") + get(col));
+		}
+		
             }
 
         }
