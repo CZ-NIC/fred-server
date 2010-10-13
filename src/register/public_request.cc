@@ -1142,6 +1142,7 @@ public:
                 "mojeid_identification",
                 "1",
                 _demo_mode);
+        PublicRequestAuthImpl::sendSmsPassword(data);
     }
 };
 
