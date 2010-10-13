@@ -128,10 +128,10 @@ public:
             set(col,value);
         else
                 {
-                    std::string new_value("            ");
-                    snprintf (const_cast<char*>(new_value.c_str()), 12 ,"%012d"
-                            , static_cast<int>(atol(value.c_str())));
-                    set(col,new_value);
+                    char new_value[13] ={0};
+                    snprintf (new_value, 12 ,"%011d"
+                            , static_cast<int>(boost::lexical_cast<long>(value)));
+                    set(col,std::string(new_value));
                 }
             }
             break;
@@ -162,7 +162,10 @@ public:
                 return std::string("");
             else
             {
-                return boost::lexical_cast<std::string>(atol(get(col).c_str()));
+	        //return get(col);
+                return boost::lexical_cast<std::string>(
+		boost::lexical_cast<long>(get(col))
+		);
             }
 
         }
