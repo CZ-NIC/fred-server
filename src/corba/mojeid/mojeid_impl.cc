@@ -150,7 +150,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
             throw std::runtime_error("unknown identification method");
         }
 
-        IdentificationRequest new_request(type);
+        IdentificationRequestPtr new_request(type);
         new_request->setRegistrarId(request.get_registrar_id());
         new_request->setRequestId(request.get_request_id());
         new_request->setEppActionId(request.get_id());
@@ -205,7 +205,7 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
                     "  identification_id: %1%  password: %2%  request_id: %3%")
                 % _ident_request_id % _password % _request_id);
 
-        IdentificationRequestManager request_manager;
+        IdentificationRequestManagerPtr request_manager;
         return request_manager->processAuthRequest(_ident_request_id, _password);
     }
     catch (Register::PublicRequest::PublicRequestAuth::NOT_AUTHENTICATED&) {
@@ -509,7 +509,7 @@ char* ServerImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
                     "  _contact_id: %1% ")
                 % _contact_id);
 
-        IdentificationRequestManager request_manager;
+        IdentificationRequestManagerPtr request_manager;
         return corba_wrap_string(request_manager->getIdentification(_contact_id).c_str());
     }
     catch (std::exception &_ex) {

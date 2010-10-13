@@ -18,7 +18,7 @@ namespace MojeID {
 /*
  * helper class - public request manager auto pointer
  */
-class IdentificationRequestManager
+class IdentificationRequestManagerPtr
 {
 private:
     std::auto_ptr<MailerManager> mailer_manager_;
@@ -28,7 +28,7 @@ private:
 
 
 public:
-    IdentificationRequestManager()
+    IdentificationRequestManagerPtr()
     {
         /* get config temporary pointer */
         HandleRegistryArgs *rconf = 
@@ -67,16 +67,16 @@ public:
 /* 
  * helper class - auth. public request auto pointer (mojeid identification process)
  */
-class IdentificationRequest
+class IdentificationRequestPtr
 {
 private:
-    IdentificationRequestManager request_manager_;
+    IdentificationRequestManagerPtr request_manager_;
     Register::PublicRequest::Type type_;
     std::auto_ptr<Register::PublicRequest::PublicRequestAuth> request_;
 
 
 public:
-    IdentificationRequest(const Register::PublicRequest::Type &_type)
+    IdentificationRequestPtr(const Register::PublicRequest::Type &_type)
         : type_(_type)
     {
         /* check valid type for mojeid identification */
