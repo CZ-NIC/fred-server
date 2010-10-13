@@ -912,10 +912,10 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Result result = conn.exec_params(
                 "SELECT c.name, c.organization, c.street1, c.city,"
-                " c.stateorprovince, c.postalcode, c.country, c.email"
-                " , or.historyid, c.telephone "
+                " c.stateorprovince, c.postalcode, c.country, c.email,"
+                " oreg.historyid, c.telephone"
                 " FROM contact c"
-                " JOIN object_registry or ON or.id = c.id "
+                " JOIN object_registry oreg ON oreg.id = c.id"
                 " WHERE c.id = $1::integer",
                 Database::query_param_list(getObject(0).id));
         if (result.size() != 1)
@@ -954,8 +954,8 @@ public:
         buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
         buf << getCreateTime().date();
         data["reqdate"] = buf.str();
-        data["object_id"]=boost::lexical_cast<std::string>(getObject(0).id);
-        data["object_registry_historyid"]= static_cast<std::string>(result[0][8]);
+        data["contact_id"]=boost::lexical_cast<std::string>(getObject(0).id);
+        data["contact_hid"]= static_cast<std::string>(result[0][8]);
         data["phone"]= static_cast<std::string>(result[0][9]);
 
         return data;
@@ -1052,8 +1052,8 @@ public:
                     _data["handle"].c_str()//contact handle
                     ,pa,file_id
                     ,"password_reset" //message type
-                    , boost::lexical_cast<unsigned long >(_data["object_id"])//contact object_registry.id
-                    , boost::lexical_cast<unsigned long >(_data["object_registry_historyid"])//contact_history.historyid
+                    , boost::lexical_cast<unsigned long >(_data["contact_id"])//contact object_registry.id
+                    , boost::lexical_cast<unsigned long >(_data["contact_hid"])//contact_history.historyid
                     ,"letter"//comm_type letter or registered_letter
                     );
     }
@@ -1065,8 +1065,8 @@ public:
                 , _data["phone"].c_str()
                 , _data["pin2"].c_str()
                 , "password_reset"
-                , boost::lexical_cast<unsigned long >(_data["object_id"])//contact object_registry.id
-                , boost::lexical_cast<unsigned long >(_data["object_registry_historyid"])//contact_history.historyid
+                , boost::lexical_cast<unsigned long >(_data["contact_id"])//contact object_registry.id
+                , boost::lexical_cast<unsigned long >(_data["contact_hid"])//contact_history.historyid
                 );
     }
 };
