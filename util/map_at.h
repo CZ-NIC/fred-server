@@ -1,11 +1,11 @@
-#ifndef THROWABLE_MAP_FIND_H_
-#define THROWABLE_MAP_FIND_H_
+#ifndef MAP_AT_H_
+#define MAP_AT_H_
 
 #include <stdexcept>
 
 
 template<typename T>
-const typename T::mapped_type& throwable_map_find(
+const typename T::mapped_type& map_at(
         const T &_container, const typename T::key_type &_key)
 {
     typename T::const_iterator it;
@@ -16,4 +16,4 @@ const typename T::mapped_type& throwable_map_find(
 }
 
 
-#endif /*THROWABLE_MAP_FIND_H_*/
+#endif /*MAP_AT_H_*/
