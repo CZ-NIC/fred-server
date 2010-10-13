@@ -2,7 +2,7 @@
 #define NULLABLE_H_
 
 #include "db/query_param.h"
-
+#include "db/value.h"
 
 template<typename T>
 class Nullable
@@ -48,6 +48,17 @@ public:
             return ::Database::QueryParam(value_);
     }
 
+    Nullable<T>& operator=(const Database::Value &_v)
+    {
+        if (_v.isnull()) {
+            isnull_ = true;
+        }
+        else {
+            isnull_ = false;
+            value_ = static_cast<T>(_v);
+        }
+        return *this;
+    }
 };
 
 

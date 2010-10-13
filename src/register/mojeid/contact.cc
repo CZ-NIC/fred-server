@@ -245,6 +245,9 @@ const MojeID::Contact contact_info(const unsigned long long &_id)
         throw std::runtime_error("not found");
     }
 
+    /* when attribute is Nullable<T> type value is assinged from
+     * result only if is not null
+     * (checking is done in Nullable<T>::operator=(Database::Value)) */
     Contact data;
     data.id = rinfo[0][0];
     data.handle = static_cast<std::string>(rinfo[0][1]);
