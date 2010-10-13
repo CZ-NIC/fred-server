@@ -47,6 +47,7 @@ struct ObjMemberConversion
     enum Type{
           MC_NONE //no member conversion
         , MC_DATETIME //member conversion of datetime
+        , MC_NUMBER // int 12 chars
     };
 };
 
@@ -121,6 +122,19 @@ public:
     {
         switch(OBJECT_META_INFO::member_conversion_type(col))
         {
+        case ObjMemberConversion::MC_NUMBER:
+            {
+            if(value.empty())
+            set(col,value);
+        else
+                {
+                    std::string new_value("            ");
+                    snprintf (const_cast<char*>(new_value.c_str()), 12 ,"%012d"
+                            , static_cast<int>(atol(value.c_str())));
+                    set(col,new_value);
+                }
+            }
+            break;
         case ObjMemberConversion::MC_DATETIME:
             {
 	        if(value.empty())
@@ -142,6 +156,18 @@ public:
     {
         switch(OBJECT_META_INFO::member_conversion_type(col))
         {
+        case ObjMemberConversion::MC_NUMBER:
+        {
+            if(get(col).empty())
+                return std::string("");
+            else
+            {
+                return boost::lexical_cast<std::string>(atol(get(col).c_str()));
+            }
+
+        }
+            break;
+
         case ObjMemberConversion::MC_DATETIME:
         {
             if(get(col).empty())
