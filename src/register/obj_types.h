@@ -127,20 +127,21 @@ public:
             if(value.empty())
             set(col,value);
         else
+            {
+                try
                 {
-		    try
-		    {
                     char new_value[13] ={0};
                     snprintf (new_value, 12 ,"%011u"
-                            , static_cast<unsigned>(boost::lexical_cast<unsigned long>(value)));
+                        , static_cast<unsigned>(
+                                boost::lexical_cast<unsigned long>(value)));
                     set(col,std::string(new_value));
-		    }
-		    catch(const std::exception& ex)
-		    {
-		        set(col,std::string("set invalid value: ") + value);
-		    }
+                }//try
+                catch(const std::exception& ex)
+                {
+                    set(col,value);
                 }
-            }
+            }//else
+            }//case block
             break;
         case ObjMemberConversion::MC_DATETIME:
             {
@@ -169,19 +170,17 @@ public:
                 return std::string("");
             else
             {
-	        try
-		{
-                return boost::lexical_cast<std::string>(
-		boost::lexical_cast<unsigned long>(get(col)));
-		}
-		catch(const std::exception& ex)
-		{
-		    return(std::string("got invalid value: ") + get(col));
-		}
-		
-            }
-
-        }
+                try
+                {
+                    return boost::lexical_cast<std::string>(
+                        boost::lexical_cast<unsigned long>(get(col)));
+                }//try
+                catch(const std::exception& ex)
+                {
+                    return(std::string("got invalid value: ") + get(col));
+                }
+            }//else
+        }//case block
             break;
 
         case ObjMemberConversion::MC_DATETIME:

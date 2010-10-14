@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
             CORBA::String_var sms_contact = CORBA::string_dup("REG-FRED_A");
             CORBA::String_var phone = CORBA::string_dup("+420123456789");
             CORBA::String_var content = CORBA::string_dup("Ahoj!");
-            CORBA::String_var sms_message_type = CORBA::string_dup("password_reset");
+            CORBA::String_var sms_message_type = CORBA::string_dup("mojeid_pin2");
 
             CORBA::ULongLong message_archive_id = 0;
 
@@ -91,13 +91,14 @@ BOOST_AUTO_TEST_CASE( test_exec )
             CORBA::String_var file_name = CORBA::string_dup("test1.pdf");
 
             CORBA::String_var file_type = CORBA::string_dup("expiration warning letter");
-            CORBA::String_var letter_message_type = CORBA::string_dup("password_reset");
+            CORBA::String_var registered_letter_message_type = CORBA::string_dup("mojeid_pin2");
+            CORBA::String_var letter_message_type = CORBA::string_dup("mojeid_pin3");
 
             if(i%2)
                 message_archive_id = messages_ref->saveLetterToSend(
                     letter_contact, paddr.in()
                     , file_content, file_name,file_type
-                    , letter_message_type, 1, 1, "registered_letter");
+                    , registered_letter_message_type, 1, 1, "registered_letter");
             else
                 message_archive_id = messages_ref->saveLetterToSend(
                     letter_contact, paddr.in()

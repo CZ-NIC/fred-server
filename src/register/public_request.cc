@@ -1085,10 +1085,12 @@ public:
                     map_at(_data, "handle").c_str()//contact handle
                     , pa
                     , file_id
-                    , "password_reset" //message type
+                    , ((_type == LETTER_PIN2) ? "mojeid_pin2"
+                            : ((_type == LETTER_PIN3) ? "mojeid_pin3" : "")) //message type
                     , boost::lexical_cast<unsigned long >(map_at(_data, "contact_id"))//contact object_registry.id
                     , boost::lexical_cast<unsigned long >(map_at(_data, "contact_hid"))//contact_history.historyid
-                    , "letter"//comm_type letter or registered_letter
+                    , ((_type == LETTER_PIN2) ? "registered_letter"
+                            : ((_type == LETTER_PIN3) ? "letter" : ""))//comm_type letter or registered_letter
                     );
 
             Database::Connection conn = Database::Manager::acquire();
@@ -1111,8 +1113,12 @@ public:
         man_->getMessagesManager()->save_sms_to_send(
                 map_at(_data, "handle").c_str()
                 , map_at(_data, "phone").c_str()
-                , map_at(_data, "pin2").c_str()
-                , "password_reset"
+                , (std::string("PIN2 pro overeni Vasi totoznosti"
+                        " v systemu mojeID: ")
+                 + map_at(_data, "pin2")
+                 + " Registraci dokoncete na www.mojeid.cz Zakaznicka podpora: "
+                    "www.nic.cz, +420 222 745 111.").c_str()
+                , "mojeid_pin2"
                 , boost::lexical_cast<unsigned long >(map_at(_data, "contact_id"))//contact object_registry.id
                 , boost::lexical_cast<unsigned long >(map_at(_data, "contact_hid"))//contact_history.historyid
                 );
