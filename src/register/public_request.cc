@@ -1204,7 +1204,23 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        /* set state */
+        /* check if contact is already conditionally identified */
+        if (checkState(getObject(0).id, 21) == true) {
+            Database::Result rid_result = conn.exec_params(
+                    "SELECT id FROM object_state_request WHERE"
+                    " state_id = 21 AND valid_to is NULL"
+                    " AND canceled is NULL AND object_id = $1::integer",
+                    Database::query_param_list(getObject(0).id));
+            /* cancel this status */
+            if (rid_result.size() == 1) {
+                conn.exec_params("UPDATE object_state_request"
+                        " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
+                        Database::query_param_list(
+                            static_cast<unsigned long long>(rid_result[0][0])));
+            }
+        }
+
+        /* set new state */
         insertNewStateRequest(getId(), getObject(0).id, 22);
         conn.exec_params(
                 "SELECT update_object_states($1::integer)",
