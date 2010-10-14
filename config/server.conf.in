@@ -96,7 +96,7 @@ session_garbage = 150
 monitoring_hosts_file = @MONITORINGIPS@
 
 [sms]
-command = ./test_sms.sh
+command = LOGIN=login PASSOWORD=pass sms_send.bash
 param_quote_by = '
 
 
