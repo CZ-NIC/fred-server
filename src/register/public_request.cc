@@ -913,7 +913,7 @@ public:
 
     typedef std::map<std::string, std::string> MessageData;
 
-    const MessageData collectMessageData(const std::string &_url)
+    const MessageData collectMessageData()
     {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result result = conn.exec_params(
@@ -950,7 +950,7 @@ public:
         data["postalcode"] = static_cast<std::string>(result[0][5]);
         data["country"] = static_cast<std::string>(result[0][6]);
         data["email"] = static_cast<std::string>(result[0][7]);
-        data["url"] = str(boost::format(_url) % identification_);
+        data["url"] = str(boost::format(man_->getIdentificationMailAuthUrl()) % identification_);
         data["handle"] = getObject(0).handle;
         /* password split */
         data["pin1"] = password_.substr(0, password_.size() / 2);
@@ -969,9 +969,7 @@ public:
     }
 
     /* helper method for sending email password */
-    void sendEmailPassword(MessageData &_data,
-                           const unsigned short &_type,
-                           bool _demo_mode) const
+    void sendEmailPassword(MessageData &_data, const unsigned short &_type) const
     {
         LOGGER(PACKAGE).debug("public request auth - send email password");
 
@@ -987,7 +985,7 @@ public:
         params["handle"]    = map_at(_data, "handle");
         params["passwd"]    = map_at(_data, "pin1");
         /* for demo purpose we send second half of password as well */
-        if (_demo_mode) {
+        if (man_->getDemoMode() == true) {
             params["passwd2"] = map_at(_data, "pin2");
         }
 
@@ -1171,7 +1169,7 @@ public:
             new_request->setEppActionId(this->getEppActionId());
             new_request->addObject(this->getObject(0));
             new_request->save();
-            new_request->sendPasswords("%1%" /* hmm sigh !HACK!*/);
+            new_request->sendPasswords();
         }
 
         /* check if need to transfer and do so */
@@ -1179,11 +1177,10 @@ public:
         tx.commit();
     }
 
-    void sendPasswords(const std::string &_redirect_url,
-                       bool _demo_mode)
+    void sendPasswords()
     {
-        MessageData data = PublicRequestAuthImpl::collectMessageData(_redirect_url);
-        PublicRequestAuthImpl::sendEmailPassword(data, 1, _demo_mode);
+        MessageData data = PublicRequestAuthImpl::collectMessageData();
+        PublicRequestAuthImpl::sendEmailPassword(data, 1);
         PublicRequestAuthImpl::sendSmsPassword(data);
     }
 };
@@ -1218,10 +1215,9 @@ public:
         tx.commit();
     }
 
-    void sendPasswords(const std::string &_redirect_url,
-                       bool _demo_mode)
+    void sendPasswords()
     {
-        MessageData data = PublicRequestAuthImpl::collectMessageData(_redirect_url);
+        MessageData data = PublicRequestAuthImpl::collectMessageData();
 
         if (checkState(getObject(0).id, 21) == true) {
             /* contact is already conditionally identified - send pin3 */
@@ -1229,7 +1225,7 @@ public:
         }
         else {
             /* contact is fresh - send pin2 */
-            PublicRequestAuthImpl::sendEmailPassword(data, 2, _demo_mode);
+            PublicRequestAuthImpl::sendEmailPassword(data, 2);
             PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN2);
         }
     }
@@ -1403,6 +1399,8 @@ private:
   Document::Manager *doc_manager_;
   Messages::ManagerPtr messages_manager;
 
+  std::string identification_mail_auth_url_;
+  bool demo_mode_;
 
 public:
   ManagerImpl(Domain::Manager   *_domain_manager,
@@ -1411,15 +1409,18 @@ public:
               KeySet::Manager   *_keyset_manager,
               Mailer::Manager   *_mailer_manager,
               Document::Manager *_doc_manager,
-              Messages::ManagerPtr _messages_manager) :
-              domain_manager_(_domain_manager),
-              contact_manager_(_contact_manager),
-              nsset_manager_(_nsset_manager),
-              keyset_manager_(_keyset_manager),
-              mailer_manager_(_mailer_manager),
-              doc_manager_(_doc_manager),
-              messages_manager(_messages_manager)
-              {}
+              Messages::ManagerPtr _messages_manager)
+      : domain_manager_(_domain_manager),
+        contact_manager_(_contact_manager),
+        nsset_manager_(_nsset_manager),
+        keyset_manager_(_keyset_manager),
+        mailer_manager_(_mailer_manager),
+        doc_manager_(_doc_manager),
+        messages_manager(_messages_manager),
+        identification_mail_auth_url_(std::string()),
+        demo_mode_(false)
+  {
+  }
 
   virtual ~ManagerImpl() {
   }
@@ -1592,6 +1593,33 @@ public:
 
       return rid[0][0];
   }
+
+  const std::string& getIdentificationMailAuthUrl() const
+  {
+      if (identification_mail_auth_url_.empty()) {
+          throw std::runtime_error("not configured");
+      }
+      else {
+          return identification_mail_auth_url_;
+      }
+  }
+
+  const bool getDemoMode() const
+  {
+      return demo_mode_;
+  }
+
+  void setIdentificationMailAuthUrl(const std::string &_url)
+  {
+      identification_mail_auth_url_ = _url;
+  }
+
+  void setDemoMode(bool _demo_mode)
+  {
+      demo_mode_ = _demo_mode;
+  }
+
+
 };
 
 Manager* Manager::create(Domain::Manager    *_domain_manager,
@@ -1600,7 +1628,8 @@ Manager* Manager::create(Domain::Manager    *_domain_manager,
                          KeySet::Manager    *_keyset_manager,
                          Mailer::Manager    *_mailer_manager,
                          Document::Manager  *_doc_manager,
-                         Messages::ManagerPtr _messages_manager) {
+                         Messages::ManagerPtr _messages_manager)
+{
 
     TRACE("[CALL] Register::Request::Manager::create()");
     return new ManagerImpl(

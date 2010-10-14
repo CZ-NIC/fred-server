@@ -31,9 +31,11 @@ public:
     IdentificationRequestManagerPtr()
     {
         /* get config temporary pointer */
-        HandleRegistryArgs *rconf = 
+        HandleRegistryArgs *rconf =
             CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
-        
+        HandleMojeIDArgs *mconf =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>();
+
         /* construct managers */
         mailer_manager_.reset(new MailerManager(CorbaContainer::get_instance()->getNS())),
         register_manager_.reset(Register::Manager::create(
@@ -52,9 +54,12 @@ public:
                     mailer_manager_.get(),
                     doc_manager_.get(),
                     register_manager_->getMessageManager()));
+
+        request_manager_->setIdentificationMailAuthUrl(mconf->redirect_url);
+        request_manager_->setDemoMode(mconf->demo_mode);
     }
 
-    
+
     Register::PublicRequest::Manager* operator ->()
     {
         return request_manager_.get();

@@ -167,8 +167,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
         /* send identification passwords */
         try {
-            new_request->sendPasswords(server_conf_->redirect_url,
-                                       server_conf_->demo_mode);
+            new_request->sendPasswords();
             LOGGER(PACKAGE).info("identification password sent");
         }
         catch (...) {

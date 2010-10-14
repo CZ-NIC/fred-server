@@ -159,8 +159,7 @@ public:
      * should be checking */
     virtual bool authenticate(const std::string &_password) = 0;
 
-    virtual void sendPasswords(const std::string &_redirect_url,
-                               bool _demo_mode = false) = 0;
+    virtual void sendPasswords() = 0;
 };
 
 typedef boost::shared_ptr<PublicRequestAuth> PublicRequestAuthPtr;
@@ -194,10 +193,11 @@ public:
                          Mailer::Manager    *_mailer_manager,
                          Document::Manager  *_doc_manager,
                          Messages::ManagerPtr _messages_manager);
-  
+
   virtual Mailer::Manager* getMailerManager() const = 0;
   virtual Document::Manager* getDocumentManager() const = 0;
-  virtual Messages::ManagerPtr getMessagesManager() const =0;
+  virtual Messages::ManagerPtr getMessagesManager() const = 0;
+
   virtual List* createList() const = 0;
   virtual void getPdf(Database::ID _id, 
                       const std::string& _lang, 
@@ -216,7 +216,13 @@ public:
 
   virtual std::string getIdentification(
           Database::ID contact) = 0;
-}; 
+
+  /* config - this should be in contructor */
+  virtual const std::string& getIdentificationMailAuthUrl() const = 0;
+  virtual const bool getDemoMode() const = 0;
+  virtual void setIdentificationMailAuthUrl(const std::string &_url) = 0;
+  virtual void setDemoMode(bool _demo_mode) = 0;
+};
 
 }
 }
