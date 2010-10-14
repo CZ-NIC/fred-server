@@ -13,3 +13,7 @@ crc32_SOURCES  = crc32.cc
 crc32_LDFLAGS  = $(BOOST_LDFLAGS) $(AM_LDFLAGS) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB)
 
 
+bin_PROGRAMS = urlencode
+urlencode_SOURCES  = urlencode.cc
+urlencode_LDFLAGS  = $(BOOST_LDFLAGS) $(AM_LDFLAGS) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB)
+urlencode_LDADD  =  libhp.a
