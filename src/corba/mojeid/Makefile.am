@@ -23,7 +23,6 @@ fred_mifd_SOURCES = ../MojeIDSK.cc \
                     ../mailer_manager.cc \
                     mojeid_impl.h \
                     mojeid_impl.cc \
-                    mojeid_request.h \
                     mojeid_identification.h \
                     corba_conversion.h \
                     fred-mifd.cc

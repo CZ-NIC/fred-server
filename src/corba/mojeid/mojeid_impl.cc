@@ -1,7 +1,6 @@
 
 #include "corba_conversion.h"
 #include "mojeid_impl.h"
-#include "mojeid_request.h"
 #include "mojeid_identification.h"
 
 #include "cfg/config_handler_decl.h"
@@ -14,6 +13,8 @@
 #include "register/register.h"
 #include "register/contact.h"
 #include "register/public_request.h"
+#include "register/mojeid/contact.h"
+#include "register/mojeid/request.h"
 
 #include "corba/connection_releaser.h"
 #include "corba/mailer_manager.h"
@@ -84,7 +85,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        Registry::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
+        ::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
         Logging::Context ctx_request(request.get_servertrid());
 
         try {
@@ -154,7 +155,9 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         new_request->setRegistrarId(request.get_registrar_id());
         new_request->setRequestId(request.get_request_id());
         new_request->setEppActionId(request.get_id());
-        new_request->addObject(Register::PublicRequest::OID(id, handle, Register::PublicRequest::OT_CONTACT));
+        new_request->addObject(
+                Register::PublicRequest::OID(
+                    id, handle, Register::PublicRequest::OT_CONTACT));
         new_request->save();
 
         /* save contact and request (one transaction) */
@@ -227,21 +230,14 @@ CORBA::ULongLong ServerImpl::transferContact(const char* _handle,
                                              const CORBA::ULongLong _request_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
-    Logging::Context ctx("contact-transfer");
+    Logging::Context ctx("contact-transfer-request");
     ConnectionReleaser releaser;
-
-    throw Registry::MojeID::Server::ErrorReport("not implemented");
 
     try {
         std::string handle = static_cast<std::string>(_handle);
         LOGGER(PACKAGE).info(boost::format("request data --"
                     "  handle: %1%  identification_method: %2%  request_id: %3%")
                 % handle % _method % _request_id);
-
-        /* start new request - here for logging into action table - until
-         * fred-logd fully migrated */
-        Registry::MojeID::Request request(205, mojeid_registrar_id_, _request_id);
-        Logging::Context ctx_request(request.get_servertrid());
 
         Register::NameIdPair cinfo;
         try {
@@ -271,13 +267,33 @@ CORBA::ULongLong ServerImpl::transferContact(const char* _handle,
 
         /* TODO: more checking? */
 
-        /* create identification request - transfer will be done when processed */
+        /* create public request */
+        Register::PublicRequest::Type type;
+        if (_method == Registry::MojeID::SMS) {
+            type = Register::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+        }
+        else if (_method == Registry::MojeID::LETTER) {
+            type = Register::PublicRequest::PRT_CONTACT_IDENTIFICATION;
+        }
+        else if (_method == Registry::MojeID::CERTIFICATE) {
+            throw std::runtime_error("not implemented");
+        }
+        else {
+            throw std::runtime_error("unknown identification method");
+        }
 
-
-        request.end_success();
+        IdentificationRequestPtr new_request(type);
+        new_request->setRegistrarId(mojeid_registrar_id_);
+        new_request->setRequestId(_request_id);
+        new_request->setEppActionId(0);
+        new_request->addObject(
+                Register::PublicRequest::OID(
+                    cinfo.id, handle, Register::PublicRequest::OT_CONTACT));
+        new_request->save();
+        new_request->sendPasswords();
 
         LOGGER(PACKAGE).info(boost::format(
-                "identification request with contact transfert saved"
+                "identification request with contact transfer saved"
                 " -- handle: %1%  id: %2%")
                 % handle % cinfo.id);
 
@@ -310,7 +326,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
 
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        Registry::MojeID::Request request(203, mojeid_registrar_id_, _request_id, _trans_id);
+        ::MojeID::Request request(203, mojeid_registrar_id_, _request_id, _trans_id);
         Logging::Context ctx_request(request.get_servertrid());
 
         if (_contact.id == 0) {

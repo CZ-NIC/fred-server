@@ -14,6 +14,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 
 libmojeid_a_SOURCES = contact.h \
                       contact.cc \
-                      nullable.h
+                      nullable.h \
+                      request.h
 
 

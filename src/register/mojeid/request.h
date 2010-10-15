@@ -4,7 +4,6 @@
 
 #include "register/db_settings.h"
 
-namespace Registry {
 namespace MojeID {
 
 class Request
@@ -26,7 +25,6 @@ private:
 
 public:
     Database::Connection conn;
-
 
     Request(const unsigned int &_request_code,
             const unsigned long long &_registrar_id,
@@ -53,7 +51,7 @@ public:
                 throw;
             }
 
-            servertrid_ = str(boost::format("MojeID-%010d") % id_);
+            servertrid_ = str(boost::format("MojedID-%010d") % id_);
 
             conn.exec_params(
                     "INSERT INTO action"
@@ -140,7 +138,6 @@ public:
 };
 
 
-}
 }
 
 #endif /*MOJEID_REQUEST_H_*/
