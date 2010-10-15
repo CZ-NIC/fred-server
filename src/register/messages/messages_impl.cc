@@ -251,10 +251,12 @@ unsigned long long Manager::save_sms_to_send(const char* contact_handle
     {
         LOGGER(PACKAGE).error(boost::format(
                 "Messages::save_sms_to_send exception: %1%") % ex.what());
+        throw;
     }
     catch(...)
     {
         LOGGER(PACKAGE).error("Messages::save_sms_to_send error");
+        throw;
     }
     return message_archive_id;
 }
@@ -360,10 +362,12 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
     {
         LOGGER(PACKAGE).error(boost::format(
                 "Messages::save_letter_to_send exception: %1%") % ex.what());
+        throw;
     }
     catch(...)
     {
         LOGGER(PACKAGE).error("Messages::save_letter_to_send error");
+        throw;
     }
 
     return message_archive_id;
@@ -857,6 +861,7 @@ void MessageReload::operator ()
     catch (std::exception& ex)
     {
       LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+      throw;
     }
 }
 
