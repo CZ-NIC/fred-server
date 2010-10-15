@@ -7,6 +7,8 @@
 #include "types/sqlize.h"
 #include "random.h"
 #include "map_at.h"
+#include "mojeid/contact.h"
+#include "mojeid/request.h"
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
@@ -846,56 +848,84 @@ public:
         return false;
     }
 
+
     void save()
     {
-
         if (id_) {
             PublicRequestImpl::save();
-            /* don't need update */
+            /* update (no need) */
             return;
         }
+        else {
+            /* insert */
 
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
-        PublicRequestImpl::save();
+            /* need one and only one contact for request */
+            if (this->getObjectSize() != 1) {
+                throw std::runtime_error("public request auth requires"
+                        " (only) one object to work with");
+            }
 
-        if (!id_) {
-            throw std::runtime_error("cannot save authenticated public request"
-                    " without base request (id not set)");
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Transaction tx(conn);
+            PublicRequestImpl::save();
+
+            if (!id_) {
+                throw std::runtime_error("cannot save authenticated public request"
+                        " without base request (id not set)");
+            }
+
+            identification_ = Random::string_alpha(32);
+            password_ = Random::string_alpha(16);
+
+            conn.exec_params(
+                    "INSERT INTO public_request_auth (id, identification, password)"
+                    " VALUES ($1::integer, $2::text, $3::text)",
+                    Database::query_param_list
+                        (id_)
+                        (identification_)
+                        (password_));
+            tx.commit();
         }
-
-        identification_ = Random::string_alpha(32);
-        password_ = Random::string_alpha(16);
-
-        conn.exec_params(
-                "INSERT INTO public_request_auth (id, identification, password)"
-                " VALUES ($1::integer, $2::text, $3::text)",
-                Database::query_param_list
-                    (id_)
-                    (identification_)
-                    (password_));
-        tx.commit();
     }
+
 
     void process(bool _invalid, bool _check)
     {
+        /* proces only new */
         if (status_ != PRS_NEW) {
             throw std::runtime_error("already processed");
         }
-        if (authenticated_) {
-            if (_invalid) {
-                status_ = PRS_INVALID;
-            }
-            else {
-                processAction(_check);
-                status_ = PRS_ANSWERED;
-            }
-            resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
-            save();
-        }
-        else {
+
+        /* need to be authenticated */
+        if (!authenticated_) {
             throw NOT_AUTHENTICATED();
         }
+
+        /* object should not change */
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result rtransfer = conn.exec_params(
+                "SELECT ((o.update IS NULL OR o.update < pr.create_time)"
+                 " AND (o.trdate IS NULL OR o.trdate < pr.create_time))"
+                 " FROM object o"
+                 " JOIN contact c on c.id = o.id"
+                 " JOIN public_request_objects_map prom on prom.object_id = c.id"
+                 " JOIN public_request pr on pr.id = prom.request_id"
+                 " WHERE pr.resolve_time IS NULL AND pr.id = $1::integer",
+                 Database::query_param_list(this->getId()));
+        if (rtransfer.size() != 1 || static_cast<bool>(rtransfer[0][0]) != true) {
+            throw std::runtime_error("request is not eligible for processing"
+                    " (contact was changed)");
+        }
+
+        if (_invalid) {
+            status_ = PRS_INVALID;
+        }
+        else {
+            processAction(_check);
+            status_ = PRS_ANSWERED;
+        }
+        resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
+        save();
     }
 
     /* just to be sure of empty impl (if someone would change base impl) */
@@ -1154,6 +1184,23 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
+        /* check if need to transfer and do so (TODO: make function (two copies) */
+        Database::Result clid_result = conn.exec_params(
+                "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
+                " WHERE c.id = $1::integer FOR UPDATE",
+                Database::query_param_list(getObject(0).id));
+        if (clid_result.size() != 1) {
+            throw std::runtime_error("cannot find contact, object doesn't exist!?"
+                    " (probably deleted?)");
+        }
+        if (static_cast<unsigned long long>(clid_result[0][0]) != this->getRegistrarId()) {
+            /* run transfer command */
+            ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
+            ::MojeID::contact_transfer(this->getEppActionId(), this->getRequestId(),
+                    this->getRegistrarId(), getObject(0).id);
+            request.end_success();
+        }
+
         /* set state */
         insertNewStateRequest(getId(), getObject(0).id, 21);
         conn.exec_params(
@@ -1204,6 +1251,23 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
+        /* check if need to transfer and do so (TODO: make function (two copies) */
+        Database::Result clid_result = conn.exec_params(
+                "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
+                " WHERE c.id = $1::integer FOR UPDATE",
+                Database::query_param_list(getObject(0).id));
+        if (clid_result.size() != 1) {
+            throw std::runtime_error("cannot find contact, object doesn't exist!?"
+                    " (probably deleted?)");
+        }
+        if (static_cast<unsigned long long>(clid_result[0][0]) != this->getRegistrarId()) {
+            /* run transfer command */
+            ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
+            ::MojeID::contact_transfer(this->getEppActionId(), this->getRequestId(),
+                    this->getRegistrarId(), getObject(0).id);
+            request.end_success();
+        }
+
         /* check if contact is already conditionally identified */
         if (checkState(getObject(0).id, 21) == true) {
             Database::Result rid_result = conn.exec_params(
@@ -1225,8 +1289,6 @@ public:
         conn.exec_params(
                 "SELECT update_object_states($1::integer)",
                 Database::query_param_list(getObject(0).id));
-
-        /* check if need to transfer and do so */
 
         tx.commit();
     }
