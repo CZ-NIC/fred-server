@@ -185,11 +185,11 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::Server::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::Server::ErrorReport();
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 }
 
@@ -212,20 +212,20 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
     }
     catch (Register::PublicRequest::PublicRequestAuth::NOT_AUTHENTICATED&) {
         LOGGER(PACKAGE).info("request authentication failed (bad password)");
-        throw Registry::MojeID::Server::ErrorReport("not authenticated");
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR("not authenticated");
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::Server::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::Server::ErrorReport();
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 
 }
 
-CORBA::ULongLong ServerImpl::transferContact(const char* _handle,
+CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
                                              IdentificationMethod _method,
                                              const CORBA::ULongLong _request_id)
 {
@@ -302,11 +302,11 @@ CORBA::ULongLong ServerImpl::transferContact(const char* _handle,
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::Server::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::Server::ErrorReport();
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 }
 
@@ -384,11 +384,11 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::Server::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::Server::ErrorReport();
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 
 }
@@ -410,11 +410,11 @@ Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::Server::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::Server::ErrorReport();
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 }
 
@@ -457,11 +457,11 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::Server::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::Server::ErrorReport();
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 }
 
@@ -504,11 +504,11 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::Server::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::Server::ErrorReport();
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 }
 
@@ -529,20 +529,46 @@ char* ServerImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        throw Registry::MojeID::Server::ErrorReport(_ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
-        throw Registry::MojeID::Server::ErrorReport();
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 }
 
 
-ContactStateChangeList* ServerImpl::getContactStateChanges(const Date& since)
+Buffer* ServerImpl::getValidationPdf(const CORBA::ULongLong _contact_id)
 {
-    ContactStateChangeList_var ret = new ContactStateChangeList;
+    Buffer_var ret = new Buffer;
     ret->length(0);
     return ret._retn();
+}
+
+
+void ServerImpl::createValidationRequest(const CORBA::ULongLong _contact_id,
+                                         const CORBA::ULongLong _request_id)
+{
+}
+
+
+ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hours)
+{
+    ContactStateInfoList_var ret = new ContactStateInfoList;
+    ret->length(0);
+    return ret._retn();
+}
+
+
+ContactState ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
+{
+    return Registry::MojeID::NOT_IDENTIFIED;
+}
+
+
+CORBA::ULongLong ServerImpl::getContactId(const char* _handle)
+{
+    return 0;
 }
 
 
