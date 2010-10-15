@@ -292,20 +292,32 @@ void NotifyClient::file_send()
              return;
          }
 
+         LOGGER(PACKAGE).debug(std::string("send letters: hp_login_registered_letter_batch_id ")
+             +hpmail_config["hp_login_registered_letter_batch_id"]);
+
          hpmail_config["hp_login_batch_id"]
                        = hpmail_config["hp_login_registered_letter_batch_id"];
      }
 
      Register::Messages::LetterProcInfo proc_letters = messages_manager->load_letters_to_send(0, comm_type);
 
-     if(proc_letters.empty()) return;
+     if(proc_letters.empty())
+     {
+         LOGGER(PACKAGE).debug("send letters: proc_letters is empty");
+         return;
+     }
+     else
+     {
+         LOGGER(PACKAGE).debug(std::string("send letters: proc_letters size: ")
+         + boost::lexical_cast<std::string>(proc_letters.size()));
+     }
 
      std::string new_status = "sent";
      std::string batch_id;
 
      try
      {
-         LOGGER(PACKAGE).info("init postservice upload");
+         LOGGER(PACKAGE).info("send letters: init postservice upload");
          HPMail::set(hpmail_config);
 
          for(unsigned i=0;i<proc_letters.size();i++)
@@ -317,19 +329,19 @@ void NotifyClient::file_send()
              fileman->download(mp.file_id, smail.data);
 
              LOGGER(PACKAGE).debug(boost::format(
-                         "adding file (id=%1%) to batch") % mp.file_id);
+                         "send letters: adding file (id=%1%) to batch") % mp.file_id);
              HPMail::get()->save_file_for_upload(smail);
          }
          batch_id = HPMail::get()->upload();
      }
      catch (std::exception& ex) {
-         std::string msg = str(boost::format("error occured (%1%)") % ex.what());
+         std::string msg = str(boost::format("send letters: error occured (%1%)") % ex.what());
          LOGGER(PACKAGE).error(msg);
          std::cerr << msg << std::endl;
          new_status = "send_failed"; // set error status in database
      }
      catch (...) {
-         std::string msg = "unknown error occured"; 
+         std::string msg = "send letters: unknown error occured";
          LOGGER(PACKAGE).error(msg);
          std::cerr << msg << std::endl;
          new_status = "send_failed"; // set error status in database
