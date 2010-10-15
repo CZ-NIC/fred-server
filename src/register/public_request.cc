@@ -1141,12 +1141,14 @@ public:
         man_->getMessagesManager()->save_sms_to_send(
                 map_at(_data, "handle").c_str()
                 , map_at(_data, "phone").c_str()
-                , (std::string("PIN2 pro overeni Vasi totoznosti"
-                        " v systemu mojeID: ")
+
+                , (std::string("Potvrzujeme uspesne zalozeni uctu mojeID. "
+                        "Pro aktivaci Vaseho uctu je nutne vlozit kody "
+                        "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: ")
                  + map_at(_data, "pin2")
-                 + " Registraci dokoncete na www.mojeid.cz Zakaznicka podpora: "
-                    "www.nic.cz, +420 222 745 111.").c_str()
-                , "mojeid_pin2"
+                 ).c_str()
+
+                 , "mojeid_pin2"
                 , boost::lexical_cast<unsigned long >(map_at(_data, "contact_id"))//contact object_registry.id
                 , boost::lexical_cast<unsigned long >(map_at(_data, "contact_hid"))//contact_history.historyid
                 );
