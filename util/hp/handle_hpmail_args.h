@@ -74,7 +74,7 @@ public:
 							::value<std::string>()->default_value(std::string("hpcb_Jednorazova_zakazka"))
 						, "batch identificator")
                 ((CONFIG_PREFIX+"hp_login_registered_letter_batch_id").c_str(), boost::program_options
-                            ::value<std::string>()->default_value(std::string("hpcb_Jednorazova_zakazka"))
+                            ::value<std::string>()
                         , "registered letter batch identificator")
 				((CONFIG_PREFIX+"hp_login_note,n").c_str(), boost::program_options
 							::value<std::string>()->default_value(std::string(""))
@@ -192,7 +192,7 @@ public:
                             ::value<std::string>()->default_value(std::string("hpcb_Jednorazova_zakazka"))
                         , "batch identificator")
                 ((CONFIG_PREFIX+"hp_login_registered_letter_batch_id").c_str(), boost::program_options
-                            ::value<std::string>()->default_value(std::string("hpcb_Jednorazova_zakazka"))
+                            ::value<std::string>()
                         , "registered letter batch identificator")
                 ((CONFIG_PREFIX+"hp_login_note,n").c_str(), boost::program_options
                             ::value<std::string>()->default_value(std::string(""))

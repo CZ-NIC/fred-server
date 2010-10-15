@@ -286,6 +286,12 @@ void NotifyClient::file_send()
 
      if(comm_type.compare("registered_letter") == 0)
      {
+         if(hpmail_config["hp_login_registered_letter_batch_id"].empty())
+         {
+             LOGGER(PACKAGE).info("send letters: not sending registered letters");
+             return;
+         }
+
          hpmail_config["hp_login_batch_id"]
                        = hpmail_config["hp_login_registered_letter_batch_id"];
      }
