@@ -27,6 +27,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(top_builddir)/util/libutils.a \
 		$(top_builddir)/src/register/messages/libmessages.a \
 		$(top_builddir)/src/register/requests/librequests.a \
+		$(top_builddir)/src/register/mojeid/libmojeid.a \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB)
 
