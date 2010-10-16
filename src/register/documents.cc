@@ -220,6 +220,10 @@ namespace Register
         templateMap[GT_CONTACT_IDENTIFICATION_LETTER_PIN3] = GenProcType(
           "mojeid_auth_owner.xsl", true, "application/pdf"
         );
+        templateMap[GT_CONTACT_VALIDATION_REQUEST_PIN3] = GenProcType(
+          "mojeid_validate.xsl", true, "application/pdf"
+        );
+
       }      
       virtual Generator *createOutputGenerator(
         GenerationType type, std::ostream& output,

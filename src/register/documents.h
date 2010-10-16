@@ -19,7 +19,8 @@ namespace Register
       GT_ACCOUNTING_XML, ///< generate accounting XML
       GT_WARNING_LETTER, ///< generate PDF with expiration warning letters
       GT_CONTACT_IDENTIFICATION_LETTER_PIN2, ///< mojeid identificaton letter with pin2 code
-      GT_CONTACT_IDENTIFICATION_LETTER_PIN3  ///< mojeid identificaton letter with pin3 code
+      GT_CONTACT_IDENTIFICATION_LETTER_PIN3,  ///< mojeid identificaton letter with pin3 code
+      GT_CONTACT_VALIDATION_REQUEST_PIN3  ///< PDF with validation request
     };
     /// generator that has to be filled with stream of data
     class Generator {
