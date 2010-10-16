@@ -904,8 +904,8 @@ public:
         /* object should not change */
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rtransfer = conn.exec_params(
-                "SELECT ((o.update IS NULL OR o.update < pr.create_time)"
-                 " AND (o.trdate IS NULL OR o.trdate < pr.create_time))"
+                "SELECT ((o.update IS NULL OR o.update <= pr.create_time)"
+                 " AND (o.trdate IS NULL OR o.trdate <= pr.create_time))"
                  " FROM object o"
                  " JOIN contact c on c.id = o.id"
                  " JOIN public_request_objects_map prom on prom.object_id = c.id"
