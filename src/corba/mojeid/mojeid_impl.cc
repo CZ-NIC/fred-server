@@ -568,7 +568,35 @@ ContactState ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
 
 CORBA::ULongLong ServerImpl::getContactId(const char* _handle)
 {
-    return 0;
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("get-contact-id");
+    ConnectionReleaser releaser;
+
+    try {
+        Register::NameIdPair cinfo;
+        Register::Contact::ManagerPtr contact_mgr(
+                Register::Contact::Manager::create(
+                    0, registry_conf_->restricted_handles));
+
+        Register::Contact::Manager::CheckAvailType check_result;
+        check_result = contact_mgr->checkAvail(_handle, cinfo);
+
+        if (check_result == Register::Contact::Manager::CA_REGISTRED) {
+            LOGGER(PACKAGE).info(boost::format(
+                        "contact %1% => id=%2%") % _handle % cinfo.id);
+            return cinfo.id;
+        }
+    }
+    catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
+
+    throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
 }
 
 
