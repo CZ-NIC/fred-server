@@ -212,7 +212,7 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
     }
     catch (Register::PublicRequest::PublicRequestAuth::NOT_AUTHENTICATED&) {
         LOGGER(PACKAGE).info("request authentication failed (bad password)");
-        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR("not authenticated");
+        throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
