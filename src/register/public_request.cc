@@ -31,6 +31,10 @@ std::string Type2Str(Type _type) {
     case PRT_UNBLOCK_CHANGES_POST_PIF:    return "Unblock changes (Web/Post)";
     case PRT_UNBLOCK_TRANSFER_EMAIL_PIF:  return "Unblock transfer (Web/Email)";
     case PRT_UNBLOCK_TRANSFER_POST_PIF:   return "Unblock transfer (Web/Post)";
+    case PRT_CONDITIONAL_CONTACT_IDENTIFICATION:
+    	                                  return "Conditional identification";
+    case PRT_CONTACT_IDENTIFICATION:      return "Full identification";
+    case PRT_CONTACT_VALIDATION:          return "Validation";
     default:                              return "TYPE UNKNOWN";
   }
 }
@@ -505,6 +509,7 @@ public:
       status_ = PRS_ANSWERED;
       answer_email_id_ = sendEmail();
     }
+    // TODO: probably bug - shoud be in UTC time zone
     resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
     save();
   }
@@ -1318,19 +1323,49 @@ public:
    {
       return true;
    }
-   virtual unsigned getPDFType() const
-   {
-       return 5;
-   }
    virtual std::string getTemplateName() const
    {
-       return "";
+       return "mojeid_validation";
    }
    virtual void fillTemplateParams(Mailer::Parameters& params) const
    {
+     std::ostringstream buf;
+	 buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
+	 buf << getCreateTime().date();
+	 params["reqdate"] = buf.str();
+	 buf.str("");
+	 buf << getId();
+	 params["reqid"] = buf.str();
+	 if (getObjectSize()) {
+	   buf.str("");
+	   buf << getObject(0).type;
+	   params["type"] = buf.str();
+	   params["handle"] = getObject(0).handle;
+	 }
+	 Database::Connection conn = Database::Manager::acquire();
+	 Database::Result res = conn.exec_params(
+       "SELECT "
+   	   " c.name, c. organization, c.ssn, c.ssntype, "
+   	   " c.street1 || ' ' || COALESCE(c.street2,'') || ' ' ||"
+       " COALESCE(c.street3,' ') || ', ' || "
+       " c.postalcode || ' ' || c.city || ', ' || c.country "
+       "FROM public_request pr"
+       " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
+  	   " JOIN contact c ON (c.id = prom.object_id) "
+       " WHERE pr.id = $1::integer",
+       Database::query_param_list(getId()));
+	 if (res.size() == 1) {
+       params["name"] = res[0][0];
+       params["org"] = res[0][1];
+       params["ic"] = unsigned(res[0][3]) == 4 ? res[0][2]  : "";
+       params["birthdate"] = unsigned(res[0][3]) == 6 ? res[0][2]  : "";
+       params["address"] = res[0][4];
+       params["status"] = getStatus() == PRS_ANSWERED ? 1 : 2;
+	 }
    }
    void processAction(bool _check)
    {
+	  // PROBLEM, MAIL NOT SEND IN CASE OF INVALID
       LOGGER(PACKAGE).debug(boost::format(
         "processing validation request id=%1%")
         % getId());
@@ -1338,6 +1373,8 @@ public:
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction tx(conn);
 
+      // TODO: close request for identification if exists
+      // TODO: set validate state for contact
       tx.commit();
    }
 };
