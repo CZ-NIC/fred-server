@@ -1345,22 +1345,22 @@ public:
 	 Database::Connection conn = Database::Manager::acquire();
 	 Database::Result res = conn.exec_params(
        "SELECT "
-   	   " c.name, c. organization, c.ssn, c.ssntype, "
-   	   " c.street1 || ' ' || COALESCE(c.street2,'') || ' ' ||"
+       " c.name, c. organization, c.ssn, c.ssntype, "
+       " c.street1 || ' ' || COALESCE(c.street2,'') || ' ' ||"
        " COALESCE(c.street3,' ') || ', ' || "
        " c.postalcode || ' ' || c.city || ', ' || c.country "
        "FROM public_request pr"
        " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
-  	   " JOIN contact c ON (c.id = prom.object_id) "
+       " JOIN contact c ON (c.id = prom.object_id) "
        " WHERE pr.id = $1::integer",
        Database::query_param_list(getId()));
 	 if (res.size() == 1) {
-       params["name"] = res[0][0];
-       params["org"] = res[0][1];
-       params["ic"] = unsigned(res[0][3]) == 4 ? res[0][2]  : "";
-       params["birthdate"] = unsigned(res[0][3]) == 6 ? res[0][2]  : "";
-       params["address"] = res[0][4];
-       params["status"] = getStatus() == PRS_ANSWERED ? 1 : 2;
+           params["name"] = std::string(res[0][0]);
+           params["org"] = std::string(res[0][1]);
+           params["ic"] = unsigned(res[0][3]) == 4 ? std::string(res[0][2])  : "";
+           params["birthdate"] = unsigned(res[0][3]) == 6 ? std::string(res[0][2])  : "";
+           params["address"] = std::string(res[0][4]);
+           params["status"] = getStatus() == PRS_ANSWERED ? "1" : "2";
 	 }
    }
    void processAction(bool _check)
