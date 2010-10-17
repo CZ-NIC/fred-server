@@ -65,6 +65,11 @@ public:
         return request_manager_.get();
     }
 
+    Register::Document::Manager* getDocumentManager()
+    {
+        return doc_manager_.get();
+    }
+
 };
 
 

@@ -537,11 +537,56 @@ char* ServerImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
     }
 }
 
-
 Buffer* ServerImpl::getValidationPdf(const CORBA::ULongLong _contact_id)
 {
-    Buffer_var ret = new Buffer;
-    ret->length(0);
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("get-validation-pdf");
+    ConnectionReleaser releaser;
+
+    // load all required data for last unprocessed validation request
+    // this should be eventually done by filter query with combination of
+    // loading contact data
+    Database::Connection conn = Database::Manager::acquire();
+    // TODO: hardcoded ID=14! should be replaced
+    Database::Result res = conn.exec_params(
+            "SELECT pr.create_time, pr.id, "
+    		" c.name, c. organization, c.ssn, c.ssntype, "
+    		" c.street1 || ' ' || c.street2 || ' ' || c.street3 || ', ' || "
+    		" c.postalcode || ' ' || c.city || ', ' || c.country "
+    		"FROM public_request pr"
+            " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
+    		" JOIN contact c ON (c.id = prom.object_id) "
+            " WHERE pr.resolve_time IS NULL AND pr.status = 0 "
+    		" AND pr.request_type=14 AND object_id = $1::integer",
+            Database::query_param_list(_contact_id));
+    if (res.size() != 1)
+        throw; // TODO: check exception
+    IdentificationRequestManagerPtr req_man;
+    std::stringstream outstr;
+    std::auto_ptr<Register::Document::Generator> g(
+      req_man->getDocumentManager()->createOutputGenerator(
+    	Register::Document::GT_CONTACT_VALIDATION_REQUEST_PIN3,
+        outstr,
+        "cs"
+      )
+    );
+    g->getInput().imbue(std::locale(std::locale(""),new date_facet("%x")));
+    g->getInput()
+    		<< "<?xml version='1.0' encoding='utf-8'?>"
+    		<< "<mojeid_valid>"
+    		<< "<request_date>" << "res[0]" << "</request_date>"
+    		<< "<request_id>"  << res[0][1] << "</request_id>"
+    		<< "<name>" << res[0][2] << "</name>"
+    		<< "<organization>" << res[0][3] << "</organization>"
+    		<< "<ic>" << res[0][4]	<< "</ic>"
+    		<< "<birth_date>" << res[0][4]	<< "</birth_date>"
+    		<< "<address>" << res[0][5] << "</address>"
+    		<< "</mojeid_valid>";
+    g->closeInput();
+    unsigned long size = outstr.str().size();
+    CORBA::Octet *b = Buffer::allocbuf(size);
+    memcpy(b,outstr.str().c_str(),size);
+    Buffer_var ret = new Buffer(size, size, b, 1);
     return ret._retn();
 }
 
@@ -549,6 +594,50 @@ Buffer* ServerImpl::getValidationPdf(const CORBA::ULongLong _contact_id)
 void ServerImpl::createValidationRequest(const CORBA::ULongLong _contact_id,
                                          const CORBA::ULongLong _request_id)
 {
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("create-validation-request");
+    ConnectionReleaser releaser;
+
+    try {
+        LOGGER(PACKAGE).info(boost::format("request data --"
+                    "  contact_id: %1%  request_id: %2%")
+                % _contact_id % _request_id);
+
+        /* if there is already existing request */
+
+        /* create validation request */
+        IdentificationRequestManagerPtr req_man;
+        std::auto_ptr<Register::PublicRequest::PublicRequest> new_request(
+        	req_man->createRequest(
+        		Register::PublicRequest::PRT_CONTACT_VALIDATION
+        	)
+        );
+        new_request->setRequestId(_request_id);
+        new_request->addObject(
+             Register::PublicRequest::OID(
+                   _contact_id,
+                   /* TODO: check if handle must be filled */
+                   "",
+                   Register::PublicRequest::OT_CONTACT
+             )
+        );
+        new_request->save();
+
+        LOGGER(PACKAGE).info(boost::format(
+                "validation request created"
+                " -- public_request_id: %1%")
+                % 0);
+
+        LOGGER(PACKAGE).info("request completed successfully");
+    }
+    catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
 }
 
 

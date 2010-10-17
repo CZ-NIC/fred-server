@@ -1236,79 +1236,110 @@ public:
 
 
 class ContactIdentificationImpl
-    : public PublicRequestAuthImpl
+  : public PublicRequestAuthImpl
+{
+ public:
+    	bool check() const
+    	{
+    		return true;
+    	}
+    	void processAction(bool _check)
+    	{
+    		LOGGER(PACKAGE).debug(boost::format(
+    				"processing public request id=%1%")
+    		% getId());
+
+    		Database::Connection conn = Database::Manager::acquire();
+    		Database::Transaction tx(conn);
+
+    		/* check if need to transfer and do so (TODO: make function (two copies) */
+    		Database::Result clid_result = conn.exec_params(
+    				"SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
+    				" WHERE c.id = $1::integer FOR UPDATE",
+    				Database::query_param_list(getObject(0).id));
+    		if (clid_result.size() != 1) {
+    			throw std::runtime_error("cannot find contact, object doesn't exist!?"
+    					" (probably deleted?)");
+    		}
+    		if (static_cast<unsigned long long>(clid_result[0][0]) != this->getRegistrarId()) {
+    			/* run transfer command */
+    			::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
+    			::MojeID::contact_transfer(this->getEppActionId(), this->getRequestId(),
+    					this->getRegistrarId(), getObject(0).id);
+    			request.end_success();
+    		}
+
+    		/* check if contact is already conditionally identified */
+    		if (checkState(getObject(0).id, 21) == true) {
+    			Database::Result rid_result = conn.exec_params(
+    					"SELECT id FROM object_state_request WHERE"
+    					" state_id = 21 AND valid_to is NULL"
+    					" AND canceled is NULL AND object_id = $1::integer",
+    					Database::query_param_list(getObject(0).id));
+    			/* cancel this status */
+    			if (rid_result.size() == 1) {
+    				conn.exec_params("UPDATE object_state_request"
+    						" SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
+    						Database::query_param_list(
+    								static_cast<unsigned long long>(rid_result[0][0])));
+    			}
+    		}
+
+    		/* set new state */
+    		insertNewStateRequest(getId(), getObject(0).id, 22);
+    		conn.exec_params(
+    				"SELECT update_object_states($1::integer)",
+    				Database::query_param_list(getObject(0).id));
+
+    		tx.commit();
+    	}
+
+    	void sendPasswords()
+    	{
+    		MessageData data = PublicRequestAuthImpl::collectMessageData();
+
+    		if (checkState(getObject(0).id, 21) == true) {
+    			/* contact is already conditionally identified - send pin3 */
+    			PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN3);
+    		}
+    		else {
+    			/* contact is fresh - send pin2 */
+    			PublicRequestAuthImpl::sendEmailPassword(data, 2);
+    			PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN2);
+    		}
+    	}
+      };
+
+class ValidationRequestImpl
+   : public PublicRequestImpl
 {
 public:
-    bool check() const
-    {
-        return true;
-    }
+   bool check() const
+   {
+      return true;
+   }
+   virtual unsigned getPDFType() const
+   {
+       return 5;
+   }
+   virtual std::string getTemplateName() const
+   {
+       return "";
+   }
+   virtual void fillTemplateParams(Mailer::Parameters& params) const
+   {
+   }
+   void processAction(bool _check)
+   {
+      LOGGER(PACKAGE).debug(boost::format(
+        "processing validation request id=%1%")
+        % getId());
 
-    void processAction(bool _check)
-    {
-        LOGGER(PACKAGE).debug(boost::format(
-                "processing public request id=%1%")
-                % getId());
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Transaction tx(conn);
 
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
-
-        /* check if need to transfer and do so (TODO: make function (two copies) */
-        Database::Result clid_result = conn.exec_params(
-                "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
-                " WHERE c.id = $1::integer FOR UPDATE",
-                Database::query_param_list(getObject(0).id));
-        if (clid_result.size() != 1) {
-            throw std::runtime_error("cannot find contact, object doesn't exist!?"
-                    " (probably deleted?)");
-        }
-        if (static_cast<unsigned long long>(clid_result[0][0]) != this->getRegistrarId()) {
-            /* run transfer command */
-            ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
-            ::MojeID::contact_transfer(this->getEppActionId(), this->getRequestId(),
-                    this->getRegistrarId(), getObject(0).id);
-            request.end_success();
-        }
-
-        /* check if contact is already conditionally identified */
-        if (checkState(getObject(0).id, 21) == true) {
-            Database::Result rid_result = conn.exec_params(
-                    "SELECT id FROM object_state_request WHERE"
-                    " state_id = 21 AND valid_to is NULL"
-                    " AND canceled is NULL AND object_id = $1::integer",
-                    Database::query_param_list(getObject(0).id));
-            /* cancel this status */
-            if (rid_result.size() == 1) {
-                conn.exec_params("UPDATE object_state_request"
-                        " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
-                        Database::query_param_list(
-                            static_cast<unsigned long long>(rid_result[0][0])));
-            }
-        }
-
-        /* set new state */
-        insertNewStateRequest(getId(), getObject(0).id, 22);
-        conn.exec_params(
-                "SELECT update_object_states($1::integer)",
-                Database::query_param_list(getObject(0).id));
-
-        tx.commit();
-    }
-
-    void sendPasswords()
-    {
-        MessageData data = PublicRequestAuthImpl::collectMessageData();
-
-        if (checkState(getObject(0).id, 21) == true) {
-            /* contact is already conditionally identified - send pin3 */
-            PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN3);
-        }
-        else {
-            /* contact is fresh - send pin2 */
-            PublicRequestAuthImpl::sendEmailPassword(data, 2);
-            PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN2);
-        }
-    }
+      tx.commit();
+   }
 };
 
 
@@ -1604,7 +1635,7 @@ public:
       case PRT_CONTACT_IDENTIFICATION:
         request = new ContactIdentificationImpl(); break;
       case PRT_CONTACT_VALIDATION:
-        throw std::runtime_error("not implemented"); break;
+    	request = new ValidationRequestImpl(); break;
     }
     request->setType(_type);
     request->setManager((Manager *)this);
