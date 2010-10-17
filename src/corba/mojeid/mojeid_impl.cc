@@ -554,6 +554,10 @@ void ServerImpl::createValidationRequest(const CORBA::ULongLong _contact_id,
 
 ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hours)
 {
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("get-contacts-states");
+    ConnectionReleaser releaser;
+
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rstates = conn.exec_params(
@@ -608,6 +612,10 @@ ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hou
 
 ContactState ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
 {
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("get-contact-state");
+    ConnectionReleaser releaser;
+
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rstates = conn.exec_params(
