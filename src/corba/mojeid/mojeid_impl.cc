@@ -562,7 +562,36 @@ ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hou
 
 ContactState ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
 {
-    return Registry::MojeID::NOT_IDENTIFIED;
+    try {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result rstates = conn.exec_params(
+                "SELECT os.state_id, eos.name, os.valid_from FROM object_state os"
+                " JOIN enum_object_states eos ON eos.id = os.state_id"
+                " WHERE os.valid_to IS NULL AND os.object_id = $1::integer",
+                Database::query_param_list(_contact_id));
+
+        for (Database::Result::size_type i = 0; i < rstates.size(); ++i) {
+            std::string state_name = static_cast<std::string>(rstates[i][1]);
+            if (state_name == "conditionallyIdentifiedContact") {
+                return Registry::MojeID::CONDITIONALLY_IDENTIFIED;
+            }
+            else if (state_name == "identifiedContact") {
+                return Registry::MojeID::IDENTIFIED;
+            }
+            else if (state_name == "validatedContact") {
+                return Registry::MojeID::VALIDATED;
+            }
+        }
+        return Registry::MojeID::NOT_IDENTIFIED;
+    }
+    catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
 }
 
 
