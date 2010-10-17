@@ -25,6 +25,25 @@ const char* corba_wrap_string(const std::string &_s)
 }
 
 
+Date corba_wrap_date(const std::string &_v)
+{
+    boost::gregorian::date tmp = boost::gregorian::from_string(
+            static_cast<std::string>(_v));
+    Date d;
+    if (tmp.is_special()) {
+        d.year  = 0;
+        d.month = 0;
+        d.day   = 0;
+    }
+    else {
+        d.year  = static_cast<int>(tmp.year());
+        d.month = static_cast<int>(tmp.month());
+        d.day   = static_cast<int>(tmp.day());
+    }
+    return d;
+}
+
+
 NullableString* corba_wrap_nullable_string(const Nullable<std::string> &_v)
 {
     if (_v.isnull()) {

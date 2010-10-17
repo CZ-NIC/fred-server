@@ -554,9 +554,55 @@ void ServerImpl::createValidationRequest(const CORBA::ULongLong _contact_id,
 
 ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hours)
 {
-    ContactStateInfoList_var ret = new ContactStateInfoList;
-    ret->length(0);
-    return ret._retn();
+    try {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result rstates = conn.exec_params(
+                "SELECT c.id, os.valid_from, eos.name"
+                " FROM object_state os"
+                " JOIN enum_object_states eos ON eos.id = os.state_id"
+                " JOIN contact c ON c.id = os.object_id"
+                " WHERE os.valid_to IS NULL"
+                " AND os.valid_from > now() - $1::interval",
+                Database::query_param_list(
+                    boost::lexical_cast<std::string>(_last_hours) + " hours"));
+
+        ContactStateInfoList_var ret = new ContactStateInfoList;
+        ret->length(0);
+
+        for (Database::Result::size_type i = 0; i < rstates.size(); ++i) {
+            Registry::MojeID::ContactStateInfo sinfo;
+            sinfo.contact_id =  static_cast<unsigned long long>(rstates[i][0]);
+            sinfo.valid_from = corba_wrap_date(static_cast<std::string>(rstates[i][1]));
+            std::string state_name = static_cast<std::string>(rstates[i][2]);
+            unsigned int act_size = ret->length();
+
+            if (state_name == "conditionallyIdentifiedContact") {
+                ret->length(act_size + 1);
+                sinfo.state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
+                ret[act_size] = sinfo;
+            }
+            else if (state_name == "identifiedContact") {
+                ret->length(act_size + 1);
+                sinfo.state = Registry::MojeID::IDENTIFIED;
+                ret[act_size] = sinfo;
+            }
+            else if (state_name == "validatedContact") {
+                ret->length(act_size + 1);
+                sinfo.state = Registry::MojeID::VALIDATED;
+                ret[act_size] = sinfo;
+            }
+        }
+
+        return ret._retn();
+    }
+    catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
 }
 
 
