@@ -565,13 +565,20 @@ ContactState ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rstates = conn.exec_params(
-                "SELECT os.state_id, eos.name, os.valid_from FROM object_state os"
-                " JOIN enum_object_states eos ON eos.id = os.state_id"
-                " WHERE os.valid_to IS NULL AND os.object_id = $1::integer",
+                "SELECT c.id, os.state_id, eos.name, os.valid_from"
+                " FROM contact c"
+                " LEFT JOIN (object_state os"
+                " JOIN enum_object_states eos ON eos.id = os.state_id)"
+                " ON os.object_id = c.id"
+                " WHERE os.valid_to IS NULL AND c.id = $1::integer",
                 Database::query_param_list(_contact_id));
 
+        if (rstates.size() == 0) {
+            throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+        }
+
         for (Database::Result::size_type i = 0; i < rstates.size(); ++i) {
-            std::string state_name = static_cast<std::string>(rstates[i][1]);
+            std::string state_name = static_cast<std::string>(rstates[i][2]);
             if (state_name == "conditionallyIdentifiedContact") {
                 return Registry::MojeID::CONDITIONALLY_IDENTIFIED;
             }
@@ -583,6 +590,9 @@ ContactState ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
             }
         }
         return Registry::MojeID::NOT_IDENTIFIED;
+    }
+    catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS&) {
+        throw;
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
