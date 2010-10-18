@@ -499,6 +499,10 @@ public:
     // default is to do nothing special
   }
 
+  /// what to do if request is invalidated
+  virtual void invalidateAction() {
+  }
+
   /// process request (or just close in case of invalid flag)
   virtual void process(bool invalid, bool check) {
       Database::Connection conn = Database::Manager::acquire();
@@ -506,6 +510,7 @@ public:
 
       if (invalid) {
           status_ = PRS_INVALID;
+          invalidateAction();
       }
       else {
           processAction(check);
@@ -1340,6 +1345,7 @@ public:
         return "mojeid_validation";
     }
 
+
     virtual void fillTemplateParams(Mailer::Parameters& params) const
     {
         std::ostringstream buf;
@@ -1375,79 +1381,93 @@ public:
             params["address"] = std::string(res[0][4]);
             params["status"] = getStatus() == PRS_ANSWERED ? "1" : "2";
         }
-   }
+    }
 
-   void processAction(bool _check)
-   {
-       // PROBLEM, MAIL NOT SEND IN CASE OF INVALID
-       LOGGER(PACKAGE).debug(boost::format(
-                   "processing validation request id=%1%")
-                   % getId());
+    void invalidateAction()
+    {
+        LOGGER(PACKAGE).debug(boost::format(
+                    "invalidation request id=%1%")
+                    % this->getId());
+        /* just send email - note that difference between succesfully
+         * processed email and invalidated email is done
+         * by setting status_ = PRS_INVALID which is passed to email in
+         * fillTemplateParams(...) method -
+         * (params["status"] = getStatus() == PRS_ANSWERED ? "1" : "2";)
+         */
+        answer_email_id_ = sendEmail();
+    }
 
-       Database::Connection conn = Database::Manager::acquire();
-       Database::Transaction tx(conn);
+    void processAction(bool _check)
+    {
+        // PROBLEM, MAIL NOT SEND IN CASE OF INVALID
+        LOGGER(PACKAGE).debug(boost::format(
+                    "processing validation request id=%1%")
+                    % getId());
 
-       /* check if contact is already conditionally identified */
-       /* TODO: a function maybe? */
-       if (checkState(getObject(0).id, 21) == true) {
-           Database::Result rid_result = conn.exec_params(
-                   "SELECT id FROM object_state_request WHERE"
-                   " state_id = 21 AND valid_to is NULL"
-                   " AND canceled is NULL AND object_id = $1::integer",
-                   Database::query_param_list(getObject(0).id));
-           /* cancel this status */
-           if (rid_result.size() == 1) {
-               conn.exec_params("UPDATE object_state_request"
-                       " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
-                       Database::query_param_list
-                            (static_cast<unsigned long long>(rid_result[0][0])));
-           }
-       }
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
 
-       /* check if contact is already identified */
-       if (checkState(getObject(0).id, 22) == true) {
-           Database::Result rid_result = conn.exec_params(
-                   "SELECT id FROM object_state_request WHERE"
-                   " state_id = 22 AND valid_to is NULL"
-                   " AND canceled is NULL AND object_id = $1::integer",
-                   Database::query_param_list(getObject(0).id));
-           /* cancel this status */
-           if (rid_result.size() == 1) {
-               conn.exec_params("UPDATE object_state_request"
-                       " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
-                       Database::query_param_list
-                            (static_cast<unsigned long long>(rid_result[0][0])));
-           }
-       }
-       /* otherwise there could be identification request */
-       else {
-           Database::Result rid_result = conn.exec_params(
-                   "SELECT pr.id FROM public_request pr"
-                   " JOIN public_request_objects_map prom ON prom.request_id = pr.id"
-                   " JOIN contact c ON c.id = prom.object_id"
-                   " WHERE pr.resolve_time IS NULL AND pr.request_type = $1::integer"
-                   " AND c.id = $2::integer",
-                   Database::query_param_list
-                        (PRT_CONTACT_IDENTIFICATION)
-                        (getObject(0).id));
-           /* close it */
-           if (rid_result.size() == 1) {
-               conn.exec_params("UPDATE public_request SET resolve_time = now(),"
-                       " status = $1::integer WHERE id = $2::integer",
-                       Database::query_param_list
-                            (PRS_INVALID)
-                            (static_cast<unsigned long long>(rid_result[0][0])));
-           }
-       }
+        /* check if contact is already conditionally identified */
+        /* TODO: a function maybe? */
+        if (checkState(getObject(0).id, 21) == true) {
+            Database::Result rid_result = conn.exec_params(
+                    "SELECT id FROM object_state_request WHERE"
+                    " state_id = 21 AND valid_to is NULL"
+                    " AND canceled is NULL AND object_id = $1::integer",
+                    Database::query_param_list(getObject(0).id));
+            /* cancel this status */
+            if (rid_result.size() == 1) {
+                conn.exec_params("UPDATE object_state_request"
+                        " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
+                        Database::query_param_list
+                             (static_cast<unsigned long long>(rid_result[0][0])));
+            }
+        }
 
-       /* set new state */
-       insertNewStateRequest(getId(), getObject(0).id, 23);
-       conn.exec_params(
-               "SELECT update_object_states($1::integer)",
-               Database::query_param_list(getObject(0).id));
+        /* check if contact is already identified */
+        if (checkState(getObject(0).id, 22) == true) {
+            Database::Result rid_result = conn.exec_params(
+                    "SELECT id FROM object_state_request WHERE"
+                    " state_id = 22 AND valid_to is NULL"
+                    " AND canceled is NULL AND object_id = $1::integer",
+                    Database::query_param_list(getObject(0).id));
+            /* cancel this status */
+            if (rid_result.size() == 1) {
+                conn.exec_params("UPDATE object_state_request"
+                        " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
+                        Database::query_param_list
+                             (static_cast<unsigned long long>(rid_result[0][0])));
+            }
+        }
+        /* otherwise there could be identification request */
+        else {
+            Database::Result rid_result = conn.exec_params(
+                    "SELECT pr.id FROM public_request pr"
+                    " JOIN public_request_objects_map prom ON prom.request_id = pr.id"
+                    " JOIN contact c ON c.id = prom.object_id"
+                    " WHERE pr.resolve_time IS NULL AND pr.request_type = $1::integer"
+                    " AND c.id = $2::integer",
+                    Database::query_param_list
+                         (PRT_CONTACT_IDENTIFICATION)
+                         (getObject(0).id));
+            /* close it */
+            if (rid_result.size() == 1) {
+                conn.exec_params("UPDATE public_request SET resolve_time = now(),"
+                        " status = $1::integer WHERE id = $2::integer",
+                        Database::query_param_list
+                             (PRS_INVALID)
+                             (static_cast<unsigned long long>(rid_result[0][0])));
+            }
+        }
 
-       tx.commit();
-   }
+        /* set new state */
+        insertNewStateRequest(getId(), getObject(0).id, 23);
+        conn.exec_params(
+                "SELECT update_object_states($1::integer)",
+                Database::query_param_list(getObject(0).id));
+
+        tx.commit();
+    }
 };
 
 
