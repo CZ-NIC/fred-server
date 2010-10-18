@@ -501,17 +501,22 @@ public:
 
   /// process request (or just close in case of invalid flag)
   virtual void process(bool invalid, bool check) {
-    if (invalid) {
-      status_ = PRS_INVALID;
-    }
-    else {
-        processAction(check);
-      status_ = PRS_ANSWERED;
-      answer_email_id_ = sendEmail();
-    }
-    // TODO: probably bug - shoud be in UTC time zone
-    resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
-    save();
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Transaction tx(conn);
+
+      if (invalid) {
+          status_ = PRS_INVALID;
+      }
+      else {
+          processAction(check);
+          status_ = PRS_ANSWERED;
+          answer_email_id_ = sendEmail();
+      }
+      // TODO: probably bug - shoud be in UTC time zone
+      resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
+      save();
+
+      tx.commit();
   }
 
   /// type for PDF letter template in case there is no template
@@ -896,6 +901,9 @@ public:
 
     void process(bool _invalid, bool _check)
     {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
         /* proces only new */
         if (status_ != PRS_NEW) {
             throw std::runtime_error("already processed");
@@ -907,7 +915,6 @@ public:
         }
 
         /* object should not change */
-        Database::Connection conn = Database::Manager::acquire();
         Database::Result rtransfer = conn.exec_params(
                 "SELECT ((o.update IS NULL OR o.update <= pr.create_time)"
                  " AND (o.trdate IS NULL OR o.trdate <= pr.create_time))"
@@ -931,6 +938,8 @@ public:
         }
         resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
         save();
+
+        tx.commit();
     }
 
     /* just to be sure of empty impl (if someone would change base impl) */
@@ -1315,67 +1324,129 @@ class ContactIdentificationImpl
         }
       };
 
+
+
 class ValidationRequestImpl
-   : public PublicRequestImpl
+    : public PublicRequestImpl
 {
 public:
-   bool check() const
-   {
-      return true;
+    bool check() const
+    {
+        return true;
+    }
+
+    virtual std::string getTemplateName() const
+    {
+        return "mojeid_validation";
+    }
+
+    virtual void fillTemplateParams(Mailer::Parameters& params) const
+    {
+        std::ostringstream buf;
+        buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
+        buf << getCreateTime().date();
+        params["reqdate"] = buf.str();
+        buf.str("");
+        buf << getId();
+        params["reqid"] = buf.str();
+        if (getObjectSize()) {
+            buf.str("");
+            buf << getObject(0).type;
+            params["type"] = buf.str();
+            params["handle"] = getObject(0).handle;
+        }
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result res = conn.exec_params(
+                "SELECT "
+                " c.name, c. organization, c.ssn, c.ssntype, "
+                " c.street1 || ' ' || COALESCE(c.street2,'') || ' ' ||"
+                " COALESCE(c.street3,' ') || ', ' || "
+                " c.postalcode || ' ' || c.city || ', ' || c.country "
+                "FROM public_request pr"
+                " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
+                " JOIN contact c ON (c.id = prom.object_id) "
+                " WHERE pr.id = $1::integer",
+                Database::query_param_list(getId()));
+        if (res.size() == 1) {
+            params["name"] = std::string(res[0][0]);
+            params["org"] = std::string(res[0][1]);
+            params["ic"] = unsigned(res[0][3]) == 4 ? std::string(res[0][2])  : "";
+            params["birthdate"] = unsigned(res[0][3]) == 6 ? std::string(res[0][2])  : "";
+            params["address"] = std::string(res[0][4]);
+            params["status"] = getStatus() == PRS_ANSWERED ? "1" : "2";
+        }
    }
-   virtual std::string getTemplateName() const
-   {
-       return "mojeid_validation";
-   }
-   virtual void fillTemplateParams(Mailer::Parameters& params) const
-   {
-     std::ostringstream buf;
-     buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
-     buf << getCreateTime().date();
-     params["reqdate"] = buf.str();
-     buf.str("");
-     buf << getId();
-     params["reqid"] = buf.str();
-     if (getObjectSize()) {
-       buf.str("");
-       buf << getObject(0).type;
-       params["type"] = buf.str();
-       params["handle"] = getObject(0).handle;
-     }
-     Database::Connection conn = Database::Manager::acquire();
-     Database::Result res = conn.exec_params(
-       "SELECT "
-       " c.name, c. organization, c.ssn, c.ssntype, "
-       " c.street1 || ' ' || COALESCE(c.street2,'') || ' ' ||"
-       " COALESCE(c.street3,' ') || ', ' || "
-       " c.postalcode || ' ' || c.city || ', ' || c.country "
-       "FROM public_request pr"
-       " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
-       " JOIN contact c ON (c.id = prom.object_id) "
-       " WHERE pr.id = $1::integer",
-       Database::query_param_list(getId()));
-     if (res.size() == 1) {
-           params["name"] = std::string(res[0][0]);
-           params["org"] = std::string(res[0][1]);
-           params["ic"] = unsigned(res[0][3]) == 4 ? std::string(res[0][2])  : "";
-           params["birthdate"] = unsigned(res[0][3]) == 6 ? std::string(res[0][2])  : "";
-           params["address"] = std::string(res[0][4]);
-           params["status"] = getStatus() == PRS_ANSWERED ? "1" : "2";
-     }
-   }
+
    void processAction(bool _check)
    {
-      // PROBLEM, MAIL NOT SEND IN CASE OF INVALID
-      LOGGER(PACKAGE).debug(boost::format(
-        "processing validation request id=%1%")
-        % getId());
+       // PROBLEM, MAIL NOT SEND IN CASE OF INVALID
+       LOGGER(PACKAGE).debug(boost::format(
+                   "processing validation request id=%1%")
+                   % getId());
 
-      Database::Connection conn = Database::Manager::acquire();
-      Database::Transaction tx(conn);
+       Database::Connection conn = Database::Manager::acquire();
+       Database::Transaction tx(conn);
 
-      // TODO: close request for identification if exists
-      // TODO: set validate state for contact
-      tx.commit();
+       /* check if contact is already conditionally identified */
+       /* TODO: a function maybe? */
+       if (checkState(getObject(0).id, 21) == true) {
+           Database::Result rid_result = conn.exec_params(
+                   "SELECT id FROM object_state_request WHERE"
+                   " state_id = 21 AND valid_to is NULL"
+                   " AND canceled is NULL AND object_id = $1::integer",
+                   Database::query_param_list(getObject(0).id));
+           /* cancel this status */
+           if (rid_result.size() == 1) {
+               conn.exec_params("UPDATE object_state_request"
+                       " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
+                       Database::query_param_list
+                            (static_cast<unsigned long long>(rid_result[0][0])));
+           }
+       }
+
+       /* check if contact is already identified */
+       if (checkState(getObject(0).id, 22) == true) {
+           Database::Result rid_result = conn.exec_params(
+                   "SELECT id FROM object_state_request WHERE"
+                   " state_id = 22 AND valid_to is NULL"
+                   " AND canceled is NULL AND object_id = $1::integer",
+                   Database::query_param_list(getObject(0).id));
+           /* cancel this status */
+           if (rid_result.size() == 1) {
+               conn.exec_params("UPDATE object_state_request"
+                       " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
+                       Database::query_param_list
+                            (static_cast<unsigned long long>(rid_result[0][0])));
+           }
+       }
+       /* otherwise there could be identification request */
+       else {
+           Database::Result rid_result = conn.exec_params(
+                   "SELECT pr.id FROM public_request pr"
+                   " JOIN public_request_objects_map prom ON prom.request_id = pr.id"
+                   " JOIN contact c ON c.id = prom.object_id"
+                   " WHERE pr.resolve_time IS NULL AND pr.request_type = $1::integer"
+                   " AND c.id = $2::integer",
+                   Database::query_param_list
+                        (PRT_CONTACT_IDENTIFICATION)
+                        (getObject(0).id));
+           /* close it */
+           if (rid_result.size() == 1) {
+               conn.exec_params("UPDATE public_request SET resolve_time = now(),"
+                       " status = $1::integer WHERE id = $2::integer",
+                       Database::query_param_list
+                            (PRS_INVALID)
+                            (static_cast<unsigned long long>(rid_result[0][0])));
+           }
+       }
+
+       /* set new state */
+       insertNewStateRequest(getId(), getObject(0).id, 23);
+       conn.exec_params(
+               "SELECT update_object_states($1::integer)",
+               Database::query_param_list(getObject(0).id));
+
+       tx.commit();
    }
 };
 
