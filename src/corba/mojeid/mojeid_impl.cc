@@ -697,23 +697,27 @@ ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hou
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
                 " JOIN contact c ON c.id = os.object_id"
                 " WHERE os.valid_to IS NULL"
-                " AND os.valid_from > now() - $1::interval",
-                Database::query_param_list(
-                    boost::lexical_cast<std::string>(_last_hours) + " hours"));
+                " AND os.valid_from > now() - $1::interval"
+                " AND eos.name =ANY ($2::text[])",
+                Database::query_param_list
+                    (boost::lexical_cast<std::string>(_last_hours) + " hours")
+                    ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}"));
 
         ContactStateInfoList_var ret = new ContactStateInfoList;
         ret->length(0);
 
         for (Database::Result::size_type i = 0; i < rstates.size(); ++i) {
             Registry::MojeID::ContactStateInfo sinfo;
-            sinfo.contact_id =  static_cast<unsigned long long>(rstates[i][0]);
-            sinfo.valid_from = corba_wrap_date(static_cast<std::string>(rstates[i][1]));
+            sinfo.contact_id = static_cast<unsigned long long>(rstates[i][0]);
+                sinfo.valid_from = corba_wrap_date(
+                    boost::gregorian::from_string(
+                        static_cast<std::string>(rstates[i][1])));
             std::string state_name = static_cast<std::string>(rstates[i][2]);
             unsigned int act_size = ret->length();
 
             if (state_name == "conditionallyIdentifiedContact") {
                 ret->length(act_size + 1);
-                sinfo.state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
+               sinfo.state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
                 ret[act_size] = sinfo;
             }
             else if (state_name == "identifiedContact") {
@@ -741,7 +745,7 @@ ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hou
 }
 
 
-ContactState ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
+ContactStateInfo ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("get-contact-state");
@@ -750,31 +754,47 @@ ContactState ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rstates = conn.exec_params(
-                "SELECT c.id, os.state_id, eos.name, os.valid_from"
+                "SELECT c.id, os.valid_from, eos.name"
                 " FROM contact c"
                 " LEFT JOIN (object_state os"
-                " JOIN enum_object_states eos ON eos.id = os.state_id)"
+                " JOIN enum_object_states eos ON eos.id = os.state_id"
+                " AND eos.name =ANY ($2::text[]))"
                 " ON os.object_id = c.id"
                 " WHERE os.valid_to IS NULL AND c.id = $1::integer",
-                Database::query_param_list(_contact_id));
+                Database::query_param_list
+                    (_contact_id)
+                    ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}"));
 
         if (rstates.size() == 0) {
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
-
-        for (Database::Result::size_type i = 0; i < rstates.size(); ++i) {
-            std::string state_name = static_cast<std::string>(rstates[i][2]);
-            if (state_name == "conditionallyIdentifiedContact") {
-                return Registry::MojeID::CONDITIONALLY_IDENTIFIED;
-            }
-            else if (state_name == "identifiedContact") {
-                return Registry::MojeID::IDENTIFIED;
-            }
-            else if (state_name == "validatedContact") {
-                return Registry::MojeID::VALIDATED;
-            }
+        else if (rstates.size() != 1) {
+            throw;
         }
-        return Registry::MojeID::NOT_IDENTIFIED;
+
+        Registry::MojeID::ContactStateInfo_var sinfo;
+        sinfo->contact_id = static_cast<unsigned long long>(rstates[0][0]);
+        sinfo->valid_from = corba_wrap_date(
+                rstates[0][1].isnull() ?
+                    boost::gregorian::date()
+                    : boost::gregorian::from_string(
+                        static_cast<std::string>(rstates[0][1])));
+        std::string state_name = static_cast<std::string>(rstates[0][2]);
+
+        if (state_name == "conditionallyIdentifiedContact") {
+            sinfo->state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
+        }
+        else if (state_name == "identifiedContact") {
+            sinfo->state = Registry::MojeID::IDENTIFIED;
+        }
+        else if (state_name == "validatedContact") {
+            sinfo->state = Registry::MojeID::VALIDATED;
+        }
+        else {
+            sinfo->state = Registry::MojeID::NOT_IDENTIFIED;
+        }
+
+        return sinfo._retn();
     }
     catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS&) {
         throw;

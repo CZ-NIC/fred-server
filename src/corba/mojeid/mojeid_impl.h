@@ -56,7 +56,7 @@ class ServerImpl : public POA_Registry::MojeID::Server,
 
         ContactStateInfoList* getContactsStates(const CORBA::ULong _last_hours);
 
-        ContactState getContactState(const CORBA::ULongLong _contact_id);
+        ContactStateInfo getContactState(const CORBA::ULongLong _contact_id);
 
         CORBA::ULongLong getContactId(const char* _handle);
 };
