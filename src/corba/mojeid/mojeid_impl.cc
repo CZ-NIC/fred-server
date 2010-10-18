@@ -650,6 +650,7 @@ void ServerImpl::createValidationRequest(const CORBA::ULongLong _contact_id,
                 Register::PublicRequest::PRT_CONTACT_VALIDATION
             )
         );
+        new_request->setRegistrarId(mojeid_registrar_id_);
         new_request->setRequestId(_request_id);
         new_request->addObject(
              Register::PublicRequest::OID(
