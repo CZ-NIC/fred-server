@@ -1430,7 +1430,6 @@ public:
 
     void processAction(bool _check)
     {
-        // PROBLEM, MAIL NOT SEND IN CASE OF INVALID
         LOGGER(PACKAGE).debug(boost::format(
                     "processing validation request id=%1%")
                     % getId());
