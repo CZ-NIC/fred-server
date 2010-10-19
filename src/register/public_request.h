@@ -218,9 +218,9 @@ public:
           Database::ID contact) = 0;
 
   /* config - this should be in contructor */
-  virtual const std::string& getIdentificationMailAuthUrl() const = 0;
+  virtual const std::string& getIdentificationMailAuthHostname() const = 0;
   virtual const bool getDemoMode() const = 0;
-  virtual void setIdentificationMailAuthUrl(const std::string &_url) = 0;
+  virtual void setIdentificationMailAuthHostname(const std::string &_hostname) = 0;
   virtual void setDemoMode(bool _demo_mode) = 0;
 };
 

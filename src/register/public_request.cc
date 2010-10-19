@@ -1037,7 +1037,8 @@ public:
         data["postalcode"] = static_cast<std::string>(result[0][5]);
         data["country"] = static_cast<std::string>(result[0][6]);
         data["email"] = static_cast<std::string>(result[0][7]);
-        data["url"] = str(boost::format(man_->getIdentificationMailAuthUrl()) % identification_);
+        data["hostname"] = man_->getIdentificationMailAuthHostname();
+        data["identification"] = identification_;
         data["handle"] = getObject(0).handle;
         /* password split */
         data["pin1"] = password_.substr(0, password_.size() / 2);
@@ -1064,8 +1065,9 @@ public:
         params["firstname"] = map_at(_data, "firstname");
         params["lastname"]  = map_at(_data, "lastname");
         params["email"]     = map_at(_data, "email");
-        params["url"]       = map_at(_data, "url");
+        params["hostname"]  = map_at(_data, "hostname");
         params["handle"]    = map_at(_data, "handle");
+        params["identification"] = map_at(_data, "identification");
         params["passwd"]    = map_at(_data, "pin1");
         /* for demo purpose we send second half of password as well */
         if (man_->getDemoMode() == true) {
@@ -1138,7 +1140,7 @@ public:
                  << "<codes>"
                  << xml_part_code.str()
                  << "</codes>"
-                 << "<link>" << map_at(_data, "url") << "</link>"
+                 << "<link>" << map_at(_data, "hostname") << "</link>"
                  << "</auth>"
                  << "</user>"
                  << "</mojeid_auth>";
@@ -1636,7 +1638,7 @@ private:
   Document::Manager *doc_manager_;
   Messages::ManagerPtr messages_manager;
 
-  std::string identification_mail_auth_url_;
+  std::string identification_mail_auth_hostname_;
   bool demo_mode_;
 
 public:
@@ -1654,7 +1656,7 @@ public:
         mailer_manager_(_mailer_manager),
         doc_manager_(_doc_manager),
         messages_manager(_messages_manager),
-        identification_mail_auth_url_(std::string()),
+        identification_mail_auth_hostname_(std::string()),
         demo_mode_(false)
   {
   }
@@ -1831,13 +1833,13 @@ public:
       return rid[0][0];
   }
 
-  const std::string& getIdentificationMailAuthUrl() const
+  const std::string& getIdentificationMailAuthHostname() const
   {
-      if (identification_mail_auth_url_.empty()) {
+      if (identification_mail_auth_hostname_.empty()) {
           throw std::runtime_error("not configured");
       }
       else {
-          return identification_mail_auth_url_;
+          return identification_mail_auth_hostname_;
       }
   }
 
@@ -1846,9 +1848,9 @@ public:
       return demo_mode_;
   }
 
-  void setIdentificationMailAuthUrl(const std::string &_url)
+  void setIdentificationMailAuthHostname(const std::string &_hostname)
   {
-      identification_mail_auth_url_ = _url;
+      identification_mail_auth_hostname_ = _hostname;
   }
 
   void setDemoMode(bool _demo_mode)

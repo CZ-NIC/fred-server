@@ -55,7 +55,7 @@ public:
                     doc_manager_.get(),
                     register_manager_->getMessageManager()));
 
-        request_manager_->setIdentificationMailAuthUrl(mconf->redirect_url);
+        request_manager_->setIdentificationMailAuthHostname(mconf->hostname);
         request_manager_->setDemoMode(mconf->demo_mode);
     }
 

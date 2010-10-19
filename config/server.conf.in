@@ -105,8 +105,7 @@ param_quote_by = '
 ##
 [mojeid]
 registrar_handle = REG-MOJEID
-# %1% = identification request id
-redirect_url = https://demo.mojeid.cz/identification/%1%/
+hostname = demo.mojeid.cz
 # demo mode true - send both passwords via email
 demo_mode = false
 
