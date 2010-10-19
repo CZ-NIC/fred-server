@@ -47,7 +47,10 @@ public:
             }
             Database::Result rnext = conn.exec(
                     "SELECT nextval('action_id_seq'::regclass)");
-            if (rnext.size() != 1 || (id_ = rnext[0][0]) == 0) {
+            if (rnext.size() != 1) {
+                throw;
+            }
+            if ((id_ = rnext[0][0]) == 0) {
                 throw;
             }
 
