@@ -632,17 +632,34 @@ void ServerImpl::createValidationRequest(const CORBA::ULongLong _contact_id,
                     "  contact_id: %1%  request_id: %2%")
                 % _contact_id % _request_id);
 
-        /* throw exception if there is already existing request */
+        Register::NameIdPair cinfo;
+        Register::Contact::ManagerPtr contact_mgr(
+                Register::Contact::Manager::create(
+                    0, registry_conf_->restricted_handles));
+
+        Register::Contact::Manager::CheckAvailType check_result;
+        check_result = contact_mgr->checkAvail(_contact_id, cinfo);
+
+        if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+            /* contact doesn't exists */
+            throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+        }
+
         Database::Connection conn = Database::Manager::acquire();
-        // TODO: hardcoded ID=14! should be replaced
+        /* throw exception if there is already existing requesti
+         * this shoud be in ValidationRequest create check */
+        /* TODO: hardcoded ID=14! should be replaced */
         Database::Result res = conn.exec_params(
             "SELECT id FROM public_request pr"
             " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
             " WHERE pr.resolve_time IS NULL AND pr.status = 0 "
             " AND pr.request_type=14 AND object_id = $1::integer",
             Database::query_param_list(_contact_id));
-        if (res.size() > 0)
+        if (res.size() > 0) {
+            /* request already exists */
             throw Registry::MojeID::Server::OBJECT_EXISTS();
+        }
+
         /* create validation request */
         IdentificationRequestManagerPtr req_man;
         std::auto_ptr<Register::PublicRequest::PublicRequest> new_request(
@@ -667,6 +684,10 @@ void ServerImpl::createValidationRequest(const CORBA::ULongLong _contact_id,
                 % 0);
 
         LOGGER(PACKAGE).info("request completed successfully");
+    }
+    catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
+        LOGGER(PACKAGE).error("contact doesn't exists");
+        throw;
     }
     catch (Registry::MojeID::Server::OBJECT_EXISTS) {
         LOGGER(PACKAGE).error("request already exists");

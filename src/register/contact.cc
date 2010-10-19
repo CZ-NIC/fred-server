@@ -707,6 +707,26 @@ public:
       return CA_PROTECTED;
     return CA_FREE;
   }
+
+  virtual CheckAvailType checkAvail(
+          const unsigned long long &_id,
+          NameIdPair& conflict, bool lock) const throw (SQL_ERROR)
+  {
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result rcheck = conn.exec_params(
+              "SELECT oreg.name FROM object_registry oreg"
+              " JOIN contact c ON c.id = oreg.id WHERE c.id = $1::integer",
+              Database::query_param_list(_id));
+      if (rcheck.size() == 1) {
+          return this->checkAvail(
+                  static_cast<std::string>(rcheck[0][0]),
+                  conflict,
+                  lock);
+      }
+      else {
+          return CA_FREE;
+      }
+  }
 };
 Manager *Manager::create(DB *db, bool restrictedHandle) {
   return new ManagerImpl(db, restrictedHandle);

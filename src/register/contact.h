@@ -139,10 +139,17 @@ public:
   /// check proper format of handle
   virtual bool checkHandleFormat(const std::string& handle) const = 0;
   /// check possibilities for registration
-  virtual CheckAvailType
-      checkAvail(const std::string& handle,
-                 NameIdPair& conflict,
-                 bool lock = false) const throw (SQL_ERROR) = 0;
+  virtual CheckAvailType checkAvail(
+          const std::string& handle,
+          NameIdPair& conflict,
+          bool lock = false) const 
+      throw (SQL_ERROR) = 0;
+  /// check with id
+  virtual CheckAvailType checkAvail(
+          const unsigned long long &_id,
+          NameIdPair& conflict,
+          bool lock = false) const 
+      throw (SQL_ERROR) = 0;
   /// factory method
   static Manager *create(DB *db, bool restrictedHandle);
 };
