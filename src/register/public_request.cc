@@ -81,7 +81,8 @@ static bool checkState(Database::ID objectId,
   return res > 0;
 }
 
-// static Database::ID insertNewStateRequest(
+
+
 static void insertNewStateRequest(Database::ID blockRequestID,
                                   Database::ID objectId,
                                   unsigned state) {
@@ -98,6 +99,8 @@ static void insertNewStateRequest(Database::ID blockRequestID,
                  << blockRequestID << ")";
   conn.exec(prsrm);
 }
+
+
 
 /** check if already blocked request interfere with requested states
  this is true in every situation other then when actual states are
@@ -155,6 +158,41 @@ static bool queryBlockRequest(Database::ID objectId,
   }
   return true;
 }
+
+
+
+/* check if object has given state and make cancel request */
+static bool cancel_state_request(
+        const unsigned long long &_object_id,
+        const unsigned long long &_state_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    /* check if state is active on object */
+    if (checkState(_object_id, _state_id) == true) {
+        Database::Transaction tx(conn);
+        Database::Result rid_result = conn.exec_params(
+                "SELECT id FROM object_state_request WHERE"
+                " state_id = $1::integer AND valid_to is NULL"
+                " AND canceled is NULL AND object_id = $2::integer",
+                Database::query_param_list
+                    (_state_id)
+                    (_object_id));
+        /* cancel this status */
+        if (rid_result.size() == 1) {
+            conn.exec_params("UPDATE object_state_request"
+                    " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
+                    Database::query_param_list(
+                            static_cast<unsigned long long>(rid_result[0][0])));
+            tx.commit();
+        }
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+
 
 class PublicRequestImpl : public Register::CommonObjectImpl,
                           virtual public PublicRequest {
@@ -1217,8 +1255,11 @@ public:
         if (static_cast<unsigned long long>(clid_result[0][0]) != this->getRegistrarId()) {
             /* run transfer command */
             ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
-            ::MojeID::contact_transfer(this->getEppActionId(), this->getRequestId(),
-                    this->getRegistrarId(), getObject(0).id);
+            ::MojeID::contact_transfer(
+                    request.get_id(),
+                    request.get_request_id(),
+                    request.get_registrar_id(),
+                    this->getObject(0).id);
             request.end_success();
         }
 
@@ -1283,26 +1324,16 @@ class ContactIdentificationImpl
             if (static_cast<unsigned long long>(clid_result[0][0]) != this->getRegistrarId()) {
                 /* run transfer command */
                 ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
-                ::MojeID::contact_transfer(this->getEppActionId(), this->getRequestId(),
-                        this->getRegistrarId(), getObject(0).id);
+                ::MojeID::contact_transfer(
+                        request.get_id(),
+                        request.get_request_id(),
+                        request.get_registrar_id(),
+                        this->getObject(0).id);
                 request.end_success();
             }
 
-            /* check if contact is already conditionally identified */
-            if (checkState(getObject(0).id, 21) == true) {
-                Database::Result rid_result = conn.exec_params(
-                        "SELECT id FROM object_state_request WHERE"
-                        " state_id = 21 AND valid_to is NULL"
-                        " AND canceled is NULL AND object_id = $1::integer",
-                        Database::query_param_list(getObject(0).id));
-                /* cancel this status */
-                if (rid_result.size() == 1) {
-                    conn.exec_params("UPDATE object_state_request"
-                            " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
-                            Database::query_param_list(
-                                    static_cast<unsigned long long>(rid_result[0][0])));
-                }
-            }
+            /* check if contact is already conditionally identified and cancel state */
+            cancel_state_request(getObject(0).id, 21);
 
             /* set new state */
             insertNewStateRequest(getId(), getObject(0).id, 22);
@@ -1407,40 +1438,12 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        /* check if contact is already conditionally identified */
-        /* TODO: a function maybe? */
-        if (checkState(getObject(0).id, 21) == true) {
-            Database::Result rid_result = conn.exec_params(
-                    "SELECT id FROM object_state_request WHERE"
-                    " state_id = 21 AND valid_to is NULL"
-                    " AND canceled is NULL AND object_id = $1::integer",
-                    Database::query_param_list(getObject(0).id));
-            /* cancel this status */
-            if (rid_result.size() == 1) {
-                conn.exec_params("UPDATE object_state_request"
-                        " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
-                        Database::query_param_list
-                             (static_cast<unsigned long long>(rid_result[0][0])));
-            }
-        }
+        /* check if contact is already conditionally identified and cancel status */
+        cancel_state_request(getObject(0).id, 21);
 
-        /* check if contact is already identified */
-        if (checkState(getObject(0).id, 22) == true) {
-            Database::Result rid_result = conn.exec_params(
-                    "SELECT id FROM object_state_request WHERE"
-                    " state_id = 22 AND valid_to is NULL"
-                    " AND canceled is NULL AND object_id = $1::integer",
-                    Database::query_param_list(getObject(0).id));
-            /* cancel this status */
-            if (rid_result.size() == 1) {
-                conn.exec_params("UPDATE object_state_request"
-                        " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
-                        Database::query_param_list
-                             (static_cast<unsigned long long>(rid_result[0][0])));
-            }
-        }
-        /* otherwise there could be identification request */
-        else {
+        /* check if contact is already identified and cancel status */
+        if (cancel_state_request(getObject(0).id, 22) == false) {
+            /* otherwise there could be identification request */
             Database::Result rid_result = conn.exec_params(
                     "SELECT pr.id FROM public_request pr"
                     " JOIN public_request_objects_map prom ON prom.request_id = pr.id"
