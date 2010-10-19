@@ -1043,11 +1043,7 @@ public:
         data["pin1"] = password_.substr(0, password_.size() / 2);
         data["pin2"] = password_.substr(password_.size() / 2, password_.size());
         data["pin3"] = password_;
-        /* yuck */
-        std::ostringstream buf;
-        buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
-        buf << getCreateTime().date();
-        data["reqdate"] = buf.str();
+        data["reqdate"] = boost::gregorian::to_iso_extended_string(getCreateTime().date());
         data["contact_id"]=boost::lexical_cast<std::string>(getObject(0).id);
         data["contact_hid"]= static_cast<std::string>(result[0][8]);
         data["phone"]= static_cast<std::string>(result[0][9]);
