@@ -161,6 +161,49 @@ static bool queryBlockRequest(Database::ID objectId,
 
 
 
+/* check if object has given request type already active */
+static unsigned long long check_public_request(
+        const unsigned long long &_object_id,
+        const Type &_type)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result rcheck = conn.exec_params(
+            "SELECT pr.id FROM public_request pr"
+            " JOIN public_request_objects_map prom ON prom.request_id = pr.id"
+            " WHERE pr.resolve_time IS NULL"
+            " AND prom.object_id = $1::integer"
+            " AND pr.request_type = $2::integer"
+            " ORDER BY pr.create_time",
+            Database::query_param_list
+                (_object_id)
+                (_type));
+    if (rcheck.size() == 0) {
+        return 0;
+    }
+    else {
+        return static_cast<unsigned long long>(rcheck[0][0]);
+    }
+}
+
+
+
+static void cancel_public_request(
+        const unsigned long long &_object_id,
+        const Type &_type)
+{
+    unsigned long long prid = 0;
+    if ((prid = check_public_request(_object_id, _type)) != 0) {
+        Database::Connection conn = Database::Manager::acquire();
+        conn.exec_params("UPDATE public_request SET resolve_time = now(),"
+                " status = $1::integer WHERE id = $2::integer",
+                Database::query_param_list
+                    (PRS_INVALID)
+                    (prid));
+    }
+}
+
+
+
 /* check if object has given state and make cancel request */
 static bool cancel_state_request(
         const unsigned long long &_object_id,
@@ -874,6 +917,8 @@ public:
         : PublicRequestImpl(),
           authenticated_(false)
     {
+        identification_ = Random::string_alpha(32);
+        password_ = Random::string_alpha(16);
     }
 
     virtual ~PublicRequestAuthImpl()
@@ -926,9 +971,6 @@ public:
                 throw std::runtime_error("cannot save authenticated public request"
                         " without base request (id not set)");
             }
-
-            identification_ = Random::string_alpha(32);
-            password_ = Random::string_alpha(16);
 
             conn.exec_params(
                     "INSERT INTO public_request_auth (id, identification, password)"
@@ -1441,23 +1483,7 @@ public:
         /* check if contact is already identified and cancel status */
         if (cancel_state_request(getObject(0).id, 22) == false) {
             /* otherwise there could be identification request */
-            Database::Result rid_result = conn.exec_params(
-                    "SELECT pr.id FROM public_request pr"
-                    " JOIN public_request_objects_map prom ON prom.request_id = pr.id"
-                    " JOIN contact c ON c.id = prom.object_id"
-                    " WHERE pr.resolve_time IS NULL AND pr.request_type = $1::integer"
-                    " AND c.id = $2::integer",
-                    Database::query_param_list
-                         (PRT_CONTACT_IDENTIFICATION)
-                         (getObject(0).id));
-            /* close it */
-            if (rid_result.size() == 1) {
-                conn.exec_params("UPDATE public_request SET resolve_time = now(),"
-                        " status = $1::integer WHERE id = $2::integer",
-                        Database::query_param_list
-                             (PRS_INVALID)
-                             (static_cast<unsigned long long>(rid_result[0][0])));
-            }
+            cancel_public_request(getObject(0).id, PRT_CONTACT_IDENTIFICATION);
         }
 
         /* set new state */
