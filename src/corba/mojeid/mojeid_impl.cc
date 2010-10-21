@@ -88,44 +88,24 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         ::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
         Logging::Context ctx_request(request.get_servertrid());
 
-        try {
-            Register::Contact::ManagerPtr contact_mgr(
-                    Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
-            LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
-                    % handle);
+        Register::Contact::ManagerPtr contact_mgr(
+                Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
 
-            Register::NameIdPair cinfo;
-            Register::Contact::Manager::CheckAvailType check_result;
-            check_result = contact_mgr->checkAvail(handle, cinfo);
+        Register::NameIdPair cinfo;
+        Register::Contact::Manager::CheckAvailType check_result;
+        check_result = contact_mgr->checkAvail(handle, cinfo);
 
-            if (check_result == Register::Contact::Manager::CA_INVALID_HANDLE) {
-                throw std::runtime_error(str(boost::format("handle '%1%' is not valid")
-                            % handle));
-            }
-            else if (check_result == Register::Contact::Manager::CA_REGISTRED) {
-                throw std::runtime_error(str(boost::format("handle '%1%' is already registered")
-                            % handle));
-            }
-            else if (check_result == Register::Contact::Manager::CA_PROTECTED) {
-                throw std::runtime_error(str(boost::format("handle '%1%' is in protection period")
-                        % handle));
-            }
-            LOGGER(PACKAGE).debug(boost::format("handle '%1%' check passed")
-                    % handle);
+        if ((check_result == Register::Contact::Manager::CA_REGISTRED)
+            || (check_result == Register::Contact::Manager::CA_PROTECTED)) {
+            Registry::MojeID::Server::ValidationErrorList_var errors
+                = new Registry::MojeID::Server::ValidationErrorList();
+            errors->length(1);
+            errors[0].name = "username";
+            errors[0].error = Registry::MojeID::Server::NOT_AVAILABLE;
+            throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(errors);
         }
-        catch (std::exception &_ex) {
-            throw;
-        }
-        catch (...) {
-            throw std::runtime_error("contact handle availability check failed");
-        }
-
-        /* TODO: more checking? */
-        if (_contact.addresses.length() == 0) {
-            throw std::runtime_error("contact has no address");
-        }
-        if (_contact.emails.length() == 0) {
-            throw std::runtime_error("contact has no email");
+        else if (check_result == Register::Contact::Manager::CA_INVALID_HANDLE) {
+            /* mojeid has different handle format */
         }
 
         ::MojeID::Contact data = corba_unwrap_contact(_contact);
@@ -182,6 +162,9 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
         /* return new contact id */
         return id;
+    }
+    catch (Registry::MojeID::Server::DATA_VALIDATION_ERROR) {
+        throw;
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -240,29 +223,14 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
                 % handle % _method % _request_id);
 
         Register::NameIdPair cinfo;
-        try {
-            Register::Contact::ManagerPtr contact_mgr(
-                    Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
+        Register::Contact::ManagerPtr contact_mgr(
+                Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
 
-            LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
-                    % handle);
+        Register::Contact::Manager::CheckAvailType check_result;
+        check_result = contact_mgr->checkAvail(handle, cinfo);
 
-            Register::Contact::Manager::CheckAvailType check_result;
-            check_result = contact_mgr->checkAvail(handle, cinfo);
-
-            if (check_result != Register::Contact::Manager::CA_REGISTRED) {
-                throw std::runtime_error(str(boost::format("handle '%1%' is not registered")
-                            % handle));
-            }
-            LOGGER(PACKAGE).debug(boost::format("handle '%1%' check passed")
-                    % handle);
-
-        }
-        catch (std::exception &_ex) {
-            throw;
-        }
-        catch (...) {
-            throw std::runtime_error("contact handle availability check failed");
+        if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+            throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
         /* TODO: more checking? */
@@ -300,6 +268,9 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
         LOGGER(PACKAGE).info("request completed successfully");
         return cinfo.id;
     }
+    catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
+        throw;
+    }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
@@ -336,28 +307,14 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         std::string handle = boost::to_upper_copy(corba_unwrap_string(_contact.username));
 
         Register::NameIdPair cinfo;
-        try {
-            Register::Contact::ManagerPtr contact_mgr(
-                    Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
+        Register::Contact::ManagerPtr contact_mgr(
+                Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
 
-            LOGGER(PACKAGE).debug(boost::format("handle '%1%' availability check")
-                    % handle);
+        Register::Contact::Manager::CheckAvailType check_result;
+        check_result = contact_mgr->checkAvail(handle, cinfo);
 
-            Register::Contact::Manager::CheckAvailType check_result;
-            check_result = contact_mgr->checkAvail(handle, cinfo);
-
-            if (check_result != Register::Contact::Manager::CA_REGISTRED) {
-                throw std::runtime_error(str(boost::format("handle '%1%' is not registered")
-                            % handle));
-            }
-            LOGGER(PACKAGE).debug(boost::format("handle '%1%' check passed")
-                    % handle);
-        }
-        catch (std::exception &_ex) {
-            throw;
-        }
-        catch (...) {
-            throw std::runtime_error("contact handle availability check failed");
+        if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+            throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
         if (cinfo.name != handle || cinfo.id != id) {
@@ -382,6 +339,9 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         request.end_prepare(_trans_id);
         LOGGER(PACKAGE).info("request completed successfully");
     }
+    catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
+        throw;
+    }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
@@ -403,10 +363,24 @@ Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
     try {
         LOGGER(PACKAGE).info(boost::format("request data -- id: %1%") % _id);
 
+        Register::NameIdPair cinfo;
+        Register::Contact::ManagerPtr contact_mgr(
+                Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
+
+        Register::Contact::Manager::CheckAvailType check_result;
+        check_result = contact_mgr->checkAvail(_id, cinfo);
+
+        if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+            throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+        }
+
         Contact *data = corba_wrap_contact(::MojeID::contact_info(_id));
 
         LOGGER(PACKAGE).info("request completed successfully");
         return data;
+    }
+    catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
+        throw;
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -738,7 +712,7 @@ ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hou
 
             if (state_name == "conditionallyIdentifiedContact") {
                 ret->length(act_size + 1);
-               sinfo.state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
+                sinfo.state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
                 ret[act_size] = sinfo;
             }
             else if (state_name == "identifiedContact") {
