@@ -373,7 +373,7 @@ void NotifyClient::file_send()
               std::string command_with_params
                   = command + " " + param_quote_by + mp.phone_number + param_quote_by
                   + " " + param_quote_by + mp.content + param_quote_by;
-              if(!system(command_with_params.c_str()))
+              if(system(command_with_params.c_str()))
               {
                   LOGGER(PACKAGE).error(
                           std::string("NotifyClient::sendSMS error command: ")
