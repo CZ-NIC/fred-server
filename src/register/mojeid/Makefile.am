@@ -15,6 +15,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 libmojeid_a_SOURCES = contact.h \
                       contact.cc \
                       nullable.h \
-                      request.h
-
+                      request.h \
+                      mojeid_data_validation.h \
+                      mojeid_data_validation.cc
 

@@ -9,6 +9,7 @@
 #include "map_at.h"
 #include "mojeid/contact.h"
 #include "mojeid/request.h"
+#include "mojeid/mojeid_data_validation.h"
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
@@ -962,6 +963,9 @@ public:
                 throw std::runtime_error("public request auth requires"
                         " (only) one object to work with");
             }
+
+            ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
+            ::MojeID::validate_contact_data(cdata);
 
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction tx(conn);

@@ -4,6 +4,7 @@
 #include "corba/MojeID.hh"
 #include "register/mojeid/nullable.h"
 #include "register/mojeid/contact.h"
+#include "register/mojeid/mojeid_data_validation.h"
 
 #include <string>
 #include <boost/algorithm/string.hpp>
@@ -277,6 +278,41 @@ Contact* corba_wrap_contact(const MojeID::Contact &_contact)
 
     return data;
 }
+
+
+Registry::MojeID::Server::ValidationError corba_wrap_validation_error(
+        const ::MojeID::ValidationError &_value)
+{
+    switch (_value) {
+        case ::MojeID::NOT_AVAILABLE:
+            return Registry::MojeID::Server::NOT_AVAILABLE;
+        case ::MojeID::INVALID:
+            return Registry::MojeID::Server::INVALID;
+        case ::MojeID::REQUIRED:
+            return Registry::MojeID::Server::REQUIRED;
+        default:
+            throw std::runtime_error("unknown validation error type");
+    }
+}
+
+
+Registry::MojeID::Server::ValidationErrorList_var corba_wrap_validation_error_list(
+        const ::MojeID::FieldErrorMap &_errors)
+{
+    Registry::MojeID::Server::ValidationErrorList_var cerrors
+        = new Registry::MojeID::Server::ValidationErrorList;
+    cerrors->length(_errors.size());
+
+    ::MojeID::FieldErrorMap::const_iterator it = _errors.begin();
+    ::MojeID::FieldErrorMap::size_type i = 0;
+    for (; it != _errors.end(); ++it, ++i) {
+        cerrors[i].name = corba_wrap_string(it->first);
+        cerrors[i].error = corba_wrap_validation_error(it->second);
+    }
+
+    return cerrors;
+}
+
 
 
 #endif /*CORBA_CONVERT_H_*/

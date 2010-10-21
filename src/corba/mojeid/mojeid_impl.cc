@@ -95,17 +95,10 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         Register::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(handle, cinfo);
 
-        if ((check_result == Register::Contact::Manager::CA_REGISTRED)
-            || (check_result == Register::Contact::Manager::CA_PROTECTED)) {
-            Registry::MojeID::Server::ValidationErrorList_var errors
-                = new Registry::MojeID::Server::ValidationErrorList();
-            errors->length(1);
-            errors[0].name = "username";
-            errors[0].error = Registry::MojeID::Server::NOT_AVAILABLE;
-            throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(errors);
-        }
-        else if (check_result == Register::Contact::Manager::CA_INVALID_HANDLE) {
-            /* mojeid has different handle format */
+        if (check_result != Register::Contact::Manager::CA_FREE) {
+            ::MojeID::FieldErrorMap errors;
+            errors["username"] = ::MojeID::NOT_AVAILABLE;
+            throw ::MojeID::DataValidationError(errors);
         }
 
         ::MojeID::Contact data = corba_unwrap_contact(_contact);
@@ -163,8 +156,9 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         /* return new contact id */
         return id;
     }
-    catch (Registry::MojeID::Server::DATA_VALIDATION_ERROR) {
-        throw;
+    catch (::MojeID::DataValidationError &_ex) {
+        throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(_ex.errors));
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -233,8 +227,6 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
-        /* TODO: more checking? */
-
         /* create public request */
         Register::PublicRequest::Type type;
         if (_method == Registry::MojeID::SMS) {
@@ -270,6 +262,10 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
     }
     catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
+    }
+    catch (::MojeID::DataValidationError &_ex) {
+        throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(_ex.errors));
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -327,6 +323,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         /* TODO: checking for prohibited states */
 
         ::MojeID::Contact data = corba_unwrap_contact(_contact);
+        ::MojeID::validate_contact_data(data);
         unsigned long long hid = ::MojeID::contact_update(
                 request.get_id(),
                 request.get_request_id(),
@@ -341,6 +338,10 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
     }
     catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
+    }
+    catch (::MojeID::DataValidationError &_ex) {
+        throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(_ex.errors));
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
