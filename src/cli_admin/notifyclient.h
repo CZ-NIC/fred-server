@@ -46,8 +46,6 @@
 #define NOTIFY_HPMAIL_CONFIG_NAME_DESC  "Configuration file for Postservis client (hpmail)"
 #define NOTIFY_SMS_COMMAND_NAME         "sms_command"
 #define NOTIFY_SMS_COMMAND_NAME_DESC    "Command to send saved sms messages"
-#define NOTIFY_SMS_PARAM_QUOTE_BY_NAME         "sms_param_quote_by"
-#define NOTIFY_SMS_PARAM_QUOTE_BY_NAME_DESC    "String used to quote script params"
 
 #include <boost/program_options.hpp>
 #include <iostream>

@@ -97,7 +97,6 @@ monitoring_hosts_file = @MONITORINGIPS@
 
 [sms]
 command = LOGIN=login PASSOWORD=pass sms_send.bash
-param_quote_by = '
 
 
 ##
