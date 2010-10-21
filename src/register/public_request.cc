@@ -1111,9 +1111,30 @@ public:
         params["handle"]    = map_at(_data, "handle");
         params["identification"] = map_at(_data, "identification");
         params["passwd"]    = map_at(_data, "pin1");
+
+        Database::Connection conn = Database::Manager::acquire();
+
         /* for demo purpose we send second half of password as well */
         if (man_->getDemoMode() == true) {
             params["passwd2"] = map_at(_data, "pin2");
+            unsigned long long file_id = 0;
+
+            Database::Result result = conn.exec_params(
+                    "select la.file_id from letter_archive la "
+                    " join message_archive ma on ma.id=la.id "
+                    " join public_request_messages_map prmm on prmm.message_archive_id = ma.id "
+                    " where prmm.public_request_id = $1::integer and prmm.message_archive_id is not null "
+                    ,Database::query_param_list (this->getId())
+            );
+            if(result.size() == 1)
+            {
+                //letter file_id
+                file_id = result[0][0];
+                attach.push_back(file_id);
+            }
+
+
+
         }
 
         handles.push_back(getObject(0).handle);
@@ -1128,7 +1149,7 @@ public:
                 attach
                 );
 
-        Database::Connection conn = Database::Manager::acquire();
+
         Database::Transaction tx(conn);
         conn.exec_params("INSERT INTO public_request_messages_map "
                 " (public_request_id, message_archive_id, mail_archive_id) "
@@ -1394,8 +1415,9 @@ class ContactIdentificationImpl
             }
             else {
                 /* contact is fresh - send pin2 */
-                PublicRequestAuthImpl::sendEmailPassword(data, 2);
                 PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN2);
+                //email have letter in attachement in demo mode, so letter first
+                PublicRequestAuthImpl::sendEmailPassword(data, 2);
             }
         }
       };
