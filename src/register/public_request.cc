@@ -947,7 +947,6 @@ public:
         return false;
     }
 
-
     void save()
     {
         if (id_) {
@@ -1284,6 +1283,64 @@ public:
         return true;
     }
 
+    void save()
+    {
+        /* insert */
+        if (!this->getId()) {
+            bool check_ok = true;
+            /* already CI */
+            if (check_ok && checkState(this->getObject(0).id, 21) == true) {
+                check_ok = false;
+            }
+            /* already I */
+            if (check_ok && checkState(this->getObject(0).id, 22) == true) {
+                check_ok = false;
+            }
+            /* already V */
+            if (check_ok && checkState(this->getObject(0).id, 23) == true) {
+                check_ok = false;
+            }
+            /* has I request */
+            if (check_ok && check_public_request(
+                        this->getObject(0).id,
+                        PRT_CONTACT_IDENTIFICATION) == true) {
+                check_ok = false;
+            }
+            /* has V request */
+            if (check_ok && check_public_request(
+                        this->getObject(0).id,
+                        PRT_CONTACT_VALIDATION) == true) {
+                check_ok = false;
+            }
+            if (!check_ok) {
+                throw std::runtime_error("pre_insert_checks: failed!");
+            }
+            /* if there is another open CI close it */
+            cancel_public_request(
+                    this->getObject(0).id,
+                    PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
+
+        }
+        PublicRequestAuthImpl::save();
+    }
+
+    void process(bool _invalid, bool _check)
+    {
+        PublicRequestAuthImpl::process(_invalid, _check);
+
+        /* make new request for finishing contact identification */
+        PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
+                man_->createRequest(PRT_CONTACT_IDENTIFICATION)));
+        if (new_request) {
+            new_request->setRegistrarId(this->getRegistrarId());
+            new_request->setRequestId(this->getRequestId());
+            new_request->setEppActionId(this->getEppActionId());
+            new_request->addObject(this->getObject(0));
+            new_request->save();
+            new_request->sendPasswords();
+        }
+    }
+
     void processAction(bool _check)
     {
         LOGGER(PACKAGE).debug(boost::format(
@@ -1334,18 +1391,6 @@ public:
                 "SELECT update_object_states($1::integer)",
                 Database::query_param_list(getObject(0).id));
 
-        /* make new request for finishing contact identification */
-        PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
-                man_->createRequest(PRT_CONTACT_IDENTIFICATION)));
-        if (new_request) {
-            new_request->setRegistrarId(this->getRegistrarId());
-            new_request->setRequestId(this->getRequestId());
-            new_request->setEppActionId(this->getEppActionId());
-            new_request->addObject(this->getObject(0));
-            new_request->save();
-            new_request->sendPasswords();
-        }
-
         tx.commit();
     }
 
@@ -1361,68 +1406,114 @@ public:
 class ContactIdentificationImpl
   : public PublicRequestAuthImpl
 {
- public:
-        bool check() const
-        {
-            return true;
+public:
+    bool check() const
+    {
+        return true;
+    }
+
+    void save()
+    {
+        if (!this->getId()) {
+            bool check_ok = true;
+            /* already I */
+            if (check_ok && checkState(this->getObject(0).id, 22) == true) {
+                check_ok = false;
+            }
+            /* already V */
+            if (check_ok && checkState(this->getObject(0).id, 23) == true) {
+                check_ok = false;
+            }
+            // /* has CI request */
+            // if (check_ok && check_public_request(
+            //             this->getObject(0).id,
+            //             PRT_CONDITIONAL_CONTACT_IDENTIFICATION) == true) {
+            //     check_ok = false;
+            // }
+            // /* has I request */
+            // if (check_ok && check_public_request(
+            //             this->getObject(0).id,
+            //             PRT_CONTACT_IDENTIFICATION) == true) {
+            //     check_ok = false;
+            // }
+            /* has V request */
+            if (check_ok && check_public_request(
+                        this->getObject(0).id,
+                        PRT_CONTACT_VALIDATION) == true) {
+                check_ok = false;
+            }
+            if (!check_ok) {
+                throw std::runtime_error("pre_insert_checks: failed!");
+            }
+            /* if there is another open CI close it */
+            cancel_public_request(
+                    this->getObject(0).id,
+                    PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
+            /* if there is another open I close it */
+            cancel_public_request(
+                    this->getObject(0).id,
+                    PRT_CONTACT_IDENTIFICATION);
         }
-        void processAction(bool _check)
-        {
-            LOGGER(PACKAGE).debug(boost::format(
-                    "processing public request id=%1%")
-            % getId());
+        PublicRequestAuthImpl::save();
+    }
 
-            Database::Connection conn = Database::Manager::acquire();
-            Database::Transaction tx(conn);
+    void processAction(bool _check)
+    {
+        LOGGER(PACKAGE).debug(boost::format(
+                "processing public request id=%1%")
+        % getId());
 
-            /* check if need to transfer and do so (TODO: make function (two copies) */
-            Database::Result clid_result = conn.exec_params(
-                    "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
-                    " WHERE c.id = $1::integer FOR UPDATE",
-                    Database::query_param_list(getObject(0).id));
-            if (clid_result.size() != 1) {
-                throw std::runtime_error("cannot find contact, object doesn't exist!?"
-                        " (probably deleted?)");
-            }
-            if (static_cast<unsigned long long>(clid_result[0][0]) != this->getRegistrarId()) {
-                /* run transfer command */
-                ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
-                ::MojeID::contact_transfer(
-                        request.get_id(),
-                        request.get_request_id(),
-                        request.get_registrar_id(),
-                        this->getObject(0).id);
-                request.end_success();
-            }
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
 
-            /* check if contact is already conditionally identified and cancel state */
-            cancel_state_request(getObject(0).id, 21);
-
-            /* set new state */
-            insertNewStateRequest(getId(), getObject(0).id, 22);
-            conn.exec_params(
-                    "SELECT update_object_states($1::integer)",
-                    Database::query_param_list(getObject(0).id));
-
-            tx.commit();
+        /* check if need to transfer and do so (TODO: make function (two copies) */
+        Database::Result clid_result = conn.exec_params(
+                "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
+                " WHERE c.id = $1::integer FOR UPDATE",
+                Database::query_param_list(getObject(0).id));
+        if (clid_result.size() != 1) {
+            throw std::runtime_error("cannot find contact, object doesn't exist!?"
+                    " (probably deleted?)");
+        }
+        if (static_cast<unsigned long long>(clid_result[0][0]) != this->getRegistrarId()) {
+            /* run transfer command */
+            ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
+            ::MojeID::contact_transfer(
+                    request.get_id(),
+                    request.get_request_id(),
+                    request.get_registrar_id(),
+                    this->getObject(0).id);
+            request.end_success();
         }
 
-        void sendPasswords()
-        {
-            MessageData data = PublicRequestAuthImpl::collectMessageData();
+        /* check if contact is already conditionally identified and cancel state */
+        cancel_state_request(getObject(0).id, 21);
 
-            if (checkState(getObject(0).id, 21) == true) {
-                /* contact is already conditionally identified - send pin3 */
-                PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN3);
-            }
-            else {
-                /* contact is fresh - send pin2 */
-                PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN2);
-                //email have letter in attachement in demo mode, so letter first
-                PublicRequestAuthImpl::sendEmailPassword(data, 2);
-            }
+        /* set new state */
+        insertNewStateRequest(getId(), getObject(0).id, 22);
+        conn.exec_params(
+                "SELECT update_object_states($1::integer)",
+                Database::query_param_list(getObject(0).id));
+
+        tx.commit();
+    }
+
+    void sendPasswords()
+    {
+        MessageData data = PublicRequestAuthImpl::collectMessageData();
+
+        if (checkState(getObject(0).id, 21) == true) {
+            /* contact is already conditionally identified - send pin3 */
+            PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN3);
         }
-      };
+        else {
+            /* contact is fresh - send pin2 */
+            PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN2);
+            //email have letter in attachement in demo mode, so letter first
+            PublicRequestAuthImpl::sendEmailPassword(data, 2);
+        }
+    }
+};
 
 
 
@@ -1434,6 +1525,31 @@ public:
     {
         return true;
     }
+
+    void save()
+    {
+        if (!this->getId()) {
+            bool check_ok = true;
+            /* already I */
+            bool ci_state = (checkState(this->getObject(0).id, 21) == true);
+            /* already V */
+            bool i_state  = (checkState(this->getObject(0).id, 22) == true);
+            if (check_ok && (!ci_state && !i_state)) {
+                check_ok = false;
+            }
+            /* has V request */
+            if (check_ok && check_public_request(
+                        this->getObject(0).id,
+                        PRT_CONTACT_VALIDATION) == true) {
+                check_ok = false;
+            }
+            if (!check_ok) {
+                throw std::runtime_error("pre_insert_checks: failed!");
+            }
+        }
+        PublicRequestImpl::save();
+    }
+
 
     virtual std::string getTemplateName() const
     {
