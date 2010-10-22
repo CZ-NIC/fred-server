@@ -57,6 +57,7 @@ unsigned long long contact_transfer(const unsigned long long &_action_id,
 
 unsigned long long contact_update(const unsigned long long &_action_id,
                                   const unsigned long long &_request_id,
+                                  const unsigned long long &_registrar_id,
                                   Contact &_data);
 
 const MojeID::Contact contact_info(const unsigned long long &_id);

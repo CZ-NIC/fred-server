@@ -207,15 +207,21 @@ unsigned long long contact_transfer(const unsigned long long &_action_id,
                          (_registrar_id)
                          (Random::string_alphanum(8))
                          (_contact_id));
-
     return db_contact_insert_history(_action_id, _request_id, _contact_id);
 }
 
 
 unsigned long long contact_update(const unsigned long long &_action_id,
                                   const unsigned long long &_request_id,
+                                  const unsigned long long &_registrar_id,
                                   Contact &_data)
 {
+    Database::Connection conn = Database::Manager::acquire();
+    conn.exec_params("UPDATE object SET upid = $1::integer, update = now()"
+                     " WHERE id = $2::integer",
+                     Database::query_param_list
+                        (_registrar_id)
+                        (_data.id));
     db_contact_update(_data);
     return db_contact_insert_history(_action_id, _request_id, _data.id);
 }

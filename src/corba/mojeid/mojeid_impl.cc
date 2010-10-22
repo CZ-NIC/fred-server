@@ -327,6 +327,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         unsigned long long hid = ::MojeID::contact_update(
                 request.get_id(),
                 request.get_request_id(),
+                request.get_registrar_id(),
                 data);
 
         LOGGER(PACKAGE).info(boost::format(
