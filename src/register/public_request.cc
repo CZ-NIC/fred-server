@@ -1289,27 +1289,21 @@ public:
         if (!this->getId()) {
             bool check_ok = true;
             /* already CI */
-            if (check_ok && checkState(this->getObject(0).id, 21) == true) {
+            if (check_ok && (checkState(this->getObject(0).id, 21) == true)) {
                 check_ok = false;
             }
             /* already I */
-            if (check_ok && checkState(this->getObject(0).id, 22) == true) {
+            if (check_ok && (checkState(this->getObject(0).id, 22) == true)) {
                 check_ok = false;
             }
             /* already V */
-            if (check_ok && checkState(this->getObject(0).id, 23) == true) {
-                check_ok = false;
-            }
-            /* has I request */
-            if (check_ok && check_public_request(
-                        this->getObject(0).id,
-                        PRT_CONTACT_IDENTIFICATION) == true) {
+            if (check_ok && (checkState(this->getObject(0).id, 23) == true)) {
                 check_ok = false;
             }
             /* has V request */
-            if (check_ok && check_public_request(
+            if (check_ok && (check_public_request(
                         this->getObject(0).id,
-                        PRT_CONTACT_VALIDATION) == true) {
+                        PRT_CONTACT_VALIDATION) > 0)) {
                 check_ok = false;
             }
             if (!check_ok) {
@@ -1319,7 +1313,10 @@ public:
             cancel_public_request(
                     this->getObject(0).id,
                     PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
-
+            /* if there is another open I close it */
+            cancel_public_request(
+                    this->getObject(0).id,
+                    PRT_CONTACT_IDENTIFICATION);
         }
         PublicRequestAuthImpl::save();
     }
@@ -1417,29 +1414,17 @@ public:
         if (!this->getId()) {
             bool check_ok = true;
             /* already I */
-            if (check_ok && checkState(this->getObject(0).id, 22) == true) {
+            if (check_ok && (checkState(this->getObject(0).id, 22) == true)) {
                 check_ok = false;
             }
             /* already V */
-            if (check_ok && checkState(this->getObject(0).id, 23) == true) {
+            if (check_ok && (checkState(this->getObject(0).id, 23) == true)) {
                 check_ok = false;
             }
-            // /* has CI request */
-            // if (check_ok && check_public_request(
-            //             this->getObject(0).id,
-            //             PRT_CONDITIONAL_CONTACT_IDENTIFICATION) == true) {
-            //     check_ok = false;
-            // }
-            // /* has I request */
-            // if (check_ok && check_public_request(
-            //             this->getObject(0).id,
-            //             PRT_CONTACT_IDENTIFICATION) == true) {
-            //     check_ok = false;
-            // }
             /* has V request */
-            if (check_ok && check_public_request(
+            if (check_ok && (check_public_request(
                         this->getObject(0).id,
-                        PRT_CONTACT_VALIDATION) == true) {
+                        PRT_CONTACT_VALIDATION) > 0)) {
                 check_ok = false;
             }
             if (!check_ok) {
@@ -1538,9 +1523,9 @@ public:
                 check_ok = false;
             }
             /* has V request */
-            if (check_ok && check_public_request(
+            if (check_ok && (check_public_request(
                         this->getObject(0).id,
-                        PRT_CONTACT_VALIDATION) == true) {
+                        PRT_CONTACT_VALIDATION) > 0)) {
                 check_ok = false;
             }
             if (!check_ok) {
