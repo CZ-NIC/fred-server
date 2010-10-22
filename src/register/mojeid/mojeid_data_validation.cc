@@ -48,12 +48,12 @@ void validate_contact_data(const ::MojeID::Contact &_data)
         /* main phone has to be unique among all mojeid contacts */
         Database::Connection conn = Database::Manager::acquire();
         Database::Result unique_phone = conn.exec_params(
-                "SELECT c.id FROM contact c"
+                "SELECT c.id FROM object_registry oreg JOIN contact c ON c.id = oreg.id"
                 " JOIN object_state os ON os.object_id = c.id"
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
                 " WHERE eos.name =ANY ($1::text[])"
                 " AND trim(both ' ' from c.telephone) = trim(both ' ' from $2::text)"
-                " AND c.name != $3::text",
+                " AND oreg.name != UPPER($3::text)",
                 Database::query_param_list
                     ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}")
                     (static_cast<std::string>(_data.telephone))
@@ -81,12 +81,12 @@ void validate_contact_data(const ::MojeID::Contact &_data)
         /* main email has to be unique among all mojeid contacts */
         Database::Connection conn = Database::Manager::acquire();
         Database::Result unique_email = conn.exec_params(
-                "SELECT c.id FROM contact c"
+                "SELECT c.id FROM object_registry oreg JOIN contact c ON c.id = oreg.id"
                 " JOIN object_state os ON os.object_id = c.id"
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
                 " WHERE eos.name =ANY ($1::text[])"
                 " AND trim(both ' ' from c.email) = trim(both ' ' from $2::text)"
-                " AND c.name != $3::text",
+                " AND oreg.name != UPPER($3::text)",
                 Database::query_param_list
                     ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}")
                     (static_cast<std::string>(_data.email))
