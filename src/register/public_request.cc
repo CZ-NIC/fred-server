@@ -1003,21 +1003,6 @@ public:
             throw NOT_AUTHENTICATED();
         }
 
-        /* object should not change */
-        Database::Result rtransfer = conn.exec_params(
-                "SELECT ((o.update IS NULL OR o.update <= pr.create_time)"
-                 " AND (o.trdate IS NULL OR o.trdate <= pr.create_time))"
-                 " FROM object o"
-                 " JOIN contact c on c.id = o.id"
-                 " JOIN public_request_objects_map prom on prom.object_id = c.id"
-                 " JOIN public_request pr on pr.id = prom.request_id"
-                 " WHERE pr.resolve_time IS NULL AND pr.id = $1::integer",
-                 Database::query_param_list(this->getId()));
-        if (rtransfer.size() != 1 || static_cast<bool>(rtransfer[0][0]) != true) {
-            throw std::runtime_error("request is not eligible for processing"
-                    " (contact was changed)");
-        }
-
         if (_invalid) {
             status_ = PRS_INVALID;
         }
@@ -1308,6 +1293,21 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
+        /* object should not change */
+        Database::Result rnot_changed = conn.exec_params(
+                "SELECT ((o.update IS NULL OR o.update <= pr.create_time)"
+                 " AND (o.trdate IS NULL OR o.trdate <= pr.create_time))"
+                 " FROM object o"
+                 " JOIN contact c on c.id = o.id"
+                 " JOIN public_request_objects_map prom on prom.object_id = c.id"
+                 " JOIN public_request pr on pr.id = prom.request_id"
+                 " WHERE pr.resolve_time IS NULL AND pr.id = $1::integer",
+                 Database::query_param_list(this->getId()));
+        if (rnot_changed.size() != 1 || static_cast<bool>(rnot_changed[0][0]) != true) {
+            throw std::runtime_error("request is not eligible for processing"
+                    " (contact was changed)");
+        }
+
         /* check if need to transfer and do so (TODO: make function (two copies) */
         Database::Result clid_result = conn.exec_params(
                 "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
@@ -1345,8 +1345,6 @@ public:
             new_request->save();
             new_request->sendPasswords();
         }
-
-        /* check if need to transfer and do so */
 
         tx.commit();
     }
