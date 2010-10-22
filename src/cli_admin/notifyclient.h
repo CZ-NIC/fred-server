@@ -92,10 +92,16 @@ public:
     void file_send();
     void sendFile(const std::string &filename, const std::string &conf_file); 
     void sendLetters(std::auto_ptr<Register::File::Transferer> fileman
-            , const std::string &conf_file, const std::string &comm_type);
+            , const std::string &conf_file);
     void sendSMS(const std::string& command , const std::string& param_quote_by);
-
     HPCfgMap readHPConfig(const std::string &conf_file);
+    void send_letters_impl(
+        Register::File::Transferer* fileman
+        , const HPCfgMap& hpmail_config
+        , Register::Messages::LetterProcInfo& proc_letters
+        , std::string& new_status
+        , std::string& batch_id);
+
 }; // class NotifyClient
 
 } // namespace Admin;

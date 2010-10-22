@@ -20,7 +20,7 @@
 #include "commonclient.h"
 #include "notifyclient.h"
 #include "register/info_buffer.h"
-#include "register/messages/messages_impl.h"
+
 
 
 #include "cfg/faked_args.h"
@@ -205,15 +205,7 @@ void NotifyClient::letters_send()
            m_conf.hasOpt(NOTIFY_HPMAIL_CONFIG_NAME) ? 
                 m_conf.get<std::string> (NOTIFY_HPMAIL_CONFIG_NAME) :
                 HPMAIL_CONFIG
-                , "letter"
             );
-    sendLetters(
-               fileclient,
-               m_conf.hasOpt(NOTIFY_HPMAIL_CONFIG_NAME) ?
-                    m_conf.get<std::string> (NOTIFY_HPMAIL_CONFIG_NAME) :
-                    HPMAIL_CONFIG
-                    , "registered_letter"
-                );
 }
 
 void NotifyClient::sms_send()
@@ -258,6 +250,64 @@ void NotifyClient::file_send()
             );
 }
 
+    void NotifyClient::send_letters_impl(
+            Register::File::Transferer* fileman
+            , const HPCfgMap& hpmail_config
+            , Register::Messages::LetterProcInfo& proc_letters
+            , std::string& new_status
+            , std::string& batch_id)
+    {
+        if(proc_letters.empty())
+        {
+            LOGGER(PACKAGE).debug("NotifyClient::send_letters_impl: proc_letters is empty");
+            return;
+        }
+        else
+        {
+            LOGGER(PACKAGE).debug(std::string(
+                "NotifyClient::send_letters_impl: proc_letters size: ")
+            + boost::lexical_cast<std::string>(proc_letters.size()));
+        }
+
+        try
+        {
+            LOGGER(PACKAGE).info(
+                "NotifyClient::send_letters_impl: init postservice upload");
+            HPMail::set(hpmail_config);
+
+            for(unsigned i=0;i<proc_letters.size();i++)
+            {
+                Register::Messages::letter_proc mp = proc_letters.at(i);
+
+                NamedMailFile smail;
+                smail.name = mp.fname;
+                fileman->download(mp.file_id, smail.data);
+
+                LOGGER(PACKAGE).debug(boost::format(
+                    "NotifyClient::send_letters_impl: adding file (id=%1%) to batch")
+                    % mp.file_id);
+                HPMail::get()->save_file_for_upload(smail);
+            }
+            batch_id = HPMail::get()->upload();
+        }
+        catch (std::exception& ex) {
+            std::string msg = str(boost::format(
+                "NotifyClient::send_letters_impl: error occured (%1%)")
+                % ex.what());
+            LOGGER(PACKAGE).error(msg);
+            std::cerr << msg << std::endl;
+            new_status = "send_failed"; // set error status in database
+        }
+        catch (...) {
+            std::string msg = "NotifyClient::send_letters_impl: unknown error occured";
+            LOGGER(PACKAGE).error(msg);
+            std::cerr << msg << std::endl;
+            new_status = "send_failed"; // set error status in database
+        }
+
+
+    }//NotifyClient::send_letters_impl
+
 
       /** This method sends letters from table letter_archive
        * it sets current processed row to status=6 (under processing)
@@ -267,8 +317,9 @@ void NotifyClient::file_send()
        */
 
 
-  void NotifyClient::sendLetters(std::auto_ptr<Register::File::Transferer> fileman
-          , const std::string &conf_file, const std::string &comm_type)
+  void NotifyClient::sendLetters(
+          std::auto_ptr<Register::File::Transferer> fileman
+          , const std::string &conf_file)
   {
      Logging::Context ctx("send letters");
      TRACE("[CALL] Register::Notify::sendLetters()");
@@ -278,72 +329,43 @@ void NotifyClient::file_send()
 
      HPCfgMap hpmail_config = readHPConfig(conf_file);
 
-     if(comm_type.compare("registered_letter") == 0)
-     {
-         if(hpmail_config["hp_login_registered_letter_batch_id"].empty())
-         {
-             LOGGER(PACKAGE).info("send letters: not sending registered letters");
-             return;
-         }
-
-         LOGGER(PACKAGE).debug(std::string("send letters: hp_login_registered_letter_batch_id ")
-             +hpmail_config["hp_login_registered_letter_batch_id"]);
-
-         hpmail_config["hp_login_batch_id"]
-                       = hpmail_config["hp_login_registered_letter_batch_id"];
-     }
-
-     Register::Messages::LetterProcInfo proc_letters = messages_manager->load_letters_to_send(0, comm_type);
-
-     if(proc_letters.empty())
-     {
-         LOGGER(PACKAGE).debug("send letters: proc_letters is empty");
-         return;
-     }
-     else
-     {
-         LOGGER(PACKAGE).debug(std::string("send letters: proc_letters size: ")
-         + boost::lexical_cast<std::string>(proc_letters.size()));
-     }
-
+     //letters
      std::string new_status = "sent";
      std::string batch_id;
+     std::string comm_type = "letter";
 
-     try
+     Register::Messages::LetterProcInfo proc_letters
+         = messages_manager->load_letters_to_send(0, comm_type);
+     send_letters_impl(fileman.get()
+             ,hpmail_config,proc_letters,new_status,batch_id);
+     messages_manager->set_letter_status(
+         proc_letters,new_status,batch_id, comm_type);
+
+     //registered letters
+     if(hpmail_config["hp_login_registered_letter_batch_id"].empty())
      {
-         LOGGER(PACKAGE).info("send letters: init postservice upload");
-         HPMail::set(hpmail_config);
-
-         for(unsigned i=0;i<proc_letters.size();i++)
-         {
-             Register::Messages::letter_proc mp = proc_letters.at(i);
-
-             NamedMailFile smail;
-             smail.name = mp.fname;
-             fileman->download(mp.file_id, smail.data);
-
-             LOGGER(PACKAGE).debug(boost::format(
-                         "send letters: adding file (id=%1%) to batch") % mp.file_id);
-             HPMail::get()->save_file_for_upload(smail);
-         }
-         batch_id = HPMail::get()->upload();
-     }
-     catch (std::exception& ex) {
-         std::string msg = str(boost::format("send letters: error occured (%1%)") % ex.what());
-         LOGGER(PACKAGE).error(msg);
-         std::cerr << msg << std::endl;
-         new_status = "send_failed"; // set error status in database
-     }
-     catch (...) {
-         std::string msg = "send letters: unknown error occured";
-         LOGGER(PACKAGE).error(msg);
-         std::cerr << msg << std::endl;
-         new_status = "send_failed"; // set error status in database
+         LOGGER(PACKAGE).info(
+                 "NotifyClient::sendLetters: not sending registered letters");
+         return;
      }
 
-     //set status
-     messages_manager->set_letter_status(proc_letters,new_status,batch_id, comm_type);
+     new_status = "sent";
+     batch_id=std::string("");
+     comm_type = "registered_letter";
 
+     LOGGER(PACKAGE).debug(std::string(
+             "NotifyClient::sendLetters: hp_login_registered_letter_batch_id ")
+         +hpmail_config["hp_login_registered_letter_batch_id"]);
+
+     hpmail_config["hp_login_batch_id"]
+         = hpmail_config["hp_login_registered_letter_batch_id"];
+
+     Register::Messages::LetterProcInfo proc_reg_letters
+         = messages_manager->load_letters_to_send(0, comm_type);
+     send_letters_impl(fileman.get()
+             ,hpmail_config,proc_reg_letters,new_status,batch_id);
+     messages_manager->set_letter_status(
+             proc_reg_letters,new_status,batch_id, comm_type);
   }//sendLetters
 
   void NotifyClient::sendSMS(const std::string& command , const std::string& param_quote_by )
