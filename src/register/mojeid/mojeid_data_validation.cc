@@ -1,3 +1,4 @@
+#include "log/logger.h"
 #include "register/db_settings.h"
 #include "mojeid_data_validation.h"
 
@@ -34,15 +35,13 @@ void validate_contact_data(const ::MojeID::Contact &_data)
      * ^\+420\.(60([1-8]|9([134]|2[1-5]))|7(0[0-9]|10|[237]))\d+
      * and 14 characters long
      */
-    if (static_cast<std::string>(_data.telephone).length() == 0) {
-        errors["phone"] = REQUIRED;
-    }
-    else if (static_cast<std::string>(_data.telephone).length() > 14) {
+    if (static_cast<std::string>(_data.telephone).length() > 14) {
         errors["phone"] = INVALID;
     }
-    else if (!boost::regex_search(
-                static_cast<std::string>(_data.telephone),
-                PHONE_PATTERN)) {
+    else if (static_cast<std::string>(_data.telephone).length() > 0
+                && !boost::regex_search(
+                        static_cast<std::string>(_data.telephone),
+                        PHONE_PATTERN)) {
         errors["phone"] = INVALID;
     }
     else {
@@ -52,11 +51,13 @@ void validate_contact_data(const ::MojeID::Contact &_data)
                 "SELECT c.id FROM contact c"
                 " JOIN object_state os ON os.object_id = c.id"
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
-                " WHERE eos.name =ANY ($1::text[]) AND"
-                " trim(both ' ' from c.telephone) = trim(both ' ' from $2::text)",
+                " WHERE eos.name =ANY ($1::text[])"
+                " AND trim(both ' ' from c.telephone) = trim(both ' ' from $2::text)"
+                " AND c.name != $3::text",
                 Database::query_param_list
                     ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}")
-                    (static_cast<std::string>(_data.telephone)));
+                    (static_cast<std::string>(_data.telephone))
+                    (_data.handle));
         if (unique_phone.size() > 0) {
             errors["phone"] = NOT_AVAILABLE;
         }
@@ -83,16 +84,19 @@ void validate_contact_data(const ::MojeID::Contact &_data)
                 "SELECT c.id FROM contact c"
                 " JOIN object_state os ON os.object_id = c.id"
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
-                " WHERE eos.name =ANY ($1::text[]) AND"
-                " trim(both ' ' from c.email) = trim(both ' ' from $2::text)",
+                " WHERE eos.name =ANY ($1::text[])"
+                " AND trim(both ' ' from c.email) = trim(both ' ' from $2::text)"
+                " AND c.name != $3::text",
                 Database::query_param_list
                     ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}")
-                    (static_cast<std::string>(_data.email)));
+                    (static_cast<std::string>(_data.email))
+                    (_data.handle));
         if (unique_email.size() > 0) {
             errors["email"] = NOT_AVAILABLE;
         }
     }
 
+    LOGGER(PACKAGE).debug(boost::format("data validation -- found %1% error(s)") % errors.size());
     if (!errors.empty()) {
         throw DataValidationError(errors);
     }
