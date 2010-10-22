@@ -1413,6 +1413,14 @@ public:
     {
         if (!this->getId()) {
             bool check_ok = true;
+            /* already CI state and opened I reqeust (finishing identification
+             * process with pin3 */
+            if (check_ok && ((checkState(this->getObject(0).id, 21) == true)
+                        && (check_public_request(
+                                this->getObject(0).id,
+                                PRT_CONTACT_IDENTIFICATION) > 0))) {
+                check_ok = false;
+            }
             /* already I */
             if (check_ok && (checkState(this->getObject(0).id, 22) == true)) {
                 check_ok = false;
@@ -1434,10 +1442,12 @@ public:
             cancel_public_request(
                     this->getObject(0).id,
                     PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
-            /* if there is another open I close it */
-            cancel_public_request(
+            /* if not state CI cancel I request */
+            if (checkState(this->getObject(0).id, 21) == false) {
+                cancel_public_request(
                     this->getObject(0).id,
                     PRT_CONTACT_IDENTIFICATION);
+            }
         }
         PublicRequestAuthImpl::save();
     }
