@@ -10,6 +10,17 @@
 namespace MojeID {
 
 
+const std::string field_username    = "contact.username";
+const std::string field_phone       = "auth_sms.phone_number";
+const std::string field_first_name  = "contact.first_name";
+const std::string field_last_name   = "contact.last_name";
+const std::string field_street1     = "address.street1";
+const std::string field_country     = "address.country";
+const std::string field_city        = "address.city";
+const std::string field_postal_code = "address.postal_code";
+const std::string field_email       = "email.email";
+
+
 enum ValidationError
 {
     NOT_AVAILABLE,

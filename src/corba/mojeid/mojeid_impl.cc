@@ -97,7 +97,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
         if (check_result != Register::Contact::Manager::CA_FREE) {
             ::MojeID::FieldErrorMap errors;
-            errors["username"] = ::MojeID::NOT_AVAILABLE;
+            errors[::MojeID::field_username] = ::MojeID::NOT_AVAILABLE;
             throw ::MojeID::DataValidationError(errors);
         }
 
