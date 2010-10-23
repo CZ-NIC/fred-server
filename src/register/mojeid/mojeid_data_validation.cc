@@ -52,7 +52,8 @@ void validate_contact_data(const ::MojeID::Contact &_data)
      * ^\+420\.(60([1-8]|9([134]|2[1-5]))|7(0[0-9]|10|[237]))\d+
      * and 14 characters long
      */
-    if (static_cast<std::string>(_data.telephone).length() != 14) {
+    if (static_cast<std::string>(_data.telephone).length() > 0
+                && static_cast<std::string>(_data.telephone).length() != 14) {
         errors[field_phone] = INVALID;
     }
     else if (static_cast<std::string>(_data.telephone).length() > 0
