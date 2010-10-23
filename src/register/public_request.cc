@@ -1384,6 +1384,22 @@ public:
 
         /* set state */
         insertNewStateRequest(getId(), getObject(0).id, 21);
+
+        /* prohibit operations on contact */
+        if (checkState(this->getObject(0).id, 1) == false) {
+            /* set 1 | serverDeleteProhibited */
+            insertNewStateRequest(getId(), getObject(0).id, 1);
+        }
+        if (checkState(this->getObject(0).id, 3) == false) {
+            /* set 3 | serverTransferProhibited */
+            insertNewStateRequest(getId(), getObject(0).id, 3);
+        }
+        if (checkState(this->getObject(0).id, 4) == false) {
+            /* set 4 | serverUpdateProhibited */
+            insertNewStateRequest(getId(), getObject(0).id, 4);
+        }
+
+        /* update states */
         conn.exec_params(
                 "SELECT update_object_states($1::integer)",
                 Database::query_param_list(getObject(0).id));
@@ -1486,6 +1502,22 @@ public:
 
         /* set new state */
         insertNewStateRequest(getId(), getObject(0).id, 22);
+
+        /* prohibit operations on contact */
+        if (checkState(this->getObject(0).id, 1) == false) {
+            /* set 1 | serverDeleteProhibited */
+            insertNewStateRequest(getId(), getObject(0).id, 1);
+        }
+        if (checkState(this->getObject(0).id, 3) == false) {
+            /* set 3 | serverTransferProhibited */
+            insertNewStateRequest(getId(), getObject(0).id, 3);
+        }
+        if (checkState(this->getObject(0).id, 4) == false) {
+            /* set 4 | serverUpdateProhibited */
+            insertNewStateRequest(getId(), getObject(0).id, 4);
+        }
+
+        /* update states */
         conn.exec_params(
                 "SELECT update_object_states($1::integer)",
                 Database::query_param_list(getObject(0).id));
