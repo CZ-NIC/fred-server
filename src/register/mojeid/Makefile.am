@@ -17,5 +17,6 @@ libmojeid_a_SOURCES = contact.h \
                       nullable.h \
                       request.h \
                       mojeid_data_validation.h \
-                      mojeid_data_validation.cc
+                      mojeid_data_validation.cc \
+                      mojeid_contact_states.h
 

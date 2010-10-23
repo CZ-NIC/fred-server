@@ -13,8 +13,10 @@
 #include "register/register.h"
 #include "register/contact.h"
 #include "register/public_request.h"
+#include "register/object_states.h"
 #include "register/mojeid/contact.h"
 #include "register/mojeid/request.h"
+#include "register/mojeid/mojeid_contact_states.h"
 
 #include "corba/connection_releaser.h"
 #include "corba/mailer_manager.h"
@@ -324,6 +326,16 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
 
         ::MojeID::Contact data = corba_unwrap_contact(_contact);
         ::MojeID::validate_contact_data(data);
+
+        if (Register::object_has_state(id, ::MojeID::VALIDATED_CONTACT) == true) {
+            if (::MojeID::check_validated_contact_diff(data, ::MojeID::contact_info(id)) == false) {
+                /* change contact status to identified */
+                if (Register::cancel_object_state(id, ::MojeID::VALIDATED_CONTACT)) {
+                    Register::insert_object_state(id, ::MojeID::IDENTIFIED_CONTACT);
+                }
+            }
+        }
+
         unsigned long long hid = ::MojeID::contact_update(
                 request.get_id(),
                 request.get_request_id(),

@@ -1,4 +1,5 @@
 #include "common_impl.h"
+#include "object_states.h"
 #include "public_request.h"
 #include "log/logger.h"
 #include "util.h"
@@ -10,6 +11,7 @@
 #include "mojeid/contact.h"
 #include "mojeid/request.h"
 #include "mojeid/mojeid_data_validation.h"
+#include "mojeid/mojeid_contact_states.h"
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
@@ -200,39 +202,6 @@ static void cancel_public_request(
                 Database::query_param_list
                     (PRS_INVALID)
                     (prid));
-    }
-}
-
-
-
-/* check if object has given state and make cancel request */
-static bool cancel_state_request(
-        const unsigned long long &_object_id,
-        const unsigned long long &_state_id)
-{
-    Database::Connection conn = Database::Manager::acquire();
-    /* check if state is active on object */
-    if (checkState(_object_id, _state_id) == true) {
-        Database::Transaction tx(conn);
-        Database::Result rid_result = conn.exec_params(
-                "SELECT id FROM object_state_request WHERE"
-                " state_id = $1::integer AND valid_to is NULL"
-                " AND canceled is NULL AND object_id = $2::integer",
-                Database::query_param_list
-                    (_state_id)
-                    (_object_id));
-        /* cancel this status */
-        if (rid_result.size() == 1) {
-            conn.exec_params("UPDATE object_state_request"
-                    " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
-                    Database::query_param_list(
-                            static_cast<unsigned long long>(rid_result[0][0])));
-            tx.commit();
-        }
-        return true;
-    }
-    else {
-        return false;
     }
 }
 
@@ -1547,8 +1516,8 @@ public:
             request.end_success();
         }
 
-        /* check if contact is already conditionally identified and cancel state */
-        cancel_state_request(getObject(0).id, 21);
+        /* check if contact is already conditionally identified (21) and cancel state */
+        Register::cancel_object_state(getObject(0).id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
 
         /* set new state */
         insertNewStateRequest(getId(), getObject(0).id, 22);
@@ -1568,9 +1537,7 @@ public:
         }
 
         /* update states */
-        conn.exec_params(
-                "SELECT update_object_states($1::integer)",
-                Database::query_param_list(getObject(0).id));
+        update_object_states(getObject(0).id);
 
         tx.commit();
     }
@@ -1694,11 +1661,11 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        /* check if contact is already conditionally identified and cancel status */
-        cancel_state_request(getObject(0).id, 21);
+        /* check if contact is already conditionally identified (21) and cancel status */
+        Register::cancel_object_state(getObject(0).id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
 
-        /* check if contact is already identified and cancel status */
-        if (cancel_state_request(getObject(0).id, 22) == false) {
+        /* check if contact is already identified (22) and cancel status */
+        if (Register::cancel_object_state(getObject(0).id, ::MojeID::IDENTIFIED_CONTACT) == false) {
             /* otherwise there could be identification request */
             cancel_public_request(getObject(0).id, PRT_CONTACT_IDENTIFICATION);
         }

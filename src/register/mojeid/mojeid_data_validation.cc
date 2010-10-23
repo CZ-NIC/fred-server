@@ -123,5 +123,42 @@ void validate_contact_data(const ::MojeID::Contact &_data)
 }
 
 
+
+bool check_validated_contact_diff(
+        const ::MojeID::Contact &_c1,
+        const ::MojeID::Contact &_c2)
+{
+    /* name */
+    if (_c1.name != _c2.name) {
+        return false;
+    }
+    /* organization */
+    if (static_cast<std::string>(_c1.organization) != static_cast<std::string>(_c2.organization)) {
+        return false;
+    }
+    /* dic */
+    if (static_cast<std::string>(_c1.vat) != static_cast<std::string>(_c2.vat)) {
+        return false;
+    }
+    /* address */
+    if ((static_cast<std::string>(_c1.street1) != static_cast<std::string>(_c2.street1))
+            || (static_cast<std::string>(_c1.street2) != static_cast<std::string>(_c2.street2))
+            || (static_cast<std::string>(_c1.street3) != static_cast<std::string>(_c2.street3))
+            || (static_cast<std::string>(_c1.city) != static_cast<std::string>(_c2.city))
+            || (static_cast<std::string>(_c1.stateorprovince) != static_cast<std::string>(_c2.stateorprovince))
+            || (static_cast<std::string>(_c1.country) != static_cast<std::string>(_c2.country))
+            || (static_cast<std::string>(_c1.postalcode) != static_cast<std::string>(_c2.postalcode))) {
+        return false;
+    }
+    /* birthday and ico*/
+    if (static_cast<std::string>(_c1.ssn) != static_cast<std::string>(_c2.ssn)) {
+        return false;
+    }
+
+    return true;
+}
+
+
+
 }
 
