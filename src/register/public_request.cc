@@ -906,6 +906,8 @@ protected:
     std::string identification_;
     std::string password_;
 
+    static const size_t PASSWORD_CHUNK_LENGTH = 8;
+
     enum LetterType
     {
         LETTER_PIN2,
@@ -919,7 +921,6 @@ public:
           authenticated_(false)
     {
         identification_ = Random::string_alpha(32);
-        password_ = Random::string_alpha(16);
     }
 
     virtual ~PublicRequestAuthImpl()
@@ -975,6 +976,8 @@ public:
                         " without base request (id not set)");
             }
 
+            /* generate passwords */
+            password_ = this->generatePasswords();
             conn.exec_params(
                     "INSERT INTO public_request_auth (id, identification, password)"
                     " VALUES ($1::integer, $2::text, $3::text)",
@@ -1071,8 +1074,8 @@ public:
         data["identification"] = identification_;
         data["handle"] = getObject(0).handle;
         /* password split */
-        data["pin1"] = password_.substr(0, password_.size() / 2);
-        data["pin2"] = password_.substr(password_.size() / 2, password_.size());
+        data["pin1"] = password_.substr(0, -PASSWORD_CHUNK_LENGTH + password_.length());
+        data["pin2"] = password_.substr(-PASSWORD_CHUNK_LENGTH + password_.length());
         data["pin3"] = password_;
         data["reqdate"] = boost::gregorian::to_iso_extended_string(getCreateTime().date());
         data["contact_id"]=boost::lexical_cast<std::string>(getObject(0).id);
@@ -1270,6 +1273,46 @@ public:
                     (Database::QPNull));
         tx.commit();
     }
+
+    std::string generateRandomPassword(const size_t _length)
+    {
+        return Random::string_from(_length, 
+                "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789");
+    }
+
+    std::string generateAuthInfoPassword()
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result rauthinfo = conn.exec_params(
+                "SELECT o.authinfopw FROM object o JOIN contact c ON c.id = o.id"
+                " WHERE c.id = $1::integer",
+                Database::query_param_list(this->getObject(0).id));
+        if (rauthinfo.size() != 1) {
+            throw std::runtime_error(str(boost::format(
+                        "cannot retrieve authinfo for contact id=%1%")
+                        % this->getObject(0).id));
+        }
+        std::string passwd;
+        /* pin1 */
+        if (rauthinfo[0][0].isnull()) {
+            passwd = generateRandomPassword(PASSWORD_CHUNK_LENGTH);
+        }
+        else {
+            passwd = static_cast<std::string>(rauthinfo[0][0]);
+        }
+        /* append pin2 */
+        passwd += generateRandomPassword(PASSWORD_CHUNK_LENGTH);
+        return passwd;
+    }
+
+    virtual std::string generatePasswords() = 0;
+
+
+    bool check() const
+    {
+        return true;
+    }
+
 };
 
 
@@ -1278,9 +1321,9 @@ class ConditionalContactIdentificationImpl
     : public PublicRequestAuthImpl
 {
 public:
-    bool check() const
+    std::string generatePasswords()
     {
-        return true;
+        return this->generateAuthInfoPassword();
     }
 
     void save()
@@ -1420,9 +1463,16 @@ class ContactIdentificationImpl
   : public PublicRequestAuthImpl
 {
 public:
-    bool check() const
+    std::string generatePasswords()
     {
-        return true;
+        if (checkState(getObject(0).id, 21) == true) {
+            /* generate pin3 */
+            return this->generateRandomPassword(PASSWORD_CHUNK_LENGTH);
+        }
+        else {
+            /* generate pin1 and pin2 */
+            return this->generateAuthInfoPassword();
+        }
     }
 
     void save()
