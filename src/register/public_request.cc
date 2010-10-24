@@ -1301,6 +1301,22 @@ public:
         /* insert */
         if (!this->getId()) {
             bool check_ok = true;
+
+            /* contact is blocked or prohibits operations:
+             *   7 | serverBlocked
+             *   3 | serverTransferProhibited
+             *   4 | serverUpdateProhibited
+             */
+            if (check_ok && (checkState(this->getObject(0).id, 7) == true)) {
+                check_ok = false;
+            }
+            if (check_ok && (checkState(this->getObject(0).id, 3) == true)) {
+                check_ok = false;
+            }
+            if (check_ok && (checkState(this->getObject(0).id, 4) == true)) {
+                check_ok = false;
+            }
+
             /* already CI */
             if (check_ok && (checkState(this->getObject(0).id, 21) == true)) {
                 check_ok = false;
@@ -1449,6 +1465,22 @@ public:
     {
         if (!this->getId()) {
             bool check_ok = true;
+
+            /* contact is blocked or prohibits operations:
+             *   7 | serverBlocked
+             *   3 | serverTransferProhibited
+             *   4 | serverUpdateProhibited
+             */
+            if (check_ok && (checkState(this->getObject(0).id, 7) == true)) {
+                check_ok = false;
+            }
+            if (check_ok && (checkState(this->getObject(0).id, 3) == true)) {
+                check_ok = false;
+            }
+            if (check_ok && (checkState(this->getObject(0).id, 4) == true)) {
+                check_ok = false;
+            }
+
             /* already CI state and opened I reqeust (finishing identification
              * process with pin3 */
             if (check_ok && ((checkState(this->getObject(0).id, 21) == true)
