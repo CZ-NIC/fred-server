@@ -189,6 +189,19 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
         IdentificationRequestManagerPtr request_manager;
         return request_manager->processAuthRequest(_ident_request_id, _password);
     }
+    catch (::MojeID::DataValidationError &_ex) {
+        LOGGER(PACKAGE).error(boost::format(
+                    "cannot process identification request"
+                    " (contact data cannot be validated)"));
+        /* TODO: throw something else */
+        throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
+    }
+    catch (Register::PublicRequest::NotApplicable &_ex) {
+        LOGGER(PACKAGE).error(boost::format(
+                    "cannot process identification request (%1%)") % _ex.what());
+        /* TODO: throw something else */
+        throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
+    }
     catch (Register::PublicRequest::PublicRequestAuth::NOT_AUTHENTICATED&) {
         LOGGER(PACKAGE).info("request authentication failed (bad password)");
         throw Registry::MojeID::Server::IDENTIFICATION_FAILED();

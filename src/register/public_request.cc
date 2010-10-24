@@ -1357,6 +1357,9 @@ public:
                 "processing public request id=%1%")
                 % getId());
 
+        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
+        ::MojeID::validate_contact_data(cdata);
+
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
@@ -1413,10 +1416,7 @@ public:
         }
 
         /* update states */
-        conn.exec_params(
-                "SELECT update_object_states($1::integer)",
-                Database::query_param_list(getObject(0).id));
-
+        Register::update_object_states(getObject(0).id);
         tx.commit();
     }
 
@@ -1494,6 +1494,9 @@ public:
                 "processing public request id=%1%")
         % getId());
 
+        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
+        ::MojeID::validate_contact_data(cdata);
+
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
@@ -1538,8 +1541,7 @@ public:
         }
 
         /* update states */
-        update_object_states(getObject(0).id);
-
+        Register::update_object_states(getObject(0).id);
         tx.commit();
     }
 
@@ -1662,6 +1664,11 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
+        if ((checkState(this->getObject(0).id, 21) == false) && checkState(this->getObject(0).id, 22) == false) {
+            throw NotApplicable("cannot process contact validation: no identified state &&"
+                    " no conditionally identified state");
+        }
+
         /* check if contact is already conditionally identified (21) and cancel status */
         Register::cancel_object_state(getObject(0).id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
 
@@ -1673,10 +1680,7 @@ public:
 
         /* set new state */
         insertNewStateRequest(getId(), getObject(0).id, 23);
-        conn.exec_params(
-                "SELECT update_object_states($1::integer)",
-                Database::query_param_list(getObject(0).id));
-
+        Register::update_object_states(getObject(0).id);
         tx.commit();
     }
 };
