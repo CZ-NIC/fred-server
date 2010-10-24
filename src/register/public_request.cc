@@ -1466,19 +1466,23 @@ public:
         if (!this->getId()) {
             bool check_ok = true;
 
-            /* contact is blocked or prohibits operations:
-             *   7 | serverBlocked
-             *   3 | serverTransferProhibited
-             *   4 | serverUpdateProhibited
-             */
-            if (check_ok && (checkState(this->getObject(0).id, 7) == true)) {
-                check_ok = false;
-            }
-            if (check_ok && (checkState(this->getObject(0).id, 3) == true)) {
-                check_ok = false;
-            }
-            if (check_ok && (checkState(this->getObject(0).id, 4) == true)) {
-                check_ok = false;
+            /* don't check this when contact is already CI - we are creating
+             * I request only for finishing identification - pin3 */
+            if (check_ok && (checkState(this->getObject(0).id, 21) == false)) {
+                /* contact is blocked or prohibits operations:
+                 *   7 | serverBlocked
+                 *   3 | serverTransferProhibited
+                 *   4 | serverUpdateProhibited
+                 */
+                if (check_ok && (checkState(this->getObject(0).id, 7) == true)) {
+                    check_ok = false;
+                }
+                if (check_ok && (checkState(this->getObject(0).id, 3) == true)) {
+                    check_ok = false;
+                }
+                if (check_ok && (checkState(this->getObject(0).id, 4) == true)) {
+                    check_ok = false;
+                }
             }
 
             /* already CI state and opened I reqeust (finishing identification
