@@ -1247,7 +1247,7 @@ public:
     std::string generateRandomPassword(const size_t _length)
     {
         return Random::string_from(_length, 
-                "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789");
+                "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
     }
 
     std::string generateAuthInfoPassword()
