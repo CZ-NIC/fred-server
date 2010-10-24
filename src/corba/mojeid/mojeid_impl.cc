@@ -265,6 +265,14 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
     catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
     }
+    catch (Register::PublicRequest::NotApplicable &_ex) {
+        LOGGER(PACKAGE).error(boost::format(
+                    "cannot create transfer request (%1%)") % _ex.what());
+        ::MojeID::FieldErrorMap errors;
+        errors["contact.status"] = ::MojeID::INVALID;
+        throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(errors));
+    }
     catch (::MojeID::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));

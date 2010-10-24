@@ -28,6 +28,15 @@ using namespace boost::gregorian;
 namespace Register {
 namespace PublicRequest {
 
+
+struct NotApplicable : public std::runtime_error
+{
+    NotApplicable(const std::string &_str)
+        : std::runtime_error("not_applicable: " + _str)
+    {
+    }
+};
+
 /// Member identification (i.e. for sorting) 
 enum MemberType {
   MT_CRDATE, ///< create date

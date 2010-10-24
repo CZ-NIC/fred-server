@@ -20,6 +20,7 @@
 namespace Register {
 namespace PublicRequest {
 
+
 std::string Type2Str(Type _type) {
   switch (_type) {
     case PRT_AUTHINFO_AUTO_RIF:           return "AuthInfo (EPP/Auto)";
@@ -1319,7 +1320,7 @@ public:
                 check_ok = false;
             }
             if (!check_ok) {
-                throw std::runtime_error("pre_insert_checks: failed!");
+                throw NotApplicable("pre_insert_checks: failed!");
             }
             /* if there is another open CI close it */
             cancel_public_request(
@@ -1471,7 +1472,7 @@ public:
                 check_ok = false;
             }
             if (!check_ok) {
-                throw std::runtime_error("pre_insert_checks: failed!");
+                throw NotApplicable("pre_insert_checks: failed!");
             }
             /* if there is another open CI close it */
             cancel_public_request(
@@ -1588,7 +1589,7 @@ public:
                 check_ok = false;
             }
             if (!check_ok) {
-                throw std::runtime_error("pre_insert_checks: failed!");
+                throw NotApplicable("pre_insert_checks: failed!");
             }
         }
         PublicRequestImpl::save();
