@@ -1588,6 +1588,10 @@ public:
         if (checkState(getObject(0).id, 21) == true) {
             /* contact is already conditionally identified - send pin3 */
             PublicRequestAuthImpl::sendLetterPassword(data, LETTER_PIN3);
+            /* in demo mode we send pin3 as email attachment */
+            if (man_->getDemoMode()) {
+                PublicRequestAuthImpl::sendEmailPassword(data, 2);
+            }
         }
         else {
             /* contact is fresh - send pin2 */
