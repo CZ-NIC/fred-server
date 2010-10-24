@@ -420,25 +420,38 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         conn.exec("COMMIT PREPARED '" + conn.escape(_trans_id) + "'");
 
         /* TEMP: until we finish migration to request logger */
+        unsigned long long aid = 0;
+        unsigned long long cid = 0;
         try {
             Database::Result result = conn.exec_params(
-                    "SELECT id FROM action WHERE"
-                    " enddate IS NULL AND response IS NULL"
-                    " AND clienttrid = $1::text",
+                    "SELECT a.id, ch.id FROM contact_history ch JOIN history h ON h.id = ch.historyid"
+                    " JOIN action a ON a.id = h.action"
+                    " WHERE a.enddate IS NULL AND a.response IS NULL AND a.clienttrid = $1::text",
                     Database::query_param_list(_trans_id));
 
-            unsigned long long id = 0;
-            if (result.size() != 1 || (id = result[0][0]) == 0) {
+            if (result.size() != 1 || (aid = result[0][0]) == 0) {
                 LOGGER(PACKAGE).warning("unable to find unique action with given"
                         " transaction id as clienttrid");
             }
             else {
+                if ((cid = result[0][1]) != 0) {
+                    ::Register::update_object_states(cid);
+                }
+                else {
+                    throw;
+                }
+
                 conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
-                        " WHERE id = $1::integer", Database::query_param_list(id));
+                        " WHERE id = $1::integer", Database::query_param_list(aid));
             }
         }
         catch (...) {
             LOGGER(PACKAGE).error("error occured when updating action response");
+            if (cid == 0) {
+                LOGGER(PACKAGE).alert(boost::format("update_object_states(): failed!"
+                            "(cannot retrieve contact id from transaction identifier)") % cid);
+            }
+
         }
 
         LOGGER(PACKAGE).info("request completed successfully");
