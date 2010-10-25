@@ -1300,6 +1300,11 @@ public:
     {
         /* insert */
         if (!this->getId()) {
+            /* telephone is required here
+             * TODO: rewrite data validations to be in one place */
+            ::MojeID::Contact cdata = ::MojeID::contact_info(this->getObject(0).id);
+            validate_contact_telephone_required(cdata);
+
             bool check_ok = true;
 
             /* contact is blocked or prohibits operations:

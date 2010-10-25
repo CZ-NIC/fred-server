@@ -17,26 +17,15 @@ void validate_contact_data(const ::MojeID::Contact &_data)
 {
     FieldErrorMap errors;
 
-    /* required */
-    if (static_cast<std::string>(_data.street1).empty()) {
-        errors[field_street1] = REQUIRED;
-    }
-    if (static_cast<std::string>(_data.city).empty()) {
-        errors[field_city] = REQUIRED;
-    }
-    if (static_cast<std::string>(_data.postalcode).empty()) {
-        errors[field_postal_code] = REQUIRED;
-    }
-
     /* hmmm?! */
-    if (static_cast<std::string>(_data.name).empty()) {
+    if (boost::algorithm::trim_copy(static_cast<std::string>(_data.name)).empty()) {
         errors[field_first_name] = REQUIRED;
     }
 
     /* contact handle has to be in domain-token
      * pattern ^[a-z0-9](-?[a-z0-9])*$ and max length 30
      */
-    if (_data.handle.length() == 0) {
+    if (boost::algorithm::trim_copy(_data.handle).empty()) {
         errors[field_username] = REQUIRED;
     }
     else if (_data.handle.length() > 30) {
@@ -52,11 +41,11 @@ void validate_contact_data(const ::MojeID::Contact &_data)
      * ^\+420\.(60([1-8]|9([134]|2[1-5]))|7(0[0-9]|10|[237]))\d+
      * and 14 characters long
      */
-    if (static_cast<std::string>(_data.telephone).length() > 0
+    if (boost::algorithm::trim_copy(static_cast<std::string>(_data.telephone)).length() > 0
                 && static_cast<std::string>(_data.telephone).length() != 14) {
         errors[field_phone] = INVALID;
     }
-    else if (static_cast<std::string>(_data.telephone).length() > 0
+    else if (boost::algorithm::trim_copy(static_cast<std::string>(_data.telephone)).length() > 0
                 && !boost::regex_search(
                         static_cast<std::string>(_data.telephone),
                         PHONE_PATTERN)) {
@@ -81,8 +70,21 @@ void validate_contact_data(const ::MojeID::Contact &_data)
         }
     }
 
-    /* main address has to be from Czech Republic */
-    if (static_cast<std::string>(_data.country).empty()) {
+    /* main address is required and has to be from Czech Republic */
+    if (_data.street1.isnull()
+            || boost::algorithm::trim_copy(static_cast<std::string>(_data.street1)).empty()) {
+        errors[field_street1] = REQUIRED;
+    }
+    if (_data.city.isnull()
+            || boost::algorithm::trim_copy(static_cast<std::string>(_data.city)).empty()) {
+        errors[field_city] = REQUIRED;
+    }
+    if (_data.postalcode.isnull()
+            || boost::algorithm::trim_copy(static_cast<std::string>(_data.postalcode)).empty()) {
+        errors[field_postal_code] = REQUIRED;
+    }
+    if (_data.country.isnull()
+            || boost::algorithm::trim_copy(static_cast<std::string>(_data.country)).empty()) {
         errors[field_country] = REQUIRED;
     }
     else if (static_cast<std::string>(_data.country) != "CZ") {
@@ -90,7 +92,8 @@ void validate_contact_data(const ::MojeID::Contact &_data)
     }
 
     /* email should match following pattern */
-    if (static_cast<std::string>(_data.email).length() == 0) {
+    if (_data.email.isnull()
+            || boost::algorithm::trim_copy(static_cast<std::string>(_data.email)).empty()) {
         errors[field_email] = REQUIRED;
     }
     else if (!boost::regex_search(
@@ -118,6 +121,19 @@ void validate_contact_data(const ::MojeID::Contact &_data)
     }
 
     LOGGER(PACKAGE).debug(boost::format("data validation -- found %1% error(s)") % errors.size());
+    if (!errors.empty()) {
+        throw DataValidationError(errors);
+    }
+}
+
+
+void validate_contact_telephone_required(const ::MojeID::Contact &_data)
+{
+    FieldErrorMap errors;
+    if (_data.telephone.isnull()
+            || boost::algorithm::trim_copy(static_cast<std::string>(_data.telephone)).empty()) {
+        errors[field_phone] = REQUIRED;
+    }
     if (!errors.empty()) {
         throw DataValidationError(errors);
     }

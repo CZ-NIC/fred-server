@@ -43,6 +43,8 @@ struct DataValidationError : private std::exception
 
 void validate_contact_data(const ::MojeID::Contact &_data);
 
+void validate_contact_telephone_required(const ::MojeID::Contact &_data);
+
 bool check_validated_contact_diff(const ::MojeID::Contact &_c1, const ::MojeID::Contact &_c2);
 
 
