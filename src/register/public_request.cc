@@ -1042,7 +1042,7 @@ public:
         data["email"] = static_cast<std::string>(result[0][7]);
         data["hostname"] = man_->getIdentificationMailAuthHostname();
         data["identification"] = identification_;
-        data["handle"] = getObject(0).handle;
+        data["handle"] = boost::algorithm::to_lower_copy(getObject(0).handle);
         /* password split */
         data["pin1"] = password_.substr(0, -PASSWORD_CHUNK_LENGTH + password_.length());
         data["pin2"] = password_.substr(-PASSWORD_CHUNK_LENGTH + password_.length());
