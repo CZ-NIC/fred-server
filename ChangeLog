@@ -1,3 +1,7 @@
+2010-10-25 Jiri Sadek, Jan Zima, Jaromir Talir, Juraj Vicenik (2.5.4)
+
+  * fred-mifd some database insert/update checks added
+
 2010-10-25 Jiri Sadek, Jan Zima, Jaromir Talir, Juraj Vicenik (2.5.3)
 
   * fred-mifd fixes (contact data validation - phone, address check,
