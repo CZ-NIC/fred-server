@@ -22,9 +22,7 @@ BUILT_SOURCES = MojeIDSK.cc MailerSK.cc
 
 
 fred_mifd_SOURCES = MojeIDSK.cc \
-                    MojeIDDynSK.cc \
                     MailerSK.cc \
-                    MailerDynSK.cc \
                     ../nameservice.cc \
                     ../mailer_manager.cc \
                     mojeid_impl.h \
