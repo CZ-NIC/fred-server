@@ -10,7 +10,8 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
               -I$(top_srcdir)/util \
               -I$(top_srcdir)/util/db \
               -I$(top_srcdir)/util/db/model \
-              -I$(top_builddir)/src
+              -I$(top_builddir)/src \
+              -I$(top_builddir)/src/corba
 
 sbin_PROGRAMS = fred-mifd
 
