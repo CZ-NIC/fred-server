@@ -437,6 +437,9 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
                 % _trans_id);
 
+        if (std::string(_trans_id).empty()) {
+             throw std::exception();
+        }
         Database::Connection conn = Database::Manager::acquire();
         conn.exec("COMMIT PREPARED '" + conn.escape(_trans_id) + "'");
 
@@ -445,15 +448,17 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         unsigned long long cid = 0;
         try {
             Database::Result ractionid = conn.exec_params(
-                    "SELECT id FROM action"
-                    " WHERE enddate IS NULL AND response IS NULL AND clienttrid = $1::text",
+                    "SELECT id, response FROM action"
+                    " WHERE clienttrid = $1::text",
                     Database::query_param_list(_trans_id));
             if (ractionid.size() != 1 || (aid = ractionid[0][0]) == 0) {
                 LOGGER(PACKAGE).warning("unable to find unique action with given"
                         " transaction id as clienttrid");
                 throw std::exception();
             }
-
+            if (!ractionid[0][1].isnull()) {
+                throw std::exception();
+            }
             Database::Result rcontactid = conn.exec_params(
                     "SELECT ch.id FROM contact_history ch JOIN history h ON h.id = ch.historyid"
                     " WHERE h.action = $1::integer",
