@@ -14,11 +14,16 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 
 sbin_PROGRAMS = fred-mifd
 
+CLEANFILES = MojeIDSK.cc MojeIDDynSK.cc MojeIDSK.h MojeID.hh \
+             MailerSK.cc MailerDynSK.cc MailerSK.h Mailer.hh
+                   
+BUILT_SOURCES = MojeIDSK.cc MailerSK.cc
 
-fred_mifd_SOURCES = ../MojeIDSK.cc \
-                    ../MojeIDDynSK.cc \
-                    ../MailerSK.cc \
-                    ../MailerDynSK.cc \
+
+fred_mifd_SOURCES = MojeIDSK.cc \
+                    MojeIDDynSK.cc \
+                    MailerSK.cc \
+                    MailerDynSK.cc \
                     ../nameservice.cc \
                     ../mailer_manager.cc \
                     mojeid_impl.h \
@@ -50,4 +55,9 @@ fred_mifd_LDADD =    $(LIBIDN_LIBS) \
                      $(top_builddir)/src/register/mojeid/libmojeid.a \
                      $(top_builddir)/src/register/messages/libmessages.a
 
+MojeIDSK.cc: $(IDLDIR)/MojeID.idl
+	omniidl -bcxx -Wba -Wbinline $(IDLDIR)/MojeID.idl
+
+MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -Wbinline $(IDLDIR)/Mailer.idl
 

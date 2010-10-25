@@ -15,9 +15,16 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 
 sbin_PROGRAMS = fred-msgd
 
+CLEANFILES = MessagesSK.cc MessagesDynSK.cc MessagesSK.h Messages.hh \
+             FileManagerSK.cc FileManagerDynSK.cc FileManagerSK.h FileManager.hh
+                   
+BUILT_SOURCES = MessagesSK.cc FileManagerSK.cc
 
-fred_msgd_SOURCES = fred-msgd.cc ../MessagesSK.cc ../MessagesDynSK.cc \
-                    ../FileManagerSK.cc ../FileManagerDynSK.cc \
+fred_msgd_SOURCES = fred-msgd.cc \
+                    MessagesSK.cc \
+                    MessagesDynSK.cc \
+                    FileManagerSK.cc \
+                    FileManagerDynSK.cc \
                      messages_filemanager.cc messages_filemanager.h \
                     ../nameservice.cc messages.cc messages.h \
                     ../file_manager_client.cc 
@@ -39,6 +46,11 @@ fred_msgd_LDADD =    $(top_builddir)/src/register/messages/libmessages.a \
                      $(top_builddir)/util/types/libtypes.a \
                      $(top_builddir)/src/old_utils/liboldutils.a
                       
+MessagesSK.cc: $(IDLDIR)/Messages.idl
+	omniidl -bcxx -Wba -Wbinline $(IDLDIR)/Messages.idl
+
+FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_FileManager.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -Wbinline $(IDLDIR)/FileManager.idl
                      
                      
                      
