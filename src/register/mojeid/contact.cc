@@ -287,5 +287,29 @@ const MojeID::Contact contact_info(const unsigned long long &_id)
 }
 
 
+void contact_transfer_poll_message(const unsigned long long &_old_registrar_id,
+                                   const unsigned long long &_contact_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+    conn.exec_params(
+            "INSERT INTO message (id, clid, crdate, exdate, seen, msgtype)"
+            " VALUES (DEFAULT, $1::integer, CURRENT_TIMESTAMP,"
+            " CURRENT_TIMESTAMP + $2::interval, false, $3::integer)",
+            Database::query_param_list
+                (_old_registrar_id)
+                ("7 days")
+                (3 /* MT_TRANSFER_CONTACT = 3 from poll.h */));
+
+    conn.exec_params(
+            "INSERT INTO poll_eppaction (msgid, objid)"
+            " SELECT currval('message_id_seq'), historyid "
+            " FROM object_registry WHERE id = $1::integer",
+            Database::query_param_list
+                (_contact_id));
+    tx.commit();
+}
+
+
 }
 

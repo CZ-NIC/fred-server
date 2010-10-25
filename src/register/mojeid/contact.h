@@ -62,6 +62,10 @@ unsigned long long contact_update(const unsigned long long &_action_id,
 
 const MojeID::Contact contact_info(const unsigned long long &_id);
 
+
+void contact_transfer_poll_message(const unsigned long long &_old_registrar_id,
+                                   const unsigned long long &_contact_id);
+
 }
 
 #endif /*MOJEID_CONTACT_H_*/

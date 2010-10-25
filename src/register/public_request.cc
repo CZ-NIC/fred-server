@@ -1408,7 +1408,8 @@ public:
             throw std::runtime_error("cannot find contact, object doesn't exist!?"
                     " (probably deleted?)");
         }
-        if (static_cast<unsigned long long>(clid_result[0][0]) != this->getRegistrarId()) {
+        unsigned long long act_registrar = static_cast<unsigned long long>(clid_result[0][0]);
+        if (act_registrar != this->getRegistrarId()) {
             /* run transfer command */
             ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
             ::MojeID::contact_transfer(
@@ -1416,6 +1417,7 @@ public:
                     request.get_request_id(),
                     request.get_registrar_id(),
                     this->getObject(0).id);
+            ::MojeID::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
             request.end_success();
         }
 
@@ -1550,7 +1552,8 @@ public:
             throw std::runtime_error("cannot find contact, object doesn't exist!?"
                     " (probably deleted?)");
         }
-        if (static_cast<unsigned long long>(clid_result[0][0]) != this->getRegistrarId()) {
+        unsigned long long act_registrar = static_cast<unsigned long long>(clid_result[0][0]);
+        if (act_registrar != this->getRegistrarId()) {
             /* run transfer command */
             ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
             ::MojeID::contact_transfer(
@@ -1558,6 +1561,7 @@ public:
                     request.get_request_id(),
                     request.get_registrar_id(),
                     this->getObject(0).id);
+            ::MojeID::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
             request.end_success();
         }
 
