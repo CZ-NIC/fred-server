@@ -282,7 +282,7 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
         LOGGER(PACKAGE).error(boost::format(
                     "cannot create transfer request (%1%)") % _ex.what());
         ::MojeID::FieldErrorMap errors;
-        errors["contact.status"] = ::MojeID::INVALID;
+        errors["contact.username"] = ::MojeID::NOT_AVAILABLE;
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(errors));
     }
