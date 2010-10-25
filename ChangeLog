@@ -1,3 +1,7 @@
+2010-10-25 Jiri Sadek, Jan Zima, Jaromir Talir, Juraj Vicenik (2.5.5)
+
+  * fred-mifd sql query performance fix
+
 2010-10-25 Jiri Sadek, Jan Zima, Jaromir Talir, Juraj Vicenik (2.5.4)
 
   * fred-mifd some database insert/update checks added
