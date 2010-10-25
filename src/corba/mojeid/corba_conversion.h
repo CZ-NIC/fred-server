@@ -175,6 +175,19 @@ MojeID::Contact corba_unwrap_contact(const Contact &_contact)
         }
     }
 
+    for (unsigned int i = 0; i < _contact.addresses.length(); ++i) {
+        std::string type = corba_unwrap_string(_contact.addresses[i].type);
+        if (type == "DEFAULT") {
+            data.street1 = corba_unwrap_string(_contact.addresses[i].street1);
+            data.street2 = corba_unwrap_nullable_string(_contact.addresses[i].street2);
+            data.street3 = corba_unwrap_nullable_string(_contact.addresses[i].street3);
+            data.city = corba_unwrap_string(_contact.addresses[i].city);
+            data.stateorprovince = corba_unwrap_nullable_string(_contact.addresses[i].state);
+            data.postalcode = corba_unwrap_string(_contact.addresses[i].postal_code);
+            data.country = corba_unwrap_string(_contact.addresses[i].country);
+        }
+    }
+
     if (_contact.ssn_type) {
         std::string type = boost::to_upper_copy(static_cast<std::string>(_contact.ssn_type->_value()));
         data.ssntype = type;
@@ -189,13 +202,6 @@ MojeID::Contact corba_unwrap_contact(const Contact &_contact)
     data.name = corba_unwrap_string(_contact.first_name) + " " + corba_unwrap_string(_contact.last_name);
     data.handle = corba_unwrap_string(_contact.username);
     data.organization = corba_unwrap_nullable_string(_contact.organization);
-    data.street1 = corba_unwrap_string(_contact.addresses[0].street1);
-    data.street2 = corba_unwrap_nullable_string(_contact.addresses[0].street2);
-    data.street3 = corba_unwrap_nullable_string(_contact.addresses[0].street3);
-    data.city = corba_unwrap_string(_contact.addresses[0].city);
-    data.stateorprovince = corba_unwrap_nullable_string(_contact.addresses[0].state);
-    data.postalcode = corba_unwrap_string(_contact.addresses[0].postal_code);
-    data.country = corba_unwrap_string(_contact.addresses[0].country);
     data.vat = corba_unwrap_nullable_string(_contact.vat_reg_num);
     data.disclosename = corba_unwrap_nullable_boolean(_contact.disclose_name);
     data.discloseorganization = corba_unwrap_nullable_boolean(_contact.disclose_organization);
