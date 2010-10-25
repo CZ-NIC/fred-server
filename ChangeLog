@@ -1,7 +1,7 @@
 2010-10-25 Jiri Sadek, Jan Zima, Jaromir Talir, Juraj Vicenik (2.5.3)
 
   * fred-mifd fixes (contact data validation - phone, address check,
-    required check trimmed)
+    required check trimmed, contact transfer poll message)
 
 2010-10-24 Jiri Sadek, Jan Zima, Jaromir Talir, Juraj Vicenik (2.5.2)
 
