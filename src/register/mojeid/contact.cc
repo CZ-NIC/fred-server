@@ -33,6 +33,10 @@ unsigned long long db_contact_object_create(const unsigned long long &_registrar
 
 unsigned long long db_contact_insert(Contact &_data)
 {
+    if (static_cast<unsigned long long>(_data.id) == 0) {
+        throw std::runtime_error("cannot insert contact record without contact id");
+    }
+
     std::string qcontact =
         "INSERT INTO contact ("
                  "id, name, organization, street1, street2, street3,"
@@ -86,6 +90,10 @@ unsigned long long db_contact_insert(Contact &_data)
 
 void db_contact_update(Contact &_data)
 {
+    if (static_cast<unsigned long long>(_data.id) == 0) {
+        throw std::runtime_error("cannot update contact record without contact id");
+    }
+
     std::string qcontact =
         "UPDATE contact SET"
                  " name = $1::text, organization = $2::text,"
@@ -141,6 +149,10 @@ unsigned long long db_contact_insert_history(const unsigned long long &_action_i
                                              const unsigned long long &_request_id,
                                              const unsigned long long &_contact_id)
 {
+    if (_contact_id == 0) {
+        throw std::runtime_error("cannot insert contact history record without contact id");
+    }
+
     Database::Connection conn = Database::Manager::acquire();
 
     conn.exec_params("INSERT INTO history (id, action, request_id)"
