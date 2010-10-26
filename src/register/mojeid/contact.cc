@@ -18,7 +18,9 @@ unsigned long long db_contact_object_create(const unsigned long long &_registrar
         throw std::runtime_error("create object failed");
     }
     unsigned long long id = static_cast<unsigned long long>(roreg[0][0]);
-
+    if (id == 0) {
+        throw std::runtime_error("create object failed");
+    }
     /* object record */
     Database::Result robject = conn.exec_params(
             "INSERT INTO object (id, clid, authinfopw) VALUES ($1::integer, $2::integer,"
