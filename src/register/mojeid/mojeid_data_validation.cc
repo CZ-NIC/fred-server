@@ -127,6 +127,19 @@ void validate_contact_data(const ::MojeID::Contact &_data)
         }
     }
 
+    if (!_data.ssntype.isnull() && static_cast<std::string>(_data.ssntype) == "BIRTHDAY") {
+        try {
+            boost::gregorian::date tmp
+                = boost::gregorian::from_string(static_cast<std::string>(_data.ssn));
+            if (tmp.is_special()) {
+                throw;
+            }
+        }
+        catch (...) {
+            errors[field_birth_date] = INVALID;
+        }
+    }
+
     LOGGER(PACKAGE).debug(boost::format("data validation -- found %1% error(s)") % errors.size());
     if (!errors.empty()) {
         throw DataValidationError(errors);
