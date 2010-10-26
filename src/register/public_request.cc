@@ -1172,7 +1172,7 @@ public:
             unsigned long long file_id = man_->getDocumentManager()->generateDocumentAndSave(
                 doc_type,
                 xml_data,
-                "identification_request-" + boost::lexical_cast<std::string>(this->getId()),
+                "identification_request-" + boost::lexical_cast<std::string>(this->getId()) + ".pdf",
                 7,
                 "");
 
