@@ -635,7 +635,7 @@ Buffer* ServerImpl::getValidationPdf(const CORBA::ULongLong _contact_id)
         return ret._retn();
     }
     catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
-        LOGGER(PACKAGE).error("request not exist");
+        LOGGER(PACKAGE).warning("request not exist");
         throw;
     }
     catch (std::exception &_ex) {
