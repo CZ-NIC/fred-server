@@ -222,10 +222,11 @@ Contact* corba_wrap_contact(const MojeID::Contact &_contact)
     data->id           = corba_wrap_nullable_ulonglong(_contact.id);
     data->username     = corba_wrap_string(_contact.handle);
 
-    std::string name = static_cast<std::string>(_contact.name);
+    std::string name = boost::algorithm::trim_copy(static_cast<std::string>(_contact.name));
     std::size_t pos = name.find_last_of(" ");
     data->first_name   = corba_wrap_string(name.substr(0, pos));
-    data->last_name    = corba_wrap_string(name.substr(pos + 1));
+    data->last_name    = (pos == std::string::npos) ? corba_wrap_string("")
+                                                    : corba_wrap_string(name.substr(pos + 1));
 
     data->organization = corba_wrap_nullable_string(_contact.organization);
     data->vat_reg_num  = corba_wrap_nullable_string(_contact.vat);

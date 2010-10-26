@@ -18,8 +18,15 @@ void validate_contact_data(const ::MojeID::Contact &_data)
     FieldErrorMap errors;
 
     /* hmmm?! */
-    if (boost::algorithm::trim_copy(static_cast<std::string>(_data.name)).empty()) {
+    std::string name = boost::algorithm::trim_copy(static_cast<std::string>(_data.name));
+    std::size_t pos = name.find_last_of(" ");
+    std::string fname = name.substr(0, pos);
+    std::string lname = (pos == std::string::npos) ? "" : name.substr(pos + 1);
+    if (fname.empty()) {
         errors[field_first_name] = REQUIRED;
+    }
+    if (lname.empty()) {
+        errors[field_last_name] = REQUIRED;
     }
 
     /* contact handle has to be in domain-token
