@@ -1061,6 +1061,8 @@ BOOST_AUTO_TEST_CASE(tryOverwriting session_id at the end)
 BOOST_AUTO_TEST_CASE(tryOverwriting session_id at the end with the same value)
 BOOST_AUTO_TEST_CASE(checkResultCodeSaving)
 BOOST_AUTO_TEST_CASE(checkObjRefsSaving)
+// in this testcase, do stuff from #4268 - property name race condition
+BOOST_AUTO_TEST_CASE(...
 */
 
 
