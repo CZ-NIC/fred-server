@@ -300,6 +300,17 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
     }
 }
 
+void ServerImpl::contactUnidentify(const CORBA::ULongLong _contact_id,
+                                   const CORBA::ULongLong _request_id)
+{
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("contact-unidentify");
+
+    // ... to be implemented TODO
+
+    LOGGER(PACKAGE).info("contactdUnidentify not implemented yet");
+}
+
 
 void ServerImpl::contactUpdatePrepare(const Contact &_contact,
                                       const char* _trans_id,
