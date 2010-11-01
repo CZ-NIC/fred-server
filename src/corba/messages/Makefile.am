@@ -22,11 +22,13 @@ CLEANFILES = MessagesSK.cc MessagesDynSK.cc MessagesSK.h Messages.hh \
 BUILT_SOURCES = MessagesSK.cc FileManagerSK.cc
 
 fred_msgd_SOURCES = fred-msgd.cc \
-                    MessagesSK.cc \
-                    FileManagerSK.cc \
                      messages_filemanager.cc messages_filemanager.h \
                     ../nameservice.cc messages.cc messages.h \
-                    ../file_manager_client.cc 
+                    ../file_manager_client.cc
+
+nodist_fred_msgd_SOURCES = MessagesSK.cc \
+                    FileManagerSK.cc 
+
 
 fred_msgd_LDFLAGS =   $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \

@@ -21,15 +21,17 @@ CLEANFILES = MojeIDSK.cc MojeIDDynSK.cc MojeIDSK.h MojeID.hh \
 BUILT_SOURCES = MojeIDSK.cc MailerSK.cc
 
 
-fred_mifd_SOURCES = MojeIDSK.cc \
-                    MailerSK.cc \
-                    ../nameservice.cc \
+
+fred_mifd_SOURCES = ../nameservice.cc \
                     ../mailer_manager.cc \
                     mojeid_impl.h \
                     mojeid_impl.cc \
                     mojeid_identification.h \
                     corba_conversion.h \
                     fred-mifd.cc
+
+nodist_fred_mifd_SOURCES = MojeIDSK.cc \
+                    MailerSK.cc
 
 
 fred_mifd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
