@@ -4,6 +4,7 @@
 #include "contact.h"
 
 #include <boost/regex.hpp>
+#include <boost/function.hpp>
 #include <map>
 
 
@@ -42,9 +43,53 @@ struct DataValidationError : private std::exception
 };
 
 
-void validate_contact_data(const ::MojeID::Contact &_data);
+class ContactValidator
+{
+public:
+    typedef boost::function<bool (const ::MojeID::Contact &_data, FieldErrorMap &_errors)> Checker;
 
-void validate_contact_telephone_required(const ::MojeID::Contact &_data);
+    void add_checker(Checker _func)
+    {
+        checkers_.push_back(_func);
+    }
+
+    void check(const ::MojeID::Contact &_data) const
+    {
+        FieldErrorMap errors;
+
+        std::vector<Checker>::const_iterator check = checkers_.begin();
+        for (; check != checkers_.end(); ++check) {
+            (*check)(_data, errors);
+        }
+
+        LOGGER(PACKAGE).debug(boost::format("data validation ran %1% check(s)"
+                    " -- found %2% error(s)") % checkers_.size() % errors.size());
+        if (!errors.empty()) {
+            throw DataValidationError(errors);
+        }
+    }
+
+
+private:
+    std::vector<Checker> checkers_;
+};
+
+
+
+bool contact_checker_name(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_username(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_phone_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_phone_unique(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_email_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_email_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_email_unique(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_address(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_birthday(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+
+ContactValidator create_conditional_identification_validator();
+ContactValidator create_identification_validator();
+ContactValidator create_contact_update_validator();
 
 bool check_validated_contact_diff(const ::MojeID::Contact &_c1, const ::MojeID::Contact &_c2);
 

@@ -459,10 +459,9 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
                     % id % handle % cinfo.id % cinfo.name));
         }
 
-        /* TODO: checking for prohibited states */
-
         ::MojeID::Contact data = corba_unwrap_contact(_contact);
-        ::MojeID::validate_contact_data(data);
+        ::MojeID::ContactValidator validator = ::MojeID::create_contact_update_validator();
+        validator.check(data);
 
         if (Register::object_has_state(id, ::MojeID::VALIDATED_CONTACT) == true) {
             if (::MojeID::check_validated_contact_diff(data, ::MojeID::contact_info(id)) == false) {

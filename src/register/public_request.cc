@@ -877,6 +877,7 @@ protected:
     std::string password_;
 
     static const size_t PASSWORD_CHUNK_LENGTH = 8;
+    ::MojeID::ContactValidator contact_validator_;
 
     enum LetterType
     {
@@ -935,7 +936,7 @@ public:
             }
 
             ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
-            ::MojeID::validate_contact_data(cdata);
+            contact_validator_.check(cdata);
 
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction tx(conn);
@@ -1291,6 +1292,11 @@ class ConditionalContactIdentificationImpl
     : public PublicRequestAuthImpl
 {
 public:
+    ConditionalContactIdentificationImpl() : PublicRequestAuthImpl()
+    {
+        contact_validator_ = ::MojeID::create_conditional_identification_validator();
+    }
+
     std::string generatePasswords()
     {
         return this->generateAuthInfoPassword();
@@ -1300,11 +1306,6 @@ public:
     {
         /* insert */
         if (!this->getId()) {
-            /* telephone is required here
-             * TODO: rewrite data validations to be in one place */
-            ::MojeID::Contact cdata = ::MojeID::contact_info(this->getObject(0).id);
-            validate_contact_telephone_required(cdata);
-
             bool check_ok = true;
 
             /* contact is blocked or prohibits operations:
@@ -1379,7 +1380,7 @@ public:
                 % getId());
 
         ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
-        ::MojeID::validate_contact_data(cdata);
+        contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
@@ -1456,6 +1457,11 @@ class ContactIdentificationImpl
   : public PublicRequestAuthImpl
 {
 public:
+    ContactIdentificationImpl() : PublicRequestAuthImpl()
+    {
+        contact_validator_ = ::MojeID::create_identification_validator();
+    }
+
     std::string generatePasswords()
     {
         if (checkState(getObject(0).id, 21) == true) {
@@ -1538,7 +1544,7 @@ public:
         % getId());
 
         ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
-        ::MojeID::validate_contact_data(cdata);
+        contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
