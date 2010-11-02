@@ -300,15 +300,119 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
     }
 }
 
+/*
+
+   states to drop:
+          1 | serverDeleteProhibited           
+          3 | serverTransferProhibited        
+          4 | serverUpdateProhibited         
+         21 | conditionallyIdentifiedContact
+         22 | identifiedContact            
+         23 | validatedContact            
+*/
+
+// TODO  -- add some more verification:
+//         contact must have some of mojeid states OR
+//         must be under MOJEID registrar
+//       -- (maybe) hardcoded state names 
+//       -- single transaction
+//       -- database locking (marginal cases)
+
 void ServerImpl::contactUnidentify(const CORBA::ULongLong _contact_id,
                                    const CORBA::ULongLong _request_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-unidentify");
 
-    // ... to be implemented TODO
+    LOGGER(PACKAGE).info(boost::format("contactUnidentify --"
+            "  contact_id: %1%  request_id: %2%")
+                % _contact_id % _request_id);
 
-    LOGGER(PACKAGE).info("contactdUnidentify not implemented yet");
+    try {
+        // check if the contact with ID _contact_id exists
+        Register::NameIdPair cinfo;
+        Register::Contact::ManagerPtr contact_mgr(
+                Register::Contact::Manager::create(
+                    0, registry_conf_->restricted_handles));
+
+        Register::Contact::Manager::CheckAvailType check_result;
+        check_result = contact_mgr->checkAvail(_contact_id, cinfo);
+
+        if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+            /* contact doesn't exists */
+            throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+        }
+
+        const int drop_states_count = 3;
+        std::string drop_states[drop_states_count] = {
+            std::string("serverDeleteProhibited"), 
+            std::string("serverTransferProhibited"),
+            std::string("serverUpdateProhibited") };
+
+        for (int i =0; i<drop_states_count; i++) {
+            if( ! Register::object_has_state(_contact_id, drop_states[i])) {
+                throw std::runtime_error("Object isn't in all expected states");
+            }
+        }
+
+        // find what state specific to mojeid applies to object,
+        // check if it's really only one of the states
+        std::string mojeid_state;
+
+        if (Register::object_has_state(_contact_id, ::MojeID::VALIDATED_CONTACT) == true) {
+            mojeid_state = ::MojeID::VALIDATED_CONTACT;
+        }
+        if (Register::object_has_state(_contact_id, ::MojeID::IDENTIFIED_CONTACT) == true) {
+            if(mojeid_state != std::string()) {
+                throw std::runtime_error("Invalid combination of contact states");
+            }
+            mojeid_state = ::MojeID::IDENTIFIED_CONTACT;
+        }
+        if (Register::object_has_state(_contact_id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT) == true) {
+            if(mojeid_state != std::string()) {
+                throw std::runtime_error("Invalid combination of contact states");
+            }
+            mojeid_state = ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT;
+        }
+
+        if(mojeid_state == std::string()) {
+            boost::format fmt = boost::format ("Contact ID %1% is not in any "
+                    "of states specific to MojeID, it can't be Unidentified")
+                        % _contact_id;
+            throw std::runtime_error(fmt.str());
+        }
+
+        // all of this should be in 1 transaction TODO
+        // drop all states of the contact....
+        for (int i =0; i<drop_states_count; i++) {
+            if(!Register::cancel_object_state(_contact_id, drop_states[i])) {
+                    boost::format fmt = boost::format ("Couldn't drop state %1%"
+                        " for object with ID %2% - object is not in the expected state") 
+                        % drop_states[i] % _contact_id; 
+                    throw std::runtime_error(fmt.str());
+                    // this shouldn't happen if everything is properly locked...
+            }
+        }
+
+        if(mojeid_state != std::string() && 
+                !Register::cancel_object_state(_contact_id, mojeid_state)) {
+            boost::format fmt = boost::format ("Couldn't drop state %1% for object with ID %2%") % mojeid_state % _contact_id; 
+            throw std::runtime_error(fmt.str());
+            // this shouldn't happen if everything is properly locked...
+        }                
+
+        // apply changes
+        ::Register::update_object_states(_contact_id);
+
+    } catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
+        throw;
+    } catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
+    } catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
 }
 
 
