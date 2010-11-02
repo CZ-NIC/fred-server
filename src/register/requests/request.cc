@@ -1339,7 +1339,10 @@ bool ManagerImpl::i_closeRequest(
 		}
 #endif // LOGD_VERIFY_INPUT
 
-	std::string query("UPDATE request SET time_end=now()");
+        boost::format fmt_update = boost::format ("UPDATE request SET time_end='%1%'") 
+                                % boost::posix_time::to_iso_extended_string(microsec_clock::universal_time());
+
+	std::string query(fmt_update.str());
                 
 	if(session_id != 0) {
 
@@ -1396,14 +1399,14 @@ ID ManagerImpl::i_createSession(ID user_id, const char *name)
 
         std::auto_ptr<Logging::Context> ctx_sess;
        
-	std::string time;
 	ID session_id;
 
 	logger_notice(boost::format("createSession: username-> [%1%] user_id-> [%2%]") % name %  user_id);
 
-	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
+	DateTime time(microsec_clock::universal_time());
 
 	ModelSession sess;
+        sess.setLoginDate(time);
 
 	if (name != NULL && *name != '\0') {
 		sess.setUserName(name);
@@ -1466,7 +1469,7 @@ bool ManagerImpl::i_closeSession(ID id)
 #endif //LOGD_VERIFY_INPUT
 
 		boost::format update;
-		time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
+		time = boost::posix_time::to_iso_extended_string(microsec_clock::universal_time());
 
 		update = boost::format("update session set logout_date = '%1%' where id=%2%") % time % id;
 
