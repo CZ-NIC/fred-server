@@ -151,7 +151,7 @@ bool contact_checker_phone_unique(const ::MojeID::Contact &_data, FieldErrorMap 
                 " FROM contact_history ch"
                 " JOIN object_state os ON os.ohid_from = ch.historyid"
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
-                " WHERE eos.name =ANY ('{conditionallyIdentifiedContact, identifiedContact}'::text[])"
+                " WHERE eos.name = 'conditionallyIdentifiedContact'"
                 " AND os.valid_from + $1::interval > now()"
                 " AND ch.telephone = $2::text"
                 " AND ch.id != $3::integer"
