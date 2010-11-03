@@ -32,8 +32,8 @@ ContactValidator create_conditional_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
     tmp.add_checker(contact_checker_email_unique);
-    tmp.add_checker(contact_checker_phone_required);
     tmp.add_checker(contact_checker_phone_format);
+    tmp.add_checker(contact_checker_phone_required);
     tmp.add_checker(contact_checker_phone_unique);
     return tmp;
 }
@@ -43,6 +43,7 @@ ContactValidator create_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
     tmp.add_checker(contact_checker_email_unique);
+    tmp.add_checker(contact_checker_phone_format);
     return tmp;
 }
 
@@ -178,9 +179,10 @@ bool contact_checker_email_format(const ::MojeID::Contact &_data, FieldErrorMap 
 {
     bool result = true;
 
-    if (!boost::regex_search(
-                static_cast<std::string>(_data.email),
-                EMAIL_PATTERN)) {
+    if (boost::algorithm::trim_copy(static_cast<std::string>(_data.email)).length() > 0
+            && !boost::regex_search(
+                    static_cast<std::string>(_data.email),
+                    EMAIL_PATTERN)) {
         _errors[field_email] = INVALID;
         result = false;
     }
