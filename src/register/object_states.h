@@ -82,6 +82,36 @@ static bool cancel_object_state(
     }
 }
 
+static void cancel_multiple_object_states(
+        const unsigned long long &_object_id,
+        const std::vector<std::string> &_states_names)
+{
+    if(_states_names.size() == 0) return;
+
+    // generate string representing an array with state names
+    std::stringstream states;
+    states << "{";
+    
+    std::vector<std::string>::const_iterator it = _states_names.begin();
+    states << *it;
+    it++;
+    for (; 
+        it != _states_names.end();
+        it++) {
+
+        states << ", " << *it;
+    }
+
+    states << "}";
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    conn.exec_params("UPDATE object_state_request osr SET canceled = CURRENT_TIMESTAMP FROM enum_object_states eos  WHERE eos.id = osr.state_id AND eos.name = ANY ($1::text[]) AND osr.valid_to is NULL AND osr.canceled is NULL AND osr.object_id = $2::integer", 
+            Database::query_param_list
+            (states.str())
+            (_object_id));
+
+}
 
 static void update_object_states(
         const unsigned long long &_object_id)

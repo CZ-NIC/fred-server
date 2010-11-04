@@ -727,6 +727,24 @@ public:
           return CA_FREE;
       }
   }
+
+  virtual unsigned long long findRegistrarId(
+          const unsigned long long &_id) const 
+  {
+      Database::Connection conn = Database::Manager::acquire();
+
+      Database::Result res = conn.exec_params(
+              "SELECT o.clid FROM object o "
+                 "JOIN contact c ON o.id=c.id "
+                 "WHERE c.id = $1::integer",
+                 Database::query_param_list(_id));
+      if(res.size() == 1) {
+          return res[0][0];
+      } else {
+          return 0;
+      }
+
+  }
 };
 Manager *Manager::create(DB *db, bool restrictedHandle) {
   return new ManagerImpl(db, restrictedHandle);

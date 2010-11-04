@@ -343,6 +343,36 @@ void ServerImpl::contactUnidentify(const CORBA::ULongLong _contact_id,
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
+        if (mojeid_registrar_id_ != contact_mgr->findRegistrarId(_contact_id)) {
+            throw std::runtime_error("Contact is not registered with MojeID");
+        }
+
+        ContactStateInfo mojeid_state_info = getContactState(_contact_id);
+
+        // find what state specific to mojeid applies to object,
+        // check if it's really only one of the states
+        std::string mojeid_state;
+
+        switch(mojeid_state_info.state) {
+            case Registry::MojeID::CONDITIONALLY_IDENTIFIED:
+                    mojeid_state = ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT;
+                break;
+            case Registry::MojeID::IDENTIFIED:
+                    mojeid_state = ::MojeID::IDENTIFIED_CONTACT;
+                break;
+            case Registry::MojeID::VALIDATED:
+                    mojeid_state = ::MojeID::VALIDATED_CONTACT;
+                break;
+            case Registry::MojeID::NOT_IDENTIFIED:
+                    boost::format fmt = boost::format ("Contact ID %1% is not in any "
+                            "of states specific to MojeID, it can't be Unidentified")
+                                % _contact_id;
+                    throw std::runtime_error(fmt.str());
+
+                break;
+
+        }
+
         const int drop_states_count = 3;
         std::string drop_states[drop_states_count] = {
             std::string("serverDeleteProhibited"), 
@@ -355,51 +385,13 @@ void ServerImpl::contactUnidentify(const CORBA::ULongLong _contact_id,
             }
         }
 
-        // find what state specific to mojeid applies to object,
-        // check if it's really only one of the states
-        std::string mojeid_state;
-
-        if (Register::object_has_state(_contact_id, ::MojeID::VALIDATED_CONTACT) == true) {
-            mojeid_state = ::MojeID::VALIDATED_CONTACT;
-        }
-        if (Register::object_has_state(_contact_id, ::MojeID::IDENTIFIED_CONTACT) == true) {
-            if(mojeid_state != std::string()) {
-                throw std::runtime_error("Invalid combination of contact states");
-            }
-            mojeid_state = ::MojeID::IDENTIFIED_CONTACT;
-        }
-        if (Register::object_has_state(_contact_id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT) == true) {
-            if(mojeid_state != std::string()) {
-                throw std::runtime_error("Invalid combination of contact states");
-            }
-            mojeid_state = ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT;
+        //generate input for cancel_multiple_object_states
+        std::vector<std::string> states2drop (drop_states, drop_states+drop_states_count);
+        if(mojeid_state != std::string()) {
+            states2drop.push_back(mojeid_state);
         }
 
-        if(mojeid_state == std::string()) {
-            boost::format fmt = boost::format ("Contact ID %1% is not in any "
-                    "of states specific to MojeID, it can't be Unidentified")
-                        % _contact_id;
-            throw std::runtime_error(fmt.str());
-        }
-
-        // all of this should be in 1 transaction TODO
-        // drop all states of the contact....
-        for (int i =0; i<drop_states_count; i++) {
-            if(!Register::cancel_object_state(_contact_id, drop_states[i])) {
-                    boost::format fmt = boost::format ("Couldn't drop state %1%"
-                        " for object with ID %2% - object is not in the expected state") 
-                        % drop_states[i] % _contact_id; 
-                    throw std::runtime_error(fmt.str());
-                    // this shouldn't happen if everything is properly locked...
-            }
-        }
-
-        if(mojeid_state != std::string() && 
-                !Register::cancel_object_state(_contact_id, mojeid_state)) {
-            boost::format fmt = boost::format ("Couldn't drop state %1% for object with ID %2%") % mojeid_state % _contact_id; 
-            throw std::runtime_error(fmt.str());
-            // this shouldn't happen if everything is properly locked...
-        }                
+        Register::cancel_multiple_object_states(_contact_id, states2drop);
 
         // apply changes
         ::Register::update_object_states(_contact_id);
@@ -414,7 +406,6 @@ void ServerImpl::contactUnidentify(const CORBA::ULongLong _contact_id,
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 }
-
 
 void ServerImpl::contactUpdatePrepare(const Contact &_contact,
                                       const char* _trans_id,

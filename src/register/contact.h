@@ -150,6 +150,8 @@ public:
           NameIdPair& conflict,
           bool lock = false) const 
       throw (SQL_ERROR) = 0;
+  virtual unsigned long long findRegistrarId(
+          const unsigned long long &_id) const = 0;
   /// factory method
   static Manager *create(DB *db, bool restrictedHandle);
 };
