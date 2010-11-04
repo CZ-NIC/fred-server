@@ -20,7 +20,7 @@ ContactValidator create_default_contact_validator()
     ContactValidator tmp;
     tmp.add_checker(contact_checker_name);
     tmp.add_checker(contact_checker_username);
-    tmp.add_checker(contact_checker_address);
+    tmp.add_checker(contact_checker_address_required);
     tmp.add_checker(contact_checker_email_format);
     tmp.add_checker(contact_checker_email_required);
     tmp.add_checker(contact_checker_birthday);
@@ -32,6 +32,7 @@ ContactValidator create_conditional_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
     tmp.add_checker(contact_checker_email_unique);
+    tmp.add_checker(contact_checker_address_country_cz);
     tmp.add_checker(contact_checker_phone_format);
     tmp.add_checker(contact_checker_phone_required);
     tmp.add_checker(contact_checker_phone_unique);
@@ -42,6 +43,7 @@ ContactValidator create_conditional_identification_validator()
 ContactValidator create_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_address_country_cz);
     tmp.add_checker(contact_checker_email_unique);
     tmp.add_checker(contact_checker_phone_format);
     return tmp;
@@ -240,10 +242,10 @@ bool contact_checker_email_unique(const ::MojeID::Contact &_data, FieldErrorMap 
 }
 
 
-bool contact_checker_address(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_address_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
-    /* main address is required and has to be from Czech Republic */
+    /* main address is required */
     if (_data.street1.isnull()
             || boost::algorithm::trim_copy(static_cast<std::string>(_data.street1)).empty()) {
         _errors[field_street1] = REQUIRED;
@@ -264,12 +266,19 @@ bool contact_checker_address(const ::MojeID::Contact &_data, FieldErrorMap &_err
         _errors[field_country] = REQUIRED;
         result = false;
     }
-    else if (static_cast<std::string>(_data.country) != "CZ") {
+
+    return result;
+}
+
+
+bool contact_checker_address_country_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
+{
+    bool result = true;
+
+    if (static_cast<std::string>(_data.country) != "CZ") {
         _errors[field_country] = INVALID;
         result = false;
     }
-
-    return result;
 }
 
 
