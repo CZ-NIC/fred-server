@@ -242,6 +242,29 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
+        ::MojeID::FieldErrorMap errors;
+        /* contact is blocked or prohibits operations:
+         *   7 | serverBlocked
+         *   3 | serverTransferProhibited
+         *   4 | serverUpdateProhibited
+         */
+        /* already CI || already I || already V */
+        if ((Register::object_has_state(cinfo.id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
+                || (Register::object_has_state(cinfo.id, ::MojeID::IDENTIFIED_CONTACT) == true)
+                || (Register::object_has_state(cinfo.id, ::MojeID::VALIDATED_CONTACT) == true)) {
+
+            errors["contact.status"] = ::MojeID::NOT_AVAILABLE;
+        }
+        else if ((Register::object_has_state(cinfo.id, "serverBlocked") == true)
+                || (Register::object_has_state(cinfo.id, "serverTransferProhibited") == true)
+                || (Register::object_has_state(cinfo.id, "serverUpdateProhibited") == true)) {
+
+            errors["contact.status"] = ::MojeID::INVALID;
+        }
+        if (errors.size() > 0) {
+            throw ::MojeID::DataValidationError(errors);
+        }
+
         /* create public request */
         Register::PublicRequest::Type type;
         if (_method == Registry::MojeID::SMS) {
@@ -282,7 +305,7 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
         LOGGER(PACKAGE).error(boost::format(
                     "cannot create transfer request (%1%)") % _ex.what());
         ::MojeID::FieldErrorMap errors;
-        errors["contact.username"] = ::MojeID::NOT_AVAILABLE;
+        errors["contact.status"] = ::MojeID::NOT_AVAILABLE;
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(errors));
     }
