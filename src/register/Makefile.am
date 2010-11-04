@@ -102,5 +102,6 @@ libfred_a_SOURCES = register.cc \
 					exceptions.h \
 					types.h \
 					obj_types.h \
+					object_states.cc \
 					object_states.h
 
