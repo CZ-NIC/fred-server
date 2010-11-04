@@ -324,6 +324,12 @@ void ServerImpl::contactUnidentify(const CORBA::ULongLong _contact_id,
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-unidentify");
 
+
+        /* start new request - here for logging into action table - until
+         * fred-logd fully migrated */
+    ::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
+    Logging::Context ctx_request(request.get_servertrid());
+
     LOGGER(PACKAGE).info(boost::format("contactUnidentify --"
             "  contact_id: %1%  request_id: %2%")
                 % _contact_id % _request_id);
@@ -395,6 +401,8 @@ void ServerImpl::contactUnidentify(const CORBA::ULongLong _contact_id,
 
         // apply changes
         ::Register::update_object_states(_contact_id);
+
+        request.end_success();
 
     } catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
@@ -694,10 +702,12 @@ Buffer* ServerImpl::getValidationPdf(const CORBA::ULongLong _contact_id)
             " c.name, c. organization, c.ssn, c.ssntype, "
             " c.street1 || ' ' || COALESCE(c.street2,'') || ' ' ||"
             " COALESCE(c.street3,' ') || ', ' || "
-            " c.postalcode || ' ' || c.city || ', ' || c.country "
+            " c.postalcode || ' ' || c.city || ', ' || c.country, "
+            " oreg.name "
             "FROM public_request pr"
             " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
             " JOIN contact c ON (c.id = prom.object_id) "
+            " JOIN object_registry oreg ON oreg.id = c.id "
             " WHERE pr.resolve_time IS NULL AND pr.status = 0 "
             " AND pr.request_type=14 AND object_id = $1::integer",
             Database::query_param_list(_contact_id));
@@ -722,6 +732,7 @@ Buffer* ServerImpl::getValidationPdf(const CORBA::ULongLong _contact_id)
             << d
             << "</request_date>"
             << "<request_id>"  << unsigned(res[0][1]) << "</request_id>"
+            << "<handle>" << std::string(res[0][7]) << "</handle>"
             << "<name>" << std::string(res[0][2]) << "</name>"
             << "<organization>" << std::string(res[0][3]) << "</organization>"
             << "<ic>"
