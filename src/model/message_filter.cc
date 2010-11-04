@@ -92,5 +92,68 @@ MessageImpl::addMessageType()
     return *tmp;
 }
 
+Value<std::string>&
+MessageImpl::addSmsPhoneNumber()
+{
+    joinMessageArchiveTable();
+    this->active = true;
+
+    addJoin(new Join(
+      Column("id", joinTable("message_archive")),
+      SQL_OP_EQ,
+      Column("id", joinTable("sms_archive"))
+    ));
+
+    Value<std::string> *tmp = new Value<std::string>(Column("phone_number", joinTable("sms_archive")));
+    tmp->setName("SmsPhoneNumber");
+    add(tmp);
+    return *tmp;
+
+}
+
+
+Value<std::string>&
+MessageImpl::addLetterAddrName()
+{
+    joinMessageArchiveTable();
+
+    addJoin(new Join(
+      Column("id", joinMessageArchiveTable()),
+      SQL_OP_EQ,
+      Column("id", joinTable("letter_archive"))
+    ));
+
+    Value<std::string> *tmp = new Value<std::string>(Column("postal_address_name", joinTable("letter_archive")));
+    tmp->setName("LetterAddresName");
+    add(tmp);
+    return *tmp;
+
+}
+
+Contact& MessageImpl::addMessageContact() {
+  Contact *tmp = new ContactImpl();
+  add(tmp);
+  tmp->setName("MessageContact");
+  tmp->addJoin(
+          new Join(
+              Column("contact_object_registry_id", joinTable("message_contact_history_map")),
+              SQL_OP_EQ,
+              Column("id", tmp->joinObjectRegistryTable())
+              )
+          );
+  tmp->joinOn(
+          new Join(
+              Column("id", joinMessageArchiveTable()),
+              SQL_OP_EQ,
+              Column("message_archive_id", joinTable("message_contact_history_map"))
+              )
+          );
+
+  return *tmp;
+}
+
+
+
+
 } // namespace Filters
 } // namespace Database

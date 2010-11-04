@@ -6,6 +6,8 @@
 #include <boost/serialization/version.hpp>
 
 #include "db/query/base_filters.h"
+#include "contact_filter.h"
+
 
 namespace Database {
 namespace Filters {
@@ -21,6 +23,9 @@ public:
   virtual Value<int>& addStatus() = 0;
   virtual Value<int>& addCommType() = 0;
   virtual Value<int>& addMessageType() = 0;
+  virtual Value<std::string>& addSmsPhoneNumber() = 0;
+  virtual Value<std::string>& addLetterAddrName() = 0;
+  virtual Contact& addMessageContact() = 0;
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -43,6 +48,9 @@ public:
   virtual Value<int>& addStatus();
   virtual Value<int>& addCommType();
   virtual Value<int>& addMessageType();
+  virtual Value<std::string>& addSmsPhoneNumber();
+  virtual Value<std::string>& addLetterAddrName();
+  virtual Contact& addMessageContact();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

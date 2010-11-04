@@ -596,6 +596,9 @@ COMPOUND_CLASS(Message, Message , Compound,
     FILTER_ADD(Int, addStatus);
     FILTER_ADD(Int, addCommType);
     FILTER_ADD(Int, addMessageType);
+    FILTER_ADD(Str, addSmsPhoneNumber);
+    FILTER_ADD(Str, addLetterAddrName);
+    FILTER_ADD(Contact, addMessageContact);
 );
 
 FilterIteratorImpl::FilterIteratorImpl() :
