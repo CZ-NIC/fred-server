@@ -1356,23 +1356,6 @@ public:
         PublicRequestAuthImpl::save();
     }
 
-    void process(bool _invalid, bool _check)
-    {
-        PublicRequestAuthImpl::process(_invalid, _check);
-
-        /* make new request for finishing contact identification */
-        PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
-                man_->createRequest(PRT_CONTACT_IDENTIFICATION)));
-        if (new_request) {
-            new_request->setRegistrarId(this->getRegistrarId());
-            new_request->setRequestId(this->getRequestId());
-            new_request->setEppActionId(this->getEppActionId());
-            new_request->addObject(this->getObject(0));
-            new_request->save();
-            new_request->sendPasswords();
-        }
-    }
-
     void processAction(bool _check)
     {
         LOGGER(PACKAGE).debug(boost::format(
@@ -1441,6 +1424,19 @@ public:
 
         /* update states */
         Register::update_object_states(getObject(0).id);
+
+        /* make new request for finishing contact identification */
+        PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
+                man_->createRequest(PRT_CONTACT_IDENTIFICATION)));
+        if (new_request) {
+            new_request->setRegistrarId(this->getRegistrarId());
+            new_request->setRequestId(this->getRequestId());
+            new_request->setEppActionId(this->getEppActionId());
+            new_request->addObject(this->getObject(0));
+            new_request->save();
+            new_request->sendPasswords();
+        }
+
         tx.commit();
     }
 
