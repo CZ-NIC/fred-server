@@ -12,7 +12,7 @@ const boost::regex PHONE_PATTERN("^\\+420\\.(60([1-8]|9([134]|2[1-5]))|7(0[0-9]|
 const boost::regex EMAIL_PATTERN("^[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+)*"
                                  "@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,6}\\.?$");
 
-const std::string EMAIL_PHONE_PROTECTION_PERIOD = "3 month";
+const std::string EMAIL_PHONE_PROTECTION_PERIOD = "1 month";
 
 
 ContactValidator create_default_contact_validator()
