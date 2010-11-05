@@ -948,8 +948,8 @@ ContactStateInfo ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
                 " LEFT JOIN (object_state os"
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
                 " AND eos.name =ANY ($2::text[]))"
-                " ON os.object_id = c.id"
-                " WHERE os.valid_to IS NULL AND c.id = $1::integer",
+                " ON os.object_id = c.id AND os.valid_to IS NULL"
+                " WHERE c.id = $1::integer",
                 Database::query_param_list
                     (_contact_id)
                     ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}"));
