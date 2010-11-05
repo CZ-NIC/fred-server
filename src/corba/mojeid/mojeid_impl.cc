@@ -255,8 +255,7 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
 
             errors["contact.status"] = ::MojeID::NOT_AVAILABLE;
         }
-        else if ((Register::object_has_state(cinfo.id, "serverBlocked") == true)
-                || (Register::object_has_state(cinfo.id, "serverTransferProhibited") == true)
+        else if ((Register::object_has_state(cinfo.id, "serverTransferProhibited") == true)
                 || (Register::object_has_state(cinfo.id, "serverUpdateProhibited") == true)) {
 
             errors["contact.status"] = ::MojeID::INVALID;
