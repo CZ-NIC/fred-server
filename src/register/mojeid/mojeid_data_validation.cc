@@ -155,7 +155,7 @@ bool contact_checker_phone_unique(const ::MojeID::Contact &_data, FieldErrorMap 
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
                 " WHERE eos.name = 'conditionallyIdentifiedContact'"
                 " AND os.valid_from + $1::interval > now()"
-                " AND ch.telephone = $2::text"
+                " AND trim(both ' ' from ch.telephone) = trim(both ' ' from $2::text)"
                 " AND ch.id != $3::integer"
                 " ORDER BY os.valid_from ASC"
                 " LIMIT 1",
@@ -220,7 +220,7 @@ bool contact_checker_email_unique(const ::MojeID::Contact &_data, FieldErrorMap 
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
                 " WHERE eos.name =ANY ('{conditionallyIdentifiedContact, identifiedContact}'::text[])"
                 " AND os.valid_from + $1::interval > now()"
-                " AND ch.email = $2::text"
+                " AND trim(both ' ' from LOWER(ch.email)) = trim(both ' ' from LOWER($2::text))"
                 " AND ch.id != $3::integer"
                 " ORDER BY os.valid_from ASC"
                 " LIMIT 1",
