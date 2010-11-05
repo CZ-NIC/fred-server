@@ -24,6 +24,7 @@ public:
   virtual Value<std::string>& addNotifyEmail() = 0;
   virtual Value<std::string>& addVat() = 0;
   virtual Value<std::string>& addSsn() = 0;
+  virtual Value<std::string>& addPhoneNumber() = 0;
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -55,6 +56,7 @@ public:
   virtual Value<std::string>& addNotifyEmail();
   virtual Value<std::string>& addVat();
   virtual Value<std::string>& addSsn();
+  virtual Value<std::string>& addPhoneNumber();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -84,6 +86,7 @@ public:
   virtual Value<std::string>& addNotifyEmail();
   virtual Value<std::string>& addVat();
   virtual Value<std::string>& addSsn();
+  virtual Value<std::string>& addPhoneNumber();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

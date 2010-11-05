@@ -390,6 +390,7 @@ COMPOUND_CLASS(Contact, Contact, Obj,
     FILTER_ADD(Str, addNotifyEmail);
     FILTER_ADD(Str, addVat);
     FILTER_ADD(Str, addSsn);
+    FILTER_ADD(Str, addPhoneNumber);
 );
 
 COMPOUND_CLASS(Domain, Domain, Obj,

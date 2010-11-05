@@ -84,6 +84,14 @@ Value<std::string>& ContactImpl::addSsn() {
   return *tmp;
 }
 
+Value<std::string>& ContactImpl::addPhoneNumber() {
+  Value<std::string> *tmp = new Value<std::string>(Column("telephone", joinContactTable()));
+  tmp->setName("PhoneNumber");
+  add(tmp);
+  return *tmp;
+}
+
+
 Table& ContactImpl::joinContactTable() {
   return joinTable("contact");
 }
@@ -173,6 +181,13 @@ Value<std::string>& ContactHistoryImpl::addVat() {
 Value<std::string>& ContactHistoryImpl::addSsn() {
   Value<std::string> *tmp = new Value<std::string>(Column("ssn", joinContactTable()));
   tmp->setName("Ssn");
+  add(tmp);
+  return *tmp;
+}
+
+Value<std::string>& ContactHistoryImpl::addPhoneNumber() {
+  Value<std::string> *tmp = new Value<std::string>(Column("telephone", joinContactTable()));
+  tmp->setName("PhoneNumber");
   add(tmp);
   return *tmp;
 }
