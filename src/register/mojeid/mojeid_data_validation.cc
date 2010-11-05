@@ -279,6 +279,8 @@ bool contact_checker_address_country_cz(const ::MojeID::Contact &_data, FieldErr
         _errors[field_country] = INVALID;
         result = false;
     }
+
+    return result;
 }
 
 
