@@ -86,6 +86,7 @@ bool contact_checker_email_required(const ::MojeID::Contact &_data, FieldErrorMa
 bool contact_checker_email_unique(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_address_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_address_country_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_address_postalcode_format_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_birthday(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 
 ContactValidator create_conditional_identification_validator();

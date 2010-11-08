@@ -11,6 +11,7 @@ const boost::regex USERNAME_PATTERN("^[a-z0-9](-?[a-z0-9])*$");
 const boost::regex PHONE_PATTERN("^\\+420\\.(60([1-8]|9([134]|2[1-5]))|7(0[0-9]|10|[237]))\\d+");
 const boost::regex EMAIL_PATTERN("^[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+)*"
                                  "@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,6}\\.?$");
+const boost::regex POSTALCODE_CZ_PATTERN("^[0-9]{3} ?[0-9]{2}$");
 
 const std::string EMAIL_PHONE_PROTECTION_PERIOD = "1 month";
 
@@ -33,6 +34,7 @@ ContactValidator create_conditional_identification_validator()
     ContactValidator tmp = create_default_contact_validator();
     tmp.add_checker(contact_checker_email_unique);
     tmp.add_checker(contact_checker_address_country_cz);
+    tmp.add_checker(contact_checker_address_postalcode_format_cz);
     tmp.add_checker(contact_checker_phone_format);
     tmp.add_checker(contact_checker_phone_required);
     tmp.add_checker(contact_checker_phone_unique);
@@ -44,6 +46,7 @@ ContactValidator create_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
     tmp.add_checker(contact_checker_address_country_cz);
+    tmp.add_checker(contact_checker_address_postalcode_format_cz);
     tmp.add_checker(contact_checker_email_unique);
     tmp.add_checker(contact_checker_phone_format);
     return tmp;
@@ -264,6 +267,21 @@ bool contact_checker_address_required(const ::MojeID::Contact &_data, FieldError
     if (_data.country.isnull()
             || boost::algorithm::trim_copy(static_cast<std::string>(_data.country)).empty()) {
         _errors[field_country] = REQUIRED;
+        result = false;
+    }
+
+    return result;
+}
+
+
+bool contact_checker_address_postalcode_format_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
+{
+    bool result = true;
+
+    if (!boost::regex_search(
+                    static_cast<std::string>(_data.postalcode),
+                    POSTALCODE_CZ_PATTERN)) {
+        _errors[field_postal_code] = INVALID;
         result = false;
     }
 
