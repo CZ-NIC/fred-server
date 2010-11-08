@@ -33,7 +33,8 @@ class ServerImpl : public POA_Registry::MojeID::Server,
                                          IdentificationMethod _method,
                                          const CORBA::ULongLong _request_id);
 
-        void contactUnidentify(const CORBA::ULongLong _contact_id,
+        void contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
+                                const char * _trans_id,
                                const CORBA::ULongLong _request_id);
 
         void contactUpdatePrepare(const Contact &_contact,

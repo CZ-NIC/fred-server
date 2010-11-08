@@ -340,7 +340,8 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
 //       -- single transaction
 //       -- database locking (marginal cases)
 
-void ServerImpl::contactUnidentify(const CORBA::ULongLong _contact_id,
+void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
+                                   const char * _trans_id,
                                    const CORBA::ULongLong _request_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
