@@ -374,7 +374,7 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
 }
 
 LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
-        , const std::string &comm_type)
+        , const std::string &comm_type, std::size_t max_attempts_limit)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -390,8 +390,9 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
             "(SELECT * FROM message_archive ma "
             "JOIN comm_type ct ON ma.comm_type_id = ct.id "
             "JOIN message_status ms ON ma.status_id = ms.id "
-            " WHERE ms.status_name = 'being_sent' AND ct.type = $1::text)"
-            , Database::query_param_list (comm_type)
+            " WHERE ms.status_name = 'being_sent' AND ct.type = $1::text "
+            " AND ma.attempt < $2::integer) "
+            , Database::query_param_list (comm_type)(max_attempts_limit)
             );
 
     if ((bool)res[0][0])
@@ -415,7 +416,8 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
             " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
             " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
             " AND comm_type_id = (SELECT id FROM comm_type WHERE type = $1::text) "
-            , Database::query_param_list (comm_type)
+            " AND attempt < $2::integer "
+            , Database::query_param_list (comm_type) (max_attempts_limit)
         );
     }
     else//limited batch
@@ -426,8 +428,10 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
             " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
             " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
             " AND comm_type_id = (SELECT id FROM comm_type "
-            " WHERE type = $1::text) ORDER BY id LIMIT $2::integer) "
-            , Database::query_param_list (comm_type) (batch_size_limit)
+            " WHERE type = $1::text) "
+            " AND attempt < $2::integer "
+            " ORDER BY id LIMIT $3::integer) "
+            , Database::query_param_list (comm_type) (max_attempts_limit) (batch_size_limit)
         );
     }
     // is there anything to send?
@@ -438,7 +442,8 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
         " JOIN comm_type ct ON ma.comm_type_id = ct.id "
         " WHERE ms.status_name='being_sent' "
         " AND ct.type = $1::text "
-        , Database::query_param_list (comm_type));
+        " AND ma.attempt < $2::integer "
+        , Database::query_param_list (comm_type) (max_attempts_limit));
 
     trans.commit();
 
@@ -463,7 +468,7 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
     return proc_letters;
 }
 
-SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit)
+SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit, std::size_t max_attempts_limit)
 {
 
     Database::Connection conn = Database::Manager::acquire();
@@ -476,11 +481,13 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit)
      * for multithreaded access - we would have to remember which
      * records exactly are we processing
      */
-    Database::Result res = conn.exec("SELECT EXISTS "
+    Database::Result res = conn.exec_params("SELECT EXISTS "
             "(SELECT * FROM message_archive ma "
             "JOIN comm_type ct ON ma.comm_type_id = ct.id "
             "JOIN message_status ms ON ma.status_id = ms.id "
-            " WHERE ms.status_name = 'being_sent' AND ct.type = 'sms')");
+            " WHERE ms.status_name = 'being_sent' AND ct.type = 'sms'"
+            " AND ma.attempt < $1::integer) "
+            , Database::query_param_list (max_attempts_limit) );
 
     if ((bool)res[0][0])
     {
@@ -498,31 +505,38 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit)
 
     if(batch_size_limit == 0)//unlimited batch
     {
-        conn.exec("UPDATE message_archive SET "
+        conn.exec_params("UPDATE message_archive SET "
             "status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
             " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
             " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
             " AND comm_type_id = (SELECT id FROM comm_type WHERE type = 'sms') "
+            " AND attempt < $1::integer "
+            , Database::query_param_list (max_attempts_limit)
         );
     }
     else//limited batch
     {
         conn.exec_params("UPDATE message_archive SET "
-            "status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
+            " status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
             " WHERE id IN (SELECT id FROM message_archive "
             " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
             " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
             " AND comm_type_id = (SELECT id FROM comm_type "
-            " WHERE type = 'sms') ORDER BY id LIMIT $1::integer) "
-                , Database::query_param_list (batch_size_limit)
+            " WHERE type = 'sms') "
+            " AND attempt < $1::integer "
+            " ORDER BY id LIMIT $2::integer) "
+            , Database::query_param_list (max_attempts_limit) (batch_size_limit)
         );
     }
 
     // is there anything to send?
-    res = conn.exec("SELECT  sa.id, ma.attempt, sa.phone_number, sa.content  "
+    res = conn.exec_params("SELECT  sa.id, ma.attempt, sa.phone_number, sa.content  "
         " FROM message_archive ma JOIN sms_archive sa ON ma.id = sa.id "
         " JOIN message_status ms ON ma.status_id = ms.id "
-        " WHERE ms.status_name='being_sent'");
+        " WHERE ms.status_name='being_sent' "
+        " AND ma.attempt < $1::integer "
+        , Database::query_param_list (max_attempts_limit)
+        );
 
     trans.commit();
 

@@ -183,10 +183,10 @@ public:
 
     //load saved letters
     LetterProcInfo load_letters_to_send(std::size_t batch_size_limit
-            , const std::string &comm_type);
+            , const std::string &comm_type, std::size_t max_attempts_limit);
 
     //load saved sms
-    SmsProcInfo load_sms_to_send(std::size_t batch_size_limit);
+    SmsProcInfo load_sms_to_send(std::size_t batch_size_limit, std::size_t max_attempts_limit);
 
     //set send result into letter status
     void set_letter_status(const LetterProcInfo& letters

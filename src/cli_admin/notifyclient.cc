@@ -335,7 +335,7 @@ void NotifyClient::file_send()
      std::string comm_type = "letter";
 
      Register::Messages::LetterProcInfo proc_letters
-         = messages_manager->load_letters_to_send(0, comm_type);
+         = messages_manager->load_letters_to_send(0, comm_type, 3);
      send_letters_impl(fileman.get()
              ,hpmail_config,proc_letters,new_status,batch_id);
      messages_manager->set_letter_status(
@@ -361,7 +361,7 @@ void NotifyClient::file_send()
          = hpmail_config["hp_login_registered_letter_batch_id"];
 
      Register::Messages::LetterProcInfo proc_reg_letters
-         = messages_manager->load_letters_to_send(0, comm_type);
+         = messages_manager->load_letters_to_send(0, comm_type, 3);
      send_letters_impl(fileman.get()
              ,hpmail_config,proc_reg_letters,new_status,batch_id);
      messages_manager->set_letter_status(
@@ -376,7 +376,7 @@ void NotifyClient::file_send()
       Register::Messages::ManagerPtr messages_manager
           = Register::Messages::create_manager();
 
-      Register::Messages::SmsProcInfo proc_sms = messages_manager->load_sms_to_send(0);
+      Register::Messages::SmsProcInfo proc_sms = messages_manager->load_sms_to_send(0, 3);
       if(proc_sms.empty()) return;
       LOGGER(PACKAGE).info("sms sending");
 
