@@ -29,6 +29,7 @@
 
 #include <stdexcept>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "register/db_settings.h"
 
@@ -221,6 +222,11 @@ unsigned long long Manager::save_sms_to_send(const char* contact_handle
                       % contact_history_historyid
                       );
 
+        //check phone
+        std::string trimed_phone_string
+            = boost::algorithm::trim_copy(static_cast<std::string>(phone));
+        if(trimed_phone_string.empty()) throw std::runtime_error("empty phone");
+
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
@@ -308,6 +314,26 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
                       % contact_history_historyid
                       % comm_type
                       );
+        //check snail mail address (name, street1, city, postalcode, country)
+        std::string trimed_address_name_string
+            = boost::algorithm::trim_copy(static_cast<std::string>(address.name));
+        if(trimed_address_name_string.empty()) throw std::runtime_error("empty address.name");
+
+        std::string trimed_address_street1_string
+            = boost::algorithm::trim_copy(static_cast<std::string>(address.street1));
+        if(trimed_address_street1_string.empty()) throw std::runtime_error("empty address.street1");
+
+        std::string trimed_address_city_string
+            = boost::algorithm::trim_copy(static_cast<std::string>(address.city));
+        if(trimed_address_city_string.empty()) throw std::runtime_error("empty address.city");
+
+        std::string trimed_address_code_string
+            = boost::algorithm::trim_copy(static_cast<std::string>(address.code));
+        if(trimed_address_code_string.empty()) throw std::runtime_error("empty address.code");
+
+        std::string trimed_address_country_string
+            = boost::algorithm::trim_copy(static_cast<std::string>(address.country));
+        if(trimed_address_country_string.empty()) throw std::runtime_error("empty address.country");
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
