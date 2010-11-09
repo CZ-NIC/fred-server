@@ -504,6 +504,8 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
                 request.get_registrar_id(),
                 data);
 
+        ::Register::update_object_states(cinfo.id);
+
         LOGGER(PACKAGE).info(boost::format(
                 "contact updated -- handle: %1%  id: %2%  history_id: %3%")
                 % handle % id % hid);
@@ -579,7 +581,7 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
                 % _trans_id);
 
         if (std::string(_trans_id).empty()) {
-             throw std::exception();
+             throw std::runtime_error("Transaction ID empty");
         }
         Database::Connection conn = Database::Manager::acquire();
         conn.exec("COMMIT PREPARED '" + conn.escape(_trans_id) + "'");
@@ -598,20 +600,8 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
                 throw std::exception();
             }
             if (!ractionid[0][1].isnull()) {
-                throw std::exception();
+                throw std::runtime_error("Action already completed");
             }
-            Database::Result rcontactid = conn.exec_params(
-                    "SELECT ch.id FROM contact_history ch JOIN history h ON h.id = ch.historyid"
-                    " WHERE h.action = $1::integer",
-                    Database::query_param_list(aid));
-            if (rcontactid.size() != 1 || (cid = rcontactid[0][0]) == 0) {
-                LOGGER(PACKAGE).warning("unable to find contact id by action id");
-                throw std::exception();
-            }
-            else {
-                ::Register::update_object_states(cid);
-            }
-
             conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
                       " WHERE id = $1::integer", Database::query_param_list(aid));
         }
