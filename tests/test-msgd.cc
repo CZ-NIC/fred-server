@@ -70,16 +70,16 @@ BOOST_AUTO_TEST_CASE( test_exec )
 
             Registry::Messages::PostalAddress_var paddr( new Registry::Messages::PostalAddress);
 
-            paddr->name = CORBA::string_dup("");
+            paddr->name = CORBA::string_dup("name");
             paddr->org = CORBA::string_dup("");
-            paddr->street1 = CORBA::string_dup("");
+            paddr->street1 = CORBA::string_dup("st1");
             paddr->street2 = CORBA::string_dup("");
             paddr->street3 = CORBA::string_dup("");
-            paddr->city = CORBA::string_dup("");
+            paddr->city = CORBA::string_dup("city");
             paddr->state = CORBA::string_dup("");
-            paddr->code = CORBA::string_dup("");
+            paddr->code = CORBA::string_dup("11150");
             paddr->city = CORBA::string_dup("Praha");
-            paddr->country = CORBA::string_dup("");
+            paddr->country = CORBA::string_dup("Czech Republic");
 
             Registry::Messages::ByteBuffer_var file_content( new Registry::Messages::ByteBuffer(3) );//prealocate
             file_content->length(3);//set/alocate
