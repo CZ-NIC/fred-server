@@ -968,7 +968,7 @@ public:
 
         /* proces only new */
         if (status_ != PRS_NEW) {
-            throw std::runtime_error("already processed");
+            throw AlreadyProcessed(this->getId());
         }
 
         /* need to be authenticated */

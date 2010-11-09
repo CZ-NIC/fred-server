@@ -202,6 +202,11 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
         /* TODO: throw something else */
         throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
     }
+    catch (Register::PublicRequest::AlreadyProcessed &_ex) {
+        LOGGER(PACKAGE).warning(boost::format(
+                    "cannot process identification request (%1%)") % _ex.what());
+        throw Registry::MojeID::Server::IDENTIFICATION_ALREADY_PROCESSED();
+    }
     catch (Register::PublicRequest::PublicRequestAuth::NOT_AUTHENTICATED&) {
         LOGGER(PACKAGE).info("request authentication failed (bad password)");
         throw Registry::MojeID::Server::IDENTIFICATION_FAILED();

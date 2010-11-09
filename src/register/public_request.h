@@ -7,6 +7,7 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/format.hpp>
 
 #include "common_object.h"
 #include "registrar.h"
@@ -33,6 +34,16 @@ struct NotApplicable : public std::runtime_error
 {
     NotApplicable(const std::string &_str)
         : std::runtime_error("not_applicable: " + _str)
+    {
+    }
+};
+
+
+struct AlreadyProcessed : public std::runtime_error
+{
+    AlreadyProcessed(const unsigned long long &_rid)
+        : std::runtime_error(str(boost::format(
+                        "public_request [id=%1%]: already_processed") % _rid))
     {
     }
 };
