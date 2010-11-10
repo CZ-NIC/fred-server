@@ -353,10 +353,8 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
     Logging::Context ctx("contact-unidentify");
 
 
-        /* start new request - here for logging into action table - until
-         * fred-logd fully migrated */
-    ::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
-    Logging::Context ctx_request(request.get_servertrid());
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
 
     LOGGER(PACKAGE).info(boost::format("contactUnidentify --"
             "  contact_id: %1%  request_id: %2%")
@@ -430,12 +428,17 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
         // apply changes
         ::Register::update_object_states(_contact_id);
 
-        request.end_success();
+        tx.prepare(_trans_id);
 
     } catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
     } catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        if (_contact_id == 0) {
+            LOGGER(PACKAGE).alert(boost::format("update_object_states(): failed!"
+                        "(cannot retrieve contact id from transaction identifier)") 
+                    % _contact_id);
+        }
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     } catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
@@ -599,15 +602,15 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
                     " WHERE clienttrid = $1::text",
                     Database::query_param_list(_trans_id));
             if (ractionid.size() != 1 || (aid = ractionid[0][0]) == 0) {
-                LOGGER(PACKAGE).warning("unable to find unique action with given"
-                        " transaction id as clienttrid");
-                throw std::exception();
+                LOGGER(PACKAGE).info("unable to find unique action - assuming it"
+                        " was not used. ");
+            } else {
+                if (!ractionid[0][1].isnull()) {
+                    throw std::runtime_error("Action already completed");
+                }
+                conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
+                          " WHERE id = $1::integer", Database::query_param_list(aid));
             }
-            if (!ractionid[0][1].isnull()) {
-                throw std::runtime_error("Action already completed");
-            }
-            conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
-                      " WHERE id = $1::integer", Database::query_param_list(aid));
         }
         catch (...) {
             LOGGER(PACKAGE).error("error occured when updating action response");
@@ -648,8 +651,8 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
 
             unsigned long long id = 0;
             if (result.size() != 1 || (id = result[0][0]) == 0) {
-                LOGGER(PACKAGE).warning("unable to find unique action with given"
-                        " transaction id as clienttrid");
+                LOGGER(PACKAGE).warning("unable to find unique action - "
+                        " assuming it was not used");
             }
             else {
                 conn.exec_params("UPDATE action SET response = 2400, enddate = now()"
@@ -660,7 +663,7 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
             LOGGER(PACKAGE).error("error occured when updating action response");
         }
 
-        LOGGER(PACKAGE).info("request completed successfully");
+        LOGGER(PACKAGE).info("rollback completed");
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
