@@ -91,7 +91,7 @@ unsigned long long save_message(Database::QueryParam moddate// = Database::QPNul
         " (crdate, moddate, attempt, status_id, comm_type_id, message_type_id)"
         " VALUES (CURRENT_TIMESTAMP, $1::timestamp"// without time zone "
         " , $2::smallint"
-        " , (SELECT id FROM message_status WHERE status_name = $3::text)"
+        " , (SELECT id FROM enum_send_status WHERE status_name = $3::text)"
         " , (SELECT id FROM comm_type WHERE type = $4::text), $5::integer)"
         , Database::query_param_list
           (Database::QueryParam())//$1 moddate
@@ -174,16 +174,24 @@ unsigned long long get_filetype_id(std::string file_type)
     return filetype_id;
 }
 
-// not processed letters should have status set back
-void set_status_back(const std::string& comm_type)
+// not processed letters should have status set back according to send attempts
+void set_status_back(const std::string& comm_type, const std::size_t max_attempts_limit)
 {
     Database::Connection conn = Database::Manager::acquire();
     conn.exec_params("UPDATE message_archive SET "
-            "status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
-            " WHERE status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
-            " AND comm_type_id = (SELECT id FROM comm_type "
-            " WHERE type = $1::text)"
-            , Database::query_param_list(comm_type));
+            " status_id = (SELECT id FROM enum_send_status WHERE status_name = 'ready') "
+            " WHERE status_id = (SELECT id FROM enum_send_status WHERE status_name = 'being_sent') "
+            " AND comm_type_id = (SELECT id FROM comm_type WHERE type = $1::text) "
+            " AND attempt < $2::integer "
+            , Database::query_param_list(comm_type)(max_attempts_limit));
+
+    conn.exec_params("UPDATE message_archive SET "
+            " status_id = (SELECT id FROM enum_send_status WHERE status_name = 'no_processing') "
+            " WHERE status_id = (SELECT id FROM enum_send_status WHERE status_name = 'send_failed') "
+            " AND comm_type_id = (SELECT id FROM comm_type WHERE type = $1::text) "
+            " AND attempt >= $2::integer "
+            , Database::query_param_list(comm_type)(max_attempts_limit));
+
 }
 
 //Manager factory
@@ -415,7 +423,7 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
     Database::Result res = conn.exec_params("SELECT EXISTS "
             "(SELECT * FROM message_archive ma "
             "JOIN comm_type ct ON ma.comm_type_id = ct.id "
-            "JOIN message_status ms ON ma.status_id = ms.id "
+            "JOIN enum_send_status ms ON ma.status_id = ms.id "
             " WHERE ms.status_name = 'being_sent' AND ct.type = $1::text "
             " AND ma.attempt < $2::integer) "
             , Database::query_param_list (comm_type)(max_attempts_limit)
@@ -438,9 +446,9 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
     if(batch_size_limit == 0)//unlimited batch
     {
         conn.exec_params("UPDATE message_archive SET "
-            "status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
-            " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
-            " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
+            "status_id = (SELECT id FROM enum_send_status WHERE status_name = 'being_sent') "
+            " WHERE (status_id = (SELECT id FROM enum_send_status WHERE status_name = 'ready') "
+            " OR status_id = (SELECT id FROM enum_send_status WHERE status_name = 'send_failed')) "
             " AND comm_type_id = (SELECT id FROM comm_type WHERE type = $1::text) "
             " AND attempt < $2::integer "
             , Database::query_param_list (comm_type) (max_attempts_limit)
@@ -449,10 +457,10 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
     else//limited batch
     {
         conn.exec_params("UPDATE message_archive SET "
-            "status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
+            "status_id = (SELECT id FROM enum_send_status WHERE status_name = 'being_sent') "
             " WHERE id IN (SELECT id FROM message_archive "
-            " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
-            " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
+            " WHERE (status_id = (SELECT id FROM enum_send_status WHERE status_name = 'ready') "
+            " OR status_id = (SELECT id FROM enum_send_status WHERE status_name = 'send_failed')) "
             " AND comm_type_id = (SELECT id FROM comm_type "
             " WHERE type = $1::text) "
             " AND attempt < $2::integer "
@@ -464,7 +472,7 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
     res = conn.exec_params("SELECT la.file_id, la.id, ma.attempt , f.name "
         " FROM message_archive ma JOIN letter_archive la ON ma.id = la.id "
         " JOIN files f ON la.file_id = f.id "
-        " JOIN message_status ms ON ma.status_id = ms.id "
+        " JOIN enum_send_status ms ON ma.status_id = ms.id "
         " JOIN comm_type ct ON ma.comm_type_id = ct.id "
         " WHERE ms.status_name='being_sent' "
         " AND ct.type = $1::text "
@@ -510,7 +518,7 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit, std::size_t 
     Database::Result res = conn.exec_params("SELECT EXISTS "
             "(SELECT * FROM message_archive ma "
             "JOIN comm_type ct ON ma.comm_type_id = ct.id "
-            "JOIN message_status ms ON ma.status_id = ms.id "
+            "JOIN enum_send_status ms ON ma.status_id = ms.id "
             " WHERE ms.status_name = 'being_sent' AND ct.type = 'sms'"
             " AND ma.attempt < $1::integer) "
             , Database::query_param_list (max_attempts_limit) );
@@ -532,9 +540,9 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit, std::size_t 
     if(batch_size_limit == 0)//unlimited batch
     {
         conn.exec_params("UPDATE message_archive SET "
-            "status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
-            " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
-            " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
+            "status_id = (SELECT id FROM enum_send_status WHERE status_name = 'being_sent') "
+            " WHERE (status_id = (SELECT id FROM enum_send_status WHERE status_name = 'ready') "
+            " OR status_id = (SELECT id FROM enum_send_status WHERE status_name = 'send_failed')) "
             " AND comm_type_id = (SELECT id FROM comm_type WHERE type = 'sms') "
             " AND attempt < $1::integer "
             , Database::query_param_list (max_attempts_limit)
@@ -543,10 +551,10 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit, std::size_t 
     else//limited batch
     {
         conn.exec_params("UPDATE message_archive SET "
-            " status_id = (SELECT id FROM message_status WHERE status_name = 'being_sent') "
+            " status_id = (SELECT id FROM enum_send_status WHERE status_name = 'being_sent') "
             " WHERE id IN (SELECT id FROM message_archive "
-            " WHERE (status_id = (SELECT id FROM message_status WHERE status_name = 'ready') "
-            " OR status_id = (SELECT id FROM message_status WHERE status_name = 'send_failed')) "
+            " WHERE (status_id = (SELECT id FROM enum_send_status WHERE status_name = 'ready') "
+            " OR status_id = (SELECT id FROM enum_send_status WHERE status_name = 'send_failed')) "
             " AND comm_type_id = (SELECT id FROM comm_type "
             " WHERE type = 'sms') "
             " AND attempt < $1::integer "
@@ -558,7 +566,7 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit, std::size_t 
     // is there anything to send?
     res = conn.exec_params("SELECT  sa.id, ma.attempt, sa.phone_number, sa.content  "
         " FROM message_archive ma JOIN sms_archive sa ON ma.id = sa.id "
-        " JOIN message_status ms ON ma.status_id = ms.id "
+        " JOIN enum_send_status ms ON ma.status_id = ms.id "
         " WHERE ms.status_name='being_sent' "
         " AND ma.attempt < $1::integer "
         , Database::query_param_list (max_attempts_limit)
@@ -588,7 +596,8 @@ SmsProcInfo Manager::load_sms_to_send(std::size_t batch_size_limit, std::size_t 
 
 void Manager::set_letter_status(const LetterProcInfo& letters
         ,const std::string& new_status, const std::string& batch_id
-        , const std::string &comm_type)
+        , const std::string &comm_type
+        , const std::size_t max_attempts_limit )
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction trans2(conn);
@@ -599,7 +608,7 @@ void Manager::set_letter_status(const LetterProcInfo& letters
     {
           unsigned int new_attempt = it->attempt + 1;
           conn.exec_params("UPDATE message_archive SET "
-              "status_id = (SELECT id FROM message_status WHERE status_name = $1::text), "
+              "status_id = (SELECT id FROM enum_send_status WHERE status_name = $1::text), "
               "attempt = $2::integer, "
               "moddate = CURRENT_TIMESTAMP WHERE id = $3::integer"
               " AND comm_type_id = (SELECT id FROM comm_type "
@@ -620,14 +629,14 @@ void Manager::set_letter_status(const LetterProcInfo& letters
                           );
     }
     // not processed letters should have status set back (set moddate? status?)
-    set_status_back(comm_type);
+    set_status_back(comm_type, max_attempts_limit);
 
     trans2.commit();
 
 }
 
 //set send result into sms status
-void Manager::set_sms_status(const SmsProcInfo& messages)
+void Manager::set_sms_status(const SmsProcInfo& messages, const std::size_t max_attempts_limit)
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction trans2(conn);
@@ -638,7 +647,7 @@ void Manager::set_sms_status(const SmsProcInfo& messages)
     {
           unsigned int new_attempt = it->attempt + 1;
           conn.exec_params("UPDATE message_archive SET "
-                  "status_id = (SELECT id FROM message_status WHERE status_name = $1::text), "
+                  "status_id = (SELECT id FROM enum_send_status WHERE status_name = $1::text), "
                       "attempt = $2::integer, "
                       "moddate = CURRENT_TIMESTAMP WHERE id = $3::integer"
                       " AND comm_type_id = (SELECT id FROM comm_type "
@@ -650,7 +659,7 @@ void Manager::set_sms_status(const SmsProcInfo& messages)
                   );
     }
     // not processed letters should have status set back (set moddate? status?)
-    set_status_back("sms");
+    set_status_back("sms", max_attempts_limit);
 
     trans2.commit();
 }
@@ -666,11 +675,11 @@ Manager::MessageListPtr Manager::createList()
 EnumList Manager::getStatusList()
 {
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result res = conn.exec("SELECT  id, status_name FROM message_status "
+    Database::Result res = conn.exec("SELECT  id, status_name FROM enum_send_status "
             "ORDER BY id");
     if(res.size() == 0)
     {
-        const char* err_msg = "getStatusList: no data in table message_status";
+        const char* err_msg = "getStatusList: no data in table enum_send_status";
         LOGGER(PACKAGE).error(err_msg);
         throw std::runtime_error(err_msg);
     }

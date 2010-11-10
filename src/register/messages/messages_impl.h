@@ -191,10 +191,12 @@ public:
     //set send result into letter status
     void set_letter_status(const LetterProcInfo& letters
             ,const std::string& new_status, const std::string& batch_id
-            , const std::string &comm_type);
+            , const std::string &comm_type
+            , const std::size_t max_attempts_limit);
 
     //set send result into sms status
-    void set_sms_status(const SmsProcInfo& messages);
+    void set_sms_status(const SmsProcInfo& messages
+            , const std::size_t max_attempts_limit);
 
     //get sms data by id
     SmsInfo get_sms_info_by_id(unsigned long long id);

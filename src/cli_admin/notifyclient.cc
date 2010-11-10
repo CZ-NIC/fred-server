@@ -334,12 +334,14 @@ void NotifyClient::file_send()
      std::string batch_id;
      std::string comm_type = "letter";
 
+     const std::size_t max_attempts_limit = 3;
+
      Register::Messages::LetterProcInfo proc_letters
-         = messages_manager->load_letters_to_send(0, comm_type, 3);
+         = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
      send_letters_impl(fileman.get()
              ,hpmail_config,proc_letters,new_status,batch_id);
      messages_manager->set_letter_status(
-         proc_letters,new_status,batch_id, comm_type);
+         proc_letters,new_status,batch_id, comm_type, max_attempts_limit);
 
      //registered letters
      if(hpmail_config["hp_login_registered_letter_batch_id"].empty())
@@ -361,11 +363,11 @@ void NotifyClient::file_send()
          = hpmail_config["hp_login_registered_letter_batch_id"];
 
      Register::Messages::LetterProcInfo proc_reg_letters
-         = messages_manager->load_letters_to_send(0, comm_type, 3);
+         = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
      send_letters_impl(fileman.get()
              ,hpmail_config,proc_reg_letters,new_status,batch_id);
      messages_manager->set_letter_status(
-             proc_reg_letters,new_status,batch_id, comm_type);
+             proc_reg_letters,new_status,batch_id, comm_type, max_attempts_limit);
   }//sendLetters
 
   void NotifyClient::sendSMS(const std::string& command , const std::string& param_quote_by )
@@ -375,6 +377,8 @@ void NotifyClient::file_send()
 
       Register::Messages::ManagerPtr messages_manager
           = Register::Messages::create_manager();
+
+      const std::size_t max_attempts_limit = 3;
 
       Register::Messages::SmsProcInfo proc_sms = messages_manager->load_sms_to_send(0, 3);
       if(proc_sms.empty()) return;
@@ -422,7 +426,7 @@ void NotifyClient::file_send()
 
 
       //set status
-      messages_manager->set_sms_status(proc_sms);
+      messages_manager->set_sms_status(proc_sms, max_attempts_limit);
   }//sendSMS
 
   void NotifyClient::sendFile(const std::string &filename, const std::string &conf_file)  {
