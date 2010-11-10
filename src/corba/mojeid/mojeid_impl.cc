@@ -450,6 +450,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-update");
 
+    unsigned long long cid;
     try {
         LOGGER(PACKAGE).info(boost::format("request data --"
                     "  handle: %1%  transaction_id: %2%"
@@ -464,7 +465,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         if (_contact.id == 0) {
             throw std::runtime_error("contact.id is null");
         }
-        unsigned long long id = _contact.id->_value();
+        cid = _contact.id->_value();
         std::string handle = boost::to_upper_copy(corba_unwrap_string(_contact.username));
 
         Register::NameIdPair cinfo;
@@ -478,22 +479,22 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
-        if (cinfo.name != handle || cinfo.id != id) {
+        if (cinfo.name != handle || cinfo.id != cid) {
             throw std::runtime_error(str(boost::format(
                         "inconsistency in parameter --"
                         " passed: (id: %1%, handle: %2%), database (id: %3%, handle: %4%)")
-                    % id % handle % cinfo.id % cinfo.name));
+                    % cid % handle % cinfo.id % cinfo.name));
         }
 
         ::MojeID::Contact data = corba_unwrap_contact(_contact);
         ::MojeID::ContactValidator validator = ::MojeID::create_contact_update_validator();
         validator.check(data);
 
-        if (Register::object_has_state(id, ::MojeID::VALIDATED_CONTACT) == true) {
-            if (::MojeID::check_validated_contact_diff(data, ::MojeID::contact_info(id)) == false) {
+        if (Register::object_has_state(cid, ::MojeID::VALIDATED_CONTACT) == true) {
+            if (::MojeID::check_validated_contact_diff(data, ::MojeID::contact_info(cid)) == false) {
                 /* change contact status to identified */
-                if (Register::cancel_object_state(id, ::MojeID::VALIDATED_CONTACT)) {
-                    Register::insert_object_state(id, ::MojeID::IDENTIFIED_CONTACT);
+                if (Register::cancel_object_state(cid, ::MojeID::VALIDATED_CONTACT)) {
+                    Register::insert_object_state(cid, ::MojeID::IDENTIFIED_CONTACT);
                 }
             }
         }
@@ -504,11 +505,11 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
                 request.get_registrar_id(),
                 data);
 
-        ::Register::update_object_states(cinfo.id);
+        ::Register::update_object_states(cid);
 
         LOGGER(PACKAGE).info(boost::format(
                 "contact updated -- handle: %1%  id: %2%  history_id: %3%")
-                % handle % id % hid);
+                % handle % cid % hid);
 
         request.end_prepare(_trans_id);
         LOGGER(PACKAGE).info("request completed successfully");
@@ -522,6 +523,10 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        if (cid == 0) {
+            LOGGER(PACKAGE).alert(boost::format("update_object_states(): failed!"
+                        "(cannot retrieve contact id from transaction identifier)") % cid);
+        }
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
@@ -588,7 +593,6 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
 
         /* TEMP: until we finish migration to request logger */
         unsigned long long aid = 0;
-        unsigned long long cid = 0;
         try {
             Database::Result ractionid = conn.exec_params(
                     "SELECT id, response FROM action"
@@ -607,11 +611,6 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         }
         catch (...) {
             LOGGER(PACKAGE).error("error occured when updating action response");
-            if (cid == 0) {
-                LOGGER(PACKAGE).alert(boost::format("update_object_states(): failed!"
-                            "(cannot retrieve contact id from transaction identifier)") % cid);
-            }
-
         }
 
         LOGGER(PACKAGE).info("request completed successfully");
