@@ -1010,7 +1010,7 @@ public:
         Database::Result result = conn.exec_params(
                 "SELECT c.name, c.organization, c.street1, c.city,"
                 " c.stateorprovince, c.postalcode, c.country, c.email,"
-                " oreg.historyid, c.telephone, ec.country"
+                " oreg.historyid, c.telephone, ec.country, ec.country_cs"
                 " FROM contact c"
                 " JOIN object_registry oreg ON oreg.id = c.id"
                 " JOIN enum_country ec ON ec.id = c.country "
@@ -1054,6 +1054,7 @@ public:
         data["contact_hid"]= static_cast<std::string>(result[0][8]);
         data["phone"]= static_cast<std::string>(result[0][9]);
         data["country_name"]= static_cast<std::string>(result[0][10]);
+        data["country_cs_name"]= static_cast<std::string>(result[0][11]);
 
         return data;
     }
@@ -1145,6 +1146,10 @@ public:
         }
 
 
+        std::string addr_country = ((map_at(_data, "country_cs_name")).empty()
+                ? map_at(_data, "country_name")
+                : map_at(_data, "country_cs_name"));
+
         xml_data << "<?xml version='1.0' encoding='utf-8'?>"
                  << "<mojeid_auth>"
                  << "<user>"
@@ -1156,7 +1161,7 @@ public:
                  << "<city>" << map_at(_data, "city") << "</city>"
                  << "<stateorprovince>" << map_at(_data, "stateorprovince") << "</stateorprovince>"
                  << "<postal_code>" << map_at(_data, "postalcode") << "</postal_code>"
-                 << "<country>" << map_at(_data, "country_name") << "</country>"
+                 << "<country>" << addr_country << "</country>"
                  << "<account>"
                  << "<username>" << map_at(_data, "handle") << "</username>"
                  << "<first_name>" << map_at(_data, "firstname") << "</first_name>"
