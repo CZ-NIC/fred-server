@@ -2,6 +2,7 @@
 #define MOJEID_IMPL_H_
 
 #include <string>
+#include <boost/thread/mutex.hpp>
 
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_mojeid_args.h"
@@ -18,6 +19,9 @@ class ServerImpl : public POA_Registry::MojeID::Server,
         const HandleMojeIDArgs *server_conf_;
         const std::string server_name_;
         unsigned long long mojeid_registrar_id_;
+
+        std::map<std::string, unsigned long long> transaction_contact;
+        boost::mutex tc_mutex;
 
         virtual ~ServerImpl();
 

@@ -351,12 +351,9 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-unidentify");
+    ConnectionReleaser releaser;
 
-
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-
-    LOGGER(PACKAGE).info(boost::format("contactUnidentify --"
+    LOGGER(PACKAGE).info(boost::format("contactUnidentifyPrepare --"
             "  contact_id: %1%  request_id: %2%")
                 % _contact_id % _request_id);
 
@@ -380,6 +377,10 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
         }
 
         ContactStateInfo mojeid_state_info = getContactState(_contact_id);
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
 
         // find what state specific to mojeid applies to object,
         // check if it's really only one of the states
@@ -425,20 +426,15 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
 
         Register::cancel_multiple_object_states(_contact_id, states2drop);
 
-        // apply changes
-        ::Register::update_object_states(_contact_id);
-
         tx.prepare(_trans_id);
+
+        boost::mutex::scoped_lock tc_lock(tc_mutex);
+        transaction_contact[_trans_id] = _contact_id;
 
     } catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
     } catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        if (_contact_id == 0) {
-            LOGGER(PACKAGE).alert(boost::format("update_object_states(): failed!"
-                        "(cannot retrieve contact id from transaction identifier)") 
-                    % _contact_id);
-        }
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     } catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
@@ -508,13 +504,15 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
                 request.get_registrar_id(),
                 data);
 
-        ::Register::update_object_states(cid);
-
         LOGGER(PACKAGE).info(boost::format(
                 "contact updated -- handle: %1%  id: %2%  history_id: %3%")
                 % handle % cid % hid);
 
         request.end_prepare(_trans_id);
+
+        boost::mutex::scoped_lock tc_lock(tc_mutex);
+        transaction_contact[_trans_id] = cid;
+
         LOGGER(PACKAGE).info("request completed successfully");
     }
     catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
@@ -593,6 +591,24 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         }
         Database::Connection conn = Database::Manager::acquire();
         conn.exec("COMMIT PREPARED '" + conn.escape(_trans_id) + "'");
+
+        boost::mutex::scoped_lock tc_lock(tc_mutex);
+        
+        std::map<std::string, unsigned long long>::iterator it = 
+            transaction_contact.find(_trans_id);
+        if(it == transaction_contact.end()) {
+            throw std::runtime_error((boost::format(
+                        "cannot retrieve contact id from transaction identifier %1%.") 
+                    % _trans_id).str());
+        }
+        unsigned long long cid = it->second;
+
+        transaction_contact.erase(it);
+
+        tc_lock.unlock();
+        
+        // apply changes
+        ::Register::update_object_states(cid);
 
         /* TEMP: until we finish migration to request logger */
         unsigned long long aid = 0;
