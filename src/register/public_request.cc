@@ -1010,9 +1010,10 @@ public:
         Database::Result result = conn.exec_params(
                 "SELECT c.name, c.organization, c.street1, c.city,"
                 " c.stateorprovince, c.postalcode, c.country, c.email,"
-                " oreg.historyid, c.telephone"
+                " oreg.historyid, c.telephone, ec.country"
                 " FROM contact c"
                 " JOIN object_registry oreg ON oreg.id = c.id"
+                " JOIN enum_country ec ON ec.id = c.country "
                 " WHERE c.id = $1::integer",
                 Database::query_param_list(getObject(0).id));
         if (result.size() != 1)
@@ -1052,6 +1053,7 @@ public:
         data["contact_id"]=boost::lexical_cast<std::string>(getObject(0).id);
         data["contact_hid"]= static_cast<std::string>(result[0][8]);
         data["phone"]= static_cast<std::string>(result[0][9]);
+        data["country_name"]= static_cast<std::string>(result[0][10]);
 
         return data;
     }
@@ -1186,7 +1188,7 @@ public:
             pa.city    = map_at(_data, "city");
             pa.state   = map_at(_data, "stateorprovince");
             pa.code    = map_at(_data, "postalcode");
-            pa.country = map_at(_data, "country");
+            pa.country = map_at(_data, "country_name");
 
             unsigned long long message_id =
                 man_->getMessagesManager()->save_letter_to_send(
