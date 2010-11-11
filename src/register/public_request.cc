@@ -1156,7 +1156,7 @@ public:
                  << "<city>" << map_at(_data, "city") << "</city>"
                  << "<stateorprovince>" << map_at(_data, "stateorprovince") << "</stateorprovince>"
                  << "<postal_code>" << map_at(_data, "postalcode") << "</postal_code>"
-                 << "<country>" << map_at(_data, "country") << "</country>"
+                 << "<country>" << map_at(_data, "country_name") << "</country>"
                  << "<account>"
                  << "<username>" << map_at(_data, "handle") << "</username>"
                  << "<first_name>" << map_at(_data, "firstname") << "</first_name>"
