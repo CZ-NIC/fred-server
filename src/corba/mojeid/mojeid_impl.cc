@@ -654,6 +654,15 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
         LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
                 % _trans_id);
 
+        boost::mutex::scoped_lock tc_lock(tc_mutex);
+        
+        std::map<std::string, unsigned long long>::iterator it = 
+            transaction_contact.find(_trans_id);
+        if(it != transaction_contact.end()) {
+            transaction_contact.erase(it);
+        }
+        tc_lock.unlock();
+
         Database::Connection conn = Database::Manager::acquire();
         conn.exec("ROLLBACK PREPARED '" + conn.escape(_trans_id) + "'");
 
