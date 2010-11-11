@@ -177,9 +177,12 @@ try {
     po::options_description logd_opts("LOGD specific");
 	logd_opts.add_options()
 	  ("logd.monitoring_hosts_file", po::value<std::string>()->default_value("/usr/local/etc/fred/monitoring_hosts.conf"), "File containing list of monitoring machines");
+    po::options_description mojeid_opts("MOJEID-WHOIS specific");
+	mojeid_opts.add_options()
+	  ("mojeid.registrar_handle", po::value<std::string>(), "MojeID registrar for correct whois disclose flags usage");
 
     po::options_description file_opts;
-    file_opts.add(database_opts).add(nameservice_opts).add(log_opts).add(registry_opts).add(rifd_opts).add(adifd_opts).add(logd_opts);
+    file_opts.add(database_opts).add(nameservice_opts).add(log_opts).add(registry_opts).add(rifd_opts).add(adifd_opts).add(logd_opts).add(mojeid_opts);
 
     Config::Manager cfm = Config::ConfigManager::instance_ref();
     try {
