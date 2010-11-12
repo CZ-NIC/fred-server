@@ -6,10 +6,10 @@
 #include "log/logger.h"
 
 
-namespace Register {
+namespace Fred {
 namespace Mail {
 
-class MailImpl : public Register::CommonObjectImpl,
+class MailImpl : public Fred::CommonObjectImpl,
                  virtual public Mail {
 private:
   Database::DateTime create_time_;
@@ -19,7 +19,7 @@ private:
   long status_;
   std::string content_;
   std::vector<std::string> handles_;
-  std::vector<Register::OID> attachments_;   
+  std::vector<Fred::OID> attachments_;
 
 public:
   MailImpl(Database::ID& _id, Database::DateTime& _create_time, Database::DateTime& _mod_time,
@@ -69,7 +69,7 @@ public:
     return handles_.at(_idx);
   }
   
-  virtual void addAttachment(const Register::OID& _oid) {
+  virtual void addAttachment(const Fred::OID& _oid) {
     attachments_.push_back(_oid);
   }
   
@@ -77,7 +77,7 @@ public:
     return attachments_.size();
   }
   
-  virtual const Register::OID& getAttachment(unsigned _idx) const {
+  virtual const Fred::OID& getAttachment(unsigned _idx) const {
     return attachments_.at(_idx);
   }
 };
@@ -87,7 +87,7 @@ COMPARE_CLASS_IMPL(MailImpl, Type)
 COMPARE_CLASS_IMPL(MailImpl, Status)
 
 
-class ListImpl : public Register::CommonListImpl,
+class ListImpl : public Fred::CommonListImpl,
                  virtual public List {
 private:
   Manager *manager_;
@@ -111,7 +111,7 @@ public:
   }
   
   virtual void reload(Database::Filters::Union& _filter) {
-    TRACE("[CALL] Register::Mail::ListImpl::reload()");
+    TRACE("[CALL] Fred::Mail::ListImpl::reload()");
     clear();
     _filter.clearQueries();
     
@@ -221,7 +221,7 @@ public:
              
         MailImpl *mail_ptr = dynamic_cast<MailImpl *>(findIDSequence(mail_id));
         if (mail_ptr)
-          mail_ptr->addAttachment(Register::OID(file_id, file_name, FT_FILE));
+          mail_ptr->addAttachment(Fred::OID(file_id, file_name, FT_FILE));
       }
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();
@@ -277,7 +277,7 @@ public:
 };
 
 Manager* Manager::create() {
-    TRACE("[CALL] Register::Mail::Manager::create()");
+    TRACE("[CALL] Fred::Mail::Manager::create()");
     return new ManagerImpl();
 }
 

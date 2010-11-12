@@ -1,6 +1,6 @@
 #include "pagetable_eppactions.h"
 
-ccReg_EPPActions_i::ccReg_EPPActions_i(Register::Registrar::EPPActionList *_eal) :
+ccReg_EPPActions_i::ccReg_EPPActions_i(Fred::Registrar::EPPActionList *_eal) :
   eal(_eal) {
 }
 
@@ -37,7 +37,7 @@ Registry::TableRow* ccReg_EPPActions_i::getRow(CORBA::UShort row)
   Logging::Context ctx(base_context_);
 
   try {
-    const Register::Registrar::EPPAction *a = eal->get(row);
+    const Fred::Registrar::EPPAction *a = eal->get(row);
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(7);
 
@@ -67,25 +67,25 @@ void ccReg_EPPActions_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
   
   switch (column) {
     case 0:
-      eal->sort(Register::Registrar::MT_SVTRID, dir);
+      eal->sort(Fred::Registrar::MT_SVTRID, dir);
       break;
     case 1:
-      eal->sort(Register::Registrar::MT_CLTRID, dir);
+      eal->sort(Fred::Registrar::MT_CLTRID, dir);
       break;
     case 2:
-      eal->sort(Register::Registrar::MT_TYPE, dir);
+      eal->sort(Fred::Registrar::MT_TYPE, dir);
       break;
     case 3:
-      eal->sort(Register::Registrar::MT_OBJECT_HANDLE, dir);
+      eal->sort(Fred::Registrar::MT_OBJECT_HANDLE, dir);
       break;
     case 4:
-      eal->sort(Register::Registrar::MT_REGISTRAR_HANDLE, dir);
+      eal->sort(Fred::Registrar::MT_REGISTRAR_HANDLE, dir);
       break;
     case 5:
-      eal->sort(Register::Registrar::MT_TIME, dir);
+      eal->sort(Fred::Registrar::MT_TIME, dir);
       break;
     case 6:
-      eal->sort(Register::Registrar::MT_RESULT, dir);
+      eal->sort(Fred::Registrar::MT_RESULT, dir);
       break;
   }
 }
@@ -94,7 +94,7 @@ ccReg::TID ccReg_EPPActions_i::getRowId(CORBA::UShort row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::Registrar::EPPAction *a = eal->get(row);
+  const Fred::Registrar::EPPAction *a = eal->get(row);
   if (!a)
     throw ccReg::Table::INVALID_ROW();
   return a->getId();
@@ -164,22 +164,22 @@ void ccReg_EPPActions_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_EPPActions_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create());
-  tmp_filter_manager->save(Register::Filter::FT_ACTION, _name, uf);
+  std::auto_ptr<Fred::Filter::Manager>
+      tmp_filter_manager(Fred::Filter::Manager::create());
+  tmp_filter_manager->save(Fred::Filter::FT_ACTION, _name, uf);
 }
 
-Register::Registrar::EPPAction* ccReg_EPPActions_i::findId(ccReg::TID _id) {
+Fred::Registrar::EPPAction* ccReg_EPPActions_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    Register::Registrar::EPPAction *epp_action = dynamic_cast<Register::Registrar::EPPAction* >(eal->findId(_id));
+    Fred::Registrar::EPPAction *epp_action = dynamic_cast<Fred::Registrar::EPPAction* >(eal->findId(_id));
     if (epp_action) {
       return epp_action;
     }
     return 0;
   }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     return 0;
   }
 }

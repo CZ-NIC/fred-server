@@ -1,6 +1,6 @@
 #include "pagetable_mails.h"
 
-ccReg_Mails_i::ccReg_Mails_i(Register::Mail::List *_list, NameService *ns) :
+ccReg_Mails_i::ccReg_Mails_i(Fred::Mail::List *_list, NameService *ns) :
   mail_list_(_list), mm(ns) {
 }
 
@@ -32,7 +32,7 @@ Registry::TableRow* ccReg_Mails_i::getRow(CORBA::UShort _row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::Mail::Mail *mail = mail_list_->get(_row);
+  const Fred::Mail::Mail *mail = mail_list_->get(_row);
   if (!mail)
     throw ccReg::Table::INVALID_ROW();
 
@@ -54,13 +54,13 @@ void ccReg_Mails_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
   
   switch (_column) {
     case 0:
-      mail_list_->sort(Register::Mail::MT_CRDATE, _dir);
+      mail_list_->sort(Fred::Mail::MT_CRDATE, _dir);
       break;
     case 1:
-      mail_list_->sort(Register::Mail::MT_TYPE, _dir);
+      mail_list_->sort(Fred::Mail::MT_TYPE, _dir);
       break;
     case 2:
-      mail_list_->sort(Register::Mail::MT_STATUS, _dir);
+      mail_list_->sort(Fred::Mail::MT_STATUS, _dir);
       break;
   }
 }
@@ -69,7 +69,7 @@ ccReg::TID ccReg_Mails_i::getRowId(CORBA::UShort _row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::Mail::Mail *mail = mail_list_->get(_row);
+  const Fred::Mail::Mail *mail = mail_list_->get(_row);
   if (!mail)
     throw ccReg::Table::INVALID_ROW();
   return mail->getId();
@@ -138,22 +138,22 @@ void ccReg_Mails_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_Mails_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create());
-  tmp_filter_manager->save(Register::Filter::FT_MAIL, _name, uf);
+  std::auto_ptr<Fred::Filter::Manager>
+      tmp_filter_manager(Fred::Filter::Manager::create());
+  tmp_filter_manager->save(Fred::Filter::FT_MAIL, _name, uf);
 }
 
-Register::Mail::Mail* ccReg_Mails_i::findId(ccReg::TID _id) {
+Fred::Mail::Mail* ccReg_Mails_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    Register::Mail::Mail *mail = dynamic_cast<Register::Mail::Mail* >(mail_list_->findId(_id));
+    Fred::Mail::Mail *mail = dynamic_cast<Fred::Mail::Mail* >(mail_list_->findId(_id));
     if (mail) {
       return mail;
     }
     return 0;
   }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     return 0;
   }
 }

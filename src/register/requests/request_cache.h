@@ -24,7 +24,7 @@
 #include <map>
 #include <boost/thread/mutex.hpp>
 
-namespace Register {
+namespace Fred {
 
 namespace Logger {
 

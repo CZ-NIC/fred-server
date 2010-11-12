@@ -54,12 +54,12 @@ PublicRequestClient::list()
     Database::Filters::PublicRequest *prFilter;
     prFilter = new Database::Filters::PublicRequestImpl();
 
-    Register::Messages::ManagerPtr msgMan
-        = Register::Messages::create_manager();
+    Fred::Messages::ManagerPtr msgMan
+        = Fred::Messages::create_manager();
 
 
-    std::auto_ptr<Register::Document::Manager> docMan(
-            Register::Document::Manager::create(
+    std::auto_ptr<Fred::Document::Manager> docMan(
+            Fred::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
                 m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
@@ -68,31 +68,31 @@ PublicRequestClient::list()
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
 
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
-    std::auto_ptr<Register::Domain::Manager> domMan(
-            Register::Domain::Manager::create(&m_db, zoneMan.get()));
-    std::auto_ptr<Register::Contact::Manager> conMan(
-            Register::Contact::Manager::create(
+    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+            Fred::Zone::Manager::create());
+    std::auto_ptr<Fred::Domain::Manager> domMan(
+            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+    std::auto_ptr<Fred::Contact::Manager> conMan(
+            Fred::Contact::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::NSSet::Manager> nssMan(
-            Register::NSSet::Manager::create(
+    std::auto_ptr<Fred::NSSet::Manager> nssMan(
+            Fred::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(
+    std::auto_ptr<Fred::KeySet::Manager> keyMan(
+            Fred::KeySet::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::Registrar::Manager> regMan(
-            Register::Registrar::Manager::create(&m_db));
+    std::auto_ptr<Fred::Registrar::Manager> regMan(
+            Fred::Registrar::Manager::create(&m_db));
 
-    std::auto_ptr<Register::PublicRequest::Manager> prMan(
-            Register::PublicRequest::Manager::create(
+    std::auto_ptr<Fred::PublicRequest::Manager> prMan(
+            Fred::PublicRequest::Manager::create(
                 domMan.get(),
                 conMan.get(),
                 nssMan.get(),
@@ -101,7 +101,7 @@ PublicRequestClient::list()
                 docMan.get(),
                 msgMan)
             );
-    std::auto_ptr<Register::PublicRequest::List> prList(
+    std::auto_ptr<Fred::PublicRequest::List> prList(
             prMan->createList());
 
     apply_ID(prFilter);
@@ -148,13 +148,13 @@ PublicRequestClient::list()
 
     std::cout << "<object>\n";
     for (unsigned int j = 0; j < prList->getCount(); j++) {
-        Register::PublicRequest::PublicRequest *pr =
-            (Register::PublicRequest::PublicRequest *)prList->get(j);
+        Fred::PublicRequest::PublicRequest *pr =
+            (Fred::PublicRequest::PublicRequest *)prList->get(j);
         std::cout
             << "\t<public_request>\n"
             << "\t\t<id>" << pr->getId() << "</id>\n"
-            << "\t\t<type>" << Register::PublicRequest::Type2Str(pr->getType()) << "</type>\n"
-            << "\t\t<status>" << Register::PublicRequest::Status2Str(pr->getStatus()) << "</status>\n"
+            << "\t\t<type>" << Fred::PublicRequest::Type2Str(pr->getType()) << "</type>\n"
+            << "\t\t<status>" << Fred::PublicRequest::Status2Str(pr->getStatus()) << "</status>\n"
             << "\t\t<crtime>" << pr->getCreateTime() << "</crtime>\n"
             << "\t\t<resolve_time>" << pr->getResolveTime() << "</resolve_time>\n"
             << "\t\t<reason>" << pr->getReason() << "</reason>\n"
@@ -167,7 +167,7 @@ PublicRequestClient::list()
                 << "\t\t<object_info>\n"
                 << "\t\t\t<id>" << pr->getObject(j).id << "</id>\n"
                 << "\t\t\t<handle>" << pr->getObject(j).handle << "</handle>\n"
-                << "\t\t\t<type>" << Register::PublicRequest::ObjectType2Str(pr->getObject(j).type) << "</type>\n"
+                << "\t\t\t<type>" << Fred::PublicRequest::ObjectType2Str(pr->getObject(j).type) << "</type>\n"
                 << "\t\t</object_info>\n";
         }
         std::cout

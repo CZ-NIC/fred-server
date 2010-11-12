@@ -4,7 +4,7 @@
 #include <ostream>
 #include "bank_common.h"
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 class Statement;
@@ -37,6 +37,6 @@ public:
 };
 
 } // namespace Banking
-} // namespace Register
+} // namespace Fred
 
 #endif // _BANK_EXPORTER_H_

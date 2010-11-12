@@ -11,7 +11,7 @@
 /// forward declared parameter type
 class DB;
 
-namespace Register {
+namespace Fred {
 namespace KeySet {
 
 /// member identification (i.e. for sorting)
@@ -64,7 +64,7 @@ public:
     virtual bool operator!=(const DNSKey& _other) const = 0;
 };
 
-class KeySet: virtual public Register::Object {
+class KeySet: virtual public Fred::Object {
 public:
     /// public d-tor
     virtual ~KeySet() {}
@@ -140,7 +140,7 @@ public:
 };
 
 } // namespace KeySet
-} // namespace Register
+} // namespace Fred
 
 
 

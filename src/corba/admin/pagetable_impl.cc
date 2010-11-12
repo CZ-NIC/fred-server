@@ -127,8 +127,8 @@ ccReg_PageTable_i::loadFilter(ccReg::TID _id) {
   uf.clear();
   it.clearF();
 
-  std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create());
+  std::auto_ptr<Fred::Filter::Manager>
+      tmp_filter_manager(Fred::Filter::Manager::create());
   tmp_filter_manager->load(_id, uf);
 }
 

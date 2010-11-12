@@ -41,7 +41,7 @@
 #include "register/obj_types.h"
 
 
-namespace Register
+namespace Fred
 {
 namespace Messages
 {
@@ -222,5 +222,5 @@ ManagerPtr create_manager();
 
 
 }//namespace Messages
-}//namespace Register
+}//namespace Fred
 #endif //MESSAGES_IMPL_H_

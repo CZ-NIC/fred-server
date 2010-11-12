@@ -19,7 +19,7 @@
 #include "request_cache.h"
 
 void
-Register::Logger::RequestCache::insert(const ModelRequest& mr)
+Fred::Logger::RequestCache::insert(const ModelRequest& mr)
 {
   boost::mutex::scoped_lock lock(cache_mutex);
   // TODO: now using auto_generated copy constructor. it's ok because only
@@ -29,7 +29,7 @@ Register::Logger::RequestCache::insert(const ModelRequest& mr)
 }
 
 void
-Register::Logger::RequestCache::remove(unsigned long long requestId)
+Fred::Logger::RequestCache::remove(unsigned long long requestId)
 throw (NOT_EXISTS)
 {
   boost::mutex::scoped_lock lock(cache_mutex);
@@ -39,7 +39,7 @@ throw (NOT_EXISTS)
 }
 
 const ModelRequest&
-Register::Logger::RequestCache::get(unsigned long long requestId)
+Fred::Logger::RequestCache::get(unsigned long long requestId)
 throw (NOT_EXISTS)
 {
   boost::mutex::scoped_lock lock(cache_mutex);
@@ -49,14 +49,14 @@ throw (NOT_EXISTS)
 }
 
 void
-Register::Logger::RequestCache::clean()
+Fred::Logger::RequestCache::clean()
 {
   boost::mutex::scoped_lock lock(cache_mutex);
 	cache.clear();
 }
 
 unsigned
-Register::Logger::RequestCache::count()
+Fred::Logger::RequestCache::count()
 {
   boost::mutex::scoped_lock lock(cache_mutex);
 	return cache.size();

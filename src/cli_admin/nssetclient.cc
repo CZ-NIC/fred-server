@@ -49,15 +49,15 @@ void
 NssetClient::list()
 {
     callHelp(m_conf, list_help);
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
-    std::auto_ptr<Register::NSSet::Manager> nssMan(
-            Register::NSSet::Manager::create(
+    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+            Fred::Zone::Manager::create());
+    std::auto_ptr<Fred::NSSet::Manager> nssMan(
+            Fred::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::NSSet::List> nssList(
+    std::auto_ptr<Fred::NSSet::List> nssList(
             nssMan->createList());
     Database::Filters::NSSet *nssFilter;
     nssFilter = new Database::Filters::NSSetHistoryImpl();
@@ -101,7 +101,7 @@ NssetClient::list()
 
     std::cout << "<objects>\n";
     for (unsigned int i = 0; i < nssList->getCount(); i++) {
-        Register::NSSet::NSSet *nsset = nssList->getNSSet(i);
+        Fred::NSSet::NSSet *nsset = nssList->getNSSet(i);
         std::cout
             << "\t<nsset>\n"
             << "\t\t<id>" << nsset->getId() << "</id>\n"
@@ -115,7 +115,7 @@ NssetClient::list()
                 << "\t\t</admin>\n";
         }
         for (unsigned int j = 0; j < nsset->getHostCount(); j++) {
-            Register::NSSet::Host *host = (Register::NSSet::Host *)nsset->getHostByIdx(j);
+            Fred::NSSet::Host *host = (Fred::NSSet::Host *)nsset->getHostByIdx(j);
             std::cout
                 << "\t\t<host>\n"
                 << "\t\t\t<name>" << host->getName() << "</name>\n"
@@ -148,7 +148,7 @@ NssetClient::list()
                 << "\t\t<auth_password>" << nsset->getAuthPw() << "</auth_password>\n"
                 << "\t\t<ROID>" << nsset->getROID() << "</ROID>\n";
             for (unsigned int j = 0; j < nsset->getStatusCount(); j++) {
-                Register::Status *status = (Register::Status *)nsset->getStatusByIdx(j);
+                Fred::Status *status = (Fred::Status *)nsset->getStatusByIdx(j);
                 std::cout
                     << "\t\t<status>\n"
                     << "\t\t\t<id>" << status->getStatusId() << "</id>\n"

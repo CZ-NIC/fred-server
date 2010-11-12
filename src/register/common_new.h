@@ -3,7 +3,7 @@
 
 #include "model/model_filters.h"
 
-namespace Register {
+namespace Fred {
 
 class CommonObjectNew {
 public:
@@ -17,14 +17,14 @@ template <typename T> struct CheckIdNew
     CheckIdNew(unsigned long long _id)
 		  :find_id_(_id)
 	{}
-    bool operator()(Register::CommonObjectNew* _object)
+    bool operator()(Fred::CommonObjectNew* _object)
     {
-        if(_object == 0) throw std::runtime_error("operator() Register::CommonObjectNew* _object is null");
+        if(_object == 0) throw std::runtime_error("operator() Fred::CommonObjectNew* _object is null");
 
         T* t_ptr = dynamic_cast<T*>(_object);
 
         if(t_ptr == 0) throw std::runtime_error(
-                std::string("operator() Register::CommonObjectNew* _object is not ")
+                std::string("operator() Fred::CommonObjectNew* _object is not ")
                 + std::string(typeid(T*).name()));
       return t_ptr->getId() == find_id_;
     }
@@ -47,6 +47,6 @@ public:
 
 
 
-} // namespace Register
+} // namespace Fred
 
 #endif  // _COMMON_NEW_H_

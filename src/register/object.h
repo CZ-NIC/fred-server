@@ -16,7 +16,7 @@
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
-namespace Register {
+namespace Fred {
 
 /// Pair of id and name of some object
 struct NameIdPair {
@@ -74,9 +74,9 @@ public:
   /// Return timestamp when object leaved this state
   virtual ptime getTo() const = 0;
   /// Return object history id from state was active
-  virtual Register::TID getHistoryIdFrom() const = 0;
+  virtual Fred::TID getHistoryIdFrom() const = 0;
   /// Return object history id to state was active
-  virtual Register::TID getHistoryIdTo() const = 0;
+  virtual Fred::TID getHistoryIdTo() const = 0;
 };
 
 

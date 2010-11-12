@@ -7,11 +7,11 @@
 #include "common_impl_new.h"
 #include "db_settings.h"
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 
-class PaymentListImpl : public Register::CommonListImplNew,
+class PaymentListImpl : public Fred::CommonListImplNew,
                         public PaymentList
 {
 public:
@@ -50,7 +50,7 @@ public:
 
     void reload(Database::Filters::Union &filter)
     {
-        TRACE("[CALL] Register::Banking::ItemList::reload(Database::Filters::Union &)");
+        TRACE("[CALL] Fred::Banking::ItemList::reload(Database::Filters::Union &)");
         clear();
         filter.clearQueries();
 

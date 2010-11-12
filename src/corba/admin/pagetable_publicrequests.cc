@@ -1,6 +1,6 @@
 #include "pagetable_publicrequests.h"
 
-ccReg_PublicRequests_i::ccReg_PublicRequests_i(Register::PublicRequest::List *_list) :
+ccReg_PublicRequests_i::ccReg_PublicRequests_i(Fred::PublicRequest::List *_list) :
   request_list_(_list) {
 }
 
@@ -42,15 +42,15 @@ Registry::TableRow* ccReg_PublicRequests_i::getRow(CORBA::UShort _row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::PublicRequest::PublicRequest *request = request_list_->get(_row);
+  const Fred::PublicRequest::PublicRequest *request = request_list_->get(_row);
   if (!request)
     throw ccReg::Table::INVALID_ROW();
   Registry::TableRow *row = new Registry::TableRow();
   row->length(4);
   (*row)[0] <<= C_STR(request->getCreateTime());
   (*row)[1] <<= C_STR(request->getResolveTime());
-  (*row)[2] <<= C_STR(Register::PublicRequest::Type2Str(request->getType()));
-  (*row)[3] <<= C_STR(Register::PublicRequest::Status2Str(request->getStatus()));
+  (*row)[2] <<= C_STR(Fred::PublicRequest::Type2Str(request->getType()));
+  (*row)[3] <<= C_STR(Fred::PublicRequest::Status2Str(request->getStatus()));
   return row;
 }
 
@@ -63,16 +63,16 @@ void ccReg_PublicRequests_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _
 
   switch (_column) {
     case 0:
-      request_list_->sort(Register::PublicRequest::MT_CRDATE, _dir);
+      request_list_->sort(Fred::PublicRequest::MT_CRDATE, _dir);
       break;
     case 1:
-      request_list_->sort(Register::PublicRequest::MT_RDATE, _dir);
+      request_list_->sort(Fred::PublicRequest::MT_RDATE, _dir);
       break;
     case 2:
-      request_list_->sort(Register::PublicRequest::MT_TYPE, _dir);
+      request_list_->sort(Fred::PublicRequest::MT_TYPE, _dir);
       break;
     case 3:
-      request_list_->sort(Register::PublicRequest::MT_STATUS, _dir);
+      request_list_->sort(Fred::PublicRequest::MT_STATUS, _dir);
       break;
   }
 }
@@ -81,7 +81,7 @@ ccReg::TID ccReg_PublicRequests_i::getRowId(CORBA::UShort _row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::PublicRequest::PublicRequest *request = request_list_->get(_row);
+  const Fred::PublicRequest::PublicRequest *request = request_list_->get(_row);
   if (!request)
     throw ccReg::Table::INVALID_ROW();
   return request->getId();
@@ -142,22 +142,22 @@ void ccReg_PublicRequests_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create());
-  tmp_filter_manager->save(Register::Filter::FT_PUBLICREQUEST, _name, uf);
+  std::auto_ptr<Fred::Filter::Manager>
+      tmp_filter_manager(Fred::Filter::Manager::create());
+  tmp_filter_manager->save(Fred::Filter::FT_PUBLICREQUEST, _name, uf);
 }
 
-Register::PublicRequest::PublicRequest* ccReg_PublicRequests_i::findId(ccReg::TID _id) {
+Fred::PublicRequest::PublicRequest* ccReg_PublicRequests_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    Register::PublicRequest::PublicRequest *request = dynamic_cast<Register::PublicRequest::PublicRequest* >(request_list_->findId(_id));
+    Fred::PublicRequest::PublicRequest *request = dynamic_cast<Fred::PublicRequest::PublicRequest* >(request_list_->findId(_id));
     if (request) {
       return request;
     }
     return 0;
   }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     return 0;
   }
 }

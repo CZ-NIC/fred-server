@@ -22,7 +22,7 @@
 #include "exceptions.h"
 #include "common_new.h"
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 
@@ -31,7 +31,7 @@ namespace Banking {
  * \brief Interface for bank payment object
  *
  */
-class Payment : virtual public Register::CommonObjectNew
+class Payment : virtual public Fred::CommonObjectNew
 {
 public:
     virtual ~Payment()

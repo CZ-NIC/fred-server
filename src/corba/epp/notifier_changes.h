@@ -39,7 +39,7 @@ public:
   typedef std::map<std::string, std::pair<std::string, std::string> >  ChangesMap;
 
 
-  MessageUpdateChanges(Register::Manager *_rm, 
+  MessageUpdateChanges(Fred::Manager *_rm,
                        const unsigned long long &_object_id,
                        const short &_enum_action)
                      : rm_(_rm),
@@ -58,7 +58,7 @@ public:
 
 
 private:
-  Register::Manager   *rm_;
+  Fred::Manager   *rm_;
   unsigned long long   object_id_;
   short                enum_action_;
 
@@ -77,28 +77,28 @@ private:
 
 
   void _diffObject(ChangesMap &_changes, 
-                   const Register::Object::Object *_prev,
-                   const Register::Object::Object *_act) const;
+                   const Fred::Object::Object *_prev,
+                   const Fred::Object::Object *_act) const;
 
 
   void _diffContact(ChangesMap &_changes, 
-                    const Register::Contact::Contact *_prev,
-                    const Register::Contact::Contact *_act) const;
+                    const Fred::Contact::Contact *_prev,
+                    const Fred::Contact::Contact *_act) const;
   
 
   void _diffDomain(ChangesMap &_changes, 
-                   const Register::Domain::Domain *_prev,
-                   const Register::Domain::Domain *_act) const;
+                   const Fred::Domain::Domain *_prev,
+                   const Fred::Domain::Domain *_act) const;
 
 
   void _diffNSSet(ChangesMap &_changes, 
-                  const Register::NSSet::NSSet *_prev,
-                  const Register::NSSet::NSSet *_act) const;
+                  const Fred::NSSet::NSSet *_prev,
+                  const Fred::NSSet::NSSet *_act) const;
 
 
   void _diffKeySet(ChangesMap &_changes, 
-                   const Register::KeySet::KeySet *_prev,
-                   const Register::KeySet::KeySet *_act) const; 
+                   const Fred::KeySet::KeySet *_prev,
+                   const Fred::KeySet::KeySet *_act) const;
 
 
 

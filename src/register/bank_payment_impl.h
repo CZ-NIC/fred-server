@@ -7,12 +7,12 @@
 #include "model_bank_payment.h"
 #include "db_settings.h"
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 
 class PaymentImpl : virtual public Payment,
-                    public Register::CommonObjectImplNew,
+                    public Fred::CommonObjectImplNew,
                     private ModelBankPayment
 {
 private:
@@ -280,7 +280,7 @@ COMPARE_CLASS_IMPL_NEW(PaymentImpl, CrTime);
 
 PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)
 {
-    TRACE("[CALL] Register::Banking::payment_from_xml(...)");
+    TRACE("[CALL] Fred::Banking::payment_from_xml(...)");
 
     /* manual xml validation */
     if (!_node.hasChild(ITEM_IDENT)

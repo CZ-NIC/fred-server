@@ -22,9 +22,9 @@ class IdentificationRequestManagerPtr
 {
 private:
     std::auto_ptr<MailerManager> mailer_manager_;
-    std::auto_ptr<Register::Manager> register_manager_;
-    std::auto_ptr<Register::Document::Manager> doc_manager_;
-    std::auto_ptr<Register::PublicRequest::Manager> request_manager_;
+    std::auto_ptr<Fred::Manager> register_manager_;
+    std::auto_ptr<Fred::Document::Manager> doc_manager_;
+    std::auto_ptr<Fred::PublicRequest::Manager> request_manager_;
 
 
 public:
@@ -38,15 +38,15 @@ public:
 
         /* construct managers */
         mailer_manager_.reset(new MailerManager(CorbaContainer::get_instance()->getNS())),
-        register_manager_.reset(Register::Manager::create(
+        register_manager_.reset(Fred::Manager::create(
                     0,
                     rconf->restricted_handles));
-        doc_manager_.reset(Register::Document::Manager::create(
+        doc_manager_.reset(Fred::Document::Manager::create(
                     rconf->docgen_path,
                     rconf->docgen_template_path,
                     rconf->fileclient_path,
                     CorbaContainer::get_instance()->getNS()->getHostName()));
-        request_manager_.reset(Register::PublicRequest::Manager::create(
+        request_manager_.reset(Fred::PublicRequest::Manager::create(
                     register_manager_->getDomainManager(),
                     register_manager_->getContactManager(),
                     register_manager_->getNSSetManager(),
@@ -60,12 +60,12 @@ public:
     }
 
 
-    Register::PublicRequest::Manager* operator ->()
+    Fred::PublicRequest::Manager* operator ->()
     {
         return request_manager_.get();
     }
 
-    Register::Document::Manager* getDocumentManager()
+    Fred::Document::Manager* getDocumentManager()
     {
         return doc_manager_.get();
     }
@@ -81,31 +81,31 @@ class IdentificationRequestPtr
 {
 private:
     IdentificationRequestManagerPtr request_manager_;
-    Register::PublicRequest::Type type_;
-    std::auto_ptr<Register::PublicRequest::PublicRequestAuth> request_;
+    Fred::PublicRequest::Type type_;
+    std::auto_ptr<Fred::PublicRequest::PublicRequestAuth> request_;
 
 
 public:
-    IdentificationRequestPtr(const Register::PublicRequest::Type &_type)
+    IdentificationRequestPtr(const Fred::PublicRequest::Type &_type)
         : type_(_type)
     {
         /* check valid type for mojeid identification */
-        if ((type_ != Register::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
-            && (type_ != Register::PublicRequest::PRT_CONTACT_IDENTIFICATION)) {
+        if ((type_ != Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
+            && (type_ != Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION)) {
             throw std::runtime_error("not valid identification request type");
         }
 
 
         /* create request and cast it to authenticated */
-        std::auto_ptr<Register::PublicRequest::PublicRequest> tmp(request_manager_->createRequest(type_));
-        request_.reset(dynamic_cast<Register::PublicRequest::PublicRequestAuth*>(tmp.release()));
+        std::auto_ptr<Fred::PublicRequest::PublicRequest> tmp(request_manager_->createRequest(type_));
+        request_.reset(dynamic_cast<Fred::PublicRequest::PublicRequestAuth*>(tmp.release()));
         if (!request_.get()) {
             throw std::runtime_error("unable to create identfication request");
         }
     }
 
 
-    Register::PublicRequest::PublicRequestAuth* operator->()
+    Fred::PublicRequest::PublicRequestAuth* operator->()
     {
         return request_.get();
     }

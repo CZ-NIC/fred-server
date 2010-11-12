@@ -27,7 +27,7 @@
 #include <memory>
 #include <string>
 
-namespace Register {
+namespace Fred {
 namespace File {
 
 class Transferer {

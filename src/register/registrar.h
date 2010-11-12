@@ -26,7 +26,7 @@ using namespace boost::posix_time;
 class DB;
 
 
-namespace Register {
+namespace Fred {
 namespace Registrar {
 
 class RegistrarZoneAccess;
@@ -115,7 +115,7 @@ struct ZoneAccess
 
 /// Registrar detail access
 class Registrar
-	: virtual public Register::CommonObjectNew
+	: virtual public Fred::CommonObjectNew
 {
 public:
   /// Public destructor, user is responsible for object delete
@@ -248,7 +248,7 @@ public:
 
 
 /// List of registrar object
-class RegistrarList : virtual public Register::CommonListNew
+class RegistrarList : virtual public Fred::CommonListNew
 {
 public:
   /// public virtual destructor
@@ -268,7 +268,7 @@ public:
   //virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
   virtual const char* getTempTableName() const = 0;
 
-  virtual Register::Registrar::Registrar* findId(Database::ID id) const =0;
+  virtual Fred::Registrar::Registrar* findId(Database::ID id) const =0;
 };
 //Add access to zone for registrar
 unsigned long addRegistrarZone(
@@ -304,7 +304,7 @@ struct EPPActionType {
 };
 
 /// Action made by registrar through EPP
-class EPPAction : virtual public Register::CommonObject {
+class EPPAction : virtual public Fred::CommonObject {
 protected:
   /// Protected destructor, object is managed by EPPActionList
   virtual ~EPPAction() {
@@ -340,7 +340,7 @@ public:
 
 
 /// List of EPPAction objects
-class EPPActionList : virtual public Register::CommonList {
+class EPPActionList : virtual public Fred::CommonList {
 public:
   /// Public destructor, user is responsible for destruction
   virtual ~EPPActionList() {
@@ -541,7 +541,7 @@ public:
   ///get membership by groups
   virtual MembershipByGroupSeq getMembershipByGroup( const TID& group_id) =0;
 
-  typedef std::auto_ptr<Register::Registrar::Manager> AutoPtr;
+  typedef std::auto_ptr<Fred::Registrar::Manager> AutoPtr;
 
   /// Factory method
   static AutoPtr create(DB* db);
@@ -563,6 +563,6 @@ public:
 };//class RegistrarZoneAccess
 
 };//namespace Registrar
-};//namespace Register
+};//namespace Fred
 
 #endif /*REGISTRAR_H_*/

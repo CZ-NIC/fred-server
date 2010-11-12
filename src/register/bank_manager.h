@@ -8,7 +8,7 @@
 #include "file.h"
 #include "db_settings.h"
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 
@@ -51,6 +51,6 @@ typedef std::auto_ptr<Manager> ManagerPtr;
 
 
 } // namespace Banking
-} // namespace Register
+} // namespace Fred
 
 #endif // _BANK_MANAGER_H_

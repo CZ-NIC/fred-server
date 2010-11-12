@@ -18,7 +18,7 @@
 /// forward declared parameter type
 class DB;
 
-namespace Register {
+namespace Fred {
 /// Deducted type of checked handle
 enum HandleType
 {

@@ -5,7 +5,7 @@
 #include "bank_payment.h"
 #include "model/model_filters.h"
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 enum ItemMemberType {
@@ -27,7 +27,7 @@ enum ItemMemberType {
     IMT_CREATE_TIME
 };
 
-class PaymentList : virtual public Register::CommonListNew
+class PaymentList : virtual public Fred::CommonListNew
 {
 public:
     virtual ~PaymentList()

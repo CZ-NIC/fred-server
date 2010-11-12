@@ -53,9 +53,9 @@ FileClient::list()
     /* init file manager */
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
-    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+    Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
-    std::auto_ptr<Register::File::List> fileList(file_manager->createList());
+    std::auto_ptr<Fred::File::List> fileList(file_manager->createList());
 
     Database::Filters::File *fileFilter;
     fileFilter = new Database::Filters::FileImpl(true);
@@ -87,7 +87,7 @@ FileClient::list()
 
     std::cout << "<object>\n";
     for (unsigned int i = 0; i < fileList->getSize(); i++) {
-        Register::File::File *file = fileList->get(i);
+        Fred::File::File *file = fileList->get(i);
         std::cout
             << "\t<file>\n"
             << "\t\t<id>" << file->getId() << "</id>\n"

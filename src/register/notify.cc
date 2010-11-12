@@ -26,7 +26,7 @@
 
 using namespace Database;
 
-namespace Register
+namespace Fred
 {
   namespace Notify
   {
@@ -190,7 +190,7 @@ namespace Register
       }
       void fillDomainParamsHistory(
         TID domain, ptime stamp,
-        Register::Mailer::Parameters& params
+        Fred::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
           try
@@ -250,14 +250,14 @@ namespace Register
 
       void fillDomainParams(
         TID domain, ptime stamp,
-        Register::Mailer::Parameters& params
+        Fred::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
-        std::auto_ptr<Register::Domain::List> dlist(dm->createList());
+        std::auto_ptr<Fred::Domain::List> dlist(dm->createList());
         dlist->setIdFilter(domain);
         dlist->reload();
         if (dlist->getCount() != 1) throw SQL_ERROR();
-        Register::Domain::Domain *d = dlist->getDomain(0);
+        Fred::Domain::Domain *d = dlist->getDomain(0);
         // fill params
         params["checkdate"] = to_iso_extended_string(
           date(day_clock::local_day())
@@ -291,7 +291,7 @@ namespace Register
       }
       void fillSimpleObjectParams(
         TID id,
-        Register::Mailer::Parameters& params
+        Fred::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
         std::stringstream sql;
@@ -338,7 +338,7 @@ namespace Register
         bool useHistory
       ) throw (SQL_ERROR)
       {
-        TRACE("[CALL] Register::Notify::notifyStateChanges()");
+        TRACE("[CALL] Fred::Notify::notifyStateChanges()");
         std::stringstream sql;
         sql << "SELECT nt.state_id, nt.type, "
             << "nt.mtype, nt.emails, nt.obj_id, nt.obj_type, nt.valid_from "
@@ -375,11 +375,11 @@ namespace Register
         if (debugOutput) *debugOutput << "<notifications>" << std::endl;
         std::vector<NotifyRequest>::const_iterator i = nlist.begin();
         for (;i!=nlist.end();i++) {
-          Register::Mailer::Parameters params;
+          Fred::Mailer::Parameters params;
           // handles are obsolete
-          Register::Mailer::Handles handles;
+          Fred::Mailer::Handles handles;
           // these mails has no attachments
-          Register::Mailer::Attachments attach;
+          Fred::Mailer::Attachments attach;
           std::string emails;
           try {
             switch (i->obj_type) {
@@ -446,7 +446,7 @@ namespace Register
               *debugOutput << "<notify>"
                            << "<emails>" << emails << "</emails>"
                            << "<template>" << i->mtype << "</template>";
-              Register::Mailer::Parameters::const_iterator ci = params.begin();
+              Fred::Mailer::Parameters::const_iterator ci = params.begin();
               for (;ci!=params.end();ci++)
                 *debugOutput << "<param><name>" << ci->first << "</name>"
                              << "<value>" << ci->second << "</value></param>";
@@ -558,7 +558,7 @@ public:
                     std::vector<TID>::iterator it = state_ids.begin();
                     TID filePDF = gPDF->closeInput();
 
-                    Register::Messages::PostalAddress pa;
+                    Fred::Messages::PostalAddress pa;
                     pa.name = contact_name;
                     pa.org = contact_org;
                     pa.street1 = contact_street1;
@@ -604,7 +604,7 @@ public:
       virtual void generateLetters(unsigned item_count_limit)
         throw (SQL_ERROR)
       {
-        TRACE("[CALL] Register::Notify::generateLetters()");
+        TRACE("[CALL] Fred::Notify::generateLetters()");
     	// transaction is needed for 'ON COMMIT DROP' functionality
         
         Connection conn = Database::Manager::acquire();

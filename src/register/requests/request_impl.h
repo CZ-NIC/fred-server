@@ -3,7 +3,7 @@
 #include "request.h"
 #include "request_cache.h"
 
-namespace Register {
+namespace Fred {
 namespace Logger {
 
 class InternalServerError : std::runtime_error {
@@ -51,9 +51,9 @@ public:
 	return Database::Manager::acquire();
   }
 
-  Database::ID i_createRequest(const char *sourceIP, ServiceType service, const  char *content, const Register::Logger::RequestProperties& props, const Register::Logger::ObjectReferences &refs, RequestType request_type_id, Database::ID session_id);
-  bool i_addRequestProperties(Database::ID id, const Register::Logger::RequestProperties &props);
-  bool i_closeRequest(Database::ID id, const char *content, const Register::Logger::RequestProperties &props, const Register::Logger::ObjectReferences &refs, const long result_code, Database::ID session_id);
+  Database::ID i_createRequest(const char *sourceIP, ServiceType service, const  char *content, const Fred::Logger::RequestProperties& props, const Fred::Logger::ObjectReferences &refs, RequestType request_type_id, Database::ID session_id);
+  bool i_addRequestProperties(Database::ID id, const Fred::Logger::RequestProperties &props);
+  bool i_closeRequest(Database::ID id, const char *content, const Fred::Logger::RequestProperties &props, const Fred::Logger::ObjectReferences &refs, const long result_code, Database::ID session_id);
   Database::ID i_createSession(Database::ID id, const char *name);
   bool i_closeSession(Database::ID id);
   Database::Result i_getRequestTypesByService(ServiceType service);
@@ -62,14 +62,14 @@ public:
   Database::Result i_getObjectTypes();
 
  // for migration tool (util/logd_migration)
- void insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Register::Logger::RequestProperties& props);
+ void insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Fred::Logger::RequestProperties& props);
   
   List* createList() const;
 
 private:
   
-  void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Register::Logger::RequestProperties& props, Connection &conn, bool output, boost::mutex::scoped_lock &prop_lock);
-  void insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Register::Logger::ObjectReferences& props, Connection &conn);
+  void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::RequestProperties& props, Connection &conn, bool output, boost::mutex::scoped_lock &prop_lock);
+  void insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::ObjectReferences& props, Connection &conn);
   bool record_check(Database::ID id, Connection &conn);
   Database::ID find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db);
   inline Database::ID find_last_property_value_id(Connection &conn);

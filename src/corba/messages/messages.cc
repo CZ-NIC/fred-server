@@ -27,7 +27,7 @@
 using namespace std;
 
 //implementational code for IDL interface Registry::Messages
-Registry_Messages_i::Registry_Messages_i(Register::Messages::ManagerPtr msgmgr)
+Registry_Messages_i::Registry_Messages_i(Fred::Messages::ManagerPtr msgmgr)
     : msgmgr_(msgmgr)
 {
   // add extra constructor code here
@@ -87,7 +87,7 @@ CORBA::ULongLong Registry_Messages_i::saveLetterToSend(const char* contact_handl
                 " contact_handle: %1%")
             % contact_handle);
 
-        Register::Messages::PostalAddress address_impl;
+        Fred::Messages::PostalAddress address_impl;
         address_impl.name = std::string(address.name.in());
         address_impl.org = std::string(address.org.in());
         address_impl.street1 = std::string(address.street1.in());
@@ -102,7 +102,7 @@ CORBA::ULongLong Registry_Messages_i::saveLetterToSend(const char* contact_handl
         unsigned char* file_content_buffer
             = const_cast<unsigned char*>(file_content.get_buffer());
 
-        unsigned long long filetype_id = Register::Messages::get_filetype_id(file_type);
+        unsigned long long filetype_id = Fred::Messages::get_filetype_id(file_type);
 
         std::vector<char> file_buffer(file_content_buffer, file_content_buffer+file_content_size) ;
 
@@ -142,7 +142,7 @@ Registry::Messages::EnumList* Registry_Messages_i::getStatusList()
     LOGGER(PACKAGE).debug("Registry_Messages_i::getStatusList");
     try
     {
-        Register::Messages::EnumList el = msgmgr_->getStatusList();
+        Fred::Messages::EnumList el = msgmgr_->getStatusList();
         Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
         ret->length(el.size());
         for(std::size_t i = 0; i < el.size(); ++i)
@@ -170,7 +170,7 @@ Registry::Messages::EnumList* Registry_Messages_i::getCommTypeList()
     LOGGER(PACKAGE).debug("Registry_Messages_i::getCommTypeList");
     try
     {
-        Register::Messages::EnumList el = msgmgr_->getCommTypeList();
+        Fred::Messages::EnumList el = msgmgr_->getCommTypeList();
         Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
         ret->length(el.size());
         for(std::size_t i = 0; i < el.size(); ++i)
@@ -198,7 +198,7 @@ Registry::Messages::EnumList* Registry_Messages_i::getMessageTypeList()
     LOGGER(PACKAGE).debug("Registry_Messages_i::getMessageTypeList");
     try
     {
-        Register::Messages::EnumList el = msgmgr_->getMessageTypeList();
+        Fred::Messages::EnumList el = msgmgr_->getMessageTypeList();
         Registry::Messages::EnumList_var ret = new Registry::Messages::EnumList;
         ret->length(el.size());
         for(std::size_t i = 0; i < el.size(); ++i)

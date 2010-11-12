@@ -6,7 +6,7 @@
 #include "db_settings.h"
 #include "model/model_filters.h"
 
-namespace Register {
+namespace Fred {
 namespace Filter {
 
 enum FilterType {
@@ -30,7 +30,7 @@ enum FilterType {
   FT_MESSAGE
 };
 
-class Filter : virtual public Register::CommonObject {
+class Filter : virtual public Fred::CommonObject {
 public:
   virtual ~Filter() {
   }
@@ -45,7 +45,7 @@ public:
   virtual void save() const = 0;
 };
 
-class List : virtual public Register::CommonList {
+class List : virtual public Fred::CommonList {
 public:
   virtual ~List() {
   }

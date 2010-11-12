@@ -1,7 +1,7 @@
 #include "pagetable_bank_payments.h"
 
 ccReg_Payments_i::ccReg_Payments_i(
-        Register::Banking::PaymentList *list):
+        Fred::Banking::PaymentList *list):
     list_(list)
 {
 }
@@ -58,7 +58,7 @@ ccReg_Payments_i::getRow(CORBA::UShort row)
 {
     Logging::Context ctx(base_context_);
 
-    const Register::Banking::Payment *data = list_->get(row);
+    const Fred::Banking::Payment *data = list_->get(row);
     if (!data) {
         throw ccReg::Table::INVALID_ROW();
     }
@@ -102,49 +102,49 @@ ccReg_Payments_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 
     switch (column) {
 //        case 0:
-//            list_->sort(Register::Banking::IMT_ID, dir);
+//            list_->sort(Fred::Banking::IMT_ID, dir);
 //            break;
 //        case 1:
-//            list_->sort(Register::Banking::IMT_STATEMENT_ID, dir);
+//            list_->sort(Fred::Banking::IMT_STATEMENT_ID, dir);
 //            break;
         case 0:
-            list_->sort(Register::Banking::IMT_ACCOUNT_NUMBER, dir);
+            list_->sort(Fred::Banking::IMT_ACCOUNT_NUMBER, dir);
             break;
         case 1:
-            list_->sort(Register::Banking::IMT_BANK_CODE, dir);
+            list_->sort(Fred::Banking::IMT_BANK_CODE, dir);
             break;
 //        case 4:
-//            list_->sort(Register::Banking::IMT_TYPE, dir);
+//            list_->sort(Fred::Banking::IMT_TYPE, dir);
 //            break;
 //        case 5:
-//            list_->sort(Register::Banking::IMT_CODE, dir);
+//            list_->sort(Fred::Banking::IMT_CODE, dir);
 //            break;
 //        case 6:
-//            list_->sort(Register::Banking::IMT_CONSTSYMB, dir);
+//            list_->sort(Fred::Banking::IMT_CONSTSYMB, dir);
 //            break;
         case 2:
-            list_->sort(Register::Banking::IMT_VARSYMB, dir);
+            list_->sort(Fred::Banking::IMT_VARSYMB, dir);
             break;
 //        case 8:
-//            list_->sort(Register::Banking::IMT_SPECSYMB, dir);
+//            list_->sort(Fred::Banking::IMT_SPECSYMB, dir);
 //            break;
         case 3:
-            list_->sort(Register::Banking::IMT_PRICE, dir);
+            list_->sort(Fred::Banking::IMT_PRICE, dir);
             break;
 //        case 10:
-//            list_->sort(Register::Banking::IMT_ACCOUNT_EVID, dir);
+//            list_->sort(Fred::Banking::IMT_ACCOUNT_EVID, dir);
 //            break;
         case 4:
-            list_->sort(Register::Banking::IMT_ACCOUNT_DATE, dir);
+            list_->sort(Fred::Banking::IMT_ACCOUNT_DATE, dir);
             break;
         case 5:
-            list_->sort(Register::Banking::IMT_ACCOUNT_MEMO, dir);
+            list_->sort(Fred::Banking::IMT_ACCOUNT_MEMO, dir);
             break;
         case 7:
-            list_->sort(Register::Banking::IMT_ACCOUNT_NAME, dir);
+            list_->sort(Fred::Banking::IMT_ACCOUNT_NAME, dir);
             break;
         case 8:
-            list_->sort(Register::Banking::IMT_CREATE_TIME, dir);
+            list_->sort(Fred::Banking::IMT_CREATE_TIME, dir);
             break;
     }
 }
@@ -155,7 +155,7 @@ ccReg_Payments_i::getRowId(CORBA::UShort row)
 {
     Logging::Context ctx(base_context_);
 
-    const Register::Banking::Payment *data = list_->get(row);
+    const Fred::Banking::Payment *data = list_->get(row);
     if (!data) {
         throw ccReg::Table::INVALID_ROW();
     }
@@ -242,22 +242,22 @@ ccReg_Payments_i::saveFilter(const char *name)
     TRACE(boost::format("[CALL] ccReg_Payments_i::saveFilter(%1%)")
             % name);
 
-    std::auto_ptr<Register::Filter::Manager> tmp_filter_manager(
-            Register::Filter::Manager::create());
-    tmp_filter_manager->save(Register::Filter::FT_STATEMENTITEM, name, uf);
+    std::auto_ptr<Fred::Filter::Manager> tmp_filter_manager(
+            Fred::Filter::Manager::create());
+    tmp_filter_manager->save(Fred::Filter::FT_STATEMENTITEM, name, uf);
 }
 
-Register::Banking::Payment *
+Fred::Banking::Payment *
 ccReg_Payments_i::findId(ccReg::TID id)
 {
     Logging::Context ctx(base_context_);
     try {
-        Register::Banking::Payment *data = list_->getById(id);
+        Fred::Banking::Payment *data = list_->getById(id);
         if (data) {
             return data;
         }
         return 0;
-    } catch (Register::NOT_FOUND) {
+    } catch (Fred::NOT_FOUND) {
         return 0;
     }
 }

@@ -9,12 +9,12 @@
 #include "db_settings.h"
 
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 
 class StatementImpl : virtual public Statement,
-                      public Register::CommonObjectImplNew,
+                      public Fred::CommonObjectImplNew,
                       private ModelBankStatement
 {
 private:
@@ -203,7 +203,7 @@ COMPARE_CLASS_IMPL_NEW(StatementImpl, FileId);
 
 StatementImplPtr parse_xml_statement_part(const XMLnode &_node)
 {
-    TRACE("[CALL] Register::Banking::statement_from_xml(...)");
+    TRACE("[CALL] Fred::Banking::statement_from_xml(...)");
 
     /* manual xml validation */
     if (!_node.hasChild(STATEMENT_ACCOUNT_NUMBER)

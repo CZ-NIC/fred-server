@@ -18,7 +18,7 @@
 #define ALLOC_STEP 4
 
 using namespace Database;
-using namespace Register::Logger;
+using namespace Fred::Logger;
 
 typedef unsigned long long TID;
 

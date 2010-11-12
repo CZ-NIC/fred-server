@@ -69,7 +69,7 @@ private:
     DB m_db;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
-    int createObjectStateRequest(Register::TID object, unsigned state);
+    int createObjectStateRequest(Fred::TID object, unsigned state);
     int deleteObjects(const std::string &typeList, CorbaClient &cc);
 
     static const struct options m_opts[];

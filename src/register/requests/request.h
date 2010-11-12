@@ -20,7 +20,7 @@
 
 using namespace Database;
 
-namespace Register {
+namespace Fred {
 namespace Logger {
 
 typedef long int ServiceType;
@@ -81,7 +81,7 @@ typedef std::vector<RequestProperty> RequestProperties;
 
 
 
-class Request : virtual public Register::CommonObject {
+class Request : virtual public Fred::CommonObject {
 public:
   virtual const boost::posix_time::ptime  getTimeBegin() const = 0;
   virtual const boost::posix_time::ptime  getTimeEnd() const = 0;
@@ -102,7 +102,7 @@ public:
 
 };
 
-class List : virtual public Register::CommonList {
+class List : virtual public Fred::CommonList {
 
 public:
   virtual void setPartialLoad(bool partialLoad) = 0;
@@ -128,9 +128,9 @@ public:
   /** Used only in migration  - return a connection used by the connection manager
 	it's meant to be used only in single-threaded environment
   */
-virtual  Database::ID i_createRequest(const char *sourceIP, ServiceType service, const  char *content, const Register::Logger::RequestProperties& props, const Register::Logger::ObjectReferences &refs, RequestType request_type_id, Database::ID session_id) = 0;
-virtual  bool i_addRequestProperties(Database::ID id, const Register::Logger::RequestProperties &props) = 0;
-virtual  bool i_closeRequest(Database::ID id, const char *content, const Register::Logger::RequestProperties &props, const Register::Logger::ObjectReferences &refs, const long result_code, Database::ID session_id) = 0;
+virtual  Database::ID i_createRequest(const char *sourceIP, ServiceType service, const  char *content, const Fred::Logger::RequestProperties& props, const Fred::Logger::ObjectReferences &refs, RequestType request_type_id, Database::ID session_id) = 0;
+virtual  bool i_addRequestProperties(Database::ID id, const Fred::Logger::RequestProperties &props) = 0;
+virtual  bool i_closeRequest(Database::ID id, const char *content, const Fred::Logger::RequestProperties &props, const Fred::Logger::ObjectReferences &refs, const long result_code, Database::ID session_id) = 0;
   virtual Database::ID i_createSession(Database::ID id, const char *name) = 0;
 virtual  bool i_closeSession(Database::ID id) = 0;
   virtual Database::Result i_getRequestTypesByService(ServiceType service) = 0;

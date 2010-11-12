@@ -50,7 +50,7 @@ private:
   NameService *ns;
   Config::Conf& conf;
   DB db;
-  std::auto_ptr<Register::Manager> regMan;
+  std::auto_ptr<Fred::Manager> regMan;
 
 
   void extractEnumDomainExtension(std::string&, ccReg::Disclose &publish, const ccReg::ExtensionList&);

@@ -30,7 +30,7 @@
 #include "model/model_filters.h"
 #include "log/logger.h"
 
-namespace Register {
+namespace Fred {
 namespace Domain {
 class DomainImpl : public ObjectImpl, public virtual Domain {
   struct AdminInfo

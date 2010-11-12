@@ -28,7 +28,7 @@ using namespace boost::gregorian;
 using namespace Database::Filters;
 using namespace Database;
 
-namespace Register {
+namespace Fred {
 namespace Logger {
 
 #ifdef LOGD_VERIFY_INPUT
@@ -186,7 +186,7 @@ Database::Filters::Value<bool> * CustomPartitioningTweak::is_monitoring = NULL;
 
 
 
-class RequestImpl : public Register::CommonObjectImpl,
+class RequestImpl : public Fred::CommonObjectImpl,
                  virtual public Request {
 private:
   DateTime time_begin;
@@ -294,7 +294,7 @@ COMPARE_CLASS_IMPL(RequestImpl, RawResponse);
 
 
 
-class ListImpl : public Register::CommonListImpl,
+class ListImpl : public Fred::CommonListImpl,
                  virtual public List {
 private:
   Manager *manager_;
@@ -323,7 +323,7 @@ public:
 
   // TODO properties should be displayed only in detailed view
   virtual void reload(Database::Filters::Union& _filter) {
-    TRACE("[CALL] Register::Logger::ListImpl::reload()");
+    TRACE("[CALL] Fred::Logger::ListImpl::reload()");
     clear();
     _filter.clearQueries();
 
@@ -556,7 +556,7 @@ public:
   }
 
   virtual void reload() {
-	 TRACE("[CALL] Register::Logger::ListImpl::reload()");
+	 TRACE("[CALL] Fred::Logger::ListImpl::reload()");
 	    clear();
 
 	// here we go
@@ -768,7 +768,7 @@ Result ManagerImpl::i_getRequestTypesByService(ServiceType service)
 
         Connection conn = Database::Manager::acquire();
 	
-	TRACE("[CALL] Register::Logger::ManagerImpl::i_getRequestTypesByService");
+	TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestTypesByService");
 
 	boost::format query = boost::format("select id, name from request_type where service_id = %1%") % service;
 
@@ -779,7 +779,7 @@ Result ManagerImpl::i_getRequestTypesByService(ServiceType service)
 Result ManagerImpl::i_getServices()
 {
     logd_ctx_init ctx;
-    TRACE("[CALL] Register::Logger::ManagerImpl::i_getServices()");
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getServices()");
 
     Database::Connection conn = Database::Manager::acquire();
     std::string query = "SELECT id, name FROM service";
@@ -790,7 +790,7 @@ Result ManagerImpl::i_getResultCodesByService(ServiceType service)
 {
     logd_ctx_init ctx;
     Connection conn = Database::Manager::acquire();
-    TRACE("[CALL] Register::Logger::ManagerImpl::i_getResultCodesByService");
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getResultCodesByService");
     boost::format query = boost::format("select result_code, name from result_code where service_id = %1%") % service;
     return conn.exec(query.str());
 }
@@ -872,7 +872,7 @@ ManagerImpl::~ManagerImpl() {
 // optimization
 bool ManagerImpl::record_check(ID id, Connection &conn)
 {
-    TRACE("[CALL] Register::Logger::ManagerImpl::record_check");
+    TRACE("[CALL] Fred::Logger::ManagerImpl::record_check");
     
 	boost::format query = boost::format("select time_end from request where id=%1%") % id;
 	Result res = conn.exec(query.str());
@@ -896,7 +896,7 @@ bool ManagerImpl::record_check(ID id, Connection &conn)
 // if the name is tool long, it's truncated to the maximal length allowed by the database
 ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db)
 {
-        TRACE("[CALL] Register::Logger::ManagerImpl::find_property_name_id");
+        TRACE("[CALL] Fred::Logger::ManagerImpl::find_property_name_id");
 	ID property_name_id;
 	std::map<std::string, ID>::iterator iter;
 
@@ -962,9 +962,9 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
 }
 
 // insert properties for the given request record
-void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Register::Logger::RequestProperties& props, Connection &conn, bool output, boost::mutex::scoped_lock &prop_lock)
+void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::RequestProperties& props, Connection &conn, bool output, boost::mutex::scoped_lock &prop_lock)
 {
-        TRACE("[CALL] Register::Logger::ManagerImpl::insert_props");
+        TRACE("[CALL] Fred::Logger::ManagerImpl::insert_props");
 	ID property_name_id, last_id = 0;
 
 	if(props.size() == 0) {
@@ -1019,7 +1019,7 @@ void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool mo
 
 }
 
-void ManagerImpl::insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Register::Logger::ObjectReferences &refs, Connection &conn) 
+void ManagerImpl::insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::ObjectReferences &refs, Connection &conn)
 {
 
     for (unsigned i = 0; i<refs.size(); i++) {
@@ -1045,7 +1045,7 @@ void ManagerImpl::insert_obj_ref(DateTime entry_time, ServiceType service, bool 
 
 }
 
-void ManagerImpl::insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, ID request_id, const Register::Logger::RequestProperties& props) {
+void ManagerImpl::insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, ID request_id, const Fred::Logger::RequestProperties& props) {
 #if ( BOOST_VERSION < 103500 ) 
         boost::mutex::scoped_lock prop_lock(properties_mutex, false);
 #else 
@@ -1058,14 +1058,14 @@ void ManagerImpl::insert_props_pub(DateTime entry_time, ServiceType request_serv
 
 
 // log a new event, return the database ID of the record
-ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const char *content, const Register::Logger::RequestProperties& props, const Register::Logger::ObjectReferences &refs, RequestType request_type_id, ID session_id)
+ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const char *content, const Fred::Logger::RequestProperties& props, const Fred::Logger::ObjectReferences &refs, RequestType request_type_id, ID session_id)
 {
      	logd_ctx_init ctx;        
 #ifdef HAVE_LOGGER
         boost::format sess_fmt = boost::format("session-%1%") % session_id;
         Logging::Context ctx_sess(sess_fmt.str());
 #endif
-        TRACE("[CALL] Register::Logger::ManagerImpl::i_createRequest");
+        TRACE("[CALL] Fred::Logger::ManagerImpl::i_createRequest");
         std::auto_ptr<Logging::Context> ctx_entry;
 
 
@@ -1172,7 +1172,7 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
 // optimization
 void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *user_name, Database::ID *user_id) 
 {
-        TRACE("[CALL] Register::Logger::ManagerImpl::getSessionUser");
+        TRACE("[CALL] Fred::Logger::ManagerImpl::getSessionUser");
     
 	if (session_id != 0) {
                 boost::format query = boost::format("select user_name, user_id from session where id = %1%") % session_id;
@@ -1198,7 +1198,7 @@ void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *u
 }
 
 // update existing log record with given ID
-bool ManagerImpl::i_addRequestProperties(ID id, const Register::Logger::RequestProperties &props)
+bool ManagerImpl::i_addRequestProperties(ID id, const Fred::Logger::RequestProperties &props)
 {	
   	logd_ctx_init ctx;        
 #ifdef HAVE_LOGGER
@@ -1206,7 +1206,7 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Register::Logger::RequestP
         Logging::Context ctx_entry(entry_fmt.str());
 #endif
         
-        TRACE("[CALL] Register::Logger::ManagerImpl::i_addRequestProperties");
+        TRACE("[CALL] Fred::Logger::ManagerImpl::i_addRequestProperties");
 
         logd_auto_db db;
 
@@ -1255,8 +1255,8 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Register::Logger::RequestP
 bool ManagerImpl::i_closeRequest(
 		ID id,
 		const char *content,
-		const Register::Logger::RequestProperties &props,
-		const Register::Logger::ObjectReferences &refs,
+		const Fred::Logger::RequestProperties &props,
+		const Fred::Logger::ObjectReferences &refs,
 		const long result_code,
 		ID session_id
 )
@@ -1300,7 +1300,7 @@ bool ManagerImpl::i_closeRequest(
 	Logging::Context ctx_entry(entry_fmt.str());
 #endif
         
-	TRACE("[CALL] Register::Logger::ManagerImpl::i_closeRequest");
+	TRACE("[CALL] Fred::Logger::ManagerImpl::i_closeRequest");
 
     // THIS lock is used for inserting new properties. It MUST be
 	// unlocked (if it gets locked at all)
@@ -1395,7 +1395,7 @@ bool ManagerImpl::i_closeRequest(
 ID ManagerImpl::i_createSession(ID user_id, const char *name)
 {	
 	logd_ctx_init ctx;
-        TRACE("[CALL] Register::Logger::ManagerImpl::i_createSession");
+        TRACE("[CALL] Fred::Logger::ManagerImpl::i_createSession");
 
         std::auto_ptr<Logging::Context> ctx_sess;
        
@@ -1444,7 +1444,7 @@ bool ManagerImpl::i_closeSession(ID id)
         Logging::Context ctx_sess(sess_fmt.str());       
 #endif
 
-        TRACE("[CALL] Register::Logger::ManagerImpl::i_closeSession");
+        TRACE("[CALL] Fred::Logger::ManagerImpl::i_closeSession");
 
         logd_auto_db db;
 	std::string  time;
@@ -1484,13 +1484,13 @@ bool ManagerImpl::i_closeSession(ID id)
 }
 
 Manager* Manager::create() {
-	TRACE("[CALL] Register::Logger::Manager::create()");
+	TRACE("[CALL] Fred::Logger::Manager::create()");
 	return new ManagerImpl();
 }
 
 Manager *Manager::create(const std::string conn_db, const std::string &monitoring_hosts_file)
 throw (Manager::DB_CONNECT_FAILED) {
-	TRACE("[CALL] Register::Logger::Manager::create(std::string, std::string)");
+	TRACE("[CALL] Fred::Logger::Manager::create(std::string, std::string)");
 	return new ManagerImpl(monitoring_hosts_file);
 }
 

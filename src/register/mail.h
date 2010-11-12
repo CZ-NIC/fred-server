@@ -6,7 +6,7 @@
 #include "db_settings.h"
 #include "model/model_filters.h"
 
-namespace Register {
+namespace Fred {
 namespace Mail {
 
 enum MemberType {
@@ -16,7 +16,7 @@ enum MemberType {
 };
 
 
-class Mail : virtual public Register::CommonObject {
+class Mail : virtual public Fred::CommonObject {
 public:
   virtual const Database::DateTime& getCreateTime() const = 0;
   virtual const Database::DateTime& getModTime() const = 0;
@@ -29,13 +29,13 @@ public:
   virtual unsigned getHandleSize() const = 0;
   virtual const std::string& getHandle(unsigned _idx) const = 0;
   
-  virtual void addAttachment(const Register::OID& _oid) = 0;
+  virtual void addAttachment(const Fred::OID& _oid) = 0;
   virtual unsigned getAttachmentSize() const = 0;
-  virtual const Register::OID& getAttachment(unsigned _idx) const = 0;
+  virtual const Fred::OID& getAttachment(unsigned _idx) const = 0;
 };
 
 
-class List : virtual public Register::CommonList {
+class List : virtual public Fred::CommonList {
 public:
   virtual Mail* get(unsigned _idx) const = 0;
   virtual void reload(Database::Filters::Union& _filter) = 0;

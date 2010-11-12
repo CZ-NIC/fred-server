@@ -1,6 +1,6 @@
 #include "pagetable_filters.h"
 
-ccReg_Filters_i::ccReg_Filters_i(Register::Filter::List& _filter_list) : 
+ccReg_Filters_i::ccReg_Filters_i(Fred::Filter::List& _filter_list) :
 	m_filter_list(_filter_list) {
 }
 
@@ -46,7 +46,7 @@ ccReg_Filters_i::getRow(CORBA::UShort row)
   Logging::Context ctx(base_context_);
 
   try {
-    const Register::Filter::Filter *item = m_filter_list.get(row);
+    const Fred::Filter::Filter *item = m_filter_list.get(row);
     if (!item) 
     	  throw ccReg::Table::INVALID_ROW();
     
@@ -69,7 +69,7 @@ ccReg_Filters_i::getRowId(CORBA::UShort row)
   Logging::Context ctx(base_context_);
  
   try {
-    const Register::Filter::Filter *item = m_filter_list.get(row);
+    const Fred::Filter::Filter *item = m_filter_list.get(row);
     if (!item) 
   	  throw ccReg::Table::INVALID_ROW();
     

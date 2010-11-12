@@ -33,7 +33,7 @@
 
 #include "register/db_settings.h"
 
-namespace Register
+namespace Fred
 {
 namespace Messages
 {
@@ -603,7 +603,7 @@ void Manager::set_letter_status(const LetterProcInfo& letters
     Database::Transaction trans2(conn);
 
     // processed letters update
-    for (Register::Messages::LetterProcInfo::const_iterator it = letters.begin()
+    for (Fred::Messages::LetterProcInfo::const_iterator it = letters.begin()
             ; it!=letters.end(); ++it)
     {
           unsigned int new_attempt = it->attempt + 1;
@@ -642,7 +642,7 @@ void Manager::set_sms_status(const SmsProcInfo& messages, const std::size_t max_
     Database::Transaction trans2(conn);
 
     // processed sms update
-    for (Register::Messages::SmsProcInfo::const_iterator it = messages.begin()
+    for (Fred::Messages::SmsProcInfo::const_iterator it = messages.begin()
             ; it!=messages.end(); ++it)
     {
           unsigned int new_attempt = it->attempt + 1;
@@ -846,8 +846,8 @@ void MessageReload::operator ()
       else
       loadLimitActive_= false;
 
-      Register::Messages::ManagerPtr msg_mgr
-          = Register::Messages::create_manager();
+      Fred::Messages::ManagerPtr msg_mgr
+          = Fred::Messages::create_manager();
 
       //enumlists
       //status names
@@ -916,4 +916,4 @@ void MessageReload::operator ()
 
 
 }//namespace Messages
-}//namespace Register
+}//namespace Fred

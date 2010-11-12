@@ -6,7 +6,7 @@
 #include <string>
 #include "types.h"
 
-namespace Register
+namespace Fred
 {
   namespace Mailer
   {
@@ -31,6 +31,6 @@ namespace Register
       virtual bool checkEmailList(std::string &_email_list) const = 0;
     }; // Manager
   }; // Mailer
-}; // Register
+}; // Fred
 
 #endif

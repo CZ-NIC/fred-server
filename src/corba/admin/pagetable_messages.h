@@ -7,14 +7,14 @@ class ccReg_Messages_i:
     public ccReg_PageTable_i,
     public PortableServer::RefCountServantBase {
 private:    
-    Register::Messages::Manager::MessageListPtr ml;
+    Fred::Messages::Manager::MessageListPtr ml;
 public:
-    ccReg_Messages_i(Register::Messages::Manager::MessageListPtr messageList);
+    ccReg_Messages_i(Fred::Messages::Manager::MessageListPtr messageList);
     ~ccReg_Messages_i();
     DECL_PAGETABLE_I;
 
     ccReg::Filters::Compound_ptr add();
-    Register::Messages::Message *findId(ccReg::TID id);
+    Fred::Messages::Message *findId(ccReg::TID id);
 
 }; // class ccReg_Messages_i
 

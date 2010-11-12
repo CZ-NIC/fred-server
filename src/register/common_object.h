@@ -6,7 +6,7 @@
 #include "model/model_filters.h"
 #include "db_settings.h"
 
-namespace Register {
+namespace Fred {
 
 /**
  * Type of searchable objects
@@ -85,7 +85,7 @@ public:
   /// get detail of loaded objects  
   virtual CommonObject *get(unsigned _idx) const = 0;
   /// get detail of object with given ID
-  virtual CommonObject* findId(TID _id) const throw (Register::NOT_FOUND) = 0;
+  virtual CommonObject* findId(TID _id) const throw (Fred::NOT_FOUND) = 0;
   
   
   /// return count of objects in list
@@ -117,6 +117,6 @@ public:
 };
 
 }
-; // Register
+; // Fred
 
 #endif

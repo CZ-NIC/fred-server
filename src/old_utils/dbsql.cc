@@ -40,7 +40,7 @@ ParsedAction::add(unsigned id, const std::string& value)
 }
 
 bool 
-ParsedAction::executeSQL(Register::TID actionid, DB* db)
+ParsedAction::executeSQL(Fred::TID actionid, DB* db)
 {
   std::map<unsigned, std::string>::const_iterator i;
   for (i=elements.begin();i!=elements.end();i++) {

@@ -1,6 +1,6 @@
 #include "pagetable_contacts.h"
 
-ccReg_Contacts_i::ccReg_Contacts_i(Register::Contact::List *_cl, const Settings *_ptr) : cl(_cl) {
+ccReg_Contacts_i::ccReg_Contacts_i(Fred::Contact::List *_cl, const Settings *_ptr) : cl(_cl) {
   uf.settings(_ptr);
 }
 
@@ -35,7 +35,7 @@ Registry::TableRow* ccReg_Contacts_i::getRow(CORBA::UShort row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::Contact::Contact *c = cl->getContact(row);
+  const Fred::Contact::Contact *c = cl->getContact(row);
   if (!c) throw ccReg::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(6);
@@ -61,22 +61,22 @@ void ccReg_Contacts_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
   
   switch (column) {
     case 0:
-      cl->sort(Register::Contact::MT_HANDLE, dir);
+      cl->sort(Fred::Contact::MT_HANDLE, dir);
       break;
     case 1:
-      cl->sort(Register::Contact::MT_NAME, dir);
+      cl->sort(Fred::Contact::MT_NAME, dir);
       break;
     case 2:
-      cl->sort(Register::Contact::MT_ORGANIZATION, dir);
+      cl->sort(Fred::Contact::MT_ORGANIZATION, dir);
       break;
     case 3:
-      cl->sort(Register::Contact::MT_CRDATE, dir);
+      cl->sort(Fred::Contact::MT_CRDATE, dir);
       break;
     case 4:
-      cl->sort(Register::Contact::MT_ERDATE, dir);
+      cl->sort(Fred::Contact::MT_ERDATE, dir);
       break;
     case 5:
-      cl->sort(Register::Contact::MT_REGISTRAR_HANDLE, dir);
+      cl->sort(Fred::Contact::MT_REGISTRAR_HANDLE, dir);
       break;
   }
 }
@@ -85,7 +85,7 @@ ccReg::TID ccReg_Contacts_i::getRowId(CORBA::UShort row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::Contact::Contact *c = cl->getContact(row);
+  const Fred::Contact::Contact *c = cl->getContact(row);
   if (!c) throw ccReg::Table::INVALID_ROW();
   return c->getId();
 }
@@ -155,23 +155,23 @@ void ccReg_Contacts_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_Contacts_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Register::Filter::Manager>
-  tmp_filter_manager(Register::Filter::Manager::create());
-  tmp_filter_manager->save(Register::Filter::FT_CONTACT, _name, uf);
+  std::auto_ptr<Fred::Filter::Manager>
+  tmp_filter_manager(Fred::Filter::Manager::create());
+  tmp_filter_manager->save(Fred::Filter::FT_CONTACT, _name, uf);
 }
 
-Register::Contact::Contact* ccReg_Contacts_i::findId(ccReg::TID _id) {
+Fred::Contact::Contact* ccReg_Contacts_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    Register::Contact::Contact *contact =
-        dynamic_cast<Register::Contact::Contact*> (cl->findId(_id));
+    Fred::Contact::Contact *contact =
+        dynamic_cast<Fred::Contact::Contact*> (cl->findId(_id));
     if (contact) {
       return contact;
     }
     return 0;
   }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     return 0;
   }
 }

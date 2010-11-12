@@ -104,8 +104,8 @@ int main(int argc, char** argv)
           , ns_args_ptr->nameservice_context);
 
         //Messages Manager
-        Register::Messages::ManagerPtr msgmgr
-            = Register::Messages::create_manager();
+        Fred::Messages::ManagerPtr msgmgr
+            = Fred::Messages::create_manager();
 
         //create server
         Registry_Messages_i* myRegistry_Messages_i = new Registry_Messages_i(msgmgr);

@@ -24,7 +24,7 @@
 //     }
 // }
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 
@@ -147,7 +147,7 @@ private:
 
             /* automatic pair payment with registrar */
             if (_registrar_id == 0) {
-                Register::Registrar::Manager::AutoPtr rmanager(Register::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::AutoPtr rmanager(Fred::Registrar::Manager::create(0));
                 _registrar_id = rmanager->getRegistrarByPayment(_payment->getVarSymb(),
                                                                 _payment->getAccountMemo());
                 /* did we find suitable registrar? */
@@ -163,8 +163,8 @@ private:
             Database::Date account_date = _payment->getAccountDate();
             unsigned long long zone_id = getZoneByAccountId(_payment->getAccountId());
 
-            std::auto_ptr<Register::Invoicing::Manager>
-                    invoice_manager(Register::Invoicing::Manager::create());
+            std::auto_ptr<Fred::Invoicing::Manager>
+                    invoice_manager(Fred::Invoicing::Manager::create());
 
             int invoice_id = invoice_manager->createDepositInvoice(
                     account_date, (int)zone_id, (int)_registrar_id, (long)price);
@@ -210,7 +210,7 @@ public:
                             const bool &_generate_invoices = false)
          throw (std::runtime_error)
     {
-        TRACE("[CALL] Register::Banking::Manager::importStatementXml(...)");
+        TRACE("[CALL] Fred::Banking::Manager::importStatementXml(...)");
         Logging::Context ctx("bank xml import");
         try {
             /* load stream to string */
@@ -423,7 +423,7 @@ public:
                             const std::string &_account_name)
         throw (std::runtime_error)
     {
-        TRACE("[CALL] Register::Banking::Manager::insertBankAccount(zone_fqdn, ...)");
+        TRACE("[CALL] Fred::Banking::Manager::insertBankAccount(zone_fqdn, ...)");
 
         try {
             Database::Connection conn = Database::Manager::acquire();
@@ -479,7 +479,7 @@ public:
                                   const Database::ID &statement,
                                   bool force = false)
     {
-        TRACE("[CALL] Register::Banking::Manager::pairPaymentWithStatement(...)");
+        TRACE("[CALL] Fred::Banking::Manager::pairPaymentWithStatement(...)");
         if (payment == 0) {
             throw std::runtime_error("payment id not valid");
         }
@@ -544,7 +544,7 @@ public:
             Database::ID statementId,
             Database::ID invoiceId)
     {
-        TRACE("[CALL] Register::Invoicing::Manager::setInvoiceToStatementItem()");
+        TRACE("[CALL] Fred::Invoicing::Manager::setInvoiceToStatementItem()");
         Database::Query update;
         update.buffer()
             << "UPDATE bank_payment SET invoice_id="
@@ -563,7 +563,7 @@ public:
                 const Database::ID &paymentId,
                 const std::string &registrarHandle) {
 
-        TRACE("[CALL] Register::Invoicing::Manager::manualCreateInvoice(Database::ID, std::string)");
+        TRACE("[CALL] Fred::Invoicing::Manager::manualCreateInvoice(Database::ID, std::string)");
         Database::Query query;
         query.buffer()
             << "SELECT id FROM registrar WHERE handle="
@@ -659,5 +659,5 @@ Manager* Manager::create(File::Manager *_file_manager)
 }
 
 } // namespace Banking
-} // namespace Register
+} // namespace Fred
 

@@ -5,10 +5,10 @@
 #include <corba/ccReg.hh>
 #include "register/requests/request.h"
 
-inline std::auto_ptr<Register::Logger::ObjectReferences> convert_obj_references(const ccReg::ObjectReferences &r) 
+inline std::auto_ptr<Fred::Logger::ObjectReferences> convert_obj_references(const ccReg::ObjectReferences &r)
 {
-    std::auto_ptr<Register::Logger::ObjectReferences> ret_ptr(new Register::Logger::ObjectReferences(r.length()));
-    Register::Logger::ObjectReferences &ret = *(ret_ptr.get());
+    std::auto_ptr<Fred::Logger::ObjectReferences> ret_ptr(new Fred::Logger::ObjectReferences(r.length()));
+    Fred::Logger::ObjectReferences &ret = *(ret_ptr.get());
 
     for(unsigned i=0;i<r.length();i++) {
         // ret[i].type = r[i].type;
@@ -19,10 +19,10 @@ inline std::auto_ptr<Register::Logger::ObjectReferences> convert_obj_references(
     return ret_ptr;
 }
 
-inline std::auto_ptr<Register::Logger::RequestProperties> convert_properties(const ccReg::RequestProperties &p)
+inline std::auto_ptr<Fred::Logger::RequestProperties> convert_properties(const ccReg::RequestProperties &p)
 {
-	std::auto_ptr<Register::Logger::RequestProperties> ret_ptr(new Register::Logger::RequestProperties(p.length()));
-	Register::Logger::RequestProperties &ret = *(ret_ptr.get());
+	std::auto_ptr<Fred::Logger::RequestProperties> ret_ptr(new Fred::Logger::RequestProperties(p.length()));
+	Fred::Logger::RequestProperties &ret = *(ret_ptr.get());
 
 	for(unsigned i=0;i<p.length();i++) {
 		ret[i].name.assign(p[i].name);
@@ -34,7 +34,7 @@ inline std::auto_ptr<Register::Logger::RequestProperties> convert_properties(con
 	return ret_ptr;
 }
 
-inline ccReg::RequestProperties convert_properties_d2c(boost::shared_ptr<Register::Logger::RequestProperties> props) 
+inline ccReg::RequestProperties convert_properties_d2c(boost::shared_ptr<Fred::Logger::RequestProperties> props)
 {
 	
 	ccReg::RequestProperties res;
@@ -51,7 +51,7 @@ inline ccReg::RequestProperties convert_properties_d2c(boost::shared_ptr<Registe
 	return res;
 }
 
-inline ccReg::ObjectReferences convert_obj_references_d2c(boost::shared_ptr<Register::Logger::ObjectReferences> refs)
+inline ccReg::ObjectReferences convert_obj_references_d2c(boost::shared_ptr<Fred::Logger::ObjectReferences> refs)
 {
         ccReg::ObjectReferences ret;
 

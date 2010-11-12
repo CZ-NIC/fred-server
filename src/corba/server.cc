@@ -348,7 +348,7 @@ try {
       exit(-7);
     }
 
-    PortableServer::ObjectId_var myccReg_EPP_iid = PortableServer::string_to_ObjectId("Register");
+    PortableServer::ObjectId_var myccReg_EPP_iid = PortableServer::string_to_ObjectId("Registry");
     poa->activate_object_with_id(myccReg_EPP_iid, myccReg_EPP_i);
     myccReg_EPP_i->_remove_ref();
     ns.bind("EPP", myccReg_EPP_i->_this());

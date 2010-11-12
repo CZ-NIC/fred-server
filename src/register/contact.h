@@ -11,7 +11,7 @@
 /// forward declared parameter type 
 class DB;
 
-namespace Register {
+namespace Fred {
 namespace Contact {
 
 /// member identification (i.e. for sorting)
@@ -25,7 +25,7 @@ enum MemberType {
 };
 
 
-class Contact : virtual public Register::Object {
+class Contact : virtual public Fred::Object {
 public:
   /// public destructor
   virtual ~Contact() {
@@ -159,6 +159,6 @@ public:
 typedef std::auto_ptr<Manager> ManagerPtr;
 
 } // namespace Contact
-} // namespace Register
+} // namespace Fred
 
 #endif /* CONTACT_H_ */

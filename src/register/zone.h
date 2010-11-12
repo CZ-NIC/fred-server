@@ -16,7 +16,7 @@
 /// forward declaration for database connection
 class DB;
 
-namespace Register
+namespace Fred
 {
   namespace Zone
   {
@@ -157,7 +157,7 @@ namespace Register
     };//class Zone
 
     /// List of Zone object
-    class ZoneList : virtual public Register::CommonListNew
+    class ZoneList : virtual public Fred::CommonListNew
     {
     public:
       virtual ~ZoneList() {
@@ -184,7 +184,7 @@ namespace Register
       virtual const char* getTempTableName() const = 0;
       virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
 
-      virtual Register::Zone::Zone* findId(Database::ID id) const =0;
+      virtual Fred::Zone::Zone* findId(Database::ID id) const =0;
     };
 
     /// holder for zones managed by register
@@ -311,12 +311,12 @@ namespace Register
         typedef std::auto_ptr<ZoneList> ZoneListPtr;
         virtual ZoneListPtr createList() =0;
 
-        typedef std::auto_ptr<Register::Zone::Manager> ZoneManagerPtr;
+        typedef std::auto_ptr<Fred::Zone::Manager> ZoneManagerPtr;
       /// create manager object
       static ZoneManagerPtr create();
     };//class Manager
   };//namespace Zone
-};//namespace Register
+};//namespace Fred
 
 #endif /*ZONE_H_*/
 

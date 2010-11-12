@@ -90,14 +90,14 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         ::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
         Logging::Context ctx_request(request.get_servertrid());
 
-        Register::Contact::ManagerPtr contact_mgr(
-                Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
+        Fred::Contact::ManagerPtr contact_mgr(
+                Fred::Contact::Manager::create(0, registry_conf_->restricted_handles));
 
-        Register::NameIdPair cinfo;
-        Register::Contact::Manager::CheckAvailType check_result;
+        Fred::NameIdPair cinfo;
+        Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(handle, cinfo);
 
-        if (check_result != Register::Contact::Manager::CA_FREE) {
+        if (check_result != Fred::Contact::Manager::CA_FREE) {
             ::MojeID::FieldErrorMap errors;
             errors[::MojeID::field_username] = ::MojeID::NOT_AVAILABLE;
             throw ::MojeID::DataValidationError(errors);
@@ -112,12 +112,12 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         unsigned long long id = data.id;
 
         /* create public request */
-        Register::PublicRequest::Type type;
+        Fred::PublicRequest::Type type;
         if (_method == Registry::MojeID::SMS) {
-            type = Register::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+            type = Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
         }
         else if (_method == Registry::MojeID::LETTER) {
-            type = Register::PublicRequest::PRT_CONTACT_IDENTIFICATION;
+            type = Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION;
         }
         else if (_method == Registry::MojeID::CERTIFICATE) {
             throw std::runtime_error("not implemented");
@@ -131,8 +131,8 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         new_request->setRequestId(request.get_request_id());
         new_request->setEppActionId(request.get_id());
         new_request->addObject(
-                Register::PublicRequest::OID(
-                    id, handle, Register::PublicRequest::OT_CONTACT));
+                Fred::PublicRequest::OID(
+                    id, handle, Fred::PublicRequest::OT_CONTACT));
         new_request->save();
 
         /* save contact and request (one transaction) */
@@ -196,18 +196,18 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
         /* TODO: throw something else */
         throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
     }
-    catch (Register::PublicRequest::NotApplicable &_ex) {
+    catch (Fred::PublicRequest::NotApplicable &_ex) {
         LOGGER(PACKAGE).error(boost::format(
                     "cannot process identification request (%1%)") % _ex.what());
         /* TODO: throw something else */
         throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
     }
-    catch (Register::PublicRequest::AlreadyProcessed &_ex) {
+    catch (Fred::PublicRequest::AlreadyProcessed &_ex) {
         LOGGER(PACKAGE).warning(boost::format(
                     "cannot process identification request (%1%)") % _ex.what());
         throw Registry::MojeID::Server::IDENTIFICATION_ALREADY_PROCESSED();
     }
-    catch (Register::PublicRequest::PublicRequestAuth::NOT_AUTHENTICATED&) {
+    catch (Fred::PublicRequest::PublicRequestAuth::NOT_AUTHENTICATED&) {
         LOGGER(PACKAGE).info("request authentication failed (bad password)");
         throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
     }
@@ -236,14 +236,14 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
                     "  handle: %1%  identification_method: %2%  request_id: %3%")
                 % handle % _method % _request_id);
 
-        Register::NameIdPair cinfo;
-        Register::Contact::ManagerPtr contact_mgr(
-                Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
+        Fred::NameIdPair cinfo;
+        Fred::Contact::ManagerPtr contact_mgr(
+                Fred::Contact::Manager::create(0, registry_conf_->restricted_handles));
 
-        Register::Contact::Manager::CheckAvailType check_result;
+        Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(handle, cinfo);
 
-        if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+        if (check_result != Fred::Contact::Manager::CA_REGISTRED) {
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
@@ -254,14 +254,14 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
          *   4 | serverUpdateProhibited
          */
         /* already CI || already I || already V */
-        if ((Register::object_has_state(cinfo.id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
-                || (Register::object_has_state(cinfo.id, ::MojeID::IDENTIFIED_CONTACT) == true)
-                || (Register::object_has_state(cinfo.id, ::MojeID::VALIDATED_CONTACT) == true)) {
+        if ((Fred::object_has_state(cinfo.id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
+                || (Fred::object_has_state(cinfo.id, ::MojeID::IDENTIFIED_CONTACT) == true)
+                || (Fred::object_has_state(cinfo.id, ::MojeID::VALIDATED_CONTACT) == true)) {
 
             errors["contact.status"] = ::MojeID::NOT_AVAILABLE;
         }
-        else if ((Register::object_has_state(cinfo.id, "serverTransferProhibited") == true)
-                || (Register::object_has_state(cinfo.id, "serverUpdateProhibited") == true)) {
+        else if ((Fred::object_has_state(cinfo.id, "serverTransferProhibited") == true)
+                || (Fred::object_has_state(cinfo.id, "serverUpdateProhibited") == true)) {
 
             errors["contact.status"] = ::MojeID::INVALID;
         }
@@ -270,12 +270,12 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
         }
 
         /* create public request */
-        Register::PublicRequest::Type type;
+        Fred::PublicRequest::Type type;
         if (_method == Registry::MojeID::SMS) {
-            type = Register::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+            type = Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
         }
         else if (_method == Registry::MojeID::LETTER) {
-            type = Register::PublicRequest::PRT_CONTACT_IDENTIFICATION;
+            type = Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION;
         }
         else if (_method == Registry::MojeID::CERTIFICATE) {
             throw std::runtime_error("not implemented");
@@ -289,8 +289,8 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
         new_request->setRequestId(_request_id);
         new_request->setEppActionId(0);
         new_request->addObject(
-                Register::PublicRequest::OID(
-                    cinfo.id, handle, Register::PublicRequest::OT_CONTACT));
+                Fred::PublicRequest::OID(
+                    cinfo.id, handle, Fred::PublicRequest::OT_CONTACT));
         new_request->save();
         new_request->sendPasswords();
 
@@ -305,7 +305,7 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
     catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
     }
-    catch (Register::PublicRequest::NotApplicable &_ex) {
+    catch (Fred::PublicRequest::NotApplicable &_ex) {
         LOGGER(PACKAGE).error(boost::format(
                     "cannot create transfer request (%1%)") % _ex.what());
         ::MojeID::FieldErrorMap errors;
@@ -359,15 +359,15 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
 
     try {
         // check if the contact with ID _contact_id exists
-        Register::NameIdPair cinfo;
-        Register::Contact::ManagerPtr contact_mgr(
-                Register::Contact::Manager::create(
+        Fred::NameIdPair cinfo;
+        Fred::Contact::ManagerPtr contact_mgr(
+                Fred::Contact::Manager::create(
                     0, registry_conf_->restricted_handles));
 
-        Register::Contact::Manager::CheckAvailType check_result;
+        Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(_contact_id, cinfo);
 
-        if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+        if (check_result != Fred::Contact::Manager::CA_REGISTRED) {
             /* contact doesn't exists */
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
@@ -413,7 +413,7 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
             std::string("serverUpdateProhibited") };
 
         for (int i =0; i<drop_states_count; i++) {
-            if( ! Register::object_has_state(_contact_id, drop_states[i])) {
+            if( ! Fred::object_has_state(_contact_id, drop_states[i])) {
                 throw std::runtime_error("Object isn't in all expected states");
             }
         }
@@ -424,7 +424,7 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
             states2drop.push_back(mojeid_state);
         }
 
-        Register::cancel_multiple_object_states(_contact_id, states2drop);
+        Fred::cancel_multiple_object_states(_contact_id, states2drop);
 
         tx.prepare(_trans_id);
 
@@ -467,14 +467,14 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         cid = _contact.id->_value();
         std::string handle = boost::to_upper_copy(corba_unwrap_string(_contact.username));
 
-        Register::NameIdPair cinfo;
-        Register::Contact::ManagerPtr contact_mgr(
-                Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
+        Fred::NameIdPair cinfo;
+        Fred::Contact::ManagerPtr contact_mgr(
+                Fred::Contact::Manager::create(0, registry_conf_->restricted_handles));
 
-        Register::Contact::Manager::CheckAvailType check_result;
+        Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(handle, cinfo);
 
-        if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+        if (check_result != Fred::Contact::Manager::CA_REGISTRED) {
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
@@ -489,11 +489,11 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         ::MojeID::ContactValidator validator = ::MojeID::create_contact_update_validator();
         validator.check(data);
 
-        if (Register::object_has_state(cid, ::MojeID::VALIDATED_CONTACT) == true) {
+        if (Fred::object_has_state(cid, ::MojeID::VALIDATED_CONTACT) == true) {
             if (::MojeID::check_validated_contact_diff(data, ::MojeID::contact_info(cid)) == false) {
                 /* change contact status to identified */
-                if (Register::cancel_object_state(cid, ::MojeID::VALIDATED_CONTACT)) {
-                    Register::insert_object_state(cid, ::MojeID::IDENTIFIED_CONTACT);
+                if (Fred::cancel_object_state(cid, ::MojeID::VALIDATED_CONTACT)) {
+                    Fred::insert_object_state(cid, ::MojeID::IDENTIFIED_CONTACT);
                 }
             }
         }
@@ -547,14 +547,14 @@ Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
     try {
         LOGGER(PACKAGE).info(boost::format("request data -- id: %1%") % _id);
 
-        Register::NameIdPair cinfo;
-        Register::Contact::ManagerPtr contact_mgr(
-                Register::Contact::Manager::create(0, registry_conf_->restricted_handles));
+        Fred::NameIdPair cinfo;
+        Fred::Contact::ManagerPtr contact_mgr(
+                Fred::Contact::Manager::create(0, registry_conf_->restricted_handles));
 
-        Register::Contact::Manager::CheckAvailType check_result;
+        Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(_id, cinfo);
 
-        if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+        if (check_result != Fred::Contact::Manager::CA_REGISTRED) {
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
@@ -608,7 +608,7 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         tc_lock.unlock();
         
         // apply changes
-        ::Register::update_object_states(cid);
+        ::Fred::update_object_states(cid);
 
         /* TEMP: until we finish migration to request logger */
         unsigned long long aid = 0;
@@ -760,9 +760,9 @@ Buffer* ServerImpl::getValidationPdf(const CORBA::ULongLong _contact_id)
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         IdentificationRequestManagerPtr req_man;
         std::stringstream outstr;
-        std::auto_ptr<Register::Document::Generator> g(
+        std::auto_ptr<Fred::Document::Generator> g(
                 req_man->getDocumentManager()->createOutputGenerator(
-                        Register::Document::GT_CONTACT_VALIDATION_REQUEST_PIN3,
+                        Fred::Document::GT_CONTACT_VALIDATION_REQUEST_PIN3,
                         outstr,
                         "cs"
                 )
@@ -823,15 +823,15 @@ void ServerImpl::createValidationRequest(const CORBA::ULongLong _contact_id,
                     "  contact_id: %1%  request_id: %2%")
                 % _contact_id % _request_id);
 
-        Register::NameIdPair cinfo;
-        Register::Contact::ManagerPtr contact_mgr(
-                Register::Contact::Manager::create(
+        Fred::NameIdPair cinfo;
+        Fred::Contact::ManagerPtr contact_mgr(
+                Fred::Contact::Manager::create(
                     0, registry_conf_->restricted_handles));
 
-        Register::Contact::Manager::CheckAvailType check_result;
+        Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(_contact_id, cinfo);
 
-        if (check_result != Register::Contact::Manager::CA_REGISTRED) {
+        if (check_result != Fred::Contact::Manager::CA_REGISTRED) {
             /* contact doesn't exists */
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
@@ -853,18 +853,18 @@ void ServerImpl::createValidationRequest(const CORBA::ULongLong _contact_id,
 
         /* create validation request */
         IdentificationRequestManagerPtr req_man;
-        std::auto_ptr<Register::PublicRequest::PublicRequest> new_request(
+        std::auto_ptr<Fred::PublicRequest::PublicRequest> new_request(
             req_man->createRequest(
-                Register::PublicRequest::PRT_CONTACT_VALIDATION
+                Fred::PublicRequest::PRT_CONTACT_VALIDATION
             )
         );
         new_request->setRegistrarId(mojeid_registrar_id_);
         new_request->setRequestId(_request_id);
         new_request->addObject(
-             Register::PublicRequest::OID(
+             Fred::PublicRequest::OID(
                    _contact_id,
                    "",
-                   Register::PublicRequest::OT_CONTACT
+                   Fred::PublicRequest::OT_CONTACT
              )
         );
         new_request->save();
@@ -1029,15 +1029,15 @@ CORBA::ULongLong ServerImpl::getContactId(const char* _handle)
     ConnectionReleaser releaser;
 
     try {
-        Register::NameIdPair cinfo;
-        Register::Contact::ManagerPtr contact_mgr(
-                Register::Contact::Manager::create(
+        Fred::NameIdPair cinfo;
+        Fred::Contact::ManagerPtr contact_mgr(
+                Fred::Contact::Manager::create(
                     0, registry_conf_->restricted_handles));
 
-        Register::Contact::Manager::CheckAvailType check_result;
+        Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(_handle, cinfo);
 
-        if (check_result == Register::Contact::Manager::CA_REGISTRED) {
+        if (check_result == Fred::Contact::Manager::CA_REGISTRED) {
             LOGGER(PACKAGE).info(boost::format(
                         "contact %1% => id=%2%") % _handle % cinfo.id);
             return cinfo.id;

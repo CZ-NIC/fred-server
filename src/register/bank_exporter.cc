@@ -2,7 +2,7 @@
 #include "bank_statement.h"
 #include "bank_payment.h"
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 ExporterXML::~ExporterXML()
@@ -14,7 +14,7 @@ ExporterXML::~ExporterXML()
 void
 ExporterXML::doExport(Statement *_data)
 {
-    TRACE("[CALL] Register::Banking::ExporterXML::doExport(Statement)");
+    TRACE("[CALL] Fred::Banking::ExporterXML::doExport(Statement)");
     m_xml.start(STATEMENT_STATEMENT);
     m_xml.text(STATEMENT_ACCOUNT_NUMBER, _data->getAccountId());
     m_xml.text(STATEMENT_NUMBER, _data->getNum());
@@ -41,7 +41,7 @@ ExporterXML::finalize()
 void
 ExporterXML::doExport(const Payment *_data)
 {
-    TRACE("[CALL] Register::Banking::ExporterXML::writeStatementItem()");
+    TRACE("[CALL] Fred::Banking::ExporterXML::writeStatementItem()");
     m_xml.start(ITEM_ITEM);
     m_xml.text(ITEM_IDENT, _data->getAccountEvid());
     m_xml.text(ITEM_ACCOUNT_NUMBER, _data->getAccountNumber());
@@ -60,5 +60,5 @@ ExporterXML::doExport(const Payment *_data)
 }
 
 } // namespace Banking
-} // namespace Register
+} // namespace Fred
 

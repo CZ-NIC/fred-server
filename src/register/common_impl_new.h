@@ -12,7 +12,7 @@
 
 #include <vector>
 
-namespace Register {
+namespace Fred {
 
 class CommonObjectImplNew:
     virtual public CommonObjectNew {
@@ -68,6 +68,6 @@ public:
 
 };
 
-} // namespace Register
+} // namespace Fred
 
 #endif // _COMMON_IMPL_NEW_H_

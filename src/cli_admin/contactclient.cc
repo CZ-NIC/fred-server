@@ -75,9 +75,9 @@ void
 ContactClient::list()
 {
     callHelp(m_conf, list_help);
-    std::auto_ptr<Register::Contact::Manager> conMan(
-            Register::Contact::Manager::create(&m_db, true));
-    std::auto_ptr<Register::Contact::List> conList(
+    std::auto_ptr<Fred::Contact::Manager> conMan(
+            Fred::Contact::Manager::create(&m_db, true));
+    std::auto_ptr<Fred::Contact::List> conList(
             conMan->createList());
 
     Database::Filters::Contact *conFilter;
@@ -110,7 +110,7 @@ ContactClient::list()
 
     std::cout << "<objects>\n";
     for (unsigned int i = 0; i < conList->getCount(); i++) {
-        Register::Contact::Contact *contact = conList->getContact(i);
+        Fred::Contact::Contact *contact = conList->getContact(i);
         std::cout
             << "\t<contact>\n"
             << "\t\t<id>" << contact->getId() << "</id>\n"
@@ -162,7 +162,7 @@ ContactClient::list()
                 << "\t\t<auth_password>" << contact->getAuthPw() << "</auth_password>\n"
                 << "\t\t<ROID>" << contact->getROID() << "</ROID>\n";
             for (unsigned int j = 0; j < contact->getStatusCount(); j++) {
-                Register::Status *status = (Register::Status *)contact->getStatusByIdx(j);
+                Fred::Status *status = (Fred::Status *)contact->getStatusByIdx(j);
                 std::cout
                     << "\t\t<status>\n"
                     << "\t\t\t<id>" << status->getStatusId() << "</id>\n"

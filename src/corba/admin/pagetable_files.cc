@@ -1,6 +1,6 @@
 #include "pagetable_files.h"
 
-ccReg_Files_i::ccReg_Files_i(Register::File::List *_list) :
+ccReg_Files_i::ccReg_Files_i(Fred::File::List *_list) :
   file_list_(_list) {
 }
 
@@ -33,7 +33,7 @@ Registry::TableRow* ccReg_Files_i::getRow(CORBA::UShort _row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::File::File *file = file_list_->get(_row);
+  const Fred::File::File *file = file_list_->get(_row);
   if (!file)
     throw ccReg::Table::INVALID_ROW();
 
@@ -41,7 +41,7 @@ Registry::TableRow* ccReg_Files_i::getRow(CORBA::UShort _row)
   tr->length(4);
   (*tr)[0] <<= C_STR(file->getName());
   (*tr)[1] <<= C_STR(file->getCrDate());
-  (*tr)[2] <<= C_STR(file->getFileTypeDesc());//C_STR(const_cast<Register::File::File *>(file)->getFileType()->getName());
+  (*tr)[2] <<= C_STR(file->getFileTypeDesc());//C_STR(const_cast<Fred::File::File *>(file)->getFileType()->getName());
   (*tr)[3] <<= C_STR(file->getFilesize());
   return tr;
 }
@@ -55,16 +55,16 @@ void ccReg_Files_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
 
   switch (_column) {
     case 0:
-      file_list_->sort(Register::File::MT_NAME, _dir);
+      file_list_->sort(Fred::File::MT_NAME, _dir);
       break;
     case 1:
-      file_list_->sort(Register::File::MT_CRDATE, _dir);
+      file_list_->sort(Fred::File::MT_CRDATE, _dir);
       break;
     case 2:
-      file_list_->sort(Register::File::MT_TYPE, _dir);
+      file_list_->sort(Fred::File::MT_TYPE, _dir);
       break;
     case 3:
-      file_list_->sort(Register::File::MT_SIZE, _dir);
+      file_list_->sort(Fred::File::MT_SIZE, _dir);
       break;
   }
 }
@@ -73,7 +73,7 @@ ccReg::TID ccReg_Files_i::getRowId(CORBA::UShort _row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::File::File *file = file_list_->get(_row);
+  const Fred::File::File *file = file_list_->get(_row);
   if (!file)
     throw ccReg::Table::INVALID_ROW();
   return file->getId();
@@ -142,22 +142,22 @@ void ccReg_Files_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_Files_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create());
-  tmp_filter_manager->save(Register::Filter::FT_FILE, _name, uf);
+  std::auto_ptr<Fred::Filter::Manager>
+      tmp_filter_manager(Fred::Filter::Manager::create());
+  tmp_filter_manager->save(Fred::Filter::FT_FILE, _name, uf);
 }
 
-Register::File::File* ccReg_Files_i::findId(ccReg::TID _id) {
+Fred::File::File* ccReg_Files_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    Register::File::File *file = dynamic_cast<Register::File::File* >(file_list_->findId(_id));
+    Fred::File::File *file = dynamic_cast<Fred::File::File* >(file_list_->findId(_id));
     if (file) {
       return file;
     }
     return 0;
   }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     return 0;
   }
 }

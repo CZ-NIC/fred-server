@@ -4,7 +4,7 @@
 #include "types.h"
 #include <iostream>
 
-namespace Register
+namespace Fred
 {
   namespace Document
   {
@@ -71,6 +71,6 @@ namespace Register
       );
     };
   }
-} // Register
+} // Fred
 
 #endif /*DOCGEN_H_*/

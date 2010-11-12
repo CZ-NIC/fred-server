@@ -44,14 +44,14 @@ char * wrap_str(const char *str)
  *
  * @returns			NULL in case of an allocation error, modified c_props otherwise
  */
-Register::Logger::RequestProperties *epp_property_push(Register::Logger::RequestProperties *c_props, const  char *name, const char *value, bool output, bool child)
+Fred::Logger::RequestProperties *epp_property_push(Fred::Logger::RequestProperties *c_props, const  char *name, const char *value, bool output, bool child)
 {
 	if(c_props == NULL) {
-		c_props = new Register::Logger::RequestProperties();
+		c_props = new Fred::Logger::RequestProperties();
 	}
 
 	if (value != NULL) {
-		Register::Logger::RequestProperty p;
+		Fred::Logger::RequestProperty p;
 
 		p.name =  name;
 		p.value = value;
@@ -79,9 +79,9 @@ Register::Logger::RequestProperties *epp_property_push(Register::Logger::Request
  *
  */
 
-Register::Logger::RequestProperties *epp_property_push_qhead(Register::Logger::RequestProperties *c_props, qhead *list, const char *list_name, bool output, bool child)
+Fred::Logger::RequestProperties *epp_property_push_qhead(Fred::Logger::RequestProperties *c_props, qhead *list, const char *list_name, bool output, bool child)
 {
-	Register::Logger::RequestProperties *ret;
+	Fred::Logger::RequestProperties *ret;
 
 	if (list->count == 0) {
 		return c_props;
@@ -109,13 +109,13 @@ Register::Logger::RequestProperties *epp_property_push_qhead(Register::Logger::R
  * @returns			NULL in case of an allocation error, modified c_props otherwise
  */
 
-Register::Logger::RequestProperties *epp_property_push_int(Register::Logger::RequestProperties *c_props, const char *name, int value, bool output)
+Fred::Logger::RequestProperties *epp_property_push_int(Fred::Logger::RequestProperties *c_props, const char *name, int value, bool output)
 {
-	Register::Logger::RequestProperty p;
+	Fred::Logger::RequestProperty p;
 	char str[12];
 
 	if(c_props == NULL) {
-		c_props = new Register::Logger::RequestProperties;
+		c_props = new Fred::Logger::RequestProperties;
 	}
 
 	snprintf(str, 12, "%i", value);
@@ -138,7 +138,7 @@ Register::Logger::RequestProperties *epp_property_push_int(Register::Logger::Req
  *      *
  *       *  @returns 	log entry properties or NULL in case of an allocation error
  *        */
-Register::Logger::RequestProperties *epp_log_postal_info(Register::Logger::RequestProperties *p, epp_postalInfo *pi)
+Fred::Logger::RequestProperties *epp_log_postal_info(Fred::Logger::RequestProperties *p, epp_postalInfo *pi)
 {
 	if(pi == NULL) return p;
 
@@ -168,7 +168,7 @@ Register::Logger::RequestProperties *epp_log_postal_info(Register::Logger::Reque
  *      *
  *       *  @returns 	log entry properties or NULL in case of an allocation error
  *        */
-Register::Logger::RequestProperties *epp_log_disclose_info(Register::Logger::RequestProperties *p, epp_discl *ed)
+Fred::Logger::RequestProperties *epp_log_disclose_info(Fred::Logger::RequestProperties *p, epp_discl *ed)
 {
 	if(ed->flag == 1) {
 		p = epp_property_push(p, "discl.policy", "private", false, false);
@@ -214,7 +214,7 @@ Register::Logger::RequestProperties *epp_log_disclose_info(Register::Logger::Req
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-Register::Logger::RequestProperties *epp_property_push_ds(Register::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
+Fred::Logger::RequestProperties *epp_property_push_ds(Fred::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
@@ -272,7 +272,7 @@ Register::Logger::RequestProperties *epp_property_push_ds(Register::Logger::Requ
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-Register::Logger::RequestProperties *epp_property_push_valerr(Register::Logger::RequestProperties *c_props, qhead *list, char *list_name)
+Fred::Logger::RequestProperties *epp_property_push_valerr(Fred::Logger::RequestProperties *c_props, qhead *list, char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
@@ -312,7 +312,7 @@ Register::Logger::RequestProperties *epp_property_push_valerr(Register::Logger::
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-Register::Logger::RequestProperties *epp_property_push_nsset(Register::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
+Fred::Logger::RequestProperties *epp_property_push_nsset(Fred::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
@@ -351,7 +351,7 @@ Register::Logger::RequestProperties *epp_property_push_nsset(Register::Logger::R
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-Register::Logger::RequestProperties *epp_property_push_dnskey(Register::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
+Fred::Logger::RequestProperties *epp_property_push_dnskey(Fred::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH];
 	epp_dnskey *value;
@@ -401,7 +401,7 @@ Register::Logger::RequestProperties *epp_property_push_dnskey(Register::Logger::
  *
  * @return  status
  */
-auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id)
+auto_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id)
 {
 #define PUSH_PROPERTY(seq, name, value)								\
 	seq = epp_property_push(seq, name, value, false, false);	\
@@ -424,7 +424,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 	//int res;								/* response from corba call wrapper */
 												
 	char errmsg[MAX_ERROR_MSG_LEN];			/* error message returned from corba call */
-	Register::Logger::RequestProperties *c_props = NULL;	/* properties to be sent to the log */
+	Fred::Logger::RequestProperties *c_props = NULL;	/* properties to be sent to the log */
 	/* data structures for every command */
 	epps_sendAuthInfo *ai;
 	epps_create_contact *cc;
@@ -441,7 +441,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 	epps_login *el;
 	epps_check *ec;
 
-	c_props = new Register::Logger::RequestProperties;
+	c_props = new Fred::Logger::RequestProperties;
 	
 	errmsg[0] = '\0';
 	if(cdata->type == EPP_DUMMY) {
@@ -451,7 +451,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 		PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 
 		// res = epp_log_new_message(request, c_props, &errmsg);
-		return auto_ptr<Register::Logger::RequestProperties>(c_props);
+		return auto_ptr<Fred::Logger::RequestProperties>(c_props);
 	}
 
 	switch(cmdtype) {
@@ -498,7 +498,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 				PUSH_PROPERTY(c_props, "id", ai->id);
 
-				return auto_ptr<Register::Logger::RequestProperties>(c_props);
+				return auto_ptr<Fred::Logger::RequestProperties>(c_props);
 			}
 			break;
 
@@ -942,7 +942,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 	PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 
 
-	return auto_ptr<Register::Logger::RequestProperties>(c_props);
+	return auto_ptr<Fred::Logger::RequestProperties>(c_props);
 	// res = epp_log_new_message(  request, c_props, &errmsg);
 
 #undef PUSH_PROPERTY

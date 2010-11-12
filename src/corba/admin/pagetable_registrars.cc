@@ -1,7 +1,7 @@
 #include "pagetable_registrars.h"
 
-ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::RegistrarList::AutoPtr _rl
-        , Register::Zone::Manager::ZoneListPtr _zl
+ccReg_Registrars_i::ccReg_Registrars_i(Fred::Registrar::RegistrarList::AutoPtr _rl
+        , Fred::Zone::Manager::ZoneListPtr _zl
 		)
   : rl(_rl)
   , zl(_zl)
@@ -65,7 +65,7 @@ ccReg_Registrars_i::getColumnHeaders()
 
   for (unsigned i = 0 ; i < zone_count ; i++)
   {
-      Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(i));
+      Fred::Zone::Zone* zp = dynamic_cast<Fred::Zone::Zone*>(zl->get(i));
       std::string zonefqdn;
       if(zp)
       {
@@ -89,7 +89,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   {
       TRACE(boost::format("[CALL] ccReg_Registrars_i::getRow(%1%)") % row);
 
-      const Register::Registrar::Registrar *r = rl->get(row);
+      const Fred::Registrar::Registrar *r = rl->get(row);
       if (!r) throw ccReg::Table::INVALID_ROW();
       Registry::TableRow *tr = new Registry::TableRow;
 
@@ -106,7 +106,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
       for (unsigned i = 0 ; i < zone_count ; i++)
       {
 
-          Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(i));
+          Fred::Zone::Zone* zp = dynamic_cast<Fred::Zone::Zone*>(zl->get(i));
           unsigned long long zoneid = std::numeric_limits<unsigned long long>::max();
           if(zp)
           {
@@ -147,22 +147,22 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
   switch (column) {
     case 0:
-      rl->sort(Register::Registrar::MT_HANDLE, dir);
+      rl->sort(Fred::Registrar::MT_HANDLE, dir);
       break;
     case 1:
-      rl->sort(Register::Registrar::MT_NAME, dir);
+      rl->sort(Fred::Registrar::MT_NAME, dir);
       break;
     case 2:
-      rl->sort(Register::Registrar::MT_MAIL, dir);
+      rl->sort(Fred::Registrar::MT_MAIL, dir);
       break;
     case 3:
-      rl->sort(Register::Registrar::MT_CREDIT, dir);
+      rl->sort(Fred::Registrar::MT_CREDIT, dir);
       break;
   }
   if((static_cast<unsigned>(column) > (static_cols-1)) && (static_cast<unsigned>(column) < zl->size()+static_cols))
   {
 
-      Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(column-static_cols));
+      Fred::Zone::Zone* zp = dynamic_cast<Fred::Zone::Zone*>(zl->get(column-static_cols));
       unsigned long long zoneid = std::numeric_limits<unsigned long long>::max();
       if(zp)
       {
@@ -173,7 +173,7 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
           throw std::bad_cast();
       }
 
-      rl->sort(Register::Registrar::MT_ZONE, dir, zoneid, &rza);
+      rl->sort(Fred::Registrar::MT_ZONE, dir, zoneid, &rza);
   }//if zone column
 
 }
@@ -187,7 +187,7 @@ ccReg_Registrars_i::getRowId(CORBA::UShort row)
     {
 
 
-      const Register::Registrar::Registrar *r = rl->get(row);
+      const Fred::Registrar::Registrar *r = rl->get(row);
       if (!r) throw ccReg::Table::INVALID_ROW();
       return r->getId();
     }//try
@@ -272,18 +272,18 @@ ccReg_Registrars_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_Registrars_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create());
-  tmp_filter_manager->save(Register::Filter::FT_REGISTRAR, _name, uf);
+  std::auto_ptr<Fred::Filter::Manager>
+      tmp_filter_manager(Fred::Filter::Manager::create());
+  tmp_filter_manager->save(Fred::Filter::FT_REGISTRAR, _name, uf);
 }
 
-Register::Registrar::Registrar* ccReg_Registrars_i::findId(ccReg::TID _id) {
+Fred::Registrar::Registrar* ccReg_Registrars_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    return dynamic_cast<Register::Registrar::Registrar* >(rl->findId(_id));
+    return dynamic_cast<Fred::Registrar::Registrar* >(rl->findId(_id));
     }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     return 0;
   }
 }

@@ -40,31 +40,31 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   Logging::Context ctx(session_id_);
 
   db.OpenDatabase(database.c_str());
-  m_register_manager.reset(Register::Manager::create(&db,
+  m_register_manager.reset(Fred::Manager::create(&db,
                                                      cfg.get<bool>("registry.restricted_handles")));
   
-  m_logsession_manager.reset(Register::Session::Manager::create());
+  m_logsession_manager.reset(Fred::Session::Manager::create());
 
   m_register_manager->dbManagerInit();
   m_register_manager->initStates();
 
-  m_document_manager.reset(Register::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
+  m_document_manager.reset(Fred::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
                                                                cfg.get<std::string>("registry.docgen_template_path"),
                                                                cfg.get<std::string>("registry.fileclient_path"),
                                                                ns->getHostName()));
-  m_publicrequest_manager.reset(Register::PublicRequest::Manager::create(m_register_manager->getDomainManager(),
+  m_publicrequest_manager.reset(Fred::PublicRequest::Manager::create(m_register_manager->getDomainManager(),
                                                                          m_register_manager->getContactManager(),
                                                                          m_register_manager->getNSSetManager(),
                                                                          m_register_manager->getKeySetManager(),
                                                                          &m_mailer_manager,
                                                                          m_document_manager.get(),
                                                                          m_register_manager->getMessageManager()));
-  m_invoicing_manager.reset(Register::Invoicing::Manager::create(m_document_manager.get(),
+  m_invoicing_manager.reset(Fred::Invoicing::Manager::create(m_document_manager.get(),
                                                                  &m_mailer_manager));
 
-  mail_manager_.reset(Register::Mail::Manager::create());
-  file_manager_.reset(Register::File::Manager::create(&m_fm_client));
-  m_banking_manager.reset(Register::Banking::Manager::create(file_manager_.get()));
+  mail_manager_.reset(Fred::Mail::Manager::create());
+  file_manager_.reset(Fred::File::Manager::create(&m_fm_client));
+  m_banking_manager.reset(Fred::Banking::Manager::create(file_manager_.get()));
 
   m_domains = new ccReg_Domains_i(m_register_manager->getDomainManager()->createList(), &settings_);
   m_contacts = new ccReg_Contacts_i(m_register_manager->getContactManager()->createList(), &settings_);
@@ -358,7 +358,7 @@ const ptime& ccReg_Session_i::getLastActivity() const {
 }
 
 Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
-  // Register::Domain::Domain *domain = m_domains->findId(_id);
+  // Fred::Domain::Domain *domain = m_domains->findId(_id);
   // if (domain) {
   //   return createDomainDetail(domain);
   // }
@@ -368,7 +368,7 @@ Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing domain filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Register::Domain::List>
+    std::auto_ptr<Fred::Domain::List>
         tmp_domain_list(m_register_manager->getDomainManager()->createList());
 
     Database::Filters::Union uf(&settings_);
@@ -389,7 +389,7 @@ Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
 }
 
 Registry::Contact::Detail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
-  // Register::Contact::Contact *contact = m_contacts->findId(_id);
+  // Fred::Contact::Contact *contact = m_contacts->findId(_id);
   // if (contact) {
   //   return createContactDetail(contact);
   // } else {
@@ -399,7 +399,7 @@ Registry::Contact::Detail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing contact filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Register::Contact::List>
+    std::auto_ptr<Fred::Contact::List>
         tmp_contact_list(m_register_manager->getContactManager()->createList());
 
     Database::Filters::Union uf(&settings_);
@@ -421,7 +421,7 @@ Registry::Contact::Detail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
 }
 
 Registry::NSSet::Detail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
-  // Register::NSSet::NSSet *nsset = m_nssets->findId(_id);
+  // Fred::NSSet::NSSet *nsset = m_nssets->findId(_id);
   // if (nsset) {
   //   return createNSSetDetail(nsset);
   // } else {
@@ -431,7 +431,7 @@ Registry::NSSet::Detail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing nsset filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Register::NSSet::List>
+    std::auto_ptr<Fred::NSSet::List>
         tmp_nsset_list(m_register_manager->getNSSetManager()->createList());
 
     Database::Filters::Union uf(&settings_);
@@ -454,7 +454,7 @@ Registry::NSSet::Detail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
 Registry::KeySet::Detail *
 ccReg_Session_i::getKeySetDetail(ccReg::TID _id)
 {
-    // Register::KeySet::KeySet *keyset = m_keysets->findId(_id);
+    // Fred::KeySet::KeySet *keyset = m_keysets->findId(_id);
     // if (keyset)
     //     return createKeySetDetail(keyset);
     // else {
@@ -464,7 +464,7 @@ ccReg_Session_i::getKeySetDetail(ccReg::TID _id)
     else {
         LOGGER(PACKAGE).debug(boost::format("constructing keyset filter for object id=%1%' detail") % _id);
 
-        std::auto_ptr <Register::KeySet::List>
+        std::auto_ptr <Fred::KeySet::List>
             tmp_keyset_list(m_register_manager->getKeySetManager()->createList());
 
         Database::Filters::Union uf(&settings_);
@@ -485,7 +485,7 @@ ccReg_Session_i::getKeySetDetail(ccReg::TID _id)
 }
 
 Registry::Registrar::Detail* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id) {
-  // Register::Registrar::Registrar *registrar = m_registrars->findId(_id);
+  // Fred::Registrar::Registrar *registrar = m_registrars->findId(_id);
   // if (registrar) {
   //   return createRegistrarDetail(registrar);
   // } else {
@@ -495,7 +495,7 @@ Registry::Registrar::Detail* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id)
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing registrar filter for object id=%1%' detail")
         % _id);
-    Register::Registrar::RegistrarList::AutoPtr tmp_registrar_list =
+    Fred::Registrar::RegistrarList::AutoPtr tmp_registrar_list =
         m_register_manager->getRegistrarManager()->createList();
 
     Database::Filters::Union uf;
@@ -518,7 +518,7 @@ Registry::Message::Detail* ccReg_Session_i::getMessageDetail(ccReg::TID _id)
 
     LOGGER(PACKAGE).debug(boost::format("constructing message filter for object id=%1%' detail")
         % _id);
-    Register::Messages::Manager::MessageListPtr tmp_message_list =
+    Fred::Messages::Manager::MessageListPtr tmp_message_list =
             m_register_manager->getMessageManager()->createList();
 
     Database::Filters::Union uf;
@@ -536,7 +536,7 @@ Registry::Message::Detail* ccReg_Session_i::getMessageDetail(ccReg::TID _id)
 
 
 Registry::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::TID _id) {
-  // Register::PublicRequest::PublicRequest *request = m_publicrequests->findId(_id);
+  // Fred::PublicRequest::PublicRequest *request = m_publicrequests->findId(_id);
   // if (request) {
   //   return createPublicRequestDetail(request);
   // } else {
@@ -546,7 +546,7 @@ Registry::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing public request filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Register::PublicRequest::List> tmp_request_list(m_publicrequest_manager->createList());
+    std::auto_ptr<Fred::PublicRequest::List> tmp_request_list(m_publicrequest_manager->createList());
 
     Database::Filters::Union union_filter;
     Database::Filters::PublicRequest *filter = new Database::Filters::PublicRequestImpl();
@@ -563,7 +563,7 @@ Registry::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::
 }
 
 Registry::Invoicing::Detail* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
-  // Register::Invoicing::Invoice *invoice = m_invoices->findId(_id);
+  // Fred::Invoicing::Invoice *invoice = m_invoices->findId(_id);
   // if (invoice && invoice->getActionCount()) {
   //   return createInvoiceDetail(invoice);
   // } else {
@@ -573,7 +573,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing invoice filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Register::Invoicing::List> tmp_invoice_list(m_invoicing_manager->createList());
+    std::auto_ptr<Fred::Invoicing::List> tmp_invoice_list(m_invoicing_manager->createList());
 
     Database::Filters::Union union_filter;
     Database::Filters::Invoice *filter = new Database::Filters::InvoiceImpl();
@@ -590,7 +590,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
 }
 
 Registry::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
-  // Register::Mail::Mail *mail = m_mails->findId(_id);
+  // Fred::Mail::Mail *mail = m_mails->findId(_id);
   // if (mail) {
   //   return createMailDetail(mail);
   // } else {
@@ -600,7 +600,7 @@ Registry::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing mail filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Register::Mail::List> tmp_mail_list(mail_manager_->createList());
+    std::auto_ptr<Fred::Mail::List> tmp_mail_list(mail_manager_->createList());
 
     Database::Filters::Union union_filter;
     Database::Filters::Mail *filter = new Database::Filters::MailImpl();
@@ -617,7 +617,7 @@ Registry::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
 }
 
 Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id) {
-  // Register::Registrar::EPPAction *action = m_eppactions->findId(_id);
+  // Fred::Registrar::EPPAction *action = m_eppactions->findId(_id);
   // if (action && !action->getEPPMessageIn().empty()) {
   //   return createEppActionDetail(action);
   // } else {
@@ -627,7 +627,7 @@ Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id)
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing eppaction filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Register::Registrar::EPPActionList> tmp_action_list(m_register_manager->getRegistrarManager()->createEPPActionList());
+    std::auto_ptr<Fred::Registrar::EPPActionList> tmp_action_list(m_register_manager->getRegistrarManager()->createEPPActionList());
 
     Database::Filters::Union union_filter;
     Database::Filters::EppAction *filter = new Database::Filters::EppActionImpl();
@@ -667,7 +667,7 @@ Registry::Request::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
 Registry::Banking::BankItem::Detail *ccReg_Session_i::getPaymentDetail(ccReg::TID _id) {
 	LOGGER(PACKAGE).debug(boost::format("constructing bank item filter for object id=%1% detail") % _id);
 
-	std::auto_ptr<Register::Banking::PaymentList> item_list(m_banking_manager->createPaymentList());
+	std::auto_ptr<Fred::Banking::PaymentList> item_list(m_banking_manager->createPaymentList());
 
 	Database::Filters::Union union_filter;	
 	Database::Filters::BankPayment *filter = new Database::Filters::BankPaymentImpl();
@@ -690,7 +690,7 @@ Registry::Banking::BankItem::Detail *ccReg_Session_i::getPaymentDetail(ccReg::TI
 Registry::Banking::BankHead::Detail *ccReg_Session_i::getStatementDetail(ccReg::TID _id) {
 	LOGGER(PACKAGE).debug(boost::format("constructing bank item filter for object id=%1% detail") % _id);
 
-	std::auto_ptr<Register::Banking::StatementList> list(m_banking_manager->createStatementList());
+	std::auto_ptr<Fred::Banking::StatementList> list(m_banking_manager->createStatementList());
 
 	Database::Filters::Union union_filter;
 	Database::Filters::BankStatement *filter = new Database::Filters::BankStatementImpl();
@@ -710,7 +710,7 @@ Registry::Banking::BankHead::Detail *ccReg_Session_i::getStatementDetail(ccReg::
 */
 
 Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
-  // Register::Zone::Zone *zone = m_zones->findId(_id);
+  // Fred::Zone::Zone *zone = m_zones->findId(_id);
   // if (zone) {
   //   return createZoneDetail(zone);
   // } else {
@@ -720,7 +720,7 @@ Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing zone filter for object id=%1%' detail")
         % _id);
-    Register::Zone::Manager::ZoneListPtr tmp_zone_list =
+    Fred::Zone::Manager::ZoneListPtr tmp_zone_list =
         m_register_manager->getZoneManager()->createList();
 
     Database::Filters::Union uf;
@@ -733,11 +733,11 @@ Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
     if (tmp_zone_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();
     }
-    return createZoneDetail(dynamic_cast<Register::Zone::Zone*>(tmp_zone_list->get(0)));
+    return createZoneDetail(dynamic_cast<Fred::Zone::Zone*>(tmp_zone_list->get(0)));
   }
 }
 
-void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const Register::Banking::Payment *_payment) 
+void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const Fred::Banking::Payment *_payment)
 {
         d.id              = _payment->getId();
         d.statementId     = _payment->getStatementId();
@@ -757,7 +757,7 @@ void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const Register::B
         d.crTime          = DUPSTRDATE(_payment->getCrTime);
 }
 
-Registry::Banking::BankItem::Detail *ccReg_Session_i::createPaymentDetail(Register::Banking::Payment *_payment) {
+Registry::Banking::BankItem::Detail *ccReg_Session_i::createPaymentDetail(Fred::Banking::Payment *_payment) {
         Registry::Banking::BankItem::Detail *detail = new Registry::Banking::BankItem::Detail();
 
         fillPaymentDetail(*detail, _payment);
@@ -765,7 +765,7 @@ Registry::Banking::BankItem::Detail *ccReg_Session_i::createPaymentDetail(Regist
 }
 
 /*
-Registry::Banking::BankHead::Detail *ccReg_Session_i::createStatementDetail(Register::Banking::Statement *_statement) {
+Registry::Banking::BankHead::Detail *ccReg_Session_i::createStatementDetail(Fred::Banking::Statement *_statement) {
         Registry::Banking::BankHead::Detail *detail = new Registry::Banking::BankHead::Detail();
 
         detail->id              = _statement->getId();
@@ -790,7 +790,7 @@ Registry::Banking::BankHead::Detail *ccReg_Session_i::createStatementDetail(Regi
 }
 */
 
-ccReg::DomainDetail* ccReg_Session_i::createDomainDetail(Register::Domain::Domain* _domain) {
+ccReg::DomainDetail* ccReg_Session_i::createDomainDetail(Fred::Domain::Domain* _domain) {
   TRACE("[CALL] ccReg_Session_i::createDomainDetail()");
   LOGGER(PACKAGE).debug(boost::format("generating domain detail for object id=%1%")
       % _domain->getId());
@@ -830,24 +830,24 @@ ccReg::DomainDetail* ccReg_Session_i::createDomainDetail(Register::Domain::Domai
     for (unsigned i = 0; i < _domain->getAdminCount(2); i++)
     detail->temps[i] = DUPSTRC(_domain->getAdminHandleByIdx(i,2));
   }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     /// some implementation error - index is out of bound - WHAT TO DO?
   }
   return detail;
 }
 
 
-Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::Domain::List* _list) {
+Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Fred::Domain::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryDomainDetail()");
   Registry::Domain::Detail *detail = new Registry::Domain::Detail();
 
   /* array for object external states already assigned */
-  std::vector<Register::TID> ext_states_ids;
+  std::vector<Fred::TID> ext_states_ids;
 
   /* we going backwards because at the end there are latest data */
   for (int n = _list->size() - 1; n >= 0; --n) {
-    Register::Domain::Domain *act  = _list->getDomain(n);
-    Register::Domain::Domain *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getDomain(n + 1));
+    Fred::Domain::Domain *act  = _list->getDomain(n);
+    Fred::Domain::Domain *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getDomain(n + 1));
 
     /* just copy static data */
     if (act == prev) {
@@ -880,10 +880,10 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
 
     /* object status */
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
-      const Register::Status *tmp = act->getStatusByIdx(s);
+      const Fred::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2%") % tmp->getId() % tmp->getStatusId());
-      std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+      std::vector<Fred::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
         LOGGER(PACKAGE).debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
@@ -927,7 +927,7 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
         MODIFY_LAST_HISTORY_RECORD(admins)
       }
     }
-    catch (Register::NOT_FOUND) {
+    catch (Fred::NOT_FOUND) {
       LOGGER(PACKAGE).error(boost::format("domain id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount(1));
     }
@@ -955,7 +955,7 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
         MODIFY_LAST_HISTORY_RECORD(temps)
       }
     }
-    catch (Register::NOT_FOUND) {
+    catch (Fred::NOT_FOUND) {
       LOGGER(PACKAGE).error(boost::format("domain id=%1% detail lib -> CORBA: request for temp contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount(2));
     }
@@ -964,7 +964,7 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
   return detail;
 }
 
-ccReg::ContactDetail* ccReg_Session_i::createContactDetail(Register::Contact::Contact* _contact) {
+ccReg::ContactDetail* ccReg_Session_i::createContactDetail(Fred::Contact::Contact* _contact) {
   TRACE("[CALL] ccReg_Session_i::createContactDetail()");
   LOGGER(PACKAGE).debug(boost::format("generating contact detail for object id=%1%")
       % _contact->getId());
@@ -1020,17 +1020,17 @@ ccReg::ContactDetail* ccReg_Session_i::createContactDetail(Register::Contact::Co
   return detail;
 }
 
-Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register::Contact::List* _list) {
+Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Fred::Contact::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryContactDetail()");
   Registry::Contact::Detail *detail = new Registry::Contact::Detail();
 
   /* array for object external states already assigned */
-  std::vector<Register::TID> ext_states_ids;
+  std::vector<Fred::TID> ext_states_ids;
 
   /* we going backwards because at the end there are latest data */
   for (int n = _list->size() - 1; n >= 0; --n) {
-    Register::Contact::Contact *act  = _list->getContact(n);
-    Register::Contact::Contact *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getContact(n + 1));
+    Fred::Contact::Contact *act  = _list->getContact(n);
+    Fred::Contact::Contact *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getContact(n + 1));
 
     LOGGER(PACKAGE).debug(boost::format("history detail -- iteration left %1%, history id is %2%") % n % act->getHistoryId());
 
@@ -1060,9 +1060,9 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
 
     /* object status */
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
-      const Register::Status *tmp = act->getStatusByIdx(s);
+      const Fred::Status *tmp = act->getStatusByIdx(s);
 LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2%") % tmp->getId() % tmp->getStatusId());
-      std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+      std::vector<Fred::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
         LOGGER(PACKAGE).debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
@@ -1112,7 +1112,7 @@ LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %
 }
 
 
-ccReg::NSSetDetail* ccReg_Session_i::createNSSetDetail(Register::NSSet::NSSet* _nsset) {
+ccReg::NSSetDetail* ccReg_Session_i::createNSSetDetail(Fred::NSSet::NSSet* _nsset) {
   TRACE("[CALL] ccReg_Session_i::createNSSetDetail()");
   LOGGER(PACKAGE).debug(boost::format("generating nsset detail for object id=%1%")
       % _nsset->getId());
@@ -1134,7 +1134,7 @@ ccReg::NSSetDetail* ccReg_Session_i::createNSSetDetail(Register::NSSet::NSSet* _
     for (unsigned i = 0; i < _nsset->getAdminCount(); i++)
     detail->admins[i] = DUPSTRC(_nsset->getAdminByIdx(i));
   }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     /// some implementation error - index is out of bound - WHAT TO DO?
   }
 
@@ -1161,17 +1161,17 @@ ccReg::NSSetDetail* ccReg_Session_i::createNSSetDetail(Register::NSSet::NSSet* _
   return detail;
 }
 
-Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSSet::List* _list) {
+Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Fred::NSSet::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryNSSetDetail()");
   Registry::NSSet::Detail *detail = new Registry::NSSet::Detail();
 
   /* array for object external states already assigned */
-  std::vector<Register::TID> ext_states_ids;
+  std::vector<Fred::TID> ext_states_ids;
 
   /* we going backwards because at the end there are latest data */
   for (int n = _list->size() - 1; n >= 0; --n) {
-    Register::NSSet::NSSet *act  = _list->getNSSet(n);
-    Register::NSSet::NSSet *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getNSSet(n + 1));
+    Fred::NSSet::NSSet *act  = _list->getNSSet(n);
+    Fred::NSSet::NSSet *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getNSSet(n + 1));
 
     /* just copy static data */
     if (act == prev) {
@@ -1199,10 +1199,10 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
 
     /* object status */
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
-      const Register::Status *tmp = act->getStatusByIdx(s);
+      const Fred::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2%") % tmp->getId() % tmp->getStatusId());
-      std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+      std::vector<Fred::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
         LOGGER(PACKAGE).debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
@@ -1242,7 +1242,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
 
       MAP_HISTORY_STRING(reportLevel, getCheckLevel)
     }
-    catch (Register::NOT_FOUND) {
+    catch (Fred::NOT_FOUND) {
       LOGGER(PACKAGE).error(boost::format("nsset id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount());
     }
@@ -1274,7 +1274,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
         MODIFY_LAST_HISTORY_RECORD(hosts)
       }
     }
-    catch (Register::NOT_FOUND) {
+    catch (Fred::NOT_FOUND) {
       LOGGER(PACKAGE).error(boost::format("nsset id=%1% detail lib -> CORBA: request for host out of range 0..%2%")
                                            % act->getId() % act->getHostCount());
     }
@@ -1285,7 +1285,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
 }
 
 ccReg::KeySetDetail *
-ccReg_Session_i::createKeySetDetail(Register::KeySet::KeySet *_keyset)
+ccReg_Session_i::createKeySetDetail(Fred::KeySet::KeySet *_keyset)
 {
     TRACE("[CALL] ccReg_Session_i::createKeySetDetail()");
     LOGGER(PACKAGE).debug(boost::format(
@@ -1309,7 +1309,7 @@ ccReg_Session_i::createKeySetDetail(Register::KeySet::KeySet *_keyset)
         for (unsigned int i = 0; i < _keyset->getAdminCount(); i++)
             detail->admins[i] = DUPSTRC(_keyset->getAdminByIdx(i));
     }
-    catch (Register::NOT_FOUND) {
+    catch (Fred::NOT_FOUND) {
         // TODO implement error handling
     }
 
@@ -1334,17 +1334,17 @@ ccReg_Session_i::createKeySetDetail(Register::KeySet::KeySet *_keyset)
     return detail;
 }
 
-Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::KeySet::List* _list) {
+Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Fred::KeySet::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryKeySetDetail()");
   Registry::KeySet::Detail *detail = new Registry::KeySet::Detail();
 
   /* array for object external states already assigned */
-  std::vector<Register::TID> ext_states_ids;
+  std::vector<Fred::TID> ext_states_ids;
 
   /* we going backwards because at the end there are latest data */
   for (int n = _list->size() - 1; n >= 0; --n) {
-    Register::KeySet::KeySet *act  = _list->getKeySet(n);
-    Register::KeySet::KeySet *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getKeySet(n + 1));
+    Fred::KeySet::KeySet *act  = _list->getKeySet(n);
+    Fred::KeySet::KeySet *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getKeySet(n + 1));
 
     /* just copy static data */
     if (act == prev) {
@@ -1372,10 +1372,10 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
 
     /* object status */
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
-      const Register::Status *tmp = act->getStatusByIdx(s);
+      const Fred::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2%") % tmp->getId() % tmp->getStatusId());
-      std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+      std::vector<Fred::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
         LOGGER(PACKAGE).debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
@@ -1413,7 +1413,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
         MODIFY_LAST_HISTORY_RECORD(admins)
       }
     }
-    catch (Register::NOT_FOUND) {
+    catch (Fred::NOT_FOUND) {
       LOGGER(PACKAGE).error(boost::format("keyset id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount());
     }
@@ -1443,7 +1443,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
         MODIFY_LAST_HISTORY_RECORD(dsrecords)
       }
     }
-    catch (Register::NOT_FOUND) {
+    catch (Fred::NOT_FOUND) {
       LOGGER(PACKAGE).error(boost::format("keyset id=%1% detail lib -> CORBA: request for dsrecord out of range 0..%2%")
                                            % act->getId() % act->getDSRecordCount());
     }
@@ -1479,7 +1479,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
         MODIFY_LAST_HISTORY_RECORD(dnskeys)
       }
     }
-    catch (Register::NOT_FOUND) {
+    catch (Fred::NOT_FOUND) {
       LOGGER(PACKAGE).error(boost::format("keyset id=%1% detail lib -> CORBA: request for dnskey out of range 0..%2%")
                                            % act->getId() % act->getDNSKeyCount());
     }
@@ -1489,7 +1489,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
   return detail;
 }
 
-Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Register::Registrar::Registrar* _registrar) {
+Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Fred::Registrar::Registrar* _registrar) {
   TRACE("[CALL] ccReg_Session_i::createRegistrarDetail()");
   LOGGER(PACKAGE).debug(boost::format("generating registrar detail for object id=%1%")
       % _registrar->getId());
@@ -1543,10 +1543,10 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
   ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
-  Register::Registrar::RegistrarList::AutoPtr tmp_registrar_list =
+  Fred::Registrar::RegistrarList::AutoPtr tmp_registrar_list =
       m_register_manager->getRegistrarManager()->createList();
-  Register::Registrar::Registrar::AutoPtr  update_registrar_guard;//delete at the end
-  Register::Registrar::Registrar* update_registrar; // registrar to be created or updated
+  Fred::Registrar::Registrar::AutoPtr  update_registrar_guard;//delete at the end
+  Fred::Registrar::Registrar* update_registrar; // registrar to be created or updated
 
   if (!_registrar.id)
   {
@@ -1594,7 +1594,7 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
   update_registrar->clearACLList();
   for (unsigned i = 0; i < _registrar.access.length(); i++)
   {
-    Register::Registrar::ACL *registrar_acl = update_registrar->newACL();
+    Fred::Registrar::ACL *registrar_acl = update_registrar->newACL();
 
     LOGGER(PACKAGE).debug(boost::format
             ("ccReg_Session_i::updateRegistrar : i: %1% setRegistrarId: %2%")
@@ -1607,7 +1607,7 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
   update_registrar->clearZoneAccessList();
   for (unsigned i = 0; i < _registrar.zones.length();i++)
     {
-      Register::Registrar::ZoneAccess *registrar_azone = update_registrar->newZoneAccess();
+      Fred::Registrar::ZoneAccess *registrar_azone = update_registrar->newZoneAccess();
 
       LOGGER(PACKAGE).debug(boost::format
               ("ccReg_Session_i::updateRegistrar azone : i: %1% "
@@ -1685,67 +1685,67 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
 
 }
 
-Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request) {
+Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Fred::PublicRequest::PublicRequest* _request) {
   Registry::PublicRequest::Detail *detail = new Registry::PublicRequest::Detail();
 
   detail->id = _request->getId();
 
   switch (_request->getStatus()) {
-    case Register::PublicRequest::PRS_NEW:
+    case Fred::PublicRequest::PRS_NEW:
       detail->status = Registry::PublicRequest::PRS_NEW;
       break;
-    case Register::PublicRequest::PRS_ANSWERED:
+    case Fred::PublicRequest::PRS_ANSWERED:
       detail->status = Registry::PublicRequest::PRS_ANSWERED;
       break;
-    case Register::PublicRequest::PRS_INVALID:
+    case Fred::PublicRequest::PRS_INVALID:
       detail->status = Registry::PublicRequest::PRS_INVALID;
       break;
   }
 
   switch (_request->getType()) {
-    case Register::PublicRequest::PRT_AUTHINFO_AUTO_RIF:
+    case Fred::PublicRequest::PRT_AUTHINFO_AUTO_RIF:
       detail->type = Registry::PublicRequest::PRT_AUTHINFO_AUTO_RIF;
       break;
-    case Register::PublicRequest::PRT_AUTHINFO_AUTO_PIF:
+    case Fred::PublicRequest::PRT_AUTHINFO_AUTO_PIF:
       detail->type = Registry::PublicRequest::PRT_AUTHINFO_AUTO_PIF;
       break;
-    case Register::PublicRequest::PRT_AUTHINFO_EMAIL_PIF:
+    case Fred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF:
       detail->type = Registry::PublicRequest::PRT_AUTHINFO_EMAIL_PIF;
       break;
-    case Register::PublicRequest::PRT_AUTHINFO_POST_PIF:
+    case Fred::PublicRequest::PRT_AUTHINFO_POST_PIF:
       detail->type = Registry::PublicRequest::PRT_AUTHINFO_POST_PIF;
       break;
-    case Register::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF:
+    case Fred::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF:
       detail->type = Registry::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF;
       break;
-    case Register::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF:
+    case Fred::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF:
       detail->type = Registry::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF;
       break;
-    case Register::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF:
+    case Fred::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF:
       detail->type = Registry::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF;
       break;
-    case Register::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF:
+    case Fred::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF:
       detail->type = Registry::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF;
       break;
-    case Register::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF:
+    case Fred::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF:
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF;
       break;
-    case Register::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF:
+    case Fred::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF:
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF;
       break;
-    case Register::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF:
+    case Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF:
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF;
       break;
-    case Register::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF:
+    case Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF:
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
       break;
-    case Register::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION:
+    case Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION:
       detail->type = Registry::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
       break;
-    case Register::PublicRequest::PRT_CONTACT_IDENTIFICATION:
+    case Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION:
       detail->type = Registry::PublicRequest::PRT_CONTACT_IDENTIFICATION;
       break;
-    case Register::PublicRequest::PRT_CONTACT_VALIDATION:
+    case Fred::PublicRequest::PRT_CONTACT_VALIDATION:
       detail->type = Registry::PublicRequest::PRT_CONTACT_VALIDATION;
       break;
   }
@@ -1770,20 +1770,20 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
   unsigned objects_size = _request->getObjectSize();
   detail->objects.length(objects_size);
   for (unsigned i = 0; i < objects_size; ++i) {
-    Register::PublicRequest::OID oid = _request->getObject(0);
+    Fred::PublicRequest::OID oid = _request->getObject(0);
     detail->objects[i].id = oid.id;
     detail->objects[i].handle = oid.handle.c_str();
     switch (oid.type) {
-      case Register::PublicRequest::OT_DOMAIN:
+      case Fred::PublicRequest::OT_DOMAIN:
         detail->objects[i].type = ccReg::FT_DOMAIN;
         break;
-      case Register::PublicRequest::OT_CONTACT:
+      case Fred::PublicRequest::OT_CONTACT:
         detail->objects[i].type = ccReg::FT_CONTACT;
         break;
-      case Register::PublicRequest::OT_NSSET:
+      case Fred::PublicRequest::OT_NSSET:
         detail->objects[i].type = ccReg::FT_NSSET;
         break;
-      case Register::PublicRequest::OT_KEYSET:
+      case Fred::PublicRequest::OT_KEYSET:
         detail->objects[i].type = ccReg::FT_KEYSET;
         break;
 
@@ -1797,7 +1797,7 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
 }
 
 
-Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invoicing::Invoice *_invoice) {
+Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Fred::Invoicing::Invoice *_invoice) {
   Registry::Invoicing::Detail *detail = new Registry::Invoicing::Detail();
 
   detail->id = _invoice->getId();
@@ -1806,7 +1806,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
   detail->taxDate = DUPSTRDATED(_invoice->getTaxDate);
   detail->fromDate = DUPSTRDATED(_invoice->getAccountPeriod().begin);
   detail->toDate = DUPSTRDATED(_invoice->getAccountPeriod().end);
-  detail->type = (_invoice->getType() == Register::Invoicing::IT_DEPOSIT ? Registry::Invoicing::IT_ADVANCE
+  detail->type = (_invoice->getType() == Fred::Invoicing::IT_DEPOSIT ? Registry::Invoicing::IT_ADVANCE
                                                                          : Registry::Invoicing::IT_ACCOUNT);
   detail->number = DUPSTRC(stringify(_invoice->getPrefix()));
   detail->credit = DUPSTRC(formatMoney(_invoice->getCredit()));
@@ -1833,7 +1833,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
 
   detail->payments.length(_invoice->getSourceCount());
   for (unsigned n = 0; n < _invoice->getSourceCount(); ++n) {
-    const Register::Invoicing::PaymentSource *ps = _invoice->getSource(n);
+    const Fred::Invoicing::PaymentSource *ps = _invoice->getSource(n);
     detail->payments[n].id = ps->getId();
     detail->payments[n].price = DUPSTRC(formatMoney(ps->getPrice()));
     detail->payments[n].balance = DUPSTRC(formatMoney(ps->getCredit()));
@@ -1842,7 +1842,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
   
   detail->paymentActions.length(_invoice->getActionCount());
   for (unsigned n = 0; n < _invoice->getActionCount(); ++n) {
-    const Register::Invoicing::PaymentAction *pa = _invoice->getAction(n);
+    const Fred::Invoicing::PaymentAction *pa = _invoice->getAction(n);
     detail->paymentActions[n].paidObject.id     = pa->getObjectId();
     detail->paymentActions[n].paidObject.handle = DUPSTRFUN(pa->getObjectName);
     detail->paymentActions[n].paidObject.type   = ccReg::FT_DOMAIN;
@@ -1859,7 +1859,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
 
 }
 
-Registry::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mail *_mail) {
+Registry::Mailing::Detail* ccReg_Session_i::createMailDetail(Fred::Mail::Mail *_mail) {
   Registry::Mailing::Detail *detail = new Registry::Mailing::Detail();
 
   detail->id = _mail->getId();
@@ -1880,7 +1880,7 @@ Registry::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mai
 
   detail->attachments.length(_mail->getAttachmentSize());
   for (unsigned i = 0; i < _mail->getAttachmentSize(); ++i) {
-    const Register::OID attachment = _mail->getAttachment(i);
+    const Fred::OID attachment = _mail->getAttachment(i);
 
     detail->attachments[i].id     = attachment.id;
     detail->attachments[i].handle = attachment.handle.c_str();
@@ -1890,7 +1890,7 @@ Registry::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mai
   return detail;
 }
 
-Registry::EPPAction::Detail* ccReg_Session_i::createEppActionDetail(Register::Registrar::EPPAction *_action) {
+Registry::EPPAction::Detail* ccReg_Session_i::createEppActionDetail(Fred::Registrar::EPPAction *_action) {
   Registry::EPPAction::Detail *detail = new Registry::EPPAction::Detail();
 
   detail->id               = _action->getId();
@@ -1910,7 +1910,7 @@ Registry::EPPAction::Detail* ccReg_Session_i::createEppActionDetail(Register::Re
   return detail;
 }
 
-Registry::Zone::Detail* ccReg_Session_i::createZoneDetail(Register::Zone::Zone* _zone)
+Registry::Zone::Detail* ccReg_Session_i::createZoneDetail(Fred::Zone::Zone* _zone)
 {
   TRACE("[CALL] ccReg_Session_i::createZoneDetail()");
 
@@ -1947,7 +1947,7 @@ Registry::Zone::Detail* ccReg_Session_i::createZoneDetail(Register::Zone::Zone* 
   return detail;
 }
 
-Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messages::MessagePtr _message) {
+Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Fred::Messages::MessagePtr _message) {
   TRACE("[CALL] ccReg_Session_i::createMessageDetail()");
   LOGGER(PACKAGE).debug(boost::format("generating message detail for object id=%1%")
       % _message->get_id());
@@ -1964,13 +1964,13 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
           " comm_type: %7% "
 
           )
-                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_ID)
-                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_CRDATE)
-                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_MODDATE)
-                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_ATTEMPT)
-                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_STATUS)
-                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)
-                % _message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)
+                % _message->conv_get(Fred::Messages::MessageMetaInfo::MT_ID)
+                % _message->conv_get(Fred::Messages::MessageMetaInfo::MT_CRDATE)
+                % _message->conv_get(Fred::Messages::MessageMetaInfo::MT_MODDATE)
+                % _message->conv_get(Fred::Messages::MessageMetaInfo::MT_ATTEMPT)
+                % _message->conv_get(Fred::Messages::MessageMetaInfo::MT_STATUS)
+                % _message->conv_get(Fred::Messages::MessageMetaInfo::MT_MSGTYPE)
+                % _message->conv_get(Fred::Messages::MessageMetaInfo::MT_COMMTYPE)
                 );
 
 
@@ -1978,49 +1978,49 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
 
   //date time conversion from iso string
 
-  detail->createDate = CORBA::string_dup((_message->conv_get(Register::Messages::MessageMetaInfo::MT_CRDATE)).c_str());
-  detail->modifyDate = CORBA::string_dup((_message->conv_get(Register::Messages::MessageMetaInfo::MT_MODDATE)).c_str());
+  detail->createDate = CORBA::string_dup((_message->conv_get(Fred::Messages::MessageMetaInfo::MT_CRDATE)).c_str());
+  detail->modifyDate = CORBA::string_dup((_message->conv_get(Fred::Messages::MessageMetaInfo::MT_MODDATE)).c_str());
 
-  detail->attempt = boost::lexical_cast<long>(_message->conv_get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
+  detail->attempt = boost::lexical_cast<long>(_message->conv_get(Fred::Messages::MessageMetaInfo::MT_ATTEMPT));
 
-  Register::Messages::ManagerPtr msg_mgr
+  Fred::Messages::ManagerPtr msg_mgr
       = m_register_manager->getMessageManager();
 
   //enumlists
   //status names
-  Register::Messages::EnumList status_names_ = msg_mgr->getStatusList();
+  Fred::Messages::EnumList status_names_ = msg_mgr->getStatusList();
   std::map<std::string, std::size_t > status_id;
-  for (Register::Messages::EnumList::const_iterator i = status_names_.begin()
+  for (Fred::Messages::EnumList::const_iterator i = status_names_.begin()
           ; i != status_names_.end(); ++i)
       status_id[i->name] = i->id;
 
   //communication types
-  Register::Messages::EnumList comm_types_ = msg_mgr->getCommTypeList();
+  Fred::Messages::EnumList comm_types_ = msg_mgr->getCommTypeList();
   std::map< std::string, std::size_t> comm_type_id;
-  for (Register::Messages::EnumList::const_iterator i = comm_types_.begin()
+  for (Fred::Messages::EnumList::const_iterator i = comm_types_.begin()
           ; i != comm_types_.end(); ++i)
       comm_type_id[i->name] = i->id;
 
   //message types
-  Register::Messages::EnumList msg_types_ = msg_mgr->getMessageTypeList();
+  Fred::Messages::EnumList msg_types_ = msg_mgr->getMessageTypeList();
   std::map<std::string, std::size_t > msg_type_id;
-  for (Register::Messages::EnumList::const_iterator i = msg_types_.begin()
+  for (Fred::Messages::EnumList::const_iterator i = msg_types_.begin()
           ; i != msg_types_.end(); ++i)
       msg_type_id[i->name] = i->id;
 
-  detail->status_id = status_id[_message->conv_get(Register::Messages::MessageMetaInfo::MT_STATUS)];
-  detail->comm_type_id = comm_type_id[_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)];
-  detail->message_type_id = msg_type_id[_message->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)];
+  detail->status_id = status_id[_message->conv_get(Fred::Messages::MessageMetaInfo::MT_STATUS)];
+  detail->comm_type_id = comm_type_id[_message->conv_get(Fred::Messages::MessageMetaInfo::MT_COMMTYPE)];
+  detail->message_type_id = msg_type_id[_message->conv_get(Fred::Messages::MessageMetaInfo::MT_MSGTYPE)];
 
   //message types
-    if((_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)).compare("sms") == 0)
+    if((_message->conv_get(Fred::Messages::MessageMetaInfo::MT_COMMTYPE)).compare("sms") == 0)
     {
 
         //detail->message_content._d(1);//sms
         Registry::Message::SMSDetail sms_detail;
 
         //load from db
-        Register::Messages::SmsInfo si
+        Fred::Messages::SmsInfo si
             = msg_mgr->get_sms_info_by_id(_message->get_id());
 
         sms_detail.content = CORBA::string_dup(si.content.c_str());
@@ -2041,9 +2041,9 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
 
     }//if sms
     else
-    if(((_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE))
+    if(((_message->conv_get(Fred::Messages::MessageMetaInfo::MT_COMMTYPE))
             .compare("letter") == 0)
-        || ((_message->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE))
+        || ((_message->conv_get(Fred::Messages::MessageMetaInfo::MT_COMMTYPE))
                 .compare("registered_letter") == 0))
     {
         //detail->message_content._d(2);//letter
@@ -2051,7 +2051,7 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Register::Messag
 
         //load from db
 
-        Register::Messages::LetterInfo li
+        Fred::Messages::LetterInfo li
             = msg_mgr->get_letter_info_by_id(_message->get_id());
 
 

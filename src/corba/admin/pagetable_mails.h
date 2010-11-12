@@ -7,16 +7,16 @@ class ccReg_Mails_i : public ccReg_PageTable_i,
                       public PortableServer::RefCountServantBase 
 {
 private:
-  std::auto_ptr<Register::Mail::List> mail_list_;
+  std::auto_ptr<Fred::Mail::List> mail_list_;
   MailerManager mm;
 
 public:
-  ccReg_Mails_i(Register::Mail::List *_list, NameService *ns);
+  ccReg_Mails_i(Fred::Mail::List *_list, NameService *ns);
   ~ccReg_Mails_i();
   DECL_PAGETABLE_I;
 
   ccReg::Filters::Compound_ptr add();
-  Register::Mail::Mail* findId(ccReg::TID _id);
+  Fred::Mail::Mail* findId(ccReg::TID _id);
   
 //  DECL_ATTRIBUTE_ID(id);
 //  DECL_ATTRIBUTE_TYPE(status,CORBA::Long);

@@ -62,11 +62,11 @@ void
 PollClient::list_all()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Poll::Manager> pollMan(
-            Register::Poll::Manager::create(
+    std::auto_ptr<Fred::Poll::Manager> pollMan(
+            Fred::Poll::Manager::create(
                 &m_db)
             );
-    std::auto_ptr<Register::Poll::List> pmList(pollMan->createList());
+    std::auto_ptr<Fred::Poll::List> pmList(pollMan->createList());
     if (m_conf.hasOpt(POLL_TYPE_NAME))
         pmList->setTypeFilter(m_conf.get<unsigned int>(POLL_TYPE_NAME));
     if (m_conf.hasOpt(REGISTRAR_ID_NAME))
@@ -77,7 +77,7 @@ PollClient::list_all()
         pmList->setNonExpiredFilter(true);
     pmList->reload();
     for (unsigned int i = 0; i < pmList->getCount(); i++) {
-        Register::Poll::Message *msg = pmList->getMessage(i);
+        Fred::Poll::Message *msg = pmList->getMessage(i);
         if (msg) {
             msg->textDump(std::cout);
             std::cout << std::endl;
@@ -89,17 +89,17 @@ void
 PollClient::list_next()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Poll::Manager> pollMan(
-            Register::Poll::Manager::create(
+    std::auto_ptr<Fred::Poll::Manager> pollMan(
+            Fred::Poll::Manager::create(
                 &m_db)
             );
     if (m_conf.hasOpt(POLL_LIST_NEXT_NAME)) {
-        Register::TID reg = m_conf.get<unsigned int>(POLL_LIST_NEXT_NAME);
+        Fred::TID reg = m_conf.get<unsigned int>(POLL_LIST_NEXT_NAME);
         unsigned int count = pollMan->getMessageCount(reg);
         if (!count) {
             std::cout << "No message" << std::endl;
         } else {
-            std::auto_ptr<Register::Poll::Message> msg(pollMan->getNextMessage(reg));
+            std::auto_ptr<Fred::Poll::Message> msg(pollMan->getNextMessage(reg));
             std::cout << "Messages:" << count << std::endl;
             msg->textDump(std::cout);
             std::cout << std::endl;
@@ -110,7 +110,7 @@ PollClient::list_next()
         if (!count) {
             std::cout << "No message" << std::endl;
         } else {
-            std::auto_ptr<Register::Poll::Message> msg(pollMan->getNextMessage(reg));
+            std::auto_ptr<Fred::Poll::Message> msg(pollMan->getNextMessage(reg));
             std::cout << "Messages:" << count << std::endl;
             msg->textDump(std::cout);
             std::cout << std::endl;
@@ -125,14 +125,14 @@ void
 PollClient::set_seen()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Poll::Manager> pollMan(
-            Register::Poll::Manager::create(
+    std::auto_ptr<Fred::Poll::Manager> pollMan(
+            Fred::Poll::Manager::create(
                 &m_db)
             );
     try {
-        Register::TID messageId = m_conf.get<unsigned int>(POLL_SET_SEEN_NAME); 
+        Fred::TID messageId = m_conf.get<unsigned int>(POLL_SET_SEEN_NAME);
         if (m_conf.hasOpt(REGISTRAR_ID_NAME)) {
-            Register::TID reg = m_conf.get<unsigned int>(REGISTRAR_ID_NAME);
+            Fred::TID reg = m_conf.get<unsigned int>(REGISTRAR_ID_NAME);
             pollMan->setMessageSeen(messageId, reg);
             std::cout << "NextId:" << pollMan->getNextMessageId(reg) << std::endl;
         } else if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME)) {
@@ -152,8 +152,8 @@ void
 PollClient::create_state_changes()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Poll::Manager> pollMan(
-            Register::Poll::Manager::create(
+    std::auto_ptr<Fred::Poll::Manager> pollMan(
+            Fred::Poll::Manager::create(
                 &m_db)
             );
     std::string exceptTypes("");
@@ -174,8 +174,8 @@ void
 PollClient::create_low_credit()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Poll::Manager> pollMan(
-            Register::Poll::Manager::create(
+    std::auto_ptr<Fred::Poll::Manager> pollMan(
+            Fred::Poll::Manager::create(
                 &m_db)
             );
     pollMan->createLowCreditMessages();

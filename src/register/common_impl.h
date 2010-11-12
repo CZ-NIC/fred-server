@@ -9,7 +9,7 @@
 
 class DB;
 
-namespace Register {
+namespace Fred {
 
 /// Implementation of common register object properties
 class CommonObjectImpl : virtual public CommonObject {
@@ -46,13 +46,13 @@ private:                                                                    \
 
 
 struct CheckId {
-  CheckId(Register::TID _id) :
+  CheckId(Fred::TID _id) :
     find_id_(_id) {
   }
-  bool operator()(Register::CommonObject* _object) {
+  bool operator()(Fred::CommonObject* _object) {
     return _object->getId() == find_id_;
   }
-  Register::TID find_id_;
+  Fred::TID find_id_;
 };
 
 
@@ -89,7 +89,7 @@ public:
   virtual void setTimeout(unsigned _timeout);
   
   CommonObject* get(unsigned _idx) const;
-  CommonObject* findId(TID _id) const throw (Register::NOT_FOUND);
+  CommonObject* findId(TID _id) const throw (Fred::NOT_FOUND);
   
   void resetIDSequence();
   CommonObject* findIDSequence(TID _id);

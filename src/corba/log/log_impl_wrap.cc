@@ -7,10 +7,10 @@
 
 ccReg_Log_i::ccReg_Log_i(const std::string database, const std::string &monitoring_hosts_file) : pagetables()
 {
-	back.reset(Register::Logger::Manager::create(database, monitoring_hosts_file));
+	back.reset(Fred::Logger::Manager::create(database, monitoring_hosts_file));
 }
 
-  // ccReg_Log_i(const std::string database) throw (Register::Logger::Manager::DB_CONNECT_FAILED): Register::Logger::Manager(database) {};
+  // ccReg_Log_i(const std::string database) throw (Fred::Logger::Manager::DB_CONNECT_FAILED): Fred::Logger::Manager(database) {};
 ccReg_Log_i::~ccReg_Log_i()
 {
     PortableServer::POA_ptr poa = this->_default_POA();
@@ -27,8 +27,8 @@ ccReg_Log_i::~ccReg_Log_i()
 ccReg::TID ccReg_Log_i::createRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content, const ccReg::RequestProperties& props, const ccReg::ObjectReferences &refs, CORBA::Long request_type_id, ccReg::TID session_id)
 {
     try {
-        std::auto_ptr<Register::Logger::RequestProperties> p(convert_properties(props));
-        std::auto_ptr<Register::Logger::ObjectReferences> r(convert_obj_references(refs));
+        std::auto_ptr<Fred::Logger::RequestProperties> p(convert_properties(props));
+        std::auto_ptr<Fred::Logger::ObjectReferences> r(convert_obj_references(refs));
         return back->i_createRequest(sourceIP, (Database::Filters::ServiceType)service, content, *(p.get()), *(r.get()), request_type_id, session_id);
     }
     catch (...) {
@@ -39,7 +39,7 @@ ccReg::TID ccReg_Log_i::createRequest(const char *sourceIP, ccReg::RequestServic
 void ccReg_Log_i::addRequestProperties(ccReg::TID id, const ccReg::RequestProperties &props)
 {
     try {
-        std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
+        std::auto_ptr<Fred::Logger::RequestProperties> p = convert_properties(props);
         if( back->i_addRequestProperties(id, *(p.get())) == false) {
             throw ccReg::Logger::REQUEST_NOT_EXISTS();
         }
@@ -52,8 +52,8 @@ void ccReg_Log_i::addRequestProperties(ccReg::TID id, const ccReg::RequestProper
 void ccReg_Log_i::closeRequest(ccReg::TID id, const char *content, const ccReg::RequestProperties &props, const ccReg::ObjectReferences &refs, const CORBA::Long result_code, ccReg::TID session_id)
 {
     try {
-        std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
-        std::auto_ptr<Register::Logger::ObjectReferences> r(convert_obj_references(refs));
+        std::auto_ptr<Fred::Logger::RequestProperties> p = convert_properties(props);
+        std::auto_ptr<Fred::Logger::ObjectReferences> r(convert_obj_references(refs));
 
         if( back->i_closeRequest(id, content, *(p.get()), *(r.get()), result_code, session_id) == false) {
             throw ccReg::Logger::REQUEST_NOT_EXISTS();
@@ -195,10 +195,10 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
         return it->second->_this();
 
     } else {
-        std::auto_ptr<Register::Logger::Manager> logger_manager;
+        std::auto_ptr<Fred::Logger::Manager> logger_manager;
 
-        logger_manager.reset(Register::Logger::Manager::create());
-        Register::Logger::List *list = logger_manager->createList();
+        logger_manager.reset(Fred::Logger::Manager::create());
+        Fred::Logger::List *list = logger_manager->createList();
         ccReg_Logger_i * ret_ptr = new ccReg_Logger_i(list);
         ret = ret_ptr->_this();
 
@@ -239,7 +239,7 @@ Registry::Request::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
 	LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
         boost::mutex::scoped_lock slm (pagetables_mutex);
-	std::auto_ptr<Register::Logger::List> request_list(back->createList());
+	std::auto_ptr<Fred::Logger::List> request_list(back->createList());
 
 	Database::Filters::Union union_filter;
 	// where is it deleted? TODO
@@ -268,7 +268,7 @@ Registry::Request::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
 
 }
 
-Registry::Request::Detail *ccReg_Log_i::createRequestDetail(Register::Logger::Request *req)
+Registry::Request::Detail *ccReg_Log_i::createRequestDetail(Fred::Logger::Request *req)
 {
 	Registry::Request::Detail *detail = new Registry::Request::Detail();
 

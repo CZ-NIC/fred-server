@@ -20,7 +20,7 @@
 
 class DB;
 
-namespace Register {
+namespace Fred {
 namespace Invoicing {
 
 /// Member identification (i.e. for sorting) 
@@ -151,7 +151,7 @@ public:
   virtual unsigned getYear() const = 0;
 };
 
-class Invoice : virtual public Register::CommonObject {
+class Invoice : virtual public Fred::CommonObject {
 public:
   virtual ~Invoice() {
   }
@@ -204,7 +204,7 @@ public:
     virtual const Payment *getPayment(const unsigned int &index) const = 0;
 };
 
-class List : virtual public Register::CommonList {
+class List : virtual public Fred::CommonList {
 public:
   /// publice destructor
   virtual ~List() {
@@ -320,6 +320,6 @@ public:
 }
 ; // Invoicing
 }
-; // Register
+; // Fred
 
 #endif // INVOICE_H_

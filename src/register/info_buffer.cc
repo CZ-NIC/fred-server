@@ -19,7 +19,7 @@
 #include "info_buffer.h"
 #include "old_utils/dbsql.h"
 
-namespace Register 
+namespace Fred
 {
   namespace InfoBuffer
   {
@@ -157,12 +157,12 @@ namespace Register
     	if (!registrar) throw INVALID_REGISTRAR();
         // init list of object specific temporary tables using their
         // managers
-        std::auto_ptr<Register::ObjectList> list;        
+        std::auto_ptr<Fred::ObjectList> list;
         switch (infotype) {
           case T_LIST_DOMAINS :
             {
               list.reset(dm->createList());
-              LIST_DOWNCAST_AND_CHECK(Register::Domain::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::Domain::List)
               LIST_DOWNCAST_CALL(setRegistrarFilter(registrar))
             }
             break;
@@ -170,7 +170,7 @@ namespace Register
           case T_DOMAINS_BY_NSSET:
             {
               list.reset(dm->createList());
-              LIST_DOWNCAST_AND_CHECK(Register::Domain::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::Domain::List)
               LIST_DOWNCAST_CALL(setNSSetHandleFilter(request))
             }
             break;
@@ -178,7 +178,7 @@ namespace Register
           case T_DOMAINS_BY_CONTACT:
             {
               list.reset(dm->createList());
-              LIST_DOWNCAST_AND_CHECK(Register::Domain::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::Domain::List)
 
               list->setWildcardExpansion(false);
               LIST_DOWNCAST_CALL(setRegistrantHandleFilter(request))
@@ -196,7 +196,7 @@ namespace Register
           case T_DOMAINS_BY_KEYSET:
             {
               list.reset(dm->createList());
-              LIST_DOWNCAST_AND_CHECK(Register::Domain::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::Domain::List)
               LIST_DOWNCAST_CALL(setKeySetHandleFilter(request))
             }
             break;
@@ -204,7 +204,7 @@ namespace Register
           case T_LIST_NSSETS:
             {
               list.reset(nm->createList());
-              LIST_DOWNCAST_AND_CHECK(Register::NSSet::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::NSSet::List)
               LIST_DOWNCAST_CALL(setRegistrarFilter(registrar))
             }
             break;
@@ -212,7 +212,7 @@ namespace Register
           case T_LIST_KEYSETS:
             {
               list.reset(km->createList());
-              LIST_DOWNCAST_AND_CHECK(Register::KeySet::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::KeySet::List)
               LIST_DOWNCAST_CALL(setRegistrarFilter(registrar))
             }
             break;
@@ -220,7 +220,7 @@ namespace Register
           case T_NSSETS_BY_CONTACT:
             {
               list.reset(nm->createList());
-              LIST_DOWNCAST_AND_CHECK(Register::NSSet::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::NSSet::List)
               LIST_DOWNCAST_CALL(setAdminFilter(request))
             }
             break;
@@ -228,7 +228,7 @@ namespace Register
           case T_KEYSETS_BY_CONTACT:
             {
               list.reset(km->createList());
-              LIST_DOWNCAST_AND_CHECK(Register::KeySet::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::KeySet::List)
               LIST_DOWNCAST_CALL(setAdminFilter(request))
             }
             break;
@@ -236,7 +236,7 @@ namespace Register
           case T_NSSETS_BY_NS:
             {
               list.reset(nm->createList());
-              LIST_DOWNCAST_AND_CHECK(Register::NSSet::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::NSSet::List)
               LIST_DOWNCAST_CALL(setHostNameFilter(request))
             }
             break;
@@ -244,7 +244,7 @@ namespace Register
           case T_LIST_CONTACTS:
             {
               list.reset(cm->createList());
-              LIST_DOWNCAST_AND_CHECK(Register::Contact::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::Contact::List)
               LIST_DOWNCAST_CALL(setRegistrarFilter(registrar))
             }
             break;

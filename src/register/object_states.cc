@@ -1,7 +1,7 @@
 #include "object_states.h"
 
 
-namespace Register {
+namespace Fred {
 
 bool object_has_state(
         const unsigned long long &_object_id,

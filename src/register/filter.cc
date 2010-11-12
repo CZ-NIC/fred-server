@@ -31,10 +31,10 @@
 #include "model/model_filters.h"
 #include "log/logger.h"
 
-namespace Register {
+namespace Fred {
 namespace Filter {
 
-class FilterImpl : public Register::CommonObjectImpl,
+class FilterImpl : public Fred::CommonObjectImpl,
                    virtual public Filter {
 public:
   FilterImpl(Database::ID _id, FilterType _type, const std::string& _name,
@@ -93,7 +93,7 @@ public:
     insert_filter.add("data", m_data);
 
     try {
-      //TRACE(boost::format("[IN] Register::FilterImpl::save(): going to inserting data SQL = %1%") % insert.str());
+      //TRACE(boost::format("[IN] Fred::FilterImpl::save(): going to inserting data SQL = %1%") % insert.str());
       Database::Connection conn = Database::Manager::acquire();
       Database::Result result = conn.exec(insert_filter);
       LOGGER(PACKAGE).info(boost::format("filter '%1%' saved successfully")
@@ -116,7 +116,7 @@ private:
   std::string m_data;
 };
 
-class ListImpl : public Register::CommonListImpl,
+class ListImpl : public Fred::CommonListImpl,
                  virtual public List {
 public:
   ListImpl() :
@@ -127,7 +127,7 @@ public:
   }
   
   virtual void reload(Database::Filters::Union &uf) {
-    TRACE("[CALL] Register::Filter::ListImpl::reload()");
+    TRACE("[CALL] Fred::Filter::ListImpl::reload()");
     clear();
     uf.clearQueries();
 
@@ -214,7 +214,7 @@ public:
     return m_filter_list;
   }
   virtual void load(Database::ID _id, Database::Filters::Union& _uf) const {
-    TRACE(boost::format("[CALL] Register::Filter::ManagerImpl::load(%1%)") % _id);
+    TRACE(boost::format("[CALL] Fred::Filter::ManagerImpl::load(%1%)") % _id);
     std::auto_ptr<Database::Filters::FilterFilter> data_filter(new Database::Filters::FilterFilterImpl());
     data_filter->addId().setValue(_id);
     
@@ -247,7 +247,7 @@ public:
   }
   
   virtual void save(FilterType _type, const std::string& _name, Database::Filters::Union& _uf) {
-    TRACE(boost::format("[CALL] Register::Filter::ManagerImpl::save(%1%, '%2%')") % _type % _name);
+    TRACE(boost::format("[CALL] Fred::Filter::ManagerImpl::save(%1%, '%2%')") % _type % _name);
     try {
       std::stringstream xml_data;
       {
@@ -256,7 +256,7 @@ public:
       }
       Database::Connection conn = Database::Manager::acquire();
 
-      Register::Filter::FilterImpl new_filter(_type, _name, 1, 1, xml_data.str());
+      Fred::Filter::FilterImpl new_filter(_type, _name, 1, 1, xml_data.str());
       new_filter.save();
     }
     catch (std::exception& ex) {
@@ -269,7 +269,7 @@ private:
 };
 
 Manager* Manager::create() {
-	TRACE("[CALL] Register::Filter::Manager::create()");
+	TRACE("[CALL] Fred::Filter::Manager::create()");
 	return new ManagerImpl();
 }
 

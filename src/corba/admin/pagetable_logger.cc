@@ -3,7 +3,7 @@
 const int ccReg_Logger_i::NUM_COLUMNS = 8;
 
 
-ccReg_Logger_i::ccReg_Logger_i(Register::Logger::List *_list) : m_lel (_list)  {
+ccReg_Logger_i::ccReg_Logger_i(Fred::Logger::List *_list) : m_lel (_list)  {
 }
 
 ccReg_Logger_i::~ccReg_Logger_i() {
@@ -41,7 +41,7 @@ Registry::TableRow* ccReg_Logger_i::getRow(CORBA::UShort row)
   Logging::Context ctx(base_context_);
 
   try {
-    const Register::Logger::Request *a = m_lel->get(row);
+    const Fred::Logger::Request *a = m_lel->get(row);
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(NUM_COLUMNS);
 
@@ -70,25 +70,25 @@ void ccReg_Logger_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
   switch (column) {
     case 0:
-      m_lel->sort(Register::Logger::MT_TIME_BEGIN, dir);
+      m_lel->sort(Fred::Logger::MT_TIME_BEGIN, dir);
       break;
     case 1:
-      m_lel->sort(Register::Logger::MT_TIME_END, dir);
+      m_lel->sort(Fred::Logger::MT_TIME_END, dir);
       break;
     case 2:
-      m_lel->sort(Register::Logger::MT_SERVICE, dir);
+      m_lel->sort(Fred::Logger::MT_SERVICE, dir);
       break;
     case 3:
-      m_lel->sort(Register::Logger::MT_SOURCE_IP, dir);
+      m_lel->sort(Fred::Logger::MT_SOURCE_IP, dir);
       break;
     case 4:
-      m_lel->sort(Register::Logger::MT_ACTION, dir);
+      m_lel->sort(Fred::Logger::MT_ACTION, dir);
       break;    
     case 5:
-      m_lel->sort(Register::Logger::MT_USER_NAME, dir);
+      m_lel->sort(Fred::Logger::MT_USER_NAME, dir);
       break;
     case 6:
-      m_lel->sort(Register::Logger::MT_MONITORING, dir);
+      m_lel->sort(Fred::Logger::MT_MONITORING, dir);
       break;
 
   }
@@ -98,7 +98,7 @@ ccReg::TID ccReg_Logger_i::getRowId(CORBA::UShort row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::Logger::Request *a = m_lel->get(row);
+  const Fred::Logger::Request *a = m_lel->get(row);
   if (!a)
     throw ccReg::Table::INVALID_ROW();
   return a->getId();
@@ -179,22 +179,22 @@ void ccReg_Logger_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_Logger_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create());
-  tmp_filter_manager->save(Register::Filter::FT_LOGGER, _name, uf);
+  std::auto_ptr<Fred::Filter::Manager>
+      tmp_filter_manager(Fred::Filter::Manager::create());
+  tmp_filter_manager->save(Fred::Filter::FT_LOGGER, _name, uf);
 }
 
-Register::Logger::Request* ccReg_Logger_i::findId(ccReg::TID _id) {
+Fred::Logger::Request* ccReg_Logger_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    Register::Logger::Request *request = dynamic_cast<Register::Logger::Request* >(m_lel->findId(_id));
+    Fred::Logger::Request *request = dynamic_cast<Fred::Logger::Request* >(m_lel->findId(_id));
     if (request) {
       return request;
     }
     return 0;
   }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     return 0;
   }
 }

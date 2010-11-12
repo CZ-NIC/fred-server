@@ -43,7 +43,7 @@
 
 #include "zone.h"
 
-namespace Register {
+namespace Fred {
 namespace Registrar {
 
 class RegistrarImpl;
@@ -215,7 +215,7 @@ unsigned long addRegistrarZone(
   }//addRegistrarZone
 
 
-class RegistrarImpl : public Register::CommonObjectImplNew,
+class RegistrarImpl : public Fred::CommonObjectImplNew,
                       virtual public Registrar,
                       private ModelRegistrar
 {
@@ -808,7 +808,7 @@ public:
 
 
 
-class RegistrarListImpl : public Register::CommonListImplNew,
+class RegistrarListImpl : public Fred::CommonListImplNew,
                           public RegistrarList {
   
   std::string name;
@@ -1071,21 +1071,21 @@ public:
     }
   }
 
-  virtual Register::Registrar::Registrar* findId(Database::ID id) const
+  virtual Fred::Registrar::Registrar* findId(Database::ID id) const
   {
-	  std::vector<Register::CommonObjectNew*>::const_iterator it = std::find_if(m_data.begin(),
+	  std::vector<Fred::CommonObjectNew*>::const_iterator it = std::find_if(m_data.begin(),
 	  m_data.end(),
-	  CheckIdNew<Register::Registrar::Registrar>(id));
+	  CheckIdNew<Fred::Registrar::Registrar>(id));
 
 	  if (it != m_data.end())
 	  {
 		  LOGGER(PACKAGE).debug(boost::format("object list hit! object id=%1% found")
 		  % id);
-		  return dynamic_cast<Register::Registrar::Registrar*>(*it);
+		  return dynamic_cast<Fred::Registrar::Registrar*>(*it);
 	  }
 	  LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% not found")
 	  % id);
-	  throw Register::NOT_FOUND();
+	  throw Fred::NOT_FOUND();
   }
 
   virtual void sort(MemberType _member, bool _asc, unsigned _zone_id
@@ -1252,8 +1252,8 @@ public:
 class EPPActionCompare##_by_what {                                        \
 public:                                                                   \
   EPPActionCompare##_by_what(bool _asc) : asc_(_asc) { }                  \
-  bool operator()(Register::CommonObject *_left,                          \
-                  Register::CommonObject *_right) const {                 \
+  bool operator()(Fred::CommonObject *_left,                          \
+                  Fred::CommonObject *_right) const {                 \
     _object_type *l_casted = dynamic_cast<_object_type *>(_left);         \
     _object_type *r_casted = dynamic_cast<_object_type *>(_right);        \
     if (l_casted == 0 || r_casted == 0) {                                 \
@@ -1280,7 +1280,7 @@ COMPARE_CLASS_IMPL(EPPActionImpl, Result)
 #undef COMPARE_CLASS_IMPL
 
 /// List of EPPAction objects
-class EPPActionListImpl : public Register::CommonListImpl,
+class EPPActionListImpl : public Fred::CommonListImpl,
                           virtual public EPPActionList {
   TID id;
   TID sessionId;
@@ -2423,12 +2423,12 @@ void RegistrarZoneAccess::reload()
 
 Manager::AutoPtr Manager::create(DB * db)
 {
-  TRACE("[CALL] Register::Registrar::Manager::create(db)");
+  TRACE("[CALL] Fred::Registrar::Manager::create(db)");
   return Manager::AutoPtr(new ManagerImpl(db));
 }
 
 }
 ; // namespace Registrar
 }
-; // namespace Register
+; // namespace Fred
 

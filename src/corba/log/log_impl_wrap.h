@@ -12,7 +12,7 @@
 
 
 
-using namespace Register::Logger;
+using namespace Fred::Logger;
 
 
 class ccReg_Log_i : public POA_ccReg::Logger,
@@ -41,18 +41,18 @@ public:
   void deletePageTable(const char *session_id);
 
   Registry::Request::Detail* getDetail(ccReg::TID _id);
-  Registry::Request::Detail* createRequestDetail(Register::Logger::Request *req);
+  Registry::Request::Detail* createRequestDetail(Fred::Logger::Request *req);
 
 private:
   typedef std::map<std::string, ccReg_Logger_i*> pagetables_list;
 
   pagetables_list pagetables;
-  std::auto_ptr<Register::Logger::Manager> back;
+  std::auto_ptr<Fred::Logger::Manager> back;
 
   boost::mutex pagetables_mutex;
 
 public:
-  typedef Register::Logger::Manager::DB_CONNECT_FAILED DB_CONNECT_FAILED ;
+  typedef Fred::Logger::Manager::DB_CONNECT_FAILED DB_CONNECT_FAILED ;
 };
 
 #endif

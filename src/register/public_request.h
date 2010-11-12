@@ -26,7 +26,7 @@
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
-namespace Register {
+namespace Fred {
 namespace PublicRequest {
 
 
@@ -114,7 +114,7 @@ struct REQUEST_BLOCKED : std::exception {};
 /*
  * Request interface
  */
-class PublicRequest : virtual public Register::CommonObject {
+class PublicRequest : virtual public Fred::CommonObject {
 public:
   virtual ~PublicRequest() {
   }
@@ -122,10 +122,10 @@ public:
   virtual void init(Database::Row::Iterator& _it) = 0;
   virtual void save() = 0;
 
-  virtual Register::PublicRequest::Type getType() const = 0;
-  virtual void setType(Register::PublicRequest::Type _type) = 0;
-  virtual Register::PublicRequest::Status getStatus() const = 0;
-  virtual void setStatus(Register::PublicRequest::Status _status) = 0;
+  virtual Fred::PublicRequest::Type getType() const = 0;
+  virtual void setType(Fred::PublicRequest::Type _type) = 0;
+  virtual Fred::PublicRequest::Status getStatus() const = 0;
+  virtual void setStatus(Fred::PublicRequest::Status _status) = 0;
   virtual ptime getCreateTime() const = 0;
   virtual ptime getResolveTime() const = 0;
   virtual const std::string& getReason() const = 0;
@@ -185,7 +185,7 @@ public:
 typedef boost::shared_ptr<PublicRequestAuth> PublicRequestAuthPtr;
 
 
-class List : virtual public Register::CommonList {
+class List : virtual public Fred::CommonList {
 public:
   virtual ~List() {
   }

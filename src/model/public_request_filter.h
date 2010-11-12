@@ -15,8 +15,8 @@ public:
 
   virtual Table& joinRequestTable() = 0;
   virtual Value<Database::ID>& addId() = 0;
-//  virtual Value<Register::Request::Type>& addType() = 0;
-//  virtual Value<Register::Request::Status>& addStatus() = 0;
+//  virtual Value<Fred::Request::Type>& addType() = 0;
+//  virtual Value<Fred::Request::Status>& addStatus() = 0;
   virtual Value<int>& addType() = 0;
   virtual Value<int>& addStatus() = 0;
   virtual Interval<DateTimeInterval>& addCreateTime() = 0;

@@ -24,7 +24,7 @@ class ParsedAction
   std::map<unsigned, std::string> elements;
 public:
   void add(unsigned id, const std::string& value);
-  bool executeSQL(Register::TID actionid, DB* db);
+  bool executeSQL(Fred::TID actionid, DB* db);
 };
 
 

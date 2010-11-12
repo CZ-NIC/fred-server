@@ -20,7 +20,7 @@ ccReg_BankingInvoicing_i::addBankAccount(
 {
     ConnectionReleaser releaser;
 
-    using namespace Register;
+    using namespace Fred;
     FileManagerClient fm_client(ns_);
     File::ManagerPtr file_manager(File::Manager::create(&fm_client));
     Banking::ManagerPtr bank_manager(Banking::Manager::create(file_manager.get()));
@@ -33,8 +33,8 @@ ccReg_BankingInvoicing_i::archiveInvoices(
         bool send)
 {
     ConnectionReleaser releaser;
-    std::auto_ptr<Register::Invoicing::Manager> 
-        invMan(Register::Invoicing::Manager::create());
+    std::auto_ptr<Fred::Invoicing::Manager>
+        invMan(Fred::Invoicing::Manager::create());
     return invMan->archiveInvoices(send);
 }
 */
@@ -47,7 +47,7 @@ ccReg_BankingInvoicing_i::pairPaymentRegistrarId(
     /*
     ConnectionReleaser releaser;
 
-    using namespace Register;
+    using namespace Fred;
     FileManagerClient fm_client(ns_);
     File::ManagerPtr file_manager(File::Manager::create(&fm_client));
 
@@ -63,7 +63,7 @@ bool ccReg_BankingInvoicing_i::pairPaymentRegistrarHandle(
 {
     ConnectionReleaser releaser;
 
-    using namespace Register;
+    using namespace Fred;
     FileManagerClient fm_client(ns_);
     File::ManagerPtr file_manager(File::Manager::create(&fm_client));
 
@@ -78,7 +78,7 @@ bool ccReg_BankingInvoicing_i::setPaymentType(
     ConnectionReleaser releaser;
 
     try {
-        using namespace Register;
+        using namespace Fred;
         FileManagerClient fm_client(ns_);
         File::ManagerPtr file_manager(File::Manager::create(&fm_client));
 
@@ -100,8 +100,8 @@ ccReg_BankingInvoicing_i::addPrefix(
         ccReg::TID prefix)
 {
     ConnectionReleaser releaser;
-    std::auto_ptr<Register::Invoicing::Manager> 
-        invMan(Register::Invoicing::Manager::create());
+    std::auto_ptr<Fred::Invoicing::Manager>
+        invMan(Fred::Invoicing::Manager::create());
     return invMan->insertInvoicePrefix(zoneName, type, year, prefix);
 }
 
@@ -109,8 +109,8 @@ bool
 ccReg_BankingInvoicing_i::pairInvoices()
 {
     ConnectionReleaser releaser;
-    std::auto_ptr<Register::Invoicing::Manager> 
-        invMan(Register::Invoicing::Manager::create());
+    std::auto_ptr<Fred::Invoicing::Manager>
+        invMan(Fred::Invoicing::Manager::create());
     return invMan->pairInvoices(false);
 }
 
@@ -123,9 +123,9 @@ ccReg_BankingInvoicing_i::createCreditInvoice(
         const char *crdate)
 {
     ConnectionReleaser releaser;
-    std::auto_ptr<Register::Invoicing::Manager>
-        invMan(Register::Invoicing::Manager::create());
-    std::auto_ptr<Register::Invoicing::Invoice>
+    std::auto_ptr<Fred::Invoicing::Manager>
+        invMan(Fred::Invoicing::Manager::create());
+    std::auto_ptr<Fred::Invoicing::Invoice>
         invoice(invMan->createDepositInvoice());
     invoice->setZoneId(zone);
     invoice->setRegistrarId(registrar);
@@ -141,13 +141,13 @@ ccReg_BankingInvoicing_i::createCreditInvoice(
 
 bool
 ccReg_BankingInvoicing_i::factoringOne(
-        Register::Invoicing::Manager *manager,
+        Fred::Invoicing::Manager *manager,
         ccReg::TID zone,
         ccReg::TID registrar,
         const Database::Date &todate,
         const Database::Date &taxdate)
 {
-    std::auto_ptr<Register::Invoicing::Invoice>
+    std::auto_ptr<Fred::Invoicing::Invoice>
         invoice(manager->createAccountInvoice());
     invoice->setZoneId(zone);
     invoice->setRegistrarId(registrar);
@@ -164,8 +164,8 @@ ccReg_BankingInvoicing_i::factoring(
         const char *taxdate)
 {
     ConnectionReleaser releaser;
-    std::auto_ptr<Register::Invoicing::Manager>
-        invMan(Register::Invoicing::Manager::create());
+    std::auto_ptr<Fred::Invoicing::Manager>
+        invMan(Fred::Invoicing::Manager::create());
     Database::Date now(Database::NOW);
     Database::Date first_this(now.get().year(), now.get().month(), 1);
     Database::Date last_prev(first_this - Database::Days(1));
@@ -225,8 +225,8 @@ bool ccReg_BankingInvoicing_i::addPrice(
     ConnectionReleaser releaser;
     DB db;
     db.OpenDatabase(m_connection_string.c_str());
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
+    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+            Fred::Zone::Manager::create());
     Database::DateTime validFrom(Database::NOW_UTC);
     if (strlen(validfrom) != 0) {
         validFrom = Database::DateTime(validfrom);
@@ -236,10 +236,10 @@ bool ccReg_BankingInvoicing_i::addPrice(
         validTo = Database::DateTime(validto);
     }
     Database::Money p_price(price);
-    Register::Zone::Operation op =
+    Fred::Zone::Operation op =
         ((operation == ccReg::BankingInvoicing::OT_CREATE) ? 
-         Register::Zone::CREATE :
-         Register::Zone::RENEW);
+         Fred::Zone::CREATE :
+         Fred::Zone::RENEW);
     zoneMan->addPrice(zone, op, validFrom, validTo,
             p_price, period);
     return true;

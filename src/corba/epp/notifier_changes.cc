@@ -48,8 +48,8 @@ void compare_and_fill_admin_contacts(MessageUpdateChanges::ChangesMap &_changes,
 
 void compare_and_fill_temp_contacts(MessageUpdateChanges::ChangesMap &_changes,
                                     const std::string &_field_prefix,
-                                    const Register::Domain::Domain *_prev,
-                                    const Register::Domain::Domain *_act)
+                                    const Fred::Domain::Domain *_prev,
+                                    const Fred::Domain::Domain *_act)
 {
   bool changed = (_prev->getAdminCount(2) != _act->getAdminCount(2));
   for (unsigned int i = 0; changed != true && i < _prev->getAdminCount(2); ++i) {
@@ -72,7 +72,7 @@ void compare_and_fill_temp_contacts(MessageUpdateChanges::ChangesMap &_changes,
 }
 
 
-std::string nsset_host_to_simple_string(const Register::NSSet::Host *_host)
+std::string nsset_host_to_simple_string(const Fred::NSSet::Host *_host)
 {
   std::string ret;
   unsigned int addr_size = _host->getAddrCount();
@@ -92,7 +92,7 @@ std::string nsset_host_to_simple_string(const Register::NSSet::Host *_host)
 }
 
 
-std::string dsrecord_to_simple_string(const Register::KeySet::DSRecord *_ds)
+std::string dsrecord_to_simple_string(const Fred::KeySet::DSRecord *_ds)
 {
   std::string ret;
 
@@ -107,7 +107,7 @@ std::string dsrecord_to_simple_string(const Register::KeySet::DSRecord *_ds)
 }
 
 
-std::string dnskey_to_simple_string(const Register::KeySet::DNSKey *_dns)
+std::string dnskey_to_simple_string(const Fred::KeySet::DNSKey *_dns)
 {
   std::string ret;
 
@@ -121,7 +121,7 @@ std::string dnskey_to_simple_string(const Register::KeySet::DNSKey *_dns)
 }
 
 
-std::string address_to_simple_string(const Register::Contact::Contact *_contact)
+std::string address_to_simple_string(const Fred::Contact::Contact *_contact)
 {
   std::string ret;
 
@@ -176,7 +176,7 @@ void MessageUpdateChanges::_collectContactChanges(ChangesMap &_changes) const
   Settings     settings;
   settings.set("filter.history", "on");
 
-  std::auto_ptr<Register::Contact::List> data(rm_->getContactManager()->createList());
+  std::auto_ptr<Fred::Contact::List> data(rm_->getContactManager()->createList());
 
   Database::Filters::Union uf(&settings);
   Database::Filters::Contact *filter = new Database::Filters::ContactHistoryImpl();
@@ -189,8 +189,8 @@ void MessageUpdateChanges::_collectContactChanges(ChangesMap &_changes) const
     throw NoChangesFound();
 
   unsigned int count = data->size();
-  Register::Contact::Contact *prev = data->getContact(count - 2);
-  Register::Contact::Contact *act  = data->getContact(count - 1);
+  Fred::Contact::Contact *prev = data->getContact(count - 2);
+  Fred::Contact::Contact *act  = data->getContact(count - 1);
 
   _diffContact(_changes, prev, act);
 }
@@ -201,7 +201,7 @@ void MessageUpdateChanges::_collectDomainChanges(ChangesMap &_changes) const
   Settings     settings;
   settings.set("filter.history", "on");
 
-  std::auto_ptr<Register::Domain::List> data(rm_->getDomainManager()->createList());
+  std::auto_ptr<Fred::Domain::List> data(rm_->getDomainManager()->createList());
 
   Database::Filters::Union uf(&settings);
   Database::Filters::Domain *filter = new Database::Filters::DomainHistoryImpl();
@@ -214,8 +214,8 @@ void MessageUpdateChanges::_collectDomainChanges(ChangesMap &_changes) const
     throw NoChangesFound();
 
   unsigned int count = data->size();
-  Register::Domain::Domain *prev = data->getDomain(count - 2);
-  Register::Domain::Domain *act  = data->getDomain(count - 1);
+  Fred::Domain::Domain *prev = data->getDomain(count - 2);
+  Fred::Domain::Domain *act  = data->getDomain(count - 1);
 
   _diffDomain(_changes, prev, act);
 }
@@ -226,7 +226,7 @@ void MessageUpdateChanges::_collectNSSetChanges(ChangesMap &_changes) const
   Settings     settings;
   settings.set("filter.history", "on");
 
-  std::auto_ptr<Register::NSSet::List> data(rm_->getNSSetManager()->createList());
+  std::auto_ptr<Fred::NSSet::List> data(rm_->getNSSetManager()->createList());
 
   Database::Filters::Union uf(&settings);
   Database::Filters::NSSet *filter = new Database::Filters::NSSetHistoryImpl();
@@ -239,8 +239,8 @@ void MessageUpdateChanges::_collectNSSetChanges(ChangesMap &_changes) const
     throw NoChangesFound();
 
   unsigned int count = data->size();
-  Register::NSSet::NSSet *prev = data->getNSSet(count - 2);
-  Register::NSSet::NSSet *act  = data->getNSSet(count - 1);
+  Fred::NSSet::NSSet *prev = data->getNSSet(count - 2);
+  Fred::NSSet::NSSet *act  = data->getNSSet(count - 1);
 
   _diffNSSet(_changes, prev, act);
 }
@@ -251,7 +251,7 @@ void MessageUpdateChanges::_collectKeySetChanges(ChangesMap &_changes) const
   Settings     settings;
   settings.set("filter.history", "on");
 
-  std::auto_ptr<Register::KeySet::List> data(rm_->getKeySetManager()->createList());
+  std::auto_ptr<Fred::KeySet::List> data(rm_->getKeySetManager()->createList());
 
   Database::Filters::Union uf(&settings);
   Database::Filters::KeySet *filter = new Database::Filters::KeySetHistoryImpl();
@@ -264,30 +264,30 @@ void MessageUpdateChanges::_collectKeySetChanges(ChangesMap &_changes) const
     throw NoChangesFound();
 
   unsigned int count = data->size();
-  Register::KeySet::KeySet *prev = data->getKeySet(count - 2);
-  Register::KeySet::KeySet *act  = data->getKeySet(count - 1);
+  Fred::KeySet::KeySet *prev = data->getKeySet(count - 2);
+  Fred::KeySet::KeySet *act  = data->getKeySet(count - 1);
 
   _diffKeySet(_changes, prev, act);
 }
 
 
 void MessageUpdateChanges::_diffObject(ChangesMap &_changes,
-                                       const Register::Object::Object *_prev,
-                                       const Register::Object::Object *_act) const
+                                       const Fred::Object::Object *_prev,
+                                       const Fred::Object::Object *_act) const
 {
   compare_and_fill(_changes, "object.authinfo", _prev->getAuthPw(), _act->getAuthPw());
 }
 
 
 void MessageUpdateChanges::_diffContact(ChangesMap &_changes, 
-                                        const Register::Contact::Contact *_prev,
-                                        const Register::Contact::Contact *_act) const 
+                                        const Fred::Contact::Contact *_prev,
+                                        const Fred::Contact::Contact *_act) const
 {
   if (_prev == _act)
     return;
 
-  const Register::Object::Object *upcast_prev = dynamic_cast<const Register::Object::Object*>(_prev); 
-  const Register::Object::Object *upcast_act  = dynamic_cast<const Register::Object::Object*>(_act);
+  const Fred::Object::Object *upcast_prev = dynamic_cast<const Fred::Object::Object*>(_prev);
+  const Fred::Object::Object *upcast_act  = dynamic_cast<const Fred::Object::Object*>(_act);
 
   if (upcast_prev != 0 && upcast_act != 0)
     _diffObject(_changes, upcast_prev, upcast_act);
@@ -323,14 +323,14 @@ void MessageUpdateChanges::_diffContact(ChangesMap &_changes,
 
 
 void MessageUpdateChanges::_diffDomain(ChangesMap &_changes, 
-                                       const Register::Domain::Domain *_prev,
-                                       const Register::Domain::Domain *_act) const 
+                                       const Fred::Domain::Domain *_prev,
+                                       const Fred::Domain::Domain *_act) const
 {
   if (_prev == _act)
     return;
 
-  const Register::Object::Object *upcast_prev = dynamic_cast<const Register::Object::Object*>(_prev); 
-  const Register::Object::Object *upcast_act  = dynamic_cast<const Register::Object::Object*>(_act);
+  const Fred::Object::Object *upcast_prev = dynamic_cast<const Fred::Object::Object*>(_prev);
+  const Fred::Object::Object *upcast_act  = dynamic_cast<const Fred::Object::Object*>(_act);
 
   if (upcast_prev != 0 && upcast_act != 0)
     _diffObject(_changes, upcast_prev, upcast_act);
@@ -346,14 +346,14 @@ void MessageUpdateChanges::_diffDomain(ChangesMap &_changes,
 
 
 void MessageUpdateChanges::_diffNSSet(ChangesMap &_changes, 
-                                      const Register::NSSet::NSSet *_prev,
-                                      const Register::NSSet::NSSet *_act) const 
+                                      const Fred::NSSet::NSSet *_prev,
+                                      const Fred::NSSet::NSSet *_act) const
 {
   if (_prev == _act)
     return;
 
-  const Register::Object::Object *upcast_prev = dynamic_cast<const Register::Object::Object*>(_prev); 
-  const Register::Object::Object *upcast_act  = dynamic_cast<const Register::Object::Object*>(_act);
+  const Fred::Object::Object *upcast_prev = dynamic_cast<const Fred::Object::Object*>(_prev);
+  const Fred::Object::Object *upcast_act  = dynamic_cast<const Fred::Object::Object*>(_act);
 
   if (upcast_prev != 0 && upcast_act != 0)
     _diffObject(_changes, upcast_prev, upcast_act);
@@ -380,21 +380,21 @@ void MessageUpdateChanges::_diffNSSet(ChangesMap &_changes,
       }
     }
   }
-  catch (Register::NOT_FOUND &_ex) {
+  catch (Fred::NOT_FOUND &_ex) {
     // report code error
   }
 }
 
 
 void MessageUpdateChanges::_diffKeySet(ChangesMap &_changes, 
-                                       const Register::KeySet::KeySet *_prev,
-                                       const Register::KeySet::KeySet *_act) const 
+                                       const Fred::KeySet::KeySet *_prev,
+                                       const Fred::KeySet::KeySet *_act) const
 {
   if (_prev == _act)
     return;
 
-  const Register::Object::Object *upcast_prev = dynamic_cast<const Register::Object::Object*>(_prev); 
-  const Register::Object::Object *upcast_act  = dynamic_cast<const Register::Object::Object*>(_act);
+  const Fred::Object::Object *upcast_prev = dynamic_cast<const Fred::Object::Object*>(_prev);
+  const Fred::Object::Object *upcast_act  = dynamic_cast<const Fred::Object::Object*>(_act);
 
   if (upcast_prev != 0 && upcast_act != 0)
     _diffObject(_changes, upcast_prev, upcast_act);
@@ -420,7 +420,7 @@ void MessageUpdateChanges::_diffKeySet(ChangesMap &_changes,
       }
     }
   }
-  catch (Register::NOT_FOUND &_ex) {
+  catch (Fred::NOT_FOUND &_ex) {
     // report code error
   }
 
@@ -443,7 +443,7 @@ void MessageUpdateChanges::_diffKeySet(ChangesMap &_changes,
       }
     }
   }
-  catch (Register::NOT_FOUND &_ex) {
+  catch (Fred::NOT_FOUND &_ex) {
     // report code error
   }
 

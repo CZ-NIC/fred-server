@@ -41,7 +41,7 @@
 #define CONTACT_REGEX_RESTRICTED "[cC][iI][dD]:[a-zA-Z0-9_:.-]{1,59}"
 #define CONTACT_REGEX "[a-zA-Z0-9_:.-]{1,63}"
 
-namespace Register {
+namespace Fred {
 namespace Contact {
 static boost::regex format(CONTACT_REGEX);
 static boost::regex formatRestricted(CONTACT_REGEX_RESTRICTED);

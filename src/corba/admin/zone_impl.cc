@@ -26,8 +26,8 @@
         ConnectionReleaser releaser;
     	try
     	{
-			std::auto_ptr<Register::Zone::Manager> zoneMan(
-					Register::Zone::Manager::create());
+			std::auto_ptr<Fred::Zone::Manager> zoneMan(
+					Fred::Zone::Manager::create());
 
 			zoneMan->addZone
 					( fqdn
@@ -66,8 +66,8 @@
         ConnectionReleaser releaser;
     	try
     	{
-			std::auto_ptr<Register::Zone::Manager> zoneMan(
-					Register::Zone::Manager::create());
+			std::auto_ptr<Fred::Zone::Manager> zoneMan(
+					Fred::Zone::Manager::create());
 
 			zoneMan->updateZoneByFqdn
 					( fqdn
@@ -107,8 +107,8 @@
         ConnectionReleaser releaser;
 		try
 		{
-			std::auto_ptr<Register::Zone::Manager> zoneMan(
-					Register::Zone::Manager::create());
+			std::auto_ptr<Fred::Zone::Manager> zoneMan(
+					Fred::Zone::Manager::create());
 
 			zoneMan->updateZoneById
 					( id
@@ -141,8 +141,8 @@
         ConnectionReleaser releaser;
 		try
 		{
-			std::auto_ptr<Register::Zone::Manager> zoneMan(
-					Register::Zone::Manager::create());
+			std::auto_ptr<Fred::Zone::Manager> zoneMan(
+					Fred::Zone::Manager::create());
 
 			zoneMan->addZoneNs(zone_fqdn, fqdn, addr);
 		}//try
@@ -166,8 +166,8 @@
         ConnectionReleaser releaser;
 		try
 		{
-			std::auto_ptr<Register::Zone::Manager> zoneMan(
-					Register::Zone::Manager::create());
+			std::auto_ptr<Fred::Zone::Manager> zoneMan(
+					Fred::Zone::Manager::create());
 			zoneMan->updateZoneNsById(id, zone_fqdn, fqdn, addr);
 		}//try
 		catch (...)

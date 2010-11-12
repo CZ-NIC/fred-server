@@ -118,7 +118,7 @@ private:
 
 #define STR_TO_MONEY(x) atol(x)
 
-namespace Register {
+namespace Fred {
 namespace Invoicing {
 
 std::string
@@ -203,7 +203,7 @@ public:
             const Database::Date &exDate,
             const int &units_count,
             bool renew) {
-      TRACE("[CALL] Register::Invoicing::Manager::domainBilling()");
+      TRACE("[CALL] Fred::Invoicing::Manager::domainBilling()");
 
       if(!renew) {
           return db->BillingCreateDomain(registrar, zone, objectId);
@@ -733,7 +733,7 @@ public:
 /// implementation of interface Invoice
 
 
-class InvoiceImpl : public Register::CommonObjectImpl, 
+class InvoiceImpl : public Fred::CommonObjectImpl,
                     virtual public Invoice {
   DB *dbc;
   TID zone;
@@ -1338,7 +1338,7 @@ public:
   //   InvoiceListImpl
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   /// implementation of interface InvoiceList
-  class ListImpl : public Register::CommonListImpl,
+  class ListImpl : public Fred::CommonListImpl,
   virtual public List {
     TID idFilter; ///< filter for invoice id 
     TID registrarFilter; ///< filter for registrar recieving invoice
@@ -2173,4 +2173,4 @@ public:
 
   
 }; // Invoicing
-}; // Register
+}; // Fred

@@ -39,7 +39,7 @@
 #define IS_NUMBER(x) (x >= '0' && x <= '9')
 #define IS_LETTER(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
 
-namespace Register
+namespace Fred
 {
   namespace Zone
   {
@@ -128,7 +128,7 @@ namespace Register
 
 
 
-    class ZoneImpl : public Register::CommonObjectImplNew
+    class ZoneImpl : public Fred::CommonObjectImplNew
                    , virtual public  Zone
                    , private ModelZoneSoa
     {
@@ -428,7 +428,7 @@ namespace Register
     COMPARE_CLASS_IMPL_NEW(ZoneImpl, NsFqdn)
 
     class ZoneListImpl
-		: public Register::CommonListImplNew
+		: public Fred::CommonListImplNew
 		, public ZoneList
 	{
 		    long long ptr_idx_;//from CommonListImpl
@@ -768,7 +768,7 @@ namespace Register
 		          registrar_handle="";
 		      }
 
-		      virtual Register::Zone::Zone* findId(Database::ID id) const
+		      virtual Fred::Zone::Zone* findId(Database::ID id) const
 		      {
                   Zone *z=0, *ret = 0;
                   for ( unsigned i = 0; i < m_data.size(); i++)
@@ -924,7 +924,7 @@ namespace Register
       const Zone* findApplicableZone(const std::string& domain_fqdn) const
       {
         // nonconst casting for lazy initialization
-        if (!loaded) ((Register::Zone::ManagerImpl *)this)->load();
+        if (!loaded) ((Fred::Zone::ManagerImpl *)this)->load();
         return zoneList.findApplicableZoneByDomainFqdn(domain_fqdn);
       }
 
@@ -1408,7 +1408,7 @@ namespace Register
 
     Manager::ZoneManagerPtr Manager::create()
     {
-      TRACE("[CALL] Register::Zone::Manager::create()");
+      TRACE("[CALL] Fred::Zone::Manager::create()");
       return Manager::ZoneManagerPtr(new ManagerImpl);
     }
   };

@@ -19,7 +19,7 @@ using namespace boost::gregorian;
 /// forward declared parameter type 
 class DB;
 
-namespace Register {
+namespace Fred {
 namespace Domain {
 
 /// member identification (i.e. for sorting)
@@ -62,7 +62,7 @@ enum CheckAvailType {
 
 
 /// domain detail
-class Domain : virtual public Register::Object {
+class Domain : virtual public Fred::Object {
 public:
   /// public destructor
   virtual ~Domain() {
@@ -220,6 +220,6 @@ public:
 };
 
 } // namespace Domain
-} // namespace Register
+} // namespace Fred
 
 #endif /*DOMAIN_H_*/

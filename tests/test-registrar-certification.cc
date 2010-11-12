@@ -203,7 +203,7 @@ public:
         res.ret = 0;
         res.desc = std::string("ok");
 
-        Register::TID cert_id=0;
+        Fred::TID cert_id=0;
         try
         {
             if(number_%tgd_)//if synchronized thread
@@ -225,8 +225,8 @@ public:
             Database::Result res1 = conn.exec( query1 );
 
 
-            Register::Registrar::Manager::AutoPtr regman(
-                    Register::Registrar::Manager::create(0));
+            Fred::Registrar::Manager::AutoPtr regman(
+                    Fred::Registrar::Manager::create(0));
 
             cert_id = regman->createRegistrarCertification(
                     1
@@ -238,7 +238,7 @@ public:
                                   + boost::gregorian::date_duration( 365 ))
                                   )
 
-                    , static_cast<Register::Registrar::RegCertClass>(3)//score
+                    , static_cast<Fred::Registrar::RegCertClass>(3)//score
                     , 0//evaluation_file_id
                     );
 
@@ -267,8 +267,8 @@ public:
         try
         {
 
-            Register::Registrar::Manager::AutoPtr regman(
-                    Register::Registrar::Manager::create(0));
+            Fred::Registrar::Manager::AutoPtr regman(
+                    Fred::Registrar::Manager::create(0));
 
             regman->shortenRegistrarCertification(cert_id
                     , Database::Date(
@@ -276,7 +276,7 @@ public:
                                   + boost::gregorian::date_duration( 7 ))));
 
             regman->updateRegistrarCertification(cert_id
-                    , static_cast<Register::Registrar::RegCertClass>(2)//score
+                    , static_cast<Fred::Registrar::RegCertClass>(2)//score
                     , 0//evaluation_file_id
                     );
         }

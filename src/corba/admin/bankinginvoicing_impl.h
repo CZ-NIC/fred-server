@@ -13,7 +13,7 @@ private:
 
     std::string m_connection_string;
     bool factoringOne(
-            Register::Invoicing::Manager *manager,
+            Fred::Invoicing::Manager *manager,
             ccReg::TID zone,
             ccReg::TID registrar,
             const Database::Date &todate,

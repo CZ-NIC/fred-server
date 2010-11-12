@@ -28,7 +28,7 @@
 #include "db_settings.h"
 #include "log/logger.h"
 
-namespace Register {
+namespace Fred {
 
 class StatusDescImpl : public virtual StatusDesc {
   TID id;
@@ -262,7 +262,7 @@ public:
   }
 
   virtual void loadCountryDesc() {
-    TRACE("[CALL] Register::Manager::loadCountryDesc()");
+    TRACE("[CALL] Fred::Manager::loadCountryDesc()");
     Database::SelectQuery country_query;
     country_query.select() << "id, country_cs, country";
     country_query.from() << "enum_country";
@@ -307,7 +307,7 @@ public:
   }
 
   virtual void initStates() throw (SQL_ERROR) {
-    TRACE("[CALL] Register::Manager::initStates()");
+    TRACE("[CALL] Fred::Manager::initStates()");
 
     statusList.clear();
 
@@ -365,7 +365,7 @@ public:
   }
 
   virtual void updateObjectStates(unsigned long long _id) const throw (SQL_ERROR) {
-    TRACE("[CALL] Register::Manager::updateObjectStates()");
+    TRACE("[CALL] Fred::Manager::updateObjectStates()");
     std::stringstream sql;
     sql << "SELECT update_object_states(" << _id << ")";
     if (!db->ExecSelect(sql.str().c_str())) {
@@ -385,8 +385,8 @@ public:
 };
 
 Manager *Manager::create(DB *db, bool _restrictedHandles) {
-  TRACE("[CALL] Register::Manager::create()");
+  TRACE("[CALL] Fred::Manager::create()");
   return new ManagerImpl(db, _restrictedHandles);
 }
 
-}//namespace Register
+}//namespace Fred

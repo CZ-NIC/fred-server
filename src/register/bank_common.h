@@ -16,7 +16,7 @@
 #include "log/logger.h"
 #endif
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 #define XML_NODE_NONE
@@ -173,6 +173,6 @@ public:
 
 
 } // namespace Banking
-} // namespace Register
+} // namespace Fred
 
 #endif // _BANK_COMMON_H_

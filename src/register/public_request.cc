@@ -17,7 +17,7 @@
 #include <boost/lexical_cast.hpp>
 
 
-namespace Register {
+namespace Fred {
 namespace PublicRequest {
 
 
@@ -208,14 +208,14 @@ static void cancel_public_request(
 
 
 
-class PublicRequestImpl : public Register::CommonObjectImpl,
+class PublicRequestImpl : public Fred::CommonObjectImpl,
                           virtual public PublicRequest {
 protected:
-  Register::PublicRequest::Type type_;
+  Fred::PublicRequest::Type type_;
   Database::ID epp_action_id_;
   Database::ID logd_request_id_;
   Database::DateTime create_time_;
-  Register::PublicRequest::Status status_;
+  Fred::PublicRequest::Status status_;
   Database::DateTime resolve_time_;
   std::string reason_;
   std::string email_to_answer_;
@@ -239,11 +239,11 @@ public:
   }
 
   PublicRequestImpl(Database::ID _id,
-              Register::PublicRequest::Type _type,
+              Fred::PublicRequest::Type _type,
               Database::ID _epp_action_id,
               Database::ID _logd_request_id,
               Database::DateTime _create_time,
-              Register::PublicRequest::Status _status,
+              Fred::PublicRequest::Status _status,
               Database::DateTime _resolve_time,
               std::string _reason,
               std::string _email_to_answer,
@@ -274,7 +274,7 @@ public:
     epp_action_id_    = *(++_it);
     logd_request_id_  = *(++_it);
     create_time_      = *(++_it);
-    status_           = (Register::PublicRequest::Status)(int)*(++_it);
+    status_           = (Fred::PublicRequest::Status)(int)*(++_it);
     resolve_time_     = *(++_it);
     reason_           = (std::string)*(++_it);
     email_to_answer_  = (std::string)*(++_it);
@@ -287,7 +287,7 @@ public:
   }
 
   virtual void save() {
-    TRACE("[CALL] Register::Request::RequestImpl::save()");
+    TRACE("[CALL] Fred::Request::RequestImpl::save()");
     if (objects_.empty()) {
       LOGGER(PACKAGE).error("can't create or update request with no object specified!");
       throw;
@@ -371,20 +371,20 @@ public:
     }
   }
 
-  virtual Register::PublicRequest::Type getType() const {
+  virtual Fred::PublicRequest::Type getType() const {
     return type_;
   }
 
-  virtual void setType(Register::PublicRequest::Type _type) {
+  virtual void setType(Fred::PublicRequest::Type _type) {
     type_ = _type;
     modified_ = true;
   }
 
-  virtual Register::PublicRequest::Status getStatus() const {
+  virtual Fred::PublicRequest::Status getStatus() const {
     return status_;
   }
 
-  virtual void setStatus(Register::PublicRequest::Status _status) {
+  virtual void setStatus(Fred::PublicRequest::Status _status) {
    status_ = _status;
    modified_ = true;
   }
@@ -1184,7 +1184,7 @@ public:
                 7,
                 "");
 
-            Register::Messages::PostalAddress pa;
+            Fred::Messages::PostalAddress pa;
             pa.name    = map_at(_data, "firstname") + " " + map_at(_data, "lastname");
             pa.org     = map_at(_data, "organization");
             pa.street1 = map_at(_data, "street");
@@ -1426,7 +1426,7 @@ public:
         }
 
         /* update states */
-        Register::update_object_states(getObject(0).id);
+        Fred::update_object_states(getObject(0).id);
 
         /* make new request for finishing contact identification */
         PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
@@ -1567,7 +1567,7 @@ public:
         }
 
         /* check if contact is already conditionally identified (21) and cancel state */
-        Register::cancel_object_state(getObject(0).id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
+        Fred::cancel_object_state(getObject(0).id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
 
         /* set new state */
         insertNewStateRequest(getId(), getObject(0).id, 22);
@@ -1587,7 +1587,7 @@ public:
         }
 
         /* update states */
-        Register::update_object_states(getObject(0).id);
+        Fred::update_object_states(getObject(0).id);
         tx.commit();
     }
 
@@ -1720,24 +1720,24 @@ public:
         }
 
         /* check if contact is already conditionally identified (21) and cancel status */
-        Register::cancel_object_state(getObject(0).id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
+        Fred::cancel_object_state(getObject(0).id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
 
         /* check if contact is already identified (22) and cancel status */
-        if (Register::cancel_object_state(getObject(0).id, ::MojeID::IDENTIFIED_CONTACT) == false) {
+        if (Fred::cancel_object_state(getObject(0).id, ::MojeID::IDENTIFIED_CONTACT) == false) {
             /* otherwise there could be identification request */
             cancel_public_request(getObject(0).id, PRT_CONTACT_IDENTIFICATION);
         }
 
         /* set new state */
         insertNewStateRequest(getId(), getObject(0).id, 23);
-        Register::update_object_states(getObject(0).id);
+        Fred::update_object_states(getObject(0).id);
         tx.commit();
     }
 };
 
 
 
-class ListImpl : public Register::CommonListImpl,
+class ListImpl : public Fred::CommonListImpl,
                  virtual public List {
 private:
   Manager *manager_;
@@ -1768,7 +1768,7 @@ public:
   }
 
   virtual void reload(Database::Filters::Union& _filter) {
-    TRACE("[CALL] Register::Request::ListImpl::reload()");
+    TRACE("[CALL] Fred::Request::ListImpl::reload()");
     clear();
     _filter.clearQueries();
 
@@ -1819,7 +1819,7 @@ public:
       for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
-        Register::PublicRequest::Type type = (Register::PublicRequest::Type)(int)*col;
+        Fred::PublicRequest::Type type = (Fred::PublicRequest::Type)(int)*col;
         PublicRequest* request = manager_->createRequest(type);
         request->init(++col);
         data_.push_back(request);
@@ -1943,7 +1943,7 @@ public:
   }
 
   virtual List* createList() const {
-    TRACE("[CALL] Register::Request::Manager::createList()");
+    TRACE("[CALL] Fred::Request::Manager::createList()");
     /*
      * can't use this way; connection will not be properly closed when
      * List is destroyed. Also can't closing connection in CommonLisrImpl
@@ -1958,7 +1958,7 @@ public:
                       const std::string& _lang,
                       std::ostream& _output) const
     throw (NOT_FOUND, SQL_ERROR, Document::Generator::ERROR) {
-    TRACE(boost::format("[CALL] Register::Request::Manager::getPdf(%1%, '%2%')") %
+    TRACE(boost::format("[CALL] Fred::Request::Manager::getPdf(%1%, '%2%')") %
           _id % _lang);
     std::auto_ptr<List> l(loadRequest(_id));
     PublicRequest* p = l->get(0);
@@ -1996,7 +1996,7 @@ public:
   virtual PublicRequest* createRequest(
     Type _type
   ) const throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) {
-    // TRACE("[CALL] Register::Request::Manager::createRequest()");
+    // TRACE("[CALL] Fred::Request::Manager::createRequest()");
     PublicRequestImpl *request = 0;
     switch(_type) {
       case PRT_AUTHINFO_AUTO_RIF :
@@ -2049,7 +2049,7 @@ public:
   virtual void processRequest(Database::ID _id, bool _invalidate,
                               bool check) const
   {
-    TRACE(boost::format("[CALL] Register::Request::Manager::processRequest(%1%, %2%)") %
+    TRACE(boost::format("[CALL] Fred::Request::Manager::processRequest(%1%, %2%)") %
           _id % _invalidate);
     try {
       std::auto_ptr<List> l(loadRequest(_id));
@@ -2135,7 +2135,7 @@ Manager* Manager::create(Domain::Manager    *_domain_manager,
                          Messages::ManagerPtr _messages_manager)
 {
 
-    TRACE("[CALL] Register::Request::Manager::create()");
+    TRACE("[CALL] Fred::Request::Manager::create()");
     return new ManagerImpl(
       _domain_manager,
       _contact_manager,

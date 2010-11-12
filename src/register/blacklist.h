@@ -7,7 +7,7 @@
 // forward declaration
 class DB;
 
-namespace Register
+namespace Fred
 {
   namespace Domain
   {

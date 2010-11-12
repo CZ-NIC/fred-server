@@ -8,15 +8,15 @@ class ccReg_Statements_i: public ccReg_PageTable_i,
                           public PortableServer::RefCountServantBase
 {
 private:
-    Register::Banking::StatementListPtr list_;
+    Fred::Banking::StatementListPtr list_;
 
 public:
-    ccReg_Statements_i(Register::Banking::StatementList *list);
+    ccReg_Statements_i(Fred::Banking::StatementList *list);
     ~ccReg_Statements_i();
     DECL_PAGETABLE_I;
 
     ccReg::Filters::Compound_ptr add();
-    Register::Banking::Statement *findId(ccReg::TID id);
+    Fred::Banking::Statement *findId(ccReg::TID id);
 }; // class ccReg_PageTable_i
 
 

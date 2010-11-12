@@ -14,7 +14,7 @@
 #include "model/model_filters.h"
 #include "model/log_filter.h"
 
-namespace Register {
+namespace Fred {
 namespace Session {
 
 enum MemberType {
@@ -25,7 +25,7 @@ enum MemberType {
 };
 
 
-class Session : virtual public Register::CommonObject {
+class Session : virtual public Fred::CommonObject {
 public:
 	virtual const std::string getName() const = 0;
 	virtual const boost::posix_time::ptime getLoginDate() const = 0;
@@ -33,7 +33,7 @@ public:
 	virtual const std::string getLang() const = 0;
 };
 
-class List : virtual public Register::CommonList {
+class List : virtual public Fred::CommonList {
 
 public:
   virtual Session* get(unsigned _idx) const = 0;

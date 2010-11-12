@@ -52,28 +52,28 @@ void
 InfoBuffClient::make_info()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
-    std::auto_ptr<Register::Domain::Manager> domMan(
-            Register::Domain::Manager::create(&m_db, zoneMan.get()));
-    std::auto_ptr<Register::Contact::Manager> conMan(
-            Register::Contact::Manager::create(
+    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+            Fred::Zone::Manager::create());
+    std::auto_ptr<Fred::Domain::Manager> domMan(
+            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+    std::auto_ptr<Fred::Contact::Manager> conMan(
+            Fred::Contact::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::NSSet::Manager> nssMan(
-            Register::NSSet::Manager::create(
+    std::auto_ptr<Fred::NSSet::Manager> nssMan(
+            Fred::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(
+    std::auto_ptr<Fred::KeySet::Manager> keyMan(
+            Fred::KeySet::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::InfoBuffer::Manager> infoBuffMan(
-            Register::InfoBuffer::Manager::create(
+    std::auto_ptr<Fred::InfoBuffer::Manager> infoBuffMan(
+            Fred::InfoBuffer::Manager::create(
                 &m_db,
                 domMan.get(),
                 nssMan.get(),
@@ -93,17 +93,17 @@ InfoBuffClient::make_info()
         return;
     }
 
-    Register::InfoBuffer::Type type_type =
-        type == 1 ? Register::InfoBuffer::T_LIST_CONTACTS :
-        type == 2 ? Register::InfoBuffer::T_LIST_DOMAINS :
-        type == 3 ? Register::InfoBuffer::T_LIST_NSSETS :
-        type == 4 ? Register::InfoBuffer::T_LIST_KEYSETS :
-        type == 5 ? Register::InfoBuffer::T_DOMAINS_BY_NSSET :
-        type == 6 ? Register::InfoBuffer::T_DOMAINS_BY_CONTACT :
-        type == 7 ? Register::InfoBuffer::T_DOMAINS_BY_KEYSET :
-        type == 8 ? Register::InfoBuffer::T_NSSETS_BY_CONTACT :
-        type == 9 ? Register::InfoBuffer::T_NSSETS_BY_NS :
-        Register::InfoBuffer::T_KEYSETS_BY_CONTACT;
+    Fred::InfoBuffer::Type type_type =
+        type == 1 ? Fred::InfoBuffer::T_LIST_CONTACTS :
+        type == 2 ? Fred::InfoBuffer::T_LIST_DOMAINS :
+        type == 3 ? Fred::InfoBuffer::T_LIST_NSSETS :
+        type == 4 ? Fred::InfoBuffer::T_LIST_KEYSETS :
+        type == 5 ? Fred::InfoBuffer::T_DOMAINS_BY_NSSET :
+        type == 6 ? Fred::InfoBuffer::T_DOMAINS_BY_CONTACT :
+        type == 7 ? Fred::InfoBuffer::T_DOMAINS_BY_KEYSET :
+        type == 8 ? Fred::InfoBuffer::T_NSSETS_BY_CONTACT :
+        type == 9 ? Fred::InfoBuffer::T_NSSETS_BY_NS :
+        Fred::InfoBuffer::T_KEYSETS_BY_CONTACT;
     if (m_conf.hasOpt(REGISTRAR_ID_NAME)) {
         infoBuffMan->info(
                 m_conf.get<unsigned int>(REGISTRAR_ID_NAME),
@@ -122,28 +122,28 @@ void
 InfoBuffClient::get_chunk()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
-    std::auto_ptr<Register::Domain::Manager> domMan(
-            Register::Domain::Manager::create(&m_db, zoneMan.get()));
-    std::auto_ptr<Register::Contact::Manager> conMan(
-            Register::Contact::Manager::create(
+    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+            Fred::Zone::Manager::create());
+    std::auto_ptr<Fred::Domain::Manager> domMan(
+            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+    std::auto_ptr<Fred::Contact::Manager> conMan(
+            Fred::Contact::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::NSSet::Manager> nssMan(
-            Register::NSSet::Manager::create(
+    std::auto_ptr<Fred::NSSet::Manager> nssMan(
+            Fred::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(
+    std::auto_ptr<Fred::KeySet::Manager> keyMan(
+            Fred::KeySet::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::InfoBuffer::Manager> infoBuffMan(
-            Register::InfoBuffer::Manager::create(
+    std::auto_ptr<Fred::InfoBuffer::Manager> infoBuffMan(
+            Fred::InfoBuffer::Manager::create(
                 &m_db,
                 domMan.get(),
                 nssMan.get(),
@@ -151,7 +151,7 @@ InfoBuffClient::get_chunk()
                 keyMan.get())
             );
     if (m_conf.hasOpt(REGISTRAR_ID_NAME)) {
-        std::auto_ptr<Register::InfoBuffer::Chunk> chunk(
+        std::auto_ptr<Fred::InfoBuffer::Chunk> chunk(
                 infoBuffMan->getChunk(
                     m_conf.get<unsigned int>(REGISTRAR_ID_NAME),
                     m_conf.get<unsigned int>(INFOBUFF_GET_CHUNK_NAME))
@@ -160,7 +160,7 @@ InfoBuffClient::get_chunk()
             std::cout << chunk->getNext() << std::endl;
         }
     } else if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME)) {
-        std::auto_ptr<Register::InfoBuffer::Chunk> chunk(
+        std::auto_ptr<Fred::InfoBuffer::Chunk> chunk(
                 infoBuffMan->getChunk(
                     m_conf.get<std::string>(REGISTRAR_HANDLE_NAME),
                     m_conf.get<unsigned int>(INFOBUFF_GET_CHUNK_NAME))

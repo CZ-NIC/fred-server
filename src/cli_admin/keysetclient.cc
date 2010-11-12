@@ -57,9 +57,9 @@ void
 KeysetClient::list()
 {
     callHelp(m_conf, list_help);
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(&m_db, true));
-    std::auto_ptr<Register::KeySet::List> keyList(
+    std::auto_ptr<Fred::KeySet::Manager> keyMan(
+            Fred::KeySet::Manager::create(&m_db, true));
+    std::auto_ptr<Fred::KeySet::List> keyList(
             keyMan->createList());
 
     Database::Filters::KeySet *keyFilter;
@@ -97,7 +97,7 @@ KeysetClient::list()
 
     std::cout << "<object>\n";
     for (unsigned int i = 0; i < keyList->getCount(); i++) {
-        Register::KeySet::KeySet *keyset = keyList->getKeySet(i);
+        Fred::KeySet::KeySet *keyset = keyList->getKeySet(i);
         std::cout
             << "\t<keyset>\n"
             << "\t\t<id>" << keyset->getId() << "</id>\n"
@@ -110,7 +110,7 @@ KeysetClient::list()
                 << "\t\t</admin>\n";
         }
         for (unsigned int j = 0; j < keyset->getDSRecordCount(); j++) {
-            Register::KeySet::DSRecord *dsrec = (Register::KeySet::DSRecord *)keyset->getDSRecordByIdx(j);
+            Fred::KeySet::DSRecord *dsrec = (Fred::KeySet::DSRecord *)keyset->getDSRecordByIdx(j);
             std::cout
                 << "\t\t<dsrecord>\n"
                 << "\t\t\t<id>" << dsrec->getId() << "</id>\n"
@@ -122,7 +122,7 @@ KeysetClient::list()
                 << "\t\t</dsrecord>\n";
         }
         for (unsigned int j = 0; j < keyset->getDNSKeyCount(); j++) {
-            Register::KeySet::DNSKey *dnskey = (Register::KeySet::DNSKey *)keyset->getDNSKeyByIdx(j);
+            Fred::KeySet::DNSKey *dnskey = (Fred::KeySet::DNSKey *)keyset->getDNSKeyByIdx(j);
             std::cout
                 << "\t\t<dnskey>\n"
                 << "\t\t\t<id>" << dnskey->getId() << "</id>\n"
@@ -153,7 +153,7 @@ KeysetClient::list()
                 << "\t\t<auth_password>" << keyset->getAuthPw() << "</auth_password>\n"
                 << "\t\t<ROID>" << keyset->getROID() << "</ROID>\n";
             for (unsigned int j = 0; j < keyset->getStatusCount(); j++) {
-                Register::Status *status = (Register::Status *)keyset->getStatusByIdx(j);
+                Fred::Status *status = (Fred::Status *)keyset->getStatusByIdx(j);
                 std::cout
                     << "\t\t<status>\n"
                     << "\t\t\t<id>" << status->getStatusId() << "</id>\n"

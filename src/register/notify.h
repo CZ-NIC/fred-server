@@ -14,7 +14,7 @@
 
 
 class DB;
-namespace Register
+namespace Fred
 {
   namespace Notify
   {

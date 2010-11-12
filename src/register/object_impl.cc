@@ -23,10 +23,10 @@
 #include "sql.h"
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//     Register::StatusImpl
+//     Fred::StatusImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-Register::StatusImpl::StatusImpl(const TID& _id, 
+Fred::StatusImpl::StatusImpl(const TID& _id,
                                  const TID& _status_id,
                                  const ptime& _timeFrom, 
                                  const ptime& _timeTo, 
@@ -39,38 +39,38 @@ Register::StatusImpl::StatusImpl(const TID& _id,
                                                         ohid_to(_ohid_to) {
 }
 
-Register::StatusImpl::~StatusImpl() {
+Fred::StatusImpl::~StatusImpl() {
 }
 
-Register::TID Register::StatusImpl::getId() const {
+Fred::TID Fred::StatusImpl::getId() const {
   return id;
 }
 
-Register::TID Register::StatusImpl::getStatusId() const {
+Fred::TID Fred::StatusImpl::getStatusId() const {
   return status_id;
 }
 
-ptime Register::StatusImpl::getFrom() const {
+ptime Fred::StatusImpl::getFrom() const {
   return timeFrom;
 }
 
-ptime Register::StatusImpl::getTo() const {
+ptime Fred::StatusImpl::getTo() const {
   return timeTo;
 }
 
-Register::TID Register::StatusImpl::getHistoryIdFrom() const {
+Fred::TID Fred::StatusImpl::getHistoryIdFrom() const {
   return ohid_from;
 }
 
-Register::TID Register::StatusImpl::getHistoryIdTo() const {
+Fred::TID Fred::StatusImpl::getHistoryIdTo() const {
   return ohid_to;
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//     Register::ObjectImpl
+//     Fred::ObjectImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-Register::ObjectImpl::ObjectImpl(TID _id, const Database::ID& _history_id, ptime _crDate, ptime _trDate,
+Fred::ObjectImpl::ObjectImpl(TID _id, const Database::ID& _history_id, ptime _crDate, ptime _trDate,
     ptime _upDate, ptime _erDate, TID _registrar,
     const std::string _registrarHandle, TID _createRegistrar,
     const std::string _createRegistrarHandle, TID _updateRegistrar,
@@ -85,101 +85,101 @@ Register::ObjectImpl::ObjectImpl(TID _id, const Database::ID& _history_id, ptime
       roid(_roid) {
 }
 
-Register::ObjectImpl::ObjectImpl() :
+Fred::ObjectImpl::ObjectImpl() :
   CommonObjectImpl(0), crDate(not_a_date_time), trDate(not_a_date_time),
       upDate(not_a_date_time), registrar(0), createRegistrar(0),
       updateRegistrar(0) {
 }
 
-Database::ID Register::ObjectImpl::getHistoryId() const {
+Database::ID Fred::ObjectImpl::getHistoryId() const {
   return history_id;
 }
 
-Database::ID Register::ObjectImpl::getActionId() const {
+Database::ID Fred::ObjectImpl::getActionId() const {
   return action_id;
 }
 
-Database::DateTime Register::ObjectImpl::getActionStartTime() const {
+Database::DateTime Fred::ObjectImpl::getActionStartTime() const {
   return action_start_time;
 }
 
-void Register::ObjectImpl::setAction(const Database::ID& _id, const Database::DateTime& _start_time) {
+void Fred::ObjectImpl::setAction(const Database::ID& _id, const Database::DateTime& _start_time) {
   action_id = _id;
   action_start_time = _start_time;
 }
 
-ptime Register::ObjectImpl::getCreateDate() const {
+ptime Fred::ObjectImpl::getCreateDate() const {
   return crDate;
 }
 
-ptime Register::ObjectImpl::getTransferDate() const {
+ptime Fred::ObjectImpl::getTransferDate() const {
   return trDate;
 }
 
-ptime Register::ObjectImpl::getUpdateDate() const {
+ptime Fred::ObjectImpl::getUpdateDate() const {
   return upDate;
 }
 
-ptime Register::ObjectImpl::getDeleteDate() const {
+ptime Fred::ObjectImpl::getDeleteDate() const {
   return erDate;
 }
 
-Register::TID Register::ObjectImpl::getRegistrarId() const {
+Fred::TID Fred::ObjectImpl::getRegistrarId() const {
   return registrar;
 }
 
-const std::string& Register::ObjectImpl::getRegistrarHandle() const {
+const std::string& Fred::ObjectImpl::getRegistrarHandle() const {
   return registrarHandle;
 }
 
-Register::TID Register::ObjectImpl::getUpdateRegistrarId() const {
+Fred::TID Fred::ObjectImpl::getUpdateRegistrarId() const {
   return updateRegistrar;
 }
 
-const std::string& Register::ObjectImpl::getCreateRegistrarHandle() const {
+const std::string& Fred::ObjectImpl::getCreateRegistrarHandle() const {
   return createRegistrarHandle;
 }
 
-const std::string& Register::ObjectImpl::getUpdateRegistrarHandle() const {
+const std::string& Fred::ObjectImpl::getUpdateRegistrarHandle() const {
   return updateRegistrarHandle;
 }
 
-Register::TID Register::ObjectImpl::getCreateRegistrarId() const {
+Fred::TID Fred::ObjectImpl::getCreateRegistrarId() const {
   return createRegistrar;
 }
 
-const std::string& Register::ObjectImpl::getAuthPw() const {
+const std::string& Fred::ObjectImpl::getAuthPw() const {
   return authPw;
 }
 
-void Register::ObjectImpl::setAuthPw(const std::string& authPw) {
+void Fred::ObjectImpl::setAuthPw(const std::string& authPw) {
   this->authPw = authPw;
 }
 
-const std::string& Register::ObjectImpl::getROID() const {
+const std::string& Fred::ObjectImpl::getROID() const {
   return roid;
 }
 
-unsigned Register::ObjectImpl::getStatusCount() const {
+unsigned Fred::ObjectImpl::getStatusCount() const {
   return slist.size();
 }
 
-const Register::Status* Register::ObjectImpl::getStatusByIdx(unsigned idx) const {
+const Fred::Status* Fred::ObjectImpl::getStatusByIdx(unsigned idx) const {
   if (idx >= slist.size())
     return NULL;
   else
     return &slist[idx];
 }
 
-void Register::ObjectImpl::insertStatus(const StatusImpl& _state) {
+void Fred::ObjectImpl::insertStatus(const StatusImpl& _state) {
   slist.push_back(_state);
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//     Register::ObjectListImpl
+//     Fred::ObjectListImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-Register::ObjectListImpl::ObjectListImpl(DB *_db) :
+Fred::ObjectListImpl::ObjectListImpl(DB *_db) :
   CommonListImpl(_db), registrarFilter(0), createRegistrarFilter(0),
       updateRegistrarFilter(0), crDateIntervalFilter(ptime(neg_infin),
           ptime(pos_infin)), updateIntervalFilter(ptime(neg_infin),
@@ -187,55 +187,55 @@ Register::ObjectListImpl::ObjectListImpl(DB *_db) :
           ptime(pos_infin)), nonHandleFilterSet(false), ptr_history_idx_(-1) {
 }
 
-void Register::ObjectListImpl::setRegistrarFilter(TID registrarId) {
+void Fred::ObjectListImpl::setRegistrarFilter(TID registrarId) {
   registrarFilter = registrarId;
   nonHandleFilterSet = true;
 }
 
-void Register::ObjectListImpl::setRegistrarHandleFilter(
+void Fred::ObjectListImpl::setRegistrarHandleFilter(
     const std::string& registrarHandle) {
   registrarHandleFilter = registrarHandle;
   nonHandleFilterSet = true;
 }
 
-void Register::ObjectListImpl::setCrDateIntervalFilter(time_period period) {
+void Fred::ObjectListImpl::setCrDateIntervalFilter(time_period period) {
   crDateIntervalFilter = period;
   nonHandleFilterSet = true;
 }
 
-void Register::ObjectListImpl::setCreateRegistrarFilter(TID registrarId) {
+void Fred::ObjectListImpl::setCreateRegistrarFilter(TID registrarId) {
   createRegistrarFilter = registrarId;
   nonHandleFilterSet = true;
 }
 
-void Register::ObjectListImpl::setCreateRegistrarHandleFilter(
+void Fred::ObjectListImpl::setCreateRegistrarHandleFilter(
     const std::string& registrarHandle) {
   createRegistrarHandleFilter = registrarHandle;
   nonHandleFilterSet = true;
 }
 
-void Register::ObjectListImpl::setUpdateIntervalFilter(time_period period) {
+void Fred::ObjectListImpl::setUpdateIntervalFilter(time_period period) {
   updateIntervalFilter = period;
   nonHandleFilterSet = true;
 }
 
-void Register::ObjectListImpl::setUpdateRegistrarFilter(TID registrarId) {
+void Fred::ObjectListImpl::setUpdateRegistrarFilter(TID registrarId) {
   updateRegistrarFilter = registrarId;
   nonHandleFilterSet = true;
 }
 
-void Register::ObjectListImpl::setUpdateRegistrarHandleFilter(
+void Fred::ObjectListImpl::setUpdateRegistrarHandleFilter(
     const std::string& registrarHandle) {
   updateRegistrarHandleFilter = registrarHandle;
   nonHandleFilterSet = true;
 }
 
-void Register::ObjectListImpl::setTrDateIntervalFilter(time_period period) {
+void Fred::ObjectListImpl::setTrDateIntervalFilter(time_period period) {
   trDateIntervalFilter = period;
   nonHandleFilterSet = true;
 }
 
-void Register::ObjectListImpl::addStateFilter(TID state, bool stateIsOn) {
+void Fred::ObjectListImpl::addStateFilter(TID state, bool stateIsOn) {
   for (unsigned i=0; i<sflist.size(); i++)
     if (sflist[i].stateId == state) {
       sflist[i].stateIsOn = stateIsOn;
@@ -248,7 +248,7 @@ void Register::ObjectListImpl::addStateFilter(TID state, bool stateIsOn) {
   nonHandleFilterSet = true;
 }
 
-void Register::ObjectListImpl::clearStateFilter(TID state) {
+void Fred::ObjectListImpl::clearStateFilter(TID state) {
   for (StatusFilterList::iterator i=sflist.begin(); i!=sflist.end(); i++)
     if (i->stateId == state) {
       sflist.erase(i);
@@ -256,7 +256,7 @@ void Register::ObjectListImpl::clearStateFilter(TID state) {
     }
 }
 
-void Register::ObjectListImpl::clearFilter() {
+void Fred::ObjectListImpl::clearFilter() {
   CommonListImpl::clearFilter();
   crDateIntervalFilter = time_period(ptime(neg_infin), ptime(pos_infin));
   updateIntervalFilter = time_period(ptime(neg_infin), ptime(pos_infin));
@@ -271,7 +271,7 @@ void Register::ObjectListImpl::clearFilter() {
   nonHandleFilterSet = false;
 }
 
-void Register::ObjectListImpl::reload(const char *handle, int type) 
+void Fred::ObjectListImpl::reload(const char *handle, int type)
   throw (SQL_ERROR) {
   std::ostringstream sql;
   sql << "SELECT tmp.id, state_id, valid_from " << "FROM "
@@ -299,7 +299,7 @@ void Register::ObjectListImpl::reload(const char *handle, int type)
   db->FreeSelect();
 }
 
-void Register::ObjectListImpl::reload(bool _history) {
+void Fred::ObjectListImpl::reload(bool _history) {
 //  Database::SelectQuery states_query;
 //  states_query.select() << "tmp.id, t_1.object_id, t_1.state_id, t_1.valid_from";
 //  states_query.from() << getTempTableName() << " tmp "
@@ -371,18 +371,18 @@ void Register::ObjectListImpl::reload(bool _history) {
   }
 }
 
-void Register::ObjectListImpl::resetHistoryIDSequence() {
+void Fred::ObjectListImpl::resetHistoryIDSequence() {
   ptr_history_idx_ = -1;
 }
 
 
-Register::Object* Register::ObjectListImpl::findHistoryIDSequence(const Database::ID& _history_id) {
+Fred::Object* Fred::ObjectListImpl::findHistoryIDSequence(const Database::ID& _history_id) {
   /* data_ container must be sorted by ID to make sence */
   if (ptr_history_idx_ < 0)
     ptr_history_idx_ = 0;
 
   while (ptr_history_idx_ < (int)data_.size()) {
-    Register::Object *ptr_object = dynamic_cast<Register::Object*>(data_[ptr_history_idx_]);
+    Fred::Object *ptr_object = dynamic_cast<Fred::Object*>(data_[ptr_history_idx_]);
     if (ptr_object && ptr_object->getHistoryId() < _history_id) {
       ++ptr_history_idx_;
     }
@@ -391,7 +391,7 @@ Register::Object* Register::ObjectListImpl::findHistoryIDSequence(const Database
     }
   }
 
-  Register::Object *ptr_object = dynamic_cast<Register::Object*>(data_[ptr_history_idx_]);
+  Fred::Object *ptr_object = dynamic_cast<Fred::Object*>(data_[ptr_history_idx_]);
   if (ptr_history_idx_ == (int)data_.size() || (ptr_object && (ptr_object->getHistoryId() != _history_id))) {
     LOGGER(PACKAGE).debug(boost::format("find history id sequence: not found in result set. (historyid=%1%, ptr_idx=%2%)")
                                         % _history_id % ptr_idx_);
@@ -404,8 +404,8 @@ Register::Object* Register::ObjectListImpl::findHistoryIDSequence(const Database
 }
 
 
-void Register::ObjectListImpl::deleteDuplicatesId() {
-  TRACE("<CALL> Register::ObjectListImpl::deleteDuplicatesId()");
+void Fred::ObjectListImpl::deleteDuplicatesId() {
+  TRACE("<CALL> Fred::ObjectListImpl::deleteDuplicatesId()");
 
   std::stable_sort(data_.begin(), data_.end(), SortByHistoryId());
   LOGGER(PACKAGE).debug(boost::format("%1% record(s) in result sorted") % data_.size());

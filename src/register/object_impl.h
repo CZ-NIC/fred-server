@@ -6,7 +6,7 @@
 #include "db_settings.h"
 
 class DB;
-namespace Register {
+namespace Fred {
 
   class SortByHistoryId {
   public:
@@ -47,8 +47,8 @@ namespace Register {
     virtual TID getStatusId() const;
     virtual ptime getFrom() const;
     virtual ptime getTo() const;
-    Register::TID getHistoryIdFrom() const;
-    Register::TID getHistoryIdTo() const;
+    Fred::TID getHistoryIdFrom() const;
+    Fred::TID getHistoryIdTo() const;
   };
   /// Implementation of common register object properties
   class ObjectImpl : public CommonObjectImpl, virtual public Object

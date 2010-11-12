@@ -7,7 +7,7 @@
 #include "model/model_filters.h"
 #include "model_files.h"
 
-namespace Register {
+namespace Fred {
 namespace File {
 
 enum MemberType {
@@ -19,7 +19,7 @@ enum MemberType {
 
 class File:
     public ModelFiles,
-    virtual public Register::CommonObjectImplNew {
+    virtual public Fred::CommonObjectImplNew {
 private:
     std::string m_typeDesc;
 public:
@@ -33,13 +33,13 @@ public:
 };
 
 class List: 
-    virtual public Register::CommonListImplNew {
+    virtual public Fred::CommonListImplNew {
 public:
     void reload(Database::Filters::Union &filter);
     File *get(unsigned int index) const throw (std::exception);
     const char* getTempTableName() const;
     void sort(MemberType member, bool asc);
-    Register::File::File* findId(Database::ID _id);
+    Fred::File::File* findId(Database::ID _id);
 
 };
 

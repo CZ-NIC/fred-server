@@ -39,7 +39,7 @@
 #include "register/db_settings.h"
 #include "model/model_filters.h"
 
-namespace Register
+namespace Fred
 {
 
 struct ObjMemberConversion
@@ -363,6 +363,6 @@ public:
 
 };//ObjList
 
-}//namespace Register
+}//namespace Fred
 #endif //OBJ_TYPES_H_
 

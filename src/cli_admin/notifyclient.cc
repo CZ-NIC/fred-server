@@ -71,8 +71,8 @@ void
 NotifyClient::state_changes()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Document::Manager> docMan(
-            Register::Document::Manager::create(
+    std::auto_ptr<Fred::Document::Manager> docMan(
+            Fred::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
                 m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
@@ -80,35 +80,35 @@ NotifyClient::state_changes()
             );
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
+    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+            Fred::Zone::Manager::create());
 
-    Register::Messages::ManagerPtr msgMan
-        = Register::Messages::create_manager();
+    Fred::Messages::ManagerPtr msgMan
+        = Fred::Messages::create_manager();
 
 
-    std::auto_ptr<Register::Domain::Manager> domMan(
-            Register::Domain::Manager::create(&m_db, zoneMan.get()));
-    std::auto_ptr<Register::Contact::Manager> conMan(
-            Register::Contact::Manager::create(
+    std::auto_ptr<Fred::Domain::Manager> domMan(
+            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+    std::auto_ptr<Fred::Contact::Manager> conMan(
+            Fred::Contact::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::NSSet::Manager> nssMan(
-            Register::NSSet::Manager::create(
+    std::auto_ptr<Fred::NSSet::Manager> nssMan(
+            Fred::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(
+    std::auto_ptr<Fred::KeySet::Manager> keyMan(
+            Fred::KeySet::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::Registrar::Manager> regMan(
-            Register::Registrar::Manager::create(&m_db));
-    std::auto_ptr<Register::Notify::Manager> notifyMan(
-            Register::Notify::Manager::create(
+    std::auto_ptr<Fred::Registrar::Manager> regMan(
+            Fred::Registrar::Manager::create(&m_db));
+    std::auto_ptr<Fred::Notify::Manager> notifyMan(
+            Fred::Notify::Manager::create(
                 &m_db,
                 &mailMan,
                 conMan.get(),
@@ -137,8 +137,8 @@ void
 NotifyClient::letters_create()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Document::Manager> docMan(
-            Register::Document::Manager::create(
+    std::auto_ptr<Fred::Document::Manager> docMan(
+            Fred::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
                 m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
@@ -146,35 +146,35 @@ NotifyClient::letters_create()
             );
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
+    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+            Fred::Zone::Manager::create());
 
-    Register::Messages::ManagerPtr msgMan
-        = Register::Messages::create_manager();
+    Fred::Messages::ManagerPtr msgMan
+        = Fred::Messages::create_manager();
 
 
-    std::auto_ptr<Register::Domain::Manager> domMan(
-            Register::Domain::Manager::create(&m_db, zoneMan.get()));
-    std::auto_ptr<Register::Contact::Manager> conMan(
-            Register::Contact::Manager::create(
+    std::auto_ptr<Fred::Domain::Manager> domMan(
+            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+    std::auto_ptr<Fred::Contact::Manager> conMan(
+            Fred::Contact::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::NSSet::Manager> nssMan(
-            Register::NSSet::Manager::create(
+    std::auto_ptr<Fred::NSSet::Manager> nssMan(
+            Fred::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(
+    std::auto_ptr<Fred::KeySet::Manager> keyMan(
+            Fred::KeySet::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    std::auto_ptr<Register::Registrar::Manager> regMan(
-            Register::Registrar::Manager::create(&m_db));
-    std::auto_ptr<Register::Notify::Manager> notifyMan(
-            Register::Notify::Manager::create(
+    std::auto_ptr<Fred::Registrar::Manager> regMan(
+            Fred::Registrar::Manager::create(&m_db));
+    std::auto_ptr<Fred::Notify::Manager> notifyMan(
+            Fred::Notify::Manager::create(
                 &m_db,
                 &mailMan,
                 conMan.get(),
@@ -198,7 +198,7 @@ void NotifyClient::letters_send()
     callHelp(m_conf, no_help);
 
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-    std::auto_ptr<Register::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
+    std::auto_ptr<Fred::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
 
     sendLetters(
            fileclient,
@@ -231,8 +231,8 @@ void NotifyClient::file_send()
     //          - make sendLetters static
     callHelp(m_conf, no_help);
 
-    std::auto_ptr<Register::Document::Manager> docMan(
-            Register::Document::Manager::create(
+    std::auto_ptr<Fred::Document::Manager> docMan(
+            Fred::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
                 m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
@@ -240,7 +240,7 @@ void NotifyClient::file_send()
             );
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     
-    std::auto_ptr<Register::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
+    std::auto_ptr<Fred::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
 
     sendFile(
             m_conf.get<std::string> (NOTIFY_FILE_SEND_NAME),
@@ -251,9 +251,9 @@ void NotifyClient::file_send()
 }
 
     void NotifyClient::send_letters_impl(
-            Register::File::Transferer* fileman
+            Fred::File::Transferer* fileman
             , const HPCfgMap& hpmail_config
-            , Register::Messages::LetterProcInfo& proc_letters
+            , Fred::Messages::LetterProcInfo& proc_letters
             , std::string& new_status
             , std::string& batch_id)
     {
@@ -277,7 +277,7 @@ void NotifyClient::file_send()
 
             for(unsigned i=0;i<proc_letters.size();i++)
             {
-                Register::Messages::letter_proc mp = proc_letters.at(i);
+                Fred::Messages::letter_proc mp = proc_letters.at(i);
 
                 NamedMailFile smail;
                 smail.name = mp.fname;
@@ -318,14 +318,14 @@ void NotifyClient::file_send()
 
 
   void NotifyClient::sendLetters(
-          std::auto_ptr<Register::File::Transferer> fileman
+          std::auto_ptr<Fred::File::Transferer> fileman
           , const std::string &conf_file)
   {
      Logging::Context ctx("send letters");
-     TRACE("[CALL] Register::Notify::sendLetters()");
+     TRACE("[CALL] Fred::Notify::sendLetters()");
 
-     Register::Messages::ManagerPtr messages_manager
-         = Register::Messages::create_manager();
+     Fred::Messages::ManagerPtr messages_manager
+         = Fred::Messages::create_manager();
 
      HPCfgMap hpmail_config = readHPConfig(conf_file);
 
@@ -336,7 +336,7 @@ void NotifyClient::file_send()
 
      const std::size_t max_attempts_limit = 3;
 
-     Register::Messages::LetterProcInfo proc_letters
+     Fred::Messages::LetterProcInfo proc_letters
          = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
      send_letters_impl(fileman.get()
              ,hpmail_config,proc_letters,new_status,batch_id);
@@ -362,7 +362,7 @@ void NotifyClient::file_send()
      hpmail_config["hp_login_batch_id"]
          = hpmail_config["hp_login_registered_letter_batch_id"];
 
-     Register::Messages::LetterProcInfo proc_reg_letters
+     Fred::Messages::LetterProcInfo proc_reg_letters
          = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
      send_letters_impl(fileman.get()
              ,hpmail_config,proc_reg_letters,new_status,batch_id);
@@ -373,14 +373,14 @@ void NotifyClient::file_send()
   void NotifyClient::sendSMS(const std::string& command , const std::string& param_quote_by )
   {
       Logging::Context ctx("send sms");
-      TRACE("[CALL] Register::Notify::sendSMS()");
+      TRACE("[CALL] Fred::Notify::sendSMS()");
 
-      Register::Messages::ManagerPtr messages_manager
-          = Register::Messages::create_manager();
+      Fred::Messages::ManagerPtr messages_manager
+          = Fred::Messages::create_manager();
 
       const std::size_t max_attempts_limit = 3;
 
-      Register::Messages::SmsProcInfo proc_sms = messages_manager->load_sms_to_send(0, 3);
+      Fred::Messages::SmsProcInfo proc_sms = messages_manager->load_sms_to_send(0, 3);
       if(proc_sms.empty()) return;
       LOGGER(PACKAGE).info("sms sending");
 
@@ -389,7 +389,7 @@ void NotifyClient::file_send()
           std::string new_status = "sent";//ok status
           try
           {
-              Register::Messages::sms_proc mp = proc_sms.at(i);
+              Fred::Messages::sms_proc mp = proc_sms.at(i);
               std::string command_with_params
                   = command + " " + param_quote_by + mp.phone_number + param_quote_by
                   + " " + param_quote_by + mp.content + param_quote_by;
@@ -431,7 +431,7 @@ void NotifyClient::file_send()
 
   void NotifyClient::sendFile(const std::string &filename, const std::string &conf_file)  {
 
-      TRACE("[CALL] Register::Notify::sendFile()");
+      TRACE("[CALL] Fred::Notify::sendFile()");
 
 
       HPCfgMap hpmail_config = readHPConfig(conf_file);

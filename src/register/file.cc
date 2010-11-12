@@ -7,7 +7,7 @@
 
 // #include "model_files.h"
 
-namespace Register {
+namespace Fred {
 namespace File {
 
 bool
@@ -54,7 +54,7 @@ List::getTempTableName() const
 void
 List::reload(Database::Filters::Union &filter)
 {
-    TRACE("[CALL] Register::File::ListImpl::reload()");
+    TRACE("[CALL] Fred::File::ListImpl::reload()");
     clear();
     filter.clearQueries();
 
@@ -160,21 +160,21 @@ List::sort(MemberType member, bool asc)
     }    
 }
 
-Register::File::File* List::findId(Database::ID _id)
+Fred::File::File* List::findId(Database::ID _id)
 {
-	  std::vector<Register::CommonObjectNew*>::const_iterator it = std::find_if(m_data.begin(),
+	  std::vector<Fred::CommonObjectNew*>::const_iterator it = std::find_if(m_data.begin(),
 	  m_data.end(),
-	  CheckIdNew<Register::File::File>(_id));
+	  CheckIdNew<Fred::File::File>(_id));
 
 	  if (it != m_data.end())
 	  {
 		  LOGGER(PACKAGE).debug(boost::format("object list hit! object id=%1% found")
 		  % _id);
-		  return dynamic_cast<Register::File::File*>(*it);
+		  return dynamic_cast<Fred::File::File*>(*it);
 	  }
 	  LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% not found")
 	  % _id);
-	  throw Register::NOT_FOUND();
+	  throw Fred::NOT_FOUND();
 }
 
 
@@ -196,7 +196,7 @@ public:
 
     File *createFile() const
     {
-        TRACE("[CALL] Register::File::ManagerImpl::createFile()");
+        TRACE("[CALL] Fred::File::ManagerImpl::createFile()");
         File *file = new File();
         return file;
     }
@@ -223,7 +223,7 @@ public:
 
 Manager* Manager::create(Transferer *_transferer)
 {
-    TRACE("[CALL] Register::File::Manager::create()");
+    TRACE("[CALL] Fred::File::Manager::create()");
     return new ManagerImpl(_transferer);
 };
 

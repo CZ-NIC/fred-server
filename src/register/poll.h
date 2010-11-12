@@ -14,7 +14,7 @@ using namespace boost::gregorian;
 /// forward declared parameter type 
 class DB;
 
-namespace Register
+namespace Fred
 {
   namespace Poll
   {

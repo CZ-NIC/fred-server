@@ -31,7 +31,7 @@
 #define NSSET_REGEX_RESTRICTED "[nN][sS][sS][iI][dD]:[a-zA-Z0-9_:.-]{1,57}"
 #define NSSET_REGEX "[a-zA-Z0-9_:.-]{1,63}"
 
-namespace Register {
+namespace Fred {
 namespace NSSet {
 static boost::regex format(NSSET_REGEX);
 static boost::regex formatRestricted(NSSET_REGEX_RESTRICTED);

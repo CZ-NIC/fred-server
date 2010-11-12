@@ -31,7 +31,7 @@
 #define KEYSET_REGEX_RESTRICTED "[kK][eE][yY][iI][dD]:[a-zA-Z0-9_:.-]{1,57}"
 #define KEYSET_REGEX "[a-zA-Z0-9_:.-]{1,63}"
 
-namespace Register {
+namespace Fred {
 namespace KeySet {
 
 static boost::regex format(KEYSET_REGEX);
@@ -887,4 +887,4 @@ Manager *Manager::create(DB *db, bool restrictedHandle)
 }
 
 } // namespace KeySet
-} // namespace Register
+} // namespace Fred

@@ -132,7 +132,7 @@ private:
 
     Database::ID getRegistrarId(std::string handle);
     /*
-    void factoring(Register::Invoicing::Manager *man, 
+    void factoring(Fred::Invoicing::Manager *man,
             Database::ID zoneId, std::string zoneName, 
             Database::ID regId, std::string regName, 
             Database::Date toDate, Database::Date taxDate);
@@ -182,7 +182,7 @@ private:
       const char *taxdateStr, const char *todateStr);
     int factoring(const char *database, const char *registrarHandle,
       const char *zone_fqdn, const char *taxdateStr, const char *todateStr);
-    void filter_reload_invoices(Register::Invoicing::Manager *invMan, Register::Invoicing::List *invList);
+    void filter_reload_invoices(Fred::Invoicing::Manager *invMan, Fred::Invoicing::List *invList);
 
 }; // class InvoiceClient
 

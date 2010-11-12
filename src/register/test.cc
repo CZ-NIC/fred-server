@@ -34,7 +34,7 @@
 void
 bank_import_xml(const std::string &_xmlfile)
 {
-    using namespace Register::Banking;
+    using namespace Fred::Banking;
     ManagerPtr bmanager(Manager::create(0));
 
     std::ifstream file(_xmlfile.c_str(), std::ios::in);
@@ -45,7 +45,7 @@ bank_import_xml(const std::string &_xmlfile)
 void
 bank_pair_payment_with_statement()
 {
-    using namespace Register::Banking;
+    using namespace Fred::Banking;
     ManagerPtr bmanager(Manager::create(0));
     bmanager->pairPaymentWithStatement(8690, 0, true);
 }
@@ -53,7 +53,7 @@ bank_pair_payment_with_statement()
 void
 bank_payment()
 {
-    using namespace Register::Banking;
+    using namespace Fred::Banking;
     ManagerPtr bmanager(Manager::create(0));
     PaymentListPtr plist(bmanager->createPaymentList());
 
@@ -73,7 +73,7 @@ bank_payment()
 void
 bank_statement()
 {
-    using namespace Register::Banking;
+    using namespace Fred::Banking;
     ManagerPtr bmanager(Manager::create());
     StatementListPtr slist(bmanager->createStatementList());
 

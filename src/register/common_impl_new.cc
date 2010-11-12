@@ -1,6 +1,6 @@
 #include "common_impl_new.h"
 
-namespace Register {
+namespace Fred {
 
 CommonObjectImplNew::CommonObjectImplNew()
 {
@@ -169,4 +169,4 @@ CommonListImplNew::isLimited() const
     return m_loadLimitActive;
 }
 
-} // namespace Register
+} // namespace Fred

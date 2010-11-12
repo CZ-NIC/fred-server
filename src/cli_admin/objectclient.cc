@@ -62,7 +62,7 @@ ObjectClient::show_opts()
 
 int
 ObjectClient::createObjectStateRequest(
-        Register::TID object,
+        Fred::TID object,
         unsigned state)
 {
       std::stringstream sql;
@@ -90,7 +90,7 @@ void
 ObjectClient::new_state_request()
 {
     callHelp(m_conf, no_help);
-    Register::TID id = m_conf.get<unsigned long long>(OBJECT_ID_NAME);
+    Fred::TID id = m_conf.get<unsigned long long>(OBJECT_ID_NAME);
     unsigned int state = m_conf.get<unsigned int>(OBJECT_NEW_STATE_REQUEST_NAME);
     int res = createObjectStateRequest(
             id, state
@@ -122,8 +122,8 @@ void
 ObjectClient::update_states()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Manager> regMan(
-            Register::Manager::create(
+    std::auto_ptr<Fred::Manager> regMan(
+            Fred::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
@@ -335,8 +335,8 @@ ObjectClient::regular_procedure()
     int i;
     std::auto_ptr<CorbaClient> cc;
     try {
-        std::auto_ptr<Register::Document::Manager> docMan(
-                Register::Document::Manager::create(
+        std::auto_ptr<Fred::Document::Manager> docMan(
+                Fred::Document::Manager::create(
                     m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
                     m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
                     m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
@@ -356,45 +356,45 @@ ObjectClient::regular_procedure()
         }
         MailerManager mailMan(cc->getNS());
 
-        std::auto_ptr<Register::Zone::Manager> zoneMan(
-                Register::Zone::Manager::create());
+        std::auto_ptr<Fred::Zone::Manager> zoneMan(
+                Fred::Zone::Manager::create());
 
-        Register::Messages::ManagerPtr msgMan
-            = Register::Messages::create_manager();
+        Fred::Messages::ManagerPtr msgMan
+            = Fred::Messages::create_manager();
 
 
-        std::auto_ptr<Register::Domain::Manager> domMan(
-                Register::Domain::Manager::create(&m_db, zoneMan.get()));
+        std::auto_ptr<Fred::Domain::Manager> domMan(
+                Fred::Domain::Manager::create(&m_db, zoneMan.get()));
 
-        std::auto_ptr<Register::Contact::Manager> conMan(
-                Register::Contact::Manager::create(
+        std::auto_ptr<Fred::Contact::Manager> conMan(
+                Fred::Contact::Manager::create(
                     &m_db,
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
-        std::auto_ptr<Register::NSSet::Manager> nssMan(
-                Register::NSSet::Manager::create(
+        std::auto_ptr<Fred::NSSet::Manager> nssMan(
+                Fred::NSSet::Manager::create(
                     &m_db,
                     zoneMan.get(),
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
-        std::auto_ptr<Register::KeySet::Manager> keyMan(
-                Register::KeySet::Manager::create(
+        std::auto_ptr<Fred::KeySet::Manager> keyMan(
+                Fred::KeySet::Manager::create(
                     &m_db,
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
-        std::auto_ptr<Register::Poll::Manager> pollMan(
-                Register::Poll::Manager::create(
+        std::auto_ptr<Fred::Poll::Manager> pollMan(
+                Fred::Poll::Manager::create(
                     &m_db)
                 );
-        std::auto_ptr<Register::Manager> registerMan(
-                Register::Manager::create(
+        std::auto_ptr<Fred::Manager> registerMan(
+                Fred::Manager::create(
                     &m_db,
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
-        std::auto_ptr<Register::Registrar::Manager> regMan(
-                Register::Registrar::Manager::create(&m_db));
-        std::auto_ptr<Register::Notify::Manager> notifyMan(
-                Register::Notify::Manager::create(
+        std::auto_ptr<Fred::Registrar::Manager> regMan(
+                Fred::Registrar::Manager::create(&m_db));
+        std::auto_ptr<Fred::Notify::Manager> notifyMan(
+                Fred::Notify::Manager::create(
                     &m_db,
                     &mailMan,
                     conMan.get(),

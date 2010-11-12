@@ -15,7 +15,7 @@ using namespace boost::posix_time;
 /** Use remote CORBA mailer to implement register mailer functionality.
  * This implementation is connected to the rest of register by supplying 
  * generic pointer to abstract mailer interface */ 
-class MailerManager : public Register::Mailer::Manager
+class MailerManager : public Fred::Mailer::Manager
 { 
   NameService       *ns_ptr;
   ccReg::Mailer_var mailer;
@@ -25,22 +25,22 @@ class MailerManager : public Register::Mailer::Manager
   class RESOLVE_FAILED {};
   class LOAD_ERROR {};
   MailerManager(NameService *ns); 
-  virtual Register::TID sendEmail(
+  virtual Fred::TID sendEmail(
     const std::string& from,
     const std::string& to,
     const std::string& subject,
     const std::string& mailTemplate,
-    const Register::Mailer::Parameters &params,
-    const Register::Mailer::Handles &handles,
-    const Register::Mailer::Attachments &attach
-  ) throw (Register::Mailer::NOT_SEND) ;
+    const Fred::Mailer::Parameters &params,
+    const Fred::Mailer::Handles &handles,
+    const Fred::Mailer::Attachments &attach
+  ) throw (Fred::Mailer::NOT_SEND) ;
   bool checkEmailList(std::string &_email_list) const;
 
   struct Filter 
   {
     Filter();
     void clear();
-    Register::TID id;
+    Fred::TID id;
     time_period crTime;
     time_period modTime;
     long type;
@@ -51,7 +51,7 @@ class MailerManager : public Register::Mailer::Manager
   };
   struct Detail
   {
-    Register::TID id;
+    Fred::TID id;
     std::string createTime;
     std::string modTime;
     long type;
@@ -59,7 +59,7 @@ class MailerManager : public Register::Mailer::Manager
     long status;
     std::string content;
     std::vector<std::string> handles;
-    std::vector<Register::TID> attachments;   
+    std::vector<Fred::TID> attachments;
   };
   typedef std::vector<Detail> List;  
  private:

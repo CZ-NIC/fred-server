@@ -92,8 +92,8 @@ int isValidBase64(const char *str, int *ret);
 char *removeWhitespaces(const char *encoded);
 
 static bool testObjectHasState(
-  DB *db, Register::TID object_id, unsigned state_id)
-    throw (Register::SQL_ERROR)
+  DB *db, Fred::TID object_id, unsigned state_id)
+    throw (Fred::SQL_ERROR)
 {
   bool returnState;
   std::stringstream sql;
@@ -101,7 +101,7 @@ static bool testObjectHasState(
       << object_id << " AND state_id=" << state_id << " AND valid_to ISNULL";
   DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
   if (!db->ExecSelect(sql.str().c_str()))
-    throw Register::SQL_ERROR();
+    throw Fred::SQL_ERROR();
   returnState = atoi(db->GetFieldValue(0, 0));
   return returnState;
 }
@@ -259,15 +259,15 @@ public:
 };
 
 /* Ticket #3197 - wrap/overload for function
- * testObjectHasState(DB *db, Register::TID object_id, unsigned state_id)
+ * testObjectHasState(DB *db, Fred::TID object_id, unsigned state_id)
  * to test system registrar (should have no restriction)
  */
-static bool testObjectHasState(EPPAction &action, Register::TID object_id,
+static bool testObjectHasState(EPPAction &action, Fred::TID object_id,
         unsigned state_id)
 {
     DB *db = action.getDB();
     if (!db) {
-        throw Register::SQL_ERROR();
+        throw Fred::SQL_ERROR();
     }
     if (db->GetRegistrarSystem(action.getRegistrar())) {
         return 0;
@@ -291,15 +291,15 @@ static long int getIdOfContact(
   DB *db, const char *handle, Config::Conf& c, bool lock = false)
 {
   if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
-  std::auto_ptr<Register::Contact::Manager>
-      cman(Register::Contact::Manager::create(db, c.get<bool>("registry.restricted_handles")) );
-  Register::Contact::Manager::CheckAvailType caType;
+  std::auto_ptr<Fred::Contact::Manager>
+      cman(Fred::Contact::Manager::create(db, c.get<bool>("registry.restricted_handles")) );
+  Fred::Contact::Manager::CheckAvailType caType;
   long int ret = -1;
   try {
-    Register::NameIdPair nameId;
+    Fred::NameIdPair nameId;
     caType = cman->checkAvail(handle,nameId, lock);
     ret = nameId.id;
-    if (caType == Register::Contact::Manager::CA_INVALID_HANDLE)
+    if (caType == Fred::Contact::Manager::CA_INVALID_HANDLE)
     ret = -1;
   } catch (...) {}
   return ret;
@@ -310,17 +310,17 @@ static long int getIdOfNSSet(
   DB *db, const char *handle, Config::Conf& c, bool lock = false)
 {
   if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
-  std::auto_ptr<Register::Zone::Manager>
-      zman(Register::Zone::Manager::create() );
-  std::auto_ptr<Register::NSSet::Manager> man(Register::NSSet::Manager::create(
+  std::auto_ptr<Fred::Zone::Manager>
+      zman(Fred::Zone::Manager::create() );
+  std::auto_ptr<Fred::NSSet::Manager> man(Fred::NSSet::Manager::create(
       db, zman.get(), c.get<bool>("registry.restricted_handles")) );
-  Register::NSSet::Manager::CheckAvailType caType;
+  Fred::NSSet::Manager::CheckAvailType caType;
   long int ret = -1;
   try {
-    Register::NameIdPair nameId;
+    Fred::NameIdPair nameId;
     caType = man->checkAvail(handle,nameId,lock);
     ret = nameId.id;
-    if (caType == Register::NSSet::Manager::CA_INVALID_HANDLE)
+    if (caType == Fred::NSSet::Manager::CA_INVALID_HANDLE)
     ret = -1;
   } catch (...) {}
   return ret;
@@ -332,15 +332,15 @@ getIdOfKeySet(DB *db, const char *handle, Config::Conf &c, bool lock = false)
 {
     if (lock && !c.get<bool>("registry.lock_epp_commands"))
         lock = false;
-    std::auto_ptr<Register::KeySet::Manager> man(
-            Register::KeySet::Manager::create(db, c.get<bool>("registry.restricted_handles")));
-    Register::KeySet::Manager::CheckAvailType caType;
+    std::auto_ptr<Fred::KeySet::Manager> man(
+            Fred::KeySet::Manager::create(db, c.get<bool>("registry.restricted_handles")));
+    Fred::KeySet::Manager::CheckAvailType caType;
     long int ret = -1;
     try {
-        Register::NameIdPair nameId;
+        Fred::NameIdPair nameId;
         caType = man->checkAvail(handle, nameId, lock);
         ret = nameId.id;
-        if (caType == Register::KeySet::Manager::CA_INVALID_HANDLE)
+        if (caType == Fred::KeySet::Manager::CA_INVALID_HANDLE)
             ret = -1;
     } catch (...) {}
     return ret;
@@ -351,34 +351,34 @@ static long int getIdOfDomain(
   DB *db, const char *handle, Config::Conf& c, bool lock = false, int* zone = NULL)
 {
   if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
-  std::auto_ptr<Register::Zone::Manager> zm(
-    Register::Zone::Manager::create()
+  std::auto_ptr<Fred::Zone::Manager> zm(
+    Fred::Zone::Manager::create()
   );
-  std::auto_ptr<Register::Domain::Manager> dman(
-    Register::Domain::Manager::create(db,zm.get())
+  std::auto_ptr<Fred::Domain::Manager> dman(
+    Fred::Domain::Manager::create(db,zm.get())
   );
-  Register::NameIdPair nameId;
+  Fred::NameIdPair nameId;
   long int ret = -1;
   try {
     switch (dman->checkAvail(handle, nameId, lock)) {
-      case Register::Domain::CA_REGISTRED :
+      case Fred::Domain::CA_REGISTRED :
         ret = nameId.id;
         break;
-      case Register::Domain::CA_INVALID_HANDLE :
-      case Register::Domain::CA_BAD_LENGHT :
-      case Register::Domain::CA_BLACKLIST :
+      case Fred::Domain::CA_INVALID_HANDLE :
+      case Fred::Domain::CA_BAD_LENGHT :
+      case Fred::Domain::CA_BLACKLIST :
         ret = -2;
         break;
-      case Register::Domain::CA_BAD_ZONE :
+      case Fred::Domain::CA_BAD_ZONE :
         ret = -1;
         break;
-      case Register::Domain::CA_PARENT_REGISTRED :
-      case Register::Domain::CA_CHILD_REGISTRED :
-      case Register::Domain::CA_AVAILABLE :
+      case Fred::Domain::CA_PARENT_REGISTRED :
+      case Fred::Domain::CA_CHILD_REGISTRED :
+      case Fred::Domain::CA_AVAILABLE :
         ret = 0;
         break;
     }
-    const Register::Zone::Zone *z = zm->findApplicableZone(handle);
+    const Fred::Zone::Zone *z = zm->findApplicableZone(handle);
     if (zone && z) *zone = z->getId();
   } catch (...) {}
   return ret;
@@ -417,7 +417,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     throw DB_CONNECT_FAILED();
   }
   LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
-  regMan.reset(Register::Manager::create(&db, false)); //TODO: replace 'false'
+  regMan.reset(Fred::Manager::create(&db, false)); //TODO: replace 'false'
   regMan->initStates();
 }
 ccReg_EPP_i::~ccReg_EPP_i()
@@ -1414,8 +1414,8 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
   // start EPP action - this will handle all init stuff
   EPPAction a(this, clientID, EPP_PollAcknowledgement, clTRID, XML);
   try {
-    std::auto_ptr<Register::Poll::Manager> pollMan(
-        Register::Poll::Manager::create(a.getDB())
+    std::auto_ptr<Fred::Poll::Manager> pollMan(
+        Fred::Poll::Manager::create(a.getDB())
     );
     pollMan->setMessageSeen(STR_TO_ID(msgID), a.getRegistrar());
     /// convert count of messages and next message id to string
@@ -1426,7 +1426,7 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
     newmsgID = CORBA::string_dup(buffer.str().c_str());
     return a.getRet()._retn();
   }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     // message id not found
     a.failed(SetErrorReason(
             a.getErrors(),COMMAND_PARAMETR_ERROR,
@@ -1476,10 +1476,10 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
   );
   // start EPP action - this will handle all init stuff
   EPPAction a(this, clientID, EPP_PollResponse, clTRID, XML);
-  std::auto_ptr<Register::Poll::Message> m;
+  std::auto_ptr<Fred::Poll::Message> m;
   try {
-    std::auto_ptr<Register::Poll::Manager> pollMan(
-        Register::Poll::Manager::create(a.getDB())
+    std::auto_ptr<Fred::Poll::Manager> pollMan(
+        Fred::Poll::Manager::create(a.getDB())
     );
     // fill count
     count = pollMan->getMessageCount(a.getRegistrar());
@@ -1503,20 +1503,20 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
   // MessageEvent, MessageEventReg, MessageTechCheck or MessageLowCredit
   // check MessageEventReg before MessageEvent because
   // MessageEvent is ancestor of MessageEventReg
-  Register::Poll::MessageEventReg *mer =
-      dynamic_cast<Register::Poll::MessageEventReg *>(m.get());
+  Fred::Poll::MessageEventReg *mer =
+      dynamic_cast<Fred::Poll::MessageEventReg *>(m.get());
   if (mer) {
     switch (m->getType()) {
-      case Register::Poll::MT_TRANSFER_CONTACT:
+      case Fred::Poll::MT_TRANSFER_CONTACT:
         type = ccReg::polltype_transfer_contact;
         break;
-      case Register::Poll::MT_TRANSFER_NSSET:
+      case Fred::Poll::MT_TRANSFER_NSSET:
         type = ccReg::polltype_transfer_nsset;
         break;
-      case Register::Poll::MT_TRANSFER_DOMAIN:
+      case Fred::Poll::MT_TRANSFER_DOMAIN:
         type = ccReg::polltype_transfer_domain;
         break;
-      case Register::Poll::MT_TRANSFER_KEYSET:
+      case Fred::Poll::MT_TRANSFER_KEYSET:
         type = ccReg::polltype_transfer_keyset;
         break;
       default:
@@ -1529,35 +1529,35 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     *msg <<= hdm;
     return a.getRet()._retn();
   }
-  Register::Poll::MessageEvent *me =
-      dynamic_cast<Register::Poll::MessageEvent *>(m.get());
+  Fred::Poll::MessageEvent *me =
+      dynamic_cast<Fred::Poll::MessageEvent *>(m.get());
   if (me) {
     switch (m->getType()) {
-      case Register::Poll::MT_DELETE_CONTACT:
+      case Fred::Poll::MT_DELETE_CONTACT:
         type = ccReg::polltype_delete_contact;
         break;
-      case Register::Poll::MT_DELETE_NSSET:
+      case Fred::Poll::MT_DELETE_NSSET:
         type = ccReg::polltype_delete_nsset;
         break;
-      case Register::Poll::MT_DELETE_DOMAIN:
+      case Fred::Poll::MT_DELETE_DOMAIN:
         type = ccReg::polltype_delete_domain;
         break;
-      case Register::Poll::MT_DELETE_KEYSET:
+      case Fred::Poll::MT_DELETE_KEYSET:
         type = ccReg::polltype_delete_keyset;
         break;
-      case Register::Poll::MT_IMP_EXPIRATION:
+      case Fred::Poll::MT_IMP_EXPIRATION:
         type = ccReg::polltype_impexpiration;
         break;
-      case Register::Poll::MT_EXPIRATION:
+      case Fred::Poll::MT_EXPIRATION:
         type = ccReg::polltype_expiration;
         break;
-      case Register::Poll::MT_IMP_VALIDATION:
+      case Fred::Poll::MT_IMP_VALIDATION:
         type = ccReg::polltype_impvalidation;
         break;
-      case Register::Poll::MT_VALIDATION:
+      case Fred::Poll::MT_VALIDATION:
         type = ccReg::polltype_validation;
         break;
-      case Register::Poll::MT_OUTZONE:
+      case Fred::Poll::MT_OUTZONE:
         type = ccReg::polltype_outzone;
         break;
       default:
@@ -1569,8 +1569,8 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     *msg <<= hdm;
     return a.getRet()._retn();
   }
-  Register::Poll::MessageLowCredit *mlc =
-      dynamic_cast<Register::Poll::MessageLowCredit *>(m.get());
+  Fred::Poll::MessageLowCredit *mlc =
+      dynamic_cast<Fred::Poll::MessageLowCredit *>(m.get());
   if (mlc) {
     type = ccReg::polltype_lowcredit;
     ccReg::PollMsg_LowCredit *hdm = new ccReg::PollMsg_LowCredit;
@@ -1580,8 +1580,8 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     *msg <<= hdm;
     return a.getRet()._retn();
   }
-  Register::Poll::MessageTechCheck *mtc =
-      dynamic_cast<Register::Poll::MessageTechCheck *>(m.get());
+  Fred::Poll::MessageTechCheck *mtc =
+      dynamic_cast<Fred::Poll::MessageTechCheck *>(m.get());
   if (mtc) {
     type = ccReg::polltype_techcheck;
     ccReg::PollMsg_Techcheck *hdm = new ccReg::PollMsg_Techcheck;
@@ -1591,7 +1591,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
       hdm->fqdns[i] = mtc->getFQDNS()[i].c_str();
     hdm->tests.length(mtc->getTests().size());
     for (unsigned i=0; i<mtc->getTests().size(); i++) {
-      Register::Poll::MessageTechCheckItem *test = mtc->getTests()[i];
+      Fred::Poll::MessageTechCheckItem *test = mtc->getTests()[i];
       hdm->tests[i].testname = CORBA::string_dup(test->getTestname().c_str());
       hdm->tests[i].status = test->getStatus();
       hdm->tests[i].note = CORBA::string_dup(test->getNote().c_str());
@@ -1879,11 +1879,11 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
 {
     unsigned long i, len;
 
-    Register::NameIdPair caConflict;
-    Register::Domain::CheckAvailType caType;
-    Register::Contact::Manager::CheckAvailType cType;
-    Register::NSSet::Manager::CheckAvailType nType;
-    Register::KeySet::Manager::CheckAvailType kType;
+    Fred::NameIdPair caConflict;
+    Fred::Domain::CheckAvailType caType;
+    Fred::Contact::Manager::CheckAvailType cType;
+    Fred::NSSet::Manager::CheckAvailType nType;
+    Fred::KeySet::Manager::CheckAvailType kType;
     short int code = 0;
 
     a = new ccReg::CheckResp;
@@ -1906,33 +1906,33 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
         switch (act) {
             case EPP_ContactCheck:
                 try {
-                    std::auto_ptr<Register::Contact::Manager> cman( Register::Contact::Manager::create(action.getDB(),conf.get<bool>("registry.restricted_handles")) );
+                    std::auto_ptr<Fred::Contact::Manager> cman( Fred::Contact::Manager::create(action.getDB(),conf.get<bool>("registry.restricted_handles")) );
 
                     LOG( NOTICE_LOG , "contact checkAvail handle [%s]" , (const char * ) chck[i] );
 
                     cType = cman->checkAvail( ( const char * ) chck[i] , caConflict );
                     LOG( NOTICE_LOG , "contact type %d" , cType );
                     switch (cType) {
-                        case Register::Contact::Manager::CA_INVALID_HANDLE:
+                        case Fred::Contact::Manager::CA_INVALID_HANDLE:
                             a[i].avail = ccReg::BadFormat;
                             a[i].reason
                                 = CORBA::string_dup(GetReasonMessage( REASON_MSG_INVALID_FORMAT , action.getLang()));
                             LOG( NOTICE_LOG , "bad format %s of contact handle" , (const char * ) chck[i] );
                             break;
-                        case Register::Contact::Manager::CA_REGISTRED:
+                        case Fred::Contact::Manager::CA_REGISTRED:
                             a[i].avail = ccReg::Exist;
                             a[i].reason
                                 = CORBA::string_dup(GetReasonMessage( REASON_MSG_REGISTRED , action.getLang()) );
                             LOG( NOTICE_LOG , "contact %s exist not Avail" , (const char * ) chck[i] );
                             break;
 
-                        case Register::Contact::Manager::CA_PROTECTED:
+                        case Fred::Contact::Manager::CA_PROTECTED:
                             a[i].avail = ccReg::DelPeriod;
                             a[i].reason
                                 = CORBA::string_dup(GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , action.getLang()) ); // v ochrane lhute
                             LOG( NOTICE_LOG , "contact %s in delete period" ,(const char * ) chck[i] );
                             break;
-                        case Register::Contact::Manager::CA_FREE:
+                        case Fred::Contact::Manager::CA_FREE:
                             a[i].avail = ccReg::NotExist;
                             a[i].reason = CORBA::string_dup(""); // free
                             LOG( NOTICE_LOG , "contact %s not exist  Avail" ,(const char * ) chck[i] );
@@ -1940,15 +1940,15 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
                     }
                 }
                 catch (...) {
-                    LOG( WARNING_LOG, "cannot run Register::Contact::checkAvail");
+                    LOG( WARNING_LOG, "cannot run Fred::Contact::checkAvail");
                     code=COMMAND_FAILED;
                 }
                 break;
 
             case EPP_KeySetCheck:
                 try {
-                    std::auto_ptr<Register::KeySet::Manager> kman(
-                            Register::KeySet::Manager::create(
+                    std::auto_ptr<Fred::KeySet::Manager> kman(
+                            Fred::KeySet::Manager::create(
                                 action.getDB(), conf.get<bool>("registry.restricted_handles")));
                     LOG(NOTICE_LOG, "keyset checkAvail handle [%s]",
                             (const char *)chck[i]);
@@ -1956,7 +1956,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
                     kType = kman->checkAvail((const char *)chck[i], caConflict);
                     LOG(NOTICE_LOG, "keyset check type %d", kType);
                     switch (kType) {
-                        case Register::KeySet::Manager::CA_INVALID_HANDLE:
+                        case Fred::KeySet::Manager::CA_INVALID_HANDLE:
                             a[i].avail = ccReg::BadFormat;
                             a[i].reason = CORBA::string_dup(
                                     GetReasonMessage(
@@ -1966,7 +1966,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
                             LOG(NOTICE_LOG, "bad format %s of keyset handle",
                                     (const char *)chck[i]);
                             break;
-                        case Register::KeySet::Manager::CA_REGISTRED:
+                        case Fred::KeySet::Manager::CA_REGISTRED:
                             a[i].avail = ccReg::Exist;
                             a[i].reason = CORBA::string_dup(
                                     GetReasonMessage(
@@ -1976,7 +1976,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
                             LOG(NOTICE_LOG, "keyset %s exist not avail",
                                     (const char *)chck[i]);
                             break;
-                        case Register::KeySet::Manager::CA_PROTECTED:
+                        case Fred::KeySet::Manager::CA_PROTECTED:
                             a[i].avail = ccReg::DelPeriod;
                             a[i].reason = CORBA::string_dup(
                                     GetReasonMessage(
@@ -1986,7 +1986,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
                             LOG(NOTICE_LOG, "keyset %s in delete period",
                                     (const char *)chck[i]);
                             break;
-                        case Register::KeySet::Manager::CA_FREE:
+                        case Fred::KeySet::Manager::CA_FREE:
                             a[i].avail = ccReg::NotExist;
                             a[i].reason = CORBA::string_dup(""); //free
                             LOG(NOTICE_LOG, "keyset %s not exist Available",
@@ -1995,7 +1995,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
                     }
                 }
                 catch (...) {
-                    LOG(WARNING_LOG, "cannot run Register::Contact::checkAvail");
+                    LOG(WARNING_LOG, "cannot run Fred::Contact::checkAvail");
                     code = COMMAND_FAILED;
                 }
                 break;
@@ -2003,34 +2003,34 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
             case EPP_NSsetCheck:
 
                 try {
-                    std::auto_ptr<Register::Zone::Manager> zman( Register::Zone::Manager::create() );
-                    std::auto_ptr<Register::NSSet::Manager> nman( Register::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")) );
+                    std::auto_ptr<Fred::Zone::Manager> zman( Fred::Zone::Manager::create() );
+                    std::auto_ptr<Fred::NSSet::Manager> nman( Fred::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")) );
 
                     LOG( NOTICE_LOG , "nsset checkAvail handle [%s]" , (const char * ) chck[i] );
 
                     nType = nman->checkAvail( ( const char * ) chck[i] , caConflict );
                     LOG( NOTICE_LOG , "nsset check type %d" , nType );
                     switch (nType) {
-                        case Register::NSSet::Manager::CA_INVALID_HANDLE:
+                        case Fred::NSSet::Manager::CA_INVALID_HANDLE:
                             a[i].avail = ccReg::BadFormat;
                             a[i].reason
                                 = CORBA::string_dup(GetReasonMessage( REASON_MSG_INVALID_FORMAT , action.getLang()));
                             LOG( NOTICE_LOG , "bad format %s of nsset handle" , (const char * ) chck[i] );
                             break;
-                        case Register::NSSet::Manager::CA_REGISTRED:
+                        case Fred::NSSet::Manager::CA_REGISTRED:
                             a[i].avail = ccReg::Exist;
                             a[i].reason
                                 = CORBA::string_dup(GetReasonMessage( REASON_MSG_REGISTRED , action.getLang()) );
                             LOG( NOTICE_LOG , "nsset %s exist not Avail" , (const char * ) chck[i] );
                             break;
 
-                        case Register::NSSet::Manager::CA_PROTECTED:
+                        case Fred::NSSet::Manager::CA_PROTECTED:
                             a[i].avail = ccReg::DelPeriod;
                             a[i].reason
                                 = CORBA::string_dup(GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , action.getLang()) ); // v ochrane lhute
                             LOG( NOTICE_LOG , "nsset %s in delete period" ,(const char * ) chck[i] );
                             break;
-                        case Register::NSSet::Manager::CA_FREE:
+                        case Fred::NSSet::Manager::CA_FREE:
                             a[i].avail = ccReg::NotExist;
                             a[i].reason = CORBA::string_dup("");
                             LOG( NOTICE_LOG , "nsset %s not exist  Avail" ,(const char * ) chck[i] );
@@ -2038,7 +2038,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
                     }
                 }
                 catch (...) {
-                    LOG( WARNING_LOG, "cannot run Register::NSSet::checkAvail");
+                    LOG( WARNING_LOG, "cannot run Fred::NSSet::checkAvail");
                     code=COMMAND_FAILED;
                 }
 
@@ -2048,41 +2048,41 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
             case EPP_DomainCheck:
 
                 try {
-                    std::auto_ptr<Register::Zone::Manager> zm( Register::Zone::Manager::create() );
-                    std::auto_ptr<Register::Domain::Manager> dman( Register::Domain::Manager::create(action.getDB(),zm.get()) );
+                    std::auto_ptr<Fred::Zone::Manager> zm( Fred::Zone::Manager::create() );
+                    std::auto_ptr<Fred::Domain::Manager> dman( Fred::Domain::Manager::create(action.getDB(),zm.get()) );
 
                     LOG( NOTICE_LOG , "domain checkAvail fqdn [%s]" , (const char * ) chck[i] );
 
                     caType = dman->checkAvail( ( const char * ) chck[i] , caConflict);
                     LOG( NOTICE_LOG , "domain type %d" , caType );
                     switch (caType) {
-                        case Register::Domain::CA_INVALID_HANDLE:
-                        case Register::Domain::CA_BAD_LENGHT:
+                        case Fred::Domain::CA_INVALID_HANDLE:
+                        case Fred::Domain::CA_BAD_LENGHT:
                             a[i].avail = ccReg::BadFormat;
                             a[i].reason
                                 = CORBA::string_dup(GetReasonMessage(REASON_MSG_INVALID_FORMAT , action.getLang()) );
                             LOG( NOTICE_LOG , "bad format %s of fqdn" , (const char * ) chck[i] );
                             break;
-                        case Register::Domain::CA_REGISTRED:
-                        case Register::Domain::CA_CHILD_REGISTRED:
-                        case Register::Domain::CA_PARENT_REGISTRED:
+                        case Fred::Domain::CA_REGISTRED:
+                        case Fred::Domain::CA_CHILD_REGISTRED:
+                        case Fred::Domain::CA_PARENT_REGISTRED:
                             a[i].avail = ccReg::Exist;
                             a[i].reason
                                 = CORBA::string_dup(GetReasonMessage( REASON_MSG_REGISTRED , action.getLang()) );
                             LOG( NOTICE_LOG , "domain %s exist not Avail" , (const char * ) chck[i] );
                             break;
-                        case Register::Domain::CA_BLACKLIST:
+                        case Fred::Domain::CA_BLACKLIST:
                             a[i].avail = ccReg::BlackList;
                             a[i].reason
                                 = CORBA::string_dup(GetReasonMessage( REASON_MSG_BLACKLISTED_DOMAIN , action.getLang()) );
                             LOG( NOTICE_LOG , "blacklisted  %s" , (const char * ) chck[i] );
                             break;
-                        case Register::Domain::CA_AVAILABLE:
+                        case Fred::Domain::CA_AVAILABLE:
                             a[i].avail = ccReg::NotExist;
                             a[i].reason = CORBA::string_dup(""); // free
                             LOG( NOTICE_LOG , "domain %s not exist  Avail" ,(const char * ) chck[i] );
                             break;
-                        case Register::Domain::CA_BAD_ZONE:
+                        case Fred::Domain::CA_BAD_ZONE:
                             a[i].avail = ccReg::NotApplicable; // unusable domain isn't in zone
                             a[i].reason
                                 = CORBA::string_dup(GetReasonMessage(REASON_MSG_NOT_APPLICABLE_DOMAIN , action.getLang()) );
@@ -2103,7 +2103,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
 */
                 }
                 catch (...) {
-                    LOG( WARNING_LOG, "cannot run Register::Domain::checkAvail");
+                    LOG( WARNING_LOG, "cannot run Fred::Domain::checkAvail");
                     code=COMMAND_FAILED;
                 }
                 break;
@@ -2212,15 +2212,15 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
   // start EPP action - this will handle all init stuff
   EPPAction a(this, clientID, EPP_ContactInfo, clTRID, XML, &paction);
   // initialize managers for contact manipulation
-  std::auto_ptr<Register::Contact::Manager>
-      cman(Register::Contact::Manager::create(a.getDB(),
+  std::auto_ptr<Fred::Contact::Manager>
+      cman(Fred::Contact::Manager::create(a.getDB(),
           conf.get<bool>("registry.restricted_handles")) );
   // first check handle for proper format
   if (!cman->checkHandleFormat(handle))
     // failure in handle check, throw exception
     a.failed(SetReasonContactHandle(a.getErrors(), handle, a.getLang()));
   // now load contact by handle
-  std::auto_ptr<Register::Contact::List> clist(cman->createList());
+  std::auto_ptr<Fred::Contact::List> clist(cman->createList());
   clist->setHandleFilter(handle);
   try {clist->reload();}
   catch (...) {a.failedInternal("Cannot load contacts");}
@@ -2228,7 +2228,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
     // failer because non existance, throw exception
     a.failed(COMMAND_OBJECT_NOT_EXIST);
   // start filling output contact structure
-  Register::Contact::Contact *con = clist->getContact(0);
+  Fred::Contact::Contact *con = clist->getContact(0);
   c = new ccReg::Contact;
   // fill common object data
   c->ROID = CORBA::string_dup(con->getROID().c_str());
@@ -2244,8 +2244,8 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
   );
   // states
   for (unsigned i=0; i<con->getStatusCount(); i++) {
-    Register::TID stateId = con->getStatusByIdx(i)->getStatusId();
-    const Register::StatusDesc* sd = regMan->getStatusDesc(stateId);
+    Fred::TID stateId = con->getStatusByIdx(i)->getStatusId();
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
     if (!sd || !sd->getExternal())
       continue;
     c->stat.length(c->stat.length()+1);
@@ -2255,7 +2255,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
     ).c_str());
   }
   if (!c->stat.length()) {
-    const Register::StatusDesc* sd = regMan->getStatusDesc(0);
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
     if (sd) {
       c->stat.length(1);
       c->stat[0].value = CORBA::string_dup(sd->getName().c_str());
@@ -2671,27 +2671,27 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
     LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag %
             c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail);
 
-    Register::Contact::Manager::CheckAvailType caType;
+    Fred::Contact::Manager::CheckAvailType caType;
     try {
-        std::auto_ptr<Register::Contact::Manager> cman(
-                Register::Contact::Manager::create(action.getDB(),conf.get<bool>("registry.restricted_handles"))
+        std::auto_ptr<Fred::Contact::Manager> cman(
+                Fred::Contact::Manager::create(action.getDB(),conf.get<bool>("registry.restricted_handles"))
                 );
-        Register::NameIdPair nameId;
+        Fred::NameIdPair nameId;
         caType = cman->checkAvail(handle,nameId);
         id = nameId.id;
     }
     catch (...) {
         id = -1;
-        caType = Register::Contact::Manager::CA_INVALID_HANDLE;
+        caType = Fred::Contact::Manager::CA_INVALID_HANDLE;
     }
-    if (id<0 || caType == Register::Contact::Manager::CA_INVALID_HANDLE) {
+    if (id<0 || caType == Fred::Contact::Manager::CA_INVALID_HANDLE) {
         LOG(WARNING_LOG, "bad format of contact [%s]", handle);
         code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                 ccReg::contact_handle, 1, REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-    } else if (caType == Register::Contact::Manager::CA_REGISTRED) {
+    } else if (caType == Fred::Contact::Manager::CA_REGISTRED) {
         LOG( WARNING_LOG, "contact handle [%s] EXIST", handle );
         code= COMMAND_OBJECT_EXIST;
-    } else if (caType == Register::Contact::Manager::CA_PROTECTED) {
+    } else if (caType == Fred::Contact::Manager::CA_PROTECTED) {
         LOG(WARNING_LOG, "object [%s] in history period", handle);
         code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                 ccReg::contact_handle, 1, REASON_MSG_PROTECTED_PERIOD);
@@ -3032,16 +3032,16 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 
                     if (code == COMMAND_OK) {
                         try {
-                            std::auto_ptr<Register::Poll::Manager> pollMan(
-                                    Register::Poll::Manager::create(action.getDB())
+                            std::auto_ptr<Fred::Poll::Manager> pollMan(
+                                    Fred::Poll::Manager::create(action.getDB())
                                     );
                             pollMan->createActionMessage(
                                     // oldaction.getRegistrar(),
                                     oldregID,
-                                    type == 1 ? Register::Poll::MT_TRANSFER_CONTACT :
-                                    type == 2 ? Register::Poll::MT_TRANSFER_NSSET :
-                                    type == 3 ? Register::Poll::MT_TRANSFER_DOMAIN :
-                                    Register::Poll::MT_TRANSFER_KEYSET,
+                                    type == 1 ? Fred::Poll::MT_TRANSFER_CONTACT :
+                                    type == 2 ? Fred::Poll::MT_TRANSFER_NSSET :
+                                    type == 3 ? Fred::Poll::MT_TRANSFER_DOMAIN :
+                                    Fred::Poll::MT_TRANSFER_KEYSET,
                                     id
                                     );
                         } catch (...) {code = COMMAND_FAILED;}
@@ -3154,17 +3154,17 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
   // start EPP action - this will handle all init stuff
   EPPAction a(this, clientID, EPP_NSsetInfo, clTRID, XML, &paction);
   // initialize managers for nsset manipulation
-  std::auto_ptr<Register::Zone::Manager>
-      zman(Register::Zone::Manager::create() );
-  std::auto_ptr<Register::NSSet::Manager>
-      nman(Register::NSSet::Manager::create(a.getDB(), zman.get(),
+  std::auto_ptr<Fred::Zone::Manager>
+      zman(Fred::Zone::Manager::create() );
+  std::auto_ptr<Fred::NSSet::Manager>
+      nman(Fred::NSSet::Manager::create(a.getDB(), zman.get(),
           conf.get<bool>("registry.restricted_handles") ) );
   // first check handle for proper format
   if (!nman->checkHandleFormat(handle))
     // failure in handle check, throw exception
     a.failed(SetReasonNSSetHandle(a.getErrors(), handle, a.getLang()));
   // now load nsset by handle
-  std::auto_ptr<Register::NSSet::List> nlist(nman->createList());
+  std::auto_ptr<Fred::NSSet::List> nlist(nman->createList());
   nlist->setHandleFilter(handle);
   try {nlist->reload();}
   catch (...) {a.failedInternal("Cannot load nsset");}
@@ -3172,7 +3172,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
     // failer because non existance, throw exception
     a.failed(COMMAND_OBJECT_NOT_EXIST);
   // start filling output nsset structure
-  Register::NSSet::NSSet *nss = nlist->getNSSet(0);
+  Fred::NSSet::NSSet *nss = nlist->getNSSet(0);
   n = new ccReg::NSSet;
   // fill common object data
   n->ROID = CORBA::string_dup(nss->getROID().c_str());
@@ -3189,8 +3189,8 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
   );
   // states
   for (unsigned i=0; i<nss->getStatusCount(); i++) {
-    Register::TID stateId = nss->getStatusByIdx(i)->getStatusId();
-    const Register::StatusDesc* sd = regMan->getStatusDesc(stateId);
+    Fred::TID stateId = nss->getStatusByIdx(i)->getStatusId();
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
     if (!sd || !sd->getExternal())
       continue;
     n->stat.length(n->stat.length()+1);
@@ -3200,7 +3200,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
     ).c_str());
   }
   if (!n->stat.length()) {
-    const Register::StatusDesc* sd = regMan->getStatusDesc(0);
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
     if (sd) {
       n->stat.length(1);
       n->stat[0].value = CORBA::string_dup(sd->getName().c_str());
@@ -3217,7 +3217,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
     n->tech[i] = CORBA::string_dup(nss->getAdminByIdx(i).c_str());
   n->dns.length(nss->getHostCount());
   for (unsigned i=0; i<nss->getHostCount(); i++) {
-    const Register::NSSet::Host *h = nss->getHostByIdx(i);
+    const Fred::NSSet::Host *h = nss->getHostByIdx(i);
     n->dns[i].fqdn = CORBA::string_dup(h->getName().c_str());
     n->dns[i].inet.length(h->getAddrCount());
     for (unsigned j=0; j<h->getAddrCount(); j++)
@@ -3371,10 +3371,10 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
     crDate = CORBA::string_dup("");
     EPPAction action(this, params.sessionID, EPP_NSsetCreate, params.clTRID, params.XML, &paction);
 
-    std::auto_ptr<Register::Zone::Manager> zman(
-            Register::Zone::Manager::create());
-    std::auto_ptr<Register::NSSet::Manager> nman(
-            Register::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")));
+    std::auto_ptr<Fred::Zone::Manager> zman(
+            Fred::Zone::Manager::create());
+    std::auto_ptr<Fred::NSSet::Manager> nman(
+            Fred::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")));
 
     if (tech.length() < 1) {
         LOG( WARNING_LOG, "NSSetCreate: not any tech Contact " );
@@ -3402,28 +3402,28 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
                 ccReg::nsset_dns_name, 0, REASON_MSG_NSSET_LIMIT);
     }
     if (code == 0) {
-        Register::NSSet::Manager::CheckAvailType caType;
+        Fred::NSSet::Manager::CheckAvailType caType;
 
         tch = new int[tech.length()];
 
         try {
-            Register::NameIdPair nameId;
+            Fred::NameIdPair nameId;
             caType = nman->checkAvail(handle, nameId);
             id = nameId.id;
         }
         catch (...) {
-            caType = Register::NSSet::Manager::CA_INVALID_HANDLE;
+            caType = Fred::NSSet::Manager::CA_INVALID_HANDLE;
             id = -1;
         }
 
-        if (id<0 || caType == Register::NSSet::Manager::CA_INVALID_HANDLE) {
+        if (id<0 || caType == Fred::NSSet::Manager::CA_INVALID_HANDLE) {
             LOG(WARNING_LOG, "bad format of nssset [%s]", handle);
             code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                     ccReg::nsset_handle, 1, REASON_MSG_BAD_FORMAT_NSSET_HANDLE);
-        } else if (caType == Register::NSSet::Manager::CA_REGISTRED) {
+        } else if (caType == Fred::NSSet::Manager::CA_REGISTRED) {
             LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
             code = COMMAND_OBJECT_EXIST;
-        } else if (caType == Register::NSSet::Manager::CA_PROTECTED) {
+        } else if (caType == Fred::NSSet::Manager::CA_PROTECTED) {
             LOG(WARNING_LOG, "object [%s] in history period", handle);
             code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                     ccReg::nsset_handle, 1, REASON_MSG_PROTECTED_PERIOD);
@@ -3431,21 +3431,21 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
     }
     if (code == 0) {
         // test tech-c
-        std::auto_ptr<Register::Contact::Manager>
-            cman(Register::Contact::Manager::create(action.getDB(),
+        std::auto_ptr<Fred::Contact::Manager>
+            cman(Fred::Contact::Manager::create(action.getDB(),
                         conf.get<bool>("registry.restricted_handles")) );
         for (i = 0; i < tech.length() ; i++) {
-            Register::Contact::Manager::CheckAvailType caType;
+            Fred::Contact::Manager::CheckAvailType caType;
             try {
-                Register::NameIdPair nameId;
+                Fred::NameIdPair nameId;
                 caType = cman->checkAvail((const char *)tech[i],nameId);
                 techid = nameId.id;
             } catch (...) {
-                caType = Register::Contact::Manager::CA_INVALID_HANDLE;
+                caType = Fred::Contact::Manager::CA_INVALID_HANDLE;
                 techid = 0;
             }
 
-            if (caType != Register::Contact::Manager::CA_REGISTRED) {
+            if (caType != Fred::Contact::Manager::CA_REGISTRED) {
                 if (techid < 0) {
                     LOG(WARNING_LOG, "bad format of Contact %s", (const char *)tech[i]);
                     code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -3736,10 +3736,10 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
     LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: clientID -> %1% clTRID [%2%] handle [%3%] authInfo_chg  [%4%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle % authInfo_chg);
     LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: tech check level %1%") % (int) level );
 
-    std::auto_ptr<Register::Zone::Manager> zman(
-            Register::Zone::Manager::create());
-    std::auto_ptr<Register::NSSet::Manager> nman(
-            Register::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")));
+    std::auto_ptr<Fred::Zone::Manager> zman(
+            Fred::Zone::Manager::create());
+    std::auto_ptr<Fred::NSSet::Manager> nman(
+            Fred::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")));
 
     if ( (nssetID = getIdOfNSSet(action.getDB(), handle, conf, true) ) < 0) {
         LOG(WARNING_LOG, "bad format of nsset [%s]", handle);
@@ -4172,19 +4172,19 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   // start EPP action - this will handle all init stuff
   EPPAction a(this, clientID, EPP_DomainInfo, clTRID, XML, &paction);
   // initialize managers for domain manipulation
-  std::auto_ptr<Register::Zone::Manager>
-      zman(Register::Zone::Manager::create() );
-  std::auto_ptr<Register::Domain::Manager>
-      dman(Register::Domain::Manager::create(a.getDB(), zman.get()) );
+  std::auto_ptr<Fred::Zone::Manager>
+      zman(Fred::Zone::Manager::create() );
+  std::auto_ptr<Fred::Domain::Manager>
+      dman(Fred::Domain::Manager::create(a.getDB(), zman.get()) );
   // first check handle for proper format
-  Register::Domain::CheckAvailType caType = dman->checkHandle(fqdn);
-  if (caType != Register::Domain::CA_AVAILABLE) {
+  Fred::Domain::CheckAvailType caType = dman->checkHandle(fqdn);
+  if (caType != Fred::Domain::CA_AVAILABLE) {
     // failure in FQDN check, throw exception
     a.failed(SetReasonDomainFQDN(a.getErrors(), fqdn, caType
-        != Register::Domain::CA_BAD_ZONE ? -1 : 0, a.getLang() ));
+        != Fred::Domain::CA_BAD_ZONE ? -1 : 0, a.getLang() ));
   }
   // now load domain by fqdn
-  std::auto_ptr<Register::Domain::List> dlist(dman->createList());
+  std::auto_ptr<Fred::Domain::List> dlist(dman->createList());
   dlist->setFQDNFilter(fqdn);
   try {dlist->reload();}
   catch (...) {a.failedInternal("Cannot load domains");}
@@ -4192,7 +4192,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
     // failer because non existance, throw exception
     a.failed(COMMAND_OBJECT_NOT_EXIST);
   // start filling output domain structure
-  Register::Domain::Domain *dom = dlist->getDomain(0);
+  Fred::Domain::Domain *dom = dlist->getDomain(0);
   d = new ccReg::Domain;
   // fill common object data
   d->ROID = CORBA::string_dup(dom->getROID().c_str());
@@ -4210,8 +4210,8 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   );
   // states
   for (unsigned i=0; i<dom->getStatusCount(); i++) {
-    Register::TID stateId = dom->getStatusByIdx(i)->getStatusId();
-    const Register::StatusDesc* sd = regMan->getStatusDesc(stateId);
+    Fred::TID stateId = dom->getStatusByIdx(i)->getStatusId();
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
     if (!sd || !sd->getExternal())
       continue;
     d->stat.length(d->stat.length()+1);
@@ -4221,7 +4221,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
     ).c_str());
   }
   if (!d->stat.length()) {
-    const Register::StatusDesc* sd = regMan->getStatusDesc(0);
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
     if (sd) {
       d->stat.length(1);
       d->stat[0].value = CORBA::string_dup(sd->getName().c_str());
@@ -4856,8 +4856,8 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     std::vector<int> ad;
     int period_count;
     char periodStr[10];
-    Register::NameIdPair dConflict;
-    Register::Domain::CheckAvailType dType;
+    Fred::NameIdPair dConflict;
+    Fred::Domain::CheckAvailType dType;
     short int code = 0;
 
     ParsedAction paction;
@@ -4896,37 +4896,37 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     extractEnumDomainExtension(valexdate, publish, ext);
 
     try {
-        std::auto_ptr<Register::Zone::Manager> zm( Register::Zone::Manager::create() );
-        std::auto_ptr<Register::Domain::Manager> dman( Register::Domain::Manager::create(action.getDB(),zm.get()) );
+        std::auto_ptr<Fred::Zone::Manager> zm( Fred::Zone::Manager::create() );
+        std::auto_ptr<Fred::Domain::Manager> dman( Fred::Domain::Manager::create(action.getDB(),zm.get()) );
 
         LOG( NOTICE_LOG , "Domain::checkAvail  fqdn [%s]" , (const char * ) fqdn );
 
         dType = dman->checkAvail( ( const char * ) fqdn , dConflict);
         LOG( NOTICE_LOG , "domain type %d" , dType );
         switch (dType) {
-            case Register::Domain::CA_INVALID_HANDLE:
-            case Register::Domain::CA_BAD_LENGHT:
+            case Fred::Domain::CA_INVALID_HANDLE:
+            case Fred::Domain::CA_BAD_LENGHT:
                 LOG( NOTICE_LOG , "bad format %s of fqdn" , (const char * ) fqdn );
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::domain_fqdn, 1, REASON_MSG_BAD_FORMAT_FQDN);
                 break;
-            case Register::Domain::CA_REGISTRED:
-            case Register::Domain::CA_CHILD_REGISTRED:
-            case Register::Domain::CA_PARENT_REGISTRED:
+            case Fred::Domain::CA_REGISTRED:
+            case Fred::Domain::CA_CHILD_REGISTRED:
+            case Fred::Domain::CA_PARENT_REGISTRED:
                 LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
                 code = COMMAND_OBJECT_EXIST; // if is exist
                 break;
-            case Register::Domain::CA_BLACKLIST: // black listed
+            case Fred::Domain::CA_BLACKLIST: // black listed
                 LOG( NOTICE_LOG , "blacklisted  %s" , (const char * ) fqdn );
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::domain_fqdn, 1, REASON_MSG_BLACKLISTED_DOMAIN);
                 break;
-            case Register::Domain::CA_AVAILABLE: // if is free
+            case Fred::Domain::CA_AVAILABLE: // if is free
                 // conver fqdn to lower case and get zone
                 zone = getFQDN(action.getDB(), FQDN, fqdn);
                 LOG( NOTICE_LOG , "domain %s avail zone %d" ,(const char * ) FQDN , zone );
                 break;
-            case Register::Domain::CA_BAD_ZONE:
+            case Fred::Domain::CA_BAD_ZONE:
                 // domain not in zone
                 LOG( NOTICE_LOG , "NOn in zone not applicable %s" , (const char * ) fqdn );
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -4934,7 +4934,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                 break;
         }
 
-        if (dType == Register::Domain::CA_AVAILABLE) {
+        if (dType == Fred::Domain::CA_AVAILABLE) {
 
             if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) {
                 LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
@@ -5169,8 +5169,8 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                 }
 
                             }
-                            std::auto_ptr<Register::Invoicing::Manager> invMan(
-                                    Register::Invoicing::Manager::create());
+                            std::auto_ptr<Fred::Invoicing::Manager> invMan(
+                                    Fred::Invoicing::Manager::create());
                             if (invMan->domainBilling(action.getDB(), zone, action.getRegistrar(),
                                         id, Database::Date(std::string(exDate)), period_count, false)) {
 
@@ -5209,7 +5209,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
         }
     }
     catch (...) {
-        LOG( WARNING_LOG, "cannot run Register::Domain::checkAvail");
+        LOG( WARNING_LOG, "cannot run Fred::Domain::checkAvail");
         code=COMMAND_FAILED;
     }
 
@@ -5418,7 +5418,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
 
 
 
-                        std::auto_ptr<Register::Invoicing::Manager> invMan(Register::Invoicing::Manager::create());
+                        std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
                         if (invMan->domainBilling(action.getDB(), zone, action.getRegistrar(),
                                     id, Database::Date(std::string(exDate)), period_count, true) == false ) {
                             code = COMMAND_BILLING_FAILURE;
@@ -5474,8 +5474,8 @@ ccReg_EPP_i::KeySetInfo(
 
     EPPAction a(this, clientID, EPP_KeySetInfo, clTRID, XML, &paction);
 
-    std::auto_ptr<Register::KeySet::Manager> kman(
-            Register::KeySet::Manager::create(
+    std::auto_ptr<Fred::KeySet::Manager> kman(
+            Fred::KeySet::Manager::create(
                 a.getDB(), conf.get<bool>("registry.restricted_handles"))
             );
     // first check handle for proper format
@@ -5485,7 +5485,7 @@ ccReg_EPP_i::KeySetInfo(
                 );
 
     // load keyset by handle
-    std::auto_ptr<Register::KeySet::List> klist(kman->createList());
+    std::auto_ptr<Fred::KeySet::List> klist(kman->createList());
 
     Database::Filters::Union unionFilter;
     Database::Filters::KeySet *keyFilter = new Database::Filters::KeySetHistoryImpl();
@@ -5507,7 +5507,7 @@ ccReg_EPP_i::KeySetInfo(
         // failed because of non existence
         a.failed(COMMAND_OBJECT_NOT_EXIST);
 
-    Register::KeySet::KeySet *kss = klist->getKeySet(0);
+    Fred::KeySet::KeySet *kss = klist->getKeySet(0);
     k = new ccReg::KeySet;
 
     //fill common object data
@@ -5526,8 +5526,8 @@ ccReg_EPP_i::KeySetInfo(
 
     // states
     for (unsigned int i = 0; i < kss->getStatusCount(); i++) {
-        Register::TID stateId = kss->getStatusByIdx(i)->getStatusId();
-        const Register::StatusDesc *sd = regMan->getStatusDesc(stateId);
+        Fred::TID stateId = kss->getStatusByIdx(i)->getStatusId();
+        const Fred::StatusDesc *sd = regMan->getStatusDesc(stateId);
         if (!sd || !sd->getExternal())
             continue;
         k->stat.length(k->stat.length() + 1);
@@ -5540,7 +5540,7 @@ ccReg_EPP_i::KeySetInfo(
     }
 
     if (!k->stat.length()) {
-        const Register::StatusDesc *sd = regMan->getStatusDesc(0);
+        const Fred::StatusDesc *sd = regMan->getStatusDesc(0);
         if (sd) {
             k->stat.length(1);
             k->stat[0].value = CORBA::string_dup(sd->getName().c_str());
@@ -5559,7 +5559,7 @@ ccReg_EPP_i::KeySetInfo(
     // dsrecord
     k->dsrec.length(kss->getDSRecordCount());
     for (unsigned int i = 0; i < kss->getDSRecordCount(); i++) {
-        const Register::KeySet::DSRecord *dsr = kss->getDSRecordByIdx(i);
+        const Fred::KeySet::DSRecord *dsr = kss->getDSRecordByIdx(i);
         k->dsrec[i].keyTag = dsr->getKeyTag();
         k->dsrec[i].alg = dsr->getAlg();
         k->dsrec[i].digestType = dsr->getDigestType();
@@ -5570,7 +5570,7 @@ ccReg_EPP_i::KeySetInfo(
     // dnskey record
     k->dnsk.length(kss->getDNSKeyCount());
     for (unsigned int i = 0; i < kss->getDNSKeyCount(); i++) {
-        const Register::KeySet::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
+        const Fred::KeySet::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
         k->dnsk[i].flags = dnsk->getFlags();
         k->dnsk[i].protocol = dnsk->getProtocol();
         k->dnsk[i].alg = dnsk->getAlg();
@@ -5736,8 +5736,8 @@ ccReg_EPP_i::KeySetCreate(
 
     EPPAction action(this, params.sessionID, EPP_KeySetCreate, params.clTRID, params.XML, &paction);
 
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(
+    std::auto_ptr<Fred::KeySet::Manager> keyMan(
+            Fred::KeySet::Manager::create(
                 action.getDB(),
                 conf.get<bool>("registry.restricted_handles"))
             );
@@ -5766,27 +5766,27 @@ ccReg_EPP_i::KeySetCreate(
                 ccReg::keyset_dnskey, 0, REASON_MSG_DNSKEY_LIMIT);
     }
     if (code == 0) {
-        Register::KeySet::Manager::CheckAvailType caType;
+        Fred::KeySet::Manager::CheckAvailType caType;
 
         tch = new int[tech.length()];
 
         try {
-            Register::NameIdPair nameId;
+            Fred::NameIdPair nameId;
             caType = keyMan->checkAvail(handle, nameId);
             id = nameId.id;
         } catch (...) {
-            caType = Register::KeySet::Manager::CA_INVALID_HANDLE;
+            caType = Fred::KeySet::Manager::CA_INVALID_HANDLE;
             id = -1;
         }
 
-        if (id < 0 || caType == Register::KeySet::Manager::CA_INVALID_HANDLE) {
+        if (id < 0 || caType == Fred::KeySet::Manager::CA_INVALID_HANDLE) {
             LOG(WARNING_LOG, "Bad format of keyset handle [%s]", handle);
             code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                     ccReg::keyset_handle, 1, REASON_MSG_BAD_FORMAT_KEYSET_HANDLE);
-        } else if (caType == Register::KeySet::Manager::CA_REGISTRED) {
+        } else if (caType == Fred::KeySet::Manager::CA_REGISTRED) {
             LOG(WARNING_LOG, "KeySet handle [%s] EXISTS", handle);
             code = COMMAND_OBJECT_EXIST;
-        } else if (caType == Register::KeySet::Manager::CA_PROTECTED) {
+        } else if (caType == Fred::KeySet::Manager::CA_PROTECTED) {
             LOG(WARNING_LOG, "object [%s] in history period", handle);
             code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                     ccReg::keyset_handle, 1, REASON_MSG_PROTECTED_PERIOD);
@@ -5795,23 +5795,23 @@ ccReg_EPP_i::KeySetCreate(
 
     if (code == 0) {
         // test technical contact
-        std::auto_ptr<Register::Contact::Manager> cman(
-                Register::Contact::Manager::create(
+        std::auto_ptr<Fred::Contact::Manager> cman(
+                Fred::Contact::Manager::create(
                     action.getDB(),
                     conf.get<bool>("registry.restricted_handles"))
                 );
         for (i = 0; i < tech.length(); i++) {
-            Register::Contact::Manager::CheckAvailType caType;
+            Fred::Contact::Manager::CheckAvailType caType;
             try {
-                Register::NameIdPair nameId;
+                Fred::NameIdPair nameId;
                 caType = cman->checkAvail((const char *)tech[i], nameId);
                 techid = nameId.id;
             } catch (...) {
-                caType = Register::Contact::Manager::CA_INVALID_HANDLE;
+                caType = Fred::Contact::Manager::CA_INVALID_HANDLE;
                 techid = 0;
             }
 
-            if (caType != Register::Contact::Manager::CA_REGISTRED) {
+            if (caType != Fred::Contact::Manager::CA_REGISTRED) {
                 LOG(DEBUG_LOG, "Tech contact doesn't exist: %s",
                         (const char *)tech[i]);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -6157,8 +6157,8 @@ ccReg_EPP_i::KeySetUpdate(
             tech_rem.length() % dsrec_add.length() % dsrec_rem.length() %
             dnsk_add.length() % dnsk_rem.length());
 
-    std::auto_ptr<Register::KeySet::Manager> kMan(
-            Register::KeySet::Manager::create(
+    std::auto_ptr<Fred::KeySet::Manager> kMan(
+            Fred::KeySet::Manager::create(
                 action.getDB(), conf.get<bool>("registry.restricted_handles"))
             );
     if ((keysetId = getIdOfKeySet(action.getDB(), handle, conf, true)) < 0) {
@@ -7183,16 +7183,16 @@ ccReg_EPP_i::ObjectSendAuthInfo(
             break;
     }
     if (code == 0) {
-        std::auto_ptr<Register::Document::Manager> doc_manager(
-                Register::Document::Manager::create(
+        std::auto_ptr<Fred::Document::Manager> doc_manager(
+                Fred::Document::Manager::create(
                     conf.get<std::string>("registry.docgen_path"),
                     conf.get<std::string>("registry.docgen_template_path"),
                     conf.get<std::string>("registry.fileclient_path"),
                     ns->getHostName()
                     )
                 );
-        std::auto_ptr<Register::PublicRequest::Manager> request_manager(
-                Register::PublicRequest::Manager::create(
+        std::auto_ptr<Fred::PublicRequest::Manager> request_manager(
+                Fred::PublicRequest::Manager::create(
                     regMan->getDomainManager(),
                     regMan->getContactManager(),
                     regMan->getNSSetManager(),
@@ -7207,14 +7207,14 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                     NOTICE_LOG , "createRequest objectID %d actionID %d" ,
                     id,action.getDB()->GetActionID()
                );
-            std::auto_ptr<Register::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
-                        Register::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
+            std::auto_ptr<Fred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
+                        Fred::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
 
 	    new_request->setEppActionId(action.getDB()->GetActionID());
             new_request->setRegistrarId(GetRegistrarID(clientID));
 
             new_request->setRegistrarId(GetRegistrarID(clientID));
-            new_request->addObject(Register::PublicRequest::OID(id));
+            new_request->addObject(Fred::PublicRequest::OID(id));
             if (!new_request->check()) {
                 LOG(WARNING_LOG, "authinfo request for %s is prohibited",name);
                 code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -7304,27 +7304,27 @@ ccReg::Response* ccReg_EPP_i::info(
   // start EPP action - this will handle all init stuff
   EPPAction a(this, clientID, EPP_Info, clTRID, XML);
   try {
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-        Register::Zone::Manager::create()
+    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+        Fred::Zone::Manager::create()
     );
-    std::auto_ptr<Register::Domain::Manager> domMan(
-        Register::Domain::Manager::create(a.getDB(), zoneMan.get())
+    std::auto_ptr<Fred::Domain::Manager> domMan(
+        Fred::Domain::Manager::create(a.getDB(), zoneMan.get())
     );
-    std::auto_ptr<Register::Contact::Manager> conMan(
-        Register::Contact::Manager::create(a.getDB(),conf.get<bool>("registry.restricted_handles"))
+    std::auto_ptr<Fred::Contact::Manager> conMan(
+        Fred::Contact::Manager::create(a.getDB(),conf.get<bool>("registry.restricted_handles"))
     );
-    std::auto_ptr<Register::NSSet::Manager> nssMan(
-        Register::NSSet::Manager::create(
+    std::auto_ptr<Fred::NSSet::Manager> nssMan(
+        Fred::NSSet::Manager::create(
             a.getDB(),zoneMan.get(),conf.get<bool>("registry.restricted_handles")
         )
     );
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(
+    std::auto_ptr<Fred::KeySet::Manager> keyMan(
+            Fred::KeySet::Manager::create(
                 a.getDB(), conf.get<bool>("registry.restricted_handles")
                 )
             );
-    std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
-        Register::InfoBuffer::Manager::create(
+    std::auto_ptr<Fred::InfoBuffer::Manager> infoBufMan(
+        Fred::InfoBuffer::Manager::create(
             a.getDB(),
             domMan.get(),
             nssMan.get(),
@@ -7335,24 +7335,24 @@ ccReg::Response* ccReg_EPP_i::info(
     count = infoBufMan->info(
         a.getRegistrar(),
         type == ccReg::IT_LIST_CONTACTS ?
-        Register::InfoBuffer::T_LIST_CONTACTS :
+        Fred::InfoBuffer::T_LIST_CONTACTS :
         type == ccReg::IT_LIST_DOMAINS ?
-        Register::InfoBuffer::T_LIST_DOMAINS :
+        Fred::InfoBuffer::T_LIST_DOMAINS :
         type == ccReg::IT_LIST_NSSETS ?
-        Register::InfoBuffer::T_LIST_NSSETS :
+        Fred::InfoBuffer::T_LIST_NSSETS :
         type == ccReg::IT_LIST_KEYSETS ?
-        Register::InfoBuffer::T_LIST_KEYSETS :
+        Fred::InfoBuffer::T_LIST_KEYSETS :
         type == ccReg::IT_DOMAINS_BY_NSSET ?
-        Register::InfoBuffer::T_DOMAINS_BY_NSSET :
+        Fred::InfoBuffer::T_DOMAINS_BY_NSSET :
         type == ccReg::IT_DOMAINS_BY_CONTACT ?
-        Register::InfoBuffer::T_DOMAINS_BY_CONTACT :
+        Fred::InfoBuffer::T_DOMAINS_BY_CONTACT :
         type == ccReg::IT_NSSETS_BY_CONTACT ?
-        Register::InfoBuffer::T_NSSETS_BY_CONTACT :
+        Fred::InfoBuffer::T_NSSETS_BY_CONTACT :
         type == ccReg::IT_NSSETS_BY_NS ?
-        Register::InfoBuffer::T_NSSETS_BY_NS :
+        Fred::InfoBuffer::T_NSSETS_BY_NS :
         type == ccReg::IT_DOMAINS_BY_KEYSET ?
-        Register::InfoBuffer::T_DOMAINS_BY_KEYSET :
-        Register::InfoBuffer::T_KEYSETS_BY_CONTACT,
+        Fred::InfoBuffer::T_DOMAINS_BY_KEYSET :
+        Fred::InfoBuffer::T_KEYSETS_BY_CONTACT,
         handle
     );
   }
@@ -7376,27 +7376,27 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
   // start EPP action - this will handle all init stuff
   EPPAction a(this, clientID, EPP_GetInfoResults, clTRID, XML);
   try {
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-        Register::Zone::Manager::create()
+    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+        Fred::Zone::Manager::create()
     );
-    std::auto_ptr<Register::Domain::Manager> domMan(
-        Register::Domain::Manager::create(a.getDB(), zoneMan.get())
+    std::auto_ptr<Fred::Domain::Manager> domMan(
+        Fred::Domain::Manager::create(a.getDB(), zoneMan.get())
     );
-    std::auto_ptr<Register::Contact::Manager> conMan(
-        Register::Contact::Manager::create(a.getDB(),conf.get<bool>("registry.restricted_handles"))
+    std::auto_ptr<Fred::Contact::Manager> conMan(
+        Fred::Contact::Manager::create(a.getDB(),conf.get<bool>("registry.restricted_handles"))
     );
-    std::auto_ptr<Register::NSSet::Manager> nssMan(
-        Register::NSSet::Manager::create(
+    std::auto_ptr<Fred::NSSet::Manager> nssMan(
+        Fred::NSSet::Manager::create(
             a.getDB(),zoneMan.get(),conf.get<bool>("registry.restricted_handles")
         )
     );
-    std::auto_ptr<Register::KeySet::Manager> keyMan(
-            Register::KeySet::Manager::create(
+    std::auto_ptr<Fred::KeySet::Manager> keyMan(
+            Fred::KeySet::Manager::create(
                 a.getDB(), conf.get<bool>("registry.restricted_handles")
                 )
             );
-    std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
-        Register::InfoBuffer::Manager::create(
+    std::auto_ptr<Fred::InfoBuffer::Manager> infoBufMan(
+        Fred::InfoBuffer::Manager::create(
             a.getDB(),
             domMan.get(),
             nssMan.get(),
@@ -7404,7 +7404,7 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
             keyMan.get()
         )
     );
-    std::auto_ptr<Register::InfoBuffer::Chunk> chunk(
+    std::auto_ptr<Fred::InfoBuffer::Chunk> chunk(
         infoBufMan->getChunk(a.getRegistrar(),1000)
     );
     handles = new ccReg::Lists();

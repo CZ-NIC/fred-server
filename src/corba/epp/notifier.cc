@@ -37,7 +37,7 @@ EPPNotifier::EPPNotifier(bool _disable,
                          DB *dbs, 
                          ID regid, 
                          ID objectid,
-                         Register::Manager *_rm)
+                         Fred::Manager *_rm)
 {
   disable = _disable;
   mm=mailManager;

@@ -1,6 +1,6 @@
 #include "pagetable_domains.h"
 
-ccReg_Domains_i::ccReg_Domains_i(Register::Domain::List *_dl, const Settings *_ptr) : dl(_dl) {
+ccReg_Domains_i::ccReg_Domains_i(Fred::Domain::List *_dl, const Settings *_ptr) : dl(_dl) {
   uf.settings(_ptr);
 }
 
@@ -62,7 +62,7 @@ Registry::TableRow* ccReg_Domains_i::getRow(CORBA::UShort row)
     Logging::Context ctx(base_context_);
     try
     {
-      const Register::Domain::Domain *d = dl->getDomain(row);
+      const Fred::Domain::Domain *d = dl->getDomain(row);
       if (!d)
         throw ccReg::Table::INVALID_ROW();
       Registry::TableRow *tr = new Registry::TableRow;
@@ -112,66 +112,66 @@ void ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
   switch (column) {
   case 0:
-    dl->sort(Register::Domain::MT_FQDN, dir);
+    dl->sort(Fred::Domain::MT_FQDN, dir);
     break;      
   case 1:
-    dl->sort(Register::Domain::MT_REGISTRANT_HANDLE, dir);
+    dl->sort(Fred::Domain::MT_REGISTRANT_HANDLE, dir);
     break;
   case 2:
-    dl->sort(Register::Domain::MT_REGISTRANT_NAME, dir);
+    dl->sort(Fred::Domain::MT_REGISTRANT_NAME, dir);
     break;
   case 3:
-    dl->sort(Register::Domain::MT_REGISTRANT_ORG, dir);
+    dl->sort(Fred::Domain::MT_REGISTRANT_ORG, dir);
     break;
   case 4:
-    dl->sort(Register::Domain::MT_REGISTRANT_PHONE, dir);
+    dl->sort(Fred::Domain::MT_REGISTRANT_PHONE, dir);
     break;
   case 5:
-    dl->sort(Register::Domain::MT_REGISTRAR_HANDLE, dir);
+    dl->sort(Fred::Domain::MT_REGISTRAR_HANDLE, dir);
     break;
   case 6:
-    dl->sort(Register::Domain::MT_ZONE_STATUS, dir);
+    dl->sort(Fred::Domain::MT_ZONE_STATUS, dir);
     break;
   case 7:
-    dl->sort(Register::Domain::MT_CRDATE, dir);
+    dl->sort(Fred::Domain::MT_CRDATE, dir);
     break;
   case 8:
-    dl->sort(Register::Domain::MT_EXDATE, dir);
+    dl->sort(Fred::Domain::MT_EXDATE, dir);
     break;
   case 9:
-    dl->sort(Register::Domain::MT_OUTZONEDATE, dir);
+    dl->sort(Fred::Domain::MT_OUTZONEDATE, dir);
     break;
   case 10:
-    dl->sort(Register::Domain::MT_CANCELDATE, dir);
-    // dl->sort(Register::Domain::MT_CANCELDATE, dir);
-    // dl->sort(Register::Domain::MT_ERDATE, dir);
+    dl->sort(Fred::Domain::MT_CANCELDATE, dir);
+    // dl->sort(Fred::Domain::MT_CANCELDATE, dir);
+    // dl->sort(Fred::Domain::MT_ERDATE, dir);
     break;
   case 12:
-    dl->sort(Register::Domain::MT_1ADMIN_NAME, dir);
+    dl->sort(Fred::Domain::MT_1ADMIN_NAME, dir);
     break;
   case 13:
-    dl->sort(Register::Domain::MT_1ADMIN_ORG, dir);
+    dl->sort(Fred::Domain::MT_1ADMIN_ORG, dir);
     break;
   case 14:
-    dl->sort(Register::Domain::MT_1ADMIN_PHONE, dir);
+    dl->sort(Fred::Domain::MT_1ADMIN_PHONE, dir);
     break;
   case 15:
-    dl->sort(Register::Domain::MT_2ADMIN_NAME, dir);
+    dl->sort(Fred::Domain::MT_2ADMIN_NAME, dir);
     break;
   case 16:
-    dl->sort(Register::Domain::MT_2ADMIN_ORG, dir);
+    dl->sort(Fred::Domain::MT_2ADMIN_ORG, dir);
     break;
   case 17:
-    dl->sort(Register::Domain::MT_2ADMIN_PHONE, dir);
+    dl->sort(Fred::Domain::MT_2ADMIN_PHONE, dir);
     break;
   case 18:
-    dl->sort(Register::Domain::MT_2ADMIN_NAME, dir);
+    dl->sort(Fred::Domain::MT_2ADMIN_NAME, dir);
     break;
   case 19:
-    dl->sort(Register::Domain::MT_2ADMIN_ORG, dir);
+    dl->sort(Fred::Domain::MT_2ADMIN_ORG, dir);
     break;
   case 20:
-    dl->sort(Register::Domain::MT_2ADMIN_PHONE, dir);
+    dl->sort(Fred::Domain::MT_2ADMIN_PHONE, dir);
     break;
   }
 }
@@ -182,7 +182,7 @@ ccReg::TID ccReg_Domains_i::getRowId(CORBA::UShort row)
   Logging::Context ctx(base_context_);
     try
     {
-      const Register::Domain::Domain *d = dl->getDomain(row);
+      const Fred::Domain::Domain *d = dl->getDomain(row);
       if (!d)
         throw ccReg::Table::INVALID_ROW();
       return d->getId();
@@ -251,22 +251,22 @@ void ccReg_Domains_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_Domains_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create());
-  tmp_filter_manager->save(Register::Filter::FT_DOMAIN, _name, uf);
+  std::auto_ptr<Fred::Filter::Manager>
+      tmp_filter_manager(Fred::Filter::Manager::create());
+  tmp_filter_manager->save(Fred::Filter::FT_DOMAIN, _name, uf);
 }
 
-Register::Domain::Domain* ccReg_Domains_i::findId(ccReg::TID _id) {
+Fred::Domain::Domain* ccReg_Domains_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    Register::Domain::Domain *domain = dynamic_cast<Register::Domain::Domain* >(dl->findId(_id));
+    Fred::Domain::Domain *domain = dynamic_cast<Fred::Domain::Domain* >(dl->findId(_id));
     if (domain) {
       return domain;
     }
     return 0;
   }
-  catch (Register::NOT_FOUND) {
+  catch (Fred::NOT_FOUND) {
     return 0;
   }
 }

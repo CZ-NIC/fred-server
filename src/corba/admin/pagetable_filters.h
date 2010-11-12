@@ -6,10 +6,10 @@
 class ccReg_Filters_i : public ccReg_PageTable_i,
                         public PortableServer::RefCountServantBase {
 private:
-  Register::Filter::List& m_filter_list;
+  Fred::Filter::List& m_filter_list;
  
 public:
-  ccReg_Filters_i(Register::Filter::List& _filter_list);
+  ccReg_Filters_i(Fred::Filter::List& _filter_list);
   ~ccReg_Filters_i();
   DECL_PAGETABLE_I;
   

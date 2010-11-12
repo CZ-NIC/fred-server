@@ -7,11 +7,11 @@
 #include "common_impl_new.h"
 #include "db_settings.h"
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 
-class StatementListImpl : public Register::CommonListImplNew,
+class StatementListImpl : public Fred::CommonListImplNew,
                           public StatementList
 {
 private:
@@ -54,7 +54,7 @@ public:
 
     void reload(Database::Filters::Union &filter)
     {
-        TRACE("[CALL] Register::Banking::StatementListImpl::reload(Database::Filters::Union &)");
+        TRACE("[CALL] Fred::Banking::StatementListImpl::reload(Database::Filters::Union &)");
         clear();
         filter.clearQueries();
 

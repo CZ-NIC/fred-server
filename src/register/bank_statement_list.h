@@ -5,7 +5,7 @@
 #include "bank_statement.h"
 #include "model/model_filters.h"
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 
@@ -23,7 +23,7 @@ enum MemberType {
 };
 
 
-class StatementList : virtual public Register::CommonListNew
+class StatementList : virtual public Fred::CommonListNew
 {
 public:
     virtual ~StatementList()

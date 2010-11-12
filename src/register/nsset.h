@@ -12,7 +12,7 @@
 /// forward declared parameter type 
 class DB;
 
-namespace Register {
+namespace Fred {
 namespace NSSet {
 
 /// member identification (i.e. for sorting)
@@ -45,7 +45,7 @@ public:
 };
 
 
-class NSSet : virtual public Register::Object {
+class NSSet : virtual public Fred::Object {
 public:
   /// public destructor
   virtual ~NSSet() {
@@ -131,6 +131,6 @@ public:
 };
 
 } // namespace NSSet
-} // namespace Register
+} // namespace Fred
 
 #endif /* NSSET_H_ */

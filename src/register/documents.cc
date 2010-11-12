@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace Register
+namespace Fred
 {
   namespace Document
   {
@@ -279,4 +279,4 @@ namespace Register
       return new ManagerImpl(path,pathTemplates,pathFM,corbaNS);
     }
   }
-} // Register
+} // Fred

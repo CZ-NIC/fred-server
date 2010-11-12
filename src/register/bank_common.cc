@@ -2,7 +2,7 @@
 #include "types/stringify.h"
 
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 static std::string ltrim(const std::string &_input)
@@ -298,4 +298,4 @@ XMLparser::getRootNode() const
     return m_rootNode;
 }
 } // namespace Banking
-} // namespace Register
+} // namespace Fred

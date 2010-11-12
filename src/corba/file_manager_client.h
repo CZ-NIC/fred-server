@@ -9,7 +9,7 @@
 #include "register/file_transferer.h"
 
 
-class FileManagerClient : public Register::File::Transferer
+class FileManagerClient : public Fred::File::Transferer
 {
 public:
     FileManagerClient(NameService *_ns);

@@ -401,7 +401,7 @@ main(int argc, char **argv)
         std::cerr << "SQL Error:" << e.what() << std::endl;
         return 1;
     }
-    catch (Register::SQL_ERROR) {
+    catch (Fred::SQL_ERROR) {
         std::cerr << "SQL ERROR" << std::endl;
         return 1;
     }

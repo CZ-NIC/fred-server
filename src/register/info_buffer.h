@@ -9,7 +9,7 @@
 #include "keyset.h"
 #include "exceptions.h" 
 
-namespace Register
+namespace Fred
 {
   namespace InfoBuffer
   {

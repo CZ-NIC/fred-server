@@ -30,7 +30,7 @@ private:
   Config::Conf& cfg;
   ccReg_BankingInvoicing_i bankingInvoicing;
   DB db;
-  std::auto_ptr<Register::Manager> register_manager_;
+  std::auto_ptr<Fred::Manager> register_manager_;
 
   typedef std::map<std::string, ccReg_Session_i*> SessionListType;
   SessionListType m_session_list;
@@ -48,7 +48,7 @@ private:
   Registry::Registrar::Group::Manager_ptr reg_grp_mgr_ref_;
 
   void fillRegistrar(ccReg::Registrar& creg,
-                     Register::Registrar::Registrar *reg);
+                     Fred::Registrar::Registrar *reg);
   void garbageSession();
 
 public:
@@ -78,21 +78,21 @@ public:
   //void putRegistrar(const ccReg::Registrar& regData);
 
   // contact detail
-  void fillContact(ccReg::ContactDetail* cv, Register::Contact::Contact* c);
+  void fillContact(ccReg::ContactDetail* cv, Fred::Contact::Contact* c);
   ccReg::ContactDetail* getContactByHandle(const char* handle)
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::ContactDetail* getContactById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
 
   // nsset
-  void fillNSSet(ccReg::NSSetDetail* cn, Register::NSSet::NSSet* n);
+  void fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n);
   ccReg::NSSetDetail* getNSSetByHandle(const char* handle)
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::NSSetDetail* getNSSetById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
 
   // keyset
-  void fillKeySet(ccReg::KeySetDetail* cn, Register::KeySet::KeySet* n);
+  void fillKeySet(ccReg::KeySetDetail* cn, Fred::KeySet::KeySet* n);
   ccReg::KeySetDetail *getKeySetByHandle(const char* handle)
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::KeySetDetail *getKeySetById(ccReg::TID id)
@@ -105,7 +105,7 @@ public:
       throw (ccReg::Admin::ObjectNotFound);
 
   // domain
-  void fillDomain(ccReg::DomainDetail* cd, Register::Domain::Domain* d);
+  void fillDomain(ccReg::DomainDetail* cd, Fred::Domain::Domain* d);
   ccReg::DomainDetail* getDomainByFQDN(const char* fqdn)
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::DomainDetail* getDomainById(ccReg::TID id)
@@ -127,7 +127,7 @@ public:
           CORBA::Long limit);
 
   void fillEPPAction(ccReg::EPPAction* cea,
-                     const Register::Registrar::EPPAction *rea);
+                     const Fred::Registrar::EPPAction *rea);
   ccReg::EPPAction* getEPPActionById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::EPPAction* getEPPActionBySvTRID(const char* svTRID)
@@ -153,7 +153,7 @@ public:
 
   /* disabled in FRED 2.3
   void fillInvoice(ccReg::Invoicing::Invoice *ci,
-                   Register::Invoicing::Invoice *i);
+                   Fred::Invoicing::Invoice *i);
   
    
   ccReg::Invoicing::Invoice* getInvoiceById(ccReg::TID id)

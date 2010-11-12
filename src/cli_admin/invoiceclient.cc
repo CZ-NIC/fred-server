@@ -59,7 +59,7 @@ InvoiceClient::show_opts()
     print_options("Invoice", getOpts(), getOptsCount());
 }
 
-void InvoiceClient::filter_reload_invoices(Register::Invoicing::Manager *invMan, Register::Invoicing::List *invList)
+void InvoiceClient::filter_reload_invoices(Fred::Invoicing::Manager *invMan, Fred::Invoicing::List *invList)
 {     
     Database::Filters::Invoice *invFilter;
     invFilter = new Database::Filters::InvoiceImpl();
@@ -128,8 +128,8 @@ InvoiceClient::list()
 {
     callHelp(m_conf, list_help);
 
-    std::auto_ptr<Register::Document::Manager> docMan(
-            Register::Document::Manager::create(
+    std::auto_ptr<Fred::Document::Manager> docMan(
+            Fred::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
                 m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
@@ -139,12 +139,12 @@ InvoiceClient::list()
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
 
-    std::auto_ptr<Register::Invoicing::Manager> invMan(
-            Register::Invoicing::Manager::create(
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+            Fred::Invoicing::Manager::create(
                 docMan.get(),
                 &mailMan));
 
-    std::auto_ptr<Register::Invoicing::List> invList(
+    std::auto_ptr<Fred::Invoicing::List> invList(
             invMan->createList());
 
     filter_reload_invoices(invMan.get(), invList.get());
@@ -158,8 +158,8 @@ InvoiceClient::list_filters()
 {
     callHelp(m_conf, list_help);
 
-    std::auto_ptr<Register::Document::Manager> docMan(
-            Register::Document::Manager::create(
+    std::auto_ptr<Fred::Document::Manager> docMan(
+            Fred::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
                 m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
@@ -169,19 +169,19 @@ InvoiceClient::list_filters()
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
 
-    std::auto_ptr<Register::Invoicing::Manager> invMan(
-            Register::Invoicing::Manager::create(
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+            Fred::Invoicing::Manager::create(
                 docMan.get(),
                 &mailMan));
 
-    std::auto_ptr<Register::Invoicing::List> invList(
+    std::auto_ptr<Fred::Invoicing::List> invList(
             invMan->createList());
 
     filter_reload_invoices(invMan.get(), invList.get());
 
     std::cout << "<objects>\n";
     for (unsigned int i = 0; i < invList->getSize(); i++) {
-        Register::Invoicing::Invoice *inv = invList->get(i);
+        Fred::Invoicing::Invoice *inv = invList->get(i);
         std::cout
             << "\t<invoice>\n"
             << "\t\t<id>" << inv->getId() << "</id>\n"
@@ -192,7 +192,7 @@ InvoiceClient::list_filters()
             << "\t\t<cr_date>" << inv->getCrDate() << "</cr_date>\n"
             << "\t\t<tax_date>" << inv->getTaxDate() << "</tax_date>\n"
             << "\t\t<account_period>" << inv->getAccountPeriod() << "</account_period>\n"
-            << "\t\t<type>" << Register::Invoicing::Type2Str(inv->getType()) << "</type>\n"
+            << "\t\t<type>" << Fred::Invoicing::Type2Str(inv->getType()) << "</type>\n"
             << "\t\t<number>" << inv->getPrefix() << "</number>\n"
             << "\t\t<registrar_id>" << inv->getRegistrarId() << "</registrar_id>\n"
             << "\t\t<credit>" << inv->getCredit() << "</credit>\n"
@@ -204,8 +204,8 @@ InvoiceClient::list_filters()
             << "\t\t<file_pdf_id>" << inv->getFileId() << "</file_pdf_id>\n"
             << "\t\t<file_xml_id>" << inv->getFileXmlId() << "</file_xml_id>\n";
         for (unsigned int j = 0; j < inv->getSourceCount(); j++) {
-            Register::Invoicing::PaymentSource *source = 
-                (Register::Invoicing::PaymentSource *)inv->getSource(j);
+            Fred::Invoicing::PaymentSource *source =
+                (Fred::Invoicing::PaymentSource *)inv->getSource(j);
             std::cout
                 << "\t\t<payment_source>\n"
                 << "\t\t\t<id>" << source->getId() << "</id>\n"
@@ -218,8 +218,8 @@ InvoiceClient::list_filters()
                 << "\t\t</payment_source>\n";
         }
         for (unsigned int j = 0; j < inv->getActionCount(); j++) {
-            Register::Invoicing::PaymentAction *act =
-                (Register::Invoicing::PaymentAction *)inv->getAction(j);
+            Fred::Invoicing::PaymentAction *act =
+                (Fred::Invoicing::PaymentAction *)inv->getAction(j);
             std::cout
                 << "\t\t<payment_action>\n"
                 << "\t\t\t<id>" << act->getObjectId() << "</id>\n"
@@ -227,15 +227,15 @@ InvoiceClient::list_filters()
                 << "\t\t\t<action_time>" << act->getActionTime() << "</action_time>\n"
                 << "\t\t\t<ex_date>" << act->getExDate() << "</ex_date>\n"
                 << "\t\t\t<action>" << act->getActionStr()
-                // << Register::Invoicing::PaymentActionType2Str(act->getAction())
+                // << Fred::Invoicing::PaymentActionType2Str(act->getAction())
                 << "</action>\n"
                 << "\t\t\t<units_count>" << act->getUnitsCount() << "</units_count>\n"
                 << "\t\t\t<price_per_unit>" << act->getPricePerUnit() << "</price_per_unit>\n"
                 << "\t\t</payment_action>\n";
         }
         for (unsigned int j = 0; j < inv->getPaymentCount(); j++) {
-            Register::Invoicing::Payment *pay = 
-                (Register::Invoicing::Payment *)inv->getPaymentByIdx(j);
+            Fred::Invoicing::Payment *pay =
+                (Fred::Invoicing::Payment *)inv->getPaymentByIdx(j);
             std::cout
                 << "\t\t<payment>\n"
                 << "\t\t\t<price>" << pay->getPrice() << "</price>\n"
@@ -244,8 +244,8 @@ InvoiceClient::list_filters()
                 << "\t\t\t<price_with_vat>" << pay->getPriceWithVat() << "</price_with_vat>\n"
                 << "\t\t</payment>\n";
         }
-        Register::Invoicing::Subject *sup =
-            (Register::Invoicing::Subject *)inv->getSupplier();
+        Fred::Invoicing::Subject *sup =
+            (Fred::Invoicing::Subject *)inv->getSupplier();
         std::cout
             << "\t\t<supplier>\n"
             << "\t\t\t<id>" << sup->getId() << "</id>\n"
@@ -266,8 +266,8 @@ InvoiceClient::list_filters()
             << "\t\t\t<phone>" << sup->getPhone() << "</phone>\n"
             << "\t\t\t<fax>" << sup->getFax() << "</fax>\n"
             << "\t\t</supplier>\n";
-        Register::Invoicing::Subject *cli =
-            (Register::Invoicing::Subject *)inv->getClient();
+        Fred::Invoicing::Subject *cli =
+            (Fred::Invoicing::Subject *)inv->getClient();
         std::cout
             << "\t\t<client>\n"
             << "\t\t\t<id>" << cli->getId() << "</id>\n"
@@ -298,8 +298,8 @@ void
 InvoiceClient::archive()
 {
     callHelp(m_conf, archive_help);
-    std::auto_ptr<Register::Document::Manager> docMan(
-            Register::Document::Manager::create(
+    std::auto_ptr<Fred::Document::Manager> docMan(
+            Fred::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
                 m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
@@ -307,8 +307,8 @@ InvoiceClient::archive()
             );
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
-    std::auto_ptr<Register::Invoicing::Manager> invMan(
-            Register::Invoicing::Manager::create(
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+            Fred::Invoicing::Manager::create(
                 docMan.get(),
                 &mailMan)
             );
@@ -320,10 +320,10 @@ void
 InvoiceClient::credit()
 {
     callHelp(m_conf, credit_help);
-    std::auto_ptr<Register::Invoicing::Manager>
-        invMan(Register::Invoicing::Manager::create());
+    std::auto_ptr<Fred::Invoicing::Manager>
+        invMan(Fred::Invoicing::Manager::create());
 
-    // std::auto_ptr<Register::Invoicing::Invoice>
+    // std::auto_ptr<Fred::Invoicing::Invoice>
         // invoice(invMan->createDepositInvoice());
     std::string taxDate;
     long price;
@@ -408,12 +408,12 @@ InvoiceClient::credit()
 /* 
  * this new crap shouldn't be used
 void
-InvoiceClient::factoring(Register::Invoicing::Manager *man,
+InvoiceClient::factoring(Fred::Invoicing::Manager *man,
         Database::ID zoneId, std::string zoneName,
         Database::ID regId, std::string regName,
         Database::Date toDate, Database::Date taxDate)
 {
-    std::auto_ptr<Register::Invoicing::Invoice>
+    std::auto_ptr<Fred::Invoicing::Invoice>
         invoice(man->createAccountInvoice());
     if (zoneId != Database::ID()) {
         invoice->setZoneId(zoneId);
@@ -450,10 +450,10 @@ void
 InvoiceClient::factoring()
 {
     callHelp(m_conf, factoring_help);
-    std::auto_ptr<Register::Invoicing::Manager>
-        invMan(Register::Invoicing::Manager::create());
-    std::auto_ptr<Register::Registrar::Manager>
-        regMan(Register::Registrar::Manager::create(&m_db));
+    std::auto_ptr<Fred::Invoicing::Manager>
+        invMan(Fred::Invoicing::Manager::create());
+    std::auto_ptr<Fred::Registrar::Manager>
+        regMan(Fred::Registrar::Manager::create(&m_db));
 
     bool zoneFilled = false;
     bool regFilled = false;
@@ -532,10 +532,10 @@ InvoiceClient::factoring()
         Database::Filters::Union *unionFilter;
         unionFilter = new Database::Filters::Union();
         unionFilter->addFilter(regFilter);
-        Register::Registrar::RegistrarList::AutoPtr list( regMan->createList());
+        Fred::Registrar::RegistrarList::AutoPtr list( regMan->createList());
         list->reload(*unionFilter);
         int i = 0;
-        Register::Registrar::Registrar *reg;
+        Fred::Registrar::Registrar *reg;
         while (1) {
             try {
                 reg = list->get(i);
@@ -557,8 +557,8 @@ void
 InvoiceClient::add_invoice_prefix()
 {
     callHelp(m_conf, add_invoice_prefix_help);
-    std::auto_ptr<Register::Invoicing::Manager>
-        invMan(Register::Invoicing::Manager::create());
+    std::auto_ptr<Fred::Invoicing::Manager>
+        invMan(Fred::Invoicing::Manager::create());
 
     unsigned int type = m_conf.get<unsigned int>(INVOICE_PREFIX_TYPE_NAME);
     if (type > 1) {
@@ -590,10 +590,10 @@ InvoiceClient::create_invoice()
     /* init file manager */
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
-    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+    Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
     /* bank manager */
-    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+    Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
 
     Database::ID paymentId = m_conf.get<unsigned int>(INVOICE_PAYMENT_ID_NAME);
     if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME)) {

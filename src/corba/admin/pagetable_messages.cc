@@ -6,7 +6,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 ccReg_Messages_i::ccReg_Messages_i(
-        Register::Messages::Manager::MessageListPtr message_list)
+        Fred::Messages::Manager::MessageListPtr message_list)
 	: ml(message_list)
 {
 }
@@ -86,7 +86,7 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
 
     Logging::Context ctx(base_context_);
 
-    Register::Messages::MessagePtr msg;
+    Fred::Messages::MessagePtr msg;
     try
     {
         msg = ml->get(row);
@@ -111,23 +111,23 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
 		)
     % row
     % msg->get_id()
-    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_CRDATE)
-    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_MODDATE)
-    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_ATTEMPT)
-    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_STATUS)
-    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE)
-    % msg->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE)
+    % msg->conv_get(Fred::Messages::MessageMetaInfo::MT_CRDATE)
+    % msg->conv_get(Fred::Messages::MessageMetaInfo::MT_MODDATE)
+    % msg->conv_get(Fred::Messages::MessageMetaInfo::MT_ATTEMPT)
+    % msg->conv_get(Fred::Messages::MessageMetaInfo::MT_STATUS)
+    % msg->conv_get(Fred::Messages::MessageMetaInfo::MT_COMMTYPE)
+    % msg->conv_get(Fred::Messages::MessageMetaInfo::MT_MSGTYPE)
     );
 
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(numColumns());
 
-    (*tr)[0] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_CRDATE));
-    (*tr)[1] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_COMMTYPE));
-    (*tr)[2] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_MSGTYPE));
-    (*tr)[3] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_STATUS));
-    (*tr)[4] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_MODDATE));
-    (*tr)[5] <<= C_STR(msg->conv_get(Register::Messages::MessageMetaInfo::MT_ATTEMPT));
+    (*tr)[0] <<= C_STR(msg->conv_get(Fred::Messages::MessageMetaInfo::MT_CRDATE));
+    (*tr)[1] <<= C_STR(msg->conv_get(Fred::Messages::MessageMetaInfo::MT_COMMTYPE));
+    (*tr)[2] <<= C_STR(msg->conv_get(Fred::Messages::MessageMetaInfo::MT_MSGTYPE));
+    (*tr)[3] <<= C_STR(msg->conv_get(Fred::Messages::MessageMetaInfo::MT_STATUS));
+    (*tr)[4] <<= C_STR(msg->conv_get(Fred::Messages::MessageMetaInfo::MT_MODDATE));
+    (*tr)[5] <<= C_STR(msg->conv_get(Fred::Messages::MessageMetaInfo::MT_ATTEMPT));
 
     return tr;
     }//try
@@ -151,9 +151,9 @@ ccReg_Messages_i::numColumns()
 	{
     LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::numColumns"
     		" numColumns %1%")
-		% (Register::Messages::MessageMetaInfo::columns - 1));
+		% (Fred::Messages::MessageMetaInfo::columns - 1));
 
-    return Register::Messages::MessageMetaInfo::columns - 1;
+    return Fred::Messages::MessageMetaInfo::columns - 1;
     }//try
     catch(std::exception& ex)
     {
@@ -184,22 +184,22 @@ ccReg_Messages_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
     switch (column)
     {
     case 0 :
-        ml->sort(Register::Messages::MessageMetaInfo::MT_CRDATE, dir);
+        ml->sort(Fred::Messages::MessageMetaInfo::MT_CRDATE, dir);
         break;
     case 1 :
-        ml->sort(Register::Messages::MessageMetaInfo::MT_COMMTYPE, dir);
+        ml->sort(Fred::Messages::MessageMetaInfo::MT_COMMTYPE, dir);
         break;
     case 2 :
-        ml->sort(Register::Messages::MessageMetaInfo::MT_MSGTYPE, dir);
+        ml->sort(Fred::Messages::MessageMetaInfo::MT_MSGTYPE, dir);
         break;
     case 3 :
-        ml->sort(Register::Messages::MessageMetaInfo::MT_STATUS, dir);
+        ml->sort(Fred::Messages::MessageMetaInfo::MT_STATUS, dir);
         break;
     case 4 :
-        ml->sort(Register::Messages::MessageMetaInfo::MT_MODDATE, dir);
+        ml->sort(Fred::Messages::MessageMetaInfo::MT_MODDATE, dir);
         break;
     case 5 :
-        ml->sort(Register::Messages::MessageMetaInfo::MT_ATTEMPT, dir);
+        ml->sort(Fred::Messages::MessageMetaInfo::MT_ATTEMPT, dir);
         break;
     default:
         throw std::runtime_error("ccReg_Messages_i::sortByColumn invalid column");
@@ -403,9 +403,9 @@ ccReg_Messages_i::saveFilter(const char *name)
     TRACE(boost::format("[CALL] ccReg_Messages_i::saveFilter(%1%)")
             % name);
 
-    std::auto_ptr<Register::Filter::Manager> tmp_filter_manager(
-            Register::Filter::Manager::create());
-    tmp_filter_manager->save(Register::Filter::FT_MESSAGE, name, uf);
+    std::auto_ptr<Fred::Filter::Manager> tmp_filter_manager(
+            Fred::Filter::Manager::create());
+    tmp_filter_manager->save(Fred::Filter::FT_MESSAGE, name, uf);
     }//try
     catch(std::exception& ex)
     {
@@ -421,17 +421,17 @@ ccReg_Messages_i::saveFilter(const char *name)
 }
 
 
-Register::Messages::Message *
+Fred::Messages::Message *
 ccReg_Messages_i::findId(ccReg::TID id)
 {
 
     Logging::Context ctx(base_context_);
     try
     {
-        Register::Messages::MessagePtr msg
+        Fred::Messages::MessagePtr msg
             = ml->findId(id);
         return msg.get();
-    } catch (Register::NOT_FOUND) {
+    } catch (Fred::NOT_FOUND) {
         return 0;
     }
 	catch(std::exception& ex)

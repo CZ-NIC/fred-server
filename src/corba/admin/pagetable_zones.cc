@@ -4,7 +4,7 @@
 #include <sstream>
 
 ccReg_Zones_i::ccReg_Zones_i(
-        Register::Zone::Manager::ZoneListPtr zoneList)
+        Fred::Zone::Manager::ZoneListPtr zoneList)
 	: m_zoneList(zoneList)
 {
 }
@@ -52,8 +52,8 @@ ccReg_Zones_i::getRow(CORBA::UShort row)
 {
     Logging::Context ctx(base_context_);
 
-    const Register::Zone::Zone *z
-        = dynamic_cast<Register::Zone::Zone *>(m_zoneList->get(row));
+    const Fred::Zone::Zone *z
+        = dynamic_cast<Fred::Zone::Zone *>(m_zoneList->get(row));
     if (!z) {
         throw ccReg::Table::INVALID_ROW();
     }
@@ -94,46 +94,46 @@ ccReg_Zones_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 
     switch (column) {
         case 0:
-            m_zoneList->sort(Register::Zone::MT_FQDN, dir);
+            m_zoneList->sort(Fred::Zone::MT_FQDN, dir);
             break;
         case 1:
-            m_zoneList->sort(Register::Zone::MT_EXPERIODMIN, dir);
+            m_zoneList->sort(Fred::Zone::MT_EXPERIODMIN, dir);
             break;
         case 2:
-            m_zoneList->sort(Register::Zone::MT_EXPERIODMAX, dir);
+            m_zoneList->sort(Fred::Zone::MT_EXPERIODMAX, dir);
             break;
         case 3:
-            m_zoneList->sort(Register::Zone::MT_VALPERIOD, dir);
+            m_zoneList->sort(Fred::Zone::MT_VALPERIOD, dir);
             break;
         case 4:
-            m_zoneList->sort(Register::Zone::MT_DOTSMAX, dir);
+            m_zoneList->sort(Fred::Zone::MT_DOTSMAX, dir);
             break;
         case 5:
-            m_zoneList->sort(Register::Zone::MT_ENUMZONE, dir);
+            m_zoneList->sort(Fred::Zone::MT_ENUMZONE, dir);
             break;
         case 6:
-            m_zoneList->sort(Register::Zone::MT_TTL, dir);
+            m_zoneList->sort(Fred::Zone::MT_TTL, dir);
             break;
         case 7:
-            m_zoneList->sort(Register::Zone::MT_HOSTMASTER, dir);
+            m_zoneList->sort(Fred::Zone::MT_HOSTMASTER, dir);
             break;
         case 8:
-            m_zoneList->sort(Register::Zone::MT_SERIAL, dir);
+            m_zoneList->sort(Fred::Zone::MT_SERIAL, dir);
             break;
         case 9:
-            m_zoneList->sort(Register::Zone::MT_REFRESH, dir);
+            m_zoneList->sort(Fred::Zone::MT_REFRESH, dir);
             break;
         case 10:
-            m_zoneList->sort(Register::Zone::MT_UPDATERETR, dir);
+            m_zoneList->sort(Fred::Zone::MT_UPDATERETR, dir);
             break;
         case 11:
-            m_zoneList->sort(Register::Zone::MT_EXPIRY, dir);
+            m_zoneList->sort(Fred::Zone::MT_EXPIRY, dir);
             break;
         case 12:
-            m_zoneList->sort(Register::Zone::MT_MINIMUM, dir);
+            m_zoneList->sort(Fred::Zone::MT_MINIMUM, dir);
             break;
         case 13:
-            m_zoneList->sort(Register::Zone::MT_NSFQDN, dir);
+            m_zoneList->sort(Fred::Zone::MT_NSFQDN, dir);
             break;
     }
 }
@@ -144,8 +144,8 @@ ccReg_Zones_i::getRowId(CORBA::UShort row)
 {
     Logging::Context ctx(base_context_);
 
-    const Register::Zone::Zone *z =
-            dynamic_cast<Register::Zone::Zone *>(m_zoneList->get(row));
+    const Fred::Zone::Zone *z =
+            dynamic_cast<Fred::Zone::Zone *>(m_zoneList->get(row));
     if (!z) {
         throw ccReg::Table::INVALID_ROW();
     }
@@ -232,23 +232,23 @@ ccReg_Zones_i::saveFilter(const char *name)
     TRACE(boost::format("[CALL] ccReg_Zones_i::saveFilter(%1%)")
             % name);
 
-    std::auto_ptr<Register::Filter::Manager> tmp_filter_manager(
-            Register::Filter::Manager::create());
-    tmp_filter_manager->save(Register::Filter::FT_ZONE, name, uf);
+    std::auto_ptr<Fred::Filter::Manager> tmp_filter_manager(
+            Fred::Filter::Manager::create());
+    tmp_filter_manager->save(Fred::Filter::FT_ZONE, name, uf);
 }
 
-Register::Zone::Zone *
+Fred::Zone::Zone *
 ccReg_Zones_i::findId(ccReg::TID id)
 {
     Logging::Context ctx(base_context_);
     try {
-        Register::Zone::Zone *z =
+        Fred::Zone::Zone *z =
                 m_zoneList->findId(id);
         if (z) {
             return z;
         }
         return 0;
-    } catch (Register::NOT_FOUND) {
+    } catch (Fred::NOT_FOUND) {
         return 0;
     }
 }

@@ -274,10 +274,10 @@ public:
             }
             //std::cout << "start: " << number_ << std::endl;
 
-            Register::Registrar::Manager::AutoPtr regman(
-                    Register::Registrar::Manager::create(0));
+            Fred::Registrar::Manager::AutoPtr regman(
+                    Fred::Registrar::Manager::create(0));
             ///create membership of registrar in group
-            Register::TID m_id = regman->createRegistrarGroupMembership(
+            Fred::TID m_id = regman->createRegistrarGroupMembership(
                     1
                     , gid3
                     , Database::Date(Database::NOW)
@@ -310,8 +310,8 @@ public:
 
         try
         {
-            Register::Registrar::Manager::AutoPtr regman(
-                    Register::Registrar::Manager::create(0));
+            Fred::Registrar::Manager::AutoPtr regman(
+                    Fred::Registrar::Manager::create(0));
             //delete group
             regman->cancelRegistrarGroup(gid3);
         }

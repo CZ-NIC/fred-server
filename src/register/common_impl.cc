@@ -24,10 +24,10 @@
 #include "log/logger.h"
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//     Register::CommonObjectImpl
+//     Fred::CommonObjectImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-namespace Register {
+namespace Fred {
 
 CommonObjectImpl::CommonObjectImpl() :
   id_(0), modified_(true) {
@@ -45,7 +45,7 @@ void CommonObjectImpl::setId(TID id) {
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//     Register::CommonListImpl
+//     Fred::CommonListImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 CommonListImpl::CommonListImpl(DB *_db) :
@@ -109,7 +109,7 @@ CommonObject* CommonListImpl::get(unsigned _idx) const {
   return _idx >= getCount() ? NULL : data_[_idx];
 }
 
-CommonObject* CommonListImpl::findId(TID _id) const throw (Register::NOT_FOUND) {
+CommonObject* CommonListImpl::findId(TID _id) const throw (Fred::NOT_FOUND) {
   list_type::const_iterator it = std::find_if(data_.begin(),
                                               data_.end(),
                                               CheckId(_id));
@@ -120,7 +120,7 @@ CommonObject* CommonListImpl::findId(TID _id) const throw (Register::NOT_FOUND) 
   }
   LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% should be loaded from db")
       % _id);
-  throw Register::NOT_FOUND();
+  throw Fred::NOT_FOUND();
 }
 
 void CommonListImpl::resetIDSequence() {

@@ -1,7 +1,7 @@
 #include "pagetable_bank_statements.h"
 
 ccReg_Statements_i::ccReg_Statements_i(
-        Register::Banking::StatementList *list):
+        Fred::Banking::StatementList *list):
     list_(list)
 {
 }
@@ -45,7 +45,7 @@ ccReg_Statements_i::getRow(CORBA::UShort row)
 {
     Logging::Context ctx(base_context_);
 
-    const Register::Banking::Statement *data = list_->get(row);
+    const Fred::Banking::Statement *data = list_->get(row);
     if (!data) {
         throw ccReg::Table::INVALID_ROW();
     }
@@ -77,31 +77,31 @@ ccReg_Statements_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 
     switch (column) {
         case 0:
-            list_->sort(Register::Banking::MT_ACCOUNT_ID, dir);
+            list_->sort(Fred::Banking::MT_ACCOUNT_ID, dir);
             break;
         case 1:
-            list_->sort(Register::Banking::MT_NUM, dir);
+            list_->sort(Fred::Banking::MT_NUM, dir);
             break;
         case 2:
-            list_->sort(Register::Banking::MT_CREATE_DATE, dir);
+            list_->sort(Fred::Banking::MT_CREATE_DATE, dir);
             break;
         case 3:
-            list_->sort(Register::Banking::MT_BALANCE_OLD_DATE, dir);
+            list_->sort(Fred::Banking::MT_BALANCE_OLD_DATE, dir);
             break;
         case 4:
-            list_->sort(Register::Banking::MT_BALANCE_OLD, dir);
+            list_->sort(Fred::Banking::MT_BALANCE_OLD, dir);
             break;
         case 5:
-            list_->sort(Register::Banking::MT_BALANCE_NEW, dir);
+            list_->sort(Fred::Banking::MT_BALANCE_NEW, dir);
             break;
         case 6:
-            list_->sort(Register::Banking::MT_BALANCE_CREDIT, dir);
+            list_->sort(Fred::Banking::MT_BALANCE_CREDIT, dir);
             break;
         case 7:
-            list_->sort(Register::Banking::MT_BALANCE_DEBET, dir);
+            list_->sort(Fred::Banking::MT_BALANCE_DEBET, dir);
             break;
         case 8:
-            list_->sort(Register::Banking::MT_FILE_ID, dir);
+            list_->sort(Fred::Banking::MT_FILE_ID, dir);
             break;
       
     }
@@ -113,7 +113,7 @@ ccReg_Statements_i::getRowId(CORBA::UShort row)
 {
     Logging::Context ctx(base_context_);
 
-    const Register::Banking::Statement *data = list_->get(row);
+    const Fred::Banking::Statement *data = list_->get(row);
     if (!data) {
         throw ccReg::Table::INVALID_ROW();
     }
@@ -200,22 +200,22 @@ ccReg_Statements_i::saveFilter(const char *name)
     TRACE(boost::format("[CALL] ccReg_Statements_i::saveFilter(%1%)")
             % name);
 
-    std::auto_ptr<Register::Filter::Manager> tmp_filter_manager(
-            Register::Filter::Manager::create());
-    tmp_filter_manager->save(Register::Filter::FT_STATEMENTHEAD, name, uf);
+    std::auto_ptr<Fred::Filter::Manager> tmp_filter_manager(
+            Fred::Filter::Manager::create());
+    tmp_filter_manager->save(Fred::Filter::FT_STATEMENTHEAD, name, uf);
 }
 
-Register::Banking::Statement *
+Fred::Banking::Statement *
 ccReg_Statements_i::findId(ccReg::TID id)
 {
     Logging::Context ctx(base_context_);
     try {
-        Register::Banking::Statement *item = list_->getById(id);
+        Fred::Banking::Statement *item = list_->getById(id);
         if (item) {
             return item;
         }
         return 0;
-    } catch (Register::NOT_FOUND) {
+    } catch (Fred::NOT_FOUND) {
         return 0;
     }
 }

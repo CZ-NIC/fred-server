@@ -41,7 +41,7 @@ class EPPNotifier
   ID registrarID; // idof registrar who make change
   ID objectID; // type of the object  where make change
 
-  Register::Manager *rm_;
+  Fred::Manager *rm_;
 
   bool disable; // for fast upload of objects
   std::string extraEmails; // for fixing notification of notifyEmail change
@@ -49,9 +49,9 @@ class EPPNotifier
   /* for separation sending and constructing messages 
    * we need it for passing between methods (for Ticket #1622) */
   bool messages_ready_;
-  Register::Mailer::Parameters params;
-  Register::Mailer::Handles handles;
-  Register::Mailer::Attachments attach;
+  Fred::Mailer::Parameters params;
+  Fred::Mailer::Handles handles;
+  Fred::Mailer::Attachments attach;
   std::string emails;
 
 public:
@@ -65,7 +65,7 @@ public:
               DB *dbs, 
               ID regid, 
               ID objectid,
-              Register::Manager *_rm = 0); // add default contacts for object ID
+              Fred::Manager *_rm = 0); // add default contacts for object ID
   ~EPPNotifier();
   bool Send(); // send e-mail messages by mailer manager
   void constructMessages(); // construct messages - running all sql queries (Ticket #1622)

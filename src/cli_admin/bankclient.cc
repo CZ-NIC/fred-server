@@ -73,9 +73,9 @@ BankClient::statement_list()
     } else {
         output.open("/dev/stdout", std::ios::out);
     }
-    std::auto_ptr<Register::Banking::Manager> bankMan(
-            Register::Banking::Manager::create());
-    std::auto_ptr<Register::Banking::HeadList> bankList(
+    std::auto_ptr<Fred::Banking::Manager> bankMan(
+            Fred::Banking::Manager::create());
+    std::auto_ptr<Fred::Banking::HeadList> bankList(
             bankMan->createList());
 
     Database::Filters::StatementHead *statementFilter =
@@ -112,11 +112,11 @@ BankClient::payment_list()
     /* init file manager */
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
-    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+    Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
     /* bank manager */
-    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
-    Register::Banking::PaymentListPtr list(bank_manager->createPaymentList());
+    Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
+    Fred::Banking::PaymentListPtr list(bank_manager->createPaymentList());
 
     Database::Filters::BankPayment *payment_filter = new Database::Filters::BankPaymentImpl();
     if (m_conf.hasOpt(BANK_PAYMENT_TYPE_NAME)) {
@@ -135,7 +135,7 @@ BankClient::payment_list()
     list->reload(filter);
 
     for (unsigned int i = 0; i < list->size(); ++i) {
-        Register::Banking::Payment *payment = list->get(i);
+        Fred::Banking::Payment *payment = list->get(i);
         if (payment) {
             std::cout << payment->getId() << std::endl;
         }
@@ -195,10 +195,10 @@ BankClient::import_xml()
     /* init file manager */
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
-    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+    Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
     /* bank manager */
-    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+    Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
     bank_manager->importStatementXml(input, statement_file, statement_mime, generate_invoice);
 }
 
@@ -221,10 +221,10 @@ BankClient::add_bank_account()
     /* init file manager */
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
-    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+    Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
     /* bank manager */
-    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+    Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
     bank_manager->addBankAccount(account_number, bank_code, zone_fqdn, account_name);
 }
 
@@ -242,10 +242,10 @@ BankClient::move_statement()
     /* init file manager */
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
-    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+    Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
     /* bank manager */
-    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+    Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
     bank_manager->pairPaymentWithStatement(itemId, headId, force);
 }
 
@@ -260,10 +260,10 @@ BankClient::set_payment_type()
      /* init file manager */
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
-    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+    Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
     /* bank manager */
-    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+    Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
     bank_manager->setPaymentType(payment_id, type);
 }
 

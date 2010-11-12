@@ -73,15 +73,15 @@ private:
   ccReg_Files_i* m_files;  
   ccReg_LogSession_i* m_logsession;  
 
-  std::auto_ptr<Register::Manager> m_register_manager;
-  std::auto_ptr<Register::PublicRequest::Manager> m_publicrequest_manager;
-  std::auto_ptr<Register::Document::Manager> m_document_manager;
-  std::auto_ptr<Register::Invoicing::Manager> m_invoicing_manager;
-  std::auto_ptr<Register::Mail::Manager> mail_manager_;
-  std::auto_ptr<Register::File::Manager> file_manager_;
-  std::auto_ptr<Register::Logger::Manager> m_logger_manager;
-  std::auto_ptr<Register::Session::Manager> m_logsession_manager;
-  std::auto_ptr<Register::Banking::Manager> m_banking_manager;
+  std::auto_ptr<Fred::Manager> m_register_manager;
+  std::auto_ptr<Fred::PublicRequest::Manager> m_publicrequest_manager;
+  std::auto_ptr<Fred::Document::Manager> m_document_manager;
+  std::auto_ptr<Fred::Invoicing::Manager> m_invoicing_manager;
+  std::auto_ptr<Fred::Mail::Manager> mail_manager_;
+  std::auto_ptr<Fred::File::Manager> file_manager_;
+  std::auto_ptr<Fred::Logger::Manager> m_logger_manager;
+  std::auto_ptr<Fred::Session::Manager> m_logsession_manager;
+  std::auto_ptr<Fred::Banking::Manager> m_banking_manager;
   MailerManager m_mailer_manager;
   FileManagerClient m_fm_client;
 
@@ -115,26 +115,26 @@ private:
 
   /*
    * TODO:
-   * this should be rather in separate library - it is only general CORBA-to-Register
+   * this should be rather in separate library - it is only general CORBA-to-Registry
    * mapping
    */
-  ccReg::DomainDetail* createDomainDetail(Register::Domain::Domain* _domain);
-  ccReg::ContactDetail* createContactDetail(Register::Contact::Contact* _contact);
-  ccReg::NSSetDetail* createNSSetDetail(Register::NSSet::NSSet* _contact);
-  ccReg::KeySetDetail *createKeySetDetail(Register::KeySet::KeySet *_contact);
-  Registry::Domain::Detail* createHistoryDomainDetail(Register::Domain::List* _list);
-  Registry::Contact::Detail* createHistoryContactDetail(Register::Contact::List* _list);
-  Registry::NSSet::Detail* createHistoryNSSetDetail(Register::NSSet::List* _list);
-  Registry::KeySet::Detail* createHistoryKeySetDetail(Register::KeySet::List* _list);
-  Registry::Registrar::Detail* createRegistrarDetail(Register::Registrar::Registrar* _registrar);
-  Registry::EPPAction::Detail* createEppActionDetail(Register::Registrar::EPPAction *_action);
-  Registry::PublicRequest::Detail* createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request);
-  Registry::Mailing::Detail* createMailDetail(Register::Mail::Mail *_mail);
-  Registry::Invoicing::Detail* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);  
-  Registry::Zone::Detail* createZoneDetail(Register::Zone::Zone* _registrar);
-  Registry::Banking::BankItem::Detail *createPaymentDetail(Register::Banking::Payment *_payment);
-  //Registry::Banking::BankHead::Detail *createStatementDetail(Register::Banking::Statement *_statement);
-  Registry::Message::Detail* createMessageDetail(Register::Messages::MessagePtr _message);
+  ccReg::DomainDetail* createDomainDetail(Fred::Domain::Domain* _domain);
+  ccReg::ContactDetail* createContactDetail(Fred::Contact::Contact* _contact);
+  ccReg::NSSetDetail* createNSSetDetail(Fred::NSSet::NSSet* _contact);
+  ccReg::KeySetDetail *createKeySetDetail(Fred::KeySet::KeySet *_contact);
+  Registry::Domain::Detail* createHistoryDomainDetail(Fred::Domain::List* _list);
+  Registry::Contact::Detail* createHistoryContactDetail(Fred::Contact::List* _list);
+  Registry::NSSet::Detail* createHistoryNSSetDetail(Fred::NSSet::List* _list);
+  Registry::KeySet::Detail* createHistoryKeySetDetail(Fred::KeySet::List* _list);
+  Registry::Registrar::Detail* createRegistrarDetail(Fred::Registrar::Registrar* _registrar);
+  Registry::EPPAction::Detail* createEppActionDetail(Fred::Registrar::EPPAction *_action);
+  Registry::PublicRequest::Detail* createPublicRequestDetail(Fred::PublicRequest::PublicRequest* _request);
+  Registry::Mailing::Detail* createMailDetail(Fred::Mail::Mail *_mail);
+  Registry::Invoicing::Detail* createInvoiceDetail(Fred::Invoicing::Invoice *_invoice);
+  Registry::Zone::Detail* createZoneDetail(Fred::Zone::Zone* _registrar);
+  Registry::Banking::BankItem::Detail *createPaymentDetail(Fred::Banking::Payment *_payment);
+  //Registry::Banking::BankHead::Detail *createStatementDetail(Fred::Banking::Statement *_statement);
+  Registry::Message::Detail* createMessageDetail(Fred::Messages::MessagePtr _message);
 
  
   void _createUpdateRegistrar(const ccReg::Registrar& _registrar);
@@ -166,7 +166,7 @@ public:
   void setHistory(CORBA::Boolean _flag);
 };
 
-void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const Register::Banking::Payment *_payment);
+void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const Fred::Banking::Payment *_payment);
 
 class CompareSessionsByLastActivity {
 public:

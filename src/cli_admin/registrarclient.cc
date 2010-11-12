@@ -72,10 +72,10 @@ void
 RegistrarClient::list()
 {
     callHelp(m_conf, no_help);
-    Register::Registrar::Manager::AutoPtr regMan
-             = Register::Registrar::Manager::create(&m_db);
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(&m_db);
 
-    Register::Registrar
+    Fred::Registrar
         ::RegistrarList::AutoPtr reg_list(regMan->createList());
 
     std::auto_ptr<Database::Filters::Registrar>
@@ -148,8 +148,8 @@ void
 RegistrarClient::zone_add()
 {
     callHelp(m_conf, zone_add_help);
-    Register::Zone::Manager::ZoneManagerPtr zoneMan
-        = Register::Zone::Manager::create();
+    Fred::Zone::Manager::ZoneManagerPtr zoneMan
+        = Fred::Zone::Manager::create();
     std::string fqdn = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     int exPeriodMin = 12;
     int exPeriodMax = 120;
@@ -173,7 +173,7 @@ RegistrarClient::zone_add()
     try {
         zoneMan->addZone(fqdn, exPeriodMin, exPeriodMax, ttl, hostmaster,
                 refresh, updateRetr, expiry, minimum, nsFqdn);
-    } catch (Register::ALREADY_EXISTS) {
+    } catch (Fred::ALREADY_EXISTS) {
         std::cerr << "Zone '" << fqdn << "' already exists" << std::endl;
     }
     return;
@@ -184,8 +184,8 @@ void
 RegistrarClient::zone_ns_add()
 {
     callHelp(m_conf, zone_ns_add_help);
-    Register::Zone::Manager::ZoneManagerPtr zoneMan
-        = Register::Zone::Manager::create();
+    Fred::Zone::Manager::ZoneManagerPtr zoneMan
+        = Fred::Zone::Manager::create();
     std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     std::string fqdn = m_conf.get<std::string>(REGISTRAR_NS_FQDN_NAME);
     std::string addr;
@@ -209,9 +209,9 @@ void
 RegistrarClient::registrar_add()
 {
     callHelp(m_conf, registrar_add_help);
-    Register::Registrar::Manager::AutoPtr regMan
-             = Register::Registrar::Manager::create(&m_db);
-    Register::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(&m_db);
+    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
     registrar->setHandle(m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME));
     registrar->setCountry(m_conf.get<std::string>(REGISTRAR_COUNTRY_NAME));
     SET_IF_PRESENT(setIco, REGISTRAR_ICO_NAME);
@@ -248,8 +248,8 @@ void
 RegistrarClient::registrar_acl_add()
 {
     callHelp(m_conf, registrar_acl_add_help);
-    Register::Registrar::Manager::AutoPtr regMan
-        = Register::Registrar::Manager::create(&m_db);
+    Fred::Registrar::Manager::AutoPtr regMan
+        = Fred::Registrar::Manager::create(&m_db);
     std::string handle = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
     std::string cert = m_conf.get<std::string>(REGISTRAR_CERT_NAME);
     std::string pass = m_conf.get<std::string>(REGISTRAR_PASSWORD_NAME);
@@ -274,7 +274,7 @@ RegistrarClient::registrar_add_zone()
     if (m_conf.hasOpt(REGISTRAR_TO_DATE_NAME)) {
         toDate.from_string(m_conf.get<std::string>(REGISTRAR_TO_DATE_NAME));
     }
-    Register::Registrar::addRegistrarZone(registrar, zone, fromDate, toDate);
+    Fred::Registrar::addRegistrarZone(registrar, zone, fromDate, toDate);
     return;
 }
 
@@ -310,8 +310,8 @@ RegistrarClient::registrar_create_certification()
     CorbaClient corba_client(0, 0, m_nsAddr
             , m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
-    Register::File::ManagerPtr file_manager(
-            Register::File::Manager::create(&fm_client));
+    Fred::File::ManagerPtr file_manager(
+            Fred::File::Manager::create(&fm_client));
 
     unsigned long long evaluation_file_id
         = file_manager->upload(cert_eval_file
@@ -320,13 +320,13 @@ RegistrarClient::registrar_create_certification()
     if(evaluation_file_id < 1)
         throw std::runtime_error("Invalid value of evaluation_file_id");
 
-    Register::Registrar::Manager::AutoPtr regman(
-             Register::Registrar::Manager::create(0));
+    Fred::Registrar::Manager::AutoPtr regman(
+             Fred::Registrar::Manager::create(0));
      ///create registrar certification
      regman->createRegistrarCertification( registrar_handle
              , fromDate//Database::Date(makeBoostDate(from))
              , toDate//Database::Date(makeBoostDate(to))
-             , static_cast<Register::Registrar::RegCertClass>(score)
+             , static_cast<Fred::Registrar::RegCertClass>(score)
              , evaluation_file_id);
 
     return;
@@ -344,8 +344,8 @@ RegistrarClient::registrar_create_group()
         throw std::runtime_error("RegistrarClient::registrar_create_group "
                 "error: group name is empty");
 
-    Register::Registrar::Manager::AutoPtr regman(
-             Register::Registrar::Manager::create(0));
+    Fred::Registrar::Manager::AutoPtr regman(
+             Fred::Registrar::Manager::create(0));
      ///create registrar certification
      regman->createRegistrarGroup(group_name);
     return;
@@ -392,8 +392,8 @@ RegistrarClient::registrar_into_group()
         throw std::runtime_error("RegistrarClient::registrar_into_group "
                 "error: group name is empty");
 
-    Register::Registrar::Manager::AutoPtr regman(
-             Register::Registrar::Manager::create(0));
+    Fred::Registrar::Manager::AutoPtr regman(
+             Fred::Registrar::Manager::create(0));
      ///create registrar group membership
      regman->createRegistrarGroupMembership(
              registrar_handle,group_name,fromDate,toDate);
@@ -404,8 +404,8 @@ void
 RegistrarClient::price_add()
 {
     callHelp(m_conf, price_add_help);
-    Register::Zone::Manager::ZoneManagerPtr zoneMan
-        = Register::Zone::Manager::create();
+    Fred::Zone::Manager::ZoneManagerPtr zoneMan
+        = Fred::Zone::Manager::create();
     Database::DateTime validFrom(Database::NOW_UTC);
     if (m_conf.hasOpt(REGISTRAR_VALID_FROM_NAME)) {
         validFrom.from_string(m_conf.get<std::string>(REGISTRAR_VALID_FROM_NAME));
@@ -428,22 +428,22 @@ RegistrarClient::price_add()
     if (m_conf.hasOpt(REGISTRAR_CREATE_OPERATION_NAME)) {
         if (m_conf.hasOpt(REGISTRAR_ZONE_FQDN_NAME)) {
             std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
-            zoneMan->addPrice(zone, Register::Zone::CREATE, validFrom,
+            zoneMan->addPrice(zone, Fred::Zone::CREATE, validFrom,
                     validTo, price, period);
         } else {
             unsigned int zoneId = m_conf.get<unsigned int>(REGISTRAR_ZONE_ID_NAME);
-            zoneMan->addPrice(zoneId, Register::Zone::CREATE, validFrom,
+            zoneMan->addPrice(zoneId, Fred::Zone::CREATE, validFrom,
                     validTo, price, period);
         }
     }
     if (m_conf.hasOpt(REGISTRAR_RENEW_OPERATION_NAME)) {
         if (m_conf.hasOpt(REGISTRAR_ZONE_FQDN_NAME)) {
             std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
-            zoneMan->addPrice(zone, Register::Zone::RENEW, validFrom,
+            zoneMan->addPrice(zone, Fred::Zone::RENEW, validFrom,
                     validTo, price, period);
         } else {
             unsigned int zoneId = m_conf.get<unsigned int>(REGISTRAR_ZONE_ID_NAME);
-            zoneMan->addPrice(zoneId, Register::Zone::RENEW, validFrom,
+            zoneMan->addPrice(zoneId, Fred::Zone::RENEW, validFrom,
                     validTo, price, period);
         }
     }

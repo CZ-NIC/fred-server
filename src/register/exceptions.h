@@ -5,7 +5,7 @@
 #include <exception>
 #include <stdexcept>
 
-namespace Register {
+namespace Fred {
 
 /// Exception when SQL error
 struct SQL_ERROR : public std::runtime_error

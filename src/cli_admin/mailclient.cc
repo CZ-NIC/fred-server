@@ -49,9 +49,9 @@ void
 MailClient::list()
 {
     callHelp(m_conf, list_help);
-    std::auto_ptr<Register::Mail::Manager> mailMan(
-            Register::Mail::Manager::create());
-    std::auto_ptr<Register::Mail::List> mailList(
+    std::auto_ptr<Fred::Mail::Manager> mailMan(
+            Fred::Mail::Manager::create());
+    std::auto_ptr<Fred::Mail::List> mailList(
             mailMan->createList());
 
     Database::Filters::Mail *mailFilter;
@@ -92,7 +92,7 @@ MailClient::list()
 
     std::cout << "<object>\n";
     for (unsigned int i = 0; i < mailList->getCount(); i++) {
-        Register::Mail::Mail *mail = mailList->get(i);
+        Fred::Mail::Mail *mail = mailList->get(i);
         std::cout
             << "\t<mail>\n"
             << "\t\t<id>" << mail->getId() << "</id>\n"

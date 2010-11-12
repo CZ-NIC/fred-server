@@ -58,13 +58,13 @@
 class Registry_Messages_i: public POA_Registry::Messages
 {
 private:
-    Register::Messages::ManagerPtr msgmgr_;
+    Fred::Messages::ManagerPtr msgmgr_;
   // Make sure all instances are built on the heap by making the
   // destructor non-public
   virtual ~Registry_Messages_i();
 public:
   // standard constructor
-  Registry_Messages_i(Register::Messages::ManagerPtr msgmgr);
+  Registry_Messages_i(Fred::Messages::ManagerPtr msgmgr);
 
   // methods corresponding to defined IDL attributes and operations
   CORBA::ULongLong saveSmsToSend(const char* contact_handle

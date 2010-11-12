@@ -57,12 +57,12 @@ void
 DomainClient::domain_list()
 {
     callHelp(m_conf, list_help);
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
+    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+            Fred::Zone::Manager::create());
 
-    std::auto_ptr<Register::Domain::Manager> domMan(
-            Register::Domain::Manager::create(&m_db, zoneMan.get()));
-    std::auto_ptr<Register::Domain::List> domList(
+    std::auto_ptr<Fred::Domain::Manager> domMan(
+            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+    std::auto_ptr<Fred::Domain::List> domList(
             domMan->createList());
 
     Database::Filters::Domain *domFilter;
@@ -109,7 +109,7 @@ DomainClient::domain_list()
 
     std::cout << "<objects>\n";
     for (unsigned int i = 0; i < domList->getCount(); i++) {
-        Register::Domain::Domain *domain = domList->getDomain(i);
+        Fred::Domain::Domain *domain = domList->getDomain(i);
         std::cout
             << "\t<domain>\n"
             << "\t\t<id>" << domain->getId() << "</id>\n"
@@ -161,7 +161,7 @@ DomainClient::domain_list()
                 << "\t\t<auth_password>" << domain->getAuthPw() << "</auth_password>\n"
                 << "\t\t<ROID>" << domain->getROID() << "</ROID>\n";
             for (unsigned int j = 0; j < domain->getStatusCount(); j++) {
-                Register::Status *status = (Register::Status *)domain->getStatusByIdx(j);
+                Fred::Status *status = (Fred::Status *)domain->getStatusByIdx(j);
                 std::cout
                     << "\t\t<status>\n"
                     << "\t\t\t<id>" << status->getStatusId() << "</id>\n"

@@ -23,7 +23,7 @@
 #include "common_new.h"
 #include "bank_payment.h"
 
-namespace Register {
+namespace Fred {
 namespace Banking {
 
 
@@ -32,7 +32,7 @@ namespace Banking {
  * \brief Interface for bank statement object
  *
  */
-class Statement : virtual public Register::CommonObjectNew
+class Statement : virtual public Fred::CommonObjectNew
 {
 public:
     virtual ~Statement()

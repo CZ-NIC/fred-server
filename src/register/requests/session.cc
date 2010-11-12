@@ -14,10 +14,10 @@
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
-namespace Register {
+namespace Fred {
 namespace Session {
 
-class SessionImpl : public Register::CommonObjectImpl,
+class SessionImpl : public Fred::CommonObjectImpl,
 			virtual public Session {
 
 private:
@@ -56,7 +56,7 @@ COMPARE_CLASS_IMPL(SessionImpl, LogoutDate);
 COMPARE_CLASS_IMPL(SessionImpl, Lang);
 
 
-class ListImpl : public Register::CommonListImpl,
+class ListImpl : public Fred::CommonListImpl,
 				virtual public List {
 private:
 	Manager *manager_;
@@ -80,7 +80,7 @@ public:
 
   // TODO properties should be displayed only in detailed view
   virtual void reload(Database::Filters::Union& _filter) {
-	TRACE("[CALL] Register::Session::ListImpl::reload(Database::Filters::Union&)");
+	TRACE("[CALL] Fred::Session::ListImpl::reload(Database::Filters::Union&)");
 	clear();
 	_filter.clearQueries();
 
@@ -170,7 +170,7 @@ public:
   }
 
   virtual void reload() {
-	  TRACE("[CALL] Register::Session::ListImpl::reload()");
+	  TRACE("[CALL] Fred::Session::ListImpl::reload()");
 	  clear();
 
 	  Database::SelectQuery query;
@@ -231,7 +231,7 @@ class ManagerImpl : virtual public Manager {
 };
 
 Manager *Manager::create() {
-	TRACE("[CALL] Register::Session::Manager::create()");
+	TRACE("[CALL] Fred::Session::Manager::create()");
 	return new ManagerImpl();
 }
 
