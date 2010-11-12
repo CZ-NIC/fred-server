@@ -19,7 +19,7 @@
 #include "simple.h"
 #include "commonclient.h"
 #include "notifyclient.h"
-#include "register/info_buffer.h"
+#include "fredlib/info_buffer.h"
 
 
 
@@ -29,7 +29,7 @@
 #include "cfg/handle_general_args.h"
 #include "hp/handle_hpmail_args.h"
 
-#include "register/db_settings.h"
+#include "fredlib/db_settings.h"
 
 using namespace Database;
 

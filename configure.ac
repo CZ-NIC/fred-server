@@ -333,10 +333,10 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  src/old_utils/Makefile
                  src/model/Makefile
-                 src/register/Makefile
-                 src/register/messages/Makefile
-                 src/register/requests/Makefile
-                 src/register/mojeid/Makefile
+                 src/fredlib/Makefile
+                 src/fredlib/messages/Makefile
+                 src/fredlib/requests/Makefile
+                 src/fredlib/mojeid/Makefile
                  src/corba/Makefile
                  src/corba/admin/Makefile
                  src/corba/epp/Makefile

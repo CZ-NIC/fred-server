@@ -19,7 +19,7 @@
 #include "simple.h"
 #include "commonclient.h"
 #include "pollclient.h"
-#include "register/poll.h"
+#include "fredlib/poll.h"
 
 namespace Admin {
 

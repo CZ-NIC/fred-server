@@ -5,7 +5,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
               $(XML2_CFLAGS) \
               -I$(top_srcdir) \
               -I$(top_srcdir)/src \
-              -I$(top_srcdir)/src/register \
+              -I$(top_srcdir)/src/fredlib \
               -I$(top_srcdir)/src/corba \
               -I$(top_srcdir)/util \
               -I$(top_srcdir)/util/db \
@@ -46,15 +46,15 @@ fred_mifd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
 
 
 fred_mifd_LDADD =    $(LIBIDN_LIBS) \
-                     $(top_builddir)/src/register/libfred.a \
+                     $(top_builddir)/src/fredlib/libfred.a \
                      $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/types/libtypes.a \
                      $(top_builddir)/src/old_utils/liboldutils.a \
                      $(top_builddir)/util/log/liblog.a \
                      $(top_builddir)/util/libutils.a \
-                     $(top_builddir)/src/register/mojeid/libmojeid.a \
-                     $(top_builddir)/src/register/messages/libmessages.a
+                     $(top_builddir)/src/fredlib/mojeid/libmojeid.a \
+                     $(top_builddir)/src/fredlib/messages/libmessages.a
 
 MojeIDSK.cc: $(IDLDIR)/MojeID.idl
 	omniidl -bcxx -Wba -Wbinline $(IDLDIR)/MojeID.idl

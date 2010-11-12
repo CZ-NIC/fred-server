@@ -33,7 +33,7 @@
 #include "user_impl.h"
 #include "corba/mailer_manager.h"
 #include "corba/file_manager_client.h"
-#include "register/register.h"
+#include "fredlib/registry.h"
 #include "old_utils/dbsql.h"
 #include "model/model_filters.h"
 
@@ -73,7 +73,7 @@ private:
   ccReg_Files_i* m_files;  
   ccReg_LogSession_i* m_logsession;  
 
-  std::auto_ptr<Fred::Manager> m_register_manager;
+  std::auto_ptr<Fred::Manager> m_registry_manager;
   std::auto_ptr<Fred::PublicRequest::Manager> m_publicrequest_manager;
   std::auto_ptr<Fred::Document::Manager> m_document_manager;
   std::auto_ptr<Fred::Invoicing::Manager> m_invoicing_manager;

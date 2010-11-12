@@ -14,12 +14,12 @@
 #include "filter_impl.h"
 #include "corba/mailer_manager.h"
 
-#include "register/register.h"
-#include "register/invoice.h"
-#include "register/notify.h"
-#include "register/mail.h"
-#include "register/filter.h"
-#include "register/requests/request.h"
+#include "fredlib/registry.h"
+#include "fredlib/invoice.h"
+#include "fredlib/notify.h"
+#include "fredlib/mail.h"
+#include "fredlib/filter.h"
+#include "fredlib/requests/request.h"
 
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"

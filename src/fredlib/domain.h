@@ -51,7 +51,7 @@ enum MemberType {
 /// return type for checkAvail method 
 enum CheckAvailType {
   CA_INVALID_HANDLE, ///< bad formed handle
-  CA_BAD_ZONE, ///< domain outside of register
+  CA_BAD_ZONE, ///< domain outside of registry
   CA_BAD_LENGHT, ///< domain longer then acceptable
   CA_BLACKLIST, ///< registration blocked in blacklist
   CA_REGISTRED, ///< domain registred

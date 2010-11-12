@@ -5,7 +5,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
               $(XML2_CFLAGS) \
               -I$(top_srcdir) \
               -I$(top_srcdir)/src \
-              -I$(top_srcdir)/src/register \
+              -I$(top_srcdir)/src/fredlib \
               -I$(top_srcdir)/src/corba \
               -I$(top_srcdir)/src/corba/admin \
               -I$(top_srcdir)/util \
@@ -27,8 +27,8 @@ test_logd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_PROGRAM_OPTIONS_LIB) \
                      $(OMNIORB4_LIBS) 
 
-test_logd_LDADD =    $(top_builddir)/src/register/requests/librequests.a \
-                     $(top_builddir)/src/register/libfred.a \
+test_logd_LDADD =    $(top_builddir)/src/fredlib/requests/librequests.a \
+                     $(top_builddir)/src/fredlib/libfred.a \
                      $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/types/libtypes.a \
@@ -46,7 +46,7 @@ test_model_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(AM_LDFLAGS) \
                      $(BOOST_PROGRAM_OPTIONS_LIB)
 
-test_model_LDADD =   $(top_builddir)/src/register/libfred.a \
+test_model_LDADD =   $(top_builddir)/src/fredlib/libfred.a \
                      $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \
@@ -66,7 +66,7 @@ test_db_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(AM_LDFLAGS) \
                      $(BOOST_PROGRAM_OPTIONS_LIB)
 
-test_db_LDADD =   $(top_builddir)/src/register/libfred.a \
+test_db_LDADD =   $(top_builddir)/src/fredlib/libfred.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \
                      $(top_builddir)/util/conf/libconf.a \
@@ -114,7 +114,7 @@ test_registrar_group_LDFLAGS = \
                      $(XML2_LIBS)
 
 test_registrar_group_LDADD = \
-                     $(top_builddir)/src/register/libfred.a \
+                     $(top_builddir)/src/fredlib/libfred.a \
                      $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \
@@ -141,7 +141,7 @@ test_registrar_certification_LDFLAGS = \
                      $(XML2_LIBS)
 
 test_registrar_certification_LDADD = \
-                     $(top_builddir)/src/register/libfred.a \
+                     $(top_builddir)/src/fredlib/libfred.a \
                      $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \
@@ -163,7 +163,7 @@ test_msgd_LDFLAGS = \
                      $(XML2_LIBS)
 
 test_msgd_LDADD = \
-                     $(top_builddir)/src/register/libfred.a \
+                     $(top_builddir)/src/fredlib/libfred.a \
                      $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \

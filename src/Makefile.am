@@ -1,2 +1,2 @@
-SUBDIRS = old_utils model register corba cli_admin
+SUBDIRS = old_utils model fredlib corba cli_admin
 

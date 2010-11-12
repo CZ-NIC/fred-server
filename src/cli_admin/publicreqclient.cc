@@ -19,8 +19,8 @@
 #include "simple.h"
 #include "commonclient.h"
 #include "publicreqclient.h"
-#include "register/public_request.h"
-#include "register/messages/messages_impl.h"
+#include "fredlib/public_request.h"
+#include "fredlib/messages/messages_impl.h"
 
 namespace Admin {
 

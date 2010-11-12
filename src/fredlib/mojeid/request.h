@@ -2,7 +2,7 @@
 #define MOJEID_REQUEST_H_
 
 
-#include "register/db_settings.h"
+#include "fredlib/db_settings.h"
 
 namespace MojeID {
 

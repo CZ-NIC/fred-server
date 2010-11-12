@@ -50,7 +50,7 @@ namespace Fred {
     Fred::TID getHistoryIdFrom() const;
     Fred::TID getHistoryIdTo() const;
   };
-  /// Implementation of common register object properties
+  /// Implementation of common registry object properties
   class ObjectImpl : public CommonObjectImpl, virtual public Object
   {
    protected:
@@ -106,7 +106,7 @@ namespace Fred {
     virtual void insertStatus(const StatusImpl& _state);
   }; // class ObjectImpl
   
-  /// Implementation of common register object list properties
+  /// Implementation of common registry object list properties
   class ObjectListImpl : public CommonListImpl, virtual public ObjectList
   {
    protected:
@@ -153,6 +153,6 @@ namespace Fred {
     void deleteDuplicatesId();
   }; // class ObjectListImpl
    
-} // namespace register
+} // namespace Fred
 
 #endif

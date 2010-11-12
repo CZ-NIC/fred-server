@@ -40,7 +40,7 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "register/db_settings.h"
+#include "fredlib/db_settings.h"
 #include "corba_wrapper.h"
 #include "log/logger.h"
 #include "log/context.h"
@@ -48,7 +48,7 @@
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 #include "common.h"
-#include "register/model_files.h"
+#include "fredlib/model_files.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_database_args.h"

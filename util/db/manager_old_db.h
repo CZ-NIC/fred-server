@@ -2,7 +2,7 @@
 #define MANAGER_OLD_DB_H_
 
 #include "old_utils/dbsql.h"
-#include "register/db_settings.h"
+#include "fredlib/db_settings.h"
 
 namespace Database {
 

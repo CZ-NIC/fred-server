@@ -9,8 +9,8 @@
 #include <iomanip>
 #include <corba/ccReg.hh>
 
-#include "register/register.h"
-#include "register/invoice.h"
+#include "fredlib/registry.h"
+#include "fredlib/invoice.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;

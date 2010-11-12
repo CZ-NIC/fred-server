@@ -24,7 +24,7 @@
 
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
-#include "register/register.h"
+#include "fredlib/registry.h"
 #include "baseclient.h"
 
 #define KEYSET_SHOW_OPTS_NAME       "keyset_show_opts"

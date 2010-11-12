@@ -3,7 +3,7 @@
 #include "messages.h"
 #include "corba/mailer_manager.h"
 #include "old_utils/dbsql.h"
-#include "register/register.h"
+#include "fredlib/registry.h"
 
 #include "conf/manager.h"
 #include <vector>

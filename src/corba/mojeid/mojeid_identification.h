@@ -6,8 +6,8 @@
 #include "cfg/handle_mojeid_args.h"
 
 #include "corba_wrapper_decl.h"
-#include "register/register.h"
-#include "register/public_request.h"
+#include "fredlib/registry.h"
+#include "fredlib/public_request.h"
 #include "corba/mailer_manager.h"
 
 
@@ -22,7 +22,7 @@ class IdentificationRequestManagerPtr
 {
 private:
     std::auto_ptr<MailerManager> mailer_manager_;
-    std::auto_ptr<Fred::Manager> register_manager_;
+    std::auto_ptr<Fred::Manager> registry_manager_;
     std::auto_ptr<Fred::Document::Manager> doc_manager_;
     std::auto_ptr<Fred::PublicRequest::Manager> request_manager_;
 
@@ -38,7 +38,7 @@ public:
 
         /* construct managers */
         mailer_manager_.reset(new MailerManager(CorbaContainer::get_instance()->getNS())),
-        register_manager_.reset(Fred::Manager::create(
+        registry_manager_.reset(Fred::Manager::create(
                     0,
                     rconf->restricted_handles));
         doc_manager_.reset(Fred::Document::Manager::create(
@@ -47,13 +47,13 @@ public:
                     rconf->fileclient_path,
                     CorbaContainer::get_instance()->getNS()->getHostName()));
         request_manager_.reset(Fred::PublicRequest::Manager::create(
-                    register_manager_->getDomainManager(),
-                    register_manager_->getContactManager(),
-                    register_manager_->getNSSetManager(),
-                    register_manager_->getKeySetManager(),
+                    registry_manager_->getDomainManager(),
+                    registry_manager_->getContactManager(),
+                    registry_manager_->getNSSetManager(),
+                    registry_manager_->getKeySetManager(),
                     mailer_manager_.get(),
                     doc_manager_.get(),
-                    register_manager_->getMessageManager()));
+                    registry_manager_->getMessageManager()));
 
         request_manager_->setIdentificationMailAuthHostname(mconf->hostname);
         request_manager_->setDemoMode(mconf->demo_mode);

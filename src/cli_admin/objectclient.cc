@@ -22,8 +22,8 @@
 #include "simple.h"
 #include "commonclient.h"
 #include "objectclient.h"
-#include "register/register.h"
-#include "register/poll.h"
+#include "fredlib/registry.h"
+#include "fredlib/poll.h"
 #include "log/logger.h"
 #include "corba/nameservice.h"
 
@@ -146,7 +146,7 @@ ObjectClient::deleteObjects(
     ccReg::EPP_var epp = NULL;
     // CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     // temporary done by using EPP corba interface
-    // should be instead somewhere in register library (object.cc?)
+    // should be instead somewhere in registry library (object.cc?)
     // get login information for first system registrar
     if (!m_db.ExecSelect(
                 "SELECT r.handle,ra.cert,ra.password "
@@ -386,7 +386,7 @@ ObjectClient::regular_procedure()
                 Fred::Poll::Manager::create(
                     &m_db)
                 );
-        std::auto_ptr<Fred::Manager> registerMan(
+        std::auto_ptr<Fred::Manager> registryMan(
                 Fred::Manager::create(
                     &m_db,
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
@@ -405,8 +405,8 @@ ObjectClient::regular_procedure()
                     regMan.get(),
                     msgMan));
 
-        registerMan->updateObjectStates();
-        registerMan->updateObjectStates();
+        registryMan->updateObjectStates();
+        registryMan->updateObjectStates();
         std::string pollExcept("");
         if (m_conf.hasOpt(OBJECT_POLL_EXCEPT_TYPES_NAME)) {
             pollExcept = m_conf.get<std::string>(OBJECT_POLL_EXCEPT_TYPES_NAME);

@@ -31,7 +31,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "register/db_settings.h"
+#include "fredlib/db_settings.h"
 
 namespace Fred
 {

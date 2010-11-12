@@ -6,7 +6,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) \
 			  -I$(top_builddir)/src \
 			  -I$(top_srcdir) \
 			  -I$(top_srcdir)/util/db/model \
-			  -I$(top_srcdir)/src/register
+			  -I$(top_srcdir)/src/fredlib
 
 LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
@@ -15,7 +15,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(XML2_LIBS) \
 		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \
-        $(top_builddir)/src/register/libfred.a \
+        $(top_builddir)/src/fredlib/libfred.a \
 		$(top_builddir)/src/model/libmodel.a \
 		$(top_builddir)/util/db/libdb.a \
 		$(top_builddir)/util/types/libtypes.a \
@@ -25,9 +25,9 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(top_builddir)/util/conf/libconf.a \
 		$(top_builddir)/util/hp/libhp.a \
 		$(top_builddir)/util/libutils.a \
-		$(top_builddir)/src/register/messages/libmessages.a \
-		$(top_builddir)/src/register/requests/librequests.a \
-		$(top_builddir)/src/register/mojeid/libmojeid.a \
+		$(top_builddir)/src/fredlib/messages/libmessages.a \
+		$(top_builddir)/src/fredlib/requests/librequests.a \
+		$(top_builddir)/src/fredlib/mojeid/libmojeid.a \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB)
 

@@ -23,7 +23,7 @@
 #include <boost/program_options.hpp>
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include "log/logger.h"
-#include "register/register.h"
+#include "fredlib/registry.h"
 // #include "corba/admin/admin_impl.h"
 // #include "corba/mailer_manager.h"
 

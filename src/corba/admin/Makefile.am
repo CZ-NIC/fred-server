@@ -9,7 +9,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) 	\
 			  -I$(top_builddir)/src \
 			  -I$(top_srcdir)		\
 			  -I$(top_srcdir)/util/db/model \
-			  -I$(top_srcdir)/src/register
+			  -I$(top_srcdir)/src/fredlib
 
 libadmin_impl_a_SOURCES = admin_impl.cc                 \
                           admin_impl.h                  \

@@ -11,7 +11,7 @@ class DB;
 
 namespace Fred {
 
-/// Implementation of common register object properties
+/// Implementation of common registry object properties
 class CommonObjectImpl : virtual public CommonObject {
 public:
   CommonObjectImpl();

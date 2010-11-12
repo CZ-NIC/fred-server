@@ -5,7 +5,7 @@
 #include "common.h"
 #include "log/logger.h"
 #include "log/context.h"
-#include "register/zone.h"
+#include "fredlib/zone.h"
 
 #include "corba/connection_releaser.h"
 

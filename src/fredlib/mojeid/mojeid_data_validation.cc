@@ -1,5 +1,5 @@
 #include "log/logger.h"
-#include "register/db_settings.h"
+#include "fredlib/db_settings.h"
 #include "mojeid_data_validation.h"
 
 #include <boost/algorithm/string.hpp>

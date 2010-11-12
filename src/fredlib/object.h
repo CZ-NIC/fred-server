@@ -80,7 +80,7 @@ public:
 };
 
 
-/// Common ancestor for all types managed in register
+/// Common ancestor for all types managed in registry
 class Object : virtual public CommonObject {
 public:
   virtual ~Object() {

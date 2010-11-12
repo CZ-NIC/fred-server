@@ -24,7 +24,7 @@ public:
   virtual EppSession& addSession() = 0;
   virtual Registrar& addRegistrar() = 0;
   virtual Object& addObject() = 0;
-  /* filter on requested object handle - it doesn't need to be in register
+  /* filter on requested object handle - it doesn't need to be in registry
    * done by using action_elements table  */
   virtual Value<std::string>& addRequestHandle() = 0;
   

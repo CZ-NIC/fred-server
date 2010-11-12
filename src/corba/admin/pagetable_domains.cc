@@ -82,7 +82,7 @@ Registry::TableRow* ccReg_Domains_i::getRow(CORBA::UShort row)
       (*tr)[7]  <<= C_STR(d->getCreateDate());                      // crdate
       (*tr)[8]  <<= C_STR(d->getExpirationDate());                  // expiration date
       (*tr)[9]  <<= C_STR(d->getOutZoneDate());                     // out from zone file
-      (*tr)[10]  <<= C_STR(d->getCancelDate());                     // delete from register
+      (*tr)[10]  <<= C_STR(d->getCancelDate());                     // delete from registry
       (*tr)[11] <<= C_STR(d->getValExDate());                       // validation
       (*tr)[12] <<= C_STR(d->getAdminNameByIdx(0));                 // 1. admin name
       (*tr)[13] <<= C_STR(d->getAdminOrganizationByIdx(0));         // 1. admin organization

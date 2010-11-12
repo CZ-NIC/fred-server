@@ -21,7 +21,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "old_utils/dbsql.h"
-#include "register.h"
+#include "registry.h"
 #include "zone.h"
 #include "domain.h"
 #include "filter.h"

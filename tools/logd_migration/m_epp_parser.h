@@ -351,7 +351,7 @@ typedef struct {
 	 *
 	 * For schema validity errors it is filled by mod_eppd (by message from
 	 * libxml) which is prefixed by localized message retrieved from
-	 * central register. In all other cases it is left empty and filled
+	 * central registry. In all other cases it is left empty and filled
 	 * by CR.
 	 */
 	char	*reason;

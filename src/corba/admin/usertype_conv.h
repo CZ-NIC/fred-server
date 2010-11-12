@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <corba/ccReg.hh>
-#include "register/requests/request.h"
+#include "fredlib/requests/request.h"
 
 inline std::auto_ptr<Fred::Logger::ObjectReferences> convert_obj_references(const ccReg::ObjectReferences &r)
 {

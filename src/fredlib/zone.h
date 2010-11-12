@@ -187,7 +187,7 @@ namespace Fred
       virtual Fred::Zone::Zone* findId(Database::ID id) const =0;
     };
 
-    /// holder for zones managed by register
+    /// holder for zones managed by registry
     class Manager
     {
      public:

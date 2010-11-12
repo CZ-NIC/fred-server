@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "corba/mailer_manager.h"
-#include "register/register.h"
+#include "fredlib/registry.h"
 #include "old_utils/dbsql.h"
 #include "model/model_filters.h"
 

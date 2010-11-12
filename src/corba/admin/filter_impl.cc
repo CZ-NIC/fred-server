@@ -9,8 +9,8 @@
 #include "filter_impl.h"
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"
-#include "register/notify.h"
-#include "register/filter.h"
+#include "fredlib/notify.h"
+#include "fredlib/filter.h"
 #include "corba/mailer_manager.h"
 
 #include "log/logger.h"

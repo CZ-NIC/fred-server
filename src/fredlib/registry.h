@@ -31,10 +31,10 @@ enum HandleType
   HT_REGISTRAR, ///< Handle is registrar
   HT_OTHER ///< Invalid handle    
 };
-/// classification for register object handle 
+/// classification for registry object handle
 enum CheckHandleClass
 {
-  CH_UNREGISTRABLE, ///< Handle is outside of register
+  CH_UNREGISTRABLE, ///< Handle is outside of registry
   CH_UNREGISTRABLE_LONG, ///< Handle is too long
   CH_REGISTRED, ///< Handle is registred
   CH_REGISTRED_PARENT, ///< Handle is registred under super domain
@@ -56,13 +56,13 @@ struct CountryDesc {
   std::string cc; ///< country code
   std::string name; ///< country name
 };
-/// main register entry class
+/// main registry entry class
 class Manager {
 public:
   /// destructor
   virtual ~Manager() {
   }
-  /// classify input handle according register rules 
+  /// classify input handle according registry rules
   virtual void checkHandle(const std::string& handle, 
   											   CheckHandleList& ch, 
   											   bool allowIDN) const = 0;

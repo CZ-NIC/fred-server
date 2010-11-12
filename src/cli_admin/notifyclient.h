@@ -53,7 +53,7 @@
 
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
-#include "register/register.h"
+#include "fredlib/registry.h"
 #include "baseclient.h"
 
 namespace Admin {

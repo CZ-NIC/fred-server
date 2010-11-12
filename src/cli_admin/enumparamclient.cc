@@ -19,7 +19,7 @@
 #include "simple.h"
 #include "commonclient.h"
 #include "enumparamclient.h"
-#include "register/db_settings.h"
+#include "fredlib/db_settings.h"
 
 
 #include <string>

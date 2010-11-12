@@ -2,7 +2,7 @@
 #define _BANKING_IMPL_H_
 
 #include <string>
-#include "register/invoice_manager.h"
+#include "fredlib/invoice_manager.h"
 #include "corba/nameservice.h"
 
 class ccReg_BankingInvoicing_i:

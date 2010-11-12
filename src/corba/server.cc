@@ -288,7 +288,7 @@ try {
                                        % cfg.get<std::string>("nameservice.context"));
     NameService ns(orb, nameservice, cfg.get<std::string>("nameservice.context"));
 
-    /* register specific object at nameservice */
+    /* registry specific object at nameservice */
 
     Database::Manager::init(new Database::ConnectionFactory(conn_info));
 

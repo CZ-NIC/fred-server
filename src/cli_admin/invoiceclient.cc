@@ -19,8 +19,8 @@
 #include "simple.h"
 #include "commonclient.h"
 #include "invoiceclient.h"
-#include "register/invoice_manager.h"
-#include "../register/model_zone.h"
+#include "fredlib/invoice_manager.h"
+#include "../fredlib/model_zone.h"
 namespace Admin {
 
 

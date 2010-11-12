@@ -33,11 +33,11 @@
 #include "admin_impl.h"
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"
-#include "register/register.h"
-#include "register/notify.h"
+#include "fredlib/registry.h"
+#include "fredlib/notify.h"
 #include "corba/mailer_manager.h"
-#include "register/messages/messages_impl.h"
-#include "register/object_states.h"
+#include "fredlib/messages/messages_impl.h"
+#include "fredlib/object_states.h"
 
 #include "log/logger.h"
 #include "log/context.h"
@@ -86,8 +86,8 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
     throw DB_CONNECT_FAILED();
   }
 
-  register_manager_.reset(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
-  register_manager_->initStates();
+  registry_manager_.reset(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+  registry_manager_->initStates();
 
   if (_session_garbage) {
     session_garbage_active_ = true;
@@ -585,7 +585,7 @@ void ccReg_Admin_i::fillContact(ccReg::ContactDetail* cc,
   cc->discloseNotifyEmail = c->getDiscloseNotifyEmail();
   std::vector<unsigned> slist;
   for (unsigned i=0; i<c->getStatusCount(); i++) {
-    if (register_manager_->getStatusDesc(
+    if (registry_manager_->getStatusDesc(
         c->getStatusByIdx(i)->getStatusId()
     )->getExternal())
       slist.push_back(c->getStatusByIdx(i)->getStatusId());
@@ -685,7 +685,7 @@ void ccReg_Admin_i::fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n) {
   }
   std::vector<unsigned> slist;
   for (unsigned i=0; i<n->getStatusCount(); i++) {
-    if (register_manager_->getStatusDesc(
+    if (registry_manager_->getStatusDesc(
         n->getStatusByIdx(i)->getStatusId()
     )->getExternal())
       slist.push_back(n->getStatusByIdx(i)->getStatusId());
@@ -798,7 +798,7 @@ ccReg_Admin_i::fillKeySet(ccReg::KeySetDetail *ck, Fred::KeySet::KeySet *k)
 
     std::vector<unsigned int> slist;
     for (unsigned int i = 0; i < k->getStatusCount(); i++)
-        if (register_manager_->getStatusDesc(
+        if (registry_manager_->getStatusDesc(
                     k->getStatusByIdx(i)->getStatusId())->getExternal())
             slist.push_back(k->getStatusByIdx(i)->getStatusId());
 
@@ -992,7 +992,7 @@ void ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd,
   cd->temps.length(d->getAdminCount(2));
   std::vector<unsigned> slist;
   for (unsigned i=0; i<d->getStatusCount(); i++) {
-    if (register_manager_->getStatusDesc(
+    if (registry_manager_->getStatusDesc(
         d->getStatusByIdx(i)->getStatusId()
     )->getExternal())
       slist.push_back(d->getStatusByIdx(i)->getStatusId());
@@ -1515,8 +1515,8 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getDomainStatusDescList(const char *l
   ConnectionReleaser releaser;
 
   ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
-  for (unsigned i=0; i<register_manager_->getStatusDescCount(); i++) {
-    const Fred::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
+  for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
+    const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
     if (sd->getExternal() && sd->isForType(3)) {
       o->length(o->length()+1);
       try {
@@ -1537,8 +1537,8 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getContactStatusDescList(const char *
   ConnectionReleaser releaser;
 
   ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
-  for (unsigned i=0; i<register_manager_->getStatusDescCount(); i++) {
-    const Fred::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
+  for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
+    const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
     if (sd->getExternal() && sd->isForType(1)) {
       o->length(o->length()+1);
       try {
@@ -1559,8 +1559,8 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getNSSetStatusDescList(const char *la
   ConnectionReleaser releaser;
 
   ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
-  for (unsigned i=0; i<register_manager_->getStatusDescCount(); i++) {
-    const Fred::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
+  for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
+    const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
     if (sd->getExternal() && sd->isForType(2)) {
       o->length(o->length()+1);
       try {
@@ -1583,8 +1583,8 @@ ccReg_Admin_i::getKeySetStatusDescList(const char *lang)
   ConnectionReleaser releaser;
 
     ccReg::ObjectStatusDescSeq *o = new ccReg::ObjectStatusDescSeq;
-    for (unsigned int i = 0; i < register_manager_->getStatusDescCount(); i++) {
-        const Fred::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
+    for (unsigned int i = 0; i < registry_manager_->getStatusDescCount(); i++) {
+        const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
         if (sd->getExternal() && sd->isForType(4)) {
             o->length(o->length() + 1);
             try {
@@ -1616,14 +1616,14 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
             throw ccReg::Admin::InternalServerError();
         }
 
-        unsigned states_count = register_manager_->getStatusDescCount();
+        unsigned states_count = registry_manager_->getStatusDescCount();
         o->length(states_count);
         for (unsigned i = 0; i < states_count; ++i) {
-        const Fred::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
+        const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
         if(sd == 0)
         {
             LOGGER(PACKAGE).error((std::string(
-                    "ccReg_Admin_i::getObjectStatusDescList error register_manager_->getStatusDescByIdx(i) i: "
+                    "ccReg_Admin_i::getObjectStatusDescList error registry_manager_->getStatusDescByIdx(i) i: "
                     +boost::lexical_cast<std::string>(i))).c_str());
             throw ccReg::Admin::InternalServerError();
         }
@@ -1790,13 +1790,13 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
           );
   std::auto_ptr<Fred::PublicRequest::Manager> request_manager(
           Fred::PublicRequest::Manager::create(
-              register_manager_->getDomainManager(),
-              register_manager_->getContactManager(),
-              register_manager_->getNSSetManager(),
-              register_manager_->getKeySetManager(),
+              registry_manager_->getDomainManager(),
+              registry_manager_->getContactManager(),
+              registry_manager_->getNSSetManager(),
+              registry_manager_->getKeySetManager(),
               &mailer_manager,
               doc_manager.get(),
-              register_manager_->getMessageManager())
+              registry_manager_->getMessageManager())
           );
   
 #define REQUEST_TYPE_CORBA2DB_CASE(type)            \
@@ -1865,13 +1865,13 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
           );
   std::auto_ptr<Fred::PublicRequest::Manager> request_manager(
           Fred::PublicRequest::Manager::create(
-              register_manager_->getDomainManager(),
-              register_manager_->getContactManager(),
-              register_manager_->getNSSetManager(),
-              register_manager_->getKeySetManager(),
+              registry_manager_->getDomainManager(),
+              registry_manager_->getContactManager(),
+              registry_manager_->getNSSetManager(),
+              registry_manager_->getKeySetManager(),
               &mailer_manager,
               doc_manager.get(),
-              register_manager_->getMessageManager())
+              registry_manager_->getMessageManager())
           );
   try {
     request_manager->processRequest(id,invalid,true);
@@ -1914,13 +1914,13 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
           );
   std::auto_ptr<Fred::PublicRequest::Manager> request_manager(
           Fred::PublicRequest::Manager::create(
-              register_manager_->getDomainManager(),
-              register_manager_->getContactManager(),
-              register_manager_->getNSSetManager(),
-              register_manager_->getKeySetManager(),
+              registry_manager_->getDomainManager(),
+              registry_manager_->getContactManager(),
+              registry_manager_->getNSSetManager(),
+              registry_manager_->getKeySetManager(),
               &mailer_manager,
               doc_manager.get(),
-              register_manager_->getMessageManager())
+              registry_manager_->getMessageManager())
           );
   DB db;
   try {

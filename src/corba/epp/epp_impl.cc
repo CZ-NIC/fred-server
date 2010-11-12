@@ -51,13 +51,13 @@
 
 
 // MailerManager is connected in constructor
-#include "register/domain.h"
-#include "register/contact.h"
-#include "register/nsset.h"
-#include "register/keyset.h"
-#include "register/info_buffer.h"
-#include "register/poll.h"
-#include "register/invoice.h"
+#include "fredlib/domain.h"
+#include "fredlib/contact.h"
+#include "fredlib/nsset.h"
+#include "fredlib/keyset.h"
+#include "fredlib/info_buffer.h"
+#include "fredlib/poll.h"
+#include "fredlib/invoice.h"
 #include <memory>
 #include "tech_check.h"
 
@@ -2092,7 +2092,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
 
                     /*
 #      CA_INVALID_HANDLE, ///< bad formed handle
-#      CA_BAD_ZONE, ///< domain outside of register
+#      CA_BAD_ZONE, ///< domain outside of registry
 #      CA_BAD_LENGHT, ///< domain longer then acceptable
 #      CA_PROTECTED, ///< domain temporary protected for registration
 #      CA_BLACKLIST, ///< registration blocked in blacklist

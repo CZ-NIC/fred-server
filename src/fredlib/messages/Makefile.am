@@ -6,7 +6,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
               $(XML2_CFLAGS) \
               -I$(top_srcdir) \
               -I$(top_srcdir)/src \
-              -I$(top_srcdir)/src/register \
+              -I$(top_srcdir)/src/fredlib \
               -I$(top_srcdir)/src/corba \
               -I$(top_srcdir)/src/corba/admin \
               -I$(top_srcdir)/util \

@@ -5,7 +5,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
               $(XML2_CFLAGS) \
               -I$(top_srcdir) \
               -I$(top_srcdir)/src \
-              -I$(top_srcdir)/src/register \
+              -I$(top_srcdir)/src/fredlib \
               -I$(top_srcdir)/src/corba \
               -I$(top_srcdir)/src/corba/admin \
               -I$(top_srcdir)/util \
@@ -40,7 +40,7 @@ fred_msgd_LDFLAGS =   $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_THREAD_LIB)
 
 
-fred_msgd_LDADD =    $(top_builddir)/src/register/messages/libmessages.a \
+fred_msgd_LDADD =    $(top_builddir)/src/fredlib/messages/libmessages.a \
                      $(top_builddir)/src/model/libmodel.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \

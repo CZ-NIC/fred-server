@@ -19,7 +19,7 @@
 #include "simple.h"
 #include "commonclient.h"
 #include "infobuffclient.h"
-#include "register/info_buffer.h"
+#include "fredlib/info_buffer.h"
 
 namespace Admin {
 

@@ -1,7 +1,7 @@
 #include "corba/mailer_manager.h"
 #include "action.h"
 #include "old_utils/dbsql.h"
-#include "register/register.h"
+#include "fredlib/registry.h"
 
 #ifndef ID
 #define ID unsigned  int

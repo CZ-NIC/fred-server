@@ -11,7 +11,7 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "register/db_settings.h"
+#include "fredlib/db_settings.h"
 #include "corba_wrapper.h"
 #include "log/logger.h"
 #include "log/context.h"

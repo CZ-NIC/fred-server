@@ -2,7 +2,7 @@
 #define _PAGETABLE_PAYMENTS_H_
 
 #include "pagetable_impl.h"
-#include "register/bank_payment_list.h"
+#include "fredlib/bank_payment_list.h"
 
 class ccReg_Payments_i: public ccReg_PageTable_i,
                         public PortableServer::RefCountServantBase

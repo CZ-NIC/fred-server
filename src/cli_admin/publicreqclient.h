@@ -51,7 +51,7 @@
 #include <boost/program_options.hpp>
 #include "old_utils/dbsql.h"
 
-#include "register/register.h"
+#include "fredlib/registry.h"
 #include "corba/admin/admin_impl.h"
 #include "corba/mailer_manager.h"
 #include "baseclient.h"

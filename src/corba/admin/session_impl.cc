@@ -7,9 +7,9 @@
 #include "session_impl.h"
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"
-#include "register/register.h"
-#include "register/notify.h"
-#include "register/registrar.h"
+#include "fredlib/registry.h"
+#include "fredlib/notify.h"
+#include "fredlib/registrar.h"
 #include "usertype_conv.h"
 #include "common.h"
 
@@ -40,25 +40,25 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   Logging::Context ctx(session_id_);
 
   db.OpenDatabase(database.c_str());
-  m_register_manager.reset(Fred::Manager::create(&db,
+  m_registry_manager.reset(Fred::Manager::create(&db,
                                                      cfg.get<bool>("registry.restricted_handles")));
   
   m_logsession_manager.reset(Fred::Session::Manager::create());
 
-  m_register_manager->dbManagerInit();
-  m_register_manager->initStates();
+  m_registry_manager->dbManagerInit();
+  m_registry_manager->initStates();
 
   m_document_manager.reset(Fred::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
                                                                cfg.get<std::string>("registry.docgen_template_path"),
                                                                cfg.get<std::string>("registry.fileclient_path"),
                                                                ns->getHostName()));
-  m_publicrequest_manager.reset(Fred::PublicRequest::Manager::create(m_register_manager->getDomainManager(),
-                                                                         m_register_manager->getContactManager(),
-                                                                         m_register_manager->getNSSetManager(),
-                                                                         m_register_manager->getKeySetManager(),
+  m_publicrequest_manager.reset(Fred::PublicRequest::Manager::create(m_registry_manager->getDomainManager(),
+                                                                         m_registry_manager->getContactManager(),
+                                                                         m_registry_manager->getNSSetManager(),
+                                                                         m_registry_manager->getKeySetManager(),
                                                                          &m_mailer_manager,
                                                                          m_document_manager.get(),
-                                                                         m_register_manager->getMessageManager()));
+                                                                         m_registry_manager->getMessageManager()));
   m_invoicing_manager.reset(Fred::Invoicing::Manager::create(m_document_manager.get(),
                                                                  &m_mailer_manager));
 
@@ -66,23 +66,23 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   file_manager_.reset(Fred::File::Manager::create(&m_fm_client));
   m_banking_manager.reset(Fred::Banking::Manager::create(file_manager_.get()));
 
-  m_domains = new ccReg_Domains_i(m_register_manager->getDomainManager()->createList(), &settings_);
-  m_contacts = new ccReg_Contacts_i(m_register_manager->getContactManager()->createList(), &settings_);
-  m_nssets = new ccReg_NSSets_i(m_register_manager->getNSSetManager()->createList(), &settings_);
-  m_keysets = new ccReg_KeySets_i(m_register_manager->getKeySetManager()->createList(), &settings_);
-  m_registrars = new ccReg_Registrars_i(m_register_manager->getRegistrarManager()->createList()
-          ,m_register_manager->getZoneManager()->createList());
-  m_eppactions = new ccReg_EPPActions_i(m_register_manager->getRegistrarManager()->getEPPActionList());
+  m_domains = new ccReg_Domains_i(m_registry_manager->getDomainManager()->createList(), &settings_);
+  m_contacts = new ccReg_Contacts_i(m_registry_manager->getContactManager()->createList(), &settings_);
+  m_nssets = new ccReg_NSSets_i(m_registry_manager->getNSSetManager()->createList(), &settings_);
+  m_keysets = new ccReg_KeySets_i(m_registry_manager->getKeySetManager()->createList(), &settings_);
+  m_registrars = new ccReg_Registrars_i(m_registry_manager->getRegistrarManager()->createList()
+          ,m_registry_manager->getZoneManager()->createList());
+  m_eppactions = new ccReg_EPPActions_i(m_registry_manager->getRegistrarManager()->getEPPActionList());
   m_invoices = new ccReg_Invoices_i(m_invoicing_manager->createList());
-  m_filters = new ccReg_Filters_i(m_register_manager->getFilterManager()->getList());
+  m_filters = new ccReg_Filters_i(m_registry_manager->getFilterManager()->getList());
   m_publicrequests = new ccReg_PublicRequests_i(m_publicrequest_manager->createList());
   m_payments = new ccReg_Payments_i(m_banking_manager->createPaymentList());
   // m_statementheads = new ccReg_StatementHeads_i(m_banking_manager->createList());
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
   m_files = new ccReg_Files_i(file_manager_->createList());  
   m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
-  m_zones = new ccReg_Zones_i(m_register_manager->getZoneManager()->createList());
-  m_messages = new ccReg_Messages_i(m_register_manager->getMessageManager()->createList());
+  m_zones = new ccReg_Zones_i(m_registry_manager->getZoneManager()->createList());
+  m_messages = new ccReg_Messages_i(m_registry_manager->getMessageManager()->createList());
 
   m_eppactions->setDB();
   m_registrars->setDB();
@@ -369,7 +369,7 @@ Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
     LOGGER(PACKAGE).debug(boost::format("constructing domain filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Fred::Domain::List>
-        tmp_domain_list(m_register_manager->getDomainManager()->createList());
+        tmp_domain_list(m_registry_manager->getDomainManager()->createList());
 
     Database::Filters::Union uf(&settings_);
     Database::Filters::Domain *filter = new Database::Filters::DomainHistoryImpl();
@@ -400,7 +400,7 @@ Registry::Contact::Detail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
     LOGGER(PACKAGE).debug(boost::format("constructing contact filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Fred::Contact::List>
-        tmp_contact_list(m_register_manager->getContactManager()->createList());
+        tmp_contact_list(m_registry_manager->getContactManager()->createList());
 
     Database::Filters::Union uf(&settings_);
     Database::Filters::Contact *filter = new Database::Filters::ContactHistoryImpl();
@@ -432,7 +432,7 @@ Registry::NSSet::Detail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
     LOGGER(PACKAGE).debug(boost::format("constructing nsset filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Fred::NSSet::List>
-        tmp_nsset_list(m_register_manager->getNSSetManager()->createList());
+        tmp_nsset_list(m_registry_manager->getNSSetManager()->createList());
 
     Database::Filters::Union uf(&settings_);
     Database::Filters::NSSet *filter = new Database::Filters::NSSetHistoryImpl();
@@ -465,7 +465,7 @@ ccReg_Session_i::getKeySetDetail(ccReg::TID _id)
         LOGGER(PACKAGE).debug(boost::format("constructing keyset filter for object id=%1%' detail") % _id);
 
         std::auto_ptr <Fred::KeySet::List>
-            tmp_keyset_list(m_register_manager->getKeySetManager()->createList());
+            tmp_keyset_list(m_registry_manager->getKeySetManager()->createList());
 
         Database::Filters::Union uf(&settings_);
         Database::Filters::KeySet *filter = new Database::Filters::KeySetHistoryImpl();
@@ -496,7 +496,7 @@ Registry::Registrar::Detail* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id)
     LOGGER(PACKAGE).debug(boost::format("constructing registrar filter for object id=%1%' detail")
         % _id);
     Fred::Registrar::RegistrarList::AutoPtr tmp_registrar_list =
-        m_register_manager->getRegistrarManager()->createList();
+        m_registry_manager->getRegistrarManager()->createList();
 
     Database::Filters::Union uf;
     Database::Filters::Registrar *filter = new Database::Filters::RegistrarImpl();
@@ -519,7 +519,7 @@ Registry::Message::Detail* ccReg_Session_i::getMessageDetail(ccReg::TID _id)
     LOGGER(PACKAGE).debug(boost::format("constructing message filter for object id=%1%' detail")
         % _id);
     Fred::Messages::Manager::MessageListPtr tmp_message_list =
-            m_register_manager->getMessageManager()->createList();
+            m_registry_manager->getMessageManager()->createList();
 
     Database::Filters::Union uf;
     Database::Filters::Message *filter = new Database::Filters::MessageImpl();
@@ -627,7 +627,7 @@ Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id)
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing eppaction filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Fred::Registrar::EPPActionList> tmp_action_list(m_register_manager->getRegistrarManager()->createEPPActionList());
+    std::auto_ptr<Fred::Registrar::EPPActionList> tmp_action_list(m_registry_manager->getRegistrarManager()->createEPPActionList());
 
     Database::Filters::Union union_filter;
     Database::Filters::EppAction *filter = new Database::Filters::EppActionImpl();
@@ -721,7 +721,7 @@ Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
     LOGGER(PACKAGE).debug(boost::format("constructing zone filter for object id=%1%' detail")
         % _id);
     Fred::Zone::Manager::ZoneListPtr tmp_zone_list =
-        m_register_manager->getZoneManager()->createList();
+        m_registry_manager->getZoneManager()->createList();
 
     Database::Filters::Union uf;
     Database::Filters::Zone *filter = new Database::Filters::ZoneImpl();
@@ -817,7 +817,7 @@ ccReg::DomainDetail* ccReg_Session_i::createDomainDetail(Fred::Domain::Domain* _
 
   std::vector<unsigned> status_list;
   for (unsigned i = 0; i < _domain->getStatusCount(); i++) {
-    if (m_register_manager->getStatusDesc(_domain->getStatusByIdx(i)->getStatusId())->getExternal())
+    if (m_registry_manager->getStatusDesc(_domain->getStatusByIdx(i)->getStatusId())->getExternal())
       status_list.push_back(_domain->getStatusByIdx(i)->getStatusId());
   }
   detail->statusList.length(status_list.size());
@@ -1008,7 +1008,7 @@ ccReg::ContactDetail* ccReg_Session_i::createContactDetail(Fred::Contact::Contac
 
   std::vector<unsigned> status_list;
   for (unsigned i = 0; i < _contact->getStatusCount(); i++) {
-    if (m_register_manager->getStatusDesc(
+    if (m_registry_manager->getStatusDesc(
         _contact->getStatusByIdx(i)->getStatusId())->getExternal()) {
       status_list.push_back(_contact->getStatusByIdx(i)->getStatusId());
     }
@@ -1147,7 +1147,7 @@ ccReg::NSSetDetail* ccReg_Session_i::createNSSetDetail(Fred::NSSet::NSSet* _nsse
   }
   std::vector<unsigned> status_list;
   for (unsigned i = 0; i < _nsset->getStatusCount(); i++) {
-    if (m_register_manager->getStatusDesc(
+    if (m_registry_manager->getStatusDesc(
         _nsset->getStatusByIdx(i)->getStatusId()
     )->getExternal()) {
       status_list.push_back(_nsset->getStatusByIdx(i)->getStatusId());
@@ -1320,7 +1320,7 @@ ccReg_Session_i::createKeySetDetail(Fred::KeySet::KeySet *_keyset)
 
     std::vector<unsigned int> status_list;
     for (unsigned int i = 0; i < _keyset->getStatusCount(); i++) {
-        if (m_register_manager->getStatusDesc(
+        if (m_registry_manager->getStatusDesc(
                     _keyset->getStatusByIdx(i)->getStatusId()
                     )->getExternal())
             status_list.push_back(
@@ -1544,14 +1544,14 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
 
   TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
   Fred::Registrar::RegistrarList::AutoPtr tmp_registrar_list =
-      m_register_manager->getRegistrarManager()->createList();
+      m_registry_manager->getRegistrarManager()->createList();
   Fred::Registrar::Registrar::AutoPtr  update_registrar_guard;//delete at the end
   Fred::Registrar::Registrar* update_registrar; // registrar to be created or updated
 
   if (!_registrar.id)
   {
     LOGGER(PACKAGE).debug("no registrar id specified; creating new registrar...");
-    update_registrar_guard = m_register_manager->getRegistrarManager()->createRegistrar();
+    update_registrar_guard = m_registry_manager->getRegistrarManager()->createRegistrar();
     update_registrar = update_registrar_guard.get();
   }
   else
@@ -1984,7 +1984,7 @@ Registry::Message::Detail* ccReg_Session_i::createMessageDetail(Fred::Messages::
   detail->attempt = boost::lexical_cast<long>(_message->conv_get(Fred::Messages::MessageMetaInfo::MT_ATTEMPT));
 
   Fred::Messages::ManagerPtr msg_mgr
-      = m_register_manager->getMessageManager();
+      = m_registry_manager->getMessageManager();
 
   //enumlists
   //status names

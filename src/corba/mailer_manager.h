@@ -6,14 +6,14 @@
 #include <boost/thread/mutex.hpp>
 
 #include "corba/ccReg.hh"
-#include "register/mailer.h"
+#include "fredlib/mailer.h"
 #include "nameservice.h"
 
 using namespace boost::posix_time;
 
-/// Implementation of register mailer 
-/** Use remote CORBA mailer to implement register mailer functionality.
- * This implementation is connected to the rest of register by supplying 
+/// Implementation of registry mailer
+/** Use remote CORBA mailer to implement registry mailer functionality.
+ * This implementation is connected to the rest of registry by supplying
  * generic pointer to abstract mailer interface */ 
 class MailerManager : public Fred::Mailer::Manager
 { 

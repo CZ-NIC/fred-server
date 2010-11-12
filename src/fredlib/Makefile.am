@@ -12,8 +12,8 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(LIBIDN_CFLAGS) \
 libfred_a_LIBADD = $(top_builddir)/src/old_utils/liboldutils.a
 
 
-libfred_a_SOURCES = register.cc \
-					register.h \
+libfred_a_SOURCES = registry.cc \
+					registry.h \
 					db_settings.h \
 					common_new.h \
 					common_object.h \

@@ -25,7 +25,7 @@
 #include "log/logger.h"
 
 // mailer manager
-#include "register/mailer.h"
+#include "fredlib/mailer.h"
 #include "notifier_changes.h"
 
 

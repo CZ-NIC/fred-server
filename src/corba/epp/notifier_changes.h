@@ -29,7 +29,7 @@
 #define NOTIFIER_CHANGES_H_
 
 #include <map>
-#include "register/register.h"
+#include "fredlib/registry.h"
 
 class MessageUpdateChanges {
 public:

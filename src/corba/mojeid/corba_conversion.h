@@ -2,9 +2,9 @@
 #define CORBA_CONVERT_H_
 
 #include "corba/MojeID.hh"
-#include "register/mojeid/nullable.h"
-#include "register/mojeid/contact.h"
-#include "register/mojeid/mojeid_data_validation.h"
+#include "fredlib/mojeid/nullable.h"
+#include "fredlib/mojeid/contact.h"
+#include "fredlib/mojeid/mojeid_data_validation.h"
 
 #include <string>
 #include <boost/algorithm/string.hpp>

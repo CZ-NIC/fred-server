@@ -26,7 +26,7 @@
 #include "messages.h"
 #include "messages_filemanager.h"
 
-#include "register/db_settings.h"
+#include "fredlib/db_settings.h"
 #include "corba_wrapper.h"
 #include "log/logger.h"
 #include "log/context.h"

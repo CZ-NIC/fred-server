@@ -1,6 +1,6 @@
 #include "contact.h"
 #include "random.h"
-#include "register/db_settings.h"
+#include "fredlib/db_settings.h"
 
 
 namespace MojeID {

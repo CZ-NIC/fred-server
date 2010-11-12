@@ -19,7 +19,7 @@
 #include "simple.h"
 #include "commonclient.h"
 #include "domainclient.h"
-#include "register/register.h"
+#include "fredlib/registry.h"
 
 #define addMethod(methods, name) \
     methods.insert(std::make_pair(name, DOMAIN_CLIENT))

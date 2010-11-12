@@ -6,7 +6,7 @@
 
 #include "corba/ccReg.hh"
 #include "nameservice.h"
-#include "register/file_transferer.h"
+#include "fredlib/file_transferer.h"
 
 
 class FileManagerClient : public Fred::File::Transferer

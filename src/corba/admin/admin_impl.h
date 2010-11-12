@@ -12,8 +12,8 @@
 
 #include "session_impl.h"
 #include "corba/mailer_manager.h"
-#include "register/register.h"
-#include "register/invoice.h"
+#include "fredlib/registry.h"
+#include "fredlib/invoice.h"
 #include "old_utils/dbsql.h"
 #include "model/model_filters.h"
 #include "bankinginvoicing_impl.h"
@@ -30,7 +30,7 @@ private:
   Config::Conf& cfg;
   ccReg_BankingInvoicing_i bankingInvoicing;
   DB db;
-  std::auto_ptr<Fred::Manager> register_manager_;
+  std::auto_ptr<Fred::Manager> registry_manager_;
 
   typedef std::map<std::string, ccReg_Session_i*> SessionListType;
   SessionListType m_session_list;

@@ -24,7 +24,7 @@
 
 #include "simple.h"
 #include "corba/admin/admin_impl.h"
-#include "register/register.h"
+#include "fredlib/registry.h"
 #include "old_utils/dbsql.h"
 #include "baseclient.h"
 
