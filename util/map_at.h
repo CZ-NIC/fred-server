@@ -10,7 +10,7 @@ const typename T::mapped_type& map_at(
 {
     typename T::const_iterator it;
     if ((it = _container.find(_key)) == _container.end()) {
-        throw std::out_of_range("throwable_map_find: not found");
+        throw std::out_of_range("map_at: not found");
     }
     return it->second;
 }
