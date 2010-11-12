@@ -962,7 +962,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
 }
 
 // insert properties for the given request record
-void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::RequestProperties& props, Connection &conn, bool output, boost::mutex::scoped_lock &prop_lock)
+void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::RequestProperties& props, Connection &conn, bool output, boost::mutex::scoped_lock &prop_lock)
 {
         TRACE("[CALL] Fred::Logger::ManagerImpl::insert_props");
 	ID property_name_id, last_id = 0;
@@ -980,7 +980,7 @@ void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool mo
 	}
 
 	ModelRequestPropertyValue pv_first;
-	pv_first.setRequestTimeBegin(entry_time);
+	pv_first.setRequestTimeBegin(request_time);
 	pv_first.setRequestServiceId(service);
 	pv_first.setRequestMonitoring(monitoring);
 	pv_first.setRequestId(request_id);
@@ -998,7 +998,7 @@ void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool mo
 		// create a new object for each iteration
 		// because ParentId must alternate between NULL and some value
 		ModelRequestPropertyValue pv;
-		pv.setRequestTimeBegin(entry_time);
+		pv.setRequestTimeBegin(request_time);
 		pv.setRequestServiceId(service);
 		pv.setRequestMonitoring(monitoring);
 		pv.setRequestId(request_id);
@@ -1019,7 +1019,7 @@ void ManagerImpl::insert_props(DateTime entry_time, ServiceType service, bool mo
 
 }
 
-void ManagerImpl::insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::ObjectReferences &refs, Connection &conn)
+void ManagerImpl::insert_obj_ref(DateTime request_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::ObjectReferences &refs, Connection &conn)
 {
 
     for (unsigned i = 0; i<refs.size(); i++) {
@@ -1037,7 +1037,7 @@ void ManagerImpl::insert_obj_ref(DateTime entry_time, ServiceType service, bool 
                 type_id = res_type[0][0];
         }
 
-        boost::format insert_query  = boost::format("INSERT INTO request_object_ref (request_time_begin, request_service_id, request_monitoring, request_id, object_type_id, object_id) VALUES ('%1%', %2%, %3%, %4%, %5%, %6%)") % entry_time % service % (monitoring ? "true" : "false") % request_id % type_id % refs[i].id;
+        boost::format insert_query  = boost::format("INSERT INTO request_object_ref (request_time_begin, request_service_id, request_monitoring, request_id, object_type_id, object_id) VALUES ('%1%', %2%, %3%, %4%, %5%, %6%)") % request_time % service % (monitoring ? "true" : "false") % request_id % type_id % refs[i].id;
 
         conn.exec(insert_query.str());
 
@@ -1045,7 +1045,7 @@ void ManagerImpl::insert_obj_ref(DateTime entry_time, ServiceType service, bool 
 
 }
 
-void ManagerImpl::insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, ID request_id, const Fred::Logger::RequestProperties& props) {
+void ManagerImpl::insert_props_pub(DateTime request_time, ServiceType request_service_id, bool monitoring, ID request_id, const Fred::Logger::RequestProperties& props) {
 #if ( BOOST_VERSION < 103500 ) 
         boost::mutex::scoped_lock prop_lock(properties_mutex, false);
 #else 
@@ -1053,7 +1053,7 @@ void ManagerImpl::insert_props_pub(DateTime entry_time, ServiceType request_serv
 #endif
         Connection conn = get_connection();
         // insert_props for migration is not going to be so simple, TODO - true here is just TEMP
-	insert_props(entry_time, request_service_id, monitoring, request_id, props, conn, true, prop_lock);
+	insert_props(request_time, request_service_id, monitoring, request_id, props, conn, true, prop_lock);
 }
 
 
@@ -1125,8 +1125,8 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
                 request_id = req.getId();
 
 #ifdef HAVE_LOGGER
-                boost::format entry_fmt = boost::format("entry-%1%") % request_id;
-                ctx_entry.reset(new Logging::Context(entry_fmt.str()));
+                boost::format request_fmt = boost::format("request-%1%") % request_id;
+                ctx_entry.reset(new Logging::Context(request_fmt.str()));
                 
 #endif
 	} catch (Database::Exception &ex) {
@@ -1202,8 +1202,8 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Fred::Logger::RequestPrope
 {	
   	logd_ctx_init ctx;        
 #ifdef HAVE_LOGGER
-        boost::format entry_fmt = boost::format("entry-%1%") % id;
-        Logging::Context ctx_entry(entry_fmt.str());
+        boost::format request_fmt = boost::format("request-%1%") % id;
+        Logging::Context ctx_entry(request_fmt.str());
 #endif
         
         TRACE("[CALL] Fred::Logger::ManagerImpl::i_addRequestProperties");
@@ -1262,13 +1262,13 @@ bool ManagerImpl::i_closeRequest(
 )
 {	
 	logd_auto_db db;
-    DateTime entry_time;
+    DateTime request_time;
     ServiceType service_id;
     bool monitoring;
     ID old_session_id;
     try {
 		const ModelRequest& mr = rcache.get(id);
-		entry_time = mr.getTimeBegin();
+		request_time = mr.getTimeBegin();
 		service_id = mr.getServiceId();
 		monitoring = mr.getIsMonitoring();
 		old_session_id = mr.getSessionId();
@@ -1286,7 +1286,7 @@ bool ManagerImpl::i_closeRequest(
             		"Record with ID %1% not found in request table.") % id );
             return false;
     	}
-    	entry_time = res[0][0].operator ptime();
+    	request_time = res[0][0].operator ptime();
     	service_id = (ServiceType)(int) res[0][1];
     	monitoring = (bool)res[0][2];
     	old_session_id = (unsigned)res[0][3];
@@ -1296,8 +1296,8 @@ bool ManagerImpl::i_closeRequest(
 	boost::format sess_fmt = boost::format("session-%1%") %
 			(session_id ? session_id : old_session_id);
 	Logging::Context ctx_sess(sess_fmt.str());
-	boost::format entry_fmt = boost::format("entry-%1%") % id;
-	Logging::Context ctx_entry(entry_fmt.str());
+	boost::format request_fmt = boost::format("request-%1%") % id;
+	Logging::Context ctx_entry(request_fmt.str());
 #endif
         
 	TRACE("[CALL] Fred::Logger::ManagerImpl::i_closeRequest");
@@ -1368,7 +1368,7 @@ bool ManagerImpl::i_closeRequest(
 	if(content != NULL && content[0] != '\0') {
 		ModelRequestData data;
 		// insert into request_data
-		data.setRequestTimeBegin(entry_time);
+		data.setRequestTimeBegin(request_time);
 		data.setRequestServiceId(service_id);
 		data.setRequestMonitoring(monitoring);
 		data.setRequestId(id);
@@ -1379,9 +1379,9 @@ bool ManagerImpl::i_closeRequest(
 
 	// insert properties
 	if(props.size() > 0)
-		insert_props(entry_time, service_id, monitoring, id, props, db, true, prop_lock);
+		insert_props(request_time, service_id, monitoring, id, props, db, true, prop_lock);
 	if(refs.size() > 0)
-		insert_obj_ref(entry_time, service_id, monitoring, id, refs, db);
+		insert_obj_ref(request_time, service_id, monitoring, id, refs, db);
 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
