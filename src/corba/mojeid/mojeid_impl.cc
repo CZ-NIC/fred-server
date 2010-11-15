@@ -376,58 +376,72 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
             throw std::runtime_error("Contact is not registered with MojeID");
         }
 
-        ContactStateInfo mojeid_state_info = getContactState(_contact_id);
-
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
+        // TODO this could be also used instead of the actual checks
+        boost::format lock_query = boost::format(
+        " SELECT eos.name "
+        "  FROM object_state os "
+        " JOIN enum_object_states eos ON eos.id = os.state_id"
+        " AND eos.name =ANY ('{"
+                "serverDeleteProhibited, serverTransferProhibited, serverUpdateProhibited, "
+                "%1%, %2%, %3%"
+                "}') WHERE os.object_id = $1::integer AND os.valid_to IS NULL FOR UPDATE"
+        ) % ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT
+          % ::MojeID::IDENTIFIED_CONTACT
+          % ::MojeID::VALIDATED_CONTACT;
 
-        // find what state specific to mojeid applies to object,
-        // check if it's really only one of the states
+        Database::Result res = conn.exec_params(lock_query.str(),
+                Database::query_param_list(_contact_id));
+
+        std::vector<std::string> drop_states;
+
         std::string mojeid_state;
+        bool haveDeleteProhibited = false;
+        bool haveTransferProhibited = false;
+        bool haveUpdateProhibited = false;
 
-        switch(mojeid_state_info.state) {
-            case Registry::MojeID::CONDITIONALLY_IDENTIFIED:
-                    mojeid_state = ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT;
-                break;
-            case Registry::MojeID::IDENTIFIED:
-                    mojeid_state = ::MojeID::IDENTIFIED_CONTACT;
-                break;
-            case Registry::MojeID::VALIDATED:
-                    mojeid_state = ::MojeID::VALIDATED_CONTACT;
-                break;
-            case Registry::MojeID::NOT_IDENTIFIED:
-                    boost::format fmt = boost::format ("Contact ID %1% is not in any "
-                            "of states specific to MojeID, it can't be Unidentified")
-                                % _contact_id;
-                    throw std::runtime_error(fmt.str());
-
-                break;
-
-        }
-
-        const int drop_states_count = 3;
-        std::string drop_states[drop_states_count] = {
-            std::string("serverDeleteProhibited"), 
-            std::string("serverTransferProhibited"),
-            std::string("serverUpdateProhibited") };
-
-        for (int i =0; i<drop_states_count; i++) {
-            if( ! Fred::object_has_state(_contact_id, drop_states[i])) {
-                throw std::runtime_error("Object isn't in all expected states");
+        for(unsigned i=0;i<res.size();i++) {
+            std::string str = (std::string)res[i][0];
+            if(::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT == str 
+                    || ::MojeID::IDENTIFIED_CONTACT == str
+                    || ::MojeID::VALIDATED_CONTACT == str) {
+                if(!mojeid_state.empty()) {
+                    throw std::runtime_error("Contact has invalid combination of states");
+                }
+                mojeid_state = str;
+                drop_states.push_back(mojeid_state);
+            } else { 
+                drop_states.push_back(str);        
+                if(std::string("serverDeleteProhibited") == str) {
+                    haveDeleteProhibited = true;
+                } else if(std::string("serverTransferProhibited") == str) {
+                    haveTransferProhibited = true;
+                } else if(std::string("serverUpdateProhibited") == str) {
+                    haveUpdateProhibited = true;
+                } else {
+                    throw std::runtime_error("Programming error: discrepancy between SQL and processing code");
+                }
             }
         }
-
-        //generate input for cancel_multiple_object_states
-        std::vector<std::string> states2drop (drop_states, drop_states+drop_states_count);
-        if(mojeid_state != std::string()) {
-            states2drop.push_back(mojeid_state);
+                
+        if (!haveDeleteProhibited 
+            || !haveTransferProhibited
+            || !haveUpdateProhibited) {
+            throw std::runtime_error("Contact is not in all expected states");                    
         }
 
-        Fred::cancel_multiple_object_states(_contact_id, states2drop);
+        Fred::cancel_multiple_object_states(_contact_id, drop_states);
+
+        conn.exec_params("UPDATE public_request pr SET status=2 "
+            "FROM public_request_objects_map prom WHERE (prom.request_id = pr.id) "
+            "AND pr.resolve_time IS NULL AND pr.status = 0 "
+            "AND pr.request_type IN (12,13,14) AND object_id = $1::integer",
+                Database::query_param_list(_contact_id));
+
 
         tx.prepare(_trans_id);
-
         boost::mutex::scoped_lock tc_lock(tc_mutex);
         transaction_contact[_trans_id] = _contact_id;
 
@@ -582,6 +596,7 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("commit-prepared");
 
+    unsigned long long cid = 0;
     try {
         LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
                 % _trans_id);
@@ -589,10 +604,7 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         if (std::string(_trans_id).empty()) {
              throw std::runtime_error("Transaction ID empty");
         }
-        Database::Connection conn = Database::Manager::acquire();
-        conn.exec("COMMIT PREPARED '" + conn.escape(_trans_id) + "'");
-
-        boost::mutex::scoped_lock tc_lock(tc_mutex);
+        boost::mutex::scoped_lock search_lock(tc_mutex);
         
         std::map<std::string, unsigned long long>::iterator it = 
             transaction_contact.find(_trans_id);
@@ -601,38 +613,16 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
                         "cannot retrieve contact id from transaction identifier %1%.") 
                     % _trans_id).str());
         }
-        unsigned long long cid = it->second;
+        search_lock.unlock();
 
+        cid = it->second;
+
+        Database::Connection conn = Database::Manager::acquire();
+        conn.exec("COMMIT PREPARED '" + conn.escape(_trans_id) + "'");
+
+        boost::mutex::scoped_lock erase_lock(tc_mutex);
         transaction_contact.erase(it);
-
-        tc_lock.unlock();
-        
-        // apply changes
-        ::Fred::update_object_states(cid);
-
-        /* TEMP: until we finish migration to request logger */
-        unsigned long long aid = 0;
-        try {
-            Database::Result ractionid = conn.exec_params(
-                    "SELECT id, response FROM action"
-                    " WHERE clienttrid = $1::text",
-                    Database::query_param_list(_trans_id));
-            if (ractionid.size() != 1 || (aid = ractionid[0][0]) == 0) {
-                LOGGER(PACKAGE).info("unable to find unique action - assuming it"
-                        " was not used. ");
-            } else {
-                if (!ractionid[0][1].isnull()) {
-                    throw std::runtime_error("Action already completed");
-                }
-                conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
-                          " WHERE id = $1::integer", Database::query_param_list(aid));
-            }
-        }
-        catch (...) {
-            LOGGER(PACKAGE).error("error occured when updating action response");
-        }
-
-        LOGGER(PACKAGE).info("request completed successfully");
+        erase_lock.unlock();
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -642,6 +632,41 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
+
+    try { 
+        // apply changes
+        ::Fred::update_object_states(cid);
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (%2%)") % ex.what() % cid);
+    } catch (...) {
+        LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (unknown exception)") % cid);
+    }
+
+    /* TEMP: until we finish migration to request logger */
+    unsigned long long aid = 0;
+    try {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result ractionid = conn.exec_params(
+                "SELECT id, response FROM action"
+                " WHERE clienttrid = $1::text",
+                Database::query_param_list(_trans_id));
+        if (ractionid.size() != 1 || (aid = ractionid[0][0]) == 0) {
+            LOGGER(PACKAGE).info("unable to find unique action - assuming it"
+                    " was not used. ");
+        } else {
+            if (!ractionid[0][1].isnull()) {
+                throw std::runtime_error("Action already completed");
+            }
+            conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
+                      " WHERE id = $1::integer", Database::query_param_list(aid));
+        }
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("error occured when updating action response");
+    }
+
+    LOGGER(PACKAGE).info("request completed successfully");
+
 }
 
 
@@ -654,41 +679,16 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
         LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
                 % _trans_id);
 
-        boost::mutex::scoped_lock tc_lock(tc_mutex);
-        
+        Database::Connection conn = Database::Manager::acquire();
+        conn.exec("ROLLBACK PREPARED '" + conn.escape(_trans_id) + "'");
+
+        boost::mutex::scoped_lock erase_lock(tc_mutex);
         std::map<std::string, unsigned long long>::iterator it = 
             transaction_contact.find(_trans_id);
         if(it != transaction_contact.end()) {
             transaction_contact.erase(it);
         }
-        tc_lock.unlock();
-
-        Database::Connection conn = Database::Manager::acquire();
-        conn.exec("ROLLBACK PREPARED '" + conn.escape(_trans_id) + "'");
-
-        /* TEMP: until we finish migration to request logger */
-        try {
-            Database::Result result = conn.exec_params(
-                    "SELECT id FROM action WHERE"
-                    " enddate IS NULL AND response IS NULL"
-                    " AND clienttrid = $1::text",
-                    Database::query_param_list(_trans_id));
-
-            unsigned long long id = 0;
-            if (result.size() != 1 || (id = result[0][0]) == 0) {
-                LOGGER(PACKAGE).warning("unable to find unique action - "
-                        " assuming it was not used");
-            }
-            else {
-                conn.exec_params("UPDATE action SET response = 2400, enddate = now()"
-                        " WHERE id = $1::integer", Database::query_param_list(id));
-            }
-        }
-        catch (...) {
-            LOGGER(PACKAGE).error("error occured when updating action response");
-        }
-
-        LOGGER(PACKAGE).info("rollback completed");
+        erase_lock.unlock();
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -698,6 +698,31 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
+
+    /* TEMP: until we finish migration to request logger */
+    try {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result result = conn.exec_params(
+                "SELECT id FROM action WHERE"
+                " enddate IS NULL AND response IS NULL"
+                " AND clienttrid = $1::text",
+                Database::query_param_list(_trans_id));
+
+        unsigned long long id = 0;
+        if (result.size() != 1 || (id = result[0][0]) == 0) {
+            LOGGER(PACKAGE).warning("unable to find unique action - "
+                    " assuming it was not used");
+        }
+        else {
+            conn.exec_params("UPDATE action SET response = 2400, enddate = now()"
+                    " WHERE id = $1::integer", Database::query_param_list(id));
+        }
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("error occured when updating action response");
+    }
+
+    LOGGER(PACKAGE).info("rollback completed");
 }
 
 
@@ -981,7 +1006,7 @@ ContactStateInfo ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
         else if (rstates.size() != 1) {
-            throw;
+            throw std::runtime_error("Object appears to be in several exclusive states");
         }
 
         Registry::MojeID::ContactStateInfo_var sinfo;
