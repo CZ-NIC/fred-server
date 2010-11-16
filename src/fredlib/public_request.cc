@@ -966,14 +966,14 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        /* proces only new */
-        if (status_ != PRS_NEW) {
-            throw AlreadyProcessed(this->getId());
-        }
-
         /* need to be authenticated */
         if (!authenticated_) {
             throw NOT_AUTHENTICATED();
+        }
+
+        /* proces only new */
+        if (status_ != PRS_NEW) {
+            throw AlreadyProcessed(this->getId());
         }
 
         if (_invalid) {
