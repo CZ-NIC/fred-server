@@ -41,9 +41,12 @@ struct NotApplicable : public std::runtime_error
 
 struct AlreadyProcessed : public std::runtime_error
 {
-    AlreadyProcessed(const unsigned long long &_rid)
+    bool success;
+
+    AlreadyProcessed(const unsigned long long &_rid, bool _success)
         : std::runtime_error(str(boost::format(
-                        "public_request [id=%1%]: already_processed") % _rid))
+                        "public_request [id=%1%]: already_processed") % _rid)),
+          success(_success)
     {
     }
 };

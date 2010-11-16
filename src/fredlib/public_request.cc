@@ -973,7 +973,9 @@ public:
 
         /* proces only new */
         if (status_ != PRS_NEW) {
-            throw AlreadyProcessed(this->getId());
+            throw AlreadyProcessed(
+                    this->getId(),
+                    this->getStatus() == PRS_ANSWERED ? true : false);
         }
 
         if (_invalid) {

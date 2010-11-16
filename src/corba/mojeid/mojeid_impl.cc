@@ -183,7 +183,7 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
 
     try {
         LOGGER(PACKAGE).info(boost::format("request data --"
-                    "  identification_id: %1%  password: %2%  request_id: %3%")
+                    " identification_id: %1%  password: %2%  request_id: %3%")
                 % _ident_request_id % _password % _request_id);
 
         IdentificationRequestManagerPtr request_manager;
@@ -213,7 +213,7 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
         LOGGER(PACKAGE).warning(boost::format(
                     "cannot process identification request (%1%)"
                     " ident=%1%") % _ex.what() % _ident_request_id);
-        throw Registry::MojeID::Server::IDENTIFICATION_ALREADY_PROCESSED();
+        throw Registry::MojeID::Server::IDENTIFICATION_ALREADY_PROCESSED(_ex.success);
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format(
