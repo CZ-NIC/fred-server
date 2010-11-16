@@ -968,7 +968,7 @@ public:
 
         /* need to be authenticated */
         if (!authenticated_) {
-            throw NOT_AUTHENTICATED();
+            throw NotAuthenticated();
         }
 
         /* proces only new */

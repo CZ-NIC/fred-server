@@ -189,34 +189,42 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
         IdentificationRequestManagerPtr request_manager;
         return request_manager->processAuthRequest(_ident_request_id, _password);
     }
+    catch (Fred::NOT_FOUND) {
+        LOGGER(PACKAGE).error(boost::format(
+                    "cannot process identification request"
+                    " (not found) ident=%1%") % _ident_request_id);
+        throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
+    }
+    catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&) {
+        LOGGER(PACKAGE).info(boost::format(
+                    "request authentication failed (bad password)"
+                    " ident=%1%") % _ident_request_id);
+        throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
+    }
     catch (::MojeID::DataValidationError &_ex) {
         LOGGER(PACKAGE).error(boost::format(
                     "cannot process identification request"
-                    " (contact data cannot be validated)"));
-        /* TODO: throw something else */
-        throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
-    }
-    catch (Fred::PublicRequest::NotApplicable &_ex) {
-        LOGGER(PACKAGE).error(boost::format(
-                    "cannot process identification request (%1%)") % _ex.what());
-        /* TODO: throw something else */
-        throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
+                    " (contact data cannot be validated) ident=%1%")
+                % _ident_request_id);
+        throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(_ex.errors));
     }
     catch (Fred::PublicRequest::AlreadyProcessed &_ex) {
         LOGGER(PACKAGE).warning(boost::format(
-                    "cannot process identification request (%1%)") % _ex.what());
+                    "cannot process identification request (%1%)"
+                    " ident=%1%") % _ex.what() % _ident_request_id);
         throw Registry::MojeID::Server::IDENTIFICATION_ALREADY_PROCESSED();
     }
-    catch (Fred::PublicRequest::PublicRequestAuth::NOT_AUTHENTICATED&) {
-        LOGGER(PACKAGE).info("request authentication failed (bad password)");
-        throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
-    }
     catch (std::exception &_ex) {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        LOGGER(PACKAGE).error(boost::format(
+                    "request failed (%1%) ident=%1%")
+                % _ex.what() % _ident_request_id);
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER(PACKAGE).error(boost::format(
+                    "request failed (unknown error) ident=%1%")
+                % _ident_request_id);
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 
