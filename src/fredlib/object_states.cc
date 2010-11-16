@@ -39,6 +39,53 @@ void insert_object_state(
     tx.commit();
 }
 
+/**
+ * Convert list of state codes to list of state codes names
+ * The function doesn't keep the order of elements
+ */
+std::vector<std::string> states_conversion(const std::vector<int> state_codes) {
+    std::vector<std::string> ret;
+    
+    unsigned input_size = state_codes.size();
+    if(input_size == 0) {
+        return ret;
+    }
+    ret.reserve(input_size);
+
+    std::stringstream ostr;
+    std::vector<int>::const_iterator it = state_codes.begin();
+    ostr << "{" << *it;
+    it++;
+
+    for(;
+        it != state_codes.end();
+        it++) {
+        ostr << ", ";
+        ostr << *it;     
+    }
+    ostr << "}";
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    boost::format query = boost::format ("SELECT name FROM enum_object_states WHERE id = ANY('%1%')") % ostr.str();
+    Database::Result res = conn.exec(query.str());
+
+    // user prepared statement TODO
+    // Database::Result res = conn.exec_params("SELECT name FROM enum_object_states WHERE id = ANY($1::integer[])");
+            // Database::query_param_list(ostr.str()));
+
+    if(res.size() != input_size) {
+        boost::format errfmt = boost::format(
+            "Failed to convert state codes using table enum_object_states, codes: %1%. ") % ostr.str();
+        throw std::runtime_error(errfmt.str());
+    }
+
+    for(unsigned i=0;i<res.size();i++) {
+        ret.push_back(res[i][0]);
+    }
+
+    return ret;
+}
 
 bool cancel_object_state(
         const unsigned long long &_object_id,

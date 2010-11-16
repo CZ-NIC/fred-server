@@ -29,6 +29,9 @@ void cancel_multiple_object_states(
 void update_object_states(
         const unsigned long long &_object_id);
 
+std::vector<std::string> states_conversion(
+        const std::vector<int> state_codes); 
+
 };
 
 #endif /*OBJECT_STATES_H_*/

@@ -379,46 +379,52 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        // TODO this could be also used instead of the actual checks
         boost::format lock_query = boost::format(
-        " SELECT eos.name "
-        "  FROM object_state os "
-        " JOIN enum_object_states eos ON eos.id = os.state_id"
-        " AND eos.name =ANY ('{"
-                "serverDeleteProhibited, serverTransferProhibited, serverUpdateProhibited, "
-                "%1%, %2%, %3%"
-                "}') WHERE os.object_id = $1::integer AND os.valid_to IS NULL FOR UPDATE"
-        ) % ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT
-          % ::MojeID::IDENTIFIED_CONTACT
-          % ::MojeID::VALIDATED_CONTACT;
+        " SELECT os.state_id FROM object_state os WHERE os.state_id = ANY ( SELECT id from enum_object_states where name = "
+            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6% }') ) AND os.valid_to IS NULL AND os.object_id = $1::integer FOR UPDATE")
+           % "serverDeleteProhibited" 
+           % "serverTransferProhibited"
+           % "serverUpdateProhibited"
+           % ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT
+           % ::MojeID::IDENTIFIED_CONTACT
+           % ::MojeID::VALIDATED_CONTACT;
 
+
+        // fetch the result and convert to strings
+        std::vector<int> drop_states_codes;
+        
         Database::Result res = conn.exec_params(lock_query.str(),
                 Database::query_param_list(_contact_id));
 
-        std::vector<std::string> drop_states;
+        drop_states_codes.reserve(res.size());
+        for(unsigned i=0;i<res.size();i++) {
+            drop_states_codes.push_back(res[i][0]);
+        }
 
-        std::string mojeid_state;
+        std::vector<std::string> drop_states = Fred::states_conversion(drop_states_codes);
+
+        // check consistency 
         bool haveDeleteProhibited = false;
         bool haveTransferProhibited = false;
         bool haveUpdateProhibited = false;
+        std::string mojeid_state;
 
-        for(unsigned i=0;i<res.size();i++) {
-            std::string str = (std::string)res[i][0];
-            if(::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT == str 
-                    || ::MojeID::IDENTIFIED_CONTACT == str
-                    || ::MojeID::VALIDATED_CONTACT == str) {
+        for(std::vector<std::string>::const_iterator it = drop_states.begin();
+                it != drop_states.end();
+                it++) {
+            if(::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT == *it 
+                    || ::MojeID::IDENTIFIED_CONTACT == *it
+                    || ::MojeID::VALIDATED_CONTACT == *it) {
                 if(!mojeid_state.empty()) {
                     throw std::runtime_error("Contact has invalid combination of states");
                 }
-                mojeid_state = str;
-                drop_states.push_back(mojeid_state);
-            } else { 
-                drop_states.push_back(str);        
-                if(std::string("serverDeleteProhibited") == str) {
+                mojeid_state = *it;
+            } else {
+                if(std::string("serverDeleteProhibited") == *it) {
                     haveDeleteProhibited = true;
-                } else if(std::string("serverTransferProhibited") == str) {
+                } else if(std::string("serverTransferProhibited") == *it) {
                     haveTransferProhibited = true;
-                } else if(std::string("serverUpdateProhibited") == str) {
+                } else if(std::string("serverUpdateProhibited") == *it) {
                     haveUpdateProhibited = true;
                 } else {
                     throw std::runtime_error("Programming error: discrepancy between SQL and processing code");
@@ -428,8 +434,9 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
                 
         if (!haveDeleteProhibited 
             || !haveTransferProhibited
-            || !haveUpdateProhibited) {
-            throw std::runtime_error("Contact is not in all expected states");                    
+            || !haveUpdateProhibited
+            || mojeid_state.empty()) {
+            throw std::runtime_error("Contact is not in all expected states");
         }
 
         Fred::cancel_multiple_object_states(_contact_id, drop_states);
