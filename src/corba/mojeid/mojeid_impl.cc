@@ -212,12 +212,12 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
     catch (Fred::PublicRequest::AlreadyProcessed &_ex) {
         LOGGER(PACKAGE).warning(boost::format(
                     "cannot process identification request (%1%)"
-                    " ident=%1%") % _ex.what() % _ident_request_id);
+                    " ident=%2%") % _ex.what() % _ident_request_id);
         throw Registry::MojeID::Server::IDENTIFICATION_ALREADY_PROCESSED(_ex.success);
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format(
-                    "request failed (%1%) ident=%1%")
+                    "request failed (%1%) ident=%2%")
                 % _ex.what() % _ident_request_id);
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
