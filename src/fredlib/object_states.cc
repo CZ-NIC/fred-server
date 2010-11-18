@@ -67,12 +67,8 @@ std::vector<std::string> states_conversion(const std::vector<int> state_codes) {
 
     Database::Connection conn = Database::Manager::acquire();
 
-    boost::format query = boost::format ("SELECT name FROM enum_object_states WHERE id = ANY('%1%')") % ostr.str();
-    Database::Result res = conn.exec(query.str());
-
-    // user prepared statement TODO
-    // Database::Result res = conn.exec_params("SELECT name FROM enum_object_states WHERE id = ANY($1::integer[])");
-            // Database::query_param_list(ostr.str()));
+    Database::Result res = conn.exec_params("SELECT name FROM enum_object_states WHERE id = ANY($1::integer[])", 
+            Database::query_param_list(ostr.str()));
 
     if(res.size() != input_size) {
         boost::format errfmt = boost::format(
