@@ -51,6 +51,16 @@ struct AlreadyProcessed : public std::runtime_error
     }
 };
 
+
+struct ObjectChanged : public std::runtime_error
+{
+    ObjectChanged()
+        : std::runtime_error("object_changed (since request create)")
+    {
+    }
+};
+
+
 /// Member identification (i.e. for sorting) 
 enum MemberType {
   MT_CRDATE, ///< create date

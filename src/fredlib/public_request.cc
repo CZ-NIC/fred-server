@@ -208,6 +208,26 @@ static void cancel_public_request(
 
 
 
+static bool object_was_changed_since_request_create(const unsigned long long _request_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result rnot_changed = conn.exec_params(
+            "SELECT ((o.update IS NULL OR o.update <= pr.create_time)"
+             " AND (o.trdate IS NULL OR o.trdate <= pr.create_time))"
+             " FROM object o"
+             " JOIN public_request_objects_map prom on prom.object_id = o.id"
+             " JOIN public_request pr on pr.id = prom.request_id"
+             " WHERE pr.resolve_time IS NULL AND pr.id = $1::integer",
+             Database::query_param_list(_request_id));
+
+    if (rnot_changed.size() != 1 || static_cast<bool>(rnot_changed[0][0]) != true) {
+        return true;
+    }
+    return false;
+}
+
+
+
 class PublicRequestImpl : public Fred::CommonObjectImpl,
                           virtual public PublicRequest {
 protected:
@@ -1370,23 +1390,13 @@ public:
         ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
         contact_validator_.check(cdata);
 
+        /* object should not change */
+        if (object_was_changed_since_request_create(this->getId())) {
+            throw ObjectChanged();
+        }
+
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
-
-        /* object should not change */
-        Database::Result rnot_changed = conn.exec_params(
-                "SELECT ((o.update IS NULL OR o.update <= pr.create_time)"
-                 " AND (o.trdate IS NULL OR o.trdate <= pr.create_time))"
-                 " FROM object o"
-                 " JOIN contact c on c.id = o.id"
-                 " JOIN public_request_objects_map prom on prom.object_id = c.id"
-                 " JOIN public_request pr on pr.id = prom.request_id"
-                 " WHERE pr.resolve_time IS NULL AND pr.id = $1::integer",
-                 Database::query_param_list(this->getId()));
-        if (rnot_changed.size() != 1 || static_cast<bool>(rnot_changed[0][0]) != true) {
-            throw std::runtime_error("request is not eligible for processing"
-                    " (contact was changed)");
-        }
 
         /* check if need to transfer and do so (TODO: make function (two copies) */
         Database::Result clid_result = conn.exec_params(
@@ -1542,6 +1552,12 @@ public:
 
         ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
         contact_validator_.check(cdata);
+
+        /* object should not change */
+        if (checkState(this->getObject(0).id, 21) == false
+                && object_was_changed_since_request_create(this->getId())) {
+            throw ObjectChanged();
+        }
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
