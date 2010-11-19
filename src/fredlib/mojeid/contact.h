@@ -29,19 +29,19 @@ public:
     Nullable<std::string> telephone;
     Nullable<std::string> fax;
     Nullable<std::string> email;
-    Nullable<bool> disclosename;
-    Nullable<bool> discloseorganization;
-    Nullable<bool> discloseaddress;
-    Nullable<bool> disclosetelephone;
-    Nullable<bool> disclosefax;
-    Nullable<bool> discloseemail;
+    bool disclosename;
+    bool discloseorganization;
+    bool discloseaddress;
+    bool disclosetelephone;
+    bool disclosefax;
+    bool discloseemail;
     Nullable<std::string> notifyemail;
     Nullable<std::string> vat;
     Nullable<std::string> ssn;
     Nullable<std::string> ssntype;
-    Nullable<bool>disclosevat;
-    Nullable<bool>discloseident;
-    Nullable<bool>disclosenotifyemail;
+    bool disclosevat;
+    bool discloseident;
+    bool disclosenotifyemail;
 };
 
 

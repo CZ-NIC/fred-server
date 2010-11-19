@@ -64,6 +64,11 @@ NullableBoolean* corba_wrap_nullable_boolean(const Nullable<bool> &_v)
     }
 }
 
+NullableBoolean* corba_wrap_nullable_boolean(const bool _v)
+{
+    return new NullableBoolean(_v);
+}
+
 
 NullableULongLong* corba_wrap_nullable_ulonglong(const Nullable<unsigned long long> &_v)
 {
@@ -136,6 +141,16 @@ Nullable<bool> corba_unwrap_nullable_boolean(const NullableBoolean *_v)
     }
 }
 
+bool corba_unwrap_nullable_boolean(const NullableBoolean *_v, const bool null_value)
+{
+    if (_v) {
+        return _v->_value();
+    }
+    else {
+        return null_value;
+    }
+}
+
 
 Nullable<std::string> corba_unwrap_nullable_date(const NullableDate *_v)
 {
@@ -203,15 +218,15 @@ MojeID::Contact corba_unwrap_contact(const Contact &_contact)
     data.handle = corba_unwrap_string(_contact.username);
     data.organization = corba_unwrap_nullable_string(_contact.organization);
     data.vat = corba_unwrap_nullable_string(_contact.vat_reg_num);
-    data.disclosename = corba_unwrap_nullable_boolean(_contact.disclose_name);
-    data.discloseorganization = corba_unwrap_nullable_boolean(_contact.disclose_organization);
-    data.discloseaddress = corba_unwrap_nullable_boolean(_contact.disclose_address);
-    data.disclosetelephone = corba_unwrap_nullable_boolean(_contact.disclose_phone);
-    data.disclosefax = corba_unwrap_nullable_boolean(_contact.disclose_fax);
-    data.discloseemail = corba_unwrap_nullable_boolean(_contact.disclose_email);
-    data.disclosenotifyemail = corba_unwrap_nullable_boolean(_contact.disclose_notify_email);
-    data.disclosevat = corba_unwrap_nullable_boolean(_contact.disclose_vat);
-    data.discloseident = corba_unwrap_nullable_boolean(_contact.disclose_ident);
+    data.disclosename = true;
+    data.discloseorganization = true;
+    data.discloseaddress = true;
+    data.disclosetelephone = corba_unwrap_nullable_boolean(_contact.disclose_phone, false);
+    data.disclosefax = corba_unwrap_nullable_boolean(_contact.disclose_fax, false);
+    data.discloseemail = corba_unwrap_nullable_boolean(_contact.disclose_email, false);
+    data.disclosenotifyemail = corba_unwrap_nullable_boolean(_contact.disclose_notify_email, false);
+    data.disclosevat = corba_unwrap_nullable_boolean(_contact.disclose_vat, false);
+    data.discloseident = corba_unwrap_nullable_boolean(_contact.disclose_ident, false);
 
     return data;
 }
