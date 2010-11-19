@@ -114,6 +114,18 @@ struct OID {
 
 struct REQUEST_BLOCKED : std::exception {};
 
+
+struct RequestExists : public std::runtime_error
+{
+    RequestExists(const Type &_type, const unsigned long long &_object_id)
+        : std::runtime_error(str(boost::format(
+                        "public_request [type=%1% object_id=%2%]: already exists")
+                    % _type % _object_id))
+    {
+    }
+};
+
+
 /*
  * Request interface
  */

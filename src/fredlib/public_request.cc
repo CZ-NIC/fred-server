@@ -1629,21 +1629,26 @@ public:
     {
         if (!this->getId()) {
             bool check_ok = true;
-            /* already I */
+            /* already CI */
             bool ci_state = (checkState(this->getObject(0).id, 21) == true);
-            /* already V */
+            /* already I */
             bool i_state  = (checkState(this->getObject(0).id, 22) == true);
             if (check_ok && (!ci_state && !i_state)) {
                 check_ok = false;
             }
-            /* has V request */
-            if (check_ok && (check_public_request(
-                        this->getObject(0).id,
-                        PRT_CONTACT_VALIDATION) > 0)) {
+            /* already V */
+            if (check_ok && (checkState(this->getObject(0).id, 23) == true)) {
                 check_ok = false;
             }
             if (!check_ok) {
                 throw NotApplicable("pre_insert_checks: failed!");
+            }
+
+            /* has V request */
+            if (check_ok && (check_public_request(
+                        this->getObject(0).id,
+                        PRT_CONTACT_VALIDATION) > 0)) {
+                throw RequestExists(PRT_CONTACT_VALIDATION, this->getObject(0).id);
             }
         }
         PublicRequestImpl::save();
