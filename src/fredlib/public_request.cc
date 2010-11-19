@@ -1387,13 +1387,13 @@ public:
                 "processing public request id=%1%")
                 % getId());
 
-        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
-        contact_validator_.check(cdata);
-
         /* object should not change */
         if (object_was_changed_since_request_create(this->getId())) {
             throw ObjectChanged();
         }
+
+        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
+        contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
@@ -1547,17 +1547,16 @@ public:
     void processAction(bool _check)
     {
         LOGGER(PACKAGE).debug(boost::format(
-                "processing public request id=%1%")
-        % getId());
-
-        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
-        contact_validator_.check(cdata);
+                "processing public request id=%1%") % getId());
 
         /* object should not change */
         if (checkState(this->getObject(0).id, 21) == false
                 && object_was_changed_since_request_create(this->getId())) {
             throw ObjectChanged();
         }
+
+        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
+        contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
