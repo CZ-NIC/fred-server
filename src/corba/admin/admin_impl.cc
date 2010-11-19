@@ -559,24 +559,9 @@ void ccReg_Admin_i::fillContact(ccReg::ContactDetail* cc,
   cc->ssn = DUPSTRFUN(c->getSSN);
   cc->ssnType = DUPSTRFUN(c->getSSNType);
   cc->vat = DUPSTRFUN(c->getVAT);
-
-  /* TEMP: */
-  if (cfg.hasOpt("mojeid.registrar_handle")
-          && cfg.get<std::string>("mojeid.registrar_handle") == c->getRegistrarHandle()
-          && !::Fred::object_has_state(c->getId(), "linked")) {
-      /* mojeid contact only - hide all */
-      cc->discloseName = false;
-      cc->discloseOrganization = false;
-      cc->discloseAddress = false;
-  }
-  else {
-      /* pure registry object - show mandatory (set to true until we fix
-       * fred-mifd and database not allowing null values in disclose fields) */
-      cc->discloseName = true; // c->getDiscloseName();
-      cc->discloseOrganization = true; // c->getDiscloseOrganization();
-      cc->discloseAddress = true; // c->getDiscloseAddr();
-  }
-
+  cc->discloseName = c->getDiscloseName();
+  cc->discloseOrganization = c->getDiscloseOrganization();
+  cc->discloseAddress = c->getDiscloseAddr();
   cc->discloseEmail = c->getDiscloseEmail();
   cc->discloseTelephone = c->getDiscloseTelephone();
   cc->discloseFax = c->getDiscloseFax();
