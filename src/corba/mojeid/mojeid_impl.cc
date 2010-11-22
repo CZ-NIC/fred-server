@@ -393,9 +393,9 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        boost::format lock_query = boost::format(
+        boost::format lock_state = boost::format(
         " SELECT os.state_id FROM object_state os WHERE os.state_id = ANY ( SELECT id from enum_object_states where name = "
-            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6% }') ) AND os.valid_to IS NULL AND os.object_id = $1::integer FOR UPDATE")
+            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6% }') ) AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) AND os.object_id = $1::integer FOR UPDATE")
            % "serverDeleteProhibited" 
            % "serverTransferProhibited"
            % "serverUpdateProhibited"
@@ -403,11 +403,23 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
            % ::MojeID::IDENTIFIED_CONTACT
            % ::MojeID::VALIDATED_CONTACT;
 
+        boost::format lock_state_request = boost::format(
+        " SELECT * FROM object_state os WHERE os.state_id = ANY ( SELECT id from enum_object_states where name = "
+            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6% }') ) AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) AND os.object_id = $1::integer FOR UPDATE")
+           % "serverDeleteProhibited" 
+           % "serverTransferProhibited"
+           % "serverUpdateProhibited"
+           % ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT
+           % ::MojeID::IDENTIFIED_CONTACT
+           % ::MojeID::VALIDATED_CONTACT;
 
         // fetch the result and convert to strings
         std::vector<int> drop_states_codes;
         
-        Database::Result res = conn.exec_params(lock_query.str(),
+        Database::Result res = conn.exec_params(lock_state.str(),
+                Database::query_param_list(_contact_id));
+
+        conn.exec_params(lock_state_request.str(), 
                 Database::query_param_list(_contact_id));
 
         drop_states_codes.reserve(res.size());

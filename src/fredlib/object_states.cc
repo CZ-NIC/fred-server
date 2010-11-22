@@ -94,7 +94,7 @@ bool cancel_object_state(
         Database::Result rid_result = conn.exec_params(
                 "SELECT osr.id FROM object_state_request osr"
                 " JOIN enum_object_states eos ON eos.id = osr.state_id"
-                " WHERE eos.name = $1::text AND osr.valid_to is NULL"
+                " WHERE eos.name = $1::text AND (osr.valid_to is NULL OR osr.valid_to > CURRENT_TIMESTAMP)"
                 " AND osr.canceled is NULL AND osr.object_id = $2::integer",
                 Database::query_param_list
                     (_state_name)
@@ -143,7 +143,7 @@ void cancel_multiple_object_states(
 
     Database::Connection conn = Database::Manager::acquire();
 
-    conn.exec_params("UPDATE object_state_request osr SET canceled = CURRENT_TIMESTAMP FROM enum_object_states eos  WHERE eos.id = osr.state_id AND eos.name = ANY ($1::text[]) AND osr.valid_to is NULL AND osr.canceled is NULL AND osr.object_id = $2::integer", 
+    conn.exec_params("UPDATE object_state_request osr SET canceled = CURRENT_TIMESTAMP FROM enum_object_states eos  WHERE eos.id = osr.state_id AND eos.name = ANY ($1::text[]) AND (osr.valid_to is NULL OR osr.valid_to > CURRENT_TIMESTAMP)  AND osr.canceled is NULL AND osr.object_id = $2::integer", 
             Database::query_param_list
             (states.str())
             (_object_id));
