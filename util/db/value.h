@@ -35,6 +35,7 @@
 #include "types/convert_sql_boost_datetime.h"
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
+#include <boost/function.hpp>
 
 
 namespace Database {

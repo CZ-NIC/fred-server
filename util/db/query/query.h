@@ -36,6 +36,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <boost/function.hpp>
 
 #include "../statement.h"
 #include "../value.h"

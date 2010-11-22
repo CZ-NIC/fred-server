@@ -8,6 +8,7 @@
 #include <boost/date_time/c_local_time_adjustor.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/gregorian/formatters.hpp>
+#include <boost/serialization/nvp.hpp>
 #include <boost/date_time/gregorian/greg_serialize.hpp>
 #include <boost/date_time/posix_time/time_serialize.hpp>
 
