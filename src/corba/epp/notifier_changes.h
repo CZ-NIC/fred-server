@@ -77,8 +77,8 @@ private:
 
 
   void _diffObject(ChangesMap &_changes, 
-                   const Fred::Object::Object *_prev,
-                   const Fred::Object::Object *_act) const;
+                   const Fred::Object *_prev,
+                   const Fred::Object *_act) const;
 
 
   void _diffContact(ChangesMap &_changes, 

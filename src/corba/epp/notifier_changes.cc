@@ -272,8 +272,8 @@ void MessageUpdateChanges::_collectKeySetChanges(ChangesMap &_changes) const
 
 
 void MessageUpdateChanges::_diffObject(ChangesMap &_changes,
-                                       const Fred::Object::Object *_prev,
-                                       const Fred::Object::Object *_act) const
+                                       const Fred::Object *_prev,
+                                       const Fred::Object *_act) const
 {
   compare_and_fill(_changes, "object.authinfo", _prev->getAuthPw(), _act->getAuthPw());
 }
@@ -286,8 +286,8 @@ void MessageUpdateChanges::_diffContact(ChangesMap &_changes,
   if (_prev == _act)
     return;
 
-  const Fred::Object::Object *upcast_prev = dynamic_cast<const Fred::Object::Object*>(_prev);
-  const Fred::Object::Object *upcast_act  = dynamic_cast<const Fred::Object::Object*>(_act);
+  const Fred::Object *upcast_prev = dynamic_cast<const Fred::Object*>(_prev);
+  const Fred::Object *upcast_act  = dynamic_cast<const Fred::Object*>(_act);
 
   if (upcast_prev != 0 && upcast_act != 0)
     _diffObject(_changes, upcast_prev, upcast_act);
@@ -329,8 +329,8 @@ void MessageUpdateChanges::_diffDomain(ChangesMap &_changes,
   if (_prev == _act)
     return;
 
-  const Fred::Object::Object *upcast_prev = dynamic_cast<const Fred::Object::Object*>(_prev);
-  const Fred::Object::Object *upcast_act  = dynamic_cast<const Fred::Object::Object*>(_act);
+  const Fred::Object *upcast_prev = dynamic_cast<const Fred::Object*>(_prev);
+  const Fred::Object *upcast_act  = dynamic_cast<const Fred::Object*>(_act);
 
   if (upcast_prev != 0 && upcast_act != 0)
     _diffObject(_changes, upcast_prev, upcast_act);
@@ -352,8 +352,8 @@ void MessageUpdateChanges::_diffNSSet(ChangesMap &_changes,
   if (_prev == _act)
     return;
 
-  const Fred::Object::Object *upcast_prev = dynamic_cast<const Fred::Object::Object*>(_prev);
-  const Fred::Object::Object *upcast_act  = dynamic_cast<const Fred::Object::Object*>(_act);
+  const Fred::Object *upcast_prev = dynamic_cast<const Fred::Object*>(_prev);
+  const Fred::Object *upcast_act  = dynamic_cast<const Fred::Object*>(_act);
 
   if (upcast_prev != 0 && upcast_act != 0)
     _diffObject(_changes, upcast_prev, upcast_act);
@@ -393,8 +393,8 @@ void MessageUpdateChanges::_diffKeySet(ChangesMap &_changes,
   if (_prev == _act)
     return;
 
-  const Fred::Object::Object *upcast_prev = dynamic_cast<const Fred::Object::Object*>(_prev);
-  const Fred::Object::Object *upcast_act  = dynamic_cast<const Fred::Object::Object*>(_act);
+  const Fred::Object *upcast_prev = dynamic_cast<const Fred::Object*>(_prev);
+  const Fred::Object *upcast_act  = dynamic_cast<const Fred::Object*>(_act);
 
   if (upcast_prev != 0 && upcast_act != 0)
     _diffObject(_changes, upcast_prev, upcast_act);
