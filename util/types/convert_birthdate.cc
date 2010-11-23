@@ -37,14 +37,14 @@ boost::gregorian::date convert_birthdate(std::string birthdate)
 {
     using namespace boost::xpressive;
 
-    static sregex re_space = +_s;//spaces regex
+    static sregex re_space = sregex::compile("\\s+");//spaces regex
 
     //current year, check birthdate in future
     int cy = boost::posix_time::second_clock::local_time().date().year();
 
 
     std::string birthdatenospaces
-        = regex_replace(birthdate, re_space,"");//ignore spaces
+        = regex_replace(birthdate, re_space,std::string(""));//ignore spaces
 
     smatch match_result;//output of regex_match
 
@@ -63,7 +63,7 @@ boost::gregorian::date convert_birthdate(std::string birthdate)
     {
 
         int v1_yyyy = boost::lexical_cast<int>(
-                    match_result[1]+ match_result[2]);
+                    std::string(match_result[1]) + std::string(match_result[2]));
         int v1_mm = boost::lexical_cast<int>(match_result[3]);
         int v1_dd = boost::lexical_cast<int>(match_result[4]);
 
@@ -75,7 +75,7 @@ boost::gregorian::date convert_birthdate(std::string birthdate)
         }
 
         int v2_yyyy = boost::lexical_cast<int>(
-                    match_result[3] + match_result[4]);
+                    std::string(match_result[3]) + std::string(match_result[4]));
         int v2_mm = boost::lexical_cast<int>(match_result[2]);
         int v2_dd = boost::lexical_cast<int>(match_result[1]);
 
@@ -84,7 +84,7 @@ boost::gregorian::date convert_birthdate(std::string birthdate)
                 && (v2_dd >= 1) && (v2_dd <= 31))
         {//ddmmyyyy
             return boost::gregorian::from_undelimited_string(
-                match_result[3]+match_result[4]+match_result[2]+match_result[1]
+                std::string(match_result[3])+std::string(match_result[4])+std::string(match_result[2])+std::string(match_result[1])
                 );
         }
 
