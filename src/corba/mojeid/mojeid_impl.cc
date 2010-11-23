@@ -571,10 +571,6 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
-        if (cid == 0) {
-            LOGGER(PACKAGE).alert(boost::format("update_object_states(): failed!"
-                        "(cannot retrieve contact id from transaction identifier)") % cid);
-        }
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
     }
     catch (...) {
