@@ -6,6 +6,7 @@
 #include "db_settings.h"
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
+#include "types/convert_birthdate.h"
 #include "random.h"
 #include "map_at.h"
 #include "mojeid/contact.h"
@@ -1707,7 +1708,19 @@ public:
             params["name"] = std::string(res[0][0]);
             params["org"] = std::string(res[0][1]);
             params["ic"] = unsigned(res[0][3]) == 4 ? std::string(res[0][2])  : "";
-            params["birthdate"] = unsigned(res[0][3]) == 6 ? std::string(res[0][2])  : "";
+
+            if (unsigned(res[0][3]) == 6)
+            {//review exception handling
+                std::ostringstream buf;
+                buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
+                buf << convert_birthdate(res[0][2]);
+                params["birthdate"] = buf.str();
+            }
+            else
+            {
+                params["birthdate"] = std::string("");
+            }
+
             params["address"] = std::string(res[0][4]);
             params["status"] = getStatus() == PRS_ANSWERED ? "1" : "2";
         }

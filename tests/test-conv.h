@@ -36,6 +36,8 @@
 #include <boost/date_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/lexical_cast.hpp>
+
 
 #include "db_settings.h"
 #include "log/logger.h"
@@ -46,6 +48,10 @@
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_database_args.h"
 
+#include "types/convert_birthdate.h"
+
+
+
 
 #ifdef BOOST_NO_STDC_NAMESPACE
 namespace std
@@ -53,5 +59,8 @@ namespace std
   using ::time;
 }
 #endif
+
+
+
 
 #endif // TESTCONV_H_
