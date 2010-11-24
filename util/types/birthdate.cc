@@ -37,6 +37,9 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
 {
     using namespace boost::xpressive;
 
+    try
+    {
+
     static sregex re_space = sregex::compile("\\s+");//spaces regex
 
     //current year, check birthdate in future
@@ -155,4 +158,10 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
 
     //try yyyymmdd000000
     return  boost::gregorian::from_undelimited_string(birthdatenospaces);
+
+    }
+    catch(std::exception&)
+    {
+        return boost::gregorian::date();
+    }
 }

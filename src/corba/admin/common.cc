@@ -1,16 +1,11 @@
 #include "common.h"
 
+#include "types/stringify.h"
+
 std::string
 formatDate(date d)
 {
-  if (d.is_special()) return "";
-  std::ostringstream buf;
-  buf.imbue(std::locale(
-    buf.getloc(),
-    new boost::gregorian::date_facet("%d.%m.%Y")
-  ));
-  buf << d; 
-  return buf.str();
+  return stringify(d);
 }
 
 std::string 

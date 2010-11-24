@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
         << "\nltime: " << lact_time	
         << "\nldate: " << buf.str()
         //<< "\nldate cz: " << StrConvert<date>().to(lact_time.date())
-        << "\nl stringify date: " << stringify(lact_time.date())
+        << "\nl stringify not a date: " << stringify(boost::gregorian::date())
         << "\n test: " << stringify( birthdate_from_string_to_date("  2009 -1- 15  "))
         << std::endl;
     }
@@ -66,43 +66,43 @@ BOOST_AUTO_TEST_CASE( test_exec )
     //yyyy-mm-dd
     BOOST_REQUIRE_EQUAL(stringify( birthdate_from_string_to_date("  2009 -1- 15  ")).compare("15.01.2009") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("1970-01-15  ")).compare("15.01.1970") , 0);
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("  2009-02-29  "), std::exception );
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  2009-02-29  ")).compare(""), 0);
 
     //yyyy/mm/dd
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  2009/ 2 /28  ")).compare("28.02.2009") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("1962/02/28  ")).compare("28.02.1962") , 0);
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("  2009/02/29  "), std::exception );
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  2009/02/29  ")).compare(""), 0);
 
     //yyyymmdd
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  20080229  ")).compare("29.02.2008") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("1963/02/28  ")).compare("28.02.1963") , 0);
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("  20090229  "), std::exception );
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  20090229  ")).compare(""), 0);
 
     //ddmmyyyy
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  29022004  ")).compare("29.02.2004") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("28021964")).compare("28.02.1964") , 0);
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("29022005"), std::exception );
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("29022005")).compare(""), 0);
 
     //dd.mm.yyyy
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("29.02.2000")).compare("29.02.2000") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("28.02.1965")).compare("28.02.1965") , 0);
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("29.2.1999"), std::exception );
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("29.2.2100"), std::exception );
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("29.2.1999")).compare(""), 0);
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("29.2.2100")).compare(""), 0);
 
     //dd/mm/yyyy
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("15/12/2000")).compare("15.12.2000") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("15/12/1965")).compare("15.12.1965") , 0);
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("32/12/1999"), std::exception );
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("11/2/2100"), std::exception );
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("111/2/2100"), std::exception );
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("32/12/1999")).compare(""), 0);
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("11/2/2100")).compare(""), 0);
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("111/2/2100")).compare(""), 0);
 
     //yymmdd
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("001215")).compare("15.12.2000") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("661215")).compare("15.12.1966") , 0);
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("991232"), std::exception );
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("991232")).compare(""), 0);
 
     //yyyymmdd000000
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("20011215000000")).compare("15.12.2001") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("19671215000000")).compare("15.12.1967") , 0);
-    BOOST_CHECK_THROW(birthdate_from_string_to_date("19671315000000"), std::exception );
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("19671315000000")).compare(""), 0);
 }

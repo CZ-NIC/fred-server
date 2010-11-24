@@ -50,6 +50,7 @@ public:
 
   static std::string to(const date &_in) {
     try {
+      if (_in.is_special()) return "";
       std::ostringstream stream;
       stream.imbue(std::locale(stream.getloc(), new date_facet("%d.%m.%Y")));
       stream << _in;

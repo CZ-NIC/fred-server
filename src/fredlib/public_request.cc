@@ -647,17 +647,10 @@ public:
     std::ostringstream buf;
     buf << getRegistrarName() << " (" << getRegistrarUrl() << ")";
     params["registrar"] = buf.str();
-    buf.str("");
-    buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
-    buf << getCreateTime().date();
-    params["reqdate"] = buf.str();
-    buf.str("");
-    buf << getId();
-    params["reqid"] = buf.str();
+    params["reqdate"] = stringify(getCreateTime().date());
+    params["reqid"] = stringify(getId());
     if (getObjectSize()) {
-      buf.str("");
-      buf << getObject(0).type;
-      params["type"] = buf.str();
+      params["type"] = stringify(getObject(0).type);
       params["handle"] = getObject(0).handle;
     }
     params["authinfo"] = getAuthInfo();
@@ -722,25 +715,14 @@ public:
   virtual short blockType() const = 0;
   virtual short blockAction() const = 0;
   virtual void fillTemplateParams(Mailer::Parameters& params) const {
-    std::ostringstream buf;
-    buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
-    buf << getCreateTime().date();
-    params["reqdate"] = buf.str();
-    buf.str("");
-    buf << getId();
-    params["reqid"] = buf.str();
+    params["reqdate"] = stringify(getCreateTime().date());
+    params["reqid"] = stringify(getId());
     if (getObjectSize()) {
-      buf.str("");
-      buf << getObject(0).type;
-      params["type"] = buf.str();
+      params["type"] = stringify(getObject(0).type);
       params["handle"] = getObject(0).handle;
     }
-    buf.str("");
-    buf << blockType();
-    params["otype"] = buf.str();
-    buf.str("");
-    buf << blockAction();
-    params["rtype"] = buf.str();
+    params["otype"] = stringify(blockType());
+    params["rtype"] = stringify(blockAction());
   }
 };
 
@@ -1704,12 +1686,10 @@ public:
             params["ic"] = unsigned(res[0][3]) == 4 ? std::string(res[0][2])  : "";
 
             if (unsigned(res[0][3]) == 6)
-
-            try
             {
                 params["birthdate"] = stringify(birthdate_from_string_to_date(res[0][2]));
             }
-            catch(std::exception& ex)
+            else
             {
                 params["birthdate"] = std::string("");
             }
@@ -1997,7 +1977,7 @@ public:
         _lang
       )
     );
-    g->getInput().imbue(std::locale(std::locale(""),new date_facet("%x")));
+
     g->getInput() << "<?xml version='1.0' encoding='utf-8'?>"
                   << "<enum_whois>"
                   << "<public_request>"
@@ -2008,7 +1988,7 @@ public:
                   << (p->getObjectSize() ? p->getObject(0).handle : "")
                   << "</handle>"
                   << "<date>"
-                  << p->getCreateTime().date()
+                  << stringify(p->getCreateTime().date())
                   << "</date>"
                   << "<id>"
                   << p->getId()

@@ -21,6 +21,10 @@
 #include "corba/connection_releaser.h"
 #include "corba/mailer_manager.h"
 
+#include "types/birthdate.h"
+#include "types/stringify.h"
+
+
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
@@ -823,12 +827,12 @@ Buffer* ServerImpl::getValidationPdf(const CORBA::ULongLong _contact_id)
         );
         unsigned identType = res[0][5];
         Database::Date d = res[0][0];
-        g->getInput().imbue(std::locale(std::locale(""),new date_facet("%x")));
+        //g->getInput().imbue(std::locale(std::locale(""),new date_facet("%x")));
         g->getInput()
             << "<?xml version='1.0' encoding='utf-8'?>"
             << "<mojeid_valid>"
             << "<request_date>"
-            << d
+            << stringify(d.get())
             << "</request_date>"
             << "<request_id>"  << unsigned(res[0][1]) << "</request_id>"
             << "<handle>" << std::string(res[0][7]) << "</handle>"
@@ -838,7 +842,7 @@ Buffer* ServerImpl::getValidationPdf(const CORBA::ULongLong _contact_id)
             << (identType == 4 ? std::string(res[0][4]) : "")
             << "</ic>"
             << "<birth_date>"
-            << (identType == 6 ? std::string(res[0][4]) : "")
+            << (identType == 6 ? stringify(birthdate_from_string_to_date(res[0][4])) : "")
             << "</birth_date>"
             << "<address>" << std::string(res[0][6]) << "</address>"
             << "</mojeid_valid>";
