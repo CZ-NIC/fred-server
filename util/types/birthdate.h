@@ -17,18 +17,18 @@
  */
 
 /**
- *  @file convert_birthdate.h
+ *  @file birthdate.h
  *  header of birth day conversion from string to boost date
  */
 
 
-#ifndef CONVERT_BIRTHDATE_H_
-#define CONVERT_BIRTHDATE_H_
+#ifndef BIRTHDATE_H_
+#define BIRTHDATE_H_
 
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 //try recognize birth date in input string and convert to boost date
-boost::gregorian::date convert_birthdate(std::string birthdate);
+boost::gregorian::date birthdate_from_string_to_date(std::string birthdate);
 
-#endif /* CONVERT_BIRTHDATE_H_ */
+#endif /* BIRTHDATE_H_ */

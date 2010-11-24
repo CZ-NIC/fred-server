@@ -6,7 +6,7 @@
 #include "db_settings.h"
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
-#include "types/convert_birthdate.h"
+#include "types/birthdate.h"
 #include "random.h"
 #include "map_at.h"
 #include "mojeid/contact.h"
@@ -1713,7 +1713,7 @@ public:
             {//review exception handling
                 std::ostringstream buf;
                 buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
-                buf << convert_birthdate(res[0][2]);
+                buf << birthdate_from_string_to_date(res[0][2]);
                 params["birthdate"] = buf.str();
             }
             else

@@ -17,13 +17,13 @@
  */
 
 /**
- *  @file convert_birthdate.cc
+ *  @file birthdate.cc
  *  impl of birth day conversion from string to boost date
  */
 
 
 
-#include "convert_birthdate.h"
+#include "birthdate.h"
 
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -33,7 +33,7 @@
 #include <stdexcept>
 
 //try recognize birth date in input string and convert to boost date
-boost::gregorian::date convert_birthdate(std::string birthdate)
+boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
 {
     using namespace boost::xpressive;
 
@@ -88,7 +88,7 @@ boost::gregorian::date convert_birthdate(std::string birthdate)
                 );
         }
 
-        throw std::runtime_error("convert_birthdate error: invalid birthdate dddddddd");
+        throw std::runtime_error("birthdate error: invalid birthdate dddddddd");
 
     }//if re_date_dddddddd
 
@@ -113,7 +113,7 @@ boost::gregorian::date convert_birthdate(std::string birthdate)
             );
         }
 
-        throw std::runtime_error("convert_birthdate error: invalid birthdate dd_mm_yyyy");
+        throw std::runtime_error("birthdate error: invalid birthdate dd_mm_yyyy");
 
     }//if re_date_dd_mm_yyyy
 
@@ -149,7 +149,7 @@ boost::gregorian::date convert_birthdate(std::string birthdate)
                 );
         }
 
-        throw std::runtime_error("convert_birthdate error: invalid birthdate dddddd");
+        throw std::runtime_error("birthdate error: invalid birthdate dddddd");
 
     }//if re_date_dddddd
 

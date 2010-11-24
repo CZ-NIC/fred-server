@@ -29,8 +29,8 @@ libtypes_a_SOURCES = date.cc                       \
                      convert_sql_boost_datetime.h  \
                      convert_sql_db_types.h        \
                      stringify.h                   \
-                     convert_birthdate.cc          \
-                     convert_birthdate.h          \
+                     birthdate.cc          \
+                     birthdate.h          \
  		     sqlize.h
 
 test_money_SOURCES = test_money.cc
