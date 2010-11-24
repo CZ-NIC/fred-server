@@ -118,9 +118,9 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
 
     }//if re_date_ddddddd
 
-    //try dd.mm.yyyy or dd/mm/yyyy
+    //try dd.mm.yyyy or dd/mm/yyyy or dd-mm-yyyy
     static sregex re_date_dd_mm_yyyy
-        = sregex::compile("^(\\d{1,2})([\\./])(\\d{1,2})\\2(\\d{4})$");
+        = sregex::compile("^(\\d{1,2})([\\./-])(\\d{1,2})\\2(\\d{4})$");
     if(regex_match( birthdatenospaces, match_result, re_date_dd_mm_yyyy ))
     {
         int yyyy = boost::lexical_cast<int>(match_result[4]);
@@ -203,6 +203,68 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
         throw std::runtime_error("birthdate error: invalid birthdate dddddd");
 
     }//if re_date_dddddd
+
+
+    //try yy_mm_dd or dd_mm_yy
+    static sregex re_date_dd_dd_dd
+        = sregex::compile("^(\\d{1,2})([\\./-])(\\d{1,2})\\2(\\d{1,2})$");
+    if(regex_match( birthdatenospaces, match_result, re_date_dd_dd_dd ))
+    {
+        //yymmdd
+        int yy = boost::lexical_cast<int>(match_result[1]);
+        int mm = boost::lexical_cast<int>(match_result[3]);
+        int dd = boost::lexical_cast<int>(match_result[4]);
+
+        //current year
+        int cy1 = cy/100;
+        int cy2 = cy%100;
+
+        if(yy > cy2 )
+        {
+            yy = yy + ((cy1 - 1) * 100);
+        }
+        else
+        {//yy<= cy2
+            yy = yy + (cy1 * 100);
+        }
+
+        if ((yy >=1900) && (yy <=cy)
+                && (mm >= 1) && (mm <= 12)
+                && (dd >= 1) && (dd <= 31))
+        {
+            return boost::gregorian::from_undelimited_string(
+                str(boost::format("%|04d|%|02d|%|02d|")
+                % yy % mm % dd)
+                );
+        }
+
+        //dd_mm_yy
+        yy = boost::lexical_cast<int>(match_result[4]);
+        mm = boost::lexical_cast<int>(match_result[3]);
+        dd = boost::lexical_cast<int>(match_result[1]);
+
+        if(yy > cy2 )
+        {
+            yy = yy + ((cy1 - 1) * 100);
+        }
+        else
+        {//yy<= cy2
+            yy = yy + (cy1 * 100);
+        }
+
+        if ((yy >=1900) && (yy <=cy)
+                && (mm >= 1) && (mm <= 12)
+                && (dd >= 1) && (dd <= 31))
+        {
+            return boost::gregorian::from_undelimited_string(
+                str(boost::format("%|04d|%|02d|%|02d|")
+                % yy % mm % dd)
+                );
+        }
+
+        throw std::runtime_error("birthdate error: invalid birthdate dd_dd_dd");
+
+    }//if re_date_dd_dd_dd
 
     //try yyyymmdd000000
     return  boost::gregorian::from_undelimited_string(birthdatenospaces);

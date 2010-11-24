@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE( test_exec )
         //<< "\nldate cz: " << StrConvert<date>().to(lact_time.date())
         << "\nl stringify not a date: " << stringify(boost::gregorian::date())
         << "\n test: " << stringify( birthdate_from_string_to_date("  2009 -1- 15  "))
-        << "\n 1522006: " << stringify(birthdate_from_string_to_date("  1522006  "))
+        << "\n 151200: " << stringify(birthdate_from_string_to_date("  151200  "))
         << std::endl;
     }
 
@@ -117,5 +117,15 @@ BOOST_AUTO_TEST_CASE( test_exec )
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("2821966")).compare("28.02.1966") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("2922005")).compare(""), 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("2005229")).compare(""), 0);
+
+    //yy_mm_dd
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("00.12.15")).compare("15.12.2000") , 0);
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("66-12-15")).compare("15.12.1966") , 0);
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("99/12/32")).compare(""), 0);
+
+    //dd_mm_yy
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("15/12/00")).compare("15.12.2000") , 0);
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("15-12-66")).compare("15.12.1966") , 0);
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("32.12.99")).compare(""), 0);
 
 }
