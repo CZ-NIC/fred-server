@@ -111,5 +111,6 @@ BOOST_AUTO_TEST_CASE( test_exec )
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  1522008  ")).compare("15.02.2008") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("2821966")).compare("28.02.1966") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("2922005")).compare(""), 0);
+    BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("2005229")).compare(""), 0);
 
 }
