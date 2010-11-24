@@ -95,6 +95,29 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
 
     }//if re_date_dddddddd
 
+    //try ddmyyyy
+    static sregex re_date_ddddddd
+        = sregex::compile("^(\\d{2})(\\d{1})(\\d{4})$");
+    if(regex_match( birthdatenospaces, match_result, re_date_ddddddd ))
+    {
+
+        int yyyy = boost::lexical_cast<int>(std::string(match_result[3]));
+        int mm = boost::lexical_cast<int>(match_result[2]);
+        int dd = boost::lexical_cast<int>(match_result[1]);
+
+        if ((yyyy >=1900) && (yyyy <=cy)
+                && (mm >= 1) && (mm <= 12)
+                && (dd >= 1) && (dd <= 31))
+        {//ddmmyyyy
+            return boost::gregorian::from_undelimited_string(
+                std::string(match_result[3])+"0"+std::string(match_result[2])+std::string(match_result[1])
+                );
+        }
+
+        throw std::runtime_error("birthdate error: invalid birthdate ddddddd");
+
+    }//if re_date_ddddddd
+
     //try dd.mm.yyyy or dd/mm/yyyy
     static sregex re_date_dd_mm_yyyy
         = sregex::compile("^(\\d{1,2})([\\./])(\\d{1,2})\\2(\\d{4})$");
@@ -159,7 +182,7 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
     //try yyyymmdd000000
     return  boost::gregorian::from_undelimited_string(birthdatenospaces);
 
-    }
+    }//try
     catch(std::exception&)
     {
         return boost::gregorian::date();
