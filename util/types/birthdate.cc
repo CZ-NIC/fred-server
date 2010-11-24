@@ -73,7 +73,7 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
         if ((v1_yyyy >=1900) && (v1_yyyy <=cy)
                 && (v1_mm >= 1) && (v1_mm <= 12)
                 && (v1_dd >= 1) && (v1_dd <= 31))
-        {//yyyymmdd
+        {
             return boost::gregorian::from_undelimited_string(match_result[0]);
         }
 
@@ -85,7 +85,7 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
         if ((v2_yyyy >=1900) && (v2_yyyy <=cy)
                 && (v2_mm >= 1) && (v2_mm <= 12)
                 && (v2_dd >= 1) && (v2_dd <= 31))
-        {//ddmmyyyy
+        {
             return boost::gregorian::from_undelimited_string(
                 std::string(match_result[3])+std::string(match_result[4])+std::string(match_result[2])+std::string(match_result[1])
                 );
@@ -108,7 +108,7 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
         if ((yyyy >=1900) && (yyyy <=cy)
                 && (mm >= 1) && (mm <= 12)
                 && (dd >= 1) && (dd <= 31))
-        {//ddmmyyyy
+        {
             return boost::gregorian::from_undelimited_string(
                 std::string(match_result[3])+"0"+std::string(match_result[2])+std::string(match_result[1])
                 );
@@ -130,7 +130,7 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
         if ((yyyy >=1900) && (yyyy <=cy)
                 && (mm >= 1) && (mm <= 12)
                 && (dd >= 1) && (dd <= 31))
-        {//ddmmyyyy
+        {
             return boost::gregorian::from_undelimited_string(
             str(boost::format("%|04d|%|02d|%|02d|")
             % match_result[4]
@@ -143,11 +143,12 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
 
     }//if re_date_dd_mm_yyyy
 
-    //try yymmdd
+    //try yymmdd or ddmmyy
     static sregex re_date_dddddd
         = sregex::compile("^(\\d{2})(\\d{2})(\\d{2})$");
     if(regex_match( birthdatenospaces, match_result, re_date_dddddd ))
     {
+        //yymmdd
         int yy = boost::lexical_cast<int>(match_result[1]);
         int mm = boost::lexical_cast<int>(match_result[2]);
         int dd = boost::lexical_cast<int>(match_result[3]);
@@ -168,7 +169,31 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
         if ((yy >=1900) && (yy <=cy)
                 && (mm >= 1) && (mm <= 12)
                 && (dd >= 1) && (dd <= 31))
-        {//ddmmyyyy
+        {
+            return boost::gregorian::from_undelimited_string(
+                str(boost::format("%|04d|%|02d|%|02d|")
+                % yy % mm % dd)
+                );
+        }
+
+        //ddmmyy
+        yy = boost::lexical_cast<int>(match_result[3]);
+        mm = boost::lexical_cast<int>(match_result[2]);
+        dd = boost::lexical_cast<int>(match_result[1]);
+
+        if(yy > cy2 )
+        {
+            yy = yy + ((cy1 - 1) * 100);
+        }
+        else
+        {//yy<= cy2
+            yy = yy + (cy1 * 100);
+        }
+
+        if ((yy >=1900) && (yy <=cy)
+                && (mm >= 1) && (mm <= 12)
+                && (dd >= 1) && (dd <= 31))
+        {
             return boost::gregorian::from_undelimited_string(
                 str(boost::format("%|04d|%|02d|%|02d|")
                 % yy % mm % dd)
