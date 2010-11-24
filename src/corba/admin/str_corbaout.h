@@ -2,8 +2,6 @@
 #define STR_CORBAOUT_H_
 
 #include "common.h"
-#include "types/convert_str_pod.h"
-#include "types/convert_str_boost_datetime.h"
 #include "types/stringify.h"
 
 

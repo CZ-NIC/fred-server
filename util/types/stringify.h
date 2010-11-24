@@ -26,6 +26,8 @@
 #define STRINGIFY_H_
 
 #include "convert_str_base.h"
+#include "convert_str_pod.h"
+#include "convert_str_boost_datetime.h"
 
 
 template<class T>

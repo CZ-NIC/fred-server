@@ -56,16 +56,13 @@ BOOST_AUTO_TEST_CASE( test_exec )
         buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
         buf << lact_time.date();
 
-        std::ostringstream buf_cz;
-        buf_cz.imbue(std::locale(std::locale("cs_CZ.utf8"),new date_facet("%x")));
-        buf_cz << lact_time.date();
-
         std::cout
         << "\nact_time: " << act_time
         << "\ndate: " << act_time.date()
         << "\nltime: " << lact_time	
         << "\nldate: " << buf.str()
-        << "\nldate cz: " << buf_cz.str()
+        //<< "\nldate cz: " << StrConvert<date>().to(lact_time.date())
+        << "\nl stringify date: " << stringify(lact_time.date())
         << std::endl;
 
     }
