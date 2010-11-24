@@ -1684,16 +1684,9 @@ public:
             params["name"] = std::string(res[0][0]);
             params["org"] = std::string(res[0][1]);
             params["ic"] = unsigned(res[0][3]) == 4 ? std::string(res[0][2])  : "";
-
-            if (unsigned(res[0][3]) == 6)
-            {
-                params["birthdate"] = stringify(birthdate_from_string_to_date(res[0][2]));
-            }
-            else
-            {
-                params["birthdate"] = std::string("");
-            }
-
+            params["birthdate"] = (unsigned(res[0][3]) == 6
+                    ? stringify(birthdate_from_string_to_date(res[0][2]))
+                    : std::string(""));
             params["address"] = std::string(res[0][4]);
             params["status"] = getStatus() == PRS_ANSWERED ? "1" : "2";
         }
