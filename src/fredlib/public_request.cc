@@ -1710,13 +1710,15 @@ public:
             params["ic"] = unsigned(res[0][3]) == 4 ? std::string(res[0][2])  : "";
 
             if (unsigned(res[0][3]) == 6)
-            {//review exception handling
+
+            try
+            {
                 std::ostringstream buf;
                 buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
                 buf << birthdate_from_string_to_date(res[0][2]);
                 params["birthdate"] = buf.str();
             }
-            else
+            catch(std::exception& ex)
             {
                 params["birthdate"] = std::string("");
             }
