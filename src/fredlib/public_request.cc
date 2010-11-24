@@ -1680,17 +1680,10 @@ public:
 
     virtual void fillTemplateParams(Mailer::Parameters& params) const
     {
-        std::ostringstream buf;
-        buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
-        buf << getCreateTime().date();
-        params["reqdate"] = buf.str();
-        buf.str("");
-        buf << getId();
-        params["reqid"] = buf.str();
+        params["reqdate"] = stringify(getCreateTime().date());
+        params["reqid"] = stringify(getId());
         if (getObjectSize()) {
-            buf.str("");
-            buf << getObject(0).type;
-            params["type"] = buf.str();
+            params["type"] = stringify(getObject(0).type);
             params["handle"] = getObject(0).handle;
         }
         Database::Connection conn = Database::Manager::acquire();
