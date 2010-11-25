@@ -76,6 +76,7 @@ appendOptions(
         int optsCount)
 {
     for (int i = 0; i < optsCount; i++) {
+    	if (all.find_nothrow(opts[i].name,false) != NULL) continue;
         switch (opts[i].type) {
             case TYPE_NOTYPE:
                 all.add_options()
