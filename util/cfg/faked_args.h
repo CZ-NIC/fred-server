@@ -123,6 +123,25 @@ public:
         //std::cout << "add_argv str : " << str <<  std::endl;
     }
 
+    FakedArgs copy_onlynospaces_args()
+    {
+        FakedArgs ret;
+
+        for (int i = 0; i < get_argc(); ++i)
+        {
+            std::string arg = get_argv()[i];
+            if((arg.find(' ') == std::string::npos)
+                && (arg.find('\t') == std::string::npos))
+            {
+                ret.add_argv(arg);
+            }
+        }
+
+        return ret;
+    }
+
+
 };//class FakedArgs
+
 
 #endif //FAKED_ARGS_H_
