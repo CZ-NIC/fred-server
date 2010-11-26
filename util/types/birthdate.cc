@@ -166,7 +166,7 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
             yy = yy + (cy1 * 100);
         }
 
-        if ((yy >=1900) && (yy <=cy)
+        if ((yy >=1900) && (yy <=2010)//for legacy data only
                 && (mm >= 1) && (mm <= 12)
                 && (dd >= 1) && (dd <= 31))
         {
@@ -190,7 +190,7 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
             yy = yy + (cy1 * 100);
         }
 
-        if ((yy >=1900) && (yy <=cy)
+        if ((yy >=1900) && (yy <=2010)//for legacy data only
                 && (mm >= 1) && (mm <= 12)
                 && (dd >= 1) && (dd <= 31))
         {
@@ -228,7 +228,7 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
             yy = yy + (cy1 * 100);
         }
 
-        if ((yy >=1900) && (yy <=cy)
+        if ((yy >=1900) && (yy <=2010)//for legacy data only
                 && (mm >= 1) && (mm <= 12)
                 && (dd >= 1) && (dd <= 31))
         {
@@ -252,7 +252,7 @@ boost::gregorian::date birthdate_from_string_to_date(std::string birthdate)
             yy = yy + (cy1 * 100);
         }
 
-        if ((yy >=1900) && (yy <=cy)
+        if ((yy >=1900) && (yy <=2010)//for legacy data only
                 && (mm >= 1) && (mm <= 12)
                 && (dd >= 1) && (dd <= 31))
         {
