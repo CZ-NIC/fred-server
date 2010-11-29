@@ -53,17 +53,10 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "file_manager_client.h"
 
-
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
-// Sun CC doesn't handle boost::iterator_adaptor yet
-#if !defined(__SUNPRO_CC) || (__SUNPRO_CC > 0x530)
-#include <boost/generator_iterator.hpp>
-#endif
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
-
 
 #endif //TESTFILEMANAGERCLIENT_H_
