@@ -1810,7 +1810,7 @@ public:
                              << "JOIN public_request t_1 ON (t_1.id = tmp.id) "
                              << "LEFT JOIN registrar t_4 ON (t_1.registrar_id = t_4.id) "
                              << "LEFT JOIN public_request_auth t_5 ON (t_5.id = t_1.id) ";
-    object_info_query.order_by() << "t_1.id";
+    object_info_query.order_by() << "t_1.id DESC";
 
     Database::Connection conn = Database::Manager::acquire();
     try {
