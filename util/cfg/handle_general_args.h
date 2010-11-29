@@ -45,7 +45,7 @@ public:
 };
 
 ///fred-server config file format parser
-void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
+static void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
 {//options without values are ignored
     std::ifstream cfg_file(fname.c_str());
     if (cfg_file.fail())

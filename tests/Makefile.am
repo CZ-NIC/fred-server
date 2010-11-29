@@ -15,7 +15,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 
 noinst_PROGRAMS = test_logd test-model test-db\
 					test-file-manager-client test-registrar-group \
-					test-registrar-certification test-msgd test-conv
+					test-registrar-certification test-msgd test-server 
 #tests
 #TESTS = $(noinst_PROGRAMS)
 
@@ -77,15 +77,17 @@ test_db_LDADD =   $(top_builddir)/src/fredlib/libfred.a \
                      $(BOOST_THREAD_LIB) \
                      $(XML2_LIBS)
 
-test_conv_SOURCES = test-conv.cc \
+test_server_SOURCES = test-server.cc \
+                     test-server.h \
+                     test-conv.cc \
                      test-conv.h
 
-test_conv_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
+test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
                      $(AM_LDFLAGS) \
                      $(BOOST_PROGRAM_OPTIONS_LIB)
 
-test_conv_LDADD =   $(top_builddir)/src/fredlib/libfred.a \
+test_server_LDADD =   $(top_builddir)/src/fredlib/libfred.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \
                      $(top_builddir)/util/conf/libconf.a \

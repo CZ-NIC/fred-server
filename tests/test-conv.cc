@@ -17,20 +17,13 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define BOOST_TEST_MODULE Test Conversions
-
 #include "test-conv.h"
 
-//args processing config for custom main
-HandlerPtrVector global_hpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
-(HandleArgsPtr(new HandleDatabaseArgs))
-;
+#define BOOST_TEST_MODULE Test Conversions
 
-#include "cfg/test_custom_main.h"
+BOOST_AUTO_TEST_SUITE(DbConversion)
 
-BOOST_AUTO_TEST_CASE( test_exec )
+BOOST_AUTO_TEST_CASE( db_conversion_with_message )
 {
     {
         //current utc ptime
@@ -52,8 +45,8 @@ BOOST_AUTO_TEST_CASE( test_exec )
         buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
         buf << lact_time.date();
 
-        std::cout
-        << "\nact_time: " << act_time
+        BOOST_TEST_MESSAGE(
+        "\nact_time: " << act_time
         << "\ndate: " << act_time.date()
         << "\nltime: " << lact_time	
         << "\nldate: " << buf.str()
@@ -61,9 +54,16 @@ BOOST_AUTO_TEST_CASE( test_exec )
         << "\nl stringify not a date: " << stringify(boost::gregorian::date())
         << "\n test: " << stringify( birthdate_from_string_to_date("  2009 -1- 15  "))
         << "\n 151200: " << stringify(birthdate_from_string_to_date("  151200  "))
-        << std::endl;
+        );
     }
+}
 
+BOOST_AUTO_TEST_SUITE_END();
+
+BOOST_AUTO_TEST_SUITE(BirthDateConversion)
+
+BOOST_AUTO_TEST_CASE( yyyy_mm_dd )
+{
     //yyyy-mm-dd
     BOOST_REQUIRE_EQUAL(stringify( birthdate_from_string_to_date("  2009 -1- 15  ")).compare("15.01.2009") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("1970-01-15  ")).compare("15.01.1970") , 0);
@@ -73,17 +73,26 @@ BOOST_AUTO_TEST_CASE( test_exec )
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  2009/ 2 /28  ")).compare("28.02.2009") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("1962/02/28  ")).compare("28.02.1962") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  2009/02/29  ")).compare(""), 0);
+}
 
+BOOST_AUTO_TEST_CASE( yyyymmdd )
+{
     //yyyymmdd
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  20080229  ")).compare("29.02.2008") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("1963/02/28  ")).compare("28.02.1963") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  20090229  ")).compare(""), 0);
+}
 
+BOOST_AUTO_TEST_CASE( ddmmyyyy )
+{
     //ddmmyyyy
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  29022004  ")).compare("29.02.2004") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("28021964")).compare("28.02.1964") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("29022005")).compare(""), 0);
+}
 
+BOOST_AUTO_TEST_CASE( dd_mm_yyyy )
+{
     //dd.mm.yyyy
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("29.02.2000")).compare("29.02.2000") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("28.02.1965")).compare("28.02.1965") , 0);
@@ -96,36 +105,56 @@ BOOST_AUTO_TEST_CASE( test_exec )
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("32/12/1999")).compare(""), 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("11/2/2100")).compare(""), 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("111/2/2100")).compare(""), 0);
+}
 
+BOOST_AUTO_TEST_CASE( yymmdd )
+{
     //yymmdd
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("001215")).compare("15.12.2000") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("661215")).compare("15.12.1966") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("991232")).compare(""), 0);
+}
 
+BOOST_AUTO_TEST_CASE( ddmmyy )
+{
     //ddmmyy
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("151200")).compare("15.12.2000") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("151266")).compare("15.12.1966") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("321299")).compare(""), 0);
+}
 
+BOOST_AUTO_TEST_CASE( yyyymmdd000000 )
+{
     //yyyymmdd000000
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("20011215000000")).compare("15.12.2001") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("19671215000000")).compare("15.12.1967") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("19671315000000")).compare(""), 0);
+}
 
+BOOST_AUTO_TEST_CASE( ddmyyyy )
+{
     //ddmyyyy
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("  1522008  ")).compare("15.02.2008") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("2821966")).compare("28.02.1966") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("2922005")).compare(""), 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("2005229")).compare(""), 0);
+}
 
+BOOST_AUTO_TEST_CASE( yy_mm_dd )
+{
     //yy_mm_dd
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("00.12.15")).compare("15.12.2000") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("66-12-15")).compare("15.12.1966") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("99/12/32")).compare(""), 0);
+}
 
+BOOST_AUTO_TEST_CASE( dd_mm_yy )
+{
     //dd_mm_yy
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("15/12/00")).compare("15.12.2000") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("15-12-66")).compare("15.12.1966") , 0);
     BOOST_REQUIRE_EQUAL(stringify(birthdate_from_string_to_date("32.12.99")).compare(""), 0);
 
 }
+
+BOOST_AUTO_TEST_SUITE_END();
