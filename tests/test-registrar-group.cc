@@ -15,20 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define BOOST_TEST_MODULE Test registrar group
-
 
 #include "test-registrar-group.h"
 
-//args processing config for custom main
-HandlerPtrVector global_hpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
-(HandleArgsPtr(new HandleDatabaseArgs))
-(HandleArgsPtr(new HandleThreadGroupArgs))
-(HandleArgsPtr(new HandleCorbaNameServiceArgs));
-
-#include "cfg/test_custom_main.h"
+BOOST_AUTO_TEST_SUITE(TestRegistrarGroup)
 
 ccReg::TID gid3 = 0;
 
@@ -397,4 +387,4 @@ BOOST_AUTO_TEST_CASE( test_group_threaded )
     }//for i
 }
 
-
+BOOST_AUTO_TEST_SUITE_END();
