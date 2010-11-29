@@ -19,23 +19,11 @@
  // test-file-manager-client.cc
 
 
-#define BOOST_TEST_MODULE Test file manager client
-
 #include "test-file-manager-client.h"
 
-//args processing config for custom main
-HandlerPtrVector global_hpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
-(HandleArgsPtr(new HandleCorbaNameServiceArgs))
-;
+BOOST_AUTO_TEST_SUITE(File_Manager_Client)
 
-#include "cfg/test_custom_main.h"
-
-#include "file_manager_client.h"
-
-
-BOOST_AUTO_TEST_CASE( test_fmc_simple )
+BOOST_AUTO_TEST_CASE( simple_test )
 {
 
     //test data
@@ -64,6 +52,8 @@ BOOST_AUTO_TEST_CASE( test_fmc_simple )
 
     std::string out_test_data_str (out_buffer.begin(), out_buffer.end());
 
-    BOOST_REQUIRE_EQUAL( test_data_str.compare(out_test_data_str) , 0);
+    BOOST_CHECK_EQUAL( test_data_str.compare(out_test_data_str) , 0);
 
 }
+
+BOOST_AUTO_TEST_SUITE_END();

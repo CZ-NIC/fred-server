@@ -40,6 +40,7 @@
 
 
 #include "db_settings.h"
+#include "corba_wrapper.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "random_data_generator.h"
@@ -47,6 +48,7 @@
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_database_args.h"
+#include "cfg/handle_corbanameservice_args.h"
 
 
 #ifdef BOOST_NO_STDC_NAMESPACE

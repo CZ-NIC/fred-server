@@ -14,7 +14,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
 			  -I$(top_builddir)/src
 
 noinst_PROGRAMS = test_logd test-model test-db\
-					test-file-manager-client test-registrar-group \
+					test-registrar-group \
 					test-registrar-certification test-msgd test-server 
 #tests
 #TESTS = $(noinst_PROGRAMS)
@@ -80,7 +80,9 @@ test_db_LDADD =   $(top_builddir)/src/fredlib/libfred.a \
 test_server_SOURCES = test-server.cc \
                      test-server.h \
                      test-conv.cc \
-                     test-conv.h
+                     test-conv.h \
+					test-file-manager-client.cc \
+					test-file-manager-client.h
 
 test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
@@ -88,35 +90,18 @@ test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_PROGRAM_OPTIONS_LIB)
 
 test_server_LDADD =   $(top_builddir)/src/fredlib/libfred.a \
+					 $(top_builddir)/src/corba/libcorba.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/util/log/liblog.a \
                      $(top_builddir)/util/conf/libconf.a \
                      $(top_builddir)/util/types/libtypes.a \
                      $(top_builddir)/src/old_utils/liboldutils.a \
+                     $(OMNIORB4_LIBS) \
                      $(BOOST_DATE_TIME_LIB) \
                      $(BOOST_REGEX_LIB) \
                      $(BOOST_THREAD_LIB) \
                      $(XML2_LIBS)
 
-
-test_file_manager_client_SOURCES = \
-					test-file-manager-client.cc \
-					test-file-manager-client.h
-
-test_file_manager_client_LDFLAGS = \
-                     $(BOOST_LDFLAGS) \
-                     $(AM_LDFLAGS) \
-                     $(BOOST_PROGRAM_OPTIONS_LIB) \
-                     $(OMNIORB4_LIBS) \
-                     $(BOOST_DATE_TIME_LIB) \
-                     $(BOOST_REGEX_LIB) \
-                     $(BOOST_THREAD_LIB)
-
-test_file_manager_client_LDADD = \
-                     $(top_builddir)/src/corba/libcorba.a \
-                     $(top_builddir)/util/log/liblog.a \
-                     $(top_builddir)/util/conf/libconf.a \
-                     $(top_builddir)/util/types/libtypes.a
 
 test_registrar_group_SOURCES = \
                      test-registrar-group.cc \

@@ -26,6 +26,7 @@ HandlerPtrVector global_hpv =
 boost::assign::list_of
 (HandleArgsPtr(new HandleGeneralArgs))
 (HandleArgsPtr(new HandleDatabaseArgs))
+(HandleArgsPtr(new HandleCorbaNameServiceArgs))
 ;
 
 #include "cfg/test_custom_main.h"
