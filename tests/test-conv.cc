@@ -19,8 +19,6 @@
 
 #include "test-conv.h"
 
-#define BOOST_TEST_MODULE Test Conversions
-
 BOOST_AUTO_TEST_SUITE(DbConversion)
 
 BOOST_AUTO_TEST_CASE( db_conversion_with_message )
