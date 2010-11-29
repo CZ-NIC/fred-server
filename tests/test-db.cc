@@ -52,10 +52,10 @@ BOOST_AUTO_TEST_CASE( exec_params_test )
                 if(1 != static_cast<unsigned long long>(res[0][0]) ) ret+=1;
                 if(2 != static_cast<unsigned long long>(res[0][1])) ret+=2;
                 if(3 != static_cast<unsigned long long>(res[0][2])) ret+=4;
-                std::cout << "test string: " << std::string(res[0][3]) << std::endl;
+                BOOST_TEST_MESSAGE("test string: " << std::string(res[0][3]));
             }//if res size
             else ret+=8;
-            if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
+            if (ret != 0 ) BOOST_TEST_MESSAGE( "exec_params_test ret: "<< ret );
 
 
             std::string qquery = "select $1::int as id, $2::bigint as data1"
@@ -90,26 +90,25 @@ BOOST_AUTO_TEST_CASE( exec_params_test )
                 if(std::string(qres[0][3]).compare("Kuk")!=0) ret+=1024;
                 if(true != static_cast<bool>(qres[0][4])) ret+=2048;
 
-                std::cout << "test null: " << std::string(qres[0][5])
-                          <<std::endl;
+                BOOST_TEST_MESSAGE( "test null: " << std::string(qres[0][5]));
 
             }//if qres size
             else ret+=128;
-            if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
+            if (ret != 0 ) BOOST_TEST_MESSAGE("exec_params_test ret: "<< ret);
 
 
         }
         catch(std::exception& ex)
         {
-            std::cerr << "exec_params_test exception reason: "<< ex.what() << std::endl;
+            BOOST_TEST_MESSAGE("exec_params_test exception reason: "<< ex.what() );
             ret+=256;
             throw;
         }
         catch(...)
         {
-            std::cerr << "exec_params_test exception returning"<< std::endl;
+            BOOST_TEST_MESSAGE("exec_params_test exception returning");
             ret+=512;
-            if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
+            if (ret != 0 ) BOOST_TEST_MESSAGE("exec_params_test ret: "<< ret);
         }
 
         BOOST_CHECK_EQUAL(ret , 0);
