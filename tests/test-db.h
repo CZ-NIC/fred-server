@@ -29,7 +29,6 @@
 #include <sys/time.h>
 #include <time.h>
 
-
 #include <boost/format.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
@@ -46,94 +45,10 @@
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_database_args.h"
 
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
 
-#ifdef BOOST_NO_STDC_NAMESPACE
-namespace std
-{
-  using ::time;
-}
-#endif
-
-
-unsigned exec_params_test()
-{
-    unsigned ret=0;
-    try
-    {   //test param data in strings
-        Database::Connection conn = Database::Manager::acquire();
-        std::string query = "select 1 as id, $1::bigint as data1, $2::bigint as data2, $3::text as data3";
-
-        std::vector<std::string> params = boost::assign::list_of("2")("3")("Kuk");
-
-
-        Database::Result res = conn.exec_params( query, params );
-        if ((res.size() > 0) && (res[0].size() == 4))
-        {
-        	//check data
-            if(1 != static_cast<unsigned long long>(res[0][0]) ) ret+=1;
-            if(2 != static_cast<unsigned long long>(res[0][1])) ret+=2;
-            if(3 != static_cast<unsigned long long>(res[0][2])) ret+=4;
-            std::cout << "test string: " << std::string(res[0][3]) << std::endl;
-        }//if res size
-        else ret+=8;
-        if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
-
-
-        std::string qquery = "select $1::int as id, $2::bigint as data1"
-            ", $3::int as data2, $4::text as data3, $4::text = 'Kuk' as data4"
-            ", $5::int as data5"
-                ;
-
-        Database::QueryParams qparams = Database::query_param_list
-            (1)//$1
-            (1ll)//$2
-            (-1l)//$3
-            ("Kuk")//$4
-            (Database::QPNull)//$5
-            ;
-
-        qparams[2].print_buffer();
-        qparams[3].print_buffer();
-
-        //test simple binary params
-        Database::Result qres = conn.exec_params( qquery, qparams );
-
-        if ((qres.size() > 0) && (qres[0].size() == 6))
-        {
-            //check data
-            if(1 != static_cast<long>(qres[0][0]) ) ret+=16;
-            if(1 != static_cast<long long>(qres[0][1])) ret+=32;
-            if(-1 != static_cast<long>(qres[0][2])) ret+=64;
-
-            //std::cout << "test string: " << std::string(qres[0][3])
-            //<< " data4: " << std::string(qres[0][4]) <<std::endl;
-
-            if(std::string(qres[0][3]).compare("Kuk")!=0) ret+=1024;
-            if(true != static_cast<bool>(qres[0][4])) ret+=2048;
-
-            std::cout << "test null: " << std::string(qres[0][5])
-                      <<std::endl;
-
-        }//if qres size
-        else ret+=128;
-        if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
-
-
-    }
-    catch(std::exception& ex)
-    {
-        std::cerr << "exec_params_test exception reason: "<< ex.what() << std::endl;
-        ret+=256;
-        throw;
-    }
-    catch(...)
-    {
-        std::cerr << "exec_params_test exception returning"<< std::endl;
-        ret+=512;
-        if (ret != 0 ) std::cerr << "exec_params_test ret: "<< ret << std::endl;
-    }
-
-    return ret;
-}
+#include "cfg/config_handler_decl.h"
+#include <boost/test/unit_test.hpp>
 
 #endif // TESTDB_H_
