@@ -248,9 +248,11 @@ public:
 
     if (err) {
       /* error */
+      std::string msg = str(boost::format("error in escape function: %1%") % PQerrorMessage(psql_conn_));
 #ifdef HAVE_LOGGER
-      LOGGER(PACKAGE).error(boost::format("error in escape function: %1%") % PQerrorMessage(psql_conn_));
+      LOGGER(PACKAGE).error(msg);
 #endif
+      throw std::runtime_error(msg);
     }
 
     return ret;
