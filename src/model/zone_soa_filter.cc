@@ -4,7 +4,7 @@ namespace Database {
 namespace Filters {
 
 ZoneSoaImpl::ZoneSoaImpl(bool set_active)
-	: Zone(), ZoneImpl()
+	: ZoneImpl()
 {
     setName("ZoneSoa");
     active = set_active;
