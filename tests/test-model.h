@@ -49,16 +49,11 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_threadgroup_args.h"
 
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
 
-
-
-#ifdef BOOST_NO_STDC_NAMESPACE
-namespace std
-{
-  using ::time;
-}
-#endif
-
+#include "cfg/config_handler_decl.h"
+#include <boost/test/unit_test.hpp>
 
 
 ModelFiles mf1, mf2;
@@ -97,19 +92,19 @@ unsigned model_insert_test()
         }//if res size
         else ret+=128;
 
-        if (ret != 0 ) std::cerr << "model_insert_test ret: "<< ret << std::endl;
+        if (ret != 0 ) BOOST_TEST_MESSAGE( "model_insert_test ret: "<< ret );
     }
     catch(std::exception& ex)
     {
-        std::cerr << "model_insert_test exception reason: "<< ex.what() << std::endl;
+        BOOST_TEST_MESSAGE("model_insert_test exception reason: "<< ex.what() );
         ret+=256;
         throw;
     }
     catch(...)
     {
-        std::cerr << "model_insert_test exception returning"<< std::endl;
+        BOOST_TEST_MESSAGE( "model_insert_test exception returning");
         ret+=512;
-        if (ret != 0 ) std::cerr << "model_insert_test ret: "<< ret << std::endl;
+        if (ret != 0 ) BOOST_TEST_MESSAGE( "model_insert_test ret: "<< ret );
     }
 
     return ret;
@@ -142,19 +137,19 @@ unsigned model_reload_test()
         if(mf2.getFilesize() != 80000 ) ret+=32;
         if(mf2.getFileTypeId() != 1 ) ret+=64;
 
-        if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+        if (ret != 0 ) BOOST_TEST_MESSAGE( "model_reload_test ret: "<< ret );
     }
     catch(std::exception& ex)
     {
-        std::cerr << "model_reload_test exception reason: "<< ex.what() << std::endl;
+        BOOST_TEST_MESSAGE("model_reload_test exception reason: "<< ex.what() );
         ret+=128;
         throw;
     }
     catch(...)
     {
-        std::cerr << "model_reload_test exception returning"<< std::endl;
+        BOOST_TEST_MESSAGE( "model_reload_test exception returning");
         ret+=256;
-        if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+        if (ret != 0 ) BOOST_TEST_MESSAGE( "model_reload_test ret: "<< ret );
     }
 
     return ret;
@@ -176,15 +171,15 @@ unsigned model_update_test()
         if(mf1.getId() != mf2.getId()) ret+=1;
         if(mf1.getName() != mf2.getName())
         {
-            std::cerr << mf1.getName() << std::endl;
-            std::cerr << mf2.getName() << std::endl;
+            BOOST_TEST_MESSAGE( mf1.getName() );
+            BOOST_TEST_MESSAGE( mf2.getName() );
             ret+=2;
         }
 
         if(mf1.getPath() != mf2.getPath())
         {
-            std::cerr << mf1.getPath() << std::endl;
-            std::cerr << mf2.getPath() << std::endl;
+            BOOST_TEST_MESSAGE( mf1.getPath() );
+            BOOST_TEST_MESSAGE( mf2.getPath() );
 
             ret+=4;
         }
@@ -192,21 +187,21 @@ unsigned model_update_test()
         if(mf1.getMimeType() != mf2.getMimeType()) ret+=8;
         if(mf1.getCrDate() != mf2.getCrDate())
         {
-            std::cerr << mf1.getCrDate() << std::endl;
-            std::cerr << mf2.getCrDate() << std::endl;
+            BOOST_TEST_MESSAGE(mf1.getCrDate() );
+            BOOST_TEST_MESSAGE( mf2.getCrDate() );
             ret+=16;
         }
 
         if(mf1.getFilesize() != mf2.getFilesize()) ret+=32;
         if(mf1.getFileTypeId() != mf2.getFileTypeId())
         {
-            std::cerr << mf1.getFileTypeId() << std::endl;
-            std::cerr << mf2.getFileTypeId() << std::endl;
+            BOOST_TEST_MESSAGE( mf1.getFileTypeId() );
+            BOOST_TEST_MESSAGE( mf2.getFileTypeId() );
 
             ret+=64;
         }
 
-        if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
+        if(ret !=0 ) BOOST_TEST_MESSAGE( "model_update_test ret: "<< ret );
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
@@ -218,15 +213,15 @@ unsigned model_update_test()
     }
     catch(std::exception& ex)
     {
-        std::cerr << "model_update_test exception reason: "<< ex.what() << std::endl;
+        BOOST_TEST_MESSAGE( "model_update_test exception reason: "<< ex.what() );
         ret+=128;
         throw;
     }
     catch(...)
     {
-        std::cerr << "model_update_test exception returning"<< std::endl;
+        BOOST_TEST_MESSAGE( "model_update_test exception returning");
         ret+=256;
-        if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
+        if(ret !=0 ) BOOST_TEST_MESSAGE( "model_update_test ret: "<< ret );
     }
 
     return ret;
@@ -327,8 +322,8 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
                     ret+=8192;
             if(insert_data.account_memo.compare(res[0][14]))
                 {
-                std::cout << "\n\ninsert_data.account_memo: " << insert_data.account_memo
-                        <<"\nresult: " << std::string(res[0][14]) << std::endl;
+                BOOST_TEST_MESSAGE( "\n\ninsert_data.account_memo: " << insert_data.account_memo
+                        <<"\nresult: " << std::string(res[0][14]) );
                     ret+=16384;
                 }
             if(insert_data.invoice_id
@@ -336,12 +331,12 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
             if(insert_data.account_name.compare(res[0][16]))
             {
 
-                std::cout << "\n\ninsert_data.account_name: " << insert_data.account_name
+                BOOST_TEST_MESSAGE( "\n\ninsert_data.account_name: " << insert_data.account_name
                         << " insert_data.account_name.size: " << insert_data.account_name.size()
                         << "\nresult id: " << static_cast<unsigned long long>(res[0][0])
                         <<" result: " << std::string(res[0][16])
                         << " result.size: " << std::string(res[0][16]).size()
-                        << std::endl;
+                        );
 
                 ret+=65536;
             }
@@ -350,20 +345,20 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
                     ret+=131072;
         }//if res size
         else ret+=262144;
-        if (ret != 0 ) std::cerr << "mbp_insert_test ret: "<< ret << std::endl;
+        if (ret != 0 ) BOOST_TEST_MESSAGE( "mbp_insert_test ret: "<< ret );
 
     }
     catch(std::exception& ex)
     {
-        std::cerr << "mbp_insert_test exception reason: "<< ex.what() << std::endl;
+        BOOST_TEST_MESSAGE( "mbp_insert_test exception reason: "<< ex.what() );
         ret+=524288;
         throw;
     }
     catch(...)
     {
-        std::cerr << "mbp_insert_test exception returning"<< std::endl;
+        BOOST_TEST_MESSAGE("mbp_insert_test exception returning");
         ret+=1048576;
-        if (ret != 0 ) std::cerr << "mbp_insert_test ret: "<< ret << std::endl;
+        if (ret != 0 ) BOOST_TEST_MESSAGE("mbp_insert_test ret: "<< ret );
     }
 
     return ret;
@@ -409,20 +404,20 @@ unsigned mbp_reload_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
         if(Database::DateTime(mbp2.getCrTime()).to_string().compare(
                 Database::DateTime("2000-01-01 00:00:01").to_string() )) ret+=131072;
 
-        if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+        if (ret != 0 ) BOOST_TEST_MESSAGE( "model_reload_test ret: "<< ret );
 
     }
     catch(std::exception& ex)
     {
-        std::cerr << "mpb_reload_test exception reason: "<< ex.what() << std::endl;
+        BOOST_TEST_MESSAGE( "mpb_reload_test exception reason: "<< ex.what() );
         ret+=262144;
         throw;
     }
     catch(...)
     {
-        std::cerr << "mpb_reload_test exception returning"<< std::endl;
+        BOOST_TEST_MESSAGE( "mpb_reload_test exception returning");
         ret+=524288;
-        if (ret != 0 ) std::cerr << "mpb_reload_test ret: "<< ret << std::endl;
+        if (ret != 0 ) BOOST_TEST_MESSAGE( "mpb_reload_test ret: "<< ret );
     }
 
     return ret;
@@ -462,7 +457,7 @@ unsigned mbp_update_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
         if(Database::DateTime(mbp2.getCrTime()).to_string().compare(
                 Database::DateTime(mbp1.getCrTime()).to_string() )) ret+=131072;
 
-        if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
+        if(ret !=0 ) BOOST_TEST_MESSAGE("model_update_test ret: "<< ret );
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
@@ -472,15 +467,15 @@ unsigned mbp_update_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
     }
     catch(std::exception& ex)
     {
-        std::cerr << "mpb_update_test exception reason: "<< ex.what() << std::endl;
+        BOOST_TEST_MESSAGE( "mpb_update_test exception reason: "<< ex.what() );
         ret+=262144;
         throw;
     }
     catch(...)
     {
-        std::cerr << "mpb_update_test exception returning"<< std::endl;
+        BOOST_TEST_MESSAGE( "mpb_update_test exception returning");
         ret+=524288;
-        if(ret !=0 ) std::cerr << "mpb_update_test ret: "<< ret << std::endl;
+        if(ret !=0 ) BOOST_TEST_MESSAGE( "mpb_update_test ret: "<< ret );
     }
 
     return ret;

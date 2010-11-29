@@ -15,18 +15,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define BOOST_TEST_MODULE Test model
 
-#include "test-model.h"
 
-//args processing config for custom main
-HandlerPtrVector global_hpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
-(HandleArgsPtr(new HandleDatabaseArgs))
-(HandleArgsPtr(new HandleThreadGroupArgs));
-
-#include "cfg/test_custom_main.h"
 
     /*
      * to log queries:
@@ -46,6 +36,13 @@ boost::assign::list_of
      * timeout = 20
      *
      * */
+
+
+
+
+#include "test-model.h"
+
+BOOST_AUTO_TEST_SUITE(ModelTest)
 
 //synchronization using barriers
 struct sync_barriers
@@ -167,7 +164,7 @@ public:
         }
         catch(...)
         {
-            std::cout << "exception in operator() thread number: " << number_ << std::endl;
+            BOOST_TEST_MESSAGE( "exception in operator() thread number: " << number_ );
         }
     }
 
@@ -183,12 +180,12 @@ private:
 
 BOOST_AUTO_TEST_CASE( test_model_files )
 {
-    BOOST_REQUIRE_EQUAL(model_insert_test() , 0);
-    BOOST_REQUIRE_EQUAL(model_reload_test() , 0);
-    BOOST_REQUIRE_EQUAL(model_update_test() , 0);
-    BOOST_REQUIRE_EXCEPTION( model_nodatareload_test()
+    BOOST_CHECK_EQUAL(model_insert_test() , 0);
+    BOOST_CHECK_EQUAL(model_reload_test() , 0);
+    BOOST_CHECK_EQUAL(model_update_test() , 0);
+    BOOST_CHECK_EXCEPTION( model_nodatareload_test()
             , std::exception , check_std_exception_nodatafound);
-    BOOST_REQUIRE_EQUAL(model_nodataupdate_test() , 0);
+    BOOST_CHECK_EQUAL(model_nodataupdate_test() , 0);
 }
 
 
@@ -209,10 +206,9 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
     std::vector<ModelBankPaymentThreadWorker> tw_vector;
     tw_vector.reserve(thread_number);
 
-    std::cout << "thread barriers:: "
+    BOOST_TEST_MESSAGE( "thread barriers:: "
             <<  (thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-                    - thread_number/thread_group_divisor)
-            << std::endl;
+                    - thread_number/thread_group_divisor));
 
     //synchronization barriers instance
     sync_barriers sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
@@ -229,7 +225,7 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
 
     threads.join_all();
 
-    std::cout << "threads end result_queue.size(): " << result_queue.size() << std::endl;
+    BOOST_TEST_MESSAGE("threads end result_queue.size(): " << result_queue.size());
 
     for(unsigned i = 0; i < thread_number; ++i)
     {
@@ -240,13 +236,14 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
 
         if(thread_result.ret)
         {
-            std::cout << thread_result.desc
+            BOOST_TEST_MESSAGE( thread_result.desc
                     << " thread number: " << thread_result.number
                     << " return code: " << thread_result.ret
                     << " description: " << thread_result.desc
-                    << std::endl;
+                    );
         }
     }//for i
 }
+BOOST_AUTO_TEST_SUITE_END();
 
 

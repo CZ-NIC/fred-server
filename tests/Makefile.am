@@ -13,7 +13,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
               -I$(top_srcdir)/util/db/model \
 			  -I$(top_builddir)/src
 
-noinst_PROGRAMS = test_logd test-model \
+noinst_PROGRAMS = test_logd \
 					test-registrar-group \
 					test-registrar-certification test-msgd test-server 
 #tests
@@ -38,26 +38,6 @@ test_logd_LDADD =    $(top_builddir)/src/fredlib/requests/librequests.a \
                      $(BOOST_DATE_TIME_LIB) \
                      $(BOOST_THREAD_LIB)
 
-test_model_SOURCES = test-model.cc \
-                     test-model.h
-
-test_model_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
-                     $(BOOST_LDFLAGS) \
-                     $(AM_LDFLAGS) \
-                     $(BOOST_PROGRAM_OPTIONS_LIB)
-
-test_model_LDADD =   $(top_builddir)/src/fredlib/libfred.a \
-                     $(top_builddir)/src/model/libmodel.a \
-                     $(top_builddir)/util/db/libdb.a \
-                     $(top_builddir)/util/log/liblog.a \
-                     $(top_builddir)/util/conf/libconf.a \
-                     $(top_builddir)/util/types/libtypes.a \
-                     $(top_builddir)/src/old_utils/liboldutils.a \
-                     $(BOOST_DATE_TIME_LIB) \
-                     $(BOOST_REGEX_LIB) \
-                     $(BOOST_THREAD_LIB) \
-                     $(XML2_LIBS)
-
 test_server_SOURCES = test-server.cc \
                      test-server.h \
                      test-conv.cc \
@@ -65,7 +45,9 @@ test_server_SOURCES = test-server.cc \
 					 test-file-manager-client.cc \
 					 test-file-manager-client.h \
 					 test-db.cc \
-                     test-db.h
+                     test-db.h \
+                     test-model.cc \
+                     test-model.h
 
 test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
