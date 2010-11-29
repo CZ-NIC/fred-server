@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
 
-        std::cout << "ccReg::Admin::_narrow" << std::endl;
+        //std::cout << "ccReg::Admin::_narrow" << std::endl;
         ccReg::Admin_var admin_ref;
         admin_ref = ccReg::Admin::_narrow(CorbaContainer::get_instance()->nsresolve("Admin"));
 
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
         mf.setFileTypeId(6);
         mf.insert();
 
-        std::cout << "admin_ref->getCertificationManager()" << std::endl;
+        //std::cout << "admin_ref->getCertificationManager()" << std::endl;
         Registry::Registrar::Certification::Manager_var cert_manager_ref;
         cert_manager_ref = admin_ref->getCertificationManager();
 
@@ -113,16 +113,16 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
         cert_by_reg = cert_manager_ref->getCertificationsByRegistrar(1);
         const Registry::Registrar::Certification::CertificationList& cert_by_reg_ref
             = cert_by_reg.in();
-        std::cout << "\nCertificationsByRegistrar" << std::endl;
+        BOOST_TEST_MESSAGE( "\nCertificationsByRegistrar" );
         for (CORBA::ULong i=0; i < cert_by_reg_ref.length(); ++i)
         {
             const Registry::Registrar::Certification::CertificationData& cd = cert_by_reg_ref[i];
-            std::cout << " certification id: " << cd.id << "\n"
+            BOOST_TEST_MESSAGE(" certification id: " << cd.id << "\n"
                     << " score: " << cd.score << "\n"
                     << " file id: " << cd.evaluation_file_id << "\n"
                     << " from date: " << cd.fromDate.day << ". " << cd.fromDate.month << ". " << cd.fromDate.year << "\n"
-                    << " to date: " << cd.toDate.day << ". " << cd.toDate.month << ". " << cd.toDate.year << "\n"
-                    << std::endl;
+                    << " to date: " << cd.toDate.day << ". " << cd.toDate.month << ". " << cd.toDate.year << "\n\n"
+                    );
         }
 
         CorbaContainer::destroy_instance();
@@ -257,7 +257,7 @@ public:
         }
         catch(...)
         {
-            std::cout << "exception 4 in operator() thread number: " << number_ << std::endl;
+            BOOST_TEST_MESSAGE("exception 4 in operator() thread number: " << number_ );
             res.ret = 4;
             res.desc = std::string("unknown exception");
             return;
@@ -282,15 +282,15 @@ public:
         }
         catch(const std::exception& ex)
         {
-            std::cout << "exception 5 in operator() thread number: " << number_
-                    << " reason: " << ex.what() << std::endl;
+            BOOST_TEST_MESSAGE( "exception 5 in operator() thread number: " << number_
+                    << " reason: " << ex.what() );
             res.ret = 5;
             res.desc = std::string(ex.what());
             return;
         }
         catch(...)
         {
-            std::cout << "exception 6 in operator() thread number: " << number_ << std::endl;
+            BOOST_TEST_MESSAGE( "exception 6 in operator() thread number: " << number_ );
             res.ret = 6;
             res.desc = std::string("unknown exception");
             return;
@@ -326,10 +326,10 @@ BOOST_AUTO_TEST_CASE( test_certification_threaded )
     std::vector<TestThreadWorker> tw_vector;
     tw_vector.reserve(thread_number);
 
-    std::cout << "thread barriers:: "
+    BOOST_TEST_MESSAGE("thread barriers:: "
             <<  (thread_number - (thread_number % thread_group_divisor ? 1 : 0)
                     - thread_number/thread_group_divisor)
-            << std::endl;
+            );
 
     //synchronization barriers instance
     sync_barriers sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
@@ -346,7 +346,7 @@ BOOST_AUTO_TEST_CASE( test_certification_threaded )
 
     threads.join_all();
 
-    std::cout << "threads end result_queue.size(): " << result_queue.size() << std::endl;
+    BOOST_TEST_MESSAGE( "threads end result_queue.size(): " << result_queue.size() );
 
     for(unsigned i = 0; i < thread_number; ++i)
     {
@@ -357,11 +357,11 @@ BOOST_AUTO_TEST_CASE( test_certification_threaded )
 
         if(thread_result.ret)
         {
-            std::cout << thread_result.desc
+            BOOST_TEST_MESSAGE( thread_result.desc
                     << " thread number: " << thread_result.number
                     << " return code: " << thread_result.ret
                     << " description: " << thread_result.desc
-                    << std::endl;
+                    );
         }
     }//for i
 }
