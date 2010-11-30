@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_group_simple )
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
 
-        std::cout << "ccReg::Admin::_narrow" << std::endl;
+        //std::cout << "ccReg::Admin::_narrow" << std::endl;
         ccReg::Admin_var admin_ref;
         admin_ref = ccReg::Admin::_narrow(CorbaContainer::get_instance()->nsresolve("Admin"));
 
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_group_simple )
 
 
         //group simple test
-        std::cout << "admin_ref->getGroupManager()" << std::endl;
+        BOOST_TEST_MESSAGE( "admin_ref->getGroupManager()" );
         Registry::Registrar::Group::Manager_var group_manager_ref;
         group_manager_ref= admin_ref->getGroupManager();
         ccReg::TID
@@ -128,11 +128,11 @@ BOOST_AUTO_TEST_CASE( test_registrar_group_simple )
         //iterate over seq using reference and read structs
         const Registry::Registrar::Group::GroupList&  gr_list_ref
             = gr_list.in();
-        std::cout << "\nGroupList" << std::endl;
+        BOOST_TEST_MESSAGE("\nGroupList" );
         for (CORBA::ULong i=0; i < gr_list_ref.length(); ++i)
         {
             const Registry::Registrar::Group::GroupData& gd = gr_list_ref[i];
-            std::cout << "group name: " << gd.name << std::endl;
+            BOOST_TEST_MESSAGE("group name: " << gd.name );
         }
 
         Registry::Registrar::Group::MembershipByGroupList_var
@@ -284,15 +284,15 @@ public:
         }
         catch(const std::exception& ex)
         {
-            std::cout << "exception 1 in operator() thread number: " << number_
-                    << " reason: " << ex.what() << std::endl;
+            BOOST_TEST_MESSAGE("exception 1 in operator() thread number: " << number_
+                    << " reason: " << ex.what() );
             res.ret = 1;
             res.desc = std::string(ex.what());
             return;
         }
         catch(...)
         {
-            std::cout << "exception 2 in operator() thread number: " << number_ << std::endl;
+            BOOST_TEST_MESSAGE("exception 2 in operator() thread number: " << number_ );
             res.ret = 2;
             res.desc = std::string("unknown exception");
             return;
@@ -311,7 +311,7 @@ public:
         }
         catch(...)
         {
-            std::cout << "exception 7 in operator() thread number: " << number_ << std::endl;
+            BOOST_TEST_MESSAGE("exception 7 in operator() thread number: " << number_ );
             res.ret = 7;
             res.desc = std::string("unknown exception");
             return;
@@ -347,10 +347,10 @@ BOOST_AUTO_TEST_CASE( test_group_threaded )
     std::vector<TestThreadWorker> tw_vector;
     tw_vector.reserve(thread_number);
 
-    std::cout << "thread barriers:: "
+    BOOST_TEST_MESSAGE( "thread barriers:: "
             <<  (thread_number - (thread_number % thread_group_divisor ? 1 : 0)
                     - thread_number/thread_group_divisor)
-            << std::endl;
+            );
 
     //synchronization barriers instance
     sync_barriers sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE( test_group_threaded )
 
     threads.join_all();
 
-    std::cout << "threads end result_queue.size(): " << result_queue.size() << std::endl;
+    BOOST_TEST_MESSAGE( "threads end result_queue.size(): " << result_queue.size() );
 
     for(unsigned i = 0; i < thread_number; ++i)
     {
@@ -378,11 +378,10 @@ BOOST_AUTO_TEST_CASE( test_group_threaded )
 
         if(thread_result.ret)
         {
-            std::cout << thread_result.desc
+            BOOST_TEST_MESSAGE( thread_result.desc
                     << " thread number: " << thread_result.number
                     << " return code: " << thread_result.ret
-                    << " description: " << thread_result.desc
-                    << std::endl;
+                    << " description: " << thread_result.desc);
         }
     }//for i
 }
