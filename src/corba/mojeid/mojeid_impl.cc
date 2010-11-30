@@ -471,7 +471,7 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
 
         Fred::cancel_multiple_object_states(_contact_id, drop_states);
 
-        conn.exec_params("UPDATE public_request pr SET status=2 "
+        conn.exec_params("UPDATE public_request pr SET status=2, resolve_time = CURRENT_TIMESTAMP "
             "FROM public_request_objects_map prom WHERE (prom.request_id = pr.id) "
             "AND pr.resolve_time IS NULL AND pr.status = 0 "
             "AND pr.request_type IN (12,13,14) AND object_id = $1::integer",
