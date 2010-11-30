@@ -67,7 +67,7 @@ struct MyFixture {
 			std::list<ID>::iterator it = id_list_entry.begin();
 			Connection conn = Database::Manager::acquire();
 
-			std::cout << "Deleting database records from request and related. " << std::endl;
+			BOOST_TEST_MESSAGE("Deleting database records from request and related. " );
 			while(it != id_list_entry.end()) {
 				conn.exec( (boost::format("delete from request_data where request_id=%1%") % *it).str() );
 				conn.exec( (boost::format("delete from request_property_value where request_id=%1%") % *it).str() );
@@ -75,12 +75,12 @@ struct MyFixture {
 				it++;
 			}
 
-			std::cout << "Deleting database records from session." << std::endl;
+			BOOST_TEST_MESSAGE( "Deleting database records from session." );
 			for(it = id_list_session.begin(); it != id_list_session.end();it++) {
 				conn.exec( (boost::format("delete from session where id=%1%") % *it).str() );
 			}
 		} catch (Database::Exception &ex) {
-			std::cout << (boost::format("error when working with database (%1%) : %2%") % CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info() % ex.what()).str();
+		    BOOST_TEST_MESSAGE( (boost::format("error when working with database (%1%) : %2%") % CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info() % ex.what()).str());
 		}
 	}
 
@@ -537,7 +537,7 @@ public:
 
 	~ConfigFile() {
 		if (remove ("test_log_monitoring.conf") != 0) {
-			std::cout << "Failed to delete a file ." << std::endl;
+		    BOOST_TEST_MESSAGE( "Failed to delete a file ." );
 		}
 	}
 };
@@ -737,7 +737,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 				}
 
 			} catch (Database::Exception &ex) {
-				std::cout << (boost::format("error when working with database (%1%) : %2%") % CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info() % ex.what()).str();
+			    BOOST_TEST_MESSAGE( (boost::format("error when working with database (%1%) : %2%") % CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info() % ex.what()).str());
 			}
 		}
 	}
