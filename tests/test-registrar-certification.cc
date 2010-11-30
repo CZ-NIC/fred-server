@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
 */
 
         model_file_id =  model_files.getId();
-        std::cout << " model_file_id: " << model_file_id << std::endl;
+        BOOST_TEST_MESSAGE( " model_file_id: " << model_file_id );
 
 
 }//test_registrar_certification_simple
