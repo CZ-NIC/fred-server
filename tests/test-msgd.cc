@@ -17,26 +17,16 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define BOOST_TEST_MODULE Test msgd
-
 #include "test-msgd.h"
 
-//args processing config for custom main
-HandlerPtrVector global_hpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
-(HandleArgsPtr(new HandleDatabaseArgs))
-(HandleArgsPtr(new HandleCorbaNameServiceArgs))
-;
+BOOST_AUTO_TEST_SUITE(TestMsgd)
 
-#include "cfg/test_custom_main.h"
-
-
-
-BOOST_AUTO_TEST_CASE( test_exec )
+BOOST_AUTO_TEST_CASE( test_corba_interface )
 {
+    /*
     try
     {
+    */
         //CORBA init
         FakedArgs orb_fa = CfgArgs::instance()->fa;
         HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
@@ -46,13 +36,15 @@ BOOST_AUTO_TEST_CASE( test_exec )
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
 
-        std::cout << "Registry::Messages::_narrow" << std::endl;
+        BOOST_TEST_MESSAGE( "Registry::Messages::_narrow" );
         Registry::Messages_var messages_ref;
         messages_ref = Registry::Messages::_narrow(
                 CorbaContainer::get_instance()->nsresolve("Messages"));
 
+        const int msg_count = 1000;
+
         int i = 0;
-        for (; i < 1000; ++i)
+        for (; i < msg_count; ++i)
         {
             //sms test
             CORBA::String_var sms_contact = CORBA::string_dup("REG-FRED_A");
@@ -106,7 +98,9 @@ BOOST_AUTO_TEST_CASE( test_exec )
                     , letter_message_type, 1, 1, "letter");
 
         }
-        BOOST_REQUIRE_EQUAL(i, 1000);
+        BOOST_CHECK_EQUAL(i, msg_count);
+        /*
+
     }
     catch(Registry::Messages::ErrorReport& er)
     {
@@ -146,8 +140,8 @@ BOOST_AUTO_TEST_CASE( test_exec )
         std::cout << "Unknown Error" << std::endl;
 
     }
-
+         */
 
 }
 
-
+BOOST_AUTO_TEST_SUITE_END();

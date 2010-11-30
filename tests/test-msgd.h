@@ -38,7 +38,7 @@
 #include <boost/assign/list_of.hpp>
 
 #include "db_settings.h"
-#include "corba_wrapper.h"
+#include "corba_wrapper_decl.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "random_data_generator.h"
@@ -49,12 +49,11 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-#ifdef BOOST_NO_STDC_NAMESPACE
-namespace std
-{
-  using ::time;
-}
-#endif
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
+
+#include "cfg/config_handler_decl.h"
+#include <boost/test/unit_test.hpp>
 
 
 #endif // TEST_MSGD_H_
