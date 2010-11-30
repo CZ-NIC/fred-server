@@ -509,7 +509,7 @@ void test_monitoring_ip(const std::string &ip, TestImplLog &t, bool result)
 
 	Connection conn = Database::Manager::acquire();
 
-	std::cout << " Recent ID: " << id << std::endl;
+	BOOST_TEST_MESSAGE( " Recent ID: " << id );
 
 	boost::format query = boost::format ( "select is_monitoring from request where id=%1%") % id;
 	Result res = conn.exec(query.str());
@@ -998,7 +998,7 @@ BOOST_AUTO_TEST_CASE( getResultCodesByService )
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
 
-        std::cout << "ccReg::Logger::_narrow" << std::endl;
+        //BOOST_TEST_MESSAGE( "ccReg::Logger::_narrow" );
         ccReg::Logger_var logger_ref;
         logger_ref = ccReg::Logger::_narrow(CorbaContainer::get_instance()->nsresolve("Logger"));
 
@@ -1012,13 +1012,12 @@ BOOST_AUTO_TEST_CASE( getResultCodesByService )
 
         const ccReg::ResultCodeList& result_codes_ref = result_codes_var.in();
 
-        std::cout << "\ngetResultCodesByService" << std::endl;
+        BOOST_TEST_MESSAGE( "\ngetResultCodesByService" );
            for (CORBA::ULong i=0; i < result_codes_ref.length(); ++i)
            {
                const ccReg::ResultCodeListItem& rc = result_codes_ref[i];
-               std::cout << " result_code: " << rc.result_code << "\n"
-                       << " name: " << rc.name << "\n"
-                       << std::endl;
+               BOOST_TEST_MESSAGE( " result_code: " << rc.result_code << "\n"
+                       << " name: " << rc.name << "\n");
            }
 
 
