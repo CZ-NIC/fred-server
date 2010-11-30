@@ -36,10 +36,6 @@ test_server_SOURCES = test-server.cc \
                      test-registrar-certification.h \
                      test_logd.cc 
 
-#                     $(top_srcdir)/src/corba/admin/common.cc \
-#                     $(top_srcdir)/src/corba/admin/common.h                     
-
-
 test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
                      $(AM_LDFLAGS)
