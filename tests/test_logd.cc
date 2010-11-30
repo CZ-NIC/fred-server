@@ -988,7 +988,8 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 
 BOOST_AUTO_TEST_CASE( getResultCodesByService )
 {
-
+    try
+    {
         //CORBA init
         FakedArgs fa = CfgArgs::instance()->fa;
         HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
@@ -1023,6 +1024,27 @@ BOOST_AUTO_TEST_CASE( getResultCodesByService )
 
         BOOST_REQUIRE_EQUAL(1 , 1);
         CorbaContainer::destroy_instance();
+    }//try
+    catch(CORBA::TRANSIENT&)
+    {
+        BOOST_TEST_MESSAGE( "getResultCodesByService Caught system exception TRANSIENT -- unable to contact the "
+           << "server." );
+    }
+    catch(CORBA::SystemException& ex)
+    {
+        BOOST_TEST_MESSAGE( "getResultCodesByService Caught a CORBA::" << ex._name() );
+    }
+    catch(CORBA::Exception& ex)
+    {
+        BOOST_TEST_MESSAGE( "getResultCodesByService Caught CORBA::Exception: " << ex._name() );
+    }
+    catch(omniORB::fatalException& fe)
+    {
+        BOOST_TEST_MESSAGE( "getResultCodesByService Caught omniORB::fatalException:" );
+        BOOST_TEST_MESSAGE( "  file: " << fe.file() );
+        BOOST_TEST_MESSAGE( "  line: " << fe.line() );
+        BOOST_TEST_MESSAGE( "  mesg: " << fe.errmsg() );
+    }
 }
 
 
