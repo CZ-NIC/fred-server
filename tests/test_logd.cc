@@ -4,7 +4,7 @@
  */
 
 #include <iostream>
-#define BOOST_TEST_MODULE Test fred-logd
+
 /*
  * for non-header library version:
  * #include <boost/test/unit_test.hpp>
@@ -14,30 +14,27 @@
 
 #include "requests/request_impl.h"
 
-#include "corba_wrapper.h"
+#include "corba_wrapper_decl.h"
 #include <corba/ccReg.hh>
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
+
+#include "cfg/config_handler_decl.h"
+#include <boost/test/unit_test.hpp>
+
+
 using namespace Database;
 using namespace Fred::Logger;
 
-boost::shared_ptr<HandleDatabaseArgs> global_hdba(new HandleDatabaseArgs);
+BOOST_AUTO_TEST_SUITE(TestLogd)
 
-HandlerPtrVector global_hpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
-(HandleArgsPtr(global_hdba))
-(HandleArgsPtr(new HandleCorbaNameServiceArgs))
-;
-
-
-#include "cfg/test_custom_main.h"
-
-
-namespace TestLogd {
+HandleDatabaseArgs* global_hdba=CfgArgs::instance()->
+               get_handler_ptr_by_type<HandleDatabaseArgs>();
 
 //args processing config for custom main
 // TODO this should be taken from the database 
@@ -1066,5 +1063,5 @@ BOOST_AUTO_TEST_CASE(...
 */
 
 
-}  // namespace TestLogd
+BOOST_AUTO_TEST_SUITE_END();
 

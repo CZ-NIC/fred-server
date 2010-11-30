@@ -13,28 +13,10 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) \
               -I$(top_srcdir)/util/db/model \
 			  -I$(top_builddir)/src
 
-noinst_PROGRAMS = test_logd test-msgd test-server 
+noinst_PROGRAMS = test-msgd test-server 
 #tests
 #TESTS = $(noinst_PROGRAMS)
 
-test_logd_SOURCES =  test_logd.cc
-
-test_logd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
-                     $(BOOST_LDFLAGS) \
-                     $(AM_LDFLAGS)    \
-                     $(BOOST_PROGRAM_OPTIONS_LIB) \
-                     $(OMNIORB4_LIBS) 
-
-test_logd_LDADD =    $(top_builddir)/src/fredlib/requests/librequests.a \
-                     $(top_builddir)/src/fredlib/libfred.a \
-                     $(top_builddir)/src/model/libmodel.a \
-                     $(top_builddir)/util/db/libdb.a \
-                     $(top_builddir)/util/types/libtypes.a \
-                     $(top_builddir)/util/log/liblog.a \
-                     $(top_builddir)/src/old_utils/liboldutils.a \
-                     $(top_builddir)/src/corba/libcorba.a \
-                     $(BOOST_DATE_TIME_LIB) \
-                     $(BOOST_THREAD_LIB)
 
 test_server_SOURCES = test-server.cc \
                      test-server.h \
@@ -51,7 +33,8 @@ test_server_SOURCES = test-server.cc \
                      $(top_srcdir)/src/corba/admin/filter_impl.cc \
                      $(top_srcdir)/src/corba/admin/filter_impl.h \
                      test-registrar-certification.cc \
-                     test-registrar-certification.h 
+                     test-registrar-certification.h \
+                     test_logd.cc 
 
 #                     $(top_srcdir)/src/corba/admin/common.cc \
 #                     $(top_srcdir)/src/corba/admin/common.h                     
@@ -63,6 +46,7 @@ test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
 
 test_server_LDADD =  $(top_builddir)/src/corba/admin/libadmin_impl.a \
 					 $(top_builddir)/src/corba/libcorba.a \
+					 $(top_builddir)/src/fredlib/requests/librequests.a \
 					 $(top_builddir)/src/fredlib/libfred.a \
                      $(top_builddir)/util/db/libdb.a \
                      $(top_builddir)/src/model/libmodel.a \
