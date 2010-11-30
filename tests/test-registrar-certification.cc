@@ -16,21 +16,9 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define BOOST_TEST_MODULE Test registrar certification
-
-
 #include "test-registrar-certification.h"
 
-//args processing config for custom main
-HandlerPtrVector global_hpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
-(HandleArgsPtr(new HandleDatabaseArgs))
-(HandleArgsPtr(new HandleThreadGroupArgs))
-(HandleArgsPtr(new HandleCorbaNameServiceArgs));
-
-#include "cfg/test_custom_main.h"
-
+BOOST_AUTO_TEST_SUITE(TestRegistrarCertification)
 
 BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
 {
@@ -61,11 +49,11 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
         conn.exec( query9 );
 
          //test file of type 6
-        mf.setName("test_name");
-        mf.setPath("test");
-        mf.setFilesize(5);
-        mf.setFileTypeId(6);
-        mf.insert();
+        model_files.setName("test_name");
+        model_files.setPath("test");
+        model_files.setFilesize(5);
+        model_files.setFileTypeId(6);
+        model_files.insert();
 
         //std::cout << "admin_ref->getCertificationManager()" << std::endl;
         Registry::Registrar::Certification::Manager_var cert_manager_ref;
@@ -74,7 +62,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
         ccReg::TID cid1 =
                 cert_manager_ref->createCertification(1
                 , makeCorbaDate(boost::gregorian::date(2010, 1, 30))
-                ,makeCorbaDate(boost::gregorian::date(2011, 1, 30)),3,mf.getId());
+                ,makeCorbaDate(boost::gregorian::date(2011, 1, 30)),3,model_files.getId());
         std::string query8 (
                 "select * from registrar_certification "
                 "where registrar_id = 1  "
@@ -84,7 +72,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
         Database::Result res8 = conn.exec( query8 );
         BOOST_REQUIRE_EQUAL(6*res8.size() , 6);
 
-        cert_manager_ref->updateCertification(cid1,4,mf.getId());
+        cert_manager_ref->updateCertification(cid1,4,model_files.getId());
         std::string query10 (
                 "select * from registrar_certification "
                 "where registrar_id = 1  "
@@ -151,8 +139,8 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
     }
 */
 
-        mfid =  mf.getId();
-        std::cout << " mfid: " << mfid << std::endl;
+        model_file_id =  model_files.getId();
+        std::cout << " model_file_id: " << model_file_id << std::endl;
 
 
 }//test_registrar_certification_simple
@@ -365,4 +353,4 @@ BOOST_AUTO_TEST_CASE( test_certification_threaded )
         }
     }//for i
 }
-
+BOOST_AUTO_TEST_SUITE_END();

@@ -41,7 +41,7 @@
 #include <boost/assign/list_of.hpp>
 
 #include "fredlib/db_settings.h"
-#include "corba_wrapper.h"
+#include "corba_wrapper_decl.h"
 #include "log/logger.h"
 #include "log/context.h"
 
@@ -55,16 +55,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
 
-ModelFiles mf;
-unsigned long long mfid = 0;
+#include "cfg/config_handler_decl.h"
+#include <boost/test/unit_test.hpp>
 
-#ifdef BOOST_NO_STDC_NAMESPACE
-namespace std
-{
-  using ::time;
-}
-#endif
 
+ModelFiles model_files;
+unsigned long long model_file_id = 0;
 
 #endif // TEST_REGISTRAR_CERTIFICATION_H_
