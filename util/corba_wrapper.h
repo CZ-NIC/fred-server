@@ -124,6 +124,7 @@ void CorbaContainer::set_instance(int argc, char** argv
         , unsigned nameservice_port
         , const std::string& nameservice_context)
 {
+    destroy_instance();
     CorbaContainerPtr tmp_instance(new CorbaContainer
             (argc, argv, nameservice_host, nameservice_port, nameservice_context)
     );
