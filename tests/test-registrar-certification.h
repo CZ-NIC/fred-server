@@ -61,8 +61,4 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-
-ModelFiles model_files;
-unsigned long long model_file_id = 0;
-
 #endif // TEST_REGISTRAR_CERTIFICATION_H_

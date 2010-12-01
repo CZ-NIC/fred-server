@@ -988,8 +988,8 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 
 BOOST_AUTO_TEST_CASE( getResultCodesByService )
 {
-    try
-    {
+//    try
+//    {
         //CORBA init
         FakedArgs fa = CfgArgs::instance()->fa;
         HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
@@ -1024,6 +1024,7 @@ BOOST_AUTO_TEST_CASE( getResultCodesByService )
 
         BOOST_REQUIRE_EQUAL(1 , 1);
         CorbaContainer::destroy_instance();
+/*
     }//try
     catch(CORBA::TRANSIENT&)
     {
@@ -1045,6 +1046,7 @@ BOOST_AUTO_TEST_CASE( getResultCodesByService )
         BOOST_TEST_MESSAGE( "  line: " << fe.line() );
         BOOST_TEST_MESSAGE( "  mesg: " << fe.errmsg() );
     }
+*/
 }
 
 
