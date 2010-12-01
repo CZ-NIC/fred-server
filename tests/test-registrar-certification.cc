@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
                 "and valid_until = to_date('2011-01-30','YYYY-MM-DD') "
                 "and classification = 3 ");
         Database::Result res8 = conn.exec( query8 );
-        BOOST_CHECK_EQUAL(6*res8.size() , 6);
+        BOOST_REQUIRE_EQUAL(6*res8.size() , 6);
 
         cert_manager_ref->updateCertification(cid1,4,model_files.getId());
         std::string query10 (
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
                 "and valid_until = to_date('2011-01-30','YYYY-MM-DD') "
                 "and classification = 4 ");
         Database::Result res10 = conn.exec( query10 );
-        BOOST_CHECK_EQUAL(7*res10.size() , 7);
+        BOOST_REQUIRE_EQUAL(7*res10.size() , 7);
 
         cert_manager_ref->shortenCertification(cid1
                 , makeCorbaDate(boost::gregorian::date(2010, 1, 30)));
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
                 "and valid_until = to_date('2010-01-30','YYYY-MM-DD') "
                 "and classification = 4 ");
         Database::Result res11 = conn.exec( query11 );
-        BOOST_CHECK_EQUAL(8*res11.size() , 8);
+        BOOST_REQUIRE_EQUAL(8*res11.size() , 8);
 
         //unbounded struct sequence client side mapping
         //create owning seq
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE( test_certification_threaded )
         ThreadResult thread_result;
         result_queue.try_pop(thread_result);
 
-        BOOST_CHECK_EQUAL(thread_result.ret , 0);
+        BOOST_REQUIRE_EQUAL(thread_result.ret , 0);
 
         if(thread_result.ret)
         {

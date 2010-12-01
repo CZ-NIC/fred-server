@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE( test_corba_interface )
         messages_ref = Registry::Messages::_narrow(
                 CorbaContainer::get_instance()->nsresolve("Messages"));
 
-        const int msg_count = 1000;
+        const int msg_count = 10;
 
         int i = 0;
         for (; i < msg_count; ++i)
