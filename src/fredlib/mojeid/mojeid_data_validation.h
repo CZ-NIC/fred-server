@@ -91,6 +91,7 @@ bool contact_checker_birthday(const ::MojeID::Contact &_data, FieldErrorMap &_er
 
 ContactValidator create_conditional_identification_validator();
 ContactValidator create_identification_validator();
+ContactValidator create_finish_identification_validator();
 ContactValidator create_contact_update_validator();
 
 bool check_validated_contact_diff(const ::MojeID::Contact &_c1, const ::MojeID::Contact &_c2);

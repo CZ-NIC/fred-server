@@ -53,6 +53,16 @@ ContactValidator create_identification_validator()
 }
 
 
+ContactValidator create_finish_identification_validator()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_address_country_cz);
+    tmp.add_checker(contact_checker_address_postalcode_format_cz);
+    tmp.add_checker(contact_checker_phone_format);
+    return tmp;
+}
+
+
 ContactValidator create_contact_update_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
@@ -159,13 +169,11 @@ bool contact_checker_phone_unique(const ::MojeID::Contact &_data, FieldErrorMap 
                 " WHERE eos.name = 'conditionallyIdentifiedContact'"
                 " AND os.valid_from + $1::interval > now()"
                 " AND trim(both ' ' from ch.telephone) = trim(both ' ' from $2::text)"
-                " AND ch.id != $3::integer"
                 " ORDER BY os.valid_from ASC"
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
-                    (static_cast<std::string>(_data.telephone))
-                    (static_cast<unsigned long long>(_data.id)));
+                    (static_cast<std::string>(_data.telephone)));
 
         if (ucheck.size() > 0) {
             _errors[field_phone] = NOT_AVAILABLE;
@@ -224,13 +232,11 @@ bool contact_checker_email_unique(const ::MojeID::Contact &_data, FieldErrorMap 
                 " WHERE eos.name =ANY ('{conditionallyIdentifiedContact, identifiedContact}'::text[])"
                 " AND os.valid_from + $1::interval > now()"
                 " AND trim(both ' ' from LOWER(ch.email)) = trim(both ' ' from LOWER($2::text))"
-                " AND ch.id != $3::integer"
                 " ORDER BY os.valid_from ASC"
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
-                    (static_cast<std::string>(_data.email))
-                    (static_cast<unsigned long long>(_data.id)));
+                    (static_cast<std::string>(_data.email)));
 
         if (ucheck.size() > 0) {
             _errors[field_email] = NOT_AVAILABLE;

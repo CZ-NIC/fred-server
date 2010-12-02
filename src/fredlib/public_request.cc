@@ -1457,6 +1457,16 @@ public:
         contact_validator_ = ::MojeID::create_identification_validator();
     }
 
+    /* XXX: change validator in case contact is already CI */
+    void addObject(const OID &_oid)
+    {
+        PublicRequestImpl::addObject(_oid);
+
+        if (checkState(this->getObject(0).id, 21) == true) {
+            contact_validator_ = ::MojeID::create_finish_identification_validator();
+        }
+    }
+
     std::string generatePasswords()
     {
         if (checkState(getObject(0).id, 21) == true) {
