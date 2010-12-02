@@ -18,7 +18,7 @@ DX_PDF_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN(fred-server, doxy.conf, [doc])
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 m4_pattern_allow([^AC_MSG_])
 
 AC_DEFUN([AS_AC_TEST_CORBA_PORTS],
@@ -323,34 +323,9 @@ fi
 # AC_CHECK_HEADERS(magic.h,,[AC_MSG_ERROR([magic.h not found])])
 
 AC_CONFIG_FILES([Makefile
-                 util/Makefile
-                 util/types/Makefile
-                 util/db/Makefile
-                 util/log/Makefile
-                 util/conf/Makefile
-                 util/hp/Makefile
-                 util/cfg/Makefile
-                 src/Makefile
-                 src/old_utils/Makefile
-                 src/model/Makefile
-                 src/fredlib/Makefile
-                 src/fredlib/messages/Makefile
-                 src/fredlib/requests/Makefile
-                 src/fredlib/mojeid/Makefile
-                 src/corba/Makefile
-                 src/corba/admin/Makefile
-                 src/corba/epp/Makefile
-                 src/corba/log/Makefile
-                 src/corba/messages/Makefile
-                 src/corba/mojeid/Makefile
-                 src/cli_admin/Makefile
-                 tools/Makefile
-                 tools/logd_migration/Makefile
-                 tests/Makefile
                  fred-server.spec
                  config/server.conf
                  config/hpmail.conf
                  init-scripts/fred-server
                  ])
 AC_OUTPUT
-
