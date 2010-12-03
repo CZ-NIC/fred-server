@@ -109,7 +109,7 @@ public:
                 new boost::program_options::options_description(
                         std::string("General configuration")));
         gen_opts->add_options()
-                ("help", "print this help message");
+                ("help", "print custom help message and boost::test help message for BOOST_VERSION > 103900");
 
         if(default_config.length() != 0)
         {
