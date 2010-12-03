@@ -62,6 +62,7 @@ public:
   ccReg::Filters::Zone_ptr addE(Database::Filters::Zone *f);
 
   ccReg::Filters::Message_ptr addE(Database::Filters::Message *f);
+  ccReg::Filters::BankAccount_ptr addE(Database::Filters::BankAccount *f);
 
 
   void addFilter(Database::Filters::Filter* f);

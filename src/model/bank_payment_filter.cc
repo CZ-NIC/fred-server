@@ -167,6 +167,31 @@ BankPaymentImpl::addBankStatement()
     return *tmp;
 }
 
+Value<std::string> &
+BankPaymentImpl::addAccountMemo()
+{
+    Value<std::string> *tmp = new Value<std::string>(
+            Column("account_memo", joinBankPaymentTable()));
+    add(tmp);
+    tmp->setName("AccountMemo");
+    return *tmp;
+}
+
+BankAccount &
+BankPaymentImpl::addBankAccount()
+{
+    BankAccount *tmp = new BankAccountImpl();
+    tmp->joinOn(new Join(
+                Column("account_id", joinBankPaymentTable()),
+                SQL_OP_EQ,
+                Column("id", tmp->joinBankAccountTable())
+                ));
+    add(tmp);
+    tmp->setName("BankAccount");
+    return *tmp;
+}
+
+
 
 } // namespace Filters
 } // namespace Database

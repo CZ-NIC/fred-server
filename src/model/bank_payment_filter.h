@@ -3,6 +3,7 @@
 
 #include "db/query/base_filters.h"
 #include "bank_statement_filter.h"
+#include "bank_account_filter.h"
 
 namespace Database {
 namespace Filters {
@@ -28,6 +29,8 @@ public:
     virtual Value<std::string> &addAccountName() = 0;
     virtual Interval<Database::DateTimeInterval> &addCrTime() = 0;
     virtual BankStatement &addBankStatement() = 0;
+    virtual Value<std::string> &addAccountMemo() = 0;
+    virtual BankAccount &addBankAccount() = 0;
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(
@@ -58,6 +61,8 @@ public:
     virtual Value<std::string> &addAccountName();
     virtual Interval<Database::DateTimeInterval> &addCrTime();
     virtual BankStatement &addBankStatement();
+    virtual Value<std::string> &addAccountMemo();
+    virtual BankAccount &addBankAccount();
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(

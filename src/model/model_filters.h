@@ -25,5 +25,6 @@
 #include "zone_ns_filter.h"
 #include "zone_filter.h"
 #include "message_filter.h"
+#include "bank_account_filter.h"
 
 #endif /*MODEL_FILTERS_H_*/
