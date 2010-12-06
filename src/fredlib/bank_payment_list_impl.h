@@ -94,11 +94,12 @@ public:
                 << "t_1.type, t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price, "
                 << "t_1.account_evid, t_1.account_date, t_1.account_memo, "
                 << "t_1.invoice_id, t_1.account_name, t_1.crtime, "
-                << "t_2.prefix";
+                << "t_2.prefix, t_3.account_number || '/' || t_3.bank_code";
             object_info_query.from()
                 << getTempTableName() << " tmp "
                 << "JOIN bank_payment t_1 ON (tmp.id = t_1.id) "
-                << "LEFT JOIN invoice t_2 ON (t_1.invoice_id = t_2.id)";
+                << "LEFT JOIN invoice t_2 ON (t_1.invoice_id = t_2.id) "
+                << "JOIN bank_account t_3 ON (t_1.account_id = t_3.id) ";
             object_info_query.order_by()
                 << "tmp.id DESC";
 
@@ -123,6 +124,7 @@ public:
                 std::string accountName     = *(++col);
                 Database::DateTime crTime   = *(++col);
                 unsigned long long iprefix  = *(++col);
+                std::string destAccount     = *(++col);
 
                 PaymentImpl *payment = new PaymentImpl();
                 payment->setId(id);
@@ -142,6 +144,7 @@ public:
                 payment->setAccountName(accountName);
                 payment->setCrTime(crTime);
                 payment->setInvoicePrefix(iprefix);
+                payment->setDestAccount(destAccount);
                 appendToList(payment);
             }
             CommonListImplNew::reload();
@@ -198,6 +201,9 @@ public:
                 break;
             case IMT_CREATE_TIME:
                 stable_sort(m_data.begin(), m_data.end(), CompareCrTime(asc));
+                break;
+            case IMT_DEST_ACCOUNT:
+                stable_sort(m_data.begin(), m_data.end(), CompareDestAccount(asc));
                 break;
             default:
             	throw std::runtime_error("unimplemented sort");

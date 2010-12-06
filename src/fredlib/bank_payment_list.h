@@ -24,7 +24,8 @@ enum ItemMemberType {
     IMT_ACCOUNT_MEMO,
     IMT_INVOICE,
     IMT_ACCOUNT_NAME,
-    IMT_CREATE_TIME
+    IMT_CREATE_TIME,
+    IMT_DEST_ACCOUNT
 };
 
 class PaymentList : virtual public Fred::CommonListNew

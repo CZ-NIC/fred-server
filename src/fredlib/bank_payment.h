@@ -56,6 +56,7 @@ public:
     virtual const unsigned long long &getInvoiceId() const = 0;
     virtual const std::string &getAccountName() const = 0;
     virtual const Database::DateTime &getCrTime() const = 0;
+    virtual const std::string &getDestAccount() const = 0;
     virtual void setId(const unsigned long long &id) = 0;
     virtual void setStatementId(const unsigned long long &statementId) = 0;
     virtual void setAccountId(const unsigned long long &accountId) = 0;
@@ -74,6 +75,7 @@ public:
     virtual void setInvoiceId(const unsigned long long &invoiceId) = 0;
     virtual void setAccountName(const std::string &accountName) = 0;
     virtual void setCrTime(const Database::DateTime &crTime) = 0;
+    virtual void setDestAccount(const std::string &destAccount) = 0;
 
     virtual unsigned long long getInvoicePrefix() const = 0;
     virtual void setInvoicePrefix(const unsigned long long &_iprefix) = 0;

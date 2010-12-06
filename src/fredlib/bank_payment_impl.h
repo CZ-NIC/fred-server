@@ -17,7 +17,7 @@ class PaymentImpl : virtual public Payment,
 {
 private:
     unsigned long long iprefix_;
-
+    std::string dest_account;
 
 public:
     PaymentImpl() : ModelBankPayment(), iprefix_(0)
@@ -96,6 +96,11 @@ public:
     {
         return ModelBankPayment::getCrTime();
     }
+    const std::string &getDestAccount() const
+    {
+        return dest_account;
+    }
+
     void setId(const unsigned long long &id)
     {
         ModelBankPayment::setId(id);
@@ -168,6 +173,10 @@ public:
     {
         ModelBankPayment::setCrTime(crTime);
     }
+    void setDestAccount(const std::string &destAccount)
+    {
+        dest_account=destAccount;
+    }
 
 
     unsigned long long getInvoicePrefix() const
@@ -211,6 +220,21 @@ public:
     {
         try {
             ModelBankPayment::reload();
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Result dest_account_result
+                = conn.exec_params("select account_number || '/' || bank_code"
+                " from bank_account where id = $1::integer "
+                ,Database::query_param_list(ModelBankPayment::getAccountId()));
+
+            if(dest_account_result.size() == 1)
+            {
+                dest_account = std::string(dest_account_result[0][0]);
+            }
+            else
+            {
+                throw std::runtime_error(
+                        "PaymentImpl::reload unable to get account");
+            }
         }
         catch (Database::NoDataFound &ex) {
             throw NOT_FOUND();
@@ -276,6 +300,8 @@ COMPARE_CLASS_IMPL_NEW(PaymentImpl, AccountMemo);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, InvoiceId);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, AccountName);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, CrTime);
+
+COMPARE_CLASS_IMPL_NEW(PaymentImpl, DestAccount)
 
 
 PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)

@@ -25,7 +25,7 @@ Registry::Table::ColumnHeaders *
 ccReg_Payments_i::getColumnHeaders()
 {
     Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
-    ch->length(9);
+    ch->length(numColumns());
 //    COLHEAD(ch, 0, "Id", CT_OID);
 //    COLHEAD(ch, 1, "Statement Head", CT_OID);
     COLHEAD(ch, 0, "Account Number", CT_OTHER);
@@ -42,6 +42,7 @@ ccReg_Payments_i::getColumnHeaders()
     COLHEAD(ch, 6, "Invoice", CT_OID);
     COLHEAD(ch, 7, "Account Name", CT_OTHER);
     COLHEAD(ch, 8, "Create Time", CT_OTHER);
+    COLHEAD(ch, 9, "Destination Account", CT_OTHER);
 
     /*
     COLHEAD(ch, 9, "Date", CT_OTHER);
@@ -64,7 +65,7 @@ ccReg_Payments_i::getRow(CORBA::UShort row)
     }
     Registry::TableRow *tr = new Registry::TableRow;
 
-    tr->length(9);
+    tr->length(numColumns());
 
     MAKE_OID(oid_id, data->getId(), C_STR(data->getId()), FT_STATEMENTITEM);
     MAKE_OID(oid_statement_id, data->getStatementId(), C_STR(data->getStatementId()), FT_STATEMENTHEAD);
@@ -86,6 +87,7 @@ ccReg_Payments_i::getRow(CORBA::UShort row)
     (*tr)[6] <<= oid_invoice_id;
     (*tr)[7] <<= C_STR(data->getAccountName());
     (*tr)[8] <<= C_STR(data->getCrTime());
+    (*tr)[9] <<= C_STR(data->getDestAccount());
 
     return tr;
 }
@@ -146,6 +148,10 @@ ccReg_Payments_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
         case 8:
             list_->sort(Fred::Banking::IMT_CREATE_TIME, dir);
             break;
+        case 9:
+            list_->sort(Fred::Banking::IMT_DEST_ACCOUNT, dir);
+            break;
+
     }
 }
 
@@ -179,7 +185,7 @@ ccReg_Payments_i::numRows()
 CORBA::Short
 ccReg_Payments_i::numColumns()
 {
-    return 9;
+    return 10;
 }
 
 void
