@@ -186,6 +186,9 @@ public:
   Registry::Registrar::Certification::Manager_ptr getCertificationManager();
   Registry::Registrar::Group::Manager_ptr getGroupManager();
 
+  ccReg::EnumList* getBankAccounts();
+
+
 private:
   std::string _createQueryForEnumDomainsByRegistrant(const std::string &select_part, const std::string &name, bool by_person, bool by_org);
 

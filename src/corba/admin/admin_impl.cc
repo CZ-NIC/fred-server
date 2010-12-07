@@ -38,6 +38,7 @@
 #include "corba/mailer_manager.h"
 #include "fredlib/messages/messages_impl.h"
 #include "fredlib/object_states.h"
+#include "fredlib/bank_payment.h"
 
 #include "log/logger.h"
 #include "log/context.h"
@@ -2552,4 +2553,32 @@ Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)
     }//catch all
 }//getMembershipsByGroup
 
+
+ccReg::EnumList* ccReg_Admin_i::getBankAccounts()
+{
+  Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+
+  LOGGER(PACKAGE).debug("ccReg_Admin_i::getBankAccounts");
+  try
+  {
+      Fred::Banking::EnumList el = Fred::Banking::getBankAccounts();
+      ccReg::EnumList_var ret = new ccReg::EnumList;
+      ret->length(el.size());
+      for(std::size_t i = 0; i < el.size(); ++i)
+      {
+          ret[i].id = el[i].id;
+          ret[i].name = CORBA::string_dup(el[i].name.c_str());
+      }
+      return ret._retn();
+  }//try
+  catch(std::exception& ex)
+  {
+      throw ccReg::ErrorReport(ex.what());
+  }
+  catch(...)
+  {
+      throw ccReg::ErrorReport("unknown exception");
+  }
+}//ccReg_Admin_i::getBankAccounts
 

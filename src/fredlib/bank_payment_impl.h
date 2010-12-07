@@ -401,8 +401,33 @@ PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)
     return payment;
 }
 
-}
-}
+EnumList getBankAccounts()
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec("SELECT  id, "
+            " account_name || ' ' || account_number || '/' || bank_code "
+            " FROM bank_account "
+            " ORDER BY id");
+    if(res.size() == 0)
+    {
+        const char* err_msg = "getBankAccounts: no data in table bank_account";
+        LOGGER(PACKAGE).error(err_msg);
+        throw std::runtime_error(err_msg);
+    }
+    EnumList el;
+    for(unsigned i=0;i<res.size();i++)
+    {
+        EnumListItem eli;
+        eli.id = res[i][0];
+        eli.name = std::string(res[i][1]);
+        el.push_back(eli);
+    }
+    return el;
+}//getBankAccounts
+
+}//namespace Banking
+}//namespace Fred
+
 
 #endif /*BANK_PAYMENT_IMPL_H_*/
 

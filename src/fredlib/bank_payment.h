@@ -25,7 +25,6 @@
 namespace Fred {
 namespace Banking {
 
-
 /**
  * \class Payment
  * \brief Interface for bank payment object
@@ -83,13 +82,23 @@ public:
     virtual std::string toString() const = 0;
     virtual void save() throw (SQL_ERROR) = 0;
     virtual void reload() throw (SQL_ERROR, NOT_FOUND) = 0;
-};
+};//class Payment
 
 // smart pointer
 typedef std::auto_ptr<Payment> PaymentPtr;
 
-}
-}
+struct EnumListItem
+{
+  unsigned long long id;
+  std::string name;
+};
+typedef std::vector<EnumListItem> EnumList;
+
+//status names
+EnumList getBankAccounts();
+
+}//namespace Banking
+}//namespace Fred
 
 #endif /*BANK_PAYMENT_H_*/
 
