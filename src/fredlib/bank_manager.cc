@@ -11,6 +11,8 @@
 #include "registrar.h"
 #include "types/stringify.h"
 
+#include <boost/algorithm/string.hpp>
+
 
 // std::string magic_string_to_mime_type(const std::string &_magic_str)
 // {
@@ -561,9 +563,13 @@ public:
 
     virtual bool pairPaymentWithRegistrar(
                 const Database::ID &paymentId,
-                const std::string &registrarHandle) {
+                const std::string &_registrarHandle) {
 
         TRACE("[CALL] Fred::Invoicing::Manager::manualCreateInvoice(Database::ID, std::string)");
+
+        //trim spaces
+        std::string registrarHandle = boost::trim_copy(_registrarHandle);
+
         Database::Query query;
         query.buffer()
             << "SELECT id FROM registrar WHERE handle="
