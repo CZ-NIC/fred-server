@@ -527,14 +527,6 @@ COMPOUND_CLASS(Session, Session, Compound,
     FILTER_ADD(DateTime, addLogoutDate);
 );
 
-COMPOUND_CLASS(BankAccount, BankAccount, Compound,
-    FILTER_ADD(Id, addId);
-    FILTER_ADD(Str, addAccountNumber);
-    FILTER_ADD(Str, addAccountName);
-    FILTER_ADD(Str, addBankCode);
-);
-
-
 COMPOUND_CLASS(StatementItem, BankPayment, Compound,
     FILTER_ADD(Id, addId);
     FILTER_ADD(Str, addAccountNumber);
@@ -550,7 +542,7 @@ COMPOUND_CLASS(StatementItem, BankPayment, Compound,
     FILTER_ADD(Str, addAccountName);
     FILTER_ADD(DateTime, addCrTime);
     FILTER_ADD(Str, addAccountMemo);
-    FILTER_ADD(BankAccount, addBankAccount);
+    FILTER_ADD(Id, addAccountId);
 );
 
 
@@ -699,7 +691,6 @@ ITERATOR_ADD_E_METHOD_IMPL(ZoneNs, ZoneNs);
 ITERATOR_ADD_E_METHOD_IMPL(Zone, Zone);
 
 ITERATOR_ADD_E_METHOD_IMPL(Message, Message);
-ITERATOR_ADD_E_METHOD_IMPL(BankAccount, BankAccount);
 
 
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
@@ -748,7 +739,6 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(ZoneNs, ZoneNs);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Zone, Zone);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Message, Message);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(BankAccount, BankAccount);
 
 }
 

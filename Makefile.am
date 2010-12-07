@@ -277,9 +277,7 @@ src_model_libmodel_a_SOURCES = src/model/object_registry_filter.cc \
 		 src/model/message_filter.cc	\
 		 src/model/message_filter.h	\
 		 src/model/log_filter.h 	\
-		 src/model/model_filters.h    \
-		 src/model/bank_account_filter.cc \
-		 src/model/bank_account_filter.h
+		 src/model/model_filters.h
 
 src_model_test_model_SOURCES  = src/model/test-model.cc
 

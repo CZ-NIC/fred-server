@@ -177,21 +177,15 @@ BankPaymentImpl::addAccountMemo()
     return *tmp;
 }
 
-BankAccount &
-BankPaymentImpl::addBankAccount()
+Value<Database::ID> &
+BankPaymentImpl::addAccountId()
 {
-    BankAccount *tmp = new BankAccountImpl();
-    tmp->joinOn(new Join(
-                Column("account_id", joinBankPaymentTable()),
-                SQL_OP_EQ,
-                Column("id", tmp->joinBankAccountTable())
-                ));
+    Value<Database::ID> *tmp = new Value<Database::ID>(
+            Column("account_id", joinBankPaymentTable()));
     add(tmp);
-    tmp->setName("BankAccount");
+    tmp->setName("AccountId");
     return *tmp;
 }
-
-
 
 } // namespace Filters
 } // namespace Database
