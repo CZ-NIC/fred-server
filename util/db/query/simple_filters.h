@@ -240,7 +240,7 @@ public:
       LOGGER(PACKAGE).trace(boost::format("[IN] Interval<DateTime>::serialize(): value is special (special_flag='%1%')")
           % t_value.getSpecial());
       
-      std::string time = (boost::format("'%1% Europe/Prague'::timestamptz")
+      std::string time = (boost::format("'%1%'::timestamp AT TIME ZONE 'Europe/Prague'")
                 % boost::posix_time::to_iso_string(microsec_clock::local_time())).str();
       
       std::stringstream beg, end;
@@ -353,7 +353,7 @@ public:
       std::string what = special2str(t_value.getSpecial());
 
       // TODO convert to iso_string
-      std::string date = (boost::format("'%1% Europe/Prague'::timestamptz")
+      std::string date = (boost::format("'%1%'::timestamp AT TIME ZONE 'Europe/Prague'")
               % day_clock::local_day()).str();
   
       if (t_value.getSpecial() < PAST_HOUR) {
@@ -366,11 +366,11 @@ public:
         if (t_value.getSpecialOffset() < 0) {
           beg << "((" << date << " + interval '" << t_value.getSpecialOffset()
               << " " << what << "') AT TIME ZONE 'UTC')" + value_post_;
-          end << date + value_post_;
+          end <<  "(" << date << " AT TIME ZONE 'UTC')" << value_post_;
         } else {
           end << "((" << date << " + interval '" << t_value.getSpecialOffset()
               << " " << what <<"') AT TIME ZONE 'UTC')" + value_post_;
-          beg << date + value_post_;
+          beg << "(" << date << " AT TIME ZONE 'UTC')" << value_post_;
         }
   
       }
