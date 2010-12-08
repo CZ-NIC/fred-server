@@ -494,9 +494,11 @@ bool ccReg_EPP_i::LoginSession(
   if (numSession < maxSession) {
     // count sessions for given registrar
     unsigned count = 0;
-    for (i=0; i<maxSession; i++)
-      if (session[i].registrarID == registrarID)
+    for (i=0; i<maxSession; i++) {
+      if (session[i].registrarID == registrarID) {
         count++;
+      }
+    }
     if (count >= conf.get<unsigned>("rifd.session_registrar_max")) {
       LOG( DEBUG_LOG , "SESSION max per registrar exceeded clientID %d registrarID %d lang %d" , loginID , registrarID , language );
       //
@@ -1767,15 +1769,11 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
       LOG( NOTICE_LOG, "bad username [%s]", ClID );
       // bad username
       ret->code = COMMAND_AUTH_ERROR;
-    } else
-
-    // test password and certificate fingerprint in the table RegistrarACL
-    if ( !DBsql.TestRegistrarACL(regID, passwd, certID) ) {
+    } else if ( !DBsql.TestRegistrarACL(regID, passwd, certID) ) {
+        // test password and certificate fingerprint in the table RegistrarACL
       LOG( NOTICE_LOG, "password [%s]  or certID [%s]  not accept", passwd , certID );
       ret->code = COMMAND_AUTH_ERROR;
-    } else
-
-    if (DBsql.BeginTransaction() ) {
+    } else if (DBsql.BeginTransaction() ) {
       id = DBsql.GetSequenceID("login"); // get sequence ID from login table
 
       // write to table
@@ -1837,8 +1835,9 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
 
       ret->msg =CORBA::string_dup(GetErrorMessage(ret->code,
           GetRegistrarLang(clientID) ) );
-    } else
+    } else {
       ServerInternalError("ClientLogin");
+    }
 
     DBsql.Disconnect();
   }
