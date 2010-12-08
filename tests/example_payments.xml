@@ -1,4 +1,3 @@
-<!-- to use this import file call /usr/sbin/fred-admin --bank_import_xml --bank_statement_file_mimetype="text/xml" --bank_statement_file="xml/example_payments.xml" < xml/example_payments.xml -->
 <statements>
   <statement>
     <account_number>617</account_number>
