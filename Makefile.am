@@ -773,4 +773,9 @@ tests_test_server_LDADD =  src/corba/admin/libadmin_impl.a \
 install-tests: $(SERVER_TESTS)
 	$(INSTALL_PROGRAM) $(SERVER_TESTS) $(bindir)
 
+testdatadir = $(docdir)
+dist_testdata_DATA = tests/test_001.xml tests/test_002.xml 
+
 #tests
+
+
