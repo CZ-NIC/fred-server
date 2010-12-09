@@ -94,7 +94,7 @@ public:
                 << "t_1.type, t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price, "
                 << "t_1.account_evid, t_1.account_date, t_1.account_memo, "
                 << "t_1.invoice_id, t_1.account_name, t_1.crtime, "
-                << "t_2.prefix, t_3.account_number || '/' || t_3.bank_code";
+                << "t_2.prefix, t_3.account_name || ' ' || t_3.account_number || '/' || t_3.bank_code";
             object_info_query.from()
                 << getTempTableName() << " tmp "
                 << "JOIN bank_payment t_1 ON (tmp.id = t_1.id) "

@@ -222,7 +222,7 @@ public:
             ModelBankPayment::reload();
             Database::Connection conn = Database::Manager::acquire();
             Database::Result dest_account_result
-                = conn.exec_params("select account_number || '/' || bank_code"
+                = conn.exec_params("select account_name || ' ' || account_number || '/' || bank_code"
                 " from bank_account where id = $1::integer "
                 ,Database::query_param_list(ModelBankPayment::getAccountId()));
 
