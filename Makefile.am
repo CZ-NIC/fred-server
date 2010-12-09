@@ -234,6 +234,10 @@ src_model_libmodel_a_SOURCES = src/model/object_registry_filter.cc \
 		 src/model/object_registry_filter.h 			\
 		 src/model/object_filter.cc 					\
 		 src/model/object_filter.h 					\
+		 src/model/bank_statement_filter.cc           \
+		 src/model/bank_statement_filter.h            \
+		 src/model/bank_payment_filter.cc             \
+		 src/model/bank_payment_filter.h              \
 		 src/model/domain_filter.cc 					\
 		 src/model/domain_filter.h 					\
 		 src/model/contact_filter.cc 					\
@@ -364,10 +368,6 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 #src fredlib
 
 src_fredlib_banking_libbanking_a_SOURCES =  \
-		src/fredlib/banking/bank_statement_filter.cc           \
-		src/fredlib/banking/bank_statement_filter.h            \
-		src/fredlib/banking/bank_payment_filter.cc             \
-		src/fredlib/banking/bank_payment_filter.h              \
 		src/fredlib/banking/model_bank_statement.cc \
 		src/fredlib/banking/model_bank_statement.h \
 		src/fredlib/banking/model_bank_payment.cc \
