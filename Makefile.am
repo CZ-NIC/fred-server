@@ -769,6 +769,7 @@ tests_test_server_LDADD =  src/corba/admin/libadmin_impl.a \
                      util/types/libtypes.a \
                      src/old_utils/liboldutils.a \
                      src/corba/libcorbamessages.a \
+                     src/fredlib/banking/libbanking.a \
                      $(BOOST_PROGRAM_OPTIONS_LIB) \
                      $(OMNIORB4_LIBS) \
                      $(BOOST_DATE_TIME_LIB) \
