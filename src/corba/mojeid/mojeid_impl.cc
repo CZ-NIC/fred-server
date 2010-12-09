@@ -356,12 +356,6 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
          23 | validatedContact            
 */
 
-// TODO  -- add some more verification:
-//         contact must have some of mojeid states OR
-//         must be under MOJEID registrar
-//       -- (maybe) hardcoded state names 
-//       -- single transaction
-//       -- database locking (marginal cases)
 
 void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
                                    const char * _trans_id,
