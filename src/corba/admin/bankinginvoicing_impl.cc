@@ -5,7 +5,7 @@
 #include "common.h"
 #include "log/logger.h"
 #include "log/context.h"
-#include "fredlib/bank_manager.h"
+#include "bank_manager.h"
 
 #include "corba/file_manager_client.h"
 #include "corba/connection_releaser.h"

@@ -38,7 +38,7 @@
 #include "corba/mailer_manager.h"
 #include "fredlib/messages/messages_impl.h"
 #include "fredlib/object_states.h"
-#include "fredlib/bank_payment.h"
+#include "bank_payment.h"
 
 #include "log/logger.h"
 #include "log/context.h"

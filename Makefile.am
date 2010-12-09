@@ -3,6 +3,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS} $(AM_CFLAGS) \
               $(LIBIDN_CFLAGS) $(OMNIORB4_CFLAGS) $(XML2_CFLAGS) \
               -I $(top_srcdir)/util -I $(top_srcdir)/src -I . \
               -I $(top_srcdir)/util/db/model -I $(top_srcdir)/src/fredlib \
+              -I $(top_srcdir)/src/fredlib/banking \
               -I $(top_srcdir)/src/corba -I $(top_srcdir)/src/corba/admin \
               -I $(top_srcdir)/util/db -I$(top_srcdir)/util \
               -I $(top_builddir)/src/corba -I $(top_builddir)/src
@@ -259,10 +260,10 @@ src_model_libmodel_a_SOURCES = src/model/object_registry_filter.cc \
 		 src/model/file_filter.h 						\
 		 src/model/keyset_filter.cc 					\
 		 src/model/keyset_filter.h 					\
-		 src/model/bank_statement_filter.cc           \
-		 src/model/bank_statement_filter.h            \
-		 src/model/bank_payment_filter.cc             \
-		 src/model/bank_payment_filter.h              \
+		 src/fredlib/banking/bank_statement_filter.cc           \
+		 src/fredlib/banking/bank_statement_filter.h            \
+		 src/fredlib/banking/bank_payment_filter.cc             \
+		 src/fredlib/banking/bank_payment_filter.h              \
 		 src/model/online_statement_filter.cc 		\
 		 src/model/online_statement_filter.h			\
 		 src/model/log_filter.cc 						\
@@ -302,10 +303,10 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/common_impl_new.h \
 		src/fredlib/model_files.cc \
 		src/fredlib/model_files.h \
-		src/fredlib/model_bank_statement.cc \
-		src/fredlib/model_bank_statement.h \
-		src/fredlib/model_bank_payment.cc \
-		src/fredlib/model_bank_payment.h \
+		src/fredlib/banking/model_bank_statement.cc \
+		src/fredlib/banking/model_bank_statement.h \
+		src/fredlib/banking/model_bank_payment.cc \
+		src/fredlib/banking/model_bank_payment.h \
 		src/fredlib/model_registrar_acl.cc \
 		src/fredlib/model_registrar_acl.h \
 		src/fredlib/model_registrar.cc \
@@ -348,20 +349,20 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/documents.h \
 		src/fredlib/info_buffer.cc \
 		src/fredlib/info_buffer.h \
-		src/fredlib/bank_common.cc \
-		src/fredlib/bank_common.h \
-		src/fredlib/bank_payment.h \
-		src/fredlib/bank_payment_impl.h \
-		src/fredlib/bank_payment_list.h \
-		src/fredlib/bank_payment_list_impl.h \
-		src/fredlib/bank_manager.cc \
-		src/fredlib/bank_manager.h \
-		src/fredlib/bank_exporter.cc \
-		src/fredlib/bank_exporter.h \
-		src/fredlib/bank_statement.h \
-		src/fredlib/bank_statement_impl.h \
-		src/fredlib/bank_statement_list.h \
-		src/fredlib/bank_statement_list_impl.h \
+		src/fredlib/banking/bank_common.cc \
+		src/fredlib/banking/bank_common.h \
+		src/fredlib/banking/bank_payment.h \
+		src/fredlib/banking/bank_payment_impl.h \
+		src/fredlib/banking/bank_payment_list.h \
+		src/fredlib/banking/bank_payment_list_impl.h \
+		src/fredlib/banking/bank_manager.cc \
+		src/fredlib/banking/bank_manager.h \
+		src/fredlib/banking/bank_exporter.cc \
+		src/fredlib/banking/bank_exporter.h \
+		src/fredlib/banking/bank_statement.h \
+		src/fredlib/banking/bank_statement_impl.h \
+		src/fredlib/banking/bank_statement_list.h \
+		src/fredlib/banking/bank_statement_list_impl.h \
 		src/fredlib/mail.cc \
 		src/fredlib/mail.h \
 		src/fredlib/notify.h \
