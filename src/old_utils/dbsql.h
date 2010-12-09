@@ -16,7 +16,7 @@
 #define CMD_OK 1000 // OK command to the commit transaction
 #define CMD_FAILED(x) (x<2000) // all successfull codes
 #define MAX_SQLBUFFER 4096*25 // maximal lenght od the sqlBuffer
-#define MAX_SVTID 32 // length of the server  ticket  svTRID
+#define MAX_SVTID 64 // length of the server  ticket  svTRID
 
 class DB;
 class ParsedAction 
@@ -40,7 +40,7 @@ public:
   {
       svrTRID = NULL;
       memHandle=NULL;
-      actionID = 0;
+      actionID = 0;      
       enum_action=0;
       loginID = 0;
   }
@@ -194,9 +194,9 @@ public:
     const char *svTRID, const char *xml);
 
   // start of the EPP operation with clientID and save xml from epp-client 
-  bool BeginAction(
+  bool BeginAction(   
     int clientID, int action, const char *clTRID, const char *xml,
-    ParsedAction* paction = NULL
+    ParsedAction* paction = NULL, unsigned long long requestID = 0
   );
   // end of the EPP operation
   const char * EndAction(
@@ -216,7 +216,7 @@ public:
   int GetEPPAction()
   {
     return enum_action;
-  } // return  EPP operation
+  } // return  EPP operation  
   int GetActionID()
   {
     return actionID;
@@ -389,7 +389,7 @@ public:
   ///---------------
   // history functions 
   int MakeHistory(
-    int objectID);// create insert into table history
+    int objectID, unsigned long long requestID);// create insert into table history
   bool SaveHistory(
     const char *table, const char *fname, int id); // save  row in table to the history table 
 
@@ -409,22 +409,24 @@ public:
 
   // save to the history and delete objects
   bool SaveNSSetHistory(
-    int id);
+    int id, unsigned long long request_id);
   bool DeleteNSSetObject(
     int id);
 
   bool SaveDomainHistory(
-    int id);
+    int id, unsigned long long request_id);
   bool DeleteDomainObject(
     int id);
 
   bool SaveContactHistory(
-    int id);
+    int id, unsigned long long request_id);
   bool DeleteContactObject(
     int id);
 
-  bool SaveKeySetHistory(int id);
-  bool DeleteKeySetObject(int id);
+  bool SaveKeySetHistory(
+    int id, unsigned long long request_id);
+  bool DeleteKeySetObject(
+    int id);
 
   /// SQL language 
 
@@ -555,7 +557,7 @@ private:
   char *svrTRID;
   char *sqlBuffer;
   char dtStr[MAX_DATE+1]; //  pfor return date
-  int actionID; // id from action table
+  int actionID; // id from action table  
   int historyID; // id from history table
   int loginID; // id of the client action.clientID
   short enum_action; // ID of the EPP operation from enum_action

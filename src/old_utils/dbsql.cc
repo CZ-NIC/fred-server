@@ -484,16 +484,16 @@ bool DB::UpdateInvoiceCredit(
 int DB::SaveXMLout(
   const char *svTRID, const char *xml)
 {
-  int actionID;
+  int update_id;
 
-  actionID = GetNumericFromTable("action", "id", "serverTRID", svTRID);
+  update_id = GetNumericFromTable("action", "id", "serverTRID", svTRID);
 
-  if (actionID > 0) {
+  if (update_id > 0) {
 
     if (strlen(xml) ) {
       UPDATE("Action_XML");
       SET("xml_out", xml);
-      WHERE("actionID", actionID);
+      WHERE("actionID", update_id);
       if (EXEC() )
         return true;
     }
@@ -507,7 +507,7 @@ int DB::SaveXMLout(
 // action 
 bool DB::BeginAction(
   int clientID, int action, const char *clTRID, const char *xml,
-  ParsedAction* paction
+  ParsedAction* paction, unsigned long long requestID
 )
 {
 
@@ -515,7 +515,7 @@ bool DB::BeginAction(
 
   if (!BeginTransaction())
       return false;
-
+  
   // actionID for loging all action
   actionID = GetSequenceID("action");
   loginID = clientID; // id of corba client
@@ -530,7 +530,11 @@ bool DB::BeginAction(
       svrTRID= new char[MAX_SVTID];
 
       // create  server ticket
-      snprintf(svrTRID, MAX_SVTID, "ccReg-%010d", actionID);
+      if (requestID == 0) {
+          snprintf(svrTRID, MAX_SVTID, "ccReg-%010d", actionID);
+      } else {
+          snprintf(svrTRID, MAX_SVTID, "ccReg-%010d-%014llu", actionID, requestID);
+      }
       LOG( SQL_LOG , "Make svrTRID: %s" , svrTRID );
     }
 
@@ -593,7 +597,7 @@ const char * DB::EndAction(
 
     // update table
     id = actionID;
-    actionID = 0;
+    actionID = 0;    
     LOG( SQL_LOG , "EndAction svrTRID: %s" , svrTRID );
 
     if (EXEC() )
@@ -2307,11 +2311,11 @@ int DB::GetSequenceID(
 }
 
 bool DB::SaveNSSetHistory(
-  int id)
+  int id, unsigned long long request_id)
 {
 
   //  save to history 
-  if (MakeHistory(id) ) {
+  if (MakeHistory(id, request_id) ) {
 
     if (SaveHistory("NSSET", "id", id) )
       if (SaveHistory("HOST", "nssetid", id) )
@@ -2324,10 +2328,10 @@ bool DB::SaveNSSetHistory(
 }
 
 bool
-DB::SaveKeySetHistory(int id)
+DB::SaveKeySetHistory(int id, unsigned long long request_id)
 {
     // save to history
-    if (MakeHistory(id))
+    if (MakeHistory(id, request_id))
         if (SaveHistory("KEYSET", "id", id))
             if (SaveHistory("DSRECORD", "keysetid", id))
                 if (SaveHistory("dnskey", "keysetid", id))
@@ -2366,10 +2370,10 @@ DB::DeleteKeySetObject(int id)
 }
 
 bool DB::SaveDomainHistory(
-  int id)
+  int id, unsigned long long request_id)
 {
 
-  if (MakeHistory(id) ) {
+  if (MakeHistory(id, request_id) ) {
     if (SaveHistory("DOMAIN", "id", id) )
       if (SaveHistory("domain_contact_map", "domainID", id) ) // save admin-c
         if (SaveHistory("enumval", "domainID", id) ) // save enum extension
@@ -2392,10 +2396,10 @@ bool DB::DeleteDomainObject(
 }
 
 bool DB::SaveContactHistory(
-  int id)
+  int id, unsigned long long request_id)
 {
 
-  if (MakeHistory(id) ) {
+  if (MakeHistory(id, request_id) ) {
     if (SaveHistory("Contact", "id", id) )
       return true;
   }
@@ -2416,18 +2420,21 @@ bool DB::DeleteContactObject(
 }
 
 int DB::MakeHistory(
-  int objectID) // write records of object to the history
+  int objectID, unsigned long long requestID) // write records of object to the history
 {
   char sqlString[128];
 
   if (actionID) {
-    LOG( SQL_LOG , "MakeHistory actionID -> %d " , actionID);
+    assert(requestID != 0);
+    LOG( SQL_LOG , "MakeHistory actionID -> %d, requestID -> %llu " ,
+            actionID, requestID);
     historyID = GetSequenceID("HISTORY");
     if (historyID) {
-      LOG( SQL_LOG , "MakeHistory actionID -> %d " , actionID);
-      snprintf(sqlString, sizeof(sqlString), 
-          "INSERT INTO HISTORY ( id , action ) VALUES ( %d  , %d );",
-          historyID, actionID);
+      LOG( SQL_LOG , "MakeHistory actionID -> %d, requestID -> %llu " ,
+              actionID, requestID);
+      snprintf(sqlString, sizeof(sqlString),
+          "INSERT INTO HISTORY ( id , action, request_id ) VALUES ( %d  , %d , %llu );",
+          historyID, actionID, requestID);
       if (ExecSQL(sqlString) ) {
         if (SaveHistory("OBJECT", "id", objectID) ) // save object table to history 
         {

@@ -2599,7 +2599,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
 
             // make update and save to history
             if (action.getDB()->EXEC() )
-                if (action.getDB()->SaveContactHistory(id) )
+                if (action.getDB()->SaveContactHistory(id, params.requestID) )
                     code = COMMAND_OK;
 
         }
@@ -2814,7 +2814,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
                 // get local timestamp of created  object
                 CORBA::string_free(crDate);
                 crDate= CORBA::string_dup(action.getDB()->GetObjectCrDateTime(id) );
-                if (action.getDB()->SaveContactHistory(id) ) // save history
+                if (action.getDB()->SaveContactHistory(id, params.requestID)) // save history
                     if (action.getDB()->SaveObjectCreate(id) )
                         code = COMMAND_OK; // if saved
             }
@@ -3009,22 +3009,22 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
                     switch (act) {
                         case EPP_ContactTransfer:
                             type=1;
-                            if (action.getDB()->SaveContactHistory(id) )
+                            if (action.getDB()->SaveContactHistory(id, params.requestID))
                                 code = COMMAND_OK;
                             break;
                         case EPP_NSsetTransfer:
                             type=2;
-                            if (action.getDB()->SaveNSSetHistory(id) )
+                            if (action.getDB()->SaveNSSetHistory(id, params.requestID))
                                 code = COMMAND_OK;
                             break;
                         case EPP_DomainTransfer:
                             type =3;
-                            if (action.getDB()->SaveDomainHistory(id) )
+                            if (action.getDB()->SaveDomainHistory(id, params.requestID))
                                 code = COMMAND_OK;
                             break;
                         case EPP_KeySetTransfer:
                             type = 4;
-                            if (action.getDB()->SaveKeySetHistory(id))
+                            if (action.getDB()->SaveKeySetHistory(id, params.requestID))
                                 code = COMMAND_OK;
                             break;
                     }
@@ -3644,7 +3644,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
 
                 //  save to  historie if is OK
                 if (code != COMMAND_FAILED)
-                    if (action.getDB()->SaveNSSetHistory(id) )
+                    if (action.getDB()->SaveNSSetHistory(id, params.requestID))
                         if (action.getDB()->SaveObjectCreate(id) )
                             code = COMMAND_OK;
             } //
@@ -4111,7 +4111,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
 
                 // save to history if not errors
                 if (code == 0)
-                    if (action.getDB()->SaveNSSetHistory(nssetID) )
+                    if (action.getDB()->SaveNSSetHistory(nssetID, params.requestID) )
                         code = COMMAND_OK; // set up successfully as default
 
 
@@ -4775,7 +4775,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
                     // save to the history on the end if is OK
                     if (code == 0)
-                        if (action.getDB()->SaveDomainHistory(id) )
+                        if (action.getDB()->SaveDomainHistory(id, params.requestID))
                             code = COMMAND_OK; // set up successfully
 
 
@@ -5178,7 +5178,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                     code = COMMAND_BILLING_FAILURE;
                                 }
 
-                                if (action.getDB()->SaveDomainHistory(id)) {
+                                if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
                                     if (action.getDB()->SaveObjectCreate(id)) {
                                         code = COMMAND_OK;
                                     }
@@ -5421,7 +5421,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
                         if (invMan->domainBilling(action.getDB(), zone, action.getRegistrar(),
                                     id, Database::Date(std::string(exDate)), period_count, true) == false ) {
                             code = COMMAND_BILLING_FAILURE;
-                        } else if (action.getDB()->SaveDomainHistory(id) ) {
+                        } else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
                             code = COMMAND_OK;
                         }
 
@@ -6075,7 +6075,7 @@ ccReg_EPP_i::KeySetCreate(
 
                 // save it to histrory if it's ok
                 if (code != COMMAND_FAILED)
-                    if (action.getDB()->SaveKeySetHistory(id))
+                    if (action.getDB()->SaveKeySetHistory(id, params.requestID))
                         if (action.getDB()->SaveObjectCreate(id))
                             code = COMMAND_OK;
             }
@@ -6795,7 +6795,7 @@ ccReg_EPP_i::KeySetUpdate(
             }
             // save to history if no errors
             if (code == 0) {
-                if (action.getDB()->SaveKeySetHistory(keysetId))
+                if (action.getDB()->SaveKeySetHistory(keysetId, params.requestID))
                     code = COMMAND_OK;
             }
             if (code == COMMAND_OK)
@@ -7210,6 +7210,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                         Fred::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
 
 	    new_request->setEppActionId(action.getDB()->GetActionID());
+            // TODO waiting for interface change in IDL
+     //       new_request->setRequestId(params.requestID);
             new_request->setRegistrarId(GetRegistrarID(clientID));
 
             new_request->setRegistrarId(GetRegistrarID(clientID));
