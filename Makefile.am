@@ -279,7 +279,8 @@ src_model_libmodel_a_SOURCES = src/model/object_registry_filter.cc \
 src_model_test_model_SOURCES  = src/model/test-model.cc
 
 src_model_test_model_LDFLAGS  = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-src_model_test_model_LDADD    = src/model/libmodel.a util/log/liblog.a \
+src_model_test_model_LDADD    = src/model/libmodel.a \ 
+        src/fredlib/banking/libbanking.a util/log/liblog.a \
         util/types/libtypes.a util/db/libdb.a \
         $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB)
 
@@ -619,7 +620,8 @@ src_corba_messages_fred_msgd_LDFLAGS =   $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_THREAD_LIB)
 
 src_corba_messages_fred_msgd_LDADD =  src/fredlib/messages/libmessages.a \
-                     src/model/libmodel.a util/log/liblog.a util/types/libtypes.a \
+                     src/model/libmodel.a src/fredlib/banking/libbanking.a \
+                     util/log/liblog.a util/types/libtypes.a \
                      util/db/libdb.a src/old_utils/liboldutils.a
 
 #src corba messages
@@ -649,6 +651,7 @@ src_corba_mojeid_fred_mifd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
 src_corba_mojeid_fred_mifd_LDADD = $(LIBIDN_LIBS) \
                      src/fredlib/libfred.a \
                      src/model/libmodel.a \
+                     src/fredlib/banking/libbanking.a \
                      src/fredlib/mojeid/libmojeid.a \
                      src/fredlib/messages/libmessages.a \
                      util/libutil.a util/log/liblog.a util/types/libtypes.a \
@@ -705,6 +708,7 @@ src_cli_admin_fred_admin_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
         
 src_cli_admin_fred_admin_LDADD = src/fredlib/libfred.a \
         src/model/libmodel.a \
+        src/fredlib/banking/libbanking.a \
         src/corba/libcorba.a \
         src/fredlib/messages/libmessages.a \
         src/fredlib/requests/librequests.a \
@@ -726,6 +730,7 @@ tools_logd_migration_migrate_log_LDFLAGS  = $(AM_LDFLAGS) $(XML2_LIBS) \
 tools_logd_migration_migrate_log_LDADD = src/fredlib/requests/librequests.a \
         src/fredlib/libfred.a	    \
 		src/model/libmodel.a 	    \
+		src/fredlib/banking/libbanking.a \
 		src/corba/log/liblog_impl.a  \
 		util/log/liblog.a util/types/libtypes.a \
 		util/db/libdb.a src/old_utils/liboldutils.a \
