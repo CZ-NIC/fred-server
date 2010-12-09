@@ -53,7 +53,7 @@ noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/d
         util/conf/libconf.a src/old_utils/liboldutils.a\
         src/model/libmodel.a src/fredlib/libfred.a \
         src/fredlib/messages/libmessages.a src/fredlib/requests/librequests.a \
-        src/fredlib/mojeid/libmojeid.a \
+        src/fredlib/mojeid/libmojeid.a src/fredlib/banking/libbanking.a \
         src/corba/libcorba.a src/corba/libcorbamessages.a src/corba/libcorbamojeid.a \
         src/corba/libfilemanager.a src/corba/libmailer.a src/corba/admin/libadmin_impl.a \
         src/corba/epp/libepp_impl.a src/corba/log/liblog_impl.a \
@@ -260,10 +260,6 @@ src_model_libmodel_a_SOURCES = src/model/object_registry_filter.cc \
 		 src/model/file_filter.h 						\
 		 src/model/keyset_filter.cc 					\
 		 src/model/keyset_filter.h 					\
-		 src/fredlib/banking/bank_statement_filter.cc           \
-		 src/fredlib/banking/bank_statement_filter.h            \
-		 src/fredlib/banking/bank_payment_filter.cc             \
-		 src/fredlib/banking/bank_payment_filter.h              \
 		 src/model/online_statement_filter.cc 		\
 		 src/model/online_statement_filter.h			\
 		 src/model/log_filter.cc 						\
@@ -303,10 +299,6 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/common_impl_new.h \
 		src/fredlib/model_files.cc \
 		src/fredlib/model_files.h \
-		src/fredlib/banking/model_bank_statement.cc \
-		src/fredlib/banking/model_bank_statement.h \
-		src/fredlib/banking/model_bank_payment.cc \
-		src/fredlib/banking/model_bank_payment.h \
 		src/fredlib/model_registrar_acl.cc \
 		src/fredlib/model_registrar_acl.h \
 		src/fredlib/model_registrar.cc \
@@ -349,20 +341,6 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/documents.h \
 		src/fredlib/info_buffer.cc \
 		src/fredlib/info_buffer.h \
-		src/fredlib/banking/bank_common.cc \
-		src/fredlib/banking/bank_common.h \
-		src/fredlib/banking/bank_payment.h \
-		src/fredlib/banking/bank_payment_impl.h \
-		src/fredlib/banking/bank_payment_list.h \
-		src/fredlib/banking/bank_payment_list_impl.h \
-		src/fredlib/banking/bank_manager.cc \
-		src/fredlib/banking/bank_manager.h \
-		src/fredlib/banking/bank_exporter.cc \
-		src/fredlib/banking/bank_exporter.h \
-		src/fredlib/banking/bank_statement.h \
-		src/fredlib/banking/bank_statement_impl.h \
-		src/fredlib/banking/bank_statement_list.h \
-		src/fredlib/banking/bank_statement_list_impl.h \
 		src/fredlib/mail.cc \
 		src/fredlib/mail.h \
 		src/fredlib/notify.h \
@@ -383,6 +361,32 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/object_states.h
 
 #src fredlib
+
+src_fredlib_banking_libbanking_a_SOURCES =  \
+		src/fredlib/banking/bank_statement_filter.cc           \
+		src/fredlib/banking/bank_statement_filter.h            \
+		src/fredlib/banking/bank_payment_filter.cc             \
+		src/fredlib/banking/bank_payment_filter.h              \
+		src/fredlib/banking/model_bank_statement.cc \
+		src/fredlib/banking/model_bank_statement.h \
+		src/fredlib/banking/model_bank_payment.cc \
+		src/fredlib/banking/model_bank_payment.h \
+		src/fredlib/banking/bank_common.cc \
+		src/fredlib/banking/bank_common.h \
+		src/fredlib/banking/bank_payment.h \
+		src/fredlib/banking/bank_payment_impl.h \
+		src/fredlib/banking/bank_payment_list.h \
+		src/fredlib/banking/bank_payment_list_impl.h \
+		src/fredlib/banking/bank_manager.cc \
+		src/fredlib/banking/bank_manager.h \
+		src/fredlib/banking/bank_exporter.cc \
+		src/fredlib/banking/bank_exporter.h \
+		src/fredlib/banking/bank_statement.h \
+		src/fredlib/banking/bank_statement_impl.h \
+		src/fredlib/banking/bank_statement_list.h \
+		src/fredlib/banking/bank_statement_list_impl.h
+
+#src fredlib banking
 
 src_fredlib_messages_libmessages_a_SOURCES =  src/fredlib/messages/messages_impl.cc \
                                                src/fredlib/messages/messages_impl.h
@@ -438,6 +442,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	util/libutil.a \
 	src/fredlib/requests/librequests.a \
 	src/fredlib/mojeid/libmojeid.a \
+	src/fredlib/banking/libbanking.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
 	
 	
