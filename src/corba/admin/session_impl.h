@@ -107,7 +107,7 @@ private:
   Registry::PublicRequest::Detail* getPublicRequestDetail(ccReg::TID _id);
   Registry::Mailing::Detail* getMailDetail(ccReg::TID _id);
   Registry::Invoicing::Detail* getInvoiceDetail(ccReg::TID _id);
-  Registry::Request::Detail*  getLoggerDetail(ccReg::TID _id);
+  ccReg::Logger::Detail*  getLoggerDetail(ccReg::TID _id);
   Registry::Zone::Detail* getZoneDetail(ccReg::TID _id);
   Registry::Banking::BankItem::Detail * getPaymentDetail(ccReg::TID _id);
   //Registry::Banking::BankHead::Detail * getStatementDetail(ccReg::TID _id);

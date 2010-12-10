@@ -234,7 +234,7 @@ void ccReg_Log_i::deletePageTable(const char* session_id)
     }
 }
 
-Registry::Request::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
+ccReg::Logger::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
 {
 	LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
@@ -268,9 +268,9 @@ Registry::Request::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
 
 }
 
-Registry::Request::Detail *ccReg_Log_i::createRequestDetail(Fred::Logger::Request *req)
+ccReg::Logger::Detail *ccReg_Log_i::createRequestDetail(Fred::Logger::Request *req)
 {
-	Registry::Request::Detail *detail = new Registry::Request::Detail();
+	ccReg::Logger::Detail *detail = new ccReg::Logger::Detail();
 
         detail->id              = req->getId();
         detail->timeBegin       = DUPSTRDATE(req->getTimeBegin);

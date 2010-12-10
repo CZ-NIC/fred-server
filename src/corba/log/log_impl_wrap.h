@@ -40,8 +40,8 @@ public:
   Registry::PageTable_ptr createPageTable(const char *session_id);
   void deletePageTable(const char *session_id);
 
-  Registry::Request::Detail* getDetail(ccReg::TID _id);
-  Registry::Request::Detail* createRequestDetail(Fred::Logger::Request *req);
+  ccReg::Logger::Detail* getDetail(ccReg::TID _id);
+  ccReg::Logger::Detail* createRequestDetail(Fred::Logger::Request *req);
 
 private:
   typedef std::map<std::string, ccReg_Logger_i*> pagetables_list;

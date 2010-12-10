@@ -645,8 +645,8 @@ Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id)
 
 
 
-// Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
-Registry::Request::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
+// ccReg::Logger::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
+ccReg::Logger::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
 	
         ccReg::Logger_ptr logger;
 
