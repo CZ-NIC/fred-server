@@ -660,7 +660,14 @@ Registry::Request::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
 
         if (CORBA::is_nil(logger)) throw ccReg::Admin::ServiceUnavailable();
 
-        return logger->getDetail(_id);
+        try {
+            return logger->getDetail(_id);
+        } catch (ccReg::Logger::OBJECT_NOT_FOUND) {
+            throw ccReg::Admin::ObjectNotFound();
+        } catch(...) {
+            LOGGER(PACKAGE).error("Unexpected exception in getLoggerDetail(id). ");
+            throw ccReg::Admin::ObjectNotFound();
+        }
                 
 }
 

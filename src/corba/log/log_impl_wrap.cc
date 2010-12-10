@@ -262,7 +262,7 @@ Registry::Request::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
         }
 
 	if(request_list->size() != 1) {
-		throw ccReg::Admin::ObjectNotFound();
+                throw ccReg::Logger::OBJECT_NOT_FOUND();
 	}
 	return createRequestDetail(request_list->get(0));
 
