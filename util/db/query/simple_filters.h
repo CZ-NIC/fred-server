@@ -164,13 +164,13 @@ public:
 
       if (!t_value.begin().is_special()) {
         prep << getConjuction() << "( ";
-        prep << column.str() << SQL_OP_GE << "%" << store.size() + 1 << "%" + value_post_;
+        prep << column.str() << SQL_OP_GE << "(%" << store.size() + 1 << "%::timestamp AT TIME ZONE 'Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
         store.push_back(t_value.begin());
         b = true;
       }
       if (!t_value.end().is_special()) {
         prep << (b ? SQL_OP_AND : getConjuction() + "( ") << column.str()
-            << second_operator << "%" << store.size() + 1 << "%" + value_post_;
+            << second_operator << "(%" << store.size() + 1 << "%::timestamp AT TIME ZONE 'Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
         prep << " )";
         store.push_back(t_value.end());
       } else if (b) {
@@ -286,7 +286,7 @@ public:
   
         if (!t_value.begin().is_special()) {
           prep << getConjuction() << "( ";
-          prep << column.str() << SQL_OP_GE << "(('%" << store.size() + 1 << "% Europe/Prague') AT TIME ZONE 'UTC')" + value_post_;
+          prep << column.str() << SQL_OP_GE << "('%" << store.size() + 1 << "%'::timestamp AT TIME ZONE 'Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
           // we want to format date in the DateTime in the right way but without quotes
           // so we need to bypass the Database::Value(DateTime) constructor
           std::string conversion  = SqlConvert<DateTime>::to(t_value.begin());
@@ -296,7 +296,7 @@ public:
         }
         if (!t_value.end().is_special()) {
           prep << (b ? SQL_OP_AND : getConjuction() + "( ") << column.str()
-              << second_operator << "(('%" << store.size() + 1 << "% Europe/Prague') AT TIME ZONE 'UTC')" + value_post_;
+              << second_operator << "('%" << store.size() + 1 << "%'::timestamp AT TIME ZONE 'Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
           prep << " )";
           // we want to format date in the DateTime in the right way but without quotes
           // so we need to bypass the Database::Value(DateTime) constructor
