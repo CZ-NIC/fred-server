@@ -305,9 +305,9 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
 
   return result;
     }//try
-    catch(ccReg::SqlQueryTimeout& ex)
+    catch(Registry::SqlQueryTimeout& ex)
     {
-        LOGGER(PACKAGE).error("ccReg_Session_i::getDetail ex: ccReg::SqlQueryTimeout");
+        LOGGER(PACKAGE).error("ccReg_Session_i::getDetail ex: Registry::SqlQueryTimeout");
         throw;
     }
     catch(ccReg::Admin::ServiceUnavailable& ex)

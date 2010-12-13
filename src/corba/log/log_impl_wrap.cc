@@ -257,7 +257,7 @@ ccReg::Logger::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
         } catch(Database::Exception &ex) {
                 std::string message = ex.what();
                 if(message.find("statement timeout") != std::string::npos) {
-                        throw ccReg::SqlQueryTimeout();
+                        throw Registry::SqlQueryTimeout();
                 }
         }
 
