@@ -2074,6 +2074,7 @@ public:
           const std::string &_password)
   {
       Database::Connection conn = Database::Manager::acquire();
+      Database::Transaction tx(conn);
       Database::Result rid = conn.exec_params(
               "SELECT pr.id FROM public_request_auth pra"
               " JOIN public_request pr ON pr.id = pra.id"
@@ -2092,6 +2093,7 @@ public:
 
       request->authenticate(_password);
       request->process(false, true);
+      tx.commit();
       return request->getObject(0).id;
   }
 
