@@ -557,6 +557,11 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
 
         boost::mutex::scoped_lock tc_lock(tc_mutex);
         transaction_contact[_trans_id] = cid;
+        tc_lock.unlock();
+
+        boost::mutex::scoped_lock ta_lock(ta_mutex);
+        transaction_eppaction[_trans_id] = request.get_id();
+        ta_lock.unlock();
 
         LOGGER(PACKAGE).info("request completed successfully");
     }
@@ -672,20 +677,34 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
     /* TEMP: until we finish migration to request logger */
     unsigned long long aid = 0;
     try {
+        boost::mutex::scoped_lock search_lock(ta_mutex);
+
+        std::map<std::string, unsigned long long>::iterator it =
+            transaction_eppaction.find(_trans_id);
+        if(it == transaction_eppaction.end()) {
+            // this is normal, not every action stores a value here
+            LOGGER(PACKAGE).info("unable to find action - assuming it"
+                    " was not used. ");
+            return;
+        }
+        unsigned long long aid = it->second;
+        transaction_eppaction.erase(it);
+        search_lock.unlock();
+
         Database::Connection conn = Database::Manager::acquire();
         Database::Result ractionid = conn.exec_params(
-                "SELECT id, response FROM action"
-                " WHERE clienttrid = $1::text",
-                Database::query_param_list(_trans_id));
-        if (ractionid.size() != 1 || (aid = ractionid[0][0]) == 0) {
-            LOGGER(PACKAGE).info("unable to find unique action - assuming it"
-                    " was not used. ");
+                "SELECT response FROM action"
+                " WHERE id = $1::text",
+                Database::query_param_list(aid));
+        if (ractionid.size() != 1) {
+            LOGGER(PACKAGE).error("unable to find unique action based on ID stored in map");
         } else {
-            if (!ractionid[0][1].isnull()) {
-                throw std::runtime_error("Action already completed");
-            }
-            conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
+            if (!ractionid[0][0].isnull()) {
+                LOGGER(PACKAGE).error("Action already completed");
+            } else {
+                conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
                       " WHERE id = $1::integer", Database::query_param_list(aid));
+            }
         }
     }
     catch (...) {
@@ -728,21 +747,32 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
 
     /* TEMP: until we finish migration to request logger */
     try {
+        boost::mutex::scoped_lock search_lock(ta_mutex);
+
+        std::map<std::string, unsigned long long>::iterator it =
+            transaction_eppaction.find(_trans_id);
+        if(it == transaction_eppaction.end()) {
+            // this is normal, not every action stores a value here
+            LOGGER(PACKAGE).info("unable to find action - assuming it"
+                    " was not used. ");
+            return;
+        }
+        unsigned long long aid = it->second;
+        transaction_eppaction.erase(it);
+        search_lock.unlock();
+
         Database::Connection conn = Database::Manager::acquire();
         Database::Result result = conn.exec_params(
                 "SELECT id FROM action WHERE"
                 " enddate IS NULL AND response IS NULL"
-                " AND clienttrid = $1::text",
-                Database::query_param_list(_trans_id));
-
-        unsigned long long id = 0;
-        if (result.size() != 1 || (id = result[0][0]) == 0) {
-            LOGGER(PACKAGE).warning("unable to find unique action - "
-                    " assuming it was not used");
-        }
-        else {
+                " AND id = $1::text",
+                Database::query_param_list(aid));
+        
+        if (result.size() != 1) {
+            LOGGER(PACKAGE).error("Rollback: Couldn't find action which according to map should've existed. ");
+        } else {
             conn.exec_params("UPDATE action SET response = 2400, enddate = now()"
-                    " WHERE id = $1::integer", Database::query_param_list(id));
+                    " WHERE id = $1::integer", Database::query_param_list(aid));
         }
     }
     catch (...) {

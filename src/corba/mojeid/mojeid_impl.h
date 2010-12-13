@@ -21,7 +21,9 @@ class ServerImpl : public POA_Registry::MojeID::Server,
         unsigned long long mojeid_registrar_id_;
 
         std::map<std::string, unsigned long long> transaction_contact;
-        boost::mutex tc_mutex;
+        std::map<std::string, unsigned long long> transaction_eppaction;
+        boost::mutex tc_mutex; /// for transaction_contact
+        boost::mutex ta_mutex; /// for transaction_eppaction
 
         virtual ~ServerImpl();
 
