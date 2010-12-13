@@ -1445,7 +1445,7 @@ CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
   return ret;
 }
 
-ccReg::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
+Registry::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -1453,7 +1453,7 @@ ccReg::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
   db.OpenDatabase(m_connection_string.c_str());
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
   Fred::Registrar::Manager *rm = r->getRegistrarManager();
-  ccReg::EPPActionTypeSeq *et = new ccReg::EPPActionTypeSeq;
+  Registry::EPPActionTypeSeq *et = new Registry::EPPActionTypeSeq;
   
   et->length(rm->getEPPActionTypeCount());
   for (unsigned i=0; i<rm->getEPPActionTypeCount(); i++) {
@@ -1465,7 +1465,7 @@ ccReg::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
   return et;
 }
 
-ccReg::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
+Registry::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -1478,7 +1478,7 @@ ccReg::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
    */ 
   r->dbManagerInit();
   
-  ccReg::CountryDescSeq *cd = new ccReg::CountryDescSeq;
+  Registry::CountryDescSeq *cd = new Registry::CountryDescSeq;
   cd->length(r->getCountryDescSize());
   for (unsigned i=0; i<r->getCountryDescSize(); i++) {
     (*cd)[i].cc = DUPSTRC(r->getCountryDescByIdx(i).cc);

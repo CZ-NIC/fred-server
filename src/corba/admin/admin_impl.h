@@ -139,8 +139,8 @@ public:
   CORBA::Long getSignedDomainCount(const char *_fqdn);
   CORBA::Long getEnumNumberCount();
   // counters
-  ccReg::EPPActionTypeSeq* getEPPActionTypeList();
-  ccReg::CountryDescSeq* getCountryDescList();
+  Registry::EPPActionTypeSeq* getEPPActionTypeList();
+  Registry::CountryDescSeq* getCountryDescList();
   char* getDefaultCountry();
   ccReg::ObjectStatusDescSeq* getDomainStatusDescList(const char *lang);
   ccReg::ObjectStatusDescSeq* getContactStatusDescList(const char *lang);
