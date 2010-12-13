@@ -8,7 +8,8 @@ namespace MojeID {
 
 
 const boost::regex USERNAME_PATTERN("^[a-z0-9](-?[a-z0-9])*$");
-const boost::regex PHONE_PATTERN("^\\+420\\.(60([1-8]|9([134]|2[1-5]))|7(0[0-9]|10|[237]))\\d+");
+const boost::regex PHONE_PATTERN("^\\+42(0\\.(60([1-8]|9([134]|2[1-5]))|7(0[0-9]|10|[237]))|"
+                                 "(1\\.9(((0[1-9]|1[0-9]))|([4-5][0-9]))))[0-9]+$");
 const boost::regex EMAIL_PATTERN("^[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+)*"
                                  "@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,6}\\.?$");
 const boost::regex POSTALCODE_CZ_PATTERN("^[0-9]{3} ?[0-9]{2}$");
@@ -33,7 +34,7 @@ ContactValidator create_conditional_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
     tmp.add_checker(contact_checker_email_unique);
-    tmp.add_checker(contact_checker_address_country_cz);
+    tmp.add_checker(contact_checker_address_country);
     tmp.add_checker(contact_checker_address_postalcode_format_cz);
     tmp.add_checker(contact_checker_phone_format);
     tmp.add_checker(contact_checker_phone_required);
@@ -45,7 +46,7 @@ ContactValidator create_conditional_identification_validator()
 ContactValidator create_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
-    tmp.add_checker(contact_checker_address_country_cz);
+    tmp.add_checker(contact_checker_address_country);
     tmp.add_checker(contact_checker_address_postalcode_format_cz);
     tmp.add_checker(contact_checker_email_unique);
     tmp.add_checker(contact_checker_phone_format);
@@ -56,7 +57,7 @@ ContactValidator create_identification_validator()
 ContactValidator create_finish_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
-    tmp.add_checker(contact_checker_address_country_cz);
+    tmp.add_checker(contact_checker_address_country);
     tmp.add_checker(contact_checker_address_postalcode_format_cz);
     tmp.add_checker(contact_checker_phone_format);
     return tmp;
@@ -120,10 +121,6 @@ bool contact_checker_username(const ::MojeID::Contact &_data, FieldErrorMap &_er
 bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
-    /* main phone has to be in format (czech mobile operators):
-     * ^\+420\.(60([1-8]|9([134]|2[1-5]))|7(0[0-9]|10|[237]))\d+
-     * and 14 characters long
-     */
     if (boost::algorithm::trim_copy(static_cast<std::string>(_data.telephone)).length() > 0
                 && static_cast<std::string>(_data.telephone).length() != 14) {
         _errors[field_phone] = INVALID;
@@ -295,11 +292,12 @@ bool contact_checker_address_postalcode_format_cz(const ::MojeID::Contact &_data
 }
 
 
-bool contact_checker_address_country_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_address_country(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
-    if (static_cast<std::string>(_data.country) != "CZ") {
+    if ((static_cast<std::string>(_data.country) != "CZ")
+        && (static_cast<std::string>(_data.country) != "SK")) {
         _errors[field_country] = INVALID;
         result = false;
     }
