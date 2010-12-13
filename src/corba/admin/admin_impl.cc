@@ -1496,11 +1496,11 @@ char* ccReg_Admin_i::getDefaultCountry() {
   return CORBA::string_dup("CZ");
 }
 
-ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getDomainStatusDescList(const char *lang) {
+Registry::ObjectStatusDescSeq* ccReg_Admin_i::getDomainStatusDescList(const char *lang) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
+  Registry::ObjectStatusDescSeq* o = new Registry::ObjectStatusDescSeq;
   for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
     const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
     if (sd->getExternal() && sd->isForType(3)) {
@@ -1518,11 +1518,11 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getDomainStatusDescList(const char *l
   return o;
 }
 
-ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getContactStatusDescList(const char *lang) {
+Registry::ObjectStatusDescSeq* ccReg_Admin_i::getContactStatusDescList(const char *lang) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
+  Registry::ObjectStatusDescSeq* o = new Registry::ObjectStatusDescSeq;
   for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
     const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
     if (sd->getExternal() && sd->isForType(1)) {
@@ -1540,11 +1540,11 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getContactStatusDescList(const char *
   return o;
 }
 
-ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getNSSetStatusDescList(const char *lang) {
+Registry::ObjectStatusDescSeq* ccReg_Admin_i::getNSSetStatusDescList(const char *lang) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
+  Registry::ObjectStatusDescSeq* o = new Registry::ObjectStatusDescSeq;
   for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
     const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
     if (sd->getExternal() && sd->isForType(2)) {
@@ -1562,13 +1562,13 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getNSSetStatusDescList(const char *la
   return o;
 }
 
-ccReg::ObjectStatusDescSeq *
+Registry::ObjectStatusDescSeq *
 ccReg_Admin_i::getKeySetStatusDescList(const char *lang)
 {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-    ccReg::ObjectStatusDescSeq *o = new ccReg::ObjectStatusDescSeq;
+  Registry::ObjectStatusDescSeq *o = new Registry::ObjectStatusDescSeq;
     for (unsigned int i = 0; i < registry_manager_->getStatusDescCount(); i++) {
         const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
         if (sd->getExternal() && sd->isForType(4)) {
@@ -1587,18 +1587,18 @@ ccReg_Admin_i::getKeySetStatusDescList(const char *lang)
     return o;
 }
 
-ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *lang) {
+Registry::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *lang) {
 
     try
     {
         Logging::Context ctx(server_name_);
         ConnectionReleaser releaser;
 
-        ccReg::ObjectStatusDescSeq_var o = new ccReg::ObjectStatusDescSeq;
-        const ccReg::ObjectStatusDescSeq* optr = &(o.in());
+        Registry::ObjectStatusDescSeq_var o = new Registry::ObjectStatusDescSeq;
+        const Registry::ObjectStatusDescSeq* optr = &(o.in());
         if(optr == 0)
         {
-            LOGGER(PACKAGE).error("ccReg_Admin_i::getObjectStatusDescList error new ccReg::ObjectStatusDescSeq failed ");
+            LOGGER(PACKAGE).error("ccReg_Admin_i::getObjectStatusDescList error new Registry::ObjectStatusDescSeq failed ");
             throw ccReg::Admin::InternalServerError();
         }
 
