@@ -1,3 +1,19 @@
+2010-12-03 Juraj Vicenik, Jiri Sadek (2.5.11)
+
+  * fred-mifd contact unidentification implemented
+
+2010-11-24 Jiri Sadek, Jan Zima, Jaromir Talir, Juraj Vicenik (2.5.10)
+
+  * fred-pifd whois contact display fix complete (disclose flags), previous
+    bug fix removed
+
+  * fred-mifd processing identification - more exceptions for error
+    state distinction
+
+2010-11-11 Jiri Sadek (2.5.9)
+
+  * fred-pifd quick bug fix release (mojeid - whois disclose flags)
+
 2010-11-08 Jiri Sadek, Jan Zima, Jaromir Talir, Juraj Vicenik (2.5.8)
 
   * fred-mifd create/transfer checks rewritten, bugfixes
