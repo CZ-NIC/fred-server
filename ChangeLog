@@ -1,3 +1,8 @@
+2010-12-14 Juraj Vicenik, Jiri Sadek (2.5.12)
+
+  * fred-mifd - SK support, epp action clienttrid removed from
+    queries, public request locking (select for update fix)
+
 2010-12-03 Juraj Vicenik, Jiri Sadek (2.5.11)
 
   * fred-mifd contact unidentification implemented
