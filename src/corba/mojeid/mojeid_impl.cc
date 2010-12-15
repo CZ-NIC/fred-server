@@ -675,7 +675,6 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
     }
 
     /* TEMP: until we finish migration to request logger */
-    unsigned long long aid = 0;
     try {
         boost::mutex::scoped_lock search_lock(ta_mutex);
 
