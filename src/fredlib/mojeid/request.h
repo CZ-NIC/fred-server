@@ -43,15 +43,15 @@ public:
             if (request_id_ == 0) {
                 LOGGER(PACKAGE).error("cannot create mojeid request without"
                         "logger request_id");
-                throw;
+                throw 0;
             }
             Database::Result rnext = conn.exec(
                     "SELECT nextval('action_id_seq'::regclass)");
             if (rnext.size() != 1) {
-                throw;
+                throw 0;
             }
             if ((id_ = rnext[0][0]) == 0) {
-                throw;
+                throw 0;
             }
 
             servertrid_ = str(boost::format("MojedID-%010d") % id_);
