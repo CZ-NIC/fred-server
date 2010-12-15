@@ -315,7 +315,7 @@ bool contact_checker_birthday(const ::MojeID::Contact &_data, FieldErrorMap &_er
             boost::gregorian::date tmp
                 = boost::gregorian::from_string(static_cast<std::string>(_data.ssn));
             if (tmp.is_special()) {
-                throw;
+                throw 0;
             }
         }
         catch (...) {

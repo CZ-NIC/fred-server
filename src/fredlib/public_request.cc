@@ -312,7 +312,7 @@ public:
     TRACE("[CALL] Fred::Request::RequestImpl::save()");
     if (objects_.empty()) {
       LOGGER(PACKAGE).error("can't create or update request with no object specified!");
-      throw;
+      throw 0;
     }
 
     Database::Connection conn = Database::Manager::acquire();
