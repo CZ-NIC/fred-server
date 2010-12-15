@@ -164,7 +164,7 @@ public:
   void generateLetters();
   bool setInZoneStatus(ccReg::TID domainId);
 
-  ccReg::TID createPublicRequest(ccReg::PublicRequest::Type _type,
+  ccReg::TID createPublicRequest(Registry::PublicRequest::Type _type,
                                  const char *_reason,
                                  const char *_email_to_answer,
                                  const ccReg::Admin::ObjectIdList& _object_ids,

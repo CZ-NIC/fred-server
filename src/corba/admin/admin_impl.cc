@@ -1749,7 +1749,7 @@ ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
     return true;
 }
 
-ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
+ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _type,
                                               const char *_reason,
                                               const char *_email_to_answer,
                                               const ccReg::Admin::ObjectIdList& _object_ids,
@@ -1786,7 +1786,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
           );
   
 #define REQUEST_TYPE_CORBA2DB_CASE(type)            \
-  case ccReg::PublicRequest::type:                  \
+  case Registry::PublicRequest::type:                  \
     request_type = Fred::PublicRequest::type; break;
   
   Fred::PublicRequest::Type request_type;
