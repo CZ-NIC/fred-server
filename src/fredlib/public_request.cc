@@ -311,8 +311,7 @@ public:
   virtual void save() {
     TRACE("[CALL] Fred::Request::RequestImpl::save()");
     if (objects_.empty()) {
-      LOGGER(PACKAGE).error("can't create or update request with no object specified!");
-      throw 0;
+      throw std::runtime_error("can't create or update request with no object specified!");
     }
 
     Database::Connection conn = Database::Manager::acquire();
