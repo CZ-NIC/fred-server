@@ -38,7 +38,7 @@ ccReg_PageTable_i::page()
 
 void 
 ccReg_PageTable_i::setPage(CORBA::Short _v) 
-  throw (ccReg::PageTable::INVALID_PAGE)
+  throw (Registry::PageTable::INVALID_PAGE)
 {
   aPage = _v;
 }
