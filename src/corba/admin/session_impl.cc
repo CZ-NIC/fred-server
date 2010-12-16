@@ -149,7 +149,7 @@ ccReg_Session_i::~ccReg_Session_i() {
     db.Disconnect();
 }
 
-ccReg::User_ptr ccReg_Session_i::getUser() {
+Registry::User_ptr ccReg_Session_i::getUser() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 

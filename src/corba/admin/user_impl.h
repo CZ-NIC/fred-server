@@ -3,7 +3,7 @@
 
 #include <string>
 
-class ccReg_User_i : public POA_ccReg::User,
+class ccReg_User_i : public POA_Registry::User,
                      public PortableServer::RefCountServantBase {
   ccReg::TID m_id;
   std::string m_username;

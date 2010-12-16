@@ -155,7 +155,7 @@ public:
   bool isTimeouted() const;
   const ptime& getLastActivity() const;
 
-  ccReg::User_ptr getUser();
+  Registry::User_ptr getUser();
 
   Registry::PageTable_ptr getPageTable(ccReg::FilterType _type);
   CORBA::Any* getDetail(ccReg::FilterType _type, ccReg::TID _id);
