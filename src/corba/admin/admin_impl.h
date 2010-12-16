@@ -132,8 +132,6 @@ public:
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::EPPAction* getEPPActionBySvTRID(const char* svTRID)
       throw (ccReg::Admin::ObjectNotFound);
-  ccReg::Mailing::Detail* getEmailById(ccReg::TID id)
-      throw (ccReg::Admin::ObjectNotFound);
   // statistics
   CORBA::Long getDomainCount(const char *zone);
   CORBA::Long getSignedDomainCount(const char *_fqdn);
