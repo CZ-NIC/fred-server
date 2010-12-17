@@ -47,7 +47,7 @@ private:
   Registry::Registrar::Certification::Manager_ptr reg_cert_mgr_ref_;
   Registry::Registrar::Group::Manager_ptr reg_grp_mgr_ref_;
 
-  void fillRegistrar(ccReg::Registrar& creg,
+  void fillRegistrar(Registry::Registrar::Detail& creg,
                      Fred::Registrar::Registrar *reg);
   void garbageSession();
 
@@ -71,11 +71,10 @@ public:
   ccReg::RegistrarList* getRegistrars() throw (ccReg::Admin::SQL_ERROR);
   ccReg::RegistrarList* getRegistrarsByZone(const char *zone)
       throw (ccReg::Admin::SQL_ERROR);
-  ccReg::Registrar* getRegistrarById(ccReg::TID id)
+  Registry::Registrar::Detail* getRegistrarById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
-  ccReg::Registrar* getRegistrarByHandle(const char* handle)
+  Registry::Registrar::Detail* getRegistrarByHandle(const char* handle)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
-  //void putRegistrar(const ccReg::Registrar& regData);
 
   // contact detail
   void fillContact(ccReg::ContactDetail* cv, Fred::Contact::Contact* c);

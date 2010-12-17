@@ -299,7 +299,7 @@ ccReg::Session_ptr ccReg_Admin_i::getSession(const char* _session_id)
 }
 
 
-void ccReg_Admin_i::fillRegistrar(ccReg::Registrar& creg,
+void ccReg_Admin_i::fillRegistrar(Registry::Registrar::Detail& creg,
                                   Fred::Registrar::Registrar *reg) {
 
   creg.id = reg->getId();
@@ -396,7 +396,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
   }
 }
 
-ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
+Registry::Registrar::Detail* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
@@ -424,7 +424,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
       ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
     }
-    ccReg::Registrar* creg = new ccReg::Registrar;
+    Registry::Registrar::Detail* creg = new Registry::Registrar::Detail;
     fillRegistrar(*creg,rl->get(0));
     ldb.Disconnect();
     return creg;
@@ -435,7 +435,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
   }
 }
 
-ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
+Registry::Registrar::Detail* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
@@ -462,7 +462,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
       ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
     }
-    ccReg::Registrar* creg = new ccReg::Registrar;
+    Registry::Registrar::Detail* creg = new Registry::Registrar::Detail;
     fillRegistrar(*creg,rl->get(0));
     ldb.Disconnect();
     return creg;
@@ -472,65 +472,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     throw ccReg::Admin::SQL_ERROR();
   }
 }
-/*
-void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
 
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
-  Fred::Registrar::Manager *rm = r->getRegistrarManager();
-  Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
-  Fred::Registrar::Registrar::AutoPtr  reg_guard;//delete at the end
-  Fred::Registrar::Registrar *reg; // registrar to be created or updated
-  if (!regData.id)
-  {
-      reg_guard = rm->createRegistrar();
-      reg = reg_guard.get();
-  }
-  else {
-      Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
-      std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
-      r->addId().setValue(Database::ID(regData.id));
-      unionFilter->addFilter( r.release() );
-      rl->reload(*unionFilter.get());
-
-    if (rl->size() != 1) {
-      db.Disconnect();
-      throw ccReg::Admin::UpdateFailed();
-    }
-    reg = rl->get(0);
-  }
-  reg->setHandle((const char *)regData.handle);
-  reg->setURL((const char *)regData.url);
-  reg->setName((const char *)regData.name);
-  reg->setOrganization((const char *)regData.organization);
-  reg->setStreet1((const char *)regData.street1);
-  reg->setStreet2((const char *)regData.street2);
-  reg->setStreet3((const char *)regData.street3);
-  reg->setCity((const char *)regData.city);
-  reg->setProvince((const char *)regData.stateorprovince);
-  reg->setPostalCode((const char *)regData.postalcode);
-  reg->setCountry((const char *)regData.country);
-  reg->setTelephone((const char *)regData.telephone);
-  reg->setFax((const char *)regData.fax);
-  reg->setEmail((const char *)regData.email);
-  reg->clearACLList();
-  for (unsigned i=0; i<regData.access.length(); i++) {
-    Fred::Registrar::ACL *acl = reg->newACL();
-    acl->setCertificateMD5((const char *)regData.access[i].md5Cert);
-    acl->setPassword((const char *)regData.access[i].password);
-  }
-  try {
-    reg->save();
-    db.Disconnect();
-  } catch (...) {
-    db.Disconnect();
-    throw ccReg::Admin::UpdateFailed();
-  }
-}
-*/
 void ccReg_Admin_i::fillContact(ccReg::ContactDetail* cc,
                                 Fred::Contact::Contact* c) {
 
