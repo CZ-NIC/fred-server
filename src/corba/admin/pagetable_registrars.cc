@@ -82,7 +82,7 @@ ccReg_Registrars_i::getColumnHeaders()
 
 Registry::TableRow* 
 ccReg_Registrars_i::getRow(CORBA::UShort row)
-  throw (ccReg::Table::INVALID_ROW)
+  throw (Registry::Table::INVALID_ROW)
 {
     Logging::Context ctx(base_context_);
   try
@@ -90,7 +90,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
       TRACE(boost::format("[CALL] ccReg_Registrars_i::getRow(%1%)") % row);
 
       const Fred::Registrar::Registrar *r = rl->get(row);
-      if (!r) throw ccReg::Table::INVALID_ROW();
+      if (!r) throw Registry::Table::INVALID_ROW();
       Registry::TableRow *tr = new Registry::TableRow;
 
       unsigned zone_count = zl->getSize();
@@ -133,7 +133,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   catch(...)
   {
       LOGGER(PACKAGE).error("ccReg_Registrars_i::getRow error");
-      throw ccReg::Table::INVALID_ROW();
+      throw Registry::Table::INVALID_ROW();
   }
 }
 
@@ -180,7 +180,7 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
 ccReg::TID 
 ccReg_Registrars_i::getRowId(CORBA::UShort row) 
-  throw (ccReg::Table::INVALID_ROW)
+  throw (Registry::Table::INVALID_ROW)
 {
     Logging::Context ctx(base_context_);
     try
@@ -188,13 +188,13 @@ ccReg_Registrars_i::getRowId(CORBA::UShort row)
 
 
       const Fred::Registrar::Registrar *r = rl->get(row);
-      if (!r) throw ccReg::Table::INVALID_ROW();
+      if (!r) throw Registry::Table::INVALID_ROW();
       return r->getId();
     }//try
     catch(...)
     {
         LOGGER(PACKAGE).error("ccReg_Registrars_i::getRowId error");
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     }
 }
 

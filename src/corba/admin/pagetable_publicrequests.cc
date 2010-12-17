@@ -39,12 +39,12 @@ Registry::Table::ColumnHeaders* ccReg_PublicRequests_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_PublicRequests_i::getRow(CORBA::UShort _row)
-    throw (ccReg::Table::INVALID_ROW) {
+    throw (Registry::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
   const Fred::PublicRequest::PublicRequest *request = request_list_->get(_row);
   if (!request)
-    throw ccReg::Table::INVALID_ROW();
+    throw Registry::Table::INVALID_ROW();
   Registry::TableRow *row = new Registry::TableRow();
   row->length(4);
   (*row)[0] <<= C_STR(request->getCreateTime());
@@ -78,12 +78,12 @@ void ccReg_PublicRequests_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _
 }
 
 ccReg::TID ccReg_PublicRequests_i::getRowId(CORBA::UShort _row)
-    throw (ccReg::Table::INVALID_ROW) {
+    throw (Registry::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
   const Fred::PublicRequest::PublicRequest *request = request_list_->get(_row);
   if (!request)
-    throw ccReg::Table::INVALID_ROW();
+    throw Registry::Table::INVALID_ROW();
   return request->getId();
 }
 

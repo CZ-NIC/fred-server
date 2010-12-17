@@ -33,12 +33,12 @@ Registry::Table::ColumnHeaders* ccReg_NSSets_i::getColumnHeaders() {
 
 Registry::TableRow* 
 ccReg_NSSets_i::getRow(CORBA::UShort row)
-  throw (ccReg::Table::INVALID_ROW)
+  throw (Registry::Table::INVALID_ROW)
 {
   Logging::Context ctx(base_context_);
 
   const Fred::NSSet::NSSet *n = nl->getNSSet(row);
-  if (!n) throw ccReg::Table::INVALID_ROW();
+  if (!n) throw Registry::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(4);
 
@@ -78,12 +78,12 @@ ccReg_NSSets_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
 ccReg::TID 
 ccReg_NSSets_i::getRowId(CORBA::UShort row) 
-  throw (ccReg::Table::INVALID_ROW)
+  throw (Registry::Table::INVALID_ROW)
 {
   Logging::Context ctx(base_context_);
 
   const Fred::NSSet::NSSet *n = nl->getNSSet(row);
-  if (!n) throw ccReg::Table::INVALID_ROW();
+  if (!n) throw Registry::Table::INVALID_ROW();
   return n->getId();
 }
 

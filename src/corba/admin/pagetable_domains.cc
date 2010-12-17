@@ -57,14 +57,14 @@ Registry::Table::ColumnHeaders* ccReg_Domains_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_Domains_i::getRow(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW)
+    throw (Registry::Table::INVALID_ROW)
 {
     Logging::Context ctx(base_context_);
     try
     {
       const Fred::Domain::Domain *d = dl->getDomain(row);
       if (!d)
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
       Registry::TableRow *tr = new Registry::TableRow;
       tr->length(21);
 
@@ -99,7 +99,7 @@ Registry::TableRow* ccReg_Domains_i::getRow(CORBA::UShort row)
     catch(...)
     {
         LOGGER(PACKAGE).error("ccReg_Domains_i::getRow error");
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     }//catch(...)
 }
 
@@ -177,20 +177,20 @@ void ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 }
 
 ccReg::TID ccReg_Domains_i::getRowId(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW)
+    throw (Registry::Table::INVALID_ROW)
 {
   Logging::Context ctx(base_context_);
     try
     {
       const Fred::Domain::Domain *d = dl->getDomain(row);
       if (!d)
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
       return d->getId();
     }//try
     catch(...)
     {
         LOGGER(PACKAGE).error("ccReg_Domains_i::getRowId error");
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     }//catch(...)
 }
 

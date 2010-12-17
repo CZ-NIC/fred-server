@@ -69,7 +69,7 @@ ccReg_PageTable_i::numPages()
 
 Registry::TableRow* 
 ccReg_PageTable_i::getPageRow(CORBA::Short pageRow)
-  throw (ccReg::Table::INVALID_ROW)
+  throw (Registry::Table::INVALID_ROW)
 {
   return getRow(pageRow + start());
 }
@@ -86,7 +86,7 @@ ccReg_PageTable_i::numPageRows()
 
 ccReg::TID 
 ccReg_PageTable_i::getPageRowId(CORBA::Short row) 
-  throw (ccReg::Table::INVALID_ROW)
+  throw (Registry::Table::INVALID_ROW)
 {
   return getRowId(row + start());
 }

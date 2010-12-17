@@ -59,8 +59,8 @@ using namespace Database;
 
 #define DECL_PAGETABLE_I \
   Registry::Table::ColumnHeaders* getColumnHeaders(); \
-  Registry::TableRow* getRow(CORBA::UShort row) throw (ccReg::Table::INVALID_ROW);\
-  ccReg::TID getRowId(CORBA::UShort row) throw (ccReg::Table::INVALID_ROW);\
+  Registry::TableRow* getRow(CORBA::UShort row) throw (Registry::Table::INVALID_ROW);\
+  ccReg::TID getRowId(CORBA::UShort row) throw (Registry::Table::INVALID_ROW);\
   char* outputCSV();\
   CORBA::Short numRows();\
   CORBA::Short numColumns();\
@@ -102,9 +102,9 @@ public:
   virtual void setTimeout(CORBA::Long _timeout);
   CORBA::Short start();
   CORBA::Short numPages();
-  Registry::TableRow* getPageRow(CORBA::Short pageRow) throw (ccReg::Table::INVALID_ROW);
+  Registry::TableRow* getPageRow(CORBA::Short pageRow) throw (Registry::Table::INVALID_ROW);
   CORBA::Short numPageRows();
-  ccReg::TID getPageRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  ccReg::TID getPageRowId(CORBA::Short row) throw (Registry::Table::INVALID_ROW);
   void reloadF();
   ccReg::Filters::Compound_ptr add();
   ccReg::FilterType filter() {

@@ -38,13 +38,13 @@ ccReg_KeySets_i::getColumnHeaders()
 
 Registry::TableRow *
 ccReg_KeySets_i::getRow(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW)
+    throw (Registry::Table::INVALID_ROW)
 {
   Logging::Context ctx(base_context_);
 
     const Fred::KeySet::KeySet *k = m_kl->getKeySet(row);
     if (!k)
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(4);
 
@@ -87,13 +87,13 @@ ccReg_KeySets_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 
 ccReg::TID
 ccReg_KeySets_i::getRowId(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW)
+    throw (Registry::Table::INVALID_ROW)
 {
   Logging::Context ctx(base_context_);
 
     const Fred::KeySet::KeySet *k = m_kl->getKeySet(row);
     if (!k)
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     return k->getId();
 }
 

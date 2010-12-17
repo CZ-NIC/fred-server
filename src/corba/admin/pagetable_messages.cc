@@ -81,7 +81,7 @@ ccReg_Messages_i::getColumnHeaders()
 
 Registry::TableRow *
 ccReg_Messages_i::getRow(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW)
+    throw (Registry::Table::INVALID_ROW)
 {
 
     Logging::Context ctx(base_context_);
@@ -94,7 +94,7 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
     catch(std::exception& ex)
     {
     	LOGGER(PACKAGE).error("ccReg_Messages_i::getRow invalid row");
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     }
 
 	try
@@ -135,12 +135,12 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
     {
         LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::getRow ex: %1%")
     		% ex.what());
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     }
     catch(...)
     {
         LOGGER(PACKAGE).error("ccReg_Messages_i::getRow unknown exception");
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     }
 }
 
@@ -221,7 +221,7 @@ ccReg_Messages_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 
 ccReg::TID
 ccReg_Messages_i::getRowId(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW)
+    throw (Registry::Table::INVALID_ROW)
 {
 	try
 	{
@@ -238,12 +238,12 @@ ccReg_Messages_i::getRowId(CORBA::UShort row)
     {
         LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::getRowId ex: %1%")
     		% ex.what());
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     }
     catch(...)
     {
         LOGGER(PACKAGE).error("ccReg_Messages_i::getRowId unknown exception");
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     }
 }
 

@@ -30,12 +30,12 @@ Registry::Table::ColumnHeaders* ccReg_Files_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_Files_i::getRow(CORBA::UShort _row)
-    throw (ccReg::Table::INVALID_ROW) {
+    throw (Registry::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
   const Fred::File::File *file = file_list_->get(_row);
   if (!file)
-    throw ccReg::Table::INVALID_ROW();
+    throw Registry::Table::INVALID_ROW();
 
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(4);
@@ -70,12 +70,12 @@ void ccReg_Files_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
 }
 
 ccReg::TID ccReg_Files_i::getRowId(CORBA::UShort _row)
-    throw (ccReg::Table::INVALID_ROW) {
+    throw (Registry::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
   const Fred::File::File *file = file_list_->get(_row);
   if (!file)
-    throw ccReg::Table::INVALID_ROW();
+    throw Registry::Table::INVALID_ROW();
   return file->getId();
 }
 

@@ -32,11 +32,11 @@ Registry::Table::ColumnHeaders* ccReg_Contacts_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_Contacts_i::getRow(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW) {
+    throw (Registry::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
   const Fred::Contact::Contact *c = cl->getContact(row);
-  if (!c) throw ccReg::Table::INVALID_ROW();
+  if (!c) throw Registry::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(6);
 
@@ -82,11 +82,11 @@ void ccReg_Contacts_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 }
 
 ccReg::TID ccReg_Contacts_i::getRowId(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW) {
+    throw (Registry::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
   const Fred::Contact::Contact *c = cl->getContact(row);
-  if (!c) throw ccReg::Table::INVALID_ROW();
+  if (!c) throw Registry::Table::INVALID_ROW();
   return c->getId();
 }
 

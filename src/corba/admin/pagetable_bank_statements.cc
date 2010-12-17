@@ -41,13 +41,13 @@ ccReg_Statements_i::getColumnHeaders()
 
 Registry::TableRow *
 ccReg_Statements_i::getRow(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW)
+    throw (Registry::Table::INVALID_ROW)
 {
     Logging::Context ctx(base_context_);
 
     const Fred::Banking::Statement *data = list_->get(row);
     if (!data) {
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     }
     Registry::TableRow *tr = new Registry::TableRow;
 
@@ -109,13 +109,13 @@ ccReg_Statements_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 
 ccReg::TID
 ccReg_Statements_i::getRowId(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW)
+    throw (Registry::Table::INVALID_ROW)
 {
     Logging::Context ctx(base_context_);
 
     const Fred::Banking::Statement *data = list_->get(row);
     if (!data) {
-        throw ccReg::Table::INVALID_ROW();
+        throw Registry::Table::INVALID_ROW();
     }
     return data->getId();
 }

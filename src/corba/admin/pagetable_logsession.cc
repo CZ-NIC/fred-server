@@ -31,7 +31,7 @@ Registry::Table::ColumnHeaders* ccReg_LogSession_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_LogSession_i::getRow(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW) {
+    throw (Registry::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
   try {
@@ -46,7 +46,7 @@ Registry::TableRow* ccReg_LogSession_i::getRow(CORBA::UShort row)
     return tr;
   }
   catch (...) {
-    throw ccReg::Table::INVALID_ROW();
+    throw Registry::Table::INVALID_ROW();
   }
 }
 
@@ -75,12 +75,12 @@ void ccReg_LogSession_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 }
 
 ccReg::TID ccReg_LogSession_i::getRowId(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW) {
+    throw (Registry::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
   const Fred::Session::Session *a = m_lel->get(row);
   if (!a)
-    throw ccReg::Table::INVALID_ROW();
+    throw Registry::Table::INVALID_ROW();
   return a->getId();
 }
 
