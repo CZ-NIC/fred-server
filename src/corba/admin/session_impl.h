@@ -137,7 +137,7 @@ private:
   Registry::Message::Detail* createMessageDetail(Fred::Messages::MessagePtr _message);
 
  
-  void _createUpdateRegistrar(const Registry::Registrar::Detail& _registrar);
+  void _createUpdateRegistrar(const ccReg::Registrar& _registrar);
 
 public:
   ccReg_Session_i(const std::string& _session_id,
@@ -160,8 +160,8 @@ public:
   Registry::PageTable_ptr getPageTable(ccReg::FilterType _type);
   CORBA::Any* getDetail(ccReg::FilterType _type, ccReg::TID _id);
 
-  ccReg::TID updateRegistrar(const Registry::Registrar::Detail& _registrar);
-  void createRegistrar(const Registry::Registrar::Detail& _registrar);
+  ccReg::TID updateRegistrar(const ccReg::Registrar& _registrar);
+  void createRegistrar(const ccReg::Registrar& _registrar);
 
   void setHistory(CORBA::Boolean _flag);
 };
