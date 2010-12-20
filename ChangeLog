@@ -1,3 +1,9 @@
+2010-12-20 Juraj Vicenik, Jiri Sadek (2.5.13)
+
+  * fix invalid throw usage
+
+  * fix bad query in commitPreparedTransaction(...)
+
 2010-12-14 Juraj Vicenik, Jiri Sadek (2.5.12)
 
   * fred-mifd - SK support, epp action clienttrid removed from
