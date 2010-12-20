@@ -7115,7 +7115,7 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
 ccReg::Response *
 ccReg_EPP_i::ObjectSendAuthInfo(
         short act, const char * table, const char *fname, const char *name,
-        CORBA::Long clientID, const char* clTRID, const char* XML)
+        const ccReg::EppParams &params)
 {
     int zone;
     int id = 0;
@@ -7125,13 +7125,13 @@ ccReg_EPP_i::ObjectSendAuthInfo(
     ParsedAction paction;
     paction.add(1,(const char*)name);
 
-    EPPAction action(this, clientID, act, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, act, params.clTRID, params.XML, &paction);
 
     // Database::Manager db(new Database::ConnectionFactory(database));
     // std::auto_ptr<Database::Connection> conn;
     // try { conn.reset(db.getConnection()); } catch (...) {}
 
-    LOG( NOTICE_LOG , "ObjectSendAuthInfo type %d  object [%s]  clientID -> %d clTRID [%s] " , act , name , (int ) clientID , clTRID );
+    LOG( NOTICE_LOG , "ObjectSendAuthInfo type %d  object [%s]  clientID -> %d clTRID [%s] " , act , name , (int ) params.sessionID , (const char*)params.clTRID );
 
     switch (act) {
         case EPP_ContactSendAuthInfo:
@@ -7210,11 +7210,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                         Fred::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
 
 	    new_request->setEppActionId(action.getDB()->GetActionID());
-            // TODO waiting for interface change in IDL
-     //       new_request->setRequestId(params.requestID);
-            new_request->setRegistrarId(GetRegistrarID(clientID));
-
-            new_request->setRegistrarId(GetRegistrarID(clientID));
+            new_request->setRequestId(params.requestID);
+            new_request->setRegistrarId(GetRegistrarID(params.sessionID));
             new_request->addObject(Fred::PublicRequest::OID(id));
             if (!new_request->check()) {
                 LOG(WARNING_LOG, "authinfo request for %s is prohibited",name);
@@ -7242,51 +7239,49 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 }
 
 ccReg::Response* ccReg_EPP_i::domainSendAuthInfo(
-  const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML)
+  const char* fqdn, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
   ConnectionReleaser releaser;
 
-  return ObjectSendAuthInfo( EPP_DomainSendAuthInfo , "DOMAIN" , "fqdn" , fqdn , clientID , clTRID, XML);
+  return ObjectSendAuthInfo( EPP_DomainSendAuthInfo , "DOMAIN" , "fqdn" , fqdn , params);
 }
 ccReg::Response* ccReg_EPP_i::contactSendAuthInfo(
-  const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML)
+  const char* handle, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
   ConnectionReleaser releaser;
 
-  return ObjectSendAuthInfo( EPP_ContactSendAuthInfo , "CONTACT" , "handle" , handle , clientID , clTRID, XML);
+  return ObjectSendAuthInfo( EPP_ContactSendAuthInfo , "CONTACT" , "handle" , handle , params);
 }
 ccReg::Response* ccReg_EPP_i::nssetSendAuthInfo(
-  const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML)
+  const char* handle, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
   ConnectionReleaser releaser;
 
-  return ObjectSendAuthInfo( EPP_NSSetSendAuthInfo , "NSSET" , "handle" , handle , clientID , clTRID, XML);
+  return ObjectSendAuthInfo( EPP_NSSetSendAuthInfo , "NSSET" , "handle" , handle , params);
 }
 
 ccReg::Response *
 ccReg_EPP_i::keysetSendAuthInfo(
         const char *handle,
-        CORBA::Long clientID,
-        const char *clTRID,
-        const char *XML)
+        const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
   ConnectionReleaser releaser;
 
     return ObjectSendAuthInfo(
             EPP_KeySetSendAuthInfo, "KEYSET",
-            "handle", handle, clientID, clTRID, XML);
+            "handle", handle, params);
 }
 
 ccReg::Response* ccReg_EPP_i::info(

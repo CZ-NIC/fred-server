@@ -35,8 +35,6 @@ KeysetClient::runMethod()
         list();
     } else if (m_conf.hasOpt(KEYSET_CHECK_NAME)) {
         check();
-    } else if (m_conf.hasOpt(KEYSET_SEND_AUTH_INFO_NAME)) {
-        send_auth_info();
     } else if (m_conf.hasOpt(KEYSET_INFO2_NAME)) {
         info2();
     } else if (m_conf.hasOpt(KEYSET_INFO_NAME)) {
@@ -226,25 +224,6 @@ KeysetClient::check()
 }
 
 void
-KeysetClient::send_auth_info()
-{
-    callHelp(m_conf, no_help);
-    std::string name = m_conf.get<std::string>(KEYSET_SEND_AUTH_INFO_NAME).c_str();
-    std::string cltrid;
-    std::string xml;
-    xml = "<handle>" + name + "</handle>";
-    cltrid = "keyset_send_auth_info";
-
-    CLIENT_LOGIN;
-    r = epp->keysetSendAuthInfo(name.c_str(), clientId, cltrid.c_str(), xml.c_str());
-
-    std::cout << r->code << std::endl;
-
-    CLIENT_LOGOUT;
-    return;
-}
-
-void
 KeysetClient::info()
 {
     callHelp(m_conf, info_help);
@@ -354,7 +333,6 @@ KeysetClient::m_opts[] = {
     ADDOPT(KEYSET_LIST_PLAIN_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(KEYSET_INFO_NAME, TYPE_STRING, true, true),
     ADDOPT(KEYSET_INFO2_NAME, TYPE_STRING, true, true),
-    ADDOPT(KEYSET_SEND_AUTH_INFO_NAME, TYPE_STRING, true, true),
     ADDOPT(KEYSET_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
     add_ID,
     add_HANDLE,

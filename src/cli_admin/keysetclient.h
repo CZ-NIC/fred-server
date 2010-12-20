@@ -35,8 +35,6 @@
 #define KEYSET_LIST_PLAIN_NAME_DESC "list of all keysets (via ccReg_i)"
 #define KEYSET_CHECK_NAME           "keyset_check"
 #define KEYSET_CHECK_NAME_DESC      "check keyset state"
-#define KEYSET_SEND_AUTH_INFO_NAME      "keyset_send_auth_info"
-#define KEYSET_SEND_AUTH_INFO_NAME_DESC "send authorization info"
 #define KEYSET_INFO_NAME            "keyset_info"
 #define KEYSET_INFO_NAME_DESC       "keyset info (via epp_impl)"
 #define KEYSET_INFO2_NAME           "keyset_info2"
@@ -83,7 +81,6 @@ public:
     void list();
     void list_plain();
     void check();
-    void send_auth_info();
     void info();
     void info2();
 

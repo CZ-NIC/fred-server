@@ -177,7 +177,7 @@ public:
   ccReg::Response* ObjectCheck(short act, const char * table, const char *fname, const ccReg::Check& chck, ccReg::CheckResp_out a, CORBA::Long clientID, const char* clTRID, const char* XML);
 
   // general send auth info for objects
-  ccReg::Response * ObjectSendAuthInfo(short act, const char * table, const char *fname, const char *name, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response * ObjectSendAuthInfo(short act, const char * table, const char *fname, const char *name, const ccReg::EppParams &params);
 
   CORBA::Boolean SaveOutXML(const char* svTRID, const char* XML);
 
@@ -241,13 +241,13 @@ public:
   ccReg::Response* ObjectTransfer(short act, const char*table, const char *fname, const char *name, const char* authInfo, const ccReg::EppParams &params);
 
   // 
-  ccReg::Response* domainSendAuthInfo(const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* domainSendAuthInfo(const char* fqdn, const ccReg::EppParams &params);
   
-  ccReg::Response* contactSendAuthInfo(const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* contactSendAuthInfo(const char* handle, const ccReg::EppParams &params);
 
-  ccReg::Response* nssetSendAuthInfo(const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* nssetSendAuthInfo(const char* handle, const ccReg::EppParams &params);
 
-  ccReg::Response *keysetSendAuthInfo( const char *handle, CORBA::Long clientID, const char *clTRID, const char *XML);
+  ccReg::Response *keysetSendAuthInfo( const char *handle, const ccReg::EppParams &params);
 
   // EPP print out
   ccReg::Response* ContactList(ccReg::Lists_out contacts, CORBA::Long clientID, const char* clTRID, const char* XML);
