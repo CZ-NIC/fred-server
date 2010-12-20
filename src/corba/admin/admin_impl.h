@@ -177,6 +177,10 @@ public:
   );
   ccReg::Admin::Buffer* getPublicRequestPDF(ccReg::TID id, const char *lang);
 
+  ::CORBA::ULongLong countEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org);
+  ccReg::EnumDictList* getEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org, ::CORBA::Long offset, ::CORBA::Long limit);
+  ccReg::EnumDictList* getEnumDomainsRecentEntries(::CORBA::Long count);
+
   Registry::Registrar::Certification::Manager_ptr getCertificationManager();
   Registry::Registrar::Group::Manager_ptr getGroupManager();
 

@@ -1863,6 +1863,165 @@ std::string ccReg_Admin_i::_createQueryForEnumDomainsByRegistrant(const std::str
 }
 
 
+/* IDL method */
+::CORBA::ULongLong ccReg_Admin_i::countEnumDomainsByRegistrant(const char* name,
+        ::CORBA::Boolean by_person, ::CORBA::Boolean by_org)
+{
+  Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+
+  try {
+    if (!by_person && !by_org) {
+        return 0;
+    }
+
+    std::string select_part = "count(*)";
+
+    std::string count_query = _createQueryForEnumDomainsByRegistrant(select_part,
+            name, by_person, by_org);
+
+    Database::Connection conn = Database::Manager::acquire();
+    Result count_result  = conn.exec(count_query);
+
+    return static_cast<unsigned long long>(count_result[0][0]);
+  }
+  catch (Database::Exception &ex) {
+      LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+      throw ccReg::Admin::InternalServerError();
+  }
+  catch (std::exception &ex) {
+    LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+    throw ccReg::Admin::InternalServerError();
+
+  }
+  catch (...) {
+    throw ccReg::Admin::InternalServerError();
+  }
+}
+
+
+/* IDL method */
+ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsByRegistrant(const char* name,
+        ::CORBA::Boolean by_person, ::CORBA::Boolean by_org,
+        ::CORBA::Long offset, ::CORBA::Long limit)
+{
+  Logging::Context(server_name_);
+  ConnectionReleaser releaser;
+
+  try {
+    ccReg::EnumDictList_var data = new ccReg::EnumDictList();
+    if (!by_person && !by_org) {
+        return data._retn();
+    }
+
+    std::string select_part = "COALESCE(c.organization, c.name) AS holder, "    \
+              "TRIM(COALESCE(c.street1, '')), TRIM(COALESCE(c.street2, '')), "  \
+              "TRIM(COALESCE(c.street3, '')), TRIM(COALESCE(c.city, '')), "     \
+              "TRIM(COALESCE(c.postalcode, '')), "                              \
+              "TRIM(COALESCE(c.stateorprovince, '')), "                         \
+              "TRIM(COALESCE(c.country, '')), oreg.name AS domain";
+
+    std::string data_query = _createQueryForEnumDomainsByRegistrant(select_part,
+            name, by_person, by_org);
+    data_query += str(boost::format(" ORDER BY holder OFFSET %1% LIMIT %2%") % offset % limit);
+    /* exec query */
+    Database::Connection conn = Database::Manager::acquire();
+    Result data_result  = conn.exec(data_query);
+
+    /* fill result data */
+    unsigned int size = data_result.size();
+    data->length(size);
+    for (unsigned int i = 0; i < size; i++) {
+      ccReg::TAddress addr;
+      addr.street1    = CORBA::string_dup(static_cast<std::string>(data_result[i][1]).c_str());
+      addr.street2    = CORBA::string_dup(static_cast<std::string>(data_result[i][2]).c_str());
+      addr.street3    = CORBA::string_dup(static_cast<std::string>(data_result[i][3]).c_str());
+      addr.city       = CORBA::string_dup(static_cast<std::string>(data_result[i][4]).c_str());
+      addr.postalcode = CORBA::string_dup(static_cast<std::string>(data_result[i][5]).c_str());
+      addr.province   = CORBA::string_dup(static_cast<std::string>(data_result[i][6]).c_str());
+      addr.country    = CORBA::string_dup(static_cast<std::string>(data_result[i][7]).c_str());
+
+      data[i].name    = CORBA::string_dup(((std::string)data_result[i][0]).c_str());
+      data[i].address = addr;
+      data[i].domain  = CORBA::string_dup(((std::string)data_result[i][8]).c_str());
+    }
+    return data._retn();
+  }
+  catch (Database::Exception &ex) {
+      LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+      throw ccReg::Admin::InternalServerError();
+  }
+  catch (std::exception &ex) {
+    LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+    throw ccReg::Admin::InternalServerError();
+
+  }
+  catch (...) {
+    throw ccReg::Admin::InternalServerError();
+  }
+}
+
+
+/* IDL method */
+ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsRecentEntries(::CORBA::Long count)
+{
+  Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+
+  try {
+    boost::format data_query;
+    data_query = boost::format("SELECT COALESCE(c.organization, c.name) AS holder, " \
+                "TRIM(COALESCE(c.street1, '')), TRIM(COALESCE(c.street2, '')), "     \
+                "TRIM(COALESCE(c.street3, '')), TRIM(COALESCE(c.city, '')), "        \
+                "TRIM(COALESCE(c.postalcode, '')), "                                 \
+                "TRIM(COALESCE(c.stateorprovince, '')), "                            \
+                "TRIM(COALESCE(c.country, '')), oreg.name AS domain "                \
+                "FROM domain d JOIN zone z ON (z.id = d.zone) "                      \
+                "JOIN enumval ev ON (d.id = ev.domainid) "                           \
+                "JOIN object_registry oreg ON (oreg.id = d.id) "                     \
+                "JOIN contact c ON (c.id = d.registrant) "                           \
+                "WHERE z.enum_zone = 't' AND ev.publish = 't' "                      \
+                "ORDER BY oreg.crdate DESC LIMIT %1%")
+                 % count;
+
+    /* execute query */
+    Database::Connection conn = Database::Manager::acquire();
+    Result data_result = conn.exec(data_query.str());
+
+    /* fill result data */
+    ccReg::EnumDictList_var data = new ccReg::EnumDictList();
+
+	unsigned int size = data_result.size();
+	data->length(size);
+	for(unsigned i=0; i<size; i++) {
+      ccReg::TAddress addr;
+      addr.street1    = CORBA::string_dup(static_cast<std::string>(data_result[i][1]).c_str());
+      addr.street2    = CORBA::string_dup(static_cast<std::string>(data_result[i][2]).c_str());
+      addr.street3    = CORBA::string_dup(static_cast<std::string>(data_result[i][3]).c_str());
+      addr.city       = CORBA::string_dup(static_cast<std::string>(data_result[i][4]).c_str());
+      addr.postalcode = CORBA::string_dup(static_cast<std::string>(data_result[i][5]).c_str());
+      addr.province   = CORBA::string_dup(static_cast<std::string>(data_result[i][6]).c_str());
+      addr.country    = CORBA::string_dup(static_cast<std::string>(data_result[i][7]).c_str());
+
+      data[i].name    = CORBA::string_dup(((std::string)data_result[i][0]).c_str());
+      data[i].address = addr;
+      data[i].domain  = CORBA::string_dup(((std::string)data_result[i][8]).c_str());
+    }
+    return data._retn();
+  }
+  catch (Database::Exception &ex) {
+      LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+      throw ccReg::Admin::InternalServerError();
+  }
+  catch (std::exception &ex) {
+    LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+    throw ccReg::Admin::InternalServerError();
+
+  }
+  catch (...) {
+    throw ccReg::Admin::InternalServerError();
+  }
+}
 
 Registry::Registrar::Certification::Manager_ptr ccReg_Admin_i::getCertificationManager()
 {
