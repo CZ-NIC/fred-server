@@ -693,7 +693,7 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         Database::Connection conn = Database::Manager::acquire();
         Database::Result ractionid = conn.exec_params(
                 "SELECT response FROM action"
-                " WHERE id = $1::text",
+                " WHERE id = $1::integer",
                 Database::query_param_list(aid));
         if (ractionid.size() != 1) {
             LOGGER(PACKAGE).error("unable to find unique action based on ID stored in map");
@@ -764,7 +764,7 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
         Database::Result result = conn.exec_params(
                 "SELECT id FROM action WHERE"
                 " enddate IS NULL AND response IS NULL"
-                " AND id = $1::text",
+                " AND id = $1::integer",
                 Database::query_param_list(aid));
         
         if (result.size() != 1) {
