@@ -23,6 +23,7 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include <stdexcept>
 
 
 #include "registrar.h"
@@ -2063,6 +2064,17 @@ public:
     {
         Database::Connection conn = Database::Manager::acquire();
 
+        Database::Result reg_id = conn.exec_params(
+                "select id from registrar where id = $1::integer"
+                , Database::query_param_list (registrar_id));
+        if(reg_id.size() != 1)
+        {
+            throw std::runtime_error(
+                std::string("getRegistrarCertifications: registrar with id: ")
+                + boost::lexical_cast<std::string>(registrar_id)
+                + " doesn't exist" );
+        }
+
         CertificationSeq ret;//returned
 
         std::stringstream query;
@@ -2218,32 +2230,6 @@ public:
               << " order by member_from desc, id desc limit 1)"  ;
 
               conn.exec(query.str());
-
-              /*not working so far
-              std::string query(
-              "update registrar_group_map set member_until = CURRENT_DATE"
-              " where id = (select id from registrar_group_map where"
-              " registrar_id = $1::bigint"
-              " and registrar_group_id = $2::bigint"
-              " order by member_from desc, id desc limit 1)");
-
-              std::vector< const char * > paramValues;
-              std::vector<int> paramLengths;
-              std::vector<int> paramFormats;
-
-              paramValues.push_back(reinterpret_cast<const char * >(&registrar_id));
-              paramLengths.push_back(sizeof(registrar_id));
-              paramFormats.push_back(1);
-
-              paramValues.push_back(reinterpret_cast<const char * >(&registrar_group_id));
-              paramLengths.push_back(sizeof(registrar_group_id));
-              paramFormats.push_back(1);
-
-              conn.exec_params(query //one command query
-                        , paramValues //pointer to memory with parameters data
-                        , paramLengths //sizes of memory with parameters data
-                        , paramFormats); //1-binary like int or double, 0- text like const char *
-              */
 
               tx.commit();
           }//try
