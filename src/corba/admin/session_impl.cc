@@ -1544,7 +1544,7 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Fred::Regist
   return detail;
 }
 
-ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
+ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _registrar)
 {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
