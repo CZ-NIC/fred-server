@@ -283,7 +283,7 @@ src_model_libmodel_a_SOURCES = src/model/object_registry_filter.cc \
 src_model_test_model_SOURCES  = src/model/test-model.cc
 
 src_model_test_model_LDFLAGS  = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-src_model_test_model_LDADD    = src/model/libmodel.a \ 
+src_model_test_model_LDADD    = src/model/libmodel.a \
         src/fredlib/banking/libbanking.a util/log/liblog.a \
         util/types/libtypes.a util/db/libdb.a \
         $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB)
