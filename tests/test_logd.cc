@@ -625,7 +625,7 @@ BOOST_AUTO_TEST_CASE( test_monitoring_flag )
 	// create monitoring file first
 	const std::string CONF_FILENAME("test_log_monitoring.conf");
 
-	ConfigFile file(CONF_FILENAME,  "127.0.0.1      0.0.0.0   216.16.16.1 2001:db8:85a3:8d3:1319:8a2e:370:7348 ::ffff:c000:280 3001:da:43bd:dead::");
+	ConfigFile file(CONF_FILENAME,  "127.0.0.1      0.0.0.0   216.16.16.1 2001:db8:85a3:8d3:1319:8a2e:370:7348 ::fffe:c000:280 3001:da:43bd:dead::");
 	// create an instance of TestImplLog
 
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info(), "test_log_monitoring.conf");
@@ -636,10 +636,10 @@ BOOST_AUTO_TEST_CASE( test_monitoring_flag )
 	test_monitoring_ip("216.16.16.2", test, false);
 	test_monitoring_ip("155.120.1.1", test, false);
 	test_monitoring_ip("2001:db8:85a3:8d3:1319:8a2e:370:7348", test, true);
-	test_monitoring_ip("::ffff:c000:280", test, true);
+	test_monitoring_ip("::fffe:c000:280", test, true);
 	test_monitoring_ip("3001:da:43bd:dead::", test, true);
 	test_monitoring_ip("3001:da:43bd:dead:123::", test, false);
-	test_monitoring_ip("::ffff:c000:28", test, false);
+	test_monitoring_ip("::fffe:c000:28", test, false);
 
 }
 
