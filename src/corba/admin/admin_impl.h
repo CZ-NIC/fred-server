@@ -125,11 +125,11 @@ public:
           ccReg::KeySetInvKeyType type,
           CORBA::Long limit);
 
-  void fillEPPAction(ccReg::EPPAction* cea,
+  void fillEPPAction(ccReg::AdminEPPAction* cea,
                      const Fred::Registrar::EPPAction *rea);
-  ccReg::EPPAction* getEPPActionById(ccReg::TID id)
+  ccReg::AdminEPPAction* getEPPActionById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
-  ccReg::EPPAction* getEPPActionBySvTRID(const char* svTRID)
+  ccReg::AdminEPPAction* getEPPActionBySvTRID(const char* svTRID)
       throw (ccReg::Admin::ObjectNotFound);
   // statistics
   CORBA::Long getDomainCount(const char *zone);

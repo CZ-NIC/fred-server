@@ -823,7 +823,7 @@ ccReg_Admin_i::getKeySetById(ccReg::TID id)
     // kf-
 // }
 
-void ccReg_Admin_i::fillEPPAction(ccReg::EPPAction* cea,
+void ccReg_Admin_i::fillEPPAction(ccReg::AdminEPPAction* cea,
                                   const Fred::Registrar::EPPAction *rea) {
   cea->id = rea->getId();
   cea->xml = DUPSTRFUN(rea->getEPPMessageIn);
@@ -837,7 +837,7 @@ void ccReg_Admin_i::fillEPPAction(ccReg::EPPAction* cea,
   cea->svTRID = DUPSTRFUN(rea->getServerTransactionId);
 }
 
-ccReg::EPPAction* ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
+ccReg::AdminEPPAction* ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
@@ -856,13 +856,13 @@ ccReg::EPPAction* ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
     db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   }
-  ccReg::EPPAction* ea = new ccReg::EPPAction;
+  ccReg::AdminEPPAction* ea = new ccReg::AdminEPPAction;
   fillEPPAction(ea, eal->get(0));
   db.Disconnect();
   return ea;
 }
 
-ccReg::EPPAction* ccReg_Admin_i::getEPPActionById(ccReg::TID id)
+ccReg::AdminEPPAction* ccReg_Admin_i::getEPPActionById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
@@ -886,7 +886,7 @@ ccReg::EPPAction* ccReg_Admin_i::getEPPActionById(ccReg::TID id)
       ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
     }
-    ccReg::EPPAction* ea = new ccReg::EPPAction;
+    ccReg::AdminEPPAction* ea = new ccReg::AdminEPPAction;
     fillEPPAction(ea, eal->get(0));
     ldb.Disconnect();
     TRACE(boost::format("[IN] ccReg_Admin_i::getEPPActionById(%1%): found action for object with handle '%2%'")
