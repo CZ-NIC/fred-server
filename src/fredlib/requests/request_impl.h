@@ -68,10 +68,10 @@ public:
 
 private:
   
-  void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::RequestProperties& props, Connection &conn, bool output, boost::mutex::scoped_lock &prop_lock);
+  void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::RequestProperties& props, Connection &conn, bool output);
   void insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::ObjectReferences& props, Connection &conn);
   bool record_check(Database::ID id, Connection &conn);
-  Database::ID find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db);
+  Database::ID find_property_name_id(const std::string &name, Connection &conn);
   inline Database::ID find_last_property_value_id(Connection &conn);
   inline Database::ID find_last_request_id(Connection &conn);
   inline void getSessionUser(Connection &conn, Database::ID session_id, std::string *user_name, Database::ID *user_id);

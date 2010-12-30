@@ -894,48 +894,54 @@ bool ManagerImpl::record_check(ID id, Connection &conn)
 
 // find ID for the given name of a property
 // if the name is tool long, it's truncated to the maximal length allowed by the database
-ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db)
+ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
 {
         TRACE("[CALL] Fred::Logger::ManagerImpl::find_property_name_id");
 	ID property_name_id;
 	std::map<std::string, ID>::iterator iter;
 
 	std::string name_trunc = name.substr(0, MAX_NAME_LENGTH);
-       
-#if ( BOOST_VERSION < 103500 ) 
-        if(!prop_add2db.locked()) 
-#else 
-        if(!prop_add2db.owns_lock()) 
-#endif
-        {
-            prop_add2db.lock();
-        }
 
-        bool db_insert = false;
-
+	boost::mutex::scoped_lock prop_check(properties_mutex);
 	iter = property_names.find(name_trunc);
 
 	if(iter != property_names.end()) {
 		property_name_id = iter->second;
 
-                prop_add2db.unlock();
+		        prop_check.unlock();
                 // unlock
         } else {
             // if the name isn't cached in the memory, try to find it in the database
+
+            prop_check.unlock();
 
             std::string s_name = conn.escape(name_trunc);
 
             boost::format query = boost::format("select id from request_property_name where name='%1%'") % s_name;
             Result res = conn.exec(query.str());
-           
+
+            if(res.size() == 0) {
+
+                // TODO
+                //  - table name should come from the class ModelRequestPropertyName
+                //  - is this the right kind of lock?
+                //  - how to release the lock in case it's not needed after next .exec?
+                // TODO
+                conn.exec("LOCK TABLE request_property_name SHARE UPDATE EXCLUSIVE MODE");
+
+                res = conn.exec(query.str());
+            }
+
             if (res.size() > 0) {
                 // okay, it was found in the database
                 property_name_id = res[0][0];
 
                 // now that we know the right database id of the name
                 // we can add it to the map
+                prop_check.lock();
                 property_names[name_trunc] = property_name_id;
-            } else {
+                prop_check.unlock();
+            } else if(res.size() == 0) {
                 // not found, we're under lock, so we can add it now
                 // and let the lock release after commiting the transaction
                 ModelRequestPropertyName pn;
@@ -946,23 +952,18 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
                     property_name_id = pn.getId();
                 } catch (Database::Exception &ex) {
                     logger_error(ex.what());
-                    prop_add2db.unlock();
                     return 0;
                 }
-                db_insert = true;
                 // we don't add the value to the map - that has to happen after the commit of this transaction
             }
-        
-            
             // if the name was inserted into database, we have to keep it locked until commit
-            if (!db_insert) prop_add2db.unlock();
 	}
         
 	return property_name_id;
 }
 
 // insert properties for the given request record
-void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::RequestProperties& props, Connection &conn, bool output, boost::mutex::scoped_lock &prop_lock)
+void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::RequestProperties& props, Connection &conn, bool output)
 {
         TRACE("[CALL] Fred::Logger::ManagerImpl::insert_props");
 	ID property_name_id, last_id = 0;
@@ -972,7 +973,7 @@ void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool 
 	}
 
 	// process the first record
-	property_name_id = find_property_name_id(props[0].name, conn, prop_lock);
+	property_name_id = find_property_name_id(props[0].name, conn);
 
 	if (props[0].child) {
 		// the first property is set to child - this is an error
@@ -993,7 +994,7 @@ void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool 
 
 	// process the rest of the sequence
 	for (unsigned i = 1; i < props.size(); i++) {
-		property_name_id = find_property_name_id(props[i].name, conn, prop_lock);
+		property_name_id = find_property_name_id(props[i].name, conn);
 
 		// create a new object for each iteration
 		// because ParentId must alternate between NULL and some value
@@ -1046,14 +1047,9 @@ void ManagerImpl::insert_obj_ref(DateTime request_time, ServiceType service, boo
 }
 
 void ManagerImpl::insert_props_pub(DateTime request_time, ServiceType request_service_id, bool monitoring, ID request_id, const Fred::Logger::RequestProperties& props) {
-#if ( BOOST_VERSION < 103500 ) 
-        boost::mutex::scoped_lock prop_lock(properties_mutex, false);
-#else 
-        boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
-#endif
         Connection conn = get_connection();
         // insert_props for migration is not going to be so simple, TODO - true here is just TEMP
-	insert_props(request_time, request_service_id, monitoring, request_id, props, conn, true, prop_lock);
+	insert_props(request_time, request_service_id, monitoring, request_id, props, conn, true);
 }
 
 
@@ -1067,13 +1063,6 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
 #endif
         TRACE("[CALL] Fred::Logger::ManagerImpl::i_createRequest");
         std::auto_ptr<Logging::Context> ctx_entry;
-
-
-#if ( BOOST_VERSION < 103500 ) 
-        boost::mutex::scoped_lock prop_lock(properties_mutex, false);
-#else 
-        boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
-#endif
 
         logd_auto_db db;
 
@@ -1153,7 +1142,7 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
 		}
 
                 if(props.size() > 0) {
-                        insert_props(time, service, monitoring, request_id, props, db, false, prop_lock);
+                        insert_props(time, service, monitoring, request_id, props, db, false);
                 }
                 if(refs.size() > 0) {
                         insert_obj_ref(time, service, monitoring, request_id, refs, db);
@@ -1210,14 +1199,6 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Fred::Logger::RequestPrope
 
         logd_auto_db db;
 
-#if ( BOOST_VERSION < 103500 ) 
-        boost::mutex::scoped_lock prop_lock(properties_mutex, false);
-#else 
-        boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
-#endif
-
-
-
 	try {
 		// perform check
 #ifdef LOGD_VERIFY_INPUT
@@ -1238,7 +1219,7 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Fred::Logger::RequestPrope
 		DateTime time = res[0][0].operator ptime();
 		ServiceType service_id = (ServiceType)(int)res[0][1];
 		bool monitoring        = (bool)res[0][2];
-		insert_props(time, service_id, monitoring, id, props, db, true, prop_lock);
+		insert_props(time, service_id, monitoring, id, props, db, true);
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
                 throw InternalServerError(ex.what());
@@ -1301,15 +1282,6 @@ bool ManagerImpl::i_closeRequest(
 #endif
         
 	TRACE("[CALL] Fred::Logger::ManagerImpl::i_closeRequest");
-
-    // THIS lock is used for inserting new properties. It MUST be
-	// unlocked (if it gets locked at all)
-    // after the transaction is commited
-#if ( BOOST_VERSION < 103500 ) 
-	boost::mutex::scoped_lock prop_lock(properties_mutex, false);
-#else 
-	boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
-#endif
 
 	try {
 #ifdef LOGD_VERIFY_INPUT
@@ -1379,7 +1351,7 @@ bool ManagerImpl::i_closeRequest(
 
 	// insert properties
 	if(props.size() > 0)
-		insert_props(request_time, service_id, monitoring, id, props, db, true, prop_lock);
+		insert_props(request_time, service_id, monitoring, id, props, db, true);
 	if(refs.size() > 0)
 		insert_obj_ref(request_time, service_id, monitoring, id, refs, db);
 
