@@ -54,6 +54,9 @@ public:
     static const field_list& getFields() {
         return fields;
     }
+    static const std::string &getTableName() {
+        return table_name;
+    }
 
 protected:
     Field::Field<unsigned long long> m_id;

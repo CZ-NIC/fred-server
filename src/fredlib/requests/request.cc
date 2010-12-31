@@ -921,13 +921,9 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
             Result res = conn.exec(query.str());
 
             if(res.size() == 0) {
-
-                // TODO
-                //  - table name should come from the class ModelRequestPropertyName
-                //  - is this the right kind of lock?
-                //  - how to release the lock in case it's not needed after next .exec?
-                // TODO
-                conn.exec("LOCK TABLE request_property_name SHARE UPDATE EXCLUSIVE MODE");
+                boost::format lockq = boost::format("LOCK TABLE %1% SHARE ROW EXCLUSIVE MODE")
+                    % ModelRequestPropertyName::getTableName();
+                conn.exec(lockq.str());
 
                 res = conn.exec(query.str());
             }
