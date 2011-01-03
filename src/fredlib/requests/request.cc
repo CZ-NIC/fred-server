@@ -929,7 +929,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
             Result res = conn.exec(query.str());
 
             if(res.size() == 0) {
-                boost::format lockq = boost::format("LOCK TABLE %1% SHARE ROW EXCLUSIVE MODE")
+                boost::format lockq = boost::format("LOCK TABLE %1% IN SHARE ROW EXCLUSIVE MODE")
                     % ModelRequestPropertyName::getTableName();
                 conn.exec(lockq.str());
 
