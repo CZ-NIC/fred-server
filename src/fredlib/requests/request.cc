@@ -457,8 +457,16 @@ public:
         }
     }
     catch (Database::Exception& ex) {
-      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-      clear();
+        // TODO this is a temporary hack which has to be removed
+        std::string message = ex.what();
+        if(message.find("statement timeout") != std::string::npos) {
+            LOGGER(PACKAGE).info("Statement timeout in request list.");
+            clear();
+            throw;
+        } else {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            clear();
+        }
     }
     catch (std::exception& ex) {
       LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
