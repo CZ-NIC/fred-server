@@ -5,7 +5,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include "corba/ccReg.hh"
+#include "corba/Registry.hh"
 #include "corba/nameservice.h"
 
 class TechCheckManager {

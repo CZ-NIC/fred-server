@@ -14,7 +14,7 @@ include $(top_srcdir)/am_doxygen.am
 
 
 CLEANFILES=config/server.conf config/hpmail.conf init-scripts/fred-server \
-        src/corba/ccRegSK.cc src/corba/ccRegDynSK.cc src/corba/ccRegSK.h src/corba/ccReg.hh \
+        src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/RegistrySK.h src/corba/Registry.hh \
         src/corba/MessagesSK.cc src/corba/MessagesDynSK.cc src/corba/MessagesSK.h src/corba/Messages.hh \
         src/corba/MojeIDSK.cc src/corba/MojeIDDynSK.cc src/corba/MojeIDSK.h src/corba/MojeID.hh \
         src/corba/FileManagerSK.cc src/corba/FileManagerDynSK.cc src/corba/FileManagerSK.h src/corba/FileManager.hh \
@@ -448,7 +448,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	
 	
 
-IDLFILE = $(IDLDIR)/ccReg.idl
+IDLFILE = $(IDLDIR)/Registry.idl
 
 sbin_PROGRAMS = src/corba/fred-rifd src/corba/fred-adifd src/corba/fred-pifd \
         src/corba/fred-logd src/corba/messages/fred-msgd \
@@ -459,7 +459,7 @@ src_corba_test_SOURCES = src/corba/test-admin.cc
          
 src_corba_test_LDADD = $(XML2_LIBS) $(LDADD)
 
-BUILT_SOURCES = src/corba/ccRegSK.cc src/corba/MessagesSK.cc \
+BUILT_SOURCES = src/corba/RegistrySK.cc src/corba/MessagesSK.cc \
         src/corba/MojeIDSK.cc src/corba/FileManagerSK.cc src/corba/MailerSK.cc
         
 src_corba_libcorba_a_SOURCES = src/corba/nameservice.cc         \
@@ -472,7 +472,7 @@ src_corba_libcorba_a_SOURCES = src/corba/nameservice.cc         \
 					 src/corba/file_manager_client.cc \
 					 src/corba/file_manager_client.h
 
-nodist_src_corba_libcorba_a_SOURCES = src/corba/ccRegSK.cc src/corba/ccRegDynSK.cc src/corba/ccReg.hh
+nodist_src_corba_libcorba_a_SOURCES = src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/Registry.hh
 src_corba_libcorba_a_CPPFLAGS  = $(AM_CPPFLAGS)
 
 nodist_src_corba_libcorbamessages_a_SOURCES = src/corba/MessagesSK.cc src/corba/MessagesDynSK.cc src/corba/Messages.hh
@@ -499,11 +499,11 @@ src_corba_fred_logd_SOURCES   = src/corba/server.cc
         
 src_corba_fred_logd_CPPFLAGS  = $(AM_CPPFLAGS) -DLOGD
 
-src/corba/ccRegSK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/ccReg.idl $(IDLDIR)/EPP.idl $(IDLDIR)/FileManager.idl \
- $(IDLDIR)/Filters.idl $(IDLDIR)/_Logger.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/TechCheck.idl $(IDLDIR)/Whois.idl \
- $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_zone.idl $(IDLDIR)/_Admin.idl $(IDLDIR)/_dataTypes.idl $(IDLDIR)/_EPP.idl \
+src/corba/RegistrySK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Registry.idl $(IDLDIR)/EPP.idl $(IDLDIR)/FileManager.idl \
+ $(IDLDIR)/Filters.idl $(IDLDIR)/_Logger.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/TechCheck.idl \
+ $(IDLDIR)/_zone.idl $(IDLDIR)/_Admin.idl $(IDLDIR)/_dataTypes.idl $(IDLDIR)/_EPP.idl \
  $(IDLDIR)/_FileManager.idl $(IDLDIR)/Logger.idl $(IDLDIR)/Mailer.idl $(IDLDIR)/_Registry.idl \
- $(IDLDIR)/_TechCheck.idl $(IDLDIR)/_Whois.idl $(IDLDIR)/_ZoneGenerator.idl
+ $(IDLDIR)/_TechCheck.idl
 	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLFILE)
 
 src/corba/MessagesSK.cc: $(IDLDIR)/Messages.idl

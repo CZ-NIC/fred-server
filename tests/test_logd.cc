@@ -15,7 +15,7 @@
 #include "requests/request_impl.h"
 
 #include "corba_wrapper_decl.h"
-#include <corba/ccReg.hh>
+#include <corba/Registry.hh>
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_database_args.h"

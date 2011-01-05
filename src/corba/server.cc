@@ -17,7 +17,7 @@
  */
 
 #include "config.h"
-#include "ccReg.hh"
+#include "Registry.hh"
 
 #ifdef RIFD
 #include "epp/epp_impl.h"

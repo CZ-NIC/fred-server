@@ -239,10 +239,10 @@ AC_ARG_WITH(
 )
 
 AC_CHECK_FILE(
-	[$IDLDIR/ccReg.idl],
+	[$IDLDIR/Registry.idl],
 	[],
 	[AC_MSG_ERROR(
-		[directory "$IDLDIR" does not contain ccReg.idl
+		[directory "$IDLDIR" does not contain Registry.idl
 		(use --with-idldir)]
 	)]
 )

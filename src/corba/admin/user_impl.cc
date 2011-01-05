@@ -1,4 +1,4 @@
-#include <corba/ccReg.hh>
+#include <corba/Registry.hh>
 #include "user_impl.h"
 
 ccReg_User_i::ccReg_User_i(ccReg::TID _id, const std::string& _username) :

@@ -2,7 +2,7 @@
 #define USERTYPE_CONV_H_
 
 #include <memory>
-#include <corba/ccReg.hh>
+#include <corba/Registry.hh>
 #include "fredlib/requests/request.h"
 
 inline std::auto_ptr<Fred::Logger::ObjectReferences> convert_obj_references(const ccReg::ObjectReferences &r)

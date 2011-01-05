@@ -27,7 +27,7 @@
 #include "messages_filemanager.h"
 #include "corba_wrapper_decl.h"
 
-#include <corba/ccReg.hh>
+#include <corba/Registry.hh>
 #include "file_manager_client.h"
 
 unsigned long long save_file(std::vector<char>& file_buffer

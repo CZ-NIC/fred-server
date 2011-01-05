@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <corba/ccReg.hh>
+#include <corba/Registry.hh>
 #include "epp_impl.h"
 
 #include "corba/connection_releaser.h"

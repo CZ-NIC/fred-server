@@ -27,7 +27,7 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
-#include <corba/ccReg.hh>
+#include <corba/Registry.hh>
 
 #include "common.h"
 #include "admin_impl.h"

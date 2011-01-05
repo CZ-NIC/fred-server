@@ -1,4 +1,4 @@
-#include <corba/ccReg.hh>
+#include <corba/Registry.hh>
 
 #include "zone_impl.h"
 

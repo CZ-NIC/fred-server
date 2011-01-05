@@ -7,7 +7,7 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
-#include <corba/ccReg.hh>
+#include <corba/Registry.hh>
 
 #include "fredlib/registry.h"
 #include "fredlib/invoice.h"

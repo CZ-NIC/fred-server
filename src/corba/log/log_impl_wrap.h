@@ -1,7 +1,7 @@
 #ifndef _LOG_IMPL_WRAP_H_
 #define _LOG_IMPL_WRAP_H_
 
-#include <corba/ccReg.hh>
+#include <corba/Registry.hh>
 
 // #include "request.h"
 // even better:
