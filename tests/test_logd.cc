@@ -27,6 +27,11 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
+// these should be extras for threaded test
+#include "concurrent_queue.h"
+#include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
+#include "cfg/handle_threadgroup_args.h"
 
 using namespace Database;
 using namespace Fred::Logger;
@@ -54,12 +59,12 @@ std::string create_date_str(int y, int m);
 struct MyFixture {
 	static std::list<ID> id_list_entry;
 	static std::list<ID> id_list_session;
+	static std::set<ID>  id_list_property_name;
 
 	MyFixture() {
 		Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string(LOG_FILE_NAME));
 		Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
 		LOGGER(PACKAGE).info("Logging initialized");
-
 	}
 
 	~MyFixture() {
@@ -79,6 +84,13 @@ struct MyFixture {
 			for(it = id_list_session.begin(); it != id_list_session.end();it++) {
 				conn.exec( (boost::format("delete from session where id=%1%") % *it).str() );
 			}
+
+			BOOST_TEST_MESSAGE( "Deleting properties created as part of the test");
+			for(std::set<ID>::iterator it = id_list_property_name.begin();
+			        it != id_list_property_name.end();
+			        it++) {
+			    conn.exec((boost::format("delete from request_property_name where id = %1%") % *it).str());
+			}
 		} catch (Database::Exception &ex) {
 		    BOOST_TEST_MESSAGE( (boost::format("error when working with database (%1%) : %2%") % CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info() % ex.what()).str());
 		}
@@ -88,29 +100,22 @@ struct MyFixture {
 
 std::list<ID> MyFixture::id_list_entry;
 std::list<ID> MyFixture::id_list_session;
+std::set<ID>  MyFixture::id_list_property_name;
 
 BOOST_GLOBAL_FIXTURE( MyFixture );
 
 
 class TestImplLog {
 	// TODO this should follow the common ways with create(...) 
-        std::auto_ptr<Fred::Logger::Manager> logd;
+        std::auto_ptr<Fred::Logger::ManagerImpl> logd;
 //	Connection conn;
 
 
 public:
-        /* TODO
-	TestImplLog (const std::string connection_string) : logd(Fred::Logger::Manager::create(connection_string)), conn(Database::Manager::acquire()) {
+    TestImplLog (const std::string connection_string) : logd(new Fred::Logger::ManagerImpl()) {
 	};
 
-	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(Fred::Logger::Manager::create(connection_string, monitoring_file)), conn(Database::Manager::acquire()) {
-	};
-        */
-
-        TestImplLog (const std::string connection_string) : logd(Fred::Logger::Manager::create(connection_string)) {
-	};
-
-	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(Fred::Logger::Manager::create(connection_string, monitoring_file)) {
+	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(new Fred::Logger::ManagerImpl(monitoring_file)) {
 	};
 
 	Database::ID createSession(Database::ID user_id, const char *user_name);
@@ -121,12 +126,19 @@ public:
 
 	bool addRequestProperties(const Database::ID id, const Fred::Logger::RequestProperties &props = TestImplLog::no_props);
 	bool closeRequest(const Database::ID id, const char * content, const Fred::Logger::RequestProperties &props = TestImplLog::no_props, const Fred::Logger::ObjectReferences &refs = TestImplLog::no_objs, long result_code = 1000, Database::ID session_id = 0);
+
+	// to encapsulate some methods which are not part of the interface
+
+	ID find_property_name(const std::string &name);
+
+	// auxiliary testing functions
 	std::auto_ptr<Fred::Logger::RequestProperties> create_generic_properties(int number, int value_id);
 
         void check_obj_references(ID rec_id, const Fred::Logger::ObjectReferences &refs);
         void check_obj_references_subset(ID rec_id, const Fred::Logger::ObjectReferences &refs);
 	void check_db_properties_subset(ID rec_id, const Fred::Logger::RequestProperties &props, bool output);
 	bool property_match(const Row r, const Fred::Logger::RequestProperty &p, bool output) ;
+
 
 // different tests
 	void check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props, bool output);
@@ -384,6 +396,20 @@ bool TestImplLog::closeRequest(const Database::ID id, const char *content, const
         check_obj_references_subset(id, refs);
 
 	return result;
+}
+
+ID TestImplLog::find_property_name(const std::string &name) {
+
+    Connection conn = Database::Manager::acquire();
+
+    Database::Transaction tx(conn);
+    ID ret_id = logd->find_property_name_id(name, conn);
+
+    MyFixture::id_list_property_name.insert(ret_id);
+
+    tx.commit();
+
+    return ret_id;
 }
 
 std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_generic_properties(int number, int value_id)
@@ -1074,7 +1100,122 @@ BOOST_AUTO_TEST_CASE ( test_rewrite_same_session )
         test.closeSession(ids);
 }
 
+struct ThreadResult {
+    int number;
+    ID result;
 
+    ThreadResult() : number(0), result(0) {};
+};
+
+typedef concurrent_queue<ThreadResult> ThreadResultQueue;
+
+class TestPropsThreadWorker {
+
+public:
+    TestPropsThreadWorker(unsigned n, boost::barrier* sb,
+            std::size_t thread_group_divisor, TestImplLog *tb,
+            ThreadResultQueue* rq = 0) :
+    number(n),
+    sb_ptr(sb),
+    divisor(thread_group_divisor),
+    result_queue(rq),
+    backend(tb) {};
+
+    void operator()() {
+
+        ThreadResult res;
+        res.number = number;
+        res.result = 0;
+
+        if(number % divisor)//if synchronized thread
+        {
+            //std::cout << "waiting: " << number_ << std::endl;
+            if(sb_ptr)
+            sb_ptr->wait();//wait for other synced threads
+        }
+        else
+        {//non-synchronized thread
+            //std::cout << "NOwaiting: " << number_ << std::endl;
+        }
+
+        res.result = run();
+    }
+
+    ID run() {
+        // TODO make sure this name is really unique
+        return backend->find_property_name("This is a name");
+    }
+
+private:
+    int number;
+    boost::barrier* sb_ptr;
+    int divisor;
+    ThreadResultQueue *result_queue;
+    TestImplLog *backend;
+
+};
+
+BOOST_AUTO_TEST_CASE (threaded_property_add_test)
+{
+
+    HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
+    get_handler_ptr_by_type<HandleThreadGroupArgs>();
+
+    std::size_t const thread_number = thread_args_ptr->thread_number;
+    std::size_t const thread_group_divisor = thread_args_ptr->thread_group_divisor;
+    // int(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+    // - thread_number / thread_group_divisor) is number of synced threads
+
+    TestImplLog test_backend(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    ThreadResultQueue result_queue;
+
+    //vector of thread functors
+    std::vector<TestPropsThreadWorker> tw_vector;
+    tw_vector.reserve(thread_number);
+
+    BOOST_TEST_MESSAGE( "thread barriers:: "
+            << (thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+                    - thread_number/thread_group_divisor)
+    );
+
+    //synchronization barriers instance
+    boost::barrier sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+            - thread_number/thread_group_divisor);
+
+    //thread container
+    boost::thread_group threads;
+    for (unsigned i = 0; i < thread_number; ++i)
+    {
+        tw_vector.push_back(TestPropsThreadWorker(i,&sb
+                        , thread_group_divisor, &test_backend, &result_queue));
+        threads.create_thread(tw_vector.at(i));
+    }
+
+    threads.join_all();
+
+    BOOST_TEST_MESSAGE( "threads end result_queue.size(): " << result_queue.size() );
+
+    ThreadResult result1;
+    result_queue.try_pop(result1);
+
+    ID correct = result1.result;
+
+    for(unsigned i = 1; i < thread_number; ++i)
+    {
+        ThreadResult thread_result;
+        result_queue.try_pop(thread_result);
+
+        if(thread_result.result != correct) {
+            BOOST_TEST_MESSAGE(
+                       " thread number: " << thread_result.number
+                    << " return code: " << thread_result.result);
+            BOOST_FAIL(" Incorrect property ID returned");
+        }
+
+    }//for i
+
+}
 
 /*
 // TODO testcases

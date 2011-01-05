@@ -61,6 +61,8 @@ public:
   Database::Result i_getResultCodesByService(ServiceType service);
   Database::Result i_getObjectTypes();
 
+  // not really part of the interface, but something we need to test
+  ID find_property_name_id(const std::string &name, Connection &conn);
  // for migration tool (util/logd_migration)
  void insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Fred::Logger::RequestProperties& props);
   
@@ -71,7 +73,7 @@ private:
   void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::RequestProperties& props, Connection &conn, bool output);
   void insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::ObjectReferences& props, Connection &conn);
   bool record_check(Database::ID id, Connection &conn);
-  Database::ID find_property_name_id(const std::string &name, Connection &conn);
+
   inline Database::ID find_last_property_value_id(Connection &conn);
   inline Database::ID find_last_request_id(Connection &conn);
   inline void getSessionUser(Connection &conn, Database::ID session_id, std::string *user_name, Database::ID *user_id);
