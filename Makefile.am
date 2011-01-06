@@ -507,7 +507,7 @@ src_corba_fred_logd_CPPFLAGS  = $(AM_CPPFLAGS) -DLOGD
 
 src/corba/RegistrySK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Registry.idl $(IDLDIR)/EPP.idl $(IDLDIR)/FileManager.idl \
  $(IDLDIR)/Filters.idl $(IDLDIR)/_Logger.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/TechCheck.idl \
- $(IDLDIR)/_zone.idl $(IDLDIR)/_Admin.idl $(IDLDIR)/_dataTypes.idl $(IDLDIR)/_EPP.idl \
+ $(IDLDIR)/_Admin.idl $(IDLDIR)/_dataTypes.idl $(IDLDIR)/_EPP.idl \
  $(IDLDIR)/_FileManager.idl $(IDLDIR)/Logger.idl $(IDLDIR)/Mailer.idl $(IDLDIR)/_Registry.idl \
  $(IDLDIR)/_TechCheck.idl
 	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLFILE)
