@@ -269,7 +269,7 @@ AC_CHECK_FILE(
 	[$IDLDIR/FileManager.idl],
 	[],
 	[AC_MSG_ERROR(
-		[directory "$IDLDIR" does not contain Messages.idl
+		[directory "$IDLDIR" does not contain FileManager.idl
 		(use --with-idldir)]
 	)]
 )
@@ -279,6 +279,15 @@ AC_CHECK_FILE(
 	[],
 	[AC_MSG_ERROR(
 		[directory "$IDLDIR" does not contain Mailer.idl
+		(use --with-idldir)]
+	)]
+)
+
+AC_CHECK_FILE(
+	[$IDLDIR/Zone.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain Zone.idl
 		(use --with-idldir)]
 	)]
 )

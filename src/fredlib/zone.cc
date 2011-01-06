@@ -1195,7 +1195,7 @@ namespace Fred
 
       /// update zone and zone_soa record identified by id
       virtual void updateZoneById(
-    		  const TID id,
+    		  const unsigned long long id,
               const std::string& fqdn,
               int ex_period_min,
               int ex_period_max,
@@ -1280,7 +1280,7 @@ namespace Fred
       }//addZoneNs
 
       virtual void updateZoneNsById(
-    		  const TID id,
+    		  const unsigned long long id,
               const std::string &zone,
               const std::string &fqdn,
               const std::string &addr)

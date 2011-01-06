@@ -18,7 +18,8 @@ CLEANFILES=config/server.conf config/hpmail.conf init-scripts/fred-server \
         src/corba/MessagesSK.cc src/corba/MessagesDynSK.cc src/corba/MessagesSK.h src/corba/Messages.hh \
         src/corba/MojeIDSK.cc src/corba/MojeIDDynSK.cc src/corba/MojeIDSK.h src/corba/MojeID.hh \
         src/corba/FileManagerSK.cc src/corba/FileManagerDynSK.cc src/corba/FileManagerSK.h src/corba/FileManager.hh \
-        src/corba/MailerSK.cc src/corba/MailerDynSK.cc src/corba/MailerSK.h src/corba/Mailer.hh
+        src/corba/MailerSK.cc src/corba/MailerDynSK.cc src/corba/MailerSK.h src/corba/Mailer.hh \
+        src/corba/ZoneSK.cc src/corba/ZoneDynSK.cc src/corba/ZoneSK.h src/corba/Zone.hh
 
 fredconfdir = $(sysconfdir)/fred
 rcconfdir = $(sysconfdir)/init.d
@@ -55,6 +56,7 @@ noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/d
         src/fredlib/messages/libmessages.a src/fredlib/requests/librequests.a \
         src/fredlib/mojeid/libmojeid.a src/fredlib/banking/libbanking.a \
         src/corba/libcorba.a src/corba/libcorbamessages.a src/corba/libcorbamojeid.a \
+        src/corba/libcorbazone.a \
         src/corba/libfilemanager.a src/corba/libmailer.a src/corba/admin/libadmin_impl.a \
         src/corba/epp/libepp_impl.a src/corba/log/liblog_impl.a \
         util/hp/libhp.a
@@ -432,6 +434,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	src/corba/log/liblog_impl.a \
 	src/corba/admin/libadmin_impl.a \
 	src/corba/libcorba.a \
+	src/corba/libcorbazone.a \
 	src/fredlib/libfred.a \
 	src/fredlib/messages/libmessages.a \
 	src/model/libmodel.a \
@@ -460,7 +463,8 @@ src_corba_test_SOURCES = src/corba/test-admin.cc
 src_corba_test_LDADD = $(XML2_LIBS) $(LDADD)
 
 BUILT_SOURCES = src/corba/RegistrySK.cc src/corba/MessagesSK.cc \
-        src/corba/MojeIDSK.cc src/corba/FileManagerSK.cc src/corba/MailerSK.cc
+    src/corba/MojeIDSK.cc src/corba/FileManagerSK.cc src/corba/MailerSK.cc \
+    src/corba/ZoneSK.cc
         
 src_corba_libcorba_a_SOURCES = src/corba/nameservice.cc         \
 					 src/corba/mailer_manager.cc      \
@@ -482,6 +486,8 @@ nodist_src_corba_libcorbamojeid_a_SOURCES = src/corba/MojeIDSK.cc src/corba/Moje
 nodist_src_corba_libfilemanager_a_SOURCES = src/corba/FileManagerSK.cc src/corba/FileManagerDynSK.cc src/corba/FileManager.hh
 
 nodist_src_corba_libmailer_a_SOURCES = src/corba/MailerSK.cc src/corba/MailerDynSK.cc src/corba/Mailer.hh
+
+nodist_src_corba_libcorbazone_a_SOURCES = src/corba/ZoneSK.cc src/corba/ZoneDynSK.cc src/corba/Zone.hh
 
 src_corba_fred_rifd_SOURCES   = src/corba/server.cc
         
@@ -517,6 +523,9 @@ src/corba/FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_FileManager.idl
 
 src/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/_dataTypes.idl
 	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/Mailer.idl
+
+src/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
+	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/Zone.idl
 
 #src corba
 

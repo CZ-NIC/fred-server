@@ -1,4 +1,4 @@
-#include <corba/Registry.hh>
+#include <corba/Zone.hh>
 
 #include "zone_impl.h"
 
@@ -91,7 +91,7 @@
     }
     bool ccReg_ZoneIf_i::updateZoneById
     (
-		ccReg::TID id
+        unsigned long long id
 		, const char* fqdn
 		, CORBA::Long ex_period_min
 		, CORBA::Long ex_period_max
@@ -157,7 +157,7 @@
 
     bool ccReg_ZoneIf_i::updateZoneNs
     (
-    		ccReg::TID id
+            unsigned long long id
     		, const char* zone_fqdn
     		, const char* fqdn
     		, const char* addr

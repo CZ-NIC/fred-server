@@ -263,7 +263,7 @@ namespace Fred
         throw (SQL_ERROR, NOT_FOUND) = 0;
       /// update zone and zone_soa record identified by fqdn
       virtual void updateZoneById(
-    		  const TID id,
+    		  const unsigned long long id,
               const std::string& fqdn,
               int ex_period_min,
               int ex_period_max,
@@ -283,7 +283,7 @@ namespace Fred
           throw (SQL_ERROR,NOT_FOUND) = 0;
 
       virtual void updateZoneNsById(
-    		  const TID id,
+    		  const unsigned long long id,
               const std::string &zone,
               const std::string &fqdn,
               const std::string &addr)
