@@ -21,8 +21,6 @@
  *  implementation of registry messages server
  */
 
-
-
 #include "messages.h"
 #include "messages_filemanager.h"
 
@@ -42,20 +40,17 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-
 using namespace std;
 
 //config args processing
 HandlerPtrVector global_hpv =
 boost::assign::list_of
-
-(HandleArgsPtr(new HandleHelpArg("\nUsage: fred-msgd <switches>\n")))
-(HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
-(HandleArgsPtr(new HandleServerArgs))
-(HandleArgsPtr(new HandleLoggingArgs))
-(HandleArgsPtr(new HandleDatabaseArgs))
-(HandleArgsPtr(new HandleCorbaNameServiceArgs));
-
+    (HandleArgsPtr(new HandleHelpArg("\nUsage: fred-msgd <switches>\n")))
+    (HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
+    (HandleArgsPtr(new HandleServerArgs))
+    (HandleArgsPtr(new HandleLoggingArgs))
+    (HandleArgsPtr(new HandleDatabaseArgs))
+    (HandleArgsPtr(new HandleCorbaNameServiceArgs));
 
 const char* server_name = "msgd";//for logging contxt
 
@@ -88,7 +83,6 @@ int main(int argc, char** argv)
 
         Logging::Context ctx(server_name);
 
-
         {//db connection, test only
             Database::Connection conn = Database::Manager::acquire();
         }
@@ -115,6 +109,8 @@ int main(int argc, char** argv)
             ->activate_object_with_id(msgObjectId, myRegistry_Messages_i);
         CORBA::Object_var msgObj = myRegistry_Messages_i->_this();
         myRegistry_Messages_i->_remove_ref();
+
+        //register within corba nameservice
         CorbaContainer::get_instance()->getNS()->bind("Messages",msgObj);
         CorbaContainer::get_instance()->poa_persistent->the_POAManager()
             ->activate();
@@ -123,13 +119,11 @@ int main(int argc, char** argv)
         if (CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
                 ->do_daemonize)
             daemonize();
-        std::string pidfile_name
+        string pidfile_name
             = CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
                                 ->pidfile_name;
         if (!pidfile_name.empty())
             PidFileNS::PidFileS::writePid(getpid(), pidfile_name);
-
-
 
         CorbaContainer::get_instance()->orb->run();
         CorbaContainer::get_instance()->orb->destroy();
@@ -164,14 +158,14 @@ int main(int argc, char** argv)
     {
         return EXIT_SUCCESS;
     }
-    catch(std::exception& ex)
+    catch(exception& ex)
     {
-        std::cout << "Error: " << ex.what() << std::endl;
+        cerr << "Error: " << ex.what() << endl;
         return EXIT_FAILURE;
     }
     catch(...)
     {
-        std::cout << "Unknown Error" << std::endl;
+        cerr << "Unknown Error" << endl;
         return EXIT_FAILURE;
     }
 

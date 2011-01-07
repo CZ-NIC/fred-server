@@ -32,7 +32,7 @@
 
 using namespace std;
 
-const std::string server_name = "fred-mifd";
+const string server_name = "fred-mifd";
 
 //config args processing
 HandlerPtrVector global_hpv =
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
         if (CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
                 ->do_daemonize)
             daemonize();
-        std::string pidfile_name
+        string pidfile_name
             = CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
                                 ->pidfile_name;
         if (!pidfile_name.empty())
@@ -143,14 +143,14 @@ int main(int argc, char *argv[])
     {
         return EXIT_SUCCESS;
     }
-    catch(std::exception& ex)
+    catch(exception& ex)
     {
-        std::cout << "Error: " << ex.what() << std::endl;
+        cerr << "Error: " << ex.what() << endl;
         return EXIT_FAILURE;
     }
     catch(...)
     {
-        std::cout << "Unknown Error" << std::endl;
+        cerr << "Unknown Error" << endl;
         return EXIT_FAILURE;
     }
 
