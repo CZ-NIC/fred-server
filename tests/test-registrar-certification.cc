@@ -351,13 +351,13 @@ BOOST_AUTO_TEST_CASE( test_certification_threaded )
     for(unsigned i = 0; i < thread_number; ++i)
     {
         ThreadResult thread_result;
-        result_queue.try_pop(thread_result);
+        if(!result_queue.try_pop(thread_result)) {
+            continue;
+        }
 
-        BOOST_REQUIRE_EQUAL(thread_result.ret , 0);
-
-        if(thread_result.ret)
+        if(thread_result.ret != 0)
         {
-            BOOST_TEST_MESSAGE( thread_result.desc
+            BOOST_FAIL( thread_result.desc
                     << " thread number: " << thread_result.number
                     << " return code: " << thread_result.ret
                     << " description: " << thread_result.desc
