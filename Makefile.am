@@ -37,7 +37,7 @@ endif
 noinst_HEADERS = util/util.h util/singleton.h util/time_clock.h util/settings.h \
         util/base_exception.h util/random.h util/concurrent_queue.h \
         util/random_data_generator.h util/corba_wrapper.h \
-        util/corba_wrapper_decl.h util/map_at.h util/setup_logging.h \
+        util/corba_wrapper_decl.h util/map_at.h util/setup_server.h \
         util/cfg/config_handler.h util/cfg/faked_args.h util/cfg/handle_args.h \
         util/cfg/handle_corbanameservice_args.h \
         util/cfg/handle_database_args.h  util/cfg/handle_general_args.h \

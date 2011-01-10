@@ -30,9 +30,8 @@
 #include "log/context.h"
 #include "corba/connection_releaser.h"
 
-#include "pidfile.h"
-#include "daemonize.h"
-#include "setup_logging.h"
+
+#include "setup_server.h"
 
 #include "cfg/config_handler.h"
 #include "cfg/handle_general_args.h"
@@ -62,7 +61,6 @@ int main(int argc, char** argv)
     {   //config
         fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
-        // setting up logger
         setup_logging(CfgArgs::instance());
 
         Logging::Context ctx(server_name);
@@ -71,15 +69,7 @@ int main(int argc, char** argv)
             Database::Connection conn = Database::Manager::acquire();
         }
 
-        //CORBA init
-        FakedArgs orb_fa = CfgArgs::instance()->fa;
-        HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-              get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-
-        CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
-          , ns_args_ptr->nameservice_host
-          , ns_args_ptr->nameservice_port
-          , ns_args_ptr->nameservice_context);
+        corba_init();
 
         //Messages Manager
         Fred::Messages::ManagerPtr msgmgr
@@ -89,21 +79,7 @@ int main(int argc, char** argv)
         CorbaContainer::get_instance()
             ->register_server(new Registry_Messages_i(msgmgr), "Messages");
 
-        CorbaContainer::get_instance()->poa_persistent->the_POAManager()
-            ->activate();
-
-        //run server
-        if (CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
-                ->do_daemonize)
-            daemonize();
-        string pidfile_name
-            = CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
-                                ->pidfile_name;
-        if (!pidfile_name.empty())
-            PidFileNS::PidFileS::writePid(getpid(), pidfile_name);
-
-        CorbaContainer::get_instance()->orb->run();
-        CorbaContainer::get_instance()->orb->destroy();
+        run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 
     }//try
     catch(CORBA::TRANSIENT&)

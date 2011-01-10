@@ -17,17 +17,24 @@
  */
 
 /**
- *  @file setup_logging.h
- *  Implementation of server logging setup.
+ *  @file setup_server.h
+ *  Implementation of server setup.
  */
 
-#ifndef SETUP_LOGGING_H_
-#define SETUP_LOGGING_H_
+#ifndef SETUP_SERVER_H_
+#define SETUP_SERVER_H_
 
+#include <string>
 #include <boost/any.hpp>
 #include "log/logger.h"
+#include "corba_wrapper_decl.h"
 #include "cfg/config_handler.h"
 #include "cfg/handle_logging_args.h"
+#include "cfg/handle_server_args.h"
+#include "cfg/handle_corbanameservice_args.h"
+
+#include "pidfile.h"
+#include "daemonize.h"
 
 void setup_logging(CfgArgs * cfg_instance_ptr)
 {
@@ -53,4 +60,39 @@ void setup_logging(CfgArgs * cfg_instance_ptr)
             <HandleLoggingArgs>()->log_level));
 }
 
-#endif //SETUP_LOGGING_H_
+void run_server(CfgArgs * cfg_instance_ptr , CorbaContainer* corba_instance_ptr )
+{
+    corba_instance_ptr->poa_persistent->the_POAManager()->activate();
+
+    //run server
+    if (cfg_instance_ptr->get_handler_ptr_by_type<HandleServerArgs>()
+        ->do_daemonize)
+    {
+        daemonize();
+    }
+    std::string pidfile_name = cfg_instance_ptr
+        ->get_handler_ptr_by_type<HandleServerArgs>()->pidfile_name;
+
+    if (!pidfile_name.empty())
+    {
+        PidFileNS::PidFileS::writePid(getpid(), pidfile_name);
+    }
+
+    corba_instance_ptr->orb->run();
+    corba_instance_ptr->orb->destroy();
+}
+
+void corba_init()
+{
+    FakedArgs orb_fa = CfgArgs::instance()->fa;
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+          get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+
+    CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
+      , ns_args_ptr->nameservice_host
+      , ns_args_ptr->nameservice_port
+      , ns_args_ptr->nameservice_context);
+
+}
+
+#endif //SETUP_SERVER_H_
