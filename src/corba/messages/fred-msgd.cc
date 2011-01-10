@@ -32,6 +32,7 @@
 
 #include "pidfile.h"
 #include "daemonize.h"
+#include "setup_logging.h"
 
 #include "cfg/config_handler.h"
 #include "cfg/handle_general_args.h"
@@ -62,24 +63,7 @@ int main(int argc, char** argv)
         fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
         // setting up logger
-        Logging::Log::Type  log_type = static_cast<Logging::Log::Type>(CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleLoggingArgs>()->log_type);
-
-        boost::any param;
-        if (log_type == Logging::Log::LT_FILE) param = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleLoggingArgs>()->log_file;
-
-        if (log_type == Logging::Log::LT_SYSLOG) param = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleLoggingArgs>()
-            ->log_syslog_facility;
-
-        Logging::Manager::instance_ref().get(PACKAGE)
-            .addHandler(log_type, param);
-
-        Logging::Manager::instance_ref().get(PACKAGE).setLevel(
-                static_cast<Logging::Log::Level>(
-                CfgArgs::instance()->get_handler_ptr_by_type
-                <HandleLoggingArgs>()->log_level));
+        setup_logging(CfgArgs::instance());
 
         Logging::Context ctx(server_name);
 
