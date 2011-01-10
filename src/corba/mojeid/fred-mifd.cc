@@ -17,8 +17,7 @@
 #include "log/context.h"
 #include "corba/connection_releaser.h"
 
-#include "pidfile.h"
-#include "daemonize.h"
+#include "setup_server.h"
 
 #include "cfg/config_handler.h"
 #include "cfg/handle_general_args.h"
@@ -56,62 +55,17 @@ int main(int argc, char *argv[])
         fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
         // setting up logger
-        Logging::Log::Type  log_type = static_cast<Logging::Log::Type>(CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleLoggingArgs>()->log_type);
-
-        boost::any param;
-        if (log_type == Logging::Log::LT_FILE) param = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleLoggingArgs>()->log_file;
-
-        if (log_type == Logging::Log::LT_SYSLOG) param = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleLoggingArgs>()
-            ->log_syslog_facility;
-
-        Logging::Manager::instance_ref().get(PACKAGE)
-            .addHandler(log_type, param);
-
-        Logging::Manager::instance_ref().get(PACKAGE).setLevel(
-                static_cast<Logging::Log::Level>(
-                CfgArgs::instance()->get_handler_ptr_by_type
-                <HandleLoggingArgs>()->log_level));
+        setup_logging(CfgArgs::instance());
 
         //CORBA init
-        FakedArgs orb_fa = CfgArgs::instance()->fa;
-        HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-              get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+        corba_init();
 
-        CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
-          , ns_args_ptr->nameservice_host
-          , ns_args_ptr->nameservice_port
-          , ns_args_ptr->nameservice_context);
+        //create server object with poa and nameservice registration
+        CorbaContainer::get_instance()
+            ->register_server(new Registry::MojeID::ServerImpl(server_name)
+            , "MojeID");
 
-        //create server
-        Registry::MojeID::ServerImpl* server =
-            new Registry::MojeID::ServerImpl(server_name);
-        PortableServer::ObjectId_var server_obj_id
-            = PortableServer::string_to_ObjectId("MojeID");
-        CorbaContainer::get_instance()->poa_persistent
-            ->activate_object_with_id(server_obj_id, server);
-        CORBA::Object_var server_obj = server->_this();
-        server->_remove_ref();
-        CorbaContainer::get_instance()->getNS()->bind("MojeID", server_obj);
-        CorbaContainer::get_instance()->poa_persistent->the_POAManager()
-            ->activate();
-
-        //run server
-        if (CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
-                ->do_daemonize)
-            daemonize();
-        string pidfile_name
-            = CfgArgs::instance()->get_handler_ptr_by_type<HandleServerArgs>()
-                                ->pidfile_name;
-        if (!pidfile_name.empty())
-            PidFileNS::PidFileS::writePid(getpid(), pidfile_name);
-
-
-
-        CorbaContainer::get_instance()->orb->run();
-        CorbaContainer::get_instance()->orb->destroy();
+        run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 
     }//try
     catch(CORBA::TRANSIENT&)

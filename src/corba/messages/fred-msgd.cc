@@ -30,7 +30,6 @@
 #include "log/context.h"
 #include "corba/connection_releaser.h"
 
-
 #include "setup_server.h"
 
 #include "cfg/config_handler.h"
@@ -58,7 +57,7 @@ int main(int argc, char** argv)
 {
     FakedArgs fa; //producing faked args with unrecognized ones
     try
-    {   //config
+    {   //config processing
         fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
         setup_logging(CfgArgs::instance());
@@ -75,7 +74,7 @@ int main(int argc, char** argv)
         Fred::Messages::ManagerPtr msgmgr
             = Fred::Messages::create_manager();
 
-        //create server with poa and nameservice registration
+        //register server with poa and nameservice
         CorbaContainer::get_instance()
             ->register_server(new Registry_Messages_i(msgmgr), "Messages");
 
