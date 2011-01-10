@@ -405,6 +405,7 @@ ID TestImplLog::find_property_name(const std::string &name) {
     Database::Transaction tx(conn);
     ID ret_id = logd->find_property_name_id(name, conn);
 
+    // TODO concurrency
     MyFixture::id_list_property_name.insert(ret_id);
 
     tx.commit();
@@ -1114,12 +1115,14 @@ class TestPropsThreadWorker {
 public:
     TestPropsThreadWorker(unsigned n, boost::barrier* sb,
             std::size_t thread_group_divisor, TestImplLog *tb,
+            const std::string &property_name,
             ThreadResultQueue* rq = 0) :
     number(n),
     sb_ptr(sb),
     divisor(thread_group_divisor),
     result_queue(rq),
-    backend(tb) {};
+    backend(tb),
+    propname(property_name) {};
 
     void operator()() {
 
@@ -1139,11 +1142,20 @@ public:
         }
 
         res.result = run();
+        result_queue->push(res);
     }
 
     ID run() {
         // TODO make sure this name is really unique
-        return backend->find_property_name("This is a name");
+        try {
+            return backend->find_property_name(propname);
+        } catch(std::exception &e) {
+            BOOST_FAIL(e.what());
+            return 0;
+        } catch(...) {
+            BOOST_FAIL("Unknown exception caught");
+            return 0;
+        }
     }
 
 private:
@@ -1152,6 +1164,7 @@ private:
     int divisor;
     ThreadResultQueue *result_queue;
     TestImplLog *backend;
+    std::string propname;
 
 };
 
@@ -1167,6 +1180,20 @@ BOOST_AUTO_TEST_CASE (threaded_property_add_test)
     // - thread_number / thread_group_divisor) is number of synced threads
 
     TestImplLog test_backend(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    const std::string unique_property_name("My test prop name");
+
+    Connection conn = Database::Manager::acquire();
+
+    boost::format check_query = boost::format("select id from request_property_name where name='%1%'")
+            % unique_property_name;
+
+    Result res = conn.exec(check_query.str());
+    if(res.size() > 0) {
+        BOOST_FAIL(boost::format("Property %1% already present in the database, cannot perform the test") % unique_property_name);
+    }
+
+
 
     ThreadResultQueue result_queue;
 
@@ -1187,9 +1214,13 @@ BOOST_AUTO_TEST_CASE (threaded_property_add_test)
     boost::thread_group threads;
     for (unsigned i = 0; i < thread_number; ++i)
     {
-        tw_vector.push_back(TestPropsThreadWorker(i,&sb
-                        , thread_group_divisor, &test_backend, &result_queue));
-        threads.create_thread(tw_vector.at(i));
+        tw_vector.push_back(TestPropsThreadWorker(i,&sb, thread_group_divisor,
+                &test_backend, unique_property_name, &result_queue));
+        try {
+            threads.create_thread(tw_vector.at(i));
+        } catch(std::exception &e) {
+            BOOST_FAIL(e.what());
+        }
     }
 
     threads.join_all();
@@ -1197,14 +1228,18 @@ BOOST_AUTO_TEST_CASE (threaded_property_add_test)
     BOOST_TEST_MESSAGE( "threads end result_queue.size(): " << result_queue.size() );
 
     ThreadResult result1;
-    result_queue.try_pop(result1);
+    if(!result_queue.try_pop(result1)) {
+        BOOST_FAIL(" Result not found.");
+    }
 
     ID correct = result1.result;
 
     for(unsigned i = 1; i < thread_number; ++i)
     {
         ThreadResult thread_result;
-        result_queue.try_pop(thread_result);
+        if(!result_queue.try_pop(thread_result)) {
+            continue;
+        }
 
         if(thread_result.result != correct) {
             BOOST_TEST_MESSAGE(
