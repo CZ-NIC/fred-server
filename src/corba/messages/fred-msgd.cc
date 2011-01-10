@@ -101,17 +101,10 @@ int main(int argc, char** argv)
         Fred::Messages::ManagerPtr msgmgr
             = Fred::Messages::create_manager();
 
-        //create server
-        Registry_Messages_i* myRegistry_Messages_i = new Registry_Messages_i(msgmgr);
-        PortableServer::ObjectId_var msgObjectId
-            = PortableServer::string_to_ObjectId("Messages");
-        CorbaContainer::get_instance()->poa_persistent
-            ->activate_object_with_id(msgObjectId, myRegistry_Messages_i);
-        CORBA::Object_var msgObj = myRegistry_Messages_i->_this();
-        myRegistry_Messages_i->_remove_ref();
+        //create server with poa and nameservice registration
+        CorbaContainer::get_instance()
+            ->register_server(new Registry_Messages_i(msgmgr), "Messages");
 
-        //register within corba nameservice
-        CorbaContainer::get_instance()->getNS()->bind("Messages",msgObj);
         CorbaContainer::get_instance()->poa_persistent->the_POAManager()
             ->activate();
 
