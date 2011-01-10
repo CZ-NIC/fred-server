@@ -28,6 +28,7 @@
 #include <boost/any.hpp>
 #include "log/logger.h"
 #include "corba_wrapper_decl.h"
+#include "cfg/faked_args.h"
 #include "cfg/config_handler.h"
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_server_args.h"
