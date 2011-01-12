@@ -20,10 +20,10 @@
 // #include "statement_head_filter.h"
 #include "online_statement_filter.h"
 #include "log_filter.h"
-#include "union_filter.h"
 #include "zone_soa_filter.h"
 #include "zone_ns_filter.h"
 #include "zone_filter.h"
 #include "message_filter.h"
+#include "union_filter.h"
 
 #endif /*MODEL_FILTERS_H_*/
