@@ -84,6 +84,7 @@ public:
 
   /// get detail of loaded objects  
   virtual CommonObject *get(unsigned _idx) const = 0;
+  virtual void release(const unsigned long long &_idx) = 0;
   /// get detail of object with given ID
   virtual CommonObject* findId(TID _id) const throw (Fred::NOT_FOUND) = 0;
   

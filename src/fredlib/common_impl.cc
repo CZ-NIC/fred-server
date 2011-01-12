@@ -109,6 +109,12 @@ CommonObject* CommonListImpl::get(unsigned _idx) const {
   return _idx >= getCount() ? NULL : data_[_idx];
 }
 
+
+void CommonListImpl::release(const unsigned long long &_idx)
+{
+    data_.erase(data_.begin() + _idx);
+}
+
 CommonObject* CommonListImpl::findId(TID _id) const throw (Fred::NOT_FOUND) {
   list_type::const_iterator it = std::find_if(data_.begin(),
                                               data_.end(),

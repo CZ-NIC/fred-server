@@ -89,6 +89,7 @@ public:
   virtual void setTimeout(unsigned _timeout);
   
   CommonObject* get(unsigned _idx) const;
+  void release(const unsigned long long &_idx);
   CommonObject* findId(TID _id) const throw (Fred::NOT_FOUND);
   
   void resetIDSequence();
