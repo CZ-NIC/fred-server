@@ -68,6 +68,7 @@ public:
   virtual Table& joinObjectTable();
   virtual void _joinPolymorphicTables();
   
+  virtual Value<Database::ID>& addHistoryId();
   virtual Interval<Database::DateTimeInterval>& addTransferTime();
   virtual Interval<Database::DateTimeInterval> & addUpdateTime();
   virtual Value<std::string>& addAuthInfo();

@@ -105,6 +105,13 @@ ObjectHistoryImpl::ObjectHistoryImpl() : ObjectRegistryImpl() {
 ObjectHistoryImpl::~ObjectHistoryImpl() {
 }
 
+Value<Database::ID>& ObjectHistoryImpl::addHistoryId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("historyid", joinObjectTable()));
+  add(tmp);
+  tmp->setName("HistoryId");
+  return *tmp;
+}
+
 Interval<Database::DateTimeInterval>& ObjectHistoryImpl::addTransferTime() {
   Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("trdate", joinObjectTable()));
   add(tmp);
