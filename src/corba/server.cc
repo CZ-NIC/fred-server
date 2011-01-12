@@ -25,6 +25,7 @@
 
 #ifdef PIFD
 #include "admin/admin_impl.h"
+#include "whois/whois_impl.h"
 #endif
 
 #ifdef ADIF
@@ -305,6 +306,14 @@ try {
     CORBA::Object_var webWhoisObj = myccReg_Admin_i->_this();
     myccReg_Admin_i->_remove_ref();
     ns.bind("WebWhois", webWhoisObj);
+
+    PortableServer::ObjectId_var whoisObjectId = PortableServer::string_to_ObjectId("Whois");
+    ccReg_Whois_i* myccReg_Whois_i = new ccReg_Whois_i(conn_info, "pifd"
+            , cfg.get<bool>("registry.restricted_handles"));
+    poa->activate_object_with_id(whoisObjectId, myccReg_Whois_i);
+    CORBA::Object_var whoisObj = myccReg_Whois_i->_this();
+    myccReg_Whois_i->_remove_ref();
+    ns.bind("Whois", whoisObj);
 #endif
 
 #ifdef RIFD

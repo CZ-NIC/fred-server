@@ -58,6 +58,7 @@ noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/d
         src/corba/libcorba.a src/corba/libcorbamessages.a src/corba/libcorbamojeid.a \
         src/corba/libcorbazone.a \
         src/corba/libfilemanager.a src/corba/libmailer.a src/corba/admin/libadmin_impl.a \
+        src/corba/whois/libwhois_impl.a \
         src/corba/epp/libepp_impl.a src/corba/log/liblog_impl.a \
         util/hp/libhp.a
 
@@ -444,6 +445,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	src/corba/log/liblog_impl.a \
 	src/corba/admin/libadmin_impl.a \
 	src/corba/libcorba.a \
+	src/corba/whois/libwhois_impl.a \
 	src/corba/libcorbazone.a \
 	src/fredlib/libfred.a \
 	src/fredlib/messages/libmessages.a \
@@ -500,19 +502,19 @@ nodist_src_corba_libmailer_a_SOURCES = src/corba/MailerSK.cc src/corba/MailerDyn
 nodist_src_corba_libcorbazone_a_SOURCES = src/corba/ZoneSK.cc src/corba/ZoneDynSK.cc src/corba/Zone.hh
 
 src_corba_fred_rifd_SOURCES   = src/corba/server.cc
-        
+
 src_corba_fred_rifd_CPPFLAGS  = $(AM_CPPFLAGS) -DRIFD
 
 src_corba_fred_adifd_SOURCES  = src/corba/server.cc
-        
+
 src_corba_fred_adifd_CPPFLAGS = $(AM_CPPFLAGS) -DADIF
 
 src_corba_fred_pifd_SOURCES   = src/corba/server.cc
-        
+
 src_corba_fred_pifd_CPPFLAGS  = $(AM_CPPFLAGS) -DPIFD
 
 src_corba_fred_logd_SOURCES   = src/corba/server.cc
-        
+
 src_corba_fred_logd_CPPFLAGS  = $(AM_CPPFLAGS) -DLOGD
 
 src/corba/RegistrySK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Registry.idl $(IDLDIR)/EPP.idl $(IDLDIR)/FileManager.idl \
@@ -571,28 +573,33 @@ src_corba_admin_libadmin_impl_a_SOURCES = src/corba/admin/admin_impl.cc \
                           src/corba/admin/pagetable_files.h             \
                           src/corba/admin/pagetable_keysets.cc          \
                           src/corba/admin/pagetable_keysets.h           \
-			  			  src/corba/admin/pagetable_logger.cc			\
-			  			  src/corba/admin/pagetable_logger.h			\
-						  src/corba/admin/pagetable_logsession.cc		\
-						  src/corba/admin/pagetable_logsession.h		\
-						  src/corba/admin/pagetable_bank_payments.cc    \
-						  src/corba/admin/pagetable_bank_payments.h     \
-						  src/corba/admin/pagetable_bank_statements.cc  \
-						  src/corba/admin/pagetable_bank_statements.h   \
+			  src/corba/admin/pagetable_logger.cc		\
+			  src/corba/admin/pagetable_logger.h		\
+			  src/corba/admin/pagetable_logsession.cc	\
+			  src/corba/admin/pagetable_logsession.h	\
+			  src/corba/admin/pagetable_bank_payments.cc    \
+			  src/corba/admin/pagetable_bank_payments.h     \
+			  src/corba/admin/pagetable_bank_statements.cc  \
+			  src/corba/admin/pagetable_bank_statements.h   \
                           src/corba/admin/pagetable_zones.cc            \
                           src/corba/admin/pagetable_zones.h             \
                           src/corba/admin/pagetable_messages.cc         \
                           src/corba/admin/pagetable_messages.h          \
                           src/corba/admin/str_corbaout.h                \
-						  src/corba/admin/usertype_conv.h				\
+			  src/corba/admin/usertype_conv.h		\
                           src/corba/admin/common.cc                     \
-                          src/corba/admin/common.h 						\
-                          src/corba/admin/zone_impl.cc			        \
-                          src/corba/admin/zone_impl.h			        \
-						  src/corba/admin/bankinginvoicing_impl.cc		\
-						  src/corba/admin/bankinginvoicing_impl.h
+                          src/corba/admin/common.h 			\
+                          src/corba/admin/zone_impl.cc			\
+                          src/corba/admin/zone_impl.h			\
+			  src/corba/admin/bankinginvoicing_impl.cc	\
+			  src/corba/admin/bankinginvoicing_impl.h
 
 #src corba admin
+
+src_corba_whois_libwhois_impl_a_SOURCES = src/corba/whois/whois_impl.cc \
+                          src/corba/whois/whois_impl.h
+
+#src corba whois
 
 src_corba_epp_libepp_impl_a_SOURCES = src/corba/epp/epp_impl.cc \
                         src/corba/epp/epp_impl.h            \
