@@ -57,10 +57,6 @@ struct RequestProperty {
 
 typedef std::vector<RequestProperty> RequestProperties;
 
-
-// TODO split this into request_common (of some sort ) and real request.h
-
-
 class Request : virtual public Fred::CommonObject {
 public:
   virtual const boost::posix_time::ptime  getTimeBegin() const = 0;

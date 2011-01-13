@@ -20,10 +20,12 @@
 #define REQUEST_MANAGER_H_
 
 #include "request_cache.h"
-#include "request_common.h"
 
 namespace Fred {
 namespace Logger {
+
+typedef long int ServiceType;
+typedef long int RequestType;
 
 class List;
 
