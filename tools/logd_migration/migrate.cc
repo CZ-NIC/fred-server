@@ -22,6 +22,7 @@
 
 
 #include "util.h"
+#include "src/fredlib/requests/request_manager.h"
 
 #include "m_epp_parser.h"
 

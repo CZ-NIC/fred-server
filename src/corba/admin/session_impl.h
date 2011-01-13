@@ -34,6 +34,7 @@
 #include "corba/mailer_manager.h"
 #include "corba/file_manager_client.h"
 #include "fredlib/registry.h"
+#include "fredlib/requests/request_manager.h"
 #include "old_utils/dbsql.h"
 #include "model/model_filters.h"
 

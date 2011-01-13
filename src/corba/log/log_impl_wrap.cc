@@ -1,5 +1,4 @@
 #include "log_impl_wrap.h"
-#include "fredlib/requests/request.h"
 
 #include <corba/Registry.hh>
 #include <boost/thread.hpp>

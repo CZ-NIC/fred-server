@@ -21,6 +21,7 @@
 #define CACHE_H_
 
 #include "request.h"
+#include "model_request.h"
 #include <map>
 #include <boost/thread/mutex.hpp>
 

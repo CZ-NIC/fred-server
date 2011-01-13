@@ -8,14 +8,6 @@
 
 #include "object.h"
 
-#include "model/log_filter.h"
-#include "db_settings.h"
-
-#include "model_request_data.h"
-#include "model_request.h"
-#include "model_request_property_name.h"
-#include "model_request_property_value.h"
-#include "model_session.h"
 
 
 using namespace Database;
@@ -23,21 +15,7 @@ using namespace Database;
 namespace Fred {
 namespace Logger {
 
-typedef long int ServiceType;
-typedef long int RequestType;
-
-enum MemberType {
-  MT_TIME_BEGIN,
-  MT_TIME_END,
-  MT_SOURCE_IP,
-  MT_SERVICE,
-  MT_ACTION,
-  MT_SESSION_ID,
-  MT_USER_NAME,
-  MT_MONITORING,
-  MT_RAW_REQUEST,
-  MT_RAW_RESPONSE
-};
+enum Languages { EN, CS  };
 
 struct ObjectReference {
   std::string type;
@@ -80,6 +58,8 @@ struct RequestProperty {
 typedef std::vector<RequestProperty> RequestProperties;
 
 
+// TODO split this into request_common (of some sort ) and real request.h
+
 
 class Request : virtual public Fred::CommonObject {
 public:
@@ -101,50 +81,6 @@ public:
   virtual const std::pair<int, std::string> getResultCode() const = 0;
 
 };
-
-class List : virtual public Fred::CommonList {
-
-public:
-  virtual void setPartialLoad(bool partialLoad) = 0;
-  virtual Request* get(unsigned _idx) const = 0;
-  virtual void reload(Database::Filters::Union& _filter) = 0;
-  virtual void sort(MemberType _member, bool _asc) = 0;
-
-  /// from CommonList; propably will be removed in future
-  virtual const char* getTempTableName() const = 0;
-  virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
-  virtual void reload() = 0;
-};
-
-enum Languages { EN, CS /*, __max_Languages=0xffffffff */ };
-
-class Manager {
-public:
-
-  struct DB_CONNECT_FAILED { };
-
-  virtual ~Manager() {};
-
-  /** Used only in migration  - return a connection used by the connection manager
-	it's meant to be used only in single-threaded environment
-  */
-virtual  Database::ID i_createRequest(const char *sourceIP, ServiceType service, const  char *content, const Fred::Logger::RequestProperties& props, const Fred::Logger::ObjectReferences &refs, RequestType request_type_id, Database::ID session_id) = 0;
-virtual  bool i_addRequestProperties(Database::ID id, const Fred::Logger::RequestProperties &props) = 0;
-virtual  bool i_closeRequest(Database::ID id, const char *content, const Fred::Logger::RequestProperties &props, const Fred::Logger::ObjectReferences &refs, const long result_code, Database::ID session_id) = 0;
-  virtual Database::ID i_createSession(Database::ID id, const char *name) = 0;
-virtual  bool i_closeSession(Database::ID id) = 0;
-  virtual Database::Result i_getRequestTypesByService(ServiceType service) = 0;
-  virtual Database::Result i_getServices() = 0;
-  virtual Database::Result i_getResultCodesByService(ServiceType service) = 0;
-  virtual Database::Result i_getObjectTypes() = 0;
-
-  virtual List* createList() const = 0;
-
-  static Manager *create();
-  static Manager *create(const std::string conn_db, const std::string &monitoring_hosts_file = std::string()) throw(DB_CONNECT_FAILED);
-
-};
-
 
 
 };

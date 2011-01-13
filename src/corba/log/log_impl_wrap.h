@@ -3,9 +3,7 @@
 
 #include <corba/Registry.hh>
 
-// #include "request.h"
-// even better:
-#include "fredlib/requests/request.h"
+#include "fredlib/requests/request_manager.h"
 #include "src/corba/admin/usertype_conv.h"
 #include "src/corba/admin/pagetable_logger.h"
 #include "src/corba/admin/common.h"

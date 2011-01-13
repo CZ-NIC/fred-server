@@ -8,7 +8,8 @@
 
 #include "db/transaction.h"
 
-#include "src/fredlib/requests/request_impl.h"
+#include "src/fredlib/requests/request.h"
+
 
 #include "util/types/id.h"
 

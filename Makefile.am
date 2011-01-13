@@ -409,20 +409,23 @@ src_fredlib_messages_libmessages_a_SOURCES =  src/fredlib/messages/messages_impl
 
 src_fredlib_requests_librequests_a_SOURCES =  \
         src/fredlib/requests/model_request_property_name.h \
-        src/fredlib/requests/request.h \
 	    src/fredlib/requests/model_request.cc \
 	    src/fredlib/requests/model_request_property_value.cc \
-	    src/fredlib/requests/request_impl.h \
 	    src/fredlib/requests/model_request_data.cc \
 	    src/fredlib/requests/model_request_property_value.h \
-	    src/fredlib/requests/session.cc \
 	    src/fredlib/requests/model_request_data.h \
 	    src/fredlib/requests/model_session.cc \
-	    src/fredlib/requests/session.h \
 	    src/fredlib/requests/model_request.h \
 	    src/fredlib/requests/model_session.h \
 	    src/fredlib/requests/model_request_property_name.cc \
+	    src/fredlib/requests/session.h \
+	    src/fredlib/requests/session.cc \
+	    src/fredlib/requests/request.h \
 	    src/fredlib/requests/request.cc \
+	    src/fredlib/requests/request_list.h \
+	    src/fredlib/requests/request_list.cc \
+	    src/fredlib/requests/request_manager.h \
+	    src/fredlib/requests/request_manager.cc \
 	    src/fredlib/requests/request_cache.h \
 	    src/fredlib/requests/request_cache.cc
 

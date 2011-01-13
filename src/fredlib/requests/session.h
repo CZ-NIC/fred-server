@@ -13,6 +13,7 @@
 
 #include "model/model_filters.h"
 #include "model/log_filter.h"
+#include "model_session.h"
 
 namespace Fred {
 namespace Session {

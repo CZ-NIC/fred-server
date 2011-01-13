@@ -19,7 +19,7 @@
 #include "fredlib/notify.h"
 #include "fredlib/mail.h"
 #include "fredlib/filter.h"
-#include "fredlib/requests/request.h"
+#include "fredlib/requests/request_list.h"
 
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"
