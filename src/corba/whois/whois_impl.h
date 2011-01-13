@@ -28,9 +28,13 @@ private:
   std::string m_connection_string;
   std::string server_name_;
   bool registry_restricted_handles_;
+  DB db;
+  std::auto_ptr<Fred::Manager> registry_manager_;
 
   void fillRegistrar(ccReg::AdminRegistrar& creg,
                      Fred::Registrar::Registrar *reg);
+
+  void fillContact(ccReg::ContactDetail* cv, Fred::Contact::Contact* c);
 
 public:
 
@@ -39,6 +43,8 @@ public:
   virtual ~ccReg_Whois_i();
 
   ccReg::AdminRegistrar* getRegistrarByHandle(const char* handle);
+  ccReg::ContactDetail* getContactByHandle(const char* handle);
+
 
 };//class ccReg_Whois_i
 

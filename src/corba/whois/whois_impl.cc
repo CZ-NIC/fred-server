@@ -27,6 +27,7 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
+#include <stdexcept>
 #include <corba/Registry.hh>
 
 #include "common.h"
@@ -54,8 +55,23 @@ ccReg_Whois_i::ccReg_Whois_i(const std::string& _database
 : m_connection_string(_database)
 , server_name_(_server_name)
 , registry_restricted_handles_(_registry_restricted_handles)
+, registry_manager_(0)
 {
   Logging::Context ctx(server_name_);
+
+  // these object are shared between threads (CAUTION)
+  if (!db.OpenDatabase(m_connection_string.c_str())) {
+    LOG(ALERT_LOG,
+        "cannot connect to DATABASE %s",
+        m_connection_string.c_str());
+    throw std::runtime_error(
+        std::string("ccReg_Whois_i::ccReg_Whois_i cannot connect to DATABASE ")
+            + m_connection_string);
+  }
+
+  registry_manager_.reset(Fred::Manager::create(&db, registry_restricted_handles_));
+  registry_manager_->initStates();
+
 }
 
 ccReg_Whois_i::~ccReg_Whois_i()
@@ -90,6 +106,55 @@ void ccReg_Whois_i::fillRegistrar(ccReg::AdminRegistrar& creg
   creg.hidden = reg->getHandle() == "REG-CZNIC" ? true : false;
 }//ccReg_Whois_i::fillRegistrar
 
+void ccReg_Whois_i::fillContact(ccReg::ContactDetail* cc,
+                                Fred::Contact::Contact* c)
+{
+  cc->id = c->getId();
+  cc->handle = DUPSTRFUN(c->getHandle);
+  cc->roid = DUPSTRFUN(c->getROID);
+  cc->registrarHandle = DUPSTRFUN(c->getRegistrarHandle);
+  cc->transferDate = DUPSTRDATE(c->getTransferDate);
+  cc->updateDate = DUPSTRDATE(c->getUpdateDate);
+  cc->createDate = DUPSTRDATE(c->getCreateDate);
+  cc->createRegistrarHandle = DUPSTRFUN(c->getCreateRegistrarHandle);
+  cc->updateRegistrarHandle = DUPSTRFUN(c->getUpdateRegistrarHandle);
+  cc->authInfo = DUPSTRFUN(c->getAuthPw);
+  cc->name = DUPSTRFUN(c->getName);
+  cc->organization = DUPSTRFUN(c->getOrganization);
+  cc->street1 = DUPSTRFUN(c->getStreet1);
+  cc->street2 = DUPSTRFUN(c->getStreet2);
+  cc->street3 = DUPSTRFUN(c->getStreet3);
+  cc->province = DUPSTRFUN(c->getProvince);
+  cc->postalcode = DUPSTRFUN(c->getPostalCode);
+  cc->city = DUPSTRFUN(c->getCity);
+  cc->country = DUPSTRFUN(c->getCountry);
+  cc->telephone = DUPSTRFUN(c->getTelephone);
+  cc->fax = DUPSTRFUN(c->getFax);
+  cc->email = DUPSTRFUN(c->getEmail);
+  cc->notifyEmail = DUPSTRFUN(c->getNotifyEmail);
+  cc->ssn = DUPSTRFUN(c->getSSN);
+  cc->ssnType = DUPSTRFUN(c->getSSNType);
+  cc->vat = DUPSTRFUN(c->getVAT);
+  cc->discloseName = c->getDiscloseName();
+  cc->discloseOrganization = c->getDiscloseOrganization();
+  cc->discloseAddress = c->getDiscloseAddr();
+  cc->discloseEmail = c->getDiscloseEmail();
+  cc->discloseTelephone = c->getDiscloseTelephone();
+  cc->discloseFax = c->getDiscloseFax();
+  cc->discloseIdent = c->getDiscloseIdent();
+  cc->discloseVat = c->getDiscloseVat();
+  cc->discloseNotifyEmail = c->getDiscloseNotifyEmail();
+  std::vector<unsigned> slist;
+  for (unsigned i=0; i<c->getStatusCount(); i++) {
+    if (registry_manager_->getStatusDesc(
+        c->getStatusByIdx(i)->getStatusId()
+    )->getExternal())
+      slist.push_back(c->getStatusByIdx(i)->getStatusId());
+  }
+  cc->statusList.length(slist.size());
+  for (unsigned i=0; i<slist.size(); i++)
+    cc->statusList[i] = slist[i];
+}//ccReg_Whois_i::fillContact
 
 ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
 {
@@ -129,4 +194,30 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
   }
 }//ccReg_Whois_i::getRegistrarByHandle
 
+ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
+{
+  Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+
+  TRACE(boost::format("[CALL] ccReg_Whois_i::getContactByHandle('%1%')") % handle);
+
+  DB db;
+  if (!handle || !*handle)
+    throw ccReg::Admin::ObjectNotFound();
+  db.OpenDatabase(m_connection_string.c_str());
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, registry_restricted_handles_));
+  Fred::Contact::Manager *cr = r->getContactManager();
+  std::auto_ptr<Fred::Contact::List> cl(cr->createList());
+  cl->setWildcardExpansion(false);
+  cl->setHandleFilter(handle);
+  cl->reload();
+  if (cl->getCount() != 1) {
+    db.Disconnect();
+    throw ccReg::Admin::ObjectNotFound();
+  }
+  ccReg::ContactDetail* cc = new ccReg::ContactDetail;
+  fillContact(cc, cl->getContact(0));
+  db.Disconnect();
+  return cc;
+}//ccReg_Whois_i::getContactByHandle
 
