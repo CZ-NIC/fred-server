@@ -38,8 +38,7 @@ public:
           , bool _registry_restricted_handles);
   virtual ~ccReg_Whois_i();
 
-  ccReg::AdminRegistrar* getRegistrarByHandle(const char* handle)
-      throw (ccReg::Whois::ObjectNotFound, ccReg::Whois::SQL_ERROR);
+  ccReg::AdminRegistrar* getRegistrarByHandle(const char* handle);
 
 };//class ccReg_Whois_i
 

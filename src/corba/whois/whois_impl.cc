@@ -92,7 +92,6 @@ void ccReg_Whois_i::fillRegistrar(ccReg::AdminRegistrar& creg
 
 
 ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
-    throw (ccReg::Whois::ObjectNotFound, ccReg::Whois::SQL_ERROR)
 {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
@@ -128,6 +127,6 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
     ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
-}
+}//ccReg_Whois_i::getRegistrarByHandle
 
 
