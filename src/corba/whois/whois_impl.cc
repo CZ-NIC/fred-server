@@ -26,7 +26,6 @@
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"
 #include "fredlib/registry.h"
-#include "fredlib/object_states.h"
 
 #include "log/logger.h"
 #include "log/context.h"
