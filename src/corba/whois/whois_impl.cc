@@ -275,126 +275,282 @@ void ccReg_Whois_i::fillDomain(ccReg::DomainDetail* cd,
 
 ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
 {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 
-  LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
-  if (!handle || !*handle) throw ccReg::Whois::ObjectNotFound();
-  DB ldb;
-  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
-    throw ccReg::Whois::SQL_ERROR();
-  }
-  try {
-    std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(&ldb, registry_restricted_handles_)
-    );
-    Fred::Registrar::Manager *rm = regm->getRegistrarManager();
-    Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
-    Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
-    std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
-    r->addHandle().setValue(handle);
-    unionFilter->addFilter( r.release() );
-    rl->reload(*unionFilter.get());
+    try
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
 
-    if (rl->size() < 1) {
-      ldb.Disconnect();
-      throw ccReg::Whois::ObjectNotFound();
+        if (!handle || !*handle) throw ccReg::Whois::ObjectNotFound();
+        DB ldb;
+        if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+        throw ccReg::Whois::Error();
+        }
+        try {
+        std::auto_ptr<Fred::Manager> regm(
+            Fred::Manager::create(&ldb, registry_restricted_handles_)
+        );
+        Fred::Registrar::Manager *rm = regm->getRegistrarManager();
+        Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
+        Database::Filters::UnionPtr unionFilter
+            = Database::Filters::CreateClearedUnionPtr();
+        std::auto_ptr<Database::Filters::Registrar>
+            r ( new Database::Filters::RegistrarImpl(true));
+        r->addHandle().setValue(handle);
+        unionFilter->addFilter( r.release() );
+        rl->reload(*unionFilter.get());
+
+        if (rl->size() < 1) {
+          ldb.Disconnect();
+          throw ccReg::Whois::ObjectNotFound();
+        }
+        ccReg::AdminRegistrar* creg = new ccReg::AdminRegistrar;
+        fillRegistrar(*creg,rl->get(0));
+        ldb.Disconnect();
+        return creg;
+        }
+        catch (Fred::SQL_ERROR) {
+        ldb.Disconnect();
+        throw ccReg::Whois::Error();
+        }
+    }//try
+    catch (const ccReg::Whois::ObjectNotFound& )
+    {
+      Logging::Manager::instance_ref()
+          .get(server_name_.c_str())
+          .message( NOTICE_LOG
+                  , "getRegistarByHandle: ccReg::Whois::ObjectNotFound");
+      throw;
     }
-    ccReg::AdminRegistrar* creg = new ccReg::AdminRegistrar;
-    fillRegistrar(*creg,rl->get(0));
-    ldb.Disconnect();
-    return creg;
-  }
-  catch (Fred::SQL_ERROR) {
-    ldb.Disconnect();
-    throw ccReg::Whois::SQL_ERROR();
-  }
+    catch (const ccReg::Whois::Error& )
+    {
+      Logging::Manager::instance_ref()
+          .get(server_name_.c_str())
+          .message( ERROR_LOG
+                  , "getRegistarByHandle: ccReg::Whois::Error");
+      throw;
+    }
+    catch (const std::exception& ex)
+    {
+      Logging::Manager::instance_ref()
+          .get(server_name_.c_str())
+          .message( ERROR_LOG
+                  , "getRegistarByHandle: std::exception %s", ex.what());
+      throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+      Logging::Manager::instance_ref()
+          .get(server_name_.c_str())
+          .message( ERROR_LOG
+                  , "getRegistarByHandle: unknown exception ");
+      throw ccReg::Whois::Error();
+    }
 }//ccReg_Whois_i::getRegistrarByHandle
 
 ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
 {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 
-  TRACE(boost::format("[CALL] ccReg_Whois_i::getContactByHandle('%1%')") % handle);
+    try
+    {
+        Logging::Manager::instance_ref()
+        .get(server_name_.c_str())
+        .trace(boost::format(
+                "[CALL] ccReg_Whois_i::getContactByHandle('%1%')") % handle);
 
-  DB db;
-  if (!handle || !*handle)
-    throw ccReg::Whois::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, registry_restricted_handles_));
-  Fred::Contact::Manager *cr = r->getContactManager();
-  std::auto_ptr<Fred::Contact::List> cl(cr->createList());
-  cl->setWildcardExpansion(false);
-  cl->setHandleFilter(handle);
-  cl->reload();
-  if (cl->getCount() != 1) {
-    db.Disconnect();
-    throw ccReg::Whois::ObjectNotFound();
-  }
-  ccReg::ContactDetail* cc = new ccReg::ContactDetail;
-  fillContact(cc, cl->getContact(0));
-  db.Disconnect();
-  return cc;
+        DB db;
+        if (!handle || !*handle)
+        throw ccReg::Whois::ObjectNotFound();
+        db.OpenDatabase(m_connection_string.c_str());
+        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, registry_restricted_handles_));
+        Fred::Contact::Manager *cr = r->getContactManager();
+        std::auto_ptr<Fred::Contact::List> cl(cr->createList());
+        cl->setWildcardExpansion(false);
+        cl->setHandleFilter(handle);
+        cl->reload();
+        if (cl->getCount() != 1) {
+        db.Disconnect();
+        throw ccReg::Whois::ObjectNotFound();
+        }
+        ccReg::ContactDetail* cc = new ccReg::ContactDetail;
+        fillContact(cc, cl->getContact(0));
+        db.Disconnect();
+        return cc;
+    }//try
+    catch (const ccReg::Whois::ObjectNotFound& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( NOTICE_LOG
+                , "getContactByHandle: ccReg::Whois::ObjectNotFound");
+        throw;
+    }
+    catch (const ccReg::Whois::Error& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getContactByHandle: ccReg::Whois::Error");
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getContactByHandle: std::exception %s", ex.what());
+        throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                    , "getContactByHandle: unknown exception ");
+        throw ccReg::Whois::Error();
+    }
+
 }//ccReg_Whois_i::getContactByHandle
 
 ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
 {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 
-  TRACE(boost::format("[CALL] ccReg_Whois_i::getNSSetByHandle('%1%')") % handle);
+    try
+    {
+        Logging::Manager::instance_ref()
+                .get(server_name_.c_str())
+                .trace(boost::format(
+                "[CALL] ccReg_Whois_i::getNSSetByHandle('%1%')") % handle);
 
-  DB db;
-  if (!handle || !*handle)
-    throw ccReg::Whois::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, registry_restricted_handles_));
-  Fred::NSSet::Manager *nr = r->getNSSetManager();
-  std::auto_ptr<Fred::NSSet::List> nl(nr->createList());
-  nl->setWildcardExpansion(false);
-  nl->setHandleFilter(handle);
-  nl->reload();
-  if (nl->getCount() != 1) {
-    db.Disconnect();
-    throw ccReg::Whois::ObjectNotFound();
-  }
-  ccReg::NSSetDetail* cn = new ccReg::NSSetDetail;
-  fillNSSet(cn, nl->getNSSet(0));
-  db.Disconnect();
-  return cn;
+        DB db;
+        if (!handle || !*handle)
+        throw ccReg::Whois::ObjectNotFound();
+        db.OpenDatabase(m_connection_string.c_str());
+        std::auto_ptr<Fred::Manager>
+            r(Fred::Manager::create(&db, registry_restricted_handles_));
+        Fred::NSSet::Manager *nr = r->getNSSetManager();
+        std::auto_ptr<Fred::NSSet::List> nl(nr->createList());
+        nl->setWildcardExpansion(false);
+        nl->setHandleFilter(handle);
+        nl->reload();
+        if (nl->getCount() != 1) {
+        db.Disconnect();
+        throw ccReg::Whois::ObjectNotFound();
+        }
+        ccReg::NSSetDetail* cn = new ccReg::NSSetDetail;
+        fillNSSet(cn, nl->getNSSet(0));
+        db.Disconnect();
+        return cn;
+    }//try
+    catch (const ccReg::Whois::ObjectNotFound& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( NOTICE_LOG
+                , "getNSSetByHandle: ccReg::Whois::ObjectNotFound");
+        throw;
+    }
+    catch (const ccReg::Whois::Error& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getNSSetByHandle: ccReg::Whois::Error");
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getNSSetByHandle: std::exception %s", ex.what());
+        throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                    , "getNSSetByHandle: unknown exception ");
+        throw ccReg::Whois::Error();
+    }
 }//ccReg_Whois_i::getNSSetByHandle
 
 ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
 {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 
-    TRACE(boost::format(
+    try
+    {
+        Logging::Manager::instance_ref()
+                .get(server_name_.c_str())
+                .trace(boost::format(
                 "[CALL] ccReg_Whois_i::getKeySetByHandle('%1%')") % handle);
 
-    DB db;
-    if (!handle || !*handle)
-        throw ccReg::Whois::ObjectNotFound();
+        DB db;
+        if (!handle || !*handle)
+            throw ccReg::Whois::ObjectNotFound();
 
-    db.OpenDatabase(m_connection_string.c_str());
-    std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db
-        ,registry_restricted_handles_));
-    Fred::KeySet::Manager *kr = r->getKeySetManager();
-    std::auto_ptr<Fred::KeySet::List> kl(kr->createList());
-    kl->setWildcardExpansion(false);
-    kl->setHandleFilter(handle);
-    kl->reload();
+        db.OpenDatabase(m_connection_string.c_str());
+        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db
+            ,registry_restricted_handles_));
+        Fred::KeySet::Manager *kr = r->getKeySetManager();
+        std::auto_ptr<Fred::KeySet::List> kl(kr->createList());
+        kl->setWildcardExpansion(false);
+        kl->setHandleFilter(handle);
+        kl->reload();
 
-    if (kl->getCount() != 1) {
+        if (kl->getCount() != 1) {
+            db.Disconnect();
+            throw ccReg::Whois::ObjectNotFound();
+        }
+
+        ccReg::KeySetDetail *ck = new ccReg::KeySetDetail;
+        fillKeySet(ck, kl->getKeySet(0));
         db.Disconnect();
-        throw ccReg::Whois::ObjectNotFound();
+        return ck;
+    }//try
+    catch (const ccReg::Whois::ObjectNotFound& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( NOTICE_LOG
+                , "getKeySetByHandle: ccReg::Whois::ObjectNotFound");
+        throw;
+    }
+    catch (const ccReg::Whois::Error& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getKeySetByHandle: ccReg::Whois::Error");
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getKeySetByHandle: std::exception %s", ex.what());
+        throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                    , "getKeySetByHandle: unknown exception ");
+        throw ccReg::Whois::Error();
     }
 
-    ccReg::KeySetDetail *ck = new ccReg::KeySetDetail;
-    fillKeySet(ck, kl->getKeySet(0));
-    db.Disconnect();
-    return ck;
 }//ccReg_Whois_i::getKeySetByHandle
 
 
@@ -403,69 +559,126 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
                                                             ccReg::DomainInvKeyType type,
                                                             CORBA::Long limit)
 {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 
-  TRACE(boost::format("[CALL] ccReg_Whois_i::getDomainsByInverseKey('%1%', %2%, %3%)")
-      % key % type % limit);
+    try
+    {
+        Logging::Manager::instance_ref()
+                .get(server_name_.c_str())
+                .trace(boost::format("[CALL] ccReg_Whois_i::getDomainsByInverseKey('%1%', %2%, %3%)")
+          % key % type % limit);
 
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, registry_restricted_handles_));
-  Fred::Domain::Manager *dm = r->getDomainManager();
-  std::auto_ptr<Fred::Domain::List> dl(dm->createList());
-  switch (type) {
-    case ccReg::DIKT_REGISTRANT:
-      dl->setRegistrantHandleFilter(key);
-      break;
-    case ccReg::DIKT_ADMIN:
-      dl->setAdminHandleFilter(key);
-      break;
-    case ccReg::DIKT_TEMP:
-      dl->setTempHandleFilter(key);
-      break;
-    case ccReg::DIKT_NSSET:
-      dl->setNSSetHandleFilter(key);
-      break;
-    case ccReg::DIKT_KEYSET:
-      dl->setKeySetHandleFilter(key);
-      break;
-  }
-  dl->setLimit(limit);
-  dl->reload();
-  ccReg::DomainDetails_var dlist = new ccReg::DomainDetails;
-  dlist->length(dl->getCount());
-  for (unsigned i=0; i<dl->getCount(); i++)
-    fillDomain(&dlist[i], dl->getDomain(i));
-  db.Disconnect();
-  return dlist._retn();
+        DB db;
+        db.OpenDatabase(m_connection_string.c_str());
+        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, registry_restricted_handles_));
+        Fred::Domain::Manager *dm = r->getDomainManager();
+        std::auto_ptr<Fred::Domain::List> dl(dm->createList());
+        switch (type) {
+        case ccReg::DIKT_REGISTRANT:
+          dl->setRegistrantHandleFilter(key);
+          break;
+        case ccReg::DIKT_ADMIN:
+          dl->setAdminHandleFilter(key);
+          break;
+        case ccReg::DIKT_TEMP:
+          dl->setTempHandleFilter(key);
+          break;
+        case ccReg::DIKT_NSSET:
+          dl->setNSSetHandleFilter(key);
+          break;
+        case ccReg::DIKT_KEYSET:
+          dl->setKeySetHandleFilter(key);
+          break;
+        }
+        dl->setLimit(limit);
+        dl->reload();
+        ccReg::DomainDetails_var dlist = new ccReg::DomainDetails;
+        dlist->length(dl->getCount());
+        for (unsigned i=0; i<dl->getCount(); i++)
+        fillDomain(&dlist[i], dl->getDomain(i));
+        db.Disconnect();
+        return dlist._retn();
+    }//try
+    catch (const ccReg::Whois::Error& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getDomainsByInverseKey: ccReg::Whois::Error");
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getDomainsByInverseKey: std::exception %s", ex.what());
+        throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                    , "getDomainsByInverseKey: unknown exception ");
+        throw ccReg::Whois::Error();
+    }
 }//ccReg_Whois_i::getDomainsByInverseKey
 
 ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
                                                           ccReg::NSSetInvKeyType type,
                                                           CORBA::Long limit)
 {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, registry_restricted_handles_));
-  Fred::Zone::Manager *zm = r->getZoneManager();
-  Fred::NSSet::Manager *nm = r->getNSSetManager();
-  std::auto_ptr<Fred::NSSet::List> nl(nm->createList());
-  switch (type) {
-    case ccReg::NIKT_NS : nl->setHostNameFilter(zm->encodeIDN(key)); break;
-    case ccReg::NIKT_TECH : nl->setAdminFilter(key); break;
-  }
-  nl->setLimit(limit);
-  nl->reload();
-  ccReg::NSSetDetails_var nlist = new ccReg::NSSetDetails;
-  nlist->length(nl->getCount());
-  for (unsigned i=0; i<nl->getCount(); i++)
-    fillNSSet(&nlist[i], nl->getNSSet(i));
-  db.Disconnect();
-  return nlist._retn();
+    try
+    {
+        DB db;
+        db.OpenDatabase(m_connection_string.c_str());
+        std::auto_ptr<Fred::Manager> r(
+                Fred::Manager::create(&db, registry_restricted_handles_));
+        Fred::Zone::Manager *zm = r->getZoneManager();
+        Fred::NSSet::Manager *nm = r->getNSSetManager();
+        std::auto_ptr<Fred::NSSet::List> nl(nm->createList());
+        switch (type) {
+        case ccReg::NIKT_NS : nl->setHostNameFilter(zm->encodeIDN(key)); break;
+        case ccReg::NIKT_TECH : nl->setAdminFilter(key); break;
+        }
+        nl->setLimit(limit);
+        nl->reload();
+        ccReg::NSSetDetails_var nlist = new ccReg::NSSetDetails;
+        nlist->length(nl->getCount());
+        for (unsigned i=0; i<nl->getCount(); i++)
+        fillNSSet(&nlist[i], nl->getNSSet(i));
+        db.Disconnect();
+        return nlist._retn();
+    }//try
+    catch (const ccReg::Whois::Error& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getNSSetsByInverseKey: ccReg::Whois::Error");
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getNSSetsByInverseKey: std::exception %s", ex.what());
+        throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                    , "getNSSetsByInverseKey: unknown exception ");
+        throw ccReg::Whois::Error();
+    }
 }//ccReg_Whois_i::getNSSetsByInverseKey
 
 ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
@@ -473,76 +686,171 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
         ccReg::KeySetInvKeyType type,
         CORBA::Long limit)
 {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 
-    DB db;
-    db.OpenDatabase(m_connection_string.c_str());
-    std::auto_ptr<Fred::Manager> r(
-            Fred::Manager::create(&db, registry_restricted_handles_));
-    Fred::KeySet::Manager *km = r->getKeySetManager();
-    std::auto_ptr<Fred::KeySet::List> kl(km->createList());
-    switch (type) {
-        case ccReg::KIKT_TECH:
-            kl->setAdminFilter(key);
-            break;
+    try
+    {
+        DB db;
+        db.OpenDatabase(m_connection_string.c_str());
+        std::auto_ptr<Fred::Manager> r(
+                Fred::Manager::create(&db, registry_restricted_handles_));
+        Fred::KeySet::Manager *km = r->getKeySetManager();
+        std::auto_ptr<Fred::KeySet::List> kl(km->createList());
+        switch (type) {
+            case ccReg::KIKT_TECH:
+                kl->setAdminFilter(key);
+                break;
+        }
+        kl->setLimit(limit);
+        kl->reload();
+        ccReg::KeySetDetails_var klist = new ccReg::KeySetDetails;
+        klist->length(kl->getCount());
+        for (unsigned int i = 0; i < kl->getCount(); i++)
+            fillKeySet(&klist[i], kl->getKeySet(i));
+        db.Disconnect();
+        return klist._retn();
+    }//try
+    catch (const ccReg::Whois::Error& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getKeySetsByInverseKey: ccReg::Whois::Error");
+        throw;
     }
-    kl->setLimit(limit);
-    kl->reload();
-    ccReg::KeySetDetails_var klist = new ccReg::KeySetDetails;
-    klist->length(kl->getCount());
-    for (unsigned int i = 0; i < kl->getCount(); i++)
-        fillKeySet(&klist[i], kl->getKeySet(i));
-    db.Disconnect();
-    return klist._retn();
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getKeySetsByInverseKey: std::exception %s", ex.what());
+        throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                    , "getKeySetsByInverseKey: unknown exception ");
+        throw ccReg::Whois::Error();
+    }
 }//ccReg_Whois_i::getKeySetsByInverseKey
 
 ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
 {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 
-  TRACE(boost::format("[CALL] ccReg_Whois_i::getDomainByFQDN('%1%')") % fqdn);
+    try
+    {
+        Logging::Manager::instance_ref()
+                .get(server_name_.c_str())
+                .trace(boost::format(
+                "[CALL] ccReg_Whois_i::getDomainByFQDN('%1%')") % fqdn);
 
-  DB db;
-  if (!fqdn || !*fqdn)
-    throw ccReg::Whois::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, registry_restricted_handles_));
-  Fred::Domain::Manager *dm = r->getDomainManager();
-  std::auto_ptr<Fred::Domain::List> dl(dm->createList());
-  dl->setWildcardExpansion(false);
-  dl->setFQDNFilter(r->getZoneManager()->encodeIDN(fqdn));
-  dl->reload();
-  if (dl->getCount() != 1) {
-    db.Disconnect();
-    throw ccReg::Whois::ObjectNotFound();
-  }
-  ccReg::DomainDetail* cd = new ccReg::DomainDetail;
-  fillDomain(cd, dl->getDomain(0));
-  db.Disconnect();
-  return cd;
+        DB db;
+        if (!fqdn || !*fqdn)
+        throw ccReg::Whois::ObjectNotFound();
+        db.OpenDatabase(m_connection_string.c_str());
+        std::auto_ptr<Fred::Manager>
+            r(Fred::Manager::create(&db, registry_restricted_handles_));
+        Fred::Domain::Manager *dm = r->getDomainManager();
+        std::auto_ptr<Fred::Domain::List> dl(dm->createList());
+        dl->setWildcardExpansion(false);
+        dl->setFQDNFilter(r->getZoneManager()->encodeIDN(fqdn));
+        dl->reload();
+        if (dl->getCount() != 1) {
+        db.Disconnect();
+        throw ccReg::Whois::ObjectNotFound();
+        }
+        ccReg::DomainDetail* cd = new ccReg::DomainDetail;
+        fillDomain(cd, dl->getDomain(0));
+        db.Disconnect();
+        return cd;
+    }//try
+    catch (const ccReg::Whois::ObjectNotFound& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( NOTICE_LOG
+                , "getDomainByFQDN: ccReg::Whois::ObjectNotFound");
+        throw;
+    }
+    catch (const ccReg::Whois::Error& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getDomainByFQDN: ccReg::Whois::Error");
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getDomainByFQDN: std::exception %s", ex.what());
+        throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                    , "getDomainByFQDN: unknown exception ");
+        throw ccReg::Whois::Error();
+    }
+
 }//ccReg_Whois_i::getDomainByFQDN
 
 Registry::ObjectStatusDescSeq* ccReg_Whois_i::getDomainStatusDescList(const char *lang)
 {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 
-  Registry::ObjectStatusDescSeq* o = new Registry::ObjectStatusDescSeq;
-  for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
-    const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
-    if (sd->getExternal() && sd->isForType(3)) {
-      o->length(o->length()+1);
-      try {
-        (*o)[o->length()-1].name = DUPSTRC(sd->getDesc(lang));
-      } catch (...) {
-        // unknown language
-        (*o)[o->length()-1].name = CORBA::string_dup("");
-      }
-      (*o)[o->length()-1].id    = sd->getId();
-      (*o)[o->length()-1].shortName = DUPSTRFUN(sd->getName);
+    try
+    {
+        Registry::ObjectStatusDescSeq* o = new Registry::ObjectStatusDescSeq;
+        for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
+        const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
+        if (sd->getExternal() && sd->isForType(3)) {
+          o->length(o->length()+1);
+          try {
+            (*o)[o->length()-1].name = DUPSTRC(sd->getDesc(lang));
+          } catch (...) {
+            // unknown language
+            (*o)[o->length()-1].name = CORBA::string_dup("");
+          }
+          (*o)[o->length()-1].id    = sd->getId();
+          (*o)[o->length()-1].shortName = DUPSTRFUN(sd->getName);
+        }
+        }
+        return o;
+    }//try
+    catch (const ccReg::Whois::Error& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getDomainStatusDescList: ccReg::Whois::Error");
+        throw;
     }
-  }
-  return o;
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getDomainStatusDescList: std::exception %s", ex.what());
+        throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                    , "getDomainStatusDescList: unknown exception ");
+        throw ccReg::Whois::Error();
+    }
+
 }//ccReg_Whois_i::getDomainStatusDescList
