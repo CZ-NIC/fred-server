@@ -63,7 +63,10 @@ public:
                  "server hostname")
                 ("mojeid.demo_mode",
                  po::value<bool>()->default_value(false),
-                 "turn demo mode on/off");
+                 "turn demo mode on/off")
+                ("mojeid.notify_commands",
+                 po::value<bool>()->default_value(false),
+                 "turn command notifier on/off");
 
         return cfg_opts;
     }//get_options_description

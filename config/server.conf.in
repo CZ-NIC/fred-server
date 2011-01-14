@@ -105,6 +105,7 @@ command = LOGIN=login PASSWORD=pass sms_send.bash
 [mojeid]
 registrar_handle = REG-MOJEID
 hostname = demo.mojeid.cz
+notify_commands = false 
 # demo mode true - send both passwords via email
 demo_mode = false
 
