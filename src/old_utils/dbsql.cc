@@ -2425,7 +2425,7 @@ int DB::MakeHistory(
   char sqlString[128];
 
   if (actionID) {
-    assert(requestID != 0);
+   // assert(requestID != 0); #4974 - allow 0
     LOG( SQL_LOG , "MakeHistory actionID -> %d, requestID -> %llu " ,
             actionID, requestID);
     historyID = GetSequenceID("HISTORY");
