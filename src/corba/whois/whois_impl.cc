@@ -30,8 +30,6 @@
 #include "log/logger.h"
 #include "log/context.h"
 
-#include "random.h"
-
 #include "corba/connection_releaser.h"
 
 ccReg_Whois_i::ccReg_Whois_i(const std::string& _database
