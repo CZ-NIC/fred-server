@@ -32,3 +32,38 @@ boost::assign::list_of
 
 #include "cfg/test_custom_main.h"
 
+BOOST_AUTO_TEST_SUITE(TestCpp)
+
+void test_stdex()
+{
+throw std::runtime_error("test ex");
+}
+
+BOOST_AUTO_TEST_CASE( test_exception )
+{
+    int check_counter = 0;
+    try
+    {
+        try
+        {
+            test_stdex();
+        }//try
+        catch (const std::exception& ex)
+        {
+            //std::cout << "ex: " << ex.what() << std::endl;
+            ++check_counter;
+            throw;
+        }
+        catch (...)
+        {
+	    ++check_counter;
+	}
+    }//try
+    catch (...)
+    {}
+    BOOST_REQUIRE_EQUAL(1, check_counter);
+
+}//test_exception
+
+BOOST_AUTO_TEST_SUITE_END();//TestCpp
+

@@ -20,6 +20,7 @@
 #define TESTSERVER_H_
 
 #include <memory>
+#include <stdexcept>
 #include <iostream>
 #include <string>
 #include <algorithm>
