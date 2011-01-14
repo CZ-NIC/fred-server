@@ -26,7 +26,13 @@
 
 // mailer manager
 #include "fredlib/mailer.h"
-#include "notifier_changes.h"
+#include "fredlib/contact_diff.h"
+#include "fredlib/domain_diff.h"
+#include "fredlib/nsset_diff.h"
+#include "fredlib/keyset_diff.h"
+
+
+//#include "notifier_changes.h"
 
 
 
@@ -35,8 +41,8 @@
 EPPNotifier::EPPNotifier(bool _disable, 
                          MailerManager *mailManager, 
                          DB *dbs, 
-                         ID regid, 
-                         ID objectid,
+                         unsigned int regid, 
+                         unsigned int objectid,
                          Fred::Manager *_rm)
 {
   disable = _disable;
@@ -102,7 +108,7 @@ void EPPNotifier::constructMessages() {
   /* construct messages */
   unsigned int i, num;
   short type, mod;
-  ID cID;
+  unsigned int cID;
 
   // 4 parameters  type of the object name  ticket svTRID and  handle of  registrar
   params["ticket"] = db->GetsvTRID();
@@ -120,27 +126,38 @@ void EPPNotifier::constructMessages() {
               enum_action == EPP_NSsetUpdate   ||
               enum_action == EPP_KeySetUpdate)) {
     try {
+      Fred::ChangesMap values;
 
-      MessageUpdateChanges changes(rm_, objectID, enum_action);
-      MessageUpdateChanges::ChangesMap values = changes.compose();
+      if (enum_action == EPP_ContactUpdate) {
+          values = Fred::Contact::diff_last_history(rm_->getContactManager(), objectID);
+      }
+      else if (enum_action == EPP_DomainUpdate) {
+          values = Fred::Domain::diff_last_history(rm_->getDomainManager(), objectID);
+      }
+      else if (enum_action == EPP_NSsetUpdate) {
+          values = Fred::NSSet::diff_last_history(rm_->getNSSetManager(), objectID);
+      }
+      else if (enum_action == EPP_KeySetUpdate) {
+          values = Fred::KeySet::diff_last_history(rm_->getKeySetManager(), objectID);
+      }
 
       params["changes"] = values.size() > 0 ? "1" : "0";
 
-      MessageUpdateChanges::ChangesMap::const_iterator it = values.begin();
+      Fred::ChangesMap::const_iterator it = values.begin();
       for (; it != values.end(); ++it) {
         params["changes." + it->first] = "1";
         params["changes." + it->first + ".old"] = it->second.first;
         params["changes." + it->first + ".new"] = it->second.second;
       }
     }
-    catch (MessageUpdateChanges::NoChangesFound &ex) {
-      LOGGER(PACKAGE).info(boost::format("EPPNotifier: update changes - no history found (object_id=%1%)") % objectID);
-    }
     catch (Database::Exception &ex) {
-      LOGGER(PACKAGE).error(boost::format("EPPNotifier: update changes - database error => %1%") % ex.what());
+        LOGGER(PACKAGE).error(boost::format("EPPNotifier: update changes - database error => %1%") % ex.what());
+    }
+    catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("EPPNotifier: update changes (%1%)") % _ex.what());
     }
     catch (...) {
-      LOGGER(PACKAGE).error("EPPNotifier: update changes - unknown exception");
+        LOGGER(PACKAGE).error("EPPNotifier: update changes - unknown exception");
     }
   }
 
@@ -173,7 +190,7 @@ void EPPNotifier::constructMessages() {
 }
 
 void EPPNotifier::AddContactID(
-  ID contactID, short type, short mod)
+  unsigned int contactID, short type, short mod)
 {
   NotifyST n;
 
@@ -186,14 +203,14 @@ void EPPNotifier::AddContactID(
 
 // addall  tech contact of  nsset  linked with domain with  domainID
 void EPPNotifier::AddNSSetTechByDomain(
-  ID domainID)
+  unsigned int domainID)
 {
   // SQL select by NSSETID
   AddNSSetTech(db->GetNumericFromTable("domain", "nsset", "id", domainID) );
 }
 
 void EPPNotifier::AddNSSetTech(
-  ID nssetID)
+  unsigned int nssetID)
 {
   int i, num;
   char sqlString[128];
@@ -212,12 +229,12 @@ void EPPNotifier::AddNSSetTech(
 
 //add all tech contact of keyset linked with domain (identified by domainID)
 void
-EPPNotifier::AddKeySetTechByDomain(ID domainID)
+EPPNotifier::AddKeySetTechByDomain(unsigned int domainID)
 {
     AddKeySetTech(db->GetNumericFromTable("domain", "keyset", "id", domainID));
 }
 void
-EPPNotifier::AddKeySetTech(ID keysetID)
+EPPNotifier::AddKeySetTech(unsigned int keysetID)
 {
     int i, num;
     char sqlString[128];
@@ -236,7 +253,7 @@ EPPNotifier::AddKeySetTech(ID keysetID)
 
 
 void EPPNotifier::AddDomainAdmin(
-  ID domainID)
+  unsigned int domainID)
 {
   int i, num;
   char sqlString[128];
@@ -255,9 +272,9 @@ void EPPNotifier::AddDomainAdmin(
 
 // add owner of domain
 void EPPNotifier::AddDomainRegistrant(
-  ID domainID)
+  unsigned int domainID)
 {
-  ID contactID;
+  unsigned int contactID;
 
   contactID = db->GetNumericFromTable("domain", "registrant", "id", domainID);
   LOG( DEBUG_LOG ,"EPPNotifier: AddDomainRegistrant domainID %d contactID %d" , domainID , contactID);

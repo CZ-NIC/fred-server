@@ -53,12 +53,12 @@ void compare_and_fill(ChangesMap &_changes,
                       const T &_prev,
                       const T &_act)
 {
-  if (_prev != _act) {
-    std::string prev = stringify(_prev);
-    std::string act  = stringify(_act);
+    if (_prev != _act) {
+        std::string prev = stringify(_prev);
+        std::string act  = stringify(_act);
 
-    _changes[_field] = std::make_pair(prev, act);
-  }
+        _changes[_field] = std::make_pair(prev, act);
+    }
 }
 
 
