@@ -24,7 +24,6 @@
 #include "log/logger.h"
 #include "log/context.h"
 
-// TODO request.h is about to be split
 #include "request.h"
 #include "request_manager.h"
 #include "request_list.h"
@@ -32,7 +31,6 @@
 #include "model_session.h"
 #include "model_request_data.h"
 #include "model_request.h"
-#include "model_request_property_name.h"
 #include "model_request_property_value.h"
 
 
@@ -65,36 +63,6 @@ class logd_ctx_init { };
 
 #endif
 
-inline void logger_notice(const char *str);
-inline void logger_error(const char *str);
-inline void logger_notice(boost::format &fmt);
-inline void logger_error(boost::format &fmt);
-
-inline void logger_notice(const char *str)
-{
-        boost::format fmt(str);
-        logger_notice(fmt);
-}
-
-inline void logger_error(const char *str)
-{
-        boost::format fmt(str);
-    logger_error(fmt);
-}
-
-inline void logger_notice(boost::format &fmt)
-{
-#ifdef HAVE_LOGGER
-    LOGGER("fred-server").notice(fmt);
-#endif
-}
-
-inline void logger_error(boost::format &fmt)
-{
-#ifdef HAVE_LOGGER
-    LOGGER("fred-server").error(fmt);
-#endif
-}
 
 #ifdef LOGD_VERIFY_INPUT
 #error "LOGD_VERIFY_INPUT should be off because of performance improvement."
@@ -222,24 +190,7 @@ ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
     }
 
     // now fill the property_names map:
-
-    try {
-        Result res = conn.exec("select id, name from request_property_name");
-
-        if (res.size() > PROP_NAMES_SIZE_LIMIT) {
-            logger_error(" Number of entries in request_property_name is over the limit.");
-
-            return;
-        }
-
-        for (Result::Iterator it = res.begin(); it != res.end(); ++it) {
-            Row row = *it;
-            property_names[row[1]] = row[0];
-        }
-
-    } catch (Database::Exception &ex) {
-        logger_error(ex.what());
-    }
+    pcache.reset(new RequestPropertyNameCache(conn));
 
 }
 
@@ -275,71 +226,7 @@ bool ManagerImpl::record_check(ID id, Connection &conn)
 }
 #endif //LOGD_VERIFY_INPUT
 
-// find ID for the given name of a property
-// if the name is tool long, it's truncated to the maximal length allowed by the database
-ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
-{
-        TRACE("[CALL] Fred::Logger::ManagerImpl::find_property_name_id");
-    ID property_name_id;
-    std::map<std::string, ID>::iterator iter;
 
-    std::string name_trunc = name.substr(0, MAX_NAME_LENGTH);
-
-    boost::mutex::scoped_lock prop_check(properties_mutex);
-    iter = property_names.find(name_trunc);
-
-    if(iter != property_names.end()) {
-        property_name_id = iter->second;
-
-                prop_check.unlock();
-                // unlock
-        } else {
-            // if the name isn't cached in the memory, try to find it in the database
-
-            prop_check.unlock();
-
-            std::string s_name = conn.escape(name_trunc);
-
-            boost::format query = boost::format("select id from request_property_name where name='%1%'") % s_name;
-            Result res = conn.exec(query.str());
-
-            if(res.size() == 0) {
-                boost::format lockq = boost::format("LOCK TABLE %1% IN SHARE ROW EXCLUSIVE MODE")
-                    % ModelRequestPropertyName::getTableName();
-                conn.exec(lockq.str());
-
-                res = conn.exec(query.str());
-            }
-
-            if (res.size() > 0) {
-                // okay, it was found in the database
-                property_name_id = res[0][0];
-
-                // now that we know the right database id of the name
-                // we can add it to the map
-                prop_check.lock();
-                property_names[name_trunc] = property_name_id;
-                prop_check.unlock();
-            } else if(res.size() == 0) {
-                // not found, we're under lock, so we can add it now
-                // and let the lock release after commiting the transaction
-                ModelRequestPropertyName pn;
-                pn.setName(name_trunc);
-
-                try {
-                    pn.insert();
-                    property_name_id = pn.getId();
-                } catch (Database::Exception &ex) {
-                    logger_error(ex.what());
-                    return 0;
-                }
-                // we don't add the value to the map - that has to happen after the commit of this transaction
-            }
-            // if the name was inserted into database, we have to keep it locked until commit
-    }
-
-    return property_name_id;
-}
 
 // insert properties for the given request record
 void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::RequestProperties& props, Connection &conn, bool output)
@@ -352,7 +239,7 @@ void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool 
     }
 
     // process the first record
-    property_name_id = find_property_name_id(props[0].name, conn);
+    property_name_id = pcache->find_property_name_id(props[0].name, conn);
 
     if (props[0].child) {
         // the first property is set to child - this is an error
@@ -373,7 +260,7 @@ void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool 
 
     // process the rest of the sequence
     for (unsigned i = 1; i < props.size(); i++) {
-        property_name_id = find_property_name_id(props[i].name, conn);
+        property_name_id = pcache->find_property_name_id(props[i].name, conn);
 
         // create a new object for each iteration
         // because ParentId must alternate between NULL and some value
@@ -845,7 +732,6 @@ throw (Manager::DB_CONNECT_FAILED) {
     return new ManagerImpl(monitoring_hosts_file);
 }
 
-const int ManagerImpl::MAX_NAME_LENGTH = 30;
 
 
 } // namespace Logger

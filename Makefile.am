@@ -427,7 +427,9 @@ src_fredlib_requests_librequests_a_SOURCES =  \
 	    src/fredlib/requests/request_manager.h \
 	    src/fredlib/requests/request_manager.cc \
 	    src/fredlib/requests/request_cache.h \
-	    src/fredlib/requests/request_cache.cc
+	    src/fredlib/requests/request_cache.cc \
+	    src/fredlib/requests/request_property_name_cache.h \
+	    src/fredlib/requests/request_property_name_cache.cc	    
 
 #src fredlib requests
 

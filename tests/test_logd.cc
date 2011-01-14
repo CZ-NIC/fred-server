@@ -37,6 +37,7 @@
 #include <boost/thread/barrier.hpp>
 #include "cfg/handle_threadgroup_args.h"
 
+
 using namespace Database;
 using namespace Fred::Logger;
 
@@ -112,15 +113,22 @@ BOOST_GLOBAL_FIXTURE( MyFixture );
 class TestImplLog {
 	// TODO this should follow the common ways with create(...) 
         std::auto_ptr<Fred::Logger::ManagerImpl> logd;
-//	Connection conn;
+        std::auto_ptr<Fred::Logger::RequestPropertyNameCache> pcache;
 
 
 public:
-    TestImplLog (const std::string connection_string) : logd(new Fred::Logger::ManagerImpl()) {
-	};
+    TestImplLog (const std::string connection_string) :
+        logd(new Fred::Logger::ManagerImpl())
+    {
+        Connection conn = Database::Manager::acquire();
+        pcache.reset(new Fred::Logger::RequestPropertyNameCache(conn));
 
-	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(new Fred::Logger::ManagerImpl(monitoring_file)) {
-	};
+    };
+
+	TestImplLog (const std::string connection_string, const std::string monitoring_file) :
+	    logd(new Fred::Logger::ManagerImpl(monitoring_file))
+    // , pcache(new Fred::Logger::RequestPropertyNameCache(Database::Manager::acquire()))
+    {};
 
 	Database::ID createSession(Database::ID user_id, const char *user_name);
 	bool         closeSession(Database::ID id);
@@ -407,7 +415,7 @@ ID TestImplLog::find_property_name(const std::string &name) {
     Connection conn = Database::Manager::acquire();
 
     Database::Transaction tx(conn);
-    ID ret_id = logd->find_property_name_id(name, conn);
+    ID ret_id = pcache->find_property_name_id(name, conn);
 
     // TODO concurrency
     MyFixture::id_list_property_name.insert(ret_id);
@@ -440,7 +448,7 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_generic_prope
 bool TestImplLog::property_match(const Row r, const Fred::Logger::RequestProperty &p, bool output)
 {
 
-	if ( (std::string)r[0] != p.name.substr(0, Fred::Logger::ManagerImpl::MAX_NAME_LENGTH))  return false;
+	if ( (std::string)r[0] != p.name.substr(0, Fred::Logger::RequestPropertyNameCache::MAX_NAME_LENGTH))  return false;
 	if ( (std::string)r[1] != p.value) return false;
         if ( (bool)r[3] != output) return false;
 

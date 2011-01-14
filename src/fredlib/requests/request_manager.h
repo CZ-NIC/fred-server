@@ -20,6 +20,7 @@
 #define REQUEST_MANAGER_H_
 
 #include "request_cache.h"
+#include "request_property_name_cache.h"
 
 namespace Fred {
 namespace Logger {
@@ -38,6 +39,8 @@ class WrongUsageError : std::runtime_error {
 public:
     WrongUsageError(const std::string msg) : std::runtime_error(msg) {};
 };
+
+
 
 class Manager {
 public:
@@ -68,24 +71,10 @@ virtual  bool i_closeSession(Database::ID id) = 0;
 
 class ManagerImpl : public Manager {
 private:
-    boost::mutex properties_mutex;
 
-    struct strCmp {
-        bool operator()(const std::string &s1, const std::string &s2) const {
-            return s1 < s2;
-        }
-    };
-  /** Limit the number of entries read from request_property_name table
-   * (which is supposed to contain limited number of distinct property names )
-   */
-  static const unsigned int PROP_NAMES_SIZE_LIMIT = 10000;
-
-  /*
-  std::tr1::unordered_map<std::string, Database::ID> property_names
-  */
-  std::map<std::string, Database::ID, strCmp> property_names;
   std::list<std::string> monitoring_ips;
   RequestCache rcache;
+  std::auto_ptr<RequestPropertyNameCache> pcache;
 
 public:
 
@@ -111,8 +100,6 @@ public:
   Database::Result i_getResultCodesByService(ServiceType service);
   Database::Result i_getObjectTypes();
 
-  // not really part of the interface, but something we need to test
-  ID find_property_name_id(const std::string &name, Connection &conn);
  // for migration tool (util/logd_migration)
  void insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Fred::Logger::RequestProperties& props);
 
@@ -127,9 +114,6 @@ private:
   inline Database::ID find_last_property_value_id(Connection &conn);
   inline Database::ID find_last_request_id(Connection &conn);
   inline void getSessionUser(Connection &conn, Database::ID session_id, std::string *user_name, Database::ID *user_id);
-
-public:
-  static const int MAX_NAME_LENGTH;
 
 };
 
