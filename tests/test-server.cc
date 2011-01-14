@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_SUITE(TestCpp)
 
 void test_stdex()
 {
-throw std::runtime_error("test ex");
+    throw std::runtime_error("test ex");
 }
 
 BOOST_AUTO_TEST_CASE( test_exception )
@@ -56,13 +56,12 @@ BOOST_AUTO_TEST_CASE( test_exception )
         }
         catch (...)
         {
-	    ++check_counter;
-	}
+            check_counter+=3;
+        }
     }//try
     catch (...)
     {}
     BOOST_REQUIRE_EQUAL(1, check_counter);
-
 }//test_exception
 
 BOOST_AUTO_TEST_SUITE_END();//TestCpp
