@@ -82,6 +82,14 @@ Fred::ChangesMap diff(Manager *_m,
 
 
 
+Fred::ChangesMap diff_last_history(Manager *_m, const unsigned long long &_id)
+{
+    std::pair<unsigned long long, unsigned long long> history = get_last_history(_id, 2);
+    return diff(_m, history.first, history.second);
+}
+
+
+
 Fred::ChangesMap diff(const NSSet *_prev,
                       const NSSet *_act)
 {

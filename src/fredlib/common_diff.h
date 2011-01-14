@@ -95,6 +95,12 @@ void _diff_object(ChangesMap &_changes,
                   const Fred::Object *_prev,
                   const Fred::Object *_act);
 
+
+
+std::pair<unsigned long long, unsigned long long>
+    get_last_history(const unsigned long long &_id, const unsigned int &_type);
+
+
 }
 
 #endif /*COMMON_DIFF_H__*/

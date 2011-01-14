@@ -12,6 +12,10 @@ Fred::ChangesMap diff(Manager *_m,
                       const unsigned long long &_prev_hid,
                       const unsigned long long &_act_hid);
 
+
+Fred::ChangesMap diff_last_history(Manager *_m, const unsigned long long &_id);
+
+
 Fred::ChangesMap diff(const KeySet *_prev,
                       const KeySet *_act);
 
