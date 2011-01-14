@@ -3,27 +3,13 @@
 
 #include <memory>
 #include <string>
-#include <map>
-#include <vector>
 
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
-
-#include "session_impl.h"
-#include "corba/mailer_manager.h"
 #include "fredlib/registry.h"
-#include "fredlib/invoice.h"
 #include "old_utils/dbsql.h"
-#include "model/model_filters.h"
-#include "bankinginvoicing_impl.h"
-
-#include "conf/manager.h"
-
-class NameService;
 
 class ccReg_Whois_i : public POA_ccReg::Whois,
-  public PortableServer::RefCountServantBase {
+  public PortableServer::RefCountServantBase
+{
 private:
   std::string m_connection_string;
   std::string server_name_;
@@ -38,8 +24,8 @@ private:
   void fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n);
   void fillKeySet(ccReg::KeySetDetail* cn, Fred::KeySet::KeySet* n);
   void fillDomain(ccReg::DomainDetail* cd, Fred::Domain::Domain* d);
-public:
 
+public:
   ccReg_Whois_i(const std::string& database, const std::string& _server_name
           , bool _registry_restricted_handles);
   virtual ~ccReg_Whois_i();
@@ -61,10 +47,6 @@ public:
           CORBA::Long limit);
   ccReg::DomainDetail* getDomainByFQDN(const char* fqdn);
   Registry::ObjectStatusDescSeq* getDomainStatusDescList(const char *lang);
-
-
-
-
 };//class ccReg_Whois_i
 
 #endif //WHOIS_IMPL_H

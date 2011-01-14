@@ -16,15 +16,6 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/date_time/posix_time/time_formatters.hpp>
-#include <boost/date_time/local_time/local_time.hpp>
-#include <boost/date_time/c_local_time_adjustor.hpp>
-
-#include <boost/thread/thread.hpp>
-#include <boost/thread/xtime.hpp>
-#include <boost/bind.hpp>
-
-#include <math.h>
 #include <memory>
 #include <iomanip>
 #include <stdexcept>
@@ -35,11 +26,7 @@
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"
 #include "fredlib/registry.h"
-#include "fredlib/notify.h"
-#include "corba/mailer_manager.h"
-#include "fredlib/messages/messages_impl.h"
 #include "fredlib/object_states.h"
-#include "bank_payment.h"
 
 #include "log/logger.h"
 #include "log/context.h"
