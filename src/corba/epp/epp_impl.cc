@@ -4721,20 +4721,26 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
                 if (code == 0) {
 
                     // change validity exdate  extension
-                    if (GetZoneEnum(action.getDB(), zone) && valexdate.length() > 0) {
-                        LOG(NOTICE_LOG, "change valExpDate %s", valexdate.c_str());
-                        action.getDB()->UPDATE("enumval");
-                        action.getDB()->SET("ExDate", valexdate.c_str());
-                        if (publish == ccReg::DISCL_DISPLAY) {
-                            action.getDB()->SET("publish", true);
-                        }
-                        if (publish == ccReg::DISCL_HIDE) {
-                            action.getDB()->SET("publish", false);
-                        }
-                        action.getDB()->WHERE("domainID", id);
+                    if (GetZoneEnum(action.getDB(), zone)) {
+                        if (valexdate.length() > 0 || publish != ccReg::DISCL_EMPTY) {
+                            action.getDB()->UPDATE("enumval");
+                            if (valexdate.length() > 0) {
+                                LOG(NOTICE_LOG, "change valExpDate %s", valexdate.c_str());
+                                action.getDB()->SET("ExDate", valexdate.c_str());
+                            }
+                            if (publish == ccReg::DISCL_DISPLAY) {
+                                LOG(NOTICE_LOG, "change publish flag to YES");
+                                action.getDB()->SET("publish", true);
+                            }
+                            if (publish == ccReg::DISCL_HIDE) {
+                                LOG(NOTICE_LOG, "change publish flag to NO");
+                                action.getDB()->SET("publish", false);
+                            }
+                            action.getDB()->WHERE("domainID", id);
 
-                        if ( !action.getDB()->EXEC() )
-                            code = COMMAND_FAILED;
+                            if ( !action.getDB()->EXEC() )
+                                code = COMMAND_FAILED;
+                        }
                     }
 
                     // REM temp-c (must be befor ADD admin-c because of uniqueness)
@@ -5388,15 +5394,18 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
 
                 // change validity date for enum domain
                 if (GetZoneEnum(action.getDB(), zone) ) {
-                    if (valexdate.length() > 0) {
-                        LOG(NOTICE_LOG, "change valExpDate %s", valexdate.c_str());
-
+                    if (valexdate.length() > 0 || publish != ccReg::DISCL_EMPTY) {
                         action.getDB()->UPDATE("enumval");
-                        action.getDB()->SET("ExDate", valexdate.c_str());
+                        if (valexdate.length() > 0) {
+                            LOG(NOTICE_LOG, "change valExpDate %s", valexdate.c_str());
+                            action.getDB()->SET("ExDate", valexdate.c_str());
+                        }
                         if (publish == ccReg::DISCL_DISPLAY) {
+                            LOG(NOTICE_LOG, "change publish flag to YES");
                             action.getDB()->SET("publish", true);
                         }
                         if (publish == ccReg::DISCL_HIDE) {
+                            LOG(NOTICE_LOG, "change publish flag to NO");
                             action.getDB()->SET("publish", false);
                         }
                         action.getDB()->WHERE("domainID", id);
