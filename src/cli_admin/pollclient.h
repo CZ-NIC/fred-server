@@ -80,12 +80,8 @@ public:
         BaseClient(connstring, nsAddr),
         m_conf(conf)
     {
-        DB* db= new DB;
-        if (!db->OpenDatabase(connstring.c_str()))
-         {
-            throw std::runtime_error("PollClient db connection failed");
-         }
-        m_db = DBDisconnectPtr(db);
+        m_db = connect_DB(connstring
+                , std::runtime_error("PollClient db connection failed"));
     }
     ~PollClient()
     { }

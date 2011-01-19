@@ -9,6 +9,8 @@
 #include <map>
 #include <cstdlib>
 #include <boost/shared_ptr.hpp>
+#include <memory>
+#include <stdexcept>
 
 
 #define LANG_EN 0
@@ -617,5 +619,17 @@ struct DBDisconnect
 };
 ///DBSharedPtr factory
 typedef DBPtrT<DBDisconnect> DBDisconnectPtr;
+///DB auto_ptr
+typedef std::auto_ptr<DB> DBAutoPtr;
+
+///DBDisconnectPtr factory with custom exception
+template <class ExceptionInCaseOfConnectionFailure>
+DBSharedPtr connect_DB(const std::string& connection_string
+        ,ExceptionInCaseOfConnectionFailure ex)
+{
+    DBAutoPtr db( new DB);
+    if (!db->OpenDatabase(connection_string.c_str())) throw ex;
+    return DBDisconnectPtr(db.release());
+}//connect_DB
 
 #endif

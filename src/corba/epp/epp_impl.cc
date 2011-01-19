@@ -153,11 +153,11 @@ public:
   {
     Logging::Context::push(str(boost::format("action-%1%") % action));
 
-    DB* _db= new DB;
+    DBAutoPtr _db( new DB);
     if (!_db->OpenDatabase(epp->getDatabaseString())) {
         epp->ServerInternalError("Cannot connect to DB");
     }
-    db = DBDisconnectPtr(_db);
+    db = DBDisconnectPtr(_db.release());
 
     if (!db->BeginAction(clientID, action, clTRID, xml, paction)) {
       epp->ServerInternalError("Cannot beginAction");
@@ -412,12 +412,7 @@ ccReg_EPP_i::ccReg_EPP_i(
   // objects are shared between threads!!!
   // init at the beginning and do not change
 
-  DB* db_ptr= new DB;
-  if (!db_ptr->OpenDatabase(database)) {
-      LOG(ALERT_LOG, "can not connect to DATABASE %s", database.c_str());
-      throw DB_CONNECT_FAILED();
-  }
-  db_disconnect_guard_ = DBDisconnectPtr(db_ptr);
+  db_disconnect_guard_ = connect_DB(database , DB_CONNECT_FAILED());
 
   LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
   regMan.reset(Fred::Manager::create(db_disconnect_guard_, false)); //TODO: replace 'false'
@@ -7072,9 +7067,9 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
 
   LOG( NOTICE_LOG , "nssetTest nsset %s  clientID -> %d clTRID [%s] \n" , handle, (int ) clientID , clTRID );
 
-  DB* db= new DB;
-  bool db_connected_ = db->OpenDatabase(database);
-  DBSharedPtr DBsql = DBDisconnectPtr(db);
+  DBAutoPtr _db( new DB);
+  bool db_connected_ = _db->OpenDatabase(database);
+  DBSharedPtr DBsql = DBDisconnectPtr(_db.release());
 
   if ( (regID = GetRegistrarID(clientID) ))
     if (db_connected_) {
