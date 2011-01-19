@@ -91,11 +91,12 @@ CORBA::Short ccReg_Mails_i::numColumns() {
   return 3;
 }
 
-void ccReg_Mails_i::reload() {
+void ccReg_Mails_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-  TRACE("[CALL] ccReg_Mails_i::reload()");
+  TRACE("[CALL] ccReg_Mails_i::reload_worker()");
+  mail_list_->setTimeout(query_timeout);
   mail_list_->reload(uf);
 }
 

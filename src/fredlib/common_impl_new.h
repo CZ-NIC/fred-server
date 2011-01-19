@@ -64,7 +64,7 @@ public:
     unsigned long long getRealCount(Database::Filters::Union &filter);
     void reload();
     bool isLimited() const;
-
+    void setTimeout(unsigned _timeout);
 
 };
 

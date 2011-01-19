@@ -120,12 +120,13 @@ ccReg_KeySets_i::numColumns()
 }
 
 void
-ccReg_KeySets_i::reload()
+ccReg_KeySets_i::reload_worker()
 {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-    TRACE("[CALL] ccReg_KeySets_i::reload()");
+    TRACE("[CALL] ccReg_KeySets_i::reload_worker()");
+    m_kl->setTimeout(query_timeout);
     m_kl->reload(uf);
     m_kl->deleteDuplicatesId();
 }

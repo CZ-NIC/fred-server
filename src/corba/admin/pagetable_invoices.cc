@@ -124,11 +124,12 @@ CORBA::Short ccReg_Invoices_i::numColumns() {
   return 9;
 }
 
-void ccReg_Invoices_i::reload() {
+void ccReg_Invoices_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
   invoice_list_->setPartialLoad(true);
+  invoice_list_->setTimeout(query_timeout);
   invoice_list_->reload(uf);
 }
 

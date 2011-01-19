@@ -43,6 +43,7 @@ public:
     virtual const char *getTempTableName() const = 0;
     virtual unsigned long long getRealCount(Database::Filters::Union &filter) = 0;
     virtual bool isLimited() const = 0;
+    virtual void setTimeout(unsigned _timeout) = 0;
 };
 
 

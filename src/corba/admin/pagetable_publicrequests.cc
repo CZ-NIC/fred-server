@@ -17,11 +17,12 @@ ccReg::Filters::Compound_ptr ccReg_PublicRequests_i::add() {
   return it.addE(f);
 }
 
-void ccReg_PublicRequests_i::reload() {
+void ccReg_PublicRequests_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-  TRACE("[CALL] ccReg_PublicRequests_i::reload()");
+  TRACE("[CALL] ccReg_PublicRequests_i::reload_worker()");
+  request_list_->setTimeout(query_timeout);
   request_list_->reload(uf);
 }
 

@@ -17,11 +17,12 @@ ccReg::Filters::Compound_ptr ccReg_Domains_i::add() {
   return it.addE(f);
 }
 
-void ccReg_Domains_i::reload() {
+void ccReg_Domains_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-  TRACE("[CALL] ccReg_Domains_i::reload()");
+  TRACE("[CALL] ccReg_Domains_i::reload_worker()");
+  dl->setTimeout(query_timeout);
   dl->reload(uf);
   dl->deleteDuplicatesId();
 }

@@ -1038,7 +1038,16 @@ public:
       CommonListImplNew::reload();
     }//try
     catch (Database::Exception& ex) {
-      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+        std::string message = ex.what();
+        if (message.find(Database::Connection::TIMEOUT_STRING)
+                != std::string::npos) {
+            LOGGER(PACKAGE).info("Statement timeout in request list.");
+            clear();
+            throw;
+        } else {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            clear();
+        }
     }
   }
   
@@ -1638,7 +1647,16 @@ public:
       CommonListImpl::reload();
     }
     catch (Database::Exception& ex) {
-      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+        std::string message = ex.what();
+        if (message.find(Database::Connection::TIMEOUT_STRING)
+                != std::string::npos) {
+            LOGGER(PACKAGE).info("Statement timeout in request list.");
+            clear();
+            throw;
+        } else {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            clear();
+        }
     }
   }
   virtual void setPartialLoad(bool _partialLoad) {

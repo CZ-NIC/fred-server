@@ -279,7 +279,7 @@ ccReg_Messages_i::numRows()
 }
 
 void
-ccReg_Messages_i::reload()
+ccReg_Messages_i::reload_worker()
 {
 	try
 	{
@@ -287,6 +287,7 @@ ccReg_Messages_i::reload()
     ConnectionReleaser releaser;
 
     LOGGER(PACKAGE).debug("ccReg_Messages_i::reload");
+    ml->setTimeout(query_timeout);
     ml->reload(uf);
     }//try
     catch(std::exception& ex)

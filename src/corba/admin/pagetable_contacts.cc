@@ -106,11 +106,12 @@ CORBA::Short ccReg_Contacts_i::numColumns() {
   return 6;
 }
 
-void ccReg_Contacts_i::reload() {
+void ccReg_Contacts_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
 //  cl->makeRealCount();
+  cl->setTimeout(query_timeout);
   cl->reload(uf);
   cl->deleteDuplicatesId();
 }

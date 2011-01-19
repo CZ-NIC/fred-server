@@ -49,12 +49,12 @@ void CommonObjectImpl::setId(TID id) {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 CommonListImpl::CommonListImpl(DBSharedPtr _db) :
-  db(_db), load_offset_(0), load_limit_(1000), query_timeout(5000), real_size_(0), real_size_initialized_(false)
+  db(_db), load_offset_(0), load_limit_(1000), real_size_(0), real_size_initialized_(false)
     , load_limit_active_(), ptr_idx_(-1), add(false), wcheck(true), idFilter(0)
 {}
 
 CommonListImpl::CommonListImpl() :
-  db(), load_offset_(0), load_limit_(1000), query_timeout(5000), real_size_(0), real_size_initialized_(false),
+  db(), load_offset_(0), load_limit_(1000), real_size_(0), real_size_initialized_(false),
   load_limit_active_(), ptr_idx_(-1), add(false), wcheck(true), idFilter(0)
 {}
 
@@ -102,13 +102,16 @@ bool CommonListImpl::isLimited() const {
 }
 
 void CommonListImpl::setTimeout(unsigned _timeout) {
-  query_timeout = _timeout;
+  Database::Connection conn = Database::Manager::acquire();
+
+  boost::format fmt_timeout =  boost::format("SET statement_timeout=%1%")
+                       % _timeout;
+  conn.exec(fmt_timeout.str());
 }
 
 CommonObject* CommonListImpl::get(unsigned _idx) const {
   return _idx >= getCount() ? NULL : data_[_idx];
 }
-
 
 void CommonListImpl::release(const unsigned long long &_idx)
 {

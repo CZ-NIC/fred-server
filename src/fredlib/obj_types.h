@@ -361,6 +361,15 @@ public:
         throw std::runtime_error("id not found");
     }
 
+    void setTimeout(unsigned _timeout)
+    {
+      Database::Connection conn = Database::Manager::acquire();
+
+      boost::format fmt_timeout =  boost::format("SET statement_timeout=%1%")
+                           % _timeout;
+      conn.exec(fmt_timeout.str());
+    }
+
 };//ObjList
 
 }//namespace Fred

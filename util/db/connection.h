@@ -373,7 +373,7 @@ public:
   typedef ConnectionBase_<connection_driver, manager_type>   super;
   typedef typename super::transaction_type                   transaction_type;
 
-
+  const static std::string TIMEOUT_STRING;
   /**
    * Constructor and destructor
    */
@@ -421,6 +421,7 @@ protected:
   transaction_type **trans_;  /**< pointer to active transaction */
 };
 
+template<class connection_driver, class manager_type> const std::string  TSSConnection_<connection_driver, manager_type>::TIMEOUT_STRING = "statement timeout";
 
 }
 

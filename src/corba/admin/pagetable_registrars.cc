@@ -19,11 +19,12 @@ ccReg_Registrars_i::~ccReg_Registrars_i() {
 }
 
 void
-ccReg_Registrars_i::reload() {
+ccReg_Registrars_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-  TRACE("[CALL] void ccReg_Registrars_i::reload()");
+  TRACE("[CALL] void ccReg_Registrars_i::reload_worker()");
+  rl->setTimeout(query_timeout);
   rl->reload(uf);
 
   Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
@@ -32,10 +33,10 @@ ccReg_Registrars_i::reload() {
 
   rza.reload();
 
-  LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload() rl-size(): %1%") % rl->size());
-  LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload() zl-size(): %1%") % zl->size());
+  LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload_worker() rl-size(): %1%") % rl->size());
+  LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload_worker() zl-size(): %1%") % zl->size());
 
-  TRACE("[CALL] void ccReg_Registrars_i::reload() end");
+  TRACE("[CALL] void ccReg_Registrars_i::reload_worker() end");
 }
 
 ccReg::Filters::Compound_ptr 

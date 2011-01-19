@@ -7,7 +7,7 @@
 #include "log/logger.h"
 
 ccReg_PageTable_i::ccReg_PageTable_i()
-  : aPageSize(10), aPage(0), filterType(), sorted_by_(-1), sorted_dir_(false)
+  : aPageSize(10), aPage(0), filterType(), sorted_by_(-1), sorted_dir_(false), query_timeout(DEFAULT_QUERY_TIMEOUT)
 {
   base_context_ = Logging::Context::get();
 }
@@ -53,7 +53,9 @@ ccReg_PageTable_i::setLimit(CORBA::Long _limit)
 
 void
 ccReg_PageTable_i::setTimeout(CORBA::Long _timeout)
-{}
+{
+    query_timeout = _timeout;
+}
 
 CORBA::Short 
 ccReg_PageTable_i::start()
@@ -150,3 +152,16 @@ CORBA::Boolean ccReg_PageTable_i::numRowsOverLimit() {
   return false; 
 }
 
+void ccReg_PageTable_i::reload() {
+    Logging::Context ctx(base_context_);
+    ConnectionReleaser releaser;
+
+    try {
+        reload_worker();
+    } catch(Database::Exception &ex) {
+          std::string message = ex.what();
+          if(message.find(Database::Connection::TIMEOUT_STRING) != std::string::npos) {
+              throw ccReg::Filters::SqlQueryTimeout();
+          }
+    }
+}

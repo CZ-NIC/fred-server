@@ -141,11 +141,12 @@ ccReg_Statements_i::numColumns()
 }
 
 void
-ccReg_Statements_i::reload()
+ccReg_Statements_i::reload_worker()
 {
     Logging::Context ctx(base_context_);
     ConnectionReleaser releaser;
 
+    list_->setTimeout(query_timeout);
     list_->reload(uf);
 }
 

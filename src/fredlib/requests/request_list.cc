@@ -295,7 +295,9 @@ public:
         query.order_by() << "t_1.time_begin desc";
     }
 
-    Database::Connection conn = connectionSetup();
+    // TODO this should be part of connection
+    Connection conn = Database::Manager::acquire();
+    conn.exec("set constraint_exclusion=ON");
 
     try {
 
@@ -369,7 +371,7 @@ public:
     catch (Database::Exception& ex) {
         // TODO this is a temporary hack which has to be removed
         std::string message = ex.what();
-        if(message.find("statement timeout") != std::string::npos) {
+        if(message.find(Database::Connection::TIMEOUT_STRING) != std::string::npos) {
             LOGGER(PACKAGE).info("Statement timeout in request list.");
             clear();
             throw;
@@ -495,7 +497,10 @@ public:
 
         }
 
-            Database::Connection conn = connectionSetup();
+        Connection conn = Database::Manager::acquire();
+        // TODO this should be part of connection
+        conn.exec("set constraint_exclusion=ON");
+
         try {
             Result res = conn.exec(query);
 
@@ -554,8 +559,16 @@ public:
             }
         }
         catch (Database::Exception& ex) {
-          LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-          clear();
+            std::string message = ex.what();
+            if (message.find(Database::Connection::TIMEOUT_STRING)
+                    != std::string::npos) {
+                LOGGER(PACKAGE).info("Statement timeout in request list.");
+                clear();
+                throw;
+            } else {
+                LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+                clear();
+            }
         }
         catch (std::exception& ex) {
           LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
@@ -563,20 +576,6 @@ public:
         }
   }
 
-private:
-  Database::Connection connectionSetup() {
-      Database::Connection conn = Database::Manager::acquire();
-
-      conn.exec("set constraint_exclusion=ON");
-
-      if(query_timeout != 0) {
-          boost::format fmt_timeout =  boost::format("set statement_timeout=%1%")
-              % query_timeout;
-          conn.exec(fmt_timeout.str());
-      }
-
-      return conn;
-  }
 };
 
 // TODO where to place this?

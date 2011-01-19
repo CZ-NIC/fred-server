@@ -169,4 +169,14 @@ CommonListImplNew::isLimited() const
     return m_loadLimitActive;
 }
 
+void
+CommonListImplNew::setTimeout(unsigned _timeout)
+{
+  Database::Connection conn = Database::Manager::acquire();
+
+  boost::format fmt_timeout =  boost::format("SET statement_timeout=%1%")
+                       % _timeout;
+  conn.exec(fmt_timeout.str());
+}
+
 } // namespace Fred

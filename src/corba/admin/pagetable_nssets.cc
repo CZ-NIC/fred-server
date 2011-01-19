@@ -110,13 +110,14 @@ ccReg_NSSets_i::numColumns()
 }
 
 void 
-ccReg_NSSets_i::reload()
+ccReg_NSSets_i::reload_worker()
 {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-  TRACE("[CALL] ccReg_NSSets_i::reload()");
-//  nl->makeRealCount();  
+  TRACE("[CALL] ccReg_NSSets_i::reload_worker()");
+//  nl->makeRealCount();
+  nl->setTimeout(query_timeout);
   nl->reload(uf);
   nl->deleteDuplicatesId();
 }

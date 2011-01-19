@@ -9,11 +9,11 @@ ccReg_Filters_i::~ccReg_Filters_i() {
 }
 
 void 
-ccReg_Filters_i::reload() {
+ccReg_Filters_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-  TRACE("[CALL] ccReg_Filters_i::reload()");
+  TRACE("[CALL] ccReg_Filters_i::reload_worker()");
   m_filter_list.reload(uf);
 }
 

@@ -95,11 +95,12 @@ CORBA::Short ccReg_Files_i::numColumns() {
   return 4;
 }
 
-void ccReg_Files_i::reload() {
+void ccReg_Files_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-  TRACE("[CALL] ccReg_Files_i::reload()");
+  TRACE("[CALL] ccReg_Files_i::reload_worker()");
+  file_list_->setTimeout(query_timeout);
   file_list_->reload(uf);
 }
 

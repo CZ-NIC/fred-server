@@ -100,12 +100,13 @@ CORBA::Short ccReg_LogSession_i::numColumns() {
   return NUM_COLUMNS;
 }
 
-void ccReg_LogSession_i::reload() {
+void ccReg_LogSession_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-  TRACE("[CALL] ccReg_LogSession_i::reload()");
+  TRACE("[CALL] ccReg_LogSession_i::reload_worker()");
 //  m_lel->reload(uf, dbm);
+  m_lel->setTimeout(query_timeout);
   m_lel->reload(uf);
 }
 

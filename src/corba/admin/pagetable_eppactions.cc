@@ -116,12 +116,13 @@ CORBA::Short ccReg_EPPActions_i::numColumns() {
   return 7;
 }
 
-void ccReg_EPPActions_i::reload() {
+void ccReg_EPPActions_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-  TRACE("[CALL] ccReg_EPPActions_i::reload()");
+  TRACE("[CALL] ccReg_EPPActions_i::reload_worker()");
   eal->setPartialLoad(true);
+  eal->setTimeout(query_timeout);
   eal->reload(uf);
 }
 

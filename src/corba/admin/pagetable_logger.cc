@@ -120,24 +120,17 @@ CORBA::Short ccReg_Logger_i::numColumns() {
   return NUM_COLUMNS;
 }
 
-void ccReg_Logger_i::reload() {
+void ccReg_Logger_i::reload_worker() {
   Logging::Context ctx(base_context_);
   ConnectionReleaser releaser;
 
-  TRACE("[CALL] ccReg_Logger_i::reload()");
+  TRACE("[CALL] ccReg_Logger_i::reload_worker()");
   m_lel->setPartialLoad(true);
 //  m_lel->reload(uf);
 
   // CustomPartitioningTweak::process_filters(uf.begin(), uf.end()); 
-
-  try {
-        m_lel->reload(uf);
-  } catch(Database::Exception &ex) {
-        std::string message = ex.what();
-        if(message.find("statement timeout") != std::string::npos) {
-            throw ccReg::Filters::SqlQueryTimeout();
-        }
-  }
+  m_lel->setTimeout(query_timeout);
+  m_lel->reload(uf);
 }
 
 void ccReg_Logger_i::clear() {
@@ -215,8 +208,4 @@ void ccReg_Logger_i::setLimit(CORBA::Long _limit)
     m_lel->setLimit(_limit);
 }
 
-// set Timeout in miliseconds (statement_timeout in postgres)
-void ccReg_Logger_i::setTimeout(CORBA::Long _timeout)
-{
-    m_lel->setTimeout(_timeout);
-}
+

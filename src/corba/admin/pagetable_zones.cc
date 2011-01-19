@@ -173,11 +173,12 @@ ccReg_Zones_i::numColumns()
 }
 
 void
-ccReg_Zones_i::reload()
+ccReg_Zones_i::reload_worker()
 {
     Logging::Context ctx(base_context_);
     ConnectionReleaser releaser;
 
+    m_zoneList->setTimeout(query_timeout);
     m_zoneList->reload(uf);
 }
 
