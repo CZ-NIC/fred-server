@@ -46,6 +46,7 @@ public:
     std::string registrar_handle;
     std::string hostname;
     bool demo_mode;
+    bool notify_commands;
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -78,6 +79,7 @@ public:
         registrar_handle = vm["mojeid.registrar_handle"].as<std::string>();
         hostname = vm["mojeid.hostname"].as<std::string>();
         demo_mode = vm["mojeid.demo_mode"].as<bool>();
+        notify_commands = vm["mojeid.notify_commands"].as<bool>();
     }//handle
 };
 
