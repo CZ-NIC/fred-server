@@ -24,9 +24,9 @@ namespace Fred
   namespace InfoBuffer
   {
     class TempSequence {
-      DB *db;
+        DBSharedPtr db;
      public:
-      TempSequence(DB *_db) throw (SQL_ERROR): db(_db) 
+      TempSequence(DBSharedPtr _db) throw (SQL_ERROR): db(_db)
       {
         std::stringstream sql;
         sql << "CREATE TEMPORARY SEQUENCE tmp_seq_epp_info_buffer_content";
@@ -52,7 +52,7 @@ namespace Fred
       std::string buffer; ///< actual record (because it could be empty string)
       unsigned long chunkSize; ///< result size (same as bufferList.size()
      public:
-      ChunkImpl(DB *db, TID registrar, unsigned size) throw (SQL_ERROR)
+      ChunkImpl(DBSharedPtr db, TID registrar, unsigned size) throw (SQL_ERROR)
       {
         // select total number of records (count) in result and actual pointer 
         // to result (current)
@@ -109,14 +109,14 @@ namespace Fred
     };
     class ManagerImpl : virtual public Manager
     {
-      DB *db;
+      DBSharedPtr db;
       Domain::Manager *dm;
       Contact::Manager *cm;
       NSSet::Manager *nm;
       KeySet::Manager *km;
      public:
       ManagerImpl(
-        DB *_db, Domain::Manager *_dm, 
+        DBSharedPtr  _db, Domain::Manager *_dm,
         NSSet::Manager *_nm, Contact::Manager *_cm, KeySet::Manager *_km
       ) : db(_db), dm(_dm), cm(_cm), nm(_nm), km(_km)
       {}
@@ -323,7 +323,7 @@ namespace Fred
       }
     };
     Manager *Manager::create(
-      DB *db, Domain::Manager *dm, NSSet::Manager *nm, Contact::Manager *cm, KeySet::Manager *km
+        DBSharedPtr db, Domain::Manager *dm, NSSet::Manager *nm, Contact::Manager *cm, KeySet::Manager *km
     )
     {
       return new ManagerImpl(db,dm,nm,cm, km);

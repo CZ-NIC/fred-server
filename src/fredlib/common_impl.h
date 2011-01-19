@@ -6,8 +6,7 @@
 
 #include "common_object.h"
 #include "db_settings.h"
-
-class DB;
+#include "old_utils/dbsql.h"
 
 namespace Fred {
 
@@ -59,7 +58,7 @@ struct CheckId {
 /// Implementation of common object list properties
 class CommonListImpl : virtual public CommonList {
 protected:
-  DB *db;
+  DBSharedPtr db;
 
   list_type data_;
   unsigned load_offset_;
@@ -75,7 +74,7 @@ protected:
   TID idFilter;
 
 public:
-  CommonListImpl(DB *_db);
+  CommonListImpl(DBSharedPtr _db);
   CommonListImpl();
   ~CommonListImpl();
   virtual void clear();

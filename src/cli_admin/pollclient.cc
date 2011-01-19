@@ -64,7 +64,7 @@ PollClient::list_all()
     callHelp(m_conf, no_help);
     std::auto_ptr<Fred::Poll::Manager> pollMan(
             Fred::Poll::Manager::create(
-                &m_db)
+                m_db)
             );
     std::auto_ptr<Fred::Poll::List> pmList(pollMan->createList());
     if (m_conf.hasOpt(POLL_TYPE_NAME))
@@ -91,7 +91,7 @@ PollClient::list_next()
     callHelp(m_conf, no_help);
     std::auto_ptr<Fred::Poll::Manager> pollMan(
             Fred::Poll::Manager::create(
-                &m_db)
+                m_db)
             );
     if (m_conf.hasOpt(POLL_LIST_NEXT_NAME)) {
         Fred::TID reg = m_conf.get<unsigned int>(POLL_LIST_NEXT_NAME);
@@ -127,7 +127,7 @@ PollClient::set_seen()
     callHelp(m_conf, no_help);
     std::auto_ptr<Fred::Poll::Manager> pollMan(
             Fred::Poll::Manager::create(
-                &m_db)
+                m_db)
             );
     try {
         Fred::TID messageId = m_conf.get<unsigned int>(POLL_SET_SEEN_NAME);
@@ -154,7 +154,7 @@ PollClient::create_state_changes()
     callHelp(m_conf, no_help);
     std::auto_ptr<Fred::Poll::Manager> pollMan(
             Fred::Poll::Manager::create(
-                &m_db)
+                m_db)
             );
     std::string exceptTypes("");
     if (m_conf.hasOpt(POLL_EXCEPT_TYPES_NAME)) {
@@ -176,7 +176,7 @@ PollClient::create_low_credit()
     callHelp(m_conf, no_help);
     std::auto_ptr<Fred::Poll::Manager> pollMan(
             Fred::Poll::Manager::create(
-                &m_db)
+                m_db)
             );
     pollMan->createLowCreditMessages();
     return;

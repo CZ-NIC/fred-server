@@ -42,7 +42,7 @@ namespace Admin {
 class ContactClient : public BaseClient {
 private:
     Config::Conf m_conf;
-    DB m_db;
+    DBSharedPtr m_db;
     ccReg::EPP_var m_epp;
 
     static const struct options m_opts[];
@@ -56,7 +56,13 @@ public:
         BaseClient(connstring, nsAddr),
         m_conf(conf)
     {
-        m_db.OpenDatabase(connstring.c_str());
+        DB* db= new DB;
+        if (!db->OpenDatabase(connstring.c_str()))
+         {
+            throw std::runtime_error("ContactClient db connection failed");
+         }
+
+        m_db = DBDisconnectPtr(db);
     }
     ~ContactClient()
     { }

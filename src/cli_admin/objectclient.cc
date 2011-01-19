@@ -70,18 +70,18 @@ ObjectClient::createObjectStateRequest(
           << "WHERE object_id=" << object << " AND state_id=" << state
           << " AND (canceled ISNULL OR canceled > CURRENT_TIMESTAMP) "
           << " AND (valid_to ISNULL OR valid_to > CURRENT_TIMESTAMP) ";
-      if (!m_db.ExecSelect(sql.str().c_str()))
+      if (!m_db->ExecSelect(sql.str().c_str()))
           return -1;
-      if (atoi(m_db.GetFieldValue(0,0)))
+      if (atoi(m_db->GetFieldValue(0,0)))
           return -2;
-      m_db.FreeSelect();
+      m_db->FreeSelect();
       sql.str("");
       sql << "INSERT INTO object_state_request "
           << "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
           << "(" << object << "," << state
           << ",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "
           << "CURRENT_TIMESTAMP + INTERVAL '7 days');";
-      if (!m_db.ExecSQL(sql.str().c_str()))
+      if (!m_db->ExecSQL(sql.str().c_str()))
           return -1;
       return 0;
 }
@@ -124,7 +124,7 @@ ObjectClient::update_states()
     callHelp(m_conf, no_help);
     std::auto_ptr<Fred::Manager> regMan(
             Fred::Manager::create(
-                &m_db,
+                m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     unsigned long long id = 0;
@@ -148,21 +148,21 @@ ObjectClient::deleteObjects(
     // temporary done by using EPP corba interface
     // should be instead somewhere in registry library (object.cc?)
     // get login information for first system registrar
-    if (!m_db.ExecSelect(
+    if (!m_db->ExecSelect(
                 "SELECT r.handle,ra.cert,ra.password "
                 "FROM registrar r, registraracl ra "
                 "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1 ")) {
         LOG(ERROR_LOG, "deleteObjects(): Error during ExecSelect");
         return -1;
     }
-    if (!m_db.GetSelectRows()) {
+    if (!m_db->GetSelectRows()) {
         LOG(ERROR_LOG, "deleteObjects(): No rows returned (1)");
         return -1;
     }
-    std::string handle = m_db.GetFieldValue(0, 0);
-    std::string cert = m_db.GetFieldValue(0, 1);
-    std::string password = m_db.GetFieldValue(0, 2);
-    m_db.FreeSelect();
+    std::string handle = m_db->GetFieldValue(0, 0);
+    std::string cert = m_db->GetFieldValue(0, 1);
+    std::string password = m_db->GetFieldValue(0, 2);
+    m_db->FreeSelect();
 
     // before connection load all objects, zones are needed to
     // put zone id into cltrid (used in statistics - need to fix)
@@ -183,11 +183,11 @@ ObjectClient::deleteObjects(
     }
     if (limit > 0)
         sql << "LIMIT " << limit;
-    if (!m_db.ExecSelect(sql.str().c_str())) {
+    if (!m_db->ExecSelect(sql.str().c_str())) {
         LOG(ERROR_LOG, "deleteObjects(): Error during ExecSelect");
         return -1;
     }
-    if (!m_db.GetSelectRows()) {
+    if (!m_db->GetSelectRows()) {
         LOG(NOTICE_LOG, "deleteObjects(): No rows returned (2)");
         return 0;
     }
@@ -197,11 +197,11 @@ ObjectClient::deleteObjects(
 
     if (debug) {
         *debug << "<objects>\n";
-        for (unsigned int i = 0; i < (unsigned int)m_db.GetSelectRows(); i++) {
-            *debug << "<object name='" << m_db.GetFieldValue(i, 0) << "'/>\n";
+        for (unsigned int i = 0; i < (unsigned int)m_db->GetSelectRows(); i++) {
+            *debug << "<object name='" << m_db->GetFieldValue(i, 0) << "'/>\n";
         }
         *debug << "</objects>\n";
-        m_db.FreeSelect();
+        m_db->FreeSelect();
         return 0;
     }
     try {
@@ -237,8 +237,8 @@ ObjectClient::deleteObjects(
             std::cerr << "Cannot connect: " << r->code << std::endl;
             throw -3;
         }
-        for (unsigned int i = 0; i < (unsigned int)m_db.GetSelectRows(); i++) {
-            std::string name = m_db.GetFieldValue(i, 0);
+        for (unsigned int i = 0; i < (unsigned int)m_db->GetSelectRows(); i++) {
+            std::string name = m_db->GetFieldValue(i, 0);
             std::string cltrid;
             std::string xml;
             xml = "<name>" + name + "</name>";
@@ -249,7 +249,7 @@ ObjectClient::deleteObjects(
             params.XML          = xml.c_str();
 
             try {
-                switch (atoi(m_db.GetFieldValue(i, 1))) {
+                switch (atoi(m_db->GetFieldValue(i, 1))) {
                     case 1:
                         cltrid = "delete_contact";
                         params.clTRID    = cltrid.c_str();
@@ -263,7 +263,7 @@ ObjectClient::deleteObjects(
                                 name.c_str(), params);
                         break;
                     case 3:
-                        cltrid = "delete_unpaid_zone_" + std::string(m_db.GetFieldValue(i, 2));
+                        cltrid = "delete_unpaid_zone_" + std::string(m_db->GetFieldValue(i, 2));
                         params.clTRID    = cltrid.c_str();
                         r = epp->DomainDelete(
                                 name.c_str(), params);
@@ -291,27 +291,27 @@ ObjectClient::deleteObjects(
             }
         }
         epp->ClientLogout(clientId, "system_delete_logout", "<system_delete_logout/>");
-        m_db.FreeSelect();
+        m_db->FreeSelect();
         return 0;
     }
     catch (int& i) {
         LOG(ERROR_LOG, "deleteObjects(): Exception catched: %d", i);
-        m_db.FreeSelect();
+        m_db->FreeSelect();
         return i;
     }
     catch (CORBA::Exception& e) {
         LOG(ERROR_LOG, "deleteObjects(): Exception catched: %s", e._name());
-        m_db.FreeSelect();
+        m_db->FreeSelect();
         return -4;
     }
     catch (std::exception& e) {
         LOG(ERROR_LOG, "deleteObjects(): Exception catched: %s", e.what());
-        m_db.FreeSelect();
+        m_db->FreeSelect();
         return -4;
     }
     catch (...) {
         LOG(ERROR_LOG, "deleteObjects(): Unknown exception catched");
-        m_db.FreeSelect();
+        m_db->FreeSelect();
         return -4;
     }
 }
@@ -364,38 +364,38 @@ ObjectClient::regular_procedure()
 
 
         std::auto_ptr<Fred::Domain::Manager> domMan(
-                Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+                Fred::Domain::Manager::create(m_db, zoneMan.get()));
 
         std::auto_ptr<Fred::Contact::Manager> conMan(
                 Fred::Contact::Manager::create(
-                    &m_db,
+                    m_db,
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
         std::auto_ptr<Fred::NSSet::Manager> nssMan(
                 Fred::NSSet::Manager::create(
-                    &m_db,
+                    m_db,
                     zoneMan.get(),
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
         std::auto_ptr<Fred::KeySet::Manager> keyMan(
                 Fred::KeySet::Manager::create(
-                    &m_db,
+                    m_db,
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
         std::auto_ptr<Fred::Poll::Manager> pollMan(
                 Fred::Poll::Manager::create(
-                    &m_db)
+                    m_db)
                 );
         std::auto_ptr<Fred::Manager> registryMan(
                 Fred::Manager::create(
-                    &m_db,
+                    m_db,
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
         std::auto_ptr<Fred::Registrar::Manager> regMan(
-                Fred::Registrar::Manager::create(&m_db));
+                Fred::Registrar::Manager::create(m_db));
         std::auto_ptr<Fred::Notify::Manager> notifyMan(
                 Fred::Notify::Manager::create(
-                    &m_db,
+                    m_db,
                     &mailMan,
                     conMan.get(),
                     nssMan.get(),

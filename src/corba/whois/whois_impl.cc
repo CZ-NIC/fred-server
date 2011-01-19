@@ -42,9 +42,9 @@ ccReg_Whois_i::ccReg_Whois_i(const std::string& _database
 , registry_manager_(0)
 {
   Logging::Context ctx(server_name_);
-
+  DB* db= new DB;
   // these object are shared between threads (CAUTION)
-  if (!db.OpenDatabase(m_connection_string.c_str())) {
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
     LOG(ALERT_LOG,
         "cannot connect to DATABASE %s",
         m_connection_string.c_str());
@@ -53,7 +53,9 @@ ccReg_Whois_i::ccReg_Whois_i(const std::string& _database
             + m_connection_string);
   }
 
-  registry_manager_.reset(Fred::Manager::create(&db, registry_restricted_handles_));
+  db_disconnect_guard_ = DBDisconnectPtr(db);
+
+  registry_manager_.reset(Fred::Manager::create(db_disconnect_guard_, registry_restricted_handles_));
   registry_manager_->initStates();
 
 }
@@ -285,13 +287,16 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
             .message( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
 
         if (!handle || !*handle) throw ccReg::Whois::ObjectNotFound();
-        DB ldb;
-        if (!ldb.OpenDatabase(m_connection_string.c_str())) {
-        throw ccReg::Whois::Error();
+
+        DB* db= new DB;
+        if (!db->OpenDatabase(m_connection_string.c_str())) {
+          throw ccReg::Whois::Error();
         }
+        DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
         try {
         std::auto_ptr<Fred::Manager> regm(
-            Fred::Manager::create(&ldb, registry_restricted_handles_)
+            Fred::Manager::create(ldb_disconnect_guard, registry_restricted_handles_)
         );
         Fred::Registrar::Manager *rm = regm->getRegistrarManager();
         Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
@@ -304,16 +309,13 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
         rl->reload(*unionFilter.get());
 
         if (rl->size() < 1) {
-          ldb.Disconnect();
           throw ccReg::Whois::ObjectNotFound();
         }
         ccReg::AdminRegistrar* creg = new ccReg::AdminRegistrar;
         fillRegistrar(*creg,rl->get(0));
-        ldb.Disconnect();
         return creg;
         }
         catch (Fred::SQL_ERROR) {
-        ldb.Disconnect();
         throw ccReg::Whois::Error();
         }
     }//try
@@ -363,23 +365,27 @@ ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
         .trace(boost::format(
                 "[CALL] ccReg_Whois_i::getContactByHandle('%1%')") % handle);
 
-        DB db;
+        DB* db= new DB;
+        if (!db->OpenDatabase(m_connection_string.c_str())) {
+          throw ccReg::Whois::Error();
+        }
+        DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
         if (!handle || !*handle)
-        throw ccReg::Whois::ObjectNotFound();
-        db.OpenDatabase(m_connection_string.c_str());
-        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, registry_restricted_handles_));
+            throw ccReg::Whois::ObjectNotFound();
+
+        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+                , registry_restricted_handles_));
         Fred::Contact::Manager *cr = r->getContactManager();
         std::auto_ptr<Fred::Contact::List> cl(cr->createList());
         cl->setWildcardExpansion(false);
         cl->setHandleFilter(handle);
         cl->reload();
         if (cl->getCount() != 1) {
-        db.Disconnect();
         throw ccReg::Whois::ObjectNotFound();
         }
         ccReg::ContactDetail* cc = new ccReg::ContactDetail;
         fillContact(cc, cl->getContact(0));
-        db.Disconnect();
         return cc;
     }//try
     catch (const ccReg::Whois::ObjectNotFound& )
@@ -429,24 +435,27 @@ ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
                 .trace(boost::format(
                 "[CALL] ccReg_Whois_i::getNSSetByHandle('%1%')") % handle);
 
-        DB db;
         if (!handle || !*handle)
         throw ccReg::Whois::ObjectNotFound();
-        db.OpenDatabase(m_connection_string.c_str());
+
+        DB* db= new DB;
+        if (!db->OpenDatabase(m_connection_string.c_str())) {
+          throw ccReg::Whois::Error();
+        }
+        DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
         std::auto_ptr<Fred::Manager>
-            r(Fred::Manager::create(&db, registry_restricted_handles_));
+            r(Fred::Manager::create(ldb_disconnect_guard, registry_restricted_handles_));
         Fred::NSSet::Manager *nr = r->getNSSetManager();
         std::auto_ptr<Fred::NSSet::List> nl(nr->createList());
         nl->setWildcardExpansion(false);
         nl->setHandleFilter(handle);
         nl->reload();
         if (nl->getCount() != 1) {
-        db.Disconnect();
         throw ccReg::Whois::ObjectNotFound();
         }
         ccReg::NSSetDetail* cn = new ccReg::NSSetDetail;
         fillNSSet(cn, nl->getNSSet(0));
-        db.Disconnect();
         return cn;
     }//try
     catch (const ccReg::Whois::ObjectNotFound& )
@@ -495,12 +504,16 @@ ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
                 .trace(boost::format(
                 "[CALL] ccReg_Whois_i::getKeySetByHandle('%1%')") % handle);
 
-        DB db;
         if (!handle || !*handle)
             throw ccReg::Whois::ObjectNotFound();
 
-        db.OpenDatabase(m_connection_string.c_str());
-        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db
+        DB* db= new DB;
+        if (!db->OpenDatabase(m_connection_string.c_str())) {
+          throw ccReg::Whois::Error();
+        }
+        DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
             ,registry_restricted_handles_));
         Fred::KeySet::Manager *kr = r->getKeySetManager();
         std::auto_ptr<Fred::KeySet::List> kl(kr->createList());
@@ -509,13 +522,11 @@ ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
         kl->reload();
 
         if (kl->getCount() != 1) {
-            db.Disconnect();
             throw ccReg::Whois::ObjectNotFound();
         }
 
         ccReg::KeySetDetail *ck = new ccReg::KeySetDetail;
         fillKeySet(ck, kl->getKeySet(0));
-        db.Disconnect();
         return ck;
     }//try
     catch (const ccReg::Whois::ObjectNotFound& )
@@ -569,9 +580,14 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
                 .trace(boost::format("[CALL] ccReg_Whois_i::getDomainsByInverseKey('%1%', %2%, %3%)")
           % key % type % limit);
 
-        DB db;
-        db.OpenDatabase(m_connection_string.c_str());
-        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, registry_restricted_handles_));
+        DB* db= new DB;
+        if (!db->OpenDatabase(m_connection_string.c_str())) {
+          throw ccReg::Whois::Error();
+        }
+        DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+                , registry_restricted_handles_));
         Fred::Domain::Manager *dm = r->getDomainManager();
         std::auto_ptr<Fred::Domain::List> dl(dm->createList());
         switch (type) {
@@ -597,7 +613,6 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
         dlist->length(dl->getCount());
         for (unsigned i=0; i<dl->getCount(); i++)
         fillDomain(&dlist[i], dl->getDomain(i));
-        db.Disconnect();
         return dlist._retn();
     }//try
     catch (const ccReg::Whois::Error& )
@@ -635,10 +650,15 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
 
     try
     {
-        DB db;
-        db.OpenDatabase(m_connection_string.c_str());
+        DB* db= new DB;
+        if (!db->OpenDatabase(m_connection_string.c_str())) {
+          throw ccReg::Whois::Error();
+        }
+        DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
         std::auto_ptr<Fred::Manager> r(
-                Fred::Manager::create(&db, registry_restricted_handles_));
+                Fred::Manager::create(ldb_disconnect_guard
+                        , registry_restricted_handles_));
         Fred::Zone::Manager *zm = r->getZoneManager();
         Fred::NSSet::Manager *nm = r->getNSSetManager();
         std::auto_ptr<Fred::NSSet::List> nl(nm->createList());
@@ -652,7 +672,6 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
         nlist->length(nl->getCount());
         for (unsigned i=0; i<nl->getCount(); i++)
         fillNSSet(&nlist[i], nl->getNSSet(i));
-        db.Disconnect();
         return nlist._retn();
     }//try
     catch (const ccReg::Whois::Error& )
@@ -691,10 +710,15 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
 
     try
     {
-        DB db;
-        db.OpenDatabase(m_connection_string.c_str());
+        DB* db= new DB;
+        if (!db->OpenDatabase(m_connection_string.c_str())) {
+          throw ccReg::Whois::Error();
+        }
+        DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
         std::auto_ptr<Fred::Manager> r(
-                Fred::Manager::create(&db, registry_restricted_handles_));
+                Fred::Manager::create(ldb_disconnect_guard
+                        , registry_restricted_handles_));
         Fred::KeySet::Manager *km = r->getKeySetManager();
         std::auto_ptr<Fred::KeySet::List> kl(km->createList());
         switch (type) {
@@ -708,7 +732,6 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
         klist->length(kl->getCount());
         for (unsigned int i = 0; i < kl->getCount(); i++)
             fillKeySet(&klist[i], kl->getKeySet(i));
-        db.Disconnect();
         return klist._retn();
     }//try
     catch (const ccReg::Whois::Error& )
@@ -749,24 +772,28 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
                 .trace(boost::format(
                 "[CALL] ccReg_Whois_i::getDomainByFQDN('%1%')") % fqdn);
 
-        DB db;
         if (!fqdn || !*fqdn)
         throw ccReg::Whois::ObjectNotFound();
-        db.OpenDatabase(m_connection_string.c_str());
+
+        DB* db= new DB;
+        if (!db->OpenDatabase(m_connection_string.c_str())) {
+          throw ccReg::Whois::Error();
+        }
+        DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
         std::auto_ptr<Fred::Manager>
-            r(Fred::Manager::create(&db, registry_restricted_handles_));
+            r(Fred::Manager::create(ldb_disconnect_guard
+                    , registry_restricted_handles_));
         Fred::Domain::Manager *dm = r->getDomainManager();
         std::auto_ptr<Fred::Domain::List> dl(dm->createList());
         dl->setWildcardExpansion(false);
         dl->setFQDNFilter(r->getZoneManager()->encodeIDN(fqdn));
         dl->reload();
         if (dl->getCount() != 1) {
-        db.Disconnect();
         throw ccReg::Whois::ObjectNotFound();
         }
         ccReg::DomainDetail* cd = new ccReg::DomainDetail;
         fillDomain(cd, dl->getDomain(0));
-        db.Disconnect();
         return cd;
     }//try
     catch (const ccReg::Whois::ObjectNotFound& )

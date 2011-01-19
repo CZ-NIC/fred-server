@@ -179,7 +179,7 @@ void Fred::ObjectImpl::insertStatus(const StatusImpl& _state) {
 //     Fred::ObjectListImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-Fred::ObjectListImpl::ObjectListImpl(DB *_db) :
+Fred::ObjectListImpl::ObjectListImpl(DBSharedPtr _db) :
   CommonListImpl(_db), registrarFilter(0), createRegistrarFilter(0),
       updateRegistrarFilter(0), crDateIntervalFilter(ptime(neg_infin),
           ptime(pos_infin)), updateIntervalFilter(ptime(neg_infin),

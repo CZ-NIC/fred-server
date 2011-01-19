@@ -95,7 +95,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         Logging::Context ctx_request(request.get_servertrid());
 
         Fred::Contact::ManagerPtr contact_mgr(
-                Fred::Contact::Manager::create(0, registry_conf_->restricted_handles));
+                Fred::Contact::Manager::create(DBDisconnectPtr(0), registry_conf_->restricted_handles));
 
         Fred::NameIdPair cinfo;
         Fred::Contact::Manager::CheckAvailType check_result;
@@ -256,7 +256,7 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
 
         Fred::NameIdPair cinfo;
         Fred::Contact::ManagerPtr contact_mgr(
-                Fred::Contact::Manager::create(0, registry_conf_->restricted_handles));
+                Fred::Contact::Manager::create(DBDisconnectPtr(0), registry_conf_->restricted_handles));
 
         Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(handle, cinfo);
@@ -374,7 +374,7 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
         Fred::NameIdPair cinfo;
         Fred::Contact::ManagerPtr contact_mgr(
                 Fred::Contact::Manager::create(
-                    0, registry_conf_->restricted_handles));
+                        DBDisconnectPtr(0), registry_conf_->restricted_handles));
 
         Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(_contact_id, cinfo);
@@ -514,7 +514,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
 
         Fred::NameIdPair cinfo;
         Fred::Contact::ManagerPtr contact_mgr(
-                Fred::Contact::Manager::create(0, registry_conf_->restricted_handles));
+                Fred::Contact::Manager::create(DBDisconnectPtr(0), registry_conf_->restricted_handles));
 
         Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(handle, cinfo);
@@ -595,7 +595,7 @@ Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
 
         Fred::NameIdPair cinfo;
         Fred::Contact::ManagerPtr contact_mgr(
-                Fred::Contact::Manager::create(0, registry_conf_->restricted_handles));
+                Fred::Contact::Manager::create(DBDisconnectPtr(0), registry_conf_->restricted_handles));
 
         Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(_id, cinfo);
@@ -907,7 +907,7 @@ void ServerImpl::createValidationRequest(const CORBA::ULongLong _contact_id,
         Fred::NameIdPair cinfo;
         Fred::Contact::ManagerPtr contact_mgr(
                 Fred::Contact::Manager::create(
-                    0, registry_conf_->restricted_handles));
+                        DBDisconnectPtr(0), registry_conf_->restricted_handles));
 
         Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(_contact_id, cinfo);
@@ -1102,7 +1102,7 @@ CORBA::ULongLong ServerImpl::getContactId(const char* _handle)
         Fred::NameIdPair cinfo;
         Fred::Contact::ManagerPtr contact_mgr(
                 Fred::Contact::Manager::create(
-                    0, registry_conf_->restricted_handles));
+                        DBDisconnectPtr(0), registry_conf_->restricted_handles));
 
         Fred::Contact::Manager::CheckAvailType check_result;
         check_result = contact_mgr->checkAvail(_handle, cinfo);

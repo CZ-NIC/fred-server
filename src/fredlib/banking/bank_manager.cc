@@ -149,7 +149,7 @@ private:
 
             /* automatic pair payment with registrar */
             if (_registrar_id == 0) {
-                Fred::Registrar::Manager::AutoPtr rmanager(Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::AutoPtr rmanager(Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
                 _registrar_id = rmanager->getRegistrarByPayment(_payment->getVarSymb(),
                                                                 _payment->getAccountMemo());
                 /* did we find suitable registrar? */

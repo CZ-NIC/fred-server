@@ -67,6 +67,8 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
     server_name_ = ("pifd");
   }
 
+
+
   //instances held until deactivation
   Registry_Registrar_Certification_Manager_i * reg_cert_mgr_i
       = new Registry_Registrar_Certification_Manager_i();
@@ -79,15 +81,20 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
 
   Logging::Context ctx(server_name_);
 
+  DB* db= new DB;
+
   // these object are shared between threads (CAUTION)
-  if (!db.OpenDatabase(m_connection_string.c_str())) {
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
     LOG(ALERT_LOG,
         "cannot connect to DATABASE %s",
         m_connection_string.c_str());
     throw DB_CONNECT_FAILED();
   }
 
-  registry_manager_.reset(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+  db_disconnect_guard_ = DBDisconnectPtr(db);
+
+  registry_manager_.reset(Fred::Manager::create(db_disconnect_guard_
+          , cfg.get<bool>("registry.restricted_handles")));
   registry_manager_->initStates();
 
   if (_session_garbage) {
@@ -98,7 +105,6 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
 
 ccReg_Admin_i::~ccReg_Admin_i() {
   TRACE("[CALL] ccReg_Admin_i::~ccReg_Admin_i()");
-  db.Disconnect();
 
   session_garbage_active_ = false;
   cond_.notify_one();
@@ -126,9 +132,19 @@ void ccReg_Admin_i::checkHandle(const char* handle,
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DB ldb;
-  ldb.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&ldb, cfg.get<bool>("registry.restricted_handles")));
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str()))
+  {
+      LOG(ALERT_LOG,
+          "cannot connect to DATABASE %s",
+          m_connection_string.c_str());
+      throw DB_CONNECT_FAILED();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   ccReg::CheckHandleTypeSeq* chs = new ccReg::CheckHandleTypeSeq;
   Fred::CheckHandleList chl;
   r->checkHandle(handle, chl, true); // allow IDN in whois queries
@@ -159,7 +175,6 @@ void ccReg_Admin_i::checkHandle(const char* handle,
     }
   }
   chso = chs;
-  ldb.Disconnect();
 }
 
 void ccReg_Admin_i::garbageSession() {
@@ -331,13 +346,18 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DB ldb;
-  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+  DB* db= new DB;
+
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
     throw ccReg::Admin::SQL_ERROR();
   }
   try { 
+
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
     std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(&ldb, cfg.get<bool>("registry.restricted_handles"))
+        Fred::Manager::create(ldb_disconnect_guard
+                , cfg.get<bool>("registry.restricted_handles"))
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
@@ -351,11 +371,9 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     reglist->length(rl->size());
     for (unsigned i=0; i<rl->size(); i++)
     fillRegistrar((*reglist)[i],rl->get(i));
-    ldb.Disconnect();
     return reglist;
   }
   catch (Fred::SQL_ERROR) {
-    ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
 }
@@ -365,13 +383,14 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DB ldb;
-  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
     throw ccReg::Admin::SQL_ERROR();
   }
   try {
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
     std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
+        Fred::Manager::create(ldb_disconnect_guard,cfg.get<bool>("registry.restricted_handles"))
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
@@ -387,11 +406,9 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
     reglist->length(rl->size());
     for (unsigned i=0; i<rl->size(); i++)
     fillRegistrar((*reglist)[i],rl->get(i));
-    ldb.Disconnect();
     return reglist;
   }
   catch (Fred::SQL_ERROR) {
-    ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
 }
@@ -403,13 +420,15 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
 
   LOG( NOTICE_LOG, "getRegistarByHandle: id -> %lld", (unsigned long long)id );
   if (!id) throw ccReg::Admin::ObjectNotFound();
-  DB ldb;
-  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
     throw ccReg::Admin::SQL_ERROR();
   }
   try {
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
     std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
+        Fred::Manager::create(ldb_disconnect_guard,cfg.get<bool>("registry.restricted_handles"))
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
@@ -421,16 +440,13 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     rl->reload(*unionFilter.get());
 
     if (rl->size() < 1) {
-      ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
     }
     ccReg::AdminRegistrar* creg = new ccReg::AdminRegistrar;
     fillRegistrar(*creg,rl->get(0));
-    ldb.Disconnect();
     return creg;
   }
   catch (Fred::SQL_ERROR) {
-    ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
 }
@@ -442,13 +458,15 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
 
   LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
   if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
-  DB ldb;
-  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
     throw ccReg::Admin::SQL_ERROR();
   }
   try {
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
     std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
+        Fred::Manager::create(ldb_disconnect_guard,cfg.get<bool>("registry.restricted_handles"))
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
@@ -459,16 +477,13 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     rl->reload(*unionFilter.get());
 
     if (rl->size() < 1) {
-      ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
     }
     ccReg::AdminRegistrar* creg = new ccReg::AdminRegistrar;
     fillRegistrar(*creg,rl->get(0));
-    ldb.Disconnect();
     return creg;
   }
   catch (Fred::SQL_ERROR) {
-    ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
 }
@@ -530,23 +545,26 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactByHandle(const char* handle)
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getContactByHandle('%1%')") % handle);
 
-  DB db;
   if (!handle || !*handle)
     throw ccReg::Admin::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   Fred::Contact::Manager *cr = r->getContactManager();
   std::auto_ptr<Fred::Contact::List> cl(cr->createList());
   cl->setWildcardExpansion(false);
   cl->setHandleFilter(handle);
   cl->reload();
   if (cl->getCount() != 1) {
-    db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   }
   ccReg::ContactDetail* cc = new ccReg::ContactDetail;
   fillContact(cc, cl->getContact(0));
-  db.Disconnect();
   return cc;
 }
 
@@ -556,11 +574,17 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactById(ccReg::TID id)
   ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getContactById(%1%)") % id);
-  DB db;
+
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard, cfg.get<bool>("registry.restricted_handles")));
   Fred::Contact::Manager *cr = r->getContactManager();
   std::auto_ptr<Fred::Contact::List> cl(cr->createList());
 
@@ -574,12 +598,10 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactById(ccReg::TID id)
   //cl->reload();
 
   if (cl->getCount() != 1) {
-    db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   }
   ccReg::ContactDetail* cc = new ccReg::ContactDetail;
   fillContact(cc, cl->getContact(0));
-  db.Disconnect();
   TRACE(boost::format("[IN] ccReg_Admin_i::getContactById(%1%): found contact with handle '%2%'")
       % id % cc->handle);
   return cc;
@@ -632,23 +654,27 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetByHandle(const char* handle)
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getNSSetByHandle('%1%')") % handle);
 
-  DB db;
   if (!handle || !*handle)
     throw ccReg::Admin::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   Fred::NSSet::Manager *nr = r->getNSSetManager();
   std::auto_ptr<Fred::NSSet::List> nl(nr->createList());
   nl->setWildcardExpansion(false);
   nl->setHandleFilter(handle);
   nl->reload();
   if (nl->getCount() != 1) {
-    db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   }
   ccReg::NSSetDetail* cn = new ccReg::NSSetDetail;
   fillNSSet(cn, nl->getNSSet(0));
-  db.Disconnect();
   return cn;
 }
 
@@ -658,11 +684,17 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
   ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getNSSetById('%1%')") % id);
-  DB db;
+
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard, cfg.get<bool>("registry.restricted_handles")));
   Fred::NSSet::Manager *nr = r->getNSSetManager();
   std::auto_ptr<Fred::NSSet::List> nl(nr->createList());
 
@@ -676,12 +708,10 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
   // nl->reload();
 
   if (nl->getCount() != 1) {
-    db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   }
   ccReg::NSSetDetail* cn = new ccReg::NSSetDetail;
   fillNSSet(cn, nl->getNSSet(0));
-  db.Disconnect();
   return cn;
 }
 
@@ -745,12 +775,16 @@ ccReg_Admin_i::getKeySetByHandle(const char *handle)
     TRACE(boost::format(
                 "[CALL] ccReg_Admin_i::getKeySetByHandle('%1%')") % handle);
 
-    DB db;
     if (!handle || !*handle)
         throw ccReg::Admin::ObjectNotFound();
 
-    db.OpenDatabase(m_connection_string.c_str());
-    std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db,
+    DB* db= new DB;
+    if (!db->OpenDatabase(m_connection_string.c_str())) {
+      throw ccReg::Admin::SQL_ERROR();
+    }
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+    std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard,
                 cfg.get<bool>("registry.restricted_handles")));
     Fred::KeySet::Manager *kr = r->getKeySetManager();
     std::auto_ptr<Fred::KeySet::List> kl(kr->createList());
@@ -759,13 +793,11 @@ ccReg_Admin_i::getKeySetByHandle(const char *handle)
     kl->reload();
 
     if (kl->getCount() != 1) {
-        db.Disconnect();
         throw ccReg::Admin::ObjectNotFound();
     }
 
     ccReg::KeySetDetail *ck = new ccReg::KeySetDetail;
     fillKeySet(ck, kl->getKeySet(0));
-    db.Disconnect();
     return ck;
 }
 
@@ -778,13 +810,18 @@ ccReg_Admin_i::getKeySetById(ccReg::TID id)
 
     TRACE(boost::format(
                 "[CALL] ccReg_Admin_i::getKeySetById('%1%')") % id);
-    DB db;
     if (!id)
         throw ccReg::Admin::ObjectNotFound();
-    db.OpenDatabase(m_connection_string.c_str());
+
+    DB* db= new DB;
+    if (!db->OpenDatabase(m_connection_string.c_str())) {
+      throw ccReg::Admin::SQL_ERROR();
+    }
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
 
     std::auto_ptr<Fred::Manager> r(
-            Fred::Manager::create(&db,  cfg.get<bool>("registry.restricted_handles")));
+            Fred::Manager::create(ldb_disconnect_guard
+                    ,  cfg.get<bool>("registry.restricted_handles")));
     Fred::KeySet::Manager *kr = r->getKeySetManager();
     std::auto_ptr<Fred::KeySet::List> kl(kr->createList());
 
@@ -795,13 +832,11 @@ ccReg_Admin_i::getKeySetById(ccReg::TID id)
     kl->reload(uf);
 
     if (kl->getCount() != 1) {
-        db.Disconnect();
         throw ccReg::Admin::ObjectNotFound();
     }
 
     ccReg::KeySetDetail *ck = new ccReg::KeySetDetail;
     fillKeySet(ck, kl->getKeySet(0));
-    db.Disconnect();
     return ck;
 }
 // ccReg::KeySetDetail *
@@ -842,23 +877,27 @@ ccReg::AdminEPPAction* ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DB db;
   if (!svTRID || !*svTRID)
     throw ccReg::Admin::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   Fred::Registrar::Manager *rm = r->getRegistrarManager();
   Fred::Registrar::EPPActionList *eal = rm->getEPPActionList();
   eal->setSvTRIDFilter(svTRID);
   eal->setPartialLoad(false);
   eal->reload();
   if (eal->size() != 1) {
-    db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   }
   ccReg::AdminEPPAction* ea = new ccReg::AdminEPPAction;
   fillEPPAction(ea, eal->get(0));
-  db.Disconnect();
   return ea;
 }
 
@@ -871,31 +910,30 @@ ccReg::AdminEPPAction* ccReg_Admin_i::getEPPActionById(ccReg::TID id)
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
   
-  DB ldb;  
-  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
     throw ccReg::Admin::SQL_ERROR();
   }  
   try {
-    std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles")));
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+    std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+            ,cfg.get<bool>("registry.restricted_handles")));
     Fred::Registrar::Manager *rm = r->getRegistrarManager();
     Fred::Registrar::EPPActionList *eal = rm->getEPPActionList();
     eal->setIdFilter(id);
     eal->setPartialLoad(false);
     eal->reload();
     if (eal->size() != 1) {
-      ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
     }
     ccReg::AdminEPPAction* ea = new ccReg::AdminEPPAction;
     fillEPPAction(ea, eal->get(0));
-    ldb.Disconnect();
     TRACE(boost::format("[IN] ccReg_Admin_i::getEPPActionById(%1%): found action for object with handle '%2%'")
         % id % ea->objectHandle);
     return ea;
   }
   catch (Fred::SQL_ERROR) {
-    ldb.Disconnect();
-    throw ccReg::Admin::SQL_ERROR();
+     throw ccReg::Admin::SQL_ERROR();
   }
 }
 
@@ -946,23 +984,27 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainByFQDN('%1%')") % fqdn);
 
-  DB db;
   if (!fqdn || !*fqdn)
     throw ccReg::Admin::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   Fred::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Fred::Domain::List> dl(dm->createList());
   dl->setWildcardExpansion(false);
   dl->setFQDNFilter(r->getZoneManager()->encodeIDN(fqdn));
   dl->reload();
   if (dl->getCount() != 1) {
-    db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   }
   ccReg::DomainDetail* cd = new ccReg::DomainDetail;
   fillDomain(cd, dl->getDomain(0));
-  db.Disconnect();
   return cd;
 }
 
@@ -972,12 +1014,18 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
   ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainById('%1%')") % id);
-  DB db;
+
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   Fred::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Fred::Domain::List> dl(dm->createList());
 
@@ -992,12 +1040,10 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
 
 
   if (dl->getCount() != 1) {
-    db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   }
   ccReg::DomainDetail* cd = new ccReg::DomainDetail;
   fillDomain(cd, dl->getDomain(0));
-  db.Disconnect();
   return cd;
 }
 ccReg::DomainDetails *
@@ -1007,12 +1053,17 @@ ccReg_Admin_i::getDomainsByKeySetId(ccReg::TID id, CORBA::Long limit)
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-    DB db;
     if (!id)
         throw ccReg::Admin::ObjectNotFound();
-    db.OpenDatabase(m_connection_string.c_str());
+
+    DB* db= new DB;
+    if (!db->OpenDatabase(m_connection_string.c_str())) {
+      throw ccReg::Admin::SQL_ERROR();
+    }
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
     std::auto_ptr<Fred::Manager> r(
-            Fred::Manager::create(&db,
+            Fred::Manager::create(ldb_disconnect_guard,
                 cfg.get<bool>("registry.restricted_handles"))
             );
     Fred::Domain::Manager *dm = r->getDomainManager();
@@ -1029,7 +1080,6 @@ ccReg_Admin_i::getDomainsByKeySetId(ccReg::TID id, CORBA::Long limit)
     dlist->length(dl->getCount());
     for (unsigned int i = 0; i < dl->getCount(); i++)
         fillDomain(&dlist[i], dl->getDomain(i));
-    db.Disconnect();
     return dlist._retn();
 }
 
@@ -1042,12 +1092,17 @@ ccReg_Admin_i::getDomainsByKeySetHandle(const char *handle, CORBA::Long limit)
 
     TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainsByKeySetHandle('%1%')")
                 % handle);
-    DB db;
     if (!handle || !*handle)
         throw ccReg::Admin::ObjectNotFound();
-    db.OpenDatabase(m_connection_string.c_str());
+
+    DB* db= new DB;
+    if (!db->OpenDatabase(m_connection_string.c_str())) {
+      throw ccReg::Admin::SQL_ERROR();
+    }
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
     std::auto_ptr<Fred::Manager> r(
-            Fred::Manager::create(&db,
+            Fred::Manager::create(ldb_disconnect_guard,
                 cfg.get<bool>("registry.restricted_handles"))
             );
     Fred::Domain::Manager *dm = r->getDomainManager();
@@ -1067,7 +1122,6 @@ ccReg_Admin_i::getDomainsByKeySetHandle(const char *handle, CORBA::Long limit)
     for (unsigned int i = 0; i < dl->getCount(); i++)
         fillDomain(&dlist[i], dl->getDomain(i));
 
-    db.Disconnect();
     return dlist._retn();
 }
 
@@ -1081,9 +1135,14 @@ ccReg::DomainDetails* ccReg_Admin_i::getDomainsByInverseKey(const char* key,
   TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainsByInverseKey('%1%', %2%, %3%)")
       % key % type % limit);
 
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   Fred::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Fred::Domain::List> dl(dm->createList());
   switch (type) {
@@ -1109,7 +1168,6 @@ ccReg::DomainDetails* ccReg_Admin_i::getDomainsByInverseKey(const char* key,
   dlist->length(dl->getCount());
   for (unsigned i=0; i<dl->getCount(); i++)
     fillDomain(&dlist[i], dl->getDomain(i));
-  db.Disconnect();
   return dlist._retn();
 }
 
@@ -1119,9 +1177,14 @@ ccReg::NSSetDetails* ccReg_Admin_i::getNSSetsByInverseKey(const char* key,
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   Fred::Zone::Manager *zm = r->getZoneManager();
   Fred::NSSet::Manager *nm = r->getNSSetManager();
   std::auto_ptr<Fred::NSSet::List> nl(nm->createList());
@@ -1135,7 +1198,6 @@ ccReg::NSSetDetails* ccReg_Admin_i::getNSSetsByInverseKey(const char* key,
   nlist->length(nl->getCount());
   for (unsigned i=0; i<nl->getCount(); i++)
     fillNSSet(&nlist[i], nl->getNSSet(i));
-  db.Disconnect();
   return nlist._retn();
 }
 
@@ -1148,10 +1210,15 @@ ccReg_Admin_i::getKeySetsByInverseKey(
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-    DB db;
-    db.OpenDatabase(m_connection_string.c_str());
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
     std::auto_ptr<Fred::Manager> r(
-            Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+            Fred::Manager::create(ldb_disconnect_guard
+                    , cfg.get<bool>("registry.restricted_handles")));
     Fred::KeySet::Manager *km = r->getKeySetManager();
     std::auto_ptr<Fred::KeySet::List> kl(km->createList());
     switch (type) {
@@ -1165,7 +1232,6 @@ ccReg_Admin_i::getKeySetsByInverseKey(
     klist->length(kl->getCount());
     for (unsigned int i = 0; i < kl->getCount(); i++)
         fillKeySet(&klist[i], kl->getKeySet(i));
-    db.Disconnect();
     return klist._retn();
 }
 
@@ -1176,12 +1242,17 @@ ccReg_Admin_i::getKeySetsByContactId(ccReg::TID id, CORBA::Long limit)
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-    DB db;
     if (!id)
         throw ccReg::Admin::ObjectNotFound();
-    db.OpenDatabase(m_connection_string.c_str());
+
+    DB* db= new DB;
+    if (!db->OpenDatabase(m_connection_string.c_str())) {
+      throw ccReg::Admin::SQL_ERROR();
+    }
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
     std::auto_ptr<Fred::Manager> r(
-            Fred::Manager::create(&db,
+            Fred::Manager::create(ldb_disconnect_guard,
                 cfg.get<bool>("registry.restricted_handles"))
             );
     Fred::KeySet::Manager *km = r->getKeySetManager();
@@ -1198,7 +1269,6 @@ ccReg_Admin_i::getKeySetsByContactId(ccReg::TID id, CORBA::Long limit)
     klist->length(kl->getCount());
     for (unsigned int i = 0; i < kl->getCount(); i++)
         fillKeySet(&klist[i], kl->getKeySet(i));
-    db.Disconnect();
     return klist._retn();
 }
 
@@ -1209,12 +1279,17 @@ ccReg_Admin_i::getKeySetsByContactHandle(const char *handle, CORBA::Long limit)
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-    DB db;
     if (!handle || !*handle)
         throw ccReg::Admin::ObjectNotFound();
-    db.OpenDatabase(m_connection_string.c_str());
+
+    DB* db= new DB;
+    if (!db->OpenDatabase(m_connection_string.c_str())) {
+      throw ccReg::Admin::SQL_ERROR();
+    }
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
     std::auto_ptr<Fred::Manager> r(
-            Fred::Manager::create(&db,
+            Fred::Manager::create(ldb_disconnect_guard,
                 cfg.get<bool>("registry.restricted_handles"))
             );
     Fred::KeySet::Manager *km = r->getKeySetManager();
@@ -1231,7 +1306,6 @@ ccReg_Admin_i::getKeySetsByContactHandle(const char *handle, CORBA::Long limit)
     klist->length(kl->getCount());
     for (unsigned int i = 0; i < kl->getCount(); i++)
         fillKeySet(&klist[i], kl->getKeySet(i));
-    db.Disconnect();
     return klist._retn();
 }
 
@@ -1240,12 +1314,16 @@ CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getDomainCount(zone);
-  db.Disconnect();
   return ret;
 }
 
@@ -1253,12 +1331,16 @@ CORBA::Long ccReg_Admin_i::getSignedDomainCount(const char *_fqdn)
 {
   Logging::Context ctx(server_name_);
 
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          ,cfg.get<bool>("registry.restricted_handles")));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getSignedDomainCount(_fqdn);
-  db.Disconnect();
   return ret;
 }
 
@@ -1266,12 +1348,16 @@ CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getEnumNumberCount();
-  db.Disconnect();
   return ret;
 }
 
@@ -1279,9 +1365,14 @@ Registry::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   Fred::Registrar::Manager *rm = r->getRegistrarManager();
   Registry::EPPActionTypeSeq *et = new Registry::EPPActionTypeSeq;
   
@@ -1290,8 +1381,7 @@ Registry::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
     (*et)[i].id = rm->getEPPActionTypeByIdx(i).id;
     (*et)[i].name = DUPSTRC(rm->getEPPActionTypeByIdx(i).name);
   }
-  
-  db.Disconnect();
+
   return et;
 }
 
@@ -1299,9 +1389,14 @@ Registry::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+  DB* db= new DB;
+  if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+          , cfg.get<bool>("registry.restricted_handles")));
   /* 
    * TEMP: this is for loading country codes from database - until new database 
    * library is not fully integrated into registrar library 
@@ -1315,7 +1410,6 @@ Registry::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
     (*cd)[i].name = DUPSTRC(r->getCountryDescByIdx(i).name);
   }
   
-  db.Disconnect();
   return cd;
 }
 
@@ -1476,10 +1570,15 @@ void ccReg_Admin_i::generateLetters() {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DB ldb;
+
   try {
-    ldb.OpenDatabase(m_connection_string.c_str());
-    
+
+    DB* db= new DB;
+    if (!db->OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+    }
+    DBSharedPtr ldb_disconnect_guard = DBDisconnectPtr(db);
+
     MailerManager mm(ns);
     std::auto_ptr<Fred::Document::Manager> docman(
         Fred::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
@@ -1494,23 +1593,23 @@ void ccReg_Admin_i::generateLetters() {
 
 
     std::auto_ptr<Fred::Domain::Manager> domMan(
-        Fred::Domain::Manager::create(&ldb,
+        Fred::Domain::Manager::create(ldb_disconnect_guard,
                                           zoneMan.get()));
     std::auto_ptr<Fred::Contact::Manager> conMan(
-        Fred::Contact::Manager::create(&ldb,
+        Fred::Contact::Manager::create(ldb_disconnect_guard,
                                            cfg.get<bool>("registry.restricted_handles")));
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
-        Fred::NSSet::Manager::create(&ldb,
+        Fred::NSSet::Manager::create(ldb_disconnect_guard,
                                          zoneMan.get(),
                                          cfg.get<bool>("registry.restricted_handles")));
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
-                &ldb,
+                    ldb_disconnect_guard,
                 cfg.get<bool>("registry.restricted_handles")));
     std::auto_ptr<Fred::Registrar::Manager> rMan(
-        Fred::Registrar::Manager::create(&ldb));
+        Fred::Registrar::Manager::create(ldb_disconnect_guard));
     std::auto_ptr<Fred::Notify::Manager> notifyMan(
-        Fred::Notify::Manager::create(&ldb,
+        Fred::Notify::Manager::create(ldb_disconnect_guard,
                                           &mm,
                                           conMan.get(),
                                           nssMan.get(),
@@ -1521,10 +1620,8 @@ void ccReg_Admin_i::generateLetters() {
                                           msgMan
                                           ));
     notifyMan->generateLetters(cfg.get<unsigned>("registry.docgen_domain_count_limit"));
-    ldb.Disconnect();
   }
   catch (...) {
-    ldb.Disconnect();
   }
 }
 
@@ -1738,7 +1835,7 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
               doc_manager.get(),
               registry_manager_->getMessageManager())
           );
-  DB db;
+
   try {
     std::stringstream outstr;
     request_manager-> getPdf(id,lang,outstr);
@@ -1999,7 +2096,7 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(
         if(evaluation_file_id < 1)
             throw std::runtime_error("Invalid value of evaluation_file_id");
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///create registrar certification
         return regman->createRegistrarCertification(
                 reg_id
@@ -2030,7 +2127,7 @@ void Registry_Registrar_Certification_Manager_i::shortenCertification(
     try
     {
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///shorten registrar certification
         return regman->shortenRegistrarCertification(
                 cert_id
@@ -2064,7 +2161,7 @@ void Registry_Registrar_Certification_Manager_i::updateCertification(
             throw std::runtime_error("Invalid value of evaluation_file_id");
 
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///update registrar certification
         return regman->updateRegistrarCertification(
                 cert_id
@@ -2093,7 +2190,7 @@ Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(
     try
     {
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///get registrar certification
         Fred::Registrar::CertificationSeq cs
         = regman->getRegistrarCertifications(registrar_id);
@@ -2138,7 +2235,7 @@ ccReg::TID Registry_Registrar_Group_Manager_i::createGroup(const char* name)
     try
     {
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///create group
         return regman->createRegistrarGroup(std::string(name));
     }//try
@@ -2162,7 +2259,7 @@ void Registry_Registrar_Group_Manager_i::deleteGroup(ccReg::TID group_id)
     try
     {
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///delete group
         regman->cancelRegistrarGroup(group_id);
     }//try
@@ -2188,7 +2285,7 @@ void Registry_Registrar_Group_Manager_i::updateGroup(
     try
     {
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///update group
         regman->updateRegistrarGroup(group_id, std::string(name));
     }//try
@@ -2214,7 +2311,7 @@ ccReg::TID Registry_Registrar_Group_Manager_i::addRegistrarToGroup(
     try
     {
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///create membership of registrar in group
         return regman->createRegistrarGroupMembership(
                 reg_id
@@ -2244,7 +2341,7 @@ void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(
     try
     {
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///end membership of registrar in group
         regman->endRegistrarGroupMembership(
                 reg_id
@@ -2271,7 +2368,7 @@ Registry_Registrar_Group_Manager_i::getGroups()
     try
     {
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///get registrar certification
         Fred::Registrar::GroupSeq gs
         = regman->getRegistrarGroups();
@@ -2312,7 +2409,7 @@ Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(
     try
     {
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///get registrar certification
         Fred::Registrar::MembershipByRegistrarSeq mbrs
         = regman->getMembershipByRegistrar(registrar_id);
@@ -2352,7 +2449,7 @@ Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)
     try
     {
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(0));
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
         ///get registrar certification
         Fred::Registrar::MembershipByGroupSeq mbgs
         = regman->getMembershipByGroup(group_id);

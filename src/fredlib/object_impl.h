@@ -126,7 +126,7 @@ namespace Fred {
     int ptr_history_idx_;
 
    public:
-    ObjectListImpl(DB *db);
+    ObjectListImpl(DBSharedPtr db);
     virtual void clearFilter();
     virtual void setRegistrarFilter(TID registrarId);
     virtual void setRegistrarHandleFilter(

@@ -93,7 +93,9 @@ private:
   std::string base_context_;
 
   ptime m_last_activity;
-  DB db;
+  DBSharedPtr db_disconnect_guard_;
+
+
 
   Settings settings_;
 

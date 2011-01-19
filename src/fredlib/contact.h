@@ -7,9 +7,7 @@
 #include "exceptions.h"
 #include "db_settings.h"
 #include "model/model_filters.h"
-
-/// forward declared parameter type 
-class DB;
+#include "old_utils/dbsql.h"
 
 namespace Fred {
 namespace Contact {
@@ -153,7 +151,7 @@ public:
   virtual unsigned long long findRegistrarId(
           const unsigned long long &_id) const = 0;
   /// factory method
-  static Manager *create(DB *db, bool restrictedHandle);
+  static Manager *create(DBSharedPtr db, bool restrictedHandle);
 };
 
 typedef std::auto_ptr<Manager> ManagerPtr;

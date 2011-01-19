@@ -47,7 +47,7 @@ namespace Fred
       virtual ~Manager() {}
       /// factory method
       static Manager *create(
-        DB *db, Domain::Manager *dm, 
+        DBSharedPtr db, Domain::Manager *dm,
         NSSet::Manager *nm, 
         Contact::Manager *cm, 
         KeySet::Manager *km

@@ -33,7 +33,7 @@ namespace Fred
     
     class ManagerImpl : virtual public Manager
     {
-      DB *db;
+      DBSharedPtr db;
       Mailer::Manager *mm;
       Contact::Manager *cm;
       NSSet::Manager *nm;
@@ -45,7 +45,7 @@ namespace Fred
 
      public:
       ManagerImpl(
-        DB *_db,
+        DBSharedPtr _db,
         Mailer::Manager *_mm,
         Contact::Manager *_cm,
         NSSet::Manager *_nm,
@@ -777,7 +777,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
     };
 
     Manager *Manager::create(
-      DB *db,
+      DBSharedPtr db,
       Mailer::Manager *mm,
       Contact::Manager *cm,
       NSSet::Manager *nm,

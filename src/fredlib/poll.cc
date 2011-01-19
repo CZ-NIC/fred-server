@@ -265,7 +265,7 @@ class ListImpl : public CommonListImpl, virtual public List {
   unsigned type;
 
 public:
-  ListImpl(DB* _db) :
+  ListImpl(DBSharedPtr _db) :
     CommonListImpl(_db), registrarFilter(0), nonExpiredFilter(false),
         nonSeenFilter(false), type(0) {
   }
@@ -563,9 +563,9 @@ public:
 
 // Local transction needed for proper on commit handling of TEMP table
 struct LocalTransaction {
-  DB *db;
+  DBSharedPtr db;
   bool closed;
-  LocalTransaction(DB *_db) :
+  LocalTransaction(DBSharedPtr _db) :
     db(_db), closed(false) {
     (void)db->BeginTransaction();
   }
@@ -581,7 +581,7 @@ struct LocalTransaction {
 
 
 class ManagerImpl : public Manager {
-  DB* db;
+  DBSharedPtr db;
   void createMessage(TID registrar, unsigned type) throw (SQL_ERROR) {
     std::stringstream sql;
     sql << "INSERT INTO message (id, clid, crdate, exdate, seen, msgtype) "
@@ -598,7 +598,7 @@ class ManagerImpl : public Manager {
   }
 
 public:
-  ManagerImpl(DB* _db) :
+  ManagerImpl(DBSharedPtr _db) :
     db(_db) {
   }
   unsigned long getMessageCount(std::string registrar) const
@@ -794,7 +794,7 @@ public:
   }
 };
 
-Manager *Manager::create(DB *db) {
+Manager *Manager::create(DBSharedPtr db) {
   return new ManagerImpl(db);
 }
 

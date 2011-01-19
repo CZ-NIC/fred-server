@@ -88,28 +88,28 @@ NotifyClient::state_changes()
 
 
     std::auto_ptr<Fred::Domain::Manager> domMan(
-            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+            Fred::Domain::Manager::create(m_db, zoneMan.get()));
     std::auto_ptr<Fred::Contact::Manager> conMan(
             Fred::Contact::Manager::create(
-                &m_db,
+                m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
             Fred::NSSet::Manager::create(
-                &m_db,
+                m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
-                &m_db,
+                m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::Registrar::Manager> regMan(
-            Fred::Registrar::Manager::create(&m_db));
+            Fred::Registrar::Manager::create(m_db));
     std::auto_ptr<Fred::Notify::Manager> notifyMan(
             Fred::Notify::Manager::create(
-                &m_db,
+                m_db,
                 &mailMan,
                 conMan.get(),
                 nssMan.get(),
@@ -154,28 +154,28 @@ NotifyClient::letters_create()
 
 
     std::auto_ptr<Fred::Domain::Manager> domMan(
-            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+            Fred::Domain::Manager::create(m_db, zoneMan.get()));
     std::auto_ptr<Fred::Contact::Manager> conMan(
             Fred::Contact::Manager::create(
-                &m_db,
+                m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
             Fred::NSSet::Manager::create(
-                &m_db,
+                m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
-                &m_db,
+                m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::Registrar::Manager> regMan(
-            Fred::Registrar::Manager::create(&m_db));
+            Fred::Registrar::Manager::create(m_db));
     std::auto_ptr<Fred::Notify::Manager> notifyMan(
             Fred::Notify::Manager::create(
-                &m_db,
+                m_db,
                 &mailMan,
                 conMan.get(),
                 nssMan.get(),

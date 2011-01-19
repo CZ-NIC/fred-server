@@ -7,12 +7,10 @@
 #include "exceptions.h"
 #include "common_object.h"
 #include <ostream>
+#include "old_utils/dbsql.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
-
-/// forward declared parameter type 
-class DB;
 
 namespace Fred
 {
@@ -153,7 +151,7 @@ namespace Fred
       // create list of messages
       virtual List* createList() = 0;
       /// factory method
-      static Manager *create(DB *db);      
+      static Manager *create(DBSharedPtr db);
     };
 
   }

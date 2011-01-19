@@ -16,6 +16,7 @@
 #include "exceptions.h" 
 #include "db_settings.h"
 #include "model/model_filters.h"
+#include "old_utils/dbsql.h"
 
 #include "model_registrar_acl.h"
 #include "model_registrar.h"
@@ -544,7 +545,7 @@ public:
   typedef std::auto_ptr<Fred::Registrar::Manager> AutoPtr;
 
   /// Factory method
-  static AutoPtr create(DB* db);
+  static AutoPtr create(DBSharedPtr db);
 };//class Manager
 
 ///storage for flag of registrar's access to zone, used in registrar pagetable

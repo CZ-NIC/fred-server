@@ -10,6 +10,7 @@
 #include "exceptions.h"
 #include "db_settings.h"
 #include "model/model_filters.h"
+#include "old_utils/dbsql.h"
 
 #include "settings.h"
 
@@ -216,7 +217,7 @@ public:
   /// create list of domains
   virtual List *createList() = 0;
   /// factory method
-  static Manager *create(DB *db, Zone::Manager *zm);
+  static Manager *create(DBSharedPtr db, Zone::Manager *zm);
 };
 
 } // namespace Domain

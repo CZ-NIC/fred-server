@@ -226,7 +226,7 @@ public:
 
 
             Fred::Registrar::Manager::AutoPtr regman(
-                    Fred::Registrar::Manager::create(0));
+                    Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
 
             cert_id = regman->createRegistrarCertification(
                     1
@@ -268,7 +268,7 @@ public:
         {
 
             Fred::Registrar::Manager::AutoPtr regman(
-                    Fred::Registrar::Manager::create(0));
+                    Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
 
             regman->shortenRegistrarCertification(cert_id
                     , Database::Date(

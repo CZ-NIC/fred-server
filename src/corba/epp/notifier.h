@@ -30,7 +30,7 @@ typedef struct
 class EPPNotifier
 {
   MailerManager *mm;
-  DB *db;
+  DBSharedPtr  db;
   std::vector<NotifyST> notify;
 
   short enum_action; // id fom  enum_action table EPP operation
@@ -58,7 +58,7 @@ public:
   }
   EPPNotifier(bool _disable, 
               MailerManager *mailManager, 
-              DB *dbs, 
+              DBSharedPtr  db_disconnect_guard,
               unsigned int regid, 
               unsigned int objectid,
               Fred::Manager *_rm = 0); // add default contacts for object ID

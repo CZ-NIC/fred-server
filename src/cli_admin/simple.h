@@ -427,18 +427,18 @@ if (m_conf.hasOpt(LOGIN_REGISTRAR_NAME)) {                                  \
         "FROM registrar r, registraracl ra "                                \
         "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1";               \
 }                                                                           \
-if (!m_db.ExecSelect(get_registrar_query.c_str())) {                        \
+if (!m_db->ExecSelect(get_registrar_query.c_str())) {                        \
     std::cout << "error in exec" << std::endl;                              \
     return;                                                                 \
 }                                                                           \
-if (!m_db.GetSelectRows()) {                                                \
+if (!m_db->GetSelectRows()) {                                                \
     std::cout << "No result" << std::endl;                                  \
     return;                                                                 \
 }                                                                           \
-std::string gg_handle = m_db.GetFieldValue(0,0);                            \
-std::string gg_cert = m_db.GetFieldValue(0,1);                              \
-std::string gg_password = m_db.GetFieldValue(0,2);                          \
-m_db.FreeSelect();                                                          \
+std::string gg_handle = m_db->GetFieldValue(0,0);                            \
+std::string gg_cert = m_db->GetFieldValue(0,1);                              \
+std::string gg_password = m_db->GetFieldValue(0,2);                          \
+m_db->FreeSelect();                                                          \
 r = epp->ClientLogin(gg_handle.c_str(),gg_password.c_str(),"",              \
     "system_delete_login","<system_delete_login/>",                         \
     clientId,gg_cert.c_str(),ccReg::EN);                                    \

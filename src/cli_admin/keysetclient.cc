@@ -56,7 +56,7 @@ KeysetClient::list()
 {
     callHelp(m_conf, list_help);
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
-            Fred::KeySet::Manager::create(&m_db, true));
+            Fred::KeySet::Manager::create(m_db, true));
     std::auto_ptr<Fred::KeySet::List> keyList(
             keyMan->createList());
 

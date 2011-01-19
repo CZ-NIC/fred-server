@@ -265,7 +265,7 @@ public:
             //std::cout << "start: " << number_ << std::endl;
 
             Fred::Registrar::Manager::AutoPtr regman(
-                    Fred::Registrar::Manager::create(0));
+                    Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
             ///create membership of registrar in group
             Fred::TID m_id = regman->createRegistrarGroupMembership(
                     1
@@ -301,7 +301,7 @@ public:
         try
         {
             Fred::Registrar::Manager::AutoPtr regman(
-                    Fred::Registrar::Manager::create(0));
+                    Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
             //delete group
             regman->cancelRegistrarGroup(gid3);
         }

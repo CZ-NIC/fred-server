@@ -29,7 +29,7 @@ private:
   NameService *ns;
   Config::Conf& cfg;
   ccReg_BankingInvoicing_i bankingInvoicing;
-  DB db;
+  DBSharedPtr  db_disconnect_guard_;
   std::auto_ptr<Fred::Manager> registry_manager_;
 
   typedef std::map<std::string, ccReg_Session_i*> SessionListType;

@@ -39,8 +39,13 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   base_context_ = Logging::Context::get() + "/" + session_id_;
   Logging::Context ctx(session_id_);
 
-  db.OpenDatabase(database.c_str());
-  m_registry_manager.reset(Fred::Manager::create(&db,
+  DB* db= new DB;
+  if (!db->OpenDatabase(database.c_str())) {
+    throw std::runtime_error(std::string("db connection failed: ")+ database);
+  }
+  db_disconnect_guard_ = DBDisconnectPtr(db);
+
+  m_registry_manager.reset(Fred::Manager::create(db_disconnect_guard_,
                                                      cfg.get<bool>("registry.restricted_handles")));
   
   m_logsession_manager.reset(Fred::Session::Manager::create());
@@ -145,8 +150,6 @@ ccReg_Session_i::~ccReg_Session_i() {
         LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: Exception caught."));
     }
 
-
-    db.Disconnect();
 }
 
 Registry::User_ptr ccReg_Session_i::getUser() {

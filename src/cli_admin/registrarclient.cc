@@ -73,7 +73,7 @@ RegistrarClient::list()
 {
     callHelp(m_conf, no_help);
     Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(&m_db);
+             = Fred::Registrar::Manager::create(m_db);
 
     Fred::Registrar
         ::RegistrarList::AutoPtr reg_list(regMan->createList());
@@ -210,7 +210,7 @@ RegistrarClient::registrar_add()
 {
     callHelp(m_conf, registrar_add_help);
     Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(&m_db);
+             = Fred::Registrar::Manager::create(m_db);
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
     registrar->setHandle(m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME));
     registrar->setCountry(m_conf.get<std::string>(REGISTRAR_COUNTRY_NAME));
@@ -249,7 +249,7 @@ RegistrarClient::registrar_acl_add()
 {
     callHelp(m_conf, registrar_acl_add_help);
     Fred::Registrar::Manager::AutoPtr regMan
-        = Fred::Registrar::Manager::create(&m_db);
+        = Fred::Registrar::Manager::create(m_db);
     std::string handle = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
     std::string cert = m_conf.get<std::string>(REGISTRAR_CERT_NAME);
     std::string pass = m_conf.get<std::string>(REGISTRAR_PASSWORD_NAME);
@@ -321,7 +321,7 @@ RegistrarClient::registrar_create_certification()
         throw std::runtime_error("Invalid value of evaluation_file_id");
 
     Fred::Registrar::Manager::AutoPtr regman(
-             Fred::Registrar::Manager::create(0));
+             Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
      ///create registrar certification
      regman->createRegistrarCertification( registrar_handle
              , fromDate//Database::Date(makeBoostDate(from))
@@ -345,7 +345,7 @@ RegistrarClient::registrar_create_group()
                 "error: group name is empty");
 
     Fred::Registrar::Manager::AutoPtr regman(
-             Fred::Registrar::Manager::create(0));
+             Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
      ///create registrar certification
      regman->createRegistrarGroup(group_name);
     return;
@@ -393,7 +393,7 @@ RegistrarClient::registrar_into_group()
                 "error: group name is empty");
 
     Fred::Registrar::Manager::AutoPtr regman(
-             Fred::Registrar::Manager::create(0));
+             Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
      ///create registrar group membership
      regman->createRegistrarGroupMembership(
              registrar_handle,group_name,fromDate,toDate);

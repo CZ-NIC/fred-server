@@ -25,9 +25,9 @@ namespace Fred
   namespace Domain
   {
     class BlacklistImpl : virtual public Blacklist {
-      DB *db;
+     DBSharedPtr db;
      public:
-      BlacklistImpl(DB *_db) : db(_db)
+      BlacklistImpl(DBSharedPtr _db) : db(_db)
       {}
       bool checkDomain(const std::string& fqdn) const 
         throw (SQL_ERROR)
@@ -44,7 +44,7 @@ namespace Fred
         return ret;
       }
     };
-    Blacklist* Blacklist::create(DB *db)
+    Blacklist* Blacklist::create(DBSharedPtr db)
     {
       return new BlacklistImpl(db);
     }

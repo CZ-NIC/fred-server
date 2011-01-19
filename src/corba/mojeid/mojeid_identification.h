@@ -39,7 +39,7 @@ public:
         /* construct managers */
         mailer_manager_.reset(new MailerManager(CorbaContainer::get_instance()->getNS())),
         registry_manager_.reset(Fred::Manager::create(
-                    0,
+                    DBDisconnectPtr(0),
                     rconf->restricted_handles));
         doc_manager_.reset(Fred::Document::Manager::create(
                     rconf->docgen_path,

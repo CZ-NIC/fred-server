@@ -11,9 +11,9 @@
 #include "registrar.h"
 #include "file_transferer.h"
 #include "messages/messages_impl.h"
+#include "old_utils/dbsql.h"
 
 
-class DB;
 namespace Fred
 {
   namespace Notify
@@ -32,7 +32,7 @@ namespace Fred
       virtual void generateLetters(unsigned item_count_limit) = 0;
       /// factory method
       static Manager *create(
-        DB *db, 
+        DBSharedPtr db,
         Mailer::Manager *mm,
         Contact::Manager *cm,
         NSSet::Manager *nm,

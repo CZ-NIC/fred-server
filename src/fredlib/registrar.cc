@@ -1298,7 +1298,7 @@ class EPPActionListImpl : public Fred::CommonListImpl,
   EPPActionResultFilter result;
   bool partialLoad;
 public:
-  EPPActionListImpl(DB *_db) : CommonListImpl(_db),
+  EPPActionListImpl(DBSharedPtr _db) : CommonListImpl(_db),
                                id(0), 
                                sessionId(0), 
                                registrarId(0), 
@@ -1682,12 +1682,12 @@ public:
 };
 
 class ManagerImpl : virtual public Manager
-{ DB * db_;
+{ DBSharedPtr db_;
   //RegistrarListImpl rl;
   EPPActionListImpl eal;
   std::vector<EPPActionType> actionTypes;
 public:
-  ManagerImpl(DB* db)
+  ManagerImpl(DBSharedPtr db)
   :db_(db)//,rl()
   , eal(db)
   {
@@ -2407,7 +2407,7 @@ void RegistrarZoneAccess::reload()
     }
 }//RegistrarZoneAccess::reload
 
-Manager::AutoPtr Manager::create(DB * db)
+Manager::AutoPtr Manager::create(DBSharedPtr db)
 {
   TRACE("[CALL] Fred::Registrar::Manager::create(db)");
   return Manager::AutoPtr(new ManagerImpl(db));

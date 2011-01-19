@@ -7,6 +7,7 @@
 #include "exceptions.h"
 #include "db_settings.h"
 #include "model/model_filters.h"
+#include "old_utils/dbsql.h"
 
 /// forward declared parameter type
 class DB;
@@ -136,7 +137,7 @@ public:
             NameIdPair &conflict,
             bool lock = false) const throw (SQL_ERROR) = 0;
 
-    static Manager *create(DB *db, bool restrictedHandle);
+    static Manager *create(DBSharedPtr db, bool restrictedHandle);
 };
 
 } // namespace KeySet

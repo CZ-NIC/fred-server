@@ -102,7 +102,7 @@ public:
   /// temporary for new database manager init
   virtual void dbManagerInit() = 0;
   /// factory method
-  static Manager *create(DB *db, bool _restrictedHandles);
+  static Manager *create(DBSharedPtr db, bool _restrictedHandles);
   /// factory method
   static Manager *create(bool _restricted_handles);
 };

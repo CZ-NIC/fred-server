@@ -55,26 +55,26 @@ InfoBuffClient::make_info()
     std::auto_ptr<Fred::Zone::Manager> zoneMan(
             Fred::Zone::Manager::create());
     std::auto_ptr<Fred::Domain::Manager> domMan(
-            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+            Fred::Domain::Manager::create(m_db, zoneMan.get()));
     std::auto_ptr<Fred::Contact::Manager> conMan(
             Fred::Contact::Manager::create(
-                &m_db,
+                m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
             Fred::NSSet::Manager::create(
-                &m_db,
+                m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
-                &m_db,
+                m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::InfoBuffer::Manager> infoBuffMan(
             Fred::InfoBuffer::Manager::create(
-                &m_db,
+                m_db,
                 domMan.get(),
                 nssMan.get(),
                 conMan.get(),
@@ -125,26 +125,26 @@ InfoBuffClient::get_chunk()
     std::auto_ptr<Fred::Zone::Manager> zoneMan(
             Fred::Zone::Manager::create());
     std::auto_ptr<Fred::Domain::Manager> domMan(
-            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+            Fred::Domain::Manager::create(m_db, zoneMan.get()));
     std::auto_ptr<Fred::Contact::Manager> conMan(
             Fred::Contact::Manager::create(
-                &m_db,
+                m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
             Fred::NSSet::Manager::create(
-                &m_db,
+                m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
-                &m_db,
+                m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Fred::InfoBuffer::Manager> infoBuffMan(
             Fred::InfoBuffer::Manager::create(
-                &m_db,
+                m_db,
                 domMan.get(),
                 nssMan.get(),
                 conMan.get(),

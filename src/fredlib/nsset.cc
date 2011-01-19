@@ -185,7 +185,7 @@ class ListImpl : public virtual List, public ObjectListImpl {
   std::string admin;
   Zone::Manager *zm;
 public:
-  ListImpl(DB *_db, Zone::Manager *_zm) :
+  ListImpl(DBSharedPtr _db, Zone::Manager *_zm) :
     ObjectListImpl(_db), zm(_zm) {
   }
   NSSet *getNSSet(unsigned idx) const {
@@ -593,7 +593,7 @@ public:
 
 
 class ManagerImpl : public virtual Manager {
-  DB *db; ///< connection do db
+  DBSharedPtr db; ///< connection do db
   Zone::Manager *zm; ///< needed for hostname checking
   bool restrictedHandle; ///< format of handle is more restrictive
   /// check if handle is in valid format
@@ -643,7 +643,7 @@ class ManagerImpl : public virtual Manager {
     return ret;
   }
 public:
-  ManagerImpl(DB *_db, Zone::Manager *_zm, bool _restrictedHandle) :
+  ManagerImpl(DBSharedPtr _db, Zone::Manager *_zm, bool _restrictedHandle) :
     db(_db), zm(_zm), restrictedHandle(_restrictedHandle) {
   }
   virtual List *createList() {
@@ -682,7 +682,7 @@ public:
 };
 
 
-Manager *Manager::create(DB *db, Zone::Manager *zm, bool restrictedHandle) {
+Manager *Manager::create(DBSharedPtr db, Zone::Manager *zm, bool restrictedHandle) {
   return new ManagerImpl(db, zm, restrictedHandle);
 }
 }

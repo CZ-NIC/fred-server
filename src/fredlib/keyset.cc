@@ -288,7 +288,7 @@ class ListImpl: public virtual List, public ObjectListImpl {
     std::string     m_handle;
     std::string     m_admin;
 public:
-    ListImpl(DB *_db): ObjectListImpl(_db)
+    ListImpl(DBSharedPtr _db): ObjectListImpl(_db)
     {
     }
     KeySet *getKeySet(unsigned int index) const
@@ -789,7 +789,7 @@ ListImpl::sort(MemberType _member, bool _asc)
 }
 
 class ManagerImpl: public virtual Manager {
-    DB      *m_db; ///< connection to db
+    DBSharedPtr m_db; ///< connection to db
     bool    m_restrictedHandle;
     bool checkHandleFormat(const std::string &handle) const;
     bool checkHandleRegistration(const std::string &, NameIdPair &,
@@ -797,7 +797,7 @@ class ManagerImpl: public virtual Manager {
     bool checkProtection(const std::string &, unsigned int,
             const std::string &) const throw (SQL_ERROR);
 public:
-    ManagerImpl(DB *db, bool restrictedHandle):
+    ManagerImpl(DBSharedPtr db, bool restrictedHandle):
         m_db(db), m_restrictedHandle(restrictedHandle)
     {
     }
@@ -881,7 +881,7 @@ ManagerImpl::checkProtection(
     return ret;
 }
 
-Manager *Manager::create(DB *db, bool restrictedHandle)
+Manager *Manager::create(DBSharedPtr db, bool restrictedHandle)
 {
     return new ManagerImpl(db, restrictedHandle);
 }

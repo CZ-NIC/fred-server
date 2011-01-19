@@ -51,7 +51,7 @@ namespace Admin {
 
 class KeysetClient : public BaseClient {
 private:
-    DB m_db;
+    DBSharedPtr m_db;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
@@ -66,7 +66,13 @@ public:
         BaseClient(connstring, nsAddr),
         m_conf(conf)
     {
-        m_db.OpenDatabase(connstring.c_str());
+        DB* db= new DB;
+        if (!db->OpenDatabase(connstring.c_str()))
+         {
+            throw std::runtime_error("KeysetClient db connection failed");
+         }
+
+        m_db = DBDisconnectPtr(db);
     }
     ~KeysetClient()
     { }

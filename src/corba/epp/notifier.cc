@@ -40,14 +40,14 @@
 
 EPPNotifier::EPPNotifier(bool _disable, 
                          MailerManager *mailManager, 
-                         DB *dbs, 
+                         DBSharedPtr  db_disconnect_guard,
                          unsigned int regid, 
                          unsigned int objectid,
                          Fred::Manager *_rm)
 {
   disable = _disable;
   mm=mailManager;
-  db=dbs;
+  db=db_disconnect_guard;
   enum_action=db->GetEPPAction(); // id of the EPP operation
   objectID=objectid;
   registrarID=regid;

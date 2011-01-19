@@ -196,7 +196,7 @@ public:
   /** this is now usable only for create domain
    */
   virtual bool domainBilling(
-            DB *db, 
+            DBSharedPtr db,
             const Database::ID &zone,
             const Database::ID &registrar,
             const Database::ID &objectId,

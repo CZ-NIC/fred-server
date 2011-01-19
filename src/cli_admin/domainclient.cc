@@ -61,7 +61,7 @@ DomainClient::domain_list()
             Fred::Zone::Manager::create());
 
     std::auto_ptr<Fred::Domain::Manager> domMan(
-            Fred::Domain::Manager::create(&m_db, zoneMan.get()));
+            Fred::Domain::Manager::create(m_db, zoneMan.get()));
     std::auto_ptr<Fred::Domain::List> domList(
             domMan->createList());
 

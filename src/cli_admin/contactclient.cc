@@ -76,7 +76,7 @@ ContactClient::list()
 {
     callHelp(m_conf, list_help);
     std::auto_ptr<Fred::Contact::Manager> conMan(
-            Fred::Contact::Manager::create(&m_db, true));
+            Fred::Contact::Manager::create(m_db, true));
     std::auto_ptr<Fred::Contact::List> conList(
             conMan->createList());
 

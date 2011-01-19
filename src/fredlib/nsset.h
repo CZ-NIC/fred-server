@@ -8,6 +8,7 @@
 #include "zone.h"
 #include "db_settings.h"
 #include "model/model_filters.h"
+#include "old_utils/dbsql.h"
 
 /// forward declared parameter type 
 class DB;
@@ -127,7 +128,7 @@ public:
       															 bool glue, 
       															 bool allowIDN = false) const = 0;
   /// factory method
-  static Manager *create(DB *db, Zone::Manager *zman, bool restrictedHandle);
+  static Manager *create(DBSharedPtr db, Zone::Manager *zman, bool restrictedHandle);
 };
 
 } // namespace NSSet

@@ -53,7 +53,7 @@ NssetClient::list()
             Fred::Zone::Manager::create());
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
             Fred::NSSet::Manager::create(
-                &m_db,
+                m_db,
                 zoneMan.get(),
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );

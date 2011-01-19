@@ -92,14 +92,14 @@ int isValidBase64(const char *str, int *ret);
 char *removeWhitespaces(const char *encoded);
 
 static bool testObjectHasState(
-  DB *db, Fred::TID object_id, unsigned state_id)
+  DBSharedPtr db, Fred::TID object_id, unsigned state_id)
     throw (Fred::SQL_ERROR)
 {
   bool returnState;
   std::stringstream sql;
   sql << "SELECT COUNT(*) FROM object_state " << "WHERE object_id="
       << object_id << " AND state_id=" << state_id << " AND valid_to ISNULL";
-  DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
+  DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
   if (!db->ExecSelect(sql.str().c_str()))
     throw Fred::SQL_ERROR();
   returnState = atoi(db->GetFieldValue(0, 0));
@@ -110,7 +110,7 @@ static bool testObjectHasState(
 /* HACK - for disable notification when delete commands called through cli_admin
  * Ticket #1622
  */
-static bool disableNotification(DB *db, int _reg_id, const char* _cltrid)
+static bool disableNotification(DBSharedPtr db, int _reg_id, const char* _cltrid)
 {
   LOGGER(PACKAGE).debug(boost::format("disable delete command notification check (registrator=%1% cltrid=%2%)")
                                       % _reg_id % _cltrid);
@@ -134,7 +134,7 @@ class EPPAction
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
   ccReg_EPP_i *epp;
-  DB db;
+  DBSharedPtr  db;
   int regID;
   int clientID;
   int code; ///< needed for destructor where Response is invalidated
@@ -153,45 +153,44 @@ public:
   {
     Logging::Context::push(str(boost::format("action-%1%") % action));
 
+    DB* _db= new DB;
+    if (!_db->OpenDatabase(epp->getDatabaseString())) {
+        epp->ServerInternalError("Cannot connect to DB");
+    }
+    db = DBDisconnectPtr(_db);
 
-    if (!db.OpenDatabase(epp->getDatabaseString()))
-      epp->ServerInternalError("Cannot connect to DB");
-    if (!db.BeginAction(clientID, action, clTRID, xml, paction)) {
-      db.Disconnect();
+    if (!db->BeginAction(clientID, action, clTRID, xml, paction)) {
       epp->ServerInternalError("Cannot beginAction");
     }
     if (!regID) {
       ret->code = COMMAND_MAX_SESSION_LIMIT;
       ccReg::Response_var& r(getRet());
-      db.EndAction(r->code);
-      db.Disconnect();
+      db->EndAction(r->code);
       epp->EppError(r->code, r->msg, r->svTRID, errors);
     }
-    if (!db.BeginTransaction()) {
-      db.EndAction(COMMAND_FAILED);
-      db.Disconnect();
+    if (!db->BeginTransaction()) {
+      db->EndAction(COMMAND_FAILED);
       epp->ServerInternalError("Cannot start transaction",
-          CORBA::string_dup(db.GetsvTRID()) );
+          CORBA::string_dup(db->GetsvTRID()) );
     }
     code = ret->code = COMMAND_OK;
 
-    Logging::Context::push(str(boost::format("%1%") % db.GetsvTRID()));
+    Logging::Context::push(str(boost::format("%1%") % db->GetsvTRID()));
   }
   ~EPPAction()
   {
-    db.QuitTransaction(code);
-    db.EndAction(code);
+    db->QuitTransaction(code);
+    db->EndAction(code);
     if (notifier) {
         notifier->Send();
     }
-    db.Disconnect();
 
     Logging::Context::pop();
     Logging::Context::pop();
   }
-  DB *getDB()
+  DBSharedPtr getDB()
   {
-    return &db;
+    return db;
   }
   int getRegistrar()
   {
@@ -203,7 +202,7 @@ public:
   }
   ccReg::Response_var& getRet()
   {
-    ret->svTRID = CORBA::string_dup(db.GetsvTRID());
+    ret->svTRID = CORBA::string_dup(db->GetsvTRID());
     ret->msg = CORBA::string_dup(epp->GetErrorMessage(ret->code, getLang()));
     return ret;
   }
@@ -239,7 +238,7 @@ public:
   {
       TRACE(">> failed internal");
     code = ret->code = COMMAND_FAILED;
-    epp->ServerInternalError(msg, db.GetsvTRID());
+    epp->ServerInternalError(msg, db->GetsvTRID());
   }
   void NoMessage() throw (ccReg::EPP::NoMessages)
   {
@@ -265,8 +264,8 @@ public:
 static bool testObjectHasState(EPPAction &action, Fred::TID object_id,
         unsigned state_id)
 {
-    DB *db = action.getDB();
-    if (!db) {
+    DBSharedPtr db = action.getDB();
+    if (!db.get()) {
         throw Fred::SQL_ERROR();
     }
     if (db->GetRegistrarSystem(action.getRegistrar())) {
@@ -288,7 +287,7 @@ static std::string formatTime(
 
 /// replace GetContactID
 static long int getIdOfContact(
-  DB *db, const char *handle, Config::Conf& c, bool lock = false)
+DBSharedPtr db, const char *handle, Config::Conf& c, bool lock = false)
 {
   if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
   std::auto_ptr<Fred::Contact::Manager>
@@ -307,7 +306,7 @@ static long int getIdOfContact(
 
 /// replace GetNSSetID
 static long int getIdOfNSSet(
-  DB *db, const char *handle, Config::Conf& c, bool lock = false)
+DBSharedPtr db, const char *handle, Config::Conf& c, bool lock = false)
 {
   if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
   std::auto_ptr<Fred::Zone::Manager>
@@ -328,7 +327,7 @@ static long int getIdOfNSSet(
 
 /// replace GetKeySetID
 static long int
-getIdOfKeySet(DB *db, const char *handle, Config::Conf &c, bool lock = false)
+getIdOfKeySet(DBSharedPtr db, const char *handle, Config::Conf &c, bool lock = false)
 {
     if (lock && !c.get<bool>("registry.lock_epp_commands"))
         lock = false;
@@ -348,7 +347,7 @@ getIdOfKeySet(DB *db, const char *handle, Config::Conf &c, bool lock = false)
 
 /// replace GetDomainID
 static long int getIdOfDomain(
-  DB *db, const char *handle, Config::Conf& c, bool lock = false, int* zone = NULL)
+DBSharedPtr db, const char *handle, Config::Conf& c, bool lock = false, int* zone = NULL)
 {
   if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
   std::auto_ptr<Fred::Zone::Manager> zm(
@@ -394,7 +393,7 @@ ccReg_EPP_i::ccReg_EPP_i(
                                 dbman(),
                                 ns(_ns),
                                 conf(_conf),
-                                db(),
+                                db_disconnect_guard_(DBDisconnectPtr(0)),
                                 regMan(),
                                 session(),
                                 numSession(),
@@ -412,12 +411,16 @@ ccReg_EPP_i::ccReg_EPP_i(
 
   // objects are shared between threads!!!
   // init at the beginning and do not change
-  if (!db.OpenDatabase(database)) {
-    LOG(ALERT_LOG, "can not connect to DATABASE %s", database.c_str());
-    throw DB_CONNECT_FAILED();
+
+  DB* db_ptr= new DB;
+  if (!db_ptr->OpenDatabase(database)) {
+      LOG(ALERT_LOG, "can not connect to DATABASE %s", database.c_str());
+      throw DB_CONNECT_FAILED();
   }
+  db_disconnect_guard_ = DBDisconnectPtr(db_ptr);
+
   LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
-  regMan.reset(Fred::Manager::create(&db, false)); //TODO: replace 'false'
+  regMan.reset(Fred::Manager::create(db_disconnect_guard_, false)); //TODO: replace 'false'
   regMan->initStates();
 }
 ccReg_EPP_i::~ccReg_EPP_i()
@@ -429,7 +432,6 @@ ccReg_EPP_i::~ccReg_EPP_i()
   delete ErrorMsg;
   delete [] session;
 
-  db.Disconnect();
   LOG( ERROR_LOG, "EPP_i destructor");
 }
 
@@ -971,11 +973,11 @@ bool ccReg_EPP_i::setvalue_DISCLOSE(
 
 std::vector<int>
 ccReg_EPP_i::GetAllZonesIDs(
-  DB *db)
+    DBSharedPtr db)
 {
     std::vector<int> ret;
     std::string query("SELECT id FROM zone;");
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve zones ids from the database");
         return ret;
@@ -993,12 +995,12 @@ ccReg_EPP_i::GetAllZonesIDs(
 
 // ZONE parameters
 int ccReg_EPP_i::GetZoneExPeriodMin(
-  DB *db,
+    DBSharedPtr db,
   int id)
 {
     std::stringstream query;
     query << "SELECT ex_period_min FROM zone WHERE id=" << id << ";";
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("Cannot retrieve ``ex_period_min'' from the database");
         return 0;
@@ -1007,12 +1009,12 @@ int ccReg_EPP_i::GetZoneExPeriodMin(
 }
 
 int ccReg_EPP_i::GetZoneExPeriodMax(
-  DB *db,
+  DBSharedPtr db,
   int id)
 {
     std::stringstream query;
     query << "SELECT ex_period_max FROM zone WHERE id=" << id << ";";
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("Cannot retrieve ``ex_period_max'' from the database");
         return 0;
@@ -1021,12 +1023,12 @@ int ccReg_EPP_i::GetZoneExPeriodMax(
 }
 
 int ccReg_EPP_i::GetZoneValPeriod(
-  DB *db,
+  DBSharedPtr db,
   int id)
 {
     std::stringstream query;
     query << "SELECT val_period FROM zone WHERE id=" << id << ";";
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("Cannot retrieve ``val_period'' from the database");
         return 0;
@@ -1035,12 +1037,12 @@ int ccReg_EPP_i::GetZoneValPeriod(
 }
 
 bool ccReg_EPP_i::GetZoneEnum(
-  DB *db,
+        DBSharedPtr db,
   int id)
 {
     std::stringstream query;
     query << "SELECT enum_zone FROM zone WHERE id=" << id << ";";
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve ``enum_zone'' from the database");
         return false;
@@ -1052,12 +1054,12 @@ bool ccReg_EPP_i::GetZoneEnum(
 }
 
 int ccReg_EPP_i::GetZoneDotsMax(
-  DB *db,
+  DBSharedPtr db,
   int id)
 {
     std::stringstream query;
     query << "SELECT dots_max FROM zone WHERE id=" << id << ";";
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve ``dots_max'' from the database");
         return 0;
@@ -1066,12 +1068,12 @@ int ccReg_EPP_i::GetZoneDotsMax(
 }
 
 std::string ccReg_EPP_i::GetZoneFQDN(
-  DB *db,
+        DBSharedPtr db,
   int id)
 {
     std::stringstream query;
     query << "SELECT fqdn FROM zone WHERE id=" << id << ";";
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve ``fqdn'' from the database");
         return std::string("");
@@ -1080,7 +1082,7 @@ std::string ccReg_EPP_i::GetZoneFQDN(
 }
 
 int ccReg_EPP_i::getZone(
-  DB *db,
+        DBSharedPtr db,
   const char *fqdn)
 {
     std::stringstream zoneQuery;
@@ -1094,7 +1096,7 @@ int ccReg_EPP_i::getZone(
         << "SELECT id FROM zone WHERE lower(fqdn)=lower('"
         << domain_fqdn.substr(pos + 1, std::string::npos)
         << "');";
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(zoneQuery.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve zone id from the database");
         return 0;
@@ -1105,11 +1107,11 @@ int ccReg_EPP_i::getZone(
 }
 
 int ccReg_EPP_i::getZoneMax(
-  DB *db,
+        DBSharedPtr db,
   const char *fqdn)
 {
     std::string query("SELECT fqdn FROM zone ORDER BY length(fqdn) DESC");
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve list of fqdn from the database");
         return 0;
@@ -1132,7 +1134,7 @@ int ccReg_EPP_i::getZoneMax(
 }
 
 int ccReg_EPP_i::getFQDN(
-  DB *db,
+        DBSharedPtr db,
   char *FQDN, const char *fqdn)
 {
   int i, len, max;
@@ -7062,7 +7064,7 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
   Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
   ConnectionReleaser releaser;
 
-  DB DBsql;
+
   ccReg::Response_var ret = new ccReg::Response;
   int regID;
   int nssetid;
@@ -7070,16 +7072,20 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
 
   LOG( NOTICE_LOG , "nssetTest nsset %s  clientID -> %d clTRID [%s] \n" , handle, (int ) clientID , clTRID );
 
+  DB* db= new DB;
+  bool db_connected_ = db->OpenDatabase(database);
+  DBSharedPtr DBsql = DBDisconnectPtr(db);
+
   if ( (regID = GetRegistrarID(clientID) ))
-    if (DBsql.OpenDatabase(database) ) {
+    if (db_connected_) {
 
-      if ( (DBsql.BeginAction(clientID, EPP_NSsetTest, clTRID, XML) )) {
+      if ( (DBsql->BeginAction(clientID, EPP_NSsetTest, clTRID, XML) )) {
 
-        if ( (nssetid = getIdOfNSSet(&DBsql, handle, conf) > 0 ))// TODO   ret->code =  SetReasonNSSetHandle( errors  , nssetid , GetRegistrarLang( clientID ) );
+        if ( (nssetid = getIdOfNSSet(DBsql, handle, conf) > 0 ))// TODO   ret->code =  SetReasonNSSetHandle( errors  , nssetid , GetRegistrarLang( clientID ) );
         {
           std::stringstream strid;
           strid << regID;
-          std::string regHandle = DBsql.GetValueFromTable("registrar",
+          std::string regHandle = DBsql->GetValueFromTable("registrar",
               "handle", "id", strid.str().c_str() );
           ret->code=COMMAND_OK;
           TechCheckManager tc(ns);
@@ -7106,13 +7112,12 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
           ret->code = COMMAND_OBJECT_NOT_EXIST;
         }
 
-        ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) ) ;
+        ret->svTRID = CORBA::string_dup(DBsql->EndAction(ret->code) ) ;
       }
 
       ret->msg =CORBA::string_dup(GetErrorMessage(ret->code,
           GetRegistrarLang(clientID) ) );
 
-      DBsql.Disconnect();
       if (internalError)
         ServerInternalError("NSSetTest");
     }

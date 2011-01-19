@@ -601,4 +601,21 @@ struct DBFreeSelect
 ///DBSharedPtr factory
 typedef DBPtrT<DBFreeSelect> DBFreeSelectPtr;
 
+///deleter functor for DB calling Disconnect only
+struct DBDisconnect
+{
+    void operator()(DB* db)
+    {
+        try
+        {
+            if(db) db->Disconnect();
+            delete db;
+            db = 0;
+        }
+        catch(...){}
+    }
+};
+///DBSharedPtr factory
+typedef DBPtrT<DBDisconnect> DBDisconnectPtr;
+
 #endif

@@ -89,7 +89,7 @@ public:
 };
 
 class ManagerImpl : virtual public Manager {
-  DB *db;
+  DBSharedPtr db;
   bool m_restricted_handles;
 
 
@@ -106,7 +106,7 @@ class ManagerImpl : virtual public Manager {
   std::vector<StatusDescImpl> statusList;
 
 public:
-  ManagerImpl(DB *_db, bool _restrictedHandles)
+  ManagerImpl(DBSharedPtr _db, bool _restrictedHandles)
     : db(_db)
     , m_restricted_handles(_restrictedHandles)
     , m_message_manager(Messages::create_manager())
@@ -384,7 +384,7 @@ public:
   }
 };
 
-Manager *Manager::create(DB *db, bool _restrictedHandles) {
+Manager *Manager::create(DBSharedPtr db, bool _restrictedHandles) {
   TRACE("[CALL] Fred::Manager::create()");
   return new ManagerImpl(db, _restrictedHandles);
 }

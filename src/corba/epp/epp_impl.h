@@ -49,7 +49,7 @@ private:
   
   NameService *ns;
   Config::Conf& conf;
-  DB db;
+  DBSharedPtr  db_disconnect_guard_;
   std::auto_ptr<Fred::Manager> regMan;
 
 
@@ -64,17 +64,17 @@ public:
   virtual ~ccReg_EPP_i();
 
   // get zones parametrs
-  int GetZoneExPeriodMin(DB *db, int id);
-  int GetZoneExPeriodMax(DB *db, int id);
-  int GetZoneValPeriod(DB *db, int id);
-  int GetZoneDotsMax(DB *db, int id);
-  bool GetZoneEnum(DB *db, int id);
-  std::string GetZoneFQDN(DB *db, int id);
-  std::vector<int> GetAllZonesIDs(DB *db);
+  int GetZoneExPeriodMin(DBSharedPtr db, int id);
+  int GetZoneExPeriodMax(DBSharedPtr db, int id);
+  int GetZoneValPeriod(DBSharedPtr db, int id);
+  int GetZoneDotsMax(DBSharedPtr db, int id);
+  bool GetZoneEnum(DBSharedPtr db, int id);
+  std::string GetZoneFQDN(DBSharedPtr db, int id);
+  std::vector<int> GetAllZonesIDs(DBSharedPtr db);
 
-  int getZone(DB *db, const char *fqdn);
-  int getZoneMax(DB *db, const char *fqdn);
-  int getFQDN(DB *db, char *FQDN, const char *fqdn);
+  int getZone(DBSharedPtr db, const char *fqdn);
+  int getZoneMax(DBSharedPtr db, const char *fqdn);
+  int getFQDN(DBSharedPtr db, char *FQDN, const char *fqdn);
 
 
   // parse extension for domain enum.exdate

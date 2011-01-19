@@ -441,7 +441,7 @@ class ListImpl : virtual public List, public ObjectListImpl {
   TID keyset;
   std::string keysetHandle;
 public:
-  ListImpl(DB *_db, Zone::Manager *_zm) :
+  ListImpl(DBSharedPtr _db, Zone::Manager *_zm) :
     ObjectListImpl(_db), zoneFilter(0), registrantFilter(0), nsset(0),
         admin(0), temp(0), contactFilter(0), exDate(ptime(neg_infin),
                                                     ptime(pos_infin)),
@@ -1237,11 +1237,11 @@ public:
 
 
 class ManagerImpl : virtual public Manager {
-  DB *db; ///< connection do db
+  DBSharedPtr db; ///< connection do db
   Zone::Manager *zm; ///< zone management api
   std::auto_ptr<Blacklist> blacklist; ///< black list manager
 public:
-  ManagerImpl(DB *_db, Zone::Manager *_zm) :
+  ManagerImpl(DBSharedPtr _db, Zone::Manager *_zm) :
 			db(_db), zm(_zm), blacklist(Blacklist::create(_db)) {
 	}
   CheckAvailType checkHandle(const std::string& fqdn, 
@@ -1346,7 +1346,8 @@ public:
     return new ListImpl(db, zm);
   }
 };
-Manager *Manager::create(DB *db, Zone::Manager *zm) {
+
+Manager *Manager::create(DBSharedPtr db, Zone::Manager *zm) {
   return new ManagerImpl(db,zm);
 }
 

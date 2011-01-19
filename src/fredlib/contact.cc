@@ -208,7 +208,7 @@ class ListImpl : public virtual List, public ObjectListImpl {
   std::string org;
   std::string vat;
 public:
-  ListImpl(DB *_db) :
+  ListImpl(DBSharedPtr _db) :
     ObjectListImpl(_db) {
   }
   Contact *getContact(unsigned idx) const {
@@ -607,7 +607,7 @@ public:
 
 
 class ManagerImpl : public virtual Manager {
-  DB *db; ///< connection do db
+  DBSharedPtr db; ///< connection do db
   bool restrictedHandle; ///< format of handle is more restrictive
   /// check if handle is in valid format
   bool checkHandleFormat(const std::string& handle) const {
@@ -635,7 +635,7 @@ class ManagerImpl : public virtual Manager {
             sql << " FOR UPDATE ";
 
           /* we really don't want to break epp because of different transaction */
-          if (db) {
+          if (db.get()) {
               if (!db->ExecSelect(sql.str().c_str()))
                   throw SQL_ERROR();
               bool result = db->GetSelectRows() >= 1;
@@ -669,7 +669,7 @@ class ManagerImpl : public virtual Manager {
               << "AND UPPER(name)=UPPER('" << name << "')";
 
           /* we really don't want to break epp because of different transaction */
-          if (db) {
+          if (db.get()) {
               if (!db->ExecSelect(sql.str().c_str())) {
                 db->FreeSelect();
                 throw SQL_ERROR();
@@ -689,7 +689,7 @@ class ManagerImpl : public virtual Manager {
       }
   }
 public:
-  ManagerImpl(DB *_db, bool _restrictedHandle) :
+  ManagerImpl(DBSharedPtr _db, bool _restrictedHandle) :
     db(_db), restrictedHandle(_restrictedHandle) {
   }
   virtual List *createList() {
@@ -746,7 +746,7 @@ public:
 
   }
 };
-Manager *Manager::create(DB *db, bool restrictedHandle) {
+Manager *Manager::create(DBSharedPtr db, bool restrictedHandle) {
   return new ManagerImpl(db, restrictedHandle);
 }
 

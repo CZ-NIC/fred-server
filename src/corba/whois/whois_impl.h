@@ -14,7 +14,7 @@ private:
   std::string m_connection_string;
   std::string server_name_;
   bool registry_restricted_handles_;
-  DB db;
+  DBSharedPtr  db_disconnect_guard_;
   std::auto_ptr<Fred::Manager> registry_manager_;
 
   void fillRegistrar(ccReg::AdminRegistrar& creg,
