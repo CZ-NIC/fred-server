@@ -31,7 +31,6 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 
-#include "old_utils/dbsql.h"
 #include "fredlib/registry.h"
 
 #include "corba/admin/admin_impl.h"
@@ -43,7 +42,6 @@ namespace Admin
 
 class EnumParamClient : public BaseClient {
 private:
-    DB m_db;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
@@ -57,9 +55,7 @@ public:
             const Config::Conf &conf):
         BaseClient(connstring, nsAddr),
         m_conf(conf)
-    {
-        m_db.OpenDatabase(connstring.c_str());
-    }
+    { }
     ~EnumParamClient()
     { }
 

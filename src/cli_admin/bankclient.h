@@ -109,7 +109,6 @@ namespace Admin {
 
 class BankClient : public BaseClient {
 private:
-    DB m_db;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
     bool parse_line(const char *line, std::vector<std::string> &vec);
@@ -124,9 +123,7 @@ public:
             const Config::Conf &conf):
         BaseClient(connstring, nsAddr),
         m_conf(conf)
-    {
-        m_db.OpenDatabase(connstring.c_str());
-    }
+    { }
     ~BankClient()
     { }
 
