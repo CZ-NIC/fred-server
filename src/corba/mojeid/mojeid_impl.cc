@@ -561,6 +561,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
 
         boost::mutex::scoped_lock ta_lock(ta_mutex);
         transaction_eppaction[_trans_id] = request.get_id();
+        transaction_request[_trans_id] = request.get_request_id();
         ta_lock.unlock();
 
         LOGGER(PACKAGE).info("request completed successfully");
@@ -674,6 +675,25 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (unknown exception)") % cid);
     }
 
+    try {
+        unsigned long long rid = 0;
+        {
+            boost::mutex::scoped_lock search_lock(ta_mutex);
+            std::map<std::string, unsigned long long>::iterator it;
+
+            it = transaction_request.find(_trans_id);
+            if (it != transaction_request.end()) {
+                rid = it->second;
+                transaction_request.erase(it);
+            }
+        }
+        /* request notification */
+        if (rid) {
+        }
+    }
+    catch (...) {
+    }
+
     /* TEMP: until we finish migration to request logger */
     try {
         boost::mutex::scoped_lock search_lock(ta_mutex);
@@ -742,6 +762,18 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
+
+    try {
+        boost::mutex::scoped_lock search_lock(ta_mutex);
+        std::map<std::string, unsigned long long>::iterator it;
+
+        it = transaction_request.find(_trans_id);
+        if (it != transaction_request.end()) {
+            transaction_request.erase(it);
+        }
+    }
+    catch (...) {
     }
 
     /* TEMP: until we finish migration to request logger */
