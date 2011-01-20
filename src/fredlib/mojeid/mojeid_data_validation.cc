@@ -148,9 +148,8 @@ bool contact_checker_auth_info(const ::MojeID::Contact &_data
         _errors[field_auth_info] = REQUIRED;
         result = false;
     }
-    else if (static_cast<std::string>(_data.auth_info).length()
-                != boost::algorithm::trim_copy(
-                        static_cast<std::string>(_data.auth_info)).length())
+    else if (static_cast<std::string>(_data.auth_info).find(" ")
+                    != std::string::npos)
     {
         _errors[field_auth_info] = INVALID;
         result = false;
