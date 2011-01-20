@@ -25,6 +25,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/date_time/local_time_adjustor.hpp"
 #include "boost/date_time/c_local_time_adjustor.hpp"
+#include <boost/algorithm/string.hpp>
 
 #include <stdlib.h>
 #include <string.h>
@@ -1116,6 +1117,7 @@ int ccReg_EPP_i::getZoneMax(
         return 0;
     }
     std::string domain(fqdn);
+    boost::to_lower(domain);
     for (int i = 0; i < db->GetSelectRows(); i++) {
         std::string zone(db->GetFieldValue(i, 0));
         int from = domain.length() - zone.length();
