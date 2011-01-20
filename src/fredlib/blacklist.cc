@@ -38,9 +38,9 @@ namespace Fred
             << "WHERE '" << fqdn << "' ~ b.regexp "
             << "AND NOW()>b.valid_from "
             << "AND (b.valid_to ISNULL OR NOW()<b.valid_to) ";
+        DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         if (db->GetSelectRows() > 0) ret = true;
-        db->FreeSelect();
         return ret;
       }
     };

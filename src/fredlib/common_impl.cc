@@ -211,12 +211,12 @@ void CommonListImpl::makeRealCount() throw (SQL_ERROR) {
   std::stringstream sql;
   add = false;
   makeQuery(true, false, sql);
+  DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
   if (!db->ExecSelect(sql.str().c_str()))
     throw SQL_ERROR();
   if (db->GetSelectRows() != 1)
     throw SQL_ERROR();
   real_size_ = atoll(db->GetFieldValue(0, 0));
-  db->FreeSelect();
   real_size_initialized_ = true;
 }
 
@@ -245,9 +245,9 @@ void CommonListImpl::fillTempTable(bool _limit) const throw (SQL_ERROR) {
   std::stringstream sql;
   if (!add) {
     sql << "SELECT create_tmp_table('" << getTempTableName() << "')";
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
-    db->FreeSelect();
     sql.str("");
   }
   makeQuery(false, _limit, sql);

@@ -70,6 +70,14 @@ public:
             CORBA::Object_ptr objref);// throw (NOT_RUNNING, BAD_CONTEXT);
 
   /**
+   * bind object into nameservice.context/process.context/'name'.Object
+   */
+  void bind2( const std::string& process_name,
+            const std::string& object_name,
+            CORBA::Object_ptr objref);
+
+
+  /**
    * resolve object from nameservice.context/'name'.Object get IOR
    */
   CORBA::Object_ptr resolve(const std::string& name);// throw (NOT_RUNNING, BAD_CONTEXT);

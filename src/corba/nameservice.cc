@@ -133,6 +133,84 @@ void NameService::bind(const std::string& name,
   }
 }
 
+void NameService::bind2( const std::string& process_name,
+            const std::string& object_name,
+            CORBA::Object_ptr objref)
+{
+    try {
+      Logging::Context ctx("nameservice");
+
+      LOGGER(PACKAGE).debug(boost::format("requested object bind: %1%/%2%/%3%")
+                                      % context % process_name % object_name);
+
+      //Fred
+      CosNaming::Name context1Name;
+      context1Name.length(1);
+      context1Name[0].id   = (const char*) context.c_str();
+      context1Name[0].kind = (const char*) "context";
+      CosNaming::NamingContext_var test1Context;
+      try {
+        // Bind the context to root
+        test1Context = rootContext->bind_new_context(context1Name);
+      }
+      catch (CosNaming::NamingContext::AlreadyBound& ex)
+      {
+        //
+        // If the context already exists, this exception will be raised.
+        // In this case, just resolve the name and assign testContext
+        // to the object returned
+        ///
+        CORBA::Object_var obj;
+        obj = rootContext->resolve(context1Name);
+        test1Context = CosNaming::NamingContext::_narrow(obj);
+        if (CORBA::is_nil(test1Context)) throw BAD_CONTEXT();
+      }//catch (CosNaming::NamingContext::AlreadyBound& ex)
+
+      //process
+      CosNaming::Name context2Name;
+      context2Name.length(1);
+      context2Name[0].id   = (const char*) process_name.c_str();
+      context2Name[0].kind = (const char*) "context";
+      CosNaming::NamingContext_var test2Context;
+      try {
+        // Bind the context to root
+        test2Context = test1Context->bind_new_context(context2Name);
+      }
+      catch (CosNaming::NamingContext::AlreadyBound& ex)
+      {
+        ///
+        // If the context already exists, this exception will be raised.
+        // In this case, just resolve the name and assign testContext
+        // to the object returned
+        ////
+        CORBA::Object_var obj;
+        obj = test1Context->resolve(context2Name);
+        test2Context = CosNaming::NamingContext::_narrow(obj);
+        if (CORBA::is_nil(test2Context)) throw BAD_CONTEXT();
+      }//catch (CosNaming::NamingContext::AlreadyBound& ex)
+
+      //object
+      CosNaming::Name objectName;
+      objectName.length(1);
+      objectName[0].id   = object_name.c_str();
+      objectName[0].kind = (const char*) "Object";
+      try {
+        test2Context->bind(objectName, objref);
+     }
+      catch(CosNaming::NamingContext::AlreadyBound& ex)
+      {
+        test2Context->rebind(objectName, objref);
+      }//catch(CosNaming::NamingContext::AlreadyBound& ex)
+
+    }
+    catch(CORBA::TRANSIENT& ex) {
+      throw NOT_RUNNING();
+    }
+    catch(CORBA::SystemException& ex) {
+      throw NOT_RUNNING();
+    }
+}
+
 
 CORBA::Object_ptr NameService::resolve(const std::string& name)
     //throw (NOT_RUNNING, BAD_CONTEXT)
