@@ -67,6 +67,7 @@ ContactValidator create_contact_update_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
     tmp.add_checker(contact_checker_phone_format);
+    tmp.add_checker(contact_checker_auth_info);
     return tmp;
 }
 
@@ -130,6 +131,28 @@ bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap 
                         static_cast<std::string>(_data.telephone),
                         PHONE_PATTERN)) {
         _errors[field_phone] = INVALID;
+        result = false;
+    }
+
+    return result;
+}
+
+bool contact_checker_auth_info(const ::MojeID::Contact &_data
+        , FieldErrorMap &_errors)
+{
+    bool result = true;
+    if (_data.auth_info.isnull()
+            || boost::algorithm::trim_copy(
+                    static_cast<std::string>(_data.auth_info)).empty())
+    {
+        _errors[field_auth_info] = REQUIRED;
+        result = false;
+    }
+    else if (static_cast<std::string>(_data.auth_info).length()
+                != boost::algorithm::trim_copy(
+                        static_cast<std::string>(_data.auth_info)).length())
+    {
+        _errors[field_auth_info] = INVALID;
         result = false;
     }
 

@@ -39,6 +39,7 @@ public:
     Nullable<std::string> vat;
     Nullable<std::string> ssn;
     Nullable<std::string> ssntype;
+    Nullable<std::string> auth_info;
     bool disclosevat;
     bool discloseident;
     bool disclosenotifyemail;

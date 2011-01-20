@@ -21,6 +21,7 @@ const std::string field_city        = "address.city";
 const std::string field_postal_code = "address.postal_code";
 const std::string field_email       = "email.email";
 const std::string field_birth_date  = "contact.birth_date";
+const std::string field_auth_info  = "contact.auth_info";
 
 
 enum ValidationError
@@ -79,6 +80,7 @@ private:
 bool contact_checker_name(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_username(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_auth_info(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_phone_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_phone_unique(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_email_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);

@@ -232,10 +232,12 @@ unsigned long long contact_update(const unsigned long long &_action_id,
 {
     Database::Connection conn = Database::Manager::acquire();
     conn.exec_params("UPDATE object SET upid = $1::integer, update = now()"
+                     " , authinfopw = $3::text "
                      " WHERE id = $2::integer",
                      Database::query_param_list
                         (_registrar_id)
-                        (_data.id));
+                        (_data.id)
+                        (_data.auth_info));
     db_contact_update(_data);
     return db_contact_insert_history(_action_id, _request_id, _data.id);
 }
