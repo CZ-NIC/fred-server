@@ -419,7 +419,6 @@ public:
 
   }
 
-        // TODO performance optimization using patitioning criteria
   virtual std::auto_ptr<RequestProperties> getPropsForId(ID id, DateTime time_begin, int sid, bool mon) {
     std::auto_ptr<RequestProperties> ret(new RequestProperties());
     Database::SelectQuery query;
@@ -450,7 +449,7 @@ public:
         std::auto_ptr<ObjectReferences> ret(new ObjectReferences());
 
         Connection conn = Database::Manager::acquire();
-        // TODO performance optimization using patitioning criteria
+
         Result res = conn.exec((boost::format
                 ("SELECT name, object_id FROM request_object_ref oref "
                 "JOIN request_object_type ot ON ot.id = oref.object_type_id "
@@ -473,6 +472,7 @@ public:
 
   virtual void makeQuery(bool, bool, std::stringstream&) const {
     // TODO maybe - stub in Mail class
+      LOGGER(PACKAGE).error("Unimplemented method called: Logger::ListImpl::makeQuery()");
   }
 
   virtual void reload() {
