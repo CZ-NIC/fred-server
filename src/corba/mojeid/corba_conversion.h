@@ -53,6 +53,11 @@ NullableString* corba_wrap_nullable_string(const Nullable<std::string> &_v)
     }
 }
 
+bool is_not_normal(int c)
+{
+    return c == '\r' || c == '\n' || c == '\t';
+}
+
 NullableString* corba_wrap_nullable_normalized_string(const Nullable<std::string> &_v)
 {
     if (_v.isnull())
@@ -61,15 +66,10 @@ NullableString* corba_wrap_nullable_normalized_string(const Nullable<std::string
     }
     else
     {
-        std::string tmp =
-        boost::algorithm::erase_all_copy(
-                boost::algorithm::erase_all_copy(
-                        boost::algorithm::erase_all_copy(
-                                static_cast<std::string>(_v)
-                                , "\n")
-                        , "\r")
-                , "\t");
-
+        std::string tmp = static_cast<std::string>(_v);
+        tmp.erase(
+                std::remove_if(tmp.begin(), tmp.end(), is_not_normal)
+                , tmp.end());
         return new NullableString(tmp.c_str());
     }
 }
