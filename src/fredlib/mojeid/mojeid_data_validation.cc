@@ -149,7 +149,7 @@ bool contact_checker_auth_info(const ::MojeID::Contact &_data
         result = false;
     }
     else if (static_cast<std::string>(_data.auth_info).length()
-                > 300 //normalizedString max length
+                > 16 //normalizedString max length
             )
     {
         _errors[field_auth_info] = INVALID;
