@@ -148,7 +148,7 @@ bool contact_checker_auth_info(const ::MojeID::Contact &_data
         _errors[field_auth_info] = REQUIRED;
         result = false;
     }
-    else if (static_cast<std::string>(_data.auth_info).find(" ")
+    else if (static_cast<std::string>(_data.auth_info).find_first_of(" \t\n")
                     != std::string::npos)
     {
         _errors[field_auth_info] = INVALID;
