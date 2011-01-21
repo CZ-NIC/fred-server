@@ -64,5 +64,22 @@ BOOST_AUTO_TEST_CASE( test_exception )
     BOOST_REQUIRE_EQUAL(1, check_counter);
 }//test_exception
 
+
+class ConstInit
+{
+    static const int cstr = 5;
+public:
+    const int get_cstr() {return cstr;}
+
+};
+
+BOOST_AUTO_TEST_CASE( test_const_member_init )
+{
+    ConstInit ci;
+
+    BOOST_REQUIRE_EQUAL(ci.get_cstr(), 5);
+
+}
+
 BOOST_AUTO_TEST_SUITE_END();//TestCpp
 
