@@ -257,8 +257,10 @@ const MojeID::Contact contact_info(const unsigned long long &_id)
         " c.disclosefax,"
         " c.street1, c.street2, c.street3,"
         " c.city, c.stateorprovince, c.postalcode, c.country,"
-        " c.email, c.notifyemail, c.telephone, c.fax, est.type"
+        " c.email, c.notifyemail, c.telephone, c.fax, est.type,"
+        " o.authinfopw"
         " FROM object_registry oreg JOIN contact c ON c.id = oreg.id"
+        " JOIN object o ON o.id = oreg.id"
         " LEFT JOIN enum_ssntype est ON est.id = c.ssntype"
         " WHERE oreg.id = $1::integer AND oreg.erdate IS NULL";
 
@@ -298,6 +300,7 @@ const MojeID::Contact contact_info(const unsigned long long &_id)
     data.notifyemail = rinfo[0][24];
     data.telephone = rinfo[0][25];
     data.fax = rinfo[0][26];
+    data.auth_info = rinfo[0][28];
 
     return data;
 }
