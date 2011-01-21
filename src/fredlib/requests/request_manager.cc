@@ -148,7 +148,6 @@ Result ManagerImpl::i_getResultCodesByService(ServiceType service)
 
 Result ManagerImpl::i_getObjectTypes()
 {
-    // TODO - object types
     Database::Connection conn = Database::Manager::acquire();
     Result res = conn.exec("SELECT id, type FROM object_type");
 
