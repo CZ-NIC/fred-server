@@ -53,28 +53,6 @@ NullableString* corba_wrap_nullable_string(const Nullable<std::string> &_v)
     }
 }
 
-bool is_not_normal(int c)
-{
-    return c == '\r' || c == '\n' || c == '\t';
-}
-
-NullableString* corba_wrap_nullable_normalized_string(const Nullable<std::string> &_v)
-{
-    if (_v.isnull())
-    {
-        return 0;
-    }
-    else
-    {
-        std::string tmp = static_cast<std::string>(_v);
-        tmp.erase(
-                std::remove_if(tmp.begin(), tmp.end(), is_not_normal)
-                , tmp.end());
-        return new NullableString(tmp.c_str());
-    }
-}
-
-
 NullableBoolean* corba_wrap_nullable_boolean(const Nullable<bool> &_v)
 {
     if (_v.isnull()) {
@@ -151,6 +129,26 @@ Nullable<std::string> corba_unwrap_nullable_string(const NullableString *_v)
     }
 }
 
+bool is_not_normal(int c)
+{
+    return c == '\r' || c == '\n' || c == '\t';
+}
+
+Nullable<std::string> corba_unwrap_normalize_nullable_string(const NullableString *_v)
+{
+    if (_v)
+    {
+        std::string tmp ( _v->_value());
+        //normalize
+        tmp.erase(std::remove_if(tmp.begin(), tmp.end(), is_not_normal)
+                , tmp.end());
+
+        return tmp;
+    }
+    else {
+        return Nullable<std::string>();
+    }
+}
 
 Nullable<bool> corba_unwrap_nullable_boolean(const NullableBoolean *_v)
 {
@@ -239,7 +237,7 @@ MojeID::Contact corba_unwrap_contact(const Contact &_contact)
     data.handle = corba_unwrap_string(_contact.username);
     data.organization = corba_unwrap_nullable_string(_contact.organization);
     data.vat = corba_unwrap_nullable_string(_contact.vat_reg_num);
-    data.auth_info = corba_unwrap_nullable_string(_contact.auth_info);
+    data.auth_info = corba_unwrap_normalize_nullable_string(_contact.auth_info);
     data.disclosename = true;
     data.discloseorganization = true;
     data.discloseaddress = true;
@@ -268,9 +266,7 @@ Contact* corba_wrap_contact(const MojeID::Contact &_contact)
     data->organization = corba_wrap_nullable_string(_contact.organization);
     data->vat_reg_num  = corba_wrap_nullable_string(_contact.vat);
     data->ssn_type     = corba_wrap_nullable_string(_contact.ssntype);
-
-
-    data->auth_info    = corba_wrap_nullable_normalized_string(_contact.auth_info);
+    data->auth_info    = corba_wrap_nullable_string(_contact.auth_info);
 
     std::string type = static_cast<std::string>(_contact.ssntype);
     data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(_contact.ssn) : 0;
