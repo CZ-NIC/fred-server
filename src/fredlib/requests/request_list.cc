@@ -231,7 +231,6 @@ public:
     partialLoad = _partialLoad;
   }
 
-  // TODO properties should be displayed only in detailed view
   virtual void reload(Database::Filters::Union& _filter) {
     TRACE("[CALL] Fred::Logger::ListImpl::reload()");
     clear();
@@ -369,7 +368,6 @@ public:
         }
     }
     catch (Database::Exception& ex) {
-        // TODO this is a temporary hack which has to be removed
         std::string message = ex.what();
         if(message.find(Database::Connection::TIMEOUT_STRING) != std::string::npos) {
             LOGGER(PACKAGE).info("Statement timeout in request list.");
@@ -471,7 +469,6 @@ public:
   }
 
   virtual void makeQuery(bool, bool, std::stringstream&) const {
-    // TODO maybe - stub in Mail class
       LOGGER(PACKAGE).error("Unimplemented method called: Logger::ListImpl::makeQuery()");
   }
 
