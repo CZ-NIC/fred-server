@@ -60,7 +60,7 @@ noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/d
         src/corba/libfilemanager.a src/corba/libmailer.a src/corba/admin/libadmin_impl.a \
         src/corba/whois/libwhois_impl.a \
         src/corba/epp/libepp_impl.a src/corba/log/liblog_impl.a \
-        util/hp/libhp.a
+        util/hp/libhp.a src/fredlib/notifier/libnotifier.a
 
 util_libutil_a_SOURCES = util/random.cc
 
@@ -443,6 +443,14 @@ src_fredlib_mojeid_libmojeid_a_SOURCES = src/fredlib/mojeid/contact.h \
 
 #src fredlib mojeid
 
+src_fredlib_notifier_libnotifier_a_SOURCES = \
+		src/fredlib/notifier/request_notifier.h \
+		src/fredlib/notifier/request_notification.cc \
+		src/fredlib/notifier/request_notification.h \
+		src/fredlib/notifier/request_ntf_handler_contact.h \
+		src/fredlib/notifier/request_ntf_sender_email.h
+
+
 LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
 	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
@@ -663,6 +671,7 @@ src_corba_mojeid_fred_mifd_SOURCES = \
                     src/corba/mojeid/mojeid_impl.h \
                     src/corba/mojeid/mojeid_impl.cc \
                     src/corba/mojeid/mojeid_identification.h \
+                    src/corba/mojeid/mojeid_notifier.h \
                     src/corba/mojeid/corba_conversion.h \
                     src/corba/mojeid/fred-mifd.cc
 
@@ -685,6 +694,7 @@ src_corba_mojeid_fred_mifd_LDADD = $(LIBIDN_LIBS) \
                      src/fredlib/banking/libbanking.a \
                      src/fredlib/mojeid/libmojeid.a \
                      src/fredlib/messages/libmessages.a \
+                     src/fredlib/notifier/libnotifier.a \
                      util/libutil.a util/log/liblog.a util/types/libtypes.a \
                      util/db/libdb.a src/old_utils/liboldutils.a
 
