@@ -12,7 +12,6 @@ const boost::regex PHONE_PATTERN("^\\+42(0\\.(60[1-9]|7[2-9]|91)|1\\.9(0[1-9]|[1
 const boost::regex EMAIL_PATTERN("^[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+)*"
                                  "@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,6}\\.?$");
 const boost::regex POSTALCODE_CZ_PATTERN("^[0-9]{3} ?[0-9]{2}$");
-const boost::regex WHITESPACE_PATTERN("\\s");
 
 const std::string EMAIL_PHONE_PROTECTION_PERIOD = "1 month";
 
@@ -149,8 +148,9 @@ bool contact_checker_auth_info(const ::MojeID::Contact &_data
         _errors[field_auth_info] = REQUIRED;
         result = false;
     }
-    else if (boost::regex_search(static_cast<std::string>(_data.auth_info)
-            ,WHITESPACE_PATTERN))
+    else if (static_cast<std::string>(_data.auth_info).length()
+                > 300 //normalizedString max length
+            )
     {
         _errors[field_auth_info] = INVALID;
         result = false;

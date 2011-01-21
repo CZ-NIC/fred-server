@@ -53,6 +53,27 @@ NullableString* corba_wrap_nullable_string(const Nullable<std::string> &_v)
     }
 }
 
+NullableString* corba_wrap_nullable_normalized_string(const Nullable<std::string> &_v)
+{
+    if (_v.isnull())
+    {
+        return 0;
+    }
+    else
+    {
+        std::string tmp =
+        boost::algorithm::erase_all_copy(
+                boost::algorithm::erase_all_copy(
+                        boost::algorithm::erase_all_copy(
+                                static_cast<std::string>(_v)
+                                , "\n")
+                        , "\r")
+                , "\t");
+
+        return new NullableString(tmp.c_str());
+    }
+}
+
 
 NullableBoolean* corba_wrap_nullable_boolean(const Nullable<bool> &_v)
 {
@@ -247,7 +268,9 @@ Contact* corba_wrap_contact(const MojeID::Contact &_contact)
     data->organization = corba_wrap_nullable_string(_contact.organization);
     data->vat_reg_num  = corba_wrap_nullable_string(_contact.vat);
     data->ssn_type     = corba_wrap_nullable_string(_contact.ssntype);
-    data->auth_info    = corba_wrap_nullable_string(_contact.auth_info);
+
+
+    data->auth_info    = corba_wrap_nullable_normalized_string(_contact.auth_info);
 
     std::string type = static_cast<std::string>(_contact.ssntype);
     data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(_contact.ssn) : 0;
