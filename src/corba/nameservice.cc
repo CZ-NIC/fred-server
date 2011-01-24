@@ -133,7 +133,7 @@ void NameService::bind(const std::string& name,
   }
 }
 
-void NameService::bind2( const std::string& process_name,
+void NameService::bind2( const std::string& process_context_name,
             const std::string& object_name,
             CORBA::Object_ptr objref)
 {
@@ -141,7 +141,7 @@ void NameService::bind2( const std::string& process_name,
       Logging::Context ctx("nameservice");
 
       LOGGER(PACKAGE).debug(boost::format("requested object bind: %1%/%2%/%3%")
-                                      % context % process_name % object_name);
+                                      % context % process_context_name % object_name);
 
       //Fred
       CosNaming::Name context1Name;
@@ -169,7 +169,7 @@ void NameService::bind2( const std::string& process_name,
       //process
       CosNaming::Name context2Name;
       context2Name.length(1);
-      context2Name[0].id   = (const char*) process_name.c_str();
+      context2Name[0].id   = (const char*) process_context_name.c_str();
       context2Name[0].kind = (const char*) "context";
       CosNaming::NamingContext_var test2Context;
       try {

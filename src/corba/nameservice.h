@@ -72,7 +72,7 @@ public:
   /**
    * bind object into nameservice.context/process.context/'name'.Object
    */
-  void bind2( const std::string& process_name,
+  void bind2( const std::string& process_context_name,
             const std::string& object_name,
             CORBA::Object_ptr objref);
 

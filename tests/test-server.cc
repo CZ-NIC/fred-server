@@ -76,9 +76,7 @@ public:
 BOOST_AUTO_TEST_CASE( test_const_member_init )
 {
     ConstInit ci;
-
     BOOST_REQUIRE_EQUAL(ci.get_cstr(), 5);
-
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestCpp
