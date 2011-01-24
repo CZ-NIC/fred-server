@@ -92,8 +92,8 @@ unsigned int RequestNotifier::get_request_type(const unsigned long long &_reques
 RequestNotifier::RequestHandlerMap init_handlers()
 {
     RequestNotifier::RequestHandlerMap handlers = boost::assign::map_list_of
-            (static_cast<unsigned int>(CREATE_CONTACT), request_contact_common)
-            (static_cast<unsigned int>(TRANSFER_CONTACT), request_contact_common)
+            (static_cast<unsigned int>(CREATE_CONTACT), request_contact_create)
+            (static_cast<unsigned int>(TRANSFER_CONTACT), request_contact_transfer)
             (static_cast<unsigned int>(UPDATE_CONTACT), request_contact_update);
     return handlers;
 }
