@@ -133,7 +133,7 @@ void NameService::bind(const std::string& name,
   }
 }
 
-void NameService::bind2( const std::string& process_context_name,
+void NameService::bind_process_object( const std::string& process_context_name,
             const std::string& object_name,
             CORBA::Object_ptr objref)
 {
@@ -209,7 +209,7 @@ void NameService::bind2( const std::string& process_context_name,
     catch(CORBA::SystemException& ex) {
       throw NOT_RUNNING();
     }
-}
+}//NameService::bind_process_object
 
 
 CORBA::Object_ptr NameService::resolve(const std::string& name)
@@ -271,8 +271,69 @@ CORBA::Object_ptr NameService::resolve(const std::string& nsctx,
   }
 
   return CORBA::Object::_nil();
+}//NameService::resolve
+
+CORBA::Object_ptr NameService::resolve_process_object(const std::string& process_context
+          , const std::string& name)
+{
+    return resolve_process_object(context, process_context, name);
 }
 
+CORBA::Object_ptr NameService::resolve_process_object(const std::string& root_context,
+                           const std::string& process_context,
+                          const std::string& object_name)
+{
+    Logging::Context ctx("nameservice");
+
+    LOGGER(PACKAGE).debug(boost::format("requested object resolve: %1%/%2%/%3%")
+                                        % root_context
+                                        % process_context
+                                        % object_name);
+
+    /* Create a name object, containing the name test/context */
+    CosNaming::Name contextName;
+    contextName.length(3);
+
+    contextName[0].id   = (const char*) root_context.c_str();
+    contextName[0].kind = (const char*) "context";
+    contextName[1].id   = (const char*) process_context.c_str();
+    contextName[1].kind = (const char*) "context";
+    contextName[2].id   = object_name.c_str();
+    contextName[2].kind = (const char*) "Object";
+    /**
+     * Note on kind: The kind field is used to indicate the type
+     * of the object. This is to avoid conventions such as that used
+     * by files (name.type -- e.g. test.ps = postscript etc.)
+     */
+
+    try {
+      /* Resolve the name to an object reference */
+      return rootContext->resolve(contextName);
+    }
+
+    catch(CosNaming::NamingContext::NotFound& ex) {
+      /**
+       * This exception is thrown if any of the components of the
+       * path [contexts or the object] aren't found
+       */
+      CosNaming::Name cname = ex.rest_of_name;
+      std::string cname_str;
+      for (unsigned i = 0; i < cname.length(); ++i) {
+        cname_str += std::string(cname[i].id) + "(" + std::string(cname[i].kind) + ")" + (cname.length() != i + 1 ? "/" : "" );
+      }
+      LOGGER(PACKAGE).error(boost::format("Context [%1%] not found.") % cname_str);
+      throw BAD_CONTEXT();
+    }
+
+    catch(CORBA::TRANSIENT& ex) {
+      throw NOT_RUNNING();
+    }
+    catch(CORBA::SystemException& ex) {
+      throw NOT_RUNNING();
+    }
+
+    return CORBA::Object::_nil();
+}//NameService::resolve_process_object
 
 const std::string& NameService::getHostName() {
   return hostname;

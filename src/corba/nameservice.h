@@ -72,7 +72,7 @@ public:
   /**
    * bind object into nameservice.context/process.context/'name'.Object
    */
-  void bind2( const std::string& process_context_name,
+  void bind_process_object( const std::string& process_context_name,
             const std::string& object_name,
             CORBA::Object_ptr objref);
 
@@ -87,6 +87,19 @@ public:
    */
   CORBA::Object_ptr resolve(const std::string& context,
                             const std::string& name);// throw (NOT_RUNNING, BAD_CONTEXT);
+
+  /**
+   * resolve object from nameservice.context/'name'.Object get IOR
+   */
+  CORBA::Object_ptr resolve_process_object(const std::string& process_context
+          , const std::string& name);
+
+  /**
+   * resolve object from 'context'.context/'process'.context/'name'.Object get IOR
+   */
+  CORBA::Object_ptr resolve_process_object(const std::string& root_context,
+                             const std::string& process_context,
+                            const std::string& object_name);
 
   /**
    * get nameservice hostname used
