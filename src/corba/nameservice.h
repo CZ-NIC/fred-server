@@ -89,7 +89,7 @@ public:
                             const std::string& name);// throw (NOT_RUNNING, BAD_CONTEXT);
 
   /**
-   * resolve object from nameservice.context/'name'.Object get IOR
+   * resolve object from nameservice.context/'process'.context/'name'.Object get IOR
    */
   CORBA::Object_ptr resolve_process_object(const std::string& process_context
           , const std::string& name);
