@@ -798,8 +798,9 @@ tests_test_server_SOURCES = tests/test-server.cc \
                      tests/test_logd.cc \
                      tests/test-msgd.cc \
                      tests/test-msgd.h  \
-                     tests/test-admin.cc
-
+                     tests/test-admin.cc \
+                     tests/test-corbans.cc
+                     
 tests_test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
                      $(AM_LDFLAGS)
