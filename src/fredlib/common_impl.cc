@@ -104,9 +104,7 @@ bool CommonListImpl::isLimited() const {
 void CommonListImpl::setTimeout(unsigned _timeout) {
   Database::Connection conn = Database::Manager::acquire();
 
-  boost::format fmt_timeout =  boost::format("SET statement_timeout=%1%")
-                       % _timeout;
-  conn.exec(fmt_timeout.str());
+  conn.setQueryTimeout(_timeout);
 }
 
 CommonObject* CommonListImpl::get(unsigned _idx) const {

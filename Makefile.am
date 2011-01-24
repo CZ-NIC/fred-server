@@ -119,6 +119,7 @@ util_db_libdb_a_SOURCES = util/db/query/query_old.cc \
 		  util/db/query/filter_it.h              \
 		  util/db/query/sql_operators.h          \
 		  util/db/psql/psql_connection.h         \
+		  util/db/psql/psql_connection.cc        \
 		  util/db/psql/psql_result.h             \
 		  util/db/model/field.h                  \
 		  util/db/model/job_queue.h              \

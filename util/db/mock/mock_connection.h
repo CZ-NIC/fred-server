@@ -172,7 +172,11 @@ public:
 	  return false;
   }
 
+  virtual inline void setConstraintExclusion(bool on = true) {
+  }
 
+  virtual inline void setQueryTimeout(unsigned t) {
+  }
 
   /* HACK! HACK! HACK! */
   typedef MOCKconn* __conn_type__;

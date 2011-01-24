@@ -31,6 +31,7 @@
 #include "../statement.h"
 #include "../db_exceptions.h"
 #include "boost/lexical_cast.hpp"
+#include "boost/format.hpp"
 
 namespace Database {
 
@@ -60,6 +61,11 @@ public:
   typedef PSQLResult       result_type;
   typedef PSQLTransaction  transaction_type;
 
+  /**
+   * String which matches the message in database exception if
+   * timeout (set by setQueryTimeout) occurs
+   */
+  static const std::string TIMEOUT_STRING;
   /**
    * Constructors and destructor
    */
@@ -231,6 +237,18 @@ public:
     }
   }//exec_params
 
+  virtual inline void setConstraintExclusion(bool on = true) {
+    if (on) {
+        exec("SET constraint_exclusion=ON");
+    } else {
+        exec("SET constraint_exclusion=OFF");
+    }
+  }
+
+  virtual inline void setQueryTimeout(unsigned t) {
+      boost::format fmt_timeout = boost::format("SET statement_timeout=%1%") % t;
+      exec(fmt_timeout.str());
+  }
 
   virtual void reset() {
     PQreset(psql_conn_);

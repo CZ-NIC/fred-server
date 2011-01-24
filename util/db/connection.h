@@ -52,7 +52,7 @@ public:
   typedef typename manager_type::transaction_type  transaction_type;
   typedef typename manager_type::result_type       result_type;
 
-
+  const static std::string TIMEOUT_STRING;
   /**
    * Constructor and destructor
    */
@@ -208,6 +208,13 @@ public:
     return conn_->inTransaction();
   }
 
+  virtual inline void setConstraintExclusion(bool on = true) {
+    conn_->setConstraintExclusion(on);
+  }
+
+  virtual inline void setQueryTimeout(unsigned t) {
+    conn_->setQueryTimeout(t);
+  }
 
   /* HACK! HACK! HACK! (use with construct with old DB connection) */
   typename driver_type::__conn_type__ __getConn__() const {
@@ -219,7 +226,9 @@ protected:
   connection_driver       *conn_;    /**< connection_driver instance */
 };
 
-
+template<class connection_driver, class manager_type>
+    const std::string ConnectionBase_<connection_driver, manager_type>::TIMEOUT_STRING
+             = connection_driver::TIMEOUT_STRING;
 
 /**
  * \class  Connection_
@@ -373,7 +382,6 @@ public:
   typedef ConnectionBase_<connection_driver, manager_type>   super;
   typedef typename super::transaction_type                   transaction_type;
 
-  const static std::string TIMEOUT_STRING;
   /**
    * Constructor and destructor
    */
@@ -421,7 +429,6 @@ protected:
   transaction_type **trans_;  /**< pointer to active transaction */
 };
 
-template<class connection_driver, class manager_type> const std::string  TSSConnection_<connection_driver, manager_type>::TIMEOUT_STRING = "statement timeout";
 
 }
 
