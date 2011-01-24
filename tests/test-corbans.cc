@@ -38,6 +38,11 @@
 
 #include "setup_server_decl.h"
 
+#include "cfg/handle_general_args.h"
+#include "cfg/handle_database_args.h"
+#include "cfg/handle_threadgroup_args.h"
+#include "cfg/handle_corbanameservice_args.h"
+
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -52,11 +57,12 @@ const std::string server_name = "test-corbans";
 BOOST_AUTO_TEST_CASE( test_corba_nameservice )
 {
     // setting up logger
+/*
     setup_logging(CfgArgs::instance());
 
     //CORBA init
     corba_init();
-
+*/
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestCorba
