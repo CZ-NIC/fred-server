@@ -160,7 +160,7 @@ void ccReg_PageTable_i::reload() {
         reload_worker();
     } catch(Database::Exception &ex) {
           std::string message = ex.what();
-          if(message.find(Database::Connection::TIMEOUT_STRING) != std::string::npos) {
+          if(message.find(Database::Connection::getTimeoutString()) != std::string::npos) {
               throw ccReg::Filters::SqlQueryTimeout();
           }
     }

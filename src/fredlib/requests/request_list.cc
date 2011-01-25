@@ -369,7 +369,7 @@ public:
     }
     catch (Database::Exception& ex) {
         std::string message = ex.what();
-        if(message.find(Database::Connection::TIMEOUT_STRING) != std::string::npos) {
+        if(message.find(conn.getTimeoutString()) != std::string::npos) {
             LOGGER(PACKAGE).info("Statement timeout in request list.");
             clear();
             throw;
@@ -557,7 +557,7 @@ public:
         }
         catch (Database::Exception& ex) {
             std::string message = ex.what();
-            if (message.find(Database::Connection::TIMEOUT_STRING)
+            if (message.find(conn.getTimeoutString())
                     != std::string::npos) {
                 LOGGER(PACKAGE).info("Statement timeout in request list.");
                 clear();

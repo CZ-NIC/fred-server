@@ -62,11 +62,6 @@ public:
   typedef PSQLTransaction  transaction_type;
 
   /**
-   * String which matches the message in database exception if
-   * timeout (set by setQueryTimeout) occurs
-   */
-  static const std::string TIMEOUT_STRING;
-  /**
    * Constructors and destructor
    */
   PSQLConnection() : psql_conn_(0),
@@ -89,6 +84,14 @@ public:
     // std::cout << "(CALL) PSQLConnection destructor" << std::endl;
   }
 
+  /**
+   * String which matches the message in database exception if
+   * timeout (set by setQueryTimeout) occurs
+   * it's too hard to implement it as const member in this class and in ConnectionBase_
+   */
+  static const std::string getTimeoutString() {
+      return std::string("statement timeout");
+  }
 
   /**
    * Implementation of coresponding methods called by Connection_ template

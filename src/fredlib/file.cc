@@ -118,7 +118,7 @@ List::reload(Database::Filters::Union &filter)
     }
     catch (Database::Exception& ex) {
         std::string message = ex.what();
-        if (message.find(Database::Connection::TIMEOUT_STRING)
+        if (message.find(Database::Connection::getTimeoutString())
                 != std::string::npos) {
             LOGGER(PACKAGE).info("Statement timeout in request list.");
             clear();

@@ -52,7 +52,6 @@ public:
   typedef typename manager_type::transaction_type  transaction_type;
   typedef typename manager_type::result_type       result_type;
 
-  const static std::string TIMEOUT_STRING;
   /**
    * Constructor and destructor
    */
@@ -62,6 +61,10 @@ public:
 
 
   virtual ~ConnectionBase_() {
+  }
+
+  static const std::string getTimeoutString() {
+      return connection_driver::getTimeoutString();
   }
 
 
@@ -226,9 +229,6 @@ protected:
   connection_driver       *conn_;    /**< connection_driver instance */
 };
 
-template<class connection_driver, class manager_type>
-    const std::string ConnectionBase_<connection_driver, manager_type>::TIMEOUT_STRING
-             = connection_driver::TIMEOUT_STRING;
 
 /**
  * \class  Connection_
