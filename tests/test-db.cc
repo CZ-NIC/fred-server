@@ -119,6 +119,35 @@ BOOST_AUTO_TEST_CASE( exec_params_test )
 
 }
 
+BOOST_AUTO_TEST_CASE(test_timeout_exception)
+{
+    BOOST_TEST_MESSAGE("Check whether long queries yield an exception with expected message. ");
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    // timeout in miliseconds
+    conn.setQueryTimeout(900);
+
+    bool thrown = false;
+    // now try to sleep for 1 second, it should yield the exception
+    try {
+        conn.exec("select pg_sleep(1)");
+    } catch (Database::Exception &ex) {
+        thrown = true;
+        std::string message = ex.what();
+        // check if the exception contains the text rely on
+        if (message.find(Database::Connection::getTimeoutString())
+                != std::string::npos) {
+            // ok
+        } else {
+            BOOST_FAIL("Exception doesn't contain expected message. ");
+        }
+    }
+
+    BOOST_REQUIRE_MESSAGE(thrown, "No timeout (or any other) exception thrown, wrong behaviour. ");
+
+}
+
 BOOST_AUTO_TEST_SUITE_END();
 
 
