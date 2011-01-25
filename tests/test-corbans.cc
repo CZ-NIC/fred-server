@@ -61,10 +61,10 @@ BOOST_AUTO_TEST_CASE( test_corba_nameservice )
     // setting up logger
 
     setup_logging(CfgArgs::instance());
-/*
+
     //CORBA init
     corba_init();
-*/
+
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestCorba
