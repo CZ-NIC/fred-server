@@ -2,6 +2,7 @@
 #include "corba_conversion.h"
 #include "mojeid_impl.h"
 #include "mojeid_identification.h"
+#include "mojeid_notifier.h"
 
 #include "cfg/config_handler_decl.h"
 #include "log/logger.h"
@@ -19,11 +20,9 @@
 #include "fredlib/mojeid/mojeid_contact_states.h"
 
 #include "corba/connection_releaser.h"
-#include "corba/mailer_manager.h"
 
 #include "types/birthdate.h"
 #include "types/stringify.h"
-
 
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
@@ -32,6 +31,7 @@
 #include <boost/random/variate_generator.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/algorithm/string.hpp>
+
 
 
 
@@ -48,7 +48,8 @@ ServerImpl::ServerImpl(const std::string &_server_name)
     : registry_conf_(CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()),
       server_conf_(CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()),
       server_name_(_server_name),
-      mojeid_registrar_id_(0)
+      mojeid_registrar_id_(0),
+      mailer_(new MailerManager(CorbaContainer::get_instance()->getNS()))
 {
     Logging::Context ctx_server(server_name_);
     Logging::Context ctx("init");
@@ -159,6 +160,19 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
                     % id % new_request->getId());
         }
 
+        /* notification */
+
+        try {
+            if (server_conf_->notify_commands) {
+                Fred::create_request_notifier_mojeid().notify_if(
+                            request.get_request_id(), Fred::NotificationEmailSender(mailer_),
+                            Fred::IsRequestType(Fred::CREATE_CONTACT));
+            }
+        }
+        catch (...) {
+            LOGGER(PACKAGE).error("request notification failed");
+        }
+
         /* return new contact id */
         return id;
     }
@@ -191,7 +205,23 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
                 % _ident_request_id % _password % _request_id);
 
         IdentificationRequestManagerPtr request_manager;
-        return request_manager->processAuthRequest(_ident_request_id, _password);
+        unsigned long long rid = 0;
+        unsigned long long cid = request_manager->processAuthRequest(
+                                    _ident_request_id, _password, rid);
+
+        try {
+            if (server_conf_->notify_commands) {
+                Fred::create_request_notifier_mojeid().notify_if(
+                            rid, Fred::NotificationEmailSender(mailer_),
+                            Fred::IsRequestType(Fred::TRANSFER_CONTACT));
+            }
+        }
+        catch (...) {
+            LOGGER(PACKAGE).error("request notification failed");
+        }
+
+        return cid;
+
     }
     catch (Fred::NOT_FOUND) {
         LOGGER(PACKAGE).error(boost::format(
@@ -237,7 +267,6 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
                 % _ident_request_id);
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
-
 }
 
 CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
@@ -688,7 +717,15 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
             }
         }
         /* request notification */
-        if (rid) {
+        try {
+            if (rid && server_conf_->notify_commands) {
+                Fred::create_request_notifier_mojeid().notify_if(
+                            rid, Fred::NotificationEmailSender(mailer_),
+                            Fred::IsRequestType(Fred::UPDATE_CONTACT));
+            }
+        }
+        catch (...) {
+            LOGGER(PACKAGE).error("request notification failed");
         }
     }
     catch (...) {

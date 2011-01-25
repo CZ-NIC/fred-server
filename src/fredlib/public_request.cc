@@ -2078,7 +2078,8 @@ public:
 
   virtual unsigned long long processAuthRequest(
           const std::string &_identification,
-          const std::string &_password)
+          const std::string &_password,
+          unsigned long long &_request_id)
   {
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction tx(conn);
@@ -2100,6 +2101,7 @@ public:
 
       request->authenticate(_password);
       request->process(false, true);
+      _request_id = request->getRequestId();
       tx.commit();
       return request->getObject(0).id;
   }

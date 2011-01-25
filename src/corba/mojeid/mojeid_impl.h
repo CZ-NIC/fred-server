@@ -6,7 +6,9 @@
 
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_mojeid_args.h"
+#include "corba/mailer_manager.h"
 #include "corba/MojeID.hh"
+
 
 namespace Registry {
 namespace MojeID {
@@ -27,6 +29,7 @@ class ServerImpl : public POA_Registry::MojeID::Server,
         boost::mutex ta_mutex; /// for transaction_eppaction
 
         virtual ~ServerImpl();
+        boost::shared_ptr<MailerManager> mailer_;
 
 
     public:

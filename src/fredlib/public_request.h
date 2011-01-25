@@ -257,7 +257,8 @@ public:
 
   virtual unsigned long long processAuthRequest(
           const std::string &_identification,
-          const std::string &_password) = 0;
+          const std::string &_password,
+          unsigned long long &_request_id) = 0;
 
   virtual std::string getIdentification(
           Database::ID contact) = 0;
