@@ -9,13 +9,36 @@
 namespace Fred {
 
 
+template<class RT>
 class RequestNotification
 {
 public:
     typedef std::vector<unsigned long long> RecipientList;
 
 
-    RequestNotification(const unsigned long long &_request_id);
+    RequestNotification(const unsigned long long &_request_id)
+        : request_id_(_request_id),
+          object_id_(0)
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result info = conn.exec_params(
+                "SELECT oreg.id, oreg.name, oreg.type, h1.id AS act, h2.id AS prev"
+                " FROM history h1 LEFT join history h2 ON h1.id = h2.next"
+                " JOIN object_history oh ON oh.historyid = h1.id"
+                " JOIN object_registry oreg ON oreg.id = oh.id"
+                " WHERE h1.request_id = $1::integer",
+                Database::query_param_list(_request_id));
+
+        if (info.size() != 1) {
+            throw std::runtime_error("create notification: no such request");
+        }
+
+        object_id_       = static_cast<unsigned long long>(info[0][0]);
+        object_handle_   = static_cast<std::string>(info[0][1]);
+        object_type_     = static_cast<unsigned int>(info[0][2]);
+        object_hid_act_  = info[0][3].isnull() ? 0 : static_cast<unsigned long long>(info[0][3]);
+        object_hid_prev_ = info[0][4].isnull() ? 0 : static_cast<unsigned long long>(info[0][4]);
+    }
 
     void add_recipient(const unsigned long long &_contact_hid)
     {
@@ -58,12 +81,12 @@ public:
     }
 
 
-    const unsigned int get_request_type() const
+    const RT& get_request_type() const
     {
         return request_type_;
     }
 
-    void set_request_type(const unsigned int &_type)
+    void set_request_type(const RT &_type)
     {
         request_type_ = _type;
     }
@@ -78,7 +101,7 @@ private:
     unsigned long long object_hid_prev_;
     ChangesMap         object_changes_;
 
-    unsigned int       request_type_;
+    RT                 request_type_;
 
     /* history ids of contacts */
     RecipientList recipients_;

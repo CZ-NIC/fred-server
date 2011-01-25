@@ -11,11 +11,12 @@
 namespace Fred {
 
 
+template<class RT>
 class RequestNotifier
 {
 public:
-    typedef boost::function<void (RequestNotification &_ntf)> RequestHandler;
-    typedef std::map<unsigned int, RequestHandler> RequestHandlerMap;
+    typedef boost::function<void (RequestNotification<RT> &_ntf)> RequestHandler;
+    typedef std::map<RT, RequestHandler> RequestHandlerMap;
 
 
     RequestNotifier(const RequestHandlerMap &_handlers)
@@ -27,7 +28,7 @@ public:
     template<class TSender>
     void notify(const unsigned long long &_request_id, const TSender &_sender)
     {
-        this->notify(_request_id, _sender, DisableCondition());
+        this->notify(_request_id, _sender, DisableCondition<RT>());
     }
 
 
@@ -35,9 +36,8 @@ public:
     void notify_if(const unsigned long long &_request_id, const TSender &_sender,
                    const TCond &_cond)
     {
-        RequestNotification ntf(_request_id);
-        unsigned int rtype = static_cast<unsigned int>(get_request_type(
-                    _request_id, ntf.get_object_type()));
+        RequestNotification<RT> ntf(_request_id);
+        RT rtype = get_request_type(_request_id, ntf.get_object_type());
 
         ntf.set_request_type(rtype);
 
@@ -60,16 +60,17 @@ public:
 
 private:
 
+    template<class T>
     struct DisableCondition
     {
-        bool operator()(const RequestNotification &_ntf) const
+        bool operator()(const RequestNotification<T> &_ntf) const
         {
             return true;
         }
     };
 
-    unsigned int get_request_type(const unsigned long long &_request_id,
-                                  const unsigned short &_object_type);
+    RT get_request_type(const unsigned long long &_request_id,
+                        const unsigned short &_object_type);
 
     RequestHandlerMap   handlers_;
 };

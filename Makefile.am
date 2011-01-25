@@ -445,7 +445,6 @@ src_fredlib_mojeid_libmojeid_a_SOURCES = src/fredlib/mojeid/contact.h \
 
 src_fredlib_notifier_libnotifier_a_SOURCES = \
 		src/fredlib/notifier/request_notifier.h \
-		src/fredlib/notifier/request_notification.cc \
 		src/fredlib/notifier/request_notification.h \
 		src/fredlib/notifier/request_ntf_handler_contact.h \
 		src/fredlib/notifier/request_ntf_sender_email.h

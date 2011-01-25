@@ -8,13 +8,15 @@
 namespace Fred {
 
 
-void request_contact_create(RequestNotification &_ntf)
+template<class RT>
+void request_contact_create(RequestNotification<RT> &_ntf)
 {
     _ntf.add_recipient(_ntf.get_object_hid_act());
 }
 
 
-void request_contact_update(RequestNotification &_ntf)
+template<class RT>
+void request_contact_update(RequestNotification<RT> &_ntf)
 {
     _ntf.add_recipient(_ntf.get_object_hid_prev());
     _ntf.add_recipient(_ntf.get_object_hid_act());
@@ -25,7 +27,8 @@ void request_contact_update(RequestNotification &_ntf)
 }
 
 
-void request_contact_transfer(RequestNotification &_ntf)
+template<class RT>
+void request_contact_transfer(RequestNotification<RT> &_ntf)
 {
     _ntf.add_recipient(_ntf.get_object_hid_act());
 }

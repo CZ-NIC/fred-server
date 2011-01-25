@@ -32,9 +32,9 @@ enum RequestType {
 };
 
 
-
-unsigned int RequestNotifier::get_request_type(const unsigned long long &_request_id,
-                                    const unsigned short &_object_type)
+template<class RT>
+RT RequestNotifier<RT>::get_request_type(const unsigned long long &_request_id,
+                                         const unsigned short &_object_type)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -89,19 +89,39 @@ unsigned int RequestNotifier::get_request_type(const unsigned long long &_reques
 }
 
 
-RequestNotifier::RequestHandlerMap init_handlers()
+struct IsRequestType
 {
-    RequestNotifier::RequestHandlerMap handlers = boost::assign::map_list_of
-            (static_cast<unsigned int>(CREATE_CONTACT), request_contact_create)
-            (static_cast<unsigned int>(TRANSFER_CONTACT), request_contact_transfer)
-            (static_cast<unsigned int>(UPDATE_CONTACT), request_contact_update);
+    IsRequestType(const RequestType &_rt) : type(_rt) { }
+
+    bool operator()(const RequestNotification<RequestType> &_ntf) const
+    {
+        if (_ntf.get_request_type() == type) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    RequestType type;
+};
+
+
+typedef RequestNotifier<RequestType> MojeIDRequestNotifier;
+
+MojeIDRequestNotifier::RequestHandlerMap init_handlers()
+{
+    MojeIDRequestNotifier::RequestHandlerMap handlers = boost::assign::map_list_of
+            (CREATE_CONTACT, request_contact_create<RequestType>)
+            (TRANSFER_CONTACT, request_contact_transfer<RequestType>)
+            (UPDATE_CONTACT, request_contact_update<RequestType>);
     return handlers;
 }
 
 
-RequestNotifier create_request_notifier_mojeid()
+MojeIDRequestNotifier create_request_notifier_mojeid()
 {
-    static RequestNotifier notifier(init_handlers());
+    static MojeIDRequestNotifier notifier(init_handlers());
     return notifier;
 }
 

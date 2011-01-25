@@ -33,7 +33,8 @@ std::string container2comma_list(const T &_cont)
 class NotificationEmailSender
 {
 public:
-    void send(const RequestNotification &_ntf) const
+    template<class RT>
+    void send(const RequestNotification<RT> &_ntf) const
     {
         Logging::Context context("notifier:email_sender");
         LOGGER(PACKAGE).info(boost::format(
