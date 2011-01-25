@@ -319,6 +319,12 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
         LOGGER(PACKAGE).error("ccReg_Session_i::getDetail ex: ccReg::Admin::ObjectNotFound");
         throw;
     }
+    catch (ccReg::Logger::OBJECT_NOT_FOUND) {
+        throw ccReg::Admin::ObjectNotFound();
+    }
+    catch (ccReg::Logger::INTERNAL_SERVER_ERROR) {
+        throw ccReg::Admin::ServiceUnavailable();
+    }
     catch(std::exception& ex)
     {
         LOGGER(PACKAGE).error(boost::format("ccReg_Session_i::getDetail ex: %1%")
@@ -664,14 +670,7 @@ ccReg::Logger::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
 
         if (CORBA::is_nil(logger)) throw ccReg::Admin::ServiceUnavailable();
 
-        try {
-            return logger->getDetail(_id);
-        } catch (ccReg::Logger::OBJECT_NOT_FOUND) {
-            throw ccReg::Admin::ObjectNotFound();
-        } catch(...) {
-            LOGGER(PACKAGE).error("Unexpected exception in getLoggerDetail(id). ");
-            throw ccReg::Admin::ObjectNotFound();
-        }
+        return logger->getDetail(_id);
                 
 }
 

@@ -256,12 +256,16 @@ ccReg::Logger::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
         } catch(Database::Exception &ex) {
                 std::string message = ex.what();
                 if(message.find("statement timeout") != std::string::npos) {
-                        throw Registry::SqlQueryTimeout();
+                    LOGGER(PACKAGE).info("Statement timeout in request list.");
+                    throw Registry::SqlQueryTimeout();
                 }
+                LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+                throw ccReg::Logger::INTERNAL_SERVER_ERROR();
         }
 
 	if(request_list->size() != 1) {
-                throw ccReg::Logger::OBJECT_NOT_FOUND();
+	    LOGGER(PACKAGE).info("throwing OBJECT_NOT_FOUND(): number of items found is not 1");
+        throw ccReg::Logger::OBJECT_NOT_FOUND();
 	}
 	return createRequestDetail(request_list->get(0));
 
