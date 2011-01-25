@@ -7,6 +7,7 @@
 
 #include "request_notification.h"
 #include "log/logger.h"
+#include "fredlib/mailer.h"
 
 
 namespace Fred {
@@ -33,6 +34,17 @@ std::string container2comma_list(const T &_cont)
 class NotificationEmailSender
 {
 public:
+    NotificationEmailSender()
+    {
+    }
+
+
+    NotificationEmailSender(boost::shared_ptr<Mailer::Manager> _mm) 
+        : mm_(_mm)
+    {
+    }
+
+
     template<class RT>
     void send(const RequestNotification<RT> &_ntf) const
     {
@@ -64,9 +76,7 @@ public:
 
 
 private:
-    std::string get_template(const unsigned short &_req_type) const
-    {
-    }
+    boost::shared_ptr<Mailer::Manager> mm_;
 };
 
 }
