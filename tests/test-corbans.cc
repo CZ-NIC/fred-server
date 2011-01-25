@@ -39,6 +39,8 @@
 #include "setup_server_decl.h"
 
 #include "cfg/handle_general_args.h"
+#include "cfg/handle_server_args.h"
+#include "cfg/handle_logging_args.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
@@ -57,9 +59,9 @@ const std::string server_name = "test-corbans";
 BOOST_AUTO_TEST_CASE( test_corba_nameservice )
 {
     // setting up logger
-/*
-    setup_logging(CfgArgs::instance());
 
+    setup_logging(CfgArgs::instance());
+/*
     //CORBA init
     corba_init();
 */

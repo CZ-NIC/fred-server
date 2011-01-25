@@ -48,6 +48,8 @@
 #include "setup_server.h"
 
 #include "cfg/handle_general_args.h"
+#include "cfg/handle_server_args.h"
+#include "cfg/handle_logging_args.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_threadgroup_args.h"
