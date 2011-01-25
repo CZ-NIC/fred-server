@@ -58,6 +58,16 @@ public:
     }
 
 
+    const unsigned int get_request_type() const
+    {
+        return request_type_;
+    }
+
+    void set_request_type(const unsigned int &_type)
+    {
+        request_type_ = _type;
+    }
+
 
 private:
     unsigned long long request_id_;
@@ -67,6 +77,8 @@ private:
     unsigned long long object_hid_act_;
     unsigned long long object_hid_prev_;
     ChangesMap         object_changes_;
+
+    unsigned int       request_type_;
 
     /* history ids of contacts */
     RecipientList recipients_;

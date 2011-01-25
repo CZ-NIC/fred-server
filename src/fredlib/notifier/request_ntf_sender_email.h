@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <boost/algorithm/string.hpp>
 
 #include "request_notification.h"
 #include "log/logger.h"
@@ -36,8 +37,10 @@ public:
     {
         Logging::Context context("notifier:email_sender");
         LOGGER(PACKAGE).info(boost::format(
-                    "request_id=%1%  object_id=%2%")
-                    % _ntf.get_request_id() % _ntf.get_object_id());
+                    "request_id=%1%  object_id=%2%  request_type=%3%")
+                    % _ntf.get_request_id()
+                    % _ntf.get_object_id()
+                    % _ntf.get_request_type());
 
         /* collect email addreses from notification recipients */
         std::string anyarray = "{" + container2comma_list(_ntf.get_recipients()) + "}";
@@ -49,7 +52,10 @@ public:
 
         std::vector<std::string> rcpts_emails;
         for (unsigned int i = 0; i < nemails.size(); ++i) {
-            rcpts_emails.push_back(static_cast<std::string>(nemails[i][0]));
+            std::string e = boost::trim_copy(static_cast<std::string>(nemails[i][0]));
+            if (find(rcpts_emails.begin(), rcpts_emails.end(), e) ==  rcpts_emails.end()) {
+                rcpts_emails.push_back(e);
+            }
         }
         LOGGER(PACKAGE).debug(boost::format("recipients: %1%")
                 % container2comma_list(rcpts_emails));
