@@ -325,6 +325,11 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
             % ex.what());
         throw ccReg::Admin::ServiceUnavailable();
     }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("ccReg_Session_i::getDetail unknown exception");
+        throw ccReg::Admin::ServiceUnavailable();
+    }
 }
 
 const std::string& ccReg_Session_i::getId() const {
