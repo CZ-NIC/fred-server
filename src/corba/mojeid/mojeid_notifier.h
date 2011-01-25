@@ -3,6 +3,7 @@
 
 #include "fredlib/notifier/request_notifier.h"
 #include "fredlib/notifier/request_ntf_handler_contact.h"
+#include "fredlib/notifier/request_ntf_sender_email.h"
 
 #include <boost/assign/list_of.hpp>
 #include <map>
@@ -32,9 +33,12 @@ enum RequestType {
 };
 
 
-template<class RT>
-RT RequestNotifier<RT>::get_request_type(const unsigned long long &_request_id,
-                                         const unsigned short &_object_type)
+typedef RequestNotifier<RequestType> MojeIDRequestNotifier;
+
+template<>
+RequestType MojeIDRequestNotifier::get_request_type(
+        const unsigned long long &_request_id,
+        const unsigned short &_object_type) const
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -89,6 +93,7 @@ RT RequestNotifier<RT>::get_request_type(const unsigned long long &_request_id,
 }
 
 
+
 struct IsRequestType
 {
     IsRequestType(const RequestType &_rt) : type(_rt) { }
@@ -107,7 +112,6 @@ struct IsRequestType
 };
 
 
-typedef RequestNotifier<RequestType> MojeIDRequestNotifier;
 
 MojeIDRequestNotifier::RequestHandlerMap init_handlers()
 {

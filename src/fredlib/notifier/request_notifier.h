@@ -70,7 +70,7 @@ private:
     };
 
     RT get_request_type(const unsigned long long &_request_id,
-                        const unsigned short &_object_type);
+                        const unsigned short &_object_type) const;
 
     RequestHandlerMap   handlers_;
 };
