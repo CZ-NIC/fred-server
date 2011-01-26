@@ -7,6 +7,7 @@
 
 #include "request_notification.h"
 #include "log/logger.h"
+#include "log/context.h"
 #include "fredlib/mailer.h"
 
 
