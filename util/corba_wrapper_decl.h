@@ -35,6 +35,15 @@
 
 #include "corba/nameservice.h"
 
+#include <boost/thread/thread.hpp>
+
+struct OrbThread
+{
+    //OrbThread() {}
+    void operator()();
+};//struct OrbThread
+
+typedef std::auto_ptr< boost::thread > ThreadPtr;
 
 /**
  * \class CorbaContainer
@@ -131,6 +140,8 @@ public:
         CorbaContainer::get_instance()->getNS()
                 ->bind_process_object(process_name, object_name,tObj);
     }//register_server_process_object
+
+    ThreadPtr run_orb_thread();
 
 };//class CorbaContainer
 

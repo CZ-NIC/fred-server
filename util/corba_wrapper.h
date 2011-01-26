@@ -38,7 +38,20 @@
 //static init
 CorbaContainer::CorbaContainerPtr CorbaContainer::instance_ptr(0);
 
+void OrbThread::operator ()() //run orb in thread
+{
+    CorbaContainer::get_instance()->orb->run();
+}//OrbThr::operator()
+
+
+
 //impl
+
+ThreadPtr CorbaContainer::run_orb_thread()
+{
+    return ThreadPtr(new boost::thread(OrbThread()));
+}
+
 PortableServer::POA_var CorbaContainer::create_persistent_poa()
 {
     //poa for persistent refs

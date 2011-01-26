@@ -71,19 +71,26 @@ BOOST_AUTO_TEST_CASE( test_corba_nameservice )
     CorbaContainer::get_instance()->register_server(
         new ccReg_Whois_i(
         CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()
-                ->get_conn_info()
-                , server_name
-                , true)
+                ->get_conn_info(), server_name, true)
         , "Whois");
 
     CorbaContainer::get_instance()->register_server_process_object(
             new ccReg_Whois_i(
             CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()
-                    ->get_conn_info()
-                    , server_name
-                    , true)
-            , "TestServer"
-            , "Whois");
+                    ->get_conn_info(), server_name, true)
+            , "TestServer", "Whois");
+
+    CorbaContainer::get_instance()->poa_persistent->the_POAManager()->activate();
+
+    //run orb in thread
+    ThreadPtr thread( CorbaContainer::get_instance()->run_orb_thread());
+
+    sleep(1);
+
+    CorbaContainer::get_instance()->orb->shutdown(true);
+    //CorbaContainer::get_instance()->orb->destroy();
+
+    thread->join();
 
 /*
 
