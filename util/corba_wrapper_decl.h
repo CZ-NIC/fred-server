@@ -110,8 +110,8 @@ public:
         CorbaContainer::get_instance()->getNS()->bind(name,tObj);
     }//register_server
 
-    //register server object with persistent poa and nameservice
-    //and with ownership transfer in process context
+    //register server object in process context with persistent poa
+    //and nameservice and with ownership transfer
     template <class T> void  register_server_process_object(
             T* new_server_object_ptr
             , const std::string& process_name
