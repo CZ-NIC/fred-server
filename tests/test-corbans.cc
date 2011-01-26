@@ -85,11 +85,16 @@ BOOST_AUTO_TEST_CASE( test_corba_nameservice )
     //run orb in thread
     ThreadPtr orb_thread( CorbaContainer::get_instance()->run_orb_thread());
 
+
+    //try to resolve
     ccReg::Whois_var whois1_ref;
     whois1_ref = ccReg::Whois::_narrow(
             CorbaContainer::get_instance()->nsresolve("TestWhois"));
 
-    CorbaContainer::get_instance()->getNS()->resolve_process_object("TestServer", "Whois");
+    ccReg::Whois_var whois2_ref;
+        whois2_ref = ccReg::Whois::_narrow(
+    CorbaContainer::get_instance()->nsresolve_process_object(
+            "TestServer", "Whois"));
 
     sleep(1);
     CorbaContainer::get_instance()->orb->shutdown(true);
