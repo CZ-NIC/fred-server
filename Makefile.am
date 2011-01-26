@@ -670,6 +670,7 @@ src_corba_mojeid_fred_mifd_SOURCES = \
                     src/corba/mojeid/mojeid_impl.h \
                     src/corba/mojeid/mojeid_impl.cc \
                     src/corba/mojeid/mojeid_identification.h \
+                    src/corba/mojeid/mojeid_notifier.cc \
                     src/corba/mojeid/mojeid_notifier.h \
                     src/corba/mojeid/corba_conversion.h \
                     src/corba/mojeid/fred-mifd.cc
