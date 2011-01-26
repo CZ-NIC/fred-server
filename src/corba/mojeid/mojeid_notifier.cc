@@ -55,11 +55,23 @@ RequestType MojeIDRequestNotifier::get_request_type(
 }
 
 
-//template<class TSender>
-//std::string MojeIDRequestNotifier::get_template(
-//        const RequestType &_request_type, const TSender &_sender) const
-//{
-//}
+template<> template<>
+const std::string MojeIDRequestNotifier::get_template(
+        const RequestType &_request_type,
+        const NotificationEmailSender&) const
+{
+    switch (_request_type) {
+        case CREATE_CONTACT:
+            return "notification_create";
+        case UPDATE_CONTACT:
+            return "notification_update";
+        case TRANSFER_CONTACT:
+            return "notification_transfer";
+        case DELETE_CONTACT:
+            return "notification_delete";
+    }
+    throw std::runtime_error("unknown template for request type");
+}
 
 
 MojeIDRequestNotifier::RequestHandlerMap init_handlers()

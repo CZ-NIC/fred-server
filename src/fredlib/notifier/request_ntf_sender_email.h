@@ -47,7 +47,7 @@ public:
 
 
     template<class RT>
-    void send(const RequestNotification<RT> &_ntf) const
+    void send(const RequestNotification<RT> &_ntf, const std::string &_template_name) const
     {
         Logging::Context context("notifier:email_sender");
         LOGGER(PACKAGE).info(boost::format(
@@ -71,8 +71,44 @@ public:
                 rcpts_emails.push_back(e);
             }
         }
-        LOGGER(PACKAGE).debug(boost::format("recipients: %1%")
-                % container2comma_list(rcpts_emails));
+        if (rcpts_emails.empty()) {
+            LOGGER(PACKAGE).debug("recipients: empty list; send canceled");
+            return;
+        }
+        else {
+            LOGGER(PACKAGE).debug(boost::format("recipients: %1%")
+                    % container2comma_list(rcpts_emails));
+        }
+
+        Mailer::Parameters  m_params;
+        Mailer::Handles     m_handles;
+        Mailer::Attachments m_attachs;
+
+        /* this is copied from mojeid/request.h */
+        m_params["ticket"] = str(boost::format("MojedID-%010d") % _ntf.get_request_id());
+        m_params["handle"] = str(boost::format("%1%") % _ntf.get_object_handle());
+        m_params["type"]   = str(boost::format("%1%") % _ntf.get_object_type());
+        m_params["registrar"] = "";
+
+        const ChangesMap &changes = _ntf.get_object_changes();
+        m_params["changes"] = changes.size() > 0 ? "1" : "0";
+        ChangesMap::const_iterator it = changes.begin();
+        for (; it != changes.end(); ++it) {
+            m_params["changes." + it->first] = "1";
+            m_params["changes." + it->first + ".old"] = it->second.first;
+            m_params["changes." + it->first + ".new"] = it->second.second;
+        }
+
+        for (unsigned int i = 0; i < rcpts_emails.size(); ++i) {
+            try {
+                mm_->sendEmail("", rcpts_emails[i], "", _template_name, m_params, m_handles, m_attachs);
+            }
+            catch (...) {
+                LOGGER(PACKAGE).error(boost::format("sending failure (email=%1%  ticket=%2%)")
+                        % rcpts_emails[i] % m_params["ticket"]);
+            }
+        }
+
     }
 
 

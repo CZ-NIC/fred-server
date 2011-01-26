@@ -55,6 +55,11 @@ public:
         object_changes_ = _changes;
     }
 
+    const ChangesMap& get_object_changes() const
+    {
+        return object_changes_;
+    }
+
     const unsigned short& get_object_type() const
     {
         return object_type_;
@@ -63,6 +68,11 @@ public:
     const unsigned long long& get_object_id() const
     {
         return object_id_;
+    }
+
+    const std::string& get_object_handle() const
+    {
+        return object_handle_;
     }
 
     const unsigned long long& get_request_id() const

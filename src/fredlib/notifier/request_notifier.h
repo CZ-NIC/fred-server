@@ -54,7 +54,7 @@ public:
                             " handler for request type %1%") % rtype));
         }
 
-        _sender.send(ntf);
+        _sender.send(ntf, get_template(rtype, _sender));
     }
 
 
@@ -71,6 +71,10 @@ private:
 
     RT get_request_type(const unsigned long long &_request_id,
                         const unsigned short &_object_type) const;
+
+
+    template<class TSender>
+    const std::string get_template(const RT &_request_type, const TSender &) const;
 
     RequestHandlerMap   handlers_;
 };
