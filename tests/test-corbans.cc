@@ -46,6 +46,8 @@
 #include "cfg/handle_corbanameservice_args.h"
 
 
+#include "whois/whois_impl.h"
+
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
@@ -64,6 +66,35 @@ BOOST_AUTO_TEST_CASE( test_corba_nameservice )
 
     //CORBA init
     corba_init();
+
+
+    CorbaContainer::get_instance()->register_server(
+        new ccReg_Whois_i(
+        CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()
+                ->get_conn_info()
+                , server_name
+                , true)
+        , "Whois");
+
+    CorbaContainer::get_instance()->register_server_process_object(
+            new ccReg_Whois_i(
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()
+                    ->get_conn_info()
+                    , server_name
+                    , true)
+            , "TestServer"
+            , "Whois");
+
+/*
+
+    //create server object with poa and nameservice registration
+    CorbaContainer::get_instance()
+        ->register_server(new Registry::MojeID::ServerImpl(server_name)
+        , "MojeID");
+
+    ccReg_Whois_i* myccReg_Whois_i = new ccReg_Whois_i(conn_info, "pifd"
+                , cfg.get<bool>("registry.restricted_handles"));
+*/
 
 }
 

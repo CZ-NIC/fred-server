@@ -93,7 +93,7 @@ public:
 
     NameService *getNS();
 
-    //register server with persistent poa and nameservice and with ownership transfer
+    //register server object with persistent poa and nameservice and with ownership transfer
     template <class T> void  register_server(T* new_server_object_ptr
             , const std::string& name)
     {
@@ -107,8 +107,30 @@ public:
         new_server_object_ptr->_remove_ref();
 
         //register within corba nameservice
-        CorbaContainer::get_instance()->getNS()->bind(name.c_str(),tObj);
+        CorbaContainer::get_instance()->getNS()->bind(name,tObj);
     }//register_server
+
+    //register server object with persistent poa and nameservice
+    //and with ownership transfer in process context
+    template <class T> void  register_server_process_object(
+            T* new_server_object_ptr
+            , const std::string& process_name
+            , const std::string& object_name)
+    {
+        PortableServer::ObjectId_var tObjectId
+            = PortableServer::string_to_ObjectId(
+                    (process_name+object_name).c_str());
+
+        CorbaContainer::get_instance()->poa_persistent
+            ->activate_object_with_id(tObjectId, new_server_object_ptr);
+
+        CORBA::Object_var tObj = new_server_object_ptr->_this();
+        new_server_object_ptr->_remove_ref();
+
+        //register within corba nameservice
+        CorbaContainer::get_instance()->getNS()
+                ->bind_process_object(process_name, object_name,tObj);
+    }//register_server_process_object
 
 };//class CorbaContainer
 

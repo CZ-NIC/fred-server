@@ -804,24 +804,30 @@ tests_test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
                      $(AM_LDFLAGS)
 
-tests_test_server_LDADD =  src/corba/admin/libadmin_impl.a \
-					 src/corba/libcorba.a \
-					 src/fredlib/requests/librequests.a \
-					 src/fredlib/libfred.a \
-                     util/db/libdb.a \
-                     src/model/libmodel.a \
-                     util/log/liblog.a \
-                     util/conf/libconf.a \
-                     util/types/libtypes.a \
-                     src/old_utils/liboldutils.a \
-                     src/corba/libcorbamessages.a \
-                     src/fredlib/banking/libbanking.a \
-                     $(BOOST_PROGRAM_OPTIONS_LIB) \
-                     $(OMNIORB4_LIBS) \
-                     $(BOOST_DATE_TIME_LIB) \
-                     $(BOOST_REGEX_LIB) \
-                     $(BOOST_THREAD_LIB) \
-                     $(XML2_LIBS)
+
+
+tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
+        $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
+	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
+	src/corba/admin/libadmin_impl.a \
+	src/corba/libcorba.a \
+	src/corba/whois/libwhois_impl.a \
+	src/fredlib/libfred.a \
+	src/fredlib/messages/libmessages.a \
+	src/model/libmodel.a \
+	util/db/libdb.a \
+	util/types/libtypes.a \
+    src/old_utils/liboldutils.a \
+    util/log/liblog.a \
+    util/conf/libconf.a \
+	util/libutil.a \
+	src/fredlib/requests/librequests.a \
+	src/fredlib/mojeid/libmojeid.a \
+	src/fredlib/banking/libbanking.a \
+	src/corba/libcorbamessages.a \
+	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
+
+                     
 
 install-tests: $(SERVER_TESTS)
 	$(INSTALL_PROGRAM) $(SERVER_TESTS) $(bindir)
