@@ -80,7 +80,6 @@ void run_server(CfgArgs * cfg_instance_ptr , CorbaContainer* corba_instance_ptr 
     }
 
     corba_instance_ptr->orb->run();
-    corba_instance_ptr->orb->destroy();
 }
 
 void corba_init()

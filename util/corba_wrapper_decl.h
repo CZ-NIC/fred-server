@@ -79,12 +79,24 @@ private:
     PortableServer::POA_var create_persistent_poa();
 
 public:
-    ///NameService resolve with simple
+    ///NameService resolve context/object name
     CORBA::Object_var nsresolve(
             const std::string& context, const std::string& object_name);
 
-    ///NameService resolve using default context
+    ///NameService resolve object name using default context
     CORBA::Object_var nsresolve(const std::string& object_name);
+
+    ///NameService resolve context/process/object name
+    CORBA::Object_var nsresolve_process_object(
+            const std::string& context
+            , const std::string& process_name
+            , const std::string& object_name);
+
+    ///NameService resolve process/object name using default context
+    CORBA::Object_var nsresolve_process_object(
+            const std::string& process_name
+            , const std::string& object_name);
+
 
     //set NameService after set_instance
     void setNameService ( const std::string& nameservice_host

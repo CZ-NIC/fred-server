@@ -103,7 +103,6 @@ CorbaContainer::~CorbaContainer()
     orb->destroy();
 }
 
-///NameService resolve with simple
 CORBA::Object_var CorbaContainer::nsresolve(const std::string& context, const std::string& object_name)
 {
     if(ns_ptr.get() == 0)
@@ -113,7 +112,6 @@ CORBA::Object_var CorbaContainer::nsresolve(const std::string& context, const st
     return ns_ptr->resolve(context, object_name);
 }
 
-///NameService resolve using default context
 CORBA::Object_var CorbaContainer::nsresolve(const std::string& object_name)
 {
     if(ns_ptr.get() == 0)
@@ -122,6 +120,31 @@ CORBA::Object_var CorbaContainer::nsresolve(const std::string& object_name)
 
     return ns_ptr->resolve(object_name);
 }
+
+
+CORBA::Object_var CorbaContainer::nsresolve_process_object(
+        const std::string& context
+        , const std::string& process_name
+        , const std::string& object_name)
+{
+    if(ns_ptr.get() == 0)
+        throw std::runtime_error(
+                "CorbaContainer::nsresolve_process_object error: NameService not set");
+
+    return ns_ptr->resolve_process_object(context, process_name, object_name);
+}
+
+CORBA::Object_var CorbaContainer::nsresolve_process_object(
+        const std::string& process_name
+        , const std::string& object_name)
+{
+    if(ns_ptr.get() == 0)
+        throw std::runtime_error(
+                "CorbaContainer::nsresolve_process_object error: NameService not set");
+
+    return ns_ptr->resolve_process_object(process_name, object_name);
+}
+
 
 NameService* CorbaContainer::getNS()
 {
