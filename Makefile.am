@@ -44,7 +44,8 @@ noinst_HEADERS = util/util.h util/singleton.h util/time_clock.h util/settings.h 
         util/cfg/handle_server_args.h  util/cfg/handle_threadgroup_args.h \
         util/cfg/test_custom_main.h util/cfg/handle_logging_args.h \
         util/cfg/handle_registry_args.h util/cfg/config_handler_decl.h \
-        util/cfg/handle_mojeid_args.h
+        util/cfg/handle_mojeid_args.h util/cfg/handle_logd_args.h  \
+        util/cfg/handle_rifd_args.h util/cfg/handle_adifd_args.h
 
 #former noinst_LIBRARIES
 #util/db/libmockdb.a
