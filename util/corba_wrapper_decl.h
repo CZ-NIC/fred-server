@@ -140,7 +140,7 @@ public:
     {
         PortableServer::ObjectId_var tObjectId
             = PortableServer::string_to_ObjectId(
-                    (process_name+object_name).c_str());
+                    (process_name+"-"+object_name).c_str());
 
         CorbaContainer::get_instance()->poa_persistent
             ->activate_object_with_id(tObjectId, new_server_object_ptr);

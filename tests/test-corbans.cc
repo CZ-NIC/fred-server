@@ -68,6 +68,7 @@ BOOST_AUTO_TEST_CASE( test_corba_nameservice )
     corba_init();
 
 
+
     CorbaContainer::get_instance()->register_server(
         new ccReg_Whois_i(
         CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()
@@ -96,7 +97,13 @@ BOOST_AUTO_TEST_CASE( test_corba_nameservice )
     CorbaContainer::get_instance()->nsresolve_process_object(
             "TestServer", "Whois"));
 
-    sleep(1);
+    //test call
+
+        ccReg::AdminRegistrar_var registrar
+            = whois2_ref->getRegistrarByHandle("REG-FRED_A");
+
+        BOOST_CHECK_EQUAL(static_cast<std::string>(registrar->country).compare("CZ"), 0);
+
     CorbaContainer::get_instance()->orb->shutdown(true);
     orb_thread->join();//wait for thread end
 }
