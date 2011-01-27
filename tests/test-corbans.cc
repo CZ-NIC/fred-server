@@ -61,13 +61,10 @@ const std::string server_name = "test-corbans";
 BOOST_AUTO_TEST_CASE( test_corba_nameservice )
 {
     // setting up logger
-
     setup_logging(CfgArgs::instance());
 
     //CORBA init
     corba_init();
-
-
 
     CorbaContainer::get_instance()->register_server(
         new ccReg_Whois_i(
@@ -86,7 +83,6 @@ BOOST_AUTO_TEST_CASE( test_corba_nameservice )
     //run orb in thread
     ThreadPtr orb_thread( CorbaContainer::get_instance()->run_orb_thread());
 
-
     //try to resolve
     ccReg::Whois_var whois1_ref;
     whois1_ref = ccReg::Whois::_narrow(
@@ -98,7 +94,6 @@ BOOST_AUTO_TEST_CASE( test_corba_nameservice )
             "TestServer", "Whois"));
 
     //test call
-
         ccReg::AdminRegistrar_var registrar
             = whois2_ref->getRegistrarByHandle("REG-FRED_A");
 
