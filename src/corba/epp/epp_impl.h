@@ -5,7 +5,6 @@
 #include "old_utils/dbsql.h"
 #include "fredlib/registry.h"
 
-#include "conf/manager.h"
 #include <vector>
 
 #include <boost/thread/thread.hpp>
@@ -48,7 +47,23 @@ private:
   Database::Manager *dbman;
   
   NameService *ns;
-  Config::Conf& conf;
+
+  //conf
+  bool restricted_handles_;
+  bool disable_epp_notifier_;
+  bool lock_epp_commands_;
+  unsigned int nsset_level_;
+  std::string docgen_path_;
+  std::string docgen_template_path_;
+
+  std::string fileclient_path_;
+
+  unsigned rifd_session_max_;
+  unsigned rifd_session_timeout_;
+  unsigned rifd_session_registrar_max_;
+  bool rifd_epp_update_domain_keyset_clear_;
+
+
   DBSharedPtr  db_disconnect_guard_;
   std::auto_ptr<Fred::Manager> regMan;
 
@@ -60,7 +75,19 @@ public:
   {
   };
   // standard constructor
-      ccReg_EPP_i(const std::string &db, MailerManager *_mm, NameService *_ns, Config::Conf& _conf) throw (DB_CONNECT_FAILED);
+      ccReg_EPP_i(const std::string &db, MailerManager *_mm, NameService *_ns
+          , bool restricted_handles
+          , bool disable_epp_notifier
+          , bool lock_epp_commands
+          , unsigned int nsset_level
+          , const std::string& docgen_path
+          , const std::string& docgen_template_path
+          , const std::string& fileclient_path
+          , unsigned rifd_session_max
+          , unsigned rifd_session_timeout
+          , unsigned rifd_session_registrar_max
+          , bool rifd_epp_update_domain_keyset_clear
+          );
   virtual ~ccReg_EPP_i();
 
   // get zones parametrs

@@ -288,11 +288,12 @@ static std::string formatTime(
 
 /// replace GetContactID
 static long int getIdOfContact(
-DBSharedPtr db, const char *handle, Config::Conf& c, bool lock = false)
+DBSharedPtr db, const char *handle, bool restricted_handles
+    , bool lock_epp_commands, bool lock = false)
 {
-  if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
+  if (lock && !lock_epp_commands) lock = false;
   std::auto_ptr<Fred::Contact::Manager>
-      cman(Fred::Contact::Manager::create(db, c.get<bool>("registry.restricted_handles")) );
+      cman(Fred::Contact::Manager::create(db, restricted_handles) );
   Fred::Contact::Manager::CheckAvailType caType;
   long int ret = -1;
   try {
@@ -307,13 +308,14 @@ DBSharedPtr db, const char *handle, Config::Conf& c, bool lock = false)
 
 /// replace GetNSSetID
 static long int getIdOfNSSet(
-DBSharedPtr db, const char *handle, Config::Conf& c, bool lock = false)
+DBSharedPtr db, const char *handle, bool restricted_handles
+    , bool lock_epp_commands, bool lock = false)
 {
-  if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
+  if (lock && !lock_epp_commands) lock = false;
   std::auto_ptr<Fred::Zone::Manager>
       zman(Fred::Zone::Manager::create() );
   std::auto_ptr<Fred::NSSet::Manager> man(Fred::NSSet::Manager::create(
-      db, zman.get(), c.get<bool>("registry.restricted_handles")) );
+      db, zman.get(), restricted_handles) );
   Fred::NSSet::Manager::CheckAvailType caType;
   long int ret = -1;
   try {
@@ -328,12 +330,13 @@ DBSharedPtr db, const char *handle, Config::Conf& c, bool lock = false)
 
 /// replace GetKeySetID
 static long int
-getIdOfKeySet(DBSharedPtr db, const char *handle, Config::Conf &c, bool lock = false)
+getIdOfKeySet(DBSharedPtr db, const char *handle, bool restricted_handles
+    , bool lock_epp_commands, bool lock = false)
 {
-    if (lock && !c.get<bool>("registry.lock_epp_commands"))
+    if (lock && !lock_epp_commands)
         lock = false;
     std::auto_ptr<Fred::KeySet::Manager> man(
-            Fred::KeySet::Manager::create(db, c.get<bool>("registry.restricted_handles")));
+            Fred::KeySet::Manager::create(db, restricted_handles));
     Fred::KeySet::Manager::CheckAvailType caType;
     long int ret = -1;
     try {
@@ -348,9 +351,10 @@ getIdOfKeySet(DBSharedPtr db, const char *handle, Config::Conf &c, bool lock = f
 
 /// replace GetDomainID
 static long int getIdOfDomain(
-DBSharedPtr db, const char *handle, Config::Conf& c, bool lock = false, int* zone = NULL)
+DBSharedPtr db, const char *handle, bool lock_epp_commands
+    , bool lock = false, int* zone = NULL)
 {
-  if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
+  if (lock && !lock_epp_commands) lock = false;
   std::auto_ptr<Fred::Zone::Manager> zm(
     Fred::Zone::Manager::create()
   );
@@ -388,24 +392,49 @@ DBSharedPtr db, const char *handle, Config::Conf& c, bool lock = false, int* zon
 // Example implementational code for IDL interface ccReg::EPP
 //
 ccReg_EPP_i::ccReg_EPP_i(
-  const std::string &_db, MailerManager *_mm, NameService *_ns, Config::Conf& _conf)
-    throw (DB_CONNECT_FAILED) : database(_db),
-                                mm(_mm),
-                                dbman(),
-                                ns(_ns),
-                                conf(_conf),
-                                db_disconnect_guard_(DBDisconnectPtr(0)),
-                                regMan(),
-                                session(),
-                                numSession(),
-                                maxSession(),
-                                maxWaitClient(),
-                                ErrorMsg(),
-                                ReasonMsg(),
-                                CC(),
-                                max_zone(),
-                                testInfo(false),
-                                session_mutex_()
+    const std::string &_db, MailerManager *_mm, NameService *_ns
+    , bool restricted_handles
+    , bool disable_epp_notifier
+    , bool lock_epp_commands
+    , unsigned int nsset_level
+    , const std::string& docgen_path
+    , const std::string& docgen_template_path
+    , const std::string& fileclient_path
+    , unsigned rifd_session_max
+    , unsigned rifd_session_timeout
+    , unsigned rifd_session_registrar_max
+    , bool rifd_epp_update_domain_keyset_clear
+)
+
+    : database(_db),
+    mm(_mm),
+    dbman(),
+    ns(_ns),
+
+    restricted_handles_(restricted_handles)
+    , disable_epp_notifier_(disable_epp_notifier)
+    , lock_epp_commands_(lock_epp_commands)
+    , nsset_level_(nsset_level)
+    , docgen_path_(docgen_path)
+    , docgen_template_path_(docgen_template_path)
+    , fileclient_path_(fileclient_path)
+    , rifd_session_max_(rifd_session_max)
+    , rifd_session_timeout_(rifd_session_timeout)
+    , rifd_session_registrar_max_(rifd_session_registrar_max)
+    , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear) ,
+
+    db_disconnect_guard_(DBDisconnectPtr(0)),
+    regMan(),
+    session(),
+    numSession(),
+    maxSession(),
+    maxWaitClient(),
+    ErrorMsg(),
+    ReasonMsg(),
+    CC(),
+    max_zone(),
+    testInfo(false),
+    session_mutex_()
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
@@ -497,7 +526,7 @@ bool ccReg_EPP_i::LoginSession(
         count++;
       }
     }
-    if (count >= conf.get<unsigned>("rifd.session_registrar_max")) {
+    if (count >= rifd_session_registrar_max_) {
       LOG( DEBUG_LOG , "SESSION max per registrar exceeded clientID %d registrarID %d lang %d" , loginID , registrarID , language );
       //
       return false;
@@ -1904,7 +1933,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
         switch (act) {
             case EPP_ContactCheck:
                 try {
-                    std::auto_ptr<Fred::Contact::Manager> cman( Fred::Contact::Manager::create(action.getDB(),conf.get<bool>("registry.restricted_handles")) );
+                    std::auto_ptr<Fred::Contact::Manager> cman( Fred::Contact::Manager::create(action.getDB(),restricted_handles_) );
 
                     LOG( NOTICE_LOG , "contact checkAvail handle [%s]" , (const char * ) chck[i] );
 
@@ -1947,7 +1976,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
                 try {
                     std::auto_ptr<Fred::KeySet::Manager> kman(
                             Fred::KeySet::Manager::create(
-                                action.getDB(), conf.get<bool>("registry.restricted_handles")));
+                                action.getDB(), restricted_handles_));
                     LOG(NOTICE_LOG, "keyset checkAvail handle [%s]",
                             (const char *)chck[i]);
 
@@ -2002,7 +2031,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
 
                 try {
                     std::auto_ptr<Fred::Zone::Manager> zman( Fred::Zone::Manager::create() );
-                    std::auto_ptr<Fred::NSSet::Manager> nman( Fred::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")) );
+                    std::auto_ptr<Fred::NSSet::Manager> nman( Fred::NSSet::Manager::create(action.getDB(),zman.get(),restricted_handles_) );
 
                     LOG( NOTICE_LOG , "nsset checkAvail handle [%s]" , (const char * ) chck[i] );
 
@@ -2212,7 +2241,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
   // initialize managers for contact manipulation
   std::auto_ptr<Fred::Contact::Manager>
       cman(Fred::Contact::Manager::create(a.getDB(),
-          conf.get<bool>("registry.restricted_handles")) );
+          restricted_handles_) );
   // first check handle for proper format
   if (!cman->checkHandleFormat(handle))
     // failure in handle check, throw exception
@@ -2365,7 +2394,8 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
 
     LOGGER(PACKAGE).notice(boost::format("ContactDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle );
 
-    id = getIdOfContact(action.getDB(), handle, conf, true);
+    id = getIdOfContact(action.getDB(), handle, restricted_handles_
+            , lock_epp_commands_, true);
 
     if (id < 0) {
         LOG(WARNING_LOG, "bad format of contact [%s]", handle);
@@ -2398,7 +2428,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
     if (!code) {
         bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
         if (notify) {
-            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id )); // notifier maneger before delete
+            ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id )); // notifier maneger before delete
             ntf->constructMessages(); // need to run all sql queries before delete take place (Ticket #1622)
         }
 
@@ -2473,11 +2503,12 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag % c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail );
             
 
-    id = getIdOfContact(action.getDB(), handle, conf, true);
+    id = getIdOfContact(action.getDB(), handle, restricted_handles_
+            , lock_epp_commands_, true);
     // for notification to old notify address, this address must be
     // discovered before change happen
     std::string oldNotifyEmail;
-    if (strlen(c.NotifyEmail) && !conf.get<bool>("registry.disable_epp_notifier"))
+    if (strlen(c.NotifyEmail) && !disable_epp_notifier_)
         oldNotifyEmail = action.getDB()->GetValueFromTable(
                 "contact", "notifyemail", "id", id
                 );
@@ -2606,7 +2637,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     if (code == COMMAND_OK) // run notifier
     {
         ntf.reset(new EPPNotifier(
-                      conf.get<bool>("registry.disable_epp_notifier"),
+                      disable_epp_notifier_,
                       mm, action.getDB(), action.getRegistrar(), id, regMan.get()));
         ntf->addExtraEmails(oldNotifyEmail);
         action.setNotifier(ntf.get()); // schedule message send
@@ -2672,7 +2703,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
     Fred::Contact::Manager::CheckAvailType caType;
     try {
         std::auto_ptr<Fred::Contact::Manager> cman(
-                Fred::Contact::Manager::create(action.getDB(),conf.get<bool>("registry.restricted_handles"))
+                Fred::Contact::Manager::create(action.getDB(),restricted_handles_)
                 );
         Fred::NameIdPair nameId;
         caType = cman->checkAvail(handle,nameId);
@@ -2823,7 +2854,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
     if (code == COMMAND_OK) // run notifier
     {
         ntf.reset(new EPPNotifier(
-                    conf.get<bool>("registry.disable_epp_notifier"),mm ,
+                    disable_epp_notifier_, mm ,
                     action.getDB(), action.getRegistrar() , id ));
         ntf->Send(); // send message with  objectID
     }
@@ -2878,7 +2909,8 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
     int zone = 0; // for domain zone check
     switch (act) {
         case EPP_ContactTransfer:
-            if ( (id = getIdOfContact(action.getDB(), name, conf, true)) < 0) {
+            if ( (id = getIdOfContact(action.getDB(), name, restricted_handles_
+                    , lock_epp_commands_, true)) < 0) {
                 LOG(WARNING_LOG, "bad format of contact [%s]", name);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::contact_handle, 1, REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
@@ -2888,7 +2920,8 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
             break;
 
         case EPP_NSsetTransfer:
-            if ( (id = getIdOfNSSet(action.getDB(), name, conf, true) ) < 0) {
+            if ( (id = getIdOfNSSet(action.getDB(), name, restricted_handles_
+                    , lock_epp_commands_, true) ) < 0) {
                 LOG(WARNING_LOG, "bad format of nsset [%s]", name);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::nsset_handle, 1, REASON_MSG_BAD_FORMAT_NSSET_HANDLE);
@@ -2898,7 +2931,8 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
             break;
 
         case EPP_KeySetTransfer:
-            if ((id = getIdOfKeySet(action.getDB(), name, conf, true)) < 0) {
+            if ((id = getIdOfKeySet(action.getDB(), name, restricted_handles_
+                    , lock_epp_commands_, true)) < 0) {
                 LOG(WARNING_LOG, "bad format of keyset [%s]", name);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_handle, 1, REASON_MSG_BAD_FORMAT_KEYSET_HANDLE);
@@ -2908,7 +2942,8 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
             break;
 
         case EPP_DomainTransfer:
-            if ( (id = getIdOfDomain(action.getDB(), name, conf, true, &zone) ) <= 0) {
+            if ( (id = getIdOfDomain(action.getDB(), name, lock_epp_commands_
+                    , true, &zone) ) <= 0) {
                 code=COMMAND_OBJECT_NOT_EXIST;
             }
             if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) {
@@ -3050,7 +3085,7 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 
         if (code == COMMAND_OK) // run notifier
         {
-            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),
+            ntf.reset(new EPPNotifier(disable_epp_notifier_,
                         mm , action.getDB(), action.getRegistrar() , id ));
             ntf->Send();
         }
@@ -3156,7 +3191,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
       zman(Fred::Zone::Manager::create() );
   std::auto_ptr<Fred::NSSet::Manager>
       nman(Fred::NSSet::Manager::create(a.getDB(), zman.get(),
-          conf.get<bool>("registry.restricted_handles") ) );
+          restricted_handles_ ) );
   // first check handle for proper format
   if (!nman->checkHandleFormat(handle))
     // failure in handle check, throw exception
@@ -3260,7 +3295,8 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
     LOGGER(PACKAGE).notice(boost::format("NSSetDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle );
 
     // lock row
-    id = getIdOfNSSet(action.getDB(), handle, conf, true);
+    id = getIdOfNSSet(action.getDB(), handle, restricted_handles_
+            , lock_epp_commands_, true);
     if (id < 0) {
         LOG(WARNING_LOG, "bad format of nsset [%s]", handle);
         code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -3292,7 +3328,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
         // create notifier
         bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
         if (notify)
-            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
+            ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
 
         // test to  table domain if relations to nsset
         if (action.getDB()->TestNSSetRelations(id) ) //  can not be delete
@@ -3372,7 +3408,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
     std::auto_ptr<Fred::Zone::Manager> zman(
             Fred::Zone::Manager::create());
     std::auto_ptr<Fred::NSSet::Manager> nman(
-            Fred::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")));
+            Fred::NSSet::Manager::create(action.getDB(),zman.get(),restricted_handles_));
 
     if (tech.length() < 1) {
         LOG( WARNING_LOG, "NSSetCreate: not any tech Contact " );
@@ -3431,7 +3467,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
         // test tech-c
         std::auto_ptr<Fred::Contact::Manager>
             cman(Fred::Contact::Manager::create(action.getDB(),
-                        conf.get<bool>("registry.restricted_handles")) );
+                        restricted_handles_) );
         for (i = 0; i < tech.length() ; i++) {
             Fred::Contact::Manager::CheckAvailType caType;
             try {
@@ -3563,7 +3599,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
         } else {
 
             if (level<0)
-                level = conf.get<unsigned>("registry.nsset_level");
+                level = nsset_level_;
             // write to nsset table
             action.getDB()->INSERT("NSSET");
             action.getDB()->INTO("id");
@@ -3651,7 +3687,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
 
             if (code == COMMAND_OK) // run notifier
             {
-                ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
+                ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
                 ntf->Send(); //send messages
             }
 
@@ -3737,9 +3773,10 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
     std::auto_ptr<Fred::Zone::Manager> zman(
             Fred::Zone::Manager::create());
     std::auto_ptr<Fred::NSSet::Manager> nman(
-            Fred::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")));
+            Fred::NSSet::Manager::create(action.getDB(),zman.get(),restricted_handles_));
 
-    if ( (nssetID = getIdOfNSSet(action.getDB(), handle, conf, true) ) < 0) {
+    if ( (nssetID = getIdOfNSSet(action.getDB(), handle, restricted_handles_
+            , lock_epp_commands_, true) ) < 0) {
         LOG(WARNING_LOG, "bad format of nsset [%s]", handle);
     } else if (nssetID == 0) {
         LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
@@ -3766,7 +3803,8 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
 
         // test  ADD tech-c
         for (i = 0; i < tech_add.length(); i++) {
-            if ( (techid = getIdOfContact(action.getDB(), tech_add[i], conf) ) <= 0) {
+            if ( (techid = getIdOfContact(action.getDB(), tech_add[i], restricted_handles_
+                    , lock_epp_commands_) ) <= 0) {
                 if (techid < 0) {
                     LOG(WARNING_LOG, "bad format of contact %s", (const char *)tech_add[i]);
                     code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -3803,7 +3841,8 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
         // test REM tech-c
         for (i = 0; i < tech_rem.length(); i++) {
 
-            if ( (techid = getIdOfContact(action.getDB(), tech_rem[i], conf) ) <= 0) {
+            if ( (techid = getIdOfContact(action.getDB(), tech_rem[i], restricted_handles_
+                    , lock_epp_commands_) ) <= 0) {
                 LOG(WARNING_LOG, "bad format of contact %s", (const char *)tech_rem[i]);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::nsset_tech_rem, i + 1,
@@ -3959,7 +3998,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
 
                 // notifier
                 ntf.reset(new EPPNotifier(
-                              conf.get<bool>("registry.disable_epp_notifier"),
+                              disable_epp_notifier_,
                               mm, action.getDB(), action.getRegistrar(), nssetID, regMan.get()));
 
                 //  add to current tech-c added tech-c
@@ -4293,7 +4332,8 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
 
     LOGGER(PACKAGE).notice(boost::format("DomainDelete: clientID -> %1% clTRID [%2%] fqdn  [%3%] ") % (int ) params.sessionID % params.clTRID % fqdn );
 
-    if ( (id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) <= 0) {
+    if ( (id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
+            , true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -4322,7 +4362,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
         // run notifier
         bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
         if (notify)
-            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
+            ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
 
         if (action.getDB()->SaveObjectDelete(id) ) //save object as delete
         {
@@ -4404,7 +4444,8 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     // parse enum.Exdate extension
     extractEnumDomainExtension(valexdate, publish, ext);
 
-    if ( (id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) <= 0) {
+    if ( (id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
+            , true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -4437,7 +4478,8 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
         // test  ADD admin-c
         for (i = 0; i < admin_add.length(); i++) {
             LOG( NOTICE_LOG , "admin ADD contact %s" , (const char *) admin_add[i] );
-            adminid = getIdOfContact(action.getDB(), admin_add[i], conf);
+            adminid = getIdOfContact(action.getDB(), admin_add[i], restricted_handles_
+                    , lock_epp_commands_);
             if (adminid < 0) {
                 LOG(WARNING_LOG, "bad format of contact %s", (const char *)admin_add[i]);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -4492,7 +4534,8 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
         // test REM admin-c
         for (i = 0; i < admin_rem.length(); i++) {
             LOG( NOTICE_LOG , "admin REM contact %s" , (const char *) admin_rem[i] );
-            adminid = getIdOfContact(action.getDB(), admin_rem[i], conf);
+            adminid = getIdOfContact(action.getDB(), admin_rem[i], restricted_handles_
+                    , lock_epp_commands_);
             if (adminid < 0) {
                 LOG(WARNING_LOG, "bad format of contact %s", (const char *)admin_rem[i]);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -4529,7 +4572,8 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
         // test REM temp-c
         for (i = 0; i < tmpcontact_rem.length(); i++) {
             LOG( NOTICE_LOG , "temp REM contact %s" , (const char *) tmpcontact_rem[i] );
-            adminid = getIdOfContact(action.getDB(), tmpcontact_rem[i], conf);
+            adminid = getIdOfContact(action.getDB(), tmpcontact_rem[i], restricted_handles_
+                    , lock_epp_commands_);
             if (adminid < 0) {
                 LOG(WARNING_LOG, "bad format of contact %s", (const char *)tmpcontact_rem[i]);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -4570,7 +4614,8 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
             if (nsset_chg[0] == 0x8)
                 nssetid = -1; // backslash escape to  NULL value
             else {
-                nssetid = getIdOfNSSet(action.getDB(), nsset_chg, conf);
+                nssetid = getIdOfNSSet(action.getDB(), nsset_chg
+                        , restricted_handles_, lock_epp_commands_);
                 if (nssetid < 0) {
                     LOG(WARNING_LOG, "bad format of domain nsset [%s]", nsset_chg);
                     code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -4591,7 +4636,8 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
             if (keyset_chg[0] == 0x8 || keyset_chg[0] == '-')
                 keysetid = -1;
             else {
-                keysetid = getIdOfKeySet(action.getDB(), keyset_chg, conf);
+                keysetid = getIdOfKeySet(action.getDB(), keyset_chg
+                            , restricted_handles_, lock_epp_commands_);
                 if (keysetid < 0) {
                     LOG(WARNING_LOG, "bad format of domain keyset [%s]", keyset_chg);
                     code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -4604,21 +4650,22 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
             }
         }
 
-        if (conf.hasOpt("rifd.epp_update_domain_keyset_clear")) {
-            if (conf.get<bool>("rifd.epp_update_domain_keyset_clear") == true) {
-                // if request contains change of nsset and no change to keyset
-                // remove keyset from domain
-                if (nssetid != 0 && keysetid == 0) {
-                    keysetid = -1;
-                }
+
+        if (rifd_epp_update_domain_keyset_clear_ == true) {
+            // if request contains change of nsset and no change to keyset
+            // remove keyset from domain
+            if (nssetid != 0 && keysetid == 0) {
+                keysetid = -1;
             }
         }
+
 
         //  owner of domain
         if (strlen(registrant_chg) == 0) {
             contactid = 0; // not change owner
         } else {
-            contactid = getIdOfContact(action.getDB(), registrant_chg, conf);
+            contactid = getIdOfContact(action.getDB(), registrant_chg, restricted_handles_
+                    , lock_epp_commands_);
             if (contactid < 0) {
                 LOG(WARNING_LOG, "bad format of registrar [%s]", registrant_chg);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -4665,7 +4712,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
             // BEGIN notifier
             // notify default contacts
             ntf.reset(new EPPNotifier(
-                          conf.get<bool>("registry.disable_epp_notifier"), mm, action.getDB(),
+                          disable_epp_notifier_, mm, action.getDB(),
                           action.getRegistrar(), id, regMan.get()));
 
             for (i = 0; i < admin_add.length(); i++)
@@ -4745,7 +4792,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
                     // REM temp-c (must be befor ADD admin-c because of uniqueness)
                     for (i = 0; i < tmpcontact_rem.length(); i++) {
                         if ( (adminid = getIdOfContact(action.getDB(), tmpcontact_rem[i],
-                                        conf) )) {
+                                restricted_handles_, lock_epp_commands_) )) {
                             LOG( NOTICE_LOG , "delete temp-c-c  -> %d [%s]" , tc_rem[i] , (const char * ) tmpcontact_rem[i] );
                             if ( !action.getDB()->DeleteFromTableMap("domain", id, tc_rem[i]) ) {
                                 code = COMMAND_FAILED;
@@ -4768,7 +4815,8 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
                     // REM admin-c
                     for (i = 0; i < admin_rem.length(); i++) {
-                        if ( (adminid = getIdOfContact(action.getDB(), admin_rem[i], conf) )) {
+                        if ( (adminid = getIdOfContact(action.getDB(), admin_rem[i]
+                             , restricted_handles_, lock_epp_commands_) )) {
                             LOG( NOTICE_LOG , "delete admin  -> %d [%s]" , ac_rem[i] , (const char * ) admin_rem[i] );
                             if ( !action.getDB()->DeleteFromTableMap("domain", id, ac_rem[i]) ) {
                                 code = COMMAND_FAILED;
@@ -4948,7 +4996,8 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                 if (strlen(nsset) == 0) {
                     nssetid = 0; // domain can be create without nsset
                 } else {
-                    nssetid = getIdOfNSSet( action.getDB(), nsset, conf);
+                    nssetid = getIdOfNSSet( action.getDB(), nsset
+                            , restricted_handles_, lock_epp_commands_);
                     if (nssetid < 0) {
                         LOG(WARNING_LOG, "bad format of domain nsset [%s]", nsset);
                         code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -4963,7 +5012,8 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                 if (strlen(keyset) == 0) {
                     keysetid = 0;
                 } else {
-                    keysetid = getIdOfKeySet(action.getDB(), keyset, conf);
+                    keysetid = getIdOfKeySet(action.getDB(), keyset
+                                , restricted_handles_, lock_epp_commands_);
                     if (keysetid < 0) {
                         LOG(WARNING_LOG, "bad format of domain keyset [%s]", keyset);
                         code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -4976,7 +5026,8 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                 }
 
                 //  owner of domain
-                if ( (contactid = getIdOfContact(action.getDB(), Registrant, conf) ) <= 0) {
+                if ( (contactid = getIdOfContact(action.getDB(), Registrant
+                        , restricted_handles_, lock_epp_commands_) ) <= 0) {
                     if (contactid < 0) {
                         LOG(WARNING_LOG, "bad format of registrant [%s]", Registrant);
                         code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -5047,7 +5098,8 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                 if (admin.length() > 0) {
                     // test
                     for (i = 0; i < admin.length(); i++) {
-                        adminid = getIdOfContact( action.getDB(), admin[i], conf);
+                        adminid = getIdOfContact( action.getDB(), admin[i]
+                                    , restricted_handles_, lock_epp_commands_);
                         if (adminid < 0) {
                             LOG(WARNING_LOG, "bad format of contact %", (const char *)admin[i]);
                             code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -5200,7 +5252,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                             if (code == COMMAND_OK) // run notifier
                             {
                                 ntf.reset(new EPPNotifier(
-                                            conf.get<bool>("registry.disable_epp_notifier"),
+                                            disable_epp_notifier_,
                                             mm , action.getDB(), action.getRegistrar(), id ));
                                 ntf->Send(); // send messages
                             }
@@ -5291,7 +5343,8 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     // parse enum.ExDate extension
     extractEnumDomainExtension(valexdate, publish, ext);
 
-    if ((id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) <= 0) {
+    if ((id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
+            , true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -5441,7 +5494,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     }
     if (code == COMMAND_OK) // run notifier
     {
-        ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
+        ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
         ntf->Send(); // send mesages to default contats
     }
     // EPP exception
@@ -5483,7 +5536,7 @@ ccReg_EPP_i::KeySetInfo(
 
     std::auto_ptr<Fred::KeySet::Manager> kman(
             Fred::KeySet::Manager::create(
-                a.getDB(), conf.get<bool>("registry.restricted_handles"))
+                a.getDB(), restricted_handles_)
             );
     // first check handle for proper format
     if (!kman->checkHandleFormat(handle))
@@ -5615,7 +5668,8 @@ ccReg_EPP_i::KeySetDelete(
     LOGGER(PACKAGE).notice( boost::format("KeySetDelete: clientID -> %1% clTRID [%2%] handle [%3%]") %
             (int)params.sessionID % (const char*)params.clTRID % handle);
 
-    id = getIdOfKeySet(action.getDB(), handle, conf, true);
+    id = getIdOfKeySet(action.getDB(), handle, restricted_handles_
+            , lock_epp_commands_, true);
     if (id < 0) {
         LOG(WARNING_LOG, "bad format of keyset [%s]", handle);
         code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -5646,7 +5700,7 @@ ccReg_EPP_i::KeySetDelete(
         bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
         if (notify)
             ntf.reset(new EPPNotifier(
-                      conf.get<bool>("registry.disable_epp_notifier"),
+                      disable_epp_notifier_,
                       mm,
                       action.getDB(),
                       action.getRegistrar(),
@@ -5746,7 +5800,7 @@ ccReg_EPP_i::KeySetCreate(
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
                 action.getDB(),
-                conf.get<bool>("registry.restricted_handles"))
+                restricted_handles_)
             );
     if (tech.length() < 1) {
         LOG(WARNING_LOG, "KeySetCreate: not any tech contact ");
@@ -5805,7 +5859,7 @@ ccReg_EPP_i::KeySetCreate(
         std::auto_ptr<Fred::Contact::Manager> cman(
                 Fred::Contact::Manager::create(
                     action.getDB(),
-                    conf.get<bool>("registry.restricted_handles"))
+                    restricted_handles_)
                 );
         for (i = 0; i < tech.length(); i++) {
             Fred::Contact::Manager::CheckAvailType caType;
@@ -6091,7 +6145,7 @@ ccReg_EPP_i::KeySetCreate(
             if (code == COMMAND_OK) {
                 // run notifier and send notify (suprisingly) message
                 ntf.reset(new EPPNotifier(
-                            conf.get<bool>("registry.disable_epp_notifier"),
+                            disable_epp_notifier_,
                             mm,
                             action.getDB(),
                             action.getRegistrar(),
@@ -6166,9 +6220,10 @@ ccReg_EPP_i::KeySetUpdate(
 
     std::auto_ptr<Fred::KeySet::Manager> kMan(
             Fred::KeySet::Manager::create(
-                action.getDB(), conf.get<bool>("registry.restricted_handles"))
+                action.getDB(), restricted_handles_)
             );
-    if ((keysetId = getIdOfKeySet(action.getDB(), handle, conf, true)) < 0) {
+    if ((keysetId = getIdOfKeySet(action.getDB(), handle, restricted_handles_
+                    , lock_epp_commands_, true)) < 0) {
         LOG(WARNING_LOG, "bad format of keyset [%s]", handle);
         code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                 ccReg::keyset_handle, 1, REASON_MSG_BAD_FORMAT_KEYSET_HANDLE);
@@ -6468,7 +6523,8 @@ ccReg_EPP_i::KeySetUpdate(
     if (!code) {
         // test ADD tech-c
         for (int i = 0; i < (int)tech_add.length(); i++) {
-            techId = getIdOfContact(action.getDB(), tech_add[i], conf);
+            techId = getIdOfContact(action.getDB(), tech_add[i]
+                         , restricted_handles_, lock_epp_commands_);
             if (techId < 0) {
                 LOG(WARNING_LOG, "bad format of contact %s", (const char *)tech_add[i]);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -6506,7 +6562,8 @@ ccReg_EPP_i::KeySetUpdate(
     // test REM tech-c
     if (!code) {
         for (int i = 0; i < (int)tech_rem.length(); i++) {
-            techId = getIdOfContact(action.getDB(), tech_rem[i], conf);
+            techId = getIdOfContact(action.getDB(), tech_rem[i]
+                         , restricted_handles_, lock_epp_commands_);
             if (techId < 0) {
                 LOG(WARNING_LOG, "bad format of contact %s", (const char *)tech_rem[i]);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -6636,7 +6693,7 @@ ccReg_EPP_i::KeySetUpdate(
     if (code == 0) {
         if (action.getDB()->ObjectUpdate(keysetId, action.getRegistrar(), authInfo_chg)) {
             ntf.reset(new EPPNotifier(
-                          conf.get<bool>("registry.disable_epp_notifier"),
+                          disable_epp_notifier_,
                           mm, action.getDB(), action.getRegistrar(), keysetId, regMan.get()));
 
             for (int i = 0; i < (int)tech_add.length(); i++)
@@ -7078,7 +7135,8 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
 
       if ( (DBsql->BeginAction(clientID, EPP_NSsetTest, clTRID, XML) )) {
 
-        if ( (nssetid = getIdOfNSSet(DBsql, handle, conf) > 0 ))// TODO   ret->code =  SetReasonNSSetHandle( errors  , nssetid , GetRegistrarLang( clientID ) );
+        if ( (nssetid = getIdOfNSSet(DBsql, handle
+                , restricted_handles_, lock_epp_commands_) > 0 ))// TODO   ret->code =  SetReasonNSSetHandle( errors  , nssetid , GetRegistrarLang( clientID ) );
         {
           std::stringstream strid;
           strid << regID;
@@ -7146,7 +7204,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 
     switch (act) {
         case EPP_ContactSendAuthInfo:
-            if ( (id = getIdOfContact(action.getDB(), name, conf) ) < 0) {
+            if ( (id = getIdOfContact(action.getDB(), name
+                    , restricted_handles_, lock_epp_commands_) ) < 0) {
                 LOG(WARNING_LOG, "bad format of contact [%s]", name);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::contact_handle, 1,
@@ -7155,7 +7214,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                 code=COMMAND_OBJECT_NOT_EXIST;
             break;
         case EPP_NSSetSendAuthInfo:
-            if ( (id = getIdOfNSSet(action.getDB(), name, conf) ) < 0) {
+            if ( (id = getIdOfNSSet(action.getDB(), name, restricted_handles_
+                    , lock_epp_commands_) ) < 0) {
                 LOG(WARNING_LOG, "bad format of nsset [%s]", name);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::nsset_handle, 1,
@@ -7183,7 +7243,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
             }
             break;
         case EPP_KeySetSendAuthInfo:
-            if ((id = getIdOfKeySet(action.getDB(), name, conf)) < 0) {
+            if ((id = getIdOfKeySet(action.getDB(), name, restricted_handles_
+                        , lock_epp_commands_)) < 0) {
                 LOG(WARNING_LOG, "bad format of keyset [%s]", name);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_handle, 1,
@@ -7195,9 +7256,9 @@ ccReg_EPP_i::ObjectSendAuthInfo(
     if (code == 0) {
         std::auto_ptr<Fred::Document::Manager> doc_manager(
                 Fred::Document::Manager::create(
-                    conf.get<std::string>("registry.docgen_path"),
-                    conf.get<std::string>("registry.docgen_template_path"),
-                    conf.get<std::string>("registry.fileclient_path"),
+                    docgen_path_,
+                    docgen_template_path_,
+                    fileclient_path_,
                     ns->getHostName()
                     )
                 );
@@ -7318,16 +7379,16 @@ ccReg::Response* ccReg_EPP_i::info(
         Fred::Domain::Manager::create(a.getDB(), zoneMan.get())
     );
     std::auto_ptr<Fred::Contact::Manager> conMan(
-        Fred::Contact::Manager::create(a.getDB(),conf.get<bool>("registry.restricted_handles"))
+        Fred::Contact::Manager::create(a.getDB(),restricted_handles_)
     );
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
         Fred::NSSet::Manager::create(
-            a.getDB(),zoneMan.get(),conf.get<bool>("registry.restricted_handles")
+            a.getDB(),zoneMan.get(),restricted_handles_
         )
     );
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
-                a.getDB(), conf.get<bool>("registry.restricted_handles")
+                a.getDB(), restricted_handles_
                 )
             );
     std::auto_ptr<Fred::InfoBuffer::Manager> infoBufMan(
@@ -7390,16 +7451,16 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
         Fred::Domain::Manager::create(a.getDB(), zoneMan.get())
     );
     std::auto_ptr<Fred::Contact::Manager> conMan(
-        Fred::Contact::Manager::create(a.getDB(),conf.get<bool>("registry.restricted_handles"))
+        Fred::Contact::Manager::create(a.getDB(),restricted_handles_)
     );
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
         Fred::NSSet::Manager::create(
-            a.getDB(),zoneMan.get(),conf.get<bool>("registry.restricted_handles")
+            a.getDB(),zoneMan.get(),restricted_handles_
         )
     );
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
-                a.getDB(), conf.get<bool>("registry.restricted_handles")
+                a.getDB(), restricted_handles_
                 )
             );
     std::auto_ptr<Fred::InfoBuffer::Manager> infoBufMan(
