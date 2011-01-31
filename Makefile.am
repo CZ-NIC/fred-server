@@ -526,9 +526,9 @@ src_corba_fred_pifd_SOURCES   = src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_CPPFLAGS  = $(AM_CPPFLAGS)
 
-src_corba_fred_logd_SOURCES   = src/corba/server.cc
+src_corba_fred_logd_SOURCES   = src/corba/fred-logd.cc
 
-src_corba_fred_logd_CPPFLAGS  = $(AM_CPPFLAGS) -DLOGD
+src_corba_fred_logd_CPPFLAGS  = $(AM_CPPFLAGS)
 
 src/corba/RegistrySK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Registry.idl $(IDLDIR)/EPP.idl $(IDLDIR)/FileManager.idl \
  $(IDLDIR)/Filters.idl $(IDLDIR)/_Logger.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/TechCheck.idl \

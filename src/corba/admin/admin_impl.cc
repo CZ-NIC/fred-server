@@ -263,15 +263,9 @@ char* ccReg_Admin_i::createSession(const char* username) {
 
   m_session_list[session_id] = session; 
 
-#ifdef ADIF
-  LOGGER(PACKAGE).notice(boost::format("admin session '%1%' created -- total number of sessions is '%2%'")
-      % session_id % m_session_list.size());
-#endif
 
-#ifdef LOGD
   LOGGER(PACKAGE).notice(boost::format("admin session '%1%' created -- total number of sessions is '%2%'")
       % session_id % m_session_list.size());
-#endif
 
   return CORBA::string_dup(session_id.c_str());
 }
