@@ -205,14 +205,13 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
                 % _ident_request_id % _password % _request_id);
 
         IdentificationRequestManagerPtr request_manager;
-        unsigned long long rid = 0;
         unsigned long long cid = request_manager->processAuthRequest(
-                                    _ident_request_id, _password, rid);
+                                    _ident_request_id, _password, _request_id);
 
         try {
             if (server_conf_->notify_commands) {
                 Fred::create_request_notifier_mojeid().notify_if(
-                            rid, Fred::NotificationEmailSender(mailer_),
+                            _request_id, Fred::NotificationEmailSender(mailer_),
                             Fred::IsRequestType(Fred::TRANSFER_CONTACT));
             }
         }

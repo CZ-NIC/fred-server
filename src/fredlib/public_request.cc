@@ -195,15 +195,18 @@ static unsigned long long check_public_request(
 
 static void cancel_public_request(
         const unsigned long long &_object_id,
-        const Type &_type)
+        const Type &_type,
+        const unsigned long long &_request_id)
 {
     unsigned long long prid = 0;
     if ((prid = check_public_request(_object_id, _type)) != 0) {
         Database::Connection conn = Database::Manager::acquire();
         conn.exec_params("UPDATE public_request SET resolve_time = now(),"
-                " status = $1::integer WHERE id = $2::integer",
+                " status = $1::integer, resolve_request_id = $2::integer"
+                " WHERE id = $3::integer",
                 Database::query_param_list
                     (PRS_INVALID)
+                    (_request_id != 0 ? _request_id : Database::QPNull)
                     (prid));
     }
 }
@@ -235,7 +238,8 @@ class PublicRequestImpl : public Fred::CommonObjectImpl,
 protected:
   Fred::PublicRequest::Type type_;
   Database::ID epp_action_id_;
-  Database::ID logd_request_id_;
+  Database::ID create_request_id_;
+  Database::ID resolve_request_id_;
   Database::DateTime create_time_;
   Fred::PublicRequest::Status status_;
   Database::DateTime resolve_time_;
@@ -249,7 +253,6 @@ protected:
   std::string registrar_name_;
   std::string registrar_url_;
 
-
   std::vector<OID> objects_;
 
 protected:
@@ -257,13 +260,13 @@ protected:
 
 public:
   PublicRequestImpl() : CommonObjectImpl(0), type_(),
-      epp_action_id_(0), logd_request_id_(0), status_(PRS_NEW), answer_email_id_(0), registrar_id_(0), man_() {
+      epp_action_id_(0), create_request_id_(0), resolve_request_id_(0), status_(PRS_NEW), answer_email_id_(0), registrar_id_(0), man_() {
   }
 
   PublicRequestImpl(Database::ID _id,
               Fred::PublicRequest::Type _type,
               Database::ID _epp_action_id,
-              Database::ID _logd_request_id,
+              Database::ID _create_request_id,
               Database::DateTime _create_time,
               Fred::PublicRequest::Status _status,
               Database::DateTime _resolve_time,
@@ -277,7 +280,7 @@ public:
               std::string _registrar_url
               ) :
               CommonObjectImpl(_id), type_(_type), epp_action_id_(_epp_action_id),
-              logd_request_id_(_logd_request_id),
+              create_request_id_(_create_request_id), resolve_request_id_(0),
               create_time_(_create_time), status_(_status),
               resolve_time_(_resolve_time), reason_(_reason),
               email_to_answer_(_email_to_answer), answer_email_id_(_answer_email_id),
@@ -294,7 +297,8 @@ public:
   virtual void init(Database::Row::Iterator& _it) {
     id_               = (unsigned long long)*_it;
     epp_action_id_    = *(++_it);
-    logd_request_id_  = *(++_it);
+    create_request_id_  = *(++_it);
+    resolve_request_id_ = *(++_it);
     create_time_      = *(++_it);
     status_           = (Fred::PublicRequest::Status)(int)*(++_it);
     resolve_time_     = *(++_it);
@@ -323,8 +327,11 @@ public:
         if(answer_email_id_ != 0) {
             update_request.buffer() << ", answer_email_id = " << Database::Value(answer_email_id_);
         }
-        if(logd_request_id_) {
-            update_request.buffer()  << ", logd_request_id = " << logd_request_id_;
+        if(create_request_id_) {
+            update_request.buffer()  << ", create_request_id = " << create_request_id_;
+        }
+        if (resolve_request_id_ != 0) {
+            update_request.buffer() << ", resolve_request_id = " << Database::Value(resolve_request_id_);
         }
         update_request.buffer() << " WHERE id = " << id_;
 
@@ -350,7 +357,7 @@ public:
 
       insert_request.add("request_type", type_);
       insert_request.add("epp_action_id", epp_action_id_);
-      insert_request.add("logd_request_id", logd_request_id_);
+      insert_request.add("create_request_id", create_request_id_);
       insert_request.add("status", status_);
       insert_request.add("reason", reason_);
       insert_request.add("email_to_answer", email_to_answer_);
@@ -450,11 +457,15 @@ public:
   }
 
   virtual const Database::ID getRequestId() const {
-    return logd_request_id_;
+    return create_request_id_;
   }
 
-  virtual void setRequestId(const Database::ID& _logd_request_id) {
-    logd_request_id_ = _logd_request_id;
+  virtual const Database::ID getResolveRequestId() const {
+    return resolve_request_id_;
+  }
+
+  virtual void setRequestId(const Database::ID& _create_request_id) {
+    create_request_id_ = _create_request_id;
     modified_ = true;
   }
 
@@ -577,9 +588,13 @@ public:
   }
 
   /// process request (or just close in case of invalid flag)
-  virtual void process(bool invalid, bool check) {
+  virtual void process(bool invalid, bool check, const unsigned long long &_request_id) {
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction tx(conn);
+
+      // TODO: probably bug - shoud be in UTC time zone
+      resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
+      resolve_request_id_ = Database::ID(_request_id);
 
       if (invalid) {
           status_ = PRS_INVALID;
@@ -590,8 +605,6 @@ public:
           status_ = PRS_ANSWERED;
           answer_email_id_ = sendEmail();
       }
-      // TODO: probably bug - shoud be in UTC time zone
-      resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
       save();
 
       tx.commit();
@@ -664,7 +677,7 @@ public:
   /// after creating, this type of request is processed
   virtual void postCreate() {
     // cannot call process(), object need to be loaded completly
-    man_->processRequest(getId(),false,false);
+    man_->processRequest(getId(),false,false, this->getRequestId());
   }
 };
 
@@ -676,7 +689,7 @@ public:
   /// after creating, this type of request is processed
   virtual void postCreate() {
     // cannot call process(), object need to be loaded completly
-    man_->processRequest(getId(),false,false);
+    man_->processRequest(getId(),false,false,this->getRequestId());
   }
 };
 
@@ -964,7 +977,7 @@ public:
     }
 
 
-    void process(bool _invalid, bool _check)
+    void process(bool _invalid, bool _check, const unsigned long long &_request_id)
     {
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
@@ -981,6 +994,10 @@ public:
                     this->getStatus() == PRS_ANSWERED ? true : false);
         }
 
+        resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
+        resolve_request_id_ = (_request_id != 0) ? Database::ID(_request_id)
+                                                 : this->getRequestId();
+
         if (_invalid) {
             status_ = PRS_INVALID;
         }
@@ -988,7 +1005,6 @@ public:
             processAction(_check);
             status_ = PRS_ANSWERED;
         }
-        resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
         save();
 
         tx.commit();
@@ -1355,11 +1371,13 @@ public:
             /* if there is another open CI close it */
             cancel_public_request(
                     this->getObject(0).id,
-                    PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
+                    PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
+                    this->getRequestId());
             /* if there is another open I close it */
             cancel_public_request(
                     this->getObject(0).id,
-                    PRT_CONTACT_IDENTIFICATION);
+                    PRT_CONTACT_IDENTIFICATION,
+                    this->getRequestId());
         }
         PublicRequestAuthImpl::save();
     }
@@ -1393,7 +1411,7 @@ public:
         unsigned long long act_registrar = static_cast<unsigned long long>(clid_result[0][0]);
         if (act_registrar != this->getRegistrarId()) {
             /* run transfer command */
-            ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
+            ::MojeID::Request request(205, this->getRegistrarId(), this->getResolveRequestId());
             ::MojeID::contact_transfer(
                     request.get_id(),
                     request.get_request_id(),
@@ -1428,7 +1446,7 @@ public:
                 man_->createRequest(PRT_CONTACT_IDENTIFICATION)));
         if (new_request) {
             new_request->setRegistrarId(this->getRegistrarId());
-            new_request->setRequestId(this->getRequestId());
+            new_request->setRequestId(this->getResolveRequestId());
             new_request->setEppActionId(this->getEppActionId());
             new_request->addObject(this->getObject(0));
             new_request->save();
@@ -1526,12 +1544,14 @@ public:
             /* if there is another open CI close it */
             cancel_public_request(
                     this->getObject(0).id,
-                    PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
+                    PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
+                    this->getRequestId());
             /* if not state CI cancel I request */
             if (checkState(this->getObject(0).id, 21) == false) {
                 cancel_public_request(
                     this->getObject(0).id,
-                    PRT_CONTACT_IDENTIFICATION);
+                    PRT_CONTACT_IDENTIFICATION,
+                    this->getRequestId());
             }
         }
         PublicRequestAuthImpl::save();
@@ -1566,7 +1586,7 @@ public:
         unsigned long long act_registrar = static_cast<unsigned long long>(clid_result[0][0]);
         if (act_registrar != this->getRegistrarId()) {
             /* run transfer command */
-            ::MojeID::Request request(205, this->getRegistrarId(), this->getRequestId());
+            ::MojeID::Request request(205, this->getRegistrarId(), this->getResolveRequestId());
             ::MojeID::contact_transfer(
                     request.get_id(),
                     request.get_request_id(),
@@ -1735,7 +1755,7 @@ public:
         /* check if contact is already identified (22) and cancel status */
         if (Fred::cancel_object_state(getObject(0).id, ::MojeID::IDENTIFIED_CONTACT) == false) {
             /* otherwise there could be identification request */
-            cancel_public_request(getObject(0).id, PRT_CONTACT_IDENTIFICATION);
+            cancel_public_request(getObject(0).id, PRT_CONTACT_IDENTIFICATION, this->getResolveRequestId());
         }
 
         /* set new state */
@@ -1810,7 +1830,7 @@ public:
         % getTempTableName() % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
-    object_info_query.select() << "t_1.request_type, t_1.id, t_1.epp_action_id, t_1.logd_request_id, "
+    object_info_query.select() << "t_1.request_type, t_1.id, t_1.epp_action_id, t_1.create_request_id, t_1.resolve_request_id, "
                                << "t_1.create_time, t_1.status, t_1.resolve_time, "
                                << "t_1.reason, t_1.email_to_answer, t_1.answer_email_id, "
                                << "'ccReg-' || to_char(t_1.epp_action_id, 'FM0999999999'), t_4.id, t_4.handle, t_4.name, t_4.url, "
@@ -2065,13 +2085,14 @@ public:
   }
 
   virtual void processRequest(Database::ID _id, bool _invalidate,
-                              bool check) const
+                              bool check,
+                              const unsigned long long &_request_id) const
   {
     TRACE(boost::format("[CALL] Fred::Request::Manager::processRequest(%1%, %2%)") %
           _id % _invalidate);
     try {
       std::auto_ptr<List> l(loadRequest(_id));
-      l->get(0)->process(_invalidate,check);
+      l->get(0)->process(_invalidate, check, _request_id);
     }
     catch (Database::Exception) { throw SQL_ERROR(); }
   }
@@ -2079,7 +2100,7 @@ public:
   virtual unsigned long long processAuthRequest(
           const std::string &_identification,
           const std::string &_password,
-          unsigned long long &_request_id)
+          const unsigned long long &_request_id)
   {
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction tx(conn);
@@ -2100,8 +2121,7 @@ public:
       }
 
       request->authenticate(_password);
-      request->process(false, true);
-      _request_id = request->getRequestId();
+      request->process(false, true, _request_id);
       tx.commit();
       return request->getObject(0).id;
   }

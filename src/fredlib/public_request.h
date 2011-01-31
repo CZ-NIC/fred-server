@@ -171,6 +171,7 @@ public:
   virtual const std::string getRegistrarName() const = 0;
   virtual const std::string getRegistrarUrl() const = 0;
   virtual const Database::ID getRequestId() const = 0;
+  virtual const Database::ID getResolveRequestId() const = 0;
   /// check if request can be handles
   virtual bool check() const = 0;
   /// return name of mailtemplate for answer email
@@ -182,7 +183,8 @@ public:
   /// send email with answer 
   virtual TID sendEmail() const throw (Mailer::NOT_SEND) = 0;
   /// process request (or just close in case of invalid flag)
-  virtual void process(bool invalid, bool check) = 0;
+  virtual void process(bool invalid, bool check,
+                       const unsigned long long &_request_id = 0) = 0;
   /// concrete action taken during request processing
   virtual void processAction(bool check) = 0;
   /// return proper type for PDF template generation
@@ -252,13 +254,15 @@ public:
   virtual PublicRequest* createRequest(Type _type) const
     throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) = 0;
 
-  virtual void processRequest(Database::ID _id, 
-                              bool _invalidate, bool _check) const = 0; 
+  virtual void processRequest(Database::ID _id,
+                              bool _invalidate,
+                              bool _check,
+                              const unsigned long long &_request_id = 0) const = 0; 
 
   virtual unsigned long long processAuthRequest(
           const std::string &_identification,
           const std::string &_password,
-          unsigned long long &_request_id) = 0;
+          const unsigned long long &_request_id) = 0;
 
   virtual std::string getIdentification(
           Database::ID contact) = 0;
