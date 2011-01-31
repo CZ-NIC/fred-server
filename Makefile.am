@@ -516,19 +516,11 @@ nodist_src_corba_libcorbazone_a_SOURCES = src/corba/ZoneSK.cc src/corba/ZoneDynS
 
 src_corba_fred_rifd_SOURCES   = src/corba/fred-rifd.cc
 
-src_corba_fred_rifd_CPPFLAGS  = $(AM_CPPFLAGS)
-
 src_corba_fred_adifd_SOURCES  = src/corba/fred-adifd.cc
-
-src_corba_fred_adifd_CPPFLAGS = $(AM_CPPFLAGS)
 
 src_corba_fred_pifd_SOURCES   = src/corba/fred-pifd.cc
 
-src_corba_fred_pifd_CPPFLAGS  = $(AM_CPPFLAGS)
-
 src_corba_fred_logd_SOURCES   = src/corba/fred-logd.cc
-
-src_corba_fred_logd_CPPFLAGS  = $(AM_CPPFLAGS)
 
 src/corba/RegistrySK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Registry.idl $(IDLDIR)/EPP.idl $(IDLDIR)/FileManager.idl \
  $(IDLDIR)/Filters.idl $(IDLDIR)/_Logger.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/TechCheck.idl \

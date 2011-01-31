@@ -64,7 +64,11 @@ private:
   void garbageSession();
 
 public:
-  struct DB_CONNECT_FAILED {
+  struct DB_CONNECT_FAILED : public std::runtime_error
+  {
+      DB_CONNECT_FAILED()
+              : std::runtime_error("Database connection failed")
+      {}
   };
   // TEMP: bool _session_garbage - until splitting Whois and Admin interface 
   ccReg_Admin_i(const std::string database, NameService *ns

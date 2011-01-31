@@ -6,6 +6,7 @@
 #include "fredlib/registry.h"
 
 #include <vector>
+#include <stdexcept>
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -71,8 +72,11 @@ private:
   void extractEnumDomainExtension(std::string&, ccReg::Disclose &publish, const ccReg::ExtensionList&);
 
 public:
-  struct DB_CONNECT_FAILED
+  struct DB_CONNECT_FAILED : public std::runtime_error
   {
+      DB_CONNECT_FAILED()
+              : std::runtime_error("Database connection failed")
+      {}
   };
   // standard constructor
       ccReg_EPP_i(const std::string &db, MailerManager *_mm, NameService *_ns

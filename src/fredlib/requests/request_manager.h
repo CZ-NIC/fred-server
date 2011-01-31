@@ -22,6 +22,8 @@
 #include "request_cache.h"
 #include "request_property_name_cache.h"
 
+#include <stdexcept>
+
 namespace Fred {
 namespace Logger {
 
@@ -45,7 +47,12 @@ public:
 class Manager {
 public:
 
-  struct DB_CONNECT_FAILED { };
+  struct DB_CONNECT_FAILED : public std::runtime_error
+  {
+      DB_CONNECT_FAILED()
+              : std::runtime_error("Database connection failed")
+      {}
+  };
 
   virtual ~Manager() {};
 
