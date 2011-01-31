@@ -23,6 +23,7 @@
 #include "request.h"
 #include "model_request.h"
 #include <map>
+#include <stdexcept>
 #include <boost/thread/mutex.hpp>
 
 namespace Fred {
@@ -39,7 +40,12 @@ class RequestCache {
 	CacheImpl cache;
 public:
   /// Exception thrown in case no record is found in cache
-  struct NOT_EXISTS {};
+  struct NOT_EXISTS : public std::runtime_error
+  {
+      NOT_EXISTS()
+      : std::runtime_error("RequestCache NOT_EXISTS")
+      {}
+  };
   /// Insert just saved request into cache during createRequest
 	void insert(const ModelRequest& mr);
 	/// Remove request from cache during closeRequest

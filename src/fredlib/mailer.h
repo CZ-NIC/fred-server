@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <stdexcept>
 #include "types.h"
 
 namespace Fred
@@ -14,7 +15,12 @@ namespace Fred
     typedef std::vector<std::string> Handles;
     typedef std::vector<TID> Attachments;
     // Exception thrown when mail cannot be send
-    struct NOT_SEND {};
+    struct NOT_SEND : public std::runtime_error
+    {
+        NOT_SEND()
+                : std::runtime_error("Mailer NOT_SEND")
+        {}
+    };
     class Manager
     {
      public:

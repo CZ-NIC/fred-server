@@ -1,6 +1,8 @@
 #ifndef MAILER_MANAGER_H_
 #define MAILER_MANAGER_H_
 
+#include <stdexcept>
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -22,8 +24,20 @@ class MailerManager : public Fred::Mailer::Manager
   boost::mutex      mutex;
 
  public:
-  class RESOLVE_FAILED {};
-  class LOAD_ERROR {};
+  class RESOLVE_FAILED : public std::runtime_error
+  {
+  public:
+      RESOLVE_FAILED()
+      : std::runtime_error("MailerManager RESOLVE_FAILED")
+      {}
+  };
+  class LOAD_ERROR : public std::runtime_error
+  {
+  public:
+      LOAD_ERROR()
+      : std::runtime_error("MailerManager LOAD_ERROR")
+      {}
+  };
   MailerManager(NameService *ns); 
   virtual Fred::TID sendEmail(
     const std::string& from,

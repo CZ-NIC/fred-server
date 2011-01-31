@@ -2,6 +2,7 @@
 #define _INFO_BUFFER_H_
 
 #include <string>
+#include <stdexcept>
 #include "types.h"
 #include "domain.h"
 #include "contact.h"
@@ -13,7 +14,12 @@ namespace Fred
 {
   namespace InfoBuffer
   {
-    struct INVALID_REGISTRAR {};
+    struct INVALID_REGISTRAR : public std::runtime_error
+    {
+        INVALID_REGISTRAR()
+                : std::runtime_error("InfoBuffer INVALID_REGISTRAR")
+        {}
+    };
     /// type of info query
     enum Type
     {

@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <stdexcept>
 
 #include "common_impl_new.h"
 #include "common_object.h"
@@ -45,9 +46,21 @@ namespace Fred
       };
 
     /// exception thrown when string is not a domain name
-    class INVALID_DOMAIN_NAME {};
+    class INVALID_DOMAIN_NAME : public std::runtime_error
+    {
+    public:
+          INVALID_DOMAIN_NAME()
+        : std::runtime_error("Zone INVALID_DOMAIN_NAME")
+        {}
+    };
     /// exception thrown when string is not a phone number
-    class NOT_A_NUMBER {};     
+    class NOT_A_NUMBER : public std::runtime_error
+    {
+    public:
+        NOT_A_NUMBER()
+        : std::runtime_error("Zone NOT_A_NUMBER")
+        {}
+    };
     /// tokenized domain name type
     typedef std::vector<std::string> DomainName;
 

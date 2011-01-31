@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include <iostream>
+#include <stdexcept>
 
 namespace Fred
 {
@@ -25,7 +26,13 @@ namespace Fred
     /// generator that has to be filled with stream of data
     class Generator {
      public:
-      class ERROR {}; // any error during generation
+      class ERROR : public std::runtime_error
+      {
+      public:
+          ERROR()
+          : std::runtime_error("Generator ERROR")
+          {}
+      }; // any error during generation
       /// client is responsible for delete
       virtual ~Generator() {}
       /// return stream that has to be filled with required data
