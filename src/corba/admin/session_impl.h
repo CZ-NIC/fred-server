@@ -51,7 +51,14 @@ class ccReg_Session_i: public POA_ccReg::Session,
                        public PortableServer::RefCountServantBase {
 private:
   std::string session_id_;
-  Config::Conf& cfg_;
+
+  //conf
+  bool restricted_handles_;
+  std::string docgen_path_;
+  std::string docgen_template_path_;
+  std::string fileclient_path_;
+  unsigned adifd_session_timeout_;
+
   NameService* m_ns;
 
   ccReg::BankingInvoicing_ptr m_banking_invoicing;
@@ -143,7 +150,13 @@ public:
   ccReg_Session_i(const std::string& _session_id,
                   const std::string& database,
                   NameService *ns,
-                  Config::Conf& cfg,
+
+                  bool restricted_handles,
+                  const std::string& docgen_path,
+                  const std::string& docgen_template_path,
+                  const std::string& fileclient_path,
+                  unsigned adifd_session_timeout,
+
                   ccReg::BankingInvoicing_ptr _banking,
                   ccReg_User_i* _user);
   ~ccReg_Session_i();

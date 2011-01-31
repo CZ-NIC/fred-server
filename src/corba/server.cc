@@ -303,7 +303,16 @@ try {
 
 #ifdef PIFD
     PortableServer::ObjectId_var webWhoisObjectId = PortableServer::string_to_ObjectId("WebWhois");
-    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(conn_info, &ns, cfg, false);
+    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(conn_info, &ns
+            , cfg.get<bool>("registry.restricted_handles")
+            , cfg.get<std::string>("registry.docgen_path")
+            , cfg.get<std::string>("registry.docgen_template_path")
+            , cfg.get<unsigned>("registry.docgen_domain_count_limit")
+            , cfg.get<std::string>("registry.fileclient_path")
+            , cfg.get<unsigned>("adifd.session_max")
+            , cfg.get<unsigned>("adifd.session_timeout")
+            , cfg.get<unsigned>("adifd.session_garbage")
+            , false);
     poa->activate_object_with_id(webWhoisObjectId, myccReg_Admin_i);
     CORBA::Object_var webWhoisObj = myccReg_Admin_i->_this();
     myccReg_Admin_i->_remove_ref();

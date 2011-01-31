@@ -27,7 +27,19 @@ class ccReg_Admin_i : public POA_ccReg::Admin,
 private:
   std::string m_connection_string;
   NameService *ns;
-  Config::Conf& cfg;
+
+
+  //conf
+  bool restricted_handles_;
+  std::string docgen_path_;
+  std::string docgen_template_path_;
+  unsigned int docgen_domain_count_limit_;
+  std::string fileclient_path_;
+
+  unsigned adifd_session_max_;
+  unsigned adifd_session_timeout_;
+  unsigned adifd_session_garbage_;
+
   ccReg_BankingInvoicing_i bankingInvoicing;
   DBSharedPtr  db_disconnect_guard_;
   std::auto_ptr<Fred::Manager> registry_manager_;
@@ -55,8 +67,16 @@ public:
   struct DB_CONNECT_FAILED {
   };
   // TEMP: bool _session_garbage - until splitting Whois and Admin interface 
-  ccReg_Admin_i(const std::string database, NameService *ns, Config::Conf& _cfg, bool _session_garbage = true)
-      throw (DB_CONNECT_FAILED);
+  ccReg_Admin_i(const std::string database, NameService *ns
+          , bool restricted_handles
+          , const std::string& docgen_path
+          , const std::string& docgen_template_path
+          , unsigned int docgen_domain_count_limit
+          , const std::string& fileclient_path
+          , unsigned adifd_session_max
+          , unsigned adifd_session_timeout
+          , unsigned adifd_session_garbage
+          , bool _session_garbage = true);
   virtual ~ccReg_Admin_i();
   virtual void authenticateUser(const char* _username, const char* _password)
       throw (ccReg::Admin::AuthFailed);

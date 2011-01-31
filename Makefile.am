@@ -518,9 +518,9 @@ src_corba_fred_rifd_SOURCES   = src/corba/fred-rifd.cc
 
 src_corba_fred_rifd_CPPFLAGS  = $(AM_CPPFLAGS)
 
-src_corba_fred_adifd_SOURCES  = src/corba/server.cc
+src_corba_fred_adifd_SOURCES  = src/corba/fred-adifd.cc
 
-src_corba_fred_adifd_CPPFLAGS = $(AM_CPPFLAGS) -DADIF
+src_corba_fred_adifd_CPPFLAGS = $(AM_CPPFLAGS)
 
 src_corba_fred_pifd_SOURCES   = src/corba/server.cc
 

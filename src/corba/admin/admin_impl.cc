@@ -47,17 +47,30 @@
 
 #include "corba/connection_releaser.h"
 
-#ifdef ADIF
-#endif
 
 class Registry_RegistrarCertification_i;
 class Registry_RegistrarGroup_i;
 
-ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
-                             NameService *_ns,
-                             Config::Conf& _cfg,
-                             bool _session_garbage) throw (DB_CONNECT_FAILED) :
-  m_connection_string(_database), ns(_ns), cfg(_cfg), bankingInvoicing(_ns) {
+ccReg_Admin_i::ccReg_Admin_i(const std::string _database, NameService *_ns
+                             , bool restricted_handles
+                             , const std::string& docgen_path
+                             , const std::string& docgen_template_path
+                             , unsigned int docgen_domain_count_limit
+                             , const std::string& fileclient_path
+                             , unsigned adifd_session_max
+                             , unsigned adifd_session_timeout
+                             , unsigned adifd_session_garbage
+                             , bool _session_garbage)
+: m_connection_string(_database), ns(_ns)
+, restricted_handles_(restricted_handles)
+, docgen_path_(docgen_path)
+, docgen_template_path_(docgen_template_path)
+, fileclient_path_(fileclient_path)
+, adifd_session_max_(adifd_session_max)
+, adifd_session_timeout_(adifd_session_timeout)
+, adifd_session_garbage_(adifd_session_garbage)
+, bankingInvoicing(_ns)
+{
 
   /* HACK: to recognize ADIFD and PIFD until separation of objects */
   if (_session_garbage) {
@@ -84,7 +97,7 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
                           , DB_CONNECT_FAILED());
 
   registry_manager_.reset(Fred::Manager::create(db_disconnect_guard_
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   registry_manager_->initStates();
 
   if (_session_garbage) {
@@ -126,7 +139,7 @@ void ccReg_Admin_i::checkHandle(const char* handle,
                                   , DB_CONNECT_FAILED());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   ccReg::CheckHandleTypeSeq* chs = new ccReg::CheckHandleTypeSeq;
   Fred::CheckHandleList chl;
   r->checkHandle(handle, chl, true); // allow IDN in whois queries
@@ -171,7 +184,7 @@ void ccReg_Admin_i::garbageSession() {
     
     boost::xtime sleep_time;
     boost::xtime_get(&sleep_time, boost::TIME_UTC);
-    sleep_time.sec += cfg.get<unsigned>("adifd.session_garbage");
+    sleep_time.sec += adifd_session_garbage_;
     cond_.timed_wait(scoped_lock, sleep_time);
     
     LOGGER(PACKAGE).debug("procedure invoked");
@@ -213,7 +226,7 @@ char* ccReg_Admin_i::createSession(const char* username) {
   TRACE(boost::format("[CALL] ccReg_Admin_i::createSession('%1%')") % username);
 
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
-  unsigned sess_max = cfg.get<unsigned>("adifd.session_max");
+  unsigned sess_max = adifd_session_max_;
   if (sess_max && m_session_list.size() == sess_max) {
     LOGGER(PACKAGE).info(boost::format("session limit (max=%1%) exceeded") % sess_max);
 
@@ -240,7 +253,14 @@ char* ccReg_Admin_i::createSession(const char* username) {
   std::string session_id = "sessid#" + Random::string_alphanum(5) + "-" + username;
 
   
-  ccReg_Session_i *session = new ccReg_Session_i(session_id, m_connection_string, ns, cfg, bankingInvoicing._this(), user_info);
+  ccReg_Session_i *session = new ccReg_Session_i(session_id, m_connection_string, ns,
+          restricted_handles_,
+          docgen_path_,
+          docgen_template_path_,
+          fileclient_path_,
+          adifd_session_timeout_,
+          bankingInvoicing._this(), user_info);
+
   m_session_list[session_id] = session; 
 
 #ifdef ADIF
@@ -335,7 +355,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
 
     std::auto_ptr<Fred::Manager> regm(
         Fred::Manager::create(ldb_disconnect_guard
-                , cfg.get<bool>("registry.restricted_handles"))
+                , restricted_handles_)
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
@@ -365,7 +385,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
     DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
                                                   , ccReg::Admin::SQL_ERROR());
     std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(ldb_disconnect_guard,cfg.get<bool>("registry.restricted_handles"))
+        Fred::Manager::create(ldb_disconnect_guard,restricted_handles_)
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
@@ -400,7 +420,7 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
                                                         , ccReg::Admin::SQL_ERROR());
     std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(ldb_disconnect_guard,cfg.get<bool>("registry.restricted_handles"))
+        Fred::Manager::create(ldb_disconnect_guard,restricted_handles_)
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
@@ -435,7 +455,7 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
                                                               , ccReg::Admin::SQL_ERROR());
     std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(ldb_disconnect_guard,cfg.get<bool>("registry.restricted_handles"))
+        Fred::Manager::create(ldb_disconnect_guard,restricted_handles_)
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
@@ -520,7 +540,7 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactByHandle(const char* handle)
   DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
                                                 , ccReg::Admin::SQL_ERROR());
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   Fred::Contact::Manager *cr = r->getContactManager();
   std::auto_ptr<Fred::Contact::List> cl(cr->createList());
   cl->setWildcardExpansion(false);
@@ -547,7 +567,7 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactById(ccReg::TID id)
   DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
                                                 , ccReg::Admin::SQL_ERROR());
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard, cfg.get<bool>("registry.restricted_handles")));
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard, restricted_handles_));
   Fred::Contact::Manager *cr = r->getContactManager();
   std::auto_ptr<Fred::Contact::List> cl(cr->createList());
 
@@ -624,7 +644,7 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetByHandle(const char* handle)
                                                 , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   Fred::NSSet::Manager *nr = r->getNSSetManager();
   std::auto_ptr<Fred::NSSet::List> nl(nr->createList());
   nl->setWildcardExpansion(false);
@@ -651,7 +671,7 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
   DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
                                                   , ccReg::Admin::SQL_ERROR());
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard, cfg.get<bool>("registry.restricted_handles")));
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard, restricted_handles_));
   Fred::NSSet::Manager *nr = r->getNSSetManager();
   std::auto_ptr<Fred::NSSet::List> nl(nr->createList());
 
@@ -739,7 +759,7 @@ ccReg_Admin_i::getKeySetByHandle(const char *handle)
                                                     , ccReg::Admin::SQL_ERROR());
 
     std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard,
-                cfg.get<bool>("registry.restricted_handles")));
+                restricted_handles_));
     Fred::KeySet::Manager *kr = r->getKeySetManager();
     std::auto_ptr<Fred::KeySet::List> kl(kr->createList());
     kl->setWildcardExpansion(false);
@@ -771,7 +791,7 @@ ccReg_Admin_i::getKeySetById(ccReg::TID id)
                                             , ccReg::Admin::SQL_ERROR());
     std::auto_ptr<Fred::Manager> r(
             Fred::Manager::create(ldb_disconnect_guard
-                    ,  cfg.get<bool>("registry.restricted_handles")));
+                    ,  restricted_handles_));
     Fred::KeySet::Manager *kr = r->getKeySetManager();
     std::auto_ptr<Fred::KeySet::List> kl(kr->createList());
 
@@ -799,7 +819,7 @@ ccReg_Admin_i::getKeySetById(ccReg::TID id)
     // db.OpenDatabase(m_connection_string.c_str());
 // 
     // std::auto_ptr<Fred::Manager> regMan(
-            // Fred::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
+            // Fred::Manager::create(&db, restricted_handles_));
     // Fred::KeySet::Manager *keyR = regMan->getKeySetManager();
     // std::auto_ptr<Fred::KeySet::List> klist(keyR->createList());
     // 
@@ -834,7 +854,7 @@ ccReg::AdminEPPAction* ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
                                               , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   Fred::Registrar::Manager *rm = r->getRegistrarManager();
   Fred::Registrar::EPPActionList *eal = rm->getEPPActionList();
   eal->setSvTRIDFilter(svTRID);
@@ -861,7 +881,7 @@ ccReg::AdminEPPAction* ccReg_Admin_i::getEPPActionById(ccReg::TID id)
     DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
                                                     , ccReg::Admin::SQL_ERROR());
     std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-            ,cfg.get<bool>("registry.restricted_handles")));
+            ,restricted_handles_));
     Fred::Registrar::Manager *rm = r->getRegistrarManager();
     Fred::Registrar::EPPActionList *eal = rm->getEPPActionList();
     eal->setIdFilter(id);
@@ -935,7 +955,7 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
                                                   , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Fred::Domain::List> dl(dm->createList());
   dl->setWildcardExpansion(false);
@@ -963,7 +983,7 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
                                                   , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Fred::Domain::List> dl(dm->createList());
 
@@ -998,7 +1018,7 @@ ccReg_Admin_i::getDomainsByKeySetId(ccReg::TID id, CORBA::Long limit)
                                                   , ccReg::Admin::SQL_ERROR());
     std::auto_ptr<Fred::Manager> r(
             Fred::Manager::create(ldb_disconnect_guard,
-                cfg.get<bool>("registry.restricted_handles"))
+                restricted_handles_)
             );
     Fred::Domain::Manager *dm = r->getDomainManager();
     std::auto_ptr<Fred::Domain::List> dl(dm->createList());
@@ -1033,7 +1053,7 @@ ccReg_Admin_i::getDomainsByKeySetHandle(const char *handle, CORBA::Long limit)
                                                   , ccReg::Admin::SQL_ERROR());
     std::auto_ptr<Fred::Manager> r(
             Fred::Manager::create(ldb_disconnect_guard,
-                cfg.get<bool>("registry.restricted_handles"))
+                restricted_handles_)
             );
     Fred::Domain::Manager *dm = r->getDomainManager();
     std::auto_ptr<Fred::Domain::List> dl(dm->createList());
@@ -1069,7 +1089,7 @@ ccReg::DomainDetails* ccReg_Admin_i::getDomainsByInverseKey(const char* key,
                                                 , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Fred::Domain::List> dl(dm->createList());
   switch (type) {
@@ -1108,7 +1128,7 @@ ccReg::NSSetDetails* ccReg_Admin_i::getNSSetsByInverseKey(const char* key,
                                                 , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   Fred::Zone::Manager *zm = r->getZoneManager();
   Fred::NSSet::Manager *nm = r->getNSSetManager();
   std::auto_ptr<Fred::NSSet::List> nl(nm->createList());
@@ -1138,7 +1158,7 @@ ccReg_Admin_i::getKeySetsByInverseKey(
                                                 , ccReg::Admin::SQL_ERROR());
     std::auto_ptr<Fred::Manager> r(
             Fred::Manager::create(ldb_disconnect_guard
-                    , cfg.get<bool>("registry.restricted_handles")));
+                    , restricted_handles_));
     Fred::KeySet::Manager *km = r->getKeySetManager();
     std::auto_ptr<Fred::KeySet::List> kl(km->createList());
     switch (type) {
@@ -1170,7 +1190,7 @@ ccReg_Admin_i::getKeySetsByContactId(ccReg::TID id, CORBA::Long limit)
 
     std::auto_ptr<Fred::Manager> r(
             Fred::Manager::create(ldb_disconnect_guard,
-                cfg.get<bool>("registry.restricted_handles"))
+                restricted_handles_)
             );
     Fred::KeySet::Manager *km = r->getKeySetManager();
     std::auto_ptr<Fred::KeySet::List> kl(km->createList());
@@ -1204,7 +1224,7 @@ ccReg_Admin_i::getKeySetsByContactHandle(const char *handle, CORBA::Long limit)
 
     std::auto_ptr<Fred::Manager> r(
             Fred::Manager::create(ldb_disconnect_guard,
-                cfg.get<bool>("registry.restricted_handles"))
+                restricted_handles_)
             );
     Fred::KeySet::Manager *km = r->getKeySetManager();
     std::auto_ptr<Fred::KeySet::List> kl(km->createList());
@@ -1232,7 +1252,7 @@ CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
                                                 , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getDomainCount(zone);
   return ret;
@@ -1246,7 +1266,7 @@ CORBA::Long ccReg_Admin_i::getSignedDomainCount(const char *_fqdn)
                                                 , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          ,cfg.get<bool>("registry.restricted_handles")));
+          ,restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getSignedDomainCount(_fqdn);
   return ret;
@@ -1260,7 +1280,7 @@ CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
                                                 , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getEnumNumberCount();
   return ret;
@@ -1274,7 +1294,7 @@ Registry::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
                                                 , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   Fred::Registrar::Manager *rm = r->getRegistrarManager();
   Registry::EPPActionTypeSeq *et = new Registry::EPPActionTypeSeq;
   
@@ -1295,7 +1315,7 @@ Registry::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
                                                 , ccReg::Admin::SQL_ERROR());
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , cfg.get<bool>("registry.restricted_handles")));
+          , restricted_handles_));
   /* 
    * TEMP: this is for loading country codes from database - until new database 
    * library is not fully integrated into registrar library 
@@ -1477,9 +1497,9 @@ void ccReg_Admin_i::generateLetters() {
 
     MailerManager mm(ns);
     std::auto_ptr<Fred::Document::Manager> docman(
-        Fred::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
-                                            cfg.get<std::string>("registry.docgen_template_path"),
-                                            cfg.get<std::string>("registry.fileclient_path"), 
+        Fred::Document::Manager::create(docgen_path_,
+                                            docgen_template_path_,
+                                            fileclient_path_,
                                             ns->getHostName()));
     std::auto_ptr<Fred::Zone::Manager> zoneMan(
         Fred::Zone::Manager::create());
@@ -1493,15 +1513,15 @@ void ccReg_Admin_i::generateLetters() {
                                           zoneMan.get()));
     std::auto_ptr<Fred::Contact::Manager> conMan(
         Fred::Contact::Manager::create(ldb_disconnect_guard,
-                                           cfg.get<bool>("registry.restricted_handles")));
+                                           restricted_handles_));
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
         Fred::NSSet::Manager::create(ldb_disconnect_guard,
                                          zoneMan.get(),
-                                         cfg.get<bool>("registry.restricted_handles")));
+                                         restricted_handles_));
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
                     ldb_disconnect_guard,
-                cfg.get<bool>("registry.restricted_handles")));
+                restricted_handles_));
     std::auto_ptr<Fred::Registrar::Manager> rMan(
         Fred::Registrar::Manager::create(ldb_disconnect_guard));
     std::auto_ptr<Fred::Notify::Manager> notifyMan(
@@ -1515,7 +1535,7 @@ void ccReg_Admin_i::generateLetters() {
                                           rMan.get(),
                                           msgMan
                                           ));
-    notifyMan->generateLetters(cfg.get<unsigned>("registry.docgen_domain_count_limit"));
+    notifyMan->generateLetters(docgen_domain_count_limit_);
   }
   catch (...) {
   }
@@ -1592,9 +1612,9 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
   
   std::auto_ptr<Fred::Document::Manager> doc_manager(
           Fred::Document::Manager::create(
-              cfg.get<std::string>("registry.docgen_path"),
-              cfg.get<std::string>("registry.docgen_template_path"),
-              cfg.get<std::string>("registry.fileclient_path"),
+              docgen_path_,
+              docgen_template_path_,
+              fileclient_path_,
               ns->getHostName())
           );
   std::auto_ptr<Fred::PublicRequest::Manager> request_manager(
@@ -1667,9 +1687,9 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
   MailerManager mailer_manager(ns);  
   std::auto_ptr<Fred::Document::Manager> doc_manager(
           Fred::Document::Manager::create(
-              cfg.get<std::string>("registry.docgen_path"),
-              cfg.get<std::string>("registry.docgen_template_path"),
-              cfg.get<std::string>("registry.fileclient_path"),
+              docgen_path_,
+              docgen_template_path_,
+              fileclient_path_,
               ns->getHostName())
           );
   std::auto_ptr<Fred::PublicRequest::Manager> request_manager(
@@ -1716,9 +1736,9 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
    
   std::auto_ptr<Fred::Document::Manager> doc_manager(
           Fred::Document::Manager::create(
-              cfg.get<std::string>("registry.docgen_path"),
-              cfg.get<std::string>("registry.docgen_template_path"),
-              cfg.get<std::string>("registry.fileclient_path"),
+              docgen_path_,
+              docgen_template_path_,
+              fileclient_path_,
               ns->getHostName())
           );
   std::auto_ptr<Fred::PublicRequest::Manager> request_manager(

@@ -23,11 +23,21 @@
 ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  const std::string& database,
                                  NameService *ns,
-                                 Config::Conf& cfg,
+
+                                 bool restricted_handles,
+                                 const std::string& docgen_path,
+                                 const std::string& docgen_template_path,
+                                 const std::string& fileclient_path,
+                                 unsigned adifd_session_timeout,
+
                                  ccReg::BankingInvoicing_ptr _banking,
                                  ccReg_User_i* _user)
                                : session_id_(_session_id),
-                                 cfg_(cfg),
+                                 restricted_handles_(restricted_handles),
+                                 docgen_path_(docgen_path),
+                                 docgen_template_path_(docgen_template_path),
+                                 fileclient_path_(fileclient_path),
+                                 adifd_session_timeout_(adifd_session_timeout),
                                  m_ns (ns),
                                  m_banking_invoicing(_banking),
                                  m_user(_user),
@@ -42,16 +52,16 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   Logging::Context ctx(session_id_);
 
   m_registry_manager.reset(Fred::Manager::create(db_disconnect_guard_,
-                                                     cfg.get<bool>("registry.restricted_handles")));
+                                                     restricted_handles_));
   
   m_logsession_manager.reset(Fred::Session::Manager::create());
 
   m_registry_manager->dbManagerInit();
   m_registry_manager->initStates();
 
-  m_document_manager.reset(Fred::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
-                                                               cfg.get<std::string>("registry.docgen_template_path"),
-                                                               cfg.get<std::string>("registry.fileclient_path"),
+  m_document_manager.reset(Fred::Document::Manager::create(docgen_path_,
+                                                           docgen_template_path_,
+                                                           fileclient_path_,
                                                                ns->getHostName()));
   m_publicrequest_manager.reset(Fred::PublicRequest::Manager::create(m_registry_manager->getDomainManager(),
                                                                          m_registry_manager->getContactManager(),
@@ -354,7 +364,7 @@ void ccReg_Session_i::updateActivity() {
 }
 
 bool ccReg_Session_i::isTimeouted() const {
-  ptime threshold = second_clock::local_time() - seconds(cfg_.get<unsigned>("adifd.session_timeout"));
+  ptime threshold = second_clock::local_time() - seconds(adifd_session_timeout_);
   bool timeout = m_last_activity < threshold;
   LOGGER(PACKAGE).debug(boost::format("session `%1%' will timeout in %2% -- session %3%")
                                       % session_id_
