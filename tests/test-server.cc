@@ -41,6 +41,14 @@ void test_stdex()
     throw std::runtime_error("test ex");
 }
 
+struct DUMMY_EXCEPTION : std::runtime_error
+{
+    DUMMY_EXCEPTION(const std::string& what)
+            : std::runtime_error(what)
+    {}
+
+};
+
 BOOST_AUTO_TEST_CASE( test_exception )
 {
     int check_counter = 0;
@@ -64,6 +72,20 @@ BOOST_AUTO_TEST_CASE( test_exception )
     catch (...)
     {}
     BOOST_REQUIRE_EQUAL(1, check_counter);
+
+
+    int DUMMY_EXCEPTION_catch_check = 0;
+    try
+    {
+        throw DUMMY_EXCEPTION("error");
+    }
+    catch(const std::exception& ex)
+    {
+        //std::cout << "ex: " << ex.what() << std::endl;
+        ++DUMMY_EXCEPTION_catch_check;
+    }
+    BOOST_REQUIRE_EQUAL(1, DUMMY_EXCEPTION_catch_check);
+
 }//test_exception
 
 
