@@ -19,7 +19,13 @@ CLEANFILES=config/server.conf config/hpmail.conf init-scripts/fred-server \
         src/corba/MojeIDSK.cc src/corba/MojeIDDynSK.cc src/corba/MojeIDSK.h src/corba/MojeID.hh \
         src/corba/FileManagerSK.cc src/corba/FileManagerDynSK.cc src/corba/FileManagerSK.h src/corba/FileManager.hh \
         src/corba/MailerSK.cc src/corba/MailerDynSK.cc src/corba/MailerSK.h src/corba/Mailer.hh \
-        src/corba/ZoneSK.cc src/corba/ZoneDynSK.cc src/corba/ZoneSK.h src/corba/Zone.hh
+        src/corba/ZoneSK.cc src/corba/ZoneDynSK.cc src/corba/ZoneSK.h src/corba/Zone.hh \
+        src/corba/_dataTypesSK.cc src/corba/_dataTypesDynSK.cc src/corba/_dataTypesSK.h src/corba/_dataTypes.hh \
+        src/corba/FiltersSK.cc src/corba/FiltersDynSK.cc src/corba/FiltersSK.h src/corba/Filters.hh \
+        src/corba/_RegistrySK.cc src/corba/_RegistryDynSK.cc src/corba/_RegistrySK.h src/corba/_Registry.hh \
+        src/corba/WhoisSK.cc src/corba/WhoisDynSK.cc src/corba/WhoisSK.h src/corba/Whois.hh \
+        src/corba/AdminSK.cc src/corba/AdminDynSK.cc src/corba/AdminSK.h src/corba/Admin.hh \
+        src/corba/LoggerSK.cc src/corba/LoggerDynSK.cc src/corba/LoggerSK.h src/corba/Logger.hh
 
 fredconfdir = $(sysconfdir)/fred
 rcconfdir = $(sysconfdir)/init.d
@@ -52,7 +58,7 @@ noinst_HEADERS = util/util.h util/singleton.h util/time_clock.h util/settings.h 
 
        
 noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/db/libdb.a \
-        util/conf/libconf.a src/old_utils/liboldutils.a\
+        util/conf/libconf.a src/old_utils/liboldutils.a \
         src/model/libmodel.a src/fredlib/libfred.a \
         src/fredlib/messages/libmessages.a src/fredlib/requests/librequests.a \
         src/fredlib/mojeid/libmojeid.a src/fredlib/banking/libbanking.a \
@@ -61,7 +67,10 @@ noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/d
         src/corba/libfilemanager.a src/corba/libmailer.a src/corba/admin/libadmin_impl.a \
         src/corba/whois/libwhois_impl.a \
         src/corba/epp/libepp_impl.a src/corba/log/liblog_impl.a \
-        util/hp/libhp.a src/fredlib/notifier/libnotifier.a
+        util/hp/libhp.a src/fredlib/notifier/libnotifier.a \
+        src/corba/libcorbadatatypes.a src/corba/libcorbafilters.a \
+        src/corba/libcorba_registry.a src/corba/libcorbawhois.a \
+        src/corba/libcorbaadmin.a src/corba/libcorbalogger.a
 
 util_libutil_a_SOURCES = util/random.cc
 
@@ -79,7 +88,7 @@ SERVER_TESTS = tests/test-server
 noinst_PROGRAMS = util/log/test-log util/types/test_money \
         util/db/test-db util/db/test-mockdb util/hp/client-hp \
         util/hp/crc32 util/conf/test-conf src/model/test-model src/corba/test \
-        $(SERVER_TESTS)
+        tests/test-idl $(SERVER_TESTS)
 
 util_log_test_log_SOURCES  = util/log/test-log.cc $(UTIL_LOG_SRC)
 util_log_test_log_CPPFLAGS = $(AM_CPPFLAGS)
@@ -489,8 +498,10 @@ src_corba_test_LDADD = $(XML2_LIBS) $(LDADD)
 
 BUILT_SOURCES = src/corba/RegistrySK.cc src/corba/MessagesSK.cc \
     src/corba/MojeIDSK.cc src/corba/FileManagerSK.cc src/corba/MailerSK.cc \
-    src/corba/ZoneSK.cc
-        
+    src/corba/ZoneSK.cc \
+    src/corba/_dataTypesSK.cc src/corba/FiltersSK.cc src/corba/_RegistrySK.cc \
+	src/corba/WhoisSK.cc src/corba/AdminSK.cc src/corba/LoggerSK.cc
+
 src_corba_libcorba_a_SOURCES = src/corba/nameservice.cc         \
 					 src/corba/mailer_manager.cc      \
 					 src/corba/nameservice.h          \
@@ -514,6 +525,19 @@ nodist_src_corba_libmailer_a_SOURCES = src/corba/MailerSK.cc src/corba/MailerDyn
 
 nodist_src_corba_libcorbazone_a_SOURCES = src/corba/ZoneSK.cc src/corba/ZoneDynSK.cc src/corba/Zone.hh
 
+
+nodist_src_corba_libcorbadatatypes_a_SOURCES = src/corba/_dataTypesSK.cc src/corba/_dataTypesDynSK.cc src/corba/_dataTypes.hh
+
+nodist_src_corba_libcorbafilters_a_SOURCES = src/corba/FiltersSK.cc src/corba/FiltersDynSK.cc src/corba/Filters.hh
+
+nodist_src_corba_libcorba_registry_a_SOURCES = src/corba/_RegistrySK.cc src/corba/_RegistryDynSK.cc src/corba/_Registry.hh
+
+nodist_src_corba_libcorbawhois_a_SOURCES = src/corba/WhoisSK.cc src/corba/WhoisDynSK.cc src/corba/Whois.hh
+
+nodist_src_corba_libcorbaadmin_a_SOURCES = src/corba/AdminSK.cc src/corba/AdminDynSK.cc src/corba/Admin.hh
+
+nodist_src_corba_libcorbalogger_a_SOURCES = src/corba/LoggerSK.cc src/corba/LoggerDynSK.cc src/corba/Logger.hh
+
 src_corba_fred_rifd_SOURCES   = src/corba/fred-rifd.cc
 
 src_corba_fred_adifd_SOURCES  = src/corba/fred-adifd.cc
@@ -523,8 +547,8 @@ src_corba_fred_pifd_SOURCES   = src/corba/fred-pifd.cc
 src_corba_fred_logd_SOURCES   = src/corba/fred-logd.cc
 
 src/corba/RegistrySK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Registry.idl $(IDLDIR)/FileManager.idl \
- $(IDLDIR)/Filters.idl $(IDLDIR)/_Logger.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/TechCheck.idl \
- $(IDLDIR)/_Admin.idl $(IDLDIR)/_dataTypes.idl $(IDLDIR)/_EPP.idl \
+ $(IDLDIR)/Filters.idl $(IDLDIR)/Logger.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/TechCheck.idl \
+ $(IDLDIR)/_dataTypes.idl $(IDLDIR)/_EPP.idl \
  $(IDLDIR)/_FileManager.idl $(IDLDIR)/Logger.idl $(IDLDIR)/Mailer.idl $(IDLDIR)/_Registry.idl \
  $(IDLDIR)/_TechCheck.idl
 	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLFILE)
@@ -543,6 +567,26 @@ src/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/_dat
 
 src/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
 	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/Zone.idl
+
+
+
+src/corba/_dataTypesSK.cc: $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/_dataTypes.idl
+
+src/corba/FiltersSK.cc: $(IDLDIR)/Filters.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Filters.idl
+
+src/corba/_RegistrySK.cc: $(IDLDIR)/_Registry.idl $(IDLDIR)/Filters.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/_Registry.idl
+
+src/corba/WhoisSK.cc: $(IDLDIR)/Whois.idl $(IDLDIR)/_Registry.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Whois.idl
+
+src/corba/AdminSK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Whois.idl $(IDLDIR)/Filters.idl $(IDLDIR)/_Registry.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Admin.idl
+
+src/corba/LoggerSK.cc: $(IDLDIR)/Logger.idl $(IDLDIR)/Admin.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Logger.idl
 
 #src corba
 
@@ -771,6 +815,17 @@ tools_logd_migration_migrate_log_LDADD = src/fredlib/requests/librequests.a \
         $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB)
 
 #tools logd_mirgation
+
+
+tests_test_idl_SOURCES = tests/test-idl.cc
+tests_test_idl_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
+        $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
+        src/corba/libcorbalogger.a \
+        src/corba/libcorbaadmin.a \
+        src/corba/libcorbawhois.a \
+        src/corba/libcorba_registry.a \
+        src/corba/libcorbafilters.a \
+        src/corba/libcorbadatatypes.a
 
 tests_test_server_SOURCES = tests/test-server.cc \
                      tests/test-server.h \
