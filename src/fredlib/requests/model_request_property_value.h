@@ -23,7 +23,7 @@ public:
     const unsigned long long &getId() const {
         return m_id.get();
     }
-    const int &getRequestId() const {
+    const unsigned long long &getRequestId() const {
         return m_requestId.get();
     }
     const int &getPropertyNameId() const {
@@ -55,7 +55,7 @@ public:
     void setId(const unsigned long long &id) {
         m_id = id;
     }
-    void setRequestId(const int &requestId) {
+    void setRequestId(const unsigned long long &requestId) {
         m_requestId = requestId;
     }
     void setPropertyNameId(const int &propertyNameId) {
@@ -110,7 +110,7 @@ protected:
     Field::Field<int> m_requestServiceId;
     Field::Field<bool> m_requestMonitoring;
     Field::Field<unsigned long long> m_id;
-    Field::Field<int> m_requestId;
+    Field::Field<unsigned long long> m_requestId;
     Field::Field<int> m_propertyNameId;
     Field::Field<std::string> m_value;
     Field::Field<bool> m_output;
@@ -123,7 +123,7 @@ public:
     static Model::Field::Basic<ModelRequestPropertyValue, int> requestServiceId;
     static Model::Field::Basic<ModelRequestPropertyValue, bool> requestMonitoring;
     static Model::Field::PrimaryKey<ModelRequestPropertyValue, unsigned long long> id;
-    static Model::Field::Basic<ModelRequestPropertyValue, int> requestId;
+    static Model::Field::Basic<ModelRequestPropertyValue, unsigned long long> requestId;
     static Model::Field::Basic<ModelRequestPropertyValue, int> propertyNameId;
     static Model::Field::Basic<ModelRequestPropertyValue, std::string> value;
     static Model::Field::Basic<ModelRequestPropertyValue, bool> output;

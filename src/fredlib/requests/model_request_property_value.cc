@@ -6,7 +6,7 @@ DEFINE_BASIC_FIELD(ModelRequestPropertyValue, Database::DateTime, requestTimeBeg
 DEFINE_BASIC_FIELD(ModelRequestPropertyValue, int, requestServiceId, m_requestServiceId, table_name, "request_service_id", .setNotNull())
 DEFINE_BASIC_FIELD(ModelRequestPropertyValue, bool, requestMonitoring, m_requestMonitoring, table_name, "request_monitoring", .setNotNull())
 DEFINE_PRIMARY_KEY(ModelRequestPropertyValue, unsigned long long, id, m_id, table_name, "id", .setDefault())
-DEFINE_BASIC_FIELD(ModelRequestPropertyValue, int, requestId, m_requestId, table_name, "request_id", .setNotNull())
+DEFINE_BASIC_FIELD(ModelRequestPropertyValue, unsigned long long, requestId, m_requestId, table_name, "request_id", .setNotNull())
 DEFINE_BASIC_FIELD(ModelRequestPropertyValue, int, propertyNameId, m_propertyNameId, table_name, "property_name_id", .setNotNull())
 DEFINE_BASIC_FIELD(ModelRequestPropertyValue, std::string, value, m_value, table_name, "value", .setNotNull())
 DEFINE_BASIC_FIELD(ModelRequestPropertyValue, bool, output, m_output, table_name, "output", .setDefault())
