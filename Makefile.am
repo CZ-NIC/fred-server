@@ -12,7 +12,6 @@ AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
 
 include $(top_srcdir)/am_doxygen.am
 
-
 CLEANFILES=config/server.conf config/hpmail.conf init-scripts/fred-server \
         src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/RegistrySK.h src/corba/Registry.hh \
         src/corba/MessagesSK.cc src/corba/MessagesDynSK.cc src/corba/MessagesSK.h src/corba/Messages.hh \
@@ -25,7 +24,10 @@ CLEANFILES=config/server.conf config/hpmail.conf init-scripts/fred-server \
         src/corba/_RegistrySK.cc src/corba/_RegistryDynSK.cc src/corba/_RegistrySK.h src/corba/_Registry.hh \
         src/corba/WhoisSK.cc src/corba/WhoisDynSK.cc src/corba/WhoisSK.h src/corba/Whois.hh \
         src/corba/AdminSK.cc src/corba/AdminDynSK.cc src/corba/AdminSK.h src/corba/Admin.hh \
-        src/corba/LoggerSK.cc src/corba/LoggerDynSK.cc src/corba/LoggerSK.h src/corba/Logger.hh
+        src/corba/LoggerSK.cc src/corba/LoggerDynSK.cc src/corba/LoggerSK.h src/corba/Logger.hh \
+        src/corba/TechCheckSK.cc src/corba/TechCheckDynSK.cc src/corba/TechCheckSK.h src/corba/TechCheck.hh \
+        src/corba/EPPSK.cc src/corba/EPPDynSK.cc src/corba/EPPSK.h src/corba/EPP.hh \
+        src/corba/ZoneGeneratorSK.cc src/corba/ZoneGeneratorDynSK.cc src/corba/ZoneGeneratorSK.h src/corba/ZoneGenerator.hh
 
 fredconfdir = $(sysconfdir)/fred
 rcconfdir = $(sysconfdir)/init.d
@@ -70,7 +72,9 @@ noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/d
         util/hp/libhp.a src/fredlib/notifier/libnotifier.a \
         src/corba/libcorbadatatypes.a src/corba/libcorbafilters.a \
         src/corba/libcorba_registry.a src/corba/libcorbawhois.a \
-        src/corba/libcorbaadmin.a src/corba/libcorbalogger.a
+        src/corba/libcorbaadmin.a src/corba/libcorbalogger.a \
+        src/corba/libcorbatechcheck.a src/corba/libcorbaepp.a \
+        src/corba/libcorbazonegenerator.a
 
 util_libutil_a_SOURCES = util/random.cc
 
@@ -500,7 +504,8 @@ BUILT_SOURCES = src/corba/RegistrySK.cc src/corba/MessagesSK.cc \
     src/corba/MojeIDSK.cc src/corba/FileManagerSK.cc src/corba/MailerSK.cc \
     src/corba/ZoneSK.cc \
     src/corba/_dataTypesSK.cc src/corba/FiltersSK.cc src/corba/_RegistrySK.cc \
-	src/corba/WhoisSK.cc src/corba/AdminSK.cc src/corba/LoggerSK.cc
+	src/corba/WhoisSK.cc src/corba/AdminSK.cc src/corba/LoggerSK.cc \
+	src/corba/TechCheckSK.cc src/corba/EPPSK.cc src/corba/ZoneGeneratorSK.cc
 
 src_corba_libcorba_a_SOURCES = src/corba/nameservice.cc         \
 					 src/corba/mailer_manager.cc      \
@@ -538,6 +543,12 @@ nodist_src_corba_libcorbaadmin_a_SOURCES = src/corba/AdminSK.cc src/corba/AdminD
 
 nodist_src_corba_libcorbalogger_a_SOURCES = src/corba/LoggerSK.cc src/corba/LoggerDynSK.cc src/corba/Logger.hh
 
+nodist_src_corba_libcorbatechcheck_a_SOURCES = src/corba/TechCheckSK.cc src/corba/TechCheckDynSK.cc src/corba/TechCheck.hh
+
+nodist_src_corba_libcorbaepp_a_SOURCES = src/corba/EPPSK.cc src/corba/EPPDynSK.cc src/corba/EPP.hh
+
+nodist_src_corba_libcorbazonegenerator_a_SOURCES = src/corba/ZoneGeneratorSK.cc src/corba/ZoneGeneratorDynSK.cc src/corba/ZoneGenerator.hh
+
 src_corba_fred_rifd_SOURCES   = src/corba/fred-rifd.cc
 
 src_corba_fred_adifd_SOURCES  = src/corba/fred-adifd.cc
@@ -547,10 +558,10 @@ src_corba_fred_pifd_SOURCES   = src/corba/fred-pifd.cc
 src_corba_fred_logd_SOURCES   = src/corba/fred-logd.cc
 
 src/corba/RegistrySK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Registry.idl $(IDLDIR)/FileManager.idl \
- $(IDLDIR)/Filters.idl $(IDLDIR)/Logger.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/TechCheck.idl \
- $(IDLDIR)/_dataTypes.idl $(IDLDIR)/_EPP.idl \
- $(IDLDIR)/_FileManager.idl $(IDLDIR)/Logger.idl $(IDLDIR)/Mailer.idl $(IDLDIR)/_Registry.idl \
- $(IDLDIR)/_TechCheck.idl
+ $(IDLDIR)/Filters.idl $(IDLDIR)/Logger.idl $(IDLDIR)/TechCheck.idl \
+ $(IDLDIR)/_dataTypes.idl $(IDLDIR)/EPP.idl \
+ $(IDLDIR)/Logger.idl $(IDLDIR)/Mailer.idl $(IDLDIR)/_Registry.idl \
+ $(IDLDIR)/TechCheck.idl
 	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLFILE)
 
 src/corba/MessagesSK.cc: $(IDLDIR)/Messages.idl
@@ -559,10 +570,10 @@ src/corba/MessagesSK.cc: $(IDLDIR)/Messages.idl
 src/corba/MojeIDSK.cc: $(IDLDIR)/MojeID.idl
 	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/MojeID.idl
 
-src/corba/FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_FileManager.idl $(IDLDIR)/_dataTypes.idl
+src/corba/FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_dataTypes.idl
 	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/FileManager.idl
 
-src/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/_dataTypes.idl
+src/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_dataTypes.idl
 	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/Mailer.idl
 
 src/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
@@ -587,6 +598,16 @@ src/corba/AdminSK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Whois.idl $(IDLDIR)/Filters.
 
 src/corba/LoggerSK.cc: $(IDLDIR)/Logger.idl $(IDLDIR)/Admin.idl $(IDLDIR)/_dataTypes.idl
 	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Logger.idl
+
+src/corba/TechCheckSK.cc: $(IDLDIR)/TechCheck.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/TechCheck.idl
+
+src/corba/EPPSK.cc: $(IDLDIR)/EPP.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/EPP.idl
+
+src/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/ZoneGenerator.idl
+
 
 #src corba
 
@@ -820,6 +841,9 @@ tools_logd_migration_migrate_log_LDADD = src/fredlib/requests/librequests.a \
 tests_test_idl_SOURCES = tests/test-idl.cc
 tests_test_idl_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
+        src/corba/libcorbazonegenerator.a \
+        src/corba/libcorbaepp.a \
+        src/corba/libcorbatechcheck.a \
         src/corba/libcorbalogger.a \
         src/corba/libcorbaadmin.a \
         src/corba/libcorbawhois.a \
