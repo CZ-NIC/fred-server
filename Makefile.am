@@ -91,7 +91,7 @@ SERVER_TESTS = tests/test-server
 noinst_PROGRAMS = util/log/test-log util/types/test_money \
         util/db/test-db util/db/test-mockdb util/hp/client-hp \
         util/hp/crc32 util/conf/test-conf src/model/test-model src/corba/test \
-        tests/test-idl $(SERVER_TESTS)
+        $(SERVER_TESTS)
 
 util_log_test_log_SOURCES  = util/log/test-log.cc $(UTIL_LOG_SRC)
 util_log_test_log_CPPFLAGS = $(AM_CPPFLAGS)
