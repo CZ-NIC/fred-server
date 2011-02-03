@@ -496,10 +496,6 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	    src/corba/libmailer.a \
 	    src/corba/libfilemanager.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
-	
-	
-
-IDLFILE = $(IDLDIR)/Registry.idl
 
 sbin_PROGRAMS = src/corba/fred-rifd src/corba/fred-adifd src/corba/fred-pifd \
         src/corba/fred-logd src/corba/messages/fred-msgd \
