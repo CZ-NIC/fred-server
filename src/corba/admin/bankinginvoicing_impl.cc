@@ -1,4 +1,4 @@
-#include <corba/Registry.hh>
+#include <corba/Admin.hh>
 
 #include "bankinginvoicing_impl.h"
 

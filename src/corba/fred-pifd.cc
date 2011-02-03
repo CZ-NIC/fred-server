@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "Registry.hh"
+#include "Admin.hh"
 #include "admin/admin_impl.h"
 #include "whois/whois_impl.h"
 

@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <corba/Registry.hh>
+#include <corba/EPP.hh>
 #include "epp_impl.h"
 
 #include "corba/connection_releaser.h"

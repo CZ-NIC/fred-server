@@ -22,7 +22,8 @@
  */
 
 #include "config.h"
-#include "Registry.hh"
+#include "EPP.hh"
+#include "TechCheck.hh"
 #include "epp/epp_impl.h"
 #include "corba/mailer_manager.h"
 

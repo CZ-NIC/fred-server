@@ -42,6 +42,8 @@
 
 #include "settings.h"
 
+#include <corba/Logger.hh>
+
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;

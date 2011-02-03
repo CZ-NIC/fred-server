@@ -2,7 +2,7 @@
 #include <fstream>
 #include "admin/admin_impl.h"
 #include "corba/nameservice.cc"
-#include "corba/Registry.hh"
+#include "corba/Admin.hh"
 #include "log/logger.h"
 
 #include "conf/manager.h"

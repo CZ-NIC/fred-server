@@ -1,7 +1,7 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
-#include <corba/Registry.hh>
+#include <corba/Filters.hh>
 #include <algorithm>
 #include <boost/utility.hpp>
 

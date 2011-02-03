@@ -19,6 +19,8 @@
 #ifndef _SIMPLE_H_
 #define _SIMPLE_H_
 
+#include <corba/EPP.hh>
+
 #include <map>
 #include <string>
 

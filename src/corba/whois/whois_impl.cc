@@ -19,7 +19,7 @@
 #include <memory>
 #include <iomanip>
 #include <stdexcept>
-#include <corba/Registry.hh>
+#include <corba/Whois.hh>
 
 #include "common.h"
 #include "whois_impl.h"

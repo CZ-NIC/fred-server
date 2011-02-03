@@ -1,6 +1,6 @@
 #include "log_impl_wrap.h"
 
-#include <corba/Registry.hh>
+#include <corba/Logger.hh>
 #include <boost/thread.hpp>
 
 

@@ -1,7 +1,7 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
-#include <corba/Registry.hh>
+#include <corba/Admin.hh>
 
 #include "pagetable_impl.h"
 #include "log/logger.h"

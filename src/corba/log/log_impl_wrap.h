@@ -1,7 +1,7 @@
 #ifndef _LOG_IMPL_WRAP_H_
 #define _LOG_IMPL_WRAP_H_
 
-#include <corba/Registry.hh>
+#include <corba/Logger.hh>
 
 #include "fredlib/requests/request_manager.h"
 #include "src/corba/admin/usertype_conv.h"

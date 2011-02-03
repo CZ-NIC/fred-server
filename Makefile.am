@@ -13,7 +13,6 @@ AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
 include $(top_srcdir)/am_doxygen.am
 
 CLEANFILES=config/server.conf config/hpmail.conf init-scripts/fred-server \
-        src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/RegistrySK.h src/corba/Registry.hh \
         src/corba/MessagesSK.cc src/corba/MessagesDynSK.cc src/corba/MessagesSK.h src/corba/Messages.hh \
         src/corba/MojeIDSK.cc src/corba/MojeIDDynSK.cc src/corba/MojeIDSK.h src/corba/MojeID.hh \
         src/corba/FileManagerSK.cc src/corba/FileManagerDynSK.cc src/corba/FileManagerSK.h src/corba/FileManager.hh \
@@ -21,7 +20,7 @@ CLEANFILES=config/server.conf config/hpmail.conf init-scripts/fred-server \
         src/corba/ZoneSK.cc src/corba/ZoneDynSK.cc src/corba/ZoneSK.h src/corba/Zone.hh \
         src/corba/_dataTypesSK.cc src/corba/_dataTypesDynSK.cc src/corba/_dataTypesSK.h src/corba/_dataTypes.hh \
         src/corba/FiltersSK.cc src/corba/FiltersDynSK.cc src/corba/FiltersSK.h src/corba/Filters.hh \
-        src/corba/_RegistrySK.cc src/corba/_RegistryDynSK.cc src/corba/_RegistrySK.h src/corba/_Registry.hh \
+        src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/RegistrySK.h src/corba/Registry.hh \
         src/corba/WhoisSK.cc src/corba/WhoisDynSK.cc src/corba/WhoisSK.h src/corba/Whois.hh \
         src/corba/AdminSK.cc src/corba/AdminDynSK.cc src/corba/AdminSK.h src/corba/Admin.hh \
         src/corba/LoggerSK.cc src/corba/LoggerDynSK.cc src/corba/LoggerSK.h src/corba/Logger.hh \
@@ -71,7 +70,7 @@ noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/d
         src/corba/epp/libepp_impl.a src/corba/log/liblog_impl.a \
         util/hp/libhp.a src/fredlib/notifier/libnotifier.a \
         src/corba/libcorbadatatypes.a src/corba/libcorbafilters.a \
-        src/corba/libcorba_registry.a src/corba/libcorbawhois.a \
+        src/corba/libcorbaregistry.a src/corba/libcorbawhois.a \
         src/corba/libcorbaadmin.a src/corba/libcorbalogger.a \
         src/corba/libcorbatechcheck.a src/corba/libcorbaepp.a \
         src/corba/libcorbazonegenerator.a
@@ -473,6 +472,15 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	src/corba/libcorba.a \
 	src/corba/whois/libwhois_impl.a \
 	src/corba/libcorbazone.a \
+	    src/corba/libcorbazonegenerator.a \
+        src/corba/libcorbaepp.a \
+        src/corba/libcorbatechcheck.a \
+        src/corba/libcorbalogger.a \
+        src/corba/libcorbaadmin.a \
+        src/corba/libcorbawhois.a \
+        src/corba/libcorbaregistry.a \
+        src/corba/libcorbafilters.a \
+        src/corba/libcorbadatatypes.a \
 	src/fredlib/libfred.a \
 	src/fredlib/messages/libmessages.a \
 	src/model/libmodel.a \
@@ -485,6 +493,8 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	src/fredlib/requests/librequests.a \
 	src/fredlib/mojeid/libmojeid.a \
 	src/fredlib/banking/libbanking.a \
+	    src/corba/libmailer.a \
+	    src/corba/libfilemanager.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
 	
 	
@@ -500,10 +510,10 @@ src_corba_test_SOURCES = src/corba/test-admin.cc
          
 src_corba_test_LDADD = $(XML2_LIBS) $(LDADD)
 
-BUILT_SOURCES = src/corba/RegistrySK.cc src/corba/MessagesSK.cc \
+BUILT_SOURCES = src/corba/MessagesSK.cc \
     src/corba/MojeIDSK.cc src/corba/FileManagerSK.cc src/corba/MailerSK.cc \
     src/corba/ZoneSK.cc \
-    src/corba/_dataTypesSK.cc src/corba/FiltersSK.cc src/corba/_RegistrySK.cc \
+    src/corba/_dataTypesSK.cc src/corba/FiltersSK.cc src/corba/RegistrySK.cc \
 	src/corba/WhoisSK.cc src/corba/AdminSK.cc src/corba/LoggerSK.cc \
 	src/corba/TechCheckSK.cc src/corba/EPPSK.cc src/corba/ZoneGeneratorSK.cc
 
@@ -517,7 +527,7 @@ src_corba_libcorba_a_SOURCES = src/corba/nameservice.cc         \
 					 src/corba/file_manager_client.cc \
 					 src/corba/file_manager_client.h
 
-nodist_src_corba_libcorba_a_SOURCES = src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/Registry.hh
+# nodist_src_corba_libcorba_a_SOURCES = src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/Registry.hh
 src_corba_libcorba_a_CPPFLAGS  = $(AM_CPPFLAGS)
 
 nodist_src_corba_libcorbamessages_a_SOURCES = src/corba/MessagesSK.cc src/corba/MessagesDynSK.cc src/corba/Messages.hh
@@ -535,7 +545,7 @@ nodist_src_corba_libcorbadatatypes_a_SOURCES = src/corba/_dataTypesSK.cc src/cor
 
 nodist_src_corba_libcorbafilters_a_SOURCES = src/corba/FiltersSK.cc src/corba/FiltersDynSK.cc src/corba/Filters.hh
 
-nodist_src_corba_libcorba_registry_a_SOURCES = src/corba/_RegistrySK.cc src/corba/_RegistryDynSK.cc src/corba/_Registry.hh
+nodist_src_corba_libcorbaregistry_a_SOURCES = src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/Registry.hh
 
 nodist_src_corba_libcorbawhois_a_SOURCES = src/corba/WhoisSK.cc src/corba/WhoisDynSK.cc src/corba/Whois.hh
 
@@ -557,27 +567,20 @@ src_corba_fred_pifd_SOURCES   = src/corba/fred-pifd.cc
 
 src_corba_fred_logd_SOURCES   = src/corba/fred-logd.cc
 
-src/corba/RegistrySK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Registry.idl $(IDLDIR)/FileManager.idl \
- $(IDLDIR)/Filters.idl $(IDLDIR)/Logger.idl $(IDLDIR)/TechCheck.idl \
- $(IDLDIR)/_dataTypes.idl $(IDLDIR)/EPP.idl \
- $(IDLDIR)/Logger.idl $(IDLDIR)/Mailer.idl $(IDLDIR)/_Registry.idl \
- $(IDLDIR)/TechCheck.idl
-	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLFILE)
-
 src/corba/MessagesSK.cc: $(IDLDIR)/Messages.idl
-	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/Messages.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Messages.idl
 
 src/corba/MojeIDSK.cc: $(IDLDIR)/MojeID.idl
-	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/MojeID.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/MojeID.idl
 
 src/corba/FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_dataTypes.idl
-	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/FileManager.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/FileManager.idl
 
 src/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_dataTypes.idl
-	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/Mailer.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Mailer.idl
 
 src/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
-	omniidl -bcxx -Wba -Wbinline -C$(top_builddir)/src/corba $(IDLDIR)/Zone.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Zone.idl
 
 
 
@@ -587,13 +590,13 @@ src/corba/_dataTypesSK.cc: $(IDLDIR)/_dataTypes.idl
 src/corba/FiltersSK.cc: $(IDLDIR)/Filters.idl $(IDLDIR)/_dataTypes.idl
 	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Filters.idl
 
-src/corba/_RegistrySK.cc: $(IDLDIR)/_Registry.idl $(IDLDIR)/Filters.idl $(IDLDIR)/_dataTypes.idl
-	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/_Registry.idl
+src/corba/RegistrySK.cc: $(IDLDIR)/Registry.idl $(IDLDIR)/Filters.idl $(IDLDIR)/_dataTypes.idl
+	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Registry.idl
 
-src/corba/WhoisSK.cc: $(IDLDIR)/Whois.idl $(IDLDIR)/_Registry.idl $(IDLDIR)/_dataTypes.idl
+src/corba/WhoisSK.cc: $(IDLDIR)/Whois.idl $(IDLDIR)/Registry.idl $(IDLDIR)/_dataTypes.idl
 	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Whois.idl
 
-src/corba/AdminSK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Whois.idl $(IDLDIR)/Filters.idl $(IDLDIR)/_Registry.idl $(IDLDIR)/_dataTypes.idl
+src/corba/AdminSK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Whois.idl $(IDLDIR)/Filters.idl $(IDLDIR)/Registry.idl $(IDLDIR)/_dataTypes.idl
 	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Admin.idl
 
 src/corba/LoggerSK.cc: $(IDLDIR)/Logger.idl $(IDLDIR)/Admin.idl $(IDLDIR)/_dataTypes.idl
@@ -718,7 +721,8 @@ src_corba_messages_fred_msgd_LDFLAGS =   $(POSTGRESQL_LDFLAGS) \
 src_corba_messages_fred_msgd_LDADD =  src/fredlib/messages/libmessages.a \
                      src/model/libmodel.a src/fredlib/banking/libbanking.a \
                      util/log/liblog.a util/types/libtypes.a \
-                     util/db/libdb.a src/old_utils/liboldutils.a
+                     util/db/libdb.a src/old_utils/liboldutils.a \
+                     src/corba/libcorbadatatypes.a
 
 #src corba messages
 
@@ -754,7 +758,8 @@ src_corba_mojeid_fred_mifd_LDADD = $(LIBIDN_LIBS) \
                      src/fredlib/messages/libmessages.a \
                      src/fredlib/notifier/libnotifier.a \
                      util/libutil.a util/log/liblog.a util/types/libtypes.a \
-                     util/db/libdb.a src/old_utils/liboldutils.a
+                     util/db/libdb.a src/old_utils/liboldutils.a \
+                     src/corba/libcorbadatatypes.a
 
 #src corba mojeid
 
@@ -809,12 +814,22 @@ src_cli_admin_fred_admin_LDADD = src/fredlib/libfred.a \
         src/model/libmodel.a \
         src/fredlib/banking/libbanking.a \
         src/corba/libcorba.a \
+            src/corba/libcorbaepp.a \
+	        src/corba/libcorbatechcheck.a \
+	        src/corba/libcorbalogger.a \
+	        src/corba/libcorbaadmin.a \
+	        src/corba/libcorbawhois.a \
+	        src/corba/libcorbaregistry.a \
+	        src/corba/libcorbafilters.a \
+	        src/corba/libcorbadatatypes.a \
         src/fredlib/messages/libmessages.a \
         src/fredlib/requests/librequests.a \
         src/fredlib/mojeid/libmojeid.a \
         util/libutil.a util/log/liblog.a util/types/libtypes.a util/db/libdb.a \
         util/conf/libconf.a src/old_utils/liboldutils.a \
-        util/hp/libhp.a
+        util/hp/libhp.a \
+        src/corba/libmailer.a \
+	    src/corba/libfilemanager.a
 
 #src cli_admin
 
@@ -847,7 +862,7 @@ tests_test_idl_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         src/corba/libcorbalogger.a \
         src/corba/libcorbaadmin.a \
         src/corba/libcorbawhois.a \
-        src/corba/libcorba_registry.a \
+        src/corba/libcorbaregistry.a \
         src/corba/libcorbafilters.a \
         src/corba/libcorbadatatypes.a
 
@@ -898,6 +913,21 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	src/fredlib/mojeid/libmojeid.a \
 	src/fredlib/banking/libbanking.a \
 	src/corba/libcorbamessages.a \
+			src/corba/libcorbamessages.a \
+			src/corba/libcorbamojeid.a \
+		    src/corba/libcorbazone.a \
+		    src/corba/libfilemanager.a \
+		    src/corba/libmailer.a \ 
+	    src/corba/libcorbazonegenerator.a \
+        src/corba/libcorbaepp.a \
+        src/corba/libcorbatechcheck.a \
+        src/corba/libcorbalogger.a \
+        src/corba/libcorbaadmin.a \
+        src/corba/libcorbawhois.a \
+        src/corba/libcorbaregistry.a \
+        src/corba/libcorbafilters.a \
+        src/corba/libcorbadatatypes.a \
+            src/corba/libmailer.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
 
                      

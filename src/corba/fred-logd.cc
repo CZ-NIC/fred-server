@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "Registry.hh"
+#include "Logger.hh"
 #include "admin/admin_impl.h"
 #include "log/log_impl_wrap.h"
 

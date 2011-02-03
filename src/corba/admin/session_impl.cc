@@ -2,7 +2,7 @@
 #include <memory>
 #include <iomanip>
 #include <algorithm>
-#include <corba/Registry.hh>
+#include <corba/Admin.hh>
 
 #include "session_impl.h"
 #include "old_utils/log.h"

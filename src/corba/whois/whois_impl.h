@@ -7,7 +7,7 @@
 #include "fredlib/registry.h"
 #include "old_utils/dbsql.h"
 
-#include "Registry.hh"
+#include "Whois.hh"
 
 class ccReg_Whois_i : public POA_ccReg::Whois,
   public PortableServer::RefCountServantBase
