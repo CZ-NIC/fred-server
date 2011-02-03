@@ -852,20 +852,6 @@ tools_logd_migration_migrate_log_LDADD = src/fredlib/requests/librequests.a \
 
 #tools logd_mirgation
 
-
-tests_test_idl_SOURCES = tests/test-idl.cc
-tests_test_idl_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
-        $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
-        src/corba/libcorbazonegenerator.a \
-        src/corba/libcorbaepp.a \
-        src/corba/libcorbatechcheck.a \
-        src/corba/libcorbalogger.a \
-        src/corba/libcorbaadmin.a \
-        src/corba/libcorbawhois.a \
-        src/corba/libcorbaregistry.a \
-        src/corba/libcorbafilters.a \
-        src/corba/libcorbadatatypes.a
-
 tests_test_server_SOURCES = tests/test-server.cc \
                      tests/test-server.h \
                      tests/test-conv.cc \
@@ -891,7 +877,6 @@ tests_test_server_SOURCES = tests/test-server.cc \
 tests_test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
                      $(AM_LDFLAGS)
-
 
 
 tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
@@ -930,7 +915,7 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
             src/corba/libmailer.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
 
-                     
+
 
 install-tests: $(SERVER_TESTS)
 	$(INSTALL_PROGRAM) $(SERVER_TESTS) $(bindir)
