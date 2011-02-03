@@ -576,30 +576,87 @@ bool ManagerImpl::i_closeRequest(
         }
 #endif // LOGD_VERIFY_INPUT
 
-        boost::format fmt_update = boost::format ("UPDATE request SET time_end='%1%'")
-                                % boost::posix_time::to_iso_extended_string(microsec_clock::universal_time());
+    //set time_end
+    std::string query("UPDATE request SET time_end = $1::timestamp");
+    Database::QueryParams update_request_params;
+    update_request_params.push_back(
+            boost::posix_time::to_iso_extended_string(
+                    microsec_clock::universal_time()));
 
-    std::string query(fmt_update.str());
+    //preallocate
+    query.reserve(512);
+    update_request_params.reserve(20);
 
     if(session_id != 0) {
+        //set session_id
+        update_request_params.push_back(
+                boost::lexical_cast<std::string>(session_id));
+        query += ", session_id = $"
+            + boost::lexical_cast<std::string>(update_request_params.size())
+            +"::bigint";
 
-        query = query + ", session_id=" + boost::lexical_cast<std::string>(session_id);
         std::string user_name;
         Database::ID user_id;
         getSessionUser(db, session_id, &user_name, &user_id);
 
         if(!user_name.empty()) {
-            query = query +  (boost::format(", user_name='%1%'") % user_name ).str();
+            //set user_name
+            update_request_params.push_back(user_name);
+            query += ", user_name = $"
+                    + boost::lexical_cast<std::string>(update_request_params.size())
+                    +"::text";
         }
         if(user_id != 0) {
-            query = query + (boost::format(", user_id=%1%") % user_id).str();
+            //set user_id
+            update_request_params.push_back(
+                    boost::lexical_cast<std::string>(user_id));
+            query += ", user_id = $"
+                    + boost::lexical_cast<std::string>(update_request_params.size())
+                    + "::bigint";
         }
     }
-    query = query + (boost::format(
-        ", result_code_id=get_result_code_id( %1% , %2% )")
-        % service_id % result_code).str();
-    query = query + " WHERE id=" + boost::lexical_cast<std::string>(id);
-    db.exec(query);
+    //set service_id
+    update_request_params.push_back(
+            boost::lexical_cast<std::string>(service_id));
+    query += ", result_code_id=get_result_code_id( $"
+            + boost::lexical_cast<std::string>(update_request_params.size())
+            + "::integer";
+
+    //set result_code
+    update_request_params.push_back(
+            boost::lexical_cast<std::string>(result_code));
+    query += ", $"
+            + boost::lexical_cast<std::string>(update_request_params.size())
+            + "::integer" + " )";
+
+    //by id
+    update_request_params.push_back(
+            boost::lexical_cast<std::string>(id));
+    query += " WHERE id = $"
+            + boost::lexical_cast<std::string>(update_request_params.size())
+            + "::bigint";
+
+    //by time_begin
+    update_request_params.push_back(
+            boost::posix_time::to_iso_extended_string(request_time));
+    query += " and time_begin = $"
+            + boost::lexical_cast<std::string>(update_request_params.size())
+            + "::timestamp";
+
+    //by service_id
+    update_request_params.push_back(
+                boost::lexical_cast<std::string>(service_id));
+    query += " and service_id = $"
+            + boost::lexical_cast<std::string>(update_request_params.size())
+            + "::bigint";
+
+    //by is_monitoring
+    update_request_params.push_back(monitoring);
+    query += " and is_monitoring = $"
+                + boost::lexical_cast<std::string>(update_request_params.size())
+                + "::boolean";
+
+    db.exec_params(query, update_request_params);
 
     // insert output content
     if(content != NULL && content[0] != '\0') {
