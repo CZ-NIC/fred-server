@@ -292,6 +292,77 @@ AC_CHECK_FILE(
 	)]
 )
 
+AC_CHECK_FILE(
+	[$IDLDIR/_dataTypes.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain _dataTypes.idl
+		(use --with-idldir)]
+	)]
+)
+
+AC_CHECK_FILE(
+	[$IDLDIR/Filters.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain Filters.idl
+		(use --with-idldir)]
+	)]
+)
+
+AC_CHECK_FILE(
+	[$IDLDIR/Whois.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain Whois.idl
+		(use --with-idldir)]
+	)]
+)
+
+AC_CHECK_FILE(
+	[$IDLDIR/Admin.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain Admin.idl
+		(use --with-idldir)]
+	)]
+)
+
+AC_CHECK_FILE(
+	[$IDLDIR/Logger.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain Logger.idl
+		(use --with-idldir)]
+	)]
+)
+
+AC_CHECK_FILE(
+	[$IDLDIR/TechCheck.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain TechCheck.idl
+		(use --with-idldir)]
+	)]
+)
+
+AC_CHECK_FILE(
+	[$IDLDIR/EPP.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain EPP.idl
+		(use --with-idldir)]
+	)]
+)
+
+AC_CHECK_FILE(
+	[$IDLDIR/ZoneGenerator.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain ZoneGenerator.idl
+		(use --with-idldir)]
+	)]
+)
 
 AC_ARG_WITH(
   [libidn], 
