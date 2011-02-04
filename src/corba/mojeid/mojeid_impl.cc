@@ -164,9 +164,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
         try {
             if (server_conf_->notify_commands) {
-                Fred::create_request_notifier_mojeid().notify_if(
-                            request.get_request_id(), Fred::NotificationEmailSender(mailer_),
-                            Fred::IsRequestType(Fred::CREATE_CONTACT));
+                /* it's not possible create contact have notify email */
             }
         }
         catch (...) {
@@ -210,9 +208,7 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
 
         try {
             if (server_conf_->notify_commands) {
-                Fred::create_request_notifier_mojeid().notify_if(
-                            _request_id, Fred::NotificationEmailSender(mailer_),
-                            Fred::IsRequestType(Fred::TRANSFER_CONTACT));
+                Fred::MojeID::notify_contact_transfer(_request_id, mailer_);
             }
         }
         catch (...) {
@@ -718,9 +714,7 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         /* request notification */
         try {
             if (rid && server_conf_->notify_commands) {
-                Fred::create_request_notifier_mojeid().notify_if(
-                            rid, Fred::NotificationEmailSender(mailer_),
-                            Fred::IsRequestType(Fred::UPDATE_CONTACT));
+                Fred::MojeID::notify_contact_update(rid, mailer_);
             }
         }
         catch (...) {

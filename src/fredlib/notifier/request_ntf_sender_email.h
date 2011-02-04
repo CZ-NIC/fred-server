@@ -46,8 +46,7 @@ public:
     }
 
 
-    template<class RT>
-    void send(const RequestNotification<RT> &_ntf, const std::string &_template_name) const
+    void send(const RequestNotification &_ntf) const
     {
         Logging::Context context("notifier:email_sender");
         LOGGER(PACKAGE).info(boost::format(
@@ -80,15 +79,16 @@ public:
                     % container2comma_list(rcpts_emails));
         }
 
-        Mailer::Parameters  m_params;
         Mailer::Handles     m_handles;
         Mailer::Attachments m_attachs;
 
-        /* this is copied from mojeid/request.h */
-        m_params["ticket"] = str(boost::format("MojedID-%010d") % _ntf.get_request_id());
-        m_params["handle"] = str(boost::format("%1%") % _ntf.get_object_handle());
-        m_params["type"]   = str(boost::format("%1%") % _ntf.get_object_type());
-        m_params["registrar"] = "";
+        std::string         m_template_name = _ntf.get_template_name();
+        Mailer::Parameters  m_params;
+
+        m_params["ticket"]    = _ntf.get_ticket_id();
+        m_params["handle"]    = _ntf.get_object_handle();
+        m_params["type"]      = boost::lexical_cast<std::string>(_ntf.get_object_type());
+        m_params["registrar"] = _ntf.get_registrar_info();
 
         const ChangesMap &changes = _ntf.get_object_changes();
         m_params["changes"] = changes.size() > 0 ? "1" : "0";
@@ -99,16 +99,23 @@ public:
             m_params["changes." + it->first + ".new"] = it->second.second;
         }
 
+
         for (unsigned int i = 0; i < rcpts_emails.size(); ++i) {
             try {
-                mm_->sendEmail("", rcpts_emails[i], "", _template_name, m_params, m_handles, m_attachs);
+                unsigned long long msg_id = mm_->sendEmail("", rcpts_emails[i], "", m_template_name, m_params, m_handles, m_attachs);
+                try {
+                    _ntf.save_relation(msg_id);
+                }
+                catch (...) {
+                    LOGGER(PACKAGE).error(boost::format("request notification save failure"
+                                " (request_id=%1% msg_id=%2%") % _ntf.get_request_id() % msg_id);
+                }
             }
             catch (...) {
                 LOGGER(PACKAGE).error(boost::format("sending failure (email=%1%  ticket=%2%)")
                         % rcpts_emails[i] % m_params["ticket"]);
             }
         }
-
     }
 
 

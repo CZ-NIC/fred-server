@@ -1,49 +1,23 @@
 #ifndef MOJEID_NOTIFIER_H__
 #define MOJEID_NOTIFIER_H__
 
-#include "fredlib/notifier/request_notifier.h"
-#include "fredlib/notifier/request_ntf_handler_contact.h"
-#include "fredlib/notifier/request_ntf_sender_email.h"
-
-#include <boost/assign/list_of.hpp>
-#include <map>
+#include <boost/shared_ptr.hpp>
+#include "fredlib/mailer.h"
 
 
 namespace Fred {
+namespace MojeID {
 
 
-enum RequestType {
-    CREATE_CONTACT,
-    UPDATE_CONTACT,
-    TRANSFER_CONTACT,
-    DELETE_CONTACT,
-};
+void notify_contact_update(const unsigned long long &_request_id,
+                           boost::shared_ptr<Fred::Mailer::Manager> _mailer);
 
 
-typedef RequestNotifier<RequestType> MojeIDRequestNotifier;
+void notify_contact_transfer(const unsigned long long &_request_id,
+                             boost::shared_ptr<Fred::Mailer::Manager> _mailer);
 
 
-struct IsRequestType
-{
-    IsRequestType(const RequestType &_rt) : type(_rt) { }
-
-    bool operator()(const RequestNotification<RequestType> &_ntf) const
-    {
-        if (_ntf.get_request_type() == type) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    RequestType type;
-};
-
-
-MojeIDRequestNotifier create_request_notifier_mojeid();
-
-
+}
 }
 
 

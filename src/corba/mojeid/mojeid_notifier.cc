@@ -1,94 +1,40 @@
 #include "mojeid_notifier.h"
+#include "fredlib/notifier/request_ntf_handler_contact.h"
+#include "fredlib/notifier/request_ntf_sender_email.h"
 
 
 namespace Fred {
+namespace MojeID {
 
 
-template<>
-RequestType MojeIDRequestNotifier::get_request_type(
-        const unsigned long long &_request_id,
-        const unsigned short &_object_type) const
+void notify_contact_update(const unsigned long long &_request_id,
+                           boost::shared_ptr<Fred::Mailer::Manager> _mailer)
 {
-    if (_object_type != 1) {
-        throw std::runtime_error("unsuported object-request type");
-    }
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result act_info = conn.exec_params(
-            "SELECT oh.historyid, oh.trdate, oh.update FROM object_history oh"
-            " JOIN history h ON h.id = oh.historyid"
-            " WHERE h.request_id = $1::integer",
-            Database::query_param_list(_request_id));
+    Fred::RequestNotification ntf(_request_id, "MojeID");
 
-    if (act_info.size() != 1) {
-        throw std::runtime_error("no such request in object history");
+    if (ntf.get_request_type() == CMD_CONTACT_UPDATE) {
+        Fred::request_contact_update(ntf);
+        ntf.set_template_name("notification_update");
+        NotificationEmailSender sender(_mailer);
+        sender.send(ntf);
     }
-
-    unsigned long long hid = act_info[0][0];
-    Database::Result prev_info = conn.exec_params(
-            "SELECT oh.historyid, oh.trdate, oh.update FROM object_history oh"
-            " JOIN history h ON h.id = oh.historyid"
-            " WHERE h.next = $1::integer",
-            Database::query_param_list(hid));
-
-    if (prev_info.size() != 1) {
-        if (_object_type == 1) {
-            return CREATE_CONTACT;
-        }
-    }
-
-    ptime p_tr = prev_info[0][1];
-    ptime a_tr = act_info[0][1];
-    ptime p_up = prev_info[0][2];
-    ptime a_up = act_info[0][2];
-
-    if (p_tr != a_tr) {
-        if (_object_type == 1) {
-            return TRANSFER_CONTACT;
-        }
-    }
-    else if (p_up != a_up) {
-        if (_object_type == 1) {
-            return UPDATE_CONTACT;
-        }
-    }
-    throw std::runtime_error("unknown request type");
 }
 
 
-template<> template<>
-const std::string MojeIDRequestNotifier::get_template(
-        const RequestType &_request_type,
-        const NotificationEmailSender&) const
+void notify_contact_transfer(const unsigned long long &_request_id,
+                           boost::shared_ptr<Fred::Mailer::Manager> _mailer)
 {
-    switch (_request_type) {
-        case CREATE_CONTACT:
-            return "notification_create";
-        case UPDATE_CONTACT:
-            return "notification_update";
-        case TRANSFER_CONTACT:
-            return "notification_transfer";
-        case DELETE_CONTACT:
-            return "notification_delete";
+    Fred::RequestNotification ntf(_request_id, "MojeID");
+
+    if (ntf.get_request_type() == CMD_CONTACT_TRANSFER) {
+        Fred::request_contact_transfer(ntf);
+        ntf.set_template_name("notification_transfer");
+        NotificationEmailSender sender(_mailer);
+        sender.send(ntf);
     }
-    throw std::runtime_error("unknown template for request type");
 }
 
 
-MojeIDRequestNotifier::RequestHandlerMap init_handlers()
-{
-    MojeIDRequestNotifier::RequestHandlerMap handlers = boost::assign::map_list_of
-            (CREATE_CONTACT, request_contact_create<RequestType>)
-            (TRANSFER_CONTACT, request_contact_transfer<RequestType>)
-            (UPDATE_CONTACT, request_contact_update<RequestType>);
-    return handlers;
 }
-
-
-MojeIDRequestNotifier create_request_notifier_mojeid()
-{
-    static MojeIDRequestNotifier notifier(init_handlers());
-    return notifier;
-}
-
 }
 
