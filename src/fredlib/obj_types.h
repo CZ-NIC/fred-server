@@ -365,9 +365,7 @@ public:
     {
       Database::Connection conn = Database::Manager::acquire();
 
-      boost::format fmt_timeout =  boost::format("SET statement_timeout=%1%")
-                           % _timeout;
-      conn.exec(fmt_timeout.str());
+      conn.setQueryTimeout(_timeout);
     }
 
 };//ObjList
