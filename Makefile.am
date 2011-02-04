@@ -446,7 +446,8 @@ src_fredlib_requests_librequests_a_SOURCES =  \
 
 #src fredlib requests
 
-src_fredlib_mojeid_libmojeid_a_SOURCES = src/fredlib/mojeid/contact.h \
+src_fredlib_mojeid_libmojeid_a_SOURCES = \
+		  src/fredlib/mojeid/contact.h \
 		  src/fredlib/mojeid/contact.cc \
 		  src/fredlib/mojeid/nullable.h \
 		  src/fredlib/mojeid/request.h \
@@ -457,9 +458,10 @@ src_fredlib_mojeid_libmojeid_a_SOURCES = src/fredlib/mojeid/contact.h \
 #src fredlib mojeid
 
 src_fredlib_notifier_libnotifier_a_SOURCES = \
-		src/fredlib/notifier/request_notifier.h \
 		src/fredlib/notifier/request_notification.h \
+		src/fredlib/notifier/request_notification.cc \
 		src/fredlib/notifier/request_ntf_handler_contact.h \
+		src/fredlib/notifier/request_ntf_handler_contact.cc \
 		src/fredlib/notifier/request_ntf_sender_email.h
 
 
@@ -747,12 +749,12 @@ src_corba_mojeid_fred_mifd_LDFLAGS =  $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_SERIALIZATION_LIB)
 
 src_corba_mojeid_fred_mifd_LDADD = $(LIBIDN_LIBS) \
+                     src/fredlib/notifier/libnotifier.a \
                      src/fredlib/libfred.a \
                      src/model/libmodel.a \
                      src/fredlib/banking/libbanking.a \
                      src/fredlib/mojeid/libmojeid.a \
                      src/fredlib/messages/libmessages.a \
-                     src/fredlib/notifier/libnotifier.a \
                      util/libutil.a util/log/liblog.a util/types/libtypes.a \
                      util/db/libdb.a src/old_utils/liboldutils.a \
                      src/corba/libcorbadatatypes.a
