@@ -218,7 +218,7 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
         return cid;
 
     }
-    catch (Fred::NOT_FOUND) {
+    catch (Fred::NOT_FOUND&) {
         LOGGER(PACKAGE).error(boost::format(
                     "cannot process identification request"
                     " (not found) ident=%1%") % _ident_request_id);
