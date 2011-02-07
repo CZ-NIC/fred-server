@@ -97,27 +97,19 @@ public:
       throw (ccReg::Admin::SQL_ERROR);
   ccReg::AdminRegistrar* getRegistrarById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
-  ccReg::AdminRegistrar* getRegistrarByHandle(const char* handle)
-      throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
 
   // contact detail
   void fillContact(ccReg::ContactDetail* cv, Fred::Contact::Contact* c);
-  ccReg::ContactDetail* getContactByHandle(const char* handle)
-      throw (ccReg::Admin::ObjectNotFound);
   ccReg::ContactDetail* getContactById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
 
   // nsset
   void fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n);
-  ccReg::NSSetDetail* getNSSetByHandle(const char* handle)
-      throw (ccReg::Admin::ObjectNotFound);
   ccReg::NSSetDetail* getNSSetById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
 
   // keyset
   void fillKeySet(ccReg::KeySetDetail* cn, Fred::KeySet::KeySet* n);
-  ccReg::KeySetDetail *getKeySetByHandle(const char* handle)
-      throw (ccReg::Admin::ObjectNotFound);
   ccReg::KeySetDetail *getKeySetById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
   // ccReg::KeySetDetail *getKeySetByDomainFQDN(const char *fqdn)
@@ -129,8 +121,6 @@ public:
 
   // domain
   void fillDomain(ccReg::DomainDetail* cd, Fred::Domain::Domain* d);
-  ccReg::DomainDetail* getDomainByFQDN(const char* fqdn)
-      throw (ccReg::Admin::ObjectNotFound);
   ccReg::DomainDetail* getDomainById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::DomainDetails *getDomainsByKeySetId(ccReg::TID id, CORBA::Long limit)
@@ -163,7 +153,6 @@ public:
   Registry::EPPActionTypeSeq* getEPPActionTypeList();
   Registry::CountryDescSeq* getCountryDescList();
   char* getDefaultCountry();
-  Registry::ObjectStatusDescSeq* getDomainStatusDescList(const char *lang);
   Registry::ObjectStatusDescSeq* getContactStatusDescList(const char *lang);
   Registry::ObjectStatusDescSeq* getNSSetStatusDescList(const char *lang);
   Registry::ObjectStatusDescSeq* getKeySetStatusDescList(const char *lang);

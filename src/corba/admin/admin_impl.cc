@@ -437,40 +437,6 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
   }
 }
 
-ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
-    throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR) {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
-
-  LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
-  if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
-
-  try {
-    DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                              , ccReg::Admin::SQL_ERROR());
-    std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(ldb_disconnect_guard,restricted_handles_)
-    );
-    Fred::Registrar::Manager *rm = regm->getRegistrarManager();
-    Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
-    Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
-    std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
-    r->addHandle().setValue(handle);
-    unionFilter->addFilter( r.release() );
-    rl->reload(*unionFilter.get());
-
-    if (rl->size() < 1) {
-      throw ccReg::Admin::ObjectNotFound();
-    }
-    ccReg::AdminRegistrar* creg = new ccReg::AdminRegistrar;
-    fillRegistrar(*creg,rl->get(0));
-    return creg;
-  }
-  catch (Fred::SQL_ERROR) {
-    throw ccReg::Admin::SQL_ERROR();
-  }
-}
-
 void ccReg_Admin_i::fillContact(ccReg::ContactDetail* cc,
                                 Fred::Contact::Contact* c) {
 
@@ -519,33 +485,6 @@ void ccReg_Admin_i::fillContact(ccReg::ContactDetail* cc,
   cc->statusList.length(slist.size());
   for (unsigned i=0; i<slist.size(); i++)
     cc->statusList[i] = slist[i];
-}
-
-ccReg::ContactDetail* ccReg_Admin_i::getContactByHandle(const char* handle)
-    throw (ccReg::Admin::ObjectNotFound) {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
-
-  TRACE(boost::format("[CALL] ccReg_Admin_i::getContactByHandle('%1%')") % handle);
-
-  if (!handle || !*handle)
-    throw ccReg::Admin::ObjectNotFound();
-
-  DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                , ccReg::Admin::SQL_ERROR());
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , restricted_handles_));
-  Fred::Contact::Manager *cr = r->getContactManager();
-  std::auto_ptr<Fred::Contact::List> cl(cr->createList());
-  cl->setWildcardExpansion(false);
-  cl->setHandleFilter(handle);
-  cl->reload();
-  if (cl->getCount() != 1) {
-    throw ccReg::Admin::ObjectNotFound();
-  }
-  ccReg::ContactDetail* cc = new ccReg::ContactDetail;
-  fillContact(cc, cl->getContact(0));
-  return cc;
 }
 
 ccReg::ContactDetail* ccReg_Admin_i::getContactById(ccReg::TID id)
@@ -622,34 +561,6 @@ void ccReg_Admin_i::fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n) {
     cn->statusList[i] = slist[i];
 
   cn->reportLevel = n->getCheckLevel();
-}
-
-ccReg::NSSetDetail* ccReg_Admin_i::getNSSetByHandle(const char* handle)
-    throw (ccReg::Admin::ObjectNotFound) {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
-
-  TRACE(boost::format("[CALL] ccReg_Admin_i::getNSSetByHandle('%1%')") % handle);
-
-  if (!handle || !*handle)
-    throw ccReg::Admin::ObjectNotFound();
-
-  DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                , ccReg::Admin::SQL_ERROR());
-
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , restricted_handles_));
-  Fred::NSSet::Manager *nr = r->getNSSetManager();
-  std::auto_ptr<Fred::NSSet::List> nl(nr->createList());
-  nl->setWildcardExpansion(false);
-  nl->setHandleFilter(handle);
-  nl->reload();
-  if (nl->getCount() != 1) {
-    throw ccReg::Admin::ObjectNotFound();
-  }
-  ccReg::NSSetDetail* cn = new ccReg::NSSetDetail;
-  fillNSSet(cn, nl->getNSSet(0));
-  return cn;
 }
 
 ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
@@ -734,39 +645,6 @@ ccReg_Admin_i::fillKeySet(ccReg::KeySetDetail *ck, Fred::KeySet::KeySet *k)
     ck->statusList.length(slist.size());
     for (unsigned int i = 0; i < slist.size(); i++)
         ck->statusList[i] = slist[i];
-}
-
-ccReg::KeySetDetail *
-ccReg_Admin_i::getKeySetByHandle(const char *handle)
-    throw (ccReg::Admin::ObjectNotFound)
-{
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
-
-    TRACE(boost::format(
-                "[CALL] ccReg_Admin_i::getKeySetByHandle('%1%')") % handle);
-
-    if (!handle || !*handle)
-        throw ccReg::Admin::ObjectNotFound();
-
-    DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                    , ccReg::Admin::SQL_ERROR());
-
-    std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard,
-                restricted_handles_));
-    Fred::KeySet::Manager *kr = r->getKeySetManager();
-    std::auto_ptr<Fred::KeySet::List> kl(kr->createList());
-    kl->setWildcardExpansion(false);
-    kl->setHandleFilter(handle);
-    kl->reload();
-
-    if (kl->getCount() != 1) {
-        throw ccReg::Admin::ObjectNotFound();
-    }
-
-    ccReg::KeySetDetail *ck = new ccReg::KeySetDetail;
-    fillKeySet(ck, kl->getKeySet(0));
-    return ck;
 }
 
 ccReg::KeySetDetail *
@@ -933,34 +811,6 @@ void ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd,
   catch (Fred::NOT_FOUND) {
     /// some implementation error - index is out of bound - WHAT TO DO?
   }
-}
-
-ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
-    throw (ccReg::Admin::ObjectNotFound) {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
-
-  TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainByFQDN('%1%')") % fqdn);
-
-  if (!fqdn || !*fqdn)
-    throw ccReg::Admin::ObjectNotFound();
-
-  DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                  , ccReg::Admin::SQL_ERROR());
-
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , restricted_handles_));
-  Fred::Domain::Manager *dm = r->getDomainManager();
-  std::auto_ptr<Fred::Domain::List> dl(dm->createList());
-  dl->setWildcardExpansion(false);
-  dl->setFQDNFilter(r->getZoneManager()->encodeIDN(fqdn));
-  dl->reload();
-  if (dl->getCount() != 1) {
-    throw ccReg::Admin::ObjectNotFound();
-  }
-  ccReg::DomainDetail* cd = new ccReg::DomainDetail;
-  fillDomain(cd, dl->getDomain(0));
-  return cd;
 }
 
 ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
@@ -1331,28 +1181,6 @@ char* ccReg_Admin_i::getDefaultCountry() {
   ConnectionReleaser releaser;
 
   return CORBA::string_dup("CZ");
-}
-
-Registry::ObjectStatusDescSeq* ccReg_Admin_i::getDomainStatusDescList(const char *lang) {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
-
-  Registry::ObjectStatusDescSeq* o = new Registry::ObjectStatusDescSeq;
-  for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
-    const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
-    if (sd->getExternal() && sd->isForType(3)) {
-      o->length(o->length()+1);
-      try {
-        (*o)[o->length()-1].name = DUPSTRC(sd->getDesc(lang));
-      } catch (...) {
-        // unknown language
-        (*o)[o->length()-1].name = CORBA::string_dup("");
-      }
-      (*o)[o->length()-1].id    = sd->getId();
-      (*o)[o->length()-1].shortName = DUPSTRFUN(sd->getName);
-    }
-  }
-  return o;
 }
 
 Registry::ObjectStatusDescSeq* ccReg_Admin_i::getContactStatusDescList(const char *lang) {
