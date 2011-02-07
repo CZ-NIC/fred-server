@@ -35,6 +35,16 @@ public:
                                                                         beg_set(false),
                                                                         end_set(false) {
   }
+/*
+  /// copy constructor
+  Interval(const Interval<Tp>& i) :
+      Simple(i),
+      column(i.column),
+      value_beg(i.value_beg), value_end(i.value_end),
+      beg_set(i.beg_set), end_set(i.end_set),
+      column(i.column){
+  }
+*/
 
   virtual ~Interval() {
   }
@@ -59,6 +69,10 @@ public:
     value_beg = _beg;
     value_end = _end;
     beg_set = end_set = true;
+  }
+
+  void setColumn(const Column &c) {
+    column = c;
   }
 
   virtual Tp getValueBeg() const {
@@ -117,6 +131,10 @@ public:
     TRACE("[CALL] _BaseDTInterval::setValue()");
     active = true;
     value = _value;
+  }
+
+  void setColumn(const Column &c) {
+    column = c;
   }
 
   virtual const DTp& getValue() const {
@@ -421,6 +439,10 @@ public:
     active = true;
   }
   
+  void setColumn(const Column &col) {
+    column = col;
+  }
+
   virtual void setValue(const Null<Tp>& _value) {
     TRACE("[CALL] Value<Tp>::setValue()");
     active = true;

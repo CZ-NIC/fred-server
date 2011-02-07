@@ -27,6 +27,12 @@ public:
     Filter(_conj), allowed_wildcard(true) {
   }
   
+  Simple(const Simple &s) : Filter(s),
+          allowed_wildcard(s.allowed_wildcard),
+          value_post_(s.value_post_),
+          value_pre_(s.value_pre_) {
+  }
+
   virtual ~Simple();
 
   virtual bool isSimple() const {

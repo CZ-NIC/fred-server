@@ -32,10 +32,14 @@ namespace Filters {
 
 class ServiceType : public Database::Filters::Value<long> {
 public:
-	ServiceType(const long val = 0) : Value<long>() {
+    using Database::Filters::Value<long>::serialize;
+
+	ServiceType(const long val) : Value<long>() {
 		setValue(val);
 	}	
 	ServiceType(const Column &col) : Database::Filters::Value<long>(col) {
+	}
+	ServiceType() {
 	}
 /*
 	void setValue(ServiceType &val) {
@@ -65,11 +69,14 @@ public:
 
 class RequestType : public Database::Filters::Value<long> {
 public:
-	RequestType(const long val = 0) : Value<long>() {
+	RequestType(const long val) : Value<long>() {
 		setValue(val);
 	}	
 	RequestType(const Column &col) : Database::Filters::Value<long>(col) {
 	}
+	RequestType() {
+	}
+
 	friend std::ostream& operator<<(std::ostream &_os, const RequestType& _v); 
 	friend std::istream& operator>>(std::istream &_is, RequestType& _v);
 	friend bool operator<(const RequestType &_left, const RequestType &_right);

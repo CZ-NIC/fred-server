@@ -38,6 +38,12 @@ public:
   Filter(const std::string& _conj) :
     neg(false), active(false), conj(_conj) {
   }
+
+  /// copy constructor
+  Filter(const Filter &f) :
+      neg(f.neg), active(f.active), conj(f.conj), name(f.name) {
+  }
+
   virtual ~Filter();
   virtual bool isSimple() const = 0;
   virtual void setAND() {
