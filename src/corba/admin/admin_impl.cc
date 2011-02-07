@@ -370,38 +370,6 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
   }
 }
 
-ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
-    throw (ccReg::Admin::SQL_ERROR) {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
-
-  try {
-    DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                  , ccReg::Admin::SQL_ERROR());
-    std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(ldb_disconnect_guard,restricted_handles_)
-    );
-    Fred::Registrar::Manager *rm = regm->getRegistrarManager();
-    Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
-
-    Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
-    std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
-    r->addZoneFqdn().setValue(zone);
-    unionFilter->addFilter( r.release() );
-    rl->reload(*unionFilter.get());
-
-    LOG( NOTICE_LOG, "getRegistrars: num -> %d", rl->size() );
-    ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
-    reglist->length(rl->size());
-    for (unsigned i=0; i<rl->size(); i++)
-    fillRegistrar((*reglist)[i],rl->get(i));
-    return reglist;
-  }
-  catch (Fred::SQL_ERROR) {
-    throw ccReg::Admin::SQL_ERROR();
-  }
-}
-
 ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR) {
   Logging::Context ctx(server_name_);

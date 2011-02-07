@@ -33,6 +33,7 @@ public:
   virtual ~ccReg_Whois_i();
 
   ccReg::AdminRegistrar* getRegistrarByHandle(const char* handle);
+  ccReg::RegistrarList* getRegistrarsByZone(const char *zone);
   ccReg::ContactDetail* getContactByHandle(const char* handle);
   ccReg::NSSetDetail* getNSSetByHandle(const char* handle);
   ccReg::KeySetDetail *getKeySetByHandle(const char* handle);

@@ -93,8 +93,6 @@ public:
   
   // registrar management
   ccReg::RegistrarList* getRegistrars() throw (ccReg::Admin::SQL_ERROR);
-  ccReg::RegistrarList* getRegistrarsByZone(const char *zone)
-      throw (ccReg::Admin::SQL_ERROR);
   ccReg::AdminRegistrar* getRegistrarById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
 

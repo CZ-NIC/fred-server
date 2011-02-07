@@ -340,6 +340,74 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
     }
 }//ccReg_Whois_i::getRegistrarByHandle
 
+
+ccReg::RegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
+{
+  Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+
+  try
+  {
+    DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
+                                                  , ccReg::Admin::SQL_ERROR());
+    std::auto_ptr<Fred::Manager> regm(
+        Fred::Manager::create(ldb_disconnect_guard,registry_restricted_handles_)
+    );
+    Fred::Registrar::Manager *rm = regm->getRegistrarManager();
+    Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
+
+    Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
+    std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
+    r->addZoneFqdn().setValue(zone);
+    unionFilter->addFilter( r.release() );
+    rl->reload(*unionFilter.get());
+
+    Logging::Manager::instance_ref()
+        .get(server_name_.c_str())
+        .message( NOTICE_LOG
+                , "getRegistrarsByZone: num -> %d", rl->size());
+
+    ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
+    reglist->length(rl->size());
+    for (unsigned i=0; i<rl->size(); i++)
+    fillRegistrar((*reglist)[i],rl->get(i));
+    return reglist;
+  }//try
+  catch (Fred::SQL_ERROR)
+  {
+      Logging::Manager::instance_ref()
+          .get(server_name_.c_str())
+          .message( ERROR_LOG
+                  , "getRegistrarsByZone: Fred::SQL_ERROR exception ");
+      throw ccReg::Whois::Error();
+  }
+  catch (const ccReg::Whois::Error& )
+  {
+    Logging::Manager::instance_ref()
+        .get(server_name_.c_str())
+        .message( ERROR_LOG
+                , "getRegistrarsByZone: ccReg::Whois::Error");
+    throw;
+  }
+  catch (const std::exception& ex)
+  {
+    Logging::Manager::instance_ref()
+        .get(server_name_.c_str())
+        .message( ERROR_LOG
+                , "getRegistrarsByZone: std::exception %s", ex.what());
+    throw ccReg::Whois::Error();
+  }
+  catch (...)
+  {
+    Logging::Manager::instance_ref()
+        .get(server_name_.c_str())
+        .message( ERROR_LOG
+                , "getRegistrarsByZone: unknown exception ");
+    throw ccReg::Whois::Error();
+  }
+}//ccReg_Whois_i::getRegistrarsByZone
+
+
 ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
 {
     Logging::Context ctx(server_name_);
