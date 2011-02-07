@@ -900,7 +900,7 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 			src/corba/libcorbamojeid.a \
 		    src/corba/libcorbazone.a \
 		    src/corba/libfilemanager.a \
-		    src/corba/libmailer.a \ 
+		    src/corba/libmailer.a \
 	    src/corba/libcorbazonegenerator.a \
         src/corba/libcorbaepp.a \
         src/corba/libcorbatechcheck.a \
