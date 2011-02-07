@@ -847,3 +847,152 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getDomainStatusDescList(const char
     }
 
 }//ccReg_Whois_i::getDomainStatusDescList
+
+Registry::ObjectStatusDescSeq* ccReg_Whois_i::getContactStatusDescList(const char *lang)
+{
+  Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+    try
+    {
+      Registry::ObjectStatusDescSeq* o = new Registry::ObjectStatusDescSeq;
+      for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
+        const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
+        if (sd->getExternal() && sd->isForType(1)) {
+          o->length(o->length()+1);
+          try {
+            (*o)[o->length()-1].name = DUPSTRC(sd->getDesc(lang));
+          } catch (...) {
+            // unknown language
+            (*o)[o->length()-1].name = CORBA::string_dup("");
+          }
+          (*o)[o->length()-1].id    = sd->getId();
+          (*o)[o->length()-1].shortName = DUPSTRFUN(sd->getName);
+        }
+      }
+      return o;
+    }//try
+    catch (const ccReg::Whois::Error& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getContactStatusDescList: ccReg::Whois::Error");
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getContactStatusDescList: std::exception %s", ex.what());
+        throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                    , "getContactStatusDescList: unknown exception ");
+        throw ccReg::Whois::Error();
+    }
+}//ccReg_Whois_i::getContactStatusDescList
+
+Registry::ObjectStatusDescSeq* ccReg_Whois_i::getNSSetStatusDescList(const char *lang)
+{
+  Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+  try
+  {
+      Registry::ObjectStatusDescSeq* o = new Registry::ObjectStatusDescSeq;
+      for (unsigned i=0; i<registry_manager_->getStatusDescCount(); i++) {
+        const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
+        if (sd->getExternal() && sd->isForType(2)) {
+          o->length(o->length()+1);
+          try {
+            (*o)[o->length()-1].name = DUPSTRC(sd->getDesc(lang));
+          } catch (...) {
+            // unknown language
+            (*o)[o->length()-1].name = CORBA::string_dup("");
+          }
+          (*o)[o->length()-1].id    = sd->getId();
+          (*o)[o->length()-1].shortName = DUPSTRFUN(sd->getName);
+        }
+      }
+      return o;
+  }//try
+  catch (const ccReg::Whois::Error& )
+  {
+      Logging::Manager::instance_ref()
+          .get(server_name_.c_str())
+          .message( ERROR_LOG
+              , "getNSSetStatusDescList: ccReg::Whois::Error");
+      throw;
+  }
+  catch (const std::exception& ex)
+  {
+      Logging::Manager::instance_ref()
+          .get(server_name_.c_str())
+          .message( ERROR_LOG
+              , "getNSSetStatusDescList: std::exception %s", ex.what());
+      throw ccReg::Whois::Error();
+  }
+  catch (...)
+  {
+      Logging::Manager::instance_ref()
+          .get(server_name_.c_str())
+          .message( ERROR_LOG
+                  , "getNSSetStatusDescList: unknown exception ");
+      throw ccReg::Whois::Error();
+  }
+}//ccReg_Whois_i::getNSSetStatusDescList
+
+Registry::ObjectStatusDescSeq* ccReg_Whois_i::getKeySetStatusDescList(const char *lang)
+{
+  Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+    try
+    {
+      Registry::ObjectStatusDescSeq *o = new Registry::ObjectStatusDescSeq;
+        for (unsigned int i = 0; i < registry_manager_->getStatusDescCount(); i++) {
+            const Fred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
+            if (sd->getExternal() && sd->isForType(4)) {
+                o->length(o->length() + 1);
+                try {
+                    (*o)[o->length()-1].name = DUPSTRC(sd->getDesc(lang));
+                }
+                catch (...) {
+                    //unknown lang
+                    (*o)[o->length()-1].name = CORBA::string_dup("");
+                }
+                (*o)[o->length()-1].id    = sd->getId();
+                (*o)[o->length()-1].shortName = DUPSTRFUN(sd->getName);
+            }
+        }
+        return o;
+    }//try
+    catch (const ccReg::Whois::Error& )
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getKeySetStatusDescList: ccReg::Whois::Error");
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                , "getKeySetStatusDescList: std::exception %s", ex.what());
+        throw ccReg::Whois::Error();
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(server_name_.c_str())
+            .message( ERROR_LOG
+                    , "getKeySetStatusDescList: unknown exception ");
+        throw ccReg::Whois::Error();
+    }
+}//ccReg_Whois_i::getKeySetStatusDescList
+

@@ -153,9 +153,6 @@ public:
   Registry::EPPActionTypeSeq* getEPPActionTypeList();
   Registry::CountryDescSeq* getCountryDescList();
   char* getDefaultCountry();
-  Registry::ObjectStatusDescSeq* getContactStatusDescList(const char *lang);
-  Registry::ObjectStatusDescSeq* getNSSetStatusDescList(const char *lang);
-  Registry::ObjectStatusDescSeq* getKeySetStatusDescList(const char *lang);
   Registry::ObjectStatusDescSeq* getObjectStatusDescList(const char *lang);
 
   /// testovaci fce na typ objektu

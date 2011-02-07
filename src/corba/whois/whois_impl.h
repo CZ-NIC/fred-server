@@ -49,6 +49,10 @@ public:
           CORBA::Long limit);
   ccReg::DomainDetail* getDomainByFQDN(const char* fqdn);
   Registry::ObjectStatusDescSeq* getDomainStatusDescList(const char *lang);
+  Registry::ObjectStatusDescSeq* getContactStatusDescList(const char *lang);
+  Registry::ObjectStatusDescSeq* getNSSetStatusDescList(const char *lang);
+  Registry::ObjectStatusDescSeq* getKeySetStatusDescList(const char *lang);
+
 };//class ccReg_Whois_i
 
 #endif //WHOIS_IMPL_H
