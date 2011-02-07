@@ -44,9 +44,6 @@ namespace Logger {
 
 class CustomPartitioningTweak {
 private:
-  CustomPartitioningTweak() {};
-
-private:
   static void find_values_recurs (Filter *f) {
     // This check can be moved to the higher level
     if(!f->isActive()) return;
@@ -122,6 +119,12 @@ private:
       if(tbl != NULL) {
 
           if(time_begin != NULL) {
+              /*
+              Interval<Database::DateTimeInterval> copy_time_begin(time_begin);
+              copy_time_begin.setColumn(Column("request_time_begin", *tbl));
+              c->add(&copy_time_begin);
+              */
+
               Interval<Database::DateTimeInterval> *copy_time_begin = new Interval<Database::DateTimeInterval>(Column("request_time_begin", *tbl));
               copy_time_begin->setName("RequestTimeBegin");
               copy_time_begin->setValue(time_begin->getValue());
@@ -173,6 +176,30 @@ public:
               add_conds_recurs(ri);
             }
         }
+  }
+
+  /// return value or empty filter - isActive()==false
+  Interval<Database::DateTimeInterval> getTimeBegin() {
+      if(time_begin != NULL) {
+          return *time_begin;
+      } else {
+          // empty filter with isActive() == false
+          return Interval<Database::DateTimeInterval>();
+      }
+  }
+  Database::Filters::ServiceType getServiceType() {
+      if(service != NULL) {
+          return *service ;
+      } else {
+          return Database::Filters::ServiceType();
+      }
+  }
+  Database::Filters::Value<bool> getIsMonitoring() {
+      if(is_monitoring != NULL) {
+          return *is_monitoring;
+      } else {
+          return Database::Filters::Value<bool>();
+      }
   }
 
 private:
@@ -236,6 +263,8 @@ public:
     clear();
     _filter.clearQueries();
 
+    CustomPartitioningTweak pt;
+
     // iterate through all the filters
     bool at_least_one = false;
     Database::SelectQuery id_query;
@@ -245,7 +274,7 @@ public:
       if (!mf)
         continue;
 
-      CustomPartitioningTweak::process_filters(mf);
+      pt.process_filters(mf);
 
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect(new Database::Column("id", mf->joinRequestTable(), "DISTINCT"));
@@ -269,6 +298,45 @@ public:
     // make the actual query for data
     Database::SelectQuery query;
 
+
+    // add conditions for JOIN with partitioned table
+    SelectQuery sql_time_begin, sql_service_type, sql_is_monitoring;
+    // table which will be used in embedded SQL statement (t_1 has to match)
+    Table trequest("request", "t_1");
+
+    Interval<Database::DateTimeInterval> time_begin = pt.getTimeBegin();
+    Database::Filters::ServiceType service_type = pt.getServiceType();
+    Database::Filters::Value<bool> is_monitoring = pt.getIsMonitoring();
+
+    if(time_begin.isActive()) {
+        time_begin.setColumn(Column("time_begin", trequest));
+        time_begin.serialize(sql_time_begin, NULL);
+        sql_time_begin.make();
+        LOGGER(PACKAGE).info(boost::format("DEBUG: Generated filer for time_begin: %1%") % sql_time_begin.where().str());
+    } else {
+        LOGGER(PACKAGE).info("DEBUG:  Filter for time_begin not active (isActive()=false)");
+    }
+
+    if(service_type.isActive()) {
+        service_type.setColumn(Column("service_id", trequest));
+        service_type.serialize(sql_service_type, (const Settings*)NULL);
+
+        sql_service_type.make();
+        LOGGER(PACKAGE).info(boost::format("DEBUG: Generated filer for service_type: %1%") % sql_service_type.where().str());
+    } else {
+        LOGGER(PACKAGE).info("DEBUG:  Filter for service_type not active (isActive()=false)");
+    }
+
+    if(is_monitoring.isActive()) {
+        is_monitoring.setColumn(Column("is_monitoring", trequest));
+        is_monitoring.serialize(sql_is_monitoring, NULL);
+        sql_is_monitoring.make();
+        LOGGER(PACKAGE).info(boost::format("DEBUG: Generated filer for is_monitoring: %1%") % sql_is_monitoring.where().str());
+    } else {
+        LOGGER(PACKAGE).info("DEBUG: Filter for is_monitoring not active (isActive()=false)");
+    }
+    // additional partitioning conditions complete
+
     if(partialLoad) {
         query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, "
                        << "t_1.source_ip, t_2.name, t_1.session_id, "
@@ -278,21 +346,46 @@ public:
                      << "join request_type t_2 on t_2.id = t_1.request_type_id "
                      << "join service t_3 on t_3.id = t_1.service_id "
                      << "left join result_code t_4 on t_4.id = t_1.result_code_id";
+
+        // add conditions to improve join with partitioned table
+        if(time_begin.isActive()) {
+            query.where() << sql_time_begin.where().str();
+        }
+        if(service_type.isActive()) {
+            query.where() << sql_service_type.where().str();
+        }
+        if(is_monitoring.isActive()) {
+            query.where() << sql_is_monitoring.where().str();
+        }
+
         query.order_by() << "t_1.time_begin desc";
     } else {
-// hardcore optimizations have to be done on this statement
-        query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.service_id, "
-                       << "t_1.source_ip, t_2.name, t_1.session_id, "
-                       << "t_1.user_name, t_1.user_id, t_1.is_monitoring, "
-                       << "t_4.result_code, t_4.name, "
-                       << "(select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=false limit 1) as request, "
-                       << "(select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=true  limit 1) as response ";
-        query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id "
-                     << "join request_type t_2 on t_2.id=t_1.request_type_id "
-                     << "join service t_3 on t_3.id=t_1.service_id "
-                     << "left join result_code t_4 on t_4.id = t_1.result_code_id";
-        query.order_by() << "t_1.time_begin desc";
-    }
+            // hardcore optimizations have to be done on this statement
+            query.select()
+                    << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.service_id, "
+                    << "t_1.source_ip, t_2.name, t_1.session_id, "
+                    << "t_1.user_name, t_1.user_id, t_1.is_monitoring, "
+                    << "t_4.result_code, t_4.name, "
+                    << "(select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=false limit 1) as request, "
+                    << "(select content from request_data where request_time_begin=t_1.time_begin and request_id=tmp.id and is_response=true  limit 1) as response ";
+            query.from() << getTempTableName()
+                    << " tmp join request t_1 on tmp.id=t_1.id "
+                    << "join request_type t_2 on t_2.id=t_1.request_type_id "
+                    << "join service t_3 on t_3.id=t_1.service_id "
+                    << "left join result_code t_4 on t_4.id = t_1.result_code_id";
+            // add conditions to improve join with partitioned table
+            if (time_begin.isActive()) {
+                query.where() << sql_time_begin.where().str();
+            }
+            if (service_type.isActive()) {
+                query.where() << sql_service_type.where().str();
+            }
+            if (is_monitoring.isActive()) {
+                query.where() << sql_is_monitoring.where().str();
+            }
+
+            query.order_by() << "t_1.time_begin desc";
+        }
 
     // TODO this should be part of connection
     Connection conn = Database::Manager::acquire();
