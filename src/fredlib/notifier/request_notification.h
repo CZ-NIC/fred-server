@@ -99,7 +99,7 @@ public:
 
     const std::string get_registrar_info() const
     {
-        return "";
+        return registrar_info_; 
     }
 
 
@@ -120,12 +120,15 @@ public:
 
 
 private:
-    std::string detect_request_type() const;
+    void load_request_info();
+
+    void load_registrar_info(const unsigned long long _reg_id);
 
 
     unsigned long long request_id_;
     std::string        service_name_;
     std::string        request_type_;
+    std::string        registrar_info_;
     unsigned long long object_id_;
     std::string        object_handle_;
     unsigned short     object_type_;

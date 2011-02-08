@@ -31,15 +31,16 @@ RequestNotification::RequestNotification(const unsigned long long &_request_id,
     object_type_     = static_cast<unsigned int>(info[0][2]);
     object_hid_act_  = info[0][3].isnull() ? 0 : static_cast<unsigned long long>(info[0][3]);
     object_hid_prev_ = info[0][4].isnull() ? 0 : static_cast<unsigned long long>(info[0][4]);
-    request_type_    = detect_request_type();
+    load_request_info();
 }
 
 
-std::string RequestNotification::detect_request_type() const
+void RequestNotification::load_request_info()
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result act_info = conn.exec_params(
-            "SELECT oh.historyid, oh.trdate, oh.update FROM object_history oh"
+            "SELECT oh.historyid, oh.trdate, oh.update, oh.clid, oh.upid"
+            " FROM object_history oh"
             " JOIN history h ON h.id = oh.historyid"
             " WHERE h.request_id = $1::integer",
             Database::query_param_list(request_id_));
@@ -50,14 +51,17 @@ std::string RequestNotification::detect_request_type() const
 
     unsigned long long hid = act_info[0][0];
     Database::Result prev_info = conn.exec_params(
-            "SELECT oh.historyid, oh.trdate, oh.update FROM object_history oh"
+            "SELECT oh.historyid, oh.trdate, oh.update"
+            " FROM object_history oh"
             " JOIN history h ON h.id = oh.historyid"
             " WHERE h.next = $1::integer",
             Database::query_param_list(hid));
 
     if (prev_info.size() != 1) {
         if (object_type_ == 1) {
-            return CMD_CONTACT_CREATE;
+            request_type_ = CMD_CONTACT_CREATE;
+            load_registrar_info(static_cast<unsigned long long>(act_info[0][3]));
+            return;
         }
     }
 
@@ -68,15 +72,34 @@ std::string RequestNotification::detect_request_type() const
 
     if (p_tr != a_tr) {
         if (object_type_ == 1) {
-            return CMD_CONTACT_TRANSFER;
+            request_type_ = CMD_CONTACT_TRANSFER;
+            load_registrar_info(static_cast<unsigned long long>(act_info[0][3]));
+            return;
         }
     }
     else if (p_up != a_up) {
         if (object_type_ == 1) {
-            return CMD_CONTACT_UPDATE;
+            request_type_ = CMD_CONTACT_UPDATE;
+            load_registrar_info(static_cast<unsigned long long>(act_info[0][4]));
+            return;
         }
     }
     throw std::runtime_error("unknown request type");
+}
+
+
+void RequestNotification::load_registrar_info(const unsigned long long _reg_id)
+{
+    if (_reg_id == 0) {
+        throw std::runtime_error("unable to find registrar for request!?");
+    }
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result rinfo = conn.exec_params(
+            "SELECT name || ' (' || url || ')'"
+            " FROM registrar WHERE id = $1::integer",
+            Database::query_param_list(_reg_id));
+
+    registrar_info_ = static_cast<std::string>(rinfo[0][0]);
 }
 
 
