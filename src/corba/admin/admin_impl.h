@@ -126,17 +126,6 @@ public:
   ccReg::DomainDetails *getDomainsByKeySetHandle(const char *handle, CORBA::Long limit)
       throw (ccReg::Admin::ObjectNotFound);
 
-  ccReg::DomainDetails* getDomainsByInverseKey(const char* key,
-                                               ccReg::DomainInvKeyType type,
-                                               CORBA::Long limit);
-  ccReg::NSSetDetails* getNSSetsByInverseKey(const char* key,
-                                             ccReg::NSSetInvKeyType type,
-                                             CORBA::Long limit);
-  ccReg::KeySetDetails *getKeySetsByInverseKey(
-          const char *key,
-          ccReg::KeySetInvKeyType type,
-          CORBA::Long limit);
-
   void fillEPPAction(ccReg::AdminEPPAction* cea,
                      const Fred::Registrar::EPPAction *rea);
   ccReg::AdminEPPAction* getEPPActionById(ccReg::TID id)

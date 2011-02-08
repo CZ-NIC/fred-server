@@ -82,6 +82,9 @@ BOOST_AUTO_TEST_CASE( test_whois )
     whois1_ref = ccReg::Whois::_narrow(
             CorbaContainer::get_instance()->nsresolve("TestWhois"));
 
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+
     //test call
         ccReg::AdminRegistrar_var registrar
             = whois1_ref->getRegistrarByHandle("REG-FRED_A");
@@ -90,22 +93,6 @@ BOOST_AUTO_TEST_CASE( test_whois )
         ccReg::RegistrarList_var registrar_list
             = whois1_ref->getRegistrarsByZone("cz");
         BOOST_CHECK(registrar_list->length() > 0);
-
-        ccReg::ContactDetail_var test_contact
-            = whois1_ref->getContactByHandle("CID:U1910661");
-        BOOST_CHECK_EQUAL(static_cast<std::string>(test_contact->city).compare("Praha"),0);
-
-        ccReg::NSSetDetail_var test_nsset
-            = whois1_ref->getNSSetByHandle("NSSID:U263648");
-        std::cout << test_nsset->registrarHandle << std::endl;
-        BOOST_CHECK_EQUAL(static_cast<std::string>(test_nsset->registrarHandle).compare("REG-FRED_A"),0);
-
-        ccReg::KeySetDetail_var test_keyset
-                    = whois1_ref->getKeySetByHandle("KEYSID:U1816282");
-        std::cout << test_keyset->registrarHandle << std::endl;
-        BOOST_CHECK_EQUAL(static_cast<std::string>(test_keyset->registrarHandle).compare("REG-FRED_A"),0);
-
-
 
     CorbaContainer::get_instance()->orb->shutdown(true);
     orb_thread->join();//wait for thread end
