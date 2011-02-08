@@ -295,12 +295,10 @@ public:
     Database::InsertQuery tmp_table_query = Database::InsertQuery(getTempTableName(), id_query);
     LOGGER(PACKAGE).debug(boost::format("temporary table '%1%' generated sql = %2%") % getTempTableName() % tmp_table_query.str());
 
-    // make the actual query for data
-    Database::SelectQuery query;
 
 
     // add conditions for JOIN with partitioned table
-    SelectQuery sql_time_begin, sql_service_type, sql_is_monitoring;
+    std::string where_time_begin, where_service_type, where_is_monitoring;
     // table which will be used in embedded SQL statement (t_1 has to match)
     Table trequest("request", "t_1");
 
@@ -310,32 +308,40 @@ public:
 
     if(time_begin.isActive()) {
         time_begin.setColumn(Column("time_begin", trequest));
-        time_begin.serialize(sql_time_begin, NULL);
-        sql_time_begin.make();
-        LOGGER(PACKAGE).info(boost::format("DEBUG: Generated filer for time_begin: %1%") % sql_time_begin.where().str());
+        SelectQuery sql;
+        time_begin.serialize(sql, NULL);
+        sql.make();
+        where_time_begin = sql.where().str();
+        LOGGER(PACKAGE).info(boost::format("DEBUG: Generated filer for time_begin: %1%") % where_time_begin);
     } else {
         LOGGER(PACKAGE).info("DEBUG:  Filter for time_begin not active (isActive()=false)");
     }
 
     if(service_type.isActive()) {
         service_type.setColumn(Column("service_id", trequest));
-        service_type.serialize(sql_service_type, (const Settings*)NULL);
-
-        sql_service_type.make();
-        LOGGER(PACKAGE).info(boost::format("DEBUG: Generated filer for service_type: %1%") % sql_service_type.where().str());
+        SelectQuery sql;
+        service_type.serialize(sql, NULL);
+        sql.make();
+        where_service_type = sql.where().str();
+        LOGGER(PACKAGE).info(boost::format("DEBUG: Generated filer for service_type: %1%") % where_service_type);
     } else {
         LOGGER(PACKAGE).info("DEBUG:  Filter for service_type not active (isActive()=false)");
     }
 
     if(is_monitoring.isActive()) {
         is_monitoring.setColumn(Column("is_monitoring", trequest));
-        is_monitoring.serialize(sql_is_monitoring, NULL);
-        sql_is_monitoring.make();
-        LOGGER(PACKAGE).info(boost::format("DEBUG: Generated filer for is_monitoring: %1%") % sql_is_monitoring.where().str());
+        SelectQuery sql;
+        is_monitoring.serialize(sql, NULL);
+        sql.make();
+        where_is_monitoring = sql.where().str();
+        LOGGER(PACKAGE).info(boost::format("DEBUG: Generated filer for is_monitoring: %1%") % where_is_monitoring);
     } else {
         LOGGER(PACKAGE).info("DEBUG: Filter for is_monitoring not active (isActive()=false)");
     }
     // additional partitioning conditions complete
+
+    // make the actual query for data
+    Database::SelectQuery query;
 
     if(partialLoad) {
         query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, "
@@ -349,13 +355,13 @@ public:
 
         // add conditions to improve join with partitioned table
         if(time_begin.isActive()) {
-            query.where() << sql_time_begin.where().str();
+            query.where() << where_time_begin;
         }
         if(service_type.isActive()) {
-            query.where() << sql_service_type.where().str();
+            query.where() << where_service_type;
         }
         if(is_monitoring.isActive()) {
-            query.where() << sql_is_monitoring.where().str();
+            query.where() << where_is_monitoring;
         }
 
         query.order_by() << "t_1.time_begin desc";
@@ -375,13 +381,13 @@ public:
                     << "left join result_code t_4 on t_4.id = t_1.result_code_id";
             // add conditions to improve join with partitioned table
             if (time_begin.isActive()) {
-                query.where() << sql_time_begin.where().str();
+                query.where() << where_time_begin;
             }
             if (service_type.isActive()) {
-                query.where() << sql_service_type.where().str();
+                query.where() << where_service_type;
             }
             if (is_monitoring.isActive()) {
-                query.where() << sql_is_monitoring.where().str();
+                query.where() << where_is_monitoring;
             }
 
             query.order_by() << "t_1.time_begin desc";
