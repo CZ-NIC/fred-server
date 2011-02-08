@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( test_whois )
         BOOST_CHECK_EQUAL(static_cast<std::string>(registrar->country).compare("CZ"), 0);
 
         ccReg::RegistrarList_var registrar_list
-            = whois1_ref->getRegistrarByZone("cz");
+            = whois1_ref->getRegistrarsByZone("cz");
 
         BOOST_CHECK(registrar_list->length() > 0);
 
