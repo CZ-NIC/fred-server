@@ -43,8 +43,13 @@ namespace Logger {
 // * separate tree browsing & functor(visitor) parts
 
 class CustomPartitioningTweak {
+public:
+    CustomPartitioningTweak()
+        : time_begin(NULL), service(NULL), is_monitoring(NULL) {
+    }
+
 private:
-  static void find_values_recurs (Filter *f) {
+  void find_values_recurs (Filter *f) {
     // This check can be moved to the higher level
     if(!f->isActive()) return;
 
@@ -55,10 +60,10 @@ private:
                     LOGGER(PACKAGE).error("Duplicity TimeBegin found in filters.");
                     return;
                 }
+
                 time_begin = dynamic_cast< Interval<Database::DateTimeInterval>* >(f);
                 if(time_begin == NULL) {
                     LOGGER(PACKAGE).error("TimeBegin: Inconsistency in filters.");
-                    std::cout << "TimeBegin: Inconsistency in filters." << std::endl;
                 }
 
             } else if(f->getName() == "ServiceType") {
@@ -92,7 +97,7 @@ private:
     }
   }
 
-  static void add_conds_recurs(Compound *c) {
+  void add_conds_recurs(Compound *c) {
 
       std::vector<Filter*>::iterator it = c->begin();
       for(; it != c->end(); it++) {
@@ -116,52 +121,38 @@ private:
           tbl = &request_object_ref->joinRequestObjectRefTable();
       }
 
-      if(tbl != NULL) {
-
-          if(time_begin != NULL) {
-              /*
-              Interval<Database::DateTimeInterval> copy_time_begin(time_begin);
-              copy_time_begin.setColumn(Column("request_time_begin", *tbl));
-              c->add(&copy_time_begin);
-              */
-
-              Interval<Database::DateTimeInterval> *copy_time_begin = new Interval<Database::DateTimeInterval>(Column("request_time_begin", *tbl));
-              copy_time_begin->setName("RequestTimeBegin");
-              copy_time_begin->setValue(time_begin->getValue());
-              // TODO  - this should be done via c-tors
-              copy_time_begin->setNOT(time_begin->getNOT());
-              // copy_time_begin->setConjuction(time_begin->getConjuction());
-              // we never run into non-active record, no need to handle this field
-              c->add(copy_time_begin);
-          }
-
-          if(service != NULL) {
-              Database::Filters::ServiceType *copy_service = new Database::Filters::ServiceType(Column("request_service_id", *tbl));
-              copy_service->setName("RequestService");
-              copy_service->setValue(service->getValue());
-              copy_service->setNOT(service->getNOT());
-              // copy_service->setConjuction(service->getConjuction());
-              // we never run into non-active record, no need to handle this field
-
-              c->add(copy_service);
-          }
-
-          if(is_monitoring != NULL) {
-              Database::Filters::Value<bool> *copy_monitoring = new Database::Filters::Value<bool>(Column("request_monitoring", *tbl));
-              copy_monitoring->setName("RequestIsMonitoring");
-              copy_monitoring->setValue(is_monitoring->getValue());
-              copy_monitoring->setNOT(is_monitoring->getNOT());
-              // copy_monitoring->setConjuction(is_monitoring->getConjuction());
-              // we never run into non-active record, no need to handle this field
-
-              c->add(copy_monitoring);
-          }
+      if(tbl == NULL) {
+          // this table doesn't need additional partitioning condition in where
+          return;
       }
+
+      if(time_begin != NULL) {
+          Interval<Database::DateTimeInterval> *copy_time_begin
+              = new Interval<Database::DateTimeInterval>(*time_begin);
+          copy_time_begin->setColumn(Column("request_time_begin", *tbl));
+          c->add(copy_time_begin);
+      }
+
+      if(service != NULL) {
+          Database::Filters::ServiceType *copy_service
+              = new Database::Filters::ServiceType(*service);
+          copy_service->setColumn(Column("request_service_id", *tbl));
+          c->add(copy_service);
+      }
+
+      if(is_monitoring != NULL) {
+          Database::Filters::Value<bool> *copy_monitoring
+              = new Database::Filters::Value<bool>(*is_monitoring);
+          copy_monitoring->setColumn(Column("request_monitoring", *tbl));
+          c->add(copy_monitoring);
+      }
+
   }
 
 public:
 
-  static void process_filters(Filter *f) {
+  /// this is expected to be called only once on each instance
+  void process_filters(Filter *f) {
         time_begin = NULL;
         service  = NULL;
         is_monitoring = NULL;
@@ -189,7 +180,7 @@ public:
   }
   Database::Filters::ServiceType getServiceType() {
       if(service != NULL) {
-          return *service ;
+          return *service;
       } else {
           return Database::Filters::ServiceType();
       }
@@ -203,18 +194,11 @@ public:
   }
 
 private:
-  Interval<Database::DateTimeInterval> static * time_begin;
-  Database::Filters::ServiceType static * service;
-  Database::Filters::Value<bool> static * is_monitoring;
+  const Interval<Database::DateTimeInterval> * time_begin;
+  const Database::Filters::ServiceType * service;
+  const Database::Filters::Value<bool> * is_monitoring;
 
 };
-
-Interval<Database::DateTimeInterval> * CustomPartitioningTweak::time_begin = NULL;
-Database::Filters::ServiceType * CustomPartitioningTweak::service = NULL;
-Database::Filters::Value<bool> * CustomPartitioningTweak::is_monitoring = NULL;
-
-
-
 
 
 class RequestImpl;
