@@ -93,7 +93,7 @@ public:
 
     const std::string get_ticket_id() const
     {
-        return str(boost::format("%s-%010d") % service_name_ % get_request_id());
+        return str(boost::format("%s-%010d") % service_name_ % action_id_);
     }
 
 
@@ -126,6 +126,7 @@ private:
 
 
     unsigned long long request_id_;
+    unsigned long long action_id_;
     std::string        service_name_;
     std::string        request_type_;
     std::string        registrar_info_;

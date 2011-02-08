@@ -39,7 +39,7 @@ void RequestNotification::load_request_info()
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result act_info = conn.exec_params(
-            "SELECT oh.historyid, oh.trdate, oh.update, oh.clid, oh.upid"
+            "SELECT oh.historyid, oh.trdate, oh.update, oh.clid, oh.upid, h.action"
             " FROM object_history oh"
             " JOIN history h ON h.id = oh.historyid"
             " WHERE h.request_id = $1::integer",
@@ -47,6 +47,12 @@ void RequestNotification::load_request_info()
 
     if (act_info.size() != 1) {
         throw std::runtime_error("no such request in object history");
+    }
+
+    /* for ticket svtrid into email */
+    action_id_ = static_cast<unsigned long long>(act_info[0][5]);
+    if (action_id_ == 0) {
+        throw std::runtime_error("action_id loaded from history is not valid");
     }
 
     unsigned long long hid = act_info[0][0];
