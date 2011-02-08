@@ -89,12 +89,13 @@ BOOST_AUTO_TEST_CASE( test_whois )
 
         ccReg::RegistrarList_var registrar_list
             = whois1_ref->getRegistrarsByZone("cz");
-
         BOOST_CHECK(registrar_list->length() > 0);
 
+        ccReg::ContactDetail_var test_contact
+            = whois1_ref->getContactByHandle("CID:U1910661");
+        BOOST_CHECK_EQUAL(static_cast<std::string>(test_contact->city).compare("Praha"),0);
 
-        //CID:U1910661
-
+        //NSSID:U263648
 
 
     CorbaContainer::get_instance()->orb->shutdown(true);
