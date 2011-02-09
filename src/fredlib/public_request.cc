@@ -202,7 +202,7 @@ static void cancel_public_request(
     if ((prid = check_public_request(_object_id, _type)) != 0) {
         Database::Connection conn = Database::Manager::acquire();
         conn.exec_params("UPDATE public_request SET resolve_time = now(),"
-                " status = $1::integer, resolve_request_id = $2::integer"
+                " status = $1::integer, resolve_request_id = $2::bigint"
                 " WHERE id = $3::integer",
                 Database::query_param_list
                     (PRS_INVALID)
