@@ -529,12 +529,8 @@ bool DB::BeginAction(
     if (svrTRID==NULL) {
       svrTRID= new char[MAX_SVTID];
 
-      // create  server ticket
-      if (requestID == 0) {
-          snprintf(svrTRID, MAX_SVTID, "ccReg-%010d", actionID);
-      } else {
-          snprintf(svrTRID, MAX_SVTID, "ccReg-%010d-%014llu", actionID, requestID);
-      }
+      snprintf(svrTRID, MAX_SVTID, "ccReg-%010d", actionID);
+
       LOG( SQL_LOG , "Make svrTRID: %s" , svrTRID );
     }
 
