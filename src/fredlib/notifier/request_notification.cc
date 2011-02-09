@@ -19,7 +19,7 @@ RequestNotification::RequestNotification(const unsigned long long &_request_id,
             " FROM history h1 LEFT join history h2 ON h1.id = h2.next"
             " JOIN object_history oh ON oh.historyid = h1.id"
             " JOIN object_registry oreg ON oreg.id = oh.id"
-            " WHERE h1.request_id = $1::integer",
+            " WHERE h1.request_id = $1::bigint",
             Database::query_param_list(_request_id));
 
     if (info.size() != 1) {
@@ -42,7 +42,7 @@ void RequestNotification::load_request_info()
             "SELECT oh.historyid, oh.trdate, oh.update, oh.clid, oh.upid, h.action"
             " FROM object_history oh"
             " JOIN history h ON h.id = oh.historyid"
-            " WHERE h.request_id = $1::integer",
+            " WHERE h.request_id = $1::bigint",
             Database::query_param_list(request_id_));
 
     if (act_info.size() != 1) {
@@ -116,7 +116,7 @@ void RequestNotification::save_relation(const unsigned long long &_msg_id) const
     }
 
     Database::Connection conn = Database::Manager::acquire();
-    conn.exec_params("INSERT INTO notify_request VALUES ($1::integer, $2::integer)",
+    conn.exec_params("INSERT INTO notify_request VALUES ($1::bigint, $2::integer)",
                          Database::query_param_list(request_id_)(_msg_id));
 }
 
