@@ -158,7 +158,7 @@ unsigned long long db_contact_insert_history(const unsigned long long &_action_i
     Database::Connection conn = Database::Manager::acquire();
 
     conn.exec_params("INSERT INTO history (id, action, request_id)"
-                     " VALUES (DEFAULT, $1::integer, $2::integer)",
+                     " VALUES (DEFAULT, $1::integer, $2::bigint)",
                      Database::query_param_list(_action_id)(_request_id));
     Database::Result rhistory = conn.exec("SELECT currval('history_id_seq')");
     unsigned long long history_id = 0;
