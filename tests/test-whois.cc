@@ -85,6 +85,21 @@ BOOST_AUTO_TEST_CASE( test_whois )
     //db
     Database::Connection conn = Database::Manager::acquire();
 
+    Database::Result res_contact =
+    conn.exec("select obr.name from contact c "
+            " join object_registry obr on c.id = obr.id "
+            " where c.name like 'Pepa Zdepa'");
+    std::string contact_city;
+    if(res_contact.size() > 0)
+    {
+        std::string contact_name =
+        std::string(res_contact[0][0]);
+        ccReg::ContactDetail_var test_contact
+            = whois1_ref->getContactByHandle(contact_name.c_str());
+        contact_city = static_cast<std::string>(test_contact->city);
+    }
+    BOOST_CHECK_EQUAL(contact_city.compare("Praha"),0);
+
     //test call
         ccReg::AdminRegistrar_var registrar
             = whois1_ref->getRegistrarByHandle("REG-FRED_A");
