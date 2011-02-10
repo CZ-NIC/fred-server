@@ -18,8 +18,6 @@
 #include "model/model_filters.h"
 #include "bankinginvoicing_impl.h"
 
-#include "conf/manager.h"
-
 class NameService;
 
 class ccReg_Admin_i : public POA_ccReg::Admin,

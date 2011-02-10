@@ -32,7 +32,6 @@ public:
 };//class EppString
 
 
-class Conf;
 //
 //  class implementing IDL interface ccReg::EPP
 //
