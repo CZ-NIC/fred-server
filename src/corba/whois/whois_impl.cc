@@ -279,7 +279,7 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
         if (!handle || !*handle) throw ccReg::Whois::ObjectNotFound();
 
         DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                , ccReg::Whois::Error());
+                , ccReg::Whois::InternalServerError());
 
         try {
         std::auto_ptr<Fred::Manager> regm(
@@ -303,7 +303,7 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
         return creg;
         }
         catch (Fred::SQL_ERROR) {
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
         }
     }//try
     catch (const ccReg::Whois::ObjectNotFound& )
@@ -314,12 +314,12 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
                   , "getRegistarByHandle: ccReg::Whois::ObjectNotFound");
       throw;
     }
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
       Logging::Manager::instance_ref()
           .get(server_name_.c_str())
           .message( ERROR_LOG
-                  , "getRegistarByHandle: ccReg::Whois::Error");
+                  , "getRegistarByHandle: ccReg::Whois::InternalServerError");
       throw;
     }
     catch (const std::exception& ex)
@@ -328,7 +328,7 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
           .get(server_name_.c_str())
           .message( ERROR_LOG
                   , "getRegistarByHandle: std::exception %s", ex.what());
-      throw ccReg::Whois::Error();
+      throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -336,7 +336,7 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
           .get(server_name_.c_str())
           .message( ERROR_LOG
                   , "getRegistarByHandle: unknown exception ");
-      throw ccReg::Whois::Error();
+      throw ccReg::Whois::InternalServerError();
     }
 }//ccReg_Whois_i::getRegistrarByHandle
 
@@ -379,14 +379,14 @@ ccReg::RegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
           .get(server_name_.c_str())
           .message( ERROR_LOG
                   , "getRegistrarsByZone: Fred::SQL_ERROR exception ");
-      throw ccReg::Whois::Error();
+      throw ccReg::Whois::InternalServerError();
   }
-  catch (const ccReg::Whois::Error& )
+  catch (const ccReg::Whois::InternalServerError& )
   {
     Logging::Manager::instance_ref()
         .get(server_name_.c_str())
         .message( ERROR_LOG
-                , "getRegistrarsByZone: ccReg::Whois::Error");
+                , "getRegistrarsByZone: ccReg::Whois::InternalServerError");
     throw;
   }
   catch (const std::exception& ex)
@@ -395,7 +395,7 @@ ccReg::RegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
         .get(server_name_.c_str())
         .message( ERROR_LOG
                 , "getRegistrarsByZone: std::exception %s", ex.what());
-    throw ccReg::Whois::Error();
+    throw ccReg::Whois::InternalServerError();
   }
   catch (...)
   {
@@ -403,7 +403,7 @@ ccReg::RegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
         .get(server_name_.c_str())
         .message( ERROR_LOG
                 , "getRegistrarsByZone: unknown exception ");
-    throw ccReg::Whois::Error();
+    throw ccReg::Whois::InternalServerError();
   }
 }//ccReg_Whois_i::getRegistrarsByZone
 
@@ -421,7 +421,7 @@ ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
                 "[CALL] ccReg_Whois_i::getContactByHandle('%1%')") % handle);
 
         DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                        , ccReg::Whois::Error());
+                        , ccReg::Whois::InternalServerError());
 
         if (!handle || !*handle)
             throw ccReg::Whois::ObjectNotFound();
@@ -448,12 +448,12 @@ ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
                 , "getContactByHandle: ccReg::Whois::ObjectNotFound");
         throw;
     }
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getContactByHandle: ccReg::Whois::Error");
+                , "getContactByHandle: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -462,7 +462,7 @@ ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
             .get(server_name_.c_str())
             .message( ERROR_LOG
                 , "getContactByHandle: std::exception %s", ex.what());
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -470,7 +470,7 @@ ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
             .get(server_name_.c_str())
             .message( ERROR_LOG
                     , "getContactByHandle: unknown exception ");
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
 
 }//ccReg_Whois_i::getContactByHandle
@@ -491,7 +491,7 @@ ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
         throw ccReg::Whois::ObjectNotFound();
 
         DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::Error());
+                                , ccReg::Whois::InternalServerError());
 
         std::auto_ptr<Fred::Manager>
             r(Fred::Manager::create(ldb_disconnect_guard, registry_restricted_handles_));
@@ -515,12 +515,12 @@ ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
                 , "getNSSetByHandle: ccReg::Whois::ObjectNotFound");
         throw;
     }
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getNSSetByHandle: ccReg::Whois::Error");
+                , "getNSSetByHandle: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -529,7 +529,7 @@ ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
             .get(server_name_.c_str())
             .message( ERROR_LOG
                 , "getNSSetByHandle: std::exception %s", ex.what());
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -537,7 +537,7 @@ ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
             .get(server_name_.c_str())
             .message( ERROR_LOG
                     , "getNSSetByHandle: unknown exception ");
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
 }//ccReg_Whois_i::getNSSetByHandle
 
@@ -557,7 +557,7 @@ ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
             throw ccReg::Whois::ObjectNotFound();
 
         DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::Error());
+                                , ccReg::Whois::InternalServerError());
 
         std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
             ,registry_restricted_handles_));
@@ -583,12 +583,12 @@ ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
                 , "getKeySetByHandle: ccReg::Whois::ObjectNotFound");
         throw;
     }
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getKeySetByHandle: ccReg::Whois::Error");
+                , "getKeySetByHandle: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -597,7 +597,7 @@ ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
             .get(server_name_.c_str())
             .message( ERROR_LOG
                 , "getKeySetByHandle: std::exception %s", ex.what());
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -605,7 +605,7 @@ ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
             .get(server_name_.c_str())
             .message( ERROR_LOG
                     , "getKeySetByHandle: unknown exception ");
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
 
 }//ccReg_Whois_i::getKeySetByHandle
@@ -627,7 +627,7 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
           % key % type % limit);
 
         DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::Error());
+                                , ccReg::Whois::InternalServerError());
 
         std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
                 , registry_restricted_handles_));
@@ -658,12 +658,12 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
         fillDomain(&dlist[i], dl->getDomain(i));
         return dlist._retn();
     }//try
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getDomainsByInverseKey: ccReg::Whois::Error");
+                , "getDomainsByInverseKey: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -672,7 +672,7 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
             .get(server_name_.c_str())
             .message( ERROR_LOG
                 , "getDomainsByInverseKey: std::exception %s", ex.what());
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -680,7 +680,7 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
             .get(server_name_.c_str())
             .message( ERROR_LOG
                     , "getDomainsByInverseKey: unknown exception ");
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
 }//ccReg_Whois_i::getDomainsByInverseKey
 
@@ -694,7 +694,7 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
     try
     {
         DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::Error());
+                                , ccReg::Whois::InternalServerError());
 
         std::auto_ptr<Fred::Manager> r(
                 Fred::Manager::create(ldb_disconnect_guard
@@ -714,12 +714,12 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
         fillNSSet(&nlist[i], nl->getNSSet(i));
         return nlist._retn();
     }//try
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getNSSetsByInverseKey: ccReg::Whois::Error");
+                , "getNSSetsByInverseKey: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -728,7 +728,7 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
             .get(server_name_.c_str())
             .message( ERROR_LOG
                 , "getNSSetsByInverseKey: std::exception %s", ex.what());
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -736,7 +736,7 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
             .get(server_name_.c_str())
             .message( ERROR_LOG
                     , "getNSSetsByInverseKey: unknown exception ");
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
 }//ccReg_Whois_i::getNSSetsByInverseKey
 
@@ -751,7 +751,7 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
     try
     {
         DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::Error());
+                                , ccReg::Whois::InternalServerError());
 
         std::auto_ptr<Fred::Manager> r(
                 Fred::Manager::create(ldb_disconnect_guard
@@ -771,12 +771,12 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
             fillKeySet(&klist[i], kl->getKeySet(i));
         return klist._retn();
     }//try
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getKeySetsByInverseKey: ccReg::Whois::Error");
+                , "getKeySetsByInverseKey: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -785,7 +785,7 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
             .get(server_name_.c_str())
             .message( ERROR_LOG
                 , "getKeySetsByInverseKey: std::exception %s", ex.what());
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -793,7 +793,7 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
             .get(server_name_.c_str())
             .message( ERROR_LOG
                     , "getKeySetsByInverseKey: unknown exception ");
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
 }//ccReg_Whois_i::getKeySetsByInverseKey
 
@@ -813,7 +813,7 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
         throw ccReg::Whois::ObjectNotFound();
 
         DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::Error());
+                                , ccReg::Whois::InternalServerError());
 
         std::auto_ptr<Fred::Manager>
             r(Fred::Manager::create(ldb_disconnect_guard
@@ -838,12 +838,12 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
                 , "getDomainByFQDN: ccReg::Whois::ObjectNotFound");
         throw;
     }
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getDomainByFQDN: ccReg::Whois::Error");
+                , "getDomainByFQDN: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -852,7 +852,7 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
             .get(server_name_.c_str())
             .message( ERROR_LOG
                 , "getDomainByFQDN: std::exception %s", ex.what());
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -860,7 +860,7 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
             .get(server_name_.c_str())
             .message( ERROR_LOG
                     , "getDomainByFQDN: unknown exception ");
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
 
 }//ccReg_Whois_i::getDomainByFQDN
@@ -889,12 +889,12 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getDomainStatusDescList(const char
         }
         return o;
     }//try
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getDomainStatusDescList: ccReg::Whois::Error");
+                , "getDomainStatusDescList: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -903,7 +903,7 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getDomainStatusDescList(const char
             .get(server_name_.c_str())
             .message( ERROR_LOG
                 , "getDomainStatusDescList: std::exception %s", ex.what());
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -911,7 +911,7 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getDomainStatusDescList(const char
             .get(server_name_.c_str())
             .message( ERROR_LOG
                     , "getDomainStatusDescList: unknown exception ");
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
 
 }//ccReg_Whois_i::getDomainStatusDescList
@@ -939,12 +939,12 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getContactStatusDescList(const cha
       }
       return o;
     }//try
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getContactStatusDescList: ccReg::Whois::Error");
+                , "getContactStatusDescList: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -953,7 +953,7 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getContactStatusDescList(const cha
             .get(server_name_.c_str())
             .message( ERROR_LOG
                 , "getContactStatusDescList: std::exception %s", ex.what());
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -961,7 +961,7 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getContactStatusDescList(const cha
             .get(server_name_.c_str())
             .message( ERROR_LOG
                     , "getContactStatusDescList: unknown exception ");
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
 }//ccReg_Whois_i::getContactStatusDescList
 
@@ -988,12 +988,12 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getNSSetStatusDescList(const char 
       }
       return o;
   }//try
-  catch (const ccReg::Whois::Error& )
+  catch (const ccReg::Whois::InternalServerError& )
   {
       Logging::Manager::instance_ref()
           .get(server_name_.c_str())
           .message( ERROR_LOG
-              , "getNSSetStatusDescList: ccReg::Whois::Error");
+              , "getNSSetStatusDescList: ccReg::Whois::InternalServerError");
       throw;
   }
   catch (const std::exception& ex)
@@ -1002,7 +1002,7 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getNSSetStatusDescList(const char 
           .get(server_name_.c_str())
           .message( ERROR_LOG
               , "getNSSetStatusDescList: std::exception %s", ex.what());
-      throw ccReg::Whois::Error();
+      throw ccReg::Whois::InternalServerError();
   }
   catch (...)
   {
@@ -1010,7 +1010,7 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getNSSetStatusDescList(const char 
           .get(server_name_.c_str())
           .message( ERROR_LOG
                   , "getNSSetStatusDescList: unknown exception ");
-      throw ccReg::Whois::Error();
+      throw ccReg::Whois::InternalServerError();
   }
 }//ccReg_Whois_i::getNSSetStatusDescList
 
@@ -1038,12 +1038,12 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getKeySetStatusDescList(const char
         }
         return o;
     }//try
-    catch (const ccReg::Whois::Error& )
+    catch (const ccReg::Whois::InternalServerError& )
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getKeySetStatusDescList: ccReg::Whois::Error");
+                , "getKeySetStatusDescList: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -1052,7 +1052,7 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getKeySetStatusDescList(const char
             .get(server_name_.c_str())
             .message( ERROR_LOG
                 , "getKeySetStatusDescList: std::exception %s", ex.what());
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
     catch (...)
     {
@@ -1060,7 +1060,7 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getKeySetStatusDescList(const char
             .get(server_name_.c_str())
             .message( ERROR_LOG
                     , "getKeySetStatusDescList: unknown exception ");
-        throw ccReg::Whois::Error();
+        throw ccReg::Whois::InternalServerError();
     }
 }//ccReg_Whois_i::getKeySetStatusDescList
 
