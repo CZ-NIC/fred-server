@@ -507,6 +507,7 @@ bool ManagerImpl::i_closeRequest(
         ID session_id
 )
 {
+    logd_ctx_init ctx;
     logd_auto_db db;
     DateTime request_time;
     ServiceType service_id;
@@ -537,7 +538,6 @@ bool ManagerImpl::i_closeRequest(
         monitoring = (bool)res[0][2];
         old_session_id = (unsigned)res[0][3];
     }
-    logd_ctx_init ctx;
 #ifdef HAVE_LOGGER
     boost::format sess_fmt = boost::format("session-%1%") %
             (session_id ? session_id : old_session_id);
