@@ -219,7 +219,15 @@ template <class HELP> CfgArgGroups* CfgArgGroups::instance(const HandlerPtrGrid&
                 ; i != hpg.end(); ++i )
             for(HandlerGrpVector::const_iterator j = i->begin()
                     ; j != i->end(); ++j )
-                hga->po_description.push_back((*j)->get_options_description());
+            {
+                try
+                {
+                    (*j)->get_options_description();//check if there are some options
+                    hga->po_description.push_back((*j)->get_options_description());
+                }//try
+                catch(const NO_OPTIONS&)
+                {}//ignore when no options decription suplied
+            }
     }
     instance_ptr = tmp_instance;
     return instance_ptr.get();

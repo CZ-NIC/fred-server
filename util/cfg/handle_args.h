@@ -48,6 +48,18 @@ public:
 };
 
 /**
+ * \class NO_OPTIONS
+ * \brief exception indicates that handler have no options defined
+ */
+
+struct NO_OPTIONS : std::runtime_error
+{
+    NO_OPTIONS()
+            : std::runtime_error("have no options")
+    {}
+};
+
+/**
  * \class HandleGrpArgs
  * \brief interface for option group handlers
  */
@@ -56,7 +68,7 @@ class HandleGrpArgs
 public:
     virtual ~HandleGrpArgs() { };
     virtual boost::shared_ptr<boost::program_options::options_description>
-        get_options_description()=0;
+        get_options_description()=0;//among other exceptions may throw NO_OPTIONS exception if there are no options
 
     //handle returning option group index
     virtual std::size_t handle( int argc, char* argv[], FakedArgs &fa , std::size_t option_group_index ) = 0;

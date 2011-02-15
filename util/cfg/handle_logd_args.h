@@ -21,8 +21,8 @@
  *  logger config
  */
 
-#ifndef HANDLE_REGISTRY_ARGS_H_
-#define HANDLE_REGISTRY_ARGS_H_
+#ifndef HANDLE_LOGD_ARGS_H_
+#define HANDLE_LOGD_ARGS_H_
 
 #include <iostream>
 #include <exception>

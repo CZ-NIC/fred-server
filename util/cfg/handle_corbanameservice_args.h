@@ -76,6 +76,27 @@ public:
         nameservice_context = (vm.count("nameservice.context") == 0
                 ? std::string("fred") : vm["nameservice.context"].as<std::string>());
     }//handle
-};
+};//HandleCorbaNameServiceArgs
+
+/**
+ * \class HandleCorbaNameServiceArgsGrp
+ * \brief corba nameservice options handler with option groups
+ */
+
+class HandleCorbaNameServiceArgsGrp : public HandleGrpArgs
+                            , public HandleCorbaNameServiceArgs
+{
+public:
+    boost::shared_ptr<boost::program_options::options_description>
+        get_options_description()
+    {
+        return HandleCorbaNameServiceArgs::get_options_description();
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa , std::size_t option_group_index)
+    {
+        HandleCorbaNameServiceArgs::handle(argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleCorbaNameServiceArgsGrp
 
 #endif //HANDLE_CORBANAMESERVICE_ARGS_H_
