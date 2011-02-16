@@ -254,7 +254,7 @@ public:
         if (vm.count("config"))
         {
             std::string fname = vm["config"].as<std::string>();
-            std::cout << "HandleConfigFileArgs::handle config file: " << fname << std::endl;
+            //std::cout << "HandleConfigFileArgs::handle config file: " << fname << std::endl;
             if(fname.length())
                 parse_config_file_to_faked_args(fname, fa );
         }
