@@ -167,10 +167,11 @@ public:
  */
 class HandleHelpArg : public HandleArgs
 {
+public:
+
     ///options descriptions reference used to print help for all options
     typedef std::vector<boost::shared_ptr<boost::program_options::options_description> > PoDescs;
 
-public:
     PoDescs po_description;
     std::string usage_;
 
@@ -266,7 +267,7 @@ public:
  * \brief common options and config file handler
  */
 class HandleHelpArgGrp : public HandleGrpArgs
-                        , public HandleHelpArg
+                        , private HandleHelpArg
 {
 public:
 
@@ -284,13 +285,20 @@ public:
         HandleHelpArg::handle(argc, argv,fa);
         return option_group_index;
     }//handle
+
+    HandleHelpArg::PoDescs& get_po_description()
+    {
+        return HandleHelpArg::po_description;
+    }
+
 };//class HandleHelpArgGrp
 
 /**
  * \class HandleConfigFileArgsGrp
  * \brief config file handler
  */
-class HandleConfigFileArgsGrp : public HandleGrpArgs, private HandleConfigFileArgs
+class HandleConfigFileArgsGrp : public HandleGrpArgs
+                                , private HandleConfigFileArgs
 {
 public:
     HandleConfigFileArgsGrp(const std::string def_cfg)

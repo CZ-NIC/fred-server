@@ -222,8 +222,10 @@ template <class HELP> CfgArgGroups* CfgArgGroups::instance(const HandlerPtrGrid&
             {
                 try
                 {
-                    (*j)->get_options_description();//check if there are some options
-                    hga->po_description.push_back((*j)->get_options_description());
+                    boost::shared_ptr<
+                        boost::program_options::options_description> options
+                        = (*j)->get_options_description();//check if there are some options
+                    hga->get_po_description().push_back(options);
                 }//try
                 catch(const NO_OPTIONS&)
                 {}//ignore when no options decription suplied

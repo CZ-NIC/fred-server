@@ -84,7 +84,7 @@ public:
  */
 
 class HandleCorbaNameServiceArgsGrp : public HandleGrpArgs
-                            , public HandleCorbaNameServiceArgs
+                            , private HandleCorbaNameServiceArgs
 {
 public:
     boost::shared_ptr<boost::program_options::options_description>
@@ -92,11 +92,20 @@ public:
     {
         return HandleCorbaNameServiceArgs::get_options_description();
     }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa , std::size_t option_group_index)
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
     {
         HandleCorbaNameServiceArgs::handle(argc, argv, fa);
         return option_group_index;
     }//handle
+
+    const std::string& get_nameservice_host()
+        {return HandleCorbaNameServiceArgs::nameservice_host;}
+    unsigned get_nameservice_port()
+        {return HandleCorbaNameServiceArgs::nameservice_port;}
+    const std::string& get_nameservice_context()
+        {return HandleCorbaNameServiceArgs::nameservice_context;}
+
 };//class HandleCorbaNameServiceArgsGrp
 
 #endif //HANDLE_CORBANAMESERVICE_ARGS_H_

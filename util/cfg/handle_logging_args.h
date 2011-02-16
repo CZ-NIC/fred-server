@@ -95,7 +95,7 @@ public:
  */
 
 class HandleLoggingArgsGrp : public HandleGrpArgs
-                            , public HandleLoggingArgs
+                            , private HandleLoggingArgs
 {
 public:
 
@@ -104,11 +104,21 @@ public:
     {
         return HandleLoggingArgs::get_options_description();
     }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa , std::size_t option_group_index)
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
     {
         HandleLoggingArgs::handle(argc, argv, fa);
         return option_group_index;
     }//handle
+
+    unsigned get_log_type()
+        {return HandleLoggingArgs::log_type;}
+    unsigned get_log_level()
+        {return HandleLoggingArgs::log_level;}
+    unsigned get_log_syslog_facility()
+        {return HandleLoggingArgs::log_syslog_facility;}
+    const std::string& get_log_file()
+        {return HandleLoggingArgs::log_file;}
 };//class HandleConfigFileArgsGrp
 
 #endif //HANDLE_LOGGING_ARGS_H_
