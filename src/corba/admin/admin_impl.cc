@@ -65,11 +65,14 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database, NameService *_ns
 , restricted_handles_(restricted_handles)
 , docgen_path_(docgen_path)
 , docgen_template_path_(docgen_template_path)
+, docgen_domain_count_limit_(docgen_domain_count_limit)
 , fileclient_path_(fileclient_path)
 , adifd_session_max_(adifd_session_max)
 , adifd_session_timeout_(adifd_session_timeout)
 , adifd_session_garbage_(adifd_session_garbage)
 , bankingInvoicing(_ns)
+, session_garbage_active_ (false)
+, session_garbage_thread_ (0)
 {
 
   /* HACK: to recognize ADIFD and PIFD until separation of objects */
