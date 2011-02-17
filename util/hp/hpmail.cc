@@ -740,7 +740,7 @@ void HPMail::send_storno()
 				, curl_log_file_name_ //failure errorlog filename
 				);
 
-		hp_form_post(formpost_prubeh  //linked list ptr
+		CURLcode res = hp_form_post(formpost_prubeh  //linked list ptr
 			, config_["hp_cancel_interface_url"]//url
 			, config_["postservice_cert_dir"] //ended by slash
 			, config_["postservice_cert_file"] //pem cert file name
@@ -759,6 +759,7 @@ void HPMail::send_storno()
 	        , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifypeer"]) //ssl config
 	        , boost::lexical_cast<long>(config_["hp_curlopt_ssl_verifyhost"])
 			);
+		(void)(res); //ignore result, this may fail
 
 		//log result
 		std::stringstream formpost_reply;
