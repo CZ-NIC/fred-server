@@ -1283,9 +1283,11 @@ public:
     {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rauthinfo = conn.exec_params(
-                "SELECT o.authinfopw FROM object o JOIN contact c ON c.id = o.id"
-                " WHERE c.id = $1::integer",
-                Database::query_param_list(this->getObject(0).id));
+                "SELECT substr(replace(o.authinfopw, ' ', ''), 1, $1::integer) "
+                " FROM object o JOIN contact c ON c.id = o.id"
+                " WHERE c.id = $2::integer",
+                Database::query_param_list(PASSWORD_CHUNK_LENGTH)
+                                          (this->getObject(0).id));
         if (rauthinfo.size() != 1) {
             throw std::runtime_error(str(boost::format(
                         "cannot retrieve authinfo for contact id=%1%")
@@ -1298,6 +1300,13 @@ public:
         }
         else {
             passwd = static_cast<std::string>(rauthinfo[0][0]);
+            LOGGER(PACKAGE).debug(boost::format("authinfo w/o spaces='%s'") % passwd);
+            /* fill with random to PASSWORD_CHUNK_LENGTH size */
+            size_t to_fill = 0;
+            if ((to_fill = (PASSWORD_CHUNK_LENGTH - passwd.length())) > 0) {
+                passwd += generateRandomPassword(to_fill);
+                LOGGER(PACKAGE).debug(boost::format("authinfo filled='%s'") % passwd);
+            }
         }
         /* append pin2 */
         passwd += generateRandomPassword(PASSWORD_CHUNK_LENGTH);
