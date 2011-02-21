@@ -38,7 +38,7 @@ namespace po = boost::program_options;
 
 /**
  * \class HandleRegistryArgs
- * \brief basic server config
+ * \brief server config
  */
 class HandleRegistryArgs : public HandleArgs
 {
@@ -51,7 +51,6 @@ public:
     std::string docgen_template_path;
     unsigned int docgen_domain_count_limit;
     std::string fileclient_path;
-
 
     boost::shared_ptr<po::options_description>
     get_options_description()
@@ -103,6 +102,46 @@ public:
         fileclient_path = (vm.count("registry.fileclient_path") == 0
                 ? std::string() : vm["registry.fileclient_path"].as<std::string>());
     }//handle
-};
+};//HandleRegistryArgs
+
+/**
+ * \class HandleRegistryArgsGrp
+ * \brief server config with option groups
+ */
+
+class HandleRegistryArgsGrp : public HandleGrpArgs
+                            , private HandleRegistryArgs
+{
+public:
+
+    boost::shared_ptr<boost::program_options::options_description>
+        get_options_description()
+    {
+        return HandleRegistryArgs::get_options_description();
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        HandleRegistryArgs::handle(argc, argv, fa);
+        return option_group_index;
+    }//handle
+
+    bool get_restricted_handles()
+        {return HandleRegistryArgs::restricted_handles;}
+    bool get_disable_epp_notifier()
+        {return HandleRegistryArgs::disable_epp_notifier;}
+    bool get_lock_epp_commands()
+        {return HandleRegistryArgs::lock_epp_commands;}
+    unsigned int get_nsset_level()
+        {return HandleRegistryArgs::nsset_level;}
+    const std::string& get_docgen_path()
+        {return HandleRegistryArgs::docgen_path;}
+    const std::string& get_docgen_template_path()
+        {return HandleRegistryArgs::docgen_template_path;}
+    unsigned int get_docgen_domain_count_limit()
+        {return HandleRegistryArgs::docgen_domain_count_limit;}
+    const std::string& get_fileclient_path()
+        {return HandleRegistryArgs::fileclient_path;}
+};//class HandleRegistryArgsGrp
 
 #endif //HANDLE_REGISTRY_ARGS_H_

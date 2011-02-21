@@ -119,6 +119,6 @@ public:
         {return HandleLoggingArgs::log_syslog_facility;}
     const std::string& get_log_file()
         {return HandleLoggingArgs::log_file;}
-};//class HandleConfigFileArgsGrp
+};//class HandleLoggingArgsGrp
 
 #endif //HANDLE_LOGGING_ARGS_H_
