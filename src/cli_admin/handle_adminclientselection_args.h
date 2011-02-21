@@ -96,7 +96,7 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("Admin client cmd domain_list options:")));
+                        std::string("Admin client cmd domain_list options")));
         cfg_opts->add_options()
                 ("id", boost::program_options
                      ::value<unsigned long long>()
@@ -131,7 +131,7 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("Admin client cmd keyset_list options:")));
+                        std::string("Admin client cmd keyset_list options")));
         cfg_opts->add_options()
                 ("id", boost::program_options
                      ::value<unsigned long long>()
