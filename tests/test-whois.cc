@@ -101,11 +101,11 @@ BOOST_AUTO_TEST_CASE( test_whois )
     BOOST_CHECK_EQUAL(contact_city.compare("Praha"),0);
 
     //test call
-        ccReg::AdminRegistrar_var registrar
+        ccReg::WhoisRegistrar_var registrar
             = whois1_ref->getRegistrarByHandle("REG-FRED_A");
         BOOST_CHECK_EQUAL(static_cast<std::string>(registrar->country).compare("CZ"), 0);
 
-        ccReg::RegistrarList_var registrar_list
+        ccReg::WhoisRegistrarList_var registrar_list
             = whois1_ref->getRegistrarsByZone("cz");
         BOOST_CHECK(registrar_list->length() > 0);
 

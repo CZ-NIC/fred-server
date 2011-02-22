@@ -55,7 +55,7 @@ ccReg_Whois_i::~ccReg_Whois_i()
   TRACE("[CALL] ccReg_Whois_i::~ccReg_Whois_i()");
 }
 
-void ccReg_Whois_i::fillRegistrar(ccReg::AdminRegistrar& creg
+void ccReg_Whois_i::fillRegistrar(ccReg::WhoisRegistrar& creg
                             , Fred::Registrar::Registrar *reg)
 {
   creg.id = reg->getId();
@@ -265,7 +265,7 @@ void ccReg_Whois_i::fillDomain(ccReg::DomainDetail* cd,
 }//ccReg_Whois_i::fillDomain
 
 
-ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
+ccReg::WhoisRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
 {
     Logging::Context ctx(server_name_);
     ConnectionReleaser releaser;
@@ -298,7 +298,7 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
         if (rl->size() < 1) {
           throw ccReg::Whois::ObjectNotFound();
         }
-        ccReg::AdminRegistrar* creg = new ccReg::AdminRegistrar;
+        ccReg::WhoisRegistrar* creg = new ccReg::WhoisRegistrar;
         fillRegistrar(*creg,rl->get(0));
         return creg;
         }
@@ -341,7 +341,7 @@ ccReg::AdminRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
 }//ccReg_Whois_i::getRegistrarByHandle
 
 
-ccReg::RegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
+ccReg::WhoisRegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
 {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
@@ -367,7 +367,7 @@ ccReg::RegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
         .message( NOTICE_LOG
                 , "getRegistrarsByZone: num -> %d", rl->size());
 
-    ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
+    ccReg::WhoisRegistrarList* reglist = new ccReg::WhoisRegistrarList;
     reglist->length(rl->size());
     for (unsigned i=0; i<rl->size(); i++)
     fillRegistrar((*reglist)[i],rl->get(i));

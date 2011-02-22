@@ -19,7 +19,7 @@ private:
   DBSharedPtr  db_disconnect_guard_;
   std::auto_ptr<Fred::Manager> registry_manager_;
 
-  void fillRegistrar(ccReg::AdminRegistrar& creg,
+  void fillRegistrar(ccReg::WhoisRegistrar& creg,
                      Fred::Registrar::Registrar *reg);
 
   void fillContact(ccReg::ContactDetail* cv, Fred::Contact::Contact* c);
@@ -32,8 +32,8 @@ public:
           , bool _registry_restricted_handles);
   virtual ~ccReg_Whois_i();
 
-  ccReg::AdminRegistrar* getRegistrarByHandle(const char* handle);
-  ccReg::RegistrarList* getRegistrarsByZone(const char *zone);
+  ccReg::WhoisRegistrar* getRegistrarByHandle(const char* handle);
+  ccReg::WhoisRegistrarList* getRegistrarsByZone(const char *zone);
   ccReg::ContactDetail* getContactByHandle(const char* handle);
   ccReg::NSSetDetail* getNSSetByHandle(const char* handle);
   ccReg::KeySetDetail *getKeySetByHandle(const char* handle);

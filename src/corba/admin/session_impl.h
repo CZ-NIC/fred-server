@@ -130,10 +130,7 @@ private:
    * this should be rather in separate library - it is only general CORBA-to-Registry
    * mapping
    */
-  ccReg::DomainDetail* createDomainDetail(Fred::Domain::Domain* _domain);
-  ccReg::ContactDetail* createContactDetail(Fred::Contact::Contact* _contact);
-  ccReg::NSSetDetail* createNSSetDetail(Fred::NSSet::NSSet* _contact);
-  ccReg::KeySetDetail *createKeySetDetail(Fred::KeySet::KeySet *_contact);
+
   Registry::Domain::Detail* createHistoryDomainDetail(Fred::Domain::List* _list);
   Registry::Contact::Detail* createHistoryContactDetail(Fred::Contact::List* _list);
   Registry::NSSet::Detail* createHistoryNSSetDetail(Fred::NSSet::List* _list);

@@ -378,10 +378,6 @@ const ptime& ccReg_Session_i::getLastActivity() const {
 }
 
 Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
-  // Fred::Domain::Domain *domain = m_domains->findId(_id);
-  // if (domain) {
-  //   return createDomainDetail(domain);
-  // }
   /* disable cache */
   if (0) {
   }
@@ -400,7 +396,6 @@ Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
     unsigned filter_count = tmp_domain_list->getCount();
     if (filter_count > 0) {
       return createHistoryDomainDetail(tmp_domain_list.get());
-      // return createDomainDetail(tmp_domain_list->getDomain(filter_count - 1));
     }
     else {
       throw ccReg::Admin::ObjectNotFound();
@@ -409,10 +404,6 @@ Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
 }
 
 Registry::Contact::Detail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
-  // Fred::Contact::Contact *contact = m_contacts->findId(_id);
-  // if (contact) {
-  //   return createContactDetail(contact);
-  // } else {
   /* disable cache */
   if (0) {
   }
@@ -432,7 +423,6 @@ Registry::Contact::Detail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
     unsigned filter_count = tmp_contact_list->getCount();
     if (filter_count > 0) {
       return createHistoryContactDetail(tmp_contact_list.get());
-      // return createContactDetail(tmp_domain_list->getContact(filter_count - 1));
     }
     else {
       throw ccReg::Admin::ObjectNotFound();
@@ -441,10 +431,6 @@ Registry::Contact::Detail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
 }
 
 Registry::NSSet::Detail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
-  // Fred::NSSet::NSSet *nsset = m_nssets->findId(_id);
-  // if (nsset) {
-  //   return createNSSetDetail(nsset);
-  // } else {
   /* disable cache */
   if (0) {
   }
@@ -474,10 +460,6 @@ Registry::NSSet::Detail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
 Registry::KeySet::Detail *
 ccReg_Session_i::getKeySetDetail(ccReg::TID _id)
 {
-    // Fred::KeySet::KeySet *keyset = m_keysets->findId(_id);
-    // if (keyset)
-    //     return createKeySetDetail(keyset);
-    // else {
     /* disable cache */
     if (0) {
     }
@@ -784,79 +766,6 @@ Registry::Banking::BankItem::Detail *ccReg_Session_i::createPaymentDetail(Fred::
 	return detail;
 }
 
-/*
-Registry::Banking::BankHead::Detail *ccReg_Session_i::createStatementDetail(Fred::Banking::Statement *_statement) {
-        Registry::Banking::BankHead::Detail *detail = new Registry::Banking::BankHead::Detail();
-
-        detail->id              = _statement->getId();
-        detail->accountId       = _statement->getAccountId();
-        detail->num             = _statement->getNum();
-        detail->createDate      = DUPSTRDATED(_statement->getCreateDate);
-        detail->balanceOldDate  = DUPSTRDATED(_statement->getBalanceOldDate);
-        detail->balanceOld      = DUPSTRC(formatMoney(_statement->getBalanceOld()));
-        detail->balanceNew      = DUPSTRC(formatMoney(_statement->getBalanceNew()));
-        detail->balanceCredit   = DUPSTRC(formatMoney(_statement->getBalanceCredit()));
-        detail->balanceDebet    = DUPSTRC(formatMoney(_statement->getBalanceDebet()));        
-        detail->fileId          = _statement->getFileId();
-
-        int count = _statement->getPaymentCount();
-        detail->bankItems.length(count);
-
-        for(int i=0;i<count;i++) {
-            fillPaymentDetail(detail->bankItems[i], _statement->getPaymentByIdx(i));
-        }
-
-	return detail;
-}
-*/
-
-ccReg::DomainDetail* ccReg_Session_i::createDomainDetail(Fred::Domain::Domain* _domain) {
-  TRACE("[CALL] ccReg_Session_i::createDomainDetail()");
-  LOGGER(PACKAGE).debug(boost::format("generating domain detail for object id=%1%")
-      % _domain->getId());
-  ccReg::DomainDetail *detail = new ccReg::DomainDetail;
-
-  detail->id = _domain->getId();
-  detail->fqdn = DUPSTRFUN(_domain->getFQDN);
-  detail->roid = DUPSTRFUN(_domain->getROID);
-  detail->registrarHandle = DUPSTRFUN(_domain->getRegistrarHandle);
-  detail->transferDate = DUPSTRDATE(_domain->getTransferDate);
-  detail->updateDate = DUPSTRDATE(_domain->getUpdateDate);
-  detail->createDate = DUPSTRDATE(_domain->getCreateDate);
-  detail->createRegistrarHandle = DUPSTRFUN(_domain->getCreateRegistrarHandle);
-  detail->updateRegistrarHandle = DUPSTRFUN(_domain->getUpdateRegistrarHandle);
-  detail->authInfo = DUPSTRFUN(_domain->getAuthPw);
-  detail->registrantHandle = DUPSTRFUN(_domain->getRegistrantHandle);
-  detail->expirationDate = DUPSTRDATED(_domain->getExpirationDate);
-  detail->valExDate = DUPSTRDATED(_domain->getValExDate);
-  detail->publish = _domain->getPublish();
-  detail->nssetHandle = DUPSTRFUN(_domain->getNSSetHandle);
-  detail->keysetHandle = DUPSTRFUN(_domain->getKeySetHandle);
-  detail->admins.length(_domain->getAdminCount(1));
-  detail->temps.length(_domain->getAdminCount(2));
-
-  std::vector<unsigned> status_list;
-  for (unsigned i = 0; i < _domain->getStatusCount(); i++) {
-    if (m_registry_manager->getStatusDesc(_domain->getStatusByIdx(i)->getStatusId())->getExternal())
-      status_list.push_back(_domain->getStatusByIdx(i)->getStatusId());
-  }
-  detail->statusList.length(status_list.size());
-  for (unsigned i = 0; i < status_list.size(); i++)
-    detail->statusList[i] = status_list[i];
-
-  try {
-    for (unsigned i = 0; i < _domain->getAdminCount(1); i++)
-    detail->admins[i] = DUPSTRC(_domain->getAdminHandleByIdx(i,1));
-    for (unsigned i = 0; i < _domain->getAdminCount(2); i++)
-    detail->temps[i] = DUPSTRC(_domain->getAdminHandleByIdx(i,2));
-  }
-  catch (Fred::NOT_FOUND) {
-    /// some implementation error - index is out of bound - WHAT TO DO?
-  }
-  return detail;
-}
-
-
 Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Fred::Domain::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryDomainDetail()");
   Registry::Domain::Detail *detail = new Registry::Domain::Detail();
@@ -984,61 +893,6 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Fred::Domai
   return detail;
 }
 
-ccReg::ContactDetail* ccReg_Session_i::createContactDetail(Fred::Contact::Contact* _contact) {
-  TRACE("[CALL] ccReg_Session_i::createContactDetail()");
-  LOGGER(PACKAGE).debug(boost::format("generating contact detail for object id=%1%")
-      % _contact->getId());
-  ccReg::ContactDetail *detail = new ccReg::ContactDetail;
-
-  detail->id = _contact->getId();
-  detail->handle = DUPSTRFUN(_contact->getHandle);
-  detail->roid = DUPSTRFUN(_contact->getROID);
-  detail->registrarHandle = DUPSTRFUN(_contact->getRegistrarHandle);
-  detail->transferDate = DUPSTRDATE(_contact->getTransferDate);
-  detail->updateDate = DUPSTRDATE(_contact->getUpdateDate);
-  detail->createDate = DUPSTRDATE(_contact->getCreateDate);
-  detail->createRegistrarHandle = DUPSTRFUN(_contact->getCreateRegistrarHandle);
-  detail->updateRegistrarHandle = DUPSTRFUN(_contact->getUpdateRegistrarHandle);
-  detail->authInfo = DUPSTRFUN(_contact->getAuthPw);
-  detail->name = DUPSTRFUN(_contact->getName);
-  detail->organization = DUPSTRFUN(_contact->getOrganization);
-  detail->street1 = DUPSTRFUN(_contact->getStreet1);
-  detail->street2 = DUPSTRFUN(_contact->getStreet2);
-  detail->street3 = DUPSTRFUN(_contact->getStreet3);
-  detail->province = DUPSTRFUN(_contact->getProvince);
-  detail->postalcode = DUPSTRFUN(_contact->getPostalCode);
-  detail->city = DUPSTRFUN(_contact->getCity);
-  detail->country = DUPSTRFUN(_contact->getCountry);
-  detail->telephone = DUPSTRFUN(_contact->getTelephone);
-  detail->fax = DUPSTRFUN(_contact->getFax);
-  detail->email = DUPSTRFUN(_contact->getEmail);
-  detail->notifyEmail = DUPSTRFUN(_contact->getNotifyEmail);
-  detail->ssn = DUPSTRFUN(_contact->getSSN);
-  detail->ssnType = DUPSTRFUN(_contact->getSSNType);
-  detail->vat = DUPSTRFUN(_contact->getVAT);
-  detail->discloseName = _contact->getDiscloseName();
-  detail->discloseOrganization = _contact->getDiscloseOrganization();
-  detail->discloseAddress = _contact->getDiscloseAddr();
-  detail->discloseEmail = _contact->getDiscloseEmail();
-  detail->discloseTelephone = _contact->getDiscloseTelephone();
-  detail->discloseFax = _contact->getDiscloseFax();
-  detail->discloseIdent = _contact->getDiscloseIdent();
-  detail->discloseVat = _contact->getDiscloseVat();
-  detail->discloseNotifyEmail = _contact->getDiscloseNotifyEmail();
-
-  std::vector<unsigned> status_list;
-  for (unsigned i = 0; i < _contact->getStatusCount(); i++) {
-    if (m_registry_manager->getStatusDesc(
-        _contact->getStatusByIdx(i)->getStatusId())->getExternal()) {
-      status_list.push_back(_contact->getStatusByIdx(i)->getStatusId());
-    }
-  }
-  detail->statusList.length(status_list.size());
-  for (unsigned i = 0; i < status_list.size(); i++)
-    detail->statusList[i] = status_list[i];
-
-  return detail;
-}
 
 Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Fred::Contact::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryContactDetail()");
@@ -1128,56 +982,6 @@ LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %
 
   }
 
-  return detail;
-}
-
-
-ccReg::NSSetDetail* ccReg_Session_i::createNSSetDetail(Fred::NSSet::NSSet* _nsset) {
-  TRACE("[CALL] ccReg_Session_i::createNSSetDetail()");
-  LOGGER(PACKAGE).debug(boost::format("generating nsset detail for object id=%1%")
-      % _nsset->getId());
-  ccReg::NSSetDetail *detail = new ccReg::NSSetDetail;
-
-  detail->id = _nsset->getId();
-  detail->handle = DUPSTRFUN(_nsset->getHandle);
-  detail->roid = DUPSTRFUN(_nsset->getROID);
-  detail->registrarHandle = DUPSTRFUN(_nsset->getRegistrarHandle);
-  detail->transferDate = DUPSTRDATE(_nsset->getTransferDate);
-  detail->updateDate = DUPSTRDATE(_nsset->getUpdateDate);
-  detail->createDate = DUPSTRDATE(_nsset->getCreateDate);
-  detail->createRegistrarHandle = DUPSTRFUN(_nsset->getCreateRegistrarHandle);
-  detail->updateRegistrarHandle = DUPSTRFUN(_nsset->getUpdateRegistrarHandle);
-  detail->authInfo = DUPSTRFUN(_nsset->getAuthPw);
-  detail->admins.length(_nsset->getAdminCount());
-
-  try {
-    for (unsigned i = 0; i < _nsset->getAdminCount(); i++)
-    detail->admins[i] = DUPSTRC(_nsset->getAdminByIdx(i));
-  }
-  catch (Fred::NOT_FOUND) {
-    /// some implementation error - index is out of bound - WHAT TO DO?
-  }
-
-  detail->hosts.length(_nsset->getHostCount());
-  for (unsigned i = 0; i < _nsset->getHostCount(); i++) {
-    detail->hosts[i].fqdn = DUPSTRFUN(_nsset->getHostByIdx(i)->getName);
-    detail->hosts[i].inet.length(_nsset->getHostByIdx(i)->getAddrCount());
-    for (unsigned j = 0; j < _nsset->getHostByIdx(i)->getAddrCount(); j++)
-      detail->hosts[i].inet[j] = DUPSTRC(_nsset->getHostByIdx(i)->getAddrByIdx(j));
-  }
-  std::vector<unsigned> status_list;
-  for (unsigned i = 0; i < _nsset->getStatusCount(); i++) {
-    if (m_registry_manager->getStatusDesc(
-        _nsset->getStatusByIdx(i)->getStatusId()
-    )->getExternal()) {
-      status_list.push_back(_nsset->getStatusByIdx(i)->getStatusId());
-    }
-  }
-  detail->statusList.length(status_list.size());
-  for (unsigned i = 0; i < status_list.size(); i++)
-    detail->statusList[i] = status_list[i];
-
-  detail->reportLevel = _nsset->getCheckLevel();
   return detail;
 }
 
@@ -1304,55 +1108,6 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Fred::NSSet::
   return detail;
 }
 
-ccReg::KeySetDetail *
-ccReg_Session_i::createKeySetDetail(Fred::KeySet::KeySet *_keyset)
-{
-    TRACE("[CALL] ccReg_Session_i::createKeySetDetail()");
-    LOGGER(PACKAGE).debug(boost::format(
-                "generating keyset detail for object id=%1%")
-            % _keyset->getId());
-    ccReg::KeySetDetail *detail = new ccReg::KeySetDetail;
-
-    detail->id = _keyset->getId();
-    detail->handle = DUPSTRFUN(_keyset->getHandle);
-    detail->roid = DUPSTRFUN(_keyset->getROID);
-    detail->registrarHandle = DUPSTRFUN(_keyset->getRegistrarHandle);
-    detail->transferDate = DUPSTRDATE(_keyset->getTransferDate);
-    detail->updateDate = DUPSTRDATE(_keyset->getUpdateDate);
-    detail->createDate = DUPSTRDATE(_keyset->getCreateDate);
-    detail->createRegistrarHandle = DUPSTRFUN(_keyset->getCreateRegistrarHandle);
-    detail->updateRegistrarHandle = DUPSTRFUN(_keyset->getUpdateRegistrarHandle);
-    detail->authInfo = DUPSTRFUN(_keyset->getAuthPw);
-    detail->admins.length(_keyset->getAdminCount());
-
-    try {
-        for (unsigned int i = 0; i < _keyset->getAdminCount(); i++)
-            detail->admins[i] = DUPSTRC(_keyset->getAdminByIdx(i));
-    }
-    catch (Fred::NOT_FOUND) {
-        // TODO implement error handling
-    }
-
-    // TODO XXX have keyset detail dsrecords list?!?
-    // detail->DSRecords.length(_keyset->getDSrecordCount());
-    // for (unsigned int i = 0; i < _keyset->getDSrecordCount(); i++) {
-    // }
-
-    std::vector<unsigned int> status_list;
-    for (unsigned int i = 0; i < _keyset->getStatusCount(); i++) {
-        if (m_registry_manager->getStatusDesc(
-                    _keyset->getStatusByIdx(i)->getStatusId()
-                    )->getExternal())
-            status_list.push_back(
-                    _keyset->getStatusByIdx(i)->getStatusId());
-    }
-
-    detail->statusList.length(status_list.size());
-    for (unsigned int i = 0; i < status_list.size(); i++)
-        detail->statusList[i] = status_list[i];
-
-    return detail;
-}
 
 Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Fred::KeySet::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryKeySetDetail()");

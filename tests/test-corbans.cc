@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( test_corba_nameservice )
             "TestServer", "Whois"));
 
     //test call
-        ccReg::AdminRegistrar_var registrar
+        ccReg::WhoisRegistrar_var registrar
             = whois2_ref->getRegistrarByHandle("REG-FRED_A");
 
         BOOST_CHECK_EQUAL(static_cast<std::string>(registrar->country).compare("CZ"), 0);
