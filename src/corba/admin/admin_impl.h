@@ -94,11 +94,6 @@ public:
   ccReg::AdminRegistrar* getRegistrarById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
 
-  // contact detail
-  void fillContact(ccReg::ContactDetail* cv, Fred::Contact::Contact* c);
-  ccReg::ContactDetail* getContactById(ccReg::TID id)
-      throw (ccReg::Admin::ObjectNotFound);
-
   // nsset
   void fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n);
   ccReg::NSSetDetail* getNSSetById(ccReg::TID id)
