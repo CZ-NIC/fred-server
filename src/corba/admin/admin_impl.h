@@ -94,11 +94,6 @@ public:
   ccReg::AdminRegistrar* getRegistrarById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
 
-  // nsset
-  void fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n);
-  ccReg::NSSetDetail* getNSSetById(ccReg::TID id)
-      throw (ccReg::Admin::ObjectNotFound);
-
   // keyset
   void fillKeySet(ccReg::KeySetDetail* cn, Fred::KeySet::KeySet* n);
   ccReg::KeySetDetail *getKeySetById(ccReg::TID id)
