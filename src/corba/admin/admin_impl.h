@@ -94,15 +94,6 @@ public:
   ccReg::AdminRegistrar* getRegistrarById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
 
-  // domain
-  void fillDomain(ccReg::DomainDetail* cd, Fred::Domain::Domain* d);
-  ccReg::DomainDetail* getDomainById(ccReg::TID id)
-      throw (ccReg::Admin::ObjectNotFound);
-  ccReg::DomainDetails *getDomainsByKeySetId(ccReg::TID id, CORBA::Long limit)
-      throw (ccReg::Admin::ObjectNotFound);
-  ccReg::DomainDetails *getDomainsByKeySetHandle(const char *handle, CORBA::Long limit)
-      throw (ccReg::Admin::ObjectNotFound);
-
   void fillEPPAction(ccReg::AdminEPPAction* cea,
                      const Fred::Registrar::EPPAction *rea);
   ccReg::AdminEPPAction* getEPPActionById(ccReg::TID id)
