@@ -94,12 +94,6 @@ public:
   ccReg::AdminRegistrar* getRegistrarById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
 
-  void fillEPPAction(ccReg::AdminEPPAction* cea,
-                     const Fred::Registrar::EPPAction *rea);
-  ccReg::AdminEPPAction* getEPPActionById(ccReg::TID id)
-      throw (ccReg::Admin::ObjectNotFound);
-  ccReg::AdminEPPAction* getEPPActionBySvTRID(const char* svTRID)
-      throw (ccReg::Admin::ObjectNotFound);
   // statistics
   CORBA::Long getDomainCount(const char *zone);
   CORBA::Long getSignedDomainCount(const char *_fqdn);
