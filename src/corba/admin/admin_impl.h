@@ -94,17 +94,6 @@ public:
   ccReg::AdminRegistrar* getRegistrarById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
 
-  // keyset
-  void fillKeySet(ccReg::KeySetDetail* cn, Fred::KeySet::KeySet* n);
-  ccReg::KeySetDetail *getKeySetById(ccReg::TID id)
-      throw (ccReg::Admin::ObjectNotFound);
-  // ccReg::KeySetDetail *getKeySetByDomainFQDN(const char *fqdn)
-      // throw (ccReg::Admin::ObjectNotFound);
-  ccReg::KeySetDetails *getKeySetsByContactId(ccReg::TID id, CORBA::Long limit)
-      throw (ccReg::Admin::ObjectNotFound);
-  ccReg::KeySetDetails *getKeySetsByContactHandle(const char *handle, CORBA::Long limit)
-      throw (ccReg::Admin::ObjectNotFound);
-
   // domain
   void fillDomain(ccReg::DomainDetail* cd, Fred::Domain::Domain* d);
   ccReg::DomainDetail* getDomainById(ccReg::TID id)
