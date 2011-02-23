@@ -465,32 +465,45 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Fred::Logger::RequestPrope
         logd_auto_db db;
 
     try {
-        // perform check
 #ifdef LOGD_VERIFY_INPUT
         if (!record_check(id, db)) return false;
 #endif
 
-        // TODO think about some other way - i don't like this
-                // optimization
-        boost::format query = boost::format("select time_begin, service_id, is_monitoring from request where id = %1%") % id;
-        Result res = db.exec(query.str());
+        DateTime request_time;
+        ServiceType service_id;
+        bool monitoring;
 
-        if(res.size() == 0) {
-            logger_error(boost::format("Record with ID %1% in request table not found.") % id);
-                        return false;
+        try {
+            const ModelRequest& mr = rcache.get(id);
+            request_time = mr.getTimeBegin();
+            service_id = mr.getServiceId();
+            monitoring = mr.getIsMonitoring();
+            // the record stays in cache for closeRequest
         }
-        // end of TODO
+        catch (RequestCache::NOT_EXISTS)
+        {
+            boost::format select = boost::format(
+                    "SELECT time_begin, service_id, is_monitoring, "
+                    "COALESCE(session_id,0) "
+                    "FROM request where id = %1%") % id;
+            Result res = db.exec(select.str());
+            if (res.size() == 0) {
+                logger_error(boost::format(
+                        "Record with ID %1% not found in request table.") % id );
+                return false;
+            }
+            request_time = res[0][0].operator ptime();
+            service_id = (ServiceType)(int) res[0][1];
+            monitoring = (bool)res[0][2];
+        }
 
-        DateTime time = res[0][0].operator ptime();
-        ServiceType service_id = (ServiceType)(int)res[0][1];
-        bool monitoring        = (bool)res[0][2];
-        insert_props(time, service_id, monitoring, id, props, db, true);
+        insert_props(request_time, service_id, monitoring, id, props, db, true);
     } catch (Database::Exception &ex) {
         logger_error(ex.what());
-                throw InternalServerError(ex.what());
+        throw InternalServerError(ex.what());
     }
 
-        db.commit();
+    db.commit();
     return true;
 
 }
