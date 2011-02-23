@@ -60,7 +60,7 @@ struct NO_OPTIONS : std::runtime_error
 };
 
 /**
- * \class NO_OPTIONS
+ * \class ReturnFromMain
  * \brief exception to end process because of cmdline processing by calling return 0; in main()
  */
 
