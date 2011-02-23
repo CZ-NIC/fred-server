@@ -60,6 +60,17 @@ struct NO_OPTIONS : std::runtime_error
 };
 
 /**
+ * \class NO_OPTIONS
+ * \brief exception to end process because of cmdline processing by calling return 0; in main()
+ */
+
+class ReturnFromMain : public std::runtime_error
+{
+public:
+    ReturnFromMain(const std::string& _what) : std::runtime_error(_what){}
+};
+
+/**
  * \class HandleGrpArgs
  * \brief interface for option group handlers
  */

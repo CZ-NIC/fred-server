@@ -37,13 +37,6 @@
 #include "faked_args.h"
 #include "handle_args.h"
 
-///end process because of cmdline processing by calling return 0; in main()
-class ReturnFromMain : public std::runtime_error {
-public:
-    ReturnFromMain(const std::string& _what) : std::runtime_error(_what) {
-  }
-};
-
 ///fred-server config file format parser
 static void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
 {//options without values are ignored
