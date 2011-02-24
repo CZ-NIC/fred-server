@@ -1,3 +1,28 @@
+2011-02-24 Jiri Sadek, Juraj Vicenik, Jan Zima (2.6.0)
+
+  * servers build enhancements
+
+  * servers sources splitted, initialization rewritten
+
+  * new tests added
+
+  * fred-mifd - request notification (same as in epp)
+              - authinfo attribut added
+              - message content fixes
+
+  * fred-log - queries performace fixes
+
+  * fred-adifd - pagetable query limit
+               - new filters (banking, messages)
+
+  * messages - message templates fixes (countrycode)
+
+  * fred-pifd (whois) and fred-adifd (admin) implementation changes due to idl
+    interface split
+
+  * epp - update enum domain - enumdir attribute is not mandatory (fixed) -
+          schema deps
+
 2010-12-20 Juraj Vicenik, Jiri Sadek (2.5.13)
 
   * fix invalid throw usage
