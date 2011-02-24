@@ -846,6 +846,36 @@ BOOST_AUTO_TEST_CASE( without_properties )
 	BOOST_CHECK(test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ"));
 }
 
+
+BOOST_AUTO_TEST_CASE ( test_double_close )
+{
+        BOOST_TEST_MESSAGE("Try to close one request two times - should yield an exception.");
+
+        TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+        Database::ID idr = test.createRequest("100.100.100.100", LC_EPP, "AAA", TestImplLog::no_props, false, TestImplLog::no_objs, 0);
+        BOOST_CHECK(idr != 0);
+        BOOST_CHECK(test.closeRequest(idr, "ZZZ", TestImplLog::no_props, TestImplLog::no_objs, 1000, 0));
+
+        bool correct_exception = false;
+        try {
+            test.closeRequest(idr, "ZZZ1", TestImplLog::no_props, TestImplLog::no_objs, 1001, 0);
+        } catch (InternalServerError &ex) {
+            std::string message(ex.what());
+            if(message.find("was already completed") == std::string::npos) {
+                BOOST_FAIL("Either completely wrong exception or just a modified message");
+            }
+
+            correct_exception = true;
+        } catch (...) {
+            BOOST_FAIL("Incorrect exception thrown");
+        }
+
+        BOOST_CHECK_MESSAGE(correct_exception, "No exception thrown when double close of request occured.");
+
+}
+
+
 BOOST_AUTO_TEST_CASE( service_types)
 {
 	BOOST_TEST_MESSAGE(" Try to use all possible service types");
@@ -1108,7 +1138,7 @@ BOOST_AUTO_TEST_CASE ( test_rewrite_same_session )
         Database::ID idr = test.createRequest("100.99.98.97", LC_EPP, "AAA", TestImplLog::no_props, false, TestImplLog::no_objs, ids);
 
 
-        test.closeRequest(idr, "ZZZ", TestImplLog::no_props, TestImplLog::no_objs, 1000, ids);
+        BOOST_CHECK(test.closeRequest(idr, "ZZZ", TestImplLog::no_props, TestImplLog::no_objs, 1000, ids));
 
         test.closeSession(ids);
 }

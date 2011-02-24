@@ -32,12 +32,12 @@ typedef long int RequestType;
 
 class List;
 
-class InternalServerError : std::runtime_error {
+class InternalServerError : public std::runtime_error {
 public:
     InternalServerError(const std::string msg) : std::runtime_error(msg) {};
 };
 
-class WrongUsageError : std::runtime_error {
+class WrongUsageError : public std::runtime_error {
 public:
     WrongUsageError(const std::string msg) : std::runtime_error(msg) {};
 };
