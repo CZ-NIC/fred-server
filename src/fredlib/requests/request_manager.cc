@@ -28,6 +28,8 @@
 #include "request_manager.h"
 #include "request_list.h"
 
+#include "random.h"
+
 #include "model_session.h"
 #include "model_request_data.h"
 #include "model_request.h"
@@ -45,16 +47,12 @@ using namespace boost::gregorian;
 #ifdef HAVE_LOGGER
 class logd_ctx_init {
 public:
-
-    inline logd_ctx_init() {
-    Logging::Context::clear();
-        pthread_t tid = pthread_self();
-        boost::format fmt = boost::format("logd-%1%") % tid;
-        ctx.reset(new Logging::Context(fmt.str()));
-    }
+    inline logd_ctx_init() :
+        ctx( (boost::format("logd-<%2%>") % Random::integer(0, 100000000)).str() )
+    {}
 
 private:
-    std::auto_ptr<Logging::Context> ctx;
+    Logging::Context ctx;
 };
 
 #else

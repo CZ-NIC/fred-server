@@ -489,13 +489,13 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	util/db/libdb.a \
 	util/types/libtypes.a \
     src/old_utils/liboldutils.a \
-    util/log/liblog.a \
-    util/conf/libconf.a \
-	util/libutil.a \
 	src/fredlib/requests/librequests.a \
 	src/fredlib/mojeid/libmojeid.a \
 	src/fredlib/banking/libbanking.a \
-	    src/corba/libmailer.a \
+    util/log/liblog.a \
+    util/conf/libconf.a \
+	util/libutil.a \
+		    src/corba/libmailer.a \
 	    src/corba/libfilemanager.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
 
@@ -845,7 +845,8 @@ tools_logd_migration_migrate_log_LDADD = src/fredlib/requests/librequests.a \
 		src/fredlib/banking/libbanking.a \
 		src/corba/log/liblog_impl.a  \
 		util/log/liblog.a util/types/libtypes.a \
-		util/db/libdb.a src/old_utils/liboldutils.a \
+		util/db/libdb.a util/libutil.a \
+		src/old_utils/liboldutils.a \
         $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB)
 
 #tools logd_mirgation
@@ -890,13 +891,13 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	util/db/libdb.a \
 	util/types/libtypes.a \
     src/old_utils/liboldutils.a \
-    util/log/liblog.a \
-    util/conf/libconf.a \
-	util/libutil.a \
 	src/fredlib/requests/librequests.a \
 	src/fredlib/mojeid/libmojeid.a \
 	src/fredlib/banking/libbanking.a \
-	src/corba/libcorbamessages.a \
+    util/log/liblog.a \
+    util/conf/libconf.a \
+	util/libutil.a \
+		src/corba/libcorbamessages.a \
 			src/corba/libcorbamessages.a \
 			src/corba/libcorbamojeid.a \
 		    src/corba/libcorbazone.a \
