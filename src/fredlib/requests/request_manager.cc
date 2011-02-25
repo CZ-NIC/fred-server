@@ -48,7 +48,7 @@ using namespace boost::gregorian;
 class logd_ctx_init {
 public:
     inline logd_ctx_init() :
-        ctx( (boost::format("logd-<%2%>") % Random::integer(0, 100000000)).str() )
+        ctx( (boost::format("logd-<%1%>") % Random::integer(0, 100000000)).str() )
     {}
 
 private:
