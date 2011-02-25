@@ -27,7 +27,6 @@ namespace Fred {
 namespace Logger {
 
 
-const int RequestPropertyNameCache::MAX_NAME_LENGTH = 30;
 const unsigned int RequestPropertyNameCache::PROP_NAMES_SIZE_LIMIT = 10000;
 
 // this throws exceptions, caller must handle it (we don't want to have logging here)
@@ -64,10 +63,8 @@ ID RequestPropertyNameCache::find_property_name_id(const std::string &name,
     ID property_name_id;
     std::map<std::string, ID>::iterator iter;
 
-    std::string name_trunc = name.substr(0, MAX_NAME_LENGTH);
-
     boost::mutex::scoped_lock prop_check(properties_mutex);
-    iter = property_names.find(name_trunc);
+    iter = property_names.find(name);
 
     if (iter != property_names.end()) {
         property_name_id = iter->second;
@@ -79,7 +76,7 @@ ID RequestPropertyNameCache::find_property_name_id(const std::string &name,
 
         prop_check.unlock();
 
-        std::string s_name = conn.escape(name_trunc);
+        std::string s_name = conn.escape(name);
 
         boost::format query = boost::format(
                 "select id from request_property_name where name='%1%'")
@@ -102,21 +99,17 @@ ID RequestPropertyNameCache::find_property_name_id(const std::string &name,
             // now that we know the right database id of the name
             // we can add it to the map
             prop_check.lock();
-            property_names[name_trunc] = property_name_id;
+            property_names[name] = property_name_id;
             prop_check.unlock();
         } else if (res.size() == 0) {
             // not found, we're under lock, so we can add it now
             // and let the lock release after commiting the transaction
             ModelRequestPropertyName pn;
-            pn.setName(name_trunc);
+            pn.setName(name);
 
-            try {
-                pn.insert();
-                property_name_id = pn.getId();
-            } catch (Database::Exception &ex) {
-                logger_error(ex.what());
-                return 0;
-            }
+            pn.insert();
+            property_name_id = pn.getId();
+
             // we don't add the value to the map - that has to happen after the commit of this transaction
         }
         // if the name was inserted into database, we have to keep it locked until commit

@@ -448,7 +448,7 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_generic_prope
 bool TestImplLog::property_match(const Row r, const Fred::Logger::RequestProperty &p, bool output)
 {
 
-	if ( (std::string)r[0] != p.name.substr(0, Fred::Logger::RequestPropertyNameCache::MAX_NAME_LENGTH))  return false;
+	if ( (std::string)r[0] != p.name)  return false;
 	if ( (std::string)r[1] != p.value) return false;
         if ( (bool)r[3] != output) return false;
 
@@ -827,6 +827,48 @@ BOOST_AUTO_TEST_CASE( zero_property_name)
 	id = test.createRequest("100.100.100.100", LC_EPP, "CCC", *props);
 
 	BOOST_CHECK(id != 0);
+}
+
+BOOST_AUTO_TEST_CASE( property_name_too_long )
+{
+    BOOST_TEST_MESSAGE("Try to log a property with a name which is too long.");
+
+    Database::ID id;
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+    std::auto_ptr<Fred::Logger::RequestProperties> props
+        = test.create_generic_properties(1, global_call_count++);
+
+    (*props)[0].name = std::string(1000, 'N');
+    (*props)[0].value = "property value - very long name";
+
+    id = test.createRequest("100.100.100.100", LC_EPP, "AAA", *props);
+    BOOST_CHECK(id == 0);
+
+    /*
+     * check if the right exception was thrown
+    bool correct_exception = false;
+    try {
+        id = test.createRequest("100.100.100.100", LC_EPP, "AAA", *props);
+    } catch (const WrongUsageError &ex) {
+        std::string message(ex.what());
+
+        //if(message.find("") == std::string::npos) {
+            //BOOST_FAIL("Either completely wrong exception or just a modified message");
+        //}
+        BOOST_FAIL(message);
+
+        correct_exception = true;
+    } catch (const Database::Exception &ex) {
+        BOOST_FAIL("FAILED, Database::Exception: " + std::string(ex.what()));
+    } catch (...) {
+        BOOST_FAIL("Incorrect exception thrown");
+    }
+
+    if(!correct_exception) {
+        // fail for incorrect exception would've been executed above
+        BOOST_FAIL("No exception thrown.");
+    }
+    */
 }
 
 
