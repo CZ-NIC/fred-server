@@ -554,6 +554,16 @@ bool ManagerImpl::i_closeRequest(
             monitoring = (bool)res[0][3];
             old_session_id = (unsigned)res[0][4];
         }
+    } catch (InternalServerError &ex) {
+        throw;
+    } catch (std::exception &ex) {
+        logger_error(ex.what());
+        throw InternalServerError(ex.what());
+    } catch (...) {
+        logger_error("Unknown exception in  ManagerImpl::i_closeRequest");
+        throw InternalServerError("Unknown exception in  ManagerImpl::i_closeRequest");
+    }
+
 #ifdef HAVE_LOGGER
     boost::format sess_fmt = boost::format("session-%1%") %
             (session_id ? session_id : old_session_id);
@@ -571,6 +581,7 @@ bool ManagerImpl::i_closeRequest(
         throw InternalServerError(msg.str());
     }
 
+    try {
 #ifdef LOGD_VERIFY_INPUT
                 boost::format query_check;
                 query_check = boost::format("select session_id, time_end from request where id=%1%") % id;
