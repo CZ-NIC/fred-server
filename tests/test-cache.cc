@@ -99,24 +99,23 @@ BOOST_AUTO_TEST_CASE( test_garbage_all )
 {
     SessionCache sc(1000, 3);
 
-    add_sequence(sc, 1000);
-    verify_items_sequence(sc, 1000);
+    add_sequence(sc, 1001);
+    verify_items_sequence(sc, 1001);
+    // now there's 1 item over capacity, we're just 
+    // before garbage collection attempt 
 
     sleep(4); 
 
     // this should trigger garbage collection
     ModelSession session;
     session.setUserName("garbage trigger");
-    session.setUserId(1001);
-    sc.add(1001, session);
+    session.setUserId(1002);
     sc.add(1002, session);
-    sc.add(1003, session);
-    sc.add(1004, session);
 
     // all items should be garbaged now 
-    verify_items_miss_sequence(sc, 1000);
+    verify_items_miss_sequence(sc, 1001);
     // this one should be still present
-    verify_item(sc, 1001);
+    verify_item(sc, 1002);
 
 }
 
@@ -124,8 +123,11 @@ BOOST_AUTO_TEST_CASE( test_garbage_some )
 {
     SessionCache sc(1000, 3);
 
-    add_sequence(sc, 1000);
-    verify_items_sequence(sc, 1000);
+    add_sequence(sc, 1001);
+    verify_items_sequence(sc, 1001);
+
+    // now there's 1 item over capacity, we're just 
+    // before garbage collection attempt 
 
     sleep(4); 
 
@@ -135,16 +137,16 @@ BOOST_AUTO_TEST_CASE( test_garbage_some )
     // this should trigger garbage collection
     ModelSession session;
     session.setUserName("garbage trigger");
-    session.setUserId(1001);
-    sc.add(1001, session);
+    session.setUserId(1002);
+    sc.add(1002, session);
 
+    // these should be still present
     verify_item(sc, 225);
     verify_item(sc, 768);
-    verify_item(sc, 1001);
+    verify_item(sc, 1002);
 
     // all items should be garbaged now 
     verify_items_miss_sequence(sc, 224);
-    // this one should be still present
 
 }
 
