@@ -111,7 +111,7 @@ private:
 };
 
 
-Result ManagerImpl::i_getRequestTypesByService(ServiceType service)
+Result ManagerImpl::i_getRequestTypesByService(ServiceType service) 
 {
         logd_ctx_init ctx;
 
@@ -155,6 +155,7 @@ Result ManagerImpl::i_getObjectTypes()
 
 // ManagerImpl ctor: connect to the database and fill property_names map
 ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
+    : scache(4, 20)
 {
         std::ifstream file;
 
@@ -426,8 +427,37 @@ void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *u
 {
         TRACE("[CALL] Fred::Logger::ManagerImpl::getSessionUser");
 
-    if (session_id != 0) {
-                boost::format query = boost::format("select user_name, user_id from session where id = %1%") % session_id;
+    if(session_id == 0) {
+        // TODO watch for NULL values
+        *user_name = std::string();
+        *user_id = 0;
+
+        return;
+    }
+
+    try {
+        ModelSession sess = scache.get(session_id);
+
+        if(sess.isUserNameSet()) *user_name = sess.getUserName();
+        else *user_name = std::string();
+
+        if(sess.isUserIdSet()) *user_id = sess.getUserId();
+        else *user_id = 0;
+
+    } catch (CACHE_MISS) {
+        ModelSession sess;
+
+        /// TODO  this probably isn't good
+        sess.setId(session_id);
+        sess.reload();
+
+        *user_name = sess.getUserName();
+        *user_id   = sess.getUserId();
+
+        scache.add(sess.getId(), sess);
+
+        /*
+        boost::format query = boost::format("select user_name, user_id from session where id = %1%") % session_id;
         Result res = conn.exec(query.str());
 
         if(res.size() == 0) {
@@ -436,16 +466,13 @@ void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *u
                         throw InternalServerError(msg.str());
         }
 
-                if(res[0][0].isnull()) *user_name = std::string();
-                else *user_name = (std::string)res[0][0];
+        if(res[0][0].isnull()) *user_name = std::string();
+        else *user_name = (std::string)res[0][0];
 
-                if(res[0][1].isnull()) *user_id = 0;
-                else *user_id = res[0][1];
-
-    } else {
-                *user_name = std::string();
-                *user_id = 0;
-        }
+        if(res[0][1].isnull()) *user_id = 0;
+        else *user_id = res[0][1];
+        */
+    }
 
 }
 
@@ -760,6 +787,7 @@ ID ManagerImpl::i_createSession(ID user_id, const char *name)
                 boost::format sess_fmt = boost::format("session-%1%") % session_id;
                 ctx_sess.reset(new Logging::Context(sess_fmt.str()));
 #endif
+                scache.add(session_id, sess);
 
         } catch (Database::Exception &ex) {
                 logger_error(ex.what());
@@ -778,6 +806,9 @@ bool ManagerImpl::i_closeSession(ID id)
 
         TRACE("[CALL] Fred::Logger::ManagerImpl::i_closeSession");
 
+    // remove the record from the cache before anything can throw
+    scache.remove(id);
+        
         logd_auto_db db;
     std::string  time;
 

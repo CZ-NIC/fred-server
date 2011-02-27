@@ -442,7 +442,9 @@ src_fredlib_requests_librequests_a_SOURCES =  \
 	    src/fredlib/requests/request_cache.h \
 	    src/fredlib/requests/request_cache.cc \
 	    src/fredlib/requests/request_property_name_cache.h \
-	    src/fredlib/requests/request_property_name_cache.cc
+	    src/fredlib/requests/request_property_name_cache.cc \
+		src/fredlib/requests/session_cache.h \
+		src/fredlib/requests/session_cache.cc
 
 #src fredlib requests
 
@@ -872,7 +874,9 @@ tests_test_server_SOURCES = tests/test-server.cc \
                      tests/test-msgd.h  \
                      tests/test-admin.cc \
                      tests/test-corbans.cc \
-                     tests/test-whois.cc
+                     tests/test-whois.cc \
+					 tests/test-cache.h \
+					 tests/test-cache.cc
                      
 tests_test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \

@@ -15,8 +15,14 @@ public:
     const unsigned long long &getId() const {
         return m_id.get();
     }
+    bool isUserNameSet() const {
+        return m_userName.isChanged();
+    }
     const std::string &getUserName() const {
         return m_userName.get();
+    }
+    bool isUserIdSet() const {
+        return m_userId.isChanged();
     }
     const unsigned long long &getUserId() const {
         return m_userId.get();

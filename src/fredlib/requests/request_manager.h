@@ -20,6 +20,7 @@
 #define REQUEST_MANAGER_H_
 
 #include "request_cache.h"
+#include "session_cache.h"
 #include "request_property_name_cache.h"
 
 #include <stdexcept>
@@ -81,6 +82,7 @@ private:
 
   std::list<std::string> monitoring_ips;
   RequestCache rcache;
+  SessionCache scache;
   std::auto_ptr<RequestPropertyNameCache> pcache;
 
 public:
