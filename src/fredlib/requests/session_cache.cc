@@ -42,7 +42,7 @@ void SessionCache::add(const Database::ID &id, const ModelSession &s)
         return; 
     }
 
-    boost::mutex::scoped_lock(cache_mutex);
+    boost::mutex::scoped_lock lock(cache_mutex);
     cache.insert(std::make_pair(id, SessionCacheItem(current, s)));
 
     // TODO DEBUG
@@ -58,7 +58,7 @@ void SessionCache::add(const Database::ID &id, const ModelSession &s)
  */
 void SessionCache::remove(const Database::ID &id)
 {
-    boost::mutex::scoped_lock(cache_mutex);
+    boost::mutex::scoped_lock lock(cache_mutex);
     CacheType::const_iterator it = cache.find(id);
     if(it != cache.end()) {
         cache.erase(id);
@@ -70,24 +70,22 @@ void SessionCache::remove(const Database::ID &id)
  */
 const ModelSession SessionCache::get(const Database::ID &id)
 {
-    boost::mutex::scoped_lock(cache_mutex);
+    boost::mutex::scoped_lock lock(cache_mutex);
     CacheType::iterator i = cache.find(id);
     if(i != cache.end()) {
         SessionCacheItem &item = i->second;
         item.update_timestamp();
         return item.get_data();
-    } else {
-        throw CACHE_MISS();
+    }
 #ifdef HAVE_LOGGER
         LOGGER("fred-server").info("SCACHE: Cache miss");
 #endif
-
-    }
+    throw CACHE_MISS();
 }
 
 bool SessionCache::needGarbage() 
 {
-    boost::mutex::scoped_lock(cache_mutex);
+    boost::mutex::scoped_lock lock(cache_mutex);
     return cache.size() > max_items;
 }
 
@@ -102,7 +100,7 @@ void SessionCache::performGarbage()
         "SCACHE: Performing garbage collection with timestamp %1% ") % max_timestamp);
 #endif
 
-    boost::mutex::scoped_lock(cache_mutex);
+    boost::mutex::scoped_lock lock(cache_mutex);
 
     CacheType::const_iterator i = cache.begin();
     while (i != cache.end()) {
