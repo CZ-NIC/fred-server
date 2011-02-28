@@ -26,7 +26,7 @@ const ptime current_timestamp() {
     return second_clock::universal_time();
 } 
 
-void SessionCache::add(const Database::ID &id, const ModelSession &s) 
+void SessionCache::add(const Database::ID &id, const boost::shared_ptr<ModelSession> &s)
 {
     ptime current = current_timestamp();
 
@@ -47,7 +47,7 @@ void SessionCache::add(const Database::ID &id, const ModelSession &s)
 
     // TODO DEBUG
 #ifdef HAVE_LOGGER
-    LOGGER("fred-server").info(boost::format("SCACHEAdded a record, size: %1%") % cache.size());
+    LOGGER("fred-server").info(boost::format("SCACHE Added a record, size: %1%") % cache.size());
 #endif
 
 }
@@ -62,13 +62,17 @@ void SessionCache::remove(const Database::ID &id)
     CacheType::const_iterator it = cache.find(id);
     if(it != cache.end()) {
         cache.erase(id);
+        // TODO DEBUG
+#ifdef HAVE_LOGGER
+        LOGGER("fred-server").info(boost::format("SCACHE Added a record, size: %1%") % cache.size());
+#endif
     }
 }
 
 /** 
  * We cannot return a reference here since it can become invalid
  */
-const ModelSession SessionCache::get(const Database::ID &id)
+boost::shared_ptr<ModelSession> SessionCache::get(const Database::ID &id)
 {
     boost::mutex::scoped_lock lock(cache_mutex);
     CacheType::iterator i = cache.find(id);
@@ -92,7 +96,8 @@ bool SessionCache::needGarbage()
 void SessionCache::performGarbage() 
 {
     unsigned deleted_count = 0;
-    ptime max_timestamp = current_timestamp() - item_ttl;
+    ptime min = current_timestamp();
+    ptime max_timestamp = min - item_ttl;
 
     //TODO DEBUG
 #ifdef HAVE_LOGGER 
@@ -102,8 +107,16 @@ void SessionCache::performGarbage()
 
     boost::mutex::scoped_lock lock(cache_mutex);
 
+    // records in interval <oldest_tstamp, max_timestamp) could be removed
+    if(oldest_tstamp >= max_timestamp) {
+        return;
+    }
+
     CacheType::const_iterator i = cache.begin();
     while (i != cache.end()) {
+        if ((i->second).is_timestamp_older(min)) {
+            min = (i->second).get_timestamp();
+        }
         if ((i->second).is_timestamp_older(max_timestamp)) {
             Database::ID to_delete = i->first;
 
@@ -115,6 +128,9 @@ void SessionCache::performGarbage()
             i++;
         }
     }
+
+    // this must be also done under a lock
+    oldest_tstamp = min;
 
 #ifdef HAVE_LOGGER
     LOGGER("fred-server").info(boost::format("SCACHE: Garbage finished, deleted %1% records")

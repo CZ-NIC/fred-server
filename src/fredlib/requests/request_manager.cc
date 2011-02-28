@@ -155,7 +155,7 @@ Result ManagerImpl::i_getObjectTypes()
 
 // ManagerImpl ctor: connect to the database and fill property_names map
 ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
-    : scache(4, 20)
+    : scache(1000, 300)
 {
         std::ifstream file;
 
@@ -428,33 +428,30 @@ void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *u
         TRACE("[CALL] Fred::Logger::ManagerImpl::getSessionUser");
 
     if(session_id == 0) {
-        // TODO watch for NULL values
         *user_name = std::string();
         *user_id = 0;
-
         return;
     }
 
     try {
-        ModelSession sess = scache.get(session_id);
+        boost::shared_ptr<ModelSession> sess = scache.get(session_id);
 
-        if(sess.isUserNameSet()) *user_name = sess.getUserName();
+        if(sess->isUserNameSet()) *user_name = sess->getUserName();
         else *user_name = std::string();
 
-        if(sess.isUserIdSet()) *user_id = sess.getUserId();
+        if(sess->isUserIdSet()) *user_id = sess->getUserId();
         else *user_id = 0;
 
     } catch (CACHE_MISS) {
-        ModelSession sess;
+        boost::shared_ptr<ModelSession> sess(new ModelSession());
 
-        /// TODO  this probably isn't good
-        sess.setId(session_id);
-        sess.reload();
+        sess->setId(session_id);
+        sess->reload();
 
-        *user_name = sess.getUserName();
-        *user_id   = sess.getUserId();
+        *user_name = sess->getUserName();
+        *user_id   = sess->getUserId();
 
-        scache.add(sess.getId(), sess);
+        scache.add(sess->getId(), sess);
 
         /*
         boost::format query = boost::format("select user_name, user_id from session where id = %1%") % session_id;
@@ -764,24 +761,24 @@ ID ManagerImpl::i_createSession(ID user_id, const char *name)
 
     DateTime time(microsec_clock::universal_time());
 
-    ModelSession sess;
-        sess.setLoginDate(time);
+    boost::shared_ptr<ModelSession> sess(new ModelSession());
+        sess->setLoginDate(time);
 
     if (name != NULL && *name != '\0') {
-        sess.setUserName(name);
+        sess->setUserName(name);
     } else {
         logger_error("createSession: name is empty!");
                 throw WrongUsageError ("User name is empty");
     }
 
         if (user_id != 0) {
-                sess.setUserId(user_id);
+                sess->setUserId(user_id);
         }
 
     try {
-                sess.insert();
+                sess->insert();
 
-                session_id = sess.getId();
+                session_id = sess->getId();
 
 #ifdef HAVE_LOGGER
                 boost::format sess_fmt = boost::format("session-%1%") % session_id;

@@ -43,11 +43,11 @@ const ptime current_timestamp();
 class SessionCacheItem {
 private:
     ptime timestamp;
-    ModelSession data;
+    boost::shared_ptr<ModelSession> data;
 
 public:
 
-    SessionCacheItem (const ptime &t, const ModelSession &s) :
+    SessionCacheItem (const ptime &t, const boost::shared_ptr<ModelSession> &s) :
         timestamp(t), 
         data(s) 
     { };
@@ -60,8 +60,12 @@ public:
         return timestamp < limit;
     }
 
-    const ModelSession &get_data() const {
+    boost::shared_ptr<ModelSession> get_data() const {
         return data;
+    }
+
+    ptime get_timestamp() const {
+        return timestamp;
     }
 };
 
@@ -81,20 +85,22 @@ private:
     typedef std::map<Database::ID, SessionCacheItem> CacheType;
     CacheType cache;
     boost::mutex cache_mutex;
+    ptime oldest_tstamp;
 
     const size_t max_items;
     const time_duration item_ttl;
 
 public:
 
-    SessionCache(size_t max_capacity, unsigned ttl_seconds) : 
+    SessionCache(size_t max_capacity, unsigned ttl_seconds) :
+        oldest_tstamp(current_timestamp()),
         max_items(max_capacity),
         item_ttl(seconds(ttl_seconds))
-    { }
+    { };
 
-    void add(const Database::ID &id, const ModelSession &s);
+    void add(const Database::ID &id, const boost::shared_ptr<ModelSession> &s);
     void remove(const Database::ID &id);
-    const ModelSession get(const Database::ID &id);
+    boost::shared_ptr<ModelSession> get(const Database::ID &id);
 
 private:
     bool needGarbage();

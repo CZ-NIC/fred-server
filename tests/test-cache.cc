@@ -8,12 +8,11 @@ using namespace Fred::Logger;
 void add_sequence(SessionCache &sc, unsigned count) 
 {
     for (unsigned i=1; i<=count; i++) {
-        ModelSession session;
-        session.setUserName("name");
-        session.setUserId(i);
+        boost::shared_ptr<ModelSession> session(new ModelSession);
+        session->setUserName("name");
+        session->setUserId(i);
 
         sc.add(i, session);
-
     }
 }
 
@@ -29,7 +28,7 @@ void verify_items_sequence(SessionCache &sc, unsigned count)
 {
     for (unsigned i=1; i<= count; i++) {
         try {
-            ModelSession s = sc.get(i);
+            boost::shared_ptr<ModelSession> s = sc.get(i);
         } catch(CACHE_MISS) {
             BOOST_FAIL("Cache miss occured when not allowed");
         } 
@@ -39,7 +38,7 @@ void verify_items_sequence(SessionCache &sc, unsigned count)
 void verify_item(SessionCache &sc, Database::ID id)
 {
     try {
-        ModelSession s = sc.get(id);
+        boost::shared_ptr<ModelSession> s = sc.get(id);
     } catch(CACHE_MISS) {
         BOOST_FAIL("Item not present in cache");
     }
@@ -50,7 +49,7 @@ void verify_items_miss_sequence(SessionCache &sc, unsigned count)
     for (unsigned i=1; i<= count; i++) {
         bool exception = false;
         try {
-            ModelSession s = sc.get(i);
+            boost::shared_ptr<ModelSession> s = sc.get(i);
         } catch(CACHE_MISS) {
             exception = true;
         } 
@@ -107,9 +106,9 @@ BOOST_AUTO_TEST_CASE( test_garbage_all )
     sleep(4); 
 
     // this should trigger garbage collection
-    ModelSession session;
-    session.setUserName("garbage trigger");
-    session.setUserId(1002);
+    boost::shared_ptr<ModelSession> session(new ModelSession());
+    session->setUserName("garbage trigger");
+    session->setUserId(1002);
     sc.add(1002, session);
 
     // all items should be garbaged now 
@@ -135,9 +134,9 @@ BOOST_AUTO_TEST_CASE( test_garbage_some )
     verify_item(sc, 768);
 
     // this should trigger garbage collection
-    ModelSession session;
-    session.setUserName("garbage trigger");
-    session.setUserId(1002);
+    boost::shared_ptr<ModelSession> session(new ModelSession());
+    session->setUserName("garbage trigger");
+    session->setUserId(1002);
     sc.add(1002, session);
 
     // these should be still present
