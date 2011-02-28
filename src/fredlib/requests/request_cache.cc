@@ -17,6 +17,8 @@
  */
 
 #include "request_cache.h"
+#include "log/logger.h"
+#include "log/context.h"
 
 void
 Fred::Logger::RequestCache::insert(const ModelRequest& mr)
@@ -26,6 +28,11 @@ Fred::Logger::RequestCache::insert(const ModelRequest& mr)
   // fields used are begin_time, is_monitoring, service_id and session_id
   // if adding field, check if copy constructor works fine
 	cache[mr.getId()] = mr;
+#ifdef HAVE_LOGGER 
+    LOGGER("fred-server").info(boost::format(
+        "RCACHE: Added a record with ID: %1%, current size: %2% ") % mr.getId() % cache.size());
+#endif
+
 }
 
 void
