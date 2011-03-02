@@ -875,7 +875,6 @@ tests_test_server_SOURCES = tests/test-server.cc \
                      tests/test-admin.cc \
                      tests/test-corbans.cc \
                      tests/test-whois.cc \
-					 tests/test-cache.h \
 					 tests/test-cache.cc
                      
 tests_test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
