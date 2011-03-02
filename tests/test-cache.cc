@@ -176,7 +176,28 @@ public:
     }
 };
 
-typedef unsigned threaded_sequence;
+template<class T>
+class threaded_sequence {
+public:
+    explicit threaded_sequence(T init = 1) : seq(init) { };
+
+    operator T() {
+        return seq;
+    }
+
+    T operator ++ (int) {
+        boost::mutex::scoped_lock lock(m);
+        T save = seq;
+        seq++;
+        return save;
+    }
+private:
+    T seq;
+    boost::mutex m;
+};
+
+typedef threaded_sequence<unsigned> sequence;
+//typedef unsigned threaded_sequence;
 
 class WorkerComplete : public ThreadWorker {
 public:
@@ -186,22 +207,22 @@ public:
         SessionCache &sc,
         unsigned maxid,
         seconds t,
-        threaded_sequence &tsq,
-        threaded_sequence &refused) :
+        sequence &tsq,
+        sequence &refused) :
            ThreadWorker(n, sb, thread_group_divisor, sc, maxid, t),
            id_sequence(tsq),
            refused_count(refused)
     { }
 
 protected:
-    threaded_sequence &id_sequence;
-    threaded_sequence &refused_count;
+    sequence &id_sequence;
+    sequence &refused_count;
 };
 
 class WorkerCompleteAdd : public WorkerComplete {
 public:
     WorkerCompleteAdd(unsigned n,boost::barrier* sb,std::size_t thread_group_divisor,SessionCache &sc,
-            unsigned maxid,seconds t,threaded_sequence &tsq,threaded_sequence &rc) :
+            unsigned maxid,seconds t,sequence &tsq,sequence &rc) :
            WorkerComplete(n, sb, thread_group_divisor, sc, maxid, t, tsq, rc)
     { }
     virtual void worker()
@@ -232,7 +253,7 @@ public:
 class WorkerCompleteRemove : public WorkerComplete {
 public:
     WorkerCompleteRemove(unsigned n, boost::barrier* sb,std::size_t thread_group_divisor,SessionCache &sc,
-            unsigned maxid,seconds t,threaded_sequence &tsq,threaded_sequence &rc) :
+            unsigned maxid,seconds t,sequence &tsq,sequence &rc) :
            WorkerComplete(n, sb, thread_group_divisor, sc, maxid, t, tsq, rc)
     { }
     virtual void worker()
@@ -403,8 +424,8 @@ BOOST_AUTO_TEST_CASE( cache_ultimate_threaded_test )
     SessionCache scache(cache_capacity, ttl);
     const unsigned max_id = 10;
 
-    threaded_sequence id_seq(1);
-    threaded_sequence refused_count(0);
+    sequence id_seq(1);
+    sequence refused_count(0);
 
     //thread container
     boost::thread_group threads;
@@ -427,7 +448,7 @@ BOOST_AUTO_TEST_CASE( cache_ultimate_threaded_test )
     BOOST_TEST_MESSAGE( boost::format("refused_count: %1%") % refused_count);
 
     // there is always 1 element above the limit
-    BOOST_CHECK(refused_count + cache_capacity + 1 <= thread_number);
+    BOOST_CHECK(1 + refused_count + cache_capacity <= thread_number);
 }
 
 
