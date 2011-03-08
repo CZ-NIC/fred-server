@@ -105,9 +105,9 @@ public:
         item_ttl(seconds(ttl_seconds))
     { };
 
-    void add(const Database::ID &id, const boost::shared_ptr<ModelSession> &s);
-    void remove(const Database::ID &id);
-    boost::shared_ptr<ModelSession> get(const Database::ID &id);
+    void add(const Database::ID &id, const boost::shared_ptr<ModelSession> s);
+    void remove(const Database::ID id);
+    boost::shared_ptr<ModelSession> get(const Database::ID id);
 
 private:
     bool needGarbage();
