@@ -2,6 +2,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include "random.h"
 #include "requests/session_cache.h"
@@ -65,117 +66,6 @@ void verify_items_miss_sequence(SessionCache &sc, unsigned count)
     }
 }
 
-class ThreadWorker {
-public:
-ThreadWorker(unsigned n,
-                boost::barrier* sb,
-               std::size_t thread_group_divisor,
-               SessionCache &sc,
-               unsigned maxid,
-               seconds t) :
-       number(n),
-       sb_ptr(sb),
-       divisor(thread_group_divisor),
-       scache(sc),
-       max_id(maxid),
-       ttl(t) { };
-
-    void operator()() {
-        if(number % divisor)//if synchronized thread
-        {
-            //std::cout << "waiting: " << number_ << std::endl;
-            if(sb_ptr)
-            sb_ptr->wait();//wait for other synced threads
-        }
-        else
-        {//non-synchronized thread
-            //std::cout << "NOwaiting: " << number_ << std::endl;
-        }
-
-        worker();
-    }
-
-    virtual void worker()
-    {
-        BOOST_FAIL("This should NEVER be run.");
-    }
-
-
-private:
-    int number;
-    boost::barrier* sb_ptr;
-    int divisor;
-
-protected:
-    SessionCache &scache;
-    unsigned max_id;
-    seconds ttl;
-};
-
-
-
-/** This is threaded add test for version with TTL
- *   - the cache might not accept the item but once
- *   it accepts it, it MUST keep it until TTL expires,
- */
-class WorkerAdd : public ThreadWorker {
-public:
-    WorkerAdd(unsigned n,
-                    boost::barrier* sb,
-                   std::size_t thread_group_divisor,
-                   SessionCache &sc,
-                   unsigned maxid,
-                   seconds t) :
-                       ThreadWorker(n, sb, thread_group_divisor, sc, maxid, t)
-    { }
-
-    void worker()
-    {
-        boost::shared_ptr<ModelSession> n(new ModelSession());
-
-        unsigned id = Random::integer(1, max_id);
-        n->setId(id);
-        n->setUserId(id);
-        scache.add(id, n);
-
-    }
-};
-
-/** This is threaded add test for version without TTL
- *  - this verison always accepts new item because
- *  it can always successfully perform garbage collection
- *  to make space for the new data
-
-void worker_add(SessionCache &sc, unsigned max_id, seconds ttl)
-{
-    boost::shared_ptr<ModelSession> n(new ModelSession());
-
-    unsigned id = Random::integer(1, max_id);
-    n->setId(id)
-    sc.add(id, n);
-
-    BOOST_CHECK(verify_item(sc, id));
-}
-*/
-
-class WorkerRemove : public ThreadWorker {
-public:
-    WorkerRemove(unsigned n,
-        boost::barrier* sb,
-        std::size_t thread_group_divisor,
-        SessionCache &sc,
-        unsigned maxid,
-        seconds t) :
-           ThreadWorker(n, sb, thread_group_divisor, sc, maxid, t)
-    { }
-    void worker()
-    {
-        unsigned id = Random::integer(1, max_id);
-
-        scache.remove(id);
-    }
-};
-
 template<class T>
 class threaded_sequence {
 public:
@@ -199,95 +89,229 @@ private:
 typedef threaded_sequence<unsigned> sequence;
 //typedef unsigned threaded_sequence;
 
+template<class T>
+class ThreadWorkerFunctor {
+public:
+ThreadWorkerFunctor(unsigned n,
+                boost::barrier &sb,
+               std::size_t thread_group_divisor,
+               T &sc,
+               unsigned maxid,
+               seconds t) :
+       sb_ptr(sb),
+       divisor(thread_group_divisor),
+       number(n),
+       scache(sc),
+       max_id(maxid),
+       ttl(t) { };
+
+    void operator()() {
+        if(number % divisor)//if synchronized thread
+        {
+            sb_ptr.wait();
+        } else {//non-synchronized thread
+            //std::cout << "NOwaiting: " << number_ << std::endl;
+        }
+
+        worker(typename T::cache_type());
+    }
+
+    virtual void worker(cache_general_type_tag) = 0;
+    virtual void worker(cache_ttl_type_tag) = 0;
+    virtual void worker(cache_oldrec_type_tag) = 0;
+
+private:
+    boost::barrier &sb_ptr;
+    int divisor;
+
+protected:
+    int number;
+    T &scache;
+    unsigned max_id;
+    seconds ttl;
+};
+
+typedef ThreadWorkerFunctor<SessionCache> ThreadWorker;
+
+/** This is threaded add test for version with TTL
+ *   - the cache might not accept the item but once
+ *   it accepts it, it MUST keep it until TTL expires,
+ */
+class WorkerSimple : public ThreadWorker {
+public:
+    WorkerSimple(unsigned n,
+                    boost::barrier &sb,
+                   std::size_t thread_group_divisor,
+                   SessionCache &sc,
+                   unsigned maxid,
+                   seconds t) :
+                       ThreadWorker(n, sb, thread_group_divisor, sc, maxid, t)
+    { }
+
+    virtual void worker(cache_general_type_tag)
+    {
+        if (number%3) {
+            boost::shared_ptr<ModelSession> n(new ModelSession());
+
+            unsigned id = Random::integer(1, max_id);
+            n->setId(id);
+            n->setUserId(id);
+            scache.add(id, n);
+        } else {
+            unsigned id = Random::integer(1, max_id);
+
+            scache.remove(id);
+        }
+    }
+    virtual void worker(cache_ttl_type_tag) {
+        worker(cache_general_type_tag());
+    }
+    virtual void worker(cache_oldrec_type_tag) {
+        worker(cache_general_type_tag());
+    }
+};
+
+/** This is threaded add test for version without TTL
+ *  - this verison always accepts new item because
+ *  it can always successfully perform garbage collection
+ *  to make space for the new data
+
+void worker_add(SessionCache &sc, unsigned max_id, seconds ttl)
+{
+    boost::shared_ptr<ModelSession> n(new ModelSession());
+
+    unsigned id = Random::integer(1, max_id);
+    n->setId(id)
+    sc.add(id, n);
+
+    BOOST_CHECK(verify_item(sc, id));
+}
+*/
+
+
 class WorkerComplete : public ThreadWorker {
 public:
     WorkerComplete(unsigned n,
-        boost::barrier* sb,
+        boost::barrier &sb,
         std::size_t thread_group_divisor,
         SessionCache &sc,
         unsigned maxid,
         seconds t,
         sequence &tsq,
-        sequence &refused) :
-           ThreadWorker(n, sb, thread_group_divisor, sc, maxid, t),
+        sequence &refused,
+        boost::mutex &pa)
+         : ThreadWorker(n, sb, thread_group_divisor, sc, maxid, t),
            id_sequence(tsq),
-           refused_count(refused)
+           refused_count(refused),
+           protect_added(pa)
     { }
+
+    virtual void worker(cache_general_type_tag) {
+        BOOST_FAIL(" This should NEVER be run.");
+    }
+
+    virtual void worker(cache_ttl_type_tag)
+    {
+        if(number%2) {
+            boost::shared_ptr<ModelSession> n(new ModelSession());
+
+            unsigned id = id_sequence++;
+            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
+            n->setId(id);
+            n->setUserId(id);
+            scache.add(id, n);
+
+            if (!verify_item(scache, id)) {
+                // if the cache didn't save it, bail out
+                refused_count++;
+                return;
+            }
+
+
+            // TODO that 1 second should be some const
+            if( ttl-seconds(1) > seconds(0) ) {
+                sleep ((ttl-seconds(1)).total_seconds());
+            }
+            // now it should still be present
+            BOOST_CHECK_MESSAGE(verify_item(scache, id), "Check if record is still present just before timeout...");
+        } else {
+            boost::shared_ptr<ModelSession> n(new ModelSession());
+
+            unsigned id = id_sequence++;
+            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
+            n->setId(id);
+            n->setUserId(id);
+            scache.add(id, n);
+
+            if (!verify_item(scache, id)) {
+                refused_count++;
+                return;
+            }
+            // if the cache didn't save it, bail out
+
+            // don't remove the records immediately - that would uncontrolably make
+            // space for other records - if they can't fit, make it happen
+            if(ttl > seconds(1)) {
+                sleep(1);
+                // it should still be there
+                BOOST_CHECK(verify_item(scache, id));
+            }
+
+            scache.remove(id);
+
+            // now it should not be present - id was unique
+            BOOST_CHECK(!verify_item(scache, id));
+        }
+    }
+
+    virtual void worker(cache_oldrec_type_tag)
+    {
+        if(number%2) {
+            boost::shared_ptr<ModelSession> n(new ModelSession());
+
+            unsigned id = id_sequence++;
+            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
+            n->setId(id);
+            n->setUserId(id);
+
+            // without lock there'd be no guarantee that it's not deleted in the meantime
+            boost::mutex::scoped_lock(protect_added);
+            scache.add(id, n);
+
+            if (!verify_item(scache, id)) {
+                BOOST_FAIL("Record not saved in cache.");
+                return;
+            }
+            // if the cache didn't save it, bail out
+        } else {
+            boost::shared_ptr<ModelSession> n(new ModelSession());
+
+            unsigned id = id_sequence++;
+            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
+            n->setId(id);
+            n->setUserId(id);
+
+            boost::mutex::scoped_lock(protect_added);
+
+            scache.add(id, n);
+
+            if (!verify_item(scache, id)) {
+                BOOST_FAIL("Record not saved in cache.");
+                return;
+            }
+            // if the cache didn't save it, bail out
+            scache.remove(id);
+
+            // now it should not be present - id was unique
+            BOOST_CHECK(!verify_item(scache, id));
+        }
+    }
 
 protected:
     sequence &id_sequence;
     sequence &refused_count;
+    boost::mutex &protect_added;
 };
-
-class WorkerCompleteAdd : public WorkerComplete {
-public:
-    WorkerCompleteAdd(unsigned n,boost::barrier* sb,std::size_t thread_group_divisor,SessionCache &sc,
-            unsigned maxid,seconds t,sequence &tsq,sequence &rc) :
-           WorkerComplete(n, sb, thread_group_divisor, sc, maxid, t, tsq, rc)
-    { }
-    virtual void worker()
-    {
-        boost::shared_ptr<ModelSession> n(new ModelSession());
-
-        unsigned id = id_sequence++;
-        BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
-        n->setId(id);
-        n->setUserId(id);
-        scache.add(id, n);
-
-        if (!verify_item(scache, id)) {
-            refused_count++;
-            return;
-        }
-        // if the cache didn't save it, bail out
-
-        // TODO that 1 second should be some const
-        if( ttl-seconds(1) > seconds(0) ) {
-            sleep ((ttl-seconds(1)).total_seconds());
-        }
-        // now it should still be present
-        BOOST_CHECK(verify_item(scache, id));
-    }
-};
-
-class WorkerCompleteRemove : public WorkerComplete {
-public:
-    WorkerCompleteRemove(unsigned n, boost::barrier* sb,std::size_t thread_group_divisor,SessionCache &sc,
-            unsigned maxid,seconds t,sequence &tsq,sequence &rc) :
-           WorkerComplete(n, sb, thread_group_divisor, sc, maxid, t, tsq, rc)
-    { }
-    virtual void worker()
-    {
-        boost::shared_ptr<ModelSession> n(new ModelSession());
-
-        unsigned id = id_sequence++;
-        BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
-        n->setId(id);
-        n->setUserId(id);
-        scache.add(id, n);
-
-        if (!verify_item(scache, id)) {
-            refused_count++;
-            return;
-        }
-        // if the cache didn't save it, bail out
-
-        // don't remove the records immediately - that would uncontrolably make
-        // space for other records - if they can't fit, make it happen
-        if(ttl > seconds(1)) {
-            sleep(1);
-            // it should still be there
-            BOOST_CHECK(verify_item(scache, id));
-        }
-
-        scache.remove(id);
-
-        // now it should not be present - id was unique
-        BOOST_CHECK(!verify_item(scache, id));
-    }
-};
-
-
 
 BOOST_AUTO_TEST_SUITE(TestCache)
 
@@ -377,9 +401,6 @@ BOOST_AUTO_TEST_CASE( test_garbage_some )
 
 }
 
-
-
-
 BOOST_AUTO_TEST_CASE( cache_threaded_test )
 {
 
@@ -397,11 +418,7 @@ BOOST_AUTO_TEST_CASE( cache_threaded_test )
     for (unsigned i = 0; i < thread_number; ++i)
     {
         try {
-            if(!(i%3)) {
-                threads.create_thread(WorkerRemove(i,&sb, thread_group_divisor, scache, max_id, seconds(ttl)));
-            } else {
-                threads.create_thread(WorkerAdd(i,&sb, thread_group_divisor, scache, max_id, seconds(ttl)));
-            }
+            threads.create_thread(WorkerSimple(i,sb, thread_group_divisor, scache, max_id, seconds(ttl)));
         } catch(std::exception &e) {
             BOOST_FAIL(e.what());
         }
@@ -426,19 +443,15 @@ BOOST_AUTO_TEST_CASE( cache_ultimate_threaded_test )
 
     sequence id_seq(1);
     sequence refused_count(0);
+    boost::mutex prot_added;
 
     //thread container
     boost::thread_group threads;
     for (unsigned i = 0; i < thread_number; ++i)
     {
         try {
-            if(!(i%2)) {
-                threads.create_thread(WorkerCompleteRemove(
-                        i,&sb, thread_group_divisor, scache, max_id, seconds(ttl), id_seq, refused_count));
-            } else {
-                threads.create_thread(WorkerCompleteAdd(
-                        i,&sb, thread_group_divisor, scache, max_id, seconds(ttl), id_seq, refused_count));
-            }
+            threads.create_thread(WorkerComplete(
+                    i,sb, thread_group_divisor, scache, max_id, seconds(ttl), id_seq, refused_count, prot_added));
         } catch(std::exception &e) {
             BOOST_FAIL(e.what());
         }

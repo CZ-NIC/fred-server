@@ -34,6 +34,12 @@ namespace Fred {
 
 namespace Logger {
 
+///general cache trait
+struct cache_general_type_tag {};
+/// cache which uses TTL to delete old records
+struct cache_ttl_type_tag : cache_general_type_tag {};
+/// cache which deletes specific number of oldest records
+struct cache_oldrec_type_tag : cache_general_type_tag {};
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -91,6 +97,7 @@ private:
     const time_duration item_ttl;
 
 public:
+    typedef cache_ttl_type_tag cache_type;
 
     SessionCache(size_t max_capacity, unsigned ttl_seconds) :
         oldest_tstamp(current_timestamp()),
