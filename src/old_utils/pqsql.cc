@@ -68,6 +68,7 @@ bool PQ::OpenDatabase(
     LOG( ALERT_LOG , "Connection to database failed: %s",
         PQerrorMessage(connection));
     PQfinish(connection);
+    connection = NULL;
     return false;
   } else {
     LOG( NOTICE_LOG , "Database connection OK user %s host %s port %s DB %s" ,
@@ -235,7 +236,9 @@ void PQ::FreeSelect()
 void PQ::Disconnect()
 {
   LOG( NOTICE_LOG , "PQ: finish");
-  PQfinish(connection);
+  if(connection != NULL) {
+      PQfinish(connection);
+  }
 }
 
 std::string PQ::Escape2(
