@@ -47,6 +47,7 @@ PQ::~PQ()
 #ifdef TIMECLOCK
   timeclock_quit();
 #endif
+  FreeSelect();
 }
 
 static void noActionNoticeReceiver(
@@ -199,16 +200,13 @@ bool PQ::ExecSelect(
 
   LOG( SQL_LOG , "SELECT: [%s]" , sqlString );
 
-  if (result != NULL) {
-      PQclear(result);
-      result = NULL;
-  }
+  FreeSelect();
   result = PQexec(connection, sqlString);
 
   if (PQresultStatus(result) != PGRES_TUPLES_OK) {
     LOG( ERROR_LOG , "SELECT [%s]failed: %s", sqlString , PQerrorMessage(connection));
     LOG( ERROR_LOG , "SQL ERROR: %s" , PQresultErrorMessage(result) );
-    PQclear(result);
+    FreeSelect();
     return false;
   }
 
@@ -228,9 +226,10 @@ bool PQ::ExecSelect(
 void PQ::FreeSelect()
 {
   LOG( SQL_LOG , "Free  select" );
-  PQclear(result);
-  result = NULL;
-
+  if(result != NULL) {
+      PQclear(result);
+      result = NULL;
+  }
 }
 
 void PQ::Disconnect()
@@ -284,10 +283,12 @@ bool PQ::ExecSQL(
     if (PQresultStatus(res) == PGRES_COMMAND_OK) {
       LOG( SQL_LOG , "PQcmdTuples: %s" , PQcmdTuples( res) );
       PQclear(res);
+      res = NULL;
       return true;
     } else {
       LOG( ERROR_LOG , "EXECSQL: SQL ERROR: %s" , PQresultErrorMessage(res) );
       PQclear(res);
+      res = NULL;
       return false;
     }
 
