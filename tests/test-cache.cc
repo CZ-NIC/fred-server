@@ -72,14 +72,14 @@ public:
     explicit threaded_sequence(T init = 1) : seq(init) { };
 
     operator T() {
+        boost::mutex::scoped_lock lock(m);
         return seq;
     }
 
-    T operator ++ (int) {
+    T operator ++ () {
         boost::mutex::scoped_lock lock(m);
-        T save = seq;
-        seq++;
-        return save;
+        ++seq;
+        return seq;
     }
 private:
     T seq;
@@ -215,36 +215,41 @@ public:
         if(number%2) {
             boost::shared_ptr<ModelSession> n(new ModelSession());
 
-            unsigned id = id_sequence++;
-            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
+            unsigned id = ++id_sequence;
+            boost::mutex::scoped_lock lock(protect_added);
+            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
+            lock.unlock();
+
             n->setId(id);
             n->setUserId(id);
             scache.add(id, n);
 
             if (!verify_item(scache, id)) {
                 // if the cache didn't save it, bail out
-                refused_count++;
+                ++refused_count;
                 return;
             }
-
-
             // TODO that 1 second should be some const
             if( ttl-seconds(1) > seconds(0) ) {
                 sleep ((ttl-seconds(1)).total_seconds());
             }
-            // now it should still be present
+            boost::mutex::scoped_lock lock2(protect_added);
             BOOST_CHECK_MESSAGE(verify_item(scache, id), "Check if record is still present just before timeout...");
         } else {
             boost::shared_ptr<ModelSession> n(new ModelSession());
 
-            unsigned id = id_sequence++;
-            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
+            unsigned id = ++id_sequence;
+
+            boost::mutex::scoped_lock lock(protect_added);
+            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
+            lock.unlock();
+
             n->setId(id);
             n->setUserId(id);
             scache.add(id, n);
 
             if (!verify_item(scache, id)) {
-                refused_count++;
+                ++refused_count;
                 return;
             }
             // if the cache didn't save it, bail out
@@ -253,13 +258,14 @@ public:
             // space for other records - if they can't fit, make it happen
             if(ttl > seconds(1)) {
                 sleep(1);
-                // it should still be there
+                boost::mutex::scoped_lock lock2(protect_added);
                 BOOST_CHECK(verify_item(scache, id));
             }
 
             scache.remove(id);
 
             // now it should not be present - id was unique
+            boost::mutex::scoped_lock lock3(protect_added);
             BOOST_CHECK(!verify_item(scache, id));
         }
     }
@@ -269,29 +275,28 @@ public:
         if(number%2) {
             boost::shared_ptr<ModelSession> n(new ModelSession());
 
-            unsigned id = id_sequence++;
-            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
+            unsigned id = ++id_sequence;
             n->setId(id);
             n->setUserId(id);
 
             // without lock there'd be no guarantee that it's not deleted in the meantime
-            boost::mutex::scoped_lock(protect_added);
+            boost::mutex::scoped_lock lock(protect_added);
+            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
+
             scache.add(id, n);
 
             if (!verify_item(scache, id)) {
                 BOOST_FAIL("Record not saved in cache.");
-                return;
             }
-            // if the cache didn't save it, bail out
         } else {
             boost::shared_ptr<ModelSession> n(new ModelSession());
 
-            unsigned id = id_sequence++;
-            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
+            unsigned id = ++id_sequence;
             n->setId(id);
             n->setUserId(id);
 
-            boost::mutex::scoped_lock(protect_added);
+            boost::mutex::scoped_lock lock(protect_added);
+            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
 
             scache.add(id, n);
 
@@ -299,7 +304,6 @@ public:
                 BOOST_FAIL("Record not saved in cache.");
                 return;
             }
-            // if the cache didn't save it, bail out
             scache.remove(id);
 
             // now it should not be present - id was unique
