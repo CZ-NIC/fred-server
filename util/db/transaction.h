@@ -84,23 +84,33 @@ public:
   }
 
 
-  virtual void rollback() {
+  virtual void rollback() throw() {
     if (!exited_) {
-      if (!ptransaction_) {
+      try {
+          if (!ptransaction_) {
 #ifdef HAVE_LOGGER
-        LOGGER(PACKAGE).debug(boost::format("(%1%) rollback transaction request -- rollback") % this);
+            LOGGER(PACKAGE).debug(boost::format("(%1%) rollback transaction request -- rollback") % this);
 #endif
-        exec(transaction_.rollback());
-        conn_.unsetTransaction();
-      }
-      else {
+            exec(transaction_.rollback());
+            conn_.unsetTransaction();
+          }
+          else {
 #ifdef HAVE_LOGGER
-        LOGGER(PACKAGE).debug(boost::format("(%1%) rollback transaction request -- to savepoint") % this);
+            LOGGER(PACKAGE).debug(boost::format("(%1%) rollback transaction request -- to savepoint") % this);
 #endif
-        conn_.setTransaction(ptransaction_);
-        exec(transaction_.rollback() + " TO SAVEPOINT " + savepoints_.front());
+            conn_.setTransaction(ptransaction_);
+            exec(transaction_.rollback() + " TO SAVEPOINT " + savepoints_.front());
+          }
+      } catch(Database::Exception &ex) {
+#ifdef HAVE_LOGGER
+            LOGGER(PACKAGE).debug(boost::format("(%1%) Rollback failed: %2% ") % this % ex.what());
+#endif
+      } catch(...) {
+#ifdef HAVE_LOGGER
+            LOGGER(PACKAGE).debug(boost::format("(%1%) rollback failed - unknown excepiton") % this );
+#endif
       }
-    exited_ = true;
+      exited_ = true;
     }
   }
 

@@ -37,11 +37,20 @@ namespace Fred
             )) throw (SQL_ERROR());
         db->FreeSelect();
       }
-      ~TempSequence() throw (SQL_ERROR)
-      {
-       std::stringstream sql;
-       sql << "DROP SEQUENCE tmp_seq_epp_info_buffer_content";
-       if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+      ~TempSequence() {
+        try {
+            std::stringstream sql;
+            sql << "DROP SEQUENCE tmp_seq_epp_info_buffer_content";
+            if (!db->ExecSQL(sql.str().c_str())) {
+#ifdef HAVE_LOGGER
+                LOGGER(PACKAGE).error("Failed to drop temporary sequence");
+#endif
+            }
+        } catch (...) {
+#ifdef HAVE_LOGGER
+            LOGGER(PACKAGE).debug("Unexpected exception in ~TempSequence");
+#endif
+        }
       }
     };
     /// designed to support database cursor implementation
