@@ -1,11 +1,10 @@
 
-#include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
-#include <boost/thread/mutex.hpp>
 
 #include "random.h"
 #include "requests/session_cache.h"
+#include "tests-common.h"
 
 using namespace Fred::Logger;
 
@@ -35,7 +34,7 @@ void verify_items_sequence(SessionCache &sc, unsigned count)
         try {
             boost::shared_ptr<ModelSession> s = sc.get(i);
         } catch(CACHE_MISS) {
-            BOOST_FAIL("Cache miss occured when not allowed");
+            THREAD_BOOST_FAIL("Cache miss occured when not allowed");
         } 
     }
 }
@@ -61,7 +60,7 @@ void verify_items_miss_sequence(SessionCache &sc, unsigned count)
         }
         
         if(!exception) {
-            BOOST_FAIL("Item present but it should not be");
+            THREAD_BOOST_FAIL("Item present but it should not be");
         }
     }
 }
@@ -207,7 +206,7 @@ public:
     { }
 
     virtual void worker(cache_general_type_tag) {
-        BOOST_FAIL(" This should NEVER be run.");
+        THREAD_BOOST_FAIL(" This should NEVER be run.");
     }
 
     virtual void worker(cache_ttl_type_tag)
@@ -216,9 +215,7 @@ public:
             boost::shared_ptr<ModelSession> n(new ModelSession());
 
             unsigned id = ++id_sequence;
-            boost::mutex::scoped_lock lock(protect_added);
-            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
-            lock.unlock();
+            THREAD_BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
 
             n->setId(id);
             n->setUserId(id);
@@ -233,16 +230,13 @@ public:
             if( ttl-seconds(1) > seconds(0) ) {
                 sleep ((ttl-seconds(1)).total_seconds());
             }
-            boost::mutex::scoped_lock lock2(protect_added);
-            BOOST_CHECK_MESSAGE(verify_item(scache, id), "Check if record is still present just before timeout...");
+            THREAD_BOOST_CHECK_MESSAGE(verify_item(scache, id), "Check if record is still present just before timeout...");
         } else {
             boost::shared_ptr<ModelSession> n(new ModelSession());
 
             unsigned id = ++id_sequence;
 
-            boost::mutex::scoped_lock lock(protect_added);
-            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
-            lock.unlock();
+            THREAD_BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
 
             n->setId(id);
             n->setUserId(id);
@@ -258,15 +252,13 @@ public:
             // space for other records - if they can't fit, make it happen
             if(ttl > seconds(1)) {
                 sleep(1);
-                boost::mutex::scoped_lock lock2(protect_added);
-                BOOST_CHECK(verify_item(scache, id));
+                THREAD_BOOST_CHECK(verify_item(scache, id));
             }
 
             scache.remove(id);
 
             // now it should not be present - id was unique
-            boost::mutex::scoped_lock lock3(protect_added);
-            BOOST_CHECK(!verify_item(scache, id));
+            THREAD_BOOST_CHECK(!verify_item(scache, id));
         }
     }
 
@@ -276,38 +268,36 @@ public:
             boost::shared_ptr<ModelSession> n(new ModelSession());
 
             unsigned id = ++id_sequence;
+            THREAD_BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
             n->setId(id);
             n->setUserId(id);
 
             // without lock there'd be no guarantee that it's not deleted in the meantime
             boost::mutex::scoped_lock lock(protect_added);
-            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
-
             scache.add(id, n);
 
             if (!verify_item(scache, id)) {
-                BOOST_FAIL("Record not saved in cache.");
+                THREAD_BOOST_FAIL("Record not saved in cache.");
             }
         } else {
             boost::shared_ptr<ModelSession> n(new ModelSession());
 
             unsigned id = ++id_sequence;
+            THREAD_BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
             n->setId(id);
             n->setUserId(id);
 
             boost::mutex::scoped_lock lock(protect_added);
-            BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id_sequence);
-
             scache.add(id, n);
 
             if (!verify_item(scache, id)) {
-                BOOST_FAIL("Record not saved in cache.");
+                THREAD_BOOST_FAIL("Record not saved in cache.");
                 return;
             }
             scache.remove(id);
 
             // now it should not be present - id was unique
-            BOOST_CHECK(!verify_item(scache, id));
+            THREAD_BOOST_CHECK(!verify_item(scache, id));
         }
     }
 
@@ -424,7 +414,7 @@ BOOST_AUTO_TEST_CASE( cache_threaded_test )
         try {
             threads.create_thread(WorkerSimple(i,sb, thread_group_divisor, scache, max_id, seconds(ttl)));
         } catch(std::exception &e) {
-            BOOST_FAIL(e.what());
+            THREAD_BOOST_FAIL(e.what());
         }
     }
 
@@ -457,7 +447,7 @@ BOOST_AUTO_TEST_CASE( cache_ultimate_threaded_test )
             threads.create_thread(WorkerComplete(
                     i,sb, thread_group_divisor, scache, max_id, seconds(ttl), id_seq, refused_count, prot_added));
         } catch(std::exception &e) {
-            BOOST_FAIL(e.what());
+            THREAD_BOOST_FAIL(e.what());
         }
     }
 
