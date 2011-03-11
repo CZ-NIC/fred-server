@@ -134,20 +134,16 @@ namespace Fred
       virtual TID getNextMessageId(std::string registrar) const = 0;;
       virtual TID getNextMessageId(TID registrar) const = 0;;
       /// mark message as seen, check ownership to registrar and if unseen
-      virtual void setMessageSeen(TID message, std::string registrar) 
-        throw (NOT_FOUND) = 0;
-      virtual void setMessageSeen(TID message, TID registrar) 
-        throw (NOT_FOUND) = 0;
+      virtual void setMessageSeen(TID message, std::string registrar) = 0;
+      virtual void setMessageSeen(TID message, TID registrar) = 0;
       /// create action poll message (used in EPP transfer commands)
       virtual void createActionMessage(
-        TID registrar, unsigned type, TID objectId
-      ) throw (SQL_ERROR) = 0;
+        TID registrar, unsigned type, TID objectId) = 0;
       /// create messages about state change (called regulary after)
       virtual void createStateMessages(
-        const std::string& exceptList, int limit, std::ostream* debug
-      ) throw (SQL_ERROR) = 0;
+        const std::string& exceptList, int limit, std::ostream* debug) = 0;
       /// create messages about low credit (called after credit change)
-      virtual void createLowCreditMessages() throw (SQL_ERROR) = 0;
+      virtual void createLowCreditMessages() = 0;
       // create list of messages
       virtual List* createList() = 0;
       /// factory method
