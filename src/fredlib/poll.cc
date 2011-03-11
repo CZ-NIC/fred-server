@@ -325,7 +325,7 @@ public:
     sql << from.rdbuf();
     sql << where.rdbuf();
   }
-  void reload() throw (SQL_ERROR) {
+  void reload() {
     // to aviod sql loads when not needed
     bool hasTechCheck = false;
     bool hasLowCredit= false;
@@ -582,7 +582,7 @@ struct LocalTransaction {
 
 class ManagerImpl : public Manager {
   DBSharedPtr db;
-  void createMessage(TID registrar, unsigned type) throw (SQL_ERROR) {
+  void createMessage(TID registrar, unsigned type) {
     std::stringstream sql;
     sql << "INSERT INTO message (id, clid, crdate, exdate, seen, msgtype) "
         << "VALUES (" << "nextval('message_id_seq')," << registrar << ","
@@ -634,11 +634,11 @@ public:
     l.reload();
     return l.getCount() ? l.getMessage(0)->getId() : 0;
   }
-  void setMessageSeen(TID message, std::string registrar) throw (NOT_FOUND)
+  void setMessageSeen(TID message, std::string registrar)
   {
       setMessageSeen(message, db->GetRegistrarID(registrar.c_str()));
   }
-  void setMessageSeen(TID message, TID registrar) throw (NOT_FOUND) {
+  void setMessageSeen(TID message, TID registrar) {
     ListImpl l(db);
     prepareListWithNext(l, registrar);
     l.setIdFilter(message);
@@ -654,7 +654,7 @@ public:
     return new ListImpl(db);
   }
   virtual void createActionMessage(TID registrar, unsigned type, TID objectId)
-      throw (SQL_ERROR) {
+  {
     createMessage(registrar, type);
     std::stringstream sql;
     sql << "INSERT INTO poll_eppaction (msgid,objid) "
@@ -665,7 +665,7 @@ public:
   }
   virtual void createStateMessages(const std::string& exceptList,
                                    int limit,
-                                   std::ostream* debug) throw (SQL_ERROR) {
+                                   std::ostream* debug) {
     TRACE("[CALL] Fred::Poll::createStateMessages()");
     // transaction is needed for 'ON COMMIT DROP' functionality
     LocalTransaction trans(db);
@@ -749,7 +749,7 @@ public:
       throw SQL_ERROR();
     trans.commit();
   }
-  virtual void createLowCreditMessages() throw (SQL_ERROR) {
+  virtual void createLowCreditMessages() {
     // transaction is needed for 'ON COMMIT DROP' functionality
     LocalTransaction trans(db);
     // create temporary table because poll message need to be inserted
