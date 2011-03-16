@@ -29,17 +29,20 @@
 #define BOOST_TEST_NO_MAIN
 
 #include "cfg/config_handler_decl.h"
-#include <boost/test/unit_test.hpp>
 
 // these should be extras for threaded test
 #include "concurrent_queue.h"
+#include "concurrent_set.h"
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
 #include "cfg/handle_threadgroup_args.h"
+#include "tests-common.h"
 
 
 using namespace Database;
 using namespace Fred::Logger;
+
+
 
 BOOST_AUTO_TEST_SUITE(TestLogd)
 
@@ -64,7 +67,7 @@ std::string create_date_str(int y, int m);
 struct MyFixture {
 	static std::list<ID> id_list_entry;
 	static std::list<ID> id_list_session;
-	static std::set<ID>  id_list_property_name;
+	static concurrent_set<ID>  id_list_property_name;
 
 	MyFixture() {
 		Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string(LOG_FILE_NAME));
@@ -105,7 +108,7 @@ struct MyFixture {
 
 std::list<ID> MyFixture::id_list_entry;
 std::list<ID> MyFixture::id_list_session;
-std::set<ID>  MyFixture::id_list_property_name;
+concurrent_set<ID>  MyFixture::id_list_property_name;
 
 BOOST_GLOBAL_FIXTURE( MyFixture );
 
@@ -1234,10 +1237,10 @@ public:
         try {
             return backend->find_property_name(propname);
         } catch(std::exception &e) {
-            BOOST_FAIL(e.what());
+            THREAD_BOOST_FAIL(e.what());
             return 0;
         } catch(...) {
-            BOOST_FAIL("Unknown exception caught");
+            THREAD_BOOST_FAIL("Unknown exception caught");
             return 0;
         }
     }
