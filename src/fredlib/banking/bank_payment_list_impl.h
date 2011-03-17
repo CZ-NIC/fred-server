@@ -201,6 +201,9 @@ public:
             case IMT_ACCOUNT_DATE:
                 stable_sort(m_data.begin(), m_data.end(), CompareAccountDate(asc));
                 break;
+            case IMT_ACCOUNT_MEMO:
+                stable_sort(m_data.begin(), m_data.end(), CompareAccountMemo(asc));
+                break;
             case IMT_PRICE:
                 stable_sort(m_data.begin(), m_data.end(), ComparePrice(asc));
                 break;
