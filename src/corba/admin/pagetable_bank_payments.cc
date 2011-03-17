@@ -100,6 +100,8 @@ ccReg_Payments_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
     TRACE(boost::format(
                 "[CALL] ccReg_Payments_i::sortByColumn(%1%, %2%)")
             % column % dir);
+    try
+    {
     ccReg_PageTable_i::sortByColumn(column, dir);
 
     switch (column) {
@@ -152,6 +154,21 @@ ccReg_Payments_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
             list_->sort(Fred::Banking::IMT_DEST_ACCOUNT, dir);
             break;
 
+    }//switch
+    }//try
+    catch (const std::exception& ex)
+    {
+        Logging::Manager::instance_ref()
+            .get(PACKAGE)
+            .message( ERROR_LOG
+                , "ccReg_Payments_i::sortByColumn: std::exception %s", ex.what());
+    }
+    catch (...)
+    {
+        Logging::Manager::instance_ref()
+            .get(PACKAGE)
+            .message( ERROR_LOG
+                    , "ccReg_Payments_i::sortByColumn: unknown exception ");
     }
 }
 
