@@ -1,3 +1,8 @@
+2011-03-17 Jan Zima, Jiri Sadek (2.6.1)
+
+  * request cache fix - exception specification removed, cache double search
+    fixed
+
 2011-02-24 Jiri Sadek, Juraj Vicenik, Jan Zima (2.6.0)
 
   * servers build enhancements
