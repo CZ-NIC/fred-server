@@ -37,17 +37,15 @@ Fred::Logger::RequestCache::insert(const ModelRequest& mr)
 
 void
 Fred::Logger::RequestCache::remove(unsigned long long requestId)
-throw (NOT_EXISTS)
 {
   boost::mutex::scoped_lock lock(cache_mutex);
-	CacheImpl::const_iterator m = cache.find(requestId);
+	CacheImpl::iterator m = cache.find(requestId);
 	if (m == cache.end()) throw NOT_EXISTS();
-	cache.erase(requestId);
+	cache.erase(m);
 }
 
 const ModelRequest&
 Fred::Logger::RequestCache::get(unsigned long long requestId)
-throw (NOT_EXISTS)
 {
   boost::mutex::scoped_lock lock(cache_mutex);
 	CacheImpl::const_iterator m = cache.find(requestId);

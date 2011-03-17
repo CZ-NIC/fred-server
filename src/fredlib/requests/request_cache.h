@@ -48,10 +48,10 @@ public:
   };
   /// Insert just saved request into cache during createRequest
 	void insert(const ModelRequest& mr);
-	/// Remove request from cache during closeRequest
-	void remove(unsigned long long requestId) throw (NOT_EXISTS);
-	/// Query cache for request int process during closeRequest
-	const ModelRequest& get(unsigned long long requestId) throw (NOT_EXISTS);
+	/// Remove request from cache during closeRequest or throw NOT_EXISTS
+	void remove(unsigned long long requestId);
+	/// Query cache for request int process during closeRequest  or throw NOT_EXISTS
+	const ModelRequest& get(unsigned long long requestId);
 	/// Remove all records from cache for cleanup purpose
 	void clean();
 	/// Query number of records in cache for monitoring purpose
