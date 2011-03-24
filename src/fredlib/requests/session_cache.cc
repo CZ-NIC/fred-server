@@ -64,7 +64,7 @@ void SessionCache::remove(const Database::ID id)
         cache.erase(id);
         // TODO DEBUG
 #ifdef HAVE_LOGGER
-        LOGGER("fred-server").info(boost::format("SCACHE Added a record, size: %1%") % cache.size());
+        LOGGER("fred-server").info(boost::format("SCACHE Removed a record, size: %1%") % cache.size());
 #endif
     }
 }
