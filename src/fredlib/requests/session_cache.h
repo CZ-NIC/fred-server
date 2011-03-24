@@ -53,7 +53,7 @@ private:
 
 public:
 
-    SessionCacheItem (const ptime &t, const boost::shared_ptr<ModelSession> &s) :
+    SessionCacheItem (const ptime &t, const boost::shared_ptr<ModelSession> s) :
         timestamp(t), 
         data(s) 
     { };

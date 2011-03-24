@@ -436,11 +436,8 @@ void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *u
     try {
         boost::shared_ptr<ModelSession> sess = scache.get(session_id);
 
-        if(sess->isUserNameSet()) *user_name = sess->getUserName();
-        else *user_name = std::string();
-
-        if(sess->isUserIdSet()) *user_id = sess->getUserId();
-        else *user_id = 0;
+        *user_name = sess->getUserName();
+        *user_id = sess->getUserId();
 
     } catch (CACHE_MISS) {
         boost::shared_ptr<ModelSession> sess(new ModelSession());
