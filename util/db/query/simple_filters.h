@@ -162,7 +162,7 @@ public:
     }
   }
 
-  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
+  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings, bool plain_date = false) {
     TRACE("[CALL] _BaseDTInterval::serialize()");
     Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
     Database::SelectQuery::prepared_values_storage &store = _sq.where_prepared_values();
@@ -182,13 +182,26 @@ public:
 
       if (!t_value.begin().is_special()) {
         prep << getConjuction() << "( ";
-        prep << column.str() << SQL_OP_GE << "(%" << store.size() + 1 << "%::timestamp AT TIME ZONE 'Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
+        prep << column.str() << SQL_OP_GE << "(%" << store.size() + 1;
+
+        if(plain_date) {
+            prep << "%::date)" + value_post_;
+        } else {
+            prep << "%::timestamp AT TIME ZONE 'Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
+        }
+
         store.push_back(t_value.begin());
         b = true;
       }
       if (!t_value.end().is_special()) {
         prep << (b ? SQL_OP_AND : getConjuction() + "( ") << column.str()
-            << second_operator << "(%" << store.size() + 1 << "%::timestamp AT TIME ZONE 'Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
+            << second_operator << "(%" << store.size() + 1;
+
+        if(plain_date) {
+            prep << "%::date)" + value_post_;
+        } else {
+            prep << "%::timestamp AT TIME ZONE 'Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
+        }
         prep << " )";
         store.push_back(t_value.end());
       } else if (b) {
@@ -371,7 +384,7 @@ public:
       std::string what = special2str(t_value.getSpecial());
 
       // TODO convert to iso_string
-      std::string date = (boost::format("'%1%'::timestamp AT TIME ZONE 'Europe/Prague'")
+      std::string date = (boost::format("'%1%'::date AT TIME ZONE 'Europe/Prague'")
               % day_clock::local_day()).str();
   
       if (t_value.getSpecial() < PAST_HOUR) {
@@ -398,7 +411,7 @@ public:
       prep << " )";
     }
     else {
-      _BaseDTInterval<DateInterval>::serialize(_sq, _settings);
+      _BaseDTInterval<DateInterval>::serialize(_sq, _settings, true);
     }
   }
   
