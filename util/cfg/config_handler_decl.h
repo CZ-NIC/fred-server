@@ -91,9 +91,7 @@ public:
     FakedArgs handle( int argc, char* argv[])
     {
         //initial fa
-        fa.prealocate_for_argc(argc);
-        for (int i = 0; i < argc ; ++i)
-            fa.add_argv(argv[i]);
+        fa.init(argc, argv);
 
         for(HandlerPtrVector::const_iterator i = hpv_.begin()
                 ; i != hpv_.end(); ++i )
@@ -172,7 +170,10 @@ private:
                 ; i != hpg_.end(); ++i )
             for(HandlerGrpVector::const_iterator j = i->begin()
                     ; j != i->end(); ++j )
+            {
+                //overwrites instance of the same type used more than once
                 hpm_[typeid( *((*j).get()) ).name()] = *j;
+            }
     }
 
 public:
@@ -183,9 +184,7 @@ public:
     FakedArgs handle( int argc, char* argv[])
     {
         //initial fa
-        fa.prealocate_for_argc(argc);
-        for (int i = 0; i < argc ; ++i)
-            fa.add_argv(argv[i]);
+        fa.init(argc, argv);
 
         std::size_t group_index = 0;//start index
 

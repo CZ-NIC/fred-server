@@ -309,35 +309,4 @@ public:
     }//handle
 };//class HandleConfigFileArgsGrp
 
-/**
- * \class HandleCheckArgsRecognitionGrp
- * \brief options recognition check handler
- */
-class HandleCheckArgsRecognitionGrp : public HandleGrpArgs
-{
-public:
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        throw NO_OPTIONS();
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        if (argc > 1)
-        {
-            std::string err = "found unknown configuration: ";
-            for(int i =1 ; i < argc; ++i)
-            {
-                err+=" ";
-                err+=argv[i];
-            }
-            throw std::runtime_error(err);
-        }
-        return 0;//reset option_group_index
-    }//handle
-};//class HandleCheckArgsRecognitionGrp
-
-
 #endif //HANDLE_GENERAL_ARGS_H_

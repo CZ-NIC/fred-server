@@ -140,6 +140,30 @@ public:
         return ret;
     }
 
+    void init(int argc, char* argv[])
+    {
+        clear();
+        //initial fa
+        prealocate_for_argc(argc);
+        for (int i = 0; i < argc ; ++i)
+            add_argv(argv[i]);
+    }
+
+    FakedArgs(int argc, char* argv[])
+    {
+        init(argc, argv);
+    }
+
+    std::string print_into_string()
+    {
+        std::string ret;
+        for (int i = 0; i < get_argc(); ++i)
+        {
+            ret += get_argv()[i] + std::string(" ");
+        }
+
+        return ret;
+    }
 
 };//class FakedArgs
 

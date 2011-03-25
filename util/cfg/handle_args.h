@@ -93,6 +93,12 @@ static void handler_parse_args(
         , boost::program_options::variables_map& vm
         , int argc, char* argv[],  FakedArgs &fa)
 {
+    if(argc < 1)
+    {
+        throw std::runtime_error(
+                "handler_parse_args: input cmdline is empty (argc < 1)"
+                " , there should be at least program name");
+    }
     boost::program_options::parsed_options parsed
         = boost::program_options::command_line_parser(argc,argv)
             .options(*opts_descs).allow_unregistered().run();
