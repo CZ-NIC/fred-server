@@ -35,9 +35,10 @@ class ServerImpl : public POA_Registry::MojeID::Server,
     public:
         ServerImpl(const std::string &_server_name);
 
-        CORBA::ULongLong contactCreate(const Contact &_contact,
-                                       IdentificationMethod _method,
-                                       const CORBA::ULongLong _request_id);
+        CORBA::ULongLong contactCreatePrepare(const Contact &_contact,
+                                                   IdentificationMethod _method,
+                                                   const char * _trans_id,
+                                                   const CORBA::ULongLong _request_id);
 
         CORBA::ULongLong contactTransfer(const char* _handle,
                                          IdentificationMethod _method,

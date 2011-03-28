@@ -76,8 +76,9 @@ ServerImpl::~ServerImpl()
 }
 
 
-CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
+CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
                                            IdentificationMethod _method,
+                                           const char * _trans_id,
                                            const CORBA::ULongLong _request_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
@@ -87,12 +88,12 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
     try {
         std::string handle = static_cast<std::string>(_contact.username);
         LOGGER(PACKAGE).info(boost::format("request data --"
-                    "  handle: %1%  identification_method: %2%  request_id: %3%")
-                % handle % _method % _request_id);
+                    "  handle: %1%  identification_method: %2%  transaction_id: %3% request_id: %4%")
+                % handle % _method % _trans_id % _request_id);
 
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
-        ::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
+        ::MojeID::Request request(204, mojeid_registrar_id_, _request_id, _trans_id);
         Logging::Context ctx_request(request.get_servertrid());
 
         Fred::Contact::ManagerPtr contact_mgr(
@@ -141,7 +142,16 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         new_request->save();
 
         /* save contact and request (one transaction) */
-        request.end_success();
+        request.end_prepare(_trans_id);
+
+        boost::mutex::scoped_lock tc_lock(tc_mutex);
+        transaction_contact[_trans_id] = id;
+        tc_lock.unlock();
+
+        boost::mutex::scoped_lock ta_lock(ta_mutex);
+        transaction_eppaction[_trans_id] = request.get_id();
+        transaction_request[_trans_id] = request.get_request_id();
+        ta_lock.unlock();
 
         LOGGER(PACKAGE).info(boost::format(
                 "contact saved -- handle: %1%  id: %2%  history_id: %3%")
