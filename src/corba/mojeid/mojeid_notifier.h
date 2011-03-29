@@ -3,6 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include "fredlib/mailer.h"
+#include "fredlib/notifier/ntf_except.h"
 
 
 namespace Fred {

@@ -464,7 +464,8 @@ src_fredlib_notifier_libnotifier_a_SOURCES = \
 		src/fredlib/notifier/request_notification.cc \
 		src/fredlib/notifier/request_ntf_handler_contact.h \
 		src/fredlib/notifier/request_ntf_handler_contact.cc \
-		src/fredlib/notifier/request_ntf_sender_email.h
+		src/fredlib/notifier/request_ntf_sender_email.h \
+		src/fredlib/notifier/ntf_except.h
 
 
 LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \

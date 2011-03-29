@@ -48,7 +48,7 @@ public:
 
     void send(const RequestNotification &_ntf) const
     {
-        Logging::Context context("notifier:email_sender");
+        Logging::Context context("email_sender");
         LOGGER(PACKAGE).info(boost::format(
                     "request_id=%1%  object_id=%2%  request_type=%3%")
                     % _ntf.get_request_id()
@@ -108,7 +108,7 @@ public:
                 }
                 catch (...) {
                     LOGGER(PACKAGE).error(boost::format("request notification save failure"
-                                " (request_id=%1% msg_id=%2%") % _ntf.get_request_id() % msg_id);
+                                " (request_id=%1% msg_id=%2%)") % _ntf.get_request_id() % msg_id);
                 }
             }
             catch (...) {

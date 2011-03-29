@@ -10,6 +10,8 @@ namespace MojeID {
 void notify_contact_update(const unsigned long long &_request_id,
                            boost::shared_ptr<Fred::Mailer::Manager> _mailer)
 {
+    Logging::Context ctx("notifier");
+
     Fred::RequestNotification ntf(_request_id, "MojeID");
 
     if (ntf.get_request_type() == CMD_CONTACT_UPDATE) {
@@ -24,6 +26,8 @@ void notify_contact_update(const unsigned long long &_request_id,
 void notify_contact_transfer(const unsigned long long &_request_id,
                            boost::shared_ptr<Fred::Mailer::Manager> _mailer)
 {
+    Logging::Context ctx("notifier");
+
     Fred::RequestNotification ntf(_request_id, "MojeID");
 
     if (ntf.get_request_type() == CMD_CONTACT_TRANSFER) {

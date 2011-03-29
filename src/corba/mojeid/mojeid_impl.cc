@@ -171,11 +171,16 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         }
 
         /* notification */
-
         try {
             if (server_conf_->notify_commands) {
                 /* it's not possible create contact have notify email */
             }
+        }
+        catch (Fred::RequestNotFound &_ex) {
+            LOGGER(PACKAGE).info(_ex.what());
+        }
+        catch (std::exception &_ex) {
+            LOGGER(PACKAGE).error(_ex.what());
         }
         catch (...) {
             LOGGER(PACKAGE).error("request notification failed");
@@ -220,6 +225,12 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
             if (server_conf_->notify_commands) {
                 Fred::MojeID::notify_contact_transfer(_request_id, mailer_);
             }
+        }
+        catch (Fred::RequestNotFound &_ex) {
+            LOGGER(PACKAGE).info(_ex.what());
+        }
+        catch (std::exception &_ex) {
+            LOGGER(PACKAGE).error(_ex.what());
         }
         catch (...) {
             LOGGER(PACKAGE).error("request notification failed");
@@ -726,6 +737,12 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
             if (rid && server_conf_->notify_commands) {
                 Fred::MojeID::notify_contact_update(rid, mailer_);
             }
+        }
+        catch (Fred::RequestNotFound &_ex) {
+            LOGGER(PACKAGE).info(_ex.what());
+        }
+        catch (std::exception &_ex) {
+            LOGGER(PACKAGE).error(_ex.what());
         }
         catch (...) {
             LOGGER(PACKAGE).error("request notification failed");

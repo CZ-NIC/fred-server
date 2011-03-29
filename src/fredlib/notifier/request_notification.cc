@@ -1,4 +1,5 @@
 #include "request_notification.h"
+#include "ntf_except.h"
 
 
 namespace Fred {
@@ -23,7 +24,7 @@ RequestNotification::RequestNotification(const unsigned long long &_request_id,
             Database::query_param_list(_request_id));
 
     if (info.size() != 1) {
-        throw std::runtime_error("create notification: no such request");
+        throw RequestNotFound(_request_id);
     }
 
     object_id_       = static_cast<unsigned long long>(info[0][0]);
