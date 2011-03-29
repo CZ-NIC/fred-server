@@ -75,6 +75,104 @@ ServerImpl::~ServerImpl()
 {
 }
 
+CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
+        IdentificationMethod _method, const CORBA::ULongLong _request_id) {
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("contact-create");
+    ConnectionReleaser releaser;
+
+    try {
+        std::string handle = static_cast<std::string> (_contact.username);
+        LOGGER(PACKAGE).info(boost::format("request data --"
+            "  handle: %1%  identification_method: %2%  request_id: %3%")
+                % handle % _method % _request_id);
+
+        /* start new request - here for logging into action table - until
+         * fred-logd fully migrated */
+        ::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
+        Logging::Context ctx_request(request.get_servertrid());
+
+        Fred::Contact::ManagerPtr contact_mgr(Fred::Contact::Manager::create(
+                DBDisconnectPtr(0), registry_conf_->restricted_handles));
+
+        Fred::NameIdPair cinfo;
+        Fred::Contact::Manager::CheckAvailType check_result;
+        check_result = contact_mgr->checkAvail(handle, cinfo);
+
+        if (check_result != Fred::Contact::Manager::CA_FREE) {
+            ::MojeID::FieldErrorMap errors;
+            errors[::MojeID::field_username] = ::MojeID::NOT_AVAILABLE;
+            throw ::MojeID::DataValidationError(errors);
+        }
+
+        ::MojeID::Contact data = corba_unwrap_contact(_contact);
+        unsigned long long hid = ::MojeID::contact_create(request.get_id(),
+                request.get_request_id(), request.get_registrar_id(), data);
+        unsigned long long id = data.id;
+
+        /* create public request */
+        Fred::PublicRequest::Type type;
+        if (_method == Registry::MojeID::SMS) {
+            type = Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+        } else if (_method == Registry::MojeID::LETTER) {
+            type = Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION;
+        } else if (_method == Registry::MojeID::CERTIFICATE) {
+            throw std::runtime_error("not implemented");
+        } else {
+            throw std::runtime_error("unknown identification method");
+        }
+
+        IdentificationRequestPtr new_request(type);
+        new_request->setRegistrarId(request.get_registrar_id());
+        new_request->setRequestId(request.get_request_id());
+        new_request->setEppActionId(request.get_id());
+        new_request->addObject(Fred::PublicRequest::OID(id, handle,
+                Fred::PublicRequest::OT_CONTACT));
+        new_request->save();
+
+        /* save contact and request (one transaction) */
+        request.end_success();
+
+        LOGGER(PACKAGE).info(boost::format(
+                "contact saved -- handle: %1%  id: %2%  history_id: %3%")
+                % handle % id % hid);
+        LOGGER(PACKAGE).info("request completed successfully");
+
+        /* send identification passwords */
+        try {
+            new_request->sendPasswords();
+            LOGGER(PACKAGE).info("identification password sent");
+        } catch (...) {
+            LOGGER(PACKAGE).error(boost::format(
+                    "error when sending identification password"
+                        " (contact_id=%1% public_request_id=%2%)") % id
+                    % new_request->getId());
+        }
+
+        /* notification */
+
+        try {
+            if (server_conf_->notify_commands) {
+                /* it's not possible create contact have notify email */
+            }
+        } catch (...) {
+            LOGGER(PACKAGE).error("request notification failed");
+        }
+
+        /* return new contact id */
+        return id;
+    } catch (::MojeID::DataValidationError &_ex) {
+        throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(_ex.errors));
+    } catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)")
+                % _ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
+    } catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
+}
 
 CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
                                            IdentificationMethod _method,
