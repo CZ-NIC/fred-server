@@ -23,10 +23,34 @@
 #include "session_cache.h"
 #include "request_property_name_cache.h"
 
+// FRED logging
+#include "log/logger.h"
+#include "log/context.h"
+
 #include <stdexcept>
+
+#include "random.h"
 
 namespace Fred {
 namespace Logger {
+
+#ifdef HAVE_LOGGER
+class logd_ctx_init {
+public:
+    inline logd_ctx_init() :
+        ctx( (boost::format("logd-<%1%>") % Random::integer(0, 100000000)).str() )
+    {}
+
+private:
+    Logging::Context ctx;
+};
+
+#else
+
+class logd_ctx_init { };
+
+#endif
+
 
 typedef long int ServiceType;
 typedef long int RequestType;

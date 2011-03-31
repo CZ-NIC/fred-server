@@ -20,15 +20,10 @@
 
 #include "config.h"
 
-// FRED logging
-#include "log/logger.h"
-#include "log/context.h"
 
 #include "request.h"
 #include "request_manager.h"
 #include "request_list.h"
-
-#include "random.h"
 
 #include "model_session.h"
 #include "model_request_data.h"
@@ -44,22 +39,7 @@ using namespace Database;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
-#ifdef HAVE_LOGGER
-class logd_ctx_init {
-public:
-    inline logd_ctx_init() :
-        ctx( (boost::format("logd-<%1%>") % Random::integer(0, 100000000)).str() )
-    {}
 
-private:
-    Logging::Context ctx;
-};
-
-#else
-
-class logd_ctx_init { };
-
-#endif
 
 
 #ifdef LOGD_VERIFY_INPUT
