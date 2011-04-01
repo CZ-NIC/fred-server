@@ -21,7 +21,8 @@ const std::string field_city        = "address.city";
 const std::string field_postal_code = "address.postal_code";
 const std::string field_email       = "email.email";
 const std::string field_birth_date  = "contact.birth_date";
-const std::string field_auth_info  = "contact.auth_info";
+const std::string field_auth_info   = "contact.auth_info";
+const std::string field_status      = "contact.status";
 
 
 enum ValidationError

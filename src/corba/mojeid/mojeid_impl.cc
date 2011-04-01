@@ -419,12 +419,12 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
                 || (Fred::object_has_state(cinfo.id, ::MojeID::IDENTIFIED_CONTACT) == true)
                 || (Fred::object_has_state(cinfo.id, ::MojeID::VALIDATED_CONTACT) == true)) {
 
-            errors["contact.status"] = ::MojeID::NOT_AVAILABLE;
+            errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
         }
         else if ((Fred::object_has_state(cinfo.id, "serverTransferProhibited") == true)
                 || (Fred::object_has_state(cinfo.id, "serverUpdateProhibited") == true)) {
 
-            errors["contact.status"] = ::MojeID::INVALID;
+            errors[::MojeID::field_status] = ::MojeID::INVALID;
         }
         if (errors.size() > 0) {
             throw ::MojeID::DataValidationError(errors);
@@ -470,7 +470,7 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
         LOGGER(PACKAGE).error(boost::format(
                     "cannot create transfer request (%1%)") % _ex.what());
         ::MojeID::FieldErrorMap errors;
-        errors["contact.status"] = ::MojeID::NOT_AVAILABLE;
+        errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(errors));
     }
