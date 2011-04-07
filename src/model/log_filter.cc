@@ -236,10 +236,8 @@ Table &RequestPropertyValueImpl::joinRequestPropertyValueTable()
 
 Value<std::string> &RequestPropertyValueImpl::addValue()
 {
-  Value<std::string> *tmp = new Value<std::string>(Column("value", joinRequestPropertyValueTable(), "UPPER"));
+  Value<std::string> *tmp = new Value<std::string>(Column("value", joinRequestPropertyValueTable()));
   tmp->setName("Value");
-  tmp->addPreValueString("UPPER(");
-  tmp->addPostValueString(")");
   add(tmp);
   return *tmp;
 }
