@@ -25,7 +25,7 @@ struct trans_data {
     trans_data() : op(MOJEID_NOP), cid(0), prid(0), eppaction_id(0), request_id(0)
     { }
 
-    trans_data(const mojeid_operation_type &operation) : op(operation), cid(0), prid(0), eppaction_id(0), request_id(0)
+    explicit trans_data(const mojeid_operation_type &operation) : op(operation), cid(0), prid(0), eppaction_id(0), request_id(0)
     { }
 
     mojeid_operation_type op;
@@ -98,6 +98,10 @@ class ServerImpl : public POA_Registry::MojeID::Server,
 
         CORBA::ULongLong getContactId(const char* _handle);
 };
+
+void sendAuthPasswords(unsigned long long cid, unsigned long long prid);
+void updateObjectStates(unsigned long long cid) throw();
+void finishEppAction(unsigned long long eppaction_id) throw();
 
 }
 }

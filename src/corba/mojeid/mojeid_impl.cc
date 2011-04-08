@@ -804,39 +804,10 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
 
     // send identification password if operation is contact create
     if(tr_data.op == MOJEID_CONTACT_CREATE) {
-        try {
-            IdentificationRequestManagerPtr mgr;
-            std::auto_ptr<Fred::PublicRequest::List> list(mgr->loadRequest(tr_data.prid));
-            // ownership stays with the list
-            Fred::PublicRequest::PublicRequestAuth *new_auth_req =
-                    dynamic_cast<Fred::PublicRequest::PublicRequestAuth*>(list->get(0));
-
-            if(new_auth_req == NULL) {
-                LOGGER(PACKAGE).error("unable to create identfication request - wrong type");
-            } else {
-                new_auth_req->sendPasswords();
-            }
-        } catch (std::exception &ex) {
-            LOGGER(PACKAGE).error(boost::format(
-                                "error when sending identification password"
-                                    " (contact_id=%1% public_request_id=%2%): %3%") % tr_data.cid
-                                % tr_data.prid % ex.what());
-        } catch (...) {
-            LOGGER(PACKAGE).error(boost::format(
-                    "error when sending identification password"
-                        " (contact_id=%1% public_request_id=%2%)") % tr_data.cid
-                    % tr_data.prid);
-        }
+        sendAuthPasswords(tr_data.cid, tr_data.prid);
     }
 
-    try {
-        // apply changes
-        ::Fred::update_object_states(tr_data.cid);
-    } catch (std::exception &ex) {
-        LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (%2%)") % ex.what() % tr_data.cid);
-    } catch (...) {
-        LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (unknown exception)") % tr_data.cid);
-    }
+    updateObjectStates(tr_data.cid);
 
     /* request notification */
     try {
@@ -859,34 +830,9 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
     }
 
     /* TEMP: until we finish migration to request logger */
+    // not all operations use epp action ID
     if(tr_data.op != MOJEID_CONTACT_UNIDENTIFY) {
-            // not all operations use epp action ID
-
-        if (tr_data.eppaction_id == 0) {
-            LOGGER(PACKAGE).info("unable to find action - assuming it"
-                    " was not used. ");
-        } else {
-            try {
-                Database::Connection conn = Database::Manager::acquire();
-                Database::Result ractionid = conn.exec_params(
-                        "SELECT response FROM action"
-                        " WHERE id = $1::integer",
-                        Database::query_param_list(tr_data.eppaction_id));
-                if (ractionid.size() != 1) {
-                    LOGGER(PACKAGE).error("unable to find unique action based on ID stored in map");
-                } else {
-                    if (!ractionid[0][0].isnull()) {
-                        LOGGER(PACKAGE).error("Action already completed");
-                    } else {
-                        conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
-                              " WHERE id = $1::integer", Database::query_param_list(tr_data.eppaction_id));
-                    }
-                }
-            }
-            catch (...) {
-                LOGGER(PACKAGE).error("error occured when updating action response");
-            }
-        }
+        finishEppAction(tr_data.eppaction_id);
     }
 
     LOGGER(PACKAGE).info("request completed successfully");
@@ -1300,6 +1246,79 @@ CORBA::ULongLong ServerImpl::getContactId(const char* _handle)
     }
 
     throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+}
+
+
+void sendAuthPasswords(unsigned long long cid, unsigned long long prid) {
+    try {
+        IdentificationRequestManagerPtr mgr;
+        std::auto_ptr<Fred::PublicRequest::List> list(mgr->loadRequest(
+                prid));
+        // ownership stays with the list
+        Fred::PublicRequest::PublicRequestAuth
+            *new_auth_req =
+            dynamic_cast<Fred::PublicRequest::PublicRequestAuth*> (list->get(0));
+
+        if (new_auth_req == NULL) {
+            LOGGER(PACKAGE).error(
+                    "unable to create identfication request - wrong type");
+        } else {
+            new_auth_req->sendPasswords();
+        }
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format(
+                "error when sending identification password"
+                    " (contact_id=%1% public_request_id=%2%): %3%")
+                % cid % prid % ex.what());
+    } catch (...) {
+        LOGGER(PACKAGE).error(boost::format(
+                "error when sending identification password"
+                    " (contact_id=%1% public_request_id=%2%)")
+                % cid % prid);
+    }
+}
+
+void updateObjectStates(unsigned long long cid) throw()
+{
+    try {
+        // apply changes
+        ::Fred::update_object_states(cid);
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (%2%)") % ex.what() % cid);
+    } catch (...) {
+        LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (unknown exception)") % cid);
+    }
+}
+
+/* TEMP: until we finish migration to request logger */
+// failure in this method is not fatal - swallow exceptions
+void finishEppAction(unsigned long long eppaction_id) throw()
+{
+    try {
+        if (eppaction_id == 0) {
+            LOGGER(PACKAGE).info("unable to find action - assuming it"
+                    " was not used. ");
+        } else {
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Result ractionid = conn.exec_params(
+                    "SELECT response FROM action"
+                    " WHERE id = $1::integer",
+                    Database::query_param_list(eppaction_id));
+            if (ractionid.size() != 1) {
+                LOGGER(PACKAGE).error("unable to find unique action based on ID stored in map");
+            } else {
+                if (!ractionid[0][0].isnull()) {
+                    LOGGER(PACKAGE).error("Action already completed");
+                } else {
+                    conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
+                          " WHERE id = $1::integer", Database::query_param_list(eppaction_id));
+                }
+            }
+        }
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("error occured when updating action response");
+    }
 }
 
 
