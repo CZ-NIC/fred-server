@@ -242,47 +242,22 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         /* save contact and request (one transaction) */
         request.end_prepare(_trans_id);
 
-        boost::mutex::scoped_lock tc_lock(tc_mutex);
-        transaction_contact[_trans_id] = id;
-        tc_lock.unlock();
+        boost::mutex::scoped_lock td_lock(td_mutex);
 
-        boost::mutex::scoped_lock ta_lock(ta_mutex);
-        transaction_eppaction[_trans_id] = request.get_id();
-        transaction_request[_trans_id] = request.get_request_id();
-        ta_lock.unlock();
+        trans_data d(MOJEID_CONTACT_CREATE);
+        d.cid = id;
+        d.prid = new_request->getId();
+        d.eppaction_id = request.get_id();
+        d.request_id =   request.get_request_id();
+        transaction_data[_trans_id] = d;
+
+        td_lock.unlock();
 
         LOGGER(PACKAGE).info(boost::format(
                 "contact saved -- handle: %1%  id: %2%  history_id: %3%")
                 % handle % id % hid);
         LOGGER(PACKAGE).info("request completed successfully");
 
-        /* send identification passwords */
-        try {
-            new_request->sendPasswords();
-            LOGGER(PACKAGE).info("identification password sent");
-        }
-        catch (...) {
-            LOGGER(PACKAGE).error(boost::format(
-                        "error when sending identification password"
-                        " (contact_id=%1% public_request_id=%2%)")
-                    % id % new_request->getId());
-        }
-
-        /* notification */
-        try {
-            if (server_conf_->notify_commands) {
-                /* it's not possible create contact have notify email */
-            }
-        }
-        catch (Fred::RequestNotFound &_ex) {
-            LOGGER(PACKAGE).info(_ex.what());
-        }
-        catch (std::exception &_ex) {
-            LOGGER(PACKAGE).error(_ex.what());
-        }
-        catch (...) {
-            LOGGER(PACKAGE).error("request notification failed");
-        }
 
         /* return new contact id */
         return id;
@@ -616,8 +591,12 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
 
 
         tx.prepare(_trans_id);
-        boost::mutex::scoped_lock tc_lock(tc_mutex);
-        transaction_contact[_trans_id] = _contact_id;
+
+        trans_data tr_data(MOJEID_CONTACT_UNIDENTIFY);
+        tr_data.cid = _contact_id;
+
+        boost::mutex::scoped_lock td_lock(td_mutex);
+        transaction_data[_trans_id] = tr_data;
 
     } catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
@@ -698,14 +677,15 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
 
         request.end_prepare(_trans_id);
 
-        boost::mutex::scoped_lock tc_lock(tc_mutex);
-        transaction_contact[_trans_id] = cid;
-        tc_lock.unlock();
+        trans_data tr_data;
 
-        boost::mutex::scoped_lock ta_lock(ta_mutex);
-        transaction_eppaction[_trans_id] = request.get_id();
-        transaction_request[_trans_id] = request.get_request_id();
-        ta_lock.unlock();
+        tr_data.cid = cid;
+        tr_data.eppaction_id = request.get_id();
+        tr_data.request_id = request.get_request_id();
+
+        boost::mutex::scoped_lock td_lock(td_mutex);
+        transaction_data[_trans_id] = tr_data;
+        td_lock.unlock();
 
         LOGGER(PACKAGE).info("request completed successfully");
     }
@@ -766,13 +746,17 @@ Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
     }
 }
 
+/* if cid is not present, don't do anything
+ *
+ */
 
 void ServerImpl::commitPreparedTransaction(const char* _trans_id)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("commit-prepared");
 
-    unsigned long long cid = 0;
+    trans_data tr_data;
+
     try {
         LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
                 % _trans_id);
@@ -780,24 +764,33 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         if (std::string(_trans_id).empty()) {
              throw std::runtime_error("Transaction ID empty");
         }
-        boost::mutex::scoped_lock search_lock(tc_mutex);
+        boost::mutex::scoped_lock search_lock(td_mutex);
         
-        std::map<std::string, unsigned long long>::iterator it = 
-            transaction_contact.find(_trans_id);
-        if(it == transaction_contact.end()) {
+        transaction_data_map_type::iterator it =
+            transaction_data.find(_trans_id);
+        if(it == transaction_data.end()) {
             throw std::runtime_error((boost::format(
-                        "cannot retrieve contact id from transaction identifier %1%.") 
+                        "cannot retrieve saved transaction data using transaction identifier %1%.")
                     % _trans_id).str());
         }
         search_lock.unlock();
 
-        cid = it->second;
+        tr_data = it->second;
+
+        LOGGER(PACKAGE).info(boost::format("Transaction data for %1% retrieved: cid %2%, prid %3%, epp_id %4%, rid %5%")
+                % _trans_id % tr_data.cid % tr_data.prid % tr_data.eppaction_id % tr_data.request_id);
+
+        if(tr_data.cid == 0) {
+            throw std::runtime_error((boost::format(
+                 "cannot retrieve contact id from transaction identifier %1%.") % _trans_id).str());
+        }
 
         Database::Connection conn = Database::Manager::acquire();
         conn.exec("COMMIT PREPARED '" + conn.escape(_trans_id) + "'");
 
-        boost::mutex::scoped_lock erase_lock(tc_mutex);
-        transaction_contact.erase(it);
+        // successful commit , delete the data from map
+        boost::mutex::scoped_lock erase_lock(td_mutex);
+        transaction_data.erase(it);
         erase_lock.unlock();
     }
     catch (std::exception &_ex) {
@@ -809,80 +802,91 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 
-    try { 
-        // apply changes
-        ::Fred::update_object_states(cid);
-    } catch (std::exception &ex) {
-        LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (%2%)") % ex.what() % cid);
-    } catch (...) {
-        LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (unknown exception)") % cid);
+    // send identification password if operation is contact create
+    if(tr_data.op == MOJEID_CONTACT_CREATE) {
+        try {
+            IdentificationRequestManagerPtr mgr;
+            std::auto_ptr<Fred::PublicRequest::List> list(mgr->loadRequest(tr_data.prid));
+            // ownership stays with the list
+            Fred::PublicRequest::PublicRequestAuth *new_auth_req =
+                    dynamic_cast<Fred::PublicRequest::PublicRequestAuth*>(list->get(0));
+
+            if(new_auth_req == NULL) {
+                LOGGER(PACKAGE).error("unable to create identfication request - wrong type");
+            } else {
+                new_auth_req->sendPasswords();
+            }
+        } catch (std::exception &ex) {
+            LOGGER(PACKAGE).error(boost::format(
+                                "error when sending identification password"
+                                    " (contact_id=%1% public_request_id=%2%): %3%") % tr_data.cid
+                                % tr_data.prid % ex.what());
+        } catch (...) {
+            LOGGER(PACKAGE).error(boost::format(
+                    "error when sending identification password"
+                        " (contact_id=%1% public_request_id=%2%)") % tr_data.cid
+                    % tr_data.prid);
+        }
     }
 
     try {
-        unsigned long long rid = 0;
-        {
-            boost::mutex::scoped_lock search_lock(ta_mutex);
-            std::map<std::string, unsigned long long>::iterator it;
+        // apply changes
+        ::Fred::update_object_states(tr_data.cid);
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (%2%)") % ex.what() % tr_data.cid);
+    } catch (...) {
+        LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (unknown exception)") % tr_data.cid);
+    }
 
-            it = transaction_request.find(_trans_id);
-            if (it != transaction_request.end()) {
-                rid = it->second;
-                transaction_request.erase(it);
+    /* request notification */
+    try {
+        if(tr_data.op == MOJEID_CONTACT_UPDATE) {
+            if (tr_data.request_id && server_conf_->notify_commands) {
+                Fred::MojeID::notify_contact_update(tr_data.request_id, mailer_);
             }
-        }
-        /* request notification */
-        try {
-            if (rid && server_conf_->notify_commands) {
-                Fred::MojeID::notify_contact_update(rid, mailer_);
-            }
-        }
-        catch (Fred::RequestNotFound &_ex) {
-            LOGGER(PACKAGE).info(_ex.what());
-        }
-        catch (std::exception &_ex) {
-            LOGGER(PACKAGE).error(_ex.what());
-        }
-        catch (...) {
-            LOGGER(PACKAGE).error("request notification failed");
+        } else if(tr_data.op == MOJEID_CONTACT_CREATE) {
+            /* it's not possible create contact have notify email */
         }
     }
+    catch (Fred::RequestNotFound &_ex) {
+        LOGGER(PACKAGE).info(_ex.what());
+    }
+    catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(_ex.what());
+    }
     catch (...) {
+        LOGGER(PACKAGE).error("request notification failed");
     }
 
     /* TEMP: until we finish migration to request logger */
-    try {
-        boost::mutex::scoped_lock search_lock(ta_mutex);
+    if(tr_data.op != MOJEID_CONTACT_UNIDENTIFY) {
+            // not all operations use epp action ID
 
-        std::map<std::string, unsigned long long>::iterator it =
-            transaction_eppaction.find(_trans_id);
-        if(it == transaction_eppaction.end()) {
-            // this is normal, not every action stores a value here
+        if (tr_data.eppaction_id == 0) {
             LOGGER(PACKAGE).info("unable to find action - assuming it"
                     " was not used. ");
-            return;
-        }
-        unsigned long long aid = it->second;
-        transaction_eppaction.erase(it);
-        search_lock.unlock();
-
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result ractionid = conn.exec_params(
-                "SELECT response FROM action"
-                " WHERE id = $1::integer",
-                Database::query_param_list(aid));
-        if (ractionid.size() != 1) {
-            LOGGER(PACKAGE).error("unable to find unique action based on ID stored in map");
         } else {
-            if (!ractionid[0][0].isnull()) {
-                LOGGER(PACKAGE).error("Action already completed");
-            } else {
-                conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
-                      " WHERE id = $1::integer", Database::query_param_list(aid));
+            try {
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Result ractionid = conn.exec_params(
+                        "SELECT response FROM action"
+                        " WHERE id = $1::integer",
+                        Database::query_param_list(tr_data.eppaction_id));
+                if (ractionid.size() != 1) {
+                    LOGGER(PACKAGE).error("unable to find unique action based on ID stored in map");
+                } else {
+                    if (!ractionid[0][0].isnull()) {
+                        LOGGER(PACKAGE).error("Action already completed");
+                    } else {
+                        conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
+                              " WHERE id = $1::integer", Database::query_param_list(tr_data.eppaction_id));
+                    }
+                }
+            }
+            catch (...) {
+                LOGGER(PACKAGE).error("error occured when updating action response");
             }
         }
-    }
-    catch (...) {
-        LOGGER(PACKAGE).error("error occured when updating action response");
     }
 
     LOGGER(PACKAGE).info("request completed successfully");
@@ -895,6 +899,7 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("rollback-prepared");
 
+    trans_data tr;
     try {
         LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
                 % _trans_id);
@@ -902,11 +907,16 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
         Database::Connection conn = Database::Manager::acquire();
         conn.exec("ROLLBACK PREPARED '" + conn.escape(_trans_id) + "'");
 
-        boost::mutex::scoped_lock erase_lock(tc_mutex);
-        std::map<std::string, unsigned long long>::iterator it = 
-            transaction_contact.find(_trans_id);
-        if(it != transaction_contact.end()) {
-            transaction_contact.erase(it);
+        boost::mutex::scoped_lock erase_lock(td_mutex);
+        transaction_data_map_type::iterator it =
+            transaction_data.find(_trans_id);
+        if(it != transaction_data.end()) {
+            tr = it->second;
+            transaction_data.erase(it);
+        } else {
+            LOGGER(PACKAGE).warning(boost::format("rollbackPrepared: Data for transaction %1% not found.")
+                    % _trans_id);
+            return;
         }
         erase_lock.unlock();
     }
@@ -919,46 +929,26 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
 
-    try {
-        boost::mutex::scoped_lock search_lock(ta_mutex);
-        std::map<std::string, unsigned long long>::iterator it;
-
-        it = transaction_request.find(_trans_id);
-        if (it != transaction_request.end()) {
-            transaction_request.erase(it);
-        }
-    }
-    catch (...) {
-    }
-
     /* TEMP: until we finish migration to request logger */
     try {
-        boost::mutex::scoped_lock search_lock(ta_mutex);
-
-        std::map<std::string, unsigned long long>::iterator it =
-            transaction_eppaction.find(_trans_id);
-        if(it == transaction_eppaction.end()) {
-            // this is normal, not every action stores a value here
+        if(tr.eppaction_id == 0) {
             LOGGER(PACKAGE).info("unable to find action - assuming it"
-                    " was not used. ");
+                                " was not used. ");
             return;
         }
-        unsigned long long aid = it->second;
-        transaction_eppaction.erase(it);
-        search_lock.unlock();
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Result result = conn.exec_params(
                 "SELECT id FROM action WHERE"
                 " enddate IS NULL AND response IS NULL"
                 " AND id = $1::integer",
-                Database::query_param_list(aid));
+                Database::query_param_list(tr.eppaction_id));
         
         if (result.size() != 1) {
             LOGGER(PACKAGE).error("Rollback: Couldn't find action which according to map should've existed. ");
         } else {
             conn.exec_params("UPDATE action SET response = 2400, enddate = now()"
-                    " WHERE id = $1::integer", Database::query_param_list(aid));
+                    " WHERE id = $1::integer", Database::query_param_list(tr.eppaction_id));
         }
     }
     catch (...) {

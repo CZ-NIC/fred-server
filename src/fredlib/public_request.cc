@@ -1799,10 +1799,11 @@ public:
       if (request)
         return request;
       else
-        throw std::exception();
-    }
-    catch (...) {
-      throw std::exception();
+        throw std::runtime_error("Wrong object type of public reuqest data from DB.");
+    } catch (std::exception) {
+        throw;
+    } catch (...) {
+      throw std::runtime_error("Unknown exception when retrieving public reuqest data from DB.");
     }
   }
 
@@ -2082,7 +2083,7 @@ public:
     return request;
   }
 
-  List *loadRequest(Database::ID id) const throw (NOT_FOUND) {
+  List *loadRequest(Database::ID id) const {
     Database::Filters::PublicRequest *prf = new Database::Filters::PublicRequestImpl();
     prf->addId().setValue(id);
     Database::Filters::Union uf;

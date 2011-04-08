@@ -13,6 +13,28 @@
 namespace Registry {
 namespace MojeID {
 
+enum mojeid_operation_type {
+    MOJEID_NOP = 0,
+    MOJEID_CONTACT_CREATE = 1,
+    MOJEID_CONTACT_UPDATE,
+    MOJEID_CONTACT_UNIDENTIFY
+};
+
+struct trans_data {
+
+    trans_data() : op(MOJEID_NOP), cid(0), prid(0), eppaction_id(0), request_id(0)
+    { }
+
+    trans_data(const mojeid_operation_type &operation) : op(operation), cid(0), prid(0), eppaction_id(0), request_id(0)
+    { }
+
+    mojeid_operation_type op;
+    unsigned long long cid;
+    unsigned long long prid;
+    unsigned long long eppaction_id;
+    unsigned long long request_id;
+};
+
 class ServerImpl : public POA_Registry::MojeID::Server,
                    public PortableServer::RefCountServantBase
 {
@@ -22,15 +44,12 @@ class ServerImpl : public POA_Registry::MojeID::Server,
         const std::string server_name_;
         unsigned long long mojeid_registrar_id_;
 
-        std::map<std::string, unsigned long long> transaction_contact;
-        std::map<std::string, unsigned long long> transaction_eppaction;
-        std::map<std::string, unsigned long long> transaction_request;
-        boost::mutex tc_mutex; /// for transaction_contact
-        boost::mutex ta_mutex; /// for transaction_eppaction
+        typedef std::map<std::string, trans_data> transaction_data_map_type;
+        transaction_data_map_type transaction_data;
+        boost::mutex td_mutex; /// for transaction data
 
         virtual ~ServerImpl();
         boost::shared_ptr<MailerManager> mailer_;
-
 
     public:
         ServerImpl(const std::string &_server_name);
