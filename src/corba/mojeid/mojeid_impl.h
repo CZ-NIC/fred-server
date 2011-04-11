@@ -8,6 +8,8 @@
 #include "cfg/handle_mojeid_args.h"
 #include "corba/mailer_manager.h"
 #include "corba/MojeID.hh"
+#include "mojeid/request.h"
+#include "mojeid_identification.h"
 
 
 namespace Registry {
@@ -50,6 +52,9 @@ class ServerImpl : public POA_Registry::MojeID::Server,
 
         virtual ~ServerImpl();
         boost::shared_ptr<MailerManager> mailer_;
+
+        IdentificationRequestPtr contactCreateWorker(unsigned long long &cid, unsigned long long &hid,
+            const Contact &_contact, IdentificationMethod _method, ::MojeID::Request &_request);
 
     public:
         ServerImpl(const std::string &_server_name);

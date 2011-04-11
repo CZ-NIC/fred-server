@@ -1,7 +1,6 @@
 
 #include "corba_conversion.h"
 #include "mojeid_impl.h"
-#include "mojeid_identification.h"
 #include "mojeid_notifier.h"
 
 #include "cfg/config_handler_decl.h"
@@ -31,7 +30,6 @@
 #include <boost/random/variate_generator.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/algorithm/string.hpp>
-
 
 
 
@@ -75,6 +73,50 @@ ServerImpl::~ServerImpl()
 {
 }
 
+IdentificationRequestPtr ServerImpl::contactCreateWorker(unsigned long long &cid, unsigned long long &hid,
+        const Contact &_contact, IdentificationMethod _method, ::MojeID::Request &_request)
+{
+    Fred::Contact::ManagerPtr contact_mgr(Fred::Contact::Manager::create(
+                    DBDisconnectPtr(0), registry_conf_->restricted_handles));
+
+    Fred::NameIdPair cinfo;
+    Fred::Contact::Manager::CheckAvailType check_result;
+    check_result = contact_mgr->checkAvail(static_cast<std::string> (_contact.username), cinfo);
+
+    if (check_result != Fred::Contact::Manager::CA_FREE) {
+        ::MojeID::FieldErrorMap errors;
+        errors[::MojeID::field_username] = ::MojeID::NOT_AVAILABLE;
+        throw ::MojeID::DataValidationError(errors);
+    }
+
+    ::MojeID::Contact data = corba_unwrap_contact(_contact);
+    hid = ::MojeID::contact_create(_request.get_id(),
+            _request.get_request_id(), _request.get_registrar_id(), data);
+    cid = data.id;
+
+    /* create public request */
+    Fred::PublicRequest::Type type;
+    if (_method == Registry::MojeID::SMS) {
+        type = Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+    } else if (_method == Registry::MojeID::LETTER) {
+        type = Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION;
+    } else if (_method == Registry::MojeID::CERTIFICATE) {
+        throw std::runtime_error("not implemented");
+    } else {
+        throw std::runtime_error("unknown identification method");
+    }
+
+    IdentificationRequestPtr new_request(type);
+    new_request->setRegistrarId(_request.get_registrar_id());
+    new_request->setRequestId(_request.get_request_id());
+    new_request->setEppActionId(_request.get_id());
+    new_request->addObject(Fred::PublicRequest::OID(cid, static_cast<std::string> (_contact.username),
+            Fred::PublicRequest::OT_CONTACT));
+    new_request->save();
+
+    return new_request;
+}
+
 CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         IdentificationMethod _method, const CORBA::ULongLong _request_id) {
     Logging::Context ctx_server(create_ctx_name(server_name_));
@@ -92,50 +134,17 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         ::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
         Logging::Context ctx_request(request.get_servertrid());
 
-        Fred::Contact::ManagerPtr contact_mgr(Fred::Contact::Manager::create(
-                DBDisconnectPtr(0), registry_conf_->restricted_handles));
+        unsigned long long cid;
+        unsigned long long hid;
 
-        Fred::NameIdPair cinfo;
-        Fred::Contact::Manager::CheckAvailType check_result;
-        check_result = contact_mgr->checkAvail(handle, cinfo);
-
-        if (check_result != Fred::Contact::Manager::CA_FREE) {
-            ::MojeID::FieldErrorMap errors;
-            errors[::MojeID::field_username] = ::MojeID::NOT_AVAILABLE;
-            throw ::MojeID::DataValidationError(errors);
-        }
-
-        ::MojeID::Contact data = corba_unwrap_contact(_contact);
-        unsigned long long hid = ::MojeID::contact_create(request.get_id(),
-                request.get_request_id(), request.get_registrar_id(), data);
-        unsigned long long id = data.id;
-
-        /* create public request */
-        Fred::PublicRequest::Type type;
-        if (_method == Registry::MojeID::SMS) {
-            type = Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
-        } else if (_method == Registry::MojeID::LETTER) {
-            type = Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION;
-        } else if (_method == Registry::MojeID::CERTIFICATE) {
-            throw std::runtime_error("not implemented");
-        } else {
-            throw std::runtime_error("unknown identification method");
-        }
-
-        IdentificationRequestPtr new_request(type);
-        new_request->setRegistrarId(request.get_registrar_id());
-        new_request->setRequestId(request.get_request_id());
-        new_request->setEppActionId(request.get_id());
-        new_request->addObject(Fred::PublicRequest::OID(id, handle,
-                Fred::PublicRequest::OT_CONTACT));
-        new_request->save();
+        IdentificationRequestPtr new_request = contactCreateWorker (cid, hid, _contact, _method, request);
 
         /* save contact and request (one transaction) */
         request.end_success();
 
         LOGGER(PACKAGE).info(boost::format(
-                "contact saved -- handle: %1%  id: %2%  history_id: %3%")
-                % handle % id % hid);
+                "contact saved -- handle: %1%  cid: %2%  history_id: %3%")
+                % handle % cid % hid);
         LOGGER(PACKAGE).info("request completed successfully");
 
         /* send identification passwords */
@@ -145,7 +154,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         } catch (...) {
             LOGGER(PACKAGE).error(boost::format(
                     "error when sending identification password"
-                        " (contact_id=%1% public_request_id=%2%)") % id
+                        " (contact_id=%1% public_request_id=%2%)") % cid
                     % new_request->getId());
         }
 
@@ -160,7 +169,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         }
 
         /* return new contact id */
-        return id;
+        return cid;
     } catch (::MojeID::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
@@ -194,50 +203,10 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         ::MojeID::Request request(204, mojeid_registrar_id_, _request_id, _trans_id);
         Logging::Context ctx_request(request.get_servertrid());
 
-        Fred::Contact::ManagerPtr contact_mgr(
-                Fred::Contact::Manager::create(DBDisconnectPtr(0), registry_conf_->restricted_handles));
+        unsigned long long cid;
+        unsigned long long hid;
 
-        Fred::NameIdPair cinfo;
-        Fred::Contact::Manager::CheckAvailType check_result;
-        check_result = contact_mgr->checkAvail(handle, cinfo);
-
-        if (check_result != Fred::Contact::Manager::CA_FREE) {
-            ::MojeID::FieldErrorMap errors;
-            errors[::MojeID::field_username] = ::MojeID::NOT_AVAILABLE;
-            throw ::MojeID::DataValidationError(errors);
-        }
-
-        ::MojeID::Contact data = corba_unwrap_contact(_contact);
-        unsigned long long hid = ::MojeID::contact_create(
-                request.get_id(),
-                request.get_request_id(),
-                request.get_registrar_id(),
-                data);
-        unsigned long long id = data.id;
-
-        /* create public request */
-        Fred::PublicRequest::Type type;
-        if (_method == Registry::MojeID::SMS) {
-            type = Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
-        }
-        else if (_method == Registry::MojeID::LETTER) {
-            type = Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION;
-        }
-        else if (_method == Registry::MojeID::CERTIFICATE) {
-            throw std::runtime_error("not implemented");
-        }
-        else {
-            throw std::runtime_error("unknown identification method");
-        }
-
-        IdentificationRequestPtr new_request(type);
-        new_request->setRegistrarId(request.get_registrar_id());
-        new_request->setRequestId(request.get_request_id());
-        new_request->setEppActionId(request.get_id());
-        new_request->addObject(
-                Fred::PublicRequest::OID(
-                    id, handle, Fred::PublicRequest::OT_CONTACT));
-        new_request->save();
+        IdentificationRequestPtr new_request = contactCreateWorker (cid, hid, _contact, _method, request);
 
         /* save contact and request (one transaction) */
         request.end_prepare(_trans_id);
@@ -245,7 +214,7 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         boost::mutex::scoped_lock td_lock(td_mutex);
 
         trans_data d(MOJEID_CONTACT_CREATE);
-        d.cid = id;
+        d.cid = cid;
         d.prid = new_request->getId();
         d.eppaction_id = request.get_id();
         d.request_id =   request.get_request_id();
@@ -254,13 +223,13 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         td_lock.unlock();
 
         LOGGER(PACKAGE).info(boost::format(
-                "contact saved -- handle: %1%  id: %2%  history_id: %3%")
-                % handle % id % hid);
+                "contact saved -- handle: %1%  cid: %2%  history_id: %3%")
+                % handle % cid % hid);
         LOGGER(PACKAGE).info("request completed successfully");
 
 
         /* return new contact id */
-        return id;
+        return cid;
     }
     catch (::MojeID::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(

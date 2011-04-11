@@ -21,10 +21,10 @@ namespace MojeID {
 class IdentificationRequestManagerPtr
 {
 private:
-    std::auto_ptr<MailerManager> mailer_manager_;
-    std::auto_ptr<Fred::Manager> registry_manager_;
-    std::auto_ptr<Fred::Document::Manager> doc_manager_;
-    std::auto_ptr<Fred::PublicRequest::Manager> request_manager_;
+    mutable std::auto_ptr<MailerManager> mailer_manager_;
+    mutable std::auto_ptr<Fred::Manager> registry_manager_;
+    mutable std::auto_ptr<Fred::Document::Manager> doc_manager_;
+    mutable std::auto_ptr<Fred::PublicRequest::Manager> request_manager_;
 
 
 public:
@@ -59,6 +59,13 @@ public:
         request_manager_->setDemoMode(mconf->demo_mode);
     }
 
+    IdentificationRequestManagerPtr(const IdentificationRequestManagerPtr &src) :
+            mailer_manager_(src.mailer_manager_),
+            registry_manager_(src.registry_manager_),
+            doc_manager_(src.doc_manager_),
+            request_manager_(src.request_manager_) 
+    {  } 
+
 
     Fred::PublicRequest::Manager* operator ->()
     {
@@ -82,7 +89,7 @@ class IdentificationRequestPtr
 private:
     IdentificationRequestManagerPtr request_manager_;
     Fred::PublicRequest::Type type_;
-    std::auto_ptr<Fred::PublicRequest::PublicRequestAuth> request_;
+    mutable std::auto_ptr<Fred::PublicRequest::PublicRequestAuth> request_;
 
 
 public:
@@ -104,6 +111,12 @@ public:
         }
     }
 
+
+    IdentificationRequestPtr(const IdentificationRequestPtr &src) :
+        request_manager_(src.request_manager_),
+        type_(src.type_),
+        request_(src.request_)
+    { }
 
     Fred::PublicRequest::PublicRequestAuth* operator->()
     {
