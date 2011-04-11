@@ -135,7 +135,7 @@ Result ManagerImpl::i_getObjectTypes()
 
 // ManagerImpl ctor: connect to the database and fill property_names map
 ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
-    : scache(4, 30)
+    : scache(1000, 300)
 {
         std::ifstream file;
 
