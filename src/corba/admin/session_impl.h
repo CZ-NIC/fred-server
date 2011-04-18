@@ -38,7 +38,7 @@
 #include "old_utils/dbsql.h"
 #include "model/model_filters.h"
 
-#include "conf/manager.h"
+//#include "conf/manager.h"
 
 #include "settings.h"
 

@@ -44,23 +44,32 @@
 #include "corba/mailer_manager.h"
 #include "baseclient.h"
 
+#include "file_params.h"
+
 namespace Admin {
 
 class FileClient : public BaseClient {
 private:
     ccReg::EPP_var m_epp;
-    Config::Conf m_conf;
-
+    std::string nameservice_context;
+    bool file_list;
+    FileListArgs file_list_params;
     static const struct options m_opts[];
 public:
     FileClient()
+    : file_list(false)
     { }
     FileClient(
-            const std::string &connstring,
-            const std::string &nsAddr,
-            const Config::Conf &conf):
-        BaseClient(connstring, nsAddr),
-        m_conf(conf)
+            const std::string &connstring
+            , const std::string &nsAddr
+            , const std::string& _nameservice_context
+            , const bool _file_list
+            , const FileListArgs& _file_list_params
+            )
+    : BaseClient(connstring, nsAddr)
+    , nameservice_context(_nameservice_context)
+    , file_list(_file_list)
+    , file_list_params(_file_list_params)
     { }
     ~FileClient()
     { }

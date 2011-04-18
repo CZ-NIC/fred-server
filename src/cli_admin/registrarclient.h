@@ -158,6 +158,7 @@
 #include "corba/admin/admin_impl.h"
 #include "baseclient.h"
 
+#include "registrar_params.h"
 
 namespace Admin {
 
@@ -165,18 +166,94 @@ class RegistrarClient : public BaseClient {
 private:
     DBSharedPtr m_db;
     ccReg::EPP_var m_epp;
-    Config::Conf m_conf;
-
     static const struct options m_opts[];
+
+    std::string nameservice_context;
+
+    bool zone_add_;
+    ZoneAddArgs zone_add_params_;
+    bool registrar_add_;
+    RegistrarAddArgs registrar_add_params_;
+    bool registrar_add_zone_;
+    RegistrarAddZoneArgs registrar_add_zone_params_;
+    bool registrar_create_certification_;
+    RegistrarCreateCertificationArgs registrar_create_certification_params_;
+    bool registrar_create_group_;
+    RegistrarCreateGroupArgs registrar_create_group_params_;
+    bool registrar_into_group_;
+    RegistrarIntoGroupArgs registrar_into_group_params_;
+    bool registrar_list_;
+    RegistrarListArgs registrar_list_params_;
+    bool registrar_show_opts_;
+    bool zone_ns_add_;
+    ZoneNsAddArgs zone_ns_add_params_;
+    bool registrar_acl_add_;
+    RegistrarAclAddArgs registrar_acl_add_params_;
+    bool price_add_;
+    PriceAddArgs price_add_params_;
+
 public:
     RegistrarClient()
+    :  zone_add_(false)
+    ,  registrar_add_(false)
+    ,  registrar_add_zone_(false)
+    ,  registrar_create_certification_(false)
+    ,  registrar_create_group_(false)
+    ,  registrar_into_group_(false)
+    ,  registrar_list_(false)
+    ,  registrar_show_opts_(false)
+    ,  zone_ns_add_(false)
+    ,  registrar_acl_add_(false)
+    ,  price_add_(false)
     { }
     RegistrarClient(
-            const std::string &connstring,
-            const std::string &nsAddr,
-            const Config::Conf &conf):
-        BaseClient(connstring, nsAddr),
-        m_conf(conf)
+            const std::string &connstring, const std::string &nsAddr
+            , const std::string& _nameservice_context
+            , bool _zone_add
+            , const ZoneAddArgs& _zone_add_params
+            , bool _registrar_add
+            , const RegistrarAddArgs& _registrar_add_params
+            , bool _registrar_add_zone
+            , const RegistrarAddZoneArgs& _registrar_add_zone_params
+            , bool _registrar_create_certification
+            , const RegistrarCreateCertificationArgs& _registrar_create_certification_params
+            , bool _registrar_create_group
+            , const RegistrarCreateGroupArgs& _registrar_create_group_params
+            , bool _registrar_into_group
+            , const RegistrarIntoGroupArgs& _registrar_into_group_params
+            , bool _registrar_list
+            , const RegistrarListArgs& _registrar_list_params
+            , bool _registrar_show_opts
+            , bool _zone_ns_add
+            , const ZoneNsAddArgs& _zone_ns_add_params
+            , bool _registrar_acl_add
+            , const RegistrarAclAddArgs& _registrar_acl_add_params
+            , bool _price_add
+            , const PriceAddArgs& _price_add_params
+            )
+    : BaseClient(connstring, nsAddr)
+    , nameservice_context(_nameservice_context)
+    , zone_add_(_zone_add)
+    , zone_add_params_(_zone_add_params)
+    , registrar_add_(_registrar_add)
+    , registrar_add_params_(_registrar_add_params)
+    , registrar_add_zone_(_registrar_add_zone)
+    , registrar_add_zone_params_(_registrar_add_zone_params)
+    , registrar_create_certification_(_registrar_create_certification)
+    , registrar_create_certification_params_(_registrar_create_certification_params)
+    , registrar_create_group_(_registrar_create_group)
+    , registrar_create_group_params_(_registrar_create_group_params)
+    , registrar_into_group_(_registrar_into_group)
+    , registrar_into_group_params_(_registrar_into_group_params)
+    , registrar_list_(_registrar_list)
+    , registrar_list_params_(_registrar_list_params)
+    , registrar_show_opts_(_registrar_show_opts)
+    , zone_ns_add_(_zone_ns_add)
+    , zone_ns_add_params_(_zone_ns_add_params)
+    , registrar_acl_add_(_registrar_acl_add)
+    , registrar_acl_add_params_(_registrar_acl_add_params)
+    , price_add_(_price_add)
+    , price_add_params_(_price_add_params)
     {
         m_db = connect_DB(connstring
                 , std::runtime_error("RegistrarClient db connection failed"));

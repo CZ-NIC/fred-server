@@ -18,8 +18,9 @@
 
 #define RESOLVE_TRY 3
 
+#include <boost/lexical_cast.hpp>
 #include <omniORB4/CORBA.h>
-#include "simple.h"
+//#include "simple.h"
 #include "commonclient.h"
 #include "objectclient.h"
 #include "fredlib/registry.h"
@@ -38,38 +39,44 @@ ObjectClient::getOpts()
 void
 ObjectClient::runMethod()
 {
-    if (m_conf.hasOpt(OBJECT_NEW_STATE_REQUEST_NAME)) {
+    if (object_new_state_request//m_conf.hasOpt(OBJECT_NEW_STATE_REQUEST_NAME)
+            ) {
         new_state_request();
-    } else if (m_conf.hasOpt(OBJECT_LIST_NAME)) {
+    }/* else if (m_conf.hasOpt(OBJECT_LIST_NAME)) {
         list();
-    } else if (m_conf.hasOpt(OBJECT_UPDATE_STATES_NAME)) {
+    }*/ else if (object_update_states//m_conf.hasOpt(OBJECT_UPDATE_STATES_NAME)
+            ) {
         update_states();
-    } else if (m_conf.hasOpt(OBJECT_DELETE_CANDIDATES_NAME)) {
+    }/* else if (m_conf.hasOpt(OBJECT_DELETE_CANDIDATES_NAME)) {
         delete_candidates();
-    } else if (m_conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)) {
+    }*/ else if (object_regular_procedure//m_conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)
+            ) {
         regular_procedure();
-    } else if (m_conf.hasOpt(OBJECT_SHOW_OPTS_NAME)) {
+    } /*else if (m_conf.hasOpt(OBJECT_SHOW_OPTS_NAME)) {
         show_opts();
-    }
+    }*/
 }
-
+/*
 void
 ObjectClient::show_opts() 
 {
     callHelp(m_conf, no_help);
     print_options("Object", getOpts(), getOptsCount());
 }
-
+*/
 int
 ObjectClient::createObjectStateRequest(
         Fred::TID object,
         unsigned state)
 {
+    Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ObjectClient::createObjectStateRequest Fred::TID object: ")
+     + boost::lexical_cast<std::string>(object) + " unsigned state: " + boost::lexical_cast<std::string>(state));
       std::stringstream sql;
       sql << "SELECT COUNT(*) FROM object_state_request "
           << "WHERE object_id=" << object << " AND state_id=" << state
           << " AND (canceled ISNULL OR canceled > CURRENT_TIMESTAMP) "
           << " AND (valid_to ISNULL OR valid_to > CURRENT_TIMESTAMP) ";
+      Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ObjectClient::createObjectStateRequest sql: ") +sql.str());
       if (!m_db->ExecSelect(sql.str().c_str()))
           return -1;
       if (atoi(m_db->GetFieldValue(0,0)))
@@ -81,6 +88,7 @@ ObjectClient::createObjectStateRequest(
           << "(" << object << "," << state
           << ",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "
           << "CURRENT_TIMESTAMP + INTERVAL '7 days');";
+      Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ObjectClient::createObjectStateRequest sql: ") +sql.str());
       if (!m_db->ExecSQL(sql.str().c_str()))
           return -1;
       return 0;
@@ -89,22 +97,25 @@ ObjectClient::createObjectStateRequest(
 void
 ObjectClient::new_state_request()
 {
-    callHelp(m_conf, no_help);
-    Fred::TID id = m_conf.get<unsigned long long>(OBJECT_ID_NAME);
-    unsigned int state = m_conf.get<unsigned int>(OBJECT_NEW_STATE_REQUEST_NAME);
+    //callHelp(m_conf, no_help);
+    Fred::TID id = object_new_state_request_params.object_id;// m_conf.get<unsigned long long>(OBJECT_ID_NAME);
+    unsigned int state = object_new_state_request_params.object_new_state_request;//m_conf.get<unsigned int>(OBJECT_NEW_STATE_REQUEST_NAME);
     int res = createObjectStateRequest(
             id, state
             );
     switch (res) {
         case -1:
+            Logging::Manager::instance_ref().get(PACKAGE).error("SQL_ERROR" );
             std::cerr << "SQL_ERROR" << std::endl;
             break;
         case -2:
+            Logging::Manager::instance_ref().get(PACKAGE).error("Already exists" );
             std::cerr << "Already exists" << std::endl;
             break;
         case 0:
             break;
         default:
+            Logging::Manager::instance_ref().get(PACKAGE).error("Unknown error");
             std::cerr << "Unknown error" << std::endl;
             break;
     }
@@ -114,23 +125,27 @@ ObjectClient::new_state_request()
 void
 ObjectClient::list()
 {
-    callHelp(m_conf, no_help);
+    //callHelp(m_conf, no_help);
     std::cout << "not implemented" << std::endl;
 }
 
 void
 ObjectClient::update_states()
 {
-    callHelp(m_conf, no_help);
+    //callHelp(m_conf, no_help);
     std::auto_ptr<Fred::Manager> regMan(
             Fred::Manager::create(
                 m_db,
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+                restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
+                )
             );
     unsigned long long id = 0;
-    if (m_conf.hasOpt(OBJECT_ID_NAME)) {
-        id = m_conf.get<unsigned long long>(OBJECT_ID_NAME);
+    if (object_update_states_params.object_id.is_value_set()//m_conf.hasOpt(OBJECT_ID_NAME)
+            ) {
+        id = object_update_states_params.object_id.get_value();//m_conf.get<unsigned long long>(OBJECT_ID_NAME);
     }
+    Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("regMan->updateObjectStates id: ")
+        +boost::lexical_cast<std::string>(id));
     regMan->updateObjectStates(id);
     return;
 
@@ -138,6 +153,7 @@ ObjectClient::update_states()
 
 /// delete objects with status deleteCandidate
 /** \return 0=OK -1=SQL ERROR -2=no system registrar -3=login failed */
+
 int
 ObjectClient::deleteObjects(
         const std::string& typeList, CorbaClient &cc)
@@ -178,8 +194,9 @@ ObjectClient::deleteObjects(
         sql << "WHERE o.type IN (" << typeList << ") ";
     sql << " ORDER BY CASE WHEN o.type = 3 THEN 1 ELSE 2 END ASC, s.id";
     unsigned int limit = 0;
-    if (m_conf.hasOpt(OBJECT_DELETE_LIMIT_NAME)) {
-        limit = m_conf.get<unsigned int>(OBJECT_DELETE_LIMIT_NAME);
+    if (delete_objects_params.object_delete_limit.is_value_set()//m_conf.hasOpt(OBJECT_DELETE_LIMIT_NAME)
+            ) {
+        limit = delete_objects_params.object_delete_limit.get_value();//m_conf.get<unsigned int>(OBJECT_DELETE_LIMIT_NAME);
     }
     if (limit > 0)
         sql << "LIMIT " << limit;
@@ -193,7 +210,8 @@ ObjectClient::deleteObjects(
     }
 
     std::ostream *debug;
-    debug = m_conf.hasOpt(OBJECT_DEBUG_NAME) ? &std::cout : NULL;
+    debug = delete_objects_params.object_delete_debug//m_conf.hasOpt(OBJECT_DEBUG_NAME)
+            ? &std::cout : NULL;
 
     if (debug) {
         *debug << "<objects>\n";
@@ -316,6 +334,7 @@ ObjectClient::deleteObjects(
     }
 }
 
+/*
 void
 ObjectClient::delete_candidates()
 {
@@ -327,24 +346,26 @@ ObjectClient::delete_candidates()
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     deleteObjects(deleteTypes, cc);
 }
+*/
 
 void
 ObjectClient::regular_procedure()
 {
-    callHelp(m_conf, no_help);
+    //callHelp(m_conf, no_help);
     int i;
     std::auto_ptr<CorbaClient> cc;
     try {
         std::auto_ptr<Fred::Document::Manager> docMan(
                 Fred::Document::Manager::create(
-                    m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
-                    m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
-                    m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
-                    m_nsAddr)
+                    docgen_path.get_value()//m_conf.get<std::string>(REG_DOCGEN_PATH_NAME)
+                    ,docgen_template_path.get_value()//m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME)
+                    ,fileclient_path.get_value()//m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME)
+                    ,m_nsAddr)
                 );
         for (i = 0; i < RESOLVE_TRY; i++) {
             try {
-                cc.reset(new CorbaClient(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME)));
+                cc.reset(new CorbaClient(0, NULL, m_nsAddr, nameservice_context//m_conf.get<std::string>(NS_CONTEXT_NAME)
+                        ));
                 if (cc.get() != NULL) {
                     break;
                 }
@@ -369,18 +390,21 @@ ObjectClient::regular_procedure()
         std::auto_ptr<Fred::Contact::Manager> conMan(
                 Fred::Contact::Manager::create(
                     m_db,
-                    m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+                    restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
+                    )
                 );
         std::auto_ptr<Fred::NSSet::Manager> nssMan(
                 Fred::NSSet::Manager::create(
                     m_db,
                     zoneMan.get(),
-                    m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+                    restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
+                    )
                 );
         std::auto_ptr<Fred::KeySet::Manager> keyMan(
                 Fred::KeySet::Manager::create(
                     m_db,
-                    m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+                    restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
+                    )
                 );
         std::auto_ptr<Fred::Poll::Manager> pollMan(
                 Fred::Poll::Manager::create(
@@ -389,7 +413,8 @@ ObjectClient::regular_procedure()
         std::auto_ptr<Fred::Manager> registryMan(
                 Fred::Manager::create(
                     m_db,
-                    m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+                    restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
+                    )
                 );
         std::auto_ptr<Fred::Registrar::Manager> regMan(
                 Fred::Registrar::Manager::create(m_db));
@@ -408,14 +433,16 @@ ObjectClient::regular_procedure()
         registryMan->updateObjectStates();
         registryMan->updateObjectStates();
         std::string pollExcept("");
-        if (m_conf.hasOpt(OBJECT_POLL_EXCEPT_TYPES_NAME)) {
-            pollExcept = m_conf.get<std::string>(OBJECT_POLL_EXCEPT_TYPES_NAME);
+        if (object_regular_procedure_params.poll_except_types.is_value_set()//m_conf.hasOpt(OBJECT_POLL_EXCEPT_TYPES_NAME)
+                ) {
+            pollExcept = object_regular_procedure_params.poll_except_types.get_value();//m_conf.get<std::string>(OBJECT_POLL_EXCEPT_TYPES_NAME);
         }
         pollMan->createStateMessages(pollExcept, 0, NULL);
 
         std::string deleteTypes("");
-        if (m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)) {
-            deleteTypes = m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
+        if (object_regular_procedure_params.object_delete_types.is_value_set()//m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)
+                ) {
+            deleteTypes = object_regular_procedure_params.object_delete_types.get_value();//m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
         }
         if ((i = deleteObjects(deleteTypes, *(cc.get()))) != 0) {
             LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occured in deleteObject: %d", i);
@@ -423,13 +450,15 @@ ObjectClient::regular_procedure()
         }
 
         std::string notifyExcept("");
-        if (m_conf.hasOpt(OBJECT_NOTIFY_EXCEPT_TYPES_NAME)) {
-            notifyExcept = m_conf.get<std::string>(OBJECT_NOTIFY_EXCEPT_TYPES_NAME);
+        if (object_regular_procedure_params.notify_except_types.is_value_set()//m_conf.hasOpt(OBJECT_NOTIFY_EXCEPT_TYPES_NAME)
+                ) {
+            notifyExcept = object_regular_procedure_params.notify_except_types.get_value();//m_conf.get<std::string>(OBJECT_NOTIFY_EXCEPT_TYPES_NAME);
         }
         notifyMan->notifyStateChanges(notifyExcept, 0, NULL, true);
 
         pollMan->createLowCreditMessages();
-        notifyMan->generateLetters(m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT));
+        notifyMan->generateLetters(docgen_domain_count_limit//m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT)
+                );
     } catch (ccReg::Admin::SQL_ERROR) {
         LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): SQL_ERROR catched");
     } catch (NameService::NOT_RUNNING) {

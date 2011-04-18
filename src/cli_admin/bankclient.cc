@@ -16,7 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simple.h"
+//#include "simple.h"
 #include "bankclient.h"
 #include "commonclient.h"
 #include "bank_manager.h"
@@ -29,88 +29,33 @@
 
 namespace Admin {
 
-const struct options *
-BankClient::getOpts()
-{
-    return m_opts;
-}
 
 void
 BankClient::runMethod()
 {
-    if (m_conf.hasOpt(BANK_SHOW_OPTS_NAME)) {
-        show_opts();
-    } else if (m_conf.hasOpt(BANK_STATEMENT_LIST_NAME)) {
-        // statement_list();
-    } else if (m_conf.hasOpt(BANK_PAYMENT_LIST_NAME)) {
+    if (bank_show_opts) {
+        //show_opts();
+    } else if (bank_payment_list) {//BANK_PAYMENT_LIST_NAME
         payment_list();
-    } else if (m_conf.hasOpt(BANK_IMPORT_XML_NAME)) {
+    } else if (bank_import_xml) {//BANK_IMPORT_XML_NAME
         import_xml();
-    } else if (m_conf.hasOpt(BANK_ADD_ACCOUNT_NAME)) {
+    } else if (bank_add_account) {//BANK_ADD_ACCOUNT_NAME
         add_bank_account();
-    } else if (m_conf.hasOpt(BANK_MOVE_STATEMENT_NAME)) {
+    } /*else if (m_conf.hasOpt(BANK_MOVE_STATEMENT_NAME)) {
         move_statement();
     } else if (m_conf.hasOpt(BANK_SET_PAYMENT_TYPE_NAME)) {
         set_payment_type();
     }
+    */
 }
-
-void
-BankClient::show_opts() 
-{
-    callHelp(m_conf, no_help);
-    print_options("Bank", getOpts(), getOptsCount());
-}
-
-/*
-void
-BankClient::statement_list()
-{
-    callHelp(m_conf, statement_list_help);
-    std::ofstream output;
-    if (m_conf.hasOpt(OUTPUT_NAME)) {
-        output.open(m_conf.get<std::string>(OUTPUT_NAME).c_str(), std::ios::out);
-    } else {
-        output.open("/dev/stdout", std::ios::out);
-    }
-    std::auto_ptr<Fred::Banking::Manager> bankMan(
-            Fred::Banking::Manager::create());
-    std::auto_ptr<Fred::Banking::HeadList> bankList(
-            bankMan->createList());
-
-    Database::Filters::StatementHead *statementFilter =
-        new Database::Filters::StatementHeadImpl();
-    Database::Filters::Union unionFilter;
-
-    apply_ID(statementFilter);
-    apply_DATE(statementFilter, BANK_DATE_NAME, Create);
-    apply_DATE(statementFilter, BANK_OLD_BALANCE_DATE_NAME, BalanceOld);
-    get_DID(statementFilter, AccountId, BANK_ACCOUNT_ID_NAME);
-    get_Str(statementFilter, AccountNumber, BANK_ACCOUNT_NUMBER_NAME);
-    get_Str(statementFilter, BankCode, BANK_BANK_CODE_NAME);
-    get_Str(statementFilter, ConstSymbol, BANK_CONST_SYMBOL_NAME);
-    if (m_conf.hasOpt(BANK_INVOICE_ID_NAME)) {
-        if (m_conf.get<unsigned int>(BANK_INVOICE_ID_NAME) == 0) {
-            statementFilter->addInvoiceId().setNULL();
-        } else {
-            get_DID(statementFilter, InvoiceId, BANK_INVOICE_ID_NAME);
-        }
-    }
-
-    unionFilter.addFilter(statementFilter);
-    bankList->reload(unionFilter);
-
-    bankList->exportXML(output);
-}
-*/
 
 void
 BankClient::payment_list()
 {
-    callHelp(m_conf, payment_list_help);
+    //callHelp(m_conf, payment_list_help);
 
     /* init file manager */
-    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    CorbaClient corba_client(0, 0, m_nsAddr, nameservice_context);
     FileManagerClient fm_client(corba_client.getNS());
     Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
@@ -119,8 +64,8 @@ BankClient::payment_list()
     Fred::Banking::PaymentListPtr list(bank_manager->createPaymentList());
 
     Database::Filters::BankPayment *payment_filter = new Database::Filters::BankPaymentImpl();
-    if (m_conf.hasOpt(BANK_PAYMENT_TYPE_NAME)) {
-        int type = m_conf.get<int>(BANK_PAYMENT_TYPE_NAME);
+    if (bank_payment_type.is_value_set()) {
+        int type = bank_payment_type.get_value();
         if (type >= 1 && type <= 6) {
             payment_filter->addType().setValue(type);
         }
@@ -145,30 +90,30 @@ BankClient::payment_list()
 void
 BankClient::import_xml()
 {
-    callHelp(m_conf, import_xml_help);
+    //callHelp(m_conf, import_xml_help);
 
     bool from_file = false;
     std::string file_name;
-    if (m_conf.hasOpt(BANK_XML_FILE_NAME)) {
+    if (import_xml_params.bank_xml.is_value_set()) {//BANK_XML_FILE_NAME
         from_file = true;
-        file_name = m_conf.get<std::string>(BANK_XML_FILE_NAME);
+        file_name = import_xml_params.bank_xml.get_value();
     }
 
     bool generate_invoice = false;
-    if (m_conf.hasOpt(BANK_CREATE_CREDIT_INVOICE_NAME)) {
+    if (import_xml_params.cr_credit_invoice) {//BANK_CREATE_CREDIT_INVOICE_NAME
         generate_invoice = true;
     }
 
     /* path to original statement file */
     std::string statement_file;
-    if (m_conf.hasOpt(BANK_XML_FILE_STATEMENT_NAME)) {
-        statement_file = m_conf.get<std::string>(BANK_XML_FILE_STATEMENT_NAME);
+    if (import_xml_params.bank_statement_file.is_value_set()) {//BANK_XML_FILE_STATEMENT_NAME
+        statement_file = import_xml_params.bank_statement_file.get_value();
     }
 
     /* mime type of original statement file */
     std::string statement_mime;
-    if (m_conf.hasOpt(BANK_XML_FILE_STATEMENT_MIME_NAME)) {
-        statement_mime = m_conf.get<std::string>(BANK_XML_FILE_STATEMENT_MIME_NAME);
+    if (import_xml_params.bank_statement_file_mimetype.is_value_set()) {//BANK_XML_FILE_STATEMENT_MIME_NAME
+        statement_mime = import_xml_params.bank_statement_file_mimetype.get_value();
     }
 
     if ((!statement_file.empty() && statement_mime.empty())
@@ -193,7 +138,7 @@ BankClient::import_xml()
     }
 
     /* init file manager */
-    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    CorbaClient corba_client(0, 0, m_nsAddr, nameservice_context);
     FileManagerClient fm_client(corba_client.getNS());
     Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
@@ -205,21 +150,21 @@ BankClient::import_xml()
 void
 BankClient::add_bank_account()
 {
-    callHelp(m_conf, add_bank_account_help);
-    std::string account_number = m_conf.get<std::string>(BANK_ACCOUNT_NUMBER_NAME);
-    std::string bank_code = m_conf.get<std::string>(BANK_BANK_CODE_NAME);
+    //callHelp(m_conf, add_bank_account_help);
+    std::string account_number = add_account_params.bank_account_number;//BANK_ACCOUNT_NUMBER_NAME
+    std::string bank_code = add_account_params.bank_code;//BANK_BANK_CODE_NAME
 
     std::string account_name;
-    if (m_conf.hasOpt(BANK_ACCOUNT_NAME_NAME)) {
-        account_name = m_conf.get<std::string>(BANK_ACCOUNT_NAME_NAME);
+    if (add_account_params.account_name.is_value_set()) {//BANK_ACCOUNT_NAME_NAME
+        account_name = add_account_params.account_name.get_value();
     }
     std::string zone_fqdn;
-    if (m_conf.hasOpt(BANK_ZONE_NAME_NAME)) {
-        zone_fqdn = m_conf.get<std::string>(BANK_ZONE_NAME_NAME);
+    if (add_account_params.zone_fqdn.is_value_set()) {//BANK_ZONE_NAME_NAME
+        zone_fqdn = add_account_params.zone_fqdn.get_value();
     }
 
     /* init file manager */
-    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    CorbaClient corba_client(0, 0, m_nsAddr, nameservice_context);
     FileManagerClient fm_client(corba_client.getNS());
     Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
@@ -227,6 +172,19 @@ BankClient::add_bank_account()
     Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
     bank_manager->addBankAccount(account_number, bank_code, zone_fqdn, account_name);
 }
+/*
+const struct options *
+BankClient::getOpts()
+{
+    return m_opts;
+}
+
+void
+BankClient::show_opts()
+{
+    print_options("Bank", getOpts(), getOptsCount());
+}
+
 
 void
 BankClient::move_statement()
@@ -239,12 +197,12 @@ BankClient::move_statement()
         force = true;
     }
 
-    /* init file manager */
+    // init file manager
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
     Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
-    /* bank manager */
+    // bank manager
     Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
     bank_manager->pairPaymentWithStatement(itemId, headId, force);
 }
@@ -257,12 +215,12 @@ BankClient::set_payment_type()
     Database::ID payment_id = m_conf.get<unsigned long long>(BANK_PAYMENT_ID_NAME);
     int type = m_conf.get<int>(BANK_PAYMENT_TYPE_NAME);
 
-     /* init file manager */
+     // init file manager
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
     Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
-    /* bank manager */
+    // bank manager
     Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
     bank_manager->setPaymentType(payment_id, type);
 }
@@ -389,6 +347,6 @@ BankClient::getOptsCount()
 {
     return sizeof(m_opts) / sizeof(options);
 }
-
+*/
 } // namespace Admin;
 

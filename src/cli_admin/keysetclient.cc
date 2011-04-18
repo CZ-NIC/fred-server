@@ -16,45 +16,35 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simple.h"
+#include <memory>
+
+//#include "simple.h"
 #include "commonclient.h"
 #include "keysetclient.h"
 
 namespace Admin {
 
-const struct options *
-KeysetClient::getOpts()
-{
-    return m_opts;
-}
-
 void
 KeysetClient::runMethod()
 {
-    if (m_conf.hasOpt(KEYSET_LIST_NAME)) {
+    if (keyset_list) {
         list();
-    } else if (m_conf.hasOpt(KEYSET_CHECK_NAME)) {
+    } else if (keyset_list_plain) {
+        list_plain();
+    } else if (keyset_check.is_value_set()) {
         check();
-    } else if (m_conf.hasOpt(KEYSET_INFO2_NAME)) {
+    } else if (keyset_info2.is_value_set()) {
         info2();
-    } else if (m_conf.hasOpt(KEYSET_INFO_NAME)) {
+    } else if (keyset_info.is_value_set()) {
         info();
-    } else if (m_conf.hasOpt(KEYSET_SHOW_OPTS_NAME)) {
-        show_opts();
+    } else if (keyset_show_opts) {
+        //show_opts();
     }
-}
-
-void
-KeysetClient::show_opts()
-{
-    callHelp(m_conf, no_help);
-    print_options("Keyset", getOpts(), getOptsCount());
 }
 
 void
 KeysetClient::list()
 {
-    callHelp(m_conf, list_help);
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(m_db, true));
     std::auto_ptr<Fred::KeySet::List> keyList(
@@ -63,33 +53,51 @@ KeysetClient::list()
     Database::Filters::KeySet *keyFilter;
     keyFilter = new Database::Filters::KeySetHistoryImpl();
 
-    apply_ID(keyFilter);
-    apply_HANDLE(keyFilter);
-
-    if (m_conf.hasOpt(ADMIN_ID_NAME))
+    if (m_list_args.keyset_id.is_value_set())
+        keyFilter->addId().setValue(Database::ID(m_list_args.keyset_id.get_value()));
+    if (m_list_args.keyset_handle.is_value_set())
+        keyFilter->addHandle().setValue(m_list_args.keyset_handle.get_value());
+    if (m_list_args.admin_id.is_value_set())
         keyFilter->addTechContact().addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ADMIN_ID_NAME)));
-    if (m_conf.hasOpt(ADMIN_HANDLE_NAME))
+                Database::ID(m_list_args.admin_id.get_value()));
+    if (m_list_args.admin_handle.is_value_set())
         keyFilter->addTechContact().addHandle().setValue(
-                m_conf.get<std::string>(ADMIN_HANDLE_NAME));
-    if (m_conf.hasOpt(ADMIN_NAME_NAME))
+                m_list_args.admin_handle.get_value());
+    if (m_list_args.admin_name.is_value_set())
         keyFilter->addTechContact().addName().setValue(
-                m_conf.get<std::string>(ADMIN_NAME_NAME));
-
-    apply_REGISTRAR_ID(keyFilter);
-    apply_REGISTRAR_HANDLE(keyFilter);
-    apply_REGISTRAR_NAME(keyFilter);
-
-    apply_CRDATE(keyFilter);
-    apply_DELDATE(keyFilter);
-    apply_UPDATE(keyFilter);
-    apply_TRANSDATE(keyFilter);
-
+                m_list_args.admin_name.get_value());
+    if (m_list_args.registrar_id.is_value_set())
+        keyFilter->addRegistrar().addId().setValue(Database::ID(m_list_args.registrar_id.get_value()));
+    if (m_list_args.registrar_handle.is_value_set())
+        keyFilter->addRegistrar().addHandle().setValue(m_list_args.registrar_handle.get_value());
+    if (m_list_args.registrar_name.is_value_set())
+        keyFilter->addRegistrar().addName().setValue(m_list_args.registrar_name.get_value());
+    if (m_list_args.crdate.is_value_set())
+    {
+        keyFilter->addCreateTime().setValue(
+                *parseDateTime(m_list_args.crdate.get_value()));
+    }
+    if (m_list_args.deldate.is_value_set())
+    {
+            keyFilter->addDeleteTime().setValue(
+                    *parseDateTime(m_list_args.deldate.get_value()));
+    }
+    if (m_list_args.update.is_value_set())
+    {
+        keyFilter->addUpdateTime().setValue(
+                *parseDateTime(m_list_args.update.get_value()));
+    }
+    if (m_list_args.transdate.is_value_set())
+    {
+        keyFilter->addTransferTime().setValue(
+                *parseDateTime(m_list_args.transdate.get_value()));
+    }
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
     
     unionFilter->addFilter(keyFilter);
-    apply_LIMIT(keyList);
+    //apply_LIMIT(keyList);
+    keyList->setLimit(m_list_args.limit.get_value());
 
     keyList->reload(*unionFilter);
 
@@ -130,7 +138,7 @@ KeysetClient::list()
                 << "\t\t\t<key>" << dnskey->getKey() << "</key>\n"
                 << "\t\t</dnskey>\n";
         }
-        if (m_conf.hasOpt(FULL_LIST_NAME)) {
+        if (m_list_args.full_list) {
             std::cout
                 << "\t\t<create_date>" << keyset->getCreateDate() << "</create_date>\n"
                 << "\t\t<transfer_date>" << keyset->getTransferDate() << "</transfer_date>\n"
@@ -172,38 +180,43 @@ KeysetClient::list()
 void
 KeysetClient::list_plain()
 {
-    callHelp(m_conf, no_help);
     std::string xml;
     std::string cltrid;
 
-    xml = "<handle>" + m_conf.get<std::string>(KEYSET_LIST_PLAIN_NAME) + "</handle>";
+    xml = "<handle>" + m_list_args.keyset_handle.get_value() + "</handle>";
     cltrid = "list_keysets";
     ccReg::Lists *k;
-    CLIENT_LOGIN;
 
-    r = epp->KeySetList(k, clientId, cltrid.c_str(), xml.c_str());
+    epp_client_login_return epp_login = epp_client_login(
+            m_db
+            , m_nsAddr
+            , nameservice_context
+            , m_list_args.login_registrar.get_value());
 
-    if (r->code != 1000) {
-        std::cerr << "An error has occured: " << r->code;
+    epp_login.r = epp_login.epp->KeySetList(k, epp_login.clientId, cltrid.c_str(), xml.c_str());
+
+    if (epp_login.r->code != 1000) {
+        std::cerr << "An error has occured: " << epp_login.r->code;
         return;
     }
     for (int i = 0; i < (int)k->length(); i++)
         std::cout << (*k)[i] << std::endl;
 
-    CLIENT_LOGOUT;
+    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
+                "<system_delete_logout/>");
     return;
 }
 
 void
 KeysetClient::check()
 {
-    callHelp(m_conf, check_help);
+
     std::string xml;
     std::string cltrid;
 
     ccReg::CheckResp *a;
     
-    std::string name = m_conf.get<std::string>(KEYSET_CHECK_NAME).c_str();
+    std::string name = keyset_check.get_value();
 
     cltrid = "keyset_check";
     xml = "<handle>" + name + "</handle>";
@@ -212,31 +225,43 @@ KeysetClient::check()
     names.length(1);
     names[0] = CORBA::string_dup(name.c_str());
 
-    CLIENT_LOGIN;
+    epp_client_login_return epp_login = epp_client_login(
+                m_db
+                , m_nsAddr
+                , nameservice_context
+                , m_list_args.login_registrar.get_value());
 
-    r = epp->KeySetCheck(names, a, clientId, cltrid.c_str(), xml.c_str());
+
+    epp_login.r = epp_login.epp->KeySetCheck(names, a, epp_login.clientId, cltrid.c_str(), xml.c_str());
 
     std::cout << (*a)[0].avail << std::endl;
     std::cout << (*a)[0].reason << std::endl;
 
-    CLIENT_LOGOUT;
+    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
+                    "<system_delete_logout/>");
     return;
 }
 
 void
 KeysetClient::info()
 {
-    callHelp(m_conf, info_help);
-    std::string name = m_conf.get<std::string>(KEYSET_INFO_NAME);
+    std::string name = keyset_info.get_value();
     std::string cltrid;
     std::string xml;
     xml = "<handle>" + name + "</handle>";
     cltrid = "info_keyset";
 
-    CLIENT_LOGIN;
-    ccReg::KeySet *k = new ccReg::KeySet;
-    epp->KeySetInfo(name.c_str(), k, clientId, cltrid.c_str(), xml.c_str());
-    CLIENT_LOGOUT;
+    epp_client_login_return epp_login = epp_client_login(
+                m_db
+                , m_nsAddr
+                , nameservice_context
+                , m_list_args.login_registrar.get_value());
+
+    ccReg::KeySet* k = new ccReg::KeySet;
+    epp_login.epp->KeySetInfo(name.c_str(), k, epp_login.clientId, cltrid.c_str(), xml.c_str());
+
+    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
+                    "<system_delete_logout/>");
 
     std::cout << k->handle << std::endl;
     std::cout << k->AuthInfoPw << std::endl;
@@ -244,15 +269,13 @@ KeysetClient::info()
     // std::cout << k->dsrec[0].digest << std::endl;
     std::cout << k->tech[0] << std::endl;
 
-    delete k;
     return;
 }
 
 void
 KeysetClient::info2()
 {
-    callHelp(m_conf, no_help);
-    std::string key_handle = m_conf.get<std::string>(KEYSET_INFO2_NAME);
+    std::string key_handle = keyset_info2.get_value();
     std::string cltrid;
     std::string xml;
 
@@ -261,22 +284,42 @@ KeysetClient::info2()
     cltrid = "info_keyset_2";
     ccReg::InfoType type = ccReg::IT_LIST_KEYSETS;
 
-    CLIENT_LOGIN;
+    epp_client_login_return epp_login = epp_client_login(
+                m_db
+                , m_nsAddr
+                , nameservice_context
+                , m_list_args.login_registrar.get_value());
 
-    r = epp->info(
+    epp_login.r = epp_login.epp->info(
             type,
             key_handle.c_str(),
             count,
-            clientId,
+            epp_login.clientId,
             cltrid.c_str(),
             xml.c_str());
 
-    std::cout << "return code: " << r->code << std::endl;
+    std::cout << "return code: " << epp_login.r->code << std::endl;
 
 
-    CLIENT_LOGOUT;
+    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
+                    "<system_delete_logout/>");
+
     return;
 }
+/*
+ const struct options *
+KeysetClient::getOpts()
+{
+    return m_opts;
+}
+
+
+void
+KeysetClient::show_opts()
+{
+    print_options("Keyset", getOpts(), getOptsCount());
+}
+
 
 void
 KeysetClient::list_help()
@@ -359,4 +402,5 @@ KeysetClient::getOptsCount()
 {
     return sizeof(m_opts) / sizeof(options);
 }
+*/
 } //namespace Admin;

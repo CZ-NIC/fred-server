@@ -61,24 +61,42 @@
 #include "old_utils/dbsql.h"
 #include "baseclient.h"
 
+#include "poll_params.h"
+
 namespace Admin {
 
 class PollClient : public BaseClient {
 private:
     DBSharedPtr m_db;
     ccReg::EPP_var m_epp;
-    Config::Conf m_conf;
+
+    std::string nameservice_context;
+    bool poll_list_all;//POLL_LIST_ALL_NAME
+    PollListAllArgs poll_list_all_params;
+    bool poll_create_statechanges;//POLL_CREATE_STATE_CHANGES_NAME
+    PollCreateStatechangesArgs poll_create_statechanges_params;
 
     static const struct options m_opts[];
 public:
     PollClient()
+    : poll_list_all(false)
+    , poll_create_statechanges(false)
     { }
     PollClient(
-            const std::string &connstring,
-            const std::string &nsAddr,
-            const Config::Conf &conf):
-        BaseClient(connstring, nsAddr),
-        m_conf(conf)
+        const std::string &connstring
+        , const std::string &nsAddr
+        , const std::string& _nameservice_context
+        , bool _poll_list_all
+        , const PollListAllArgs& _poll_list_all_params
+        , bool _poll_create_statechanges
+        , const PollCreateStatechangesArgs& _poll_create_statechanges_params
+        )
+    : BaseClient(connstring, nsAddr)
+    , nameservice_context(_nameservice_context)
+    , poll_list_all(_poll_list_all)
+    , poll_list_all_params(_poll_list_all_params)
+    , poll_create_statechanges(_poll_create_statechanges)
+    , poll_create_statechanges_params(_poll_create_statechanges_params)
     {
         m_db = connect_DB(connstring
                 , std::runtime_error("PollClient db connection failed"));

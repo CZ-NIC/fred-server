@@ -27,6 +27,8 @@
 #include "fredlib/registry.h"
 #include "baseclient.h"
 
+#include "keyset_params.h"
+
 #define KEYSET_SHOW_OPTS_NAME       "keyset_show_opts"
 #define KEYSET_SHOW_OPTS_NAME_DESC  "show all keyset command line options"
 #define KEYSET_LIST_NAME            "keyset_list"
@@ -53,24 +55,44 @@ class KeysetClient : public BaseClient {
 private:
     DBSharedPtr m_db;
     ccReg::EPP_var m_epp;
-    Config::Conf m_conf;
+    std::string nameservice_context;
+    bool keyset_list;
+    optional_string keyset_check;
+    bool keyset_list_plain;
+    optional_string keyset_info;
+    optional_string keyset_info2;
+    bool keyset_show_opts;
+    KeysetListArgs m_list_args;
 
     static const struct options m_opts[];
 public:
     KeysetClient()
+    : keyset_list(false)
+    , keyset_list_plain(false)
+    , keyset_show_opts(false)
     { }
     KeysetClient(
             const std::string &connstring,
             const std::string &nsAddr,
-            const Config::Conf &conf):
-        BaseClient(connstring, nsAddr),
-        m_conf(conf)
+            const std::string& _nameservice_context,
+            bool _keyset_list,
+            const optional_string& _keyset_check,
+            bool _keyset_list_plain,
+            const optional_string& _keyset_info,
+            const optional_string& _keyset_info2,
+            bool _keyset_show_opts,
+            const KeysetListArgs &_list_args)
+    : BaseClient(connstring, nsAddr)
+    , nameservice_context(_nameservice_context)
+    , keyset_list(_keyset_list)
+    , keyset_check(_keyset_check)
+    , keyset_info2(_keyset_info2)
+    , keyset_show_opts(_keyset_show_opts)
+    , m_list_args(_list_args)
     {
         m_db = connect_DB(connstring
                 , std::runtime_error("KeysetClient db connection failed"));
     }
-    ~KeysetClient()
-    { }
 
     static const struct options *getOpts();
     static int getOptsCount();

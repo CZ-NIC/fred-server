@@ -16,7 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simple.h"
+//#include "simple.h"
 #include "commonclient.h"
 #include "notifyclient.h"
 #include "fredlib/info_buffer.h"
@@ -25,7 +25,7 @@
 
 #include "cfg/faked_args.h"
 #include "cfg/handle_args.h"
-#include "cfg/config_handler.h"
+#include "cfg/config_handler_decl.h"
 #include "cfg/handle_general_args.h"
 #include "hp/handle_hpmail_args.h"
 
@@ -35,50 +35,41 @@ using namespace Database;
 
 namespace Admin {
 
-const struct options *
-NotifyClient::getOpts()
-{
-    return m_opts;
-}
 
 
 void
 NotifyClient::runMethod()
 {
-    if (m_conf.hasOpt(NOTIFY_STATE_CHANGES_NAME)) {
+    if (notify_state_changes){//m_conf.hasOpt(NOTIFY_STATE_CHANGES_NAME)
         state_changes();
-    } else if (m_conf.hasOpt(NOTIFY_LETTERS_CREATE_NAME)) {
-        letters_create();
-    } else if (m_conf.hasOpt(NOTIFY_LETTERS_SEND_NAME)) {
+    //} else if (m_conf.hasOpt(NOTIFY_LETTERS_CREATE_NAME)) {
+    //    letters_create();
+    } else if (notify_letters_postservis_send//m_conf.hasOpt(NOTIFY_LETTERS_SEND_NAME)
+            ) {
         letters_send();
-    } else if (m_conf.hasOpt(NOTIFY_SMS_SEND_NAME)) {
+    } else if (notify_sms_send//m_conf.hasOpt(NOTIFY_SMS_SEND_NAME)
+            ) {
         sms_send();
-    } else if (m_conf.hasOpt(NOTIFY_FILE_SEND_NAME)) {
-        file_send();
-    } else if (m_conf.hasOpt(NOTIFY_SHOW_OPTS_NAME)) {
-        show_opts();
-    }
-}
-
-void
-NotifyClient::show_opts()
-{
-    callHelp(m_conf, no_help);
-    print_options("Notify", getOpts(), getOptsCount());
+    } //else if (m_conf.hasOpt(NOTIFY_FILE_SEND_NAME)) {
+        //file_send();
+    //} else if (m_conf.hasOpt(NOTIFY_SHOW_OPTS_NAME)) {
+      //  show_opts();
+    //}
 }
 
 void
 NotifyClient::state_changes()
 {
-    callHelp(m_conf, no_help);
+    //callHelp(m_conf, no_help);
     std::auto_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
-                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
-                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
-                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
-                m_nsAddr)
+                docgen_path.get_value()//m_conf.get<std::string>(REG_DOCGEN_PATH_NAME)
+                ,docgen_template_path.get_value()//m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME)
+                ,fileclient_path.get_value()//m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME)
+                ,m_nsAddr)
             );
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    CorbaClient cc(0, NULL, m_nsAddr, nameservice_context//m_conf.get<std::string>(NS_CONTEXT_NAME)
+            );
     MailerManager mailMan(cc.getNS());
     std::auto_ptr<Fred::Zone::Manager> zoneMan(
             Fred::Zone::Manager::create());
@@ -92,18 +83,21 @@ NotifyClient::state_changes()
     std::auto_ptr<Fred::Contact::Manager> conMan(
             Fred::Contact::Manager::create(
                 m_db,
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+                restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
+                )
             );
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
             Fred::NSSet::Manager::create(
                 m_db,
                 zoneMan.get(),
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+                restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
+                )
             );
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
                 m_db,
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
+                restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
+                )
             );
     std::auto_ptr<Fred::Registrar::Manager> regMan(
             Fred::Registrar::Manager::create(m_db));
@@ -120,17 +114,35 @@ NotifyClient::state_changes()
                 msgMan));
 
     std::string exceptTypes("");
-    if (m_conf.hasOpt(NOTIFY_EXCEPT_TYPES_NAME)) {
-        exceptTypes = m_conf.get<std::string>(NOTIFY_EXCEPT_TYPES_NAME);
+    if (notify_state_changes_params.notify_except_types.is_value_set()//m_conf.hasOpt(NOTIFY_EXCEPT_TYPES_NAME)
+            ) {
+        exceptTypes = notify_state_changes_params.notify_except_types.get_value();//m_conf.get<std::string>(NOTIFY_EXCEPT_TYPES_NAME);
     }
     int limit = 0;
-    if (m_conf.hasOpt(NOTIFY_LIMIT_NAME)) {
-        limit = m_conf.get<unsigned int>(NOTIFY_LIMIT_NAME);
+    if (notify_state_changes_params.notify_limit.is_value_set()//m_conf.hasOpt(NOTIFY_LIMIT_NAME)
+            ) {
+        limit = notify_state_changes_params.notify_limit.get_value();//m_conf.get<unsigned int>(NOTIFY_LIMIT_NAME);
     }
     notifyMan->notifyStateChanges(
             exceptTypes, limit,
-            m_conf.hasOpt(NOTIFY_DEBUG_NAME) ? &std::cout : NULL,
-            m_conf.hasOpt(NOTIFY_USE_HISTORY_TABLES_NAME));
+            //m_conf.hasOpt(NOTIFY_DEBUG_NAME)
+            notify_state_changes_params.notify_debug ? &std::cout : NULL,
+                    notify_state_changes_params.notify_use_history_tables//m_conf.hasOpt(NOTIFY_USE_HISTORY_TABLES_NAME)
+                    );
+}
+/*
+
+const struct options *
+NotifyClient::getOpts()
+{
+    return m_opts;
+}
+
+void
+NotifyClient::show_opts()
+{
+    //callHelp(m_conf, no_help);
+    print_options("Notify", getOpts(), getOptsCount());
 }
 
 void
@@ -187,7 +199,7 @@ NotifyClient::letters_create()
 
     notifyMan->generateLetters(m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT));
 }
-
+*/
 void NotifyClient::letters_send()
 {
     // TODO code duplicity except for the last line
@@ -195,33 +207,33 @@ void NotifyClient::letters_send()
     //          - move the body of the sendLetters() here
     //          - separate constructor for Notify::Manager
     //          - make sendLetters static
-    callHelp(m_conf, no_help);
+    //callHelp(m_conf, no_help);
 
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    CorbaClient cc(0, NULL, m_nsAddr, nameservice_context//m_conf.get<std::string>(NS_CONTEXT_NAME)
+            );
     std::auto_ptr<Fred::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
 
     sendLetters(
            fileclient,
-           m_conf.hasOpt(NOTIFY_HPMAIL_CONFIG_NAME) ? 
-                m_conf.get<std::string> (NOTIFY_HPMAIL_CONFIG_NAME) :
-                HPMAIL_CONFIG
+           hpmail_config.is_value_set()//m_conf.hasOpt(NOTIFY_HPMAIL_CONFIG_NAME)
+           ? hpmail_config.get_value()//m_conf.get<std::string> (NOTIFY_HPMAIL_CONFIG_NAME)
+            : HPMAIL_CONFIG
             );
 }
 
 void NotifyClient::sms_send()
 {
 
-    callHelp(m_conf, no_help);
-    sendSMS(m_conf.hasOpt(NOTIFY_SMS_COMMAND_NAME)
-            ? m_conf.get<std::string> (NOTIFY_SMS_COMMAND_NAME)
-            : ( m_conf.hasOpt(SMS_COMMAND_NAME)
-                ? m_conf.get<std::string> (SMS_COMMAND_NAME)
+    //callHelp(m_conf, no_help);
+    sendSMS(cmdline_sms_command.is_value_set()//m_conf.hasOpt(NOTIFY_SMS_COMMAND_NAME)
+            ? cmdline_sms_command.get_value()//m_conf.get<std::string> (NOTIFY_SMS_COMMAND_NAME)
+            : ( configfile_sms_command.is_value_set()//m_conf.hasOpt(SMS_COMMAND_NAME)
+                ? configfile_sms_command.get_value()//m_conf.get<std::string> (SMS_COMMAND_NAME)
                 : std::string("exit 1 "))
             , std::string("'")
            );
 }
-
-
+/*
 void NotifyClient::file_send()
 {
     // TODO code duplicity except for the last line
@@ -249,7 +261,7 @@ void NotifyClient::file_send()
                 HPMAIL_CONFIG        
             );
 }
-
+*/
     void NotifyClient::send_letters_impl(
             Fred::File::Transferer* fileman
             , const HPCfgMap& hpmail_config
@@ -465,37 +477,31 @@ void NotifyClient::file_send()
 
   }
 
-    HPCfgMap 
-    NotifyClient::readHPConfig(const std::string &conf_file)
+    HPCfgMap NotifyClient::readHPConfig(const std::string &conf_file)
     {
-        FakedArgs fa;
+            boost::shared_ptr<HandleHPMailArgs> hhp(new HandleHPMailArgs);
 
-        boost::shared_ptr<HandleHPMailArgs> hhp(new HandleHPMailArgs);
+            HandlerPtrVector hpv =
+                boost::assign::list_of
+                    (HandleArgsPtr(new HandleConfigFileArgs(conf_file) ))
+                    (HandleArgsPtr(hhp));
 
-        HandlerPtrVector handlers =
-        boost::assign::list_of
-        (HandleArgsPtr(new HandleGeneralArgs(conf_file) ))
-        (HandleArgsPtr(hhp));
+            // it always needs some argv vector, argc cannot be 0
+            FakedArgs fa;
+            fa.add_argv(std::string(""));
 
-        try
-        {
-            // CfgArgs always needs some argv vector, argc cannot be 0
-            int argc = 1;
-            char *argv[argc];
-            argv[0] = new char [1];
-            // zero-length string into argv[0]
-            argv[0][0] = '\0';
+            //handle
+            for(HandlerPtrVector::const_iterator i = hpv.begin()
+                    ; i != hpv.end(); ++i )
+            {
+                FakedArgs fa_out;
+                (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
+                fa=fa_out;//last output to next input
+            }//for HandlerPtrVector
 
-            fa = CfgArgs::instance<HandleHelpArg>(handlers)->handle(argc, argv);
             HPCfgMap set_cfg = hhp->get_map();
-            
+
             return set_cfg;
-        }
-        catch(const ReturnFromMain&)
-        {
-            return HPCfgMap();
-            // return 0;
-        }
     }
 
 #define ADDOPT(name, type, callable, visible) \

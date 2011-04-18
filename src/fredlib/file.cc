@@ -218,6 +218,10 @@ public:
                               const std::string &_mime_type,
                               const unsigned int &_file_type)
     {
+        Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ManagerImpl::upload _name: ")
+        +_name + std::string(" _mime_type: ") + _mime_type + std::string(" _file_type: ")
+         + boost::lexical_cast<std::string>(_file_type));
+
         return transferer_->upload(_name, _mime_type, _file_type);
     }
 

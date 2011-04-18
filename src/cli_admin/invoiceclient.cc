@@ -16,7 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simple.h"
+#include <math.h>
+//#include "simple.h"
 #include "commonclient.h"
 #include "invoiceclient.h"
 #include "fredlib/invoice_manager.h"
@@ -24,119 +25,108 @@
 namespace Admin {
 
 
-const struct options *
-InvoiceClient::getOpts()
-{
-    return m_opts;
-}
 
 void
 InvoiceClient::runMethod()
 {
-    if (m_conf.hasOpt(INVOICE_LIST_NAME)) {
+    if (invoice_list) {
         list();
-    } else if (m_conf.hasOpt(INVOICE_ARCHIVE_NAME)) {
+    } else if (invoice_archive) {
         archive();
-    } else if (m_conf.hasOpt(INVOICE_LIST_FILTERS_NAME)) {
+    } else if (invoice_list_filters) {
         list_filters();
-    } else if (m_conf.hasOpt(INVOICE_SHOW_OPTS_NAME)) {
-        show_opts();
-    } else if (m_conf.hasOpt(INVOICE_CREDIT_NAME)) {
+    } else if (invoice_show_opts) {
+        //show_opts();
+    } else if (invoice_credit) {
         credit();
-    } else if (m_conf.hasOpt(INVOICE_FACTORING_NAME)) {
+    } else if (invoice_factoring) {
         factoring();
-    } else if (m_conf.hasOpt(INVOICE_ADD_PREFIX_NAME)) {
+    } else if (invoice_add_prefix) {
         add_invoice_prefix();
-    } else if (m_conf.hasOpt(INVOICE_CREATE_INVOICE_NAME)) {
+    } else if (invoice_create) {
         create_invoice();
     }
 }
 
-void
-InvoiceClient::show_opts()
-{
-    callHelp(m_conf, no_help);
-    print_options("Invoice", getOpts(), getOptsCount());
-}
 
 void InvoiceClient::filter_reload_invoices(Fred::Invoicing::Manager *invMan, Fred::Invoicing::List *invList)
 {     
     Database::Filters::Invoice *invFilter;
     invFilter = new Database::Filters::InvoiceImpl();
 
-    if (m_conf.hasOpt(ID_NAME))
+    if (params.invoice_id.is_value_set())
         invFilter->addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
-
-    if (m_conf.hasOpt(ZONE_ID_NAME))
+                Database::ID(params.invoice_id.get_value()));
+    if (params.zone_id.is_value_set())
         invFilter->addZoneId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ZONE_ID_NAME)));
-    if (m_conf.hasOpt(ZONE_FQDN_NAME)) {
+                Database::ID(params.zone_id.get_value()));
+    if (params.zone_fqdn.is_value_set())
         invFilter->addZone().addFqdn().setValue(
-                m_conf.get<std::string>(ZONE_FQDN_NAME));
-    }
-    if (m_conf.hasOpt(INVOICE_TYPE_NAME))
+                params.zone_fqdn.get_value());
+    if (params.type.is_value_set())
         invFilter->addType().setValue(
-                m_conf.get<unsigned int>(INVOICE_TYPE_NAME));
-    if (m_conf.hasOpt(INVOICE_NUMBER_NAME))
+                params.type.get_value());
+    if (params.number.is_value_set())
         invFilter->addNumber().setValue(
-                m_conf.get<std::string>(INVOICE_NUMBER_NAME));
-
-    apply_CRDATE(invFilter);
-    apply_DATE(invFilter, INVOICE_TAXDATE_NAME, Tax);
-
-    if (m_conf.hasOpt(REGISTRAR_ID_NAME))
+                params.number.get_value());
+    if (params.crdate.is_value_set())
+            invFilter->addCreateTime().setValue(
+                    *parseDateTime(params.crdate.get_value()));
+    if (params.taxdate.is_value_set())
+            invFilter->addTaxDate().setValue(
+                    *parseDate(params.taxdate.get_value()));
+    if (params.registrar_id.is_value_set())
         invFilter->addRegistrar().addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(REGISTRAR_ID_NAME)));
-    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME))
+                Database::ID(params.registrar_id.get_value()));
+    if (params.registrar_handle.is_value_set())
         invFilter->addRegistrar().addHandle().setValue(
-                m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
-    if (m_conf.hasOpt(INVOICE_FILE_PDF_NAME)) {
-        if (m_conf.get<unsigned int>(INVOICE_FILE_PDF_NAME) == 0) {
+                params.registrar_handle.get_value());
+    if (params.invoice_file_pdf.is_value_set()) {
+        if (params.invoice_file_pdf.get_value() == 0) {
             invFilter->addFilePDF().setNULL();
         } else {
             invFilter->addFilePDF().setValue(Database::ID(
-                        m_conf.get<unsigned int>(INVOICE_FILE_PDF_NAME)));
+                    params.invoice_file_pdf.get_value()));
         }
     }
-    if (m_conf.hasOpt(INVOICE_FILE_XML_NAME)) {
-        if (m_conf.get<unsigned int>(INVOICE_FILE_XML_NAME) == 0) {
+    if (params.invoice_file_xml.is_value_set()) {
+        if (params.invoice_file_xml.get_value() == 0) {
             invFilter->addFileXML().setNULL();
         } else {
             invFilter->addFileXML().setValue(Database::ID(
-                        m_conf.get<unsigned int>(INVOICE_FILE_XML_NAME)));
+                    params.invoice_file_xml.get_value()));
         }
     }
-    if (m_conf.hasOpt(INVOICE_FILE_NAME_NAME))
+    if (params.invoice_file_name.is_value_set())
         invFilter->addFile().addName().setValue(
-                m_conf.get<std::string>(INVOICE_FILE_NAME_NAME));
+                params.invoice_file_name.get_value());
 
 
    Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
     unionFilter->addFilter(invFilter);
 
-    invList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
+    invList->setLimit(params.limit.get_value());
     invList->reload(*unionFilter);
 
     unionFilter->clear();
-    delete unionFilter;   
+    delete unionFilter;   //TODO fix
 }
 
 void
 InvoiceClient::list()
 {
-    callHelp(m_conf, list_help);
+
 
     std::auto_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
-                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
-                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
-                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
+                docgen_path.get_value(),
+                docgen_template_path.get_value(),
+                fileclient_path.get_value(),
                 m_nsAddr)
             );
 
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    CorbaClient cc(0, NULL, m_nsAddr, nameservice_context);
     MailerManager mailMan(cc.getNS());
 
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
@@ -156,17 +146,16 @@ InvoiceClient::list()
 void
 InvoiceClient::list_filters()
 {
-    callHelp(m_conf, list_help);
 
     std::auto_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
-                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
-                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
-                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
+                docgen_path.get_value(),
+                docgen_template_path.get_value(),
+                fileclient_path.get_value(),
                 m_nsAddr)
             );
 
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    CorbaClient cc(0, NULL, m_nsAddr, nameservice_context);
     MailerManager mailMan(cc.getNS());
 
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
@@ -297,29 +286,33 @@ InvoiceClient::list_filters()
 void
 InvoiceClient::archive()
 {
-    callHelp(m_conf, archive_help);
+
     std::auto_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
-                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
-                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
-                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
+                docgen_path.get_value(),
+                docgen_template_path.get_value(),
+                fileclient_path.get_value(),
                 m_nsAddr)
             );
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    CorbaClient cc(0, NULL, m_nsAddr, nameservice_context);
     MailerManager mailMan(cc.getNS());
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
             Fred::Invoicing::Manager::create(
                 docMan.get(),
                 &mailMan)
             );
-    invMan->archiveInvoices(!m_conf.hasOpt(INVOICE_DONT_SEND_NAME));
+    invMan->archiveInvoices(!invoice_dont_send);
     return;
+}
+
+long round_price(double x)
+{
+    return (x > 0.0) ? floor(x + 0.5) : ceil(x - 0.5);
 }
 
 void
 InvoiceClient::credit()
 {
-    callHelp(m_conf, credit_help);
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
@@ -332,47 +325,31 @@ InvoiceClient::credit()
     bool priceFilled = false;
     bool zoneFilled = false;
 
-    /* not supported
-    if (m_conf.hasOpt(INVOICE_ZONE_NAME_NAME)) {
-        zone = m_conf.get<std::string>(INVOICE_ZONE_NAME_NAME);
-    }
-    */
-    if (m_conf.hasOpt(INVOICE_ZONE_ID_NAME)) {
-        zoneId = m_conf.get<unsigned int>(INVOICE_ZONE_ID_NAME);
+
+    if (credit_params.zone_id.is_value_set()) {
+        zoneId = credit_params.zone_id.get_value();
         zoneFilled = true;
     }
 
-    if (m_conf.hasOpt(INVOICE_REGISTRAR_ID_NAME)) {
-        regId = m_conf.get<unsigned int>(
-                    INVOICE_REGISTRAR_ID_NAME);
+    if (credit_params.registrar_id.is_value_set()) {
+        regId = credit_params.registrar_id.get_value();
         regFilled = true;
     }
-    /*
-    if (m_conf.hasOpt(INVOICE_REGISTRAR_HANDLE_NAME)) {
-                registrar = m_conf.get<std::string>(INVOICE_REGISTRAR_HANDLE_NAME);
-        regFilled = true;
-    }
-    */
-    if (m_conf.hasOpt(INVOICE_PRICE_NAME)) {
+
+    if (credit_params.price.is_value_set()) {
         // invoice->setPrice(Database::Money(
-        price = 100 * m_conf.get<double>(INVOICE_PRICE_NAME);
+        price = round_price(100 * credit_params.price.get_value());
         priceFilled = true;
     }
 
-    if (m_conf.hasOpt(INVOICE_TAXDATE_NAME)) {
+    if (credit_params.taxdate.is_value_set()) {
         // invoice->setTaxDate(Database::Date(
-        taxDate = m_conf.get<std::string>(INVOICE_TAXDATE_NAME);
+        taxDate = credit_params.taxdate.get_value();
     } else {
         Database::Date now(Database::NOW);
         taxDate = now.to_string();
     }
 
-    /* not supported
-    if (m_conf.hasOpt(CRDATE_NAME)) {
-        invoice->setCrDate(Database::DateTime(
-                    m_conf.get<std::string>(CRDATE_NAME)));
-    }
-    */
 
     // TODO error messages are not precise for version2.3
     if (!regFilled) {
@@ -393,63 +370,12 @@ InvoiceClient::credit()
 
     (void) invMan->createDepositInvoice(taxDate, zoneId, regId, price); 
 
-    /*
-    if (invoice->save() == false) {
-        std::cerr << "Error has occured:" << std::endl;
-        std::vector<std::string> errors = invoice->getErrors();
-        for (int i = 0; i < (int)errors.size(); i++) {
-            std::cerr << errors[i] << std::endl;
-        }
-    }
-    */
 }
 
-
-/* 
- * this new crap shouldn't be used
-void
-InvoiceClient::factoring(Fred::Invoicing::Manager *man,
-        Database::ID zoneId, std::string zoneName,
-        Database::ID regId, std::string regName,
-        Database::Date toDate, Database::Date taxDate)
-{
-    std::auto_ptr<Fred::Invoicing::Invoice>
-        invoice(man->createAccountInvoice());
-    if (zoneId != Database::ID()) {
-        invoice->setZoneId(zoneId);
-    }
-    if (!zoneName.empty()) {
-        ModelZone *zone = new ModelZone();
-        zone->setFqdn(zoneName);
-        invoice->setZoneId(zone->getId());
-    }
-    if (regId != Database::ID()) {
-        invoice->setRegistrarId(regId);
-    }
-    if (!regName.empty()) {
-        ModelRegistrar *registrar = new ModelRegistrar();
-        registrar->setHandle(regName);
-        invoice->setRegistrarId(registrar->getId());
-    }
-    invoice->setToDate(toDate);
-    invoice->setTaxDate(taxDate);
-    if (!invoice->save()) {
-        std::vector<std::string> errors = invoice->getErrors();
-        if (errors.size() == 0) {
-            return;
-        }
-        std::cerr << "Error has occured:" << std::endl;
-        for (int i = 0; i < (int)errors.size(); i++) {
-            std::cerr << errors[i] << std::endl;
-        }
-    }
-}
-*/
 
 void
 InvoiceClient::factoring()
 {
-    callHelp(m_conf, factoring_help);
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
     std::auto_ptr<Fred::Registrar::Manager>
@@ -464,32 +390,21 @@ InvoiceClient::factoring()
     Database::ID registrarId;
     std::string registrarName;
 
-    if (m_conf.hasOpt(INVOICE_ZONE_NAME_NAME)) {
-        zoneName = m_conf.get<std::string>(INVOICE_ZONE_NAME_NAME);
+    if (factoring_params.zone_fqdn.is_value_set()) {
+        zoneName = factoring_params.zone_fqdn.get_value();
         zoneFilled = true;
     }
-    /* this is not supported currently
-    if (m_conf.hasOpt(INVOICE_ZONE_ID_NAME)) {
-        zoneId = Database::ID(
-                    m_conf.get<unsigned int>(INVOICE_ZONE_ID_NAME));
-        zoneFilled = true;
-    }
-    if (m_conf.hasOpt(INVOICE_REGISTRAR_ID_NAME)) {
-        registrarId = Database::ID(
-                    m_conf.get<unsigned int>(INVOICE_REGISTRAR_ID_NAME));
-        regFilled = true;
-    }
-    */
-    if (m_conf.hasOpt(INVOICE_REGISTRAR_HANDLE_NAME)) {
-        registrarName = m_conf.get<std::string>(INVOICE_REGISTRAR_HANDLE_NAME);
+
+    if (factoring_params.registrar_handle.is_value_set()) {
+        registrarName = factoring_params.registrar_handle.get_value();
         regFilled = true;
     }
     Database::Date now(Database::NOW);
     Database::Date first_this(now.get().year(), now.get().month(), 1);
     Database::Date last_prev(first_this - Database::Days(1));
 
-    if (m_conf.hasOpt(INVOICE_TODATE_NAME)) {
-        toDate = Database::Date(createDateTime(m_conf.get<std::string>(INVOICE_TODATE_NAME)));
+    if (factoring_params.todate.is_value_set()) {
+        toDate = Database::Date(createDateTime(factoring_params.todate.get_value()));
 
         if(toDate.is_special()) {
             std::cerr << "Invalid date given for ``" <<  INVOICE_TODATE_NAME << "'' " << std::endl;
@@ -499,8 +414,8 @@ InvoiceClient::factoring()
         toDate = last_prev;
     }
     
-    if (m_conf.hasOpt(INVOICE_TAXDATE_NAME)) {
-        taxDate = Database::Date(m_conf.get<std::string>(INVOICE_TAXDATE_NAME));
+    if (factoring_params.taxdate.is_value_set()) {
+        taxDate = Database::Date(factoring_params.taxdate.get_value());
 
         if(taxDate.is_special()) {
             std::cerr << "Invalid date given for ``" <<  INVOICE_TAXDATE_NAME << "'' " << std::endl;
@@ -511,8 +426,7 @@ InvoiceClient::factoring()
     }
     
     if (!zoneFilled) {
-        std::cerr << "Zone is not set, use ``"<< INVOICE_ZONE_ID_NAME << "'' or "
-            << "``" << INVOICE_ZONE_NAME_NAME << "'' to set it" << std::endl;
+        std::cerr << "Zone is not set, use ``"<< INVOICE_ZONE_NAME_NAME << "'' to set it" << std::endl;
         return;
     }
 
@@ -525,59 +439,32 @@ InvoiceClient::factoring()
         invMan->factoring( Manager::getConnectionString().c_str(), registrarName.c_str(), zoneName.c_str(), taxDate_str.c_str(), toDate_str.c_str());
     }
 
-    /*
-    if (!regFilled) {
-        Database::Filters::Registrar *regFilter;
-        regFilter = new Database::Filters::RegistrarImpl(true);
-        Database::Filters::Union *unionFilter;
-        unionFilter = new Database::Filters::Union();
-        unionFilter->addFilter(regFilter);
-        Fred::Registrar::RegistrarList::AutoPtr list( regMan->createList());
-        list->reload(*unionFilter);
-        int i = 0;
-        Fred::Registrar::Registrar *reg;
-        while (1) {
-            try {
-                reg = list->get(i);
-            } catch (...) {
-                return;
-            }
-            factoring(invMan.get(), zoneId, zoneName, reg->getId(),
-                    reg->getHandle(), toDate, taxDate);
-            i++;
-        }
-    } else {
-        factoring(invMan.get(), zoneId, zoneName, registrarId, registrarName,
-                toDate, taxDate);
-    }
-    */
 }
 
 void
 InvoiceClient::add_invoice_prefix()
 {
-    callHelp(m_conf, add_invoice_prefix_help);
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
-    unsigned int type = m_conf.get<unsigned int>(INVOICE_PREFIX_TYPE_NAME);
+    unsigned int type = prefix_params.type.get_value();
     if (type > 1) {
         std::cerr << "Type can be either 0 or 1." << std::endl;
         return;
     }
     unsigned int year;
-    if (m_conf.hasOpt(INVOICE_PREFIX_YEAR_NAME)) {
-        year = m_conf.get<unsigned int>(INVOICE_PREFIX_YEAR_NAME);
+    if (prefix_params.year.is_value_set()) {
+        year = prefix_params.year.get_value();
     } else {
         Database::Date now(Database::NOW);
         year = now.get().year();
     }
-    unsigned long long prefix = m_conf.get<unsigned long long>(INVOICE_PREFIX_PREFIX_NAME);
-    if (m_conf.hasOpt(INVOICE_ZONE_ID_NAME)) {
-        unsigned int zoneId = m_conf.get<unsigned int>(INVOICE_ZONE_ID_NAME);
+    unsigned long long prefix = prefix_params.prefix.get_value();
+    if (prefix_params.zone_id.is_value_set()) {
+        unsigned int zoneId = prefix_params.zone_id.get_value();
         invMan->insertInvoicePrefix(zoneId, type, year, prefix);
-    } else if (m_conf.hasOpt(INVOICE_ZONE_NAME_NAME)) {
-        std::string zoneName = m_conf.get<std::string>(INVOICE_ZONE_NAME_NAME);
+    } else if (prefix_params.zone_fqdn.is_value_set()) {
+        std::string zoneName = prefix_params.zone_fqdn.get_value();
         invMan->insertInvoicePrefix(zoneName, type, year, prefix);
     }
 }
@@ -585,27 +472,37 @@ InvoiceClient::add_invoice_prefix()
 void
 InvoiceClient::create_invoice()
 {
-    callHelp(m_conf, create_invoice_help);
-
     /* init file manager */
-    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    CorbaClient corba_client(0, 0, m_nsAddr, nameservice_context);
     FileManagerClient fm_client(corba_client.getNS());
     Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
     /* bank manager */
     Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
 
-    Database::ID paymentId = m_conf.get<unsigned int>(INVOICE_PAYMENT_ID_NAME);
-    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME)) {
+    Database::ID paymentId = create_params.payment_id.get_value();
+    if (create_params.registrar_handle.is_value_set()) {
         bank_manager->pairPaymentWithRegistrar(paymentId,
-                m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
+                create_params.registrar_handle.get_value());
     } else {
-        std::cerr << "You have to specify ``--"<< REGISTRAR_HANDLE_NAME << "''" << std::endl;
-
-        // std::cerr << "You have to specify ``--" << REGISTRAR_ID_NAME
-          //  << "'' or ``--" << REGISTRAR_HANDLE_NAME << "''" << std::endl;
+        std::cerr << "You have to specify  ``--registrar_handle''" << std::endl;
     }
 }
+
+/*
+const struct options *
+InvoiceClient::getOpts()
+{
+    return m_opts;
+}
+
+
+void
+InvoiceClient::show_opts()
+{
+    print_options("Invoice", getOpts(), getOptsCount());
+}
+
 
 void
 InvoiceClient::list_help()
@@ -723,7 +620,7 @@ InvoiceClient::m_opts[] = {
     add_REGISTRAR_ID,
     add_REGISTRAR_HANDLE,
     add_ZONE_ID,
-    add_ZONE_FQDN, 
+    add_ZONE_FQDN,
     add_CRDATE,
     ADDOPT(INVOICE_TYPE_NAME, TYPE_UINT, false, false),
     ADDOPT(INVOICE_VAR_SYMBOL_NAME, TYPE_STRING, false, false),
@@ -757,5 +654,5 @@ InvoiceClient::getOptsCount()
 {
     return sizeof(m_opts) / sizeof(options);
 }
-
+*/
 } // namespace Admin;

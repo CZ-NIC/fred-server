@@ -16,42 +16,32 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simple.h"
+//#include "simple.h"
 #include "commonclient.h"
 #include "fileclient.h"
 
 namespace Admin {
 
-const struct options *
-FileClient::getOpts()
-{
-    return m_opts;
-}
 
 void
 FileClient::runMethod()
 {
-    if (m_conf.hasOpt(FILE_LIST_NAME)) {
+    if (file_list) {
         list();
-    } else if (m_conf.hasOpt(FILE_SHOW_OPTS_NAME)) {
+    }/*else if (m_conf.hasOpt(FILE_SHOW_OPTS_NAME)) {
         show_opts();
-    }
+    }*/
 }
 
-void
-FileClient::show_opts()
-{
-    callHelp(m_conf, no_help);
-    print_options("File", getOpts(), getOptsCount());
-}
 
 void
 FileClient::list()
 {
-    callHelp(m_conf, list_help);
+    //callHelp(m_conf, list_help);
 
     /* init file manager */
-    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    CorbaClient corba_client(0, 0, m_nsAddr, nameservice_context//m_conf.get<std::string>(NS_CONTEXT_NAME)
+            );
     FileManagerClient fm_client(corba_client.getNS());
     Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
@@ -60,28 +50,50 @@ FileClient::list()
     Database::Filters::File *fileFilter;
     fileFilter = new Database::Filters::FileImpl(true);
 
-    apply_ID(fileFilter);
-    apply_NAME(fileFilter);
-    apply_CRDATE(fileFilter);
+    if (file_list_params.id.is_value_set()//m_conf.hasOpt("id")
+            )
+        fileFilter->addId().setValue(Database::ID(file_list_params.id.get_value()
+                ));
 
-    if (m_conf.hasOpt(FILE_PATH_NAME))
+    if (file_list_params.name_name.is_value_set()//m_conf.hasOpt("name_name")
+            )
+        fileFilter->addName().setValue(file_list_params.name_name.get_value()//m_conf.get<std::string>("name_name")
+                );
+
+    if (file_list_params.crdate.is_value_set()//m_conf.hasOpt("crdate")
+            ) {
+       fileFilter->addCreateTime().setValue(
+               *parseDateTime(file_list_params.crdate.get_value()//m_conf.get<std::string>("crdate")
+                       ));
+    }
+
+    if (file_list_params.path.is_value_set()//m_conf.hasOpt(FILE_PATH_NAME)
+            )
         fileFilter->addPath().setValue(
-                m_conf.get<std::string>(FILE_PATH_NAME));
-    if (m_conf.hasOpt(FILE_MIME_NAME))
+                file_list_params.path.get_value()//m_conf.get<std::string>(FILE_PATH_NAME)
+                );
+    if (file_list_params.mime.is_value_set()// m_conf.hasOpt(FILE_MIME_NAME)
+            )
         fileFilter->addPath().setValue(
-                m_conf.get<std::string>(FILE_MIME_NAME));
-    if (m_conf.hasOpt(FILE_SIZE_NAME))
+                file_list_params.mime.get_value()//m_conf.get<std::string>(FILE_MIME_NAME)
+                );
+    if (file_list_params.size.is_value_set()//m_conf.hasOpt(FILE_SIZE_NAME)
+            )
         fileFilter->addSize().setValue(
-                m_conf.get<int>(FILE_SIZE_NAME));
-    if (m_conf.hasOpt(FILE_TYPE_NAME))
+                file_list_params.size.get_value()//m_conf.get<int>(FILE_SIZE_NAME)
+                );
+    if (file_list_params.file_type.is_value_set()//m_conf.hasOpt(FILE_TYPE_NAME)
+            )
         fileFilter->addType().setValue(
-                m_conf.get<int>(FILE_TYPE_NAME));
+                file_list_params.file_type.get_value()//m_conf.get<int>(FILE_TYPE_NAME)
+                );
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
 
     unionFilter->addFilter(fileFilter);
-    fileList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
+    fileList->setLimit(file_list_params.limit//m_conf.get<unsigned int>(LIMIT_NAME)
+            );
 
     fileList->reload(*unionFilter);
 
@@ -107,6 +119,22 @@ FileClient::list()
     // delete fileFilter;
     delete unionFilter;
 } // FileClient::list
+
+/*
+const struct options *
+FileClient::getOpts()
+{
+    return m_opts;
+}
+
+
+void
+FileClient::show_opts()
+{
+    //callHelp(m_conf, no_help);
+    print_options("File", getOpts(), getOptsCount());
+}
+
 
 void
 FileClient::list_help()
@@ -147,7 +175,7 @@ FileClient::getOptsCount()
 {
     return sizeof(m_opts) / sizeof(options);
 }
-
+*/
 } // namespace Admin;
 
 

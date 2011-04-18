@@ -56,24 +56,67 @@
 #include "fredlib/registry.h"
 #include "baseclient.h"
 
+#include "notify_params.h"
+
 namespace Admin {
 
 class NotifyClient : public BaseClient {
 private:
     DBSharedPtr m_db;
     ccReg::EPP_var m_epp;
-    Config::Conf m_conf;
+
+    std::string nameservice_context;
+
+    optional_string docgen_path;
+    optional_string docgen_template_path;
+    optional_string fileclient_path;
+    bool restricted_handles;
+
+    bool notify_state_changes;
+    NotifyStateChangesArgs notify_state_changes_params;
+    bool notify_letters_postservis_send;
+    optional_string hpmail_config;
+    bool notify_sms_send;
+    optional_string cmdline_sms_command;
+    optional_string configfile_sms_command;
 
     static const struct options m_opts[];
 public:
     NotifyClient()
+    : restricted_handles(false)
+    , notify_state_changes(false)
+    , notify_letters_postservis_send(false)
+    , notify_sms_send(false)
     { }
     NotifyClient(
-            const std::string &connstring,
-            const std::string &nsAddr,
-            const Config::Conf &conf):
-        BaseClient(connstring, nsAddr),
-        m_conf(conf)
+            const std::string &connstring
+            , const std::string &nsAddr
+            , const std::string& _nameservice_context
+            , const optional_string& _docgen_path
+            , const optional_string& _docgen_template_path
+            , const optional_string& _fileclient_path
+            , bool _restricted_handles
+            , bool _notify_state_changes
+            , const NotifyStateChangesArgs& _notify_state_changes_params
+            , bool _notify_letters_postservis_send
+            , const optional_string& _hpmail_config
+            , bool _notify_sms_send
+            , const optional_string& _cmdline_sms_command
+            , const optional_string& _configfile_sms_command
+            )
+    : BaseClient(connstring, nsAddr)
+    , nameservice_context(_nameservice_context)
+    , docgen_path(_docgen_path)
+    , docgen_template_path(_docgen_template_path)
+    , fileclient_path(_fileclient_path)
+    , restricted_handles(_restricted_handles)
+    , notify_state_changes(_notify_state_changes)
+    , notify_state_changes_params(_notify_state_changes_params)
+    , notify_letters_postservis_send(_notify_letters_postservis_send)
+    , hpmail_config(_hpmail_config)
+    , notify_sms_send(_notify_sms_send)
+    , cmdline_sms_command(_cmdline_sms_command)
+    , configfile_sms_command(_configfile_sms_command)
     {
         m_db = connect_DB(connstring
                 , std::runtime_error("NotifyClient db connection failed"));

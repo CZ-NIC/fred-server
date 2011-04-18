@@ -52,14 +52,15 @@ noinst_HEADERS = util/util.h util/singleton.h util/time_clock.h util/settings.h 
         util/cfg/test_custom_main.h util/cfg/handle_logging_args.h \
         util/cfg/handle_registry_args.h util/cfg/config_handler_decl.h \
         util/cfg/handle_mojeid_args.h util/cfg/handle_adifd_args.h \
-        util/cfg/handle_logd_args.h util/cfg/handle_rifd_args.h
+        util/cfg/handle_logd_args.h util/cfg/handle_rifd_args.h \
+        util/cfg/command_selection_args.h util/cfg/check_args.h
 
 #former noinst_LIBRARIES
 #util/db/libmockdb.a
 
        
 noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/db/libdb.a \
-        util/conf/libconf.a src/old_utils/liboldutils.a \
+        src/old_utils/liboldutils.a \
         src/model/libmodel.a src/fredlib/libfred.a \
         src/fredlib/messages/libmessages.a src/fredlib/requests/librequests.a \
         src/fredlib/mojeid/libmojeid.a src/fredlib/banking/libbanking.a \
@@ -90,7 +91,7 @@ SERVER_TESTS = tests/test-server
 
 noinst_PROGRAMS = util/log/test-log util/types/test_money \
         util/db/test-db util/db/test-mockdb util/hp/client-hp \
-        util/hp/crc32 util/conf/test-conf src/model/test-model src/corba/test \
+        util/hp/crc32 src/model/test-model \
         $(SERVER_TESTS)
 
 util_log_test_log_SOURCES  = util/log/test-log.cc $(UTIL_LOG_SRC)
@@ -228,15 +229,6 @@ util_hp_crc32_LDFLAGS  = $(BOOST_LDFLAGS) $(AM_LDFLAGS) $(BOOST_PROGRAM_OPTIONS_
 
 #util hp
 
-util_conf_libconf_a_SOURCES = util/conf/manager.cc util/conf/conf.cc \
-         util/conf/manager.h util/conf/conf.h
-
-util_conf_test_conf_SOURCES  = util/conf/test-conf.cc
-util_conf_test_conf_LDFLAGS  = $(BOOST_LDFLAGS) $(AM_LDFLAGS) \
-        $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_THREAD_LIB) 
-util_conf_test_conf_LDADD  = util/conf/libconf.a
-
-#util conf
 #util cfg - noinst headers only
 
 src_old_utils_liboldutils_a_SOURCES = src/old_utils/dbsql.cc src/old_utils/log.cc \
@@ -496,7 +488,6 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	src/fredlib/mojeid/libmojeid.a \
 	src/fredlib/banking/libbanking.a \
     util/log/liblog.a \
-    util/conf/libconf.a \
 	util/libutil.a \
 		    src/corba/libmailer.a \
 	    src/corba/libfilemanager.a \
@@ -504,12 +495,9 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 
 sbin_PROGRAMS = src/corba/fred-rifd src/corba/fred-adifd src/corba/fred-pifd \
         src/corba/fred-logd src/corba/messages/fred-msgd \
-        src/corba/mojeid/fred-mifd src/cli_admin/fred-admin \
-        tools/logd_migration/migrate_log
+        src/corba/mojeid/fred-mifd \
+        src/cli_admin/fred-admin tools/logd_migration/migrate_log
 
-src_corba_test_SOURCES = src/corba/test-admin.cc 
-         
-src_corba_test_LDADD = $(XML2_LIBS) $(LDADD)
 
 BUILT_SOURCES = src/corba/MessagesSK.cc \
     src/corba/MojeIDSK.cc src/corba/FileManagerSK.cc src/corba/MailerSK.cc \
@@ -764,43 +752,56 @@ src_corba_mojeid_fred_mifd_LDADD = $(LIBIDN_LIBS) \
 
 #src corba mojeid
 
-src_cli_admin_fred_admin_SOURCES = src/cli_admin/simple.cc \
-         src/cli_admin/simple.h             \
+src_cli_admin_fred_admin_SOURCES = src/cli_admin/fred-admin.cc \
          src/cli_admin/commonclient.cc      \
          src/cli_admin/commonclient.h       \
-         src/cli_admin/keysetclient.cc      \
-         src/cli_admin/keysetclient.h       \
-         src/cli_admin/nssetclient.cc       \
-         src/cli_admin/nssetclient.h        \
          src/cli_admin/domainclient.cc      \
          src/cli_admin/domainclient.h       \
-         src/cli_admin/contactclient.cc     \
+         src/cli_admin/domain_params.h		\
+         src/cli_admin/domain_client_impl.h \
+         src/cli_admin/keysetclient.cc      \
+         src/cli_admin/keysetclient.h       \
+         src/cli_admin/keyset_params.h        \
+         src/cli_admin/keyset_client_impl.h \
+		 src/cli_admin/contactclient.cc     \
          src/cli_admin/contactclient.h      \
-         src/cli_admin/bankclient.cc        \
-         src/cli_admin/bankclient.h         \
+         src/cli_admin/contact_params.h     \
+         src/cli_admin/contact_client_impl.h \
          src/cli_admin/invoiceclient.cc     \
          src/cli_admin/invoiceclient.h      \
-         src/cli_admin/pollclient.cc        \
-         src/cli_admin/pollclient.h         \
-         src/cli_admin/registrarclient.cc   \
-         src/cli_admin/registrarclient.h    \
-         src/cli_admin/notifyclient.cc      \
-         src/cli_admin/notifyclient.h       \
-         src/cli_admin/objectclient.cc      \
-         src/cli_admin/objectclient.h       \
-         src/cli_admin/infobuffclient.cc    \
-         src/cli_admin/infobuffclient.h     \
-         src/cli_admin/fileclient.cc        \
-         src/cli_admin/fileclient.h         \
-         src/cli_admin/mailclient.cc        \
-         src/cli_admin/mailclient.h         \
-         src/cli_admin/publicreqclient.cc   \
-         src/cli_admin/publicreqclient.h    \
-         src/cli_admin/enumparamclient.cc   \
-         src/cli_admin/enumparamclient.h    \
-         src/cli_admin/baseclient.h
-             
-src_cli_admin_fred_admin_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
+         src/cli_admin/invoice_params.h     \
+         src/cli_admin/invoice_client_impl.h \
+         src/cli_admin/bankclient.cc     \
+         src/cli_admin/bankclient.h      \
+         src/cli_admin/bank_params.h     \
+         src/cli_admin/bank_client_impl.h \
+         src/cli_admin/pollclient.cc     \
+         src/cli_admin/pollclient.h      \
+         src/cli_admin/poll_params.h     \
+         src/cli_admin/poll_client_impl.h \
+     	src/cli_admin/registrarclient.cc   \
+         src/cli_admin/registrarclient.h   \
+         src/cli_admin/registrar_params.h \
+         src/cli_admin/registrar_client_impl.h \
+     	src/cli_admin/notifyclient.cc   \
+         src/cli_admin/notifyclient.h   \
+         src/cli_admin/notify_params.h \
+         src/cli_admin/notify_client_impl.h \
+     	src/cli_admin/enumparamclient.cc   \
+         src/cli_admin/enumparamclient.h   \
+         src/cli_admin/enumparam_params.h \
+         src/cli_admin/enumparam_client_impl.h \
+         src/cli_admin/objectclient.h   \
+         src/cli_admin/objectclient.cc   \
+         src/cli_admin/object_params.h   \
+         src/cli_admin/object_client_impl.h \
+         src/cli_admin/fileclient.h   \
+         src/cli_admin/fileclient.cc   \
+         src/cli_admin/file_params.h   \
+         src/cli_admin/file_client_impl.h 
+
+
+src_cli_admin_fred_admin_LDFLAGS = -lm $(POSTGRESQL_LDFLAGS) \
         $(BOOST_PROGRAM_OPTIONS_LIB) \
         $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) \
@@ -810,8 +811,9 @@ src_cli_admin_fred_admin_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
         $(LIBIDN_LIBS) \
         $(BOOST_THREAD_LIB) \
         $(BOOST_SERIALIZATION_LIB)
-        
-src_cli_admin_fred_admin_LDADD = src/fredlib/libfred.a \
+
+src_cli_admin_fred_admin_LDADD = \
+        src/fredlib/libfred.a \
         src/model/libmodel.a \
         src/fredlib/banking/libbanking.a \
         src/corba/libcorba.a \
@@ -827,7 +829,7 @@ src_cli_admin_fred_admin_LDADD = src/fredlib/libfred.a \
         src/fredlib/requests/librequests.a \
         src/fredlib/mojeid/libmojeid.a \
         util/libutil.a util/log/liblog.a util/types/libtypes.a util/db/libdb.a \
-        util/conf/libconf.a src/old_utils/liboldutils.a \
+        src/old_utils/liboldutils.a \
         util/hp/libhp.a \
         src/corba/libmailer.a \
 	    src/corba/libfilemanager.a
@@ -902,7 +904,6 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	src/fredlib/mojeid/libmojeid.a \
 	src/fredlib/banking/libbanking.a \
     util/log/liblog.a \
-    util/conf/libconf.a \
 	util/libutil.a \
 		src/corba/libcorbamessages.a \
 			src/corba/libcorbamessages.a \

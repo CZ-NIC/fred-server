@@ -36,6 +36,8 @@
 #include "corba/admin/admin_impl.h"
 #include "baseclient.h"
 
+#include "enumparam_params.h"
+
 
 namespace Admin
 {
@@ -43,19 +45,25 @@ namespace Admin
 class EnumParamClient : public BaseClient {
 private:
     ccReg::EPP_var m_epp;
-    Config::Conf m_conf;
+
+    bool enum_parameter_change_;
+    EnumParameterChangeArgs enum_parameter_change_params;
 
     static const struct options m_opts[];
 public:
     EnumParamClient()
+    : enum_parameter_change_(false)
     { }
     EnumParamClient(
-            const std::string &connstring,
-            const std::string &nsAddr,
-            const Config::Conf &conf):
-        BaseClient(connstring, nsAddr),
-        m_conf(conf)
-    { }
+            const std::string &connstring
+            , const std::string &nsAddr
+            , bool _enum_parameter_change
+            , const EnumParameterChangeArgs& _enum_parameter_change_params
+            )
+        : BaseClient(connstring, nsAddr)
+        , enum_parameter_change_(_enum_parameter_change)
+        , enum_parameter_change_params(_enum_parameter_change_params)
+        { }
     ~EnumParamClient()
     { }
 

@@ -348,3 +348,57 @@ parseDateTime(std::string str)
     return ret;
 }
 
+
+epp_client_login_return epp_client_login( DBSharedPtr db
+        , const std::string& nsAddr
+        , const std::string& nameservice_context
+        , const std::string& login_registrar)
+{
+    epp_client_login_return ret;
+
+    CorbaClient cc(0, 0, nsAddr.c_str(),
+            nameservice_context);
+    CORBA::Object_var o = cc.getNS()->resolve("EPP");
+
+    ret.epp = ccReg::EPP::_narrow(o);
+    ret.clientId = 0;
+
+    std::string get_registrar_query;
+    if (!login_registrar.empty()) {
+        std::stringstream sss;
+        sss << "SELECT r.handle, ra.cert, ra.password "
+            "FROM registrar r, registraracl ra "
+            "WHERE r.id=ra.registrarid AND r.handle='"
+            << login_registrar
+            << "' LIMIT 1";
+        get_registrar_query = sss.str();
+    } else {
+        get_registrar_query = "SELECT r.handle,ra.cert,ra.password "
+            "FROM registrar r, registraracl ra "
+            "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1";
+    }
+
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
+
+    if (!db->ExecSelect(get_registrar_query.c_str())) {
+        std::cout << "error in exec" << std::endl;
+        throw std::runtime_error("epp_client_login: Error - error in exec");
+    }
+    if (!db->GetSelectRows()) {
+        std::cout << "No result" << std::endl;
+        throw std::runtime_error("epp_client_login: Error - No result");
+    }
+    std::string gg_handle = db->GetFieldValue(0,0);
+    std::string gg_cert = db->GetFieldValue(0,1);
+    std::string gg_password = db->GetFieldValue(0,2);
+
+    ret.r = ret.epp->ClientLogin(gg_handle.c_str(),gg_password.c_str(),"",
+        "system_delete_login","<system_delete_login/>",
+        ret.clientId,gg_cert.c_str(),ccReg::EN);
+    if (ret.r->code != 1000 || !ret.clientId) {
+        std::cerr << "Cannot connect: " << ret.r->code << std::endl;
+        throw std::runtime_error("epp_client_login: Error - Cannot connect: "
+                + boost::lexical_cast<std::string>(ret.r->code));
+    }
+    return ret;
+}

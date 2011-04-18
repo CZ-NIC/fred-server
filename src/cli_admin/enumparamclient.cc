@@ -16,7 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simple.h"
+//#include "simple.h"
 #include "commonclient.h"
 #include "enumparamclient.h"
 #include "fredlib/db_settings.h"
@@ -28,34 +28,24 @@
 namespace Admin
 {
 
-const struct options *
-EnumParamClient::getOpts()
-{
-    return m_opts;
-}
 
 void
 EnumParamClient::runMethod()
 {
-    if (m_conf.hasOpt(ENUMPARAM_ENUM_PARAMETER_CHANGE)) {
+    if (enum_parameter_change_//m_conf.hasOpt(ENUMPARAM_ENUM_PARAMETER_CHANGE)
+            ) {
         enum_parameter_change();
     }
 }
 
-void
-EnumParamClient::show_opts()
-{
-    callHelp(m_conf, no_help);
-    print_options("EnumParam", getOpts(), getOptsCount());
-}
 
 void
 EnumParamClient::enum_parameter_change()
 {
-    callHelp(m_conf, enum_parameter_change_help);
+    //callHelp(m_conf, enum_parameter_change_help);
 
-    std::string name = m_conf.get<std::string>(ENUMPARAM_NAME);
-    std::string value = m_conf.get<std::string>(ENUMPARAM_VALUE);
+    std::string name = enum_parameter_change_params.parameter_name;//m_conf.get<std::string>(ENUMPARAM_NAME);
+    std::string value = enum_parameter_change_params.parameter_value;//m_conf.get<std::string>(ENUMPARAM_VALUE);
 
     try {
         Database::Connection conn = Database::Manager::acquire();
@@ -85,6 +75,22 @@ EnumParamClient::enum_parameter_change()
     }
 
 }
+
+/*
+const struct options *
+EnumParamClient::getOpts()
+{
+    return m_opts;
+}
+
+
+void
+EnumParamClient::show_opts()
+{
+    //callHelp(m_conf, no_help);
+    print_options("EnumParam", getOpts(), getOptsCount());
+}
+
 void
 EnumParamClient::enum_parameter_change_help()
 {
@@ -114,6 +120,6 @@ EnumParamClient::getOptsCount()
     return sizeof(m_opts) / sizeof(options);
 }
 
-
+*/
 
 }; // namespace Admin

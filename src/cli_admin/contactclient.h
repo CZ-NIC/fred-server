@@ -26,6 +26,8 @@
 #include "old_utils/dbsql.h"
 #include "baseclient.h"
 
+#include "contact_params.h"
+
 #define CONTACT_SHOW_OPTS_NAME          "contact_show_opts"
 #define CONTACT_SHOW_OPTS_NAME_DESC     "show all contact command line options"
 #define CONTACT_INFO_NAME               "contact_info"
@@ -41,26 +43,39 @@ namespace Admin {
 
 class ContactClient : public BaseClient {
 private:
-    Config::Conf m_conf;
     DBSharedPtr m_db;
     ccReg::EPP_var m_epp;
+    std::string nameservice_context;
+    bool contact_list;
+    optional_string contact_info;
+    bool contact_show_opts;
+    ContactListArgs params;
 
     static const struct options m_opts[];
 public:
     ContactClient()
+    : contact_list(false)
+    , contact_show_opts(false)
     { }
     ContactClient(
-            const std::string &connstring,
-            const std::string &nsAddr,
-            const Config::Conf &conf):
-        BaseClient(connstring, nsAddr),
-        m_conf(conf)
+            const std::string &connstring
+            , const std::string &nsAddr
+            , const std::string& _nameservice_context
+            , bool _contact_list
+            , const optional_string& _contact_info
+            , bool _contact_show_opts
+            , const ContactListArgs& _params
+            )
+    : BaseClient(connstring, nsAddr)
+    , nameservice_context(_nameservice_context)
+    , contact_list(_contact_list)
+    , contact_info(_contact_info)
+    , contact_show_opts(_contact_show_opts)
+    , params(_params)
     {
         m_db = connect_DB(connstring
                 , std::runtime_error("ContactClient db connection failed"));
     }
-    ~ContactClient()
-    { }
 
     static const struct options *getOpts();
     static int getOptsCount();

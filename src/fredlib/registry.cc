@@ -364,10 +364,17 @@ public:
     return &statusList[idx];
   }
 
-  virtual void updateObjectStates(unsigned long long _id) const throw (SQL_ERROR) {
+  virtual void updateObjectStates(unsigned long long _id) //const throw (SQL_ERROR)
+  {
+      Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ManagerImpl::updateObjectStates _id: ")
+       + boost::lexical_cast<std::string>(_id));
+
     TRACE("[CALL] Fred::Manager::updateObjectStates()");
     std::stringstream sql;
     sql << "SELECT update_object_states(" << _id << ")";
+    Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ManagerImpl::updateObjectStates sql: ")
+     + sql.str());
+
     if (!db->ExecSelect(sql.str().c_str())) {
       LOGGER(PACKAGE).error("updateObjectStates(): throwing SQL_ERROR");
       throw SQL_ERROR();

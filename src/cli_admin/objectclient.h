@@ -60,7 +60,10 @@
 #include "old_utils/dbsql.h"
 #include "fredlib/registry.h"
 #include "baseclient.h"
+#include "commonclient.h"
 //#include "corba/mailer_manager.h"
+
+#include "object_params.h"
 
 namespace Admin {
 
@@ -68,20 +71,65 @@ class ObjectClient : public BaseClient {
 private:
     DBSharedPtr m_db;
     ccReg::EPP_var m_epp;
-    Config::Conf m_conf;
+
+    std::string nameservice_context;
+    optional_string docgen_path;
+    optional_string docgen_template_path;
+    optional_string fileclient_path;
+    bool restricted_handles;
+    unsigned long long docgen_domain_count_limit;
+
+    bool object_new_state_request;
+    ObjectNewStateRequestArgs object_new_state_request_params;
+    bool object_update_states;
+    ObjectUpdateStatesArgs object_update_states_params;
+    bool object_regular_procedure;
+    ObjectRegularProcedureArgs object_regular_procedure_params;
+    DeleteObjectsArgs delete_objects_params;
+
     int createObjectStateRequest(Fred::TID object, unsigned state);
     int deleteObjects(const std::string &typeList, CorbaClient &cc);
 
     static const struct options m_opts[];
 public:
     ObjectClient()
+    : restricted_handles(false)
+    , docgen_domain_count_limit(0)
+    , object_new_state_request(false)
+    , object_update_states(false)
+    , object_regular_procedure(false)
     { }
     ObjectClient(
-            const std::string &connstring,
-            const std::string &nsAddr,
-            const Config::Conf &conf):
-        BaseClient(connstring, nsAddr),
-        m_conf(conf)
+            const std::string &connstring
+            , const std::string &nsAddr
+            , const std::string& _nameservice_context
+            , const optional_string& _docgen_path
+            , const optional_string& _docgen_template_path
+            , const optional_string& _fileclient_path
+            , bool _restricted_handles
+            , const unsigned long long _docgen_domain_count_limit
+            , const bool _object_new_state_request
+            , const ObjectNewStateRequestArgs& _object_new_state_request_params
+            , const bool _object_update_states
+            , const ObjectUpdateStatesArgs& _object_update_states_params
+            , const bool _object_regular_procedure
+            , const ObjectRegularProcedureArgs& _object_regular_procedure_params
+            , const DeleteObjectsArgs& _delete_objects_params
+            )
+    : BaseClient(connstring, nsAddr)
+    , nameservice_context(_nameservice_context)
+    , docgen_path(_docgen_path)
+    , docgen_template_path(_docgen_template_path)
+    , fileclient_path(_fileclient_path)
+    , restricted_handles(_restricted_handles)
+    , docgen_domain_count_limit(_docgen_domain_count_limit)
+    , object_new_state_request(_object_new_state_request)
+    , object_new_state_request_params(_object_new_state_request_params)
+    , object_update_states(_object_update_states)
+    , object_update_states_params(_object_update_states_params)
+    , object_regular_procedure(_object_regular_procedure)
+    , object_regular_procedure_params(_object_regular_procedure_params)
+    , delete_objects_params(_delete_objects_params)
     {
         m_db = connect_DB(connstring
                 , std::runtime_error("ObjectClient db connection failed"));

@@ -22,13 +22,15 @@ public:
             const std::string &_account_number,
             const std::string &_bank_code,
             const std::string &_zone,
-            const std::string &_account_name) throw (std::runtime_error) = 0;
+            const std::string &_account_name) //throw (std::runtime_error)
+                = 0;
 
     virtual void importStatementXml(
             std::istream &_in,
             const std::string &_file_path,
             const std::string &_file_mime,
-            const bool &_generate_invoices = false) throw (std::runtime_error) = 0;
+            const bool &_generate_invoices = false) //throw (std::runtime_error)
+                = 0;
 
     virtual bool pairPaymentWithStatement(
             const Database::ID &payment,

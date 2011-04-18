@@ -16,7 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simple.h"
+//#include "simple.h"
 #include "commonclient.h"
 #include "domainclient.h"
 #include "fredlib/registry.h"
@@ -26,37 +26,32 @@
 
 namespace Admin {
 
-const struct options *
-DomainClient::getOpts()
-{
-    return m_opts;
-}
 
 void
 DomainClient::runMethod()
 {
-    if (m_conf.hasOpt(DOMAIN_LIST_PLAIN_NAME)) {
+    if (domain_list_plain_)
+    {
         domain_list_plain();
-    } else if (m_conf.hasOpt(DOMAIN_INFO_NAME)) {
+    }
+        else if (domain_info_.is_value_set())
+    {
         domain_info();
-    } else if (m_conf.hasOpt(DOMAIN_LIST_NAME)) {
+    }
+        else if (domain_list_)
+    {
         domain_list();
-    } else if (m_conf.hasOpt(DOMAIN_SHOW_OPTS_NAME)) {
-        show_opts();
+    }
+        else if (domain_show_opts_)
+    {
+        //show_opts();
     }
 }
 
-void
-DomainClient::show_opts()
-{
-    callHelp(m_conf, no_help);
-    print_options("Domain", getOpts(), getOptsCount());
-}
 
 void
 DomainClient::domain_list()
 {
-    callHelp(m_conf, list_help);
     std::auto_ptr<Fred::Zone::Manager> zoneMan(
             Fred::Zone::Manager::create());
 
@@ -68,43 +63,58 @@ DomainClient::domain_list()
     Database::Filters::Domain *domFilter;
     domFilter = new Database::Filters::DomainHistoryImpl();
 
-    apply_ID(domFilter);
-    apply_FQDN(domFilter);
-    apply_HANDLE(domFilter);
-    apply_NSSET_ID(domFilter);
-    apply_NSSET_HANDLE(domFilter);
-    apply_ANY_NSSET(domFilter);
-    apply_KEYSET_ID(domFilter);
-    apply_KEYSET_HANDLE(domFilter);
-    apply_ANY_KEYSET(domFilter);
-    apply_ZONE_ID(domFilter);
-    apply_REGISTRANT_ID(domFilter);
-    apply_REGISTRANT_HANDLE(domFilter);
-    apply_REGISTRANT_NAME(domFilter);
-    apply_CRDATE(domFilter);
-    apply_DELDATE(domFilter);
-    apply_TRANSDATE(domFilter);
-    apply_UPDATE(domFilter);
-
-    if (m_conf.hasOpt(ADMIN_ID_NAME))
-        domFilter->addAdminContact().addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ADMIN_ID_NAME)));
-    if (m_conf.hasOpt(ADMIN_HANDLE_NAME))
-        domFilter->addAdminContact().addHandle().setValue(
-                m_conf.get<std::string>(ADMIN_HANDLE_NAME));
-    if (m_conf.hasOpt(ADMIN_NAME_NAME))
-        domFilter->addAdminContact().addName().setValue(
-                m_conf.get<std::string>(ADMIN_NAME_NAME));
-
-    apply_DATE(domFilter, DOMAIN_OUT_DATE_NAME, OutZone);
-    apply_DATE(domFilter, DOMAIN_EXP_DATE_NAME, Expiration);
-    apply_DATE(domFilter, DOMAIN_CANC_DATE_NAME, Cancel);
+    if (domain_id_.is_value_set())
+        domFilter->addId().setValue(Database::ID(domain_id_.get_value()));
+    if (fqdn_.is_value_set())
+        domFilter->addFQDN().setValue(fqdn_.get_value());
+    if (domain_handle_.is_value_set())
+        domFilter->addHandle().setValue(domain_handle_.get_value());
+    if (nsset_id_.is_value_set())
+        domFilter->addNSSet().addId().setValue(Database::ID(nsset_id_.get_value()));
+    if (nsset_handle_.is_value_set())
+        domFilter->addNSSet().addHandle().setValue(nsset_handle_.get_value());
+    if (any_nsset_) domFilter->addNSSet();
+    if (keyset_id_.is_value_set())
+        domFilter->addKeySet().addId().setValue(Database::ID(keyset_id_.get_value()));
+    if (keyset_handle_.is_value_set())
+        domFilter->addKeySet().addHandle().setValue(keyset_handle_.get_value());
+    if (any_keyset_) domFilter->addKeySet();
+    if (zone_id_.is_value_set())
+        domFilter->addZoneId().setValue(Database::ID(zone_id_.get_value()));
+    if (registrant_id_.is_value_set())
+        domFilter->addRegistrant().addId().setValue(Database::ID(registrant_id_.get_value()));
+    if (registrant_handle_.is_value_set())
+        domFilter->addRegistrant().addHandle().setValue(registrant_handle_.get_value());
+    if (registrant_name_.is_value_set())
+        domFilter->addRegistrant().addName().setValue(registrant_name_.get_value());
+    if (crdate_.is_value_set())
+        domFilter->addCreateTime().setValue(*parseDateTime(crdate_.get_value()));
+    if (deldate_.is_value_set())
+        domFilter->addDeleteTime().setValue(*parseDateTime(deldate_.get_value()));
+    if (transdate_.is_value_set())
+        domFilter->addTransferTime().setValue(*parseDateTime(transdate_.get_value()));
+    if (update_.is_value_set())
+        domFilter->addUpdateTime().setValue(*parseDateTime(update_.get_value()));
+    if (admin_id_.is_value_set())
+        domFilter->addAdminContact().addId().setValue(Database::ID(admin_id_.get_value()));
+    if (admin_handle_.is_value_set())
+        domFilter->addAdminContact().addHandle().setValue(admin_handle_.get_value());
+    if (admin_name_.is_value_set())
+        domFilter->addAdminContact().addName().setValue(admin_name_.get_value());
+    if (out_zone_date_.is_value_set())
+        domFilter->addOutZoneDate().setValue(*parseDate(out_zone_date_.get_value()));
+    if (exp_date_.is_value_set())
+        domFilter->addExpirationDate().setValue(*parseDate(exp_date_.get_value()));
+    if (cancel_date_.is_value_set())
+        domFilter->addCancelDate().setValue(*parseDate(cancel_date_.get_value()));
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
     unionFilter->addFilter(domFilter);
 
-    apply_LIMIT(domList);
+    if(limit_.is_value_set())
+        domList->setLimit(limit_.get_value());
+
     domList->reload(*unionFilter);
 
     std::cout << "<objects>\n";
@@ -135,7 +145,7 @@ DomainClient::domain_list()
                 << "\t\t\t<id>" << domain->getAdminIdByIdx(j) << "</id>\n"
                 << "\t\t\t<handle>" << domain->getAdminHandleByIdx(j) << "</handle>\n"
                 << "\t\t</admin>\n";
-        if (m_conf.hasOpt(FULL_LIST_NAME)) {
+        if (full_list_) {
             std::cout
                 << "\t\t<exp_date>" << domain->getExpirationDate() << "</exp_date>\n"
                 << "\t\t<val_ex_date>" << domain->getValExDate() << "</val_ex_date>\n"
@@ -182,32 +192,46 @@ DomainClient::domain_list()
 void
 DomainClient::domain_info()
 {
-    callHelp(m_conf, no_help);
-    std::string name = m_conf.get<std::string>(DOMAIN_INFO_NAME);
+    std::string name = domain_info_.is_value_set()
+                        ? domain_info_.get_value()
+                        : "";
 
-    CLIENT_LOGIN;
+    epp_client_login_return epp_login = epp_client_login( m_db
+            , m_nsAddr
+            , nameservice_context_
+            , login_registrar_.is_value_set()
+                ? login_registrar_.get_value()
+                : "");
+
     std::string cltrid;
     std::string xml;
     xml = "<fqdn>" + name + "</fqdn>";
     cltrid = "info_keyset";
 
     ccReg::Domain *k = new ccReg::Domain;
-    epp->DomainInfo(name.c_str(), k, clientId, cltrid.c_str(), xml.c_str());
+    epp_login.epp->DomainInfo(name.c_str(), k, epp_login.clientId, cltrid.c_str(), xml.c_str());
 
     std::cout << k->name << std::endl;
     std::cout << k->AuthInfoPw << std::endl;
     std::cout << k->ROID << std::endl;
     std::cout << k->keyset << std::endl;
 
-    CLIENT_LOGOUT;
+    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",                      \
+                "<system_delete_logout/>");
     return;
 }
+
 void
 DomainClient::domain_list_plain()
 {
-    callHelp(m_conf, no_help);
-    CLIENT_LOGIN;
-    std::string name = m_conf.get<std::string>(DOMAIN_LIST_PLAIN_NAME).c_str();
+    epp_client_login_return epp_login = epp_client_login( m_db
+            , m_nsAddr
+            , nameservice_context_
+            , login_registrar_.is_value_set()
+                ? login_registrar_.get_value()
+                : "");
+
+    std::string name = "";//option domain_list_plain have no argument
     std::string cltrid;
     std::string xml;
     xml = "<fqdn>" + name + "</fqdn>";
@@ -215,14 +239,31 @@ DomainClient::domain_list_plain()
 
     ccReg::Lists *k;
 
-    r = epp->DomainList(k, clientId, cltrid.c_str(), xml.c_str());
+    epp_login.r = epp_login.epp->DomainList(k, epp_login.clientId, cltrid.c_str(), xml.c_str());
 
     for (int i = 0; i < (int)k->length(); i++)
         std::cout << (*k)[i] << std::endl;
 
-    CLIENT_LOGOUT;
+    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
+                "<system_delete_logout/>");
     return;
 }
+
+/*
+
+ const struct options *
+DomainClient::getOpts()
+{
+    return m_opts;
+}
+
+
+void
+DomainClient::show_opts()
+{
+    print_options("Domain", getOpts(), getOptsCount());
+}
+
 
 void
 DomainClient::list_help()
@@ -302,4 +343,5 @@ DomainClient::getOptsCount()
 {
     return sizeof(m_opts) / sizeof(options);
 }
+*/
 } // namespace Admin;

@@ -15,5 +15,18 @@ const typename T::mapped_type& map_at(
     return it->second;
 }
 
+template<typename CONTAINER, class EXCEPTION>
+const typename CONTAINER::mapped_type& map_at_ex(
+        const CONTAINER &_container
+        , const typename CONTAINER::key_type &_key
+        ,  EXCEPTION ex)//exception to throw when _key not fond in _container
+{
+    typename CONTAINER::const_iterator it;
+    if ((it = _container.find(_key)) == _container.end()) {
+        throw ex;
+    }
+    return it->second;
+}
+
 
 #endif /*MAP_AT_H_*/

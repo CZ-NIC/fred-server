@@ -22,10 +22,17 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <stdexcept>
+#include <string>
+
+#include <boost/lexical_cast.hpp>
 
 #include "corba/nameservice.h"
 #include "types/datetime_interval.h"
 #include "types/date_interval.h"
+#include "old_utils/dbsql.h"
+
+#include <corba/EPP.hh>
 
 extern const char *corbaOpts[][2];
 extern const char g_prog_name[];
@@ -67,5 +74,17 @@ Database::DateTimeInterval *parseDateTime(std::string str);
 void print_version();
 void print_moo();
 void help_dates();
+
+struct epp_client_login_return
+{
+    ccReg::EPP_var epp;
+    CORBA::Long clientId;
+    ccReg::Response_var r;
+};
+
+epp_client_login_return epp_client_login( DBSharedPtr db
+        , const std::string& nsAddr
+        , const std::string& nameservice_context
+        , const std::string& login_registrar);
 
 #endif // _COMMONCLIENT_H_

@@ -106,6 +106,13 @@ public:
     const std::string& get_nameservice_context()
         {return HandleCorbaNameServiceArgs::nameservice_context;}
 
+    std::string get_nameservice_host_port()
+        {
+            return get_nameservice_host()
+                +":"+boost::lexical_cast<std::string>(get_nameservice_port());
+        }
+
+
 };//class HandleCorbaNameServiceArgsGrp
 
 #endif //HANDLE_CORBANAMESERVICE_ARGS_H_

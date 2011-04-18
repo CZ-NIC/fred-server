@@ -210,10 +210,13 @@ public:
                             const std::string &_file_path,
                             const std::string &_file_mime,
                             const bool &_generate_invoices = false)
-         throw (std::runtime_error)
+         //throw (std::runtime_error)
     {
         TRACE("[CALL] Fred::Banking::Manager::importStatementXml(...)");
         Logging::Context ctx("bank xml import");
+
+
+
         try {
             /* load stream to string */
             _in.seekg(0, std::ios::beg);
@@ -423,7 +426,7 @@ public:
                             const std::string &_bank_code,
                             const std::string &_zone,
                             const std::string &_account_name)
-        throw (std::runtime_error)
+        //throw (std::runtime_error)
     {
         TRACE("[CALL] Fred::Banking::Manager::insertBankAccount(zone_fqdn, ...)");
 

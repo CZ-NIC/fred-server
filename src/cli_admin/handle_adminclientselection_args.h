@@ -33,157 +33,131 @@
 
 #include "util/cfg/faked_args.h"
 #include "util/cfg/handle_args.h"
-
-/**
- * \class HandleAdminClientSelectionArgsGrp
- * \brief admin client selection options handler
- */
-class HandleAdminClientSelectionArgsGrp : public HandleGrpArgs
-{
-public:
-    std::string selected_command;
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("Admin client command selection")));
-        cfg_opts->add_options()
-                ("cmd", boost::program_options
-                     ::value<std::string>()
-                          , "client command selection is required, possible arg values are: domain_list, keyset_list, contact_list")
-                ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-
-        selected_command = (vm.count("cmd") == 0
-                        ? std::string("") : vm["cmd"].as<std::string>());
-
-        //modify option_group_index according to selected_client
-        if (selected_command.compare("domain_list") == 0)
-            option_group_index = 0;
-        else if (selected_command.compare("keyset_list") == 0)
-            option_group_index = 1;
-        else if (selected_command.compare("contact_list") == 0)
-            option_group_index = 2;
-        else
-            throw std::runtime_error(
-                    "HandleAdminClientSelectionArgsGrp: no client command selected, use option: --cmd=arg");
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientSelectionArgsGrp
-
-typedef struct {std::string value; bool is_value_set;} optional_string;
-typedef struct {unsigned long long value; bool is_value_set;} optional_id;
+#include "util/types/optional.h"
+#include "util/types/optional_from_program_options.h"
+#include "util/cfg/command_selection_args.h"
+#include "util/cfg/validate_args.h"
+#include "domain_params.h"
+#include "keyset_params.h"
+#include "contact_params.h"
+#include "invoice_params.h"
+#include "bank_params.h"
+#include "poll_params.h"
+#include "registrar_params.h"
+#include "notify_params.h"
+#include "enumparam_params.h"
+#include "object_params.h"
+#include "file_params.h"
 
 /**
  * \class HandleAdminClientDomainListArgsGrp
  * \brief admin client domain_list options handler
  */
-class HandleAdminClientDomainListArgsGrp : public HandleGrpArgs
+class HandleAdminClientDomainListArgsGrp : public HandleCommandGrpArgs
 {
 public:
-    optional_id domain_id;
-    optional_string fqdn;
-    optional_string domain_handle;
-    optional_id nsset_id;
-    optional_string nsset_handle;
-    bool any_nsset;
-    optional_id keyset_id;
-    optional_string keyset_handle;
-    bool any_keyset;
-    optional_id zone_id;
-    optional_id registrant_id;
-    optional_string registrant_handle;
-    optional_string registrant_name;
-    optional_id admin_id;
-    optional_string admin_handle;
-    optional_string admin_name;
-    optional_id registrar_id;
-    optional_string registrar_handle;
-    optional_string registrar_name;
-    optional_string crdate;
-    optional_string deldate;
-    optional_string update;
-    optional_string transdate;
-    bool full_list;
+    DomainListArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("domain_list");
+    }
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("Admin client command domain_list options")));
+                        std::string("domain_list options")));
         cfg_opts->add_options()
+            ("domain_list", "list of all domains (via filters)")
+            ("login_registrar", boost::program_options
+                    ::value<Checked::string>()->notifier(save_string(params.login_registrar))
+                ,"login registrar handle")
             ("id", boost::program_options
-                 ::value<unsigned long long>()
+                 ::value<Checked::id>()->notifier(save_id(params.domain_id))
                       , "domain id")
             ("fqdn", boost::program_options
-               ::value<std::string>()
+               ::value<Checked::string>()->notifier(save_string(params.fqdn))
                 ,"fully qualified domain name is domain object handle")
             ("handle", boost::program_options
-                 ::value<std::string>()
+                 ::value<Checked::string>()->notifier(save_string(params.domain_handle))
                   ,"domain object handle is fully qualified domain name (fqdn)")
             ("nsset_id", boost::program_options
-             ::value<unsigned long long>()
+             ::value<Checked::id>()->notifier(save_id(params.nsset_id))
                   , "nsset id")
             ("nsset_handle", boost::program_options
-            ::value<std::string>()
+            ::value<Checked::string>()->notifier(save_string(params.nsset_handle))
                 , "nsset handle")
-            ("any_nsset", "any nsset")
+            ("any_nsset",  boost::program_options
+                    ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.any_nsset))
+                     ,"any nsset")
             ("keyset_id", boost::program_options
-               ::value<unsigned long long>()
+               ::value<Checked::id>()->notifier(save_id(params.keyset_id))
                     , "keyset id")
             ("keyset_handle", boost::program_options
-            ::value<std::string>()
+            ::value<Checked::string>()->notifier(save_string(params.keyset_handle))
                 , "keyset handle")
-            ("any_keyset", "any keyset")
+            ("any_keyset", boost::program_options
+                    ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.any_keyset)) ,"any keyset")
             ("zone_id", boost::program_options
-               ::value<unsigned long long>()
+               ::value<Checked::id>()->notifier(save_id(params.zone_id))
                     , "zone id")
             ("registrant_id", boost::program_options
-               ::value<unsigned long long>()
+               ::value<Checked::id>()->notifier(save_id(params.registrant_id))
                     , "registrant id")
             ("registrant_handle", boost::program_options
-                ::value<std::string>()
+                ::value<Checked::string>()->notifier(save_string(params.registrant_handle))
                 , "registrant handle")
             ("registrant_name", boost::program_options
-                ::value<std::string>()
+                ::value<Checked::string>()->notifier(save_string(params.registrant_name))
                 , "registrant name")
             ("admin_id", boost::program_options
-               ::value<unsigned long long>()
+               ::value<Checked::id>()->notifier(save_id(params.admin_id))
                     , "admin id")
             ("admin_handle", boost::program_options
-                ::value<std::string>()
+                ::value<Checked::string>()->notifier(save_string(params.admin_handle))
                 , "admin handle")
             ("admin_name", boost::program_options
-                ::value<std::string>()
+                ::value<Checked::string>()->notifier(save_string(params.admin_name))
                 , "admin name")
             ("registrar_id", boost::program_options
-               ::value<unsigned long long>()
+               ::value<Checked::id>()->notifier(save_id(params.registrar_id))
                     , "registrar id")
             ("registrar_handle", boost::program_options
-                ::value<std::string>()
+                ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
                 , "registrar handle")
             ("registrar_name", boost::program_options
-                ::value<std::string>()
+                ::value<Checked::string>()->notifier(save_string(params.registrar_name))
                 , "registrar name")
             ("crdate", boost::program_options
-                ::value<std::string>()
+                ::value<Checked::string>()->notifier(save_string(params.crdate))
                 , "create date, arg format viz --help_dates")
             ("deldate", boost::program_options
-                ::value<std::string>()
+                ::value<Checked::string>()->notifier(save_string(params.deldate))
                 , "delete date, arg format viz --help_dates")
+            ("update", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.update))
+                , "update date, arg format viz --help_dates")
             ("transdate", boost::program_options
-                ::value<std::string>()
+                ::value<Checked::string>()->notifier(save_string(params.transdate))
                 , "transfer date, arg format viz --help_dates")
-            ("full_list", "full list")
+            ("full_list", boost::program_options
+                    ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.full_list))
+                     , "full list")
+            /* invisible options
+            ("out_zone_date", boost::program_options
+                ::value<Checked::string>()
+                , "out zone date, arg format viz --help_dates")
+            ("exp_date", boost::program_options
+                ::value<Checked::string>()
+                , "expiration date, arg format viz --help_dates")
+            ("cancel_date", boost::program_options
+                ::value<Checked::string>()
+                , "cancel date, arg format viz --help_dates")
+            invisible options */
+            ("limit", boost::program_options
+               ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.limit))
+                    , "limit")
             ;
         return cfg_opts;
     }//get_options_description
@@ -192,76 +166,102 @@ public:
     {
         boost::program_options::variables_map vm;
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
-
-        if((domain_id.is_value_set = vm.count("id")))
-            domain_id.value = vm["id"].as<unsigned long long>();
-        if((fqdn.is_value_set = vm.count("fqdn")))
-            fqdn.value = vm["fqdn"].as<std::string>();
-        if((domain_handle.is_value_set = vm.count("handle")))
-            domain_handle.value = vm["handle"].as<std::string>();
-        if((nsset_id.is_value_set = vm.count("nsset_id")))
-            nsset_id.value = vm["nsset_id"].as<unsigned long long>();
-        if((nsset_handle.is_value_set = vm.count("nsset_handle")))
-            nsset_handle.value = vm["nsset_handle"].as<std::string>();
-        any_nsset = vm.count("any_nsset");
-        if((keyset_id.is_value_set = vm.count("keyset_id")))
-            keyset_id.value = vm["keyset_id"].as<unsigned long long>();
-        if((keyset_handle.is_value_set = vm.count("keyset_handle")))
-            keyset_handle.value = vm["keyset_handle"].as<std::string>();
-        any_keyset = vm.count("any_keyset");
-        if((zone_id.is_value_set = vm.count("zone_id")))
-            zone_id.value = vm["zone_id"].as<unsigned long long>();
-        if((registrant_id.is_value_set = vm.count("registrant_id")))
-            registrant_id.value = vm["registrant_id"].as<unsigned long long>();
-        if((registrant_handle.is_value_set = vm.count("registrant_handle")))
-            registrant_handle.value = vm["registrant_handle"].as<std::string>();
-        if((registrant_name.is_value_set = vm.count("registrant_name")))
-            registrant_name.value = vm["registrant_name"].as<std::string>();
-        if((admin_id.is_value_set = vm.count("admin_id")))
-            admin_id.value = vm["admin_id"].as<unsigned long long>();
-        if((admin_handle.is_value_set = vm.count("admin_handle")))
-            admin_handle.value = vm["admin_handle"].as<std::string>();
-        if((admin_name.is_value_set = vm.count("admin_name")))
-            admin_name.value = vm["admin_name"].as<std::string>();
-        if((registrar_id.is_value_set = vm.count("registrar_id")))
-            registrar_id.value = vm["registrar_id"].as<unsigned long long>();
-        if((registrar_handle.is_value_set = vm.count("registrar_handle")))
-            registrar_handle.value = vm["registrar_handle"].as<std::string>();
-        if((registrar_name.is_value_set = vm.count("registrar_name")))
-            registrar_name.value = vm["registrar_name"].as<std::string>();
-        if((crdate.is_value_set = vm.count("crdate")))
-            crdate.value = vm["crdate"].as<std::string>();
-        if((deldate.is_value_set = vm.count("deldate")))
-            deldate.value = vm["deldate"].as<std::string>();
-        if((update.is_value_set = vm.count("update")))
-            update.value = vm["update"].as<std::string>();
-        if((transdate.is_value_set = vm.count("transdate")))
-            transdate.value = vm["transdate"].as<std::string>();
-        full_list = vm.count("full_list");
-
         return option_group_index;
     }//handle
 };//class HandleAdminClientDomainListArgsGrp
 
 /**
- * \class HandleAdminClientKeySetListArgsGrp
- * \brief admin client keyset_list options handler
+ * \class HandleAdminClientDomainListPlainArgsGrp
+ * \brief admin client domain_list_plain options handler
  */
-class HandleAdminClientKeySetListArgsGrp : public HandleGrpArgs
+class HandleAdminClientDomainListPlainArgsGrp : public HandleCommandGrpArgs
 {
 public:
-    optional_id keyset_id;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("domain_list_plain");
+    }
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("Admin client command keyset_list options")));
+                        std::string("domain_list_plain options")));
         cfg_opts->add_options()
-                ("id", boost::program_options
-                     ::value<unsigned long long>()
-                          , "optional keyset id")
+            ("domain_list_plain", "list of all domains")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientDomainListPlainArgsGrp
+
+/**
+ * \class HandleAdminClientDomainInfoArgsGrp
+ * \brief admin client domain_info options handler
+ */
+class HandleAdminClientDomainInfoArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    optional_string domain_info;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("domain_info", true);
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("domain_info options")));
+        cfg_opts->add_options()
+            ("domain_info", boost::program_options
+                    ::value<Checked::string>()->notifier(save_string(domain_info))
+                     , "info on domain in arg")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientDomainInfoArgsGrp
+
+
+/**
+ * \class HandleAdminClientKeySetCheckArgsGrp
+ * \brief admin client keyset_check options handler
+ */
+class HandleAdminClientKeySetCheckArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    optional_string keyset_check;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("keyset_check", true);
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("keyset_check options")));
+        cfg_opts->add_options()
+            ("keyset_check", boost::program_options
+                 ::value<Checked::string>()->notifier(save_string(keyset_check))
+                      , "command with keyset name in arg")
                 ;
         return cfg_opts;
     }//get_options_description
@@ -270,13 +270,199 @@ public:
     {
         boost::program_options::variables_map vm;
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientKeySetCheckArgsGrp
 
-        if((keyset_id.is_value_set = vm.count("id")))
-        keyset_id.value = vm["id"].as<unsigned long long>();
+/**
+ * \class HandleAdminClientKeySetInfoArgsGrp
+ * \brief admin client keyset_info options handler
+ */
+class HandleAdminClientKeySetInfoArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    optional_string keyset_info;
 
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("keyset_info", true);
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("keyset_info options")));
+        cfg_opts->add_options()
+            ("keyset_info", boost::program_options
+                 ::value<Checked::string>()->notifier(save_string(keyset_info))
+                      , "command with keyset name in arg")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientKeySetInfoArgsGrp
+
+/**
+ * \class HandleAdminClientKeySetInfo2ArgsGrp
+ * \brief admin client keyset_info2 options handler
+ */
+class HandleAdminClientKeySetInfo2ArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    optional_string keyset_info2;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("keyset_info2", true);
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("keyset_info2 options")));
+        cfg_opts->add_options()
+            ("keyset_info2", boost::program_options
+                 ::value<Checked::string>()->notifier(save_string(keyset_info2))
+                      , "command with keyset name in arg")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientKeySetInfo2ArgsGrp
+
+
+
+/**
+ * \class HandleAdminClientKeySetListArgsGrp
+ * \brief admin client keyset_list options handler
+ */
+class HandleAdminClientKeySetListArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    KeysetListArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("keyset_list");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("keyset_list options")));
+        cfg_opts->add_options()
+            ("keyset_list", boost::program_options
+                 ::value<Checked::string>()
+                      , "command for list of keysets (via filters)")
+            ("login_registrar", boost::program_options
+             ::value<Checked::string>()->notifier(save_string(params.login_registrar))
+              ,"login registrar handle")
+            ("id", boost::program_options
+             ::value<Checked::id>()->notifier(save_id(params.keyset_id))
+                  , "keyset id")
+            ("handle", boost::program_options
+            ::value<Checked::string>()->notifier(save_string(params.keyset_handle))
+              , "keyset handle")
+            ("admin_id", boost::program_options
+             ::value<Checked::id>()->notifier(save_id(params.admin_id))
+                  , "admin id")
+            ("admin_handle", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.admin_handle))
+              , "admin handle")
+            ("admin_name", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.admin_name))
+              , "admin name")
+            ("registrar_id", boost::program_options
+             ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+                  , "registrar id")
+            ("registrar_handle", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+              , "registrar handle")
+            ("registrar_name", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.registrar_name))
+              , "registrar name")
+            ("crdate", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.crdate))
+              , "create date, arg format viz --help_dates")
+            ("deldate", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.deldate))
+              , "delete date, arg format viz --help_dates")
+            ("update", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.update))
+              , "update date, arg format viz --help_dates")
+            ("transdate", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.transdate))
+              , "transfer date, arg format viz --help_dates")
+            ("full_list",boost::program_options
+                    ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.full_list))
+                     , "full list")
+            ("limit", boost::program_options
+             ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.limit))
+                  , "limit")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientKeySetListArgsGrp
+
+/**
+ * \class HandleAdminClientKeySetListPlainArgsGrp
+ * \brief admin client keyset_list_plain options handler
+ */
+class HandleAdminClientKeySetListPlainArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("keyset_list_plain");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("keyset_list_plain options")));
+        cfg_opts->add_options()
+            ("keyset_list_plain", boost::program_options
+                 ::value<Checked::string>()
+                      , "list all keysets command")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientKeySetListPlainArgsGrp
 
 
 /**
@@ -292,7 +478,7 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("Admin client date and time format help option")));
+                        std::string("date and time format help option")));
         cfg_opts->add_options()
                 ("help_dates"
                           , "print admin client date and time format help")
@@ -325,6 +511,1498 @@ public:
         return option_group_index;
     }//handle
 };//class HandleHelpDatesArgsGrp
+
+/**
+ * \class HandleAdminClientContactInfoArgsGrp
+ * \brief admin client contact_info options handler
+ */
+class HandleAdminClientContactInfoArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    optional_string contact_info;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("contact_info", true);
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("contact_info options")));
+        cfg_opts->add_options()
+            ("contact_info", boost::program_options
+                 ::value<Checked::string>()->notifier(save_string(contact_info))
+                      , "command with contact name in arg")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientContactInfoArgsGrp
+
+/**
+ * \class HandleAdminClientContactListArgsGrp
+ * \brief admin client contact_list options handler
+ */
+class HandleAdminClientContactListArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ContactListArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("contact_list");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("contact_list options")));
+        cfg_opts->add_options()
+            ("contact_list", "command for list of contacts (via filters)")
+            ("login_registrar", boost::program_options
+             ::value<Checked::string>()->notifier(save_string(params.login_registrar))
+              ,"login registrar handle")
+            ("id", boost::program_options
+             ::value<Checked::id>()->notifier(save_id(params.contact_id))
+                  , "contact id")
+            ("handle", boost::program_options
+            ::value<Checked::string>()->notifier(save_string(params.contact_handle))
+              , "contact handle")
+            ("name_name", boost::program_options
+            ::value<Checked::string>()->notifier(save_string(params.contact_name))
+            , "contact name")
+            ("organization", boost::program_options
+            ::value<Checked::string>()->notifier(save_string(params.contact_organization))
+            , "contact organization")
+            ("city", boost::program_options
+            ::value<Checked::string>()->notifier(save_string(params.contact_city))
+            , "contact city")
+            ("email", boost::program_options
+            ::value<Checked::string>()->notifier(save_string(params.contact_email))
+            , "contact email")
+            ("notify_email", boost::program_options
+            ::value<Checked::string>()->notifier(save_string(params.contact_notify_email))
+            , "contact notify email")
+            ("vat", boost::program_options
+            ::value<Checked::string>()->notifier(save_string(params.contact_vat))
+            , "contact vat")
+            ("ssn", boost::program_options
+            ::value<Checked::string>()->notifier(save_string(params.contact_ssn))
+            , "contact ssn")
+            ("registrar_id", boost::program_options
+             ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+                  , "registrar id")
+            ("registrar_handle", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+              , "registrar handle")
+            ("registrar_name", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.registrar_name))
+              , "registrar name")
+            ("crdate", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.crdate))
+              , "create date, arg format viz --help_dates")
+            ("deldate", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.deldate))
+              , "delete date, arg format viz --help_dates")
+            ("update", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.update))
+              , "update date, arg format viz --help_dates")
+            ("transdate", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.transdate))
+              , "transfer date, arg format viz --help_dates")
+            ("full_list",boost::program_options
+                    ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.full_list))
+                     ,"full list")
+            ("limit", boost::program_options
+             ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.limit))
+                  , "limit")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientContactListArgsGrp
+
+/**
+ * \class HandleAdminClientInvoiceListArgsGrp
+ * \brief admin client invoice_list options handler
+ */
+class HandleAdminClientInvoiceListArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    InvoiceListArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("invoice_list");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("invoice_list options")));
+        cfg_opts->add_options()
+            ("invoice_list", "command for list of invoices (via filters)")
+            ("id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.invoice_id))
+                , "invoice id")
+            ("zone_id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.zone_id))
+                , "zone id")
+            ("zone_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.zone_fqdn))
+                , "zone name")
+            ("type", boost::program_options
+             ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.type))
+              , "invoice type (1=advanced, 2=account)")
+            ("number", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.number))
+              , "invoice number")
+            ("crdate", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.crdate))
+                , "create date, arg format viz --help_dates")
+            ("taxdate", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.taxdate))
+              , "tax date, arg format viz --help_dates")
+            ("registrar_id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+                , "registrar id")
+            ("registrar_handle", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+                , "registrar handle")
+            ("invoice_file_pdf", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.invoice_file_pdf))
+                , "invoice file pdf")
+            ("invoice_file_xml", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.invoice_file_xml))
+                , "invoice file xml")
+            ("invoice_file_name", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.invoice_file_name))
+                , "invoice file name")
+            ("limit", boost::program_options
+                ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.limit))
+                , "limit")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientInvoiceListArgsGrp
+
+/**
+ * \class HandleAdminClientInvoiceArchiveArgsGrp
+ * \brief admin client invoice_archive options handler
+ */
+class HandleAdminClientInvoiceArchiveArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    bool invoice_dont_send;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("invoice_archive");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("invoice_archive options")));
+        cfg_opts->add_options()
+            ("invoice_archive", "archive unarchived invoices")
+            ("invoice_dont_send",boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(invoice_dont_send))
+                 , "don't send mails with invoices during archivation")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientInvoiceArchiveArgsGrp
+
+
+/**
+ * \class HandleAdminClientInvoiceCreditArgsGrp
+ * \brief admin client invoice_credit options handler
+ */
+class HandleAdminClientInvoiceCreditArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    InvoiceCreditArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("invoice_credit");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("invoice_credit options")));
+        cfg_opts->add_options()
+            ("invoice_credit", "create credit invoice for registrar")
+            ("zone_id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.zone_id))
+                , "zone id")
+            ("registrar_id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+                , "registrar id")
+            ("price", boost::program_options
+                ::value<Checked::fpnumber>()->notifier(save_double(params.price))
+                , "price")
+            ("taxdate", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.taxdate))
+              , "tax date, default in impl is today, arg format viz --help_dates")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientInvoiceCreditArgsGrp
+
+/**
+ * \class HandleAdminClientInvoiceFactoringArgsGrp
+ * \brief admin client invoice_factoring options handler
+ */
+class HandleAdminClientInvoiceFactoringArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    InvoiceFactoringArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("invoice_factoring");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("invoice_factoring options")));
+        cfg_opts->add_options()
+            ("invoice_factoring", "invoice factoring")
+            ("zone_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.zone_fqdn))
+                , "zone name")
+            ("registrar_handle", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+                , "registrar handle")
+            ("todate", boost::program_options
+                    ::value<Checked::string>()->notifier(save_string(params.todate))
+                , "todate, default in impl is last day of previous month, arg format viz --help_dates")
+            ("taxdate", boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.taxdate))
+              , "tax date, default in impl is first day of this month, arg format viz --help_dates")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientInvoiceFactoringArgsGrp
+
+/**
+ * \class HandleAdminClientInvoiceAddPrefixArgsGrp
+ * \brief admin client invoice_add_prefix options handler
+ */
+class HandleAdminClientInvoiceAddPrefixArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    InvoicePrefixArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("invoice_add_prefix");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("invoice_add_prefix options")));
+        cfg_opts->add_options()
+            ("invoice_add_prefix", "add row into the ``invoice_prefix'' table")
+            ("zone_id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.zone_id))
+                , "zone id")
+            ("zone_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.zone_fqdn))
+                , "zone name")
+            ("type", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.type))
+                , "type is either 0 (for the deposit invoice) or 1 (for account invoice)")
+            ("year", boost::program_options
+                    ::value<Checked::ulong>()->notifier(save_ulong(params.year))
+                , "year default in impl is the current year")
+            ("prefix", boost::program_options
+              ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.prefix))
+              , "prefix")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientInvoiceAddPrefixArgsGrp
+
+/**
+ * \class HandleAdminClientInvoiceCreateArgsGrp
+ * \brief admin client create_invoice options handler
+ */
+class HandleAdminClientInvoiceCreateArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    InvoiceCreateArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("create_invoice");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("create_invoice options")));
+        cfg_opts->add_options()
+            ("create_invoice", "create invoice for payment")
+            ("payment_id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.payment_id))
+                , "payment id")
+            ("registrar_handle", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+                , "registrar handle")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientInvoiceCreateArgsGrp
+
+/**
+ * \class HandleAdminClientBankPaymentListArgsGrp
+ * \brief admin client bank_payment_list options handler
+ */
+class HandleAdminClientBankPaymentListArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    optional_ulong bank_payment_type;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("bank_payment_list");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("bank_payment_list options")));
+        cfg_opts->add_options()
+            ("bank_payment_list", "list of payments")
+
+            ("bank_payment_type", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(bank_payment_type))
+                , "payment type is  1 - 6")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientBankPaymentListArgsGrp
+
+/**
+ * \class HandleAdminClientBankImportXMLArgsGrp
+ * \brief admin client bank_import_xml options handler
+ */
+class HandleAdminClientBankImportXMLArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ImportXMLArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("bank_import_xml");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("bank_import_xml options")));
+        cfg_opts->add_options()
+            ("bank_import_xml", "xml file with bank statement(s)")
+            ("bank_xml", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.bank_xml))
+                , "xml file name")
+            ("cr_credit_invoice", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.cr_credit_invoice))
+                , "create also credit invoice if appliable")
+            ("bank_statement_file", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.bank_statement_file))
+                , "path to original statement file")
+            ("bank_statement_file_mimetype", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.bank_statement_file_mimetype))
+                , "mime type of original statement file")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientBankImportXMLArgsGrp
+
+/**
+ * \class HandleAdminClientBankAddAccountArgsGrp
+ * \brief admin client bank_add_account options handler
+ */
+class HandleAdminClientBankAddAccountArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    AddAccountArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("bank_add_account");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("bank_add_account options")));
+        cfg_opts->add_options()
+            ("bank_add_account", "add bank account")
+            ("bank_account_number", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.bank_account_number))
+                , "bank_account_number description")
+            ("bank_code", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.bank_code))
+                , "bank_code description")
+            ("account_name", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.account_name))
+                , "account name")
+            ("zone_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.zone_fqdn))
+                , "zone fully qualified domain name")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientBankAddAccountArgsGrp
+
+/**
+ * \class HandleAdminClientPollListAllArgsGrp
+ * \brief admin client poll_list_all options handler
+ */
+class HandleAdminClientPollListAllArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    PollListAllArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("poll_list_all");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("poll_list_all options")));
+        cfg_opts->add_options()
+            ("poll_list_all", "list all poll messages")
+            ("poll_type", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.poll_type))
+                , "set filter for poll type")
+            ("registrar_id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+                , "show only records with specific registrar id number")
+            ("poll_nonseen", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.poll_nonseen))
+                , "set filter for non seen messages")
+            ("poll_nonex", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.poll_nonex))
+                , "set filter for non expired messages")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientPollListAllArgsGrp
+
+
+/**
+ * \class HandleAdminClientPollCreateStatechangesArgsGrp
+ * \brief admin client poll_create_statechanges options handler
+ */
+class HandleAdminClientPollCreateStatechangesArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    PollCreateStatechangesArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("poll_create_statechanges");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("poll_create_statechanges options")));
+        cfg_opts->add_options()
+            ("poll_create_statechanges", "create messages for state changes")
+            ("poll_except_types", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.poll_except_types))
+                , "list of poll messages types ignored in creation (only states now)")
+            ("poll_limit", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.poll_limit))
+                , "limit for number of messages generated in one pass (0=no limit)")
+            ("poll_debug", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.poll_debug))
+                , "don't do actually anything, just list xml with values")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientPollCreateStatechangesArgsGrp
+
+/**
+ * \class HandleAdminClientZoneAddArgsGrp
+ * \brief admin client zone_add options handler
+ */
+class HandleAdminClientZoneAddArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ZoneAddArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("zone_add");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("zone_add options")));
+        cfg_opts->add_options()
+            ("zone_add", "add new zone")
+            ("zone_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.zone_fqdn))
+                , "fqdn of new zone")
+            ("ex_period_min", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.ex_period_min))
+                , "ex_period_min")
+            ("ex_period_max", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.ex_period_max))
+                , "ex_period_max")
+            ("ttl", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.ttl))
+                , "time to live")
+            ("hostmaster", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.hostmaster))
+                , "hostmaster")
+            ("update_retr", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.update_retr))
+                , "update_retr")
+            ("refresh", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.refresh))
+                , "refresh")
+            ("expiry", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.expiry))
+                , "expiry")
+            ("minimum", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.minimum))
+                , "minimum")
+            ("ns_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.ns_fqdn))
+                , "ns_fqdn")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientZoneAddArgsGrp
+
+
+/**
+ * \class HandleAdminClientRegistrarAddArgsGrp
+ * \brief admin client registrar_add options handler
+ */
+class HandleAdminClientRegistrarAddArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegistrarAddArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("registrar_add");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("registrar_add options")));
+        cfg_opts->add_options()
+            ("registrar_add", "add new registrar (make a copy of REG-FRED_A)")
+            ("handle", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
+                , "registrar handle")
+            ("country", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.country))
+                , "registrar two letter country code")
+            ("ico", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.ico))
+                , "organization identifier number")
+            ("dic", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.dic))
+                , "tax identifier number")
+            ("varsymb", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.varsymb))
+                , "registrar variable symbol")
+            ("reg_name", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.reg_name))
+                , "registrar name")
+            ("organization", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.organization))
+                , "registrar organization")
+            ("street1", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.street1))
+                , "registrar street #1")
+            ("street2", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.street2))
+                , "registrar street #2")
+            ("street3", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.street3))
+                , "registrar street #3")
+            ("city", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.city))
+                , "registrar city")
+            ("stateorprovince", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.stateorprovince))
+                , "registrar state or province")
+            ("postalcode", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.postalcode))
+                , "registrar postal code")
+            ("telephone", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.telephone))
+                , "registrar telephone")
+            ("fax", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.fax))
+                , "registrar fax")
+            ("email", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.email))
+                , "registrar email")
+            ("url", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.url))
+                , "registrar url")
+            ("system", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.system))
+                , "if registrar is system")
+            ("no_vat", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.no_vat))
+                , "no vat")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientRegistrarAddArgsGrp
+
+/**
+ * \class HandleAdminClientRegistrarAddZoneArgsGrp
+ * \brief admin client registrar_add_zone options handler
+ */
+class HandleAdminClientRegistrarAddZoneArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegistrarAddZoneArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("registrar_add_zone");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("registrar_add_zone options")));
+        cfg_opts->add_options()
+            ("registrar_add_zone", "add access right for registrar to zone")
+            ("zone_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.zone_fqdn))
+                , "zone fqdn")
+            ("handle", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
+                , "registrar handle")
+            ("from_date", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.from_date))
+                , "from date (default today)")
+            ("to_date", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.to_date))
+                , "to date (default not filled)")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientRegistrarAddZoneArgsGrp
+
+/**
+ * \class HandleAdminClientRegistrarCreateCertificationArgsGrp
+ * \brief admin client registrar_create_certification options handler
+ */
+class HandleAdminClientRegistrarCreateCertificationArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegistrarCreateCertificationArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("registrar_create_certification");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("registrar_create_certification options")));
+        cfg_opts->add_options()
+            ("registrar_create_certification", "create registrar certification")
+            ("certification_evaluation", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.certification_evaluation))
+                , "registrar certification evaluation pdf file")
+            ("certification_evaluation_mime_type", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.certification_evaluation_mime_type))
+                , "registrar certification evaluation file MIME type")
+            ("certification_score", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_arg<long>(params.certification_score))
+                , "registrar certification score 0 - 5")
+            ("handle", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
+                , "registrar handle")
+            ("from_date", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.from_date))
+                , "from date (default today)")
+            ("to_date", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.to_date))
+                , "to date (default not filled)")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientRegistrarCreateCertificationArgsGrp
+
+/**
+ * \class HandleAdminClientRegistrarCreateGroupArgsGrp
+ * \brief admin client registrar_create_group options handler
+ */
+class HandleAdminClientRegistrarCreateGroupArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegistrarCreateGroupArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("registrar_create_group");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("registrar_create_group options")));
+        cfg_opts->add_options()
+            ("registrar_create_group", "create registrar group")
+            ("registrar_group", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.registrar_group))
+                , "registrar group name")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientRegistrarCreateGroupArgsGrp
+
+/**
+ * \class HandleAdminClientRegistrarIntoGroupArgsGrp
+ * \brief admin client registrar_into_group options handler
+ */
+class HandleAdminClientRegistrarIntoGroupArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegistrarIntoGroupArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("registrar_into_group");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("registrar_into_group options")));
+        cfg_opts->add_options()
+            ("registrar_into_group", "add registrar into group")
+            ("handle", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
+                , "registrar handle")
+            ("from_date", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.from_date))
+                , "from date (default today)")
+            ("to_date", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.to_date))
+                , "to date (default not filled)")
+            ("registrar_group", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.registrar_group))
+                , "registrar group name")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientRegistrarIntoGroupArgsGrp
+
+/**
+ * \class HandleAdminClientRegistrarListArgsGrp
+ * \brief admin client registrar_list options handler
+ */
+class HandleAdminClientRegistrarListArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegistrarListArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("registrar_list");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("registrar_list options")));
+        cfg_opts->add_options()
+            ("registrar_list", "list all registrars (via filters)")
+            ("id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.id))
+                , "filter records with specific id nubmer")
+            ("handle", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.handle))
+                , "filter records with specific handle")
+            ("name_name", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.name_name))
+                , "filter records with specific name")
+            ("organization", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.organization))
+                , "show only records with specific organization name")
+            ("city", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.city))
+                , "show only records with specific city")
+            ("email", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.email))
+                , "show only records with specific email address")
+            ("country", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.country))
+                , "show only records with specific country")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientRegistrarListArgsGrp
+
+//bool zone_ns_add_;
+   //ZoneNsAddArgs zone_ns_add_params_;
+
+/**
+ * \class HandleAdminClientZoneNsAddArgsGrp
+ * \brief admin client zone_ns_add options handler
+ */
+class HandleAdminClientZoneNsAddArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ZoneNsAddArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("zone_ns_add");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("zone_ns_add options")));
+        cfg_opts->add_options()
+            ("zone_ns_add", "add new nameserver to the zone")
+            ("zone_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.zone_fqdn))
+                , "zone fqdn")
+            ("ns_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.ns_fqdn))
+                , "nameserver fqdn")
+            ("addr", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.addr))
+                , "nameserver address")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientZoneNsAddArgsGrp
+
+/**
+ * \class HandleAdminClientRegistrarAclAddArgsGrp
+ * \brief admin client registrar_acl_add options handler
+ */
+class HandleAdminClientRegistrarAclAddArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegistrarAclAddArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("registrar_acl_add");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("registrar_acl_add options")));
+        cfg_opts->add_options()
+            ("registrar_acl_add", "add new certificate for registrar")
+            ("handle", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
+                , "registrar handle")
+            ("certificate", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.certificate))
+                , "registrar certificate")
+            ("password", boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.password))
+                , "registrar password")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientRegistrarAclAddArgsGrp
+
+/**
+ * \class HandleAdminClientPriceAddArgsGrp
+ * \brief admin client price_add options handler
+ */
+class HandleAdminClientPriceAddArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    PriceAddArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("price_add");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("price_add options")));
+        cfg_opts->add_options()
+            ("price_add", "add price")
+            ("valid_from", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.valid_from))
+                , "price valid from datetime")
+            ("valid_to", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.valid_to))
+                , "price valid to datetime")
+            ("operation_price", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_arg<long>(params.operation_price))
+                , "operation price")
+            ("period", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_ulong(params.period))
+                , "period")
+            ("zone_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.zone_fqdn))
+                , "zone fqdn")
+            ("zone_id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.zone_id))
+                , "zone id")
+            ("renew", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.renew))
+                , "domain renew operation")
+            ("create", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.create))
+                , "domain create operation")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientRegistrarAclAddArgsGrp
+
+
+/**
+ * \class HandleAdminClientNotifyStateChangesArgsGrp
+ * \brief admin client notify_state_changes options handler
+ */
+class HandleAdminClientNotifyStateChangesArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    NotifyStateChangesArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("notify_state_changes");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("notify_state_changes options")));
+        cfg_opts->add_options()
+            ("notify_state_changes", "send emails to contacts about object state changes")
+            ("notify_except_types", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.notify_except_types))
+                , "list of notification types ignored in notification")
+            ("notify_limit", boost::program_options
+                ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.notify_limit))
+                , "limit for nubmer of emails generated in one pass (0=no limit)")
+            ("notify_debug", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.notify_debug))
+                , "debug")
+            ("notify_use_history_tables", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.notify_use_history_tables))
+                , "slower queries into historic tables, but can handle deleted objects")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientNotifyStateChangesArgsGrp
+
+/**
+ * \class HandleAdminClientNotifyLettersPostservisSendArgsGrp
+ * \brief admin client notify_letters_postservis_send options handler
+ */
+class HandleAdminClientNotifyLettersPostservisSendArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    optional_string hpmail_config;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("notify_letters_postservis_send");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("notify_letters_postservis_send options")));
+        cfg_opts->add_options()
+            ("notify_letters_postservis_send", "send generated PDF notification letters to postservis")
+
+            ("hpmail_config", boost::program_options
+                ::value<Checked::string>()->default_value(HPMAIL_CONFIG)
+                     ->notifier(save_string(hpmail_config))
+                , "configuration file for Postservis client (hpmail)")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientNotifyLettersPostservisSendArgsGrp
+
+/**
+ * \class HandleAdminClientNotifySmsSendArgsGrp
+ * \brief admin client notify_sms_send options handler
+ */
+class HandleAdminClientNotifySmsSendArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    optional_string cmdline_sms_command;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("notify_sms_send");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("notify_sms_send options")));
+        cfg_opts->add_options()
+            ("notify_sms_send", "send generated SMS notification messages")
+
+            ("sms_command",boost::program_options
+                    ::value<Checked::string>()->notifier(save_string(cmdline_sms_command))
+                     ,"shell command to send saved sms messages")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientNotifyLettersPostservisSendArgsGrp
+
+/**
+ * \class HandleAdminClientEnumParameterChangeArgsGrp
+ * \brief admin client enum_parameter_change options handler
+ */
+class HandleAdminClientEnumParameterChangeArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    EnumParameterChangeArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("enum_parameter_change");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("enum_parameter_change options")));
+        cfg_opts->add_options()
+            ("enum_parameter_change", "change value of enum_parameter by name")
+            ("parameter_name",boost::program_options
+                    ::value<Checked::string>()->notifier(save_arg<std::string>(params.parameter_name))
+                     ,"enum parameter name")
+             ("parameter_value",boost::program_options
+                     ::value<Checked::string>()->notifier(save_arg<std::string>(params.parameter_value))
+                      ,"enum parameter value")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientEnumParameterChangeArgsGrp
+
+/**
+ * \class HandleAdminClientObjectNewStateRequestArgsGrp
+ * \brief admin client object_new_state_request options handler
+ */
+class HandleAdminClientObjectNewStateRequestArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ObjectNewStateRequestArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("object_new_state_request",true);
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("object_new_state_request options")));
+        cfg_opts->add_options()
+            ("object_new_state_request",boost::program_options
+                    ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_new_state_request))
+                    ,"set request for object state with specified state id")
+            ("object_id",boost::program_options
+                    ::value<Checked::id>()->notifier(save_arg<unsigned long long>(params.object_id))
+                     ,"object id")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientObjectNewStateRequestArgsGrp
+
+/**
+ * \class HandleAdminClientObjectUpdateStatesArgsGrp
+ * \brief admin client object_update_states options handler
+ */
+class HandleAdminClientObjectUpdateStatesArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ObjectUpdateStatesArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("object_update_states");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("object_update_states options")));
+        cfg_opts->add_options()
+            ("object_update_states","globally update all states of all objects")
+            ("object_id",boost::program_options
+                    ::value<Checked::id>()->notifier(save_id(params.object_id))
+                     ,"object id")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientObjectUpdateStatesArgsGrp
+
+
+/**
+ * \class HandleAdminClientObjectRegularProcedureArgsGrp
+ * \brief admin client object_regular_procedure options handler
+ */
+class HandleAdminClientObjectRegularProcedureArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ObjectRegularProcedureArgs regular_procedure_params;
+    DeleteObjectsArgs delete_objects_params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("object_regular_procedure");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("object_regular_procedure options")));
+        cfg_opts->add_options()
+            ("object_regular_procedure"
+                    ,"shortcut for 2x update_object_states, notify_state changes, "
+                    "poll_create_statechanges, object_delete_candidates, poll_create_low_credit, notify_letters_create"
+                    )
+            ("poll_except_types",boost::program_options
+                    ::value<Checked::string>()->notifier(save_string(regular_procedure_params.poll_except_types))
+                     ,"list of poll message types ignored in creation (only states now)")
+            ("object_delete_types",boost::program_options
+                 ::value<Checked::string>()->notifier(save_string(regular_procedure_params.object_delete_types))
+                  ,"only this type of object will be delete during mass delete")
+            ("notify_except_types",boost::program_options
+               ::value<Checked::string>()->notifier(save_string(regular_procedure_params.notify_except_types))
+                ,"list of notification types ignored in notification")
+            ("object_delete_limit", boost::program_options
+                ::value<Checked::ulonglong>()->notifier(save_ulonglong(delete_objects_params.object_delete_limit))
+                , "limit for object deleting")
+            ("object_delete_debug", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(delete_objects_params.object_delete_debug))
+                , "object delete debug")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientObjectRegularProcedureArgsGrp
+
+
+/**
+ * \class HandleAdminClientFileListArgsGrp
+ * \brief admin client file_list options handler
+ */
+class HandleAdminClientFileListArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    FileListArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("file_list");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("file_list options")));
+        cfg_opts->add_options()
+            ("file_list","list all files")
+            ("id", boost::program_options
+                ::value<Checked::id>()->notifier(save_id(params.id))
+                , "file id")
+            ("name_name",boost::program_options
+                ::value<Checked::string>()->notifier(save_string(params.name_name))
+                 ,"file name")
+            ("crdate", boost::program_options
+                 ::value<Checked::string>()->notifier(save_string(params.crdate))
+                 , "create date, arg format viz --help_dates")
+            ("path",boost::program_options
+             ::value<Checked::string>()->notifier(save_string(params.path))
+              ,"file path")
+            ("mime",boost::program_options
+              ::value<Checked::string>()->notifier(save_string(params.mime))
+               ,"file mime type")
+            ("size", boost::program_options
+               ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.size))
+               , "file size")
+            ("limit", boost::program_options
+              ::value<Checked::ulonglong>()->notifier(save_arg<unsigned long long>(params.limit))
+              , "limit")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientFileListArgsGrp
 
 
 #endif //HANDLE_ADMINCLIENTSELECTION_ARGS_H_
