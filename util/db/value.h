@@ -252,7 +252,6 @@ public:
   HANDLE_TYPE(unsigned,           0,          false, false)
   HANDLE_TYPE(unsigned long,      0,          false, false)
   HANDLE_TYPE(unsigned long long, 0,          false, false)
-  HANDLE_TYPE(float,              0,          false, false)
   HANDLE_TYPE(bool,               0,          true,  false)
   HANDLE_TYPE(Money,              Money(),    true,  false)
 //  HANDLE_TYPE(DateTime,           DateTime(), true,  false)
