@@ -64,6 +64,9 @@ public:
 #endif
   }
 
+  Result_() : result_()
+  {  }
+
   virtual ~Result_() {
     result_.clear();
   }

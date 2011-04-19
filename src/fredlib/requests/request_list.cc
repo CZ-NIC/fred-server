@@ -219,6 +219,126 @@ bool IdFilterActive(const Database::Filters::Compound* f)
   return false;
 }
 
+Database::Result oneRecordQuery(Database::Connection &conn, Database::SelectQuery &id_query, bool partialLoad)
+{
+    Result res = conn.exec(id_query);
+    Database::SelectQuery query;
+
+    std::string q_id;
+    std::string q_time_begin;
+    std::string q_service_id;
+    std::string q_monitoring;
+
+    // we didn't use DISTINCT, let's not make
+    // any assumptions about number of records in return
+    if (res.size() > 0) {
+        q_id         =  (std::string)res[0][0];
+        q_time_begin =  (std::string)res[0][1];
+        q_service_id =  (std::string)res[0][2];
+        q_monitoring =  (std::string)res[0][3];
+    } else {
+        // no records found , return some empty result
+        return res;
+    }
+
+    // these are mandatory
+    if(q_id.empty() || q_time_begin.empty()) {
+        return res;
+    }
+
+    if (partialLoad) {
+        query.select()
+                << "t_1.id, t_1.time_begin, t_1.time_end, t_3.name, "
+                << "t_1.source_ip, t_2.name, t_1.session_id, "
+                << "t_1.user_name, t_1.is_monitoring, "
+                << "t_4.result_code, t_4.name";
+        query.from() << "request t_1 "
+                << "join request_type t_2 on t_2.id = t_1.request_type_id "
+                << "join service t_3 on t_3.id = t_1.service_id "
+                << "left join result_code t_4 on t_4.id = t_1.result_code_id";
+
+        query.where() << "and t_1.id=" << q_id
+            << " and t_1.time_begin='" << q_time_begin << "'";
+
+        if(!q_service_id.empty()) {
+            query.where() << " and t_1.service_id=" << q_service_id;
+        }
+        if(!q_monitoring.empty()) {
+            query.where() << " and t_1.is_monitoring='" << q_monitoring << "'";
+        }
+
+        query.order_by() << "t_1.time_begin desc";
+    } else {
+        // hardcore optimizations have to be done on this statement
+        query.select()
+            << "t_1.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.service_id, "
+            << "t_1.source_ip, t_2.name, t_1.session_id, "
+            << "t_1.user_name, t_1.user_id, t_1.is_monitoring, "
+            << "t_4.result_code, t_4.name, "
+            << "(select content from request_data where "
+            << "request_id=" << q_id
+            << " and request_time_begin='" << q_time_begin << "'";
+
+        if(!q_service_id.empty()) {
+            query.select() << " and request_service_id=" << q_service_id;
+        }
+        if(!q_monitoring.empty()) {
+            query.select() << " and request_monitoring='" << q_monitoring << "'";
+        }
+        query.select()
+            << " and is_response=false limit 1) as request, "
+            << "(select content from request_data where "
+            << "request_id=" << q_id
+            << " and request_time_begin='" << q_time_begin << "'"
+            << " and request_service_id=" << q_service_id
+            << " and request_monitoring='" << q_monitoring << "'"
+            << " and is_response=true  limit 1) as response ";
+        query.from() << "request t_1 "
+            << "join request_type t_2 on t_2.id=t_1.request_type_id "
+            << "join service t_3 on t_3.id=t_1.service_id "
+            << "left join result_code t_4 on t_4.id=t_1.result_code_id";
+        // add conditions to improve join with partitioned table
+
+        query.where() << " and t_1.id=" << q_id
+                    << " and t_1.time_begin='" << q_time_begin << "'";
+
+        if (!q_service_id.empty()) {
+            query.where() << " and t_1.service_id="
+                    << q_service_id;
+        }
+        if (!q_monitoring.empty()) {
+            query.where() << " and t_1.is_monitoring='" << q_monitoring << "'";
+        }
+
+        query.order_by() << "t_1.time_begin desc";
+    }
+    return conn.exec(query);
+}
+
+template <typename T>
+std::string generateCondition(T & filter,
+        const std::string &name, Table &table)
+{
+    std::string where_cond;
+
+    if (filter.isActive()) {
+        filter.setColumn(Column(name, table));
+        SelectQuery sql;
+        filter.serialize(sql, NULL);
+        sql.make();
+        where_cond = sql.where().str();
+        LOGGER(PACKAGE).info(boost::format(
+                    "DEBUG: Generated filer for %1%: %2%")
+                    % name % where_cond);
+    } else {
+        LOGGER(PACKAGE).info(
+                boost::format("DEBUG:  Filter for %1% not active (isActive()=false)")
+                    % name);
+    }
+    return where_cond;
+}
+
+
 class RequestImpl;
 
 COMPARE_CLASS_IMPL(RequestImpl, TimeBegin)
@@ -309,75 +429,12 @@ public:
     try {
         // TODO this should be part of connection
         conn.exec("set constraint_exclusion=ON");
+        Result res;
 
         if (one_record_optimization) {
             _filter.serialize(id_query);
 
-            Result res = conn.exec(id_query);
-
-            Database::ID q_id;
-            Database::DateTime q_time_begin;
-            int q_service_id;
-            bool q_monitoring;
-
-            // we didn't use DISTINCT, let's not make
-            // any assumptions about number of records in return
-            if (res.size() > 0) {
-                q_id =  res[0][0];
-                q_time_begin =  res[0][1];
-                q_service_id =  res[0][2];
-                q_monitoring =  res[0][3];
-            }
-
-            if (partialLoad) {
-                query.select()
-                        << "t_1.id, t_1.time_begin, t_1.time_end, t_3.name, "
-                        << "t_1.source_ip, t_2.name, t_1.session_id, "
-                        << "t_1.user_name, t_1.is_monitoring, "
-                        << "t_4.result_code, t_4.name";
-                query.from() << "request t_1 "
-                        << "join request_type t_2 on t_2.id = t_1.request_type_id "
-                        << "join service t_3 on t_3.id = t_1.service_id "
-                        << "left join result_code t_4 on t_4.id = t_1.result_code_id";
-
-                query.where() << "and t_1.id = " << q_id
-                        << " and t_1.time_begin = '" << q_time_begin << "'"
-                        << " and t_1.service_id = " << q_service_id
-                        << " and t_1.is_monitoring = " << (q_monitoring ? "true" : "false" );
-
-                query.order_by() << "t_1.time_begin desc";
-            } else {
-                // hardcore optimizations have to be done on this statement
-                query.select()
-                        << "t_1.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.service_id, "
-                        << "t_1.source_ip, t_2.name, t_1.session_id, "
-                        << "t_1.user_name, t_1.user_id, t_1.is_monitoring, "
-                        << "t_4.result_code, t_4.name, "
-                        << "(select content from request_data where "
-                        << "request_id=" << q_id
-                        << " and request_time_begin='" << q_time_begin << "'"
-                        << " and request_service_id=" << q_service_id
-                        << " and request_monitoring=" << (q_monitoring ? "true" : "false" )
-                        << " and is_response=false limit 1) as request, "
-                        << "(select content from request_data where "
-                        << "request_id=" << q_id
-                        << " and request_time_begin='" << q_time_begin << "'"
-                        << " and request_service_id=" << q_service_id
-                        << " and request_monitoring=" << (q_monitoring ? "true" : "false" )
-                        << " and is_response=true  limit 1) as response ";
-                query.from() << "request t_1 "
-                        << "join request_type t_2 on t_2.id=t_1.request_type_id "
-                        << "join service t_3 on t_3.id=t_1.service_id "
-                        << "left join result_code t_4 on t_4.id=t_1.result_code_id";
-                // add conditions to improve join with partitioned table
-
-                query.where() << "and t_1.id=" << q_id
-                        << " and t_1.time_begin='" << q_time_begin  << "'"
-                        << " and t_1.service_id=" << q_service_id
-                        << " and t_1.is_monitoring=" << (q_monitoring ? "true" : "false" );
-
-                query.order_by() << "t_1.time_begin desc";
-            }
+            res = oneRecordQuery(conn, id_query, partialLoad);
 
         } else {
             // make an id query according to the filters
@@ -392,12 +449,10 @@ public:
                     "temporary table '%1%' generated sql = %2%")
                     % getTempTableName() % tmp_table_query.str());
 
-            // add conditions for JOIN with partitioned table
-            std::string where_time_begin, where_service_type,
-                    where_is_monitoring;
             // table which will be used in embedded SQL statement (t_1 has to match)
             Table trequest("request", "t_1");
 
+            // create some additional partitioning conditions
             Interval<Database::DateTimeInterval> time_begin =
                     pt.getTimeBegin();
             Database::Filters::ServiceType service_type =
@@ -405,49 +460,12 @@ public:
             Database::Filters::Value<bool> is_monitoring =
                     pt.getIsMonitoring();
 
-            if (time_begin.isActive()) {
-                time_begin.setColumn(Column("time_begin", trequest));
-                SelectQuery sql;
-                time_begin.serialize(sql, NULL);
-                sql.make();
-                where_time_begin = sql.where().str();
-                LOGGER(PACKAGE).info(boost::format(
-                        "DEBUG: Generated filer for time_begin: %1%")
-                        % where_time_begin);
-            } else {
-                LOGGER(PACKAGE).info(
-                        "DEBUG:  Filter for time_begin not active (isActive()=false)");
-            }
-
-            if (service_type.isActive()) {
-                service_type.setColumn(Column("service_id", trequest));
-                SelectQuery sql;
-                service_type.serialize(sql, NULL);
-                sql.make();
-                where_service_type = sql.where().str();
-                LOGGER(PACKAGE).info(boost::format(
-                        "DEBUG: Generated filer for service_type: %1%")
-                        % where_service_type);
-            } else {
-                LOGGER(PACKAGE).info(
-                        "DEBUG:  Filter for service_type not active (isActive()=false)");
-            }
-
-            if (is_monitoring.isActive()) {
-                is_monitoring.setColumn(Column("is_monitoring", trequest));
-                SelectQuery sql;
-                is_monitoring.serialize(sql, NULL);
-                sql.make();
-                where_is_monitoring = sql.where().str();
-                LOGGER(PACKAGE).info(boost::format(
-                        "DEBUG: Generated filer for is_monitoring: %1%")
-                        % where_is_monitoring);
-            } else {
-                LOGGER(PACKAGE).info(
-                        "DEBUG: Filter for is_monitoring not active (isActive()=false)");
-            }
-            // additional partitioning conditions complete
-
+            std::string where_time_begin
+                = generateCondition<Interval<Database::DateTimeInterval> >(time_begin, "time_begin", trequest);
+            std::string where_service_type
+                = generateCondition<Database::Filters::ServiceType>(service_type, "service_id", trequest);
+            std::string where_is_monitoring
+                = generateCondition<Database::Filters::Value<bool> >(is_monitoring, "is_monitoring", trequest);
 
             if (partialLoad) {
                 query.select()
@@ -461,18 +479,6 @@ public:
                         << "join service t_3 on t_3.id = t_1.service_id "
                         << "left join result_code t_4 on t_4.id = t_1.result_code_id";
 
-                // add conditions to improve join with partitioned table
-                if (time_begin.isActive()) {
-                    query.where() << where_time_begin;
-                }
-                if (service_type.isActive()) {
-                    query.where() << where_service_type;
-                }
-                if (is_monitoring.isActive()) {
-                    query.where() << where_is_monitoring;
-                }
-
-                query.order_by() << "t_1.time_begin desc";
             } else {
                 // hardcore optimizations have to be done on this statement
                 query.select()
@@ -487,28 +493,29 @@ public:
                         << "join request_type t_2 on t_2.id=t_1.request_type_id "
                         << "join service t_3 on t_3.id=t_1.service_id "
                         << "left join result_code t_4 on t_4.id = t_1.result_code_id";
-                // add conditions to improve join with partitioned table
-                if (time_begin.isActive()) {
-                    query.where() << where_time_begin;
-                }
-                if (service_type.isActive()) {
-                    query.where() << where_service_type;
-                }
-                if (is_monitoring.isActive()) {
-                    query.where() << where_is_monitoring;
-                }
 
-                query.order_by() << "t_1.time_begin desc";
             }
+            // add conditions to improve join with partitioned table
+            if (time_begin.isActive()) {
+                query.where() << where_time_begin;
+            }
+            if (service_type.isActive()) {
+                query.where() << where_service_type;
+            }
+            if (is_monitoring.isActive()) {
+                query.where() << where_is_monitoring;
+            }
+
+            query.order_by() << "t_1.time_begin desc";
 
             // run all the queries
             Database::Query create_tmp_table("SELECT create_tmp_table('"
                     + std::string(getTempTableName()) + "')");
             conn.exec(create_tmp_table);
             conn.exec(tmp_table_query);
-        }
 
-        Result res = conn.exec(query);
+            res = conn.exec(query);
+        }
 
         for (Result::Iterator it = res.begin(); it != res.end(); ++it) {
             Database::Row::Iterator col = (*it).begin();
