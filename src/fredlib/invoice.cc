@@ -249,6 +249,113 @@ int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long 
     return ret;
 }
 
+#define INVOICE_FA  1 // normal invoice
+#define INVOICE_ZAL 0 // advance invoice
+
+// TODO what exceptions to throw and whether to log errors
+// SPEC current time taken from now() in DB (which should be UTC)
+int My_createDepositInvoice(const Database::Date &date, int zoneId, int registrarId, int price)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result rvat = conn.exec_params("SELECT vat FROM registrar WHERE id=1::integer",
+            Database::query_param_list(registrarId));
+
+    if(rvat.size() != 1 || rvat[0][0].isnull() ) {
+        throw std::runtime_error(
+            (boost::format(" Couldn't determine whether the registrar with ID %1% pays VAT.")
+                % registrarId).str());
+    }
+    bool pay_vat = rvat[0][0];
+
+    //// handle VAT
+
+    // VAT  percentage
+    int vat_percent = 0;
+    // ratio for reverse VAT calculation
+    // price_without_vat = price_with_vat - price_with_vat*vat_reverse
+    // it should have 4 decimal places in the DB
+    float vat_reverse = 0.0;
+
+    int vat_amount = 0;
+    int total;
+
+    if (pay_vat) {
+
+        Database::Result vat_details = conn.exec("select vat, koef from price_vat where valid_to > now() or valid_to is null");
+
+        if(vat_details.size() > 1) {
+            throw std::runtime_error("Multiple valid VAT values found.");
+        } else if(vat_details.size() == 0) {
+            throw std::runtime_error("No valid VAT value found.");
+        }
+
+        if(vat_details[0][0].isnull()) {
+            vat_percent = 0;
+        } else {
+            vat_percent = vat_details[0][0];
+        }
+
+        if(vat_details[0][1].isnull()) {
+            vat_reverse = 0.0;
+        } else {
+            vat_reverse = (float)vat_details[0][1];
+        }
+
+        vat_amount = count_dph(price, vat_reverse);
+        total = price - vat_amount;
+    } else {
+        total = price;
+    }
+    int credit = total;
+
+
+    // get new invoice prefix and its type
+    // TODO unclear thread safety in the old implementation
+    Database::Result ip_res = conn.exec_params(
+        "SELECT id, prefix  FROM invoice_prefix WHERE zone=$1::integer AND  typ=$2::integer AND year=$3::numeric FOR UPDATE",
+        Database::query_param_list(zoneId)
+                                (INVOICE_ZAL)
+                                (date.year())
+                                );
+
+    if(ip_res.size() == 0 || ip_res[0][0].isnull() || ip_res[0][0].isnull()) {
+        throw std::runtime_error("Missing invoice prefix");
+    }
+
+    int inv_prefix_type = ip_res[0][0];
+    unsigned long long inv_prefix = ip_res[0][1];
+
+    conn.exec_params("UPDATE invoice_prefix SET prefix = $1::bigint",
+        Database::query_param_list(inv_prefix) );
+
+    Database::Result curr_id = conn.exec("SELECT NEXT('invoice_id_seq'::regclass)");
+    if(curr_id.size() != 1 || curr_id[0][0].isnull()) {
+        throw std::runtime_error("Couldn't fetch new invoice ID");
+    }
+    int invoiceId = curr_id[0][0];
+
+    conn.exec_params(
+            "INSERT INTO invoice (id, prefix, zone, prefix_type, registrarid, taxDate, price, vat, total, totalVAT, credit) VALUES "
+            "($1::integer, $2::bigint, $3::integer, $4::integer, $5::integer, $6::date, $7::numeric(10,2), $8::integer"
+            "$9::numeric(10,2), $10::numeric(10,2), $11::numeric(10,2))", // total, totalVAT, credit
+        Database::query_param_list(invoiceId)
+                                (inv_prefix)
+                                (zoneId)
+                                (inv_prefix_type)
+                                (registrarId)
+                                (date)
+                                (price)
+                                (vat_percent)
+                                (total)
+                                (vat_amount)
+                                (credit)
+                                );
+
+    return invoiceId;
+
+}
+
 
 bool factoring_all(const char *database, const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
 {
