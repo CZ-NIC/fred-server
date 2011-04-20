@@ -190,9 +190,15 @@ public:
         }//for i
 
         if (selection_ == 0)
-            throw std::runtime_error("HandleCommandSelectionArgsGrp"
-                " - no command selected");
+        {
+            std::string unknown_command;
+            for (int i = 1; i < first_fa.get_argc(); ++i)
+            {
+                unknown_command += first_fa.get_argv()[i] + std::string(" ");
+            }
 
+            throw std::runtime_error("unknown command: " + unknown_command);
+        }
         return option_group_index;
     }//handle
     HandleCommandSelectionArgsGrp(CommandDescriptionsWithImplCallback command_descriptions)//init commands (path index by position + 1)
