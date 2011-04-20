@@ -197,7 +197,7 @@ public:
                 unknown_command += first_fa.get_argv()[i] + std::string(" ");
             }
 
-            throw std::runtime_error("unknown command: " + unknown_command);
+            throw std::runtime_error("unknown command: \"" + unknown_command + "\" try --help");
         }
         return option_group_index;
     }//handle
