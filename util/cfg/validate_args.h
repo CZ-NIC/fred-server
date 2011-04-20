@@ -80,11 +80,19 @@ namespace boost
                 v = any(s.substr(1, s.size()-2));
             }
             else
-            {   if (*s.begin() == '-')
+            {
+                if (*s.begin() == '-')
+
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                     throw validation_error(
                             "invalid argument value, argument value may be missing"
                             ", unquoted arg can't start with '-' ");
+#endif
+
                 v = any(s);
+
             }
         }//validate checked_string
 
@@ -117,8 +125,12 @@ namespace boost
                 size_t found=str_inside_quotes.find_first_not_of("0123456789");
                 if (found!=string::npos)
                 {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                     throw validation_error(std::string("invalid quoted argument value: '")
                         + s.at(found) + "' arg may contain only numbers 0 - 9");
+#endif
                 }
 
                 try
@@ -127,8 +139,12 @@ namespace boost
                 }
                 catch(const std::exception& ex)
                 {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                     throw validation_error(
                             std::string("invalid quoted argument value cast"));
+#endif
                 }
 
 
@@ -141,8 +157,12 @@ namespace boost
                     size_t found=s.find_first_not_of("0123456789");
                     if (found!=string::npos)
                     {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                         throw validation_error(std::string("invalid argument value: '")
                             + s.at(found) + "' arg may contain only numbers 0 - 9");
+#endif
                     }
                     try
                     {
@@ -150,8 +170,12 @@ namespace boost
                     }
                     catch(const std::exception& ex)
                     {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                         throw validation_error(
                                 std::string("invalid quoted argument value cast"));
+#endif
                     }
                 }
 
@@ -188,8 +212,12 @@ namespace boost
                 size_t found=str_inside_quotes.find_first_not_of("0123456789");
                 if (found!=string::npos)
                 {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                     throw validation_error(std::string("invalid quoted argument value: '")
                         + s.at(found) + "' arg may contain only numbers 0 - 9");
+#endif
                 }
 
                 try
@@ -198,8 +226,12 @@ namespace boost
                 }
                 catch(const std::exception& ex)
                 {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                     throw validation_error(
                             std::string("invalid quoted argument value cast"));
+#endif
                 }
 
                 v = any(str_inside_quotes);
@@ -211,8 +243,12 @@ namespace boost
                     size_t found=s.find_first_not_of("0123456789");
                     if (found!=string::npos)
                     {
+#if ( BOOST_VERSION > 104100 )
+                        boost::throw_exception(invalid_option_value(s));
+#else
                         throw validation_error(std::string("invalid argument value: '")
                             + s.at(found) + "' arg may contain only numbers 0 - 9");
+#endif
                     }
 
                     try
@@ -221,8 +257,12 @@ namespace boost
                     }
                     catch(const std::exception& ex)
                     {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                         throw validation_error(
                                 std::string("invalid argument value cast"));
+#endif
                     }
 
                 }
@@ -264,8 +304,12 @@ namespace boost
 
                 if (!boost::regex_match(str_inside_quotes, fp_number_regex))
                 {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                     throw validation_error(
                             std::string("invalid quoted argument value"));
+#endif
                 }
 
                 try
@@ -274,8 +318,13 @@ namespace boost
                 }
                 catch(const std::exception& ex)
                 {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+
                     throw validation_error(
                             std::string("invalid quoted argument value cast"));
+#endif
                 }
 
                 v = any(str_inside_quotes);
@@ -287,8 +336,12 @@ namespace boost
 
                     if (!boost::regex_match(s, fp_number_regex))
                     {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                         throw validation_error(
                                 std::string("invalid argument value"));
+#endif
                     }
 
                     try
@@ -297,8 +350,12 @@ namespace boost
                     }
                     catch(const std::exception& ex)
                     {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
                         throw validation_error(
                                 std::string("invalid argument value cast"));
+#endif
                     }
                 }
 
