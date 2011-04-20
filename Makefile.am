@@ -53,7 +53,9 @@ noinst_HEADERS = util/util.h util/singleton.h util/time_clock.h util/settings.h 
         util/cfg/handle_registry_args.h util/cfg/config_handler_decl.h \
         util/cfg/handle_mojeid_args.h util/cfg/handle_adifd_args.h \
         util/cfg/handle_logd_args.h util/cfg/handle_rifd_args.h \
-        util/cfg/command_selection_args.h util/cfg/check_args.h
+        util/cfg/command_selection_args.h util/cfg/check_args.h \
+        util/cfg/validate_args.h util/cfg/handle_sms_args.h util/types/optional.h \
+        util/types/optional_from_program_options.h
 
 #former noinst_LIBRARIES
 #util/db/libmockdb.a
@@ -753,6 +755,8 @@ src_corba_mojeid_fred_mifd_LDADD = $(LIBIDN_LIBS) \
 #src corba mojeid
 
 src_cli_admin_fred_admin_SOURCES = src/cli_admin/fred-admin.cc \
+         src/cli_admin/handle_adminclientselection_args.h \
+         src/cli_admin/baseclient.h \
          src/cli_admin/commonclient.cc      \
          src/cli_admin/commonclient.h       \
          src/cli_admin/domainclient.cc      \
