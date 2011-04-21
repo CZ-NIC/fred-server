@@ -752,6 +752,7 @@ public:
             if(data_.empty()) {
                 return;
             }
+            CommonListImpl::reload();
         }
         catch (Database::Exception& ex) {
             std::string message = ex.what();
