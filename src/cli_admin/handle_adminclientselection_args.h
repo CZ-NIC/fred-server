@@ -1751,6 +1751,39 @@ public:
 };//class HandleAdminClientNotifyLettersPostservisSendArgsGrp
 
 /**
+ * \class HandleAdminClientNotifyRegisteredLettersManualSendArgsGrp
+ * \brief admin client notify_registered_letters_manual_send options handler
+ */
+class HandleAdminClientNotifyRegisteredLettersManualSendArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("notify_registered_letters_manual_send");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("notify_registered_letters_manual_send options")));
+        cfg_opts->add_options()
+            ("notify_registered_letters_manual_send", "manual send of generated registered letters")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientNotifyRegisteredLettersManualSendArgsGrp
+
+
+/**
  * \class HandleAdminClientNotifySmsSendArgsGrp
  * \brief admin client notify_sms_send options handler
  */

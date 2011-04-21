@@ -26,9 +26,9 @@
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-#include "handle_adminclientselection_args.h"
+#include "src/cli_admin/handle_adminclientselection_args.h"
 #include "log/context.h"
-#include "domainclient.h"
+#include "cli_admin/domainclient.h"
 
 /**
  * \class domain_list_impl

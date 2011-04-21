@@ -59,7 +59,7 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-#include "handle_adminclientselection_args.h"
+#include "cli_admin/handle_adminclientselection_args.h"
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_sms_args.h"
 #include "cfg/check_args.h"
@@ -117,6 +117,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientPriceAddArgsGrp),price_add_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientNotifyStateChangesArgsGrp),notify_state_changes_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientNotifyLettersPostservisSendArgsGrp),notify_letters_postservis_send_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientNotifyRegisteredLettersManualSendArgsGrp),notify_registered_letters_manual_send_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientNotifySmsSendArgsGrp),notify_sms_send_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientEnumParameterChangeArgsGrp),enum_parameter_change_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectNewStateRequestArgsGrp),object_new_state_request_impl()))

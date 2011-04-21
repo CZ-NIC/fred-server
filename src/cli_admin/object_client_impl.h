@@ -26,9 +26,9 @@
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-#include "handle_adminclientselection_args.h"
+#include "cli_admin/handle_adminclientselection_args.h"
 #include "log/context.h"
-#include "objectclient.h"
+#include "cli_admin/objectclient.h"
 
 /**
  * \class object_new_state_request_impl

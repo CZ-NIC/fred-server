@@ -20,6 +20,7 @@
 #define _NOTIFYCLIENT_H_
 
 #include "util/hp/hpmail.h"
+#include "util/subprocess.h"
 
 #define NOTIFY_SHOW_OPTS_NAME           "notify_show_opts"
 #define NOTIFY_SHOW_OPTS_NAME_DESC      "show all notify command line options"
@@ -147,6 +148,9 @@ public:
         , std::string& batch_id);
 
 }; // class NotifyClient
+
+
+
 
 } // namespace Admin;
 

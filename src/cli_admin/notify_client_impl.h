@@ -23,13 +23,15 @@
 
 #ifndef NOTIFY_CLIENT_IMPL_H_
 #define NOTIFY_CLIENT_IMPL_H_
+#include <cstdio>
+#include <cstdlib>
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_sms_args.h"
-#include "handle_adminclientselection_args.h"
+#include "cli_admin/handle_adminclientselection_args.h"
 #include "log/context.h"
-#include "notifyclient.h"
+#include "cli_admin/notifyclient.h"
 
 
 /**
@@ -97,6 +99,43 @@ struct notify_letters_postservis_send_impl
       return ;
   }
 };
+
+/**
+ * \class notify_registered_letters_manual_send_impl
+ * \brief admin client implementation of notify_registered_letters_manual_send
+ */
+struct notify_registered_letters_manual_send_impl
+{
+  void operator()() const
+  {
+      Logging::Context ctx("notify_registered_letters_manual_send_impl");
+      Logging::Manager::instance_ref().get(PACKAGE).debug("start");
+
+      //test SubProcessOutput print
+      //SubProcessOutput sub_output = ShellCmd("ls /usr/sbin/blabol", "/bin/bash")();
+      //std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+      //        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+
+      //check files
+      std::string err_msg;
+      if(!(err_msg=ShellCmd("rm --version")().stderr).empty())
+          throw std::runtime_error(err_msg);
+      if(!(err_msg=ShellCmd("gs --version")().stderr).empty())
+          throw std::runtime_error(err_msg);
+      if((err_msg=ShellCmd("filemanager_client --help")().stderr).find("nameservice") == std::string::npos)
+          throw std::runtime_error(err_msg);
+      if(!(err_msg=ShellCmd("ls /usr/sbin/sendmail")().stderr).empty())
+          throw std::runtime_error(err_msg);
+
+
+
+      if(!(err_msg=ShellCmd("not implemented yet")().stderr).empty())
+          throw std::runtime_error(err_msg);
+
+      return ;
+  }
+};
+
 
 /**
  * \class notify_sms_send_impl

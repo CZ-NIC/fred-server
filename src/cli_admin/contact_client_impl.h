@@ -28,7 +28,7 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "handle_adminclientselection_args.h"
 #include "log/context.h"
-#include "contactclient.h"
+#include "cli_admin/contactclient.h"
 
 
 /**
