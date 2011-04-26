@@ -87,7 +87,7 @@ util_log_liblog_a_SOURCES = util/log/logger.cc util/log/log.cc \
         util/log/log_types.h util/log/logger.h util/log/context.h
 
 #tests
-SERVER_TESTS = tests/test-server
+SERVER_TESTS = tests/test-server tests/test-invoice
 
 #TESTS = $(SERVER_TESTS)
 
@@ -927,6 +927,29 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
             src/corba/libmailer.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
 
+
+
+
+
+tests_test_invoice_SOURCES = tests/test-invoicing.cc
+                     
+                     
+tests_test_invoice_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
+                     $(BOOST_LDFLAGS) \
+                     $(AM_LDFLAGS)
+
+                                         
+# TODO something like this should be used....
+tests_test_invoice_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
+    src/fredlib/libfred.a \
+    src/model/libmodel.a \
+    util/db/libdb.a \
+    util/types/libtypes.a \
+    src/old_utils/liboldutils.a \
+    util/log/liblog.a \
+    util/libutil.a \
+    $(BOOST_THREAD_LIB)
+                                                                                 
 
 
 install-tests: $(SERVER_TESTS)
