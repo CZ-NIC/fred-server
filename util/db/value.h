@@ -347,6 +347,10 @@ inline std::ostream& operator<<(std::ostream& _os, const Value& _value) {
 }
 
 
+
+std::vector<std::string> array_to_vector(std::string _dbarr);
+
+
 }
 
 #endif /*VALUE_H_*/

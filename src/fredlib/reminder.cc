@@ -2,10 +2,10 @@
 #include <string>
 #include <vector>
 #include <boost/assign/list_of.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "reminder.h"
 #include "db_settings.h"
-
 #include "log/logger.h"
 #include "log/context.h"
 
@@ -13,26 +13,45 @@
 using namespace boost::assign;
 
 
-std::map<std::string, std::string> map_from_db_row(const Database::Row &_row,
-                                                   const std::vector<std::string> &_keys)
+namespace Fred {
+
+
+void row_map_copy(std::map<std::string, std::string> &_dest,
+                  const Database::Row &_row,
+                  const std::vector<std::string> &_keys)
 {
-    std::map<std::string, std::string> data;
     for (std::vector<std::string>::const_iterator key = _keys.begin();
             key != _keys.end();
             ++key)
     {
-        data[*key] = static_cast<std::string>(_row[*key]);
+        _dest[*key] = static_cast<std::string>(_row[*key]);
     }
-    return data;
 }
 
 
-namespace Fred {
+void insert_parameter_list(std::map<std::string, std::string> &_params,
+                             const std::string &_base_key,
+                             const std::vector<std::string> &_list)
+{
+    for (std::vector<std::string>::size_type i = 0; i < _list.size(); ++i)
+    {
+        _params.insert(std::make_pair(
+                       _base_key + "." + boost::lexical_cast<std::string>(i),
+                       _list[i]));
+    }
+}
+
 
 
 class ReminderEmail
 {
 public:
+    struct IntegrityError : public std::runtime_error
+    {
+        IntegrityError(const std::string &_err)
+            : std::runtime_error("integrity_error: " + _err) { }
+    };
+
     typedef std::map<std::string, std::string> ParametersMap;
 
 
@@ -40,8 +59,14 @@ public:
                   const Database::Row &_linked_data)
     {
         /* check if results have all necessary data */
+        if (static_cast<unsigned long long>(_contact_data["id"])
+                != static_cast<unsigned long long>(_linked_data["id"]))
+        {
+            throw IntegrityError("rows contact id mismatch!");
+        }
         contact_id_ = static_cast<unsigned long long>(_contact_data["id"]);
-        ParametersMap tmp1 = map_from_db_row(_contact_data,
+
+        row_map_copy(email_params_, _contact_data,
                 list_of("roid")
                        ("crdate")
                        ("handle")
@@ -56,14 +81,18 @@ public:
                        ("fax")
                        ("email")
                        ("notify_email"));
-        ParametersMap tmp2 = map_from_db_row(_linked_data,
-                list_of("domains")
-                       ("nssets")
-                       ("keysets")
-                       ("domains_owner")
-                       ("domains_admin_c"));
-        email_params_.insert(tmp1.begin(), tmp1.end());
-        email_params_.insert(tmp2.begin(), tmp2.end());
+
+        row_map_copy(email_params_, _linked_data,
+                list_of("arr_domains")
+                       ("arr_nssets")
+                       ("arr_keysets")
+                       ("arr_domains_owner")
+                       ("arr_domains_admin_c"));
+
+        /* transform objects arrays to clearsilver list */
+        insert_parameter_list(email_params_, "domains", Database::array_to_vector(email_params_["arr_domains"]));
+        insert_parameter_list(email_params_, "nssets",  Database::array_to_vector(email_params_["arr_nssets"]));
+        insert_parameter_list(email_params_, "keysets", Database::array_to_vector(email_params_["arr_keysets"]));
    }
 
 
@@ -123,6 +152,7 @@ public:
           dummy1_(conn_.exec(
                 "CREATE TEMPORARY TABLE tmp_reminder"
                 " (contact_id bigint, contact_crdate timestamp without time zone)")),
+          /* TODO: join with already notified on given date to prevert multiple notification */
           dummy2_(conn_.exec_params(
                 "INSERT INTO tmp_reminder"
                 " SELECT coreg.id, coreg.crdate"
@@ -158,15 +188,15 @@ public:
                 " ORDER BY tmp.contact_id")),
           linked_data_(conn_.exec(
                 "SELECT tmp.contact_id AS id,"
-                " array_accum(DISTINCT doreg.name) AS domains_admin_c,"
-                " array_accum(DISTINCT doreg2.name) AS domains_owner,"
+                " array_accum(DISTINCT doreg.name) AS arr_domains_admin_c,"
+                " array_accum(DISTINCT doreg2.name) AS arr_domains_owner,"
                 " array(SELECT DISTINCT (array_accum(DISTINCT doreg.name)||array_accum(DISTINCT doreg2.name))[i]"
                 " FROM generate_series("
                 " array_lower((array_accum(DISTINCT doreg.name)||array_accum(DISTINCT doreg2.name)), 1),"
                 " array_upper((array_accum(DISTINCT doreg.name)||array_accum(DISTINCT doreg2.name)), 1)) g(i)"
-                " ) AS domains,"
-                " array_accum(DISTINCT noreg.name) AS nssets,"
-                " array_accum(DISTINCT koreg.name) AS keysets"
+                " ) AS arr_domains,"
+                " array_accum(DISTINCT noreg.name) AS arr_nssets,"
+                " array_accum(DISTINCT koreg.name) AS arr_keysets"
                 " FROM tmp_reminder tmp"
                 " LEFT JOIN (domain_contact_map dcm"
                 " JOIN object_registry doreg ON doreg.id = dcm.domainid"
@@ -208,23 +238,15 @@ public:
 
     ReminderEmail next()
     {
-        if (index_ > contact_data_.size()) {
-            throw StopIteration();
-        }
-
-        if (static_cast<unsigned long long >(contact_data_[index_]["id"])
-                != static_cast<unsigned long long>(linked_data_[index_]["id"])) {
-            throw std::runtime_error("intergrity error: row data mismatch!");
-        }
-
-        ReminderEmail next = ReminderEmail(contact_data_[index_], linked_data_[index_]);
+        unsigned long long lindex = index_;
         index_ += 1;
-        return next;
+
+        return ReminderEmail(contact_data_[lindex], linked_data_[lindex]);
     }
 };
 
 
-void run_reminder(const boost::gregorian::date &_date)
+void run_reminder(Mailer::Manager *_mailer, const boost::gregorian::date &_date)
 {
     try {
         Logging::Context ctx("reminder");
@@ -237,24 +259,40 @@ void run_reminder(const boost::gregorian::date &_date)
 
         ReminderEmailGenerator rem = ReminderEmailGenerator(_date);
         while (rem.is_next()) {
-            ReminderEmail email = rem.next();
-            ReminderEmail::ParametersMap params = email.get_template_params();
+            try {
+                ReminderEmail email = rem.next();
 
-            LOGGER(PACKAGE).info(boost::format("processing %1% (crdate: %2%) %3%")
-                        % params["roid"] % params["crdate"] % params["handle"]);
-            LOGGER(PACKAGE).debug(boost::format(
-                        "%1% data ((owner: %2%, admin-c: %3%) => domains: %4%, nssets: %5%, keysets: %6%)")
-                        % params["handle"]
-                        % params["domains_owner"]
-                        % params["domains_admin_c"]
-                        % params["domains"]
-                        % params["nssets"]
-                        % params["keysets"]);
+                ReminderEmail::ParametersMap params = email.get_template_params();
+                LOGGER(PACKAGE).info(boost::format("processing %1% (crdate: %2%) %3%")
+                            % params["roid"] % params["crdate"] % params["handle"]);
+                LOGGER(PACKAGE).debug(boost::format(
+                            "%1% data ((owner: %2%, admin-c: %3%) => domains: %4%, nssets: %5%, keysets: %6%)")
+                            % params["handle"]
+                            % params["arr_domains_owner"]
+                            % params["arr_domains_admin_c"]
+                            % params["arr_domains"]
+                            % params["arr_nssets"]
+                            % params["arr_keysets"]);
+
+                Mailer::Handles handles;
+                Mailer::Attachments attach;
+                _mailer->sendEmail("", params["email"], "", email.get_template(), params, handles, attach);
+            }
+            catch (ReminderEmail::IntegrityError &_ie) {
+                /* stop on integrity error */
+                throw;
+            }
+            catch (std::exception &_ex) {
+                /* do not fail after one contact error */
+                LOGGER(PACKAGE).error(boost::format("problem occured (%1%)") % _ex.what());
+            }
         }
     }
     catch (std::exception &_ex) {
-        LOGGER(PACKAGE).error(_ex.what());
-        /* TODO: error handling */
+        throw ReminderError(_ex.what());
+    }
+    catch (...) {
+        throw ReminderError("unknown error");
     }
 }
 
