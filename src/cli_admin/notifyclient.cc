@@ -731,7 +731,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               "From: ")+email+"\nContent-Type: multipart/mixed; boundary=\"SSSSSS\""
               "\n--SSSSSS\nContent-Disposition: attachment; filename=registered_letters_$(date +'%Y-%m-%d').pdf"
               "Content-Type: application/pdf; charset=UTF-8\nContent-Transfer-Encoding: base64\n\n\";"
-              "\nbase64 ./all.pdf"
+              "\nbase64 ./all.pdf "
               "echo \"\n\n--SSSSSS\n\n\";"
               "\n} | /usr/sbin/sendmail "+email;
 
