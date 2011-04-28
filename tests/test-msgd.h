@@ -29,6 +29,14 @@
 #include <sys/time.h>
 #include <time.h>
 
+#include <cstdio>
+#include <stdexcept>
+#include <fstream>
+#include <ios>
+#include <iomanip>
+#include <sstream>
+#include <limits>
+
 
 #include <boost/format.hpp>
 #include <boost/thread.hpp>

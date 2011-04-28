@@ -73,12 +73,38 @@ BOOST_AUTO_TEST_CASE( test_corba_interface )
             paddr->city = CORBA::string_dup("Praha");
             paddr->country = CORBA::string_dup("Czech Republic");
 
-            Registry::Messages::ByteBuffer_var file_content( new Registry::Messages::ByteBuffer(3) );//prealocate
-            file_content->length(3);//set/alocate
+
+            //load test pdf
+            std::string test_pdf_file_name = std::string(TEST_DATA)+"doc/fred-server/test-file.pdf";
+            std::ifstream test_pdf;
+            long long test_pdf_length = 0;
+            test_pdf.open (test_pdf_file_name.c_str()
+                    , std::ios::in | std::ios::binary);
+            if(test_pdf.is_open())
+            {//ok file is there
+                test_pdf.seekg (0, std::ios::end);//seek end of the file
+                test_pdf_length = test_pdf.tellg();//get length of the file
+                test_pdf.seekg (0, std::ios::beg);//reset
+            }
+            else //no more files
+                    throw std::runtime_error(
+                            std::string("unable to open file: ")
+                            + test_pdf_file_name);
+
+            Registry::Messages::ByteBuffer_var file_content( new Registry::Messages::ByteBuffer(test_pdf_length) );//prealocate
+            file_content->length(test_pdf_length);//set/alocate
             CORBA::Octet* data = file_content->get_buffer();
+
+            /*
             data[0] = 'p';
             data[1] = 'd';
             data[2] = 'f';
+            */
+
+            data[0] = 'p';
+
+            //read pdf into buffer
+            test_pdf.read( reinterpret_cast<char*>(&(data[0])), static_cast<std::streamsize>(test_pdf_length) );
 
             CORBA::String_var file_name = CORBA::string_dup("test1.pdf");
 

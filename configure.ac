@@ -220,6 +220,9 @@ AC_DEFINE_UNQUOTED([CONFIG_FILE], [["]$SYSCONFDIR/fred/server.conf["]], [locatio
 # config file for hpmail (postservis)
 AC_DEFINE_UNQUOTED([HPMAIL_CONFIG], [["]$SYSCONFDIR/fred/hpmail.conf["]], [location of hpmail config file])
 
+# location of data for tests 
+AC_DEFINE_UNQUOTED([TEST_DATA], [["]$DATAROOTDIR/["]], [location of data for tests])
+
 AC_DEFINE_UNQUOTED([HAVE_LOGGER], [1], [compile libraries with logging messages])
 
 
