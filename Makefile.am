@@ -956,7 +956,7 @@ install-tests: $(SERVER_TESTS)
 	$(INSTALL_PROGRAM) $(SERVER_TESTS) $(bindir)
 
 testdatadir = $(docdir)
-dist_testdata_DATA = tests/example_payments.xml
+dist_testdata_DATA = tests/example_payments.xml tests/test-file.pdf
 
 #tests
 
