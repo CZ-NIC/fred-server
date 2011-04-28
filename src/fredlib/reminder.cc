@@ -71,6 +71,8 @@ public:
                        ("crdate")
                        ("handle")
                        ("registrar")
+                       ("registrar_name")
+                       ("registrar_url")
                        ("name")
                        ("address")
                        ("organization")
@@ -168,6 +170,8 @@ public:
                 " coreg.name AS handle,"
                 " coreg.crdate AS crdate,"
                 " r.handle AS registrar,"
+                " r.name AS registrar_name,"
+                " r.url AS registrar_url,"
                 " c.name AS name,"
                 " c.street1 || ', ' || c.city || ', ' || c.postalcode as address,"
                 " c.organization AS organization,"
