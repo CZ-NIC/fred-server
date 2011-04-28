@@ -74,4 +74,29 @@ struct SmsSendArgs
     {}//init ctor
 };//struct SmsSendArgs
 
+
+/**
+ * \class RegisteredLettersManualSendArgs
+ * \brief admin client notify_registered_letters_manual_send_impl params
+ */
+struct RegisteredLettersManualSendArgs
+{
+    optional_string working_directory;
+    std::string email;
+    unsigned long shell_cmd_timeout;//secs
+
+
+    RegisteredLettersManualSendArgs()
+    {}//ctor
+    RegisteredLettersManualSendArgs(
+            const optional_string& _working_directory
+            , const std::string & _email
+            , const long _shell_cmd_timeout
+            )
+    : working_directory(_working_directory)
+    , email(_email)
+    , shell_cmd_timeout(_shell_cmd_timeout)
+    {}//init ctor
+};//struct RegisteredLettersManualSendArgs
+
 #endif // NOTIFY_PARAMS_H_

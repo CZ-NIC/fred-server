@@ -149,7 +149,10 @@ public:
 
 }; // class NotifyClient
 
-
+void notify_registered_letters_manual_send_impl(const std::string& nameservice_host_port
+        , const std::string& nameservice_context
+        , const RegisteredLettersManualSendArgs& params
+        );
 
 
 } // namespace Admin;

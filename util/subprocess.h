@@ -107,6 +107,7 @@ class ShellCmd
     static const int num_of_pipe_ends = 2;
     const std::string cmd_;
     const std::string shell_;
+    unsigned long timeout_;
 
     int p[num_of_pipes][num_of_pipe_ends];//pipes fds
 
@@ -154,6 +155,7 @@ public:
     ShellCmd(const std::string& cmd)
     :cmd_(cmd)
     , shell_("/bin/sh")
+    , timeout_(10)
     {
         //init pipe fds
         for(int i = 0; i < num_of_pipes; ++i)
@@ -161,9 +163,27 @@ public:
                 p[i][j] = -1;
     }
 
-    ShellCmd(const std::string& cmd, const std::string& shell)//shell is filename, not command line
+    ShellCmd(const std::string& cmd
+            , const unsigned long timeout
+            )
+    :cmd_(cmd)
+    , shell_("/bin/sh")
+    , timeout_(timeout)
+    {
+        //init pipe fds
+        for(int i = 0; i < num_of_pipes; ++i)
+            for(int j = 0; j < num_of_pipe_ends; ++j)
+                p[i][j] = -1;
+    }
+
+
+    ShellCmd(const std::string& cmd
+            , const std::string& shell //shell is filename, not command line
+            , const unsigned long timeout //in seconds used for alarm
+            )
     :cmd_(cmd)
     , shell_(shell)
+    , timeout_(timeout)
     {
         //init pipe fds
         for(int i = 0; i < num_of_pipes; ++i)
@@ -190,7 +210,7 @@ public:
         }
     }
 
-    SubProcessOutput operator()()
+    SubProcessOutput execute()
     {
         close_pipes();
         create_pipes();
@@ -285,11 +305,14 @@ public:
             child_stdin_close_guard.reset((FILE*)(0));//flush and close input
 
             // wait for child completion
+            //set child timeout
+            if (timeout_ != 0) alarm(timeout_);
             int    status;//shell exit status
             do
             {
                 pid_t dp;//death pid
                 dp = waitpid(pid, &status,0);
+                if (timeout_ != 0) alarm(0);//cancel timeout
 
                 if(dp == -1)
                 {
@@ -413,6 +436,9 @@ public:
             char *shell_argv[2];
             shell_argv[0] = (char*)shell_.c_str();
             shell_argv[1] = NULL;
+
+
+            std::cout << "\n\nshell: " << shell_ << " cmd: " << cmd_ << std::endl;
 
             //shell exec
             execvp(shell_argv[0],shell_argv);

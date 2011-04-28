@@ -16,7 +16,17 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include "simple.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cerrno>
+#include <unistd.h>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <boost/lexical_cast.hpp>
+
+#include "corba/file_manager_client.h"
+
 #include "commonclient.h"
 #include "notifyclient.h"
 #include "fredlib/info_buffer.h"
@@ -530,6 +540,240 @@ NotifyClient::getOptsCount()
 {
     return sizeof(m_opts) / sizeof(options);
 }
+
+//#4712#comment:23
+void notify_registered_letters_manual_send_impl(const std::string& nameservice_host_port
+        , const std::string& nameservice_context
+        , const RegisteredLettersManualSendArgs& params
+        )
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+
+    try
+    {
+        //get working directory from cfg
+        optional_string working_directory = params.working_directory;
+
+        //get shell cmd timeout from cfg
+        unsigned long timeout = params.shell_cmd_timeout;
+
+
+        if(working_directory.is_value_set())
+        if (chdir(working_directory.get_value().c_str()) == -1)
+        {
+          std::string err_msg(strerror(errno));
+          std::string msg("chdir error : ");
+          Logging::Manager::instance_ref()
+              .get(PACKAGE).error(msg+err_msg);
+          throw std::runtime_error(msg+err_msg);
+        }
+
+        //checks
+
+        //if rm is there
+        {
+          SubProcessOutput sub_output = ShellCmd("rm --version", timeout).execute();
+          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+
+          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        }
+        //if gs is there
+        {
+          SubProcessOutput sub_output = ShellCmd("gs --version", timeout).execute();
+          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+
+          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        }
+        //if base64 is there
+        {
+          SubProcessOutput sub_output = ShellCmd("base64 --version", timeout).execute();
+          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+
+          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        }
+        //if sendmail is there
+        {
+          SubProcessOutput sub_output = ShellCmd("ls /usr/sbin/sendmail", timeout).execute();
+          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+
+          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        }
+
+        //remove old letter files
+        {
+          SubProcessOutput sub_output = ShellCmd("rm -f letter*.pdf", timeout).execute();
+          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        }
+        {
+          SubProcessOutput sub_output = ShellCmd("rm -f all.pdf", timeout).execute();
+          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        }
+
+        // init file manager
+        CorbaClient corba_client(0, 0
+              , nameservice_host_port
+              , nameservice_context);//NS_CONTEXT_NAME
+        FileManagerClient fm_client(corba_client.getNS());
+        Fred::File::ManagerPtr file_manager(
+              Fred::File::Manager::create(&fm_client));
+
+        //read letter ids
+
+          Database::Result reg_letter_ids = conn.exec(
+              "select ma.id, la.file_id, ma.attempt "
+              " from message_archive ma "
+              " join comm_type ct on ma.comm_type_id = ct.id "
+              " join enum_send_status ess on ess.id=ma.status_id "
+              " join letter_archive la on la.id=ma.id "
+              " where ct.type = 'registered_letter' "
+              " and ess.status_name = 'ready' ");
+
+          std::size_t reg_letter_count = reg_letter_ids.size();
+
+          if (reg_letter_count == 0)
+          {
+              Logging::Manager::instance_ref().get(PACKAGE).debug("no registered letters found");
+              std::cout << "no registered letters found" << std::endl;
+
+              //get email from cfg
+              std::string email = params.email;
+
+              if(email.empty()) throw std::runtime_error("email required");
+
+              {
+                  std::string cmd=
+                  std::string("{\n"
+                  "echo \"Subject: No new registered letters $(date +'%Y-%m-%d')\n"
+                  "From: ")+email+"\nContent-Type: text/plain; charset=UTF-8; format=flowed"
+                  "\nContent-Transfer-Encoding: 8bit\n\";"
+                  "\nno new registered letters"
+                  "\n} | /usr/sbin/sendmail "+email;
+
+                  SubProcessOutput sub_output = ShellCmd(cmd, timeout).execute();
+                  std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                                << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+                  if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+              }
+
+              return;
+          }
+
+          if (reg_letter_ids[0].size() != 3)
+          {
+                throw std::runtime_error("3 columns in query result expected");
+          }
+
+          //process letter ids
+          for(std::size_t i = 0; i < reg_letter_count; ++i)
+          {
+            unsigned long long file_id = reg_letter_ids[i][1];
+
+            std::string letter_file_name = std::string("./letter")
+                    + boost::lexical_cast<std::string>(file_id)
+                    + ".pdf";
+
+            std::vector<char> file_buffer;
+            file_manager->download(file_id,file_buffer);
+
+            std::ofstream letter_file;
+            letter_file.open(letter_file_name.c_str() //./letter$FILEID.pdf
+              ,std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+
+            if(letter_file.is_open())
+            {
+                letter_file.write(&(file_buffer[0]), file_buffer.size());
+            }
+            else
+            {
+                throw std::runtime_error("letterfile open error");
+            }
+
+            std::cout
+            << "ma.id " << reg_letter_ids[i][0]//MSGID
+            << " la.file_id " << reg_letter_ids[i][1]//FILEID
+           << "ma.attempt " << reg_letter_ids[i][2]//attempt
+            << " file_id " << file_id
+            << " letter_file_name " << letter_file_name
+            << std::endl;
+
+          }//for letter files
+
+          //concat letters
+          {
+              SubProcessOutput sub_output = ShellCmd(
+                      "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=all.pdf letter*.pdf"
+                      , timeout).execute();
+              std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                            << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+              if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+          }
+
+          //send all.pdf by email
+
+          //get email from cfg
+          std::string email = params.email;
+
+          if(email.empty()) throw std::runtime_error("email required");
+
+          {
+              std::string cmd=
+              std::string("{\n"
+              "echo \"Subject: Registered letters to send $(date +'%Y-%m-%d')\n"
+              "From: ")+email+"\nContent-Type: multipart/mixed; boundary=\"SSSSSS\""
+              "\n--SSSSSS\nContent-Disposition: attachment; filename=registered_letters_$(date +'%Y-%m-%d').pdf"
+              "Content-Type: application/pdf; charset=UTF-8\nContent-Transfer-Encoding: base64\n\n\";"
+              "\nbase64 ./all.pdf"
+              "echo \"\n\n--SSSSSS\n\n\";"
+              "\n} | /usr/sbin/sendmail "+email;
+
+              SubProcessOutput sub_output = ShellCmd(cmd, timeout).execute();
+              std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                            << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+              if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+          }
+
+
+          //process letter ids
+          for(std::size_t i = 0; i < reg_letter_count; ++i)
+          {
+            unsigned long long msg_id = reg_letter_ids[i][0];
+            //unsigned long long file_id = reg_letter_ids[i][1];
+            long attempt = reg_letter_ids[i][2];
+
+            conn.exec_params("update message_archive set "
+                    "status_id = (select id from message_status where status_name = 'sent') "
+                    ", attempt = $1::integer "
+                    ", moddate = CURRENT_TIMESTAMP "
+                    " where id = $2::integer"
+                    , Database::query_param_list
+                    (attempt+1)
+                    (msg_id)
+            );
+          }//for msg id
+
+    }
+    catch (std::exception &ex) {
+      throw std::runtime_error(str(boost::format(
+                      "notify_registered_letters_manual_send_impl: %1%")
+                      % ex.what()));
+    }
+    catch (...) {
+      throw std::runtime_error("notify_registered_letters_manual_send_impl: unknown error");
+    }
+
+    tx.commit();
+
+      return ;
+}//
 
 } // namespace Admin;
 

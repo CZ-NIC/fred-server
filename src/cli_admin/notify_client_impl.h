@@ -25,6 +25,11 @@
 #define NOTIFY_CLIENT_IMPL_H_
 #include <cstdio>
 #include <cstdlib>
+#include <cerrno>
+#include <unistd.h>
+#include <fstream>
+#include <sstream>
+#include <boost/lexical_cast.hpp>
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
@@ -32,6 +37,10 @@
 #include "cli_admin/handle_adminclientselection_args.h"
 #include "log/context.h"
 #include "cli_admin/notifyclient.h"
+#include "cli_admin/commonclient.h"
+#include "corba/file_manager_client.h"
+
+
 
 
 /**
@@ -108,31 +117,14 @@ struct notify_registered_letters_manual_send_impl
 {
   void operator()() const
   {
-      Logging::Context ctx("notify_registered_letters_manual_send_impl");
-      Logging::Manager::instance_ref().get(PACKAGE).debug("start");
+    Logging::Context ctx("notify_registered_letters_manual_send_impl");
 
-      //test SubProcessOutput print
-      //SubProcessOutput sub_output = ShellCmd("ls /usr/sbin/blabol", "/bin/bash")();
-      //std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-      //        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
-
-      //check files
-      std::string err_msg;
-      if(!(err_msg=ShellCmd("rm --version")().stderr).empty())
-          throw std::runtime_error(err_msg);
-      if(!(err_msg=ShellCmd("gs --version")().stderr).empty())
-          throw std::runtime_error(err_msg);
-      if((err_msg=ShellCmd("filemanager_client --help")().stderr).find("nameservice") == std::string::npos)
-          throw std::runtime_error(err_msg);
-      if(!(err_msg=ShellCmd("ls /usr/sbin/sendmail")().stderr).empty())
-          throw std::runtime_error(err_msg);
-
-
-
-      if(!(err_msg=ShellCmd("not implemented yet")().stderr).empty())
-          throw std::runtime_error(err_msg);
-
-      return ;
+    Admin::notify_registered_letters_manual_send_impl(
+        CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
+        , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
+        , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyRegisteredLettersManualSendArgsGrp>()->params
+    );
+    return;
   }
 };
 

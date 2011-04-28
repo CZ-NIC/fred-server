@@ -1758,6 +1758,8 @@ class HandleAdminClientNotifyRegisteredLettersManualSendArgsGrp : public HandleC
 {
 public:
 
+    RegisteredLettersManualSendArgs params;
+
     CommandDescription get_command_option()
     {
         return CommandDescription("notify_registered_letters_manual_send");
@@ -1770,7 +1772,19 @@ public:
                         std::string("notify_registered_letters_manual_send options")));
         cfg_opts->add_options()
             ("notify_registered_letters_manual_send", "manual send of generated registered letters")
-                ;
+            ("working_directory", boost::program_options
+                ::value<Checked::string>()->default_value("./")
+                     ->notifier(save_string(params.working_directory))
+                , "working directory used for letter files")
+            ("email", boost::program_options
+                ::value<Checked::string>()
+                     ->notifier(save_arg<std::string>(params.email))
+                , "email address where to send concatenated letter files")
+            ("shell_cmd_timeout", boost::program_options
+                ::value<Checked::ulong>()->default_value(10)
+                     ->notifier(save_arg<unsigned long>(params.shell_cmd_timeout))
+                , "set alarm timeout for shell commands [s]")
+            ;
         return cfg_opts;
     }//get_options_description
     std::size_t handle( int argc, char* argv[],  FakedArgs &fa

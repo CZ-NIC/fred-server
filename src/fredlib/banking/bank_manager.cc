@@ -455,7 +455,7 @@ public:
                 Database::Result result = conn.exec(query);
                 if (result.size() != 0) {
                     throw std::runtime_error(str(boost::format(
-                                    "account '%1%/%2%' already exist")
+                                    "account '%1%/%2%' already exists")
                                     % _account_number % _bank_code));
                 }
                 /* insert new account */
