@@ -575,47 +575,31 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         //if rm is there
         {
           SubProcessOutput sub_output = ShellCmd("rm --version", timeout).execute();
-          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
-
           if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
         }
         //if gs is there
         {
           SubProcessOutput sub_output = ShellCmd("gs --version", timeout).execute();
-          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
-
           if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
         }
         //if base64 is there
         {
           SubProcessOutput sub_output = ShellCmd("base64 --version", timeout).execute();
-          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
-
           if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
         }
         //if sendmail is there
         {
           SubProcessOutput sub_output = ShellCmd("ls /usr/sbin/sendmail", timeout).execute();
-          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
-
           if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
         }
 
         //remove old letter files
         {
           SubProcessOutput sub_output = ShellCmd("rm -f letter*.pdf", timeout).execute();
-          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
           if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
         }
         {
           SubProcessOutput sub_output = ShellCmd("rm -f all.pdf", timeout).execute();
-          std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                        << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
           if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
         }
 
@@ -655,13 +639,12 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                   std::string("{\n"
                   "echo \"Subject: No new registered letters $(date +'%Y-%m-%d')\n"
                   "From: ")+email+"\nContent-Type: text/plain; charset=UTF-8; format=flowed"
-                  "\nContent-Transfer-Encoding: 8bit\n\";"
-                  "\nno new registered letters"
+                  "\nContent-Transfer-Encoding: 8bit\n\nno new registered letters\n\";"
                   "\n} | /usr/sbin/sendmail "+email;
 
                   SubProcessOutput sub_output = ShellCmd(cmd, timeout).execute();
-                  std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                                << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+                  //std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                    //            << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
                   if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
               }
 
@@ -698,14 +681,6 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                 throw std::runtime_error("letterfile open error");
             }
 
-            std::cout
-            << "ma.id " << reg_letter_ids[i][0]//MSGID
-            << " la.file_id " << reg_letter_ids[i][1]//FILEID
-           << "ma.attempt " << reg_letter_ids[i][2]//attempt
-            << " file_id " << file_id
-            << " letter_file_name " << letter_file_name
-            << std::endl;
-
           }//for letter files
 
           //concat letters
@@ -713,8 +688,8 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               SubProcessOutput sub_output = ShellCmd(
                       "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=all.pdf letter*.pdf"
                       , timeout).execute();
-              std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                            << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+              //std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+            //                << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
               if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
           }
 
@@ -737,8 +712,8 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               "\n} | /usr/sbin/sendmail "+email;
 
               SubProcessOutput sub_output = ShellCmd(cmd, timeout).execute();
-              std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                            << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+              //std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
+                //            << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
               if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
           }
 

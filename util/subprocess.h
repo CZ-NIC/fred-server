@@ -456,7 +456,7 @@ public:
             shell_argv[1] = NULL;
 
 
-            std::cout << "\n\nshell: " << shell_ << " cmd: " << cmd_ << std::endl;
+            //std::cout << "\n\nshell: " << shell_ << " cmd: " << cmd_ << std::endl;
 
             //shell exec
             execvp(shell_argv[0],shell_argv);
