@@ -617,7 +617,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         std::string new_status = "sent";
         std::string batch_id = std::string("manual send ")
             + boost::posix_time::to_iso_extended_string(
-                    boost::posix_time::microsec_clock::universal_time());
+                    boost::posix_time::microsec_clock::universal_time())+" UTC";
         std::string comm_type = "registered_letter";
 
         Fred::Messages::LetterProcInfo proc_reg_letters
