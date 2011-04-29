@@ -24,6 +24,7 @@
 #include <sstream>
 #include <vector>
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "corba/file_manager_client.h"
 
@@ -547,8 +548,9 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         , const RegisteredLettersManualSendArgs& params
         )
 {
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
+
+    Fred::Messages::ManagerPtr messages_manager
+        = Fred::Messages::create_manager();
 
     try
     {
@@ -570,7 +572,6 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         }
 
         //checks
-
 
         //if rm is there
         {
@@ -611,18 +612,18 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         Fred::File::ManagerPtr file_manager(
               Fred::File::Manager::create(&fm_client));
 
-        //read letter ids
+        //read letters
+        const std::size_t max_attempts_limit = 3;
+        std::string new_status = "sent";
+        std::string batch_id = std::string("manual send ")
+            + boost::posix_time::to_iso_extended_string(
+                    boost::posix_time::microsec_clock::universal_time());
+        std::string comm_type = "registered_letter";
 
-          Database::Result reg_letter_ids = conn.exec(
-              "select ma.id, la.file_id, ma.attempt "
-              " from message_archive ma "
-              " join comm_type ct on ma.comm_type_id = ct.id "
-              " join enum_send_status ess on ess.id=ma.status_id "
-              " join letter_archive la on la.id=ma.id "
-              " where ct.type = 'registered_letter' "
-              " and ess.status_name = 'ready' ");
+        Fred::Messages::LetterProcInfo proc_reg_letters
+            = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
 
-          std::size_t reg_letter_count = reg_letter_ids.size();
+          std::size_t reg_letter_count = proc_reg_letters.size();
 
           if (reg_letter_count == 0)
           {
@@ -642,8 +643,6 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                   "\n} | /usr/sbin/sendmail "+email;
 
                   SubProcessOutput sub_output = ShellCmd(cmd, timeout).execute();
-                  //std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                    //            << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
                   if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
               }
 
@@ -651,15 +650,10 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               return;
           }
 
-          if (reg_letter_ids[0].size() != 3)
-          {
-                throw std::runtime_error("3 columns in query result expected");
-          }
-
           //process letter ids
           for(std::size_t i = 0; i < reg_letter_count; ++i)
           {
-            unsigned long long file_id = reg_letter_ids[i][1];
+            unsigned long long file_id = proc_reg_letters[i].file_id;
 
             std::string letter_file_name = std::string("./letter")
                     + boost::lexical_cast<std::string>(file_id)
@@ -688,8 +682,6 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               SubProcessOutput sub_output = ShellCmd(
                       "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=all.pdf letter*.pdf"
                       , timeout).execute();
-              //std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-            //                << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
               if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
           }
 
@@ -708,7 +700,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               "\n--SSSSSS\nContent-Disposition: attachment; filename=registered_letters_$(date +'%Y-%m-%d').pdf"
               "\nContent-Type: application/pdf; charset=UTF-8\nContent-Transfer-Encoding: base64\n\n\";"
               "\nbase64 ./all.pdf\n "
-              "echo \"\n\n--SSSSSS\n\n\";"
+              "echo \"\n\n--SSSSSS\n\nbatch id: "+batch_id+"\n\n\";"
               "\n} | /usr/sbin/sendmail "+email;
 
               SubProcessOutput sub_output = ShellCmd(cmd, timeout).execute();
@@ -719,22 +711,8 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
 
 
           //process letter ids
-          for(std::size_t i = 0; i < reg_letter_count; ++i)
-          {
-            unsigned long long msg_id = reg_letter_ids[i][0];
-            //unsigned long long file_id = reg_letter_ids[i][1];
-            long attempt = reg_letter_ids[i][2];
-
-            conn.exec_params("update message_archive set "
-                    "status_id = (select id from enum_send_status where status_name = 'sent') "
-                    ", attempt = $1::integer "
-                    ", moddate = CURRENT_TIMESTAMP "
-                    " where id = $2::integer"
-                    , Database::query_param_list
-                    (attempt+1)
-                    (msg_id)
-            );
-          }//for msg id
+          messages_manager->set_letter_status(
+                  proc_reg_letters,new_status,batch_id, comm_type, max_attempts_limit);
 
           std::cout << "new registered letters found" << std::endl;
 
@@ -747,8 +725,6 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
     catch (...) {
       throw std::runtime_error("notify_registered_letters_manual_send_impl: unknown error");
     }
-
-    tx.commit();
 
       return ;
 }//
