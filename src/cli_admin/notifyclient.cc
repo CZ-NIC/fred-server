@@ -627,7 +627,6 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
           if (reg_letter_count == 0)
           {
               Logging::Manager::instance_ref().get(PACKAGE).debug("no registered letters found");
-              std::cout << "no registered letters found" << std::endl;
 
               //get email from cfg
               std::string email = params.email;
@@ -648,6 +647,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                   if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
               }
 
+              std::cout << "no new registered letters found" << std::endl;
               return;
           }
 
@@ -735,6 +735,8 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                     (msg_id)
             );
           }//for msg id
+
+          std::cout << "new registered letters found" << std::endl;
 
     }
     catch (std::exception &ex) {
