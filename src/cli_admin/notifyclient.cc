@@ -571,6 +571,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
 
         //checks
 
+
         //if rm is there
         {
           SubProcessOutput sub_output = ShellCmd("rm --version", timeout).execute();
@@ -730,8 +731,8 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               "echo \"Subject: Registered letters to send $(date +'%Y-%m-%d')\n"
               "From: ")+email+"\nContent-Type: multipart/mixed; boundary=\"SSSSSS\""
               "\n--SSSSSS\nContent-Disposition: attachment; filename=registered_letters_$(date +'%Y-%m-%d').pdf"
-              "Content-Type: application/pdf; charset=UTF-8\nContent-Transfer-Encoding: base64\n\n\";"
-              "\nbase64 ./all.pdf "
+              "\nContent-Type: application/pdf; charset=UTF-8\nContent-Transfer-Encoding: base64\n\n\";"
+              "\nbase64 ./all.pdf\n "
               "echo \"\n\n--SSSSSS\n\n\";"
               "\n} | /usr/sbin/sendmail "+email;
 
@@ -750,7 +751,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
             long attempt = reg_letter_ids[i][2];
 
             conn.exec_params("update message_archive set "
-                    "status_id = (select id from message_status where status_name = 'sent') "
+                    "status_id = (select id from enum_send_status where status_name = 'sent') "
                     ", attempt = $1::integer "
                     ", moddate = CURRENT_TIMESTAMP "
                     " where id = $2::integer"

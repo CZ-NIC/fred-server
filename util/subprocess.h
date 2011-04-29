@@ -134,12 +134,14 @@ class ShellCmd
                 {
                     if(close(p[i][j]) != 0)
                     {
+		    /* this may fail
                         std::string err_msg(strerror(errno));
                         Logging::Manager::instance_ref()
                             .get(PACKAGE).error(
                                     std::string("ShellCmd::close_pipes() error closing pipe: ")
                                     + boost::lexical_cast<std::string>(i)
                                     + (" msg: ")+err_msg );
+		     */
                     }//check pipe fds close
 
                     p[i][j] = -1;//set pipe fds invalid
