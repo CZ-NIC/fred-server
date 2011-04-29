@@ -32,6 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cerrno>
+#include <csignal>
 #include <unistd.h>
 #include <cstring>
 #include <string>
@@ -88,6 +89,19 @@ struct FileClose
 ///FileSharedPtr factory
 typedef FilePtrT<FileClose> FileClosePtr;
 ///usage FileSharedPtr  file_close_guard = FileClosePtr((FILE*)0);
+
+
+//SIGALARM handler user in ShellCmd for waitpid timeout
+static void handleSIGALARM (int sig)
+{
+     signal(SIGALRM, SIG_IGN);//uninstall handler
+
+     std::string msg("timeout");
+     Logging::Manager::instance_ref()
+         .get(PACKAGE).error(msg);
+     throw std::runtime_error(msg);
+}
+
 
 //shell output
 struct SubProcessOutput
@@ -303,6 +317,8 @@ public:
             fprintf(child_stdin_close_guard.get(), "%s\n", "exit");
 
             child_stdin_close_guard.reset((FILE*)(0));//flush and close input
+
+            signal(SIGALRM, handleSIGALARM);     //install the handler
 
             // wait for child completion
             //set child timeout
