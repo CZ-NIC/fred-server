@@ -397,10 +397,10 @@ InvoiceClient::factoring()
 
         if(toDate.is_special()) {
             std::cerr << "Invalid date given for ``todate'' " << std::endl;
-            toDate = last_prev;
+            toDate = first_this;
         }
     } else {
-        toDate = last_prev;
+        toDate = first_this;
     }
     
     if (factoring_params.taxdate.is_value_set()) {
@@ -408,10 +408,10 @@ InvoiceClient::factoring()
 
         if(taxDate.is_special()) {
             std::cerr << "Invalid date given for ``taxdate'' " << std::endl;
-            taxDate = first_this;
+            taxDate = last_prev;
         }
     } else {
-        taxDate = first_this;
+        taxDate = last_prev;
     }
     
     if (!zoneFilled) {

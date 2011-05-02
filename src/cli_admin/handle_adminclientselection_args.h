@@ -829,10 +829,10 @@ public:
                 , "registrar handle")
             ("todate", boost::program_options
                     ::value<Checked::string>()->notifier(save_string(params.todate))
-                , "todate, default in impl is last day of previous month, arg format viz --help_dates")
+                , "todate, default in impl is first day of this month, arg format viz --help_dates")
             ("taxdate", boost::program_options
               ::value<Checked::string>()->notifier(save_string(params.taxdate))
-              , "tax date, default in impl is first day of this month, arg format viz --help_dates")
+              , "tax date, default in impl is last day of previous month, arg format viz --help_dates")
                 ;
         return cfg_opts;
     }//get_options_description
