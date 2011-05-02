@@ -2017,6 +2017,7 @@ public:
       << "LEFT JOIN zone z ON (z.id = i.zone) "
       << "WHERE i.registrarid=r.id "
       << "AND im.mailid ISNULL "
+      << "AND NOT(r.email ISNULL OR TRIM(r.email)='')"
       << "UNION "
       << "SELECT r.email, g.fromdate, g.todate, NULL, NULL, g.id, "
       << "NULL, z.fqdn "
