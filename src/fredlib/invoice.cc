@@ -26,6 +26,7 @@
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/checked_delete.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "common_impl.h"
 #include "invoice.h"
@@ -1965,6 +1966,9 @@ public:
     /// send all mails and store information about sending
     void send() { //throw (SQL_ERROR) {
       for (unsigned i=0; i<items.size(); i++) {
+
+          try {
+
         Item *it = &items[i];
         Mailer::Parameters params;
         std::stringstream dateBuffer;
@@ -1992,11 +1996,26 @@ public:
         );
         if (!it->mail) {
           // TODO: LOG ERROR 
-            LOGGER(PACKAGE).error(" Error while send mail in Mails class. ");
-            throw SQL_ERROR();
+            LOGGER(PACKAGE).error(
+                    std::string(" Error while send mail in Mails class email: ")
+                    + it->registrarEmail
+                    + " pdf file id: " + boost::lexical_cast<std::string>(it->filePDF)
+                    + " xml file id: " + boost::lexical_cast<std::string>(it->fileXML)
+                    + " invoice id: " + boost::lexical_cast<std::string>(it->invoice)
+                    + " zone fqdn: " + it->zoneFqdn
+            );
+            continue;
         }
         store(i);
-      }
+          } catch (std::exception ex)
+          {
+              LOGGER(PACKAGE).error(
+                      std::string(" std exception while send mail in Mails class what: ")
+                      + ex.what()
+              );
+              continue;
+          }
+      }//for i
     }
  
     void load() throw (SQL_ERROR) {
