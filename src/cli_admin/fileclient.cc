@@ -16,7 +16,6 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include "simple.h"
 #include "commonclient.h"
 #include "fileclient.h"
 
@@ -28,18 +27,15 @@ FileClient::runMethod()
 {
     if (file_list) {
         list();
-    }/*else if (m_conf.hasOpt(FILE_SHOW_OPTS_NAME)) {
-        show_opts();
-    }*/
+    }
 }
 
 
 void
 FileClient::list()
 {
-    //callHelp(m_conf, list_help);
 
-    /* init file manager */
+    // init file manager
     CorbaClient corba_client(0, 0, m_nsAddr, nameservice_context//m_conf.get<std::string>(NS_CONTEXT_NAME)
             );
     FileManagerClient fm_client(corba_client.getNS());
@@ -120,62 +116,6 @@ FileClient::list()
     delete unionFilter;
 } // FileClient::list
 
-/*
-const struct options *
-FileClient::getOpts()
-{
-    return m_opts;
-}
-
-
-void
-FileClient::show_opts()
-{
-    //callHelp(m_conf, no_help);
-    print_options("File", getOpts(), getOptsCount());
-}
-
-
-void
-FileClient::list_help()
-{
-    std::cout
-        << "** File list **\n\n"
-        << "  $ " << g_prog_name << " --" << FILE_LIST_NAME << " \\\n"
-        << "  [--" << ID_NAME << "=<id_number>] \\\n"
-        << "  [--" << NAME_NAME << "=<name>] \\\n"
-        << "  [--" << FILE_TYPE_NAME << "=<type_name>] \\\n"
-        << "  [--" << FILE_PATH_NAME << "=<path>] \\\n"
-        << "  [--" << FILE_MIME_NAME << "=<mime_type>] \\\n"
-        << "  [--" << FILE_SIZE_NAME << "=<size>] \\\n"
-        << "  [--" << CRDATE_NAME << "=<create_time>]\n"
-        << std::endl;
-}
-
-#define ADDOPT(name, type, callable, visible) \
-    {CLIENT_FILE, name, name##_DESC, type, callable, visible}
-
-const struct options
-FileClient::m_opts[] = {
-    ADDOPT(FILE_LIST_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(FILE_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
-    add_ID,
-    add_NAME,
-    ADDOPT(FILE_TYPE_NAME, TYPE_INT, false, false),
-    ADDOPT(FILE_PATH_NAME, TYPE_STRING, false, false),
-    ADDOPT(FILE_MIME_NAME, TYPE_STRING, false, false),
-    ADDOPT(FILE_SIZE_NAME, TYPE_INT, false, false),
-    add_CRDATE,
-};
-
-#undef ADDOPT
-
-int 
-FileClient::getOptsCount()
-{
-    return sizeof(m_opts) / sizeof(options);
-}
-*/
 } // namespace Admin;
 
 

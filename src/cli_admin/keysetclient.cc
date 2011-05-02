@@ -18,7 +18,6 @@
 
 #include <memory>
 
-//#include "simple.h"
 #include "commonclient.h"
 #include "keysetclient.h"
 
@@ -306,101 +305,5 @@ KeysetClient::info2()
 
     return;
 }
-/*
- const struct options *
-KeysetClient::getOpts()
-{
-    return m_opts;
-}
 
-
-void
-KeysetClient::show_opts()
-{
-    print_options("Keyset", getOpts(), getOptsCount());
-}
-
-
-void
-KeysetClient::list_help()
-{
-    std::cout
-        << "** KeySet list **\n\n"
-        << "  $ " << g_prog_name << " --" << KEYSET_LIST_HELP_NAME << " \\\n"
-        << "    [--" << ID_NAME << "=<id_nubmer>] \\\n"
-        << "    [--" << HANDLE_NAME << "=<handle>] \\\n"
-        << "    [--" << ADMIN_ID_NAME << "=<admin_id_number>] \\\n"
-        << "    [--" << ADMIN_HANDLE_NAME << "=<admin_handle>] \\\n"
-        << "    [--" << ADMIN_NAME_NAME << "=<admin_name>] \\\n"
-        << "    [--" << REGISTRAR_ID_NAME << "=<registrar_id_number>] \\\n"
-        << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
-        << "    [--" << REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
-        << "    [--" << CRDATE_NAME << "=<create_date>] \\\n"
-        << "    [--" << DELDATE_NAME << "=<delete_date>] \\\n"
-        << "    [--" << UPDATE_NAME << "=<update_date>] \\\n"
-        << "    [--" << TRANSDATE_NAME << "<transfer_date>] \\\n"
-        << "    [--" << FULL_LIST_NAME << "]\n"
-        << std::endl;
-}
-
-void
-KeysetClient::info_help()
-{
-    std::cout
-        << "** Keyset info **\n\n"
-        << "  " << g_prog_name << " --" << KEYSET_INFO_NAME << "=<keyset_handle>\n\n"
-        << "Example:\n"
-        << "\t$ " << g_prog_name << " --" << KEYSET_INFO_NAME << "=\"KEY::001\"\n"
-        << "Command print on screen some informatins about keyset (identified by handle) such as handle, auth info password, roid,\n"
-        << "tech contact handles, and dsrecord informations"
-        << std::endl;
-}
-void
-KeysetClient::check_help()
-{
-    std::cout
-        << "** Keyset check **\n\n"
-        << "  " << g_prog_name << " --" << KEYSET_CHECK_NAME << "=<keyset_handle>\n\n"
-        << "Example:\n"
-        << "\t$ " << g_prog_name << " --" << KEYSET_CHECK_NAME << "=\"K:02344\"\n"
-        << "Command return 1 if keyset handle is free for registration and 0 if is already used in registry."
-        << std::endl;
-}
-
-#define ADDOPT(name, type, callable, visible) \
-    {CLIENT_KEYSET, name, name##_DESC, type, callable, visible}
-
-const struct options
-KeysetClient::m_opts[] = {
-    ADDOPT(KEYSET_LIST_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(KEYSET_LIST_PLAIN_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(KEYSET_INFO_NAME, TYPE_STRING, true, true),
-    ADDOPT(KEYSET_INFO2_NAME, TYPE_STRING, true, true),
-    ADDOPT(KEYSET_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
-    add_ID,
-    add_HANDLE,
-    add_ADMIN_ID,
-    add_ADMIN_HANDLE,
-    add_ADMIN_NAME,
-    add_REGISTRAR_ID,
-    add_REGISTRAR_HANDLE,
-    add_REGISTRAR_NAME,
-    add_ADMIN_NAME,
-    add_ADMIN_ADD,
-    add_ADMIN_REM,
-    add_CRDATE,
-    add_UPDATE,
-    add_TRANSDATE,
-    add_DELDATE,
-    add_AUTH_PW,
-};
-
-#undef ADDOPT
-
-int 
-KeysetClient::getOptsCount()
-{
-    return sizeof(m_opts) / sizeof(options);
-}
-*/
 } //namespace Admin;

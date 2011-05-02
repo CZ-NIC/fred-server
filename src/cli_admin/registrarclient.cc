@@ -16,7 +16,6 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include "simple.h"
 #include "commonclient.h"
 #include "registrarclient.h"
 
@@ -134,7 +133,6 @@ RegistrarClient::list()
 void
 RegistrarClient::zone_add()
 {
-    //callHelp(m_conf, zone_add_help);
     Fred::Zone::Manager::ZoneManagerPtr zoneMan
         = Fred::Zone::Manager::create();
     std::string fqdn = zone_add_params_.zone_fqdn;//REGISTRAR_ZONE_FQDN_NAME
@@ -187,7 +185,6 @@ RegistrarClient::zone_add()
 void
 RegistrarClient::zone_ns_add()
 {
-    //callHelp(m_conf, zone_ns_add_help);
     Fred::Zone::Manager::ZoneManagerPtr zoneMan
         = Fred::Zone::Manager::create();
     std::string zone = zone_ns_add_params_.zone_fqdn;//REGISTRAR_ZONE_FQDN_NAME
@@ -208,7 +205,6 @@ RegistrarClient::zone_ns_add()
 void
 RegistrarClient::registrar_add()
 {
-    //callHelp(m_conf, registrar_add_help);
     Fred::Registrar::Manager::AutoPtr regMan
              = Fred::Registrar::Manager::create(m_db);
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
@@ -275,7 +271,6 @@ RegistrarClient::registrar_add()
 void
 RegistrarClient::registrar_acl_add()
 {
-    //callHelp(m_conf, registrar_acl_add_help);
     Fred::Registrar::Manager::AutoPtr regMan
         = Fred::Registrar::Manager::create(m_db);
     std::string handle = registrar_acl_add_params_.handle;//REGISTRAR_ADD_HANDLE_NAME
@@ -291,7 +286,6 @@ RegistrarClient::registrar_acl_add()
 void
 RegistrarClient::registrar_add_zone()
 {
-    //callHelp(m_conf, registrar_add_zone_help);
     std::string zone = registrar_add_zone_params_.zone_fqdn;//REGISTRAR_ZONE_FQDN_NAME
     std::string registrar = registrar_add_zone_params_.handle;//REGISTRAR_ADD_HANDLE_NAME
     Database::Date fromDate;
@@ -309,8 +303,6 @@ RegistrarClient::registrar_add_zone()
 void
 RegistrarClient::registrar_create_certification()
 {
-    //callHelp(m_conf, registrar_create_certification_help);
-
     std::string cert_eval_file =
             registrar_create_certification_params_.certification_evaluation;//REGISTRAR_CERTIFICATION_EVALUATION_NAME
 
@@ -379,8 +371,6 @@ RegistrarClient::registrar_create_group()
 void
 RegistrarClient::registrar_into_group()
 {
-    //callHelp(m_conf, registrar_into_group_help);
-
     std::string registrar_handle
         = registrar_into_group_params_.handle;//REGISTRAR_ADD_HANDLE_NAME
 
@@ -428,7 +418,6 @@ RegistrarClient::registrar_into_group()
 void
 RegistrarClient::price_add()
 {
-    //callHelp(m_conf, price_add_help);
     Fred::Zone::Manager::ZoneManagerPtr zoneMan
         = Fred::Zone::Manager::create();
     Database::DateTime validFrom(Database::NOW_UTC);
@@ -446,8 +435,7 @@ RegistrarClient::price_add()
     }
     if (!(price_add_params_.zone_fqdn.is_value_set() ||//REGISTRAR_ZONE_FQDN_NAME
             price_add_params_.zone_id.is_value_set())) {//REGISTRAR_ZONE_ID_NAME
-        std::cerr << "You have to specity either ``--" << REGISTRAR_ZONE_FQDN_NAME
-            << "'' or ``--" << REGISTRAR_ZONE_ID_NAME << "''." << std::endl;
+        std::cerr << "You have to specity either ``--zone_fqdn'' or ``--zone_id''." << std::endl;
         return;
     }
     if (price_add_params_.create) {//REGISTRAR_CREATE_OPERATION_NAME
@@ -474,242 +462,5 @@ RegistrarClient::price_add()
     }
 }
 
-/*
-const struct options *
-RegistrarClient::getOpts()
-{
-    return m_opts;
-}
-
-
-void
-RegistrarClient::show_opts()
-{
-    print_options("Registrar", getOpts(), getOptsCount());
-}
-
-
-void
-RegistrarClient::zone_add_help()
-{
-    std::cout <<
-        "** Add new zone **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_ZONE_ADD_NAME << " \\\n"
-        "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
-        "    [--" << REGISTRAR_EX_PERIOD_MIN_NAME << "=<ex_period_min>] \\\n"
-        "    [--" << REGISTRAR_EX_PERIOD_MAX_NAME << "=<ex_period_max>] \\\n"
-        "    [--" << REGISTRAR_TTL_NAME << "=<ttl>] \\\n"
-        "    [--" << REGISTRAR_HOSTMASTER_NAME << "=<hostmaster>] \\\n"
-        "    [--" << REGISTRAR_UPDATE_RETR_NAME << "=<update_retr>] \\\n"
-        "    [--" << REGISTRAR_REFRESH_NAME << "=<refresh>] \\\n"
-        "    [--" << REGISTRAR_EXPIRY_NAME << "=<expiry>] \\\n"
-        "    [--" << REGISTRAR_MINIMUM_NAME << "=<minimum>] \\\n"
-        "    [--" << REGISTRAR_NS_FQDN_NAME << "=<ns_fqdn>]\n"
-        << std::endl;
-}
-
-void
-RegistrarClient::zone_ns_add_help()
-{
-    std::cout <<
-        "** Add new nameserver to zone**\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_ZONE_NS_ADD_NAME << " \\\n"
-        "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
-        "    --" << REGISTRAR_NS_FQDN_NAME << "=<ns_fqdn> \\\n"
-        "    --" << REGISTRAR_ADDR_NAME << "=<addr>\n"
-        << std::endl;
-}
-
-void
-RegistrarClient::registrar_add_help()
-{
-    std::cout <<
-        "** Add new registrar **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ADD_NAME << " \\\n"
-        "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
-        "    --" << REGISTRAR_COUNTRY_NAME << "=<country_code> \\\n"
-        "    [--" << REGISTRAR_ICO_NAME << "=<ico>] \\\n"
-        "    [--" << REGISTRAR_DIC_NAME << "=<dic>] \\\n"
-        "    [--" << REGISTRAR_VAR_SYMB_NAME << "=<var_symbol>] \\\n"
-        "    [--" << REGISTRAR_ADD_NAME_NAME << "=<name>] \\\n"
-        "    [--" << REGISTRAR_ORGANIZATION_NAME << "=<organizatin>] \\\n"
-        "    [--" << REGISTRAR_STREET1_NAME << "=<street1>] \\\n"
-        "    [--" << REGISTRAR_STREET2_NAME << "=<street2>] \\\n"
-        "    [--" << REGISTRAR_STREET3_NAME << "=<street3>] \\\n"
-        "    [--" << REGISTRAR_CITY_NAME << "=<city>] \\\n"
-        "    [--" << REGISTRAR_STATEORPROVINCE_NAME << "=<state_or_province>] \\\n"
-        "    [--" << REGISTRAR_POSTALCODE_NAME << "=<postal_code>] \\\n"
-        "    [--" << REGISTRAR_TELEPHONE_NAME << "=<telephone>] \\\n"
-        "    [--" << REGISTRAR_FAX_NAME << "=<fax>] \\\n"
-        "    [--" << REGISTRAR_EMAIL_NAME << "=<email>] \\\n"
-        "    [--" << REGISTRAR_URL_NAME << "=<url>] \\\n"
-        "    [--" << REGISTRAR_NO_VAT_NAME << "] \\\n"
-        "    [--" << REGISTRAR_SYSTEM_NAME << "]\n"
-        << std::endl;
-}
-void
-RegistrarClient::registrar_acl_add_help()
-{
-    std::cout << 
-        "** Add new certificate add password to registrar **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ACL_ADD_NAME << " \\\n"
-        "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<handle> \\\n"
-        "    --" << REGISTRAR_CERT_NAME << "=<certificate> \\\n"
-        "    --" << REGISTRAR_PASSWORD_NAME << "=<password>\n"
-        << std::endl;
-}
-void
-RegistrarClient::registrar_add_zone_help()
-{
-    std::cout <<
-        "** Add registrar to zone **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ADD_ZONE_NAME << " \\\n"
-        "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
-        "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
-        "    [--" << REGISTRAR_FROM_DATE_NAME << "=<YYYY-MM-DD>] \\\n"
-        "    [--" << REGISTRAR_TO_DATE_NAME << "=<YYYY-MM-DD>]\n"
-        << std::endl;
-}
-
-void
-RegistrarClient::registrar_create_certification_help()
-{
-    std::cout <<
-        "** Create registrar certification **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_CREATE_CERTIFICATION_NAME << " \\\n"
-        "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
-        "    --" << REGISTRAR_CERTIFICATION_SCORE_NAME << "=<certification_score> \\\n"
-        "    --" << REGISTRAR_CERTIFICATION_EVALUATION_NAME << "=<certification_evaluation_file_name> \\\n"
-        "    --" << REGISTRAR_CERTIFICATION_EVALUATION_MIME_TYPE_NAME << "=<certification_evaluation_file_MIME_type> \\\n"
-        "    --" << REGISTRAR_FROM_DATE_NAME << "=<YYYY-MM-DD> \\\n"
-        "    --" << REGISTRAR_TO_DATE_NAME << "=<YYYY-MM-DD>\n"
-        << std::endl;
-}
-
-void
-RegistrarClient::registrar_create_group_help()
-{
-    std::cout <<
-        "** Create registrar group **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_CREATE_GROUP_NAME << " \\\n"
-        "    --" << REGISTRAR_GROUP_NAME << "=<registrar_group_name> \\\n"
-        << std::endl;
-}
-
-
-void
-RegistrarClient::registrar_into_group_help()
-{
-    std::cout <<
-        "** Add registrar into group **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_INTO_GROUP_NAME << " \\\n"
-        "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
-        "    --" << REGISTRAR_GROUP_NAME << "=<registrar_group_name> \\\n"
-        "    [--" << REGISTRAR_FROM_DATE_NAME << "=<YYYY-MM-DD> default today] \\\n"
-        "    [--" << REGISTRAR_TO_DATE_NAME << "=<YYYY-MM-DD> ]\n"
-        << std::endl;
-}
-
-
-void
-RegistrarClient::price_add_help()
-{
-    std::cout <<
-        "** Add new price for the zone **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_PRICE_ADD_NAME << " \\\n"
-        "    --" << REGISTRAR_CREATE_OPERATION_NAME << " | \\\n"
-        "    --" << REGISTRAR_RENEW_OPERATION_NAME << " \\\n"
-        "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> | \\\n"
-        "    --" << REGISTRAR_ZONE_ID_NAME << "=<zone_id> \\\n"
-        "    [--" << REGISTRAR_VALID_FROM_NAME << "=<valid_from_timestamp>] \\\n"
-        "    [--" << REGISTRAR_VALID_TO_NAME << "=<valid_to_timestamp>] \\\n"
-        "    --" << REGISTRAR_PRICE_NAME << "=<price> \\\n"
-        "    [--" << REGISTRAR_PERIOD_NAME << "=<period>]\n"
-        << std::endl;
-    std::cout <<
-        "Default value for the ``valid from'' is NOW and NULL for ``valid_to''.\n"
-        "Default pediod is 12 (it means twelve months).\n";
-}
-
-#define ADDOPT(name, type, callable, visible) \
-    {CLIENT_REGISTRAR, name, name##_DESC, type, callable, visible}
-
-const struct options
-RegistrarClient::m_opts[] = {
-    ADDOPT(REGISTRAR_LIST_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(REGISTRAR_ZONE_ADD_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(REGISTRAR_ZONE_NS_ADD_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(REGISTRAR_REGISTRAR_ADD_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(REGISTRAR_REGISTRAR_ACL_ADD_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(REGISTRAR_REGISTRAR_ADD_ZONE_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(REGISTRAR_PRICE_ADD_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(REGISTRAR_REGISTRAR_CREATE_CERTIFICATION_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(REGISTRAR_REGISTRAR_CREATE_GROUP_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(REGISTRAR_REGISTRAR_INTO_GROUP_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(REGISTRAR_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
-    add_ID,
-    add_HANDLE,
-    add_NAME,
-    add_CITY,
-    add_EMAIL,
-    add_COUNTRY,
-    ADDOPT(REGISTRAR_ZONE_FQDN_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_ZONE_ID_NAME, TYPE_UINT, false, false),
-    ADDOPT(REGISTRAR_ADD_HANDLE_NAME, TYPE_STRING, false, false),
-
-
-
-    ADDOPT(REGISTRAR_ICO_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_DIC_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_VAR_SYMB_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_ADD_NAME_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_ORGANIZATION_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_STREET1_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_STREET2_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_STREET3_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_CITY_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_STATEORPROVINCE_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_POSTALCODE_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_COUNTRY_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_TELEPHONE_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_FAX_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_EMAIL_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_URL_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_CERT_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_PASSWORD_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_NO_VAT_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(REGISTRAR_SYSTEM_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(REGISTRAR_FROM_DATE_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_TO_DATE_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_EX_PERIOD_MAX_NAME, TYPE_INT, false, false),
-    ADDOPT(REGISTRAR_EX_PERIOD_MIN_NAME, TYPE_INT, false, false),
-    ADDOPT(REGISTRAR_TTL_NAME, TYPE_INT, false, false),
-    ADDOPT(REGISTRAR_HOSTMASTER_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_UPDATE_RETR_NAME, TYPE_INT, false, false),
-    ADDOPT(REGISTRAR_REFRESH_NAME, TYPE_INT, false, false),
-    ADDOPT(REGISTRAR_EXPIRY_NAME, TYPE_INT, false, false),
-    ADDOPT(REGISTRAR_MINIMUM_NAME, TYPE_INT, false, false),
-    ADDOPT(REGISTRAR_NS_FQDN_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_ADDR_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_CREATE_OPERATION_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(REGISTRAR_RENEW_OPERATION_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(REGISTRAR_VALID_FROM_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_VALID_TO_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_GROUP_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_CERTIFICATION_EVALUATION_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_CERTIFICATION_EVALUATION_MIME_TYPE_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_CERTIFICATION_SCORE_NAME, TYPE_INT, false, false),
-    ADDOPT(REGISTRAR_PRICE_NAME, TYPE_INT, false, false),
-    ADDOPT(REGISTRAR_PERIOD_NAME, TYPE_INT, false, false)
-};
-
-#undef ADDOPT
-
-int 
-RegistrarClient::getOptsCount()
-{
-    return sizeof(m_opts) / sizeof(options);
-}
-*/
 } // namespace Admin;
 

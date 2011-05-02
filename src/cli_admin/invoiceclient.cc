@@ -17,7 +17,6 @@
  */
 
 #include <math.h>
-//#include "simple.h"
 #include "commonclient.h"
 #include "invoiceclient.h"
 #include "fredlib/invoice_manager.h"
@@ -116,8 +115,6 @@ void InvoiceClient::filter_reload_invoices(Fred::Invoicing::Manager *invMan, Fre
 void
 InvoiceClient::list()
 {
-
-
     std::auto_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
                 docgen_path.get_value(),
@@ -139,14 +136,12 @@ InvoiceClient::list()
 
     filter_reload_invoices(invMan.get(), invList.get());
     invList->exportXML(std::cout);
-
 }
 
 
 void
 InvoiceClient::list_filters()
 {
-
     std::auto_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
                 docgen_path.get_value(),
@@ -286,7 +281,6 @@ InvoiceClient::list_filters()
 void
 InvoiceClient::archive()
 {
-
     std::auto_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
                 docgen_path.get_value(),
@@ -316,8 +310,6 @@ InvoiceClient::credit()
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
-    // std::auto_ptr<Fred::Invoicing::Invoice>
-        // invoice(invMan->createDepositInvoice());
     std::string taxDate;
     long price;
     int zoneId, regId;
@@ -353,18 +345,15 @@ InvoiceClient::credit()
 
     // TODO error messages are not precise for version2.3
     if (!regFilled) {
-        //std::cerr << "Registrar is not set, use ``--registrar_id'' or "
-//            << "``--registrar_name'' to set it" << std::endl;
-
-        std::cerr << "Registrar is not set, use ``--" << INVOICE_REGISTRAR_ID_NAME << "'' to set it" << std::endl;
+        std::cerr << "Registrar is not set, use ``--registrar_id'' to set it" << std::endl;
         return;
     }
     if (!priceFilled) {
-        std::cerr << "Price is not set, use ``--" << INVOICE_PRICE_NAME << "'' to set it" << std::endl;
+        std::cerr << "Price is not set, use ``--price'' to set it" << std::endl;
         return;
     }
     if (!zoneFilled) {
-        std::cerr << "Zone id is not set, use --" << INVOICE_ZONE_ID_NAME << " to set it " << std::endl;
+        std::cerr << "Zone id is not set, use --zone_id to set it " << std::endl;
         return;
     }
 
@@ -407,7 +396,7 @@ InvoiceClient::factoring()
         toDate = Database::Date(createDateTime(factoring_params.todate.get_value()));
 
         if(toDate.is_special()) {
-            std::cerr << "Invalid date given for ``" <<  INVOICE_TODATE_NAME << "'' " << std::endl;
+            std::cerr << "Invalid date given for ``todate'' " << std::endl;
             toDate = last_prev;
         }
     } else {
@@ -418,7 +407,7 @@ InvoiceClient::factoring()
         taxDate = Database::Date(factoring_params.taxdate.get_value());
 
         if(taxDate.is_special()) {
-            std::cerr << "Invalid date given for ``" <<  INVOICE_TAXDATE_NAME << "'' " << std::endl;
+            std::cerr << "Invalid date given for ``taxdate'' " << std::endl;
             taxDate = first_this;
         }
     } else {
@@ -426,7 +415,7 @@ InvoiceClient::factoring()
     }
     
     if (!zoneFilled) {
-        std::cerr << "Zone is not set, use ``"<< INVOICE_ZONE_NAME_NAME << "'' to set it" << std::endl;
+        std::cerr << "Zone is not set, use ``zone_fqdn'' to set it" << std::endl;
         return;
     }
 
@@ -472,12 +461,12 @@ InvoiceClient::add_invoice_prefix()
 void
 InvoiceClient::create_invoice()
 {
-    /* init file manager */
+    // init file manager
     CorbaClient corba_client(0, 0, m_nsAddr, nameservice_context);
     FileManagerClient fm_client(corba_client.getNS());
     Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
-    /* bank manager */
+    // bank manager
     Fred::Banking::ManagerPtr bank_manager(Fred::Banking::Manager::create(file_manager.get()));
 
     Database::ID paymentId = create_params.payment_id.get_value();
@@ -489,170 +478,4 @@ InvoiceClient::create_invoice()
     }
 }
 
-/*
-const struct options *
-InvoiceClient::getOpts()
-{
-    return m_opts;
-}
-
-
-void
-InvoiceClient::show_opts()
-{
-    print_options("Invoice", getOpts(), getOptsCount());
-}
-
-
-void
-InvoiceClient::list_help()
-{
-    std::cout <<
-        "** List invoices **\n\n"
-        "  $ " << g_prog_name << " --" << INVOICE_LIST_NAME << " \\\n"
-        "    [--" << ID_NAME << "=<id_number>] \\\n"
-        "    [--" << ZONE_ID_NAME << "=<id_number>] \\\n"
-        "    [--" << ZONE_FQDN_NAME << "=<zone_fqdn>] \\\n"
-        "    [--" << INVOICE_TYPE_NAME << "=<invoice_type>] \\\n"
-        "    [--" << INVOICE_NUMBER_NAME << "=<invoice_number>] \\\n"
-        "    [--" << CRDATE_NAME << "=<invoice_create_date>] \\\n"
-        "    [--" << INVOICE_TAXDATE_NAME << "=<invoice_taxdate>] \\\n"
-        "    [--" << REGISTRAR_ID_NAME <<    "=<registrar_id>] \\\n"
-        "    [--" << REGISTRAR_HANDLE_NAME <<    "=<registrar_handle>] \\\n"
-        "    [--" << INVOICE_FILE_NAME_NAME << "=<file_name>] \n"
-        "    [--" << INVOICE_FILE_XML_NAME << "=<xml file_name>] \n"
-        "    [--" << INVOICE_FILE_PDF_NAME << "=<pdf file_name>] \n"
-        << std::endl;
-}
-
-void
-InvoiceClient::archive_help()
-{
-    std::cout <<
-        "** Invoice archive **\n\n"
-        "  $ " << g_prog_name << " --" << INVOICE_ARCHIVE_NAME << " \\\n"
-        "    [--" << INVOICE_DONT_SEND_NAME << "] \\\n"
-        << std::endl;
-}
-
-void
-InvoiceClient::credit_help()
-{
-    // TODO features not supported in 2.3 are commented out
-    std::cout <<
-        "** Invoice credit **\n\n"
-        "  $ " << g_prog_name << " --" << INVOICE_CREDIT_NAME << " \\\n"
-        "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
-        // "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
-        "    --" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
-        // "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle> \\\n"
-        "    --" << INVOICE_PRICE_NAME << "=<price> \\\n"
-        // "    [--" << CRDATE_NAME << "=<create_time_stamp>] \\\n"
-        "    [--" << INVOICE_TAXDATE_NAME << "=<tax_date>]\n"
-        << std::endl;
-    // std::cout << "Default value for ``--" << CRDATE_NAME << "'' is current timestamp "
-     //   << "and today for ``--" << INVOICE_TAXDATE_NAME << "''."
-     //   << std::endl;
-//    std::cout << "Default value for ``--" << INVOICE_TAXDATE_NAME << "'' is today's timestamp. For ``--" << INVOICE_TODATE_NAME << "'' it's last day of previous month.  " << std::endl;
-    std::cout << "Default value for ``--" << INVOICE_TAXDATE_NAME << "'' is today's timestamp. " << std::endl;
-}
-
-void
-InvoiceClient::factoring_help()
-{
-    std::cout <<
-        "** Invoice factoring **\n\n"
-        "  $ " << g_prog_name << " --" << INVOICE_FACTORING_NAME << " \\\n"
-        // not supported "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
-        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
-        // not supported "    [--" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
-        "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
-        "    [--" << INVOICE_TODATE_NAME << "=<to_date>] \\\n"
-        "    [--" << INVOICE_TAXDATE_NAME << "=<tax_date>]\n"
-        << std::endl;
-    std::cout << "Default value for ``to date'' is last day of previous month "
-        "and for ``tax date'' it is first day of this month."
-        << std::endl;
-}
-
-void
-InvoiceClient::add_invoice_prefix_help()
-{
-    std::cout <<
-        "** Invoice add prefix **\n\n"
-        "  $ " << g_prog_name << " --" << INVOICE_ADD_PREFIX_NAME << " \\\n"
-        "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
-        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
-        "    --" << INVOICE_PREFIX_TYPE_NAME << "=<type> \\\n"
-        "    [--" << INVOICE_PREFIX_YEAR_NAME << "=<year>] \\\n"
-        "    --" << INVOICE_PREFIX_PREFIX_NAME << "=<prefix_number>\n"
-        << std::endl <<
-        "Type is either 0 (for the deposit invoice) or 1 (for account invoice).\n"
-        "Default value for the year is the current year.\n"
-        << std::endl;
-}
-
-void
-InvoiceClient::create_invoice_help()
-{
-    std::cout <<
-        "** Manually create invoice for payment **\n\n"
-        "  $ " << g_prog_name << " --" << INVOICE_CREATE_INVOICE_NAME << " \\\n"
-        "    --" << INVOICE_PAYMENT_ID_NAME << "=<payment_id> \\\n"
-        "    --" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>\n"
-        << std::endl;
-}
-
-#define ADDOPT(name, type, callable, visible) \
-    {CLIENT_INVOICE, name, name##_DESC, type, callable, visible}
-
-const struct options
-InvoiceClient::m_opts[] = {
-    ADDOPT(INVOICE_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(INVOICE_LIST_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(INVOICE_LIST_FILTERS_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(INVOICE_ARCHIVE_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(INVOICE_CREDIT_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(INVOICE_FACTORING_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(INVOICE_ADD_PREFIX_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(INVOICE_CREATE_INVOICE_NAME, TYPE_NOTYPE, true, true),
-    add_ID,
-    add_REGISTRAR_ID,
-    add_REGISTRAR_HANDLE,
-    add_ZONE_ID,
-    add_ZONE_FQDN,
-    add_CRDATE,
-    ADDOPT(INVOICE_TYPE_NAME, TYPE_UINT, false, false),
-    ADDOPT(INVOICE_VAR_SYMBOL_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_TAXDATE_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_ARCHIVED_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_OBJECT_ID_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_OBJECT_NAME_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_ADV_NUMBER_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_FILE_ID_NAME, TYPE_UINT, false, false),
-    ADDOPT(INVOICE_FILE_NAME_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_FILE_XML_NAME, TYPE_UINT, false, false),
-    ADDOPT(INVOICE_FILE_PDF_NAME, TYPE_UINT, false, false),
-    ADDOPT(INVOICE_ZONE_ID_NAME, TYPE_UINT, false, false),
-    ADDOPT(INVOICE_ZONE_NAME_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_REGISTRAR_ID_NAME, TYPE_UINT, false, false),
-    ADDOPT(INVOICE_REGISTRAR_HANDLE_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_PRICE_NAME, TYPE_DOUBLE, false, false),
-    ADDOPT(INVOICE_TODATE_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_DONT_SEND_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(INVOICE_PREFIX_TYPE_NAME, TYPE_UINT, false, false),
-    ADDOPT(INVOICE_PREFIX_YEAR_NAME, TYPE_UINT, false, false),
-    ADDOPT(INVOICE_PREFIX_PREFIX_NAME, TYPE_ULONGLONG, false, false),
-    ADDOPT(INVOICE_PAYMENT_ID_NAME, TYPE_UINT, false, false),
-    ADDOPT(INVOICE_NUMBER_NAME, TYPE_STRING, false, false),
-};
-
-#undef ADDOPT
-
-int 
-InvoiceClient::getOptsCount()
-{
-    return sizeof(m_opts) / sizeof(options);
-}
-*/
 } // namespace Admin;

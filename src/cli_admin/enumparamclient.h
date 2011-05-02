@@ -19,15 +19,6 @@
 #ifndef _ENUMPARAMCLIENT_H_
 #define _ENUMPARAMCLIENT_H_
 
-#define ENUMPARAM_ENUM_PARAMETER_CHANGE         "enum_parameter_change"
-#define ENUMPARAM_ENUM_PARAMETER_CHANGE_DESC    "change value of enum_parameter by name"
-#define ENUMPARAM_NAME                          "parameter_name"
-#define ENUMPARAM_NAME_DESC                     "enum parameter name"
-#define ENUMPARAM_VALUE                         "parameter_value"
-#define ENUMPARAM_VALUE_DESC                    "enum parameter value"
-
-
-
 #include <boost/program_options.hpp>
 #include <iostream>
 

@@ -16,7 +16,6 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include "simple.h"
 #include "commonclient.h"
 #include "pollclient.h"
 #include "fredlib/poll.h"
@@ -29,21 +28,10 @@ PollClient::runMethod()
 {
     if (poll_list_all) {//POLL_LIST_ALL_NAME
         list_all();
-/*  } else if (m_conf.hasOpt(POLL_LIST_NEXT_NAME)) {
-        list_next();
-    } else if (m_conf.hasOpt(POLL_LIST_NEXT_HANDLE_NAME)) {
-        list_next();*/
     } else if (poll_create_statechanges //POLL_CREATE_STATE_CHANGES_NAME
-            /*|| m_conf.hasOpt(POLL_CREATE_STATE_CHANGES_2_NAME)*/) {
+             ) {
         create_state_changes();
-    }/* else if (m_conf.hasOpt(POLL_CREATE_LOW_CREDIT_NAME) ||
-            m_conf.hasOpt(POLL_CREATE_LOW_CREDIT_2_NAME)) {
-        create_low_credit();
-    } else if (m_conf.hasOpt(POLL_SET_SEEN_NAME)) {
-        set_seen();
-    } else if (m_conf.hasOpt(POLL_SHOW_OPTS_NAME)) {
-        show_opts();
-    }*/
+    }
 }
 
 void
@@ -73,87 +61,7 @@ PollClient::list_all()
     }
     return;
 }
-/*
 
-
-const struct options *
-PollClient::getOpts()
-{
-    return m_opts;
-}
-
-
-void
-PollClient::show_opts()
-{
-    print_options("Poll", getOpts(), getOptsCount());
-}
-
-
-void
-PollClient::list_next()
-{
-    callHelp(m_conf, no_help);
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
-            Fred::Poll::Manager::create(
-                m_db)
-            );
-    if (m_conf.hasOpt(POLL_LIST_NEXT_NAME)) {
-        Fred::TID reg = m_conf.get<unsigned int>(POLL_LIST_NEXT_NAME);
-        unsigned int count = pollMan->getMessageCount(reg);
-        if (!count) {
-            std::cout << "No message" << std::endl;
-        } else {
-            std::auto_ptr<Fred::Poll::Message> msg(pollMan->getNextMessage(reg));
-            std::cout << "Messages:" << count << std::endl;
-            msg->textDump(std::cout);
-            std::cout << std::endl;
-        }
-    } else if (m_conf.hasOpt(POLL_LIST_NEXT_HANDLE_NAME)) {
-        std::string reg = m_conf.get<std::string>(POLL_LIST_NEXT_HANDLE_NAME);
-        unsigned int count = pollMan->getMessageCount(reg);
-        if (!count) {
-            std::cout << "No message" << std::endl;
-        } else {
-            std::auto_ptr<Fred::Poll::Message> msg(pollMan->getNextMessage(reg));
-            std::cout << "Messages:" << count << std::endl;
-            msg->textDump(std::cout);
-            std::cout << std::endl;
-        }
-    } else {
-        std::cerr << "Registrar is not set, use ``--" << REGISTRAR_ID_NAME
-            << "'' or ``--" << REGISTRAR_HANDLE_NAME << "''" << std::endl;
-        return;
-    }
-}
-void
-PollClient::set_seen()
-{
-    callHelp(m_conf, no_help);
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
-            Fred::Poll::Manager::create(
-                m_db)
-            );
-    try {
-        Fred::TID messageId = m_conf.get<unsigned int>(POLL_SET_SEEN_NAME);
-        if (m_conf.hasOpt(REGISTRAR_ID_NAME)) {
-            Fred::TID reg = m_conf.get<unsigned int>(REGISTRAR_ID_NAME);
-            pollMan->setMessageSeen(messageId, reg);
-            std::cout << "NextId:" << pollMan->getNextMessageId(reg) << std::endl;
-        } else if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME)) {
-            std::string reg = m_conf.get<std::string>(REGISTRAR_ID_NAME);
-            pollMan->setMessageSeen(messageId, reg);
-            std::cout << "NextId:" << pollMan->getNextMessageId(reg) << std::endl;
-        } else {
-            std::cerr << "Registrar is not set, use ``--" << REGISTRAR_ID_NAME
-                << "'' or ``--" << REGISTRAR_HANDLE_NAME << "''" << std::endl;
-            return;
-        }
-    } catch (...) {
-        std::cout << "No message" << std::endl;
-    }
-}
-*/
 void
 PollClient::create_state_changes()
 {
@@ -176,51 +84,6 @@ PollClient::create_state_changes()
     );
     return;
 }
-/*
-void
-PollClient::create_low_credit()
-{
-    callHelp(m_conf, no_help);
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
-            Fred::Poll::Manager::create(
-                m_db)
-            );
-    pollMan->createLowCreditMessages();
-    return;
-}
 
-#define ADDOPT(name, type, callable, visible) \
-    {CLIENT_POLL, name, name##_DESC, type, callable, visible}
-
-const struct options
-PollClient::m_opts[] = {
-    add_REGISTRAR_ID,
-    add_REGISTRAR_HANDLE,
-    ADDOPT(POLL_LIST_ALL_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(POLL_LIST_NEXT_NAME, TYPE_UINT, true, true),
-    ADDOPT(POLL_LIST_NEXT_HANDLE_NAME, TYPE_STRING, true, true),
-    ADDOPT(POLL_SET_SEEN_NAME, TYPE_UINT, true, true),
-    ADDOPT(POLL_CREATE_STATE_CHANGES_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(POLL_CREATE_STATE_CHANGES_2_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(POLL_CREATE_LOW_CREDIT_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(POLL_CREATE_LOW_CREDIT_2_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(POLL_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(POLL_TYPE_NAME, TYPE_UINT, false, false),
-    ADDOPT(POLL_REGID_NAME, TYPE_UINT, false, false),
-    ADDOPT(POLL_NONSEEN_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(POLL_NONEX_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(POLL_DEBUG_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(POLL_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),
-    ADDOPT(POLL_LIMIT_NAME, TYPE_UINT, false, false),
-};
-
-#undef ADDOPT
-
-int 
-PollClient::getOptsCount()
-{
-    return sizeof(m_opts) / sizeof(options);
-}
-*/
 } // namespace Admin;
 

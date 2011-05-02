@@ -28,26 +28,6 @@
 #include "util/types/optional.h"
 #include "domain_params.h"
 
-
-#define DOMAIN_SHOW_OPTS_NAME           "domain_show_opts"
-#define DOMAIN_SHOW_OPTS_NAME_DESC      "show all domain command line options"
-#define DOMAIN_LIST_NAME                "domain_list"
-#define DOMAIN_LIST_NAME_DESC           "list of all domains (via filters)"
-#define DOMAIN_LIST_PLAIN_NAME          "domain_list_plain"
-#define DOMAIN_LIST_PLAIN_NAME_DESC     "list of all domains"
-#define DOMAIN_INFO_NAME                "domain_info"
-#define DOMAIN_INFO_NAME_DESC           "info on domain"
-
-#define DOMAIN_LIST_HELP_NAME           "domain_list_help"
-#define DOMAIN_LIST_HELP_NAME_DESC      "help on domain list"
-
-#define DOMAIN_EXP_DATE_NAME            "exp_date"
-#define DOMAIN_EXP_DATE_NAME_DESC       "expiration date (type ``./fred-admin --help_dates'' for further date&time information)"
-#define DOMAIN_OUT_DATE_NAME            "out_zone_date"
-#define DOMAIN_OUT_DATE_NAME_DESC       "out zone date (type ``./fred-admin --help_dates'' for further date&time information)"
-#define DOMAIN_CANC_DATE_NAME           "cancel_date"
-#define DOMAIN_CANC_DATE_NAME_DESC      "cancel date (type ``./fred-admin --help_dates'' for further date&time information)"
-
 namespace Admin {
 
 class DomainClient : public BaseClient {

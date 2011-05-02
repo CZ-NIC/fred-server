@@ -20,7 +20,6 @@
 
 #include <boost/lexical_cast.hpp>
 #include <omniORB4/CORBA.h>
-//#include "simple.h"
 #include "commonclient.h"
 #include "objectclient.h"
 #include "fredlib/registry.h"
@@ -30,40 +29,21 @@
 
 namespace Admin {
 
-const struct options *
-ObjectClient::getOpts()
-{
-    return m_opts;
-}
-
 void
 ObjectClient::runMethod()
 {
     if (object_new_state_request//m_conf.hasOpt(OBJECT_NEW_STATE_REQUEST_NAME)
             ) {
         new_state_request();
-    }/* else if (m_conf.hasOpt(OBJECT_LIST_NAME)) {
-        list();
-    }*/ else if (object_update_states//m_conf.hasOpt(OBJECT_UPDATE_STATES_NAME)
+    }   else if (object_update_states//m_conf.hasOpt(OBJECT_UPDATE_STATES_NAME)
             ) {
         update_states();
-    }/* else if (m_conf.hasOpt(OBJECT_DELETE_CANDIDATES_NAME)) {
-        delete_candidates();
-    }*/ else if (object_regular_procedure//m_conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)
+    }   else if (object_regular_procedure//m_conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)
             ) {
         regular_procedure();
-    } /*else if (m_conf.hasOpt(OBJECT_SHOW_OPTS_NAME)) {
-        show_opts();
-    }*/
+    }
 }
-/*
-void
-ObjectClient::show_opts() 
-{
-    callHelp(m_conf, no_help);
-    print_options("Object", getOpts(), getOptsCount());
-}
-*/
+
 int
 ObjectClient::createObjectStateRequest(
         Fred::TID object,
@@ -125,14 +105,12 @@ ObjectClient::new_state_request()
 void
 ObjectClient::list()
 {
-    //callHelp(m_conf, no_help);
     std::cout << "not implemented" << std::endl;
 }
 
 void
 ObjectClient::update_states()
 {
-    //callHelp(m_conf, no_help);
     std::auto_ptr<Fred::Manager> regMan(
             Fred::Manager::create(
                 m_db,
@@ -334,24 +312,9 @@ ObjectClient::deleteObjects(
     }
 }
 
-/*
-void
-ObjectClient::delete_candidates()
-{
-    callHelp(m_conf, no_help);
-    std::string deleteTypes("");
-    if (m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)) {
-        deleteTypes = m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
-    }
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-    deleteObjects(deleteTypes, cc);
-}
-*/
-
 void
 ObjectClient::regular_procedure()
 {
-    //callHelp(m_conf, no_help);
     int i;
     std::auto_ptr<CorbaClient> cc;
     try {
@@ -473,33 +436,6 @@ ObjectClient::regular_procedure()
 
     return;
 } // ObjectClient::regular_procedure
-
-#define ADDOPT(name, type, callable, visible) \
-    {CLIENT_OBJECT, name, name##_DESC, type, callable, visible}
-
-const struct options
-ObjectClient::m_opts[] = {
-    ADDOPT(OBJECT_NEW_STATE_REQUEST_NAME, TYPE_UINT, true, true),
-    ADDOPT(OBJECT_REGULAR_PROCEDURE_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(OBJECT_DELETE_CANDIDATES_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(OBJECT_UPDATE_STATES_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(OBJECT_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(OBJECT_DEBUG_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(OBJECT_ID_NAME, TYPE_ULONGLONG, false, false),
-    ADDOPT(OBJECT_NAME_NAME, TYPE_STRING, false, false),
-    ADDOPT(OBJECT_DELETE_TYPES_NAME, TYPE_STRING, false, false),
-    ADDOPT(OBJECT_NOTIFY_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),
-    ADDOPT(OBJECT_POLL_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),
-    ADDOPT(OBJECT_DELETE_LIMIT_NAME, TYPE_UINT, false, false),
-};
-
-#undef ADDOPT
-
-int 
-ObjectClient::getOptsCount()
-{
-    return sizeof(m_opts) / sizeof(options);
-}
 
 } // namespace Admin;
 

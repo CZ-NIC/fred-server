@@ -16,13 +16,9 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include "simple.h"
 #include "commonclient.h"
 #include "domainclient.h"
 #include "fredlib/registry.h"
-
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, DOMAIN_CLIENT))
 
 namespace Admin {
 
@@ -249,99 +245,4 @@ DomainClient::domain_list_plain()
     return;
 }
 
-/*
-
- const struct options *
-DomainClient::getOpts()
-{
-    return m_opts;
-}
-
-
-void
-DomainClient::show_opts()
-{
-    print_options("Domain", getOpts(), getOptsCount());
-}
-
-
-void
-DomainClient::list_help()
-{
-    std::cout
-        << "** Domain list **\n\n"
-        << "  $ " << g_prog_name << " --" << DOMAIN_LIST_NAME << " \\\n"
-        << "    [--" << ID_NAME << "=<id_nubmer>] \\\n"
-        << "    [--" << HANDLE_NAME << "=<handle>] \\\n"
-        << "    [--" << NSSET_ID_NAME << "=<id_number>] \\\n"
-        << "    [--" << NSSET_HANDLE_NAME << "=<handle>] \\\n"
-        << "    [--" << ANY_NSSET_NAME << "] \\\n"
-        << "    [--" << KEYSET_ID_NAME << "=<id_number>] \\\n"
-        << "    [--" << KEYSET_HANDLE_NAME << "=<handle>] \\\n"
-        << "    [--" << ANY_KEYSET_NAME << "] \\\n"
-        << "    [--" << ZONE_ID_NAME << "=<id_number>] \\\n"
-        << "    [--" << REGISTRANT_ID_NAME << "=<id_number>] \\\n"
-        << "    [--" << REGISTRANT_HANDLE_NAME << "=<handle>] \\\n"
-        << "    [--" << REGISTRANT_NAME_NAME << "=<name>] \\\n"
-        << "    [--" << ADMIN_ID_NAME << "=<admin_id_number>] \\\n"
-        << "    [--" << ADMIN_HANDLE_NAME << "=<admin_handle>] \\\n"
-        << "    [--" << ADMIN_NAME_NAME << "=<admin_name>] \\\n"
-        << "    [--" << REGISTRAR_ID_NAME << "=<registrar_id_number>] \\\n"
-        << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
-        << "    [--" << REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
-        << "    [--" << CRDATE_NAME << "=<create_date>] \\\n"
-        << "    [--" << DELDATE_NAME << "=<delete_date>] \\\n"
-        << "    [--" << UPDATE_NAME << "=<update_date>] \\\n"
-        << "    [--" << TRANSDATE_NAME << "=<transfer_date>] \\\n"
-        << "    [--" << FULL_LIST_NAME << "]\n"
-        << std::endl;
-}
-
-#define ADDOPT(name, type, callable, visible) \
-    {CLIENT_DOMAIN, name, name##_DESC, type, callable, visible}
-
-const struct options
-DomainClient::m_opts[] = {
-    ADDOPT(DOMAIN_LIST_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(DOMAIN_LIST_PLAIN_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(DOMAIN_INFO_NAME, TYPE_STRING, true, true),
-    ADDOPT(DOMAIN_LIST_PLAIN_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(DOMAIN_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(DOMAIN_OUT_DATE_NAME, TYPE_STRING, false, false),
-    ADDOPT(DOMAIN_EXP_DATE_NAME, TYPE_STRING, false, false),
-    ADDOPT(DOMAIN_CANC_DATE_NAME, TYPE_STRING, false, false),
-    add_ID,
-    add_FQDN,
-    add_NSSET_ID,
-    add_NSSET_HANDLE,
-    add_ANY_NSSET,
-    add_KEYSET_ID,
-    add_KEYSET_HANDLE,
-    add_ANY_KEYSET,
-    add_REGISTRANT_ID,
-    add_REGISTRANT_NAME,
-    add_REGISTRANT_HANDLE,
-    add_ADMIN_ID,
-    add_ADMIN_HANDLE,
-    add_ADMIN_NAME,
-    add_REGISTRAR_ID,
-    add_REGISTRAR_HANDLE,
-    add_REGISTRAR_NAME,
-    add_ADMIN,
-    add_ADMIN_ADD,
-    add_ADMIN_REM,
-    add_CRDATE,
-    add_UPDATE,
-    add_DELDATE,
-    add_TRANSDATE
-};
-
-#undef ADDOPT
-
-int 
-DomainClient::getOptsCount()
-{
-    return sizeof(m_opts) / sizeof(options);
-}
-*/
 } // namespace Admin;

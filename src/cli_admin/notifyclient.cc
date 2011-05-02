@@ -32,8 +32,6 @@
 #include "notifyclient.h"
 #include "fredlib/info_buffer.h"
 
-
-
 #include "cfg/faked_args.h"
 #include "cfg/handle_args.h"
 #include "cfg/config_handler_decl.h"
@@ -53,25 +51,18 @@ NotifyClient::runMethod()
 {
     if (notify_state_changes){//m_conf.hasOpt(NOTIFY_STATE_CHANGES_NAME)
         state_changes();
-    //} else if (m_conf.hasOpt(NOTIFY_LETTERS_CREATE_NAME)) {
-    //    letters_create();
     } else if (notify_letters_postservis_send//m_conf.hasOpt(NOTIFY_LETTERS_SEND_NAME)
             ) {
         letters_send();
     } else if (notify_sms_send//m_conf.hasOpt(NOTIFY_SMS_SEND_NAME)
             ) {
         sms_send();
-    } //else if (m_conf.hasOpt(NOTIFY_FILE_SEND_NAME)) {
-        //file_send();
-    //} else if (m_conf.hasOpt(NOTIFY_SHOW_OPTS_NAME)) {
-      //  show_opts();
-    //}
+    }
 }
 
 void
 NotifyClient::state_changes()
 {
-    //callHelp(m_conf, no_help);
     std::auto_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
                 docgen_path.get_value()//m_conf.get<std::string>(REG_DOCGEN_PATH_NAME)
@@ -141,76 +132,7 @@ NotifyClient::state_changes()
                     notify_state_changes_params.notify_use_history_tables//m_conf.hasOpt(NOTIFY_USE_HISTORY_TABLES_NAME)
                     );
 }
-/*
 
-const struct options *
-NotifyClient::getOpts()
-{
-    return m_opts;
-}
-
-void
-NotifyClient::show_opts()
-{
-    //callHelp(m_conf, no_help);
-    print_options("Notify", getOpts(), getOptsCount());
-}
-
-void
-NotifyClient::letters_create()
-{
-    callHelp(m_conf, no_help);
-    std::auto_ptr<Fred::Document::Manager> docMan(
-            Fred::Document::Manager::create(
-                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
-                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
-                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
-                m_nsAddr)
-            );
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-    MailerManager mailMan(cc.getNS());
-    std::auto_ptr<Fred::Zone::Manager> zoneMan(
-            Fred::Zone::Manager::create());
-
-    Fred::Messages::ManagerPtr msgMan
-        = Fred::Messages::create_manager();
-
-
-    std::auto_ptr<Fred::Domain::Manager> domMan(
-            Fred::Domain::Manager::create(m_db, zoneMan.get()));
-    std::auto_ptr<Fred::Contact::Manager> conMan(
-            Fred::Contact::Manager::create(
-                m_db,
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
-            );
-    std::auto_ptr<Fred::NSSet::Manager> nssMan(
-            Fred::NSSet::Manager::create(
-                m_db,
-                zoneMan.get(),
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
-            );
-    std::auto_ptr<Fred::KeySet::Manager> keyMan(
-            Fred::KeySet::Manager::create(
-                m_db,
-                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
-            );
-    std::auto_ptr<Fred::Registrar::Manager> regMan(
-            Fred::Registrar::Manager::create(m_db));
-    std::auto_ptr<Fred::Notify::Manager> notifyMan(
-            Fred::Notify::Manager::create(
-                m_db,
-                &mailMan,
-                conMan.get(),
-                nssMan.get(),
-                keyMan.get(),
-                domMan.get(),
-                docMan.get(),
-                regMan.get(),
-                msgMan));
-
-    notifyMan->generateLetters(m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT));
-}
-*/
 void NotifyClient::letters_send()
 {
     // TODO code duplicity except for the last line
@@ -244,35 +166,7 @@ void NotifyClient::sms_send()
             , std::string("'")
            );
 }
-/*
-void NotifyClient::file_send()
-{
-    // TODO code duplicity except for the last line
-    // you can:
-    //          - move the body of the sendLetters() here
-    //          - separate constructor for Notify::Manager
-    //          - make sendLetters static
-    callHelp(m_conf, no_help);
 
-    std::auto_ptr<Fred::Document::Manager> docMan(
-            Fred::Document::Manager::create(
-                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
-                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
-                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
-                m_nsAddr)
-            );
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-    
-    std::auto_ptr<Fred::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
-
-    sendFile(
-            m_conf.get<std::string> (NOTIFY_FILE_SEND_NAME),
-            m_conf.hasOpt(NOTIFY_HPMAIL_CONFIG_NAME) ? 
-                m_conf.get<std::string> (NOTIFY_HPMAIL_CONFIG_NAME) :
-                HPMAIL_CONFIG        
-            );
-}
-*/
     void NotifyClient::send_letters_impl(
             Fred::File::Transferer* fileman
             , const HPCfgMap& hpmail_config
@@ -332,13 +226,12 @@ void NotifyClient::file_send()
     }//NotifyClient::send_letters_impl
 
 
-      /** This method sends letters from table letter_archive
-       * it sets current processed row to status=6 (under processing)
-       * and cancels execution at the beginning if any row in this table
-       * is already being processed.
-       *
-       */
-
+  /** This method sends letters from table letter_archive
+   * it sets current processed row to status=6 (under processing)
+   * and cancels execution at the beginning if any row in this table
+   * is already being processed.
+   *
+   */
 
   void NotifyClient::sendLetters(
           std::auto_ptr<Fred::File::Transferer> fileman
@@ -514,33 +407,6 @@ void NotifyClient::file_send()
 
             return set_cfg;
     }
-
-#define ADDOPT(name, type, callable, visible) \
-    {CLIENT_NOTIFY, name, name##_DESC, type, callable, visible}
-
-const struct options
-NotifyClient::m_opts[] = {
-    ADDOPT(NOTIFY_STATE_CHANGES_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(NOTIFY_LETTERS_CREATE_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(NOTIFY_LETTERS_SEND_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(NOTIFY_SMS_SEND_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(NOTIFY_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(NOTIFY_DEBUG_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(NOTIFY_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),
-    ADDOPT(NOTIFY_LIMIT_NAME, TYPE_UINT, false, false),
-    ADDOPT(NOTIFY_USE_HISTORY_TABLES_NAME, TYPE_BOOL, false, false),
-    ADDOPT(NOTIFY_FILE_SEND_NAME, TYPE_STRING, true, true),
-    ADDOPT(NOTIFY_HPMAIL_CONFIG_NAME, TYPE_STRING, true, true),
-    ADDOPT(NOTIFY_SMS_COMMAND_NAME, TYPE_STRING, true, true)
-};
-
-#undef ADDOPT
-
-int 
-NotifyClient::getOptsCount()
-{
-    return sizeof(m_opts) / sizeof(options);
-}
 
 //#4712#comment:23
 void notify_registered_letters_manual_send_impl(const std::string& nameservice_host_port

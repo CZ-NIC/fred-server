@@ -19,22 +19,6 @@
 #ifndef _FILECLIENT_H_
 #define _FILECLIENT_H_
 
-#define FILE_LIST_NAME              "file_list"
-#define FILE_LIST_NAME_DESC         "list all files"
-#define FILE_LIST_HELP_NAME         "file_list_help"
-#define FILE_LIST_HELP_NAME_DESC    "help for file list"
-
-#define FILE_SHOW_OPTS_NAME         "file_show_opts"
-#define FILE_SHOW_OPTS_NAME_DESC    "show all file command line options"
-#define FILE_PATH_NAME              "path"
-#define FILE_PATH_NAME_DESC         "path"
-#define FILE_MIME_NAME              "mime"
-#define FILE_MIME_NAME_DESC         "mime"
-#define FILE_SIZE_NAME              "size"
-#define FILE_SIZE_NAME_DESC         "size"
-#define FILE_TYPE_NAME              "file_type"
-#define FILE_TYPE_NAME_DESC         "file type"
-
 #include <iostream>
 #include <boost/program_options.hpp>
 

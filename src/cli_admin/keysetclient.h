@@ -29,26 +29,6 @@
 
 #include "keyset_params.h"
 
-#define KEYSET_SHOW_OPTS_NAME       "keyset_show_opts"
-#define KEYSET_SHOW_OPTS_NAME_DESC  "show all keyset command line options"
-#define KEYSET_LIST_NAME            "keyset_list"
-#define KEYSET_LIST_NAME_DESC       "list of all keysets (via filters)"
-#define KEYSET_LIST_PLAIN_NAME      "keyset_list_plain"
-#define KEYSET_LIST_PLAIN_NAME_DESC "list of all keysets (via ccReg_i)"
-#define KEYSET_CHECK_NAME           "keyset_check"
-#define KEYSET_CHECK_NAME_DESC      "check keyset state"
-#define KEYSET_INFO_NAME            "keyset_info"
-#define KEYSET_INFO_NAME_DESC       "keyset info (via epp_impl)"
-#define KEYSET_INFO2_NAME           "keyset_info2"
-#define KEYSET_INFO2_NAME_DESC      "keyset info (via ccReg_i::info method)"
-
-#define KEYSET_LIST_HELP_NAME           "keyset_list_help"
-#define KEYSET_LIST_HELP_NAME_DESC      "help for keyset list"
-#define KEYSET_INFO_HELP_NAME           "keyset_info_help"
-#define KEYSET_INFO_HELP_NAME_DESC      "help for keyset info"
-#define KEYSET_CHECK_HELP_NAME          "keyset_check_help"
-#define KEYSET_CHECK_HELP_NAME_DESC     "help for keyset checking"
-
 namespace Admin {
 
 class KeysetClient : public BaseClient {

@@ -28,17 +28,6 @@
 
 #include "contact_params.h"
 
-#define CONTACT_SHOW_OPTS_NAME          "contact_show_opts"
-#define CONTACT_SHOW_OPTS_NAME_DESC     "show all contact command line options"
-#define CONTACT_INFO_NAME               "contact_info"
-#define CONTACT_INFO_NAME_DESC          "contact info"
-#define CONTACT_LIST_NAME               "contact_list"
-#define CONTACT_LIST_NAME_DESC          "list of all contacts (via filters)"
-#define CONTACT_LIST_PLAIN_NAME         "contact_list_plain"
-#define CONTACT_LIST_PLAIN_NAME_DESC    "list of all contacts (via epp_impl)"
-#define CONTACT_LIST_HELP_NAME          "contact_list_help"
-#define CONTACT_LIST_HELP_NAME_DESC     "help for contact list"
-
 namespace Admin {
 
 class ContactClient : public BaseClient {

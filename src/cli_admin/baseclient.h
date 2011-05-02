@@ -24,53 +24,9 @@
 #ifndef BASE_CLIENT_H_
 #define BASE_CLIENT_H_
 
-//#include "simple.h"
 #include <corba/EPP.hh>
 #include <map>
 #include <string>
-
-
-
-typedef std::map<std::string, int> METHODS;
-typedef std::map<std::string, int>::iterator METHODS_IT;
-
-
-#define CLIENT_COMMON           0
-#define CLIENT_DOMAIN           1
-#define CLIENT_KEYSET           2
-#define CLIENT_CONTACT          3
-#define CLIENT_INVOICE          4
-#define CLIENT_AUTHINFO         5
-#define CLIENT_BANK             6
-#define CLIENT_POLL             7
-#define CLIENT_REGISTRAR        8
-#define CLIENT_NOTIFY           9
-#define CLIENT_OBJECT           10
-#define CLIENT_INFOBUFF         11
-#define CLIENT_NSSET            12
-#define CLIENT_FILE             13
-#define CLIENT_MAIL             14
-#define CLIENT_PUBLICREQUEST    15
-#define CLIENT_ENUMPARAM        16
-
-#define TYPE_NOTYPE     0
-#define TYPE_STRING     1
-#define TYPE_INT        2
-#define TYPE_UINT       3
-#define TYPE_ULONGLONG  4
-#define TYPE_BOOL       5
-#define TYPE_DOUBLE     6
-
-struct options
-{
-    int         client;
-    const char  *name;
-    const char  *description;
-    int         type;
-    bool        callable;
-    bool        visible;
-};
-
 
 namespace Admin {
 
@@ -99,49 +55,7 @@ public:
     m_connstring = _conn_string;
     m_nsAddr     = _nsaddr;
   }
-  void no_help()
-  {
-    std::cout << "There is no help for this topic" << std::endl;
-  }
 
-  void print_options(const std::string &clientName, 
-          const struct options *opts, int count)
-  {
-      if (count == 0) {
-          std::cout << "No parameters" << std::endl;
-          return;
-      }
-      std::string omg;
-      std::cout << clientName << std::endl << "Callable parameters:" << std::endl;
-      for (int i = 0; i < count; i++) {
-          if (opts[i].callable) {
-              if (opts[i].type != TYPE_NOTYPE) {
-                  omg = opts[i].name + std::string(" arg");
-              } else {
-                  omg = opts[i].name;
-              }
-              std::ios_base::fmtflags state = std::cout.flags();
-              std::cout.width(24);
-              std::cout << std::left << omg << " - " << opts[i].description << std::endl;
-              std::cout.flags(state);
-          }
-      }
-      std::cout << std::endl << "Other parametrs:" << std::endl;
-      for (int i = 0; i < count; i++) {
-          if (!opts[i].callable) {
-              if (opts[i].type != TYPE_NOTYPE) {
-                  omg = opts[i].name + std::string(" arg");
-              } else {
-                  omg = opts[i].name;
-              }
-              std::ios_base::fmtflags state = std::cout.flags();
-              std::cout.width(24);
-              std::cout << std::left << omg;
-              std::cout << " - " << opts[i].description << std::endl;
-              std::cout.flags(state);
-          }
-      }
-  }
 }; // class BaseClient
 
 } // namespace Admin
