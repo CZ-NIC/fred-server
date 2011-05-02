@@ -19,7 +19,8 @@ enum mojeid_operation_type {
     MOJEID_NOP = 0,
     MOJEID_CONTACT_CREATE = 1,
     MOJEID_CONTACT_UPDATE,
-    MOJEID_CONTACT_UNIDENTIFY
+    MOJEID_CONTACT_UNIDENTIFY,
+    MOJEID_CONTACT_TRANSFER
 };
 
 struct trans_data {
@@ -71,6 +72,11 @@ class ServerImpl : public POA_Registry::MojeID::Server,
         CORBA::ULongLong contactTransfer(const char* _handle,
                                          IdentificationMethod _method,
                                          const CORBA::ULongLong _request_id);
+
+        CORBA::ULongLong contactTransferPrepare(const char *_handle,
+                                             IdentificationMethod _method,
+                                             const char * _trans_id,
+                                             const CORBA::ULongLong _request_id);
 
         void contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
                                 const char * _trans_id,

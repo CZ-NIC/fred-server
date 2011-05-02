@@ -432,6 +432,129 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
     }
 }
 
+CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
+                                             IdentificationMethod _method,
+                                             const char * _trans_id,
+                                             const CORBA::ULongLong _request_id)
+{
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("contact-transfer-request");
+    ConnectionReleaser releaser;
+
+    try {
+        std::string handle = static_cast<std::string>(_handle);
+        LOGGER(PACKAGE).info(boost::format("request data --"
+                    "  handle: %1%  identification_method: %2%  request_id: %3%")
+                % handle % _method % _request_id);
+
+        Fred::NameIdPair cinfo;
+        Fred::Contact::ManagerPtr contact_mgr(
+                Fred::Contact::Manager::create(DBDisconnectPtr(0), registry_conf_->restricted_handles));
+
+        Fred::Contact::Manager::CheckAvailType check_result;
+        check_result = contact_mgr->checkAvail(handle, cinfo);
+
+        if (check_result != Fred::Contact::Manager::CA_REGISTRED) {
+            throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+        }
+
+        ::MojeID::FieldErrorMap errors;
+        /* contact is blocked or prohibits operations:
+         *   7 | serverBlocked
+         *   3 | serverTransferProhibited
+         *   4 | serverUpdateProhibited
+         */
+        /* already CI || already I || already V */
+        if ((Fred::object_has_state(cinfo.id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
+                || (Fred::object_has_state(cinfo.id, ::MojeID::IDENTIFIED_CONTACT) == true)
+                || (Fred::object_has_state(cinfo.id, ::MojeID::VALIDATED_CONTACT) == true)) {
+
+            errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
+        }
+        else if ((Fred::object_has_state(cinfo.id, "serverTransferProhibited") == true)
+                || (Fred::object_has_state(cinfo.id, "serverUpdateProhibited") == true)) {
+
+            errors[::MojeID::field_status] = ::MojeID::INVALID;
+        }
+        if (errors.size() > 0) {
+            throw ::MojeID::DataValidationError(errors);
+        }
+
+        /* create public request */
+        Fred::PublicRequest::Type type;
+        if (_method == Registry::MojeID::SMS) {
+            type = Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+        }
+        else if (_method == Registry::MojeID::LETTER) {
+            type = Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION;
+        }
+        else if (_method == Registry::MojeID::CERTIFICATE) {
+            throw std::runtime_error("not implemented");
+        }
+        else {
+            throw std::runtime_error("unknown identification method");
+        }
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
+        IdentificationRequestPtr new_request(type);
+        new_request->setRegistrarId(mojeid_registrar_id_);
+        new_request->setRequestId(_request_id);
+        new_request->setEppActionId(0);
+        new_request->addObject(
+                Fred::PublicRequest::OID(
+                    cinfo.id, handle, Fred::PublicRequest::OT_CONTACT));
+        new_request->save();
+
+        tx.prepare(_trans_id);
+
+        boost::mutex::scoped_lock td_lock(td_mutex);
+
+        trans_data d(MOJEID_CONTACT_TRANSFER);
+        d.cid = cinfo.id;
+        d.prid = new_request->getId();
+        d.request_id =   _request_id;
+        transaction_data[_trans_id] = d;
+
+        td_lock.unlock();
+
+
+
+        LOGGER(PACKAGE).info(boost::format(
+                "identification request with contact transfer saved"
+                " -- handle: %1%  id: %2%")
+                % handle % cinfo.id);
+
+        LOGGER(PACKAGE).info("request prepare completed successfully");
+        return cinfo.id;
+    }
+    catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
+        throw;
+    }
+    catch (Fred::PublicRequest::NotApplicable &_ex) {
+        LOGGER(PACKAGE).error(boost::format(
+                    "cannot create transfer request (%1%)") % _ex.what());
+        ::MojeID::FieldErrorMap errors;
+        errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
+        throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(errors));
+    }
+    catch (::MojeID::DataValidationError &_ex) {
+        throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(_ex.errors));
+    }
+    catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
+}
+
+
 /*
 
    states to drop:
@@ -772,11 +895,13 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
     }
 
     // send identification password if operation is contact create
-    if(tr_data.op == MOJEID_CONTACT_CREATE) {
+    if(tr_data.op == MOJEID_CONTACT_CREATE || tr_data.op == MOJEID_CONTACT_TRANSFER) {
         sendAuthPasswords(tr_data.cid, tr_data.prid);
     }
 
-    updateObjectStates(tr_data.cid);
+    if(tr_data.op == MOJEID_CONTACT_UPDATE || tr_data.op == MOJEID_CONTACT_UNIDENTIFY) {
+        updateObjectStates(tr_data.cid);
+    }
 
     /* request notification */
     try {
