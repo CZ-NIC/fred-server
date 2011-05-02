@@ -24,7 +24,12 @@ void row_map_copy(std::map<std::string, std::string> &_dest,
             key != _keys.end();
             ++key)
     {
-        _dest[*key] = static_cast<std::string>(_row[*key]);
+        if (_row[*key].isnull()) {
+            _dest[*key] = std::string("");
+        }
+        else {
+            _dest[*key] = static_cast<std::string>(_row[*key]);
+        }
     }
 }
 
@@ -159,9 +164,11 @@ public:
                 "INSERT INTO tmp_reminder"
                 " SELECT coreg.id, coreg.crdate"
                 " FROM object_registry coreg"
+                " JOIN object o ON o.id = coreg.id"
                 " WHERE coreg.type = 1 AND coreg.erdate IS NULL"
                 " AND extract('month' FROM ($1::date - interval '10 month')) = extract('month' FROM coreg.crdate)"
                 " AND extract('day' FROM ($1::date - interval '10 month')) = extract('day' FROM coreg.crdate)"
+                " AND (o.update IS NULL OR o.update::date NOT BETWEEN (current_date - interval '2 month') AND current_date)"
                 " ORDER BY crdate",
                 Database::query_param_list(_date))),
           contact_data_(conn_.exec(
@@ -192,15 +199,11 @@ public:
                 " ORDER BY tmp.contact_id")),
           linked_data_(conn_.exec(
                 "SELECT tmp.contact_id AS id,"
-                " array_accum(DISTINCT doreg.name) AS arr_domains_admin_c,"
-                " array_accum(DISTINCT doreg2.name) AS arr_domains_owner,"
-                " array(SELECT DISTINCT (array_accum(DISTINCT doreg.name)||array_accum(DISTINCT doreg2.name))[i]"
-                " FROM generate_series("
-                " array_lower((array_accum(DISTINCT doreg.name)||array_accum(DISTINCT doreg2.name)), 1),"
-                " array_upper((array_accum(DISTINCT doreg.name)||array_accum(DISTINCT doreg2.name)), 1)) g(i)"
-                " ) AS arr_domains,"
-                " array_accum(DISTINCT noreg.name) AS arr_nssets,"
-                " array_accum(DISTINCT koreg.name) AS arr_keysets"
+                " array_filter_null(array_accum(DISTINCT doreg.name)) AS arr_domains_admin_c,"
+                " array_filter_null(array_accum(DISTINCT doreg2.name)) AS arr_domains_owner,"
+                " array_filter_null(array_uniq(array_accum(DISTINCT doreg.name)||array_accum(DISTINCT doreg.name))) AS arr_domains,"
+                " array_filter_null(array_accum(DISTINCT noreg.name)) AS arr_nssets,"
+                " array_filter_null(array_accum(DISTINCT koreg.name)) AS arr_keysets"
                 " FROM tmp_reminder tmp"
                 " LEFT JOIN (domain_contact_map dcm"
                 " JOIN object_registry doreg ON doreg.id = dcm.domainid"

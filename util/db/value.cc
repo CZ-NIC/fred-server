@@ -5,7 +5,7 @@
 #include "string_split.h"
 
 
-namespace Database{
+namespace Database {
 
 
 std::vector<std::string> array_to_vector(std::string _dbarr)
