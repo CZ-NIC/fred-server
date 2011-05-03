@@ -201,7 +201,7 @@ public:
                 "SELECT tmp.contact_id AS id,"
                 " array_filter_null(array_accum(DISTINCT doreg.name)) AS arr_domains_admin_c,"
                 " array_filter_null(array_accum(DISTINCT doreg2.name)) AS arr_domains_owner,"
-                " array_filter_null(array_uniq(array_accum(DISTINCT doreg.name)||array_accum(DISTINCT doreg.name))) AS arr_domains,"
+                " array_filter_null(array_uniq(array_accum(DISTINCT doreg.name)||array_accum(DISTINCT doreg2.name))) AS arr_domains,"
                 " array_filter_null(array_accum(DISTINCT noreg.name)) AS arr_nssets,"
                 " array_filter_null(array_accum(DISTINCT koreg.name)) AS arr_keysets"
                 " FROM tmp_reminder tmp"
