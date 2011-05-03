@@ -78,6 +78,8 @@ public:
                        ("registrar")
                        ("registrar_name")
                        ("registrar_url")
+                       ("registrar_memo")
+                       ("registrar_reply_to")
                        ("name")
                        ("address")
                        ("organization")
@@ -179,6 +181,8 @@ public:
                 " r.handle AS registrar,"
                 " r.name AS registrar_name,"
                 " r.url AS registrar_url,"
+                " rrp.template_memo AS registrar_memo,"
+                " rrp.reply_to AS registrar_reply_to,"
                 " c.name AS name,"
                 " c.street1 || ', ' || c.city || ', ' || c.postalcode as address,"
                 " c.organization AS organization,"
@@ -193,6 +197,7 @@ public:
                 " LEFT JOIN (object_registry coreg"
                 " JOIN object co ON co.id = coreg.id"
                 " JOIN registrar r ON r.id = co.clid"
+                " LEFT JOIN reminder_registrar_parameter rrp ON rrp.registrar_id = r.id"
                 " JOIN contact c ON c.id = coreg.id"
                 " LEFT JOIN enum_ssntype est ON est.id = c.ssntype)"
                 " ON coreg.id = tmp.contact_id"
