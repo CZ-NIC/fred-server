@@ -53,13 +53,13 @@ class SQL_ERROR;
 #ifdef MAKE_DATE_DEF
 #undef MAKE_DATE_DEF
 #endif
-
+/*
 #define MAKE_TIME_DEF(ROW,COL,DEF)  \
   (ptime(db->IsNotNull(ROW,COL) ? \
    time_from_string(db->GetFieldValue(ROW,COL)) : DEF))
 #define MAKE_TIME(ROW,COL) \
   MAKE_TIME_DEF(ROW,COL,ptime(not_a_date_time))
-
+*/
 
 /*
 #define MAKE_TIME_DEF(ROW,COL,DEF)  \
@@ -816,19 +816,6 @@ class PaymentSourceImpl : public PaymentImpl, virtual public PaymentSource {
   ptime crtime; ///< creation time of advance invoice 
 public:
   /// init content from sql result (ignore first column)
-    
-  PaymentSourceImpl(DB *db, unsigned l, ManagerImpl *man) :
-    PaymentImpl(
-    STR_TO_MONEY(db->GetFieldValue(l,2)),
-    STR_TO_ID(db->GetFieldValue(l,6)),
-    man->countVAT(
-        STR_TO_MONEY(db->GetFieldValue(l,2)),
-        STR_TO_ID(db->GetFieldValue(l,6)),
-        true
-    )), number(atoll(db->GetFieldValue(l, 1))), credit(STR_TO_MONEY(db->GetFieldValue(l,3))), id(STR_TO_ID(db->GetFieldValue(l,4))), totalPrice(STR_TO_MONEY(db->GetFieldValue(l,5))), totalVat(STR_TO_MONEY(db->GetFieldValue(l,7))), crtime(MAKE_TIME(l,8)) {
-  }
-     
-  
   PaymentSourceImpl(Money _price, unsigned _vat_rate, Money _vat, 
                     unsigned long long _number, Money _credit, TID _id,
                     Money _total_price, Money _total_vat, ptime _crtime) :
@@ -878,28 +865,6 @@ class PaymentActionImpl : public PaymentImpl, virtual public PaymentAction {
   TID objectId; ///< id of object affected by payment action
 public:
   /// init content from sql result (ignore first column)
-
-    // TODO db shouldn't be saved anywhere in the dtor because caller reload()
-    // doesnt count on it and it retains the ownership of the db resource
-  PaymentActionImpl(DB *db, unsigned l, ManagerImpl *man) :
-    PaymentImpl(
-    STR_TO_MONEY(db->GetFieldValue(l,7)),
-    STR_TO_ID(db->GetFieldValue(l,9)),
-    man->countVAT(
-        STR_TO_MONEY(db->GetFieldValue(l,7)),
-        STR_TO_ID(db->GetFieldValue(l,9)),
-        true
-    )), 
-        objectName(db->GetFieldValue(l, 1)),
-        actionTime(MAKE_TIME(l,2)),
-        exDate(MAKE_DATE(l,3)),
-        action(atoi(db->GetFieldValue(l, 4)) == 1 ? PAT_CREATE_DOMAIN
-                                                     : PAT_RENEW_DOMAIN),
-    unitsCount(atoi(db->GetFieldValue(l, 5))),
-        pricePerUnit(STR_TO_MONEY(db->GetFieldValue(l,6))),
-        objectId(STR_TO_ID(db->GetFieldValue(l,8))) {
-  }
-    
   PaymentActionImpl(Money _price, unsigned _vat_rate, Money _vat, 
                     std::string& _object_name, ptime _action_time, date _exdate,
                     PaymentActionType _type, unsigned _units, Money _price_per_unit, TID _id) :

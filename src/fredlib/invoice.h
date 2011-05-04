@@ -282,13 +282,7 @@ public:
   virtual Money getCreditByZone(const std::string& registrarHandle, 
                                 TID zone) = 0;
   /// factory method
-  /*
-  static Manager *create(DB *db,
-                         Document::Manager *docman,
-                         Mailer::Manager *mailman);
-   */
-  
-  static Manager *create(
+   static Manager *create(
                          Document::Manager *_doc_manager,
                          Mailer::Manager *_mail_manager);
 
