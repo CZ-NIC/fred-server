@@ -3,6 +3,7 @@
 #include <vector>
 #include <boost/assign/list_of.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 #include "reminder.h"
 #include "db_settings.h"
@@ -108,6 +109,12 @@ public:
     std::string get_template() const
     {
         return "annual_contact_reminder";
+    }
+
+
+    unsigned long long get_contact_id() const
+    {
+        return contact_id_;
     }
 
 
@@ -288,7 +295,14 @@ void run_reminder(Mailer::Manager *_mailer, const boost::gregorian::date &_date)
 
                 Mailer::Handles handles;
                 Mailer::Attachments attach;
-                _mailer->sendEmail("", params["email"], "", email.get_template(), params, handles, attach);
+                std::string email_addr = boost::algorithm::trim_copy(params["email"]);
+                std::string email_registrar_reply_to = boost::algorithm::trim_copy(params["registrar_reply_to"]);
+                if (email_addr.empty()) {
+                    throw std::runtime_error(str(boost::format("no email address (contact_id=%1%)")
+                                             % email.get_contact_id()));
+                }
+                _mailer->sendEmail("", email_addr, "", email.get_template(), params, handles, attach,
+                                   email_registrar_reply_to);
             }
             catch (ReminderEmail::IntegrityError &_ie) {
                 /* stop on integrity error */

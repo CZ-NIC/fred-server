@@ -19,6 +19,7 @@
 #include <exception>
 #include <boost/tokenizer.hpp>
 #include <set>
+#include <boost/algorithm/string/trim.hpp>
 
 #include "mailer_manager.h"
 #include "old_utils/log.h"
@@ -42,7 +43,8 @@ MailerManager::sendEmail(
   const std::string& mailTemplate,
   const Fred::Mailer::Parameters &params,
   const Fred::Mailer::Handles &handles,
-  const Fred::Mailer::Attachments &attach
+  const Fred::Mailer::Attachments &attach,
+  const std::string& reply_to
 ) throw (Fred::Mailer::NOT_SEND)
 {
   LOGGER("mailer").debug(boost::format("recipients = '%1%'") % to);
@@ -54,6 +56,10 @@ MailerManager::sendEmail(
   ccReg::MailHeader header;
   header.h_from = CORBA::string_dup(from.c_str());
   header.h_to = CORBA::string_dup(to.c_str());
+  std::string h_reply_to = boost::algorithm::trim_copy(reply_to);
+  if (!h_reply_to.empty()) {
+      header.h_reply_to = CORBA::string_dup(h_reply_to.c_str());
+  }
   // prepare data
   ccReg::KeyValues data;
   data.length(params.size());

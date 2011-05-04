@@ -46,7 +46,8 @@ class MailerManager : public Fred::Mailer::Manager
     const std::string& mailTemplate,
     const Fred::Mailer::Parameters &params,
     const Fred::Mailer::Handles &handles,
-    const Fred::Mailer::Attachments &attach
+    const Fred::Mailer::Attachments &attach,
+    const std::string& reply_to = std::string("")
   ) throw (Fred::Mailer::NOT_SEND) ;
   bool checkEmailList(std::string &_email_list) const;
 
