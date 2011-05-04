@@ -347,17 +347,6 @@ public:
 
       // new implementation
       return new_domainBilling(db, zone, registrar, objectId, exDate, units_count, renew);
-
-/*
-
-     OLD IMPLEMENTATION
-      if(!renew) {
-          return db->BillingCreateDomain(registrar, zone, objectId);
-      } else {
-          return db->BillingRenewDomain(registrar, zone, objectId, units_count, exDate.to_string().c_str());
-      }
-*/
-
   };
 
     /**
@@ -368,38 +357,6 @@ int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long 
 
     // new implementation
     return new_createDepositInvoice(date, zoneId, registrarId, price);
-
-    /*
-    // HACK! we need to use same transaction
-    Database::Connection conn = Database::Manager::acquire();
-    DB db(conn);
-    // if(!db.OpenDatabase(Database::Manager::getConnectionString())) {
-    //     LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-    //     return 0;
-    // }
-
-    // TODO conversion with loss of precision
-    int ret = db.MakeNewInvoiceAdvance(date.to_string().c_str(), zoneId, registrarId, price);
-
-    switch(ret)  {
-        case -1:
-                throw std::runtime_error(" Insert into table invoice has failed. ");
-                break;
-        case -2: 
-                throw std::runtime_error(" Couldn't find invoice prefix. ");
-                break;
-        case -3:
-                throw std::runtime_error(" Select from registrar table failed. ");
-                break;
-        case -4:
-                throw std::runtime_error(" Number of selected rows is not 1 as it should be.");
-                break;
-        default:
-                // this shouldn't happen
-                break;
-    }
-    return ret;
-    */
 }
 
 #define INVOICE_FA  1 // normal invoice
