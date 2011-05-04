@@ -129,6 +129,16 @@ static bool disableNotification(DBSharedPtr db, int _reg_id, const char* _cltrid
 }
 /* HACK END */
 
+Database::Connection wrapped_acquire(ccReg_EPP_i *epp)
+{
+    try {
+        Database::Connection conn = Database::Manager::acquire();
+        return conn;
+    } catch(std::exception &ex) {
+        epp->ServerInternalError("Cannot connect to DB");
+    }
+}
+
 
 class EPPAction
 {
@@ -178,6 +188,46 @@ public:
 
     Logging::Context::push(str(boost::format("%1%") % db->GetsvTRID()));
   }
+
+  ///// TODO hack for new invoicing
+  EPPAction(
+      ccReg_EPP_i *_epp, int _clientID, int action, const char *clTRID,
+      const char *xml, ParsedAction *paction, int for_new_invoicing
+    ) throw (ccReg::EPP::EppError) :
+      ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
+      regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
+      notifier(0)
+    {
+      Logging::Context::push(str(boost::format("action-inv-%1%") % action));
+
+      Database::Connection conn = wrapped_acquire(epp);
+
+      /*
+      DBAutoPtr _db( new DB(conn));
+      db = DBDisconnectPtr(_db.release());
+      */
+      // ConnectionReleaser will take care of disconnect
+      db.reset(new DB(conn));
+
+      if (!db->BeginAction(clientID, action, clTRID, xml, paction)) {
+        epp->ServerInternalError("Cannot beginAction");
+      }
+      if (!regID) {
+        ret->code = COMMAND_MAX_SESSION_LIMIT;
+        ccReg::Response_var& r(getRet());
+        db->EndAction(r->code);
+        epp->EppError(r->code, r->msg, r->svTRID, errors);
+      }
+      if (!db->BeginTransaction()) {
+        db->EndAction(COMMAND_FAILED);
+        epp->ServerInternalError("Cannot start transaction",
+            CORBA::string_dup(db->GetsvTRID()) );
+      }
+      code = ret->code = COMMAND_OK;
+
+      Logging::Context::push(str(boost::format("%1%") % db->GetsvTRID()));
+    }
+
   ~EPPAction()
   {
     db->QuitTransaction(code);
@@ -4918,7 +4968,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     crDate = CORBA::string_dup("");
     exDate = CORBA::string_dup("");
 
-    EPPAction action(this, params.sessionID, EPP_DomainCreate, params.clTRID, params.XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_DomainCreate, params.clTRID, params.XML, &paction, 12345);
 
     ad.resize(admin.length());
 
@@ -5321,7 +5371,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     ParsedAction paction;
     paction.add(1,(const char*)fqdn);
 
-    EPPAction action(this, params.sessionID, EPP_DomainRenew, params.clTRID, params.XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_DomainRenew, params.clTRID, params.XML, &paction, 12345);
 
     // default
     exDate = CORBA::string_dup("");

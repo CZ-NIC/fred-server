@@ -169,6 +169,12 @@ class ManagerImpl : public Manager {
   
 public:
 
+  // TODO copy of those in action.h
+  enum {
+      OPERATION_DomainCreate = 1,
+      OPERATION_DomainRenew = 2
+  };
+
   ManagerImpl() :docman(NULL), mailman(NULL) {
     initVATList();
   }
@@ -194,6 +200,185 @@ public:
   virtual bool insertInvoicePrefix(const std::string &zoneName,
           int type, int year, unsigned long long prefix);
 
+
+
+  typedef signed int cent_amount;
+  // input is price in cents(penny)
+  // signed type allows negative amounts
+
+  // TODO format %2% to 2 decimal places
+  std::string query_param_price(cent_amount price)
+  {
+      return (boost::format("%1%.%2%") % (price/100) % (price%100) ).str();
+  }
+
+  void updateObjectPrice(Database::Connection &conn, Database::ID rec_id, cent_amount price, Database::ID invoiceID)
+  {
+      conn.exec_params("INSERT INTO invoice_object_registry_price_map (id, invoiceID, price) "
+          "VALUES ($1::integer, $2::integer, $3::numeric(10,2)) ",
+          Database::query_param_list( rec_id )
+                                     (invoiceID)
+                                     (query_param_price(price))
+                                     );
+  }
+
+  // create new record in invoice_object_registry and return the ID
+  Database::ID createInvoiceObjectRegistry(Database::Connection &conn, Database::ID objectID, Database::ID registrar, Database::ID zone, int period, const Database::Date &exDate, bool renew)
+  {
+      Database::Result res_id = conn.exec("SELECT nextval('invoice_object_registry_id_seq'::regclass) ");
+      Database::ID id = res_id[0][0];
+
+      conn.exec_params("INSERT INTO invoice_object_registry(id, objectid, registrarid, operation, zone, period, ExDate) VALUES ("
+            "$1::integer, $2::integer, $3::integer, $4::integer, $5::integer, $6::integer, $7::date)",
+            Database::query_param_list(  id  )
+                                       (objectID)
+                                       (registrar)
+                                       (static_cast<int>(renew ? OPERATION_DomainRenew : OPERATION_DomainCreate))
+                                       (zone)
+                                       (period)
+                                       (exDate));
+
+      return id;
+  }
+
+  void invoiceLowerCredit(Database::Connection &conn, cent_amount price, Database::ID invoiceID) {
+
+      if(price == 0) {
+          LOGGER(PACKAGE).debug ( boost::format("Zero price for invoiceID %1%, credit unchanged.") % invoiceID);
+          return;
+      }
+      conn.exec_params("UPDATE invoice SET credit = credit - $1::numeric(10,2) WHERE id=$2::integer",
+              Database::query_param_list(  query_param_price(price) )
+                                          (invoiceID));
+
+  }
+
+  long get_price(const std::string &str)
+  {
+      return ::get_price(str.c_str());
+  }
+
+  // TODO use it
+// where to catch exceptions? especially those comming from the database...
+  virtual bool new_domainBilling(
+              DBSharedPtr db,
+              const Database::ID &zone,
+              const Database::ID &registrar,
+              const Database::ID &objectId,
+              const Database::Date &exDate,
+              const int &units_count,
+              bool renew) {
+      try {
+      // TODO maybe this should be passed as an argument
+      Database::Connection conn = Database::Manager::acquire();
+
+      // find out whether the registrar in question is system
+      bool system = false;
+     Database::Result rsys =
+        conn.exec_params("SELECT system FROM registrar WHERE id=$1::integer",
+            Database::query_param_list(registrar));
+      if(rsys.size() != 1 || rsys[0][0].isnull()) {
+          // TODO how to treat this error
+          LOGGER(PACKAGE).error ( (boost::format("Registrar ID %1% not found ") % registrar).str());
+      } else {
+          system = rsys[0][0];
+          if(system) {
+              // no billing for system registrar
+              return true;
+          }
+      }
+
+     // find operation price in pennies/cents:
+     Database::Result res_price = conn.exec_params("SELECT price , period FROM price_list WHERE valid_from < 'now()'  "
+              "and ( valid_to is NULL or valid_to > 'now()' ) "
+              "and operation=$1::integer and zone=$2::integer",
+         Database::query_param_list( static_cast<int>(renew ? OPERATION_DomainRenew : OPERATION_DomainCreate) )
+                                     (zone ));
+
+      if(res_price.size() != 1 || res_price[0][0].isnull()) {
+          // price not set - no billing
+          return true;
+      }
+
+      cent_amount price = get_price((std::string)res_price[0][0]);
+      if(units_count > 0) {
+          if(res_price[0][1].isnull()) {
+              throw std::runtime_error("Couldn't find price for this operation");
+          }
+          int base_period = res_price[0][1];
+          price *= (units_count / base_period);
+      }
+
+      // billing itself
+      // lock invoices suitable for charging
+      Database::Result res_inv = conn.exec_params("SELECT id, credit FROM invoice "
+              "WHERE registrarid=$1::integer and zone=$2::integer and credit > 0 "
+              "order by id limit 2 "
+              "FOR UPDATE",
+              Database::query_param_list(registrar)
+                                        (zone));
+
+      if(res_inv.size() == 0) {
+          throw std::runtime_error((boost::format("No usable invoices found for registrar ID %1%") % registrar).str());
+      }
+
+      // do we have only one invoice which can be used?
+      bool single_invoice = true;
+      if(res_inv.size() != 1) {
+          single_invoice = false;
+      }
+
+      Database::ID inv_id1 = res_inv[0][0];
+      cent_amount credit1 = get_price((std::string)res_inv[0][1]);
+      if(price <= static_cast<cent_amount>(res_inv[0][1])) {
+          // count if off the first invoice
+
+          Database::ID invoice_obj_reg_id = createInvoiceObjectRegistry(conn, objectId, registrar, zone, units_count, exDate, renew);
+
+          updateObjectPrice(conn, invoice_obj_reg_id, price, inv_id1);
+          invoiceLowerCredit(conn, price, inv_id1);
+
+      } else {
+          // if single_invoice is set, res_inv[1][*] is not valid
+          if(single_invoice) {
+              throw std::runtime_error((boost::format("Credit not sufficient for registrar ID %1%, invoice: %2%")
+                  % registrar % inv_id1).str());
+              // TODO credit not sufficient
+          }
+          // there is the second invoice
+
+          Database::ID inv_id2 = res_inv[1][0];
+          cent_amount credit2 = get_price((std::string)res_inv[1][1]);
+
+          if(credit1 + credit2 < price) {
+              throw std::runtime_error((boost::format("Credit not sufficient for registrar ID %1%, invoices: %2%, %3%")
+                   % registrar % inv_id1 % inv_id2).str());
+              // TODO credit not sufficient
+          }
+
+          cent_amount price_remainder = price - credit1;
+
+          Database::ID invoice_obj_reg_id = createInvoiceObjectRegistry(conn, objectId, registrar, zone, units_count, exDate, renew);
+
+          updateObjectPrice(conn, invoice_obj_reg_id, credit1, inv_id1);
+          updateObjectPrice(conn, invoice_obj_reg_id, price_remainder, inv_id2);
+
+          // first invoice goes to zero balance
+          invoiceLowerCredit(conn, credit1, inv_id1);
+          // remaining price of the operation
+          invoiceLowerCredit(conn, price_remainder, inv_id2);
+
+      }
+
+      } catch( std::exception &ex) {
+          LOGGER(PACKAGE).error ( boost::format("Billing failed: %1% ") % ex.what());
+          return false;
+      }
+
+      return true;
+
+  }
+
   /** this is now usable only for create domain
    */
   virtual bool domainBilling(
@@ -206,11 +391,19 @@ public:
             bool renew) {
       TRACE("[CALL] Fred::Invoicing::Manager::domainBilling()");
 
+      // new implementation
+      return new_domainBilling(db, zone, registrar, objectId, exDate, units_count, renew);
+
+/*
+
+     OLD IMPLEMENTATION
       if(!renew) {
           return db->BillingCreateDomain(registrar, zone, objectId);
       } else {
           return db->BillingRenewDomain(registrar, zone, objectId, units_count, exDate.to_string().c_str());
       }
+*/
+
   };
 
     /**
@@ -219,7 +412,11 @@ public:
      */
 int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price) {
 
-    /* HACK! we need to use same transaction */
+    // new implementation
+    return new_createDepositInvoice(date, zoneId, registrarId, price);
+
+    /*
+    // HACK! we need to use same transaction
     Database::Connection conn = Database::Manager::acquire();
     DB db(conn);
     // if(!db.OpenDatabase(Database::Manager::getConnectionString())) {
@@ -248,6 +445,116 @@ int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long 
                 break;
     }
     return ret;
+    */
+}
+
+#define INVOICE_FA  1 // normal invoice
+#define INVOICE_ZAL 0 // advance invoice
+
+// TODO what exceptions to throw and whether to log errors
+// SPEC current time taken from now() in DB (which should be UTC)
+int new_createDepositInvoice(const Database::Date &date, int zoneId, int registrarId, cent_amount price)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result rvat = conn.exec_params("SELECT vat FROM registrar WHERE id=$1::integer",
+            Database::query_param_list(registrarId));
+
+    if(rvat.size() != 1 || rvat[0][0].isnull() ) {
+        throw std::runtime_error(
+            (boost::format(" Couldn't determine whether the registrar with ID %1% pays VAT.")
+                % registrarId).str());
+    }
+    bool pay_vat = rvat[0][0];
+
+    //// handle VAT
+
+    // VAT  percentage
+    int vat_percent = 0;
+    // ratio for reverse VAT calculation
+    // price_without_vat = price_with_vat - price_with_vat*vat_reverse
+    // it should have 4 decimal places in the DB
+    float vat_reverse = 0.0;
+
+    cent_amount vat_amount = 0;
+    cent_amount total;
+
+    if (pay_vat) {
+
+        Database::Result vat_details = conn.exec("select vat, koef from price_vat where valid_to > now() or valid_to is null");
+
+        if(vat_details.size() > 1) {
+            throw std::runtime_error("Multiple valid VAT values found.");
+        } else if(vat_details.size() == 0) {
+            throw std::runtime_error("No valid VAT value found.");
+        }
+
+        if(vat_details[0][0].isnull()) {
+            vat_percent = 0;
+        } else {
+            vat_percent = vat_details[0][0];
+        }
+
+        if(vat_details[0][1].isnull()) {
+            vat_reverse = 0.0;
+        } else {
+            vat_reverse = (float)vat_details[0][1];
+        }
+
+        vat_amount = count_dph(price, vat_reverse);
+        total = price - vat_amount;
+    } else {
+        total = price;
+    }
+    cent_amount credit = total;
+
+
+    // get new invoice prefix and its type
+    // TODO unclear thread safety in the old implementation
+    Database::Result ip_res = conn.exec_params(
+        "SELECT id, prefix  FROM invoice_prefix WHERE zone=$1::integer AND  typ=$2::integer AND year=$3::numeric FOR UPDATE",
+        Database::query_param_list(zoneId)
+                                (INVOICE_ZAL)
+                                (date.year())
+                                );
+
+    if(ip_res.size() == 0 || ip_res[0][0].isnull() || ip_res[0][0].isnull()) {
+        throw std::runtime_error("Missing invoice prefix");
+    }
+
+    int inv_prefix_type = ip_res[0][0];
+    unsigned long long inv_prefix = ip_res[0][1];
+
+    // increment invoice prefix in the DB
+    conn.exec_params("UPDATE invoice_prefix SET prefix = $1::bigint WHERE id=$2::integer",
+        Database::query_param_list(inv_prefix + 1)
+                                  (inv_prefix_type));
+
+    Database::Result curr_id = conn.exec("SELECT nextval('invoice_id_seq'::regclass)");
+    if(curr_id.size() != 1 || curr_id[0][0].isnull()) {
+        throw std::runtime_error("Couldn't fetch new invoice ID");
+    }
+    int invoiceId = curr_id[0][0];
+
+    conn.exec_params(
+            "INSERT INTO invoice (id, prefix, zone, prefix_type, registrarid, taxDate, price, vat, total, totalVAT, credit) VALUES "
+            "($1::integer, $2::bigint, $3::integer, $4::integer, $5::integer, $6::date, $7::numeric(10,2), $8::integer, "
+            "$9::numeric(10,2), $10::numeric(10,2), $11::numeric(10,2))", // total, totalVAT, credit
+        Database::query_param_list(invoiceId)
+                                (inv_prefix)
+                                (zoneId)
+                                (inv_prefix_type)
+                                (registrarId)
+                                (date)
+                                (price)
+                                (vat_percent)
+                                (total)
+                                (vat_amount)
+                                (credit)
+                                );
+
+    return invoiceId;
+
 }
 
 
