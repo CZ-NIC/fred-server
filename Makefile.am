@@ -152,6 +152,7 @@ util_db_libdb_a_SOURCES = util/db/query/query_old.cc \
 		  util/db/result.h                       \
 		  util/db/row.h                          \
 		  util/db/value.h                        \
+		  util/db/value.cc                       \
 		  util/db/statement.h                    \
 		  util/db/sequence.h                     \
 		  util/db/manager.h                      \
