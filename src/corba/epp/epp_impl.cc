@@ -131,12 +131,14 @@ static bool disableNotification(DBSharedPtr db, int _reg_id, const char* _cltrid
 
 Database::Connection wrapped_acquire(ccReg_EPP_i *epp)
 {
+
     try {
-        Database::Connection conn = Database::Manager::acquire();
-        return conn;
+        return Database::Manager::acquire();
     } catch(std::exception &ex) {
         epp->ServerInternalError("Cannot connect to DB");
     }
+
+    return Database::Manager::acquire();
 }
 
 

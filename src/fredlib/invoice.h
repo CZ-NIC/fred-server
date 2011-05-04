@@ -5,9 +5,7 @@
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-/*
-#include "common_object.h"
-*/
+
 #include "common_object.h"
 #include "object.h"
 #include "types.h"

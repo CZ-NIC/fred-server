@@ -31,6 +31,7 @@
 #include "common_impl.h"
 #include "invoice.h"
 #include "log/logger.h"
+#include "log/context.h"
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
 #include "old_utils/dbsql.h"
@@ -1079,53 +1080,6 @@ class InvoiceImpl : public Fred::CommonObjectImpl,
       delete actions[i];
   }
 public:
-  /// initialize invoice from result set=db with row=l
-
-    
-  InvoiceImpl(DB *db, ManagerImpl *_man, unsigned l) :
-      CommonObjectImpl(STR_TO_ID(db->GetFieldValue(l,0))),
-      // this class should not store pointer to DB
-      dbc(NULL),  
-      zone(STR_TO_ID(db->GetFieldValue(l,1))), 
-      zoneName(db->GetFieldValue(l, 26)), 
-      crTime(MAKE_TIME(l,2)), 
-      taxDate(MAKE_DATE(l,3)), 
-      accountPeriod(MAKE_DATE_NEG(l,4),MAKE_DATE_POS(l,5)), 
-      type(atoi(db->GetFieldValue(l, 6)) == 0 ? IT_DEPOSIT : IT_ACCOUNT),
-      number(atoll(db->GetFieldValue(l, 7))), 
-      registrar(STR_TO_ID(db->GetFieldValue(l,8))),
-      credit(STR_TO_MONEY(db->GetFieldValue(l,9))), 
-      price(STR_TO_MONEY(db->GetFieldValue(l,10))), 
-      vatRate(atoi(db->GetFieldValue(l, 11))),
-      total(STR_TO_MONEY(db->GetFieldValue(l,12))), 
-      totalVAT(STR_TO_MONEY(db->GetFieldValue(l,13))), 
-      filePDF(STR_TO_ID(db->GetFieldValue(l,14))), 
-      fileXML(STR_TO_ID(db->GetFieldValue(l,15))), 
-      varSymbol(db->GetFieldValue(l, 22)), 
-      client(STR_TO_ID(db->GetFieldValue(l,25)),
-             db->GetFieldValue(l,23),
-             db->GetFieldValue(l,16),
-             "", // fullname is empty
-             db->GetFieldValue(l,17),
-             db->GetFieldValue(l,18),
-             db->GetFieldValue(l,19),
-             db->GetFieldValue(l,27),
-             db->GetFieldValue(l,20),
-             db->GetFieldValue(l,21),
-             "", // registration is empty
-             "", // reclamation is empty
-             "", // url is empty
-             "", // email is empty
-             "", // phone is empty
-             "", // fax is empty
-             db->GetFieldValue(l,24)[0] == 't'), 
-      storeFileFlag(false), 
-      ap(_man), 
-      man(_man),
-      id(0) {
-  }
-
-     
   
   InvoiceImpl(TID _id, TID _zone, std::string& _zoneName, ptime _crTime, date _taxDate,
               date_period& _accountPeriod, Type _type, unsigned long long _number,
@@ -1281,12 +1235,6 @@ public:
     exp->doExport(this);
   }
   /// initialize list of actions from sql result
-
-  // ownership of db remains in the caller
-  void addAction(DB *db, unsigned row) {
-    actions.push_back(new PaymentActionImpl(db,row,man));
-    ap.addAction(actions.back()); // update partitioning
-  }
    
   void addAction(Database::Row::Iterator& _col) {
     Database::Money    price       = *_col;
@@ -1314,20 +1262,6 @@ public:
     ap.addAction(actions.back());
   }
   /// initialize list of sources from sql result
-
-  
-  void addSource(DB *db, unsigned row) {
-    PaymentSourceImpl *ps = new PaymentSourceImpl(db,row,man);
-    sources.push_back(ps);
-    // init vat groups, if vat rate exists, add it, otherwise create new
-    std::vector<PaymentImpl>::iterator i = find(paid.begin(),
-                                               paid.end(),
-                                               ps->getVatRate() );
-    if (i != paid.end())
-      i->add(ps);
-    else
-      paid.push_back(PaymentImpl(ps));
-  }  
 
   void addSource(Database::Row::Iterator& _col) {
     Database::Money price       = *_col;
@@ -2006,159 +1940,323 @@ public:
       }
 
     }    
-    virtual void reload() {
+    virtual void reload()
+    {
+        Logging::Context ctx("invoice list reload()");
+        try
+        {
+            Database::Connection conn = Database::Manager::acquire();
+            clearList();
 
-        // auto_ptr just to avoid changing -> into . in 1000 places :)
-        std::auto_ptr<autoDB> db(new autoDB(Database::Manager::getConnectionString()));
-        if (!db->success()) {
-            LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-            throw SQL_ERROR();
+            Database::QueryParams sql_params;//query params
+            sql_params.reserve(20);
+            std::stringstream sql;
+            // id that conform to filter will be stored in temporary table
+            // sql is contructed from two sections 'from' and 'where'
+            // that are pasted into final 'sql' stream
+            sql << "SELECT DISTINCT i.id "
+            << "INTO TEMPORARY tmp_invoice_filter_result ";
+            std::stringstream from;
+            from << "FROM invoice i ";
+            std::stringstream where;
+            where << "WHERE 1=1 "; // must be for the case of empty filter
+            // process individual filters
+            if (idFilter)
+            {
+                sql_params.push_back(boost::lexical_cast<std::string>(idFilter));
+                where << "AND " << "i.id" << "= $" << sql_params.size() << "::bigint ";
+            }
+            if (registrarFilter)
+            {
+                sql_params.push_back(boost::lexical_cast<std::string>(registrarFilter));
+                where << "AND " << "i.registrarid" << "= $" << sql_params.size() << "::bigint ";
+            }
+            if (zoneFilter)
+            {
+                sql_params.push_back(boost::lexical_cast<std::string>(zoneFilter));
+                where << "AND " << "i.zone" << "= $" << sql_params.size() << "::bigint ";
+            }
+            if (typeFilter && typeFilter<=2)
+            {
+                from << ", invoice_prefix ip ";
+                where << "AND i.prefix_type=ip.id ";
+                sql_params.push_back(boost::lexical_cast<std::string>(typeFilter-1));
+                where << "AND " << "ip.typ" << "=$" << sql_params.size() << "::integer ";
+            }
+            if (!varSymbolFilter.empty() || !registrarHandleFilter.empty())
+            {
+                from << ", registrar r ";
+                where << "AND i.registrarid=r.id ";
+                if (!varSymbolFilter.empty())
+                {
+                    sql_params.push_back(boost::lexical_cast<std::string>(varSymbolFilter));
+                    where << "AND "
+                           << "TRIM(r.varsymb)" << " ILIKE TRANSLATE($" << sql_params.size() << "::text,'*?','%_') ";
+                }
+                if (!registrarHandleFilter.empty())
+                {
+                    sql_params.push_back(boost::lexical_cast<std::string>(registrarHandleFilter));
+                    where << "AND "
+                           << "r.handle" << " ILIKE TRANSLATE($" << sql_params.size() << "::text,'*?','%_') ";
+                }
+            }
+            if (!numberFilter.empty())
+            {
+                sql_params.push_back(boost::lexical_cast<std::string>(numberFilter));
+                where << "AND "
+                    << "i.prefix" << " ILIKE TRANSLATE($" << sql_params.size() << "::text,'*?','%_') ";
+            }
+            if (!crDateFilter.begin().is_special())
+            {
+                sql_params.push_back(boost::lexical_cast<std::string>(
+                        to_iso_extended_string(crDateFilter.begin().date())));
+                 where << "AND " << "i.crdate" << ">=$"
+                   <<  sql_params.size() << "::text ";
+            }
+            if (!crDateFilter.end().is_special())
+            {
+                sql_params.push_back(boost::lexical_cast<std::string>(
+                        to_iso_extended_string(crDateFilter.end().date())
+                        )+ " 23:59:59");
+                where << "AND " << "i.crdate" << "<=$"
+                        <<  sql_params.size() << "::text ";
+            }
+            if ((!taxDateFilter.begin().is_special()))
+            {
+                sql_params.push_back(boost::lexical_cast<std::string>(
+                        to_iso_extended_string(taxDateFilter.begin())));
+               where << "AND " << "i.taxdate" << ">=$"
+                 <<  sql_params.size() << "::text ";
+            }
+            if ((!taxDateFilter.end().is_special()))
+            {
+                sql_params.push_back(boost::lexical_cast<std::string>(
+                        to_iso_extended_string(taxDateFilter.end())));
+                where << "AND " << "i.taxdate" << "<=$"
+                    << sql_params.size() << "::text ";
+            }
+            switch (archiveFilter)
+            {
+                case AF_IGNORE: break;
+                case AF_SET: where << "AND NOT(i.file ISNULL) "; break;
+                case AF_UNSET: where << "AND i.file ISNULL "; break;
+                default: break;
+            }
+            if (objectIdFilter)
+            {
+                from << ", invoice_object_registry ior ";
+                where << "AND i.id=ior.invoiceid ";
+                sql_params.push_back(boost::lexical_cast<std::string>(objectIdFilter));
+                where << "AND " << "ior.objectid" << "=$" << sql_params.size() << "::bigint ";
+            }
+            if (!objectNameFilter.empty())
+            {
+                from << ", invoice_object_registry iorh, object_registry obr ";
+                where << "AND i.id=iorh.invoiceid AND obr.id=iorh.objectid ";
+                sql_params.push_back(boost::lexical_cast<std::string>(objectNameFilter));
+                where << "AND "
+                       << "obr.name" << " ILIKE TRANSLATE($" << sql_params.size() << "::text,'*?','%_') ";
+            }
+
+            if (!advanceNumberFilter.empty())
+            {
+                from << ", invoice_object_registry ior2 "
+                << ", invoice_object_registry_price_map iorpm "
+                << ", invoice advi ";
+                where << "AND i.id=ior2.invoiceid "
+                << "AND iorpm.id=ior2.id AND iorpm.invoiceid=advi.id ";
+                sql_params.push_back(boost::lexical_cast<std::string>(advanceNumberFilter));
+                where << "AND "
+                       << "advi.prefix" << " ILIKE TRANSLATE($" << sql_params.size() << "::text,'*?','%_') ";
+            }
+            // complete sql end do the query
+            sql << from.rdbuf() << where.rdbuf();
+
+            Database::Result res1 = conn.exec_params(sql.str(), sql_params);
+            Database::Result res2 = conn.exec("ANALYZE tmp_invoice_filter_result");
+            // initialize list of invoices using temporary table
+
+            Database::Result res3 = conn.exec(
+                  "SELECT "
+                  " i.id, i.zone, i.crdate::timestamptz AT TIME ZONE 'Europe/Prague',"
+                  " i.taxdate, ig.fromdate, "
+                  " ig.todate, ip.typ, i.prefix, i.registrarid, i.credit*100, "
+                  " i.price*100, i.vat, i.total*100, i.totalvat*100, "
+                  " i.file, i.fileXML, "
+                  " r.organization, r.street1, "
+                  " r.city, r.postalcode, TRIM(r.ico), TRIM(r.dic), TRIM(r.varsymb), "
+                  " r.handle, r.vat, r.id, z.fqdn, r.country "
+                  "FROM "
+                  " tmp_invoice_filter_result it "
+                  " JOIN invoice i ON (it.id=i.id) "
+                  " JOIN zone z ON (i.zone=z.id) "
+                  " JOIN registrar r ON (i.registrarid=r.id) "
+                  " JOIN invoice_prefix ip ON (ip.id=i.prefix_type) "
+                  " LEFT JOIN invoice_generation ig ON (i.id=ig.invoiceid) "
+                  // temporary static sorting
+                  " ORDER BY crdate DESC "
+              );
+
+            for (unsigned i=0; i < res3.size(); ++i)
+            {
+                Database::ID       id             = res3[i][0];
+                Database::ID       zone           = res3[i][1];
+                std::string        fqdn           = res3[i][26];
+                Database::DateTime create_time    = (ptime(res3[i][2].isnull()
+                                                        ? ptime(not_a_date_time)
+                                                        : time_from_string(res3[i][2])));
+                Database::Date     tax_date       = (date(res3[i][3].isnull()
+                                                        ? date(not_a_date_time)
+                                                        : from_string(res3[i][3])));
+                Database::Date     from_date      = (date(res3[i][4].isnull()
+                                                        ? date(neg_infin)
+                                                        : from_string(res3[i][4])));
+                Database::Date     to_date        = (date(res3[i][5].isnull()
+                                                        ? date(pos_infin)
+                                                        : from_string(res3[i][5])));
+                Type               type           = (int(res3[i][6]) == 0 ? IT_DEPOSIT
+                                                                       : IT_ACCOUNT);
+                unsigned long long number         = res3[i][7];
+                Database::ID       registrar_id   = res3[i][8];
+                Database::Money    credit         = res3[i][9];
+                Database::Money    price          = res3[i][10];
+                short              vat_rate       = res3[i][11];
+                Database::Money    total          = res3[i][12];
+                Database::Money    total_vat      = res3[i][13];
+                Database::ID       filePDF        = res3[i][14];
+                Database::ID       fileXML        = res3[i][15];
+
+                std::string        c_organization = "";
+                std::string        c_street1      = res3[i][17];
+                std::string        c_city         = res3[i][18];
+                std::string        c_postal_code  = res3[i][19];
+                std::string        c_ico          = res3[i][20];
+                std::string        c_dic          = res3[i][21];
+                std::string        c_var_symb     = res3[i][22];
+                std::string        c_handle       = res3[i][23];
+                bool               c_vat          = res3[i][24];
+                TID                c_id           = res3[i][25];
+                std::string        c_country      = res3[i][27];
+                std::string        filepdf_name   = "";
+                std::string        filexml_name   = "";
+
+                date_period account_period(from_date, to_date);
+                SubjectImpl client(c_id, c_handle, c_organization, "", c_street1,
+                    c_city, c_postal_code, c_country, c_ico, c_dic,
+                    "", "", "", "", "", "", c_vat);
+
+                data_.push_back(new InvoiceImpl(id,
+                                                zone,
+                                                fqdn,
+                                                create_time,
+                                                tax_date,
+                                                account_period,
+                                                type,
+                                                number,
+                                                registrar_id,
+                                                credit,
+                                                price,
+                                                vat_rate,
+                                                total,
+                                                total_vat,
+                                                filePDF,
+                                                fileXML,
+                                                c_var_symb,
+                                                client,
+                                                filepdf_name,
+                                                filexml_name,
+                                                man));
+            }//for res3
+
+            // append list of actions to all selected invoices
+            // it handle situation when action come from source advance invoices
+            // with different vat rates by grouping
+            // this is ignored on partial load
+            if (!partialLoad)
+            {
+                Database::Result res4 = conn.exec(
+                    "SELECT "
+                    " it.id, o.name, ior.crdate::timestamptz AT TIME ZONE 'Europe/Prague',"
+                    " ior.exdate, ior.operation, ior.period, "
+                    " CASE "
+                    "  WHEN ior.period=0 THEN 0 "
+                    "  ELSE 100*SUM(ipm.price)*12/ior.period END, "
+                    " SUM(ipm.price)*100, o.id, i.vat "
+                    "FROM "
+                    " tmp_invoice_filter_result it "
+                    " JOIN invoice_object_registry ior ON (it.id=ior.invoiceid) "
+                    " JOIN object_registry o ON (ior.objectid=o.id) "
+                    " JOIN invoice_object_registry_price_map ipm ON (ior.id=ipm.id) "
+                    " JOIN invoice i ON (ipm.invoiceid=i.id) "
+                    "GROUP BY "
+                    " it.id, o.name, ior.crdate, ior.exdate, ior.operation, "
+                    " ior.period, o.id, i.vat ");
+
+            for (unsigned i=0; i < res4.size(); ++i)
+            {
+                InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(res4[i][0]));
+                Database::Row::Iterator ri = (res4[i]).begin();
+                if (inv) inv->addAction(ri);
+                else
+                {
+                LOGGER(PACKAGE).error(" dynamic_cast failed for Invoice. ");
+                // TODO: log error - more specific error
+                }
+            }//for res4
+
+            }//if not partialLoad
+
+            // append list of sources to all selected invoices
+            Database::Result res5 = conn.exec(
+                  "SELECT "
+                  " it.id, sri.prefix, ipm.credit*100, ipm.balance*100, sri.id, "
+                  " sri.total*100, sri.vat, sri.totalvat*100, sri.crdate "
+                  "FROM "
+                  " tmp_invoice_filter_result it "
+                  " JOIN invoice_credit_payment_map ipm ON (it.id=ipm.invoiceid) "
+                  " JOIN invoice sri ON (ipm.ainvoiceid=sri.id) ");
+
+            for (unsigned i=0; i < res5.size(); ++i)
+            {
+                InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(res5[i][0]));
+                Database::Row::Iterator ri = (res5[i]).begin();
+                if (inv) inv->addSource(ri);
+                else
+                {
+                  // TODO: log error - more specific
+                    LOGGER(PACKAGE).error(" dynamic_cast failed ");
+                    throw SQL_ERROR();//??
+                }
+            }//for res5
+
+            // delete temporary table
+            conn.exec("DROP TABLE tmp_invoice_filter_result ");
+
+        }//try
+        catch (Database::Exception& ex)
+        {
+            std::string message = ex.what();
+            if (message.find(Database::Connection::getTimeoutString())
+                  != std::string::npos)
+            {
+              LOGGER(PACKAGE).error("timeout");
+              clear();
+            }
+            else
+            {
+              LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+              clear();
+            }
+            throw;
+        }
+        catch (std::exception& ex)
+        {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            clear();
+            throw;
         }
 
-        clearList();
-        std::stringstream sql;
-        // id that conform to filter will be stored in temporary table
-        // sql is contructed from two sections 'from' and 'where'
-      // that are pasted into final 'sql' stream 
-      sql << "SELECT DISTINCT i.id "
-      << "INTO TEMPORARY tmp_invoice_filter_result ";
-      std::stringstream from;
-      from << "FROM invoice i ";
-      std::stringstream where;
-      where << "WHERE 1=1 "; // must be for the case of empty filter
-      // process individual filters 
-      SQL_ID_FILTER(where,"i.id",idFilter);
-      SQL_ID_FILTER(where,"i.registrarid",registrarFilter);
-      SQL_ID_FILTER(where,"i.zone",zoneFilter);
-      if (typeFilter && typeFilter<=2) {
-        from << ", invoice_prefix ip ";
-        where << "AND i.prefix_type=ip.id ";
-        SQL_ID_FILTER_FILL(where,"ip.typ",typeFilter-1);
-      }
-      if (!varSymbolFilter.empty() || !registrarHandleFilter.empty()) {
-        from << ", registrar r ";
-        where << "AND i.registrarid=r.id ";
-        if (!varSymbolFilter.empty())
-        SQL_WILDCARD_FILTER_FILL(where,"TRIM(r.varsymb)",varSymbolFilter);
-        if (!registrarHandleFilter.empty())
-        SQL_WILDCARD_FILTER_FILL(where,"r.handle",registrarHandleFilter);
-      }
-      SQL_WILDCARD_FILTER(where,"i.prefix",numberFilter);
-      SQL_DATE_FILTER(where,"i.crdate",crDateFilter);
-      SQL_TIME_FILTER(where,"i.taxdate",taxDateFilter);
-      switch (archiveFilter) {
-        case AF_IGNORE: break;
-        case AF_SET: where << "AND NOT(i.file ISNULL) "; break;
-        case AF_UNSET: where << "AND i.file ISNULL "; break;
-      }
-      if (objectIdFilter) {
-        from << ", invoice_object_registry ior ";
-        where << "AND i.id=ior.invoiceid ";
-        SQL_ID_FILTER_FILL(where,"ior.objectid",objectIdFilter);
-      }
-      if (!objectNameFilter.empty()) {
-        from << ", invoice_object_registry iorh, object_registry obr ";
-        where << "AND i.id=iorh.invoiceid AND obr.id=iorh.objectid ";
-        SQL_WILDCARD_FILTER_FILL(where,"obr.name",objectNameFilter);
-      }
-
-      if (!advanceNumberFilter.empty()) {
-        from << ", invoice_object_registry ior2 "
-        << ", invoice_object_registry_price_map iorpm "
-        << ", invoice advi ";
-        where << "AND i.id=ior2.invoiceid "
-        << "AND iorpm.id=ior2.id AND iorpm.invoiceid=advi.id ";
-        SQL_WILDCARD_FILTER_FILL(where,"advi.prefix",advanceNumberFilter);
-      }
-      // complete sql end do the query
-      sql << from.rdbuf() << where.rdbuf();
-      if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
-      if (!db->ExecSQL("ANALYZE tmp_invoice_filter_result"))
-      throw SQL_ERROR();
-      // initialize list of invoices using temporary table 
-      if (!db->ExecSelect(
-              "SELECT "
-              " i.id, i.zone, i.crdate::timestamptz AT TIME ZONE 'Europe/Prague',"
-              " i.taxdate, ig.fromdate, "
-              " ig.todate, ip.typ, i.prefix, i.registrarid, i.credit*100, "
-              " i.price*100, i.vat, i.total*100, i.totalvat*100, "
-              " i.file, i.fileXML, "
-              " r.organization, r.street1, "
-              " r.city, r.postalcode, TRIM(r.ico), TRIM(r.dic), TRIM(r.varsymb), "
-              " r.handle, r.vat, r.id, z.fqdn, r.country "
-              "FROM "
-              " tmp_invoice_filter_result it "
-              " JOIN invoice i ON (it.id=i.id) "
-              " JOIN zone z ON (i.zone=z.id) "
-              " JOIN registrar r ON (i.registrarid=r.id) "
-              " JOIN invoice_prefix ip ON (ip.id=i.prefix_type) "
-              " LEFT JOIN invoice_generation ig ON (i.id=ig.invoiceid) "
-              // temporary static sorting
-              " ORDER BY crdate DESC "
-          )) throw SQL_ERROR();
-      for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
-      data_.push_back(new InvoiceImpl(db.get(),man,i));
-      db->FreeSelect();
-      // append list of actions to all selected invoices
-      // it handle situation when action come from source advance invoices
-      // with different vat rates by grouping
-      // this is ignored on partial load
-      if (!partialLoad) {
-        if (!db->ExecSelect(
-                "SELECT "
-                " it.id, o.name, ior.crdate::timestamptz AT TIME ZONE 'Europe/Prague',"
-                " ior.exdate, ior.operation, ior.period, "
-                " CASE "
-                "  WHEN ior.period=0 THEN 0 "
-                "  ELSE 100*SUM(ipm.price)*12/ior.period END, "
-                " SUM(ipm.price)*100, o.id, i.vat "
-                "FROM "
-                " tmp_invoice_filter_result it "
-                " JOIN invoice_object_registry ior ON (it.id=ior.invoiceid) "
-                " JOIN object_registry o ON (ior.objectid=o.id) "
-                " JOIN invoice_object_registry_price_map ipm ON (ior.id=ipm.id) "
-                " JOIN invoice i ON (ipm.invoiceid=i.id) "
-                "GROUP BY "
-                " it.id, o.name, ior.crdate, ior.exdate, ior.operation, "
-                " ior.period, o.id, i.vat "
-            )) throw SQL_ERROR();
-
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(STR_TO_ID(db->GetFieldValue(i,0))));
-
-          // addAction only uses db, it doesnt want to own it
-          if (inv) inv->addAction(db.get(),i);
-          else {
-            LOGGER(PACKAGE).error(" dynamic_cast failed for Invoice. ");
-            // TODO: log error - more specific error
-          }
-        }
-        db->FreeSelect();
-      }
-      // append list of sources to all selected invoices
-      if (!db->ExecSelect(
-              "SELECT "
-              " it.id, sri.prefix, ipm.credit*100, ipm.balance*100, sri.id, "
-              " sri.total*100, sri.vat, sri.totalvat*100, sri.crdate "
-              "FROM "
-              " tmp_invoice_filter_result it "
-              " JOIN invoice_credit_payment_map ipm ON (it.id=ipm.invoiceid) "
-              " JOIN invoice sri ON (ipm.ainvoiceid=sri.id) "
-          )) throw SQL_ERROR();
-      for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-        InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(STR_TO_ID(db->GetFieldValue(i,0))));
-        if (inv) inv->addSource(db.get(),i);
-        else {
-          // TODO: log error - more specific
-            LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-            throw SQL_ERROR();
-        }
-      }
-      db->FreeSelect();
-      // delete temporary table
-      if (!db->ExecSQL("DROP TABLE tmp_invoice_filter_result "))
-      throw SQL_ERROR();
-    }
+    }//reload()
     
     
     /// export all invoices on the list using given exporter
