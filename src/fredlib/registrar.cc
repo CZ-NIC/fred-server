@@ -28,7 +28,7 @@
 
 #include "registrar.h"
 #include "common_impl.h"
-#include "sql.h"
+//#include "sql.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/log.h"
 
