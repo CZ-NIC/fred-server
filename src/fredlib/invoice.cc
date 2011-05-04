@@ -37,7 +37,6 @@
 #include "old_utils/dbsql.h"
 
 #include "documents.h"
-#include "sql.h"
 
 #include "log/logger.h"
 
@@ -45,52 +44,6 @@ using namespace boost::gregorian;
 using namespace boost::posix_time;
 
 class SQL_ERROR;
-
-#ifdef MAKE_TIME_DEF
-#undef MAKE_TIME_DEF
-#endif
-
-#ifdef MAKE_DATE_DEF
-#undef MAKE_DATE_DEF
-#endif
-/*
-#define MAKE_TIME_DEF(ROW,COL,DEF)  \
-  (ptime(db->IsNotNull(ROW,COL) ? \
-   time_from_string(db->GetFieldValue(ROW,COL)) : DEF))
-#define MAKE_TIME(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,ptime(not_a_date_time))
-*/
-
-/*
-#define MAKE_TIME_DEF(ROW,COL,DEF)  \
-  (ptime(!res[ROW][COL].isnull() ? \
-   time_from_string(res[ROW][COL]) : DEF))
-#define MAKE_TIME(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,ptime(not_a_date_time))
-#define MAKE_TIME_NEG(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,ptime(neg_infin))
-#define MAKE_TIME_POS(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,ptime(pos_infin))
- **/
-
-/*
-#define MAKE_TIME_DEF(ROW,COL,DEF)  \
-  (ptime(db->IsNotNull(ROW,COL) ? \
-   time_from_string(db->GetFieldValue(ROW,COL)) : DEF))
-#define MAKE_DATE_DEF(ROW,COL,DEF)  \
- (date(db->IsNotNull(ROW,COL) ? from_string(db->GetFieldValue(ROW,COL)) : DEF))
- **/
-
-
-#define MAKE_DATE_DEF(ROW,COL,DEF)  \
- (date(db->IsNotNull(ROW,COL) ? from_string(db->GetFieldValue(ROW,COL)) : DEF))
-#define MAKE_DATE(ROW,COL)  \
-  MAKE_DATE_DEF(ROW,COL,date(not_a_date_time))
-#define MAKE_DATE_NEG(ROW,COL) \
-  MAKE_DATE_DEF(ROW,COL,date(neg_infin))
-#define MAKE_DATE_POS(ROW,COL) \
-  MAKE_DATE_DEF(ROW,COL,date(pos_infin))
-
 
 class autoDB : public DB {
 public:
@@ -2388,76 +2341,63 @@ public:
       }//for i
     }
  
-    void load() throw (SQL_ERROR) {
+    void load()
+    {
+        Database::Connection conn = Database::Manager::acquire();
 
-        std::auto_ptr<autoDB> db(new autoDB(Database::Manager::getConnectionString()));
-        if(!db->success()) {
-            LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-            throw SQL_ERROR();
-        }
+        std::stringstream sql;
 
-      std::stringstream sql;
+        sql << "SELECT r.email, g.fromdate, g.todate, "
+        << "i.file, i.fileXML, g.id, i.id, z.fqdn "
+        << "FROM registrar r, invoice i "
+        << "LEFT JOIN invoice_generation g ON (g.invoiceid=i.id) "
+        << "LEFT JOIN invoice_mails im ON (im.invoiceid=i.id) "
+        << "LEFT JOIN zone z ON (z.id = i.zone) "
+        << "WHERE i.registrarid=r.id "
+        << "AND im.mailid ISNULL "
+        << "AND NOT(r.email ISNULL OR TRIM(r.email)='')"
+        << "UNION "
+        << "SELECT r.email, g.fromdate, g.todate, NULL, NULL, g.id, "
+        << "NULL, z.fqdn "
+        << "FROM registrar r, invoice_generation g "
+        << "LEFT JOIN invoice_mails im ON (im.genid=g.id) "
+        << "LEFT JOIN zone z ON (z.id = g.zone) "
+        << "WHERE g.registrarid=r.id AND g.invoiceid ISNULL "
+        << "AND im.mailid ISNULL "
+        << "AND NOT(r.email ISNULL OR TRIM(r.email)='')";
 
-      sql << "SELECT r.email, g.fromdate, g.todate, "
-      << "i.file, i.fileXML, g.id, i.id, z.fqdn "
-      << "FROM registrar r, invoice i "
-      << "LEFT JOIN invoice_generation g ON (g.invoiceid=i.id) "
-      << "LEFT JOIN invoice_mails im ON (im.invoiceid=i.id) "
-      << "LEFT JOIN zone z ON (z.id = i.zone) "
-      << "WHERE i.registrarid=r.id "
-      << "AND im.mailid ISNULL "
-      << "AND NOT(r.email ISNULL OR TRIM(r.email)='')"
-      << "UNION "
-      << "SELECT r.email, g.fromdate, g.todate, NULL, NULL, g.id, "
-      << "NULL, z.fqdn "
-      << "FROM registrar r, invoice_generation g "
-      << "LEFT JOIN invoice_mails im ON (im.genid=g.id) "
-      << "LEFT JOIN zone z ON (z.id = g.zone) "
-      << "WHERE g.registrarid=r.id AND g.invoiceid ISNULL "
-      << "AND im.mailid ISNULL "
-      << "AND NOT(r.email ISNULL OR TRIM(r.email)='')";
-
-      if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-      for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
-      items.push_back(Item(
-              db->GetFieldValue(i,0),
-              MAKE_DATE(i,1),
-              MAKE_DATE(i,2),
-              STR_TO_ID(db->GetFieldValue(i,3)),
-              STR_TO_ID(db->GetFieldValue(i,4)),
-              STR_TO_ID(db->GetFieldValue(i,5)),
-              STR_TO_ID(db->GetFieldValue(i,6)),
+        Database::Result res = conn.exec(sql.str());
+        for (unsigned i=0; i < res.size(); ++i)
+        items.push_back(Item(
+              res[i][0],
+              (date(res[i][1].isnull()? date(not_a_date_time) : from_string(res[i][1]))),
+              (date(res[i][2].isnull()? date(not_a_date_time) : from_string(res[i][2]))),
+              res[i][3],
+              res[i][4],
+              res[i][5],
+              res[i][6],
               (TID)0,
-              db->GetFieldValue(i, 7)
+              res[i][7]
           ));
-      db->FreeSelect();
-    }
-
+    }//load
   }; // Mails
   
 
   void ManagerImpl::initVATList()  {
 
-    if (vatList.empty()) {
-      std::auto_ptr<autoDB> db(new autoDB(Database::Manager::getConnectionString()));
-      if(!db->success()) {
-         LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-         throw SQL_ERROR();
-      }
-
-      if (!db->ExecSelect("SELECT vat, 10000*koef, valid_to FROM price_vat"))
-          throw SQL_ERROR();
-      for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+    if (vatList.empty())
+    {
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result res = conn.exec("SELECT vat, 10000*koef, valid_to FROM price_vat");
+      for (unsigned i=0; i < res.size(); ++i) {
         vatList.push_back(
-            VAT(
-                atoi(db->GetFieldValue(i,0)),
-                atoi(db->GetFieldValue(i,1)),
-                MAKE_DATE(i,2)
-            )
+            VAT(res[i][0],
+                res[i][1],
+                (date(res[i][2].isnull()? date(not_a_date_time) : from_string(res[i][2])))
+                )
         );
-      }
-      db->FreeSelect();
-    }
+      }//for res
+    }//if empty
   }
 
 
