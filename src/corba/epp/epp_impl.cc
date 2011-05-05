@@ -194,15 +194,13 @@ public:
   ///// TODO hack for new invoicing
   EPPAction(
       ccReg_EPP_i *_epp, int _clientID, int action, const char *clTRID,
-      const char *xml, ParsedAction *paction, int for_new_invoicing
+      const char *xml, ParsedAction *paction, Database::Connection conn
     ) throw (ccReg::EPP::EppError) :
       ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
       regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
       notifier(0)
     {
       Logging::Context::push(str(boost::format("action-inv-%1%") % action));
-
-      Database::Connection conn = wrapped_acquire(epp);
 
       /*
       DBAutoPtr _db( new DB(conn));
@@ -4970,7 +4968,8 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     crDate = CORBA::string_dup("");
     exDate = CORBA::string_dup("");
 
-    EPPAction action(this, params.sessionID, EPP_DomainCreate, params.clTRID, params.XML, &paction, 12345);
+    Database::Connection conn = wrapped_acquire(this);
+    EPPAction action(this, params.sessionID, EPP_DomainCreate, params.clTRID, params.XML, &paction, conn);
 
     ad.resize(admin.length());
 
@@ -5373,7 +5372,9 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     ParsedAction paction;
     paction.add(1,(const char*)fqdn);
 
-    EPPAction action(this, params.sessionID, EPP_DomainRenew, params.clTRID, params.XML, &paction, 12345);
+
+    Database::Connection conn = wrapped_acquire(this);
+    EPPAction action(this, params.sessionID, EPP_DomainRenew, params.clTRID, params.XML, &paction, conn);
 
     // default
     exDate = CORBA::string_dup("");
