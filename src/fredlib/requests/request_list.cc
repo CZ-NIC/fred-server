@@ -566,6 +566,8 @@ public:
         if (data_.empty()) {
             return;
         }
+        /* checks if row number result load limit is active and set flag */
+        CommonListImpl::reload();
     } catch (Database::Exception& ex) {
         std::string message = ex.what();
         if (message.find(conn.getTimeoutString()) != std::string::npos) {
@@ -752,6 +754,7 @@ public:
             if(data_.empty()) {
                 return;
             }
+            /* checks if row number result load limit is active and set flag */
             CommonListImpl::reload();
         }
         catch (Database::Exception& ex) {
