@@ -133,19 +133,11 @@ public:
     void factoring();
     void create_invoice();
 
-    void list_help();
-    void archive_help();
-    void credit_help();
-    void factoring_help();
-    void pair_invoices_help();
-    void add_invoice_prefix_help();
-    void create_invoice_help();
-
     // added in order to make it work with old invoicing
 private:
-    bool factoring_all(const char *database, const char *zone_fqdn,
+    void factoring_all(const char *zone_fqdn,
       const char *taxdateStr, const char *todateStr);
-    int factoring(const char *database, const char *registrarHandle,
+    int factoring(const char *registrarHandle,
       const char *zone_fqdn, const char *taxdateStr, const char *todateStr);
     void filter_reload_invoices(Fred::Invoicing::Manager *invMan, Fred::Invoicing::List *invList);
 

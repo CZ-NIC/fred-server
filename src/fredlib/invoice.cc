@@ -23,6 +23,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <cmath>
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/checked_delete.hpp>
@@ -163,7 +164,7 @@ public:
   // TODO format %2% to 2 decimal places
   std::string query_param_price(cent_amount price)
   {
-      return (boost::format("%1%.%2%") % (price/100) % (price%100) ).str();
+      return (boost::format("%1%.%2$02d") % (price/100) % (price%100) ).str();
   }
 
   void updateObjectPrice(Database::Connection &conn, Database::ID rec_id, cent_amount price, Database::ID invoiceID)
@@ -215,7 +216,7 @@ public:
   // TODO use it
 // where to catch exceptions? especially those comming from the database...
   virtual bool new_domainBilling(
-              DBSharedPtr db,
+              DBSharedPtr ,
               const Database::ID &zone,
               const Database::ID &registrar,
               const Database::ID &objectId,
@@ -328,6 +329,10 @@ public:
           LOGGER(PACKAGE).error ( boost::format("Billing failed: %1% ") % ex.what());
           return false;
       }
+      catch(...) {
+                LOGGER(PACKAGE).error("Billing failed.");
+                return false;
+            }
 
       return true;
 
@@ -468,115 +473,541 @@ int new_createDepositInvoice(const Database::Date &date, int zoneId, int registr
 
 }
 
-
-bool factoring_all(const char *database, const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
+int GetSystemVAT() // return VAT for invoicing depend on the time
 {
-  autoDB db(database);
-  int *regID = 0;
-  int i, num =-1;
-  char timestampStr[32];
-  int invoiceID = 0;
-  int zone;
-  int ret = 0;
+    int dph=0;
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();//get db conn
+        Database::Result res = conn.exec(
+            "select vat from price_vat where valid_to > now() or valid_to is null");
 
-  if (db.success() ) {
+        if(res.size() == 1 && (res[0][0].isnull() == false))
+        {
+            dph = res[0][0];
+        }
+        else
+            throw std::runtime_error("select vat from price_vat where valid_to > now() or valid_to is null failed");
+    }//try
+    catch( std::exception &ex)
+    {
+        LOGGER(PACKAGE).error ( boost::format("GetSystemVAT failed: %1% ") % ex.what());
+        throw std::runtime_error(std::string("GetSystemVAT failed: ") + ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("GetSystemVAT failed.");
+        throw std::runtime_error("GetSystemVAT failed");
+    }
 
-      LOGGER(PACKAGE).debug ( boost::format("successfully  connect to DATABASE %1%") % database);
+    return dph;
 
-    if (db.BeginTransaction() ) {
-      get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr) );
+}
 
-      if ( (zone = db.GetNumericFromTable("zone", "id", "fqdn", zone_fqdn) )) {
-        std::stringstream sql;
-        sql
-            << "SELECT r.id FROM registrar r, registrarinvoice i WHERE r.id=i.registrarid "
-            << "AND r.system=false AND i.zone=" << zone
-            << " AND i.fromdate<=CURRENT_DATE";
-        if (db.ExecSelect(sql.str().c_str()) && db.GetSelectRows() > 0) {
-          num = db.GetSelectRows();
-          regID= new int[num];
-          for (i = 0; i < num; i ++) {
-            regID[i] = atoi(db.GetFieldValue(i, 0) );
-          }
-          db.FreeSelect();
+long long GetInvoicePrefix(const std::string &dateStr, int typ, unsigned long long zone)
+{
+    long long prefix=0;
+    try
+    {
+        int year = boost::lexical_cast<unsigned long>(dateStr.substr(0,4));
+        unsigned long long id = 0;
 
-          if (num > 0) {
-            for (i = 0; i < num; i ++) {
-              invoiceID = db.MakeFactoring(regID[i], zone, timestampStr,
-                taxdateStr);
-              LOGGER(PACKAGE).notice(boost::format("Vygenerovana fa %1% pro regID %2% ") % invoiceID % regID[i] );
+        LOGGER(PACKAGE).debug ( boost::format("GetInvoicePrefix date[%1%]  year %2% typ %3% zone %4%\n")
+            % dateStr % year % typ % zone);
 
-              if (invoiceID >=0)
-                ret = CMD_OK;
-              else {
-                ret = 0;
-                break;
-              }
+        Database::Connection conn = Database::Manager::acquire();//get db conn
+
+        Database::Result res = conn.exec_params(
+            "SELECT id , prefix   FROM invoice_prefix WHERE zone=$1::bigint AND  typ=$2::integer AND year=$3::numeric FOR UPDATE"
+            , Database::query_param_list (zone) (typ) (year));
+
+        if(res.size() == 1 && (res[0][0].isnull() == false))
+        {
+            id = res[0][0];
+            prefix = res[0][1];
+
+            LOGGER(PACKAGE).debug ( boost::format("invoice_prefix id %1% -> %2%")
+                % id % prefix);
+
+            // increment invoice prefix in the DB
+                conn.exec_params("UPDATE invoice_prefix SET prefix = $1::bigint WHERE id=$2::bigint"
+                        , Database::query_param_list(prefix + 1)(id));
+        }
+        else
+            throw std::runtime_error("SELECT id , prefix FROM invoice_prefix failed");
+    }//try
+    catch( std::exception &ex)
+    {
+        LOGGER(PACKAGE).error ( boost::format("GetInvoicePrefix failed: %1% ") % ex.what());
+        throw std::runtime_error(std::string("GetInvoicePrefix failed: ") + ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("GetInvoicePrefix failed.");
+        throw std::runtime_error("GetInvoicePrefix failed");
+    }
+
+    return prefix;
+}
+
+unsigned long long GetPrefixType(const std::string& dateStr, int typ, unsigned long long zone)
+{
+    unsigned long long id=0;
+    try
+    {
+        int year = boost::lexical_cast<unsigned long>(dateStr.substr(0,4));
+
+        LOGGER(PACKAGE).debug ( boost::format("GetPrefixType date[%1%]  year %2% typ %3% zone %4%\n")
+                    % dateStr % year % typ % zone);
+
+        Database::Connection conn = Database::Manager::acquire();//get db conn
+
+        Database::Result res = conn.exec_params(
+            "SELECT id  FROM invoice_prefix WHERE zone=$1::bigint AND  typ=$2::integer AND year=$3::numeric"
+            , Database::query_param_list (zone) (typ) (year));
+        if(res.size() == 1 && (res[0][0].isnull() == false))
+        {
+            id = res[0][0];
+        }
+        else
+            throw std::runtime_error("SELECT id  FROM invoice_prefix failed");
+    }//try
+    catch( std::exception &ex)
+    {
+        LOGGER(PACKAGE).error ( boost::format("GetPrefixType failed: %1% ") % ex.what());
+        throw std::runtime_error(std::string("GetPrefixType failed: ") + ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("GetPrefixType failed.");
+        throw std::runtime_error("GetPrefixType failed");
+    }
+
+    return id;
+}
+
+// count new balance on advance invoice from total and all usages of that invoice
+long GetInvoiceBalance(unsigned long long aID, long credit)
+{
+    long price=-1; // err value
+    try
+    {
+        LOGGER(PACKAGE).debug ( boost::format("GetInvoiceBalance: zalohova FA %1%") % aID);
+
+        Database::Connection conn = Database::Manager::acquire();//get db conn
+        long total, suma;
+        Database::Result res = conn.exec_params(
+                "select total from invoice where id=$1::bigint"
+                , Database::query_param_list(aID));
+
+        if(res.size() == 1 && (res[0][0].isnull() == false))
+        {
+            total = (long) rint( 100.0 * atof(std::string(res[0][0]).c_str() ) );
+
+            LOGGER(PACKAGE).debug ( boost::format("celkovy zaklad faktury %1%") % total);
+
+            Database::Result res = conn.exec_params(
+                "SELECT sum( credit ) FROM invoice_credit_payment_map where ainvoiceid=$1::bigint"
+                , Database::query_param_list(aID));
+            if(res.size() == 1 && (res[0][0].isnull() == false))
+            {
+                suma = (long) rint( 100.0 * atof(std::string(res[0][0]).c_str() ) );
+                LOGGER(PACKAGE).debug ( boost::format("sectweny credit %1%  pro zal FA") % suma);
+
+                price = total - suma - credit;
+                LOGGER(PACKAGE).debug ( boost::format("celkovy zustatek pri  uzavreni Fa %1%") % price);
+            }
+            else
+                throw std::runtime_error("SELECT sum( credit ) FROM invoice_credit_payment_map failed");
+        }
+        else
+            throw std::runtime_error("select total from invoice failed");
+
+    }//try
+    catch( std::exception &ex)
+    {
+        LOGGER(PACKAGE).error ( boost::format("GetInvoiceBalance failed: %1% ") % ex.what());
+        throw std::runtime_error(std::string("GetInvoiceBalance failed: ") + ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("GetInvoiceBalance failed.");
+        throw std::runtime_error("GetInvoiceBalance failed");
+    }
+
+    return price;
+}
+
+// return accounted price for invoice  iID from advance invoice  FA aID
+long GetInvoiceSumaPrice(unsigned long long iID, unsigned long long aID)
+{
+    long price=-1; // err value
+    try
+    {
+        LOGGER(PACKAGE).debug ( boost::format("GetInvoiceSumaPrice invoiceID %1% zalohova FA %2%")
+        % iID % aID);
+        Database::Connection conn = Database::Manager::acquire();//get db conn
+        Database::Result res = conn.exec_params(
+        "SELECT sum( invoice_object_registry_price_map.price ) FROM invoice_object_registry , invoice_object_registry_price_map "
+        " WHERE invoice_object_registry.id=invoice_object_registry_price_map.id AND invoice_object_registry.invoiceid=$1::bigint AND "
+        " invoice_object_registry_price_map.invoiceid=$2::bigint "
+        , Database::query_param_list(iID) (aID));
+
+        if(!res[0][0].isnull())
+        {
+            price = (long) rint( 100.0 * atof(std::string(res[0][0]).c_str() ) );
+            LOGGER(PACKAGE).debug ( boost::format("celkovy strezeny credit z dane zal  Fa %1%") % price);
+        }//if res not null
+
+    }//try
+    catch( std::exception &ex)
+    {
+        LOGGER(PACKAGE).error ( boost::format("GetInvoiceSumaPrice failed: %1% ") % ex.what());
+        throw std::runtime_error(std::string("GetInvoiceSumaPrice failed: ") + ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("GetInvoiceSumaPrice failed.");
+        throw std::runtime_error("GetInvoiceSumaPrice failed");
+    }
+
+    return price;
+}
+
+//returning invoiceID
+unsigned long long  MakeNewInvoice(
+  const std::string& taxDateStr, const std::string& fromdateStr, const std::string& todateStr,
+  unsigned long long zone, unsigned long long  regID, long price, std::size_t count)
+{
+    unsigned long long invoiceID =0;
+    try
+    {
+        LOGGER(PACKAGE).debug ( boost::format("MakeNewInvoice taxdate[%1%]  fromdateStr [%2%] todateStr[%3%]  zone %d regID %4% , price %5%  count %6%")
+        % taxDateStr % fromdateStr % todateStr % zone % regID % price % count);
+
+        Database::Connection conn = Database::Manager::acquire();//get db conn
+
+        unsigned long long type=0;
+        long long prefix=0;
+        int dph=0;
+
+        if ( (type = GetPrefixType(taxDateStr, INVOICE_FA, zone) )) // usable prefix id of invoice
+          {
+
+            if (count) // create invoice
+            {
+              if ( (prefix = GetInvoicePrefix(taxDateStr, INVOICE_FA, zone) )) // number of invoice accord to taxable period
+              {
+                // find out VAT height
+                dph =GetSystemVAT();
+
+                LOGGER(PACKAGE).debug ( boost::format("Make Invoice prefix %1% type %2% DPH=%3%\n")
+                % prefix % type % dph);
+
+                invoiceID = conn.exec("SELECT NEXTVAL ('invoice_id_seq')")[0][0];
+
+                conn.exec_params("INSERT INTO invoice "
+                    " (id, prefix, zone, prefix_type "
+                    " , registrarid, taxDate, price, vat"
+                    " , total, totalVAT, credit) "
+                    " VALUES ($1::bigint, $2::bigint, $3::bigint, $4::bigint"
+                    ", $5::bigint, $6::date, $7::numeric, $8::integer"
+                    ", $9::numeric, $10::integer, $11::numeric )"
+                    , Database::query_param_list
+                    (invoiceID)(prefix)(zone)(type)// link into prefix
+                    (regID)(taxDateStr)
+                    (query_param_price(price))// total price
+                    (dph)// VAT is not null
+                    (query_param_price(0)) // base without is zero amount
+                    (0)
+                    (Database::QPNull)// only credit is NULL
+                    );
+
+              }//if prefix
+            }//if count
+            else
+                  invoiceID=0; // empty invoicing
+
+            // record of invoicing
+            conn.exec_params("INSERT INTO invoice_generation "
+                " (fromdate, todate, registrarid, zone, invoiceID) "
+                " VALUES ($1::date, $2::date, $3::bigint, $4::bigint, $5::bigint )"
+                , Database::query_param_list
+                (fromdateStr)(todateStr)(regID)(zone)
+                (invoiceID ? Database::QueryParam(invoiceID) : Database::QPNull)
+                );
+
+          }//if prefix
+
+    }//try
+    catch( std::exception &ex)
+    {
+        LOGGER(PACKAGE).error ( boost::format("MakeNewInvoice failed: %1% ") % ex.what());
+        throw std::runtime_error(std::string("MakeNewInvoice failed: ") + ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("MakeNewInvoice failed.");
+        throw std::runtime_error("MakeNewInvoice failed");
+    }
+
+    return invoiceID;
+}
+
+//make new invoice returning invoiceID
+unsigned long long MakeFactoring(unsigned long long regID
+        , unsigned long long zone, const std::string& timestampStr
+        , const std::string& taxDateStr)
+{
+    unsigned long long invoiceID =0;
+    try
+    {
+        LOGGER(PACKAGE).debug ( boost::format("MakeFactoring regID %1% zone %2%")
+            % regID % zone);
+
+        Database::Connection conn = Database::Manager::acquire();//get db conn
+
+        // last records todate plus one day in invoice_generation
+        std::string fromdateStr;
+        {
+            Database::Result res = conn.exec_params(
+            "SELECT date( todate + interval'1 day')  from invoice_generation "
+            " WHERE zone=$1::bigint  AND registrarid =$2::bigint  order by id desc limit 1"
+                    , Database::query_param_list(zone)(regID));
+            if(res.size() == 1 && (res[0][0].isnull() == false))
+                fromdateStr = std::string(res[0][0]);
+        }
+
+        if (fromdateStr.empty())
+        {
+            Database::Result res = conn.exec_params(
+                "SELECT  fromdate  from registrarinvoice "
+                " WHERE zone=$1::bigint and registrarid=$2::bigint"
+                , Database::query_param_list(zone)(regID));
+            if(res.size() == 1 && (res[0][0].isnull() == false))
+                fromdateStr = std::string(res[0][0]);
+        }
+
+        std::string todateStr = timestampStr.substr(0,10);//first 10 chars
+
+        LOGGER(PACKAGE).debug ( boost::format("MakeFactoring from %1% to %2% timestamp [%3%]")
+            % fromdateStr % todateStr % timestampStr);
+
+        // find out amount of item for invoicing
+        std::size_t count = 0;
+        {
+            Database::Result res = conn.exec_params(
+                "SELECT count( id)  from invoice_object_registry "
+                " where crdate < $1::timestamp "
+                " AND  zone=$2::bigint AND registrarid=$3::bigint AND invoiceid IS NULL"
+                , Database::query_param_list(timestampStr)(zone)(regID));
+            count = res[0][0];
+        }
+
+        // find out total invoiced price if it exists al least one record
+        long price = 0;
+        if (count > 0)
+        {
+            Database::Result res = conn.exec_params(
+                "SELECT sum( price ) "
+                " FROM invoice_object_registry , invoice_object_registry_price_map  "
+                " WHERE invoice_object_registry_price_map.id=invoice_object_registry.id "
+                " AND crdate < $1::timestamp AND zone=$2::bigint and registrarid=$3::bigint "
+                " AND  invoice_object_registry.invoiceid is null"
+                , Database::query_param_list(timestampStr)(zone)(regID));
+            price = (long) rint( 100.0 * atof(std::string(res[0][0]).c_str() ) );
+
+            LOGGER(PACKAGE).debug ( boost::format("Total price %1%")
+                % price);
+        }
+
+        // empty invoice invoicing record
+        // returns invoiceID or null if nothings was invoiced, on error returns negative number of error
+        if ( (invoiceID = MakeNewInvoice(taxDateStr, fromdateStr, todateStr, zone,
+            regID, price, count) ) >= 0)
+        {
+            if (count > 0) // mark item of invoice
+            {
+                conn.exec_params(
+                "UPDATE invoice_object_registry set invoiceid=$1::bigint "
+                " WHERE crdate < $2::timestamp AND zone=$3::bigint  "
+                " and registrarid=$4::bigint AND invoiceid IS NULL"
+                , Database::query_param_list
+                    (invoiceID)(timestampStr)(zone)(regID));
 
             }
-          }
-          delete[] regID;
-        }
-      } else {
-        LOGGER(PACKAGE).error( boost::format("unkown zone %1% \n") % zone_fqdn );
-      }
 
-      db.QuitTransaction(ret);
+            // set last date into tabel registrarinvoice
+            conn.exec_params(
+                "UPDATE registrarinvoice SET lastdate=$1::date "
+                " WHERE zone=$2::bigint and registrarid=$3::bigint"
+                , Database::query_param_list
+                (todateStr)(zone)(regID));
+
+            // if invoice was created
+            if (invoiceID > 0)
+            {
+                // query for all advance invoices, from which were gathered for taxes FA
+                Database::Result res = conn.exec_params(
+                    "select invoice_object_registry_price_map.invoiceid "
+                    " from  invoice_object_registry ,  invoice_object_registry_price_map "
+                    " where invoice_object_registry.id=invoice_object_registry_price_map.id "
+                    "  and invoice_object_registry.invoiceid=$1::bigint "
+                    " GROUP BY invoice_object_registry_price_map.invoiceid"
+                    , Database::query_param_list(invoiceID));
+
+                for (std::size_t i = 0; i < res.size(); ++i)
+                {
+                    // insert into table invoice_credit_payment_map;
+                    unsigned long long aID = res[i][0];
+                    LOGGER(PACKAGE).debug ( boost::format("zalohova FA -> %1%")
+                                                % aID);
+                    long credit = GetInvoiceSumaPrice(invoiceID, aID);
+                    long balance = GetInvoiceBalance(aID, credit); // actual available balance
+                    if (balance >=0)
+                    {
+                        LOGGER(PACKAGE).debug ( boost::format("zalohova FA  %1% credit %2% balance %3%")
+                            % aID % credit % balance);
+
+                        conn.exec_params("INSERT INTO invoice_credit_payment_map "
+                          " (invoiceid, ainvoiceid, credit, balance) "
+                          " VALUES ($1::bigint, $2::bigint, $3::numeric, $4::numeric)"
+                          , Database::query_param_list
+                          (invoiceID)(aID)
+                          (query_param_price(credit))
+                          (query_param_price(balance))
+                      );
+
+                    }//if balance >=0
+
+                }//for i res.size()
+
+            }//if invoiceID > 0
+
+        }//if invoiceID >=0
+
+    }//try
+    catch( std::exception &ex)
+    {
+        LOGGER(PACKAGE).error ( boost::format("MakeFactoring failed: %1% ") % ex.what());
+        throw std::runtime_error(std::string("MakeFactoring failed: ") + ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("MakeFactoring failed.");
+        throw std::runtime_error("MakeFactoring failed");
     }
 
-    // db.Disconnect(); not needed anymore
-  }
-
-  if (ret)
     return invoiceID;
-  else
-    return -1; // err
 }
+
+void factoring_all( const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
+{
+    Logging::Context ctx("factoring_all");
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
+        //TODO use boost clock
+        char timestampStr[32];
+        get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr) );
+
+        Database::Result res = conn.exec_params(
+          "SELECT r.id, z.id FROM registrar r, registrarinvoice i, zone z WHERE r.id=i.registrarid"
+          " AND r.system=false AND i.zone=z.id AND z.fqdn=$1::text"
+          " AND i.fromdate<=CURRENT_DATE"
+          , Database::query_param_list (zone_fqdn)
+          );
+
+        for(std::size_t i = 0; i < res.size(); ++i)
+        {
+            unsigned long long regID = res[i][0];//regID
+            unsigned long long zoneID =res[i][1];//zoneID
+
+            unsigned long long invoiceID = MakeFactoring(regID, zoneID, timestampStr,taxdateStr);
+            LOGGER(PACKAGE).notice(boost::format(
+             "Vygenerovana fa invoiceID %1% pro regID %2% zoneID %3% timestampStr %4% taxdateStr %5%")
+             % invoiceID % regID % zoneID % timestampStr % taxdateStr);
+        }//for i
+
+        tx.commit();
+    }//try
+    catch( std::exception &ex)
+    {
+        LOGGER(PACKAGE).error ( boost::format("factoring_all failed: %1% ") % ex.what());
+        throw std::runtime_error(std::string("factoring_all failed: ") + ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("factoring_all failed.");
+        throw std::runtime_error("factoring_all failed");
+    }
+}//factoring_all
 
 // close invoice to registar handle for zone make taxDate to the todateStr
-int factoring(const char *database, const char *registrarHandle, const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
+void factoring( const char *registrarHandle, const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
 {
-  autoDB db(database);
-  int regID;
-  char timestampStr[32];
-  int invoiceID = -1;
-  int zone;
-  int ret = 0;
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
 
-  if (db.success() ) {
+        char timestampStr[32];
+        unsigned long long regID = 0;
+        unsigned long long zone = 0;
 
-    LOGGER(PACKAGE).debug ( boost::format("successfully  connect to DATABASE %1%") % database);
+        Database::Result res = conn.exec_params(
+            "SELECT id FROM registrar WHERE handle=$1::text"
+            , Database::query_param_list (registrarHandle));
 
-    if (db.BeginTransaction() ) {
+        if(res.size() == 1 && (res[0][0].isnull() == false))
+        {
+            regID = res[0][0];//regID
 
-      if ( (regID = db.GetRegistrarID(  registrarHandle ) )) {
-        if ( (zone = db.GetNumericFromTable("zone", "id", "fqdn", zone_fqdn) )) {
+            Database::Result res = conn.exec_params(
+                "SELECT id FROM zone WHERE fqdn=$1::text"
+                , Database::query_param_list (zone_fqdn));
 
-          get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr) );
-          // make invoice
-          invoiceID = db.MakeFactoring(regID, zone, timestampStr, taxdateStr);
+            if(res.size() == 1 && (res[0][0].isnull() == false))
+            {
+                zone = res[0][0];//zone
 
-        } else {
-          LOGGER(PACKAGE).error( boost::format("unknown zone %1% \n") % zone_fqdn );
+                //TODO use boost clock
+                get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr) );
+                // make invoice
+                MakeFactoring(regID, zone, timestampStr, taxdateStr);
+
+            }
+            else
+            {
+                std::string msg = str( boost::format("unknown zone %1% \n") % zone_fqdn);
+                LOGGER(PACKAGE).error(msg  );
+                throw std::runtime_error(msg);
+            }
+
         }
-      } else {
-        LOGGER(PACKAGE).error( boost::format("unknown registrarHandle %1% ") % registrarHandle );
-      }
+        else
+        {
+            std::string msg = str( boost::format("unknown registrarHandle %1% ") % registrarHandle );
+            LOGGER(PACKAGE).error( msg );
+            throw std::runtime_error(msg);
+        }
 
-      if (invoiceID >=0)
-        ret = CMD_OK; // OK succesfully invocing
-
-      db.QuitTransaction(ret);
+        tx.commit();
+    }//try
+    catch( std::exception &ex)
+    {
+      LOGGER(PACKAGE).error ( boost::format("factoring failed: %1% ") % ex.what());
+      throw std::runtime_error(std::string("factoring failed: ") + ex.what());
+    }
+    catch(...)
+    {
+      LOGGER(PACKAGE).error("factoring failed.");
+      throw std::runtime_error("factoring failed");
     }
 
-    // db.Disconnect(); not needed anymore
-  }
-
-  if (ret)
-    return invoiceID;
-  else
-    return -1; // err
-}
+}//factoring
 
 }; // ManagerImpl
 
