@@ -124,11 +124,14 @@ public:
     }
 
 
-    void save_relation(boost::gregorian::date &_date,
+    void save_relation(const boost::gregorian::date &_date,
                        const unsigned long long &_msg_id) const
     {
+        if (_date.is_not_a_date() || _msg_id == 0) {
+            throw std::runtime_error("can't save reminder run info - invalid date or message id");
+        }
         Database::Connection conn = Database::Manager::acquire();
-        conn.exec_params("INSERT INTO contact_reminder_message_map"
+        conn.exec_params("INSERT INTO reminder_contact_message_map"
                 " (reminder_date, contact_id, message_id) VALUES"
                 " ($1::date, $2::bigint, $3::bigint)",
                 Database::query_param_list(_date)(contact_id_)(_msg_id));
@@ -168,16 +171,17 @@ public:
           dummy1_(conn_.exec(
                 "CREATE TEMPORARY TABLE tmp_reminder"
                 " (contact_id bigint, contact_crdate timestamp without time zone)")),
-          /* TODO: join with already notified on given date to prevert multiple notification */
           dummy2_(conn_.exec_params(
                 "INSERT INTO tmp_reminder"
                 " SELECT coreg.id, coreg.crdate"
                 " FROM object_registry coreg"
                 " JOIN object o ON o.id = coreg.id"
+                " LEFT JOIN reminder_contact_message_map rcmm ON rcmm.contact_id = coreg.id AND rcmm.reminder_date = $1::date"
                 " WHERE coreg.type = 1 AND coreg.erdate IS NULL"
                 " AND extract('month' FROM ($1::date - interval '10 month')) = extract('month' FROM coreg.crdate)"
                 " AND extract('day' FROM ($1::date - interval '10 month')) = extract('day' FROM coreg.crdate)"
                 " AND (o.update IS NULL OR o.update::date NOT BETWEEN (current_date - interval '2 month') AND current_date)"
+                " AND rcmm.contact_id IS NULL"
                 " ORDER BY crdate",
                 Database::query_param_list(_date))),
           contact_data_(conn_.exec(
@@ -301,8 +305,16 @@ void run_reminder(Mailer::Manager *_mailer, const boost::gregorian::date &_date)
                     throw std::runtime_error(str(boost::format("no email address (contact_id=%1%)")
                                              % email.get_contact_id()));
                 }
-                _mailer->sendEmail("", email_addr, "", email.get_template(), params, handles, attach,
-                                   email_registrar_reply_to);
+                unsigned long long mid = _mailer->sendEmail("", email_addr, "", email.get_template(),
+                                                            params, handles, attach, email_registrar_reply_to);
+                try {
+                    email.save_relation(_date, mid);
+                }
+                catch (...) {
+                    LOGGER(PACKAGE).error(boost::format(
+                                "reminder run info save failure (contact_id=%1%  msg_id=%2%)")
+                                % email.get_contact_id() % mid);
+                }
             }
             catch (ReminderEmail::IntegrityError &_ie) {
                 /* stop on integrity error */
