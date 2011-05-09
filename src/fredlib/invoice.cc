@@ -347,20 +347,30 @@ public:
 
   }
 
-  /** this is now usable only for create domain
-   */
-  virtual bool domainBilling(
-            const Database::ID &zone,
-            const Database::ID &registrar,
-            const Database::ID &objectId,
-            const Database::Date &exDate,
-            const int &units_count,
-            bool renew) {
-      TRACE("[CALL] Fred::Invoicing::Manager::domainBilling()");
-
+  virtual bool chargeDomainCreate(
+          const Database::ID &zone,
+          const Database::ID &registrar,
+          const Database::ID &objectId,
+          const Database::Date &exDate,
+          const int &units_count)
+  {
+      TRACE("[CALL] Fred::Invoicing::Manager::chargeDomainCreate()");
       // new implementation
-      return new_domainBilling(zone, registrar, objectId, exDate, units_count, renew);
-  };
+      return new_domainBilling(zone, registrar, objectId, exDate, units_count, false);
+  }
+
+  virtual bool chargeDomainRenew(
+          const Database::ID &zone,
+          const Database::ID &registrar,
+          const Database::ID &objectId,
+          const Database::Date &exDate,
+          const int &units_count)
+  {
+      TRACE("[CALL] Fred::Invoicing::Manager::chargeDomainRenew()");
+      // new implementation
+            return new_domainBilling(zone, registrar, objectId, exDate, units_count, true);
+  }
+
 
     /**
      *returns 0 in case of failure, id of invoice otherwise
@@ -910,9 +920,9 @@ unsigned long long MakeFactoring(unsigned long long regID
     return invoiceID;
 }
 
-void factoring_all( const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr)
+void createAccountInvoices( const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr)
 {
-    Logging::Context ctx("factoring_all");
+    Logging::Context ctx("createAccountInvoices");
     try
     {
         Database::Connection conn = Database::Manager::acquire();
@@ -944,19 +954,20 @@ void factoring_all( const std::string& zone_fqdn, const std::string& taxdateStr,
     }//try
     catch( std::exception &ex)
     {
-        LOGGER(PACKAGE).error ( boost::format("factoring_all failed: %1% ") % ex.what());
-        throw std::runtime_error(std::string("factoring_all failed: ") + ex.what());
+        LOGGER(PACKAGE).error ( boost::format("createAccountInvoices failed: %1% ") % ex.what());
+        throw std::runtime_error(std::string("createAccountInvoices failed: ") + ex.what());
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("factoring_all failed.");
-        throw std::runtime_error("factoring_all failed");
+        LOGGER(PACKAGE).error("createAccountInvoices failed.");
+        throw std::runtime_error("createAccountInvoices failed");
     }
-}//factoring_all
+}//createAccountInvoices
 
 // close invoice to registar handle for zone make taxDate to the todateStr
-void factoring( const std::string& registrarHandle, const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr)
+void createAccountInvoice( const std::string& registrarHandle, const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr)
 {
+    Logging::Context ctx("createAccountInvoice");
     try
     {
         Database::Connection conn = Database::Manager::acquire();
@@ -1009,16 +1020,16 @@ void factoring( const std::string& registrarHandle, const std::string& zone_fqdn
     }//try
     catch( std::exception &ex)
     {
-      LOGGER(PACKAGE).error ( boost::format("factoring failed: %1% ") % ex.what());
-      throw std::runtime_error(std::string("factoring failed: ") + ex.what());
+      LOGGER(PACKAGE).error ( boost::format("createAccountInvoice failed: %1% ") % ex.what());
+      throw std::runtime_error(std::string("createAccountInvoice failed: ") + ex.what());
     }
     catch(...)
     {
-      LOGGER(PACKAGE).error("factoring failed.");
-      throw std::runtime_error("factoring failed");
+      LOGGER(PACKAGE).error("createAccountInvoice failed.");
+      throw std::runtime_error("createAccountInvoice failed");
     }
 
-}//factoring
+}//createAccountInvoice
 
 }; // ManagerImpl
 

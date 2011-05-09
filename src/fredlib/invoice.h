@@ -292,17 +292,23 @@ public:
 
   // added methods
   virtual  int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price) = 0; 
-  // nnnn
-  virtual bool domainBilling(
-            const Database::ID &zone,
-            const Database::ID &registrar,
-            const Database::ID &objectId,
-            const Database::Date &exDate,
-            const int &units_count,
-            bool renew) = 0;
 
-  virtual void factoring_all(const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr) = 0;
-  virtual void factoring(const std::string& registrarHandle, const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr) = 0;
+  virtual bool chargeDomainCreate(
+          const Database::ID &zone,
+          const Database::ID &registrar,
+          const Database::ID &objectId,
+          const Database::Date &exDate,
+          const int &units_count) = 0;
+
+  virtual bool chargeDomainRenew(
+          const Database::ID &zone,
+          const Database::ID &registrar,
+          const Database::ID &objectId,
+          const Database::Date &exDate,
+          const int &units_count) = 0;
+
+  virtual void createAccountInvoices(const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr) = 0;
+  virtual void createAccountInvoice(const std::string& registrarHandle, const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr) = 0;
 
 }; // Manager
 }

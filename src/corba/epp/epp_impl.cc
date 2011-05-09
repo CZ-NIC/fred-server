@@ -5278,11 +5278,11 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                             }
                             std::auto_ptr<Fred::Invoicing::Manager> invMan(
                                     Fred::Invoicing::Manager::create());
-                            if (invMan->domainBilling(zone, action.getRegistrar(),
-                                        id, Database::Date(std::string(exDate)), period_count, false)) {
+                            if (invMan->chargeDomainCreate(zone, action.getRegistrar(),
+                                        id, Database::Date(std::string(exDate)), period_count)) {
 
-                                if(!invMan->domainBilling(zone, action.getRegistrar(),
-                                        id, Database::Date(std::string(exDate)), period_count, true)) {
+                                if(!invMan->chargeDomainRenew(zone, action.getRegistrar(),
+                                        id, Database::Date(std::string(exDate)), period_count)) {
                                     code = COMMAND_BILLING_FAILURE;
                                 }
 
@@ -5532,8 +5532,8 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
 
 
                         std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
-                        if (invMan->domainBilling(zone, action.getRegistrar(),
-                                    id, Database::Date(std::string(exDate)), period_count, true) == false ) {
+                        if (invMan->chargeDomainRenew(zone, action.getRegistrar(),
+                                    id, Database::Date(std::string(exDate)), period_count) == false ) {
                             code = COMMAND_BILLING_FAILURE;
                         } else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
                             code = COMMAND_OK;
