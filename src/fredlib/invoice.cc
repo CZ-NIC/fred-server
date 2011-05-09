@@ -216,7 +216,6 @@ public:
   // TODO use it
 // where to catch exceptions? especially those comming from the database...
   virtual bool new_domainBilling(
-              DBSharedPtr ,
               const Database::ID &zone,
               const Database::ID &registrar,
               const Database::ID &objectId,
@@ -341,7 +340,6 @@ public:
   /** this is now usable only for create domain
    */
   virtual bool domainBilling(
-            DBSharedPtr db,
             const Database::ID &zone,
             const Database::ID &registrar,
             const Database::ID &objectId,
@@ -351,7 +349,7 @@ public:
       TRACE("[CALL] Fred::Invoicing::Manager::domainBilling()");
 
       // new implementation
-      return new_domainBilling(db, zone, registrar, objectId, exDate, units_count, renew);
+      return new_domainBilling(zone, registrar, objectId, exDate, units_count, renew);
   };
 
     /**

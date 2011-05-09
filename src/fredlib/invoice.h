@@ -297,7 +297,6 @@ public:
   virtual  int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price) = 0; 
   // nnnn
   virtual bool domainBilling(
-            DBSharedPtr db,
             const Database::ID &zone,
             const Database::ID &registrar,
             const Database::ID &objectId,
