@@ -304,8 +304,8 @@ public:
             const int &units_count,
             bool renew) = 0;
 
-  virtual void factoring_all(const char *zone_fqdn, const char *taxdateStr, const char *todateStr) = 0;
-  virtual void factoring(const char *registrarHandle, const char *zone_fqdn, const char *taxdateStr, const char *todateStr) = 0;
+  virtual void factoring_all(const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr) = 0;
+  virtual void factoring(const std::string& registrarHandle, const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr) = 0;
 
 }; // Manager
 }

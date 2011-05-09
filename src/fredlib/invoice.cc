@@ -899,7 +899,7 @@ unsigned long long MakeFactoring(unsigned long long regID
     return invoiceID;
 }
 
-void factoring_all( const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
+void factoring_all( const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr)
 {
     Logging::Context ctx("factoring_all");
     try
@@ -909,7 +909,7 @@ void factoring_all( const char *zone_fqdn, const char *taxdateStr, const char *t
 
         //TODO use boost clock
         char timestampStr[32];
-        get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr) );
+        get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr.c_str()) );
 
         Database::Result res = conn.exec_params(
           "SELECT r.id, z.id FROM registrar r, registrarinvoice i, zone z WHERE r.id=i.registrarid"
@@ -944,7 +944,7 @@ void factoring_all( const char *zone_fqdn, const char *taxdateStr, const char *t
 }//factoring_all
 
 // close invoice to registar handle for zone make taxDate to the todateStr
-void factoring( const char *registrarHandle, const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
+void factoring( const std::string& registrarHandle, const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr)
 {
     try
     {
@@ -972,7 +972,7 @@ void factoring( const char *registrarHandle, const char *zone_fqdn, const char *
                 zone = res[0][0];//zone
 
                 //TODO use boost clock
-                get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr) );
+                get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr.c_str()) );
                 // make invoice
                 MakeFactoring(regID, zone, timestampStr, taxdateStr);
 
