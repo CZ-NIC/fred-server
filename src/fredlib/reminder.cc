@@ -9,6 +9,7 @@
 #include "db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
+#include "file_lock.h"
 
 
 using namespace boost::assign;
@@ -277,6 +278,10 @@ void run_reminder(Mailer::Manager *_mailer, const boost::gregorian::date &_date)
         if (_date.is_not_a_date()) {
             throw std::runtime_error("date is not valid");
         }
+
+        /* TODO: consider using boost::interprocess::file_lock */
+        FileLock lock("/tmp/fred_reminder_run.lock");
+
         LOGGER(PACKAGE).info(boost::format("reminder run date: %1%")
                 % boost::gregorian::to_iso_extended_string(_date));
 
