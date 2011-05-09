@@ -212,8 +212,8 @@ public:
       return ::get_price(str.c_str());
   }
 
-  // TODO use it
-// where to catch exceptions? especially those comming from the database...
+  // WARNING: this is called from epp_impl.cc and it's sharing connection with dbsql's DB
+  // so it must *NOT* create Database::Transactions
   virtual bool new_domainBilling(
               const Database::ID &zone,
               const Database::ID &registrar,
@@ -222,20 +222,20 @@ public:
               const int &units_count,
               bool renew) {
       try {
-      // TODO maybe this should be passed as an argument
+      // TODO we rely that connection is saved in thread specific data
       Database::Connection conn = Database::Manager::acquire();
 
-      // find out whether the registrar in question is system
+      // find out whether the registrar in question is system registrar
       bool system = false;
-     Database::Result rsys =
+      Database::Result rsys =
         conn.exec_params("SELECT system FROM registrar WHERE id=$1::integer",
             Database::query_param_list(registrar));
       if(rsys.size() != 1 || rsys[0][0].isnull()) {
-          // TODO how to treat this error
-          LOGGER(PACKAGE).error ( (boost::format("Registrar ID %1% not found ") % registrar).str());
+          throw std::runtime_error((boost::format("Registrar ID %1% not found ") % registrar).str());
       } else {
           system = rsys[0][0];
           if(system) {
+              LOGGER(PACKAGE).info ( (boost::format("Registrar ID %1% has system flag set, not billing") % registrar).str());
               // no billing for system registrar
               return true;
           }
@@ -249,6 +249,7 @@ public:
                                      (zone ));
 
       if(res_price.size() != 1 || res_price[0][0].isnull()) {
+          LOGGER(PACKAGE).info ( (boost::format("Operation %1% for zoneId %1% not found in price list. No billing.") % static_cast<int>(renew ? OPERATION_DomainRenew : OPERATION_DomainCreate)  % zone).str());
           // price not set - no billing
           return true;
       }
@@ -286,6 +287,11 @@ public:
       if(price <= static_cast<cent_amount>(res_inv[0][1])) {
           // count if off the first invoice
 
+          LOGGER(PACKAGE).debug ( boost::format(
+              "domainBilling: RegistrarId %1%, zoneId %2%, objectId %3%, price %4% exDate %5%, single invoice %6% ")
+              % registrar % zone % objectId % query_param_price(price) % exDate
+              % inv_id1);
+
           Database::ID invoice_obj_reg_id = createInvoiceObjectRegistry(conn, objectId, registrar, zone, units_count, exDate, renew);
 
           updateObjectPrice(conn, invoice_obj_reg_id, price, inv_id1);
@@ -296,7 +302,6 @@ public:
           if(single_invoice) {
               throw std::runtime_error((boost::format("Credit not sufficient for registrar ID %1%, invoice: %2%")
                   % registrar % inv_id1).str());
-              // TODO credit not sufficient
           }
           // there is the second invoice
 
@@ -304,10 +309,16 @@ public:
           cent_amount credit2 = get_price((std::string)res_inv[1][1]);
 
           if(credit1 + credit2 < price) {
-              throw std::runtime_error((boost::format("Credit not sufficient for registrar ID %1%, invoices: %2%, %3%")
-                   % registrar % inv_id1 % inv_id2).str());
-              // TODO credit not sufficient
+              throw std::runtime_error((boost::format("Credit not sufficient for registrar ID %1% operation %2% on object %3%, invoices: %4%, %5%")
+                   % registrar
+                   % static_cast<int>(renew ? OPERATION_DomainRenew : OPERATION_DomainCreate)
+                   % objectId % inv_id1 % inv_id2).str());
           }
+
+          LOGGER(PACKAGE).debug ( boost::format(
+              "domainBilling: RegistrarId %1%, zoneId %2%, objectId %3%, price %4% exDate %5%, two invoices %6%, %7%")
+              % registrar % zone % objectId % query_param_price(price) % exDate
+              % inv_id1 % inv_id2);
 
           cent_amount price_remainder = price - credit1;
 
