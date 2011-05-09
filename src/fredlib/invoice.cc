@@ -43,7 +43,6 @@
 using namespace boost::gregorian;
 using namespace boost::posix_time;
 
-#define STR_TO_MONEY(x) atol(x)
 
 namespace Fred {
 namespace Invoicing {
