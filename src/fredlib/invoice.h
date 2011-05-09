@@ -14,9 +14,6 @@
 #include "mailer.h"
 #include "db_settings.h"
 #include "model/model_filters.h"
-#include "old_utils/dbsql.h" 
-
-class DB;
 
 namespace Fred {
 namespace Invoicing {

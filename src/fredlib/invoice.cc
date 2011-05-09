@@ -35,7 +35,6 @@
 #include "log/context.h"
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
-#include "old_utils/dbsql.h"
 
 #include "documents.h"
 
@@ -786,7 +785,8 @@ unsigned long long MakeFactoring(unsigned long long regID
                 fromdateStr = std::string(res[0][0]);
         }
 
-        std::string todateStr = timestampStr.substr(0,10);//first 10 chars
+        std::string todateStr = boost::gregorian::to_iso_extended_string(
+                (boost::posix_time::time_from_string(timestampStr)).date());
 
         LOGGER(PACKAGE).debug ( boost::format("MakeFactoring from %1% to %2% timestamp [%3%]")
             % fromdateStr % todateStr % timestampStr);
@@ -907,9 +907,9 @@ void factoring_all( const std::string& zone_fqdn, const std::string& taxdateStr,
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        //TODO use boost clock
-        char timestampStr[32];
-        get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr.c_str()) );
+        std::string  timestampStr = boost::posix_time::to_iso_extended_string(
+                boost::posix_time::time_from_string(todateStr));
+        timestampStr[timestampStr.find('T')] = ' ';
 
         Database::Result res = conn.exec_params(
           "SELECT r.id, z.id FROM registrar r, registrarinvoice i, zone z WHERE r.id=i.registrarid"
@@ -951,7 +951,7 @@ void factoring( const std::string& registrarHandle, const std::string& zone_fqdn
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        char timestampStr[32];
+        std::string timestampStr;
         unsigned long long regID = 0;
         unsigned long long zone = 0;
 
@@ -971,8 +971,10 @@ void factoring( const std::string& registrarHandle, const std::string& zone_fqdn
             {
                 zone = res[0][0];//zone
 
-                //TODO use boost clock
-                get_timestamp(timestampStr, sizeof(timestampStr), get_utctime_from_localdate(todateStr.c_str()) );
+                std::string  timestampStr = boost::posix_time::to_iso_extended_string(
+                        boost::posix_time::time_from_string(todateStr));
+                timestampStr[timestampStr.find('T')] = ' ';
+
                 // make invoice
                 MakeFactoring(regID, zone, timestampStr, taxdateStr);
 
