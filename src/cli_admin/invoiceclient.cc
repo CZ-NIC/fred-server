@@ -423,9 +423,9 @@ InvoiceClient::factoring()
     std::string taxDate_str(taxDate.to_string());
 
     if (!regFilled) {
-        invMan->createAccountInvoices( zoneName.c_str(), taxDate_str.c_str(), toDate_str.c_str());
+        invMan->createAccountInvoices( zoneName, taxDate_str, toDate_str);
     } else {
-        invMan->createAccountInvoice( registrarName.c_str(), zoneName.c_str(), taxDate_str.c_str(), toDate_str.c_str());
+        invMan->createAccountInvoice( registrarName, zoneName, taxDate_str, toDate_str);
     }
 
 }

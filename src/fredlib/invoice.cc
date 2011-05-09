@@ -43,34 +43,6 @@
 using namespace boost::gregorian;
 using namespace boost::posix_time;
 
-class SQL_ERROR;
-
-class autoDB : public DB {
-public:
-    autoDB(const char *conn_string) : DB(), succ(false) {
-        succ = OpenDatabase(conn_string);
-    }
-
-    autoDB(const std::string &conn_string) : DB(), succ(false) {
-        succ = OpenDatabase(conn_string);
-    }
-    
-    ~autoDB() {
-        if(succ) {
-            Disconnect();
-        }
-    }
-    
-    bool success() {
-        return succ;
-    }
-
-private:
-    /// was the database opened successfully?
-    bool succ;
-};
-
-
 #define STR_TO_MONEY(x) atol(x)
 
 namespace Fred {
@@ -1538,26 +1510,48 @@ public:
       catch (...) {}
     }
   }
-  void storeFile()  {
+  void storeFile()
+  {
     // cannot rollback generated files so ignoring if XML file hasn't
     // been generated
-    autoDB dbc(Database::Manager::getConnectionString());
-    if(!dbc.success()) {
-        LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-        throw SQL_ERROR();
-    }
 
-    if (storeFileFlag && filePDF) {
-      std::stringstream sql;
-      sql << "UPDATE invoice SET file=" << filePDF;
-      if (fileXML) {
-        sql << ",fileXML=" << fileXML;
-      };
-      sql << " WHERE id=" << getId();      
-      if (!dbc.ExecSQL(sql.str().c_str()))
-        throw SQL_ERROR();
-    }
-  }
+      Logging::Context ctx("storeFile");
+      try
+      {
+          if (storeFileFlag && filePDF)
+          {
+              Database::Connection conn = Database::Manager::acquire();
+              Database::QueryParams sql_params;//query params
+              std::stringstream sql;
+
+              sql_params.push_back(boost::lexical_cast<std::string>(filePDF));
+              sql << "UPDATE invoice SET file=$"<< sql_params.size() <<"::bigint ";
+
+              if (fileXML)
+              {
+                  sql_params.push_back(boost::lexical_cast<std::string>(fileXML));
+                  sql << ",fileXML=$"<< sql_params.size() <<"::bigint ";
+              }
+
+              sql_params.push_back(boost::lexical_cast<std::string>(getId()));
+              sql << " WHERE id=$"<< sql_params.size() <<"::bigint ";
+
+              conn.exec_params(sql.str(), sql_params);
+          }
+
+      }//try
+      catch( std::exception &ex)
+      {
+          LOGGER(PACKAGE).error ( boost::format("storeFile failed: %1% ") % ex.what());
+          throw std::runtime_error(std::string("storeFile failed: ") + ex.what());
+      }
+      catch(...)
+      {
+          LOGGER(PACKAGE).error("storeFile failed.");
+          throw std::runtime_error("storeFile failed");
+      }
+  }//storeFile
+
   /// export invoice using given exporter
   void doExport(Exporter *exp) {
     exp->doExport(this);
