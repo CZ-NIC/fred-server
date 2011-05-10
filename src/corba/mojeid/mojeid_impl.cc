@@ -162,7 +162,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
         try {
             if (server_conf_->notify_commands) {
-                /* it's not possible create contact have notify email */
+                Fred::MojeID::notify_contact_create(_request_id, mailer_);
             }
         } catch (...) {
             LOGGER(PACKAGE).error("request notification failed");
@@ -905,12 +905,13 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
 
     /* request notification */
     try {
-        if(tr_data.op == MOJEID_CONTACT_UPDATE) {
-            if (tr_data.request_id && server_conf_->notify_commands) {
+        if (tr_data.request_id && server_conf_->notify_commands) {
+            if (tr_data.op == MOJEID_CONTACT_UPDATE) {
                 Fred::MojeID::notify_contact_update(tr_data.request_id, mailer_);
             }
-        } else if(tr_data.op == MOJEID_CONTACT_CREATE) {
-            /* it's not possible create contact have notify email */
+            else if (tr_data.op == MOJEID_CONTACT_CREATE) {
+                Fred::MojeID::notify_contact_create(tr_data.request_id, mailer_);
+            }
         }
     }
     catch (Fred::RequestNotFound &_ex) {
