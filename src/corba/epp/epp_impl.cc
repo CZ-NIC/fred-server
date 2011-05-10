@@ -138,6 +138,7 @@ Database::Connection wrapped_acquire(ccReg_EPP_i *epp)
         epp->ServerInternalError("Cannot connect to DB");
     }
 
+    /* unreachable code - only for suppress gcc warning */
     return Database::Manager::acquire();
 }
 
