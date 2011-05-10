@@ -419,7 +419,7 @@ int new_createDepositInvoice(const Database::Date &date, int zoneId, int registr
     Database::Result ip_res = conn.exec_params(
         "SELECT id, prefix  FROM invoice_prefix WHERE zone=$1::integer AND  typ=$2::integer AND year=$3::numeric FOR UPDATE",
         Database::query_param_list(zoneId)
-                                (INVOICE_ZAL)
+                                (IT_DEPOSIT)
                                 (date.year())
                                 );
 
@@ -680,12 +680,12 @@ unsigned long long  MakeNewInvoice(
         long long prefix=0;
         int dph=0;
 
-        if ( (type = GetPrefixType(taxDateStr, INVOICE_FA, zone) )) // usable prefix id of invoice
+        if ( (type = GetPrefixType(taxDateStr, IT_ACCOUNT, zone) )) // usable prefix id of invoice
           {
 
             if (count) // create invoice
             {
-              if ( (prefix = GetInvoicePrefix(taxDateStr, INVOICE_FA, zone) )) // number of invoice accord to taxable period
+              if ( (prefix = GetInvoicePrefix(taxDateStr, IT_ACCOUNT, zone) )) // number of invoice accord to taxable period
               {
                 // find out VAT height
                 dph =GetSystemVAT();
