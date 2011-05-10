@@ -454,7 +454,7 @@ int new_createDepositInvoice(const Database::Date &date, int zoneId, int registr
                                 (query_param_price(price))
                                 (vat_percent)
                                 (query_param_price(total))
-                                (vat_amount)
+                                (query_param_price(vat_amount))
                                 (query_param_price(credit))
                                 );
 
