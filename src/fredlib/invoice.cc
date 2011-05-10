@@ -2669,7 +2669,6 @@ public:
     typedef std::vector<Item> MailItems; ///< type for notification list
     MailItems items; ///< list of notifications to send
     Mailer::Manager *mm; ///< mail sending interface
-    Database::Connection conn;    
     /// store information about sending email 
     void store(unsigned idx) {
        
@@ -2683,11 +2682,13 @@ public:
       sql << ","
       << items[idx].mail
       << ")";
+
+      Database::Connection conn = Database::Manager::acquire();
       conn.exec(sql.str());
     }
     
   public:
-    Mails(Mailer::Manager *_mm) : mm(_mm), conn(Database::Manager::acquire()) {
+    Mails(Mailer::Manager *_mm) : mm(_mm) {
     }
     /// send all mails and store information about sending
     void send() { //throw (SQL_ERROR) {
