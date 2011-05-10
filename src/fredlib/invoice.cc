@@ -451,11 +451,11 @@ int new_createDepositInvoice(const Database::Date &date, int zoneId, int registr
                                 (inv_prefix_type)
                                 (registrarId)
                                 (date)
-                                (price)
+                                (query_param_price(price))
                                 (vat_percent)
-                                (total)
+                                (query_param_price(total))
                                 (vat_amount)
-                                (credit)
+                                (query_param_price(credit))
                                 );
 
     return invoiceId;
