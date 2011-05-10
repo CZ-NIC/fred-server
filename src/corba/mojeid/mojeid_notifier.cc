@@ -7,6 +7,22 @@ namespace Fred {
 namespace MojeID {
 
 
+void notify_contact_create(const unsigned long long &_request_id,
+                           boost::shared_ptr<Fred::Mailer::Manager> _mailer)
+{
+    Logging::Context ctx("notifier");
+
+    Fred::RequestNotification ntf(_request_id, "MojeID");
+
+    if (ntf.get_request_type() == CMD_CONTACT_CREATE) {
+        Fred::request_contact_create(ntf);
+        ntf.set_template_name("notification_create");
+        NotificationEmailSender sender(_mailer);
+        sender.send(ntf);
+    }
+}
+
+
 void notify_contact_update(const unsigned long long &_request_id,
                            boost::shared_ptr<Fred::Mailer::Manager> _mailer)
 {

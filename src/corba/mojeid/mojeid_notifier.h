@@ -10,6 +10,10 @@ namespace Fred {
 namespace MojeID {
 
 
+void notify_contact_create(const unsigned long long &_request_id,
+                           boost::shared_ptr<Fred::Mailer::Manager> _mailer);
+
+
 void notify_contact_update(const unsigned long long &_request_id,
                            boost::shared_ptr<Fred::Mailer::Manager> _mailer);
 
