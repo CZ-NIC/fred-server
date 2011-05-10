@@ -185,7 +185,7 @@ public:
 
   // WARNING: this is called from epp_impl.cc and it's sharing connection with dbsql's DB
   // so it must *NOT* create Database::Transactions
-  virtual bool new_domainBilling(
+  virtual bool domainBilling(
               const Database::ID &zone,
               const Database::ID &registrar,
               const Database::ID &objectId,
@@ -327,7 +327,7 @@ public:
   {
       TRACE("[CALL] Fred::Invoicing::Manager::chargeDomainCreate()");
       // new implementation
-      return new_domainBilling(zone, registrar, objectId, exDate, units_count, false);
+      return domainBilling(zone, registrar, objectId, exDate, units_count, false);
   }
 
   virtual bool chargeDomainRenew(
@@ -339,7 +339,7 @@ public:
   {
       TRACE("[CALL] Fred::Invoicing::Manager::chargeDomainRenew()");
       // new implementation
-            return new_domainBilling(zone, registrar, objectId, exDate, units_count, true);
+            return domainBilling(zone, registrar, objectId, exDate, units_count, true);
   }
 
 
@@ -347,18 +347,10 @@ public:
      *returns 0 in case of failure, id of invoice otherwise
      * type is int just because MakeNewInoviceAdvance returns it.
      */
-int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price) {
-
-    // new implementation
-    return new_createDepositInvoice(date, zoneId, registrarId, price);
-}
-
-#define INVOICE_FA  1 // normal invoice
-#define INVOICE_ZAL 0 // advance invoice
 
 // TODO what exceptions to throw and whether to log errors
 // SPEC current time taken from now() in DB (which should be UTC)
-int new_createDepositInvoice(const Database::Date &date, int zoneId, int registrarId, cent_amount price)
+int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price)
 {
     Database::Connection conn = Database::Manager::acquire();
 
