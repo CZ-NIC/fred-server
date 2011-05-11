@@ -106,34 +106,6 @@ public:
   long GetRegistrarCredit(
     int regID, int zoneID);
 
-  ///------------------------
-  /// INVOICING 
-
-  // count balence and used credit on invoice
-  long GetInvoiceBalance(
-    int aID, long credit);
-  long GetInvoiceSumaPrice(
-    int iID, int aID); //
-
-  // make factoring 
-  int MakeFactoring(
-    int regID, int zone, const char *timestampStr, const char *taxDateStr);
-
-  // make Invoice
-  int MakeNewInvoice(
-    const char *taxDateStr, const char *fromdateStr, const char *todateStr,
-    int zone, int regID, long price, unsigned int count);
-
-  // make new Invoice 
-  int MakeNewInvoiceAdvance(
-    const char *taxDateStr, int zone, int regID, long price);
-
-  // make prefix for invoice
-  int GetPrefixType(
-    const char *dateStr, int typ, int zone);
-  long GetInvoicePrefix(
-    const char *dateStr, int typ, int zone);
-
   ///-------------------
   // BANKING 
 
