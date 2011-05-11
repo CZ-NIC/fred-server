@@ -663,7 +663,7 @@ unsigned long long  MakeNewInvoice(
     unsigned long long invoiceID =0;
     try
     {
-        LOGGER(PACKAGE).debug ( boost::format("MakeNewInvoice taxdate[%1%]  fromdateStr [%2%] todateStr[%3%]  zone %d regID %4% , price %5%  count %6%")
+        LOGGER(PACKAGE).debug ( boost::format("MakeNewInvoice taxdate[%1%]  fromdateStr [%2%] todateStr[%3%]  zone %4% regID %5% , price %6%  count %7%")
         % taxDateStr % fromdateStr % todateStr % zone % regID % price % count);
 
         Database::Connection conn = Database::Manager::acquire();//get db conn
