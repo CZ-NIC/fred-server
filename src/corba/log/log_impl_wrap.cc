@@ -12,14 +12,41 @@ ccReg_Log_i::ccReg_Log_i(const std::string database, const std::string &monitori
   // ccReg_Log_i(const std::string database) throw (Fred::Logger::Manager::DB_CONNECT_FAILED): Fred::Logger::Manager(database) {};
 ccReg_Log_i::~ccReg_Log_i()
 {
-    PortableServer::POA_ptr poa = this->_default_POA();
+    try {
+        PortableServer::POA_ptr poa = this->_default_POA();
 
-    for (pagetables_list::iterator mit = pagetables.begin(); mit != pagetables.end(); mit++) {
-        try {
+        for (pagetables_list::iterator mit = pagetables.begin(); mit != pagetables.end(); mit++) {
             poa->deactivate_object(*(poa->servant_to_id(mit->second)));
         }
-        catch (...) {
-        }
+    } catch (std::exception &ex) {
+        logger_error(boost::format("Exception in ~ccReg_Log_i(): %1%") % ex.what() );
+    } catch (...) {
+        logger_error("Unknown exception in ~ccReg_Log_i()");
+    }
+}
+
+
+// use ONLY in exception handlers
+void Logger_common_exception_handler(const std::string &method_name)
+  throw(ccReg::Logger::INCORRECT_USAGE, ccReg::Logger::INTERNAL_SERVER_ERROR)
+{
+    try {
+        throw;
+    } catch (WrongUsageError &ex) {
+        logger_error(boost::format("Incorrect usage error in %1%: %2%") % method_name % ex.what());
+        throw ccReg::Logger::INCORRECT_USAGE();
+    } catch (InternalServerError &ex) {
+        logger_error(boost::format("Internal server error in %1%: %2%") % method_name % ex.what());
+        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
+    } catch (Database::Exception &ex) {
+        logger_error(boost::format("Database error in %1%: %2%") % method_name % ex.what());
+        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
+    } catch (std::exception &ex) {
+        logger_error(boost::format("Exception in %1%: %2%" ) % method_name % ex.what());
+        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
+    } catch (...) {
+        logger_error(boost::format("Unknown exception in %1%") % method_name);
+        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
 }
 
@@ -29,10 +56,12 @@ ccReg::TID ccReg_Log_i::createRequest(const char *sourceIP, ccReg::RequestServic
         std::auto_ptr<Fred::Logger::RequestProperties> p(convert_properties(props));
         std::auto_ptr<Fred::Logger::ObjectReferences> r(convert_obj_references(refs));
         return back->i_createRequest(sourceIP, (Database::Filters::ServiceType)service, content, *(p.get()), *(r.get()), request_type_id, session_id);
-    }
-    catch (...) {
+
+    } catch(...) {
+        Logger_common_exception_handler("createRequest");
         throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
+
 }
 
 void ccReg_Log_i::addRequestProperties(ccReg::TID id, const ccReg::RequestProperties &props)
@@ -42,8 +71,8 @@ void ccReg_Log_i::addRequestProperties(ccReg::TID id, const ccReg::RequestProper
         if( back->i_addRequestProperties(id, *(p.get())) == false) {
             throw ccReg::Logger::REQUEST_NOT_EXISTS();
         }
-    }
-    catch (...) {
+    } catch(...) {
+        Logger_common_exception_handler("addRequestProperties");
         throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
 }
@@ -59,6 +88,7 @@ void ccReg_Log_i::closeRequest(ccReg::TID id, const char *content, const ccReg::
         }
     }
     catch (...) {
+        Logger_common_exception_handler("closeRequest");
         throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
 
@@ -77,6 +107,7 @@ ccReg::TID ccReg_Log_i::createSession(ccReg::TID user_id, const char *name)
         }
     }
     catch (...) {
+        Logger_common_exception_handler("createSession");
         throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
 }
@@ -89,6 +120,7 @@ void ccReg_Log_i::closeSession(ccReg::TID id)
         }
     }
     catch (...) {
+        Logger_common_exception_handler("closeSession");
         throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
 }
@@ -111,6 +143,7 @@ ccReg::RequestTypeList *ccReg_Log_i::getRequestTypesByService(ccReg::RequestServ
         return ret._retn();
     }
     catch (...) {
+        Logger_common_exception_handler("getRequestTypesByService");
         throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
 }
@@ -131,6 +164,7 @@ ccReg::RequestServiceList* ccReg_Log_i::getServices()
         return ret._retn();
     }
     catch (...) {
+        Logger_common_exception_handler("getServices");
         throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
 }
@@ -151,6 +185,7 @@ ccReg::ResultCodeList* ccReg_Log_i::getResultCodesByService(ccReg::RequestServic
         return ret._retn();
     }
     catch (...) {
+        Logger_common_exception_handler("getResultCodesByService");
         throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
 }
@@ -176,6 +211,7 @@ ccReg::Logger::ObjectTypeList* ccReg_Log_i::getObjectTypes()
         return ret._retn();
     }
     catch (...) {
+        Logger_common_exception_handler("getObjectTypes");
         throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
 }
@@ -185,31 +221,36 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
     Registry::PageTable_ptr ret;
     pagetables_list::iterator it;
 
-    // this method doesn't call logger implementation, we have to init context here
-    logd_ctx_init ctx;
+    try {
+        // this method doesn't call logger implementation, we have to init context here
+        logd_ctx_init ctx;
 
-    boost::mutex::scoped_lock slm (pagetables_mutex);
+        boost::mutex::scoped_lock slm (pagetables_mutex);
 
-    it = pagetables.find(session_id);
+        it = pagetables.find(session_id);
 
-    if (it != pagetables.end()) {
-        LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: returning existing pagetable for client (session_id %1%) ") % session_id);
-        return it->second->_this();
+        if (it != pagetables.end()) {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: returning existing pagetable for client (session_id %1%) ") % session_id);
+            return it->second->_this();
 
-    } else {
-        std::auto_ptr<Fred::Logger::Manager> logger_manager;
+        } else {
+            std::auto_ptr<Fred::Logger::Manager> logger_manager;
 
-        logger_manager.reset(Fred::Logger::Manager::create());
-        Fred::Logger::List *list = logger_manager->createList();
-        ccReg_Logger_i * ret_ptr = new ccReg_Logger_i(list);
-        ret = ret_ptr->_this();
+            logger_manager.reset(Fred::Logger::Manager::create());
+            Fred::Logger::List *list = logger_manager->createList();
+            ccReg_Logger_i * ret_ptr = new ccReg_Logger_i(list);
+            ret = ret_ptr->_this();
 
-        pagetables[session_id] = ret_ptr;
+            pagetables[session_id] = ret_ptr;
+        }
+
+        LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: Returning a pagetable object (%1%) to a client (session %2%).") % ret % session_id);
+
+        return ret;
+    } catch(...) {
+        Logger_common_exception_handler("createPageTable");
+        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
-
-    LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: Returning a pagetable object (%1%) to a client (session %2%).") % ret % session_id);
-
-    return ret;
 }
 // m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
 
@@ -217,66 +258,81 @@ void ccReg_Log_i::deletePageTable(const char* session_id)
 {
     pagetables_list::iterator it;
 
-    // this method doesn't call logger implementation, we have to init context here
-    logd_ctx_init ctx;
+    try {
+        // this method doesn't call logger implementation, we have to init context here
+        logd_ctx_init ctx;
 
-    boost::mutex::scoped_lock slm (pagetables_mutex);
+        boost::mutex::scoped_lock slm (pagetables_mutex);
 
-    it = pagetables.find(session_id);
+        it = pagetables.find(session_id);
 
-    PortableServer::POA_ptr poa = this->_default_POA();
+        PortableServer::POA_ptr poa = this->_default_POA();
 
-    if (it == pagetables.end()) {
-        LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: No pagetable found for session %1%, no action. ") % session_id);
-    } else {
-        LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: A pagetable found for session %1%, deleting. ") % session_id);
+        if (it == pagetables.end()) {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: No pagetable found for session %1%, no action. ") % session_id);
+        } else {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: A pagetable found for session %1%, deleting. ") % session_id);
 
-        poa->deactivate_object(*(poa->servant_to_id(it->second)));
+            poa->deactivate_object(*(poa->servant_to_id(it->second)));
 
-        it->second->_remove_ref();
+            it->second->_remove_ref();
 
-        pagetables.erase(it);
+            pagetables.erase(it);
+        }
+    } catch(...) {
+        Logger_common_exception_handler("deletePageTable");
+        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
     }
 }
 
+
+// huge TODO  - exceptions
 ccReg::Logger::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
 {
-    // this method doesn't call logger implementation, we have to init context here
-    logd_ctx_init ctx;
+    try {
+        // this method doesn't call logger implementation, we have to init context here
+        logd_ctx_init ctx;
 
-	LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
+        LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
         boost::mutex::scoped_lock slm (pagetables_mutex);
-	std::auto_ptr<Fred::Logger::List> request_list(back->createList());
+        std::auto_ptr<Fred::Logger::List> request_list(back->createList());
 
-	Database::Filters::Union union_filter;
-	// where is it deleted? TODO
-	Database::Filters::Request *filter = new Database::Filters::RequestImpl();
+        Database::Filters::Union union_filter;
+        // where is it deleted? TODO
+        Database::Filters::Request *filter = new Database::Filters::RequestImpl();
 
-	filter->addId().setValue(Database::ID(_id));
-	union_filter.addFilter(filter);
+        filter->addId().setValue(Database::ID(_id));
+        union_filter.addFilter(filter);
 
-	request_list->setPartialLoad(false);
-	// TODO make sure the db_manager is OK
-	//
-	// request_list->reload(union_filter, &m_db_manager);
+        request_list->setPartialLoad(false);
+        // TODO make sure the db_manager is OK
+        //
+        // request_list->reload(union_filter, &m_db_manager);
         try {
-                request_list->reload(union_filter);
+            request_list->reload(union_filter);
         } catch(Database::Exception &ex) {
-                std::string message = ex.what();
-                if(message.find("statement timeout") != std::string::npos) {
-                    LOGGER(PACKAGE).info("Statement timeout in request list.");
-                    throw Registry::SqlQueryTimeout();
-                }
-                LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-                throw ccReg::Logger::INTERNAL_SERVER_ERROR();
+            std::string message = ex.what();
+            if(message.find("statement timeout") != std::string::npos) {
+                LOGGER(PACKAGE).info("Statement timeout in request list.");
+                throw Registry::SqlQueryTimeout();
+            }
+            throw;
         }
 
-	if(request_list->size() != 1) {
-	    LOGGER(PACKAGE).info("throwing OBJECT_NOT_FOUND(): number of items found is not 1");
-        throw ccReg::Logger::OBJECT_NOT_FOUND();
-	}
-	return createRequestDetail(request_list->get(0));
+        if(request_list->size() != 1) {
+            LOGGER(PACKAGE).info("throwing OBJECT_NOT_FOUND(): number of items found is not 1");
+            throw ccReg::Logger::OBJECT_NOT_FOUND();
+        }
+        return createRequestDetail(request_list->get(0));
+    } catch (Registry::SqlQueryTimeout) {
+        throw;
+    } catch (ccReg::Logger::OBJECT_NOT_FOUND) {
+        throw;
+    } catch (...) {
+        Logger_common_exception_handler("getDetail");
+        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
+    }
 
 }
 

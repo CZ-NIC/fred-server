@@ -164,6 +164,7 @@ ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
 
         } catch(std::exception &e) {
             LOGGER("fred-server").error(boost::format("Error while reading config file %1% : %2%") % monitoring_hosts_file % e.what());
+            LOGGER("fred-server").info("Monitoring hosts might not be recognized now");
         }
     }
 
@@ -298,17 +299,18 @@ void ManagerImpl::insert_props_pub(DateTime request_time, ServiceType request_se
 
 
 // log a new event, return the database ID of the record
+// EXCEPTIONS MUST be handled in the caller
 ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const char *content, const Fred::Logger::RequestProperties& props, const Fred::Logger::ObjectReferences &refs, RequestType request_type_id, ID session_id)
 {
-        logd_ctx_init ctx;
+    logd_ctx_init ctx;
 #ifdef HAVE_LOGGER
-        boost::format sess_fmt = boost::format("session-%1%") % session_id;
-        Logging::Context ctx_sess(sess_fmt.str());
+    boost::format sess_fmt = boost::format("session-%1%") % session_id;
+    Logging::Context ctx_sess(sess_fmt.str());
 #endif
-        TRACE("[CALL] Fred::Logger::ManagerImpl::i_createRequest");
-        std::auto_ptr<Logging::Context> ctx_entry;
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_createRequest");
+    std::auto_ptr<Logging::Context> ctx_entry;
 
-        logd_auto_db db;
+    logd_auto_db db;
 
     ID request_id;
 
@@ -332,72 +334,58 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
     req.setServiceId(service);
     req.setRequestTypeId(request_type_id);
 
-        if (session_id != 0){
-                req.setSessionId(session_id);
+    if (session_id != 0){
+            req.setSessionId(session_id);
 
-                std::string user_name;
-                Database::ID user_id;
+            std::string user_name;
+            Database::ID user_id;
 
-                getSessionUser(db, session_id, &user_name, &user_id);
+            getSessionUser(db, session_id, &user_name, &user_id);
 
-                if(user_name != std::string()) {
-                    req.setUserName(user_name);
-                }
-                if(user_id != 0) {
-                    req.setUserId(user_id);
-                }
-        }
+            if(user_name != std::string()) {
+                req.setUserName(user_name);
+            }
+            if(user_id != 0) {
+                req.setUserId(user_id);
+            }
+    }
 
-    try {
-        if(sourceIP != NULL && sourceIP[0] != '\0') {
-            // make sure these values can be safely used in an SQL statement
-            req.setSourceIp(sourceIP);
-        }
+    if(sourceIP != NULL && sourceIP[0] != '\0') {
+        // make sure these values can be safely used in an SQL statement
+        req.setSourceIp(sourceIP);
+    }
 
-        req.insert();
-                request_id = req.getId();
+    req.insert();
+    request_id = req.getId();
 
 #ifdef HAVE_LOGGER
-                boost::format request_fmt = boost::format("request-%1%") % request_id;
-                ctx_entry.reset(new Logging::Context(request_fmt.str()));
-
+    boost::format request_fmt = boost::format("request-%1%") % request_id;
+    ctx_entry.reset(new Logging::Context(request_fmt.str()));
 #endif
-    } catch (Database::Exception &ex) {
-        logger_error(ex.what());
-        return 0;
-    } catch (ConversionError &ex) {
-        std::cout << "Exception text: " << ex.what() << std::endl;
-                return 0;
+
+
+    ModelRequestData data;
+
+    // insert into request_data
+    if(content != NULL && content[0] != '\0') {
+        data.setRequestTimeBegin(time);
+        data.setRequestServiceId(service);
+        data.setRequestMonitoring(monitoring);
+        data.setRequestId(request_id);
+        data.setContent(content);
+        data.setIsResponse(false);
+
+        data.insert();
     }
 
-    try {
-        ModelRequestData data;
-
-        // insert into request_data
-        if(content != NULL && content[0] != '\0') {
-            data.setRequestTimeBegin(time);
-            data.setRequestServiceId(service);
-            data.setRequestMonitoring(monitoring);
-            data.setRequestId(request_id);
-            data.setContent(content);
-            data.setIsResponse(false);
-
-            data.insert();
-        }
-
-                if(props.size() > 0) {
-                        insert_props(time, service, monitoring, request_id, props, db, false);
-                }
-                if(refs.size() > 0) {
-                        insert_obj_ref(time, service, monitoring, request_id, refs, db);
-                }
-
-    } catch (Database::Exception &ex) {
-        logger_error(ex.what());
-                return 0;
+    if(props.size() > 0) {
+            insert_props(time, service, monitoring, request_id, props, db, false);
+    }
+    if(refs.size() > 0) {
+            insert_obj_ref(time, service, monitoring, request_id, refs, db);
     }
 
-        db.commit();
+    db.commit();
     rcache.insert(req);
     return request_id;
 }
@@ -451,56 +439,53 @@ void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *u
 }
 
 // update existing log record with given ID
+// EXCEPTIONS MUST be handled in the caller
 bool ManagerImpl::i_addRequestProperties(ID id, const Fred::Logger::RequestProperties &props)
 {
     logd_ctx_init ctx;
 #ifdef HAVE_LOGGER
-        boost::format request_fmt = boost::format("request-%1%") % id;
-        Logging::Context ctx_entry(request_fmt.str());
+    boost::format request_fmt = boost::format("request-%1%") % id;
+    Logging::Context ctx_entry(request_fmt.str());
 #endif
 
-        TRACE("[CALL] Fred::Logger::ManagerImpl::i_addRequestProperties");
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_addRequestProperties");
 
-        logd_auto_db db;
+    logd_auto_db db;
+
+
+#ifdef LOGD_VERIFY_INPUT
+    if (!record_check(id, db)) return false;
+#endif
+
+    DateTime request_time;
+    ServiceType service_id;
+    bool monitoring;
 
     try {
-#ifdef LOGD_VERIFY_INPUT
-        if (!record_check(id, db)) return false;
-#endif
-
-        DateTime request_time;
-        ServiceType service_id;
-        bool monitoring;
-
-        try {
-            const ModelRequest& mr = rcache.get(id);
-            request_time = mr.getTimeBegin();
-            service_id = mr.getServiceId();
-            monitoring = mr.getIsMonitoring();
-            // the record stays in cache for closeRequest
-        }
-        catch (RequestCache::NOT_EXISTS)
-        {
-            boost::format select = boost::format(
-                    "SELECT time_begin, service_id, is_monitoring, "
-                    "COALESCE(session_id,0) "
-                    "FROM request where id = %1%") % id;
-            Result res = db.exec(select.str());
-            if (res.size() == 0) {
-                logger_error(boost::format(
-                        "Record with ID %1% not found in request table.") % id );
-                return false;
-            }
-            request_time = res[0][0].operator ptime();
-            service_id = (ServiceType)(int) res[0][1];
-            monitoring = (bool)res[0][2];
-        }
-
-        insert_props(request_time, service_id, monitoring, id, props, db, true);
-    } catch (Database::Exception &ex) {
-        logger_error(ex.what());
-        throw InternalServerError(ex.what());
+        const ModelRequest& mr = rcache.get(id);
+        request_time = mr.getTimeBegin();
+        service_id = mr.getServiceId();
+        monitoring = mr.getIsMonitoring();
+        // the record stays in cache for closeRequest
     }
+    catch (RequestCache::NOT_EXISTS)
+    {
+        boost::format select = boost::format(
+                "SELECT time_begin, service_id, is_monitoring, "
+                "COALESCE(session_id,0) "
+                "FROM request where id = %1%") % id;
+        Result res = db.exec(select.str());
+        if (res.size() == 0) {
+            logger_error(boost::format(
+                    "Record with ID %1% not found in request table.") % id );
+            return false;
+        }
+        request_time = res[0][0].operator ptime();
+        service_id = (ServiceType)(int) res[0][1];
+        monitoring = (bool)res[0][2];
+    }
+
+    insert_props(request_time, service_id, monitoring, id, props, db, true);
 
     db.commit();
     return true;
@@ -510,6 +495,7 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Fred::Logger::RequestPrope
 // close the record with given ID (end time is filled thus no further
 // modification is possible after this call)
 // TODO session_id is optional - refactor code
+// EXCEPTIONS MUST be handled in the caller
 bool ManagerImpl::i_closeRequest(
         ID id,
         const char *content,
@@ -527,43 +513,34 @@ bool ManagerImpl::i_closeRequest(
     bool monitoring;
     ID old_session_id;
     try {
-        try {
-            const ModelRequest& mr = rcache.get(id);
-            request_time = mr.getTimeBegin();
-            request_time_end = mr.getTimeEnd();
-            service_id = mr.getServiceId();
-            monitoring = mr.getIsMonitoring();
-            old_session_id = mr.getSessionId();
-            // it must be removed here, if not, the cache leaks
-            rcache.remove(id);
-        }
-        catch (RequestCache::NOT_EXISTS)
-        {
-            boost::format select = boost::format(
-                    "SELECT time_begin, time_end, service_id, is_monitoring, "
-                    "COALESCE(session_id,0) "
-                    "FROM request where id = %1%") % id;
-            Result res = db.exec(select.str());
-            if (res.size() == 0) {
-                logger_error(boost::format(
-                        "Record with ID %1% not found in request table.") % id );
-                return false;
-            }
-            request_time = res[0][0].operator ptime();
-            request_time_end = res[0][1].operator ptime();
-            service_id = (ServiceType)(int) res[0][2];
-            monitoring = (bool)res[0][3];
-            old_session_id = (unsigned)res[0][4];
-        }
-    } catch (InternalServerError &ex) {
-        throw;
-    } catch (std::exception &ex) {
-        logger_error(ex.what());
-        throw InternalServerError(ex.what());
-    } catch (...) {
-        logger_error("Unknown exception in  ManagerImpl::i_closeRequest");
-        throw InternalServerError("Unknown exception in  ManagerImpl::i_closeRequest");
+        const ModelRequest& mr = rcache.get(id);
+        request_time = mr.getTimeBegin();
+        request_time_end = mr.getTimeEnd();
+        service_id = mr.getServiceId();
+        monitoring = mr.getIsMonitoring();
+        old_session_id = mr.getSessionId();
+        // it must be removed here, if not, the cache leaks
+        rcache.remove(id);
     }
+    catch (RequestCache::NOT_EXISTS)
+    {
+        boost::format select = boost::format(
+                "SELECT time_begin, time_end, service_id, is_monitoring, "
+                "COALESCE(session_id,0) "
+                "FROM request where id = %1%") % id;
+        Result res = db.exec(select.str());
+        if (res.size() == 0) {
+            logger_error(boost::format(
+                    "Record with ID %1% not found in request table.") % id );
+            return false;
+        }
+        request_time = res[0][0].operator ptime();
+        request_time_end = res[0][1].operator ptime();
+        service_id = (ServiceType)(int) res[0][2];
+        monitoring = (bool)res[0][3];
+        old_session_id = (unsigned)res[0][4];
+    }
+
 
 #ifdef HAVE_LOGGER
     boost::format sess_fmt = boost::format("session-%1%") %
@@ -582,32 +559,31 @@ bool ManagerImpl::i_closeRequest(
         throw InternalServerError(msg.str());
     }
 
-    try {
 #ifdef LOGD_VERIFY_INPUT
-                boost::format query_check;
-                query_check = boost::format("select session_id, time_end from request where id=%1%") % id;
-                // TODO you really should update the session_id
+    boost::format query_check;
+    query_check = boost::format("select session_id, time_end from request where id=%1%") % id;
+    // TODO you really should update the session_id
 
-        Result res_check = db.exec(query_check.str());
+    Result res_check = db.exec(query_check.str());
 
-        // if there is no record with specified ID
-        if(res_check.size() == 0) {
-            logger_error(boost::format("record in request with ID %1% doesn't exist") % id);
-            return false;
-        }
+    // if there is no record with specified ID
+    if(res_check.size() == 0) {
+        logger_error(boost::format("record in request with ID %1% doesn't exist") % id);
+        return false;
+    }
 
-                if(!res_check[0][1].isnull()) {
-                        logger_error(boost::format("record with ID %1% was already completed") % id);
-                        return false;
-                }
+            if(!res_check[0][1].isnull()) {
+                    logger_error(boost::format("record with ID %1% was already completed") % id);
+                    return false;
+            }
 
-        if(session_id != 0 && !res_check[0][0].isnull()) {
-                ID filled = res_check[0][0];
-                        if(filled != 0 && filled != session_id) {
-                                logger_error(boost::format("record with ID %1% already has session_id filled") % id);
-                                throw WrongUsageError(" session_id already set. ");
-                        }
-        }
+    if(session_id != 0 && !res_check[0][0].isnull()) {
+            ID filled = res_check[0][0];
+                    if(filled != 0 && filled != session_id) {
+                            logger_error(boost::format("record with ID %1% already has session_id filled") % id);
+                            throw WrongUsageError(" session_id already set. ");
+                    }
+    }
 #endif // LOGD_VERIFY_INPUT
 
     //set time_end
@@ -711,20 +687,11 @@ bool ManagerImpl::i_closeRequest(
     if(refs.size() > 0)
         insert_obj_ref(request_time, service_id, monitoring, id, refs, db);
 
-    } catch (InternalServerError &ex) {
-        throw;
-    } catch (std::exception &ex) {
-        logger_error(ex.what());
-        throw InternalServerError(ex.what());
-    } catch (...) {
-        logger_error("Unknown exception in  ManagerImpl::i_closeRequest");
-        throw InternalServerError("Unknown exception in  ManagerImpl::i_closeRequest");
-    }
-
     db.commit();
     return true;
 }
 
+// EXCEPTIONS MUST be handled in the caller
 ID ManagerImpl::i_createSession(ID user_id, const char *name)
 {
     logd_ctx_init ctx;
@@ -752,33 +719,29 @@ ID ManagerImpl::i_createSession(ID user_id, const char *name)
                 sess->setUserId(user_id);
         }
 
-    try {
-                sess->insert();
+    sess->insert();
 
-                session_id = sess->getId();
+    session_id = sess->getId();
 
 #ifdef HAVE_LOGGER
-                boost::format sess_fmt = boost::format("session-%1%") % session_id;
-                ctx_sess.reset(new Logging::Context(sess_fmt.str()));
+    boost::format sess_fmt = boost::format("session-%1%") % session_id;
+    ctx_sess.reset(new Logging::Context(sess_fmt.str()));
 #endif
-                scache.add(session_id, sess);
+    scache.add(session_id, sess);
 
-        } catch (Database::Exception &ex) {
-                logger_error(ex.what());
-                throw InternalServerError(ex.what());
-    }
     return session_id;
 }
 
+// EXCEPTIONS MUST be handled in the caller
 bool ManagerImpl::i_closeSession(ID id)
 {
     logd_ctx_init ctx;
 #ifdef HAVE_LOGGER
-        boost::format sess_fmt = boost::format("session-%1%") % id;
-        Logging::Context ctx_sess(sess_fmt.str());
+    boost::format sess_fmt = boost::format("session-%1%") % id;
+    Logging::Context ctx_sess(sess_fmt.str());
 #endif
 
-        TRACE("[CALL] Fred::Logger::ManagerImpl::i_closeSession");
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_closeSession");
 
     // remove the record from the cache before anything can throw
     scache.remove(id);
@@ -788,35 +751,29 @@ bool ManagerImpl::i_closeSession(ID id)
 
     logger_notice(boost::format("closeSession: session_id -> [%1%] ") % id );
 
-    try {
-
 #ifdef LOGD_VERIFY_INPUT
-                boost::format query = boost::format("select logout_date from session where id=%1%") % id;
-        Result res = db.exec(query.str());
+            boost::format query = boost::format("select logout_date from session where id=%1%") % id;
+    Result res = db.exec(query.str());
 
-        if(res.size() == 0) {
-            logger_error(boost::format("record in session with ID %1% doesn't exist") % id);
-            return false;
-        }
-
-        if(!res[0][0].isnull()) {
-            logger_error(boost::format("record in session with ID %1% already closed") % id);
-            return false;
-        }
-#endif //LOGD_VERIFY_INPUT
-
-        boost::format update;
-        time = boost::posix_time::to_iso_extended_string(microsec_clock::universal_time());
-
-        update = boost::format("update session set logout_date = '%1%' where id=%2%") % time % id;
-
-        db.exec(update.str());
-    } catch (Database::Exception &ex) {
-        logger_error(ex.what());
-                throw InternalServerError(ex.what());
+    if(res.size() == 0) {
+        logger_error(boost::format("record in session with ID %1% doesn't exist") % id);
+        return false;
     }
 
-        db.commit();
+    if(!res[0][0].isnull()) {
+        logger_error(boost::format("record in session with ID %1% already closed") % id);
+        return false;
+    }
+#endif //LOGD_VERIFY_INPUT
+
+    boost::format update;
+    time = boost::posix_time::to_iso_extended_string(microsec_clock::universal_time());
+
+    update = boost::format("update session set logout_date = '%1%' where id=%2%") % time % id;
+
+    db.exec(update.str());
+
+    db.commit();
     return true;
 }
 
