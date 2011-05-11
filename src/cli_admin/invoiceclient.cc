@@ -357,7 +357,7 @@ InvoiceClient::credit()
         return;
     }
 
-    (void) invMan->createDepositInvoice(taxDate, zoneId, regId, price); 
+    invMan->createDepositInvoice(taxDate, zoneId, regId, price);
 
 }
 
