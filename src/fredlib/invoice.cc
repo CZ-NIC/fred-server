@@ -588,7 +588,7 @@ long GetInvoiceBalance(unsigned long long aID, long credit)
             LOGGER(PACKAGE).debug ( boost::format("celkovy zaklad faktury %1%") % total);
 
             Database::Result res = conn.exec_params(
-                "SELECT sum( credit ) FROM invoice_credit_payment_map where ainvoiceid=$1::bigint"
+                "SELECT COALESCE( SUM( credit ), 0) FROM invoice_credit_payment_map WHERE ainvoiceid=$1::bigint"
                 , Database::query_param_list(aID));
             if(res.size() == 1 && (res[0][0].isnull() == false))
             {
