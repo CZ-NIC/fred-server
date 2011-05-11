@@ -886,7 +886,8 @@ tests_test_server_SOURCES = tests/test-server.cc \
 					 tests/test-cache.cc \
 					 tests/tests-common.cc \
 					 tests/tests-common.h \
-					 tests/test-filters-date-time.cc
+					 tests/test-filters-date-time.cc \
+                     tests/test-invoice.cc
                      
 tests_test_server_LDFLAGS = $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \
