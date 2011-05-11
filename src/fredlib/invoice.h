@@ -291,7 +291,7 @@ public:
           int type, int year, unsigned long long prefix) = 0;
 
   // added methods
-  virtual  int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price) = 0; 
+  virtual  unsigned long long createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price) = 0;
 
   virtual bool chargeDomainCreate(
           const Database::ID &zone,

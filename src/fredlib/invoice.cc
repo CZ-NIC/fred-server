@@ -350,7 +350,7 @@ public:
 
 // TODO what exceptions to throw and whether to log errors
 // SPEC current time taken from now() in DB (which should be UTC)
-int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price)
+unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -431,7 +431,7 @@ int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long 
     if(curr_id.size() != 1 || curr_id[0][0].isnull()) {
         throw std::runtime_error("Couldn't fetch new invoice ID");
     }
-    int invoiceId = curr_id[0][0];
+    unsigned long long  invoiceId = curr_id[0][0];
 
     conn.exec_params(
             "INSERT INTO invoice (id, prefix, zone, prefix_type, registrarid, taxDate, price, vat, total, totalVAT, credit) VALUES "
