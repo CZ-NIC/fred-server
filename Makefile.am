@@ -384,7 +384,9 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/keyset_diff.cc \
 		src/fredlib/keyset_diff.h \
 		src/fredlib/common_diff.cc \
-		src/fredlib/common_diff.h
+		src/fredlib/common_diff.h \
+		src/fredlib/reminder.cc \
+		src/fredlib/reminder.h
 
 #src fredlib
 

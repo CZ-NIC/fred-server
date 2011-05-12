@@ -549,6 +549,43 @@ public:
 };//class HandleAdminClientContactInfoArgsGrp
 
 /**
+ * \class HandleAdminClientContactReminderArgsGrp
+ * \brief admin client contact_reminder options handler
+ */
+class HandleAdminClientContactReminderArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    optional_string date;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("contact_reminder");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("contact_reminder options")));
+        cfg_opts->add_options()
+            ("contact_reminder", "command for run contact reminder procedure")
+            ("date", boost::program_options
+                ::value<Checked::string>()->notifier(save_string(date))
+                , "specific date, arg format viz --help_dates")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientContactReminderArgsGrp
+
+/**
  * \class HandleAdminClientContactListArgsGrp
  * \brief admin client contact_list options handler
  */

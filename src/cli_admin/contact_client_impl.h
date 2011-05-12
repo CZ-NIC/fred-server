@@ -23,12 +23,16 @@
 
 #ifndef CONTACT_CLIENT_IMPL_H_
 #define CONTACT_CLIENT_IMPL_H_
+
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "handle_adminclientselection_args.h"
 #include "log/context.h"
 #include "cli_admin/contactclient.h"
+#include "commonclient.h"
+#include "fredlib/reminder.h"
 
 
 /**
@@ -76,5 +80,39 @@ struct contact_list_impl
       return ;
   }
 };
+
+/**
+ * \class contact_list_impl
+ * \brief admin client implementation of contact_list
+ */
+struct contact_reminder_impl
+{
+  void operator()() const
+  {
+      Logging::Context ctx("contact_reminder_impl");
+
+      CorbaClient cc(
+              0, // argc
+              0, // argv
+              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port(),
+              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context());
+      MailerManager mailer(cc.getNS());
+
+      if (CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientContactReminderArgsGrp>()->date.is_value_set())
+      {
+          Fred::run_reminder(
+                  &mailer,
+                  boost::gregorian::from_string(
+                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientContactReminderArgsGrp>()->date.get_value()));
+      }
+      else
+      {
+          Fred::run_reminder(&mailer);
+      }
+
+      return;
+  }
+};
+
 
 #endif // CONTACT_CLIENT_IMPL_H_
