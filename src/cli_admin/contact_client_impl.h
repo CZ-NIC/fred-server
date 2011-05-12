@@ -70,7 +70,7 @@ struct contact_list_impl
               , true //contact_list
               , optional_string() //contact_info
               , false //contact_show_opts bool _contact_show_opts
-              , ContactListArgs()
+              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientContactListArgsGrp>()->params
               );
       contact_client.runMethod();
       return ;
