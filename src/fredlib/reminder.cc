@@ -181,7 +181,7 @@ public:
                 " WHERE coreg.type = 1 AND coreg.erdate IS NULL"
                 " AND extract('month' FROM ($1::date - interval '10 month')) = extract('month' FROM coreg.crdate)"
                 " AND extract('day' FROM ($1::date - interval '10 month')) = extract('day' FROM coreg.crdate)"
-                " AND (o.update IS NULL OR o.update::date NOT BETWEEN (current_date - interval '2 month') AND current_date)"
+                " AND (o.update IS NULL OR o.update::date NOT BETWEEN ($1::date - interval '2 month') AND $1::date)"
                 " AND rcmm.contact_id IS NULL"
                 " ORDER BY crdate",
                 Database::query_param_list(_date))),
