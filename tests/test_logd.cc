@@ -58,6 +58,8 @@ const int UNKNOWN_ACTION = 1000;
 //whether to test partitioning on request_property_value table
 const bool PARTITIONS_TEST_PROPERTIES = true;
 
+
+// TODO does it still work?
 const std::string LOG_FILE_NAME("log_test_logd.txt");
 
 boost::format get_table_postfix(int year, int month, ServiceType service_num, bool monitoring);
@@ -844,8 +846,14 @@ BOOST_AUTO_TEST_CASE( property_name_too_long )
     (*props)[0].name = std::string(1000, 'N');
     (*props)[0].value = "property value - very long name";
 
-    id = test.createRequest("100.100.100.100", LC_EPP, "AAA", *props);
-    BOOST_CHECK(id == 0);
+    bool exception = false;
+    // this should fail
+    try {
+        id = test.createRequest("100.100.100.100", LC_EPP, "AAA", *props);
+    } catch (...) {
+        exception = true;
+    } 
+    BOOST_CHECK(exception);
 
     /*
      * check if the right exception was thrown
@@ -936,8 +944,21 @@ BOOST_AUTO_TEST_CASE( invalid_ip)
 	BOOST_TEST_MESSAGE(" Try to send an invalid IP address");
 
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
-	BOOST_CHECK(test.createRequest("ABC", LC_PUBLIC_REQUEST, "AA") == 0);
-	BOOST_CHECK(test.createRequest("127.0.0.256", LC_PUBLIC_REQUEST, "AA") == 0);
+    bool exception = false;
+    try {
+        test.createRequest("ABC", LC_PUBLIC_REQUEST, "AA");
+    } catch (...) {
+        exception = true; 
+    }
+    BOOST_CHECK(exception);
+
+    exception = false;
+    try {
+        test.createRequest("127.0.0.256", LC_PUBLIC_REQUEST, "AA");
+    } catch (...) {
+        exception = true;
+    }
+    BOOST_CHECK(exception);
 }
 
 BOOST_AUTO_TEST_CASE( zero_length_strings )
@@ -989,8 +1010,14 @@ BOOST_AUTO_TEST_CASE( long_strings )
 	std::auto_ptr<Fred::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
-	id1 = test.createRequest(std::string(100, 'X').c_str(), LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
-	BOOST_CHECK(id1 == 0);
+    bool exception = false;
+    // this should fail
+    try {
+        id1 = test.createRequest(std::string(100, 'X').c_str(), LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
+    } catch (...) {
+        exception = true;
+    }
+    BOOST_CHECK(exception);
 
 	id1 = test.createRequest("122.123.124.125", LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
 	BOOST_CHECK(id1 != 0);
