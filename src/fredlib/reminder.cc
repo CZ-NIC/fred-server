@@ -279,6 +279,10 @@ void run_reminder(Mailer::Manager *_mailer, const boost::gregorian::date &_date)
             throw std::runtime_error("date is not valid");
         }
 
+        if (_date > boost::gregorian::day_clock::universal_day()) {
+            throw std::runtime_error("running reminder with date in future is not allowed");
+        }
+
         /* TODO: consider using boost::interprocess::file_lock */
         FileLock lock("/tmp/fred_reminder_run.lock");
 
