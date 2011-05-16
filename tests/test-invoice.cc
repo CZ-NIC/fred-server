@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( test_inv )
     std::string registrar_handle(std::string("REG-FRED_INV")+time_string);
 
     registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry("cz");//REGISTRAR_COUNTRY_NAME
+    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
     registrar->setVat(true);
     registrar->save();
 
