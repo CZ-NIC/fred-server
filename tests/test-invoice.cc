@@ -69,6 +69,21 @@ BOOST_AUTO_TEST_CASE( test_inv )
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
+    BOOST_CHECK((invMan->insertInvoicePrefix(
+            static_cast<unsigned long long>(conn.exec("select id from zone where fqdn='cz'")[0][0])//zone//zoneId
+            , 0//type
+            , 2010//year
+            , 50000//prefix
+            )));
+
+    BOOST_CHECK((invMan->insertInvoicePrefix(
+            static_cast<unsigned long long>(conn.exec("select id from zone where fqdn='cz'")[0][0])//zone//zoneId
+            , 1//type
+            , 2010//year
+            , 60000//prefix
+            )));
+
+
     unsigned long long invoiceid =
     invMan->createDepositInvoice(Database::Date(2010,12,31)//taxdate
             , conn.exec("select id from zone where fqdn='cz'")[0][0]//zone
