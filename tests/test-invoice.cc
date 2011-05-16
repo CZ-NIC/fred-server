@@ -35,6 +35,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "setup_server_decl.h"
 
@@ -45,7 +46,7 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-
+#include "fredlib/registrar.h"
 #include "fredlib/invoicing/invoice.h"
 
 //not using UTF defined main
@@ -64,6 +65,23 @@ BOOST_AUTO_TEST_CASE( test_inv )
     setup_logging(CfgArgs::instance());
     //db
     Database::Connection conn = Database::Manager::acquire();
+
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+
+    //current time into char string
+    std::string time_string(
+    boost::posix_time::to_iso_string(
+            boost::posix_time::microsec_clock::universal_time()));
+    boost::algorithm::erase_last(time_string,",");
+    boost::algorithm::erase_first(time_string,"T");
+
+    std::string registrar_handle(std::string("REG-FRED_INV")+time_string);
+
+    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar->setCountry("cz");//REGISTRAR_COUNTRY_NAME
+
 
     //manager
     std::auto_ptr<Fred::Invoicing::Manager>
@@ -87,7 +105,7 @@ BOOST_AUTO_TEST_CASE( test_inv )
     unsigned long long invoiceid =
     invMan->createDepositInvoice(Database::Date(2010,12,31)//taxdate
             , conn.exec("select id from zone where fqdn='cz'")[0][0]//zone
-            , conn.exec("select id from registrar where handle='REG-FRED_A'")[0][0]//registrar
+            , conn.exec(std::string("select id from registrar where handle='")+registrar_handle+"'")[0][0]//registrar
             , 10000);//price
 
 
