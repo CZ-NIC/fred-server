@@ -28,7 +28,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/checked_delete.hpp>
 #include <boost/lexical_cast.hpp>
-
+#include <boost/algorithm/string.hpp>
 #include "common_impl.h"
 #include "invoice.h"
 #include "log/logger.h"
@@ -180,7 +180,24 @@ public:
 
   long get_price(const std::string &str)
   {
-      return ::get_price(str.c_str());
+    std::string t_str = boost::algorithm::trim_copy(str);//remove whitespaces
+    std::size_t delimiter = t_str.find_first_of(".,");//find delimiter
+    if (delimiter != std::string::npos)//if found
+    {
+          t_str.erase(delimiter,1);//erase delimiter
+          if(t_str.length() > (delimiter + 2))//if there are more than two chars after delimiter
+              t_str.erase(delimiter+2);//remove rest of the string
+          else if (t_str.length() == (delimiter + 1))//if there is only one char after delimiter
+              t_str+="0";//append second char after delimiter
+          else if (t_str.length() == delimiter)//if there is no char after delimiter
+            t_str+="00";//append first and second char after delimiter
+     }
+
+      long price = boost::lexical_cast<long>(t_str);//try convert
+      LOGGER(PACKAGE).debug( boost::format("get_price from string[%1%] -> %2% hal") % str % price );
+      return price;
+
+      //return ::get_price(str.c_str());
   }
 
   // WARNING: this is called from epp_impl.cc and it's sharing connection with dbsql's DB
