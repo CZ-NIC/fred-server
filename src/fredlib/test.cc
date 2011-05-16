@@ -21,7 +21,7 @@
 #include <string>
 #include "db_settings.h"
 #include "file.h"
-#include "invoice_manager.h"
+#include "invoicing/invoice.h"
 #include "bank_manager.h"
 // #include "bank.h"
 #include "mail.h"

@@ -46,7 +46,7 @@
 #include "cfg/handle_corbanameservice_args.h"
 
 
-#include "fredlib/invoice_manager.h"
+#include "fredlib/invoicing/invoice.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN

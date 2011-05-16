@@ -15,7 +15,7 @@
 #include "corba/mailer_manager.h"
 
 #include "fredlib/registry.h"
-#include "fredlib/invoice.h"
+#include "fredlib/invoicing/invoice.h"
 #include "fredlib/notify.h"
 #include "fredlib/mail.h"
 #include "fredlib/filter.h"

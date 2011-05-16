@@ -7,7 +7,7 @@
 #include "bank_statement_list_impl.h"
 #include "bank_common.h"
 #include "bank_manager.h"
-#include "invoice_manager.h"
+#include "invoicing/invoice.h"
 #include "registrar.h"
 #include "types/stringify.h"
 

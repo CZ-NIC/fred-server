@@ -30,7 +30,7 @@ boost::assign::list_of
 // #include "tests-common.h"
 
 
-#include "invoice.h"
+#include "invoicing/invoice.h"
 
 using namespace Database;
 

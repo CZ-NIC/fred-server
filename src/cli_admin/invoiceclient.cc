@@ -19,7 +19,7 @@
 #include <math.h>
 #include "commonclient.h"
 #include "invoiceclient.h"
-#include "fredlib/invoice_manager.h"
+#include "fredlib/invoicing/invoice.h"
 #include "../fredlib/model_zone.h"
 namespace Admin {
 

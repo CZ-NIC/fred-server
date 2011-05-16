@@ -8,7 +8,7 @@
 #include "nsset.h"
 #include "keyset.h"
 #include "public_request.h"
-#include "invoice_manager.h"
+#include "invoicing/invoice.h"
 #include "bank_manager.h"
 #include "mail.h"
 #include "file.h"

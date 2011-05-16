@@ -10,7 +10,7 @@
 #include <corba/Admin.hh>
 
 #include "fredlib/registry.h"
-#include "fredlib/invoice.h"
+#include "fredlib/invoicing/invoice.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;

@@ -58,7 +58,7 @@
 #include "fredlib/keyset.h"
 #include "fredlib/info_buffer.h"
 #include "fredlib/poll.h"
-#include "fredlib/invoice.h"
+#include "fredlib/invoicing/invoice.h"
 #include <memory>
 #include "tech_check.h"
 

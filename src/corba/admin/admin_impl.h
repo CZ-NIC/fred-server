@@ -13,7 +13,7 @@
 #include "session_impl.h"
 #include "corba/mailer_manager.h"
 #include "fredlib/registry.h"
-#include "fredlib/invoice.h"
+#include "fredlib/invoicing/invoice.h"
 #include "old_utils/dbsql.h"
 #include "model/model_filters.h"
 #include "bankinginvoicing_impl.h"

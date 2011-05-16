@@ -345,10 +345,8 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/registrar.h \
 		src/fredlib/public_request.cc \
 		src/fredlib/public_request.h \
-		src/fredlib/invoice.cc \
-		src/fredlib/invoice.h \
-		src/fredlib/invoice_list.h \
-		src/fredlib/invoice_manager.h \
+		src/fredlib/invoicing/invoice.cc \
+		src/fredlib/invoicing/invoice.h \
 		src/fredlib/zone.cc \
 		src/fredlib/zone.h \
 		src/fredlib/blacklist.cc \
