@@ -360,6 +360,32 @@ public:
   }
 
 
+  //  count VAT from price without tax with help of coefficient a round VAT to dimes
+  // count VAT  ( local CZ ) function for banking
+  long count_dph(
+    long price, double koef)
+  {
+    double p;
+    long d, r, mod;
+
+    p = price/100.0; // convert to double
+    d = (long ) ( (p* koef) * 100.0 ); // to long 2 decimal places
+
+    mod = d % 10;
+
+    if (mod > 4)
+      r = (d / 10) * 10 + 10; // round up dimes
+    else
+      r = (d / 10) * 10; // down
+
+    LOGGER(PACKAGE).debug (
+            boost::format("count_dph koef  %1% p = %2% price %3% d = %4%  mod %5% zaokrouhleno dph->%6%")
+        % koef % p % price % d % mod % r);
+
+    return r;
+  }
+
+
     /**
      *returns 0 in case of failure, id of invoice otherwise
      * type is int just because MakeNewInoviceAdvance returns it.

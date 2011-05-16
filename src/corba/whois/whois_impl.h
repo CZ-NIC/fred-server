@@ -5,7 +5,7 @@
 #include <string>
 
 #include "fredlib/registry.h"
-#include "old_utils/dbsql.h"
+//#include "old_utils/dbsql.h"
 
 #include "Whois.hh"
 

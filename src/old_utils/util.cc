@@ -363,30 +363,6 @@ int TestPeriodyInterval(
     return 2; // period is out of range
 }
 
-//  count VAT from price without tax with help of coefficient a round VAT to dimes
-// count VAT  ( local CZ ) function for banking
-long count_dph(
-  long price, double koef)
-{
-  double p;
-  long d, r, mod;
-
-  p = price/100.0; // convert to double
-  d = (long ) ( (p* koef) * 100.0 ); // to long 2 decimal places
-
-  mod = d % 10;
-
-  if (mod > 4)
-    r = (d / 10) * 10 + 10; // round up dimes
-  else
-    r = (d / 10) * 10; // down
-
-
-  LOG( LOG_DEBUG , "count_dph koef  %lf p = %lf price %ld d = %ld  mod %ld zaokrouhleno dph->%ld" , koef , p , price , d ,mod , r );
-
-  return r;
-}
-
 // convert price of penny without conversion through float
 // convert  local currency string
 long get_price(

@@ -25,7 +25,7 @@
 //#include "simple.h"
 #include "corba/admin/admin_impl.h"
 #include "fredlib/registry.h"
-#include "old_utils/dbsql.h"
+//#include "old_utils/dbsql.h"
 #include "baseclient.h"
 
 #include "invoice_params.h"
