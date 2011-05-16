@@ -81,6 +81,7 @@ BOOST_AUTO_TEST_CASE( test_inv )
 
     registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
     registrar->setCountry("cz");//REGISTRAR_COUNTRY_NAME
+    registrar->setVat(true);
     registrar->save();
 
 
