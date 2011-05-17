@@ -421,7 +421,10 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
 
     if (pay_vat) {
 
-        Database::Result vat_details = conn.exec("select vat, koef from price_vat where valid_to > now() or valid_to is null");
+        Database::Result vat_details = conn.exec_params(
+                "select vat, koef from price_vat where valid_to > $1::date or valid_to is null"
+                , Database::query_param_list(date.is_special() ? boost::gregorian::day_clock::universal_day() : date.get() )
+                );
 
         if(vat_details.size() > 1) {
             throw std::runtime_error("Multiple valid VAT values found.");
