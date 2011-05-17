@@ -67,6 +67,8 @@ BOOST_AUTO_TEST_CASE( test_inv )
     //db
     Database::Connection conn = Database::Manager::acquire();
 
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
     Fred::Registrar::Manager::AutoPtr regMan
              = Fred::Registrar::Manager::create(DBSharedPtr());
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
@@ -80,51 +82,66 @@ BOOST_AUTO_TEST_CASE( test_inv )
     registrar->setVat(true);
     registrar->save();
 
+    {
+        //get registrar credit
+        long registrar_credit = conn.exec_params(
+                "select COALESCE(SUM(credit), 0) "
+                " from invoice group by registrarid, zone "
+                " where zone = $1::bigint and registrarid =$2::bigint "
+                , Database::query_param_list(zone_cz_id)(registrar->getId())
+                )[0][0];
 
-    std::cout << "test_inv registrar model: id " <<  registrar->getId()
-            << " credit0 " << registrar->getCredit(0) << " credit1 " << registrar->getCredit(1)
-            << std::endl;
-    //registrar->getCredit(1);
+        std::cout << "test_inv registrar model: id " <<  registrar->getId()
+                << " credit0 " << registrar->getCredit(0) << " credit1 " << registrar->getCredit(1)
+                << " registrar_credit " << registrar_credit
+                << std::endl;
+    }
 
-    //get registrar credit
-/*    conn.exec_params("select zone, registrarid, COALESCE(SUM(credit), 0) "
-    "from invoice group by registrarid, zone where registrarid =$1::bigint"
-            , Database::query_param_list()
-            );
-*/
     //manager
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
-    BOOST_CHECK((invMan->insertInvoicePrefix(
-            static_cast<unsigned long long>(conn.exec("select id from zone where fqdn='cz'")[0][0])//zone//zoneId
+    try{
+    invMan->insertInvoicePrefix(
+             zone_cz_id//zoneId
             , 0//type
             , 2010//year
-            , registrar->getId()*100000+50000//prefix
-            )));
+            , 50000//prefix
+            );
+    }catch(...){}
 
-    BOOST_CHECK((invMan->insertInvoicePrefix(
-            static_cast<unsigned long long>(conn.exec("select id from zone where fqdn='cz'")[0][0])//zone//zoneId
+    try{
+    invMan->insertInvoicePrefix(
+            zone_cz_id//zoneId
             , 1//type
             , 2010//year
-            , registrar->getId()*100000+60000//prefix
-            )));
-
+            , 60000//prefix
+            );
+    }catch(...){}
 
     unsigned long long invoiceid =
     invMan->createDepositInvoice(Database::Date(2010,12,31)//taxdate
-            , conn.exec("select id from zone where fqdn='cz'")[0][0]//zone
+            , zone_cz_id//zone
             , conn.exec(std::string("select id from registrar where handle='")+registrar_handle+"'")[0][0]//registrar
-            , 200);//price
+            , 20000);//price
 
 
     Fred::Registrar::Registrar::AutoPtr registrar_after = regMan->getRegistrarByHandle(registrar->getHandle());
 
+    {
+        //get registrar credit
+        long registrar_credit = conn.exec_params(
+              "select COALESCE(SUM(credit), 0) "
+              " from invoice group by registrarid, zone "
+              " where zone = $1::bigint and registrarid =$2::bigint "
+              , Database::query_param_list(zone_cz_id)(registrar->getId())
+              )[0][0];
 
-    std::cout << "test_inv registrar model: id " <<  registrar_after->getId()
-            << " credit0 " << registrar_after->getCredit(0) << " credit1 " << registrar_after->getCredit(1)
-            << std::endl;
-
+        std::cout << "test_inv registrar model: id " <<  registrar_after->getId()
+              << " credit0 " << registrar_after->getCredit(0) << " credit1 " << registrar_after->getCredit(1)
+              << " registrar_credit " << registrar_credit
+              << std::endl;
+    }
 
 
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
