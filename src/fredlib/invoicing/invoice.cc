@@ -422,7 +422,7 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
     if (pay_vat) {
 
         Database::Result vat_details = conn.exec_params(
-                "select vat, koef from price_vat where valid_to > $1::date or valid_to is null"
+                "select vat, koef from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
                 , Database::query_param_list(date.is_special() ? boost::gregorian::day_clock::universal_day() : date.get() )
                 );
 
