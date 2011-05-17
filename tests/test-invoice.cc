@@ -81,6 +81,17 @@ BOOST_AUTO_TEST_CASE( test_inv )
     registrar->save();
 
 
+    std::cout << "test_inv registrar model: id " <<  registrar->getId()
+            << " credit0 " << registrar->getCredit(0) << " credit1 " << registrar->getCredit(1)
+            << std::endl;
+    //registrar->getCredit(1);
+
+    //get registrar credit
+/*    conn.exec_params("select zone, registrarid, COALESCE(SUM(credit), 0) "
+    "from invoice group by registrarid, zone where registrarid =$1::bigint"
+            , Database::query_param_list()
+            );
+*/
     //manager
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
