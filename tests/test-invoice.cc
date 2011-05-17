@@ -100,14 +100,14 @@ BOOST_AUTO_TEST_CASE( test_inv )
             static_cast<unsigned long long>(conn.exec("select id from zone where fqdn='cz'")[0][0])//zone//zoneId
             , 0//type
             , 2010//year
-            , 50000//prefix
+            , registrar->getId()*100000+50000//prefix
             )));
 
     BOOST_CHECK((invMan->insertInvoicePrefix(
             static_cast<unsigned long long>(conn.exec("select id from zone where fqdn='cz'")[0][0])//zone//zoneId
             , 1//type
             , 2010//year
-            , 60000//prefix
+            , registrar->getId()*100000+60000//prefix
             )));
 
 
