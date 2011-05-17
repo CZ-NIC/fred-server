@@ -48,6 +48,7 @@
 
 #include "fredlib/registrar.h"
 #include "fredlib/invoicing/invoice.h"
+#include "time_clock.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -71,13 +72,7 @@ BOOST_AUTO_TEST_CASE( test_inv )
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
 
     //current time into char string
-    std::string time_string(
-    boost::posix_time::to_iso_string(
-            boost::posix_time::microsec_clock::universal_time()));
-    boost::algorithm::erase_all(time_string,",");
-    boost::algorithm::erase_all(time_string,".");
-    boost::algorithm::erase_all(time_string,"T");
-
+    std::string time_string(TimeStamp::microsec());
     std::string registrar_handle(std::string("REG-FRED_INV")+time_string);
 
     registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
@@ -109,7 +104,7 @@ BOOST_AUTO_TEST_CASE( test_inv )
     invMan->createDepositInvoice(Database::Date(2010,12,31)//taxdate
             , conn.exec("select id from zone where fqdn='cz'")[0][0]//zone
             , conn.exec(std::string("select id from registrar where handle='")+registrar_handle+"'")[0][0]//registrar
-            , 10000);//price
+            , 200);//price
 
 
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
