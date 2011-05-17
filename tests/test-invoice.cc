@@ -86,8 +86,9 @@ BOOST_AUTO_TEST_CASE( test_inv )
         //get registrar credit
         long registrar_credit = conn.exec_params(
                 "select COALESCE(SUM(credit), 0) "
-                " from invoice group by registrarid, zone "
+                " from invoice "
                 " where zone = $1::bigint and registrarid =$2::bigint "
+                " group by registrarid, zone "
                 , Database::query_param_list(zone_cz_id)(registrar->getId())
                 )[0][0];
 
