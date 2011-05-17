@@ -118,6 +118,15 @@ BOOST_AUTO_TEST_CASE( test_inv )
             , 200);//price
 
 
+    Fred::Registrar::Registrar::AutoPtr registrar_after = regMan->getRegistrarByHandle(registrar->getHandle());
+
+
+    std::cout << "test_inv registrar model: id " <<  registrar_after->getId()
+            << " credit0 " << registrar_after->getCredit(0) << " credit1 " << registrar_after->getCredit(1)
+            << std::endl;
+
+
+
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
 }
 
