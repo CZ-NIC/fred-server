@@ -74,8 +74,9 @@ BOOST_AUTO_TEST_CASE( test_inv )
     std::string time_string(
     boost::posix_time::to_iso_string(
             boost::posix_time::microsec_clock::universal_time()));
-    boost::algorithm::erase_last(time_string,",");
-    boost::algorithm::erase_first(time_string,"T");
+    boost::algorithm::erase_all(time_string,",");
+    boost::algorithm::erase_all(time_string,".");
+    boost::algorithm::erase_all(time_string,"T");
 
     std::string registrar_handle(std::string("REG-FRED_INV")+time_string);
 
