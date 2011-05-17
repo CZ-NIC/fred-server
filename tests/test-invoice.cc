@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE( test_inv )
     registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
     registrar->setVat(true);
     registrar->save();
-
+/*
     {
         //get registrar credit
         long registrar_credit = conn.exec_params(
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE( test_inv )
                 << " registrar_credit " << registrar_credit
                 << std::endl;
     }
-
+*/
     //manager
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE( test_inv )
 
 
     Fred::Registrar::Registrar::AutoPtr registrar_after = regMan->getRegistrarByHandle(registrar->getHandle());
-
+/*
     {
         //get registrar credit
         long registrar_credit = conn.exec_params(
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE( test_inv )
               << " registrar_credit " << registrar_credit
               << std::endl;
     }
-
+*/
 
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
 }
