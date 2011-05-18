@@ -507,14 +507,14 @@ int GetSystemVAT() // return VAT for invoicing depend on the time
     {
         Database::Connection conn = Database::Manager::acquire();//get db conn
         Database::Result res = conn.exec(
-            "select vat from price_vat where valid_to > now() or valid_to is null");
+            "select vat from price_vat where valid_to > now() or valid_to is null order by valid_to limit 1");
 
         if(res.size() == 1 && (res[0][0].isnull() == false))
         {
             dph = res[0][0];
         }
         else
-            throw std::runtime_error("select vat from price_vat where valid_to > now() or valid_to is null failed");
+            throw std::runtime_error("select vat from price_vat where valid_to > now() or valid_to is null order by valid_to limit 1 failed");
     }//try
     catch( std::exception &ex)
     {
