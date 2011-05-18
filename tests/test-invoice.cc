@@ -89,20 +89,29 @@ BOOST_AUTO_TEST_CASE( test_inv )
             " from invoice "
             " where zone = $1::bigint and registrarid =$2::bigint "
             " group by registrarid, zone ";
-/*
+
     {
         //get registrar credit
-        long registrar_credit = conn.exec_params(
-                zone_registrar_credit_query
-                , Database::query_param_list(zone_cz_id)(registrar_inv_id)
-                )[0][0];
+         long registrar_credit = 0;
+        Database::Result res = conn.exec_params(zone_registrar_credit_query
+                , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+
+        if(res.size() ==  1 )
+        {
+            if(res[0].size() == 1)
+            {
+                registrar_credit = res[0][0];
+            }
+            else std::cout << "test_inv  zone_registrar_credit_query cols: " << res[0].size() << std::endl;
+        }
+        else std::cout << "test_inv  zone_registrar_credit_query rows: " << res.size() << std::endl;
 
         std::cout << "test_inv registrar model: id " <<  registrar->getId()
                 << " credit0 " << registrar->getCredit(0) << " credit1 " << registrar->getCredit(1)
                 << " registrar_credit " << registrar_credit
                 << std::endl;
     }
-*/
+
     //manager
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
