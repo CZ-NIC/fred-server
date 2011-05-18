@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2011  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -81,15 +81,20 @@ BOOST_AUTO_TEST_CASE( test_inv )
     registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
     registrar->setVat(true);
     registrar->save();
+
+    unsigned long long registrar_inv_id = registrar->getId();
+
+    std::string zone_registrar_credit_query =
+            "select COALESCE(SUM(credit), 0) "
+            " from invoice "
+            " where zone = $1::bigint and registrarid =$2::bigint "
+            " group by registrarid, zone ";
 /*
     {
         //get registrar credit
         long registrar_credit = conn.exec_params(
-                "select COALESCE(SUM(credit), 0) "
-                " from invoice "
-                " where zone = $1::bigint and registrarid =$2::bigint "
-                " group by registrarid, zone "
-                , Database::query_param_list(zone_cz_id)(registrar->getId())
+                zone_registrar_credit_query
+                , Database::query_param_list(zone_cz_id)(registrar_inv_id)
                 )[0][0];
 
         std::cout << "test_inv registrar model: id " <<  registrar->getId()
@@ -132,12 +137,9 @@ BOOST_AUTO_TEST_CASE( test_inv )
     {
         //get registrar credit
         long registrar_credit = conn.exec_params(
-              "select COALESCE(SUM(credit), 0) "
-              " from invoice "
-              " where zone = $1::bigint and registrarid =$2::bigint "
-              " group by registrarid, zone "
-              , Database::query_param_list(zone_cz_id)(registrar->getId())
-              )[0][0];
+                zone_registrar_credit_query
+                , Database::query_param_list(zone_cz_id)(registrar_inv_id)
+                )[0][0];
 
         std::cout << "test_inv registrar model: id " <<  registrar_after->getId()
               << " credit0 " << registrar_after->getCredit(0) << " credit1 " << registrar_after->getCredit(1)
