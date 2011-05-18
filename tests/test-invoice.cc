@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_SUITE(TestInvoice)
 
 const std::string server_name = "test-invoice";
 
-BOOST_AUTO_TEST_CASE( test_inv )
+BOOST_AUTO_TEST_CASE( createDepositInvoice )
 {
     // setting up logger
     setup_logging(CfgArgs::instance());
