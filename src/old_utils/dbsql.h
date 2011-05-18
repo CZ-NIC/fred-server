@@ -150,7 +150,7 @@ public:
 
   //
   int GetSystemVAT(); // return VAT for invoicing depends at the actual time
-  double GetSystemKOEF(); // transformed koeficient to count VAT for price local function
+
 
   // this bank statement is processed
   bool UpdateBankStatementItem(

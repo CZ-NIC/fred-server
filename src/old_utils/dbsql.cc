@@ -1409,21 +1409,6 @@ int DB::GetSystemVAT() // return VAT for invoicing depend on the time
   return dph;
 }
 
-double DB::GetSystemKOEF() // return VAT count parametr for count price without VAT
-{
-  char sqlString[128] =
-      "select koef   from price_vat where valid_to > now() or valid_to is null;";
-  double koef = 0;
-
-  if (ExecSelect(sqlString) ) {
-    if (GetSelectRows() == 1) {
-      koef = atof(GetFieldValue( 0, 0) );
-    }
-    FreeSelect();
-  }
-
-  return koef;
-}
 
 // get ID of back account
 int DB::GetBankAccount(
