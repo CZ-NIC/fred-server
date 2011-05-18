@@ -237,7 +237,7 @@ public:
                                      (zone ));
 
       if(res_price.size() != 1 || res_price[0][0].isnull()) {
-          LOGGER(PACKAGE).info ( (boost::format("Operation %1% for zoneId %1% not found in price list. No billing.") % static_cast<int>(renew ? OPERATION_DomainRenew : OPERATION_DomainCreate)  % zone).str());
+          LOGGER(PACKAGE).info ( (boost::format("Operation %1% for zoneId %2% not found in price list. No billing.") % static_cast<int>(renew ? OPERATION_DomainRenew : OPERATION_DomainCreate)  % zone).str());
           // price not set - no billing
           return true;
       }
@@ -272,7 +272,7 @@ public:
 
       Database::ID inv_id1 = res_inv[0][0];
       cent_amount credit1 = get_price((std::string)res_inv[0][1]);
-      if(price <= static_cast<cent_amount>(res_inv[0][1])) {
+      if(price <= credit1) {
           // count if off the first invoice
 
           LOGGER(PACKAGE).debug ( boost::format(
