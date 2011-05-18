@@ -148,10 +148,6 @@ public:
   bool UpdateEBankaListInvoice(
     int id, int invoiceID);
 
-  //
-  int GetSystemVAT(); // return VAT for invoicing depends at the actual time
-
-
   // this bank statement is processed
   bool UpdateBankStatementItem(
     int id, int invoiceID);

@@ -1393,23 +1393,6 @@ bool DB::AuthTable(
   return ret;
 }
 
-int DB::GetSystemVAT() // return VAT for invoicing depend on the time
-{
-  char sqlString[128] =
-      "select vat from price_vat where valid_to > now() or valid_to is null order by valid_to limit 1";
-  int dph=0;
-
-  if (ExecSelect(sqlString) ) {
-    if (GetSelectRows() == 1) {
-      dph = atoi(GetFieldValue( 0, 0) );
-    }
-    FreeSelect();
-  }
-
-  return dph;
-}
-
-
 // get ID of back account
 int DB::GetBankAccount(
   const char *accountStr, const char *codeStr)
