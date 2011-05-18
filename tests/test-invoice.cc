@@ -84,13 +84,15 @@ BOOST_AUTO_TEST_CASE( test_inv )
 
     unsigned long long registrar_inv_id = registrar->getId();
 
-    std::string zone_registrar_credit_query =
-            "select COALESCE(SUM(credit), 0) "
-            " from invoice "
+    std::string zone_registrar_credit_query (
+            "select COALESCE(SUM(credit), 0) from invoice "
             " where zone = $1::bigint and registrarid =$2::bigint "
-            " group by registrarid, zone ";
-
+            " group by registrarid, zone ");
     {
+	std::cout << "test_inv  zone_cz_id: " << zone_cz_id
+	    << " registrar_inv_id: " << registrar_inv_id 
+	    << std::endl;
+    
         //get registrar credit
          long registrar_credit = 0;
         Database::Result res = conn.exec_params(zone_registrar_credit_query
@@ -107,8 +109,7 @@ BOOST_AUTO_TEST_CASE( test_inv )
         else std::cout << "test_inv  zone_registrar_credit_query rows: " << res.size() << std::endl;
 
         std::cout << "test_inv registrar model: id " <<  registrar->getId()
-                << " credit0 " << registrar->getCredit(0) << " credit1 " << registrar->getCredit(1)
-                << " registrar_credit " << registrar_credit
+                << " registrar_credit1 " << registrar_credit
                 << std::endl;
     }
 
@@ -137,25 +138,36 @@ BOOST_AUTO_TEST_CASE( test_inv )
     unsigned long long invoiceid =
     invMan->createDepositInvoice(Database::Date(2010,12,31)//taxdate
             , zone_cz_id//zone
-            , conn.exec(std::string("select id from registrar where handle='")+registrar_handle+"'")[0][0]//registrar
+            , registrar_inv_id//registrar
             , 20000);//price
 
 
     Fred::Registrar::Registrar::AutoPtr registrar_after = regMan->getRegistrarByHandle(registrar->getHandle());
-/*
-    {
-        //get registrar credit
-        long registrar_credit = conn.exec_params(
-                zone_registrar_credit_query
-                , Database::query_param_list(zone_cz_id)(registrar_inv_id)
-                )[0][0];
 
-        std::cout << "test_inv registrar model: id " <<  registrar_after->getId()
-              << " credit0 " << registrar_after->getCredit(0) << " credit1 " << registrar_after->getCredit(1)
-              << " registrar_credit " << registrar_credit
-              << std::endl;
+    {
+	std::cout << "test_inv  zone_cz_id: " << zone_cz_id
+	    << " registrar_inv_id: " << registrar_inv_id 
+	    << std::endl;
+    
+        //get registrar credit
+         long registrar_credit = 0;
+        Database::Result res = conn.exec_params(zone_registrar_credit_query
+                , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+
+        if(res.size() ==  1 )
+        {
+            if(res[0].size() == 1)
+            {
+                registrar_credit = res[0][0];
+            }
+            else std::cout << "test_inv  zone_registrar_credit_query cols: " << res[0].size() << std::endl;
+        }
+        else std::cout << "test_inv  zone_registrar_credit_query rows: " << res.size() << std::endl;
+
+        std::cout << "test_inv registrar model: id " <<  registrar->getId()
+                << " registrar_credit2 " << registrar_credit
+                << std::endl;
     }
-*/
 
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
 }
