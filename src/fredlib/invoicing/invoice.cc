@@ -112,11 +112,11 @@ public:
   /// count vat from price
   /** price can be base or base+vat according to base flag */
   Money countVAT(Money price, unsigned vatRate, bool base);
-  const VAT *getVAT(unsigned rate) const;
+  const VAT *getVAT(unsigned rate);
   /// find unarchived invoices. archive then and send them by email
-  void archiveInvoices(bool send) const;
+  void archiveInvoices(bool send);
   /// create empty list of invoices      
-  virtual List* createList() const;
+  virtual List* createList();
   /// return credit for registrar by zone
   virtual Money
       getCreditByZone(const std::string& registrarHandle, TID zone);
@@ -2849,16 +2849,16 @@ public:
     return price * coef / (10000 - (base ? coef : 0));
   }
   
-  const VAT * ManagerImpl::getVAT(unsigned rate) const {
+  const VAT * ManagerImpl::getVAT(unsigned rate) {
     // late initialization would brake constness
-    ((ManagerImpl *)this)->initVATList();
+    this->initVATList();
     std::vector<VAT>::const_iterator ci = find(
         vatList.begin(),vatList.end(),rate
     );
     return ci == vatList.end() ? NULL : &(*ci);
   }
   
-  void ManagerImpl::archiveInvoices(bool send) const {
+  void ManagerImpl::archiveInvoices(bool send) {
       
       if(docman == NULL || mailman == NULL) {
         LOGGER(PACKAGE).error("archiveInvoices: No docman or mailman specified in c-tor. ");    
@@ -2867,7 +2867,7 @@ public:
     try {
       // archive unarchived invoices
       ExporterArchiver exporter(docman);
-      ListImpl l((ManagerImpl *)this);
+      ListImpl l(this);
 
 
 
@@ -2889,8 +2889,8 @@ public:
     }
   }
   
-  List* ManagerImpl::createList() const {
-    return new ListImpl((ManagerImpl *)this);
+  List* ManagerImpl::createList() {
+    return new ListImpl(this);
     // return new ListImpl(conn_, (ManagerImpl *)this);
   }
   

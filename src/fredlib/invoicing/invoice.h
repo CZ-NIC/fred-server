@@ -272,9 +272,9 @@ public:
   virtual ~Manager() {
   }
   /// find unarchived invoices and archive then in PDF format
-  virtual void archiveInvoices(bool send) const = 0;
+  virtual void archiveInvoices(bool send) = 0;
   /// create empty list of invoices
-  virtual List* createList() const = 0;
+  virtual List* createList() = 0;
   /// return credit for registrar by zone
   virtual Money getCreditByZone(const std::string& registrarHandle, 
                                 TID zone) = 0;
