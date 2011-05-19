@@ -209,15 +209,37 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
         }
     }//for createDepositInvoice
 
-    std::cout <<"registrar_credit_vect \n";
+
+    std::string dec_credit_query("select 0::numeric ");
+    Database::QueryParams dec_credit_query_params;
+
     for (std::size_t i = 0 ; i < registrar_credit_vect.size(); ++i)
     {
-        std::cout << " year: " << registrar_credit_vect.at(i).year
+        dec_credit_query_params.push_back(registrar_credit_vect.at(i).price);
+        dec_credit_query_params.push_back(registrar_credit_vect.at(i).koef);
+        dec_credit_query += std::string(" + $")
+                + boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
+                +  "::numeric - ( $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size())
+                +"::numeric * $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
+                +"::numeric ) ";
+
+        std::string fred_credit_str ( str(boost::format("%1$.2f") % registrar_credit_vect.at(i).credit_from_query));
+        std::string test_credit_str(std::string(conn.exec_params(
+                std::string("select (")+dec_credit_query+")::numeric(10,2)"//round to 2 places
+                , dec_credit_query_params)[0][0]));
+
+        BOOST_CHECK(fred_credit_str.compare(test_credit_str)==0);
+
+        if(fred_credit_str.compare(test_credit_str) != 0 )
+        {
+            std::cout << " year: " << registrar_credit_vect.at(i).year
                 << " price: " << registrar_credit_vect.at(i).price
-                << " credit: " << registrar_credit_vect.at(i).credit_from_query
+                << " credit: " <<  fred_credit_str
+                << " test_credit: " << test_credit_str
                 << " vat koef: " << registrar_credit_vect.at(i).koef
                 << " vat : " << registrar_credit_vect.at(i).vat
                 << "\n";
+        }//if not equal
     }
     std::cout << std::endl;
 
