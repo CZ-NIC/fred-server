@@ -1,3 +1,25 @@
+2011-05-16 Jiri Sadek (2.6.5)
+
+  * fix domain create charging
+
+2011-04-20 Juraj Vicenik, Jaromir Talir (2.6.4)
+
+  * spec file changes (omniorb package name)
+
+  * logger filter optimization for one record (id filter)
+
+2011-04-07 Jiri Sadek, Juraj Vicenik (2.6.3)
+
+  * fix logger filters - performance
+
+2011-03-28 Juraj Vicenik, Jan Zima, Jiri Sadek (2.6.2)
+
+  * fix date filter
+
+  * fix bank payment sort by memo
+
+  * fix logger - username and userid was not logged for requests
+
 2011-03-17 Jan Zima, Jiri Sadek (2.6.1)
 
   * request cache fix - exception specification removed, cache double search
