@@ -8,7 +8,8 @@ namespace MojeID {
 
 
 const boost::regex USERNAME_PATTERN("^[a-z0-9](-?[a-z0-9])*$");
-const boost::regex PHONE_PATTERN("^\\+42(0\\.(60[1-9]|7[2-9]|91)|1\\.9(0[1-9]|[145]))[0-9]+$");
+const boost::regex PHONE_PATTERN("^\\+[0-9]{1,3}\\.[0-9]{1,14}$");
+const boost::regex PHONE_CZ_PATTERN("^\\+42(0\\.(60[1-9]|7[2-9]|91)|1\\.9(0[1-9]|[145]))[0-9]+$");
 const boost::regex EMAIL_PATTERN("^[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+)*"
                                  "@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,6}\\.?$");
 const boost::regex POSTALCODE_CZ_PATTERN("^[0-9]{3} ?[0-9]{2}$");
@@ -24,7 +25,10 @@ ContactValidator create_default_contact_validator()
     tmp.add_checker(contact_checker_address_required);
     tmp.add_checker(contact_checker_email_format);
     tmp.add_checker(contact_checker_email_required);
+    tmp.add_checker(contact_checker_phone_format_cz);
     tmp.add_checker(contact_checker_birthday);
+    tmp.add_checker(contact_checker_notify_email_format);
+    tmp.add_checker(contact_checker_fax_format);
     return tmp;
 }
 
@@ -35,7 +39,6 @@ ContactValidator create_conditional_identification_validator()
     tmp.add_checker(contact_checker_email_unique);
     tmp.add_checker(contact_checker_address_country);
     tmp.add_checker(contact_checker_address_postalcode_format_cz);
-    tmp.add_checker(contact_checker_phone_format);
     tmp.add_checker(contact_checker_phone_required);
     tmp.add_checker(contact_checker_phone_unique);
     return tmp;
@@ -48,7 +51,6 @@ ContactValidator create_identification_validator()
     tmp.add_checker(contact_checker_address_country);
     tmp.add_checker(contact_checker_address_postalcode_format_cz);
     tmp.add_checker(contact_checker_email_unique);
-    tmp.add_checker(contact_checker_phone_format);
     return tmp;
 }
 
@@ -58,7 +60,6 @@ ContactValidator create_finish_identification_validator()
     ContactValidator tmp = create_default_contact_validator();
     tmp.add_checker(contact_checker_address_country);
     tmp.add_checker(contact_checker_address_postalcode_format_cz);
-    tmp.add_checker(contact_checker_phone_format);
     return tmp;
 }
 
@@ -66,7 +67,6 @@ ContactValidator create_finish_identification_validator()
 ContactValidator create_contact_update_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
-    tmp.add_checker(contact_checker_phone_format);
     tmp.add_checker(contact_checker_auth_info);
     return tmp;
 }
@@ -118,24 +118,45 @@ bool contact_checker_username(const ::MojeID::Contact &_data, FieldErrorMap &_er
 }
 
 
-bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
+bool generic_checker_phone_format(const std::string &_phone, const boost::regex &_pattern)
 {
-    bool result = true;
-    if (boost::algorithm::trim_copy(static_cast<std::string>(_data.telephone)).length() > 0
-                && static_cast<std::string>(_data.telephone).length() != 14) {
-        _errors[field_phone] = INVALID;
-        result = false;
+    if (boost::algorithm::trim_copy(_phone).length() > 0
+                && _phone.length() != 14) {
+        return false;
     }
-    else if (boost::algorithm::trim_copy(static_cast<std::string>(_data.telephone)).length() > 0
+    else if (boost::algorithm::trim_copy(_phone).length() > 0
                 && !boost::regex_search(
-                        static_cast<std::string>(_data.telephone),
-                        PHONE_PATTERN)) {
-        _errors[field_phone] = INVALID;
-        result = false;
+                        _phone,
+                        _pattern)) {
+        return false;
     }
+    return true;
+}
 
+
+bool contact_checker_phone_format_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
+{
+    bool result = generic_checker_phone_format(
+            static_cast<std::string>(_data.telephone),
+            PHONE_CZ_PATTERN);
+    if (result == false) {
+        _errors[field_phone] = INVALID;
+    }
     return result;
 }
+
+
+bool contact_checker_fax_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
+{
+    bool result = generic_checker_phone_format(
+            static_cast<std::string>(_data.fax),
+            PHONE_PATTERN);
+    if (result == false) {
+        _errors[field_fax] = INVALID;
+    }
+    return result;
+}
+
 
 bool contact_checker_auth_info(const ::MojeID::Contact &_data
         , FieldErrorMap &_errors)
@@ -207,18 +228,34 @@ bool contact_checker_phone_unique(const ::MojeID::Contact &_data, FieldErrorMap 
 }
 
 
+bool generic_checker_email_format(const std::string &_email)
+{
+    if (boost::algorithm::trim_copy(_email).length() > 0
+            && !boost::regex_search(
+                    _email,
+                    EMAIL_PATTERN)) {
+        return false;
+    }
+    return true;
+}
+
+
 bool contact_checker_email_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
-    bool result = true;
-
-    if (boost::algorithm::trim_copy(static_cast<std::string>(_data.email)).length() > 0
-            && !boost::regex_search(
-                    static_cast<std::string>(_data.email),
-                    EMAIL_PATTERN)) {
+    bool result = generic_checker_email_format(static_cast<std::string>(_data.email));
+    if (result == false) {
         _errors[field_email] = INVALID;
-        result = false;
     }
+    return result;
+}
 
+
+bool contact_checker_notify_email_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
+{
+    bool result = generic_checker_email_format(static_cast<std::string>(_data.notifyemail));
+    if (result == false) {
+       _errors[field_notify_email] = INVALID;
+    }
     return result;
 }
 

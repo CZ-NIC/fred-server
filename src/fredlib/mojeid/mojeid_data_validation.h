@@ -11,18 +11,20 @@
 namespace MojeID {
 
 
-const std::string field_username    = "contact.username";
-const std::string field_phone       = "phone.number";
-const std::string field_first_name  = "contact.first_name";
-const std::string field_last_name   = "contact.last_name";
-const std::string field_street1     = "address.street1";
-const std::string field_country     = "address.country";
-const std::string field_city        = "address.city";
-const std::string field_postal_code = "address.postal_code";
-const std::string field_email       = "email.email";
-const std::string field_birth_date  = "contact.birth_date";
-const std::string field_auth_info   = "contact.auth_info";
-const std::string field_status      = "contact.status";
+const std::string field_username     = "contact.username";
+const std::string field_phone        = "phone.number";
+const std::string field_fax          = "phone.fax";
+const std::string field_first_name   = "contact.first_name";
+const std::string field_last_name    = "contact.last_name";
+const std::string field_street1      = "address.street1";
+const std::string field_country      = "address.country";
+const std::string field_city         = "address.city";
+const std::string field_postal_code  = "address.postal_code";
+const std::string field_email        = "email.email";
+const std::string field_notify_email = "email.notify_email";
+const std::string field_birth_date   = "contact.birth_date";
+const std::string field_auth_info    = "contact.auth_info";
+const std::string field_status       = "contact.status";
 
 
 enum ValidationError
@@ -80,13 +82,15 @@ private:
 
 bool contact_checker_name(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_username(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_phone_format_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_fax_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_auth_info(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_phone_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_phone_unique(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_email_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_email_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_email_unique(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_notify_email_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_address_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_address_country(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_address_postalcode_format_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
