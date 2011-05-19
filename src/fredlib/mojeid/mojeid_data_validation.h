@@ -82,7 +82,7 @@ private:
 
 bool contact_checker_name(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_username(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_phone_format_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_fax_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_auth_info(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_phone_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);

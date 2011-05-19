@@ -9,7 +9,7 @@ namespace MojeID {
 
 const boost::regex USERNAME_PATTERN("^[a-z0-9](-?[a-z0-9])*$");
 const boost::regex PHONE_PATTERN("^\\+[0-9]{1,3}\\.[0-9]{1,14}$");
-const boost::regex PHONE_CZ_PATTERN("^\\+42(0\\.(60[1-9]|7[2-9]|91)|1\\.9(0[1-9]|[145]))[0-9]+$");
+const boost::regex PHONE_CZ_SK_PATTERN("^\\+42(0\\.(60[1-9]|7[2-9]|91)|1\\.9(0[1-9]|[145]))[0-9]+$");
 const boost::regex EMAIL_PATTERN("^[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+)*"
                                  "@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,6}\\.?$");
 const boost::regex POSTALCODE_CZ_PATTERN("^[0-9]{3} ?[0-9]{2}$");
@@ -25,7 +25,7 @@ ContactValidator create_default_contact_validator()
     tmp.add_checker(contact_checker_address_required);
     tmp.add_checker(contact_checker_email_format);
     tmp.add_checker(contact_checker_email_required);
-    tmp.add_checker(contact_checker_phone_format_cz);
+    tmp.add_checker(contact_checker_phone_format);
     tmp.add_checker(contact_checker_birthday);
     tmp.add_checker(contact_checker_notify_email_format);
     tmp.add_checker(contact_checker_fax_format);
@@ -134,11 +134,11 @@ bool generic_checker_phone_format(const std::string &_phone, const boost::regex 
 }
 
 
-bool contact_checker_phone_format_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = generic_checker_phone_format(
             static_cast<std::string>(_data.telephone),
-            PHONE_CZ_PATTERN);
+            PHONE_CZ_SK_PATTERN);
     if (result == false) {
         _errors[field_phone] = INVALID;
     }
