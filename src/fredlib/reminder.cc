@@ -249,7 +249,12 @@ public:
             conn_.exec("DROP TABLE tmp_reminder");
         }
         catch (...) {
-            LOGGER(PACKAGE).error("unable to drop temporary table (tmp_reminder)");
+            /* try to log error */
+            try {
+                LOGGER(PACKAGE).error("unable to drop temporary table (tmp_reminder)");
+            }
+            catch (...) {
+            }
         }
     }
 
