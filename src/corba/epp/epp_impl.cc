@@ -5287,7 +5287,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                     code = COMMAND_BILLING_FAILURE;
                                 }
 
-                                if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
+                                else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
                                     if (action.getDB()->SaveObjectCreate(id)) {
                                         code = COMMAND_OK;
                                     }
