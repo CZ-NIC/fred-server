@@ -75,6 +75,73 @@ static std::string zone_registrar_credit_query (
         " where zone = $1::bigint and registrarid =$2::bigint "
         " group by registrarid, zone ");
 
+
+bool check_std_exception_invoice_prefix(std::exception const & ex)
+{
+    std::string ex_msg(ex.what());
+    return (ex_msg.find(std::string("Missing invoice prefix")) != std::string::npos);
+}
+
+
+BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
+{
+    // setting up logger
+    setup_logging(CfgArgs::instance());
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+
+    conn.exec("delete from invoice_prefix where year >= 1500 and year < 1505");
+
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar_novat = regMan->createRegistrar();
+
+    //current time into char string
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_novat_handle(std::string("REG-FRED_NOVAT_INV")+time_string);
+
+    registrar_novat->setHandle(registrar_novat_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar_novat->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+    registrar_novat->setVat(false);
+    registrar_novat->save();
+
+    unsigned long long registrar_novat_inv_id = registrar_novat->getId();
+
+    std::vector<registrar_credit_item> registrar_novat_credit_vect;
+
+    {//get registrar novat credit
+        registrar_credit_item ci={1400,0.0,0,0.0, 0.0};
+
+        Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
+                , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
+        if(credit_res.size() ==  1 && credit_res[0].size() == 1) ci.credit_from_query = credit_res[0][0];
+
+        registrar_novat_credit_vect.push_back(ci);//save credit
+    }
+
+    //manager
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+    unsigned long long invoiceid = 0;
+
+    for (int year = 1500; year < 1505 ; ++year)
+    {
+        {
+            Database::Date taxdate (year,1,1);
+	    BOOST_CHECK_EXCEPTION(
+            invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                    , zone_cz_id//zone
+                    , registrar_novat_inv_id//registrar
+                    , 20000)//price
+		, std::exception
+		, check_std_exception_invoice_prefix);
+
+        }
+    }//for createDepositInvoice
+}//BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
+
 BOOST_AUTO_TEST_CASE( createDepositInvoice )
 {
     // setting up logger
@@ -179,7 +246,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
         }
 
         {
-            Database::Date taxdate (year,1,1);
+            Database::Date taxdate (year,12,31);
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
@@ -326,7 +393,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
         }
 
         {
-            Database::Date taxdate (year,1,1);
+            Database::Date taxdate (year,12,31);
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
