@@ -68,6 +68,7 @@ struct registrar_credit_item
   int vat;
   double koef;
   double price;
+  Database::Date taxdate;
 };
 
 static std::string zone_registrar_credit_query (
@@ -108,18 +109,6 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
     registrar_novat->save();
 
     unsigned long long registrar_novat_inv_id = registrar_novat->getId();
-
-    std::vector<registrar_credit_item> registrar_novat_credit_vect;
-
-    {//get registrar novat credit
-        registrar_credit_item ci={1400,0.0,0,0.0, 0.0};
-
-        Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
-                , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
-        if(credit_res.size() ==  1 && credit_res[0].size() == 1) ci.credit_from_query = credit_res[0][0];
-
-        registrar_novat_credit_vect.push_back(ci);//save credit
-    }
 
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
@@ -169,7 +158,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     std::vector<registrar_credit_item> registrar_credit_vect;
 
     {//get registrar credit
-        registrar_credit_item ci={1400,0.0,0,0.0, 0.0};
+        registrar_credit_item ci={1400,0.0,0,0.0, 0.0, Database::Date(1400,1,1)};
 
         Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                 , Database::query_param_list(zone_cz_id)(registrar_inv_id));
@@ -183,6 +172,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
         {
             ci.vat = vat_details[0][0];
             ci.koef = vat_details[0][1];
+	    ci.taxdate = taxdate;
         }
 
         registrar_credit_vect.push_back(ci);//save credit
@@ -227,7 +217,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
-            registrar_credit_item ci={year,0.0,0,0.0, 200.0};
+            registrar_credit_item ci={year,0.0,0,0.0, 200.0, Database::Date(1400,1,1)};
 
             Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                     , Database::query_param_list(zone_cz_id)(registrar_inv_id));
@@ -240,6 +230,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             {
                 ci.vat = vat_details[0][0];
                 ci.koef = vat_details[0][1];
+		ci.taxdate= taxdate;
             }
 
             registrar_credit_vect.push_back(ci);//save credit
@@ -254,7 +245,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
-            registrar_credit_item ci={year,0.0,0,0.0, 200.0};
+            registrar_credit_item ci={year,0.0,0,0.0, 200.0, Database::Date(1400,1,1)};
 
             Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                     , Database::query_param_list(zone_cz_id)(registrar_inv_id));
@@ -267,6 +258,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             {
                 ci.vat = vat_details[0][0];
                 ci.koef = vat_details[0][1];
+		ci.taxdate = taxdate;
             }
 
             registrar_credit_vect.push_back(ci);//save credit
@@ -295,7 +287,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
         if(fred_credit_str.compare(test_credit_str) != 0 )
         {
-            std::cout << " year: " << registrar_credit_vect.at(i).year
+            std::cout << "taxdate: " << registrar_credit_vect.at(i).taxdate
+		<< " year: " << registrar_credit_vect.at(i).year
                 << " price: " << registrar_credit_vect.at(i).price
                 << " credit: " <<  fred_credit_str
                 << " test_credit: " << test_credit_str
