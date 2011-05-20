@@ -1,3 +1,18 @@
+2011-05-20 Jiri Sadek, Juraj Vicenik, Jan Zima (2.7.0)
+
+  * fred-admin - configuration redesigned and rewritten
+               - command for manual creating/sending of registered letters
+
+  * whois contact reminder implemented
+
+  * invoicing refactoring - removed from old_utils
+
+  * mojeid - data validation fixes (fax, notify_email)
+           - notification error handling fixes
+           - create notification added
+
+  * logger - exception handling in corba wrapper
+
 2011-05-16 Jiri Sadek (2.6.5)
 
   * fix domain create charging
