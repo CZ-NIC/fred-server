@@ -41,9 +41,9 @@ $(doc_DATA): doxygen-doc
 MOSTLYCLEANFILES = ${DX_CLEANFILES}
 endif
 
-noinst_HEADERS = util/util.h util/singleton.h util/time_clock.h util/settings.h \
+noinst_HEADERS = util/util.h util/singleton.h util/time_clock.h util/settings.h util/file_lock.h \
         util/base_exception.h util/random.h util/concurrent_queue.h util/concurrent_set.h \
-        util/random_data_generator.h util/corba_wrapper.h util/subprocess.h \
+        util/random_data_generator.h util/corba_wrapper.h util/subprocess.h util/string_split.h \
         util/corba_wrapper_decl.h util/map_at.h util/setup_server.h util/setup_server_decl.h \
         util/cfg/config_handler.h util/cfg/faked_args.h util/cfg/handle_args.h \
         util/cfg/handle_corbanameservice_args.h \
