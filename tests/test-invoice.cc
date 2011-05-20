@@ -70,6 +70,10 @@ struct registrar_credit_item
   double price;
 };
 
+static std::string zone_registrar_credit_query (
+        "select COALESCE(SUM(credit), 0) from invoice "
+        " where zone = $1::bigint and registrarid =$2::bigint "
+        " group by registrarid, zone ");
 
 BOOST_AUTO_TEST_CASE( createDepositInvoice )
 {
@@ -95,12 +99,6 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
     unsigned long long registrar_inv_id = registrar->getId();
 
-    std::string zone_registrar_credit_query (
-            "select COALESCE(SUM(credit), 0) from invoice "
-            " where zone = $1::bigint and registrarid =$2::bigint "
-            " group by registrarid, zone ");
-    
-
     std::vector<registrar_credit_item> registrar_credit_vect;
 
     {//get registrar credit
@@ -124,8 +122,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     }
 
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager>
-        invMan(Fred::Invoicing::Manager::create());
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     //insertInvoicePrefix
     for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
@@ -209,7 +206,6 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
         }
     }//for createDepositInvoice
 
-
     std::string dec_credit_query("select 0::numeric ");
     Database::QueryParams dec_credit_query_params;
 
@@ -243,6 +239,146 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     }
     std::cout << std::endl;
 
-}
+}//BOOST_AUTO_TEST_CASE( createDepositInvoice )
+
+BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
+{
+    // setting up logger
+    setup_logging(CfgArgs::instance());
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar_novat = regMan->createRegistrar();
+
+    //current time into char string
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_novat_handle(std::string("REG-FRED_NOVAT_INV")+time_string);
+
+    registrar_novat->setHandle(registrar_novat_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar_novat->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+    registrar_novat->setVat(false);
+    registrar_novat->save();
+
+    unsigned long long registrar_novat_inv_id = registrar_novat->getId();
+
+    std::vector<registrar_credit_item> registrar_novat_credit_vect;
+
+    {//get registrar novat credit
+        registrar_credit_item ci={1400,0.0,0,0.0, 0.0};
+
+        Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
+                , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
+        if(credit_res.size() ==  1 && credit_res[0].size() == 1) ci.credit_from_query = credit_res[0][0];
+
+        registrar_novat_credit_vect.push_back(ci);//save credit
+    }
+
+    //manager
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+    //insertInvoicePrefix
+    for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+    {
+        try{
+        invMan->insertInvoicePrefix(
+                 zone_cz_id//zoneId
+                , 0//type
+                , year//year
+                , year*10000//prefix
+                );
+        }catch(...){}
+
+        try{
+        invMan->insertInvoicePrefix(
+                zone_cz_id//zoneId
+                , 1//type
+                , year//year
+                , year*10000 + 1000//prefix
+                );
+        }catch(...){}
+
+    }//for insertInvoicePrefix
+
+    unsigned long long invoiceid = 0;
+
+    for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+    {
+        {
+            Database::Date taxdate (year,1,1);
+            invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                    , zone_cz_id//zone
+                    , registrar_novat_inv_id//registrar
+                    , 20000);//price
+            BOOST_CHECK_EQUAL(invoiceid != 0,true);
+
+            //get registrar credit
+            registrar_credit_item ci={year,0.0,0,0.0, 200.0};
+
+            Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
+                    , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
+            if(credit_res.size() ==  1 && credit_res[0].size() == 1) ci.credit_from_query = credit_res[0][0];
+
+            registrar_novat_credit_vect.push_back(ci);//save credit
+        }
+
+        {
+            Database::Date taxdate (year,1,1);
+            invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                    , zone_cz_id//zone
+                    , registrar_novat_inv_id//registrar
+                    , 20000);//price
+            BOOST_CHECK_EQUAL(invoiceid != 0,true);
+
+            //get registrar credit
+            registrar_credit_item ci={year,0.0,0,0.0, 200.0};
+
+            Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
+                    , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
+            if(credit_res.size() ==  1 && credit_res[0].size() == 1) ci.credit_from_query = credit_res[0][0];
+
+            registrar_novat_credit_vect.push_back(ci);//save credit
+        }
+    }//for createDepositInvoice
+
+    std::string dec_credit_query("select 0::numeric ");
+    Database::QueryParams dec_credit_query_params;
+
+    for (std::size_t i = 0 ; i < registrar_novat_credit_vect.size(); ++i)
+    {
+        dec_credit_query_params.push_back(registrar_novat_credit_vect.at(i).price);
+        dec_credit_query_params.push_back(registrar_novat_credit_vect.at(i).koef);
+        dec_credit_query += std::string(" + $")
+                + boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
+                +  "::numeric - ( $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size())
+                +"::numeric * $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
+                +"::numeric ) ";
+
+        std::string fred_credit_str ( str(boost::format("%1$.2f") % registrar_novat_credit_vect.at(i).credit_from_query));
+        std::string test_credit_str(std::string(conn.exec_params(
+                std::string("select (")+dec_credit_query+")::numeric(10,2)"//round to 2 places
+                , dec_credit_query_params)[0][0]));
+
+        BOOST_CHECK(fred_credit_str.compare(test_credit_str)==0);
+
+        if(fred_credit_str.compare(test_credit_str) != 0 )
+        {
+            std::cout << " year: " << registrar_novat_credit_vect.at(i).year
+                << " price: " << registrar_novat_credit_vect.at(i).price
+                << " credit: " <<  fred_credit_str
+                << " test_credit: " << test_credit_str
+                << " vat koef: " << registrar_novat_credit_vect.at(i).koef
+                << " vat : " << registrar_novat_credit_vect.at(i).vat
+                << "\n";
+        }//if not equal
+    }
+    std::cout << std::endl;
+
+
+}//BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestInv
