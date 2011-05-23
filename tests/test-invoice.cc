@@ -106,22 +106,23 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
 
     conn.exec_params("delete from invoice_prefix where year = $1::bigint", Database::query_param_list(year));
 
-    BOOST_CHECK_EXCEPTION(
+    BOOST_CHECK(
     (invMan->insertInvoicePrefix(
             0//no zoneId
             , 0//type
             , year//year
             , year*10000//prefix
-            ))
-            , std::exception, check_std_exception_out_of_range);
+            )));
 
-    BOOST_CHECK(
+    BOOST_CHECK_EXCEPTION(
     (invMan->insertInvoicePrefix(
             "com"//zone
             , 1//type
             , year//year
             , year*10000 + 1000//prefix
-            )));
+            ))
+            , std::exception, check_std_exception_out_of_range);
+
 
 }//insertInvoicePrefix
 
