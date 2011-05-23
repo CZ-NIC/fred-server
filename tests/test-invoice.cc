@@ -84,6 +84,60 @@ bool check_std_exception_invoice_prefix(std::exception const & ex)
 }
 
 
+BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
+{
+    // setting up logger
+    setup_logging(CfgArgs::instance());
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+
+    //current time into char string
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_novat_handle(std::string("REG-FRED_NOVAT_INV")+time_string);
+
+    registrar->setHandle(registrar_novat_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+    registrar->setVat(true);
+    registrar->save();
+
+    unsigned long long registrar_novat_inv_id = registrar->getId();
+
+    //manager
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+    unsigned long long invoiceid = 0;
+
+    {
+        int year = boost::gregorian::day_clock::universal_day().year();
+	
+        invMan->insertInvoicePrefix(
+                 15//zoneId
+                , 0//type
+                , year//year
+                , year*10000//prefix
+                );
+        invMan->insertInvoicePrefix(
+                15//zoneId
+                , 1//type
+                , year//year
+                , year*10000 + 1000//prefix
+                );
+        Database::Date taxdate (year,1,1);
+        BOOST_CHECK_EXCEPTION(
+        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                , 15//no zone
+                , registrar_novat_inv_id//registrar
+                , 20000)//price
+                ;
+    , std::exception, check_std_exception_invoice_prefix);
+    }
+}//BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
+
+
 BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
 {
     // setting up logger
