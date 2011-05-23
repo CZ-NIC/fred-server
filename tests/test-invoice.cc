@@ -84,6 +84,14 @@ bool check_std_exception_invoice_prefix(std::exception const & ex)
     return (ex_msg.find(std::string("Missing invoice prefix")) != std::string::npos);
 }
 
+bool check_std_exception_out_of_range(std::exception const & ex)
+{
+    std::string ex_msg(ex.what());
+    return (ex_msg.find(std::string("Out of range")) != std::string::npos);
+}
+
+
+
 BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
 {
     // setting up logger
@@ -98,13 +106,14 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
 
     conn.exec_params("delete from invoice_prefix where year = $1::bigint", Database::query_param_list(year));
 
-    BOOST_CHECK(
+    BOOST_CHECK_EXCEPTION(
     (invMan->insertInvoicePrefix(
             0//no zoneId
             , 0//type
             , year//year
             , year*10000//prefix
-            )));
+            ))
+            , std::exception, check_std_exception_out_of_range);
 
     BOOST_CHECK(
     (invMan->insertInvoicePrefix(
