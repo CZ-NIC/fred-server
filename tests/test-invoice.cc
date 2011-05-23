@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
             , 0//type
             , year//year
             , year*10000//prefix
-            )));
+            ) == false));
 
     BOOST_CHECK_EXCEPTION(
     (invMan->insertInvoicePrefix(
