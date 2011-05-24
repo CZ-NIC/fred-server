@@ -58,10 +58,6 @@ const int UNKNOWN_ACTION = 1000;
 //whether to test partitioning on request_property_value table
 const bool PARTITIONS_TEST_PROPERTIES = true;
 
-
-// TODO does it still work?
-const std::string LOG_FILE_NAME("log_test_logd.txt");
-
 boost::format get_table_postfix(int year, int month, ServiceType service_num, bool monitoring);
 boost::format get_table_postfix_for_now(ServiceType service_num, bool monitoring);
 std::string create_date_str(int y, int m);
@@ -72,9 +68,6 @@ struct MyFixture {
 	static concurrent_set<ID>  id_list_property_name;
 
 	MyFixture() {
-		Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string(LOG_FILE_NAME));
-		Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
-		LOGGER(PACKAGE).info("Logging initialized");
 	}
 
 	~MyFixture() {
