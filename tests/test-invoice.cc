@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
             , 0//type
             , year//year
             , year*10000//prefix
-            ) == false));
+            )));
 
     BOOST_CHECK_EXCEPTION(
     (invMan->insertInvoicePrefix(
@@ -398,6 +398,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     std::string dec_credit_query("select 0::numeric ");
     Database::QueryParams dec_credit_query_params;
 
+    std::string test_credit_str;
+
     for (std::size_t i = 0 ; i < registrar_credit_vect.size(); ++i)
     {
         dec_credit_query_params.push_back(registrar_credit_vect.at(i).price);
@@ -409,9 +411,9 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
                 +"::numeric ) ";
 
         std::string fred_credit_str ( str(boost::format("%1$.2f") % registrar_credit_vect.at(i).credit_from_query));
-        std::string test_credit_str(std::string(conn.exec_params(
+        test_credit_str = std::string(conn.exec_params(
                 std::string("select (")+dec_credit_query+")::numeric(10,2)"//round to 2 places
-                , dec_credit_query_params)[0][0]));
+                , dec_credit_query_params)[0][0]);
 
         BOOST_CHECK(fred_credit_str.compare(test_credit_str)==0);
 
@@ -428,6 +430,9 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
         }//if not equal
     }
     std::cout << std::endl;
+
+    Database::Money test_get_credit_by_zone = invMan->getCreditByZone(registrar_handle,zone_cz_id);
+    BOOST_CHECK((test_get_credit_by_zone.to_string().compare(test_credit_str) == 0));
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
