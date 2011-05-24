@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     if(test_get_credit_by_zone.to_string().compare(test_credit_str) != 0)
     {
         std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone 
-	    << "test_credit_str: " << test_credit_str << std::endl;
+	    << " test_credit_str: " << test_credit_str << std::endl;
     }
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice )
