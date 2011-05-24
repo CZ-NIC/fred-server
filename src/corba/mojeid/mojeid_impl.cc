@@ -519,8 +519,6 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
 
         td_lock.unlock();
 
-
-
         LOGGER(PACKAGE).info(boost::format(
                 "identification request with contact transfer saved"
                 " -- handle: %1%  id: %2%")
@@ -769,7 +767,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
 
         request.end_prepare(_trans_id);
 
-        trans_data tr_data;
+        trans_data tr_data(MOJEID_CONTACT_UPDATE);
 
         tr_data.cid = cid;
         tr_data.eppaction_id = request.get_id();
