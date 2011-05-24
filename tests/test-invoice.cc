@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
             , 0//type
             , year//year
             , year*10000//prefix
-            )));
+            )==false));
 
     BOOST_CHECK_EXCEPTION(
     (invMan->insertInvoicePrefix(
@@ -433,6 +433,12 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
     Database::Money test_get_credit_by_zone = invMan->getCreditByZone(registrar_handle,zone_cz_id);
     BOOST_CHECK((test_get_credit_by_zone.to_string().compare(test_credit_str) == 0));
+    
+    if(test_get_credit_by_zone.to_string().compare(test_credit_str) != 0)
+    {
+        std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone 
+	    << "test_credit_str: " << test_credit_str << std::endl;
+    }
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
