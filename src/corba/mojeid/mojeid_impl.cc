@@ -218,7 +218,7 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         d.prid = new_request->getId();
         d.eppaction_id = request.get_id();
         d.request_id =   request.get_request_id();
-        transaction_data[_trans_id] = d;
+        transaction_data.insert(std::make_pair(_trans_id, d));
 
         td_lock.unlock();
 
@@ -515,7 +515,7 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
         d.cid = cinfo.id;
         d.prid = new_request->getId();
         d.request_id =   _request_id;
-        transaction_data[_trans_id] = d;
+        transaction_data.insert(std::make_pair(_trans_id, d));
 
         td_lock.unlock();
 
@@ -686,7 +686,7 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
         tr_data.cid = _contact_id;
 
         boost::mutex::scoped_lock td_lock(td_mutex);
-        transaction_data[_trans_id] = tr_data;
+        transaction_data.insert(std::make_pair(_trans_id, tr_data));
 
     } catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
@@ -774,7 +774,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         tr_data.request_id = request.get_request_id();
 
         boost::mutex::scoped_lock td_lock(td_mutex);
-        transaction_data[_trans_id] = tr_data;
+        transaction_data.insert(std::make_pair(_trans_id, tr_data));
         td_lock.unlock();
 
         LOGGER(PACKAGE).info("request completed successfully");
@@ -845,7 +845,7 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("commit-prepared");
 
-    trans_data tr_data;
+    trans_data tr_data(MOJEID_NOP);
 
     try {
         LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
@@ -938,7 +938,7 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("rollback-prepared");
 
-    trans_data tr;
+    trans_data tr(MOJEID_NOP);
     try {
         LOGGER(PACKAGE).info(boost::format("request data -- transaction_id: %1%")
                 % _trans_id);
