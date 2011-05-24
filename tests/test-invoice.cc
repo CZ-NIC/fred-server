@@ -90,7 +90,26 @@ bool check_std_exception_out_of_range(std::exception const & ex)
     return (ex_msg.find(std::string("Out of range")) != std::string::npos);
 }
 
+BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
+{
 
+    // setting up logger
+    setup_logging(CfgArgs::instance());
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+    //current time into char string
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_handle(std::string("REG-FRED_NOINV")+time_string);//not created registrar
+
+    //manager
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+    BOOST_CHECK((invMan->getCreditByZone(registrar_handle,zone_cz_id) == 0));//noregistrar
+    BOOST_CHECK((invMan->getCreditByZone(registrar_handle,0) == 0));//no registrar no zone
+}
 
 BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
 {
@@ -249,13 +268,13 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
     {
         {
             Database::Date taxdate (year,1,1);
-	    BOOST_CHECK_EXCEPTION(
+            BOOST_CHECK_EXCEPTION(
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
                     , 20000)//price
-		, std::exception
-		, check_std_exception_invoice_prefix);
+                    , std::exception
+                    , check_std_exception_invoice_prefix);
 
         }
     }//for createDepositInvoice
