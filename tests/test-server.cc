@@ -30,6 +30,7 @@ boost::assign::list_of
 (HandleArgsPtr(new HandleDatabaseArgs))
 (HandleArgsPtr(new HandleCorbaNameServiceArgs))
 (HandleArgsPtr(new HandleThreadGroupArgs))
+(HandleArgsPtr(new HandleRegistryArgs))
 ;
 
 #include "cfg/test_custom_main.h"

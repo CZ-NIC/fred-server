@@ -53,5 +53,6 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_threadgroup_args.h"
+#include "cfg/handle_registry_args.h"
 
 #endif // TESTSERVER_H_
