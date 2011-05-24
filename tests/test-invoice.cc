@@ -46,10 +46,13 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
+#include "cfg/handle_registry_args.h"
 
 #include "fredlib/registrar.h"
 #include "fredlib/invoicing/invoice.h"
+#include "mailer_manager.h"
 #include "time_clock.h"
+
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -89,6 +92,50 @@ bool check_std_exception_out_of_range(std::exception const & ex)
     std::string ex_msg(ex.what());
     return (ex_msg.find(std::string("Out of range")) != std::string::npos);
 }
+
+BOOST_AUTO_TEST_CASE( archiveInvoices )
+{
+    // setting up logger
+    setup_logging(CfgArgs::instance());
+    //db
+    //Database::Connection conn = Database::Manager::acquire();
+
+    //corba config
+       FakedArgs fa = CfgArgs::instance()->fa;
+
+    //conf pointers
+    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
+        ->get_handler_ptr_by_type<HandleRegistryArgs>();
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+
+    std::string corbaNS =ns_args_ptr->nameservice_host
+            + ":"
+            + boost::lexical_cast<std::string>(ns_args_ptr->nameservice_port);
+
+    std::auto_ptr<Fred::Document::Manager> docMan(
+              Fred::Document::Manager::create(
+                  registry_args_ptr->docgen_path
+                  , registry_args_ptr->docgen_template_path
+                  , registry_args_ptr->fileclient_path
+                  , corbaNS)
+              );
+
+    MailerManager mailMan(CorbaContainer::get_instance()->getNS());
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        Fred::Invoicing::Manager::create(
+        docMan.get(),&mailMan));
+
+    invMan->archiveInvoices(false);
+    //invMan->archiveInvoices(true);
+}
+
 
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
 {
