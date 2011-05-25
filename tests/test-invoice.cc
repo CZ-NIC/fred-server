@@ -497,10 +497,9 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
                 << " test_credit: " << test_credit_str
                 << " vat koef: " << registrar_credit_vect.at(i).koef
                 << " vat : " << registrar_credit_vect.at(i).vat
-                << "\n";
+                << std::endl;
         }//if not equal
     }
-    std::cout << std::endl;
 
     Database::Money test_get_credit_by_zone = invMan->getCreditByZone(registrar_handle,zone_cz_id);
     BOOST_CHECK((test_get_credit_by_zone.to_string().compare(test_credit_str) == 0));
