@@ -18,6 +18,12 @@
 namespace Fred {
 namespace Invoicing {
 
+// input is price in cents(penny)
+// signed type allows negative amounts
+typedef signed int cent_amount;
+
+cent_amount get_price(const std::string &str);
+
 // TODO copy of those in action.h
 enum  {
     INVOICING_DomainCreate = 1,

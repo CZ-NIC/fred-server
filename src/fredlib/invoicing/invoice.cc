@@ -121,10 +121,6 @@ public:
 
 
 
-  typedef signed int cent_amount;
-  // input is price in cents(penny)
-  // signed type allows negative amounts
-
   // TODO format %2% to 2 decimal places
   std::string query_param_price(cent_amount price)
   {
@@ -172,7 +168,7 @@ public:
 
   }
 
-  long get_price(const std::string &str)
+  cent_amount get_price(const std::string &str)
   {
     std::string t_str = boost::algorithm::trim_copy(str);//remove whitespaces
     std::size_t delimiter = t_str.find_first_of(".,");//find delimiter
