@@ -267,15 +267,13 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
-    unsigned long long invoiceid = 0;
-
     {
         int year = boost::gregorian::day_clock::universal_day().year();
 
         Database::Date taxdate (year,1,1);
 	
         BOOST_CHECK_EXCEPTION(
-        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+        invMan->createDepositInvoice(taxdate//taxdate
                 , 0//no zone
                 , registrar_inv_id//registrar
                 , 20000)//price
@@ -314,14 +312,12 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
-    unsigned long long invoiceid = 0;
-
     for (int year = 1500; year < 1505 ; ++year)
     {
         {
             Database::Date taxdate (year,1,1);
             BOOST_CHECK_EXCEPTION(
-            invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+            invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
                     , 20000)//price
