@@ -643,11 +643,9 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
                 << " test_credit: " << test_credit_str
                 << " vat koef: " << registrar_novat_credit_vect.at(i).koef
                 << " vat : " << registrar_novat_credit_vect.at(i).vat
-                << "\n";
+                << std::endl;
         }//if not equal
     }
-    std::cout << std::endl;
-
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
