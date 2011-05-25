@@ -36,9 +36,10 @@ enum ValidationError
 
 typedef std::map<std::string, ValidationError> FieldErrorMap;
 
-struct DataValidationError : private std::exception
+struct DataValidationError : public std::runtime_error
 {
     DataValidationError(const FieldErrorMap &_e) :
+        std::runtime_error("data validation error"),
         errors(_e)
     {
     }
