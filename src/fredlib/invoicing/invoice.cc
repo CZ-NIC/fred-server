@@ -2846,7 +2846,8 @@ public:
   void ManagerImpl::archiveInvoices(bool send) {
       
       if(docman == NULL || mailman == NULL) {
-        LOGGER(PACKAGE).error("archiveInvoices: No docman or mailman specified in c-tor. ");    
+        LOGGER(PACKAGE).error("archiveInvoices: No docman or mailman specified in c-tor. ");
+        throw std::runtime_error("archiveInvoices: No docman or mailman specified in c-tor");
       }
       
     try {

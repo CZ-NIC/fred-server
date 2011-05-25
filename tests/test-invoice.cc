@@ -96,14 +96,30 @@ bool check_std_exception_out_of_range(std::exception const & ex)
     return (ex_msg.find(std::string("Out of range")) != std::string::npos);
 }
 
+bool check_std_exception_archiveInvoices(std::exception const & ex)
+{
+    std::string ex_msg(ex.what());
+    return (ex_msg.find(std::string("archiveInvoices")) != std::string::npos);
+}
 
+
+BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
+{
+    // setting up logger
+    setup_logging(CfgArgs::instance());
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        Fred::Invoicing::Manager::create());
+
+    BOOST_CHECK_EXCEPTION(
+    invMan->archiveInvoices(false)
+    , std::exception, check_std_exception_archiveInvoices);
+}
 
 BOOST_AUTO_TEST_CASE( archiveInvoices )
 {
     // setting up logger
     setup_logging(CfgArgs::instance());
-    //db
-    //Database::Connection conn = Database::Manager::acquire();
 
     //corba config
        FakedArgs fa = CfgArgs::instance()->fa;
@@ -138,9 +154,7 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
         docMan.get(),&mailMan));
 
     invMan->archiveInvoices(false);
-    //invMan->archiveInvoices(true);
 }
-
 
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
 {
