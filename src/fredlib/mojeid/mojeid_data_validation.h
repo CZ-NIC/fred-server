@@ -43,7 +43,7 @@ struct DataValidationError : public std::runtime_error
         errors(_e)
     {
     }
-
+    ~DataValidationError() throw () {}
     FieldErrorMap errors;
 };
 
