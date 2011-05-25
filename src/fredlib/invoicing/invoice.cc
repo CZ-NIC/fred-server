@@ -222,7 +222,8 @@ public:
      // find operation price in pennies/cents:
      Database::Result res_price = conn.exec_params("SELECT price , period FROM price_list WHERE valid_from < 'now()'  "
               "and ( valid_to is NULL or valid_to > 'now()' ) "
-              "and operation=$1::integer and zone=$2::integer",
+              "and operation=$1::integer and zone=$2::integer "
+              "order by valid_from desc limit 1",
          Database::query_param_list( static_cast<int>(renew ? INVOICING_DomainRenew : INVOICING_DomainCreate) )
                                      (zone ));
 
