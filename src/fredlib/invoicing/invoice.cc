@@ -94,12 +94,6 @@ class ManagerImpl : public Manager {
   
 public:
 
-  // TODO copy of those in action.h
-  enum {
-      OPERATION_DomainCreate = 1,
-      OPERATION_DomainRenew = 2
-  };
-
   ManagerImpl() :docman(NULL), mailman(NULL) {
     initVATList();
   }
@@ -158,7 +152,7 @@ public:
             Database::query_param_list(  id  )
                                        (objectID)
                                        (registrar)
-                                       (static_cast<int>(renew ? OPERATION_DomainRenew : OPERATION_DomainCreate))
+                                       (static_cast<int>(renew ? INVOICING_DomainRenew : INVOICING_DomainCreate))
                                        (zone)
                                        (period)
                                        (exDate));
@@ -233,11 +227,11 @@ public:
      Database::Result res_price = conn.exec_params("SELECT price , period FROM price_list WHERE valid_from < 'now()'  "
               "and ( valid_to is NULL or valid_to > 'now()' ) "
               "and operation=$1::integer and zone=$2::integer",
-         Database::query_param_list( static_cast<int>(renew ? OPERATION_DomainRenew : OPERATION_DomainCreate) )
+         Database::query_param_list( static_cast<int>(renew ? INVOICING_DomainRenew : INVOICING_DomainCreate) )
                                      (zone ));
 
       if(res_price.size() != 1 || res_price[0][0].isnull()) {
-          LOGGER(PACKAGE).info ( (boost::format("Operation %1% for zoneId %2% not found in price list. No billing.") % static_cast<int>(renew ? OPERATION_DomainRenew : OPERATION_DomainCreate)  % zone).str());
+          LOGGER(PACKAGE).info ( (boost::format("Operation %1% for zoneId %2% not found in price list. No billing.") % static_cast<int>(renew ? INVOICING_DomainRenew : INVOICING_DomainCreate)  % zone).str());
           // price not set - no billing
           return true;
       }
@@ -299,7 +293,7 @@ public:
           if(credit1 + credit2 < price) {
               throw std::runtime_error((boost::format("Credit not sufficient for registrar ID %1% operation %2% on object %3%, invoices: %4%, %5%")
                    % registrar
-                   % static_cast<int>(renew ? OPERATION_DomainRenew : OPERATION_DomainCreate)
+                   % static_cast<int>(renew ? INVOICING_DomainRenew : INVOICING_DomainCreate)
                    % objectId % inv_id1 % inv_id2).str());
           }
 

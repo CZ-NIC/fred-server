@@ -18,6 +18,12 @@
 namespace Fred {
 namespace Invoicing {
 
+// TODO copy of those in action.h
+enum  {
+    INVOICING_DomainCreate = 1,
+    INVOICING_DomainRenew = 2
+};
+
 /// Member identification (i.e. for sorting) 
 enum MemberType {
   MT_CRTIME,
