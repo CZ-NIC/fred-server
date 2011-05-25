@@ -356,30 +356,18 @@ public:
 
   //  count VAT from price without tax with help of coefficient
   // count VAT  ( local CZ ) function for banking
- long long count_dph(
-    long long price, long long vat_percent)
+ long count_dph( //returning vat in cents
+    long price //*100 in cents
+    , long vat_reverse //vat coeff *10000
+    )
     {
-        Database::Connection conn = Database::Manager::acquire();
+         long vat = price * vat_reverse / 10000;
 
-        Database::Result res = conn.exec_params(
-            "select (( (($1::numeric / 100::numeric) " //price
-                " * round($2::numeric / (100::numeric + $2::numeric), 4))) " //coeff
-                " * 100::numeric)::bigint"
-                , Database::query_param_list(price)(vat_percent));
+         LOGGER(PACKAGE).debug (
+             boost::format("count_dph price %1% vat_reverse %2% vat %3%")
+             % price % vat_reverse % vat);
 
-          if(res.size() != 1 || res[0][0].isnull() ) {
-              throw std::runtime_error(
-                  (boost::format("count_dph")
-                      % price % vat_percent ).str());
-          }
-
-          long long vat= res[0][0];
-
-          LOGGER(PACKAGE).debug (
-              boost::format("count_dph price %1% vat_percent %2% vat %3%")
-              % price % vat_percent % vat);
-
-          return vat;
+         return vat;
   }
 
 
@@ -411,7 +399,7 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
     // ratio for reverse VAT calculation
     // price_without_vat = price_with_vat - price_with_vat*vat_reverse
     // it should have 4 decimal places in the DB
-    float vat_reverse = 0.0;
+    long vat_reverse = 0;
 
     cent_amount vat_amount = 0;
     cent_amount total;
@@ -419,7 +407,7 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
     if (pay_vat) {
 
         Database::Result vat_details = conn.exec_params(
-                "select vat, koef from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
+                "select vat, koef*10000::numeric from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
                 , Database::query_param_list(date.is_special() ? boost::gregorian::day_clock::universal_day() : date.get() )
                 );
 
@@ -436,12 +424,12 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
         }
 
         if(vat_details[0][1].isnull()) {
-            vat_reverse = 0.0;
+            vat_reverse = 0;
         } else {
-            vat_reverse = (float)vat_details[0][1];
+            vat_reverse = vat_details[0][1];
         }
 
-        vat_amount = count_dph(price, vat_percent);
+        vat_amount = count_dph(price, vat_reverse);
         total = price - vat_amount;
     } else {
         total = price;
