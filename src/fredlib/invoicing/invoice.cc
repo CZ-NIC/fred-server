@@ -354,29 +354,32 @@ public:
   }
 
 
-  //  count VAT from price without tax with help of coefficient a round VAT to dimes
+  //  count VAT from price without tax with help of coefficient
   // count VAT  ( local CZ ) function for banking
-  long count_dph(
-    long price, double koef)
-  {
-    double p;
-    long d, r, mod;
+ long long count_dph(
+    long long price, long long vat_percent)
+    {
+        Database::Connection conn = Database::Manager::acquire();
 
-    p = price/100.0; // convert to double
-    d = (long ) ( (p* koef) * 100.0 ); // to long 2 decimal places
+        Database::Result res = conn.exec_params(
+            "select (( (($1::numeric / 100::numeric) " //price
+                " * round($2::numeric / (100::numeric + $2::numeric), 4))) " //coeff
+                " * 100::numeric)::bigint"
+                , Database::query_param_list(price)(vat_percent));
 
-    mod = d % 10;
+          if(res.size() != 1 || res[0][0].isnull() ) {
+              throw std::runtime_error(
+                  (boost::format("count_dph")
+                      % price % vat_percent ).str());
+          }
 
-    if (mod > 4)
-      r = (d / 10) * 10 + 10; // round up dimes
-    else
-      r = (d / 10) * 10; // down
+          long long vat= res[0][0];
 
-    LOGGER(PACKAGE).debug (
-            boost::format("count_dph koef  %1% p = %2% price %3% d = %4%  mod %5% zaokrouhleno dph->%6%")
-        % koef % p % price % d % mod % r);
+          LOGGER(PACKAGE).debug (
+              boost::format("count_dph price %1% vat_percent %2% vat %3%")
+              % price % vat_percent % vat);
 
-    return r;
+          return vat;
   }
 
 
@@ -438,7 +441,7 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
             vat_reverse = (float)vat_details[0][1];
         }
 
-        vat_amount = count_dph(price, vat_reverse);
+        vat_amount = count_dph(price, vat_percent);
         total = price - vat_amount;
     } else {
         total = price;

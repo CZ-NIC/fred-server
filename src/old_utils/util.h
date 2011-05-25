@@ -74,10 +74,6 @@ bool TestExDate(
 int TestPeriodyInterval(
   int period, int min, int max);
 
-// count VAT from price without tax with coefficient help and round VAT to dimes
-// count VAT for invoicing  and round 
-long count_dph(
-  long price, double koef);
 
 // convert registrar credit for pennies without conversion to float it takes also decimal comma or dot
 // convert currency  string for example   1.200,00  to logn value 120000
