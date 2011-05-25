@@ -186,7 +186,8 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
                                            IdentificationMethod _method,
                                            const char * _trans_id,
-                                           const CORBA::ULongLong _request_id)
+                                           const CORBA::ULongLong _request_id,
+                                           CORBA::String_out _identification)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-create");
@@ -207,6 +208,9 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         unsigned long long hid;
 
         IdentificationRequestPtr new_request = contactCreateWorker (cid, hid, _contact, _method, request);
+
+        IdentificationRequestManagerPtr request_manager;
+        _identification = corba_wrap_string(request_manager->getIdentification(cid).c_str());
 
         /* save contact and request (one transaction) */
         request.end_prepare(_trans_id);
@@ -435,7 +439,8 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
 CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
                                              IdentificationMethod _method,
                                              const char * _trans_id,
-                                             const CORBA::ULongLong _request_id)
+                                             const CORBA::ULongLong _request_id,
+                                             CORBA::String_out _identification)
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
     Logging::Context ctx("contact-transfer-request");
@@ -506,6 +511,9 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
                 Fred::PublicRequest::OID(
                     cinfo.id, handle, Fred::PublicRequest::OT_CONTACT));
         new_request->save();
+
+        IdentificationRequestManagerPtr request_manager;
+        _identification = corba_wrap_string(request_manager->getIdentification(cinfo.id).c_str());
 
         tx.prepare(_trans_id);
 

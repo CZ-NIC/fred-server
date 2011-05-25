@@ -64,7 +64,8 @@ class ServerImpl : public POA_Registry::MojeID::Server,
         CORBA::ULongLong contactCreatePrepare(const Contact &_contact,
                                                    IdentificationMethod _method,
                                                    const char * _trans_id,
-                                                   const CORBA::ULongLong _request_id);
+                                                   const CORBA::ULongLong _request_id,
+                                                   CORBA::String_out _identification);
 
         CORBA::ULongLong contactTransfer(const char* _handle,
                                          IdentificationMethod _method,
@@ -73,7 +74,8 @@ class ServerImpl : public POA_Registry::MojeID::Server,
         CORBA::ULongLong contactTransferPrepare(const char *_handle,
                                              IdentificationMethod _method,
                                              const char * _trans_id,
-                                             const CORBA::ULongLong _request_id);
+                                             const CORBA::ULongLong _request_id,
+                                             CORBA::String_out _identification);
 
         void contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
                                 const char * _trans_id,
