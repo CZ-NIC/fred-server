@@ -83,6 +83,29 @@ static std::string zone_registrar_credit_query (
         " where zone = $1::bigint and registrarid =$2::bigint "
         " group by registrarid, zone ");
 
+// TODO duplicity from invoice.cc - compilation problem
+cent_amount get_price(const std::string &str)
+{
+  std::string t_str = boost::algorithm::trim_copy(str);//remove whitespaces
+  std::size_t delimiter = t_str.find_first_of(".,");//find delimiter
+  if (delimiter != std::string::npos)//if found
+  {
+        t_str.erase(delimiter,1);//erase delimiter
+        if(t_str.length() > (delimiter + 2))//if there are more than two chars after delimiter
+            t_str.erase(delimiter+2);//remove rest of the string
+        else if (t_str.length() == (delimiter + 1))//if there is only one char after delimiter
+            t_str+="0";//append second char after delimiter
+        else if (t_str.length() == delimiter)//if there is no char after delimiter
+          t_str+="00";//append first and second char after delimiter
+   }
+
+    long price = boost::lexical_cast<long>(t_str);//try convert
+    LOGGER(PACKAGE).debug( boost::format("get_price from string[%1%] -> %2% hal") % str % price );
+    return price;
+
+    //return ::get_price(str.c_str());
+}
+
 
 bool check_std_exception_invoice_prefix(std::exception const & ex)
 {
@@ -101,7 +124,6 @@ bool check_std_exception_archiveInvoices(std::exception const & ex)
     std::string ex_msg(ex.what());
     return (ex_msg.find(std::string("archiveInvoices")) != std::string::npos);
 }
-
 
 BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
 {
@@ -659,7 +681,6 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
-
 void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigned reg_units,
         unsigned operation, Database::ID zone_id, Database::ID registrar_id)
 {
@@ -671,13 +692,13 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
     std::string time_string(TimeStamp::microsec());
     std::string object_roid = std::string("ROID-TEST_INVOICE")  + time_string;
 
-    double credit_before, credit_after;
+    cent_amount credit_before, credit_after;
 
     // CHECK CREDIT before
     Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                        , Database::query_param_list(zone_id)(registrar_id));
     // TODO add check
-    if(credit_res.size() ==  1 && credit_res[0].size() == 1) credit_before = credit_res[0][0];
+    if(credit_res.size() ==  1 && credit_res[0].size() == 1) credit_before = get_price((std::string)credit_res[0][0]);
 
 
     // some fake object in object registry
@@ -695,12 +716,18 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
     Database::ID object_id = res_or[0][0];
 
 
-    BOOST_CHECK(invMan->chargeDomainCreate(zone_id, registrar_id, object_id, exdate, reg_units ));
+    if (operation == INVOICING_DomainCreate ) {
+        BOOST_CHECK(invMan->chargeDomainCreate(zone_id, registrar_id, object_id, exdate, reg_units ));
+    } else if (operation == INVOICING_DomainRenew) {
+        BOOST_CHECK(invMan->chargeDomainRenew(zone_id, registrar_id, object_id, exdate, reg_units ));
+    } else {
+        BOOST_FAIL("Not implemented");
+    }
 
     // CHECK CREDIT after
     Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_id)(registrar_id));
-                   if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) credit_after = credit_res2[0][0];
+                   if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) credit_after = get_price((std::string)credit_res2[0][0]);
 
     // now check the credit change
     Database::Result price_res = conn.exec_params("SELECT price , period FROM price_list where zone=$1::integer and operation=$2::integer "
@@ -710,9 +737,12 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
 
     BOOST_CHECK_MESSAGE(price_res.size() == 1, "Exactly one actual valid record must be present in table price_list");
 
-    double counted_price = (double)price_res[0][0] * (reg_units / (double)price_res[0][1]);
+    // TODO integer division, part of questions to specification
+    double counted_price = get_price(price_res[0][0]) * (reg_units / (int)price_res[0][1]);
 
-    BOOST_CHECK_MESSAGE(counted_price == credit_after - credit_before, "Charged credit does not match");
+    std::cout << "credit before: " << credit_before << ", credit_after: " << credit_after <<
+            ", counted price: " << counted_price << std::endl;
+    BOOST_CHECK_MESSAGE(counted_price == credit_before - credit_after, "Charged credit does not match");
 
 
     Database::Result res_ior = conn.exec_params(
@@ -769,6 +799,7 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreateNoCredit )
 
     Database::ID object_id = res_or[0][0];
 
+    // TODO this should check price_list - if operation price is really 0
     // TODO change date
     BOOST_CHECK(!invMan->chargeDomainCreate(zone_cz_id, registrar->getId(), object_id, Database::Date(2012, 1, 1), 12 ));
 
@@ -809,20 +840,19 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreate )
     Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
                     , zone_cz_id//zone
                     , registrar->getId()//registrar
-                    , 20000);//price
+                    , 2000000);//price
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
     // add credit for new registrar
     Database::ID invoiceid2 = invMan->createDepositInvoice(taxdate //taxdate
                     , zone_enum_id//zone
                     , registrar->getId()//registrar
-                    , 10000);//price
+                    , 1000000);//price
     BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
-
+    int reg_units = 24;
 
 
     Database::Date exdate(act_year + 1, 1, 1);
     Database::Date exdate2(act_year + 5, 4, 30);
-    unsigned reg_units = 24;
 
     test_ChargeDomainOperation(invMan.get(), exdate, reg_units, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
     test_ChargeDomainOperation(invMan.get(), exdate, reg_units, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
