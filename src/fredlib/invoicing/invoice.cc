@@ -1734,6 +1734,7 @@ public:
     out << TAG(id,s->getId()) << TAG(name,s->getName()) << TAG(fullname,s->getFullname()) << TAGSTART(address) << TAG(street,s->getStreet()) << TAG(city,s->getCity()) << TAG(zip,s->getZip()) << TAG(country,s->getCountry()) << TAGEND(address) << TAG(ico,s->getICO()) << TAG(vat_number,s->getVatNumber()) << TAG(registration,s->getRegistration()) << TAG(reclamation,s->getReclamation()) << TAG(url,s->getURL()) << TAG(email,s->getEmail()) << TAG(phone,s->getPhone()) << TAG(fax,s->getFax()) << TAG(vat_not_apply,(s->getVatApply() ? 0 : 1)); return out;} 
     virtual void doExport(Invoice *i)
     {
+        if(!i) throw std::runtime_error("ExporterXML::doExport i");
       // setting locale for proper date and time format
       // do not use system locale - locale("") because of
       // unpredictable formatting behavior
@@ -1868,6 +1869,7 @@ public:
     ExporterArchiver(Document::Manager *_docman) : docman(_docman) {}
     virtual void doExport(Invoice *i)
     {
+      if(!i) throw std::runtime_error("ExporterArchiver::doExport i");
       try {
         // create generator for pdf 
         std::auto_ptr<Document::Generator> gPDF(
@@ -1901,8 +1903,8 @@ public:
         ii->setFile(filePDF,fileXML);
       }
       catch (...) {
-          // TODO log something more specific
         LOGGER(PACKAGE).error("Exception in ExporterArchiver::doExport.");
+        throw;
       }
     }
   };
