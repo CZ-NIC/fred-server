@@ -1886,6 +1886,9 @@ public:
         ExporterXML(gPDF->getInput(),true).doExport(i);
         // return id of generated PDF file
         TID filePDF = gPDF->closeInput();
+
+        LOGGER(PACKAGE).debug ( boost::format("ExporterArchiver::doExport pdf file id: %1% ") % filePDF);
+
         // create generator for XML
         std::auto_ptr<Document::Generator> gXML(
             docman->createSavingGenerator(
