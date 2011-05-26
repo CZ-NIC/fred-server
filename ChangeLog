@@ -1,3 +1,10 @@
+2011-05-26 Jiri Sadek, Jan Zima (2.7.1)
+
+  * mojeid - interface changes for methods for 2PC
+
+  * invoicing fix - vat computation + tests
+                  - error handling, logging
+
 2011-05-20 Jiri Sadek, Juraj Vicenik, Jan Zima (2.7.0)
 
   * fred-admin - configuration redesigned and rewritten
