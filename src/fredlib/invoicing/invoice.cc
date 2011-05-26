@@ -2868,7 +2868,7 @@ public:
     }
     catch (...) {
       LOGGER(PACKAGE).error("Exception in archiveInvoices.");
-      //TODO: LOG more specific ERROR
+      throw;
     }
   }
   
