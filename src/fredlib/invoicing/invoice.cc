@@ -2602,6 +2602,10 @@ public:
     
     /// export all invoices on the list using given exporter
     void doExport(Exporter *_exporter) {
+        if(!_exporter) {
+            LOGGER(PACKAGE).error("Exporter::doExport _exporter");
+            throw std::runtime_error("Exporter::doExport _exporter");
+        }
       Iterator it = data_.begin();
       for (; it != data_.end(); ++it) {
         InvoiceImpl *invoice = dynamic_cast<InvoiceImpl*>(*it);
