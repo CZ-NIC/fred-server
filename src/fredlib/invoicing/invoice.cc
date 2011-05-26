@@ -2607,6 +2607,11 @@ public:
         InvoiceImpl *invoice = dynamic_cast<InvoiceImpl*>(*it);
         if (invoice)
           invoice->doExport(_exporter);
+        else
+        {
+            LOGGER(PACKAGE).error("Exporter::doExport dynamic_cast<InvoiceImpl*> failed");
+            throw std::runtime_error("Exporter::doExport dynamic_cast<InvoiceImpl*> failed");
+        }
       }
     }
 
@@ -2851,12 +2856,6 @@ public:
       // archive unarchived invoices
       ExporterArchiver exporter(docman);
       ListImpl l(this);
-
-
-
-
-
-
       l.setArchivedFilter(ListImpl::AF_UNSET);
       l.reload();
       l.doExport(&exporter);
