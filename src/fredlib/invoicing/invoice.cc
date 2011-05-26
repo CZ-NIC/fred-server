@@ -1731,6 +1731,7 @@ public:
     out(_out), xmlDec(_xmlDec) {
   }
   std::ostream& doExport(const Subject* s) {
+      if(!s) throw std::runtime_error("ExporterXML::doExport s");
     out << TAG(id,s->getId()) << TAG(name,s->getName()) << TAG(fullname,s->getFullname()) << TAGSTART(address) << TAG(street,s->getStreet()) << TAG(city,s->getCity()) << TAG(zip,s->getZip()) << TAG(country,s->getCountry()) << TAGEND(address) << TAG(ico,s->getICO()) << TAG(vat_number,s->getVatNumber()) << TAG(registration,s->getRegistration()) << TAG(reclamation,s->getReclamation()) << TAG(url,s->getURL()) << TAG(email,s->getEmail()) << TAG(phone,s->getPhone()) << TAG(fax,s->getFax()) << TAG(vat_not_apply,(s->getVatApply() ? 0 : 1)); return out;} 
     virtual void doExport(Invoice *i)
     {
