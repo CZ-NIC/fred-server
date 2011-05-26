@@ -125,58 +125,6 @@ bool check_std_exception_archiveInvoices(std::exception const & ex)
     return (ex_msg.find(std::string("archiveInvoices")) != std::string::npos);
 }
 
-BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
-{
-    // setting up logger
-    setup_logging(CfgArgs::instance());
-
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
-        Fred::Invoicing::Manager::create());
-
-    BOOST_CHECK_EXCEPTION(
-    invMan->archiveInvoices(false)
-    , std::exception, check_std_exception_archiveInvoices);
-}
-
-BOOST_AUTO_TEST_CASE( archiveInvoices )
-{
-    // setting up logger
-    setup_logging(CfgArgs::instance());
-
-    //corba config
-       FakedArgs fa = CfgArgs::instance()->fa;
-
-    //conf pointers
-    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleRegistryArgs>();
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
-
-
-    std::string corbaNS =ns_args_ptr->nameservice_host
-            + ":"
-            + boost::lexical_cast<std::string>(ns_args_ptr->nameservice_port);
-
-    std::auto_ptr<Fred::Document::Manager> docMan(
-              Fred::Document::Manager::create(
-                  registry_args_ptr->docgen_path
-                  , registry_args_ptr->docgen_template_path
-                  , registry_args_ptr->fileclient_path
-                  , corbaNS)
-              );
-
-    MailerManager mailMan(CorbaContainer::get_instance()->getNS());
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
-        Fred::Invoicing::Manager::create(
-        docMan.get(),&mailMan));
-
-    invMan->archiveInvoices(false);
-}
 
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
 {
@@ -876,6 +824,58 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreate )
 
 }
 
+BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
+{
+    // setting up logger
+    setup_logging(CfgArgs::instance());
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        Fred::Invoicing::Manager::create());
+
+    BOOST_CHECK_EXCEPTION(
+    invMan->archiveInvoices(false)
+    , std::exception, check_std_exception_archiveInvoices);
+}
+
+BOOST_AUTO_TEST_CASE( archiveInvoices )
+{
+    // setting up logger
+    setup_logging(CfgArgs::instance());
+
+    //corba config
+       FakedArgs fa = CfgArgs::instance()->fa;
+
+    //conf pointers
+    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
+        ->get_handler_ptr_by_type<HandleRegistryArgs>();
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+
+    std::string corbaNS =ns_args_ptr->nameservice_host
+            + ":"
+            + boost::lexical_cast<std::string>(ns_args_ptr->nameservice_port);
+
+    std::auto_ptr<Fred::Document::Manager> docMan(
+              Fred::Document::Manager::create(
+                  registry_args_ptr->docgen_path
+                  , registry_args_ptr->docgen_template_path
+                  , registry_args_ptr->fileclient_path
+                  , corbaNS)
+              );
+
+    MailerManager mailMan(CorbaContainer::get_instance()->getNS());
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        Fred::Invoicing::Manager::create(
+        docMan.get(),&mailMan));
+
+    invMan->archiveInvoices(false);
+}
 
 
 BOOST_AUTO_TEST_SUITE_END();//TestInv
