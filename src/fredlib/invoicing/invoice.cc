@@ -2612,8 +2612,7 @@ public:
             LOGGER(PACKAGE).error("Exporter::doExport _exporter");
             throw std::runtime_error("Exporter::doExport _exporter");
         }
-      Iterator it = data_.begin();
-      for (; it != data_.end(); ++it) {
+      for (Iterator it = data_.begin(); it != data_.end(); ++it) {
         InvoiceImpl *invoice = dynamic_cast<InvoiceImpl*>(*it);
         if (invoice)
           invoice->doExport(_exporter);
