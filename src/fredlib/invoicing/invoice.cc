@@ -2536,67 +2536,64 @@ public:
                                                 man));
             }//for res3
 
-            // append list of actions to all selected invoices
-            // it handle situation when action come from source advance invoices
-            // with different vat rates by grouping
-            // this is ignored on partial load
-            if (!partialLoad)
-            {
-                Database::Result res4 = conn.exec(
-                    "SELECT "
-                    " it.id, o.name, ior.crdate::timestamptz AT TIME ZONE 'Europe/Prague',"
-                    " ior.exdate, ior.operation, ior.period, "
-                    " CASE "
-                    "  WHEN ior.period=0 THEN 0 "
-                    "  ELSE SUM(ipm.price)*12/ior.period END, "
-                    " SUM(ipm.price), o.id, i.vat "
-                    "FROM "
-                    " tmp_invoice_filter_result it "
-                    " JOIN invoice_object_registry ior ON (it.id=ior.invoiceid) "
-                    " JOIN object_registry o ON (ior.objectid=o.id) "
-                    " JOIN invoice_object_registry_price_map ipm ON (ior.id=ipm.id) "
-                    " JOIN invoice i ON (ipm.invoiceid=i.id) "
-                    "GROUP BY "
-                    " it.id, o.name, ior.crdate, ior.exdate, ior.operation, "
-                    " ior.period, o.id, i.vat ");
+            /* append list of actions to all selected invoices
+             * it handle situation when action come from source advance invoices
+             * with different vat rates by grouping
+             * this is ignored on partial load
+             */
+            if (!partialLoad) {
+              Database::SelectQuery action_query;
+              action_query.select() << "tmp.id, SUM(ipm.price), i.vat, o.name, "
+                                    << "ior.crdate::timestamptz AT TIME ZONE 'Europe/Prague', "
+                                    << "ior.exdate, ior.operation, ior.period, "
+                                    << "CASE "
+                                    << "  WHEN ior.period = 0 THEN 0 "
+                                    << "  ELSE SUM(ipm.price) * 12 / ior.period END, "
+                                    << "o.id";
+              action_query.from() << "tmp_invoice_filter_result tmp "
+                                  << "JOIN invoice_object_registry ior ON (tmp.id = ior.invoiceid) "
+                                  << "JOIN object_registry o ON (ior.objectid = o.id) "
+                                  << "JOIN invoice_object_registry_price_map ipm ON (ior.id = ipm.id) "
+                                  << "JOIN invoice i ON (ipm.invoiceid = i.id) ";
+              action_query.group_by() << "tmp.id, o.name, ior.crdate, ior.exdate, "
+                                      << "ior.operation, ior.period, o.id, i.vat";
+              action_query.order_by() << "tmp.id";
 
-            for (unsigned i=0; i < res4.size(); ++i)
+              resetIDSequence();
+              Database::Result r_actions = conn.exec(action_query);
+              for (Database::Result::Iterator it = r_actions.begin(); it != r_actions.end(); ++it) {
+                Database::Row::Iterator col = (*it).begin();
+                Database::ID invoice_id = *col;
+
+                InvoiceImpl *invoice_ptr = dynamic_cast<InvoiceImpl* >(findIDSequence(invoice_id));
+                if (invoice_ptr)
+                  invoice_ptr->addAction(++col);
+              }
+            }
+
+            //append list of sources to all selected invoices
             {
-                InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(res4[i][0]));
-                Database::Row::Iterator ri = (res4[i]).begin();
-                if (inv) inv->addAction(ri);
-                else
-                {
-                LOGGER(PACKAGE).error(" dynamic_cast failed for Invoice. ");
-                // TODO: log error - more specific error
+                resetIDSequence();
+                Database::SelectQuery source_query;
+                source_query.select() << "tmp.id, ipm.credit, sri.vat, sri.prefix, "
+                                      << "ipm.balance, sri.id, sri.total, "
+                                      << "sri.totalvat, sri.crdate";
+                source_query.from() << "tmp_invoice_filter_result tmp "
+                                    << "JOIN invoice_credit_payment_map ipm ON (tmp.id = ipm.invoiceid) "
+                                    << "JOIN invoice sri ON (ipm.ainvoiceid = sri.id) ";
+                source_query.order_by() << "tmp.id";
+
+                resetIDSequence();
+                Database::Result r_sources = conn.exec(source_query);
+                for (Database::Result::Iterator it = r_sources.begin(); it != r_sources.end(); ++it) {
+                  Database::Row::Iterator col = (*it).begin();
+                  Database::ID invoice_id = *col;
+
+                  InvoiceImpl *invoice_ptr = dynamic_cast<InvoiceImpl*>(findIDSequence(invoice_id));
+                  if (invoice_ptr)
+                    invoice_ptr->addSource(++col);
                 }
-            }//for res4
-
-            }//if not partialLoad
-
-            // append list of sources to all selected invoices
-            Database::Result res5 = conn.exec(
-                  "SELECT "
-                  " it.id, sri.prefix, ipm.credit, ipm.balance, sri.id, "
-                  " sri.total, sri.vat, sri.totalvat, sri.crdate "
-                  "FROM "
-                  " tmp_invoice_filter_result it "
-                  " JOIN invoice_credit_payment_map ipm ON (it.id=ipm.invoiceid) "
-                  " JOIN invoice sri ON (ipm.ainvoiceid=sri.id) ");
-
-            for (unsigned i=0; i < res5.size(); ++i)
-            {
-                InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(res5[i][0]));
-                Database::Row::Iterator ri = (res5[i]).begin();
-                if (inv) inv->addSource(ri);
-                else
-                {
-                  // TODO: log error - more specific
-                    LOGGER(PACKAGE).error(" dynamic_cast failed ");
-                    throw SQL_ERROR();//??
-                }
-            }//for res5
-
+            }
             // delete temporary table
             conn.exec("DROP TABLE tmp_invoice_filter_result ");
 
