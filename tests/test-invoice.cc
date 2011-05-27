@@ -874,6 +874,9 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
         Fred::Invoicing::Manager::create(
         docMan.get(),&mailMan));
     InvoiceIdVect inv_id_vect = invMan->archiveInvoices(false);
+
+
+
 }
 
 
