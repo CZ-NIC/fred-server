@@ -2,8 +2,9 @@
 
   * mojeid - interface changes for methods for 2PC
 
-  * invoicing fix - vat computation + tests
+  * invoicing fix - vat computation + test
                   - error handling, logging
+                  - money conversions
 
 2011-05-20 Jiri Sadek, Juraj Vicenik, Jan Zima (2.7.0)
 
