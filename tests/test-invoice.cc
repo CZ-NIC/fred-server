@@ -873,8 +873,7 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create(
         docMan.get(),&mailMan));
-
-    invMan->archiveInvoices(false);
+    InvoiceIdVect inv_id_vect = invMan->archiveInvoices(false);
 }
 
 

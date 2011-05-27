@@ -108,7 +108,7 @@ public:
   Money countVAT(Money price, unsigned vatRate, bool base);
   const VAT *getVAT(unsigned rate);
   /// find unarchived invoices. archive then and send them by email
-  void archiveInvoices(bool send);
+  InvoiceIdVect archiveInvoices(bool send);
   /// create empty list of invoices      
   virtual List* createList();
   /// return credit for registrar by zone
@@ -1730,9 +1730,29 @@ public:
   ExporterXML(std::ostream& _out, bool _xmlDec) :
     out(_out), xmlDec(_xmlDec) {
   }
-  std::ostream& doExport(const Subject* s) {
-      if(!s) throw std::runtime_error("ExporterXML::doExport s");
-    out << TAG(id,s->getId()) << TAG(name,s->getName()) << TAG(fullname,s->getFullname()) << TAGSTART(address) << TAG(street,s->getStreet()) << TAG(city,s->getCity()) << TAG(zip,s->getZip()) << TAG(country,s->getCountry()) << TAGEND(address) << TAG(ico,s->getICO()) << TAG(vat_number,s->getVatNumber()) << TAG(registration,s->getRegistration()) << TAG(reclamation,s->getReclamation()) << TAG(url,s->getURL()) << TAG(email,s->getEmail()) << TAG(phone,s->getPhone()) << TAG(fax,s->getFax()) << TAG(vat_not_apply,(s->getVatApply() ? 0 : 1)); return out;} 
+  std::ostream& doExport(const Subject* s)
+  {
+    if(!s) throw std::runtime_error("ExporterXML::doExport s");
+    out << TAG(id,s->getId())
+        << TAG(name,s->getName())
+        << TAG(fullname,s->getFullname())
+        << TAGSTART(address)
+        << TAG(street,s->getStreet())
+        << TAG(city,s->getCity())
+        << TAG(zip,s->getZip())
+        << TAG(country,s->getCountry())
+        << TAGEND(address)
+        << TAG(ico,s->getICO())
+        << TAG(vat_number,s->getVatNumber())
+        << TAG(registration,s->getRegistration())
+        << TAG(reclamation,s->getReclamation())
+        << TAG(url,s->getURL())
+        << TAG(email,s->getEmail())
+        << TAG(phone,s->getPhone())
+        << TAG(fax,s->getFax())
+        << TAG(vat_not_apply,(s->getVatApply() ? 0 : 1));
+    return out;
+  }
     virtual void doExport(Invoice *i)
     {
         if(!i) throw std::runtime_error("ExporterXML::doExport i");
@@ -1927,6 +1947,7 @@ public:
   //   InvoiceListImpl
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   /// implementation of interface InvoiceList
+
   class ListImpl : public Fred::CommonListImpl,
   virtual public List {
     TID idFilter; ///< filter for invoice id 
@@ -2604,24 +2625,29 @@ public:
         }
 
     }//reload()
-    
+
     
     /// export all invoices on the list using given exporter
-    void doExport(Exporter *_exporter) {
+    InvoiceIdVect doExport(Exporter *_exporter) {
         if(!_exporter) {
             LOGGER(PACKAGE).error("Exporter::doExport _exporter");
             throw std::runtime_error("Exporter::doExport _exporter");
         }
+      InvoiceIdVect ret_inv_id;
       for (Iterator it = data_.begin(); it != data_.end(); ++it) {
         InvoiceImpl *invoice = dynamic_cast<InvoiceImpl*>(*it);
         if (invoice)
+        {
+          ret_inv_id.push_back(invoice->getId());
           invoice->doExport(_exporter);
+        }
         else
         {
             LOGGER(PACKAGE).error("Exporter::doExport dynamic_cast<InvoiceImpl*> failed");
             throw std::runtime_error("Exporter::doExport dynamic_cast<InvoiceImpl*> failed");
         }
       }
+      return ret_inv_id;
     }
 
     virtual Invoice* get(unsigned _idx) const {
@@ -2854,20 +2880,22 @@ public:
     return ci == vatList.end() ? NULL : &(*ci);
   }
   
-  void ManagerImpl::archiveInvoices(bool send) {
+  InvoiceIdVect ManagerImpl::archiveInvoices(bool send) {
       
       if(docman == NULL || mailman == NULL) {
         LOGGER(PACKAGE).error("archiveInvoices: No docman or mailman specified in c-tor. ");
         throw std::runtime_error("archiveInvoices: No docman or mailman specified in c-tor");
       }
       
+      InvoiceIdVect ret_inv;
+
     try {
       // archive unarchived invoices
       ExporterArchiver exporter(docman);
       ListImpl l(this);
       l.setArchivedFilter(ListImpl::AF_UNSET);
       l.reload();
-      l.doExport(&exporter);
+      ret_inv = l.doExport(&exporter);
       if (send) {
         Mails m(mailman);
         m.load();
@@ -2878,6 +2906,7 @@ public:
       LOGGER(PACKAGE).error("Exception in archiveInvoices.");
       throw;
     }
+    return ret_inv;
   }
   
   List* ManagerImpl::createList() {

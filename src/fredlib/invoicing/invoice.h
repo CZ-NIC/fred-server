@@ -277,6 +277,8 @@ public:
 
   };
 
+typedef std::vector<unsigned long long> InvoiceIdVect;//exported invoices for test
+
 /// facade of invoicing subsystem
 class Manager {
 public:
@@ -284,7 +286,7 @@ public:
   virtual ~Manager() {
   }
   /// find unarchived invoices and archive then in PDF format
-  virtual void archiveInvoices(bool send) = 0;
+  virtual InvoiceIdVect archiveInvoices(bool send) = 0;
   /// create empty list of invoices
   virtual List* createList() = 0;
   /// return credit for registrar by zone
