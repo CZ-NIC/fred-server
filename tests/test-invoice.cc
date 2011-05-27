@@ -875,7 +875,11 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
         docMan.get(),&mailMan));
     InvoiceIdVect inv_id_vect = invMan->archiveInvoices(false);
 
+    std::cout << "export invoice id: " ;
+    for (InvoiceIdVect::iterator i = inv_id_vect.begin(); i != inv_id_vect.end(); ++i )
+        std::cout << *i << " ";
 
+    std::cout << std::endl;
 
 }
 
