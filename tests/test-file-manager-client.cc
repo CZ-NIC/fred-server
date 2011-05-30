@@ -21,9 +21,9 @@
 
 #include "test-file-manager-client.h"
 
-BOOST_AUTO_TEST_SUITE(File_Manager_Client)
+BOOST_AUTO_TEST_SUITE(Files)
 
-BOOST_AUTO_TEST_CASE( simple_test )
+BOOST_AUTO_TEST_CASE( file_manager_client_simple )
 {
 
     //test data
