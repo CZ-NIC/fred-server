@@ -629,6 +629,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
+// all CHECKs were changed to REQUIRE
 void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigned reg_units,
         unsigned operation, Database::ID zone_id, Database::ID registrar_id)
 {
@@ -665,14 +666,14 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
 
 
     if (operation == INVOICING_DomainCreate ) {
-        BOOST_CHECK(invMan->chargeDomainCreate(zone_id, registrar_id, object_id, exdate, reg_units ));
+        BOOST_REQUIRE(invMan->chargeDomainCreate(zone_id, registrar_id, object_id, exdate, reg_units ));
     } else if (operation == INVOICING_DomainRenew) {
-        BOOST_CHECK(invMan->chargeDomainRenew(zone_id, registrar_id, object_id, exdate, reg_units ));
+        BOOST_REQUIRE(invMan->chargeDomainRenew(zone_id, registrar_id, object_id, exdate, reg_units ));
     } else {
         BOOST_FAIL("Not implemented");
     }
 
-    // CHECK CREDIT after
+    // REQUIRE CREDIT after
     Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_id)(registrar_id));
                    if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) credit_after = get_price((std::string)credit_res2[0][0]);
@@ -683,14 +684,14 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
                                 Database::query_param_list  (zone_id)
                                                             (operation));
 
-    BOOST_CHECK_MESSAGE(price_res.size() == 1, "Exactly one actual valid record must be present in table price_list");
+    BOOST_REQUIRE_MESSAGE(price_res.size() == 1, "Exactly one actual valid record must be present in table price_list");
 
     // TODO integer division, part of questions to specification
     double counted_price = get_price(price_res[0][0]) * (reg_units / (int)price_res[0][1]);
 
     std::cout << "credit before: " << credit_before << ", credit_after: " << credit_after <<
             ", counted price: " << counted_price << std::endl;
-    BOOST_CHECK_MESSAGE(counted_price == credit_before - credit_after, "Charged credit does not match");
+    BOOST_REQUIRE_MESSAGE(counted_price == credit_before - credit_after, "Charged credit does not match");
 
 
     Database::Result res_ior = conn.exec_params(
@@ -701,11 +702,46 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
                                           ( registrar_id)
                                           ( zone_id));
 
-    BOOST_CHECK_MESSAGE(res_ior.size() == 1, "Incorrect number of records in invoice_object_registry table ");
+    BOOST_REQUIRE_MESSAGE(res_ior.size() == 1, "Incorrect number of records in invoice_object_registry table ");
 
-    BOOST_CHECK((unsigned)res_ior[0][0] == reg_units);
-    BOOST_CHECK(res_ior[0][1] == exdate);
+    BOOST_REQUIRE((unsigned)res_ior[0][0] == reg_units);
+    BOOST_REQUIRE(res_ior[0][1] == exdate);
 }
+
+// Fred::Registrar::Registrar::AutoPtr createTestRegistrar(const std::string &handle_base)
+Database::ID createTestRegistrar(const std::string &handle_base)
+{
+
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_handle = std::string("REG-FRED_2INVNEED") + time_string;
+
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+
+    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+    registrar->setVat(true);
+    registrar->save();
+
+    return registrar->getId();
+}
+
+void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Database::ID zone_cz_id, Database::ID reg_id, cent_amount amount)
+{
+   Database::ID invoiceid = man->createDepositInvoice(taxdate //taxdate
+                   , zone_cz_id//zone
+                   , reg_id//registrar
+                   , amount);//price
+   BOOST_CHECK_EQUAL(invoiceid != 0,true);
+   // add credit for new registrar
+   Database::ID invoiceid2 = man->createDepositInvoice(taxdate //taxdate
+                   , zone_cz_id//zone
+                   , reg_id//registrar
+                   , amount);//price
+   BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
+}
+
 
 BOOST_AUTO_TEST_CASE( chargeDomainCreateNoCredit )
 {
@@ -759,18 +795,23 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreate )
     // setting up logger
     setup_logging(CfgArgs::instance());
 
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle = std::string("REG-FRED_INV") + time_string;
-
-    unsigned act_year = boost::gregorian::day_clock::universal_day().year();
-
     //db
     Database::Connection conn = Database::Manager::acquire();
 
+    // zone IDs
     Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-
     Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
 
+/*
+    std::string registrar_handle =          //vat
+            common_init( "REG-FRED_INV", true );
+    */
+
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_handle = std::string("REG-FRED_INV") + time_string;
+
+
+    // create registrar
     Fred::Registrar::Manager::AutoPtr regMan
              = Fred::Registrar::Manager::create(DBSharedPtr());
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
@@ -780,22 +821,32 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreate )
     registrar->setVat(true);
     registrar->save();
 
+
+    cent_amount amount = 20000 * 100;
+    unsigned act_year = boost::gregorian::day_clock::universal_day().year();
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+
 
     // add credit for new registrar
     Database::Date taxdate (act_year,1,1);
     Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
                     , zone_cz_id//zone
                     , registrar->getId()//registrar
-                    , 2000000);//price
+                    , amount);//price
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
     // add credit for new registrar
     Database::ID invoiceid2 = invMan->createDepositInvoice(taxdate //taxdate
                     , zone_enum_id//zone
                     , registrar->getId()//registrar
-                    , 1000000);//price
+                    , amount);//price
     BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
+
+
+
+
+
     int reg_units = 24;
 
 
@@ -821,6 +872,51 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreate )
    test_ChargeDomainOperation(invMan.get(), exdate2, reg_units, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
    test_ChargeDomainOperation(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
    test_ChargeDomainOperation(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
+
+}
+
+BOOST_AUTO_TEST_CASE(chargeDomainCreate2Invoices )
+{
+    // setting up logger
+    setup_logging(CfgArgs::instance());
+
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+    // zone IDs
+    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+    Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
+
+// registrar
+    Database::ID regid = createTestRegistrar("REG-FRED_2INVNEED");
+
+
+    // get operation price so we can create invoices which will split the operation
+    // TODO more detailed
+    Database::Result res_price =
+            conn.exec_params("SELECT price FROM price_list WHERE operation = $1::integer AND zone = $2::integer AND valid_from < now() ORDER BY valid_from DESC LIMIT 1",
+            Database::query_param_list ( (unsigned)INVOICING_DomainRenew )
+                                        ( zone_cz_id ));
+
+    cent_amount renew_price = get_price (res_price[0][0]);
+
+    // price for invoices so that 2 are not sufficient
+    // cent_amount amount = op_price / 3;
+
+    // price for invoices so that 2 are needed.
+    // TODO hardcoded - change
+    cent_amount amount = ( renew_price * 1.20) / 2;
+    unsigned act_year = boost::gregorian::day_clock::universal_day().year();
+
+
+    //manager
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    // add credit - 2 invoices for the same zone:
+    Database::Date taxdate (act_year,1,1);
+
+    create2Invoices(invMan.get(), taxdate, zone_cz_id, regid, amount);
+
+    Database::Date exdate2(act_year + 5, 4, 30);
+    test_ChargeDomainOperation(invMan.get(), exdate2, 12, INVOICING_DomainRenew, zone_cz_id, regid);
 
 }
 
@@ -882,6 +978,8 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
     //std::cout << std::endl;
 
 }
+
+
 
 
 BOOST_AUTO_TEST_SUITE_END();//TestInv
