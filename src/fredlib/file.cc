@@ -70,7 +70,7 @@ List::reload(Database::Filters::Union &filter)
     }
 
     id_query.order_by() << "id DESC";
-    id_query.limit(getLimit());
+    if(getLimit() != 0) id_query.limit(getLimit());
     filter.serialize(id_query);
 
     Database::InsertQuery tmp_table_query = Database::InsertQuery(getTempTableName(),
