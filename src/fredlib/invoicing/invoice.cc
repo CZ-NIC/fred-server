@@ -375,7 +375,7 @@ public:
 
 // TODO what exceptions to throw and whether to log errors
 // SPEC current time taken from now() in DB (which should be UTC)
-unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price)
+unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int registrarId, cent_amount price)
 {
     Database::Connection conn = Database::Manager::acquire();
 
