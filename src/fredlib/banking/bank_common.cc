@@ -275,7 +275,7 @@ XMLparser::parseNode(xmlNode *node)
 bool 
 XMLparser::parse(const std::string &xml)
 {
-    m_doc = xmlReadMemory(xml.c_str(), xml.length(), "", NULL, 0);
+    m_doc = xmlReadMemory(xml.c_str(), xml.length(), "", NULL, XML_PARSE_NOCDATA);
     if (m_doc == NULL) {
         return false;
     }
