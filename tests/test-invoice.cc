@@ -52,6 +52,8 @@
 #include "fredlib/invoicing/invoice.h"
 #include "mailer_manager.h"
 #include "time_clock.h"
+#include "file_manager_client.h"
+#include "fredlib/banking/bank_common.h"
 
 
 //not using UTF defined main
@@ -925,6 +927,9 @@ BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
 
 BOOST_AUTO_TEST_CASE( archiveInvoices )
 {
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+
     //corba config
        FakedArgs fa = CfgArgs::instance()->fa;
 
@@ -952,18 +957,133 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
                   , corbaNS)
               );
 
+    //manager init
     MailerManager mailMan(CorbaContainer::get_instance()->getNS());
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create(
         docMan.get(),&mailMan));
+
+    FileManagerClient fm_client(
+             CorbaContainer::get_instance()->getNS());
+
+    //call archive invoices and get processed invoice ids
     InvoiceIdVect inv_id_vect = invMan->archiveInvoices(false);
 
-    //std::cout << "export invoice id: " ;
+    //read processed invoices query
+    std::string inv_query(
+        "select zone, crdate, taxdate, prefix , registrarid " // 0 - 4
+        ", credit, price, vat, total, totalvat, prefix_type, file , filexml " // 5 - 12
+        " from invoice where ");
+
+  /* table invoice
+  id serial NOT NULL, -- unique automatically generated identifier
+  "zone" integer, -- reference to zone
+  crdate timestamp without time zone NOT NULL DEFAULT now(), -- date and time of invoice creation
+  taxdate date NOT NULL, -- date of taxable fulfilment (when payment cames by advance FA)
+  prefix bigint NOT NULL, -- 9 placed number of invoice from invoice_prefix.prefix counted via TaxDate
+  registrarid integer NOT NULL, -- link to registrar
+  credit numeric(10,2) DEFAULT 0.0, -- credit from which is taken till zero, if it is NULL it is normal invoice
+  price numeric(10,2) NOT NULL DEFAULT 0.0, -- invoice high with tax
+  vat integer NOT NULL DEFAULT 19, -- VAT hight from account
+  total numeric(10,2) NOT NULL DEFAULT 0.0, -- amount without tax
+  totalvat numeric(10,2) NOT NULL DEFAULT 0.0, -- tax paid
+  prefix_type integer NOT NULL, -- invoice type (from which year is and which type is according to prefix)
+  file integer, -- link to generated PDF file, it can be NULL till file is generated
+  filexml integer, -- link to generated XML file, it can be NULL till file is generated
+ *
+ * */
+
+    bool inv_query_first_id = true;
+
+    Database::QueryParams inv_query_params;
+
+    //TODO: parse xml from filemanager , check with data in db
+
+    //select invoices by export invoice id"
     for (InvoiceIdVect::iterator i = inv_id_vect.begin(); i != inv_id_vect.end(); ++i )
-      //  std::cout << *i << " "
-        ;
+    {
+        //  std::cout << *i << " " //id
+
+        if (inv_query_first_id)
+        {//first id
+            inv_query_first_id = false;
+            //add first id
+            inv_query_params.push_back(*i);
+            inv_query += " id = $" + boost::lexical_cast<std::string>(inv_query_params.size()) +"::bigint ";
+        }
+        else
+        {//next id
+            inv_query_params.push_back(*i);
+            inv_query += "or id = $" + boost::lexical_cast<std::string>(inv_query_params.size()) +"::bigint ";
+        }
+    }//for id
     //std::cout << std::endl;
 
+    Database::Result invoice_res= conn.exec_params(inv_query, inv_query_params);
+
+    for (std::size_t i = 0 ; i < invoice_res.size(); ++i)//check invoice data
+    {
+        unsigned long long  file_id = invoice_res[i][12];
+        std::vector<char> out_buffer;
+        fm_client.download(file_id, out_buffer);
+
+        std::string xml(out_buffer.begin(), out_buffer.end());
+
+        try
+        {
+
+            Fred::Banking::XMLparser parser;
+            if (!parser.parse(xml)) throw std::runtime_error("parser error");
+
+            Fred::Banking::XMLnode root = parser.getRootNode();
+            if (root.getName().compare("invoice") != 0) throw std::runtime_error("root xml element name is not \"invoice\"");
+
+            Fred::Banking::XMLnode delivery = root.getChild("delivery");
+            if (delivery.getName().compare("delivery") != 0) throw std::runtime_error("xml element name is not \"delivery\"");
+
+            Fred::Banking::XMLnode vat_rates = delivery.getChild("vat_rates");
+            if (vat_rates.getName().compare("vat_rates") != 0) throw std::runtime_error("xml element name is not \"vat_rates\"");
+
+            if(vat_rates.hasChild("entry"))
+            {
+                Fred::Banking::XMLnode entry = vat_rates.getChild("entry");
+                if (entry.getName().compare("entry") != 0) throw std::runtime_error("xml element name is not \"entry\"");
+            }
+
+            Fred::Banking::XMLnode sumarize = delivery.getChild("sumarize");
+            if (sumarize.getName().compare("sumarize") != 0) throw std::runtime_error("xml element name is not \"sumarize\"");
+
+            Fred::Banking::XMLnode total = sumarize.getChild("total");
+            if (total.getName().compare("total") != 0) throw std::runtime_error("xml element name is not \"total\"");
+
+            if(total.getValue().compare( std::string( invoice_res[i][8])) !=0)
+            {
+                std::cout << "archiveInvoices debug total "
+                    << "\nCredit: " << std::string(invoice_res[i][5])
+                    << " xml total: " << total.getValue() << " sumarize value: " << sumarize.getValue()
+                    << " db total: " << std::string( invoice_res[i][8])
+                    << " xml file id: " << std::string(invoice_res[i][12])
+                    << " file_id: " << file_id
+                    << " out_buffer.size(): " << out_buffer.size()
+                    << " xml.size(): " << xml.size()
+                    << " \nxml: " << xml
+                    << std::endl;
+
+            }
+
+        }
+        catch(const std::exception& ex)
+        {
+            std::cout << "archiveInvoices debug exception: " << ex.what()
+                << "\nCredit: " << std::string(invoice_res[i][5])
+                << " xml file id: " << std::string(invoice_res[i][12])
+                << " file_id: " << file_id
+                << " out_buffer.size(): " << out_buffer.size()
+                << " xml.size(): " << xml.size()
+                << " \nxml: " << xml
+                << std::endl;
+        }
+    }
 }
 
 
