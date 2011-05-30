@@ -8,8 +8,8 @@ License:        GPL
 URL:            http://fred.nic.cz
 Source:         %{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
-BuildRequires:  omniORB-devel, boost-devel, postgresql-devel
-Requires: libomniORB4.1, boost, postgresql-libs, fred-pyfred, fred-doc2pdf fred-db redhat-lsb
+BuildRequires:  libomniorb-devel, boost-devel, postgresql-devel
+Requires: omniORB, boost, postgresql-libs, fred-pyfred, fred-doc2pdf fred-db redhat-lsb
 
 %description
 FRED (Free Registry for Enum and Domain) is free registry system for 
@@ -44,7 +44,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_sbindir}/fred-mifd
 %{_sbindir}/fred-msgd
 %{_sbindir}/migrate_log
-%{_docdir}/fred-server/example_payments.xml
+%{_docdir}/fred-server/*
 
 %changelog
 * Mon Sep 07 2008 Jaromir Talir <jaromir.talir@nic.cz>
