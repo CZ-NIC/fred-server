@@ -60,8 +60,24 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
+
+
+
+
+
 BOOST_AUTO_TEST_SUITE(TestInvoice)
 
+class InvoiceFixture {
+public:
+    InvoiceFixture() {
+        // setting up logger
+        setup_logging(CfgArgs::instance());
+    }
+
+};
+
+
+BOOST_GLOBAL_FIXTURE(InvoiceFixture)
 
 using namespace Fred::Invoicing;
 
@@ -128,9 +144,6 @@ bool check_std_exception_archiveInvoices(std::exception const & ex)
 
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
 {
-
-    // setting up logger
-    setup_logging(CfgArgs::instance());
     //db
     Database::Connection conn = Database::Manager::acquire();
 
@@ -149,8 +162,6 @@ BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
 
 BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
     //db
     Database::Connection conn = Database::Manager::acquire();
 
@@ -184,8 +195,6 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
 
 BOOST_AUTO_TEST_CASE( insertInvoicePrefix )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
     //db
     Database::Connection conn = Database::Manager::acquire();
     
@@ -228,8 +237,6 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix )
 
 BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
     //db
     Database::Connection conn = Database::Manager::acquire();
 
@@ -269,8 +276,6 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
 
 BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
     //db
     Database::Connection conn = Database::Manager::acquire();
 
@@ -314,8 +319,6 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
 
 BOOST_AUTO_TEST_CASE( createDepositInvoice )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
     //db
     Database::Connection conn = Database::Manager::acquire();
 
@@ -494,8 +497,6 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
 BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
     //db
     Database::Connection conn = Database::Manager::acquire();
 
@@ -745,8 +746,6 @@ void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Data
 
 BOOST_AUTO_TEST_CASE( chargeDomainCreateNoCredit )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
 
     std::string time_string(TimeStamp::microsec());
     std::string registrar_handle = std::string("REG-FRED_INV") + time_string;
@@ -792,8 +791,6 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreateNoCredit )
 // not thread safe - database data can change in the meantime
 BOOST_AUTO_TEST_CASE( chargeDomainCreate )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
 
     //db
     Database::Connection conn = Database::Manager::acquire();
@@ -844,9 +841,6 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreate )
     BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
 
 
-
-
-
     int reg_units = 24;
 
 
@@ -877,8 +871,6 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreate )
 
 BOOST_AUTO_TEST_CASE(chargeDomainCreate2Invoices )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
 
     //db
     Database::Connection conn = Database::Manager::acquire();
@@ -922,8 +914,6 @@ BOOST_AUTO_TEST_CASE(chargeDomainCreate2Invoices )
 
 BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
 
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
@@ -935,9 +925,6 @@ BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
 
 BOOST_AUTO_TEST_CASE( archiveInvoices )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
-
     //corba config
        FakedArgs fa = CfgArgs::instance()->fa;
 
@@ -978,8 +965,6 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
     //std::cout << std::endl;
 
 }
-
-
 
 
 BOOST_AUTO_TEST_SUITE_END();//TestInv
