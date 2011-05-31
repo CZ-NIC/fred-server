@@ -693,7 +693,7 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
     BOOST_REQUIRE_MESSAGE(price_res.size() == 1, "Exactly one actual valid record must be present in table price_list");
 
     // TODO integer division, part of questions to specification
-    double counted_price = get_price(price_res[0][0]) * (reg_units / (int)price_res[0][1]);
+    cent_amount counted_price = get_price(price_res[0][0]) * (reg_units / (int)price_res[0][1]);
 
     boost::format credit_desc = boost::format(" credit before: %1%, credit_after: %2%, counted price: %3%")
         % credit_before % credit_after % counted_price;
@@ -874,46 +874,54 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreate )
 
 }
 
+cent_amount getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units)
+{
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+
+    // TODO more detailed
+    Database::Result price_res = conn.exec_params("SELECT price , period FROM price_list where zone=$1::integer and operation=$2::integer "
+                              "and valid_from<now() and ((valid_to is null) or (valid_to>now()))  order by valid_from desc limit 1 ",
+                              Database::query_param_list  (zone_id)
+                                                          (op));
+
+    BOOST_REQUIRE_MESSAGE(price_res.size() > 0, "Fetching record from price_list");
+
+    return get_price (price_res[0][0]) * (reg_units / (int)price_res[0][1]);
+
+}
+
 BOOST_AUTO_TEST_CASE(chargeDomainCreate2Invoices )
 {
-
     //db
     Database::Connection conn = Database::Manager::acquire();
     // zone IDs
     Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
     Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
 
+    unsigned period = 12;
+    unsigned act_year = boost::gregorian::day_clock::universal_day().year();
+    Database::Date exdate(act_year + 5, 4, 30);
+
+
 // registrar
     Database::ID regid = createTestRegistrar("REG-FRED_2INVNEED");
 
-
-    // get operation price so we can create invoices which will split the operation
-    // TODO more detailed
-    Database::Result res_price =
-            conn.exec_params("SELECT price FROM price_list WHERE operation = $1::integer AND zone = $2::integer AND valid_from < now() ORDER BY valid_from DESC LIMIT 1",
-            Database::query_param_list ( (unsigned)INVOICING_DomainRenew )
-                                        ( zone_cz_id ));
-
-    cent_amount renew_price = get_price (res_price[0][0]);
-
+    cent_amount renew_price = getOperationPrice(INVOICING_DomainRenew, zone_cz_id, period);
     // price for invoices so that 2 are not sufficient
     // cent_amount amount = op_price / 3;
 
     // price for invoices so that 2 are needed.
-    // TODO hardcoded - change
+    // TODO hardcoded VAT - change
     cent_amount amount = ( renew_price * 1.20) / 2;
-    unsigned act_year = boost::gregorian::day_clock::universal_day().year();
-
 
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
     // add credit - 2 invoices for the same zone:
     Database::Date taxdate (act_year,1,1);
-
     create2Invoices(invMan.get(), taxdate, zone_cz_id, regid, amount);
 
-    Database::Date exdate2(act_year + 5, 4, 30);
-    test_ChargeDomainOperation(invMan.get(), exdate2, 12, INVOICING_DomainRenew, zone_cz_id, regid);
+    test_ChargeDomainOperation(invMan.get(), exdate, 12, INVOICING_DomainRenew, zone_cz_id, regid);
 
 }
 
