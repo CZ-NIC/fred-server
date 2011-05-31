@@ -367,8 +367,6 @@ InvoiceClient::factoring()
 {
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
-    std::auto_ptr<Fred::Registrar::Manager>
-        regMan(Fred::Registrar::Manager::create(m_db));
 
     bool zoneFilled = false;
     bool regFilled = false;

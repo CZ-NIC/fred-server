@@ -988,6 +988,28 @@ BOOST_AUTO_TEST_CASE(chargeDomainCreate2InvoicesNotSuff )
 
 }
 
+BOOST_AUTO_TEST_CASE( createAccountInvoices_default )
+{
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        Fred::Invoicing::Manager::create());
+
+    Database::Date now(Database::NOW);
+    Database::Date first_this(now.get().year(), now.get().month(), 1);
+    Database::Date last_prev(first_this - Database::Days(1));
+
+    Database::Date toDate;
+    Database::Date taxDate;
+
+    toDate = first_this;
+    taxDate = last_prev;
+
+    std::string toDate_str(toDate.to_string());
+    std::string taxDate_str(taxDate.to_string());
+
+    invMan->createAccountInvoices( std::string("cz"), taxDate_str, toDate_str);
+}
+
 BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
 {
 
@@ -1123,9 +1145,19 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
             BOOST_CHECK(payment.getChild("invoice_date").getValue().compare(std::string(invoice_res[i][1])//invoice crdate::date
                         )==0);
 
-            BOOST_CHECK(payment.getChild("advance_payment_date").getValue().compare(std::string(invoice_res[i][2])//invoice taxdate
+            //deposit inv
+            if(payment.hasChild("advance_payment_date"))
+            {
+                BOOST_CHECK(payment.getChild("advance_payment_date").getValue().compare(std::string(invoice_res[i][2])//invoice taxdate
                         )==0);
+            }
 
+            //account inv
+            if(payment.hasChild("tax_point"))
+            {
+                BOOST_CHECK(payment.getChild("tax_point").getValue().compare(std::string(invoice_res[i][2])//invoice taxdate
+                        )==0);
+            }
 
 
             Fred::Banking::XMLnode vat_rates = delivery.getChild("vat_rates");
