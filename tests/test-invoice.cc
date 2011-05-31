@@ -982,7 +982,7 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 
     //read processed invoices query
     std::string inv_query(
-        "select zone, crdate, taxdate, prefix , registrarid " // 0 - 4
+        "select zone, crdate::date, taxdate, prefix , registrarid " // 0 - 4
         ", credit, price, vat, total, totalvat, prefix_type, file , filexml " // 5 - 12
         " from invoice where ");
 
@@ -1050,6 +1050,20 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 
             Fred::Banking::XMLnode delivery = root.getChild("delivery");
             if (delivery.getName().compare("delivery") != 0) throw std::runtime_error("xml element name is not \"delivery\"");
+
+            Fred::Banking::XMLnode payment = root.getChild("payment");
+            if (payment.getName().compare("payment") != 0) throw std::runtime_error("xml element name is not \"payment\"");
+
+            BOOST_CHECK(payment.getChild("invoice_number").getValue().compare(std::string(invoice_res[i][3])//invoice prefix
+                        )==0);
+
+            BOOST_CHECK(payment.getChild("invoice_date").getValue().compare(std::string(invoice_res[i][1])//invoice crdate::date
+                        )==0);
+
+            BOOST_CHECK(payment.getChild("advance_payment_date").getValue().compare(std::string(invoice_res[i][2])//invoice taxdate
+                        )==0);
+
+
 
             Fred::Banking::XMLnode vat_rates = delivery.getChild("vat_rates");
             if (vat_rates.getName().compare("vat_rates") != 0) throw std::runtime_error("xml element name is not \"vat_rates\"");
