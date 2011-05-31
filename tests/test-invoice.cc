@@ -636,8 +636,9 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigned reg_units,
         unsigned operation, Database::ID zone_id, Database::ID registrar_id)
 {
-    BOOST_TEST_MESSAGE( boost::format("test domain operation charging - exdate: %1%, reg_units: %2%, operation: %3% , zone_id: %4%, registrar_id: %5%")
-                % exdate % reg_units % operation % zone_id % registrar_id );
+    boost::format test_desc
+        = boost::format("test domain operation charging - exdate: %1%, reg_units: %2%, operation: %3% , zone_id: %4%, registrar_id: %5%")
+        % exdate % reg_units % operation % zone_id % registrar_id;
 
     Database::Connection conn = Database::Manager::acquire();
 
@@ -669,9 +670,11 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
 
 
     if (operation == INVOICING_DomainCreate ) {
-        BOOST_REQUIRE(invMan->chargeDomainCreate(zone_id, registrar_id, object_id, exdate, reg_units ));
+        BOOST_REQUIRE_MESSAGE (
+                invMan->chargeDomainCreate(zone_id, registrar_id, object_id, exdate, reg_units ), test_desc);
     } else if (operation == INVOICING_DomainRenew) {
-        BOOST_REQUIRE(invMan->chargeDomainRenew(zone_id, registrar_id, object_id, exdate, reg_units ));
+        BOOST_REQUIRE_MESSAGE (
+                invMan->chargeDomainRenew(zone_id, registrar_id, object_id, exdate, reg_units ), test_desc);
     } else {
         BOOST_FAIL("Not implemented");
     }
@@ -692,10 +695,10 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
     // TODO integer division, part of questions to specification
     double counted_price = get_price(price_res[0][0]) * (reg_units / (int)price_res[0][1]);
 
-    std::cout << "credit before: " << credit_before << ", credit_after: " << credit_after <<
-            ", counted price: " << counted_price << std::endl;
-    BOOST_REQUIRE_MESSAGE(counted_price == credit_before - credit_after, "Charged credit does not match");
+    boost::format credit_desc = boost::format(" credit before: %1%, credit_after: %2%, counted price: %3%")
+        % credit_before % credit_after % counted_price;
 
+    BOOST_REQUIRE_MESSAGE(counted_price == credit_before - credit_after, "Charged credit match: " + test_desc.str());
 
     Database::Result res_ior = conn.exec_params(
     "SELECT period, ExDate FROM invoice_object_registry WHERE objectid = $1::integer "
