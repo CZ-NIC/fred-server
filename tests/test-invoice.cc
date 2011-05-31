@@ -1034,7 +1034,6 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 
         try
         {
-
             Fred::Banking::XMLparser parser;
             if (!parser.parse(xml)) throw std::runtime_error("parser error");
 
@@ -1051,20 +1050,33 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
             {
                 Fred::Banking::XMLnode entry = vat_rates.getChild("entry");
                 if (entry.getName().compare("entry") != 0) throw std::runtime_error("xml element name is not \"entry\"");
-            }
 
-            Fred::Banking::XMLnode sumarize = delivery.getChild("sumarize");
-            if (sumarize.getName().compare("sumarize") != 0) throw std::runtime_error("xml element name is not \"sumarize\"");
-
-            Fred::Banking::XMLnode total = sumarize.getChild("total");
-            if (total.getName().compare("total") != 0) throw std::runtime_error("xml element name is not \"total\"");
-
-            if(total.getValue().compare( std::string( invoice_res[i][8])) !=0)
-            {
-                std::cout << "archiveInvoices debug total "
-                    << "\nCredit: " << std::string(invoice_res[i][5])
-                    << " xml total: " << total.getValue() << " sumarize value: " << sumarize.getValue()
+                if(
+                        (entry.getChild("vatperc").getValue().compare(std::string(invoice_res[i][7])//invoice vat
+                                                    )!=0)
+                        || (entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][8])//invoice total
+                        )!=0)
+                        || (entry.getChild("vat").getValue().compare(std::string(invoice_res[i][9])//invoice totalvat
+                        )!=0)
+                        || (entry.getChild("total").getValue().compare(std::string(invoice_res[i][6])//invoice price
+                        )!=0)
+                )
+                std::cout << "archiveInvoices debug entry "
+                    << "\n"
+                    << " xml entry vatperc: " << entry.getChild("vatperc").getValue()
+                    << " xml entry basetax: " << entry.getChild("basetax").getValue()
+                    << " xml entry vat: " << entry.getChild("vat").getValue()
+                    << " xml entry total: " << entry.getChild("total").getValue()
+                    << "\n"
+                    << " db crdate: " << std::string( invoice_res[i][1])
+                    << " db taxdate: " << std::string( invoice_res[i][2])
+                    << " db prefix: " << std::string( invoice_res[i][3])
+                    << " db credit: " << std::string(invoice_res[i][5])
+                    << " db price: " << std::string(invoice_res[i][6])
+                    << " db vat: " << std::string(invoice_res[i][7])
                     << " db total: " << std::string( invoice_res[i][8])
+                    << " db totalvat: " << std::string( invoice_res[i][9])
+                    << "\n"
                     << " xml file id: " << std::string(invoice_res[i][12])
                     << " file_id: " << file_id
                     << " out_buffer.size(): " << out_buffer.size()
@@ -1072,7 +1084,49 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
                     << " \nxml: " << xml
                     << std::endl;
 
+                BOOST_CHECK(entry.getChild("vatperc").getValue().compare(std::string(invoice_res[i][7])//invoice vat
+                            )==0);
+                BOOST_CHECK(entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][8])//invoice total
+                            )==0);
+                BOOST_CHECK(entry.getChild("vat").getValue().compare(std::string(invoice_res[i][9])//invoice totalvat
+                            )==0);
+                BOOST_CHECK(entry.getChild("total").getValue().compare(std::string(invoice_res[i][6])//invoice price
+                            )==0);
             }
+
+            Fred::Banking::XMLnode sumarize = delivery.getChild("sumarize");
+            if (sumarize.getName().compare("sumarize") != 0) throw std::runtime_error("xml element name is not \"sumarize\"");
+
+
+
+            if (sumarize.getChild("total").getValue().compare(std::string(invoice_res[i][6])//invoice price
+            )!=0)
+            {
+                std::cout << "archiveInvoices debug total "
+                    << "\n"
+                    << " db crdate: " << std::string( invoice_res[i][1])
+                    << " db taxdate: " << std::string( invoice_res[i][2])
+                    << " db prefix: " << std::string( invoice_res[i][3])
+                    << " db credit: " << std::string(invoice_res[i][5])
+                    << " db price: " << std::string(invoice_res[i][6])
+                    << " db vat: " << std::string(invoice_res[i][7])
+                    << " db total: " << std::string( invoice_res[i][8])
+                    << " db totalvat: " << std::string( invoice_res[i][9])
+
+                    << " xml sumarize total: " << sumarize.getChild("total").getValue()
+
+                    << " xml file id: " << std::string(invoice_res[i][12])
+                    << " file_id: " << file_id
+                    << " out_buffer.size(): " << out_buffer.size()
+                    << " xml.size(): " << xml.size()
+                    << " \nxml: " << xml
+                    << std::endl;
+            }
+
+            BOOST_CHECK(sumarize.getChild("total").getValue().compare(std::string(invoice_res[i][6])//invoice price
+                            )==0);
+
+
 
         }
         catch(const std::exception& ex)
