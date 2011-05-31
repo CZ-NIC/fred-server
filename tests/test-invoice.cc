@@ -143,6 +143,7 @@ bool check_std_exception_archiveInvoices(std::exception const & ex)
     return (ex_msg.find(std::string("archiveInvoices")) != std::string::npos);
 }
 
+cent_amount getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units);
 
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
 {
@@ -633,8 +634,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
 // all CHECKs were changed to REQUIRE
-void testCharge(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigned reg_units,
-        unsigned operation, Database::ID zone_id, Database::ID registrar_id)
+void testChargeWorker(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigned reg_units,
+        unsigned operation, Database::ID zone_id, Database::ID registrar_id, bool should_suceed)
 {
     boost::format test_desc
         = boost::format("test domain operation charging - exdate: %1%, reg_units: %2%, operation: %3% , zone_id: %4%, registrar_id: %5%")
@@ -670,11 +671,21 @@ void testCharge(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigne
 
 
     if (operation == INVOICING_DomainCreate ) {
-        BOOST_REQUIRE_MESSAGE (
-                invMan->chargeDomainCreate(zone_id, registrar_id, object_id, exdate, reg_units ), test_desc);
+        if(should_suceed) {
+            BOOST_REQUIRE_MESSAGE (invMan->chargeDomainCreate(zone_id, registrar_id, object_id, exdate, reg_units ),
+                    test_desc);
+        } else {
+            BOOST_REQUIRE_MESSAGE (!invMan->chargeDomainCreate(zone_id, registrar_id, object_id, exdate, reg_units ),
+                    test_desc);
+        }
     } else if (operation == INVOICING_DomainRenew) {
-        BOOST_REQUIRE_MESSAGE (
-                invMan->chargeDomainRenew(zone_id, registrar_id, object_id, exdate, reg_units ), test_desc);
+        if(should_suceed) {
+            BOOST_REQUIRE_MESSAGE (invMan->chargeDomainRenew(zone_id, registrar_id, object_id, exdate, reg_units ),
+                    test_desc);
+        } else {
+            BOOST_REQUIRE_MESSAGE (!invMan->chargeDomainRenew(zone_id, registrar_id, object_id, exdate, reg_units ),
+                    test_desc);
+        }
     } else {
         BOOST_FAIL("Not implemented");
     }
@@ -685,39 +696,44 @@ void testCharge(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigne
                    if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) credit_after = get_price((std::string)credit_res2[0][0]);
 
 
-                   // TODO refactor
+    cent_amount counted_price = getOperationPrice(operation, zone_id, reg_units);
+
     // now check the credit change
-    Database::Result price_res = conn.exec_params("SELECT price , period FROM price_list where zone=$1::integer and operation=$2::integer "
-                                "and valid_from<now() and ((valid_to is null) or (valid_to>now()))  order by valid_from desc limit 1 ",
-                                Database::query_param_list  (zone_id)
-                                                            (operation));
-
-    BOOST_REQUIRE_MESSAGE(price_res.size() == 1, "Exactly one actual valid record must be present in table price_list");
-
-    // TODO integer division, part of questions to specification
-    cent_amount counted_price = get_price(price_res[0][0]) * (reg_units / (int)price_res[0][1]);
-
-
-
-
-
     boost::format credit_desc = boost::format(" credit before: %1%, credit_after: %2%, counted price: %3%")
         % credit_before % credit_after % counted_price;
 
-    BOOST_REQUIRE_MESSAGE(counted_price == credit_before - credit_after, "Charged credit match: " + test_desc.str());
+    if(should_suceed) {
+        BOOST_REQUIRE_MESSAGE(counted_price == credit_before - credit_after, "Charged credit match: " + test_desc.str());
+    } else {
+        BOOST_REQUIRE_MESSAGE(credit_before == credit_after, "No credit charged - operation was not successful. " + test_desc.str());
+    }
 
-    Database::Result res_ior = conn.exec_params(
-    "SELECT period, ExDate FROM invoice_object_registry WHERE objectid = $1::integer "
-                                                    "AND registrarid = $2::integer "
-                                                    "AND zone = $3::integer",
-               Database::query_param_list ( object_id )
-                                          ( registrar_id)
-                                          ( zone_id));
+    if(should_suceed) {
+        Database::Result res_ior = conn.exec_params(
+        "SELECT period, ExDate FROM invoice_object_registry WHERE objectid = $1::integer "
+                                                        "AND registrarid = $2::integer "
+                                                        "AND zone = $3::integer",
+                   Database::query_param_list ( object_id )
+                                              ( registrar_id)
+                                              ( zone_id));
 
-    BOOST_REQUIRE_MESSAGE(res_ior.size() == 1, "Incorrect number of records in invoice_object_registry table ");
+        BOOST_REQUIRE_MESSAGE(res_ior.size() == 1, "Incorrect number of records in invoice_object_registry table ");
 
-    BOOST_REQUIRE((unsigned)res_ior[0][0] == reg_units);
-    BOOST_REQUIRE(res_ior[0][1] == exdate);
+        BOOST_REQUIRE((unsigned)res_ior[0][0] == reg_units);
+        BOOST_REQUIRE(res_ior[0][1] == exdate);
+    }
+}
+
+void testChargeSucc(Fred::Invoicing::Manager *invMan, Database::Date &exdate, unsigned reg_units,
+        unsigned operation, Database::ID zone_id, Database::ID registrar_id)
+{
+    testChargeWorker(invMan, exdate, reg_units, operation, zone_id, registrar_id, true);
+}
+
+void testChargeFail(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigned reg_units,
+        unsigned operation, Database::ID zone_id, Database::ID registrar_id)
+{
+    testChargeWorker(invMan, exdate, reg_units, operation, zone_id, registrar_id, false);
 }
 
 // Fred::Registrar::Registrar::AutoPtr createTestRegistrar(const std::string &handle_base)
@@ -753,7 +769,6 @@ void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Data
                    , amount);//price
    BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
 }
-
 
 BOOST_AUTO_TEST_CASE( chargeDomainCreateNoCredit )
 {
@@ -856,25 +871,25 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreate )
     Database::Date exdate(act_year + 1, 1, 1);
     Database::Date exdate2(act_year + 5, 4, 30);
 
-    testCharge(invMan.get(), exdate, 24, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
-    testCharge(invMan.get(), exdate, 24, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
-    testCharge(invMan.get(), exdate, 19, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
-    testCharge(invMan.get(), exdate, 19, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
+    testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
+    testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
+    testChargeSucc(invMan.get(), exdate, 19, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
+    testChargeSucc(invMan.get(), exdate, 19, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
 
-    testCharge(invMan.get(), exdate2, 24, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
-    testCharge(invMan.get(), exdate2, 24, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
-    testCharge(invMan.get(), exdate2, 19, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
-    testCharge(invMan.get(), exdate2, 19, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
+    testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
+    testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
+    testChargeSucc(invMan.get(), exdate2, 19, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
+    testChargeSucc(invMan.get(), exdate2, 19, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
 
-    testCharge(invMan.get(), exdate, 24, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
-   testCharge(invMan.get(), exdate, 24, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
-   testCharge(invMan.get(), exdate, 19, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
-   testCharge(invMan.get(), exdate, 19, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
+    testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
+   testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
+   testChargeSucc(invMan.get(), exdate, 19, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
+   testChargeSucc(invMan.get(), exdate, 19, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
 
-   testCharge(invMan.get(), exdate2, 24, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
-   testCharge(invMan.get(), exdate2, 24, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
-   testCharge(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
-   testCharge(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
+   testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
+   testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
+   testChargeSucc(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
+   testChargeSucc(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
 
 }
 
@@ -895,33 +910,27 @@ cent_amount getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_un
 
 }
 
-void testCharge2Invoices(Database::ID zone_id, unsigned op, unsigned period, Database::Date taxdate, Database::Date exdate)
+void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned period,
+        Database::Date taxdate, Database::Date exdate, cent_amount amount, bool should_succ)
 {
     // registrar
     Database::ID regid = createTestRegistrar("REG-FRED_2INVNEED");
-
-    cent_amount op_price = getOperationPrice(INVOICING_DomainRenew, zone_id, period);
-    // price for invoices so that 2 are not sufficient
-    // cent_amount amount = op_price / 3;
-
-    // price for invoices so that 2 are needed.
-    // TODO hardcoded VAT - change
-    cent_amount amount = ( op_price * 1.20) / 2;
 
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
     // add credit - 2 invoices for the same zone:
 
-    create2Invoices(invMan.get(), taxdate, zone_id, regid, amount);
+    if(amount > 0) {
+        create2Invoices(invMan.get(), taxdate, zone_id, regid, amount);
+    }
 
-    testCharge(invMan.get(), exdate, 12, INVOICING_DomainRenew, zone_id, regid);
+    testChargeWorker(invMan.get(), exdate, 12, INVOICING_DomainRenew, zone_id, regid, should_succ);
 }
 
 void testCharge2InvoicesFail(Database::ID zone_id, unsigned op, unsigned period, Database::Date taxdate, Database::Date exdate)
 {
-
+    throw 0;
 }
-
 
 BOOST_AUTO_TEST_CASE(chargeDomainCreate2Invoices )
 {
@@ -929,16 +938,53 @@ BOOST_AUTO_TEST_CASE(chargeDomainCreate2Invoices )
     Database::Connection conn = Database::Manager::acquire();
     // zone IDs
     Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+    // TODO unused
     Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
 
     unsigned operation = (unsigned) INVOICING_DomainRenew;
     unsigned period = 12;
 
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
-    Database::Date exdate(act_year + 5, 4, 30);
-    Database::Date taxdate (act_year,1,1);
 
-    testCharge2Invoices(zone_cz_id, operation, period, taxdate, exdate);
+
+    cent_amount op_price = getOperationPrice(operation, zone_cz_id, period);
+       // price for invoices so that 2 are not sufficient
+       // cent_amount amount = op_price / 3;
+
+       // price for invoices so that 2 are needed.
+       // TODO hardcoded VAT - change
+    cent_amount amount = ( op_price * 1.20) / 2;
+
+    testCharge2InvoicesWorker(zone_cz_id, operation, period,
+            Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), amount, true);
+
+}
+
+BOOST_AUTO_TEST_CASE(chargeDomainCreate2InvoicesNotSuff )
+{
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+    // zone IDs
+    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+    // TODO unused
+    Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
+
+    unsigned operation = (unsigned) INVOICING_DomainRenew;
+    unsigned period = 12;
+
+    unsigned act_year = boost::gregorian::day_clock::universal_day().year();
+
+
+    cent_amount op_price = getOperationPrice(operation, zone_cz_id, period);
+       // price for invoices so that 2 are not sufficient
+       // cent_amount amount = op_price / 3;
+
+       // price for invoices so that 2 are needed.
+       // TODO hardcoded VAT - change
+    cent_amount amount = ( op_price * 0.9) / 2;
+
+    testCharge2InvoicesWorker(zone_cz_id, operation, period,
+            Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), amount, false);
 
 }
 
