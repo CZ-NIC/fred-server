@@ -633,7 +633,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
 // all CHECKs were changed to REQUIRE
-void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigned reg_units,
+void testCharge(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigned reg_units,
         unsigned operation, Database::ID zone_id, Database::ID registrar_id)
 {
     boost::format test_desc
@@ -679,11 +679,13 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
         BOOST_FAIL("Not implemented");
     }
 
-    // REQUIRE CREDIT after
+    // CHECK CREDIT after
     Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_id)(registrar_id));
                    if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) credit_after = get_price((std::string)credit_res2[0][0]);
 
+
+                   // TODO refactor
     // now check the credit change
     Database::Result price_res = conn.exec_params("SELECT price , period FROM price_list where zone=$1::integer and operation=$2::integer "
                                 "and valid_from<now() and ((valid_to is null) or (valid_to>now()))  order by valid_from desc limit 1 ",
@@ -694,6 +696,10 @@ void test_ChargeDomainOperation(Fred::Invoicing::Manager *invMan, Database::Date
 
     // TODO integer division, part of questions to specification
     cent_amount counted_price = get_price(price_res[0][0]) * (reg_units / (int)price_res[0][1]);
+
+
+
+
 
     boost::format credit_desc = boost::format(" credit before: %1%, credit_after: %2%, counted price: %3%")
         % credit_before % credit_after % counted_price;
@@ -761,6 +767,8 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreateNoCredit )
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
+
+    // create registrar
     Fred::Registrar::Manager::AutoPtr regMan
              = Fred::Registrar::Manager::create(DBSharedPtr());
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
@@ -845,32 +853,28 @@ BOOST_AUTO_TEST_CASE( chargeDomainCreate )
                     , amount);//price
     BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
 
-
-    int reg_units = 24;
-
-
     Database::Date exdate(act_year + 1, 1, 1);
     Database::Date exdate2(act_year + 5, 4, 30);
 
-    test_ChargeDomainOperation(invMan.get(), exdate, reg_units, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
-    test_ChargeDomainOperation(invMan.get(), exdate, reg_units, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
-    test_ChargeDomainOperation(invMan.get(), exdate, 19, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
-    test_ChargeDomainOperation(invMan.get(), exdate, 19, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
+    testCharge(invMan.get(), exdate, 24, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
+    testCharge(invMan.get(), exdate, 24, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
+    testCharge(invMan.get(), exdate, 19, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
+    testCharge(invMan.get(), exdate, 19, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
 
-    test_ChargeDomainOperation(invMan.get(), exdate2, reg_units, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
-    test_ChargeDomainOperation(invMan.get(), exdate2, reg_units, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
-    test_ChargeDomainOperation(invMan.get(), exdate2, 19, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
-    test_ChargeDomainOperation(invMan.get(), exdate2, 19, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
+    testCharge(invMan.get(), exdate2, 24, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
+    testCharge(invMan.get(), exdate2, 24, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
+    testCharge(invMan.get(), exdate2, 19, INVOICING_DomainCreate, zone_cz_id, registrar->getId());
+    testCharge(invMan.get(), exdate2, 19, INVOICING_DomainCreate, zone_enum_id, registrar->getId());
 
-    test_ChargeDomainOperation(invMan.get(), exdate, reg_units, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
-   test_ChargeDomainOperation(invMan.get(), exdate, reg_units, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
-   test_ChargeDomainOperation(invMan.get(), exdate, 19, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
-   test_ChargeDomainOperation(invMan.get(), exdate, 19, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
+    testCharge(invMan.get(), exdate, 24, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
+   testCharge(invMan.get(), exdate, 24, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
+   testCharge(invMan.get(), exdate, 19, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
+   testCharge(invMan.get(), exdate, 19, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
 
-   test_ChargeDomainOperation(invMan.get(), exdate2, reg_units, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
-   test_ChargeDomainOperation(invMan.get(), exdate2, reg_units, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
-   test_ChargeDomainOperation(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
-   test_ChargeDomainOperation(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
+   testCharge(invMan.get(), exdate2, 24, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
+   testCharge(invMan.get(), exdate2, 24, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
+   testCharge(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_cz_id, registrar->getId());
+   testCharge(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_enum_id, registrar->getId());
 
 }
 
@@ -891,6 +895,34 @@ cent_amount getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_un
 
 }
 
+void testCharge2Invoices(Database::ID zone_id, unsigned op, unsigned period, Database::Date taxdate, Database::Date exdate)
+{
+    // registrar
+    Database::ID regid = createTestRegistrar("REG-FRED_2INVNEED");
+
+    cent_amount op_price = getOperationPrice(INVOICING_DomainRenew, zone_id, period);
+    // price for invoices so that 2 are not sufficient
+    // cent_amount amount = op_price / 3;
+
+    // price for invoices so that 2 are needed.
+    // TODO hardcoded VAT - change
+    cent_amount amount = ( op_price * 1.20) / 2;
+
+    //manager
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    // add credit - 2 invoices for the same zone:
+
+    create2Invoices(invMan.get(), taxdate, zone_id, regid, amount);
+
+    testCharge(invMan.get(), exdate, 12, INVOICING_DomainRenew, zone_id, regid);
+}
+
+void testCharge2InvoicesFail(Database::ID zone_id, unsigned op, unsigned period, Database::Date taxdate, Database::Date exdate)
+{
+
+}
+
+
 BOOST_AUTO_TEST_CASE(chargeDomainCreate2Invoices )
 {
     //db
@@ -899,29 +931,14 @@ BOOST_AUTO_TEST_CASE(chargeDomainCreate2Invoices )
     Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
     Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
 
+    unsigned operation = (unsigned) INVOICING_DomainRenew;
     unsigned period = 12;
+
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
     Database::Date exdate(act_year + 5, 4, 30);
-
-
-// registrar
-    Database::ID regid = createTestRegistrar("REG-FRED_2INVNEED");
-
-    cent_amount renew_price = getOperationPrice(INVOICING_DomainRenew, zone_cz_id, period);
-    // price for invoices so that 2 are not sufficient
-    // cent_amount amount = op_price / 3;
-
-    // price for invoices so that 2 are needed.
-    // TODO hardcoded VAT - change
-    cent_amount amount = ( renew_price * 1.20) / 2;
-
-    //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
-    // add credit - 2 invoices for the same zone:
     Database::Date taxdate (act_year,1,1);
-    create2Invoices(invMan.get(), taxdate, zone_cz_id, regid, amount);
 
-    test_ChargeDomainOperation(invMan.get(), exdate, 12, INVOICING_DomainRenew, zone_cz_id, regid);
+    testCharge2Invoices(zone_cz_id, operation, period, taxdate, exdate);
 
 }
 
