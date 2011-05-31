@@ -63,13 +63,13 @@ AC_DEFUN([AX_BOOST_DATE_TIME],
 
         AC_CACHE_CHECK(whether the Boost::Date_Time library is available,
 					   ax_cv_boost_date_time,
-        [AC_LANG_PUSH([C++])
-		 AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/date_time/gregorian/gregorian_types.hpp>]],
+       [#AC_LANG_PUSH([C++])
+		 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/date_time/gregorian/gregorian_types.hpp>]],
                                    [[using namespace boost::gregorian; date d(2002,Jan,10);
                                      return 0;
-                                   ]]),
+                                   ]])],
          ax_cv_boost_date_time=yes, ax_cv_boost_date_time=no)
-         AC_LANG_POP([C++])
+ #        AC_LANG_POP([C++])
 		])
 		link_date_time="no"
 		if test "x$ax_cv_boost_date_time" = "xyes"; then
