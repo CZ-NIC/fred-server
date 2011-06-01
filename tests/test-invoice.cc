@@ -1023,6 +1023,8 @@ BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
 
 BOOST_AUTO_TEST_CASE( archiveInvoices )
 {
+    ElapsedTime et;
+    
     //db
     Database::Connection conn = Database::Manager::acquire();
 

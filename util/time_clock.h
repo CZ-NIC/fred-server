@@ -24,6 +24,24 @@
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/test/unit_test.hpp>
+
+class ElapsedTime
+{
+    boost::posix_time::ptime start;
+public:
+    ElapsedTime()
+    : start(boost::posix_time::microsec_clock::universal_time())
+    {}
+    ~ElapsedTime()
+    {
+        BOOST_MESSAGE(std::string ("elapsed time: ")+std::string (
+                boost::posix_time::to_iso_string(
+                boost::posix_time::microsec_clock::universal_time()
+                - start)));
+    }
+};//class ElapsedTime
+													
 
 class TimeStamp
 {
