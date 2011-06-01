@@ -1169,9 +1169,15 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
                 if(
                         (entry.getChild("vatperc").getValue().compare(std::string(invoice_res[i][7])//invoice vat
                                                     )!=0)
-                        /*
-                        || (entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][8])//invoice total
-                        )!=0)
+                        
+                        || ((entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][5])//invoice credit
+                                )!=0) 
+			    && (entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][6])//invoice price
+                                )!=0)
+			    && (entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][8])//invoice total
+                                )!=0))
+			    
+			/*
                         || (entry.getChild("vat").getValue().compare(std::string(invoice_res[i][9])//invoice totalvat
                         )!=0)
                         || (entry.getChild("total").getValue().compare(std::string(invoice_res[i][6])//invoice price
@@ -1203,9 +1209,15 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 
                 BOOST_CHECK(entry.getChild("vatperc").getValue().compare(std::string(invoice_res[i][7])//invoice vat
                             )==0);
-                /*
-                BOOST_CHECK(entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][8])//invoice total
-                            )==0);
+                
+                BOOST_CHECK(
+		            ((entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][5])//invoice credit
+                                )==0) 
+			    || (entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][6])//invoice price
+                                )==0)
+			    || (entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][8])//invoice total
+                                )==0)) );
+		/*
                 BOOST_CHECK(entry.getChild("vat").getValue().compare(std::string(invoice_res[i][9])//invoice totalvat
                             )==0);
                 BOOST_CHECK(entry.getChild("total").getValue().compare(std::string(invoice_res[i][6])//invoice price
