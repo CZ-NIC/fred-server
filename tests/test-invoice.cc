@@ -86,6 +86,40 @@ using namespace Fred::Invoicing;
 const std::string server_name = "test-invoice";
 
 
+//insertInvoicePrefix
+void try_insert_invoice_prefix()
+{
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+            Fred::Invoicing::Manager::create());
+
+    for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+    {
+        try{
+        invMan->insertInvoicePrefix(
+                 zone_cz_id//zoneId
+                , 0//type
+                , year//year
+                , year*10000//prefix
+                );
+        }catch(...){}
+
+        try{
+        invMan->insertInvoicePrefix(
+                zone_cz_id//zoneId
+                , 1//type
+                , year//year
+                , year*10000 + 1000//prefix
+                );
+        }catch(...){}
+
+}//for insertInvoicePrefix
+}
+
+
 struct registrar_credit_item
 {
   int year;
@@ -368,28 +402,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
-    //insertInvoicePrefix
-    for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
-    {
-        try{
-        invMan->insertInvoicePrefix(
-                 zone_cz_id//zoneId
-                , 0//type
-                , year//year
-                , year*10000//prefix
-                );
-        }catch(...){}
-
-        try{
-        invMan->insertInvoicePrefix(
-                zone_cz_id//zoneId
-                , 1//type
-                , year//year
-                , year*10000 + 1000//prefix
-                );
-        }catch(...){}
-
-    }//for insertInvoicePrefix
+    try_insert_invoice_prefix();
 
     unsigned long long invoiceid = 0;
 
@@ -417,7 +430,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             {
                 ci.vat = vat_details[0][0];
                 ci.koef = vat_details[0][1];
-		ci.taxdate= taxdate;
+                ci.taxdate= taxdate;
             }
 
             registrar_credit_vect.push_back(ci);//save credit
@@ -445,7 +458,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             {
                 ci.vat = vat_details[0][0];
                 ci.koef = vat_details[0][1];
-		ci.taxdate = taxdate;
+                ci.taxdate = taxdate;
             }
 
             registrar_credit_vect.push_back(ci);//save credit
@@ -535,28 +548,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
-    //insertInvoicePrefix
-    for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
-    {
-        try{
-        invMan->insertInvoicePrefix(
-                 zone_cz_id//zoneId
-                , 0//type
-                , year//year
-                , year*10000//prefix
-                );
-        }catch(...){}
-
-        try{
-        invMan->insertInvoicePrefix(
-                zone_cz_id//zoneId
-                , 1//type
-                , year//year
-                , year*10000 + 1000//prefix
-                );
-        }catch(...){}
-
-    }//for insertInvoicePrefix
+    try_insert_invoice_prefix();
 
     unsigned long long invoiceid = 0;
 
@@ -1094,6 +1086,59 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_default )
 
     invMan->createAccountInvoices( std::string("cz"), taxDate_str, toDate_str);
 }
+
+BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
+{
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+    // registrar
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_handle(std::string("REG-FRED_ACCINV")+time_string);
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+    registrar->setVat(true);
+    registrar->save();
+    unsigned long long registrar_inv_id = registrar->getId();
+
+    try_insert_invoice_prefix();
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        Fred::Invoicing::Manager::create());
+
+    unsigned long long invoiceid = 0;
+
+    for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+    {
+        Database::Date taxdate (year,6,10);
+        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                , zone_cz_id//zone
+                , registrar_inv_id//registrar
+                , 40000);//price
+        BOOST_CHECK_EQUAL(invoiceid != 0,true);
+    }//for createDepositInvoice
+
+    Database::Date now(Database::NOW);
+    Database::Date first_this(now.get().year(), now.get().month(), 1);
+    Database::Date last_prev(first_this - Database::Days(1));
+
+    Database::Date toDate;
+    Database::Date taxDate;
+
+    toDate = first_this;
+    taxDate = last_prev;
+
+    std::string toDate_str(toDate.to_string());
+    std::string taxDate_str(taxDate.to_string());
+
+    invMan->createAccountInvoice( registrar_handle, std::string("cz"), taxDate_str, toDate_str);
+
+}
+
 
 BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
 {
