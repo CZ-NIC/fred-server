@@ -28,17 +28,23 @@
 
 class ElapsedTime
 {
-    boost::posix_time::ptime start;
+    boost::posix_time::ptime start_;
+    std::string label_;
 public:
     ElapsedTime()
-    : start(boost::posix_time::microsec_clock::universal_time())
+    : start_(boost::posix_time::microsec_clock::universal_time())
+    , label_("elapsed time: ")
+    {}
+    ElapsedTime(const std::string& label)
+    : start_(boost::posix_time::microsec_clock::universal_time())
+    , label_(label)
     {}
     ~ElapsedTime()
     {
-        BOOST_MESSAGE(std::string ("elapsed time: ")+std::string (
-                boost::posix_time::to_iso_string(
+        BOOST_MESSAGE(label_
+                + boost::posix_time::to_iso_string(
                 boost::posix_time::microsec_clock::universal_time()
-                - start)));
+                - start_));
     }
 };//class ElapsedTime
 													
