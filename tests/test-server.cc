@@ -35,6 +35,8 @@ boost::assign::list_of
 
 #include "cfg/test_custom_main.h"
 
+ElapsedTime et("tests elapsed time: ", cout_print());
+
 BOOST_AUTO_TEST_SUITE(TestCpp)
 
 void test_stdex()
