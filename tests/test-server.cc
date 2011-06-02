@@ -35,7 +35,17 @@ boost::assign::list_of
 
 #include "cfg/test_custom_main.h"
 
-ElapsedTime et("tests elapsed time: ", cout_print());
+class ElapsedTimeFixture
+{
+    ElapsedTime et_;
+public:
+    ElapsedTimeFixture()
+    : et_("tests elapsed time: ", cout_print())
+    {}
+};
+
+BOOST_GLOBAL_FIXTURE(ElapsedTimeFixture);
+
 
 BOOST_AUTO_TEST_SUITE(TestCpp)
 

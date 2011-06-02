@@ -79,8 +79,6 @@ public:
 };
 
 
-BOOST_GLOBAL_FIXTURE(InvoiceFixture)
-
 using namespace Fred::Invoicing;
 
 const std::string server_name = "test-invoice";
@@ -1153,8 +1151,6 @@ BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
 
 BOOST_AUTO_TEST_CASE( archiveInvoices )
 {
-    ElapsedTime et;
-    
     //db
     Database::Connection conn = Database::Manager::acquire();
 
