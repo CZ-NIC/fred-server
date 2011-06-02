@@ -175,6 +175,13 @@ bool check_std_exception_archiveInvoices(std::exception const & ex)
     return (ex_msg.find(std::string("archiveInvoices")) != std::string::npos);
 }
 
+bool check_std_exception_createAccountInvoice(std::exception const & ex)
+{
+    std::string ex_msg(ex.what());
+    return (ex_msg.find(std::string("createAccountInvoice")) != std::string::npos);
+}
+
+
 cent_amount getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units);
 
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
@@ -1094,6 +1101,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     // registrar
     std::string time_string(TimeStamp::microsec());
     std::string registrar_handle(std::string("REG-FRED_ACCINV")+time_string);
+    std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
     Fred::Registrar::Manager::AutoPtr regMan
              = Fred::Registrar::Manager::create(DBSharedPtr());
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
@@ -1134,6 +1142,11 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     std::string taxDate_str(taxDate.to_string());
 
     invMan->createAccountInvoice( registrar_handle, std::string("cz"), taxDate_str, toDate_str);
+
+    BOOST_CHECK_EXCEPTION(
+    invMan->createAccountInvoice( noregistrar_handle, std::string("cz"), taxDate_str, toDate_str)
+    , std::exception
+    , check_std_exception_createAccountInvoice );
 
 }
 
