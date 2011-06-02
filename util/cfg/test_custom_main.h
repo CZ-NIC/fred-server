@@ -50,10 +50,12 @@
 #endif
 
 #include "config_handler.h"
+#include "time_clock.h"
 #include <boost/test/included/unit_test.hpp>
 
 int main( int argc, char* argv[] )
 {
+    ElapsedTime("tests elapsed time: ", cout_print());
     //processing of additional program options
     //producing faked args with unrecognized ones
     FakedArgs fa;
