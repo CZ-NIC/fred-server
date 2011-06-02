@@ -40,7 +40,7 @@ class ElapsedTimeFixture
     ElapsedTime et_;
 public:
     ElapsedTimeFixture()
-    : et_("tests elapsed time: ", cout_print())
+    : et_("elapsed time: ", cout_print())
     {}
 };
 
