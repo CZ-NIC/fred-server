@@ -1172,6 +1172,9 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     std::string toDate_str(toDate.to_string());
     std::string taxDate_str(taxDate.to_string());
 
+    invMan->createAccountInvoice( registrar_handle, std::string("cz")
+        , (taxDate - Database::Years(2)).to_string(), (toDate - Database::Years(2)).to_string());
+
     invMan->createAccountInvoice( registrar_handle, std::string("cz"), taxDate_str, toDate_str);
 
     BOOST_CHECK_EXCEPTION(
