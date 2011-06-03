@@ -134,7 +134,7 @@ Database::Connection wrapped_acquire(ccReg_EPP_i *epp)
 
     try {
         return Database::Manager::acquire();
-    } catch(std::exception &ex) {
+    } catch(...) {
         epp->ServerInternalError("Cannot connect to DB");
     }
 
