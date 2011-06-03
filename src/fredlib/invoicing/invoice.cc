@@ -353,9 +353,9 @@ public:
 
   //  count VAT from price without tax with help of coefficient
   // count VAT  ( local CZ ) function for banking
- long count_dph( //returning vat in cents
-    long price //*100 in cents
-    , long vat_reverse //vat coeff *10000
+  cent_amount count_dph( //returning vat in cents
+          cent_amount price //*100 in cents
+    , cent_amount vat_reverse //vat coeff *10000
     )
     {
          long vat = price * vat_reverse / 10000;
