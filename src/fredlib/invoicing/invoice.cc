@@ -146,7 +146,7 @@ public:
   // TODO format %2% to 2 decimal places
   std::string query_param_price(cent_amount price)
   {
-      return (boost::format("%1%.%2$02d") % (price/100) % (price >= 0  ? price%100 : (-1*price)%100) ).str();
+      return (boost::format("%1%.%2$02u") % (price/100) % (price >= 0  ? price%100 : (-1*price)%100) ).str();
   }
 
   void updateObjectPrice(Database::Connection &conn, Database::ID rec_id, cent_amount price, Database::ID invoiceID)
