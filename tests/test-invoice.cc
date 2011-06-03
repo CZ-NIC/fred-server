@@ -469,13 +469,13 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
                 + boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
                 +  "::numeric - ( $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size())
                 +"::numeric * $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
-                +"::numeric ) ";
+                +"::numeric )::numeric(10,2) ";//round vat to 2 places
 
         //std::string fred_credit_str ( str(boost::format("%1$.2f") % registrar_credit_vect.at(i).credit_from_query));
         std::string fred_credit_str (registrar_credit_vect.at(i).credit_from_query);
 
         test_credit_str = std::string(conn.exec_params(
-                std::string("select (")+dec_credit_query+")::numeric(20,2)"//round to 2 places
+                dec_credit_query
                 , dec_credit_query_params)[0][0]);
 
         BOOST_CHECK(fred_credit_str.compare(test_credit_str)==0);
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
                 << std::endl;
 
 
-            std::cout << "\ndec_credit_query: " << std::string("select (")+dec_credit_query+")::numeric(20,2)" <<  std::endl;
+            std::cout << "\ndec_credit_query: " << dec_credit_query <<  std::endl;
             std::cout << "\ndec_credit_query_params: ";
             std::size_t i_num=0;
             for (Database::QueryParams::iterator it = dec_credit_query_params.begin(); it != dec_credit_query_params.end(); ++it )
@@ -606,13 +606,13 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
                 + boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
                 +  "::numeric - ( $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size())
                 +"::numeric * $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
-                +"::numeric ) ";
+                +"::numeric )::numeric(10,2) ";//round vat to 2 places
 
         //std::string fred_credit_str ( str(boost::format("%1$.2f") % registrar_novat_credit_vect.at(i).credit_from_query));
         std::string fred_credit_str (registrar_novat_credit_vect.at(i).credit_from_query);
 
         std::string test_credit_str(std::string(conn.exec_params(
-                std::string("select (")+dec_credit_query+")::numeric(20,2)"//round to 2 places
+                dec_credit_query
                 , dec_credit_query_params)[0][0]));
 
         BOOST_CHECK(fred_credit_str.compare(test_credit_str)==0);
@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
                 << std::endl;
 
 
-            std::cout << "\ndec_credit_query: " << std::string("select (")+dec_credit_query+")::numeric(20,2)" <<  std::endl;
+            std::cout << "\ndec_credit_query: " << dec_credit_query <<  std::endl;
             std::cout << "\ndec_credit_query_params: ";
             std::size_t i_num=0;
             for (Database::QueryParams::iterator it = dec_credit_query_params.begin(); it != dec_credit_query_params.end(); ++it )
