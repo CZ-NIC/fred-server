@@ -354,10 +354,12 @@ public:
   //  count VAT from price without tax with help of coefficient
   // count VAT  ( local CZ ) function for banking
   cent_amount count_dph( //returning vat in cents
-          cent_amount price //*100 in cents
+          cent_amount _price //*100 in cents
     , cent_amount vat_reverse //vat coeff *10000
     )
     {
+      unsigned long long price = _price;
+
       cent_amount vat = price * vat_reverse / 10000;
 
          LOGGER(PACKAGE).debug (
