@@ -363,6 +363,10 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
     unsigned long long registrar_inv_id = registrar->getId();
 
+    LOGGER(PACKAGE).debug ( boost::format("createDepositInvoice registrar_handle %1% registrar_inv_id %2%")
+               % registrar_handle % registrar_inv_id);
+
+
     std::vector<registrar_credit_item> registrar_credit_vect;
 
     {//get registrar credit
