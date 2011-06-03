@@ -139,30 +139,6 @@ static std::string zone_registrar_credit_query (
         " where zone = $1::bigint and registrarid =$2::bigint "
         " group by registrarid, zone ");
 
-// TODO duplicity from invoice.cc - compilation problem
-cent_amount get_price(const std::string &str)
-{
-  std::string t_str = boost::algorithm::trim_copy(str);//remove whitespaces
-  std::size_t delimiter = t_str.find_first_of(".,");//find delimiter
-  if (delimiter != std::string::npos)//if found
-  {
-        t_str.erase(delimiter,1);//erase delimiter
-        if(t_str.length() > (delimiter + 2))//if there are more than two chars after delimiter
-            t_str.erase(delimiter+2);//remove rest of the string
-        else if (t_str.length() == (delimiter + 1))//if there is only one char after delimiter
-            t_str+="0";//append second char after delimiter
-        else if (t_str.length() == delimiter)//if there is no char after delimiter
-          t_str+="00";//append first and second char after delimiter
-   }
-
-    long price = boost::lexical_cast<long>(t_str);//try convert
-    LOGGER(PACKAGE).debug( boost::format("get_price from string[%1%] -> %2% hal") % str % price );
-    return price;
-
-    //return ::get_price(str.c_str());
-}
-
-
 bool check_std_exception_invoice_prefix(std::exception const & ex)
 {
     std::string ex_msg(ex.what());
