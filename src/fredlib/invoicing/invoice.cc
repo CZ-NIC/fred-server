@@ -358,7 +358,7 @@ public:
     , cent_amount vat_reverse //vat coeff *10000
     )
     {
-         long vat = price * vat_reverse / 10000;
+      cent_amount vat = price * vat_reverse / 10000;
 
          LOGGER(PACKAGE).debug (
              boost::format("count_dph price %1% vat_reverse %2% vat %3%")
