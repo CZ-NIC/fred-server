@@ -59,6 +59,7 @@
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
+#include "concurrent_queue.h"
 #include "tests-common.h"
 
 #include "cfg/config_handler_decl.h"
@@ -640,6 +641,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
 struct ResultTestCharge {
+    unsigned number;
+
     bool success;
     cent_amount credit_before;
     cent_amount credit_after;
@@ -1472,41 +1475,106 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 
 
 
+
+
 /*
+TestThreadWorker(unsigned number
+           , boost::barrier* sb,
+           , std::size_t thread_group_divisor
+           , ThreadResultQueue* result_queue_ptr = 0
+                  )
 
-Database::Date exdate(act_year + 1, 1, 1);
-Database::Date exdate2(act_year + 5, 4, 30);
+           : number_(number)
+           , sb_(sb)
+           , tgd_(thread_group_divisor)
+           , results(result_queue_ptr)
+   {}
+*/
 
-testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainCreate, zone_cz_id, regid);
+typedef concurrent_queue<ResultTestCharge> ThreadResultQueue;
 
 
 class ThreadInvoiceWorker {
-    ThreadInvoiceWorker()
 
+public:
+    ThreadInvoiceWorker(unsigned number
+             , boost::barrier* sb
+             , std::size_t thread_group_divisor
+             , ThreadResultQueue* result_queue_ptr
 
+             , Database::ID zone, Database::ID registrar
+                    )
 
+             : number_(number)
+             , sb_(sb)
+             , tgd_(thread_group_divisor)
+             , results(result_queue_ptr)
 
-    run() {
+            , zone_id(zone), regid(registrar)
+     {}
+
+     void operator()()
+     {
+        try
+        {
+            if(number_ % tgd_)//if synchronized thread
+            {
+                if(sb_ != NULL) {
+                    sb_->wait();//wait for other synced threads
+                }
+            }
+
+            ResultTestCharge res = run();
+            if(results != NULL)  {
+                results->push(res);
+            }
+
+        } catch(const std::exception & ex) {
+            //ok
+            BOOST_TEST_MESSAGE("Exception caught in worker: " << ex.what());
+        }
+        catch(...)
+        {
+            BOOST_TEST_MESSAGE("Unknown exception in operator(), thread number: " << number_ );
+            return;
+        }
+     }
+
+     // specific code
+
+     // this shouldn't throw
+     ResultTestCharge run() {
         unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
         Database::Date exdate(act_year + 1, 1, 1);
 
-        testChargeSucc()
+        std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+        ResultTestCharge ret = testChargeWorker(invMan.get(), exdate, 24, INVOICING_DomainCreate, zone_id, regid);
+        ret.number = number_;
+
+        return ret;
     }
 
+private:
+    unsigned number_;
+
+    boost::barrier *sb_;
+    std::size_t tgd_;
+    ThreadResultQueue *results;
+
+    Database::ID zone_id;
+    Database::ID regid;
 };
 
 BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
 {
-
-    //db
     Database::Connection conn = Database::Manager::acquire();
 
-    // zone IDs
     Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-    Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
+    // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
 
-    Database::ID regid = createTestRegistrar("REG-INV_ THREAD");
+    Database::ID regid = createTestRegistrar("REG-ITHREAD");
 
     cent_amount amount = 20000 * 100;
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
@@ -1528,8 +1596,52 @@ BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
    //                 , amount);//price
   //  BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
 
+   HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
+                      get_handler_ptr_by_type<HandleThreadGroupArgs>();
+
+   std::size_t const thread_number = thread_args_ptr->thread_number;
+   std::size_t const thread_group_divisor = thread_args_ptr->thread_group_divisor;
+   // int(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+   // - thread_number / thread_group_divisor) is number of synced threads
+
+   ThreadResultQueue result_queue;
+
+   //vector of thread functors
+   std::vector<ThreadInvoiceWorker> tw_vector;
+   tw_vector.reserve(thread_number);
+
+   BOOST_TEST_MESSAGE("thread barriers:: "
+           <<  (thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+                   - thread_number/thread_group_divisor)
+           );
+
+   //synchronization barriers instance
+   boost::barrier sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+           - thread_number/thread_group_divisor);
+
+   //thread container
+   boost::thread_group threads;
+   for (unsigned i = 0; i < thread_number; ++i)
+   {
+       tw_vector.push_back(ThreadInvoiceWorker(i,&sb
+               , thread_group_divisor, &result_queue, zone_cz_id, regid));
+       threads.create_thread(tw_vector.at(i));
+   }
+
+   threads.join_all();
+
+   BOOST_TEST_MESSAGE( "threads end result_queue.size(): " << result_queue.size() );
+
+   for(unsigned i = 0; i < thread_number; ++i)
+   {
+       ResultTestCharge thread_result;
+       if(!result_queue.try_pop(thread_result)) {
+           continue;
+       }
+
+       testChargeEval(thread_result, true);
+   }//for i
 }
-*/
 
 
 BOOST_AUTO_TEST_SUITE_END();//TestInv
