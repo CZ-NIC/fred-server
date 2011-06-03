@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
-            registrar_credit_item ci={year,"0.00",0,"0.00", "42949672.95", Database::Date(1400,1,1)};
+            registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("42949672.95"), Database::Date(1400,1,1)};
 
             Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                     , Database::query_param_list(zone_cz_id)(registrar_inv_id));
