@@ -408,12 +408,6 @@ EnumList getBankAccounts()
             " account_name || ' ' || account_number || '/' || bank_code "
             " FROM bank_account "
             " ORDER BY id");
-    if(res.size() == 0)
-    {
-        const char* err_msg = "getBankAccounts: no data in table bank_account";
-        LOGGER(PACKAGE).error(err_msg);
-        throw std::runtime_error(err_msg);
-    }
     EnumList el;
     for(unsigned i=0;i<res.size();i++)
     {
