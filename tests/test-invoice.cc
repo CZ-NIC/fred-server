@@ -451,7 +451,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , 20000);//price
+                    , 99900000000);//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
