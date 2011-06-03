@@ -20,7 +20,7 @@ namespace Invoicing {
 
 // input is price in cents(penny)
 // signed type allows negative amounts
-typedef signed int cent_amount;
+typedef unsigned long cent_amount;
 
 cent_amount get_price(const std::string &str);
 
