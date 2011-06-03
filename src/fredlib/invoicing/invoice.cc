@@ -360,7 +360,9 @@ public:
     {
       unsigned long long price = _price;
 
-      cent_amount vat = price * vat_reverse / 10000;
+      cent_amount vat =  (((price * vat_reverse) % 10000) < 5000)
+                              ? price * vat_reverse / 10000
+                              : price * vat_reverse / 10000 + 1;
 
          LOGGER(PACKAGE).debug (
              boost::format("count_dph price %1% vat_reverse %2% vat %3%")
