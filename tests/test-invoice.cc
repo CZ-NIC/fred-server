@@ -54,6 +54,8 @@
 #include "time_clock.h"
 #include "file_manager_client.h"
 #include "fredlib/banking/bank_common.h"
+#include "corba/Admin.hh"
+
 
 
 //not using UTF defined main
@@ -346,6 +348,19 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     //db
     Database::Connection conn = Database::Manager::acquire();
 
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+
+    //conf pointers
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
     Fred::Registrar::Manager::AutoPtr regMan
@@ -505,13 +520,29 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     }
 
     std::string test_get_credit_by_zone = invMan->getCreditByZone(registrar_handle,zone_cz_id);
-    BOOST_CHECK((test_get_credit_by_zone.compare(test_credit_str) == 0));
-    
+
     if(test_get_credit_by_zone.compare(test_credit_str) != 0)
     {
         std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone 
 	    << " test_credit_str: " << test_credit_str << std::endl;
     }
+    BOOST_CHECK((test_get_credit_by_zone.compare(test_credit_str) == 0));
+
+    //try to resolve
+    ccReg::Admin_var admin_ref;
+    admin_ref = ccReg::Admin::_narrow(
+            CorbaContainer::get_instance()->nsresolve("Admin"));
+
+    CORBA::String_var registrar_handle_cpy = CORBA::string_dup(registrar_handle.c_str());
+    CORBA::String_var corba_credit = admin_ref->getCreditByZone(registrar_handle_cpy,zone_cz_id);
+
+    if(std::string(corba_credit.in()).compare(test_credit_str) != 0)
+    {
+        std::cout << "corba_credit: " << std::string(corba_credit.in())
+        << " test_credit_str: " << test_credit_str << std::endl;
+    }
+    BOOST_CHECK((std::string(corba_credit.in()).compare(test_credit_str) != 0));
+
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
