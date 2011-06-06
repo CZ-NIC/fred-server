@@ -538,7 +538,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
         std::cout << "corba_credit: " << std::string(corba_credit.in())
         << " test_credit_str: " << test_credit_str << std::endl;
     }
-    BOOST_CHECK((std::string(corba_credit.in()).compare(test_credit_str) != 0));
+    BOOST_CHECK((std::string(corba_credit.in()).compare(test_credit_str) == 0));
 
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice )
