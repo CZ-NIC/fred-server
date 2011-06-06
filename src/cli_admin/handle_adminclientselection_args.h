@@ -818,7 +818,7 @@ public:
                 ::value<Checked::id>()->notifier(save_id(params.registrar_id))
                 , "registrar id")
             ("price", boost::program_options
-                ::value<Checked::fpnumber>()->notifier(save_double(params.price))
+                ::value<Checked::string_fpnumber>()->notifier(save_string(params.price))
                 , "price")
             ("taxdate", boost::program_options
               ::value<Checked::string>()->notifier(save_string(params.taxdate))

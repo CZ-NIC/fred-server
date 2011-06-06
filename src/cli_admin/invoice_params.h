@@ -88,7 +88,7 @@ struct InvoiceCreditArgs
 {
     optional_id zone_id;
     optional_id registrar_id;
-    optional_double price;
+    optional_string price;
     optional_string taxdate;
 
     InvoiceCreditArgs()
@@ -97,7 +97,7 @@ struct InvoiceCreditArgs
     InvoiceCreditArgs(
         const optional_id& _zone_id
         , const optional_id& _registrar_id
-        , const optional_double& _price
+        , const optional_string& _price
         , const optional_string& _taxdate
         )
     : zone_id(_zone_id)

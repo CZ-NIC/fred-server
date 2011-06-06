@@ -34,12 +34,13 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/strong_typedef.hpp>
 
 #include "faked_args.h"
 #include "handle_args.h"
 
-//type alias checked by custom validator
 
+// alias checked by custom validator
 struct Checked
 {
     typedef std::string string;
@@ -47,7 +48,28 @@ struct Checked
     typedef unsigned long ulong;
     typedef ulonglong id;
     typedef double fpnumber;
+    BOOST_STRONG_TYPEDEF(std::string, string_fpnumber);
 };
+
+
+template<class Char, class Traits>
+std::basic_ostream<Char, Traits>&
+operator<<(std::basic_ostream<Char, Traits> &o, const Checked::string_fpnumber &s)
+{
+    return o << static_cast<std::string>(s);
+}
+
+template<class Char, class Traits>
+std::basic_istream<Char, Traits>&
+operator>>(std::basic_istream<Char, Traits> &i, Checked::string_fpnumber &s)
+{
+    std::string tmp;
+    i >> tmp;
+    s = tmp;
+    return i;
+}
+
+
 
 namespace boost
 {
@@ -362,6 +384,98 @@ namespace boost
                 v = any(s);
             }
         }//validate checked_fpnumber
+
+
+        void validate(boost::any& v,
+                      const std::vector<std::string>& values,
+                      Checked::string_fpnumber* target_type, int)
+        {
+            using namespace boost;
+            using namespace boost::program_options;
+            using namespace std;
+
+            // Make sure no previous assignment to 'a' was made.
+            validators::check_first_occurrence(v);
+            // Extract the first string from 'values'. If there is more than
+            // one string, it's an error, and exception will be thrown.
+            const std::string& s = validators::get_single_string(values);
+
+
+            //fp number check
+            static const boost::regex fp_number_regex("[-+]?([0-9]*\\.[0-9]+|[0-9]+)");
+
+            if (!s.empty() //string not empty
+                && // and
+                (
+                    (*s.begin() == '\'' && *s.rbegin() == '\'') //quoted by '\'
+                    ||                                          //or
+                    (*s.begin() == '"' && *s.rbegin() == '"')   //quoted by '"'
+                )
+            )
+            {
+                std::string str_inside_quotes = s.substr(1, s.size()-2);
+
+                if (!boost::regex_match(str_inside_quotes, fp_number_regex))
+                {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+                    throw validation_error(
+                            std::string("invalid quoted argument value"));
+#endif
+                }
+
+                try
+                {
+                    boost::lexical_cast<double>(str_inside_quotes);
+                }
+                catch(const std::exception& ex)
+                {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+
+                    throw validation_error(
+                            std::string("invalid quoted argument value cast"));
+#endif
+                }
+
+                v = any(str_inside_quotes);
+            }
+            else
+            {
+                if (!s.empty()) //string not empty
+                {
+
+                    if (!boost::regex_match(s, fp_number_regex))
+                    {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+                        throw validation_error(
+                                std::string("invalid argument value"));
+#endif
+                    }
+
+                    try
+                    {
+                        boost::lexical_cast<double>(s);
+                    }
+                    catch(const std::exception& ex)
+                    {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+                        throw validation_error(
+                                std::string("invalid argument value cast"));
+#endif
+                    }
+                }
+
+                v = any(s);
+            }
+        }//validate checked_string_fpnumber
+
     }//namespace program_options
 }//namespace boost
 #endif //VALIDATE_ARGS_H_
