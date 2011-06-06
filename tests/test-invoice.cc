@@ -180,8 +180,8 @@ BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
-    BOOST_CHECK((invMan->getCreditByZone(registrar_handle,zone_cz_id) == 0));//noregistrar
-    BOOST_CHECK((invMan->getCreditByZone(registrar_handle,0) == 0));//no registrar no zone
+    BOOST_CHECK((invMan->getCreditByZone(registrar_handle,zone_cz_id).compare("0.00") == 0));//noregistrar
+    BOOST_CHECK((invMan->getCreditByZone(registrar_handle,0).compare("0.00") == 0));//no registrar no zone
 }
 
 BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
@@ -504,10 +504,10 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
         }//if not equal
     }
 
-    Database::Money test_get_credit_by_zone = invMan->getCreditByZone(registrar_handle,zone_cz_id);
-    BOOST_CHECK((test_get_credit_by_zone.to_string().compare(test_credit_str) == 0));
+    std::string test_get_credit_by_zone = invMan->getCreditByZone(registrar_handle,zone_cz_id);
+    BOOST_CHECK((test_get_credit_by_zone.compare(test_credit_str) == 0));
     
-    if(test_get_credit_by_zone.to_string().compare(test_credit_str) != 0)
+    if(test_get_credit_by_zone.compare(test_credit_str) != 0)
     {
         std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone 
 	    << " test_credit_str: " << test_credit_str << std::endl;

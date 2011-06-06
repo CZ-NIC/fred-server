@@ -290,7 +290,7 @@ public:
   /// create empty list of invoices
   virtual List* createList() = 0;
   /// return credit for registrar by zone
-  virtual Money getCreditByZone(const std::string& registrarHandle, 
+  virtual std::string getCreditByZone(const std::string& registrarHandle,
                                 TID zone) = 0;
   /// factory method
    static Manager *create(

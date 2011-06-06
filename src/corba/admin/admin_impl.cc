@@ -555,7 +555,7 @@ char* ccReg_Admin_i::getCreditByZone(const char*registrarHandle, ccReg::TID zone
 
   std::auto_ptr<Fred::Invoicing::Manager>
       invman(Fred::Invoicing::Manager::create());
-  char *ret = DUPSTRC(formatMoney(invman->getCreditByZone(registrarHandle, zone)));
+  char *ret = DUPSTRC(invman->getCreditByZone(registrarHandle, zone));
   return ret;
 }
 
