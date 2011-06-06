@@ -671,15 +671,15 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
-struct MyTestParams {
+struct ChargeTestParams {
     Database::ID zone_id;
     Database::ID regid;
 
-    MyTestParams() : zone_id(0), regid(0)
+    ChargeTestParams() : zone_id(0), regid(0)
     { }
 };
 
-struct ResultTestCharge : MyTestParams {
+struct ResultTestCharge : ChargeTestParams {
     unsigned number;
 
     bool success;
@@ -691,7 +691,7 @@ struct ResultTestCharge : MyTestParams {
     Database::Date exdate;
     std::string test_desc;
 
-    ResultTestCharge() : MyTestParams(), success(false), credit_before(0), credit_after(0),
+    ResultTestCharge() : ChargeTestParams(), success(false), credit_before(0), credit_after(0),
             object_id(0), units(0), exdate(), test_desc()
         { }
 };
@@ -1509,29 +1509,18 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-class MyThreadedTestWorker : public ThreadedTestWorker<ResultTestCharge, MyTestParams>
+class TestChargeThreadWorker : public ThreadedTestWorker<ResultTestCharge, ChargeTestParams>
 {
 public:
-    typedef ThreadedTestWorker<ResultTestCharge, MyTestParams>::ThreadedTestResultQueue queue_type;
+    typedef ThreadedTestWorker<ResultTestCharge, ChargeTestParams>::ThreadedTestResultQueue queue_type;
 
-    MyThreadedTestWorker(unsigned number
+    TestChargeThreadWorker(unsigned number
              , boost::barrier* sb
              , std::size_t thread_group_divisor
              , queue_type* result_queue
-             , MyTestParams params
+             , ChargeTestParams params
                     )
-        : ThreadedTestWorker<ResultTestCharge, MyTestParams>(number, sb, thread_group_divisor, result_queue, params)
+        : ThreadedTestWorker<ResultTestCharge, ChargeTestParams>(number, sb, thread_group_divisor, result_queue, params)
             { }
     /*
     // non-static version
@@ -1547,7 +1536,7 @@ public:
       */
 
     // this shouldn't throw
-    ResultTestCharge run(const MyTestParams &p) {
+    ResultTestCharge run(const ChargeTestParams &p) {
        unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
        Database::Date exdate(act_year + 1, 1, 1);
@@ -1564,7 +1553,7 @@ public:
     }
 
 private:
-    MyTestParams params;
+    ChargeTestParams params;
 
 };
 
@@ -1591,12 +1580,12 @@ BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
                     , amount);//price
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-    MyTestParams params;
+    ChargeTestParams params;
     params.zone_id = zone_cz_id ;
     params.regid = regid;
 
 // TODO this is it ....
-    threadedTest< MyThreadedTestWorker> (params, &testChargeEvalSucc);
+    threadedTest< TestChargeThreadWorker> (params, &testChargeEvalSucc);
 
 }
 
