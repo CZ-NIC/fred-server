@@ -2925,6 +2925,12 @@ public:
 
     Database::Result res = conn.exec(sql.str());
     Database::Money result = res[0][0];
+
+    LOGGER(PACKAGE).debug(std::string("ManagerImpl::getCreditByZone res[0][0]: ")
+        +std::string(res[0][0])+ " registrarHandle: " + registrarHandle
+        + " zone id: " + boost::lexical_cast<std::string>(zone)
+        + " sql: " + sql.str()
+    );
     return result;
     
   }
