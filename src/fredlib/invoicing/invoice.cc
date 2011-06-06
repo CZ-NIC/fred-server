@@ -80,13 +80,15 @@ cent_amount get_price(const std::string &str)
             t_str+="0";//append second char after delimiter
         else if (t_str.length() == delimiter)//if there is no char after delimiter
           t_str+="00";//append first and second char after delimiter
-   }
+  }
+  else
+  {
+      t_str += "00";
+  }
 
-    long price = boost::lexical_cast<long>(t_str);//try convert
-    LOGGER(PACKAGE).debug( boost::format("get_price from string[%1%] -> %2% hal") % str % price );
-    return price;
-
-    //return ::get_price(str.c_str());
+  unsigned long price = boost::lexical_cast<unsigned long>(t_str);//try convert
+  LOGGER(PACKAGE).debug( boost::format("get_price from string[%1%] -> %2% hal") % str % price );
+  return price;
 }
 
 // hold vat rates for time periods
