@@ -256,7 +256,7 @@ struct mbp_insert_data
     std::string konstsym;// 10 numletters
     std::string varsymb;// 10 numletters
     std::string specsymb;// 10 numletters
-    int price;//int
+    long long price;//long long
     std::string account_evid;//20 numletters
     Database::Date account_date; //some date
     std::string account_memo; //64 chars

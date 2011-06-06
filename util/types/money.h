@@ -28,12 +28,6 @@ public:
   Money(value_type _value) : value_(_value) {
   }
 
-  Money(const int value): value_(value)
-  { }
-  Money(const unsigned int value): value_(value)
-  { }
-  Money(const long int value): value_(value)
-  { }
   Money(const unsigned long int value): value_(value)
   { }
   Money(const char *value)

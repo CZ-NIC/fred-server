@@ -99,7 +99,7 @@ private:
             if (_payment->getInvoiceId() != Database::ID(0)) {
                 return;
             }
-            if (_payment->getPrice() <= Database::Money(0)) {
+            if (_payment->getPrice() <= Database::Money(0UL)) {
                 return;
             }
 

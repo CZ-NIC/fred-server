@@ -110,22 +110,22 @@ main()
         test_money_from_string(num, "21474836.47", 2147483647, IS_SAME, failures);
         test_money_from_string(num, "-21474836.47", -2147483647, IS_SAME, failures);
 
-        test_string_from_money(num, Database::Money(12300), "123.00", IS_SAME, failures);
-        test_string_from_money(num, Database::Money(12340), "123.40", IS_SAME, failures);
-        test_string_from_money(num, Database::Money(12345), "123.45", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(12300UL), "123.00", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(12340UL), "123.40", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(12345UL), "123.45", IS_SAME, failures);
 
-        test_string_from_money(num, Database::Money(-12300), "-123.00", IS_SAME, failures);
-        test_string_from_money(num, Database::Money(-12340), "-123.40", IS_SAME, failures);
-        test_string_from_money(num, Database::Money(-12345), "-123.45", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(-12300LL), "-123.00", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(-12340LL), "-123.40", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(-12345LL), "-123.45", IS_SAME, failures);
 
-        test_string_from_money(num, Database::Money(0), "0.00", IS_SAME, failures);
-        test_string_from_money(num, Database::Money(1), "0.01", IS_SAME, failures);
-        test_string_from_money(num, Database::Money(10), "0.10", IS_SAME, failures);
-        test_string_from_money(num, Database::Money(100), "1.00", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(0UL), "0.00", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(1UL), "0.01", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(10UL), "0.10", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(100UL), "1.00", IS_SAME, failures);
 
-        test_string_from_money(num, Database::Money(-1), "-0.01", IS_SAME, failures);
-        test_string_from_money(num, Database::Money(-10), "-0.10", IS_SAME, failures);
-        test_string_from_money(num, Database::Money(-100), "-1.00", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(-1LL), "-0.01", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(-10LL), "-0.10", IS_SAME, failures);
+        test_string_from_money(num, Database::Money(-100LL), "-1.00", IS_SAME, failures);
 
 
         std::cout << "Number of failures: " << failures << std::endl;

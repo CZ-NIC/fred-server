@@ -148,7 +148,7 @@ public:
 
     bool isValid() const
     {
-        Database::Money zero(0);
+        Database::Money zero(0UL);
         if (getAccountId() != 0
                 && getCreateDate().is_special()
                 && getBalanceOldDate().is_special()

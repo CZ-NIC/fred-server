@@ -1676,7 +1676,7 @@ public:
                 ::value<Checked::string>()->notifier(save_string(params.valid_to))
                 , "price valid to datetime")
             ("operation_price", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_arg<long>(params.operation_price))
+                ::value<Checked::ulong>()->notifier(save_arg<long long>(params.operation_price))
                 , "operation price")
             ("period", boost::program_options
                 ::value<Checked::ulong>()->notifier(save_ulong(params.period))
