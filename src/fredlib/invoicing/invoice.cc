@@ -741,16 +741,35 @@ unsigned long long  MakeNewInvoice(
               }//if prefix
             }//if count
             else
+	    {
                   invoiceID=0; // empty invoicing
+	    }
 
             // record of invoicing
-            conn.exec_params("INSERT INTO invoice_generation "
+	    std::string recor_of_invoicing (
+	    "INSERT INTO invoice_generation "
                 " (fromdate, todate, registrarid, zone, invoiceID) "
-                " VALUES ($1::date, $2::date, $3::bigint, $4::bigint, $5::bigint )"
+                " VALUES ($1::date, $2::date, $3::bigint, $4::bigint, $5::bigint )" );
+		
+            conn.exec_params(recor_of_invoicing
                 , Database::query_param_list
                 (fromdateStr)(todateStr)(regID)(zone)
                 (invoiceID ? Database::QueryParam(invoiceID) : Database::QPNull)
                 );
+	     
+	     LOGGER(PACKAGE).debug ( boost::format(
+	         "MakeNewInvoice record of invoicing sql: %1%  "
+	         " $1: %2% $2: %3% $3: %4% $4: %5%  $5: %6% "
+		 " count: %7% prefix: %8% invoiceID: %9% "
+	     ) 
+	        % recor_of_invoicing 
+		% Database::QueryParam(fromdateStr).print_buffer()
+		% Database::QueryParam(todateStr).print_buffer()
+		% Database::QueryParam(regID).print_buffer()
+		% Database::QueryParam(zone).print_buffer()
+		% Database::QueryParam(invoiceID ? Database::QueryParam(invoiceID) : Database::QPNull).print_buffer()
+		% count % prefix % invoiceID
+	        );
 
           }//if prefix
 
