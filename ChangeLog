@@ -6,6 +6,10 @@
                   - money/price conversions
                   - fred-admin --invoice_credit
 
+  * fredlib/getCreditByZone returns string now
+
+  * fredlib/getBankAccounts don't thow on empty list
+
 2011-05-26 Jiri Sadek, Jan Zima (2.7.1)
 
   * mojeid - interface changes for methods for 2PC
