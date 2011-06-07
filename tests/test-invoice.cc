@@ -444,11 +444,11 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , 4294967295UL);//price
+                    , 2147483647UL);//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
-            registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("42949672.95"), Database::Date(1400,1,1)};
+            registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("21474836.47"), Database::Date(1400,1,1)};
 
             Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                     , Database::query_param_list(zone_cz_id)(registrar_inv_id));
