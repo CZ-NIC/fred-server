@@ -1,3 +1,11 @@
+2011-06-07 Jiri Sadek, Jan Zima, Juraj Vicenik (2.7.2)
+
+  * new invoicing tests
+
+  * invoicing fix - price values overflow problem
+                  - money/price conversions
+                  - fred-admin --invoice_credit
+
 2011-05-26 Jiri Sadek, Jan Zima (2.7.1)
 
   * mojeid - interface changes for methods for 2PC
