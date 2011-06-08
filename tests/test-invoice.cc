@@ -1255,7 +1255,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
     if(credit_res3.size() ==  1 && credit_res3[0].size() == 1)
         credit_after_renew = get_price(std::string(credit_res3[0][0]));
-    std::cout << "\n\t credit after create: " << credit_after_renew << std::endl;
+    std::cout << "\n\t credit after renew: " << credit_after_renew << std::endl;
 
     Database::Date now(Database::NOW);
     Database::Date first_this(now.get().year(), now.get().month(), 1);
@@ -1286,7 +1286,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
     if(credit_res4.size() ==  1 && credit_res4[0].size() == 1)
         credit_after_acc = get_price(std::string(credit_res4[0][0]));
-    std::cout << "\n\t credit after create: " << credit_after_acc << std::endl;
+    std::cout << "\n\t credit after acc: " << credit_after_acc << std::endl;
 
 
 }
