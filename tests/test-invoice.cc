@@ -1201,11 +1201,16 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
     {
         Database::Date taxdate (year,6,10);
+        unsigned long price = 100000UL;//cents
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
-                , 100000);//price
+                , price);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
+
+        std::cout << "deposit invoice id: " << invoiceid
+            << " year: " << year << " price: " << price << std::endl;
+
     }//for createDepositInvoice
 
     // credit before
@@ -1277,8 +1282,8 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
     BOOST_CHECK_EXCEPTION(
     invMan->createAccountInvoice( noregistrar_handle, std::string("cz"), taxDate_str, toDate_str)
-    , std::exception
-    , check_std_exception_createAccountInvoice );
+        , std::exception
+        , check_std_exception_createAccountInvoice );
 
     // credit after
     cent_amount credit_after_acc = 0UL;
@@ -1287,8 +1292,6 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     if(credit_res4.size() ==  1 && credit_res4[0].size() == 1)
         credit_after_acc = get_price(std::string(credit_res4[0][0]));
     std::cout << "\n\t credit after acc: " << credit_after_acc << std::endl;
-
-
 }
 
 
