@@ -1208,11 +1208,10 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , price);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-        std::cout << "deposit invoice id: " << invoiceid
-            << " year: " << year << " price: " << price << std::endl;
+        //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << std::endl;
 
     }//for createDepositInvoice
-
+/*
     // credit before
     Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                        , Database::query_param_list(zone_cz_id)(registrar_inv_id));
@@ -1261,7 +1260,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     if(credit_res3.size() ==  1 && credit_res3[0].size() == 1)
         credit_after_renew = get_price(std::string(credit_res3[0][0]));
     std::cout << "\n\t credit after renew: " << credit_after_renew << std::endl;
-
+*/
     Database::Date now(Database::NOW);
     Database::Date first_this(now.get().year(), now.get().month(), 1);
     Database::Date last_prev(first_this - Database::Days(1));
@@ -1284,7 +1283,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     invMan->createAccountInvoice( noregistrar_handle, std::string("cz"), taxDate_str, toDate_str)
         , std::exception
         , check_std_exception_createAccountInvoice );
-
+/*
     // credit after
     cent_amount credit_after_acc = 0UL;
     Database::Result credit_res4 = conn.exec_params(zone_registrar_credit_query
@@ -1292,6 +1291,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     if(credit_res4.size() ==  1 && credit_res4[0].size() == 1)
         credit_after_acc = get_price(std::string(credit_res4[0][0]));
     std::cout << "\n\t credit after acc: " << credit_after_acc << std::endl;
+*/
 }
 
 
