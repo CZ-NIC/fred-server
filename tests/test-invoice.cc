@@ -1044,7 +1044,6 @@ BOOST_AUTO_TEST_CASE( chargeDomain2Invoices )
 
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
-
     cent_amount op_price_cz = getOperationPrice(operation, zone_cz_id, period);
        // price for invoices so that 2 are not sufficient
        // cent_amount amount = op_price / 3;
@@ -1205,9 +1204,62 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
-                , 40000);//price
+                , 2000000);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
     }//for createDepositInvoice
+
+    // credit before
+    Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
+                       , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+
+    cent_amount credit_before = 0UL;
+    if(credit_res.size() ==  1 && credit_res[0].size() == 1)
+        credit_before = get_price(std::string(credit_res[0][0]));
+
+    std::cout << "createAccountInvoices_registrar: " << registrar_handle
+            << " credit before: " << credit_before << std::endl;
+
+
+    // insert object into object registry
+    conn.exec_params("INSERT INTO object_registry (roid, name, crid ) VALUES ($1::text, 'object'::text, $2::bigint)",
+             Database::query_param_list  (registrar_handle)
+                                         (registrar_inv_id) );
+
+    Database::Result res_or = conn.exec_params("SELECT id FROM object_registry WHERE roid = $1::text AND crid = $2::bigint ",
+            Database::query_param_list ( registrar_handle)
+                                       ( registrar_inv_id) );
+
+    BOOST_REQUIRE_MESSAGE(res_or.size() > 0 , "object_registry object wasn't found, cannot perform test");
+
+    unsigned long long object_id = 0;
+    object_id = res_or[0][0];
+    unsigned long units = 12;
+    Database::Date exdate = Database::Date(Database::NOW) + Database::Days(3);
+
+    invMan->chargeDomainCreate(zone_cz_id, registrar_inv_id, object_id, exdate, units );
+
+    // credit after
+    cent_amount credit_after_create = 0UL;
+    Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
+                           , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+
+    if(credit_res2.size() ==  1 && credit_res2[0].size() == 1)
+        credit_after_create = get_price(std::string(credit_res2[0][0]));
+
+    std::cout << "\n\t credit after create: " << credit_after_create << std::endl;
+
+    exdate = exdate + Database::Days(3);
+
+    invMan->chargeDomainRenew(zone_cz_id, registrar_inv_id, object_id, exdate, units );
+
+    // credit after
+    cent_amount credit_after_renew = 0UL;
+    Database::Result credit_res3 = conn.exec_params(zone_registrar_credit_query
+                           , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+
+    if(credit_res3.size() ==  1 && credit_res3[0].size() == 1)
+        credit_after_renew = get_price(std::string(credit_res3[0][0]));
+    std::cout << "\n\t credit after create: " << credit_after_create << std::endl;
 
     Database::Date now(Database::NOW);
     Database::Date first_this(now.get().year(), now.get().month(), 1);
