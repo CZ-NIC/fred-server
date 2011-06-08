@@ -1211,12 +1211,11 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     // credit before
     Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                        , Database::query_param_list(zone_cz_id)(registrar_inv_id));
-
     cent_amount credit_before = 0UL;
     if(credit_res.size() ==  1 && credit_res[0].size() == 1)
         credit_before = get_price(std::string(credit_res[0][0]));
 
-    std::cout << "createAccountInvoices_registrar: " << registrar_handle
+    std::cout << "\ncreateAccountInvoices_registrar: " << registrar_handle
             << " credit before: " << credit_before << std::endl;
 
 
@@ -1242,10 +1241,8 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     cent_amount credit_after_create = 0UL;
     Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
-
     if(credit_res2.size() ==  1 && credit_res2[0].size() == 1)
         credit_after_create = get_price(std::string(credit_res2[0][0]));
-
     std::cout << "\n\t credit after create: " << credit_after_create << std::endl;
 
     exdate = exdate + Database::Days(3);
@@ -1256,10 +1253,9 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     cent_amount credit_after_renew = 0UL;
     Database::Result credit_res3 = conn.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
-
     if(credit_res3.size() ==  1 && credit_res3[0].size() == 1)
         credit_after_renew = get_price(std::string(credit_res3[0][0]));
-    std::cout << "\n\t credit after create: " << credit_after_create << std::endl;
+    std::cout << "\n\t credit after create: " << credit_after_renew << std::endl;
 
     Database::Date now(Database::NOW);
     Database::Date first_this(now.get().year(), now.get().month(), 1);
@@ -1283,6 +1279,15 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     invMan->createAccountInvoice( noregistrar_handle, std::string("cz"), taxDate_str, toDate_str)
     , std::exception
     , check_std_exception_createAccountInvoice );
+
+    // credit after
+    cent_amount credit_after_acc = 0UL;
+    Database::Result credit_res4 = conn.exec_params(zone_registrar_credit_query
+                           , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+    if(credit_res4.size() ==  1 && credit_res4[0].size() == 1)
+        credit_after_acc = get_price(std::string(credit_res4[0][0]));
+    std::cout << "\n\t credit after create: " << credit_after_acc << std::endl;
+
 
 }
 
