@@ -1250,26 +1250,35 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 	ccReg::Response_var r;
     try
     {
+        CORBA::String_var registrar_handle_var = CORBA::string_dup(registrar_handle.c_str());
+        CORBA::String_var passwd_var = CORBA::string_dup("");
+        CORBA::String_var new_passwd_var = CORBA::string_dup("");
+        CORBA::String_var cltrid_var = CORBA::string_dup("omg");
+        CORBA::String_var xml_var = CORBA::string_dup("<omg/>");
+        CORBA::String_var cert_var = CORBA::string_dup("");
 
         r = epp_ref->ClientLogin(
-            registrar_handle.c_str(),"","","omg",
-                    "<omg/>",clientId,"",ccReg::EN);
+            registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
+            xml_var,clientId,cert_var,ccReg::EN);
     }//try
     catch(CORBA::TRANSIENT&)
     {
         Logging::Manager::instance_ref().get(PACKAGE).error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
         std::cerr << "Caught exception CORBA::TRANSIENT -- unable to contact the "
              << "server." << std::endl;
+        throw;
     }
     catch(CORBA::SystemException& ex)
     {
         Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::SystemException: ")+ex._name() );
         std::cerr << "Caught CORBA::SystemException" << ex._name() << std::endl;
+        throw;
     }
     catch(CORBA::Exception& ex)
     {
         Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::Exception: ")+ex._name() );
         std::cerr << "Caught CORBA::Exception: " << ex._name() << std::endl;
+        throw;
     }
     catch(omniORB::fatalException& fe)
     {
@@ -1279,6 +1288,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                         + std::string("  mesg: ") + std::string(fe.errmsg());
         Logging::Manager::instance_ref().get(PACKAGE).error(errmsg);
         std::cerr << errmsg  << std::endl;
+        throw;
     }
 
             if (r->code != 1000 || !clientId) {
