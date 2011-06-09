@@ -1246,10 +1246,41 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         CorbaContainer::get_instance()->nsresolve("EPP"));
 
     //login
-    CORBA::Long clientId = 0;
-    ccReg::Response_var r = epp_ref->ClientLogin(
+        CORBA::Long clientId = 0;
+	ccReg::Response_var r;
+    try
+    {
+
+        r = epp_ref->ClientLogin(
             registrar_handle.c_str(),"","","omg",
                     "<omg/>",clientId,"",ccReg::EN);
+    }//try
+    catch(CORBA::TRANSIENT&)
+    {
+        Logging::Manager::instance_ref().get(PACKAGE).error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
+        std::cerr << "Caught exception CORBA::TRANSIENT -- unable to contact the "
+             << "server." << std::endl;
+    }
+    catch(CORBA::SystemException& ex)
+    {
+        Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::SystemException: ")+ex._name() );
+        std::cerr << "Caught CORBA::SystemException" << ex._name() << std::endl;
+    }
+    catch(CORBA::Exception& ex)
+    {
+        Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::Exception: ")+ex._name() );
+        std::cerr << "Caught CORBA::Exception: " << ex._name() << std::endl;
+    }
+    catch(omniORB::fatalException& fe)
+    {
+        std::string errmsg = std::string("Caught omniORB::fatalException: ")
+                        + std::string("  file: ") + std::string(fe.file())
+                        + std::string("  line: ") + boost::lexical_cast<std::string>(fe.line())
+                        + std::string("  mesg: ") + std::string(fe.errmsg());
+        Logging::Manager::instance_ref().get(PACKAGE).error(errmsg);
+        std::cerr << errmsg  << std::endl;
+    }
+
             if (r->code != 1000 || !clientId) {
                 //LOG(ERROR_LOG, "Cannot connect: %d", r->code);
                 std::cerr << "Cannot connect: " << r->code << std::endl;
