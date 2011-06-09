@@ -1191,6 +1191,12 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     registrar->save();
     unsigned long long registrar_inv_id = registrar->getId();
 
+    //add registrar into zone
+    std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
+    Database::Date rzfromDate;
+    Database::Date rztoDate;
+    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);						    
+
     try_insert_invoice_prefix();
 
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
@@ -1208,10 +1214,13 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , price);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-        //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << std::endl;
+        std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
     }//for createDepositInvoice
-/*
+    
+    
+    
+
     // credit before
     Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                        , Database::query_param_list(zone_cz_id)(registrar_inv_id));
@@ -1260,7 +1269,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     if(credit_res3.size() ==  1 && credit_res3[0].size() == 1)
         credit_after_renew = get_price(std::string(credit_res3[0][0]));
     std::cout << "\n\t credit after renew: " << credit_after_renew << std::endl;
-*/
+
     Database::Date now(Database::NOW);
     Database::Date first_this(now.get().year(), now.get().month(), 1);
     Database::Date last_prev(first_this - Database::Days(1));
