@@ -52,6 +52,7 @@
 #include "file_manager_client.h"
 #include "fredlib/banking/bank_common.h"
 #include "corba/Admin.hh"
+#include "corba/EPP.hh"
 
 #include "test-common-threaded.h"
 
@@ -1176,6 +1177,17 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 {
     //db
     Database::Connection conn = Database::Manager::acquire();
+
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+    //conf pointers
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
     // registrar
@@ -1217,9 +1229,6 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
     }//for createDepositInvoice
-    
-    
-    
 
     // credit before
     Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
@@ -1231,6 +1240,21 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     std::cout << "\ncreateAccountInvoices_registrar: " << registrar_handle
             << " credit before: " << credit_before << std::endl;
 
+    //try get epp reference
+    ccReg::EPP_var epp_ref;
+    epp_ref = ccReg::EPP::_narrow(
+        CorbaContainer::get_instance()->nsresolve("EPP"));
+
+    //login
+    CORBA::Long clientId = 0;
+    ccReg::Response_var r = epp_ref->ClientLogin(
+            registrar_handle.c_str(),"","","omg",
+                    "<omg/>",clientId,"",ccReg::EN);
+            if (r->code != 1000 || !clientId) {
+                //LOG(ERROR_LOG, "Cannot connect: %d", r->code);
+                std::cerr << "Cannot connect: " << r->code << std::endl;
+                throw std::runtime_error("Cannot connect ");
+            }
 
     // insert object into object registry
     conn.exec_params("INSERT INTO object_registry (roid, name, crid ) VALUES ($1::text, 'object'::text, $2::bigint)",
