@@ -1251,6 +1251,9 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     //login
     CORBA::Long clientId = 0;
     ccReg::Response_var r;
+
+    std::string test_domain_fqdn(std::string("tdomain-")+time_string+".cz");
+
     try
     {
         CORBA::String_var registrar_handle_var = CORBA::string_dup(registrar_handle.c_str());
@@ -1280,7 +1283,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         CORBA::String_var crdate;
         CORBA::String_var exdate;
         r = epp_ref->DomainCreate(
-                "test-domain1.cz",        // fqdn
+                test_domain_fqdn.c_str(), // fqdn
                 "KONTAKT",                // contact
                 "",                       // nsset
                 "",                       // keyset
@@ -1334,13 +1337,10 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         throw;
     }
 
-    // insert object into object registry
-    conn.exec_params("INSERT INTO object_registry (roid, name, crid ) VALUES ($1::text, 'object'::text, $2::bigint)",
-             Database::query_param_list  (registrar_handle)
-                                         (registrar_inv_id) );
 
-    Database::Result res_or = conn.exec_params("SELECT id FROM object_registry WHERE roid = $1::text AND crid = $2::bigint ",
-            Database::query_param_list ( registrar_handle)
+    //get object id
+    Database::Result res_or = conn.exec_params("SELECT id FROM object_registry WHERE name = $1::text AND crid = $2::bigint ",
+            Database::query_param_list ( test_domain_fqdn)
                                        ( registrar_inv_id) );
 
     BOOST_REQUIRE_MESSAGE(res_or.size() > 0 , "object_registry object wasn't found, cannot perform test");
