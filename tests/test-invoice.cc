@@ -1294,7 +1294,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 exdate,                   // expiration date (output)
                 epp_params,               // common call params
                 ccReg::ExtensionList());
-
+/*
 
         period.count = 10;
 
@@ -1306,6 +1306,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 epp_params,//in EppParams params,
                 ccReg::ExtensionList()//in ExtensionList ext
                 );
+		*/
 
     }//try
     catch(ccReg::EPP::EppError &_epp_error)
