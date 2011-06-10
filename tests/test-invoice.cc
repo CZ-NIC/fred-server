@@ -1229,7 +1229,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , price);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-        std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+        //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
     }//for createDepositInvoice
 
@@ -1296,6 +1296,17 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 ccReg::ExtensionList());
 
 
+        period.count = 10;
+
+        r = epp_ref->DomainRenew(
+                test_domain_fqdn.c_str(), // fqdn
+                exdate,//curExpDate
+                period, //Period_str
+                exdate,//out timestamp exDate,
+                epp_params,//in EppParams params,
+                ccReg::ExtensionList()//in ExtensionList ext
+                );
+
     }//try
     catch(ccReg::EPP::EppError &_epp_error)
     {
@@ -1306,6 +1317,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
         LOGGER(PACKAGE).error(error_msg);
         std::cerr << error_msg << std::endl;
+        throw;
     }
     catch(CORBA::TRANSIENT&)
     {
@@ -1336,33 +1348,6 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         std::cerr << errmsg  << std::endl;
         throw;
     }
-
-
-    //get object id
-    Database::Result res_or = conn.exec_params("SELECT id FROM object_registry WHERE name = $1::text AND crid = $2::bigint ",
-            Database::query_param_list ( test_domain_fqdn)
-                                       ( registrar_inv_id) );
-
-    BOOST_REQUIRE_MESSAGE(res_or.size() > 0 , "object_registry object wasn't found, cannot perform test");
-
-    unsigned long long object_id = 0;
-    object_id = res_or[0][0];
-    unsigned long units = 12;
-    Database::Date exdate = Database::Date(Database::NOW) + Database::Days(3);
-
-    invMan->chargeDomainCreate(zone_cz_id, registrar_inv_id, object_id, exdate, units );
-
-    // credit after
-    cent_amount credit_after_create = 0UL;
-    Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
-                           , Database::query_param_list(zone_cz_id)(registrar_inv_id));
-    if(credit_res2.size() ==  1 && credit_res2[0].size() == 1)
-        credit_after_create = get_price(std::string(credit_res2[0][0]));
-    std::cout << "\n\t credit after create: " << credit_after_create << std::endl;
-
-    exdate = exdate + Database::Days(3);
-
-    invMan->chargeDomainRenew(zone_cz_id, registrar_inv_id, object_id, exdate, units );
 
     // credit after
     cent_amount credit_after_renew = 0UL;
