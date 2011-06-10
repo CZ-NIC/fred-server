@@ -217,6 +217,9 @@ public:
 
   virtual inline void setQueryTimeout(unsigned t) {
     conn_->setQueryTimeout(t);
+#ifdef HAVE_LOGGER
+      LOGGER(PACKAGE).debug(boost::format("sql statement timout set to %1%ms") % t);
+#endif
   }
 
   /* HACK! HACK! HACK! (use with construct with old DB connection) */
