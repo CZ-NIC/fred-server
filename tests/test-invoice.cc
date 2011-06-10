@@ -1200,6 +1200,9 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
     registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
     registrar->setVat(true);
+    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
+    registrar_acl->setCertificateMD5("");
+    registrar_acl->setPassword("");
     registrar->save();
     unsigned long long registrar_inv_id = registrar->getId();
 
@@ -1207,7 +1210,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
     Database::Date rzfromDate;
     Database::Date rztoDate;
-    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);						    
+    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);                          
 
     try_insert_invoice_prefix();
 
@@ -1246,8 +1249,8 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         CorbaContainer::get_instance()->nsresolve("EPP"));
 
     //login
-        CORBA::Long clientId = 0;
-	ccReg::Response_var r;
+    CORBA::Long clientId = 0;
+    ccReg::Response_var r;
     try
     {
         CORBA::String_var registrar_handle_var = CORBA::string_dup(registrar_handle.c_str());
@@ -1260,7 +1263,47 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         r = epp_ref->ClientLogin(
             registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
             xml_var,clientId,cert_var,ccReg::EN);
+
+        if (r->code != 1000 || !clientId) {
+            std::cerr << "Cannot connect: " << r->code << std::endl;
+            throw std::runtime_error("Cannot connect ");
+        }
+
+        ccReg::Period_str period;
+        period.count = 1;
+        period.unit = ccReg::unit_year;
+        ccReg::EppParams epp_params;
+        epp_params.requestID = clientId;
+        epp_params.sessionID = clientId;
+        epp_params.clTRID = "";
+        epp_params.XML = "";
+        CORBA::String_var crdate;
+        CORBA::String_var exdate;
+        r = epp_ref->DomainCreate(
+                "test-domain1.cz",        // fqdn
+                "KONTAKT",                // contact
+                "",                       // nsset
+                "",                       // keyset
+                "",                       // authinfo
+                period,                   // reg. period
+                ccReg::AdminContact(),    // admin contact list
+                crdate,                   // create datetime (output)
+                exdate,                   // expiration date (output)
+                epp_params,               // common call params
+                ccReg::ExtensionList());
+
+
     }//try
+    catch(ccReg::EPP::EppError &_epp_error)
+    {
+        std::string error_msg = str(boost::format("code: %1%  message: %2%  svtrid: %3%")
+                                    % _epp_error.errCode
+                                    % _epp_error.errMsg
+                                    % _epp_error.svTRID);
+
+        LOGGER(PACKAGE).error(error_msg);
+        std::cerr << error_msg << std::endl;
+    }
     catch(CORBA::TRANSIENT&)
     {
         Logging::Manager::instance_ref().get(PACKAGE).error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
@@ -1290,12 +1333,6 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         std::cerr << errmsg  << std::endl;
         throw;
     }
-
-            if (r->code != 1000 || !clientId) {
-                //LOG(ERROR_LOG, "Cannot connect: %d", r->code);
-                std::cerr << "Cannot connect: " << r->code << std::endl;
-                throw std::runtime_error("Cannot connect ");
-            }
 
     // insert object into object registry
     conn.exec_params("INSERT INTO object_registry (roid, name, crid ) VALUES ($1::text, 'object'::text, $2::bigint)",
