@@ -1294,19 +1294,25 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 exdate,                   // expiration date (output)
                 epp_params,               // common call params
                 ccReg::ExtensionList());
-/*
 
-        period.count = 10;
 
+        ccReg::EppParams epp_params_renew;
+        epp_params_renew.requestID = clientId+1;
+        epp_params_renew.sessionID = clientId;
+        epp_params_renew.clTRID = "";
+        epp_params_renew.XML = "";
+
+
+        period.count = 3;
+        CORBA::String_var exdate1;
         r = epp_ref->DomainRenew(
                 test_domain_fqdn.c_str(), // fqdn
                 exdate,//curExpDate
                 period, //Period_str
-                exdate,//out timestamp exDate,
-                epp_params,//in EppParams params,
+                exdate1,//out timestamp exDate,
+                epp_params_renew,//in EppParams params,
                 ccReg::ExtensionList()//in ExtensionList ext
                 );
-		*/
 
     }//try
     catch(ccReg::EPP::EppError &_epp_error)
