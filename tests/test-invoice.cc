@@ -1233,7 +1233,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , price);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-        std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+        //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
         taxdate = Database::Date(year,6,10);
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
@@ -1242,7 +1242,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , price);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-        std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+        //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
         taxdate = Database::Date(year,12,31);
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
@@ -1251,7 +1251,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , price);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-        std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+        //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
     }//for createDepositInvoice
 
@@ -1294,8 +1294,8 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     if(credit_res.size() ==  1 && credit_res[0].size() == 1)
         credit_before = get_price(std::string(credit_res[0][0]));
 
-    std::cout << "\ncreateAccountInvoices_registrar: " << registrar_handle
-            << " credit before: " << credit_before << std::endl;
+//    std::cout << "\ncreateAccountInvoices_registrar: " << registrar_handle
+//            << " credit before: " << credit_before << std::endl;
 
 
     //try get epp reference
@@ -1308,6 +1308,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     ccReg::Response_var r;
 
     std::string test_domain_fqdn(std::string("tdomain")+time_string);
+    cent_amount test_operation_price = 0;
 
     try
     {
@@ -1326,6 +1327,8 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
             std::cerr << "Cannot connect: " << r->code << std::endl;
             throw std::runtime_error("Cannot connect ");
         }
+
+
 
         for (int i =0 ; i < 5000; i+=2)
         {
@@ -1352,6 +1355,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                     exdate,                   // expiration date (output)
                     epp_params,               // common call params
                     ccReg::ExtensionList());
+            test_operation_price+=19000;
 
             ++i;
 
@@ -1372,6 +1376,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                     epp_params_renew,//in EppParams params,
                     ccReg::ExtensionList()//in ExtensionList ext
                     );
+            test_operation_price+=3*19000;
         }
 
     }//try
@@ -1422,7 +1427,17 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
     if(credit_res3.size() ==  1 && credit_res3[0].size() == 1)
         credit_after_renew = get_price(std::string(credit_res3[0][0]));
-    std::cout << "\n\t credit after renew: " << credit_after_renew << std::endl;
+    //std::cout << "\n\t credit after renew: " << credit_after_renew << std::endl;
+
+    //debug print
+    if(credit_before - credit_after_renew != test_operation_price)
+    {
+        std::cout << "\ncredit_before: " << credit_before
+                << " credit_after_renew: " << credit_after_renew
+                << " test_operation_price: " << test_operation_price
+                << std::endl;
+    }
+    BOOST_CHECK(credit_before - credit_after_renew == test_operation_price);
 
     Database::Date now(Database::NOW);
     Database::Date first_this(now.get().year(), now.get().month(), 1);
