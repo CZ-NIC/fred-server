@@ -1197,6 +1197,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     Fred::Registrar::Manager::AutoPtr regMan
              = Fred::Registrar::Manager::create(DBSharedPtr());
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+    registrar->setName(registrar_handle+"_Name");
     registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
     registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
     registrar->setVat(true);
@@ -1219,6 +1220,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
     unsigned long long invoiceid = 0;
 
+    /*
     for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
     {
         Database::Date taxdate (year,6,10);
@@ -1232,6 +1234,38 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
     }//for createDepositInvoice
+    */
+
+    {
+        Database::Date taxdate (2003,6,10);
+        unsigned long price = 10000UL;//cents
+        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                , zone_cz_id//zone
+                , registrar_inv_id//registrar
+                , price);//price
+        BOOST_CHECK_EQUAL(invoiceid != 0,true);
+    }
+    {
+        Database::Date taxdate (2006,6,10);
+        unsigned long price = 10000UL;//cents
+        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                , zone_cz_id//zone
+                , registrar_inv_id//registrar
+                , price);//price
+        BOOST_CHECK_EQUAL(invoiceid != 0,true);
+    }
+    {
+        Database::Date taxdate (2010,6,10);
+        unsigned long price = 100000UL;//cents
+        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                , zone_cz_id//zone
+                , registrar_inv_id//registrar
+                , price);//price
+        BOOST_CHECK_EQUAL(invoiceid != 0,true);
+    }
+
+
+
 
     // credit before
     Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
