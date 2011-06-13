@@ -1218,24 +1218,44 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
 
-    unsigned long long invoiceid = 0;
 
-    /*
     for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
     {
-        Database::Date taxdate (year,6,10);
-        unsigned long price = 100000UL;//cents
+        unsigned long long invoiceid = 0;
+        Database::Date taxdate;
+
+        taxdate = Database::Date(year,1,1);
+        unsigned long price = 5000000UL;//cents
+
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
                 , price);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-        //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+        std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+
+        taxdate = Database::Date(year,6,10);
+        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                , zone_cz_id//zone
+                , registrar_inv_id//registrar
+                , price);//price
+        BOOST_CHECK_EQUAL(invoiceid != 0,true);
+
+        std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+
+        taxdate = Database::Date(year,12,31);
+        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                , zone_cz_id//zone
+                , registrar_inv_id//registrar
+                , price);//price
+        BOOST_CHECK_EQUAL(invoiceid != 0,true);
+
+        std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
     }//for createDepositInvoice
-    */
 
+/* https://admin.nic.cz/ticket/5355#comment:123
     {
         Database::Date taxdate (2003,6,10);
         unsigned long price = 15000UL;//cents
@@ -1263,11 +1283,11 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , price);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
     }
+*/
 
 
 
-
-    // credit before
+    /* // credit before
     Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                        , Database::query_param_list(zone_cz_id)(registrar_inv_id));
     cent_amount credit_before = 0UL;
@@ -1276,6 +1296,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
     std::cout << "\ncreateAccountInvoices_registrar: " << registrar_handle
             << " credit before: " << credit_before << std::endl;
+    */
 
     //try get epp reference
     ccReg::EPP_var epp_ref;
@@ -1286,7 +1307,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     CORBA::Long clientId = 0;
     ccReg::Response_var r;
 
-    std::string test_domain_fqdn(std::string("tdomain-")+time_string+".cz");
+    std::string test_domain_fqdn(std::string("tdomain")+time_string);
 
     try
     {
@@ -1306,47 +1327,52 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
             throw std::runtime_error("Cannot connect ");
         }
 
-        ccReg::Period_str period;
-        period.count = 1;
-        period.unit = ccReg::unit_year;
-        ccReg::EppParams epp_params;
-        epp_params.requestID = clientId;
-        epp_params.sessionID = clientId;
-        epp_params.clTRID = "";
-        epp_params.XML = "";
-        CORBA::String_var crdate;
-        CORBA::String_var exdate;
-        r = epp_ref->DomainCreate(
-                test_domain_fqdn.c_str(), // fqdn
-                "KONTAKT",                // contact
-                "",                       // nsset
-                "",                       // keyset
-                "",                       // authinfo
-                period,                   // reg. period
-                ccReg::AdminContact(),    // admin contact list
-                crdate,                   // create datetime (output)
-                exdate,                   // expiration date (output)
-                epp_params,               // common call params
-                ccReg::ExtensionList());
+        for (int i =0 ; i < 5000; i+=2)
+        {
+            ccReg::Period_str period;
+            period.count = 1;
+            period.unit = ccReg::unit_year;
+            ccReg::EppParams epp_params;
+            epp_params.requestID = clientId + i;
+            epp_params.sessionID = clientId;
+            epp_params.clTRID = "";
+            epp_params.XML = "";
+            CORBA::String_var crdate;
+            CORBA::String_var exdate;
+
+            r = epp_ref->DomainCreate(
+                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i)+".cz").c_str(), // fqdn
+                    "KONTAKT",                // contact
+                    "",                       // nsset
+                    "",                       // keyset
+                    "",                       // authinfo
+                    period,                   // reg. period
+                    ccReg::AdminContact(),    // admin contact list
+                    crdate,                   // create datetime (output)
+                    exdate,                   // expiration date (output)
+                    epp_params,               // common call params
+                    ccReg::ExtensionList());
+
+            ++i;
+
+            ccReg::EppParams epp_params_renew;
+            epp_params_renew.requestID = clientId+i;
+            epp_params_renew.sessionID = clientId;
+            epp_params_renew.clTRID = "";
+            epp_params_renew.XML = "";
 
 
-        ccReg::EppParams epp_params_renew;
-        epp_params_renew.requestID = clientId+1;
-        epp_params_renew.sessionID = clientId;
-        epp_params_renew.clTRID = "";
-        epp_params_renew.XML = "";
-
-
-        period.count = 3;
-        CORBA::String_var exdate1;
-        r = epp_ref->DomainRenew(
-                test_domain_fqdn.c_str(), // fqdn
-                exdate,//curExpDate
-                period, //Period_str
-                exdate1,//out timestamp exDate,
-                epp_params_renew,//in EppParams params,
-                ccReg::ExtensionList()//in ExtensionList ext
-                );
+            period.count = 3;
+            CORBA::String_var exdate1;
+            r = epp_ref->DomainRenew(
+                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
+                    exdate,//curExpDate
+                    period, //Period_str
+                    exdate1,//out timestamp exDate,
+                    epp_params_renew,//in EppParams params,
+                    ccReg::ExtensionList()//in ExtensionList ext
+                    );
+        }
 
     }//try
     catch(ccReg::EPP::EppError &_epp_error)
