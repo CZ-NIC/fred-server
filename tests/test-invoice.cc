@@ -1238,7 +1238,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
     {
         Database::Date taxdate (2003,6,10);
-        unsigned long price = 10000UL;//cents
+        unsigned long price = 15000UL;//cents
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
@@ -1247,7 +1247,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     }
     {
         Database::Date taxdate (2006,6,10);
-        unsigned long price = 10000UL;//cents
+        unsigned long price = 15000UL;//cents
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
