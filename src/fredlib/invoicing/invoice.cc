@@ -2487,7 +2487,7 @@ public:
                   " JOIN invoice_prefix ip ON (ip.id=i.prefix_type) "
                   " LEFT JOIN invoice_generation ig ON (i.id=ig.invoiceid) "
                   // temporary static sorting
-                  " ORDER BY crdate DESC "
+                  " ORDER BY it.id"
               );
 
             for (unsigned i=0; i < res3.size(); ++i)
