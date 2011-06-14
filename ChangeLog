@@ -1,3 +1,10 @@
+2011-06-14 Jiri Sadek, Jan Zima, Juraj Vicenik (2.7.3)
+
+  * invoice archive fix (invoice list reload fix)
+
+  * whois contact reminder fix (call with specified date in past
+  should not select objects created in future from that date)
+
 2011-06-07 Jiri Sadek, Jan Zima, Juraj Vicenik (2.7.2)
 
   * new invoicing tests
