@@ -1455,6 +1455,22 @@ public:
                                        ap(_manager),
                                        man(_manager),
                                        id(_id) {
+      LOGGER(PACKAGE).debug ( boost::format(
+              "InvoiceImpl _id: %1% _zone: %2% _zoneName: %3% _crTime: %4% _taxDate: %5%"
+              " _accountPeriod: %6% _type: %7% _number: %8%"
+              " _registrar: %9% _credit: %10% _price: %11% _vatRate: %12% _total: %13%"
+              " _totalVAT: %14% _filePDF: %15% _fileXML: %16% _varSymbol: %17%"
+              //" _client: %18% _filepdf_name: %19%  _filexml_name: %20%"
+              //" _manager: %21%"
+              )
+      % _id % _zone % _zoneName % _crTime % _taxDate
+      % _accountPeriod % _type %  _number
+      % _registrar % _credit % _price % _vatRate % _total
+      % _totalVAT % _filePDF % _fileXML % _varSymbol
+      //% _client % _filepdf_name % _filexml_name
+      //% _manager
+
+      );
   }
 
   ~InvoiceImpl() {
@@ -1999,7 +2015,7 @@ public:
     archiveFilter(AF_IGNORE), objectIdFilter(0), partialLoad(false),
     man(_man)
     {}
-          
+
     ~ListImpl() {
       clearList();
     }
