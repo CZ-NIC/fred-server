@@ -1178,7 +1178,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     //db
     Database::Connection conn = Database::Manager::acquire();
     //set operation price
-    conn.exec("update price_list set price = 190.1 where zone = 1 and operation = 2");
+    conn.exec("update price_list set price = 190.11 where zone = 1 and operation = 2");
 
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
@@ -1357,7 +1357,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                     exdate,                   // expiration date (output)
                     epp_params,               // common call params
                     ccReg::ExtensionList());
-            test_operation_price+=19010;
+            test_operation_price+=19011;
 
             ++i;
 
@@ -1378,7 +1378,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                     epp_params_renew,//in EppParams params,
                     ccReg::ExtensionList()//in ExtensionList ext
                     );
-            test_operation_price+=3*19010;
+            test_operation_price+=3*19011;
         }
 
     }//try
