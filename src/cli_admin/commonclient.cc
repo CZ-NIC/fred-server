@@ -355,10 +355,10 @@ epp_client_login_return epp_client_login( DBSharedPtr db
         , const std::string& login_registrar)
 {
     epp_client_login_return ret;
+    ret.cc.reset(new CorbaClient(0, 0, nsAddr.c_str(),
+            nameservice_context));
 
-    CorbaClient cc(0, 0, nsAddr.c_str(),
-            nameservice_context);
-    CORBA::Object_var o = cc.getNS()->resolve("EPP");
+    CORBA::Object_var o = ret.cc->getNS()->resolve("EPP");
 
     ret.epp = ccReg::EPP::_narrow(o);
     ret.clientId = 0;

@@ -80,6 +80,7 @@ struct epp_client_login_return
     ccReg::EPP_var epp;
     CORBA::Long clientId;
     ccReg::Response_var r;
+    boost::shared_ptr<CorbaClient> cc;
 };
 
 epp_client_login_return epp_client_login( DBSharedPtr db
