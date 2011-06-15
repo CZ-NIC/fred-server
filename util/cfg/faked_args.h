@@ -119,7 +119,14 @@ public:
             argv_buffers[argv_idx].push_back(*si);
         }//for si
         argv_buffers[argv_idx].push_back(0);//zero terminated string
-        argv.push_back(&argv_buffers[argv_idx][0]);//added char*
+
+        //refresh argv
+        argv.clear();
+        for(argv_buffers_t::iterator i = argv_buffers.begin()
+                ; i!=argv_buffers.end();++i)
+        {
+            argv.push_back(&(*i)[0]);
+        }
         //std::cout << "add_argv str : " << str <<  std::endl;
     }
 
