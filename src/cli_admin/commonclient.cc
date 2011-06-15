@@ -21,6 +21,12 @@
 
 #include "commonclient.h"
 
+#include "corba_wrapper_decl.h"
+#include "cfg/faked_args.h"
+#include "cfg/config_handler_decl.h"
+#include "cfg/handle_corbanameservice_args.h"
+
+
 
 const char *corbaOpts[][2] = {
     {"nativeCharCodeSet", "UTF-8"},
@@ -349,48 +355,52 @@ parseDateTime(std::string str)
 }
 
 
-epp_client_login_return epp_client_login( DBSharedPtr db
-        , const std::string& nsAddr
-        , const std::string& nameservice_context
-        , const std::string& login_registrar)
+epp_client_login_return epp_client_login(const std::string& login_registrar )
 {
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+
+    //corba config
+    FakedArgs fa = CfgArgGroups::instance()->fa;
+    HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->get_nameservice_host()
+            , ns_args_ptr->get_nameservice_port()
+            , ns_args_ptr->get_nameservice_context());
+    //try get epp reference
     epp_client_login_return ret;
-    ret.cc.reset(new CorbaClient(0, 0, nsAddr.c_str(),
-            nameservice_context));
+    ret.epp = ccReg::EPP::_narrow(
+        CorbaContainer::get_instance()->nsresolve("EPP"));
 
-    CORBA::Object_var o = ret.cc->getNS()->resolve("EPP");
-
-    ret.epp = ccReg::EPP::_narrow(o);
     ret.clientId = 0;
 
     std::string get_registrar_query;
-    if (!login_registrar.empty()) {
-        std::stringstream sss;
-        sss << "SELECT r.handle, ra.cert, ra.password "
+    if (!login_registrar.empty())
+    {
+        get_registrar_query = "SELECT r.handle, ra.cert, ra.password "
             "FROM registrar r, registraracl ra "
             "WHERE r.id=ra.registrarid AND r.handle='"
-            << login_registrar
-            << "' LIMIT 1";
-        get_registrar_query = sss.str();
-    } else {
+            + login_registrar
+            + "' LIMIT 1";
+    } else
+    {
         get_registrar_query = "SELECT r.handle,ra.cert,ra.password "
             "FROM registrar r, registraracl ra "
             "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1";
     }
 
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
+    Database::Result registrar_result = conn.exec(get_registrar_query);
 
-    if (!db->ExecSelect(get_registrar_query.c_str())) {
-        std::cout << "error in exec" << std::endl;
-        throw std::runtime_error("epp_client_login: Error - error in exec");
-    }
-    if (!db->GetSelectRows()) {
+    if (registrar_result.size() == 0)
+    {
         std::cout << "No result" << std::endl;
         throw std::runtime_error("epp_client_login: Error - No result");
     }
-    std::string gg_handle = db->GetFieldValue(0,0);
-    std::string gg_cert = db->GetFieldValue(0,1);
-    std::string gg_password = db->GetFieldValue(0,2);
+
+    std::string gg_handle = std::string(registrar_result[0][0]);
+    std::string gg_cert = std::string(registrar_result[0][1]);;
+    std::string gg_password = std::string(registrar_result[0][2]);
 
     ret.r = ret.epp->ClientLogin(gg_handle.c_str(),gg_password.c_str(),"",
         "system_delete_login","<system_delete_login/>",

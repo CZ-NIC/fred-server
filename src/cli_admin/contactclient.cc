@@ -38,10 +38,7 @@ void
 ContactClient::info()
 {
     epp_client_login_return epp_login = epp_client_login(
-            m_db
-            , m_nsAddr
-            , nameservice_context
-            , params.login_registrar.get_value());
+            params.login_registrar.get_value());
 
     std::string name = contact_info.get_value();
     std::string cltrid;

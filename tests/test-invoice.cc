@@ -1178,7 +1178,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     //db
     Database::Connection conn = Database::Manager::acquire();
     //set operation price
-    conn.exec("update price_list set price = 190.11 where zone = 1 and operation = 2");
+    conn.exec("update price_list set price = price + 0.11 where zone = 1 and operation = 2");
 
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
@@ -1472,6 +1472,8 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         credit_after_acc = get_price(std::string(credit_res4[0][0]));
     std::cout << "\n\t credit after acc: " << credit_after_acc << std::endl;
 */
+    //set operation price back
+    conn.exec("update price_list set price = price - 0.11 where zone = 1 and operation = 2");
 }
 
 

@@ -80,12 +80,8 @@ struct epp_client_login_return
     ccReg::EPP_var epp;
     CORBA::Long clientId;
     ccReg::Response_var r;
-    boost::shared_ptr<CorbaClient> cc;
 };
 
-epp_client_login_return epp_client_login( DBSharedPtr db
-        , const std::string& nsAddr
-        , const std::string& nameservice_context
-        , const std::string& login_registrar);
+epp_client_login_return epp_client_login(const std::string& login_registrar);
 
 #endif // _COMMONCLIENT_H_

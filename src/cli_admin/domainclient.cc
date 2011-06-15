@@ -19,6 +19,10 @@
 #include "commonclient.h"
 #include "domainclient.h"
 #include "fredlib/registry.h"
+#include "corba_wrapper_decl.h"
+#include "cfg/faked_args.h"
+#include "cfg/config_handler_decl.h"
+#include "cfg/handle_corbanameservice_args.h"
 
 namespace Admin {
 
@@ -192,10 +196,8 @@ DomainClient::domain_info()
                         ? domain_info_.get_value()
                         : "";
 
-    epp_client_login_return epp_login = epp_client_login( m_db
-            , m_nsAddr
-            , nameservice_context_
-            , login_registrar_.is_value_set()
+    epp_client_login_return epp_login = epp_client_login(
+            login_registrar_.is_value_set()
                 ? login_registrar_.get_value()
                 : "");
 
@@ -220,10 +222,8 @@ DomainClient::domain_info()
 void
 DomainClient::domain_list_plain()
 {
-    epp_client_login_return epp_login = epp_client_login( m_db
-            , m_nsAddr
-            , nameservice_context_
-            , login_registrar_.is_value_set()
+    epp_client_login_return epp_login = epp_client_login(
+            login_registrar_.is_value_set()
                 ? login_registrar_.get_value()
                 : "");
 

@@ -187,10 +187,7 @@ KeysetClient::list_plain()
     ccReg::Lists *k;
 
     epp_client_login_return epp_login = epp_client_login(
-            m_db
-            , m_nsAddr
-            , nameservice_context
-            , m_list_args.login_registrar.get_value());
+            m_list_args.login_registrar.get_value());
 
     epp_login.r = epp_login.epp->KeySetList(k, epp_login.clientId, cltrid.c_str(), xml.c_str());
 
@@ -225,10 +222,7 @@ KeysetClient::check()
     names[0] = CORBA::string_dup(name.c_str());
 
     epp_client_login_return epp_login = epp_client_login(
-                m_db
-                , m_nsAddr
-                , nameservice_context
-                , m_list_args.login_registrar.get_value());
+            m_list_args.login_registrar.get_value());
 
 
     epp_login.r = epp_login.epp->KeySetCheck(names, a, epp_login.clientId, cltrid.c_str(), xml.c_str());
@@ -251,10 +245,7 @@ KeysetClient::info()
     cltrid = "info_keyset";
 
     epp_client_login_return epp_login = epp_client_login(
-                m_db
-                , m_nsAddr
-                , nameservice_context
-                , m_list_args.login_registrar.get_value());
+            m_list_args.login_registrar.get_value());
 
     ccReg::KeySet* k = new ccReg::KeySet;
     epp_login.epp->KeySetInfo(name.c_str(), k, epp_login.clientId, cltrid.c_str(), xml.c_str());
@@ -284,10 +275,7 @@ KeysetClient::info2()
     ccReg::InfoType type = ccReg::IT_LIST_KEYSETS;
 
     epp_client_login_return epp_login = epp_client_login(
-                m_db
-                , m_nsAddr
-                , nameservice_context
-                , m_list_args.login_registrar.get_value());
+            m_list_args.login_registrar.get_value());
 
     epp_login.r = epp_login.epp->info(
             type,
