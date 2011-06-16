@@ -283,7 +283,7 @@ public:
           if(single_invoice) {
               LOGGER(PACKAGE).info((boost::format("Credit not sufficient for registrar ID %1%, invoice: %2%")
                   % registrar % inv_id1).str());
-              return true;
+              return false;
           }
           // there is the second invoice
 
@@ -295,7 +295,7 @@ public:
                    % registrar
                    % static_cast<int>(renew ? INVOICING_DomainRenew : INVOICING_DomainCreate)
                    % objectId % inv_id1 % inv_id2).str());
-              return true;
+              return false;
           }
 
           LOGGER(PACKAGE).debug ( boost::format(
