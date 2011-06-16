@@ -1918,7 +1918,7 @@ public:
     ObjectNewStateRequestArgs params;
     CommandDescription get_command_option()
     {
-        return CommandDescription("object_new_state_request",true);
+        return CommandDescription("object_new_state_request");
     }
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -1927,12 +1927,49 @@ public:
                 new boost::program_options::options_description(
                         std::string("object_new_state_request options")));
         cfg_opts->add_options()
-            ("object_new_state_request",boost::program_options
-                    ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_new_state_request))
-                    ,"set request for object state with specified state id")
-            ("object_id",boost::program_options
-                    ::value<Checked::id>()->notifier(save_arg<unsigned long long>(params.object_id))
-                     ,"object id")
+            ("object_new_state_request","set request for object state")
+            ("object_name",boost::program_options
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.object_name))
+                 ,"object handle")
+            ("object_type",boost::program_options
+                 ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_type))
+                  ,"object type number: 1 - contact,  2 - nsset, 3 - domain, 4 - keyset")
+          ("object_state_name",boost::program_options
+                  ::value<Checked::string>()->notifier(save_arg<std::string>(params.object_state_name))
+                   ,"object state name from db table enum_object_states: "
+                   "serverRenewProhibited "
+                   "serverOutzoneManual "
+                   "serverInzoneManual "
+                   "serverBlocked "
+                   "expirationWarning "
+                   "expired "
+                   "unguarded "
+                   "validationWarning1 "
+                   "validationWarning2 "
+                   "notValidated "
+                   "nssetMissing "
+                   "outzone "
+                   "serverRegistrantChangeProhibited "
+                   "deleteWarning "
+                   "outzoneUnguarded "
+                   "serverDeleteProhibited "
+                   "serverTransferProhibited "
+                   "serverUpdateProhibited "
+                   "linked "
+                   "deleteCandidate "
+                   "conditionallyIdentifiedContact "
+                   "identifiedContact "
+                   "validatedContact "
+                   )
+
+                   ("valid_from",boost::program_options
+                       ::value<Checked::string>()->notifier(save_string(params.valid_from))
+                        ,"object state request valid from date time , impl default is now, example: 2002-01-31T10:00:01,123456789 ")
+
+                    ("valid_to",boost::program_options
+                        ::value<Checked::string>()->notifier(save_string(params.valid_to))
+                         ,"object state request valid to date time , impl default is empty, example: 2003-01-31T10:00:01,123456789 ")
+
                 ;
         return cfg_opts;
     }//get_options_description

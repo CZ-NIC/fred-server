@@ -53,7 +53,13 @@ private:
     ObjectRegularProcedureArgs object_regular_procedure_params;
     DeleteObjectsArgs delete_objects_params;
 
-    int createObjectStateRequest(Fred::TID object, unsigned state);
+    void createObjectStateRequest(
+            const std::string & object_name
+            , unsigned long object_type
+            , const std::string& object_state_name
+            , const std::string& valid_from
+            , const optional_string& valid_to);
+
     int deleteObjects(const std::string &typeList, CorbaClient &cc);
 
     static const struct options m_opts[];

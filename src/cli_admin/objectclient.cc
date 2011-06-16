@@ -26,6 +26,8 @@
 #include "fredlib/poll.h"
 #include "log/logger.h"
 #include "corba/nameservice.h"
+#include <stdexcept>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Admin {
 
@@ -44,61 +46,121 @@ ObjectClient::runMethod()
     }
 }
 
-int
-ObjectClient::createObjectStateRequest(
-        Fred::TID object,
-        unsigned state)
+void ObjectClient::createObjectStateRequest(
+        const std::string & object_name
+        , unsigned long object_type
+        , const std::string& object_state_name
+        , const std::string& valid_from
+        , const optional_string& valid_to
+        )
 {
-    Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ObjectClient::createObjectStateRequest Fred::TID object: ")
-     + boost::lexical_cast<std::string>(object) + " unsigned state: " + boost::lexical_cast<std::string>(state));
-      std::stringstream sql;
-      sql << "SELECT COUNT(*) FROM object_state_request "
-          << "WHERE object_id=" << object << " AND state_id=" << state
-          << " AND (canceled ISNULL OR canceled > CURRENT_TIMESTAMP) "
-          << " AND (valid_to ISNULL OR valid_to > CURRENT_TIMESTAMP) ";
-      Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ObjectClient::createObjectStateRequest sql: ") +sql.str());
-      if (!m_db->ExecSelect(sql.str().c_str()))
-          return -1;
-      if (atoi(m_db->GetFieldValue(0,0)))
-          return -2;
-      m_db->FreeSelect();
-      sql.str("");
-      sql << "INSERT INTO object_state_request "
-          << "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
-          << "(" << object << "," << state
-          << ",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "
-          << "CURRENT_TIMESTAMP + INTERVAL '7 days');";
-      Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ObjectClient::createObjectStateRequest sql: ") +sql.str());
-      if (!m_db->ExecSQL(sql.str().c_str()))
-          return -1;
-      return 0;
-}
+    Logging::Manager::instance_ref().get(PACKAGE).debug(std::string(
+        "ObjectClient::createObjectStateRequest object name: ") + object_name
+        + " object type: " + boost::lexical_cast<std::string>(object_type)
+        + " object state name: " + object_state_name
+        + " valid from: " + valid_from
+        + " valid to: " + valid_to.get_value());
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    //get object
+    Database::Result obj_id_res = conn.exec_params(
+            "SELECT id FROM object_registry "
+            " WHERE type=$1::integer AND name=$2::text "
+            , Database::query_param_list
+                (object_type)(object_name));
+
+    if(obj_id_res.size() != 1)
+        throw std::runtime_error("object not found");
+
+    unsigned long long object_id = obj_id_res[0][0];
+
+    //get object state
+    Database::Result obj_state_res = conn.exec_params(
+                "SELECT id FROM enum_object_states "
+                " WHERE name=$1::text"
+                , Database::query_param_list
+                    (object_state_name));
+
+    if(obj_state_res.size() !=1)
+        throw std::runtime_error("object state not found");
+
+    unsigned long long object_state_id = obj_state_res[0][0];
+
+    //get existing state requests for object and state
+    //assuming requests for different states of the same object may overlay
+    Database::Result requests_result = conn.exec_params(
+        "SELECT valid_from, valid_to, canceled FROM object_state_request "
+        " WHERE object_id=$1::bigint AND state_id=$2::bigint "
+        , Database::query_param_list(object_id)(object_state_id));
+
+    //check time
+    boost::posix_time::ptime new_valid_from
+        = boost::posix_time::time_from_string(valid_from);
+    boost::posix_time::ptime new_valid_to
+        = boost::posix_time::time_from_string(valid_to.get_value());
+
+    if(new_valid_from > new_valid_to )
+        throw std::runtime_error("new_valid_from > new_valid_to");
+
+    for(std::size_t i = 0 ; i < requests_result.size(); ++i)
+    {
+        boost::posix_time::ptime obj_valid_from
+            = boost::posix_time::time_from_string(
+                    std::string(requests_result[i][0]));
+
+        boost::posix_time::ptime obj_valid_to
+            = boost::posix_time::time_from_string(
+                    std::string(requests_result[i][1]));
+
+        //if obj_canceled is not null
+        if(requests_result[i][2].isnull() == false)
+        {
+            boost::posix_time::ptime obj_canceled
+                = boost::posix_time::time_from_string(
+                        std::string(requests_result[i][2]));
+            if (obj_canceled < obj_valid_to) obj_valid_to = obj_canceled;
+        }//if obj_canceled is not null
+
+        if(obj_valid_from > obj_valid_to )
+            throw std::runtime_error("obj_valid_from > obj_valid_to");
+
+        //check overlay
+        if(((new_valid_from >= obj_valid_from) && (new_valid_from < obj_valid_to))
+          || ((new_valid_to > obj_valid_from) && (new_valid_to <= obj_valid_to)))
+            throw std::runtime_error("overlayed validity time intervals");
+    }//for check with existing object state requests
+
+    conn.exec_params(
+        "INSERT INTO object_state_request "
+        "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
+        "( $1::bigint , $2::bigint "
+        ",CURRENT_TIMESTAMP, $3::timestamp, "
+        "$4::timestamp )"
+        , Database::query_param_list
+            (object_id)(object_state_id)
+            (new_valid_from)(new_valid_to.is_special()
+                    ? Database::QPNull
+                            : Database::QueryParam(new_valid_to) )
+        );
+
+    return;
+}//ObjectClient::createObjectStateRequest
 
 void
 ObjectClient::new_state_request()
 {
-    //callHelp(m_conf, no_help);
-    Fred::TID id = object_new_state_request_params.object_id;// m_conf.get<unsigned long long>(OBJECT_ID_NAME);
-    unsigned int state = object_new_state_request_params.object_new_state_request;//m_conf.get<unsigned int>(OBJECT_NEW_STATE_REQUEST_NAME);
-    int res = createObjectStateRequest(
-            id, state
-            );
-    switch (res) {
-        case -1:
-            Logging::Manager::instance_ref().get(PACKAGE).error("SQL_ERROR" );
-            std::cerr << "SQL_ERROR" << std::endl;
-            break;
-        case -2:
-            Logging::Manager::instance_ref().get(PACKAGE).error("Already exists" );
-            std::cerr << "Already exists" << std::endl;
-            break;
-        case 0:
-            break;
-        default:
-            Logging::Manager::instance_ref().get(PACKAGE).error("Unknown error");
-            std::cerr << "Unknown error" << std::endl;
-            break;
-    }
+
+    createObjectStateRequest(
+        object_new_state_request_params.object_name
+        , object_new_state_request_params.object_type
+        , object_new_state_request_params.object_state_name
+        , object_new_state_request_params.valid_from.is_value_set()
+            ? object_new_state_request_params.valid_from.get_value()
+                :  boost::posix_time::to_iso_extended_string(microsec_clock::universal_time())  //valid_from default now
+        , object_new_state_request_params.valid_to//valid_to
+        );
+
     return;
 }
 
