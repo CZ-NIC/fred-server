@@ -241,7 +241,7 @@ public:
               throw std::runtime_error("Couldn't find price for this operation");
           }
           int base_period = res_price[0][1];
-          price *= (units_count / base_period);
+          if(base_period != 0) price *= (units_count / base_period);
       }
 
       // billing itself
