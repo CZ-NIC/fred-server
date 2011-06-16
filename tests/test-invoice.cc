@@ -1179,6 +1179,28 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     Database::Connection conn = Database::Manager::acquire();
     //set operation price
     conn.exec("update price_list set price = price + 0.11 where zone = 1 and operation = 2");
+/*
+    Database::Result create_operation_price_result= conn.exec(
+        "SELECT price , period FROM price_list WHERE valid_from < 'now()'  "
+        "and ( valid_to is NULL or valid_to > 'now()' ) "
+	"and operation=1 and zone=2 "
+	"order by valid_from desc limit 1"
+    );
+*/
+    Database::Result renew_operation_price_result= conn.exec(
+        "SELECT price , period FROM price_list WHERE valid_from < 'now()'  "
+        "and ( valid_to is NULL or valid_to > 'now()' ) "
+	"and operation=2 and zone=1 "
+	"order by valid_from desc limit 1"
+    );
+    
+    //cent_amount create_operation_price = get_price(create_operation_price_result[0][0]);
+
+    cent_amount renew_operation_price = get_price(renew_operation_price_result[0][0]);
+
+
+    //std::cout<< "create_operation_price: " << create_operation_price 
+    //    << "renew_operation_price: " << renew_operation_price << std::endl;
 
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
@@ -1357,7 +1379,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                     exdate,                   // expiration date (output)
                     epp_params,               // common call params
                     ccReg::ExtensionList());
-            test_operation_price+=19011;
+            test_operation_price+=renew_operation_price;
 
             ++i;
 
@@ -1378,7 +1400,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                     epp_params_renew,//in EppParams params,
                     ccReg::ExtensionList()//in ExtensionList ext
                     );
-            test_operation_price+=3*19011;
+            test_operation_price+=3*renew_operation_price;
         }
 
     }//try
