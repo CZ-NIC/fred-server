@@ -281,8 +281,9 @@ public:
       } else {
           // if single_invoice is set, res_inv[1][*] is not valid
           if(single_invoice) {
-              throw std::runtime_error((boost::format("Credit not sufficient for registrar ID %1%, invoice: %2%")
+              LOGGER(PACKAGE).info((boost::format("Credit not sufficient for registrar ID %1%, invoice: %2%")
                   % registrar % inv_id1).str());
+              return true;
           }
           // there is the second invoice
 
@@ -290,10 +291,11 @@ public:
           cent_amount credit2 = get_price((std::string)res_inv[1][1]);
 
           if(credit1 + credit2 < price) {
-              throw std::runtime_error((boost::format("Credit not sufficient for registrar ID %1% operation %2% on object %3%, invoices: %4%, %5%")
+              LOGGER(PACKAGE).info((boost::format("Credit not sufficient for registrar ID %1% operation %2% on object %3%, invoices: %4%, %5%")
                    % registrar
                    % static_cast<int>(renew ? INVOICING_DomainRenew : INVOICING_DomainCreate)
                    % objectId % inv_id1 % inv_id2).str());
+              return true;
           }
 
           LOGGER(PACKAGE).debug ( boost::format(
