@@ -3,6 +3,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
+#include <boost/lexical_cast.hpp>
 #include "tests-common.h"
 #include "concurrent_queue.h"
 #include "cfg/handle_threadgroup_args.h"
@@ -52,7 +53,8 @@ public:
         }
         catch(...)
         {
-            THREAD_BOOST_TEST_MESSAGE( std::stringstream("Unknown exception in operator(), thread number: ") << number_ );
+            THREAD_BOOST_TEST_MESSAGE( std::string("Unknown exception in operator(), thread number: ") 
+		+ boost::lexical_cast<std::string>(number_) );
             return;
         }
      }
@@ -93,8 +95,8 @@ template <typename WORKER>
     std::vector<WORKER> tw_vector;
     tw_vector.reserve(thread_number);
 
-    BOOST_TEST_MESSAGE("thread barriers:: "
-            <<  (thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+    BOOST_TEST_MESSAGE( std::string("thread barriers:: ")
+            + boost::lexical_cast<std::string>(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
                     - thread_number/thread_group_divisor)
             );
 
@@ -113,7 +115,8 @@ template <typename WORKER>
 
     threads.join_all();
 
-    BOOST_TEST_MESSAGE( "threads end result_queue.size(): " << result_queue.size() );
+    BOOST_TEST_MESSAGE( std::string("threads end result_queue.size(): ") 
+	+ boost::lexical_cast<std::string> (result_queue.size()) );
 
     for(unsigned i = 0; i < thread_number; ++i)
     {
