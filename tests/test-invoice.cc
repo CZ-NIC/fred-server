@@ -44,6 +44,7 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_registry_args.h"
+#include "cfg/handle_rifd_args.h"
 
 #include "fredlib/registrar.h"
 #include "fredlib/invoicing/invoice.h"
@@ -53,6 +54,7 @@
 #include "fredlib/banking/bank_common.h"
 #include "corba/Admin.hh"
 #include "corba/EPP.hh"
+#include "epp/epp_impl.h"
 
 #include "test-common-threaded.h"
 
@@ -72,6 +74,7 @@
 
 BOOST_AUTO_TEST_SUITE(TestInvoice)
 
+const unsigned DEFAULT_REGISTRATION_PERIOD = 24;
 
 
 class InvoiceFixture {
@@ -672,11 +675,16 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
+// some fields are only used by Create Domain test
 struct ChargeTestParams {
     Database::ID zone_id;
     Database::ID regid;
 
-    ChargeTestParams() : zone_id(0), regid(0)
+    ccReg::EPP_var epp_ref;
+
+    unsigned clientId;
+
+    ChargeTestParams() : zone_id(0), regid(0), epp_ref(0), clientId(0)
     { }
 };
 
@@ -794,10 +802,44 @@ void testChargeEval(const ResultTestCharge &res, bool should_succeed)
 
 }
 
+
+// TODO this could be more detailed 
+void testCreateDomainEval(const ResultTestCharge &res, bool should_succeed)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    if(should_succeed) {
+        BOOST_REQUIRE_MESSAGE (res.success, res.test_desc);
+    } else {
+        BOOST_REQUIRE_MESSAGE (!res.success, res.test_desc);
+    }
+
+
+    if(should_succeed) {
+        Database::Result res_ior = conn.exec_params(
+        "SELECT period, ExDate FROM invoice_object_registry WHERE objectid = $1::integer "
+                                                        "AND registrarid = $2::integer "
+                                                        "AND zone = $3::integer",
+                   Database::query_param_list ( res.object_id )
+                                              ( res.regid)
+                                              ( res.zone_id));
+
+        boost::format msg = boost::format("Incorrect number of records in invoice_object_registry table, object_id: %1%, regid: %2%, zone_id: %3% ")
+            % res.object_id % res.regid % res.zone_id;
+        BOOST_REQUIRE_MESSAGE(res_ior.size() == 2, msg.str());
+    }
+
+}
+
 //this is needed for threaded test template
 void testChargeEvalSucc(const ResultTestCharge &res)
 {
     testChargeEval(res, true);
+}
+
+void testCreateDomainEvalSucc(const ResultTestCharge &res)
+{
+    testCreateDomainEval(res, true);
 }
 
 void testChargeSucc(Fred::Invoicing::Manager *invMan, Database::Date &exdate, unsigned reg_units,
@@ -1773,6 +1815,130 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
     }
 }
 
+// thread-safe worker
+// TODO use exdate parameter !!!
+ResultTestCharge testCreateDomainWorker(ccReg::EPP_var epp_ref, Fred::Invoicing::Manager *invMan, Database::Date exdate_, unsigned reg_units,
+        unsigned operation, Database::ID zone_id, Database::ID registrar_id,
+        unsigned number, unsigned clientId)
+{
+    ResultTestCharge ret;
+
+    ret.exdate = exdate_;
+    ret.units = reg_units;
+    ret.zone_id = zone_id;
+    ret.regid = registrar_id;
+
+    ret.success = true;
+
+    ret.test_desc =
+        (boost::format("test create domain operation charging - exdate: %1%, reg_units: %2%, operation: %3% , zone_id: %4%, registrar_id: %5%")
+        % ret.exdate % ret.units % operation % zone_id % registrar_id).str();
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    std::string time_string(TimeStamp::microsec());
+
+    ret.credit_before = 0;
+    ret.credit_after = 0;
+
+
+    // do the operation
+    if ( operation == INVOICING_DomainCreate ) {
+        ccReg::Response_var r;
+
+        ccReg::Period_str period;
+                period.count = reg_units;
+                period.unit = ccReg::unit_month;
+                ccReg::EppParams epp_params;
+                epp_params.requestID = clientId + number;
+                epp_params.sessionID = clientId;
+                epp_params.clTRID = "";
+                epp_params.XML = "";
+                CORBA::String_var crdate;
+                // CORBA::String_var exdate(exdate_); TODO
+                CORBA::String_var exdate;
+
+        std::string test_domain_fqdn(std::string("tdomain")+time_string+".cz");
+
+        try {
+            r = epp_ref->DomainCreate(
+                (test_domain_fqdn).c_str(), // fqdn
+                "KONTAKT",                // contact
+                "",                       // nsset
+                "",                       // keyset
+                "",                       // authinfo
+                period,                   // reg. period
+                ccReg::AdminContact(),    // admin contact list
+                crdate,                   // create datetime (output)
+                exdate,                   // expiration date (output)
+                epp_params,               // common call params
+                ccReg::ExtensionList());
+
+        } catch (ccReg::EPP::EppError &ex) {
+            boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
+            throw std::runtime_error(message.str());
+        }
+
+        if(r->code != 1000) {
+            std::cerr << "ERROR: Return code: " << r->code << std::endl;
+            throw std::runtime_error("Error received");
+        }
+
+        Database::Result res_or = conn.exec_params("SELECT id FROM object_registry WHERE name = $1 AND crid = $2::integer AND erdate is null",
+                Database::query_param_list ( test_domain_fqdn )
+                                           ( registrar_id) );
+        if(res_or.size() != 1 || res_or[0][0].isnull()) {
+            throw std::runtime_error("Newly created object wasn't found in object_registry or is not unique");
+        }
+        ret.object_id = res_or[0][0];
+
+    } else if (operation == INVOICING_DomainRenew) {
+        THREAD_BOOST_FAIL("Not implemented");
+    } else {
+        THREAD_BOOST_FAIL("Not implemented");
+    }
+
+
+
+
+    return ret;
+}
+
+
+class TestCreateDomainThreadedWorker : public ThreadedTestWorker<ResultTestCharge, ChargeTestParams>
+{
+public:
+    typedef ThreadedTestWorker<ResultTestCharge, ChargeTestParams>::ThreadedTestResultQueue queue_type;
+
+    TestCreateDomainThreadedWorker(unsigned number
+             , boost::barrier* sb
+             , std::size_t thread_group_divisor
+             , queue_type* result_queue
+             , ChargeTestParams params
+                    )
+        : ThreadedTestWorker<ResultTestCharge, ChargeTestParams>(number, sb, thread_group_divisor, result_queue, params)
+            { }
+    // this shouldn't throw
+    ResultTestCharge run(const ChargeTestParams &p) {
+       unsigned act_year = boost::gregorian::day_clock::universal_day().year();
+
+       Database::Date exdate(act_year + 1, 1, 1);
+
+       std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+       ResultTestCharge ret = testCreateDomainWorker(p.epp_ref, invMan.get(), exdate, DEFAULT_REGISTRATION_PERIOD, INVOICING_DomainCreate, p.zone_id, p.regid,   number_, p.clientId );
+
+       // copy all the parametres to Result
+       ret.number = number_;
+
+       return ret;
+    }
+
+private:
+    ChargeTestParams params;
+
+};
+
 class TestChargeThreadWorker : public ThreadedTestWorker<ResultTestCharge, ChargeTestParams>
 {
 public:
@@ -1786,19 +1952,7 @@ public:
                     )
         : ThreadedTestWorker<ResultTestCharge, ChargeTestParams>(number, sb, thread_group_divisor, result_queue, params)
             { }
-    /*
-    // non-static version
-    MyThreadedTestWorker(unsigned number
-              , boost::barrier* sb
-              , std::size_t thread_group_divisor
-              , queue_type* result_queue_ptr
-
-              , Database::ID zone, Database::ID registrar
-                     )
-         : ThreadedTestWorker(number, sb, tgd, rqp), zone_id(zone), regid(reigstrar)
-             { }
-      */
-
+    
     // this shouldn't throw
     ResultTestCharge run(const ChargeTestParams &p) {
        unsigned act_year = boost::gregorian::day_clock::universal_day().year();
@@ -1853,6 +2007,429 @@ BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
 
 }
 
+BOOST_AUTO_TEST_CASE(createDomainThreaded)
+{
+    // registrar
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_handle(std::string("REG-FRED_ACCINV")+time_string);
 
-BOOST_AUTO_TEST_SUITE_END();//TestInv
+    std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+    registrar->setName(registrar_handle+"_Name");
+    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+    registrar->setVat(true);
+    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
+    registrar_acl->setCertificateMD5("");
+    registrar_acl->setPassword("");
+    registrar->save();
+    unsigned long long registrar_inv_id = registrar->getId();
+
+    //add registrar into zone
+    std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
+    Database::Date rzfromDate;
+    Database::Date rztoDate;
+    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+
+
+    // ### add credit
+    cent_amount amount = 90000 * 100;
+    unsigned act_year = boost::gregorian::day_clock::universal_day().year();
+
+    Database::Connection conn = Database::Manager::acquire();
+    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+    // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+    // add credit for new registrar
+    try_insert_invoice_prefix();
+    Database::Date taxdate (act_year,1,1);
+    Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
+                    , zone_cz_id//zone
+                    , registrar_inv_id//registrar
+                    , amount);//price
+    BOOST_CHECK_EQUAL(invoiceid != 0,true);
+
+
+    //Database::ID invoiceid2 = invMan->createDepositInvoice(taxdate //taxdate
+     //               , zone_enum_id//zone
+      //              , registrar_inv_id//registrar
+       //             , amount);//price
+    //BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
+
+    //try get epp reference
+    
+    cent_amount credit_before, credit_after;
+    // CHECK CREDIT before
+    Database::Result credit_res1 = conn.exec_params(zone_registrar_credit_query
+                           , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+    if(credit_res1.size() ==  1 && credit_res1[0].size() == 1) {
+        credit_before = get_price((std::string)credit_res1[0][0]);
+    } else {
+        BOOST_FAIL("Couldn't count registrar credit ");
+    }
+
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+    //conf pointers
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+    // DEBUG
+    std::cout << " Parameters: host: " << ns_args_ptr->nameservice_host 
+        << " port: " << ns_args_ptr->nameservice_port 
+        << " context: " << ns_args_ptr->nameservice_context << std::endl;
+    for (int t = 0;t<<fa.get_argc();t++ ) {
+        std::cout << " CmdLine Args: " << fa.get_argv() [t] << std::endl;
+    }
+
+    // EPP CORBA ref
+    ccReg::EPP_var epp_ref;
+    epp_ref = ccReg::EPP::_narrow(
+        CorbaContainer::get_instance()->nsresolve("EPP"));
+
+
+    //login
+    CORBA::Long clientId = 0;
+    ccReg::Response_var r;
+
+    CORBA::String_var registrar_handle_var = CORBA::string_dup(registrar_handle.c_str());
+    CORBA::String_var passwd_var = CORBA::string_dup("");
+    CORBA::String_var new_passwd_var = CORBA::string_dup("");
+    CORBA::String_var cltrid_var = CORBA::string_dup("omg");
+    CORBA::String_var xml_var = CORBA::string_dup("<omg/>");
+    CORBA::String_var cert_var = CORBA::string_dup("");
+
+    try {
+        r = epp_ref->ClientLogin(
+                registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
+                xml_var,clientId,cert_var,ccReg::EN);
+
+        if (r->code != 1000 || !clientId) {
+            std::cerr << "Cannot connect: " << r->code << std::endl;
+            throw std::runtime_error("Cannot connect ");
+        }
+    } catch (ccReg::EPP::EppError &ex) {
+        boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
+        throw std::runtime_error(message.str());
+    }
+
+    ChargeTestParams params;
+    params.zone_id = zone_cz_id ;
+    params.regid = registrar_inv_id;
+    params.epp_ref  = epp_ref;
+    params.clientId = clientId;
+
+
+
+
+// TODO this is it ....
+    unsigned thread_count = threadedTest< TestCreateDomainThreadedWorker>
+                                    (params, &testCreateDomainEvalSucc);
+
+    // CHECK CREDIT after
+    Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
+                           , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+    if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) {
+        credit_after = get_price((std::string)credit_res2[0][0]);
+    } else {
+        BOOST_FAIL("Couldn't count registrar credit ");
+    }
+
+
+
+    // this is how operations are charged
+    /*
+    if(operation == INVOICING_DomainRenew) {
+        ret.counted_price = getOperationPrice(operation, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
+    }
+    */
+
+    // if(operation == INVOICING_DomainCreate) {
+    cent_amount counted_price =
+            getOperationPrice(INVOICING_DomainRenew, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
+            + getOperationPrice(INVOICING_DomainCreate, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
+
+    counted_price *= thread_count;
+
+    BOOST_REQUIRE_MESSAGE(credit_before - credit_after == counted_price, boost::format(
+        "Credit before (%1%) and  after (%2%) + price (%3%) threaded test don't match. ")
+            % credit_before
+            % credit_after
+            % counted_price );
+}
+
+/*
+BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
+{
+
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+    //conf pointers
+    HandleDatabaseArgs* db_args_ptr = CfgArgs::instance()
+        ->get_handler_ptr_by_type<HandleDatabaseArgs>();
+    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
+        ->get_handler_ptr_by_type<HandleRegistryArgs>();
+    HandleRifdArgs* rifd_args_ptr = CfgArgs::instance()
+        ->get_handler_ptr_by_type<HandleRifdArgs>();
+
+    MailerManager mailMan(CorbaContainer::get_instance()->getNS());
+
+
+    std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i ( new ccReg_EPP_i(
+                db_args_ptr->get_conn_info()
+                , &mailMan, CorbaContainer::get_instance()->getNS()
+                , registry_args_ptr->restricted_handles
+                , registry_args_ptr->disable_epp_notifier
+                , registry_args_ptr->lock_epp_commands
+                , registry_args_ptr->nsset_level
+                , registry_args_ptr->docgen_path
+                , registry_args_ptr->docgen_template_path
+                , registry_args_ptr->fileclient_path
+                , rifd_args_ptr->rifd_session_max
+                , rifd_args_ptr->rifd_session_timeout
+                , rifd_args_ptr->rifd_session_registrar_max
+                , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
+        ));
+
+
+
+
+
+
+   // login
+
+    std::string registrar_handle("REG-FRED_EPPB");
+
+    std::string registrar_handle_var(registrar_handle.c_str());
+    std::string passwd_var("");
+    std::string new_passwd_var("");
+    std::string cltrid_var("omg");
+    std::string xml_var("<omg/>");
+    std::string cert_var("");
+
+    CORBA::Long clientId = 0;
+
+    ccReg::Response *r = myccReg_EPP_i->ClientLogin(
+        registrar_handle_var.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),
+        xml_var.c_str(),clientId,cert_var.c_str(),ccReg::EN);
+    
+     if (r->code != 1000 || !clientId) {
+        boost::format msg = boost::format("Error code: %1% - %2% ") % r->code % r->msg;
+        std::cerr << msg.str() << std::endl;
+        throw std::runtime_error(msg.str());
+    }
+
+
+    // call
+    std::string time_string(TimeStamp::microsec());
+
+    int i = 1;
+    ccReg::Period_str period;
+    period.count = 1;
+    period.unit = ccReg::unit_year;
+    ccReg::EppParams epp_params;
+    epp_params.requestID = clientId + i;
+    epp_params.sessionID = clientId;
+    epp_params.clTRID = "";
+    epp_params.XML = "";
+    CORBA::String_var crdate;
+    CORBA::String_var exdate;
+
+    std::string test_domain_fqdn(std::string("tdomain")+time_string);
+
+    r = myccReg_EPP_i->DomainCreate(
+        (test_domain_fqdn+".cz").c_str(), // fqdn
+        "KONTAKT",                // contact
+        "",                       // nsset
+        "",                       // keyset
+        "",                       // authinfo
+        period,                   // reg. period
+        ccReg::AdminContact(),    // admin contact list
+        crdate,                   // create datetime (output)
+        exdate,                   // expiration date (output)
+        epp_params,               // common call params
+        ccReg::ExtensionList());
+
+    if(r->code != 1000) {
+        std::cerr << "ERROR: Return code: " << r->code << std::endl;
+        throw std::runtime_error("Error received from DomainCreate call");
+    }
+
+
+}
+*/
+
+
+BOOST_AUTO_TEST_CASE(testCreateDomainEPP)
+{
+    // init
+
+
+    // registrar
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_handle(std::string("REG-FRED_ACCINV")+time_string);
+
+    std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+    registrar->setName(registrar_handle+"_Name");
+    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+    registrar->setVat(true);
+    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
+    registrar_acl->setCertificateMD5("");
+    registrar_acl->setPassword("");
+    registrar->save();
+    unsigned long long registrar_inv_id = registrar->getId();
+
+    //add registrar into zone
+    std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
+    Database::Date rzfromDate;
+    Database::Date rztoDate;
+    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+
+
+    // ### add credit
+    cent_amount amount = 20000 * 100;
+    unsigned act_year = boost::gregorian::day_clock::universal_day().year();
+
+    Database::Connection conn = Database::Manager::acquire();
+    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+    // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+    Database::Date taxdate (act_year,1,1);
+    Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
+                    , zone_cz_id//zone
+                    , registrar_inv_id//registrar
+                    , amount);//price
+    BOOST_CHECK_EQUAL(invoiceid != 0,true);
+    // add credit for new registrar
+
+    //Database::ID invoiceid2 = invMan->createDepositInvoice(taxdate //taxdate
+     //               , zone_enum_id//zone
+      //              , registrar_inv_id//registrar
+       //             , amount);//price
+    //BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
+
+    //try get epp reference
+    
+
+
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+    //conf pointers
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+    // DEBUG
+    std::cout << " Parameters: host: " << ns_args_ptr->nameservice_host 
+        << " port: " << ns_args_ptr->nameservice_port 
+        << " context: " << ns_args_ptr->nameservice_context << std::endl;
+    for (int t = 0;t<<fa.get_argc();t++ ) {
+        std::cout << " CmdLine Args: " << fa.get_argv() [t] << std::endl;
+    }
+
+    // EPP CORBA ref
+    ccReg::EPP_var epp_ref;
+    epp_ref = ccReg::EPP::_narrow(
+        CorbaContainer::get_instance()->nsresolve("EPP"));
+
+
+    //login
+    CORBA::Long clientId = 0;
+    ccReg::Response_var r;
+
+    CORBA::String_var registrar_handle_var = CORBA::string_dup(registrar_handle.c_str());
+    CORBA::String_var passwd_var = CORBA::string_dup("");
+    CORBA::String_var new_passwd_var = CORBA::string_dup("");
+    CORBA::String_var cltrid_var = CORBA::string_dup("omg");
+    CORBA::String_var xml_var = CORBA::string_dup("<omg/>");
+    CORBA::String_var cert_var = CORBA::string_dup("");
+
+    try {
+        r = epp_ref->ClientLogin(
+                registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
+                xml_var,clientId,cert_var,ccReg::EN);
+
+        if (r->code != 1000 || !clientId) {
+            std::cerr << "Cannot connect: " << r->code << std::endl;
+            throw std::runtime_error("Cannot connect ");
+        }
+    } catch (ccReg::EPP::EppError &ex) {
+        boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
+        throw std::runtime_error(message.str());
+    }
+
+
+
+
+
+    
+    // ####call
+    // std::string time_string(TimeStamp::microsec());
+
+
+
+
+
+
+    
+    int i = 1;
+    ccReg::Period_str period;
+            period.count = 1;
+            period.unit = ccReg::unit_year;
+            ccReg::EppParams epp_params;
+            epp_params.requestID = clientId + i;
+            epp_params.sessionID = clientId;
+            epp_params.clTRID = "";
+            epp_params.XML = "";
+            CORBA::String_var crdate;
+            CORBA::String_var exdate;
+
+    std::string test_domain_fqdn(std::string("tdomain")+time_string);
+
+    r = epp_ref->DomainCreate(
+        (test_domain_fqdn+".cz").c_str(), // fqdn
+        "KONTAKT",                // contact
+        "",                       // nsset
+        "",                       // keyset
+        "",                       // authinfo
+        period,                   // reg. period
+        ccReg::AdminContact(),    // admin contact list
+        crdate,                   // create datetime (output)
+        exdate,                   // expiration date (output)
+        epp_params,               // common call params
+        ccReg::ExtensionList());
+
+    if(r->code != 1000) {
+        std::cerr << "ERROR: Return code: " << r->code << std::endl;
+        throw std::runtime_error("Error received");
+    }
+
+}
+
+BOOST_AUTO_TEST_SUITE_END();//TestInvoice
 

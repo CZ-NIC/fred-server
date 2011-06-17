@@ -3,6 +3,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
+#include "tests-common.h"
 #include "concurrent_queue.h"
 #include "cfg/handle_threadgroup_args.h"
 
@@ -47,12 +48,11 @@ public:
             }
 
         } catch(const std::exception & ex) {
-            //ok
-            BOOST_TEST_MESSAGE("Exception caught in worker: " << ex.what());
+            THREAD_BOOST_FAIL( std::string("Exception caught in worker: ") + ex.what() );
         }
         catch(...)
         {
-            BOOST_TEST_MESSAGE("Unknown exception in operator(), thread number: " << number_ );
+            THREAD_BOOST_TEST_MESSAGE( std::stringstream("Unknown exception in operator(), thread number: ") << number_ );
             return;
         }
      }
@@ -70,7 +70,7 @@ protected:
 
 
 template <typename WORKER>
-    void threadedTest (
+    unsigned threadedTest (
             const typename WORKER::PARAMS_TYPE &params,
             void (*checker_func)(const typename WORKER::RESULT_TYPE &p)
             )
@@ -124,4 +124,6 @@ template <typename WORKER>
 
         checker_func(thread_result);
     }//for i
+
+    return thread_number;
 }
