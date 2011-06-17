@@ -2154,7 +2154,28 @@ BOOST_AUTO_TEST_CASE(createDomainThreaded)
             % counted_price );
 }
 
-/*
+void EPP_backend_init(ccReg_EPP_i *epp_i, HandleRifdArgs *rifd_args_ptr)
+{
+    epp_i->CreateSession(
+            rifd_args_ptr->rifd_session_max
+            , rifd_args_ptr->rifd_session_timeout);
+
+    // load all country code from table enum_country
+    if (epp_i->LoadCountryCode() <= 0) {
+      throw std::runtime_error("EPP backend init: database error: load country code");
+    }
+
+    // load error messages to memory
+    if (epp_i->LoadErrorMessages() <= 0) {
+      throw std::runtime_error("EPP backend init: database error: load error messages");
+    }
+
+    // load reason messages to memory
+    if (epp_i->LoadReasonMessages() <= 0) {
+      throw std::runtime_error("EPP backend init: database error: load reason messages" );
+    }
+}
+
 BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
 {
 
@@ -2195,16 +2216,55 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
                 , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
         ));
 
-
-
-
-
+    EPP_backend_init( myccReg_EPP_i.get(), rifd_args_ptr);
 
    // login
+    // registrar
+     std::string time_string(TimeStamp::microsec());
+     std::string registrar_handle(std::string("REG-DIRECTCALL")+time_string);
 
-    std::string registrar_handle("REG-FRED_EPPB");
+     std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
+     Fred::Registrar::Manager::AutoPtr regMan
+              = Fred::Registrar::Manager::create(DBSharedPtr());
+     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+     registrar->setName(registrar_handle+"_Name");
+     registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+     registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+     registrar->setVat(true);
+     Fred::Registrar::ACL* registrar_acl = registrar->newACL();
+     registrar_acl->setCertificateMD5("");
+     registrar_acl->setPassword("");
+     registrar->save();
+     unsigned long long registrar_inv_id = registrar->getId();
 
-    std::string registrar_handle_var(registrar_handle.c_str());
+     //add registrar into zone
+     std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
+     Database::Date rzfromDate;
+     Database::Date rztoDate;
+     Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+
+
+     // ### add credit
+     cent_amount amount = 20000 * 100;
+     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
+
+     Database::Connection conn = Database::Manager::acquire();
+     Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+     // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
+     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+     Database::Date taxdate (act_year,1,1);
+     Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
+                     , zone_cz_id//zone
+                     , registrar_inv_id//registrar
+                     , amount);//price
+     BOOST_CHECK_EQUAL(invoiceid != 0,true);
+
+
+
+    // ------------------ login
+
     std::string passwd_var("");
     std::string new_passwd_var("");
     std::string cltrid_var("omg");
@@ -2214,19 +2274,16 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
     CORBA::Long clientId = 0;
 
     ccReg::Response *r = myccReg_EPP_i->ClientLogin(
-        registrar_handle_var.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),
+        registrar_handle.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),
         xml_var.c_str(),clientId,cert_var.c_str(),ccReg::EN);
     
-     if (r->code != 1000 || !clientId) {
+    if (r->code != 1000 || !clientId) {
         boost::format msg = boost::format("Error code: %1% - %2% ") % r->code % r->msg;
         std::cerr << msg.str() << std::endl;
         throw std::runtime_error(msg.str());
     }
 
-
     // call
-    std::string time_string(TimeStamp::microsec());
-
     int i = 1;
     ccReg::Period_str period;
     period.count = 1;
@@ -2241,27 +2298,31 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
 
     std::string test_domain_fqdn(std::string("tdomain")+time_string);
 
-    r = myccReg_EPP_i->DomainCreate(
-        (test_domain_fqdn+".cz").c_str(), // fqdn
-        "KONTAKT",                // contact
-        "",                       // nsset
-        "",                       // keyset
-        "",                       // authinfo
-        period,                   // reg. period
-        ccReg::AdminContact(),    // admin contact list
-        crdate,                   // create datetime (output)
-        exdate,                   // expiration date (output)
-        epp_params,               // common call params
-        ccReg::ExtensionList());
+    try {
+        r = myccReg_EPP_i->DomainCreate(
+            (test_domain_fqdn+".cz").c_str(), // fqdn
+            "KONTAKT",                // contact
+            "",                       // nsset
+            "",                       // keyset
+            "",                       // authinfo
+            period,                   // reg. period
+            ccReg::AdminContact(),    // admin contact list
+            crdate,                   // create datetime (output)
+            exdate,                   // expiration date (output)
+            epp_params,               // common call params
+            ccReg::ExtensionList());
+
+    } catch (ccReg::EPP::EppError &ex) {
+        boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
+        throw std::runtime_error(message.str());
+    }
 
     if(r->code != 1000) {
         std::cerr << "ERROR: Return code: " << r->code << std::endl;
         throw std::runtime_error("Error received from DomainCreate call");
     }
-
-
 }
-*/
+
 
 
 BOOST_AUTO_TEST_CASE(testCreateDomainEPP)

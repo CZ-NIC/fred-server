@@ -899,6 +899,7 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
 	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
 	src/corba/admin/libadmin_impl.a \
+	src/corba/epp/libepp_impl.a \
 	src/corba/libcorba.a \
 	src/corba/whois/libwhois_impl.a \
 	src/fredlib/libfred.a \
