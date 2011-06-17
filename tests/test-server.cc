@@ -47,6 +47,19 @@ public:
 BOOST_GLOBAL_FIXTURE(ElapsedTimeFixture);
 
 
+class LoggingFixture {
+public:
+    LoggingFixture() {
+        // setting up logger
+        setup_logging(CfgArgs::instance());
+    }
+
+};
+
+BOOST_GLOBAL_FIXTURE( LoggingFixture );
+
+
+
 BOOST_AUTO_TEST_SUITE(TestCpp)
 
 void test_stdex()

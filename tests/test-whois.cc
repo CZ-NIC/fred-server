@@ -62,9 +62,6 @@ const std::string server_name = "test-whois";
 
 BOOST_AUTO_TEST_CASE( test_whois )
 {
-    // setting up logger
-    setup_logging(CfgArgs::instance());
-
     //CORBA init
     corba_init();
 

@@ -76,18 +76,6 @@ BOOST_AUTO_TEST_SUITE(TestInvoice)
 
 const unsigned DEFAULT_REGISTRATION_PERIOD = 24;
 
-
-class InvoiceFixture {
-public:
-    InvoiceFixture() {
-        // setting up logger
-        setup_logging(CfgArgs::instance());
-    }
-
-};
-
-BOOST_GLOBAL_FIXTURE( InvoiceFixture )
-
 using namespace Fred::Invoicing;
 
 const std::string server_name = "test-invoice";
