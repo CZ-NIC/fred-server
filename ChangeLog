@@ -1,3 +1,14 @@
+2011-06-17 Jan Zima, Juraj Vicenik (2.7.4)
+
+  * epp create domain operation fix (division by zero - period)
+
+  * insufficient credit log message severity adjusted
+
+  * fred-admin - memory invalid read fix
+               - corba client fix (BAD_INV_ORDER exception)
+
+  * invoicing tests enhancements and fixes
+
 2011-06-14 Jiri Sadek, Jan Zima, Juraj Vicenik (2.7.3)
 
   * invoice archive fix (invoice list reload fix)
