@@ -194,6 +194,15 @@ void ObjectClient::createObjectStateRequestName(
         if(obj_valid_to.is_special())
             obj_valid_to = boost::posix_time::pos_infin;
 
+        Logging::Manager::instance_ref().get(PACKAGE).debug(std::string(
+            "ObjectClient::createObjectStateRequestName new_valid_from: ")
+            + boost::posix_time::to_iso_extended_string(new_valid_from)
+            + " new_valid_to: " + boost::posix_time::to_iso_extended_string(new_valid_to)
+            + " obj_valid_from: " + boost::posix_time::to_iso_extended_string(obj_valid_from)
+            + " obj_valid_to: " + boost::posix_time::to_iso_extended_string(obj_valid_to)
+        );
+
+
         //check overlay
         if(((new_valid_from >= obj_valid_from) && (new_valid_from < obj_valid_to))
           || ((new_valid_to > obj_valid_from) && (new_valid_to <= obj_valid_to)))
