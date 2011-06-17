@@ -32,7 +32,8 @@ namespace Fred
       MT_VALIDATION = 12,
       MT_OUTZONE = 13,
       MT_TRANSFER_KEYSET = 14,
-      MT_DELETE_KEYSET = 15
+      MT_DELETE_KEYSET = 15,
+      MT_REQUEST_FEE_INFO = 16
     };
 
     class Message
@@ -101,6 +102,17 @@ namespace Fred
       virtual const std::string& getZone() const = 0;
       virtual CreditType getCredit() const = 0;
       virtual CreditType getLimit() const = 0;
+    };
+
+    class MessageRequestFeeInfo : virtual public Message
+    {
+     public:
+         virtual ~MessageRequestFeeInfo() {}
+         virtual const ptime& getPeriodFrom() const = 0;
+         virtual const ptime& getPeriodTo() const = 0;
+         virtual const unsigned long long& getTotalFreeCount() const = 0;
+         virtual const unsigned long long& getUsedCount() const = 0;
+         virtual const std::string& getPrice() const = 0;
     };
 
     class List : virtual public CommonList

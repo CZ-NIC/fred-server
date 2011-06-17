@@ -1680,6 +1680,21 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     *msg <<= hdm;
     return a.getRet()._retn();
   }
+  Fred::Poll::MessageRequestFeeInfo *mrf =
+      dynamic_cast<Fred::Poll::MessageRequestFeeInfo*>(m.get());
+  if (mrf)
+  {
+      type = ccReg::polltype_request_fee_info;
+      ccReg::PollMsg_RequestFeeInfo *hdm = new ccReg::PollMsg_RequestFeeInfo;
+      hdm->periodFrom = CORBA::string_dup(formatTime(mrf->getPeriodFrom()).c_str());
+      hdm->periodTo = CORBA::string_dup(formatTime(mrf->getPeriodTo()).c_str());
+      hdm->totalFreeCount = mrf->getTotalFreeCount();
+      hdm->usedCount = mrf->getUsedCount();
+      hdm->price = CORBA::string_dup(mrf->getPrice().c_str());
+      *msg <<= hdm;
+      LOGGER(PACKAGE).debug("poll message request_fee_info packed");
+      return a.getRet()._retn();
+  }
   a.failedInternal("Invalid message structure");
   // previous command throw exception in any case so this code
   // will never be called
