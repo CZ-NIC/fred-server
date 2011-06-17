@@ -28,6 +28,7 @@
 #include "corba/nameservice.h"
 #include <stdexcept>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace Admin {
 
@@ -157,35 +158,41 @@ void ObjectClient::createObjectStateRequestName(
         , Database::query_param_list(object_id)(object_state_id));
 
     //check time
+    std::string tmp_time_from ( valid_from);
+    if(tmp_time_from.empty()) throw std::runtime_error("empty valid_from");
+    tmp_time_from[tmp_time_from.find('T')] = ' ';
     boost::posix_time::ptime new_valid_from
-        = boost::posix_time::time_from_string(valid_from);
+        = boost::posix_time::time_from_string(tmp_time_from);
+
+    std::string tmp_time_to ( valid_to.get_value());
+    if(!tmp_time_to.empty()) tmp_time_to[tmp_time_to.find('T')] = ' ';
+
     boost::posix_time::ptime new_valid_to
-        = boost::posix_time::time_from_string(valid_to.get_value());
+        = tmp_time_to.empty() ? boost::posix_time::pos_infin
+            : boost::posix_time::time_from_string(tmp_time_to);
 
     if(new_valid_from > new_valid_to )
         throw std::runtime_error("new_valid_from > new_valid_to");
 
     for(std::size_t i = 0 ; i < requests_result.size(); ++i)
     {
-        boost::posix_time::ptime obj_valid_from
-            = boost::posix_time::time_from_string(
-                    std::string(requests_result[i][0]));
+        boost::posix_time::ptime obj_valid_from = requests_result[i][0];
 
-        boost::posix_time::ptime obj_valid_to
-            = boost::posix_time::time_from_string(
-                    std::string(requests_result[i][1]));
+        boost::posix_time::ptime obj_valid_to = requests_result[i][1];
 
         //if obj_canceled is not null
         if(requests_result[i][2].isnull() == false)
         {
-            boost::posix_time::ptime obj_canceled
-                = boost::posix_time::time_from_string(
-                        std::string(requests_result[i][2]));
+            boost::posix_time::ptime obj_canceled = requests_result[i][2];
+
             if (obj_canceled < obj_valid_to) obj_valid_to = obj_canceled;
         }//if obj_canceled is not null
 
         if(obj_valid_from > obj_valid_to )
             throw std::runtime_error("obj_valid_from > obj_valid_to");
+
+        if(obj_valid_to.is_special())
+            obj_valid_to = boost::posix_time::pos_infin;
 
         //check overlay
         if(((new_valid_from >= obj_valid_from) && (new_valid_from < obj_valid_to))
