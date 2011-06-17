@@ -122,6 +122,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientNotifySmsSendArgsGrp),notify_sms_send_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientEnumParameterChangeArgsGrp),enum_parameter_change_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectNewStateRequestArgsGrp),object_new_state_request_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectNewStateRequestNameArgsGrp),object_new_state_request_name_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectUpdateStatesArgsGrp),object_update_states_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectRegularProcedureArgsGrp),object_regular_procedure_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientFileListArgsGrp),file_list_impl()))

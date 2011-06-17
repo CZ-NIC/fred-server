@@ -44,22 +44,25 @@ private:
     optional_string fileclient_path;
     bool restricted_handles;
     unsigned long long docgen_domain_count_limit;
-
     bool object_new_state_request;
     ObjectNewStateRequestArgs object_new_state_request_params;
+    bool object_new_state_request_name;
+    ObjectNewStateRequestNameArgs object_new_state_request_name_params;
+
     bool object_update_states;
     ObjectUpdateStatesArgs object_update_states_params;
     bool object_regular_procedure;
     ObjectRegularProcedureArgs object_regular_procedure_params;
     DeleteObjectsArgs delete_objects_params;
 
-    void createObjectStateRequest(
+    void createObjectStateRequestName(
             const std::string & object_name
             , unsigned long object_type
             , const std::string& object_state_name
             , const std::string& valid_from
             , const optional_string& valid_to);
 
+    int createObjectStateRequest(Fred::TID object, unsigned state);
     int deleteObjects(const std::string &typeList, CorbaClient &cc);
 
     static const struct options m_opts[];
@@ -68,6 +71,7 @@ public:
     : restricted_handles(false)
     , docgen_domain_count_limit(0)
     , object_new_state_request(false)
+    , object_new_state_request_name(false)
     , object_update_states(false)
     , object_regular_procedure(false)
     { }
@@ -82,6 +86,8 @@ public:
             , const unsigned long long _docgen_domain_count_limit
             , const bool _object_new_state_request
             , const ObjectNewStateRequestArgs& _object_new_state_request_params
+            , const bool _object_new_state_request_name
+            , const ObjectNewStateRequestNameArgs& _object_new_state_request_name_params
             , const bool _object_update_states
             , const ObjectUpdateStatesArgs& _object_update_states_params
             , const bool _object_regular_procedure
@@ -97,6 +103,8 @@ public:
     , docgen_domain_count_limit(_docgen_domain_count_limit)
     , object_new_state_request(_object_new_state_request)
     , object_new_state_request_params(_object_new_state_request_params)
+    , object_new_state_request_name(_object_new_state_request_name)
+    , object_new_state_request_name_params(_object_new_state_request_name_params)
     , object_update_states(_object_update_states)
     , object_update_states_params(_object_update_states_params)
     , object_regular_procedure(_object_regular_procedure)
@@ -115,6 +123,7 @@ public:
 
     void show_opts();
     void new_state_request();
+    void new_state_request_name();
     void list();
     void update_states();
     void delete_candidates();

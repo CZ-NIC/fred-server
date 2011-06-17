@@ -32,16 +32,39 @@
  */
 struct ObjectNewStateRequestArgs
 {
+    unsigned long long object_id;//OBJECT_ID_NAME
+    unsigned long object_new_state_request;//OBJECT_NEW_STATE_REQUEST_NAME
+
+    ObjectNewStateRequestArgs()
+    : object_id(0)
+    , object_new_state_request(0)
+    {}//ctor
+    ObjectNewStateRequestArgs(
+            const unsigned long long _object_id
+             , const unsigned long _object_new_state_request
+            )
+    : object_id(_object_id)
+    , object_new_state_request(_object_new_state_request)
+    {}//init ctor
+};//struct ObjectNewStateRequestArgs
+
+
+/**
+ * \class ObjectNewStateRequestNameArgs
+ * \brief admin client object_new_state_request_name params
+ */
+struct ObjectNewStateRequestNameArgs
+{
     std::string object_name;
     unsigned long object_type;
     std::string object_state_name;
     optional_string valid_from;
     optional_string valid_to;
 
-    ObjectNewStateRequestArgs()
+    ObjectNewStateRequestNameArgs()
     : object_type(0)
     {}//ctor
-    ObjectNewStateRequestArgs(
+    ObjectNewStateRequestNameArgs(
         const std::string& _object_name
         , const long _object_type
         , const std::string& _object_state_name
@@ -54,7 +77,7 @@ struct ObjectNewStateRequestArgs
     , valid_from(_valid_from)
     , valid_to(_valid_to)
     {}//init ctor
-};//struct ObjectNewStateRequestArgs
+};//struct ObjectNewStateRequestNameArgs
 
 /**
  * \class ObjectUpdateStatesArgs
