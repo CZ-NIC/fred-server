@@ -129,7 +129,7 @@ void ObjectClient::createObjectStateRequestName(
     //get object
     Database::Result obj_id_res = conn.exec_params(
             "SELECT id FROM object_registry "
-            " WHERE type=$1::integer AND name=$2::text "
+            " WHERE type=$1::integer AND name=$2::text AND erdate IS NULL"
             , Database::query_param_list
                 (object_type)(object_name));
 
