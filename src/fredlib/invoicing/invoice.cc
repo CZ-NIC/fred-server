@@ -798,8 +798,8 @@ unsigned long long MakeFactoring(unsigned long long regID
     unsigned long long invoiceID =0;
     try
     {
-        LOGGER(PACKAGE).debug ( boost::format("MakeFactoring regID %1% zone %2%")
-            % regID % zone);
+        LOGGER(PACKAGE).debug ( boost::format("MakeFactoring regID %1% zone %2% timestampStr %3% taxDateStr %4%")
+            % regID % zone % timestampStr % taxDateStr);
 
         Database::Connection conn = Database::Manager::acquire();//get db conn
 
