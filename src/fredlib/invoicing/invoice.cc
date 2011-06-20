@@ -957,6 +957,11 @@ void createAccountInvoices( const std::string& zone_fqdn, const std::string& tax
           , Database::query_param_list (zone_fqdn)
           );
 
+        LOGGER(PACKAGE).debug ( boost::format("ManagerImpl::createAccountInvoices"
+                " zone_fqdn %1%  taxdateStr %2% todateStr %3%")
+        % zone_fqdn % taxdateStr % todateStr);
+
+
         for(std::size_t i = 0; i < res.size(); ++i)
         {
             unsigned long long regID = res[i][0];//regID
