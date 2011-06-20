@@ -824,8 +824,7 @@ unsigned long long MakeFactoring(unsigned long long regID
                 fromdateStr = std::string(res[0][0]);
         }
 
-        std::string todateStr = boost::gregorian::to_iso_extended_string(
-                (boost::posix_time::time_from_string(timestampStr)).date());
+        std::string todateStr = timestampStr;
 
         LOGGER(PACKAGE).debug ( boost::format("MakeFactoring from %1% to %2% timestamp [%3%]")
             % fromdateStr % todateStr % timestampStr);
