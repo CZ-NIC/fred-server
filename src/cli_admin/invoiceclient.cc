@@ -424,11 +424,16 @@ InvoiceClient::factoring()
             " zoneName %1%  registrarName %2% taxDate_str %3%  toDate_str %4%")
     % zoneName % registrarName % taxDate_str % toDate_str );
 
+    boost::gregorian::from_simple_string(taxDate_str);
 
     if (!regFilled) {
-        invMan->createAccountInvoices( zoneName, taxDate_str, toDate_str);
+        invMan->createAccountInvoices( zoneName
+                , boost::gregorian::from_simple_string(taxDate_str)
+                , boost::gregorian::from_simple_string(toDate_str));
     } else {
-        invMan->createAccountInvoice( registrarName, zoneName, taxDate_str, toDate_str);
+        invMan->createAccountInvoice( registrarName, zoneName
+                , boost::gregorian::from_simple_string(taxDate_str)
+                , boost::gregorian::from_simple_string(toDate_str));
     }
 
 }

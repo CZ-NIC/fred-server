@@ -937,13 +937,16 @@ unsigned long long MakeFactoring(unsigned long long regID
     return invoiceID;
 }
 
-void createAccountInvoices( const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr)
+void createAccountInvoices( const std::string& zone_fqdn,  boost::gregorian::date taxdate, boost::gregorian::date todate)
 {
     Logging::Context ctx("createAccountInvoices");
     try
     {
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
+
+        std::string taxdateStr(boost::gregorian::to_simple_string(taxdate));
+        std::string todateStr(boost::gregorian::to_simple_string(todate));
 
         std::string  timestampStr = todateStr;
 
@@ -985,13 +988,16 @@ void createAccountInvoices( const std::string& zone_fqdn, const std::string& tax
 }//createAccountInvoices
 
 // close invoice to registar handle for zone make taxDate to the todateStr
-void createAccountInvoice( const std::string& registrarHandle, const std::string& zone_fqdn, const std::string& taxdateStr, const std::string& todateStr)
+void createAccountInvoice( const std::string& registrarHandle, const std::string& zone_fqdn, boost::gregorian::date taxdate, boost::gregorian::date todate)
 {
     Logging::Context ctx("createAccountInvoice");
     try
     {
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
+
+        std::string taxdateStr(boost::gregorian::to_simple_string(taxdate));
+        std::string todateStr(boost::gregorian::to_simple_string(todate));
 
         std::string timestampStr;
         unsigned long long regID = 0;
