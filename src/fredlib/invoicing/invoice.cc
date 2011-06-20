@@ -946,9 +946,7 @@ void createAccountInvoices( const std::string& zone_fqdn, const std::string& tax
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        std::string  timestampStr = boost::posix_time::to_iso_extended_string(
-                boost::posix_time::time_from_string(todateStr));
-        timestampStr[timestampStr.find('T')] = ' ';
+        std::string  timestampStr = todateStr;
 
         Database::Result res = conn.exec_params(
           "SELECT r.id, z.id FROM registrar r, registrarinvoice i, zone z WHERE r.id=i.registrarid"
