@@ -57,7 +57,7 @@ struct ObjectNewStateRequestNameArgs
 {
     std::string object_name;
     unsigned long object_type;
-    std::string object_state_name;
+    std::vector< std::string > object_state_name;
     optional_string valid_from;
     optional_string valid_to;
 
@@ -67,7 +67,7 @@ struct ObjectNewStateRequestNameArgs
     ObjectNewStateRequestNameArgs(
         const std::string& _object_name
         , const long _object_type
-        , const std::string& _object_state_name
+        , std::vector< std::string > _object_state_name
         , const optional_string& _valid_from
         , const optional_string& _valid_to
         )

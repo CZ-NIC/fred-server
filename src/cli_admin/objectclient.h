@@ -58,7 +58,7 @@ private:
     void createObjectStateRequestName(
             const std::string & object_name
             , unsigned long object_type
-            , const std::string& object_state_name
+            , std::vector< std::string > object_state_name
             , const std::string& valid_from
             , const optional_string& valid_to);
 

@@ -112,19 +112,27 @@ ObjectClient::new_state_request()
 void ObjectClient::createObjectStateRequestName(
         const std::string & object_name
         , unsigned long object_type
-        , const std::string& object_state_name
+        , std::vector< std::string > _object_state_name
         , const std::string& valid_from
         , const optional_string& valid_to
         )
 {
+    std::string object_state_names;
+
+    for (std::vector<std::string>::iterator i= _object_state_name.begin()
+            ; i != _object_state_name.end()
+            ; ++i) object_state_names += (*i) + " ";
+
     Logging::Manager::instance_ref().get(PACKAGE).debug(std::string(
         "ObjectClient::createObjectStateRequestName object name: ") + object_name
         + " object type: " + boost::lexical_cast<std::string>(object_type)
-        + " object state name: " + object_state_name
+        + " object state name: " + object_state_names
         + " valid from: " + valid_from
         + " valid to: " + valid_to.get_value());
 
     Database::Connection conn = Database::Manager::acquire();
+
+    Database::Transaction tx(conn);
 
     //get object
     Database::Result obj_id_res = conn.exec_params(
@@ -137,6 +145,14 @@ void ObjectClient::createObjectStateRequestName(
         throw std::runtime_error("object not found");
 
     unsigned long long object_id = obj_id_res[0][0];
+
+
+    for (std::vector<std::string>::iterator i= _object_state_name.begin()
+            ; i != _object_state_name.end()
+            ; ++i)
+    {
+
+        std::string object_state_name(*i);
 
     //get object state
     Database::Result obj_state_res = conn.exec_params(
@@ -222,13 +238,16 @@ void ObjectClient::createObjectStateRequestName(
                             : Database::QueryParam(new_valid_to) )
         );
 
+    }//for object_state
+
+    tx.commit();
+
     return;
 }//ObjectClient::createObjectStateRequest
 
 void
 ObjectClient::new_state_request_name()
 {
-
     createObjectStateRequestName(
         object_new_state_request_name_params.object_name
         , object_new_state_request_name_params.object_type

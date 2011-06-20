@@ -105,5 +105,22 @@ typedef save_arg<optional_ulong> save_optional_ulong;
 typedef save_arg<optional_bool> save_optional_bool;
 typedef save_arg<optional_double> save_optional_double;
 
+//for VALUEs and ARGs like std::vector or compatible
+template <typename VALUE> class insert_arg
+{
+    VALUE& val_;
+public:
+    //ctor taking reference to variable where arg value will be stored
+    insert_arg(VALUE& val) : val_(val) {}
+
+    template <typename ARG>
+    void operator()(const ARG& arg)//assign value
+    {
+        val_.insert(val_.end(), arg.begin(), arg.end());
+    }
+};//template <typename VALUE> class insert_arg
+
+
+
 #endif //OPTIONAL_H_
 

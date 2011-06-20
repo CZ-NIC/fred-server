@@ -1973,8 +1973,8 @@ public:
                  ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_type))
                   ,"object type number: 1 - contact,  2 - nsset, 3 - domain, 4 - keyset")
           ("object_state_name,s",boost::program_options
-                  ::value<Checked::string>()->notifier(save_arg<std::string>(params.object_state_name))
-                   ,"object state name from db table enum_object_states: "
+                  ::value<std::vector<std::string> >()->notifier(insert_arg< std::vector<std::string> >(params.object_state_name))
+                   ,"object state name , may appear multiple times like \" -s serverBlocked -s serverOutzoneManual \" , from db table enum_object_states: "
                    "serverRenewProhibited "
                    "serverOutzoneManual "
                    "serverInzoneManual "
@@ -1999,7 +1999,6 @@ public:
                    "identifiedContact "
                    "validatedContact "
                    )
-
                    ("valid_from,f",boost::program_options
                        ::value<Checked::string>()->notifier(save_optional_string(params.valid_from))
                         ,"object state request valid from date time , impl default is now, example: 2002-01-31T10:00:01,123456789 ")
