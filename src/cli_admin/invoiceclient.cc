@@ -420,6 +420,11 @@ InvoiceClient::factoring()
     std::string toDate_str(toDate.to_string());
     std::string taxDate_str(taxDate.to_string());
 
+    LOGGER(PACKAGE).debug ( boost::format("InvoiceClient::factoring"
+            " zoneName %1%  registrarName %2% taxDate_str %3%  toDate_str %4%")
+    % zoneName % registrarName % taxDate_str % toDate_str );
+
+
     if (!regFilled) {
         invMan->createAccountInvoices( zoneName, taxDate_str, toDate_str);
     } else {
