@@ -1015,6 +1015,10 @@ void createAccountInvoice( const std::string& registrarHandle, const std::string
                         boost::posix_time::time_from_string(todateStr));
                 timestampStr[timestampStr.find('T')] = ' ';
 
+                LOGGER(PACKAGE).debug ( boost::format("ManagerImpl::createAccountInvoice"
+                        " regID %1%  zone %2% taxdateStr %3%  timestampStr %4%")
+                % regID % zone % taxdateStr % timestampStr );
+
                 // make invoice
                 MakeFactoring(regID, zone, timestampStr, taxdateStr);
 
