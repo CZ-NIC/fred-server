@@ -98,12 +98,12 @@ public:
     }
 };
 
-typedef save_arg<optional_string> save_string;
-typedef save_arg<optional_id> save_id;
-typedef save_arg<optional_ulonglong> save_ulonglong;
-typedef save_arg<optional_ulong> save_ulong;
-typedef save_arg<optional_bool> save_bool;
-typedef save_arg<optional_double> save_double;
+typedef save_arg<optional_string> save_optional_string;
+typedef save_arg<optional_id> save_optional_id;
+typedef save_arg<optional_ulonglong> save_optional_ulonglong;
+typedef save_arg<optional_ulong> save_optional_ulong;
+typedef save_arg<optional_bool> save_optional_bool;
+typedef save_arg<optional_double> save_optional_double;
 
 #endif //OPTIONAL_H_
 

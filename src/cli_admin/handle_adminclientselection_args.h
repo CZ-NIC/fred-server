@@ -71,75 +71,75 @@ public:
         cfg_opts->add_options()
             ("domain_list", "list of all domains (via filters)")
             ("login_registrar", boost::program_options
-                    ::value<Checked::string>()->notifier(save_string(params.login_registrar))
+                    ::value<Checked::string>()->notifier(save_optional_string(params.login_registrar))
                 ,"login registrar handle")
             ("id", boost::program_options
-                 ::value<Checked::id>()->notifier(save_id(params.domain_id))
+                 ::value<Checked::id>()->notifier(save_optional_id(params.domain_id))
                       , "domain id")
             ("fqdn", boost::program_options
-               ::value<Checked::string>()->notifier(save_string(params.fqdn))
+               ::value<Checked::string>()->notifier(save_optional_string(params.fqdn))
                 ,"fully qualified domain name is domain object handle")
             ("handle", boost::program_options
-                 ::value<Checked::string>()->notifier(save_string(params.domain_handle))
+                 ::value<Checked::string>()->notifier(save_optional_string(params.domain_handle))
                   ,"domain object handle is fully qualified domain name (fqdn)")
             ("nsset_id", boost::program_options
-             ::value<Checked::id>()->notifier(save_id(params.nsset_id))
+             ::value<Checked::id>()->notifier(save_optional_id(params.nsset_id))
                   , "nsset id")
             ("nsset_handle", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.nsset_handle))
+            ::value<Checked::string>()->notifier(save_optional_string(params.nsset_handle))
                 , "nsset handle")
             ("any_nsset",  boost::program_options
                     ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.any_nsset))
                      ,"any nsset")
             ("keyset_id", boost::program_options
-               ::value<Checked::id>()->notifier(save_id(params.keyset_id))
+               ::value<Checked::id>()->notifier(save_optional_id(params.keyset_id))
                     , "keyset id")
             ("keyset_handle", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.keyset_handle))
+            ::value<Checked::string>()->notifier(save_optional_string(params.keyset_handle))
                 , "keyset handle")
             ("any_keyset", boost::program_options
                     ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.any_keyset)) ,"any keyset")
             ("zone_id", boost::program_options
-               ::value<Checked::id>()->notifier(save_id(params.zone_id))
+               ::value<Checked::id>()->notifier(save_optional_id(params.zone_id))
                     , "zone id")
             ("registrant_id", boost::program_options
-               ::value<Checked::id>()->notifier(save_id(params.registrant_id))
+               ::value<Checked::id>()->notifier(save_optional_id(params.registrant_id))
                     , "registrant id")
             ("registrant_handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.registrant_handle))
+                ::value<Checked::string>()->notifier(save_optional_string(params.registrant_handle))
                 , "registrant handle")
             ("registrant_name", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.registrant_name))
+                ::value<Checked::string>()->notifier(save_optional_string(params.registrant_name))
                 , "registrant name")
             ("admin_id", boost::program_options
-               ::value<Checked::id>()->notifier(save_id(params.admin_id))
+               ::value<Checked::id>()->notifier(save_optional_id(params.admin_id))
                     , "admin id")
             ("admin_handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.admin_handle))
+                ::value<Checked::string>()->notifier(save_optional_string(params.admin_handle))
                 , "admin handle")
             ("admin_name", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.admin_name))
+                ::value<Checked::string>()->notifier(save_optional_string(params.admin_name))
                 , "admin name")
             ("registrar_id", boost::program_options
-               ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+               ::value<Checked::id>()->notifier(save_optional_id(params.registrar_id))
                     , "registrar id")
             ("registrar_handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+                ::value<Checked::string>()->notifier(save_optional_string(params.registrar_handle))
                 , "registrar handle")
             ("registrar_name", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.registrar_name))
+                ::value<Checked::string>()->notifier(save_optional_string(params.registrar_name))
                 , "registrar name")
             ("crdate", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.crdate))
+                ::value<Checked::string>()->notifier(save_optional_string(params.crdate))
                 , "create date, arg format viz --help_dates")
             ("deldate", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.deldate))
+                ::value<Checked::string>()->notifier(save_optional_string(params.deldate))
                 , "delete date, arg format viz --help_dates")
             ("update", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.update))
+                ::value<Checked::string>()->notifier(save_optional_string(params.update))
                 , "update date, arg format viz --help_dates")
             ("transdate", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.transdate))
+                ::value<Checked::string>()->notifier(save_optional_string(params.transdate))
                 , "transfer date, arg format viz --help_dates")
             ("full_list", boost::program_options
                     ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.full_list))
@@ -156,7 +156,7 @@ public:
                 , "cancel date, arg format viz --help_dates")
             invisible options */
             ("limit", boost::program_options
-               ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.limit))
+               ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(params.limit))
                     , "limit")
             ;
         return cfg_opts;
@@ -223,7 +223,7 @@ public:
                         std::string("domain_info options")));
         cfg_opts->add_options()
             ("domain_info", boost::program_options
-                    ::value<Checked::string>()->notifier(save_string(domain_info))
+                    ::value<Checked::string>()->notifier(save_optional_string(domain_info))
                      , "info on domain in arg")
             ;
         return cfg_opts;
@@ -260,7 +260,7 @@ public:
                         std::string("keyset_check options")));
         cfg_opts->add_options()
             ("keyset_check", boost::program_options
-                 ::value<Checked::string>()->notifier(save_string(keyset_check))
+                 ::value<Checked::string>()->notifier(save_optional_string(keyset_check))
                       , "command with keyset name in arg")
                 ;
         return cfg_opts;
@@ -296,7 +296,7 @@ public:
                         std::string("keyset_info options")));
         cfg_opts->add_options()
             ("keyset_info", boost::program_options
-                 ::value<Checked::string>()->notifier(save_string(keyset_info))
+                 ::value<Checked::string>()->notifier(save_optional_string(keyset_info))
                       , "command with keyset name in arg")
                 ;
         return cfg_opts;
@@ -332,7 +332,7 @@ public:
                         std::string("keyset_info2 options")));
         cfg_opts->add_options()
             ("keyset_info2", boost::program_options
-                 ::value<Checked::string>()->notifier(save_string(keyset_info2))
+                 ::value<Checked::string>()->notifier(save_optional_string(keyset_info2))
                       , "command with keyset name in arg")
                 ;
         return cfg_opts;
@@ -373,49 +373,49 @@ public:
                  ::value<Checked::string>()
                       , "command for list of keysets (via filters)")
             ("login_registrar", boost::program_options
-             ::value<Checked::string>()->notifier(save_string(params.login_registrar))
+             ::value<Checked::string>()->notifier(save_optional_string(params.login_registrar))
               ,"login registrar handle")
             ("id", boost::program_options
-             ::value<Checked::id>()->notifier(save_id(params.keyset_id))
+             ::value<Checked::id>()->notifier(save_optional_id(params.keyset_id))
                   , "keyset id")
             ("handle", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.keyset_handle))
+            ::value<Checked::string>()->notifier(save_optional_string(params.keyset_handle))
               , "keyset handle")
             ("admin_id", boost::program_options
-             ::value<Checked::id>()->notifier(save_id(params.admin_id))
+             ::value<Checked::id>()->notifier(save_optional_id(params.admin_id))
                   , "admin id")
             ("admin_handle", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.admin_handle))
+              ::value<Checked::string>()->notifier(save_optional_string(params.admin_handle))
               , "admin handle")
             ("admin_name", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.admin_name))
+              ::value<Checked::string>()->notifier(save_optional_string(params.admin_name))
               , "admin name")
             ("registrar_id", boost::program_options
-             ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+             ::value<Checked::id>()->notifier(save_optional_id(params.registrar_id))
                   , "registrar id")
             ("registrar_handle", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+              ::value<Checked::string>()->notifier(save_optional_string(params.registrar_handle))
               , "registrar handle")
             ("registrar_name", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.registrar_name))
+              ::value<Checked::string>()->notifier(save_optional_string(params.registrar_name))
               , "registrar name")
             ("crdate", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.crdate))
+              ::value<Checked::string>()->notifier(save_optional_string(params.crdate))
               , "create date, arg format viz --help_dates")
             ("deldate", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.deldate))
+              ::value<Checked::string>()->notifier(save_optional_string(params.deldate))
               , "delete date, arg format viz --help_dates")
             ("update", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.update))
+              ::value<Checked::string>()->notifier(save_optional_string(params.update))
               , "update date, arg format viz --help_dates")
             ("transdate", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.transdate))
+              ::value<Checked::string>()->notifier(save_optional_string(params.transdate))
               , "transfer date, arg format viz --help_dates")
             ("full_list",boost::program_options
                     ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.full_list))
                      , "full list")
             ("limit", boost::program_options
-             ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.limit))
+             ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(params.limit))
                   , "limit")
                 ;
         return cfg_opts;
@@ -534,7 +534,7 @@ public:
                         std::string("contact_info options")));
         cfg_opts->add_options()
             ("contact_info", boost::program_options
-                 ::value<Checked::string>()->notifier(save_string(contact_info))
+                 ::value<Checked::string>()->notifier(save_optional_string(contact_info))
                       , "command with contact name in arg")
                 ;
         return cfg_opts;
@@ -571,7 +571,7 @@ public:
         cfg_opts->add_options()
             ("contact_reminder", "command for run contact reminder procedure")
             ("date", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(date))
+                ::value<Checked::string>()->notifier(save_optional_string(date))
                 , "specific date, arg format viz --help_dates")
                 ;
         return cfg_opts;
@@ -608,61 +608,61 @@ public:
         cfg_opts->add_options()
             ("contact_list", "command for list of contacts (via filters)")
             ("login_registrar", boost::program_options
-             ::value<Checked::string>()->notifier(save_string(params.login_registrar))
+             ::value<Checked::string>()->notifier(save_optional_string(params.login_registrar))
               ,"login registrar handle")
             ("id", boost::program_options
-             ::value<Checked::id>()->notifier(save_id(params.contact_id))
+             ::value<Checked::id>()->notifier(save_optional_id(params.contact_id))
                   , "contact id")
             ("handle", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.contact_handle))
+            ::value<Checked::string>()->notifier(save_optional_string(params.contact_handle))
               , "contact handle")
             ("name_name", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.contact_name))
+            ::value<Checked::string>()->notifier(save_optional_string(params.contact_name))
             , "contact name")
             ("organization", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.contact_organization))
+            ::value<Checked::string>()->notifier(save_optional_string(params.contact_organization))
             , "contact organization")
             ("city", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.contact_city))
+            ::value<Checked::string>()->notifier(save_optional_string(params.contact_city))
             , "contact city")
             ("email", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.contact_email))
+            ::value<Checked::string>()->notifier(save_optional_string(params.contact_email))
             , "contact email")
             ("notify_email", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.contact_notify_email))
+            ::value<Checked::string>()->notifier(save_optional_string(params.contact_notify_email))
             , "contact notify email")
             ("vat", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.contact_vat))
+            ::value<Checked::string>()->notifier(save_optional_string(params.contact_vat))
             , "contact vat")
             ("ssn", boost::program_options
-            ::value<Checked::string>()->notifier(save_string(params.contact_ssn))
+            ::value<Checked::string>()->notifier(save_optional_string(params.contact_ssn))
             , "contact ssn")
             ("registrar_id", boost::program_options
-             ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+             ::value<Checked::id>()->notifier(save_optional_id(params.registrar_id))
                   , "registrar id")
             ("registrar_handle", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+              ::value<Checked::string>()->notifier(save_optional_string(params.registrar_handle))
               , "registrar handle")
             ("registrar_name", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.registrar_name))
+              ::value<Checked::string>()->notifier(save_optional_string(params.registrar_name))
               , "registrar name")
             ("crdate", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.crdate))
+              ::value<Checked::string>()->notifier(save_optional_string(params.crdate))
               , "create date, arg format viz --help_dates")
             ("deldate", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.deldate))
+              ::value<Checked::string>()->notifier(save_optional_string(params.deldate))
               , "delete date, arg format viz --help_dates")
             ("update", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.update))
+              ::value<Checked::string>()->notifier(save_optional_string(params.update))
               , "update date, arg format viz --help_dates")
             ("transdate", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.transdate))
+              ::value<Checked::string>()->notifier(save_optional_string(params.transdate))
               , "transfer date, arg format viz --help_dates")
             ("full_list",boost::program_options
                     ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.full_list))
                      ,"full list")
             ("limit", boost::program_options
-             ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.limit))
+             ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(params.limit))
                   , "limit")
                 ;
         return cfg_opts;
@@ -699,43 +699,43 @@ public:
         cfg_opts->add_options()
             ("invoice_list", "command for list of invoices (via filters)")
             ("id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.invoice_id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.invoice_id))
                 , "invoice id")
             ("zone_id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.zone_id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.zone_id))
                 , "zone id")
             ("zone_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.zone_fqdn))
+                ::value<Checked::string>()->notifier(save_optional_string(params.zone_fqdn))
                 , "zone name")
             ("type", boost::program_options
-             ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.type))
+             ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(params.type))
               , "invoice type (1=advanced, 2=account)")
             ("number", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.number))
+              ::value<Checked::string>()->notifier(save_optional_string(params.number))
               , "invoice number")
             ("crdate", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.crdate))
+                ::value<Checked::string>()->notifier(save_optional_string(params.crdate))
                 , "create date, arg format viz --help_dates")
             ("taxdate", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.taxdate))
+              ::value<Checked::string>()->notifier(save_optional_string(params.taxdate))
               , "tax date, arg format viz --help_dates")
             ("registrar_id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.registrar_id))
                 , "registrar id")
             ("registrar_handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+                ::value<Checked::string>()->notifier(save_optional_string(params.registrar_handle))
                 , "registrar handle")
             ("invoice_file_pdf", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.invoice_file_pdf))
+                ::value<Checked::id>()->notifier(save_optional_id(params.invoice_file_pdf))
                 , "invoice file pdf")
             ("invoice_file_xml", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.invoice_file_xml))
+                ::value<Checked::id>()->notifier(save_optional_id(params.invoice_file_xml))
                 , "invoice file xml")
             ("invoice_file_name", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.invoice_file_name))
+                ::value<Checked::string>()->notifier(save_optional_string(params.invoice_file_name))
                 , "invoice file name")
             ("limit", boost::program_options
-                ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.limit))
+                ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(params.limit))
                 , "limit")
                 ;
         return cfg_opts;
@@ -812,16 +812,16 @@ public:
         cfg_opts->add_options()
             ("invoice_credit", "create credit invoice for registrar")
             ("zone_id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.zone_id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.zone_id))
                 , "zone id")
             ("registrar_id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.registrar_id))
                 , "registrar id")
             ("price", boost::program_options
-                ::value<Checked::string_fpnumber>()->notifier(save_string(params.price))
+                ::value<Checked::string_fpnumber>()->notifier(save_optional_string(params.price))
                 , "price")
             ("taxdate", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.taxdate))
+              ::value<Checked::string>()->notifier(save_optional_string(params.taxdate))
               , "tax date, default in impl is today, arg format viz --help_dates")
                 ;
         return cfg_opts;
@@ -859,16 +859,16 @@ public:
         cfg_opts->add_options()
             ("invoice_factoring", "invoice factoring")
             ("zone_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.zone_fqdn))
+                ::value<Checked::string>()->notifier(save_optional_string(params.zone_fqdn))
                 , "zone name")
             ("registrar_handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+                ::value<Checked::string>()->notifier(save_optional_string(params.registrar_handle))
                 , "registrar handle")
             ("todate", boost::program_options
-                    ::value<Checked::string>()->notifier(save_string(params.todate))
+                    ::value<Checked::string>()->notifier(save_optional_string(params.todate))
                 , "todate, default in impl is first day of this month, arg format viz --help_dates")
             ("taxdate", boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.taxdate))
+              ::value<Checked::string>()->notifier(save_optional_string(params.taxdate))
               , "tax date, default in impl is last day of previous month, arg format viz --help_dates")
                 ;
         return cfg_opts;
@@ -906,19 +906,19 @@ public:
         cfg_opts->add_options()
             ("invoice_add_prefix", "add row into the ``invoice_prefix'' table")
             ("zone_id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.zone_id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.zone_id))
                 , "zone id")
             ("zone_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.zone_fqdn))
+                ::value<Checked::string>()->notifier(save_optional_string(params.zone_fqdn))
                 , "zone name")
             ("type", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.type))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.type))
                 , "type is either 0 (for the deposit invoice) or 1 (for account invoice)")
             ("year", boost::program_options
-                    ::value<Checked::ulong>()->notifier(save_ulong(params.year))
+                    ::value<Checked::ulong>()->notifier(save_optional_ulong(params.year))
                 , "year default in impl is the current year")
             ("prefix", boost::program_options
-              ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.prefix))
+              ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(params.prefix))
               , "prefix")
                 ;
         return cfg_opts;
@@ -956,10 +956,10 @@ public:
         cfg_opts->add_options()
             ("create_invoice", "create invoice for payment")
             ("payment_id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.payment_id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.payment_id))
                 , "payment id")
             ("registrar_handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.registrar_handle))
+                ::value<Checked::string>()->notifier(save_optional_string(params.registrar_handle))
                 , "registrar handle")
             ;
         return cfg_opts;
@@ -998,7 +998,7 @@ public:
             ("bank_payment_list", "list of payments")
 
             ("bank_payment_type", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(bank_payment_type))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(bank_payment_type))
                 , "payment type is  1 - 6")
             ;
         return cfg_opts;
@@ -1033,16 +1033,16 @@ public:
         cfg_opts->add_options()
             ("bank_import_xml", "xml file with bank statement(s)")
             ("bank_xml", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.bank_xml))
+                ::value<Checked::string>()->notifier(save_optional_string(params.bank_xml))
                 , "xml file name")
             ("cr_credit_invoice", boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.cr_credit_invoice))
                 , "create also credit invoice if appliable")
             ("bank_statement_file", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.bank_statement_file))
+                ::value<Checked::string>()->notifier(save_optional_string(params.bank_statement_file))
                 , "path to original statement file")
             ("bank_statement_file_mimetype", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.bank_statement_file_mimetype))
+                ::value<Checked::string>()->notifier(save_optional_string(params.bank_statement_file_mimetype))
                 , "mime type of original statement file")
             ;
         return cfg_opts;
@@ -1083,10 +1083,10 @@ public:
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.bank_code))
                 , "bank_code description")
             ("account_name", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.account_name))
+                ::value<Checked::string>()->notifier(save_optional_string(params.account_name))
                 , "account name")
             ("zone_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.zone_fqdn))
+                ::value<Checked::string>()->notifier(save_optional_string(params.zone_fqdn))
                 , "zone fully qualified domain name")
             ;
         return cfg_opts;
@@ -1121,10 +1121,10 @@ public:
         cfg_opts->add_options()
             ("poll_list_all", "list all poll messages")
             ("poll_type", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.poll_type))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.poll_type))
                 , "set filter for poll type")
             ("registrar_id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.registrar_id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.registrar_id))
                 , "show only records with specific registrar id number")
             ("poll_nonseen", boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.poll_nonseen))
@@ -1166,10 +1166,10 @@ public:
         cfg_opts->add_options()
             ("poll_create_statechanges", "create messages for state changes")
             ("poll_except_types", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.poll_except_types))
+                ::value<Checked::string>()->notifier(save_optional_string(params.poll_except_types))
                 , "list of poll messages types ignored in creation (only states now)")
             ("poll_limit", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.poll_limit))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.poll_limit))
                 , "limit for number of messages generated in one pass (0=no limit)")
             ("poll_debug", boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.poll_debug))
@@ -1210,31 +1210,31 @@ public:
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.zone_fqdn))
                 , "fqdn of new zone")
             ("ex_period_min", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.ex_period_min))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.ex_period_min))
                 , "ex_period_min")
             ("ex_period_max", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.ex_period_max))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.ex_period_max))
                 , "ex_period_max")
             ("ttl", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.ttl))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.ttl))
                 , "time to live")
             ("hostmaster", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.hostmaster))
+                ::value<Checked::string>()->notifier(save_optional_string(params.hostmaster))
                 , "hostmaster")
             ("update_retr", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.update_retr))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.update_retr))
                 , "update_retr")
             ("refresh", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.refresh))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.refresh))
                 , "refresh")
             ("expiry", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.expiry))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.expiry))
                 , "expiry")
             ("minimum", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.minimum))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.minimum))
                 , "minimum")
             ("ns_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.ns_fqdn))
+                ::value<Checked::string>()->notifier(save_optional_string(params.ns_fqdn))
                 , "ns_fqdn")
             ;
         return cfg_opts;
@@ -1276,49 +1276,49 @@ public:
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.country))
                 , "registrar two letter country code")
             ("ico", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.ico))
+                ::value<Checked::string>()->notifier(save_optional_string(params.ico))
                 , "organization identifier number")
             ("dic", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.dic))
+                ::value<Checked::string>()->notifier(save_optional_string(params.dic))
                 , "tax identifier number")
             ("varsymb", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.varsymb))
+                ::value<Checked::string>()->notifier(save_optional_string(params.varsymb))
                 , "registrar variable symbol")
             ("reg_name", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.reg_name))
+                ::value<Checked::string>()->notifier(save_optional_string(params.reg_name))
                 , "registrar name")
             ("organization", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.organization))
+                ::value<Checked::string>()->notifier(save_optional_string(params.organization))
                 , "registrar organization")
             ("street1", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.street1))
+                ::value<Checked::string>()->notifier(save_optional_string(params.street1))
                 , "registrar street #1")
             ("street2", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.street2))
+                ::value<Checked::string>()->notifier(save_optional_string(params.street2))
                 , "registrar street #2")
             ("street3", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.street3))
+                ::value<Checked::string>()->notifier(save_optional_string(params.street3))
                 , "registrar street #3")
             ("city", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.city))
+                ::value<Checked::string>()->notifier(save_optional_string(params.city))
                 , "registrar city")
             ("stateorprovince", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.stateorprovince))
+                ::value<Checked::string>()->notifier(save_optional_string(params.stateorprovince))
                 , "registrar state or province")
             ("postalcode", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.postalcode))
+                ::value<Checked::string>()->notifier(save_optional_string(params.postalcode))
                 , "registrar postal code")
             ("telephone", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.telephone))
+                ::value<Checked::string>()->notifier(save_optional_string(params.telephone))
                 , "registrar telephone")
             ("fax", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.fax))
+                ::value<Checked::string>()->notifier(save_optional_string(params.fax))
                 , "registrar fax")
             ("email", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.email))
+                ::value<Checked::string>()->notifier(save_optional_string(params.email))
                 , "registrar email")
             ("url", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.url))
+                ::value<Checked::string>()->notifier(save_optional_string(params.url))
                 , "registrar url")
             ("system", boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.system))
@@ -1365,10 +1365,10 @@ public:
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
                 , "registrar handle")
             ("from_date", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.from_date))
+                ::value<Checked::string>()->notifier(save_optional_string(params.from_date))
                 , "from date (default today)")
             ("to_date", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.to_date))
+                ::value<Checked::string>()->notifier(save_optional_string(params.to_date))
                 , "to date (default not filled)")
             ;
         return cfg_opts;
@@ -1415,10 +1415,10 @@ public:
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
                 , "registrar handle")
             ("from_date", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.from_date))
+                ::value<Checked::string>()->notifier(save_optional_string(params.from_date))
                 , "from date (default today)")
             ("to_date", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.to_date))
+                ::value<Checked::string>()->notifier(save_optional_string(params.to_date))
                 , "to date (default not filled)")
                 ;
         return cfg_opts;
@@ -1491,10 +1491,10 @@ public:
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
                 , "registrar handle")
             ("from_date", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.from_date))
+                ::value<Checked::string>()->notifier(save_optional_string(params.from_date))
                 , "from date (default today)")
             ("to_date", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.to_date))
+                ::value<Checked::string>()->notifier(save_optional_string(params.to_date))
                 , "to date (default not filled)")
             ("registrar_group", boost::program_options
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.registrar_group))
@@ -1532,25 +1532,25 @@ public:
         cfg_opts->add_options()
             ("registrar_list", "list all registrars (via filters)")
             ("id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.id))
                 , "filter records with specific id nubmer")
             ("handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.handle))
+                ::value<Checked::string>()->notifier(save_optional_string(params.handle))
                 , "filter records with specific handle")
             ("name_name", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.name_name))
+                ::value<Checked::string>()->notifier(save_optional_string(params.name_name))
                 , "filter records with specific name")
             ("organization", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.organization))
+                ::value<Checked::string>()->notifier(save_optional_string(params.organization))
                 , "show only records with specific organization name")
             ("city", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.city))
+                ::value<Checked::string>()->notifier(save_optional_string(params.city))
                 , "show only records with specific city")
             ("email", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.email))
+                ::value<Checked::string>()->notifier(save_optional_string(params.email))
                 , "show only records with specific email address")
             ("country", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.country))
+                ::value<Checked::string>()->notifier(save_optional_string(params.country))
                 , "show only records with specific country")
             ;
         return cfg_opts;
@@ -1594,7 +1594,7 @@ public:
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.ns_fqdn))
                 , "nameserver fqdn")
             ("addr", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.addr))
+                ::value<Checked::string>()->notifier(save_optional_string(params.addr))
                 , "nameserver address")
                 ;
         return cfg_opts;
@@ -1670,22 +1670,22 @@ public:
         cfg_opts->add_options()
             ("price_add", "add price")
             ("valid_from", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.valid_from))
+                ::value<Checked::string>()->notifier(save_optional_string(params.valid_from))
                 , "price valid from datetime")
             ("valid_to", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.valid_to))
+                ::value<Checked::string>()->notifier(save_optional_string(params.valid_to))
                 , "price valid to datetime")
             ("operation_price", boost::program_options
                 ::value<Checked::ulong>()->notifier(save_arg<long long>(params.operation_price))
                 , "operation price")
             ("period", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_ulong(params.period))
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.period))
                 , "period")
             ("zone_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.zone_fqdn))
+                ::value<Checked::string>()->notifier(save_optional_string(params.zone_fqdn))
                 , "zone fqdn")
             ("zone_id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.zone_id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.zone_id))
                 , "zone id")
             ("renew", boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.renew))
@@ -1727,10 +1727,10 @@ public:
         cfg_opts->add_options()
             ("notify_state_changes", "send emails to contacts about object state changes")
             ("notify_except_types", boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.notify_except_types))
+                ::value<Checked::string>()->notifier(save_optional_string(params.notify_except_types))
                 , "list of notification types ignored in notification")
             ("notify_limit", boost::program_options
-                ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.notify_limit))
+                ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(params.notify_limit))
                 , "limit for nubmer of emails generated in one pass (0=no limit)")
             ("notify_debug", boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.notify_debug))
@@ -1773,7 +1773,7 @@ public:
 
             ("hpmail_config", boost::program_options
                 ::value<Checked::string>()->default_value(HPMAIL_CONFIG)
-                     ->notifier(save_string(hpmail_config))
+                     ->notifier(save_optional_string(hpmail_config))
                 , "configuration file for Postservis client (hpmail)")
                 ;
         return cfg_opts;
@@ -1811,7 +1811,7 @@ public:
             ("notify_registered_letters_manual_send", "manual send of generated registered letters")
             ("working_directory", boost::program_options
                 ::value<Checked::string>()->default_value("./")
-                     ->notifier(save_string(params.working_directory))
+                     ->notifier(save_optional_string(params.working_directory))
                 , "working directory used for letter files")
             ("email", boost::program_options
                 ::value<Checked::string>()
@@ -1856,7 +1856,7 @@ public:
             ("notify_sms_send", "send generated SMS notification messages")
 
             ("sms_command",boost::program_options
-                    ::value<Checked::string>()->notifier(save_string(cmdline_sms_command))
+                    ::value<Checked::string>()->notifier(save_optional_string(cmdline_sms_command))
                      ,"shell command to send saved sms messages")
                 ;
         return cfg_opts;
@@ -1966,13 +1966,13 @@ public:
                         std::string("object_new_state_request_name options")));
         cfg_opts->add_options()
             ("object_new_state_request_name","set request for object state by name")
-            ("object_name",boost::program_options
+            ("object_name,n",boost::program_options
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.object_name))
                  ,"object handle")
-            ("object_type",boost::program_options
+            ("object_type,t",boost::program_options
                  ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_type))
                   ,"object type number: 1 - contact,  2 - nsset, 3 - domain, 4 - keyset")
-          ("object_state_name",boost::program_options
+          ("object_state_name,s",boost::program_options
                   ::value<Checked::string>()->notifier(save_arg<std::string>(params.object_state_name))
                    ,"object state name from db table enum_object_states: "
                    "serverRenewProhibited "
@@ -2000,12 +2000,12 @@ public:
                    "validatedContact "
                    )
 
-                   ("valid_from",boost::program_options
-                       ::value<Checked::string>()->notifier(save_string(params.valid_from))
+                   ("valid_from,f",boost::program_options
+                       ::value<Checked::string>()->notifier(save_optional_string(params.valid_from))
                         ,"object state request valid from date time , impl default is now, example: 2002-01-31T10:00:01,123456789 ")
 
-                    ("valid_to",boost::program_options
-                        ::value<Checked::string>()->notifier(save_string(params.valid_to))
+                    ("valid_to,t",boost::program_options
+                        ::value<Checked::string>()->notifier(save_optional_string(params.valid_to))
                          ,"object state request valid to date time , impl default is empty, example: 2003-01-31T10:00:01,123456789 ")
 
                 ;
@@ -2041,7 +2041,7 @@ public:
         cfg_opts->add_options()
             ("object_update_states","globally update all states of all objects")
             ("object_id",boost::program_options
-                    ::value<Checked::id>()->notifier(save_id(params.object_id))
+                    ::value<Checked::id>()->notifier(save_optional_id(params.object_id))
                      ,"object id")
                 ;
         return cfg_opts;
@@ -2082,16 +2082,16 @@ public:
                     "poll_create_statechanges, object_delete_candidates, poll_create_low_credit, notify_letters_create"
                     )
             ("poll_except_types",boost::program_options
-                    ::value<Checked::string>()->notifier(save_string(regular_procedure_params.poll_except_types))
+                    ::value<Checked::string>()->notifier(save_optional_string(regular_procedure_params.poll_except_types))
                      ,"list of poll message types ignored in creation (only states now)")
             ("object_delete_types",boost::program_options
-                 ::value<Checked::string>()->notifier(save_string(regular_procedure_params.object_delete_types))
+                 ::value<Checked::string>()->notifier(save_optional_string(regular_procedure_params.object_delete_types))
                   ,"only this type of object will be delete during mass delete")
             ("notify_except_types",boost::program_options
-               ::value<Checked::string>()->notifier(save_string(regular_procedure_params.notify_except_types))
+               ::value<Checked::string>()->notifier(save_optional_string(regular_procedure_params.notify_except_types))
                 ,"list of notification types ignored in notification")
             ("object_delete_limit", boost::program_options
-                ::value<Checked::ulonglong>()->notifier(save_ulonglong(delete_objects_params.object_delete_limit))
+                ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(delete_objects_params.object_delete_limit))
                 , "limit for object deleting")
             ("object_delete_debug", boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(delete_objects_params.object_delete_debug))
@@ -2131,22 +2131,22 @@ public:
         cfg_opts->add_options()
             ("file_list","list all files")
             ("id", boost::program_options
-                ::value<Checked::id>()->notifier(save_id(params.id))
+                ::value<Checked::id>()->notifier(save_optional_id(params.id))
                 , "file id")
             ("name_name",boost::program_options
-                ::value<Checked::string>()->notifier(save_string(params.name_name))
+                ::value<Checked::string>()->notifier(save_optional_string(params.name_name))
                  ,"file name")
             ("crdate", boost::program_options
-                 ::value<Checked::string>()->notifier(save_string(params.crdate))
+                 ::value<Checked::string>()->notifier(save_optional_string(params.crdate))
                  , "create date, arg format viz --help_dates")
             ("path",boost::program_options
-             ::value<Checked::string>()->notifier(save_string(params.path))
+             ::value<Checked::string>()->notifier(save_optional_string(params.path))
               ,"file path")
             ("mime",boost::program_options
-              ::value<Checked::string>()->notifier(save_string(params.mime))
+              ::value<Checked::string>()->notifier(save_optional_string(params.mime))
                ,"file mime type")
             ("size", boost::program_options
-               ::value<Checked::ulonglong>()->notifier(save_ulonglong(params.size))
+               ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(params.size))
                , "file size")
             ("limit", boost::program_options
               ::value<Checked::ulonglong>()->notifier(save_arg<unsigned long long>(params.limit))
