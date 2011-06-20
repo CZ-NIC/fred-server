@@ -945,8 +945,8 @@ void createAccountInvoices( const std::string& zone_fqdn,  boost::gregorian::dat
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        std::string taxdateStr(boost::gregorian::to_simple_string(taxdate));
-        std::string todateStr(boost::gregorian::to_simple_string(todate));
+        std::string taxdateStr(boost::gregorian::to_iso_extended_string(taxdate));
+        std::string todateStr(boost::gregorian::to_iso_extended_string(todate));
 
         std::string  timestampStr = todateStr;
 
@@ -996,8 +996,8 @@ void createAccountInvoice( const std::string& registrarHandle, const std::string
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        std::string taxdateStr(boost::gregorian::to_simple_string(taxdate));
-        std::string todateStr(boost::gregorian::to_simple_string(todate));
+        std::string taxdateStr(boost::gregorian::to_iso_extended_string(taxdate));
+        std::string todateStr(boost::gregorian::to_iso_extended_string(todate));
 
         std::string timestampStr;
         unsigned long long regID = 0;
