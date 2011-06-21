@@ -859,7 +859,10 @@ unsigned long long MakeFactoring(unsigned long long regID
 
         // empty invoice invoicing record
         // returns invoiceID or null if nothings was invoiced, on error returns negative number of error
-        if ( (invoiceID = MakeNewInvoice(taxDateStr, fromdateStr, todateStr, zone,
+        if ( (invoiceID = MakeNewInvoice(taxDateStr, fromdateStr
+                , boost::gregorian::to_iso_extended_string(//for invoice todate is lastdate included in the interval
+                        boost::gregorian::from_simple_string(todateStr) - boost::gregorian::days(1))
+                , zone,
             regID, price, count) ) >= 0)
         {
             if (count > 0) // mark item of invoice
@@ -878,7 +881,9 @@ unsigned long long MakeFactoring(unsigned long long regID
                 "UPDATE registrarinvoice SET lastdate=$1::date "
                 " WHERE zone=$2::bigint and registrarid=$3::bigint"
                 , Database::query_param_list
-                (todateStr)(zone)(regID));
+                (boost::gregorian::to_iso_extended_string(//for invoice todate is lastdate included in the interval
+                        boost::gregorian::from_simple_string(todateStr) - boost::gregorian::days(1)))
+                (zone)(regID));
 
             // if invoice was created
             if (invoiceID > 0)
