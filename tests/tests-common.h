@@ -18,9 +18,9 @@ extern boost::mutex boost_test_mutex;
 } while (0)
 
 
-#define THREAD_BOOST_FAIL( M ) do {                         \
+#define THREAD_BOOST_ERROR( M ) do {                        \
     boost::mutex::scoped_lock lock_guard(boost_test_mutex); \
-    BOOST_FAIL( M );                                        \
+    BOOST_ERROR( M );                                       \
 } while (0)
 
 

@@ -34,7 +34,7 @@ void verify_items_sequence(SessionCache &sc, unsigned count)
         try {
             boost::shared_ptr<ModelSession> s = sc.get(i);
         } catch(CACHE_MISS) {
-            THREAD_BOOST_FAIL("Cache miss occured when not allowed");
+            THREAD_BOOST_ERROR("Cache miss occured when not allowed");
         } 
     }
 }
@@ -60,7 +60,7 @@ void verify_items_miss_sequence(SessionCache &sc, unsigned count)
         }
         
         if(!exception) {
-            THREAD_BOOST_FAIL("Item present but it should not be");
+            THREAD_BOOST_ERROR("Item present but it should not be");
         }
     }
 }
@@ -206,7 +206,7 @@ public:
     { }
 
     virtual void worker(cache_general_type_tag) {
-        THREAD_BOOST_FAIL(" This should NEVER be run.");
+        THREAD_BOOST_ERROR(" This should NEVER be run.");
     }
 
     virtual void worker(cache_ttl_type_tag)
@@ -277,7 +277,7 @@ public:
             scache.add(id, n);
 
             if (!verify_item(scache, id)) {
-                THREAD_BOOST_FAIL("Record not saved in cache.");
+                THREAD_BOOST_ERROR("Record not saved in cache.");
             }
         } else {
             boost::shared_ptr<ModelSession> n(new ModelSession());
@@ -291,7 +291,7 @@ public:
             scache.add(id, n);
 
             if (!verify_item(scache, id)) {
-                THREAD_BOOST_FAIL("Record not saved in cache.");
+                THREAD_BOOST_ERROR("Record not saved in cache.");
                 return;
             }
             scache.remove(id);
@@ -414,7 +414,7 @@ BOOST_AUTO_TEST_CASE( cache_threaded_test )
         try {
             threads.create_thread(WorkerSimple(i,sb, thread_group_divisor, scache, max_id, seconds(ttl)));
         } catch(std::exception &e) {
-            THREAD_BOOST_FAIL(e.what());
+            THREAD_BOOST_ERROR(e.what());
         }
     }
 
@@ -447,7 +447,7 @@ BOOST_AUTO_TEST_CASE( cache_ultimate_threaded_test )
             threads.create_thread(WorkerComplete(
                     i,sb, thread_group_divisor, scache, max_id, seconds(ttl), id_seq, refused_count, prot_added));
         } catch(std::exception &e) {
-            THREAD_BOOST_FAIL(e.what());
+            THREAD_BOOST_ERROR(e.what());
         }
     }
 

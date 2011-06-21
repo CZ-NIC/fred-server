@@ -49,7 +49,7 @@ public:
             }
 
         } catch(const std::exception & ex) {
-            THREAD_BOOST_FAIL( std::string("Exception caught in worker: ") + ex.what() );
+            THREAD_BOOST_ERROR( std::string("Exception caught in worker: ") + ex.what() );
         }
         catch(...)
         {

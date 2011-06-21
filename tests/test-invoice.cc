@@ -740,7 +740,7 @@ ResultTestCharge testChargeWorker(Fred::Invoicing::Manager *invMan, Database::Da
     } else if (operation == INVOICING_DomainRenew) {
         ret.success = invMan->chargeDomainRenew(zone_id, registrar_id, ret.object_id, exdate, ret.units );
     } else {
-        THREAD_BOOST_FAIL("Not implemented");
+        THREAD_BOOST_ERROR("Not implemented");
     }
 
     // CHECK CREDIT after
@@ -1879,6 +1879,7 @@ ResultTestCharge testCreateDomainWorker(ccReg::EPP_var epp_ref, Fred::Invoicing:
             throw std::runtime_error("Error received");
         }
 
+        // TODO here -- threaded
         Database::Result res_or = conn.exec_params("SELECT id FROM object_registry WHERE name = $1 AND crid = $2::integer AND erdate is null",
                 Database::query_param_list ( test_domain_fqdn )
                                            ( registrar_id) );
@@ -1888,9 +1889,9 @@ ResultTestCharge testCreateDomainWorker(ccReg::EPP_var epp_ref, Fred::Invoicing:
         ret.object_id = res_or[0][0];
 
     } else if (operation == INVOICING_DomainRenew) {
-        THREAD_BOOST_FAIL("Not implemented");
+        THREAD_BOOST_ERROR("Not implemented");
     } else {
-        THREAD_BOOST_FAIL("Not implemented");
+        THREAD_BOOST_ERROR("Not implemented");
     }
 
 

@@ -1257,10 +1257,10 @@ public:
         try {
             return backend->find_property_name(propname);
         } catch(std::exception &e) {
-            THREAD_BOOST_FAIL(e.what());
+            THREAD_BOOST_ERROR(e.what());
             return 0;
         } catch(...) {
-            THREAD_BOOST_FAIL("Unknown exception caught");
+            THREAD_BOOST_ERROR("Unknown exception caught");
             return 0;
         }
     }
