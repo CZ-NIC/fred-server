@@ -26,6 +26,9 @@
 #include <cmath>
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/local_time_adjustor.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
+
 #include <boost/checked_delete.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -824,7 +827,7 @@ unsigned long long MakeFactoring(unsigned long long regID
                 fromdateStr = std::string(res[0][0]);
         }
 
-        std::string todateStr = timestampStr;
+        std::string todateStr = timestampStr.substr(0,10);//date part from utc timestamp
 
         LOGGER(PACKAGE).debug ( boost::format("MakeFactoring from %1% to %2% timestamp [%3%]")
             % fromdateStr % todateStr % timestampStr);
@@ -860,8 +863,7 @@ unsigned long long MakeFactoring(unsigned long long regID
         // empty invoice invoicing record
         // returns invoiceID or null if nothings was invoiced, on error returns negative number of error
         if ( (invoiceID = MakeNewInvoice(taxDateStr, fromdateStr
-                , boost::gregorian::to_iso_extended_string(//for invoice todate is lastdate included in the interval
-                        boost::gregorian::from_simple_string(todateStr) - boost::gregorian::days(1))
+                , todateStr
                 , zone,
             regID, price, count) ) >= 0)
         {
@@ -881,9 +883,7 @@ unsigned long long MakeFactoring(unsigned long long regID
                 "UPDATE registrarinvoice SET lastdate=$1::date "
                 " WHERE zone=$2::bigint and registrarid=$3::bigint"
                 , Database::query_param_list
-                (boost::gregorian::to_iso_extended_string(//for invoice todate is lastdate included in the interval
-                        boost::gregorian::from_simple_string(todateStr) - boost::gregorian::days(1)))
-                (zone)(regID));
+                (todateStr)(zone)(regID));
 
             // if invoice was created
             if (invoiceID > 0)
@@ -953,7 +953,13 @@ void createAccountInvoices( const std::string& zone_fqdn,  boost::gregorian::dat
         std::string taxdateStr(boost::gregorian::to_iso_extended_string(taxdate));
         std::string todateStr(boost::gregorian::to_iso_extended_string(todate));
 
-        std::string  timestampStr = todateStr;
+        //local todate into utc timestamp
+        boost::posix_time::ptime local_todate_timestamp (todate, boost::posix_time::time_duration(0,0,0));
+        std::string local_todate_timestamp_str = boost::posix_time::to_iso_extended_string(local_todate_timestamp);
+        local_todate_timestamp_str[local_todate_timestamp_str.find('T')] = ' ';//replace  T with [space]
+        std::string  timestampStr(conn.exec(std::string("select '")
+            +local_todate_timestamp_str+" Europe/Prague' AT TIME ZONE 'UTC'")[0][0]);
+
 
         Database::Result res = conn.exec_params(
           "SELECT r.id, z.id FROM registrar r, registrarinvoice i, zone z WHERE r.id=i.registrarid"
@@ -1024,7 +1030,12 @@ void createAccountInvoice( const std::string& registrarHandle, const std::string
             {
                 zone = res[0][0];//zone
 
-                std::string  timestampStr = todateStr;
+                //local todate into utc timestamp
+                boost::posix_time::ptime local_todate_timestamp (todate, boost::posix_time::time_duration(0,0,0));
+                std::string local_todate_timestamp_str = boost::posix_time::to_iso_extended_string(local_todate_timestamp);
+                local_todate_timestamp_str[local_todate_timestamp_str.find('T')] = ' ';//replace  T with [space]
+                std::string  timestampStr(conn.exec(std::string("select '")
+                    +local_todate_timestamp_str+" Europe/Prague' AT TIME ZONE 'UTC'")[0][0]);
 
                 LOGGER(PACKAGE).debug ( boost::format("ManagerImpl::createAccountInvoice"
                         " regID %1%  zone %2% taxdateStr %3%  timestampStr %4%")
