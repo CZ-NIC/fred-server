@@ -2006,9 +2006,8 @@ BOOST_AUTO_TEST_CASE(createDomainThreaded)
 {
     // registrar
     std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle(std::string("REG-FRED_ACCINV")+time_string);
+    std::string registrar_handle(std::string("REG-FRED_")+time_string);
 
-    std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
     Fred::Registrar::Manager::AutoPtr regMan
              = Fred::Registrar::Manager::create(DBSharedPtr());
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
@@ -2339,9 +2338,8 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPP)
 
     // registrar
     std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle(std::string("REG-FRED_ACCINV")+time_string);
+    std::string registrar_handle(std::string("REG-FRED_")+time_string);
 
-    std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
     Fred::Registrar::Manager::AutoPtr regMan
              = Fred::Registrar::Manager::create(DBSharedPtr());
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
