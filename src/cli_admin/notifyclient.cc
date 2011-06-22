@@ -556,8 +556,9 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
           //concat letters
           {
               SubProcessOutput sub_output = ShellCmd(
-                      "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=all.pdf letter*.pdf"
-                      , timeout).execute();
+                  "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=all.pdf letter*.pdf"
+                      " > /dev/null 2>&1 || echo gs return code $? 1>&2"
+                  , timeout).execute();
               if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
           }
 
