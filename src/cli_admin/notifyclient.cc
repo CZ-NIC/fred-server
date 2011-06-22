@@ -460,16 +460,6 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
           if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
         }
 
-        //remove old letter files
-        {
-          SubProcessOutput sub_output = ShellCmd("rm -f letter*.pdf", timeout).execute();
-          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
-        }
-        {
-          SubProcessOutput sub_output = ShellCmd("rm -f all.pdf", timeout).execute();
-          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
-        }
-
         // init file manager
         CorbaClient corba_client(0, 0
               , nameservice_host_port
@@ -515,6 +505,17 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               std::cout << "no new registered letters found" << std::endl;
               return;
           }
+
+          //remove old letter files
+          {
+            SubProcessOutput sub_output = ShellCmd("rm -f letter*.pdf", timeout).execute();
+            if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+          }
+          {
+            SubProcessOutput sub_output = ShellCmd("rm -f all.pdf", timeout).execute();
+            if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+          }
+
 
           //process letter ids
           for(std::size_t i = 0; i < reg_letter_count; ++i)
