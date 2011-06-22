@@ -420,6 +420,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
 
     //needed by fallback
     Fred::Messages::LetterProcInfo proc_reg_letters;
+    Fred::Messages::LetterProcInfo fm_failed_reg_letters;//file manager failed letters
     std::string batch_id = std::string("manual send ")
         + boost::posix_time::to_iso_extended_string(
                 boost::posix_time::microsec_clock::universal_time())+" UTC";
@@ -433,7 +434,6 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
 
         //get shell cmd timeout from cfg
         unsigned long timeout = params.shell_cmd_timeout;
-
 
         if(working_directory.is_value_set())
         if (chdir(working_directory.get_value().c_str()) == -1)
@@ -528,6 +528,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                     + ".pdf";
 
             std::vector<char> file_buffer;
+
             try
             {
                 file_manager->download(file_id,file_buffer);
@@ -537,6 +538,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
             {
                 LOGGER(PACKAGE).error(boost::format("filemanager download: '%1%' error processing letter_id: %2% file_id: %3%") % ex.what()
                         % proc_reg_letters[i].letter_id % proc_reg_letters[i].file_id );
+                fm_failed_reg_letters.push_back(proc_reg_letters[i]);//save failed letter
                 proc_reg_letters.erase(proc_reg_letters.begin()+i);
                 continue;
             }
@@ -555,6 +557,11 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
             }
 
           }//for letter files
+
+          //process letter ids
+          messages_manager->set_letter_status(
+                  fm_failed_reg_letters,"send_failed",batch_id, comm_type, max_attempts_limit);
+
 
           //concat letters
           {
@@ -602,6 +609,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         std::string set_letter_status_result;
         try
         {
+            proc_reg_letters.insert(proc_reg_letters.end(),fm_failed_reg_letters.begin(),fm_failed_reg_letters.end());
             messages_manager->set_letter_status(
                       proc_reg_letters,"send_failed",batch_id, comm_type, max_attempts_limit);
         }
@@ -624,6 +632,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         std::string set_letter_status_result;
         try
         {
+            proc_reg_letters.insert(proc_reg_letters.end(),fm_failed_reg_letters.begin(),fm_failed_reg_letters.end());
             messages_manager->set_letter_status(
                       proc_reg_letters,"send_failed",batch_id, comm_type, max_attempts_limit);
         }
