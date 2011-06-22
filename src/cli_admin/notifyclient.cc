@@ -479,9 +479,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         Fred::Messages::LetterProcInfo proc_reg_letters
             = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
 
-          std::size_t reg_letter_count = proc_reg_letters.size();
-
-          if (reg_letter_count == 0)
+          if (proc_reg_letters.size() == 0)
           {
               Logging::Manager::instance_ref().get(PACKAGE).debug("no registered letters found");
 
@@ -518,7 +516,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
 
 
           //process letter ids
-          for(std::size_t i = 0; i < reg_letter_count; ++i)
+          for(std::size_t i = 0; i < proc_reg_letters.size(); ++i)
           {
             unsigned long long file_id = proc_reg_letters[i].file_id;
 
@@ -527,7 +525,18 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                     + ".pdf";
 
             std::vector<char> file_buffer;
-            file_manager->download(file_id,file_buffer);
+            try
+            {
+                file_manager->download(file_id,file_buffer);
+
+            }
+            catch (std::exception &ex)
+            {
+                LOGGER(PACKAGE).error(boost::format("filemanager download: '%1%' error processing letter_id: %2% file_id: %3%") % ex.what()
+                        % proc_reg_letters[i].letter_id % proc_reg_letters[i].file_id );
+                proc_reg_letters.erase(proc_reg_letters.begin()+i);
+                continue;
+            }
 
             std::ofstream letter_file;
             letter_file.open(letter_file_name.c_str() //./letter$FILEID.pdf
