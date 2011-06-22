@@ -418,6 +418,14 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
     Fred::Messages::ManagerPtr messages_manager
         = Fred::Messages::create_manager();
 
+    //needed by fallback
+    Fred::Messages::LetterProcInfo proc_reg_letters;
+    std::string batch_id = std::string("manual send ")
+        + boost::posix_time::to_iso_extended_string(
+                boost::posix_time::microsec_clock::universal_time())+" UTC";
+    std::string comm_type = "registered_letter";
+    const std::size_t max_attempts_limit = 3;
+
     try
     {
         //get working directory from cfg
@@ -469,15 +477,10 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               Fred::File::Manager::create(&fm_client));
 
         //read letters
-        const std::size_t max_attempts_limit = 3;
         std::string new_status = "sent";
-        std::string batch_id = std::string("manual send ")
-            + boost::posix_time::to_iso_extended_string(
-                    boost::posix_time::microsec_clock::universal_time())+" UTC";
-        std::string comm_type = "registered_letter";
 
-        Fred::Messages::LetterProcInfo proc_reg_letters
-            = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
+         proc_reg_letters = messages_manager
+                 ->load_letters_to_send(0, comm_type, max_attempts_limit);
 
           if (proc_reg_letters.size() == 0)
           {
@@ -595,12 +598,46 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
 
     }
     catch (std::exception &ex) {
+
+        std::string set_letter_status_result;
+        try
+        {
+            messages_manager->set_letter_status(
+                      proc_reg_letters,"send_failed",batch_id, comm_type, max_attempts_limit);
+        }
+        catch (std::exception &ex)
+        {
+            set_letter_status_result +=std::string("set_letter_status: ")+ex.what();
+        }
+
+        catch(...)
+        {
+            set_letter_status_result +="set_letter_status failed";
+        }
+
       throw std::runtime_error(str(boost::format(
-                      "notify_registered_letters_manual_send_impl: %1%")
-                      % ex.what()));
+                      "notify_registered_letters_manual_send_impl: %1% %2%")
+                      % ex.what() % set_letter_status_result));
     }
     catch (...) {
-      throw std::runtime_error("notify_registered_letters_manual_send_impl: unknown error");
+
+        std::string set_letter_status_result;
+        try
+        {
+            messages_manager->set_letter_status(
+                      proc_reg_letters,"send_failed",batch_id, comm_type, max_attempts_limit);
+        }
+        catch (std::exception &ex)
+        {
+            set_letter_status_result +=std::string("set_letter_status: ")+ex.what();
+        }
+
+        catch(...)
+        {
+            set_letter_status_result +="set_letter_status failed";
+        }
+
+      throw std::runtime_error(std::string("notify_registered_letters_manual_send_impl: unknown error ")+set_letter_status_result);
     }
 
       return ;
