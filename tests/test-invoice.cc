@@ -1187,22 +1187,12 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_default )
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
 
-    Database::Date now(Database::NOW);
-    Database::Date first_this(now.get().year(), now.get().month(), 1);
-    Database::Date last_prev(first_this - Database::Days(1));
-
-    Database::Date toDate;
-    Database::Date taxDate;
-
-    toDate = first_this;
-    taxDate = last_prev;
-
-    std::string toDate_str(toDate.to_string());
-    std::string taxDate_str(taxDate.to_string());
+    boost::gregorian::date taxdate(day_clock::local_day().end_of_month());
+    boost::gregorian::date todate(taxdate + boost::gregorian::days(1));
 
     invMan->createAccountInvoices( std::string("cz")
-        , boost::gregorian::from_simple_string(taxDate_str)
-        , boost::gregorian::from_simple_string(toDate_str));
+        , taxdate
+        , todate);
 }
 
 BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
@@ -1495,31 +1485,21 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     }
     BOOST_CHECK(credit_before - credit_after_renew == test_operation_price);
 
-    Database::Date now(Database::NOW);
-    Database::Date first_this(now.get().year(), now.get().month(), 1);
-    Database::Date last_prev(first_this - Database::Days(1));
-
-    Database::Date toDate;
-    Database::Date taxDate;
-
-    toDate = first_this;
-    taxDate = last_prev;
-
-    std::string toDate_str(toDate.to_string());
-    std::string taxDate_str(taxDate.to_string());
+    boost::gregorian::date taxdate(day_clock::local_day().end_of_month());
+    boost::gregorian::date todate(taxdate + boost::gregorian::days(1));
 
     invMan->createAccountInvoice( registrar_handle, std::string("cz")
         , boost::gregorian::from_simple_string((Database::Date(2001,1,31)).to_string())
         , boost::gregorian::from_simple_string((Database::Date(2001,2,1)).to_string()));
 
     invMan->createAccountInvoice( registrar_handle, std::string("cz")
-        , boost::gregorian::from_simple_string(taxDate_str)
-        , boost::gregorian::from_simple_string(toDate_str));
+        , taxdate
+        , todate);
 
     BOOST_CHECK_EXCEPTION(
     invMan->createAccountInvoice( noregistrar_handle, std::string("cz")
-        , boost::gregorian::from_simple_string(taxDate_str)
-        , boost::gregorian::from_simple_string(toDate_str))
+        , taxdate
+        , todate)
         , std::exception
         , check_std_exception_createAccountInvoice );
 /*
