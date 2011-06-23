@@ -1,3 +1,13 @@
+2011-06-20 Jan Zima (2.7.5)
+
+  * createAccountInvoice(s) functions fix (date conversion)
+     - interface string dates was replaced with boost::gregorian::date type
+
+  * fred-admin - sending registered letters fix
+               - broken commands commented out
+
+  * invoicing tests fixes
+
 2011-06-17 Jan Zima, Juraj Vicenik (2.7.4)
 
   * epp create domain operation fix (division by zero - period)
