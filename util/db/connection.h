@@ -302,7 +302,9 @@ public:
       delete this->conn_;
       this->conn_ = 0;
 #ifdef HAVE_LOGGER
-      LOGGER(PACKAGE).info(boost::format("connection closed; (%1%)") % conn_info_);
+      try{
+          LOGGER(PACKAGE).info(boost::format("connection closed; (%1%)") % conn_info_);
+      }catch(...){}
 #endif
     }
   }
