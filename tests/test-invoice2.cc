@@ -71,7 +71,7 @@ class fixture_exception_handler
 public:
     virtual ~fixture_exception_handler(){}
 
-    fixture_exception_handler(const char* _message_prefix, bool _rethrow = false)
+    fixture_exception_handler(const char* _message_prefix, bool _rethrow = true)
             : message_prefix(_message_prefix)
             , rethrow(_rethrow)
     {}
@@ -310,14 +310,72 @@ protected:
 };
 
 
-struct Case_invoice_registrar1_Fixture
-: virtual db_conn_acquire_fixture
-  , set_price_fixture
-  , get_renew_operation_price_fixture
-  , corba_init_fixture
-  , zone_cz_id_fixture
-  , registrar_fixture
+struct invoice_manager_fixture
+{
+    std::auto_ptr<Fred::Invoicing::Manager> invMan;
 
+    invoice_manager_fixture()
+    try
+    : invMan (Fred::Invoicing::Manager::create())
+    {}
+    catch(...)
+    {
+        fixture_exception_handler("invoice_manager_fixture ctor exception", true)();
+    }
+
+protected:
+    ~invoice_manager_fixture()
+    {}
+};
+
+struct try_insert_invoice_prefix_fixture
+    : virtual zone_cz_id_fixture
+    , virtual invoice_manager_fixture
+{
+    try_insert_invoice_prefix_fixture()
+    {
+        try
+        {
+            for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+            {
+                try{
+                invMan->insertInvoicePrefix(
+                         zone_cz_id//zoneId
+                        , 0//type
+                        , year//year
+                        , year*10000//prefix
+                        );
+                }catch(...){}
+
+                try{
+                invMan->insertInvoicePrefix(
+                        zone_cz_id//zoneId
+                        , 1//type
+                        , year//year
+                        , year*10000 + 1000//prefix
+                        );
+                }catch(...){}
+            }//for
+        }
+        catch(...)
+        {
+            fixture_exception_handler("try_insert_invoice_prefix_fixture ctor exception", true)();
+        }
+    }
+
+protected:
+    ~try_insert_invoice_prefix_fixture()
+    {}
+};
+
+struct Case_invoice_registrar1_Fixture
+    : virtual db_conn_acquire_fixture
+    , virtual set_price_fixture
+    , virtual get_renew_operation_price_fixture
+    , virtual corba_init_fixture
+    , virtual zone_cz_id_fixture
+    , virtual registrar_fixture
+    , virtual try_insert_invoice_prefix_fixture
 {
     int j;
 
@@ -332,8 +390,6 @@ struct Case_invoice_registrar1_Fixture
         BOOST_TEST_MESSAGE( "Case_invoice_registrar1_Fixture teardown fixture" );
     }
 };
-
-
 
 BOOST_AUTO_TEST_SUITE( TestInvoice2 )
 
