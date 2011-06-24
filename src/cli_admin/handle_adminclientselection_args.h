@@ -171,184 +171,6 @@ public:
 };//class HandleAdminClientDomainListArgsGrp
 
 /**
- * \class HandleAdminClientDomainListPlainArgsGrp
- * \brief admin client domain_list_plain options handler
- */
-class HandleAdminClientDomainListPlainArgsGrp : public HandleCommandGrpArgs
-{
-public:
-    CommandDescription get_command_option()
-    {
-        return CommandDescription("domain_list_plain");
-    }
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("domain_list_plain options")));
-        cfg_opts->add_options()
-            ("domain_list_plain", "list of all domains")
-            ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientDomainListPlainArgsGrp
-
-/**
- * \class HandleAdminClientDomainInfoArgsGrp
- * \brief admin client domain_info options handler
- */
-class HandleAdminClientDomainInfoArgsGrp : public HandleCommandGrpArgs
-{
-public:
-    optional_string domain_info;
-    CommandDescription get_command_option()
-    {
-        return CommandDescription("domain_info", true);
-    }
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("domain_info options")));
-        cfg_opts->add_options()
-            ("domain_info", boost::program_options
-                    ::value<Checked::string>()->notifier(save_optional_string(domain_info))
-                     , "info on domain in arg")
-            ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientDomainInfoArgsGrp
-
-
-/**
- * \class HandleAdminClientKeySetCheckArgsGrp
- * \brief admin client keyset_check options handler
- */
-class HandleAdminClientKeySetCheckArgsGrp : public HandleCommandGrpArgs
-{
-public:
-    optional_string keyset_check;
-
-    CommandDescription get_command_option()
-    {
-        return CommandDescription("keyset_check", true);
-    }
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("keyset_check options")));
-        cfg_opts->add_options()
-            ("keyset_check", boost::program_options
-                 ::value<Checked::string>()->notifier(save_optional_string(keyset_check))
-                      , "command with keyset name in arg")
-                ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientKeySetCheckArgsGrp
-
-/**
- * \class HandleAdminClientKeySetInfoArgsGrp
- * \brief admin client keyset_info options handler
- */
-class HandleAdminClientKeySetInfoArgsGrp : public HandleCommandGrpArgs
-{
-public:
-    optional_string keyset_info;
-
-    CommandDescription get_command_option()
-    {
-        return CommandDescription("keyset_info", true);
-    }
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("keyset_info options")));
-        cfg_opts->add_options()
-            ("keyset_info", boost::program_options
-                 ::value<Checked::string>()->notifier(save_optional_string(keyset_info))
-                      , "command with keyset name in arg")
-                ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientKeySetInfoArgsGrp
-
-/**
- * \class HandleAdminClientKeySetInfo2ArgsGrp
- * \brief admin client keyset_info2 options handler
- */
-class HandleAdminClientKeySetInfo2ArgsGrp : public HandleCommandGrpArgs
-{
-public:
-    optional_string keyset_info2;
-
-    CommandDescription get_command_option()
-    {
-        return CommandDescription("keyset_info2", true);
-    }
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("keyset_info2 options")));
-        cfg_opts->add_options()
-            ("keyset_info2", boost::program_options
-                 ::value<Checked::string>()->notifier(save_optional_string(keyset_info2))
-                      , "command with keyset name in arg")
-                ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientKeySetInfo2ArgsGrp
-
-
-
-/**
  * \class HandleAdminClientKeySetListArgsGrp
  * \brief admin client keyset_list options handler
  */
@@ -430,42 +252,6 @@ public:
 };//class HandleAdminClientKeySetListArgsGrp
 
 /**
- * \class HandleAdminClientKeySetListPlainArgsGrp
- * \brief admin client keyset_list_plain options handler
- */
-class HandleAdminClientKeySetListPlainArgsGrp : public HandleCommandGrpArgs
-{
-public:
-
-    CommandDescription get_command_option()
-    {
-        return CommandDescription("keyset_list_plain");
-    }
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("keyset_list_plain options")));
-        cfg_opts->add_options()
-            ("keyset_list_plain", boost::program_options
-                 ::value<Checked::string>()
-                      , "list all keysets command")
-                ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientKeySetListPlainArgsGrp
-
-
-/**
  * \class HandleHelpDatesArgsGrp
  * \brief admin client date and time format help
  */
@@ -511,42 +297,6 @@ public:
         return option_group_index;
     }//handle
 };//class HandleHelpDatesArgsGrp
-
-/**
- * \class HandleAdminClientContactInfoArgsGrp
- * \brief admin client contact_info options handler
- */
-class HandleAdminClientContactInfoArgsGrp : public HandleCommandGrpArgs
-{
-public:
-    optional_string contact_info;
-
-    CommandDescription get_command_option()
-    {
-        return CommandDescription("contact_info", true);
-    }
-
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("contact_info options")));
-        cfg_opts->add_options()
-            ("contact_info", boost::program_options
-                 ::value<Checked::string>()->notifier(save_optional_string(contact_info))
-                      , "command with contact name in arg")
-                ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientContactInfoArgsGrp
 
 /**
  * \class HandleAdminClientContactReminderArgsGrp
@@ -1969,7 +1719,7 @@ public:
             ("object_name,n",boost::program_options
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.object_name))
                  ,"object handle")
-            ("object_type,t",boost::program_options
+            ("object_type,o",boost::program_options
                  ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_type))
                   ,"object type number: 1 - contact,  2 - nsset, 3 - domain, 4 - keyset")
           ("object_state_name,s",boost::program_options
@@ -2006,6 +1756,9 @@ public:
                     ("valid_to,t",boost::program_options
                         ::value<Checked::string>()->notifier(save_optional_string(params.valid_to))
                          ,"object state request valid to date time , impl default is empty, example: 2003-01-31T10:00:01,123456789 ")
+                     ("with_update,u", boost::program_options
+                         ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.update_object_state))
+                         , "update state of the object")
 
                 ;
         return cfg_opts;

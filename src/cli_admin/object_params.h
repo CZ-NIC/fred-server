@@ -60,9 +60,11 @@ struct ObjectNewStateRequestNameArgs
     std::vector< std::string > object_state_name;
     optional_string valid_from;
     optional_string valid_to;
+    bool update_object_state;
 
     ObjectNewStateRequestNameArgs()
     : object_type(0)
+    , update_object_state(false)
     {}//ctor
     ObjectNewStateRequestNameArgs(
         const std::string& _object_name
@@ -70,12 +72,14 @@ struct ObjectNewStateRequestNameArgs
         , std::vector< std::string > _object_state_name
         , const optional_string& _valid_from
         , const optional_string& _valid_to
+        , const bool _update_object_state
         )
     : object_name(_object_name)
     , object_type(_object_type)
     , object_state_name(_object_state_name)
     , valid_from(_valid_from)
     , valid_to(_valid_to)
+    , update_object_state(_update_object_state)
     {}//init ctor
 };//struct ObjectNewStateRequestNameArgs
 

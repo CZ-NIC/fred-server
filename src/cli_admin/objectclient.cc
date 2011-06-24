@@ -115,6 +115,9 @@ void ObjectClient::createObjectStateRequestName(
         , std::vector< std::string > _object_state_name
         , const std::string& valid_from
         , const optional_string& valid_to
+        , DBSharedPtr _m_db
+        , bool _restricted_handles
+        , bool update_object_state
         )
 {
     std::string object_state_names;
@@ -242,6 +245,16 @@ void ObjectClient::createObjectStateRequestName(
 
     tx.commit();
 
+    if (update_object_state)
+    {
+        std::auto_ptr<Fred::Manager> regMan(
+            Fred::Manager::create( _m_db, _restricted_handles ));
+
+         Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("regMan->updateObjectStates id: ")
+             +boost::lexical_cast<std::string>(object_id));
+         regMan->updateObjectStates(object_id);
+    }//if (update_object_state)
+
     return;
 }//ObjectClient::createObjectStateRequest
 
@@ -256,6 +269,9 @@ ObjectClient::new_state_request_name()
             ? object_new_state_request_name_params.valid_from.get_value()
                 :  boost::posix_time::to_iso_extended_string(microsec_clock::universal_time())  //valid_from default now
         , object_new_state_request_name_params.valid_to//valid_to
+        , m_db
+        , restricted_handles
+        , object_new_state_request_name_params.update_object_state
         );
 
     return;

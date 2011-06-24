@@ -32,81 +32,6 @@
 
 
 /**
- * \class keyset_check_impl
- * \brief admin client implementation of keyset_check
- */
-struct keyset_check_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("keyset_check_impl");
-      Admin::KeysetClient keyset_client (
-              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-              , false //bool _keyset_list
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientKeySetCheckArgsGrp>()->keyset_check//const optional_string& _keyset_check
-              , false//bool _keyset_list_plain
-              , optional_string()//const optional_string& _keyset_info
-              , optional_string()//const optional_string& _keyset_info2
-              , false//bool _keyset_show_opts
-              , KeysetListArgs());
-      keyset_client.runMethod();
-      return ;
-  }
-};
-
-/**
- * \class keyset_info_impl
- * \brief admin client implementation of keyset_info
- */
-struct keyset_info_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("keyset_info_impl");
-      Admin::KeysetClient keyset_client (
-              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-              , false //bool _keyset_list
-              , optional_string() //const optional_string& _keyset_check
-              , false//bool _keyset_list_plain
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientKeySetInfoArgsGrp>()->keyset_info//const optional_string& _keyset_info
-              , optional_string()//const optional_string& _keyset_info2
-              , false//bool _keyset_show_opts
-              , KeysetListArgs());
-      keyset_client.runMethod();
-      return ;
-  }
-};
-
-/**
- * \class keyset_info2_impl
- * \brief admin client implementation of keyset_info
- */
-struct keyset_info2_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("keyset_info2_impl");
-      Admin::KeysetClient keyset_client (
-              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-              , false //bool _keyset_list
-              , optional_string() //const optional_string& _keyset_check
-              , false//bool _keyset_list_plain
-              , optional_string()//const optional_string& _keyset_info
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientKeySetInfo2ArgsGrp>()->keyset_info2//const optional_string& _keyset_info2
-              , false//bool _keyset_show_opts
-              , KeysetListArgs());
-      keyset_client.runMethod();
-      return ;
-  }
-};
-
-/**
  * \class keyset_list_impl
  * \brief admin client implementation of keyset_list
  */
@@ -120,38 +45,7 @@ struct keyset_list_impl
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
               , false //bool _keyset_list
-              , optional_string() //const optional_string& _keyset_check
-              , false//bool _keyset_list_plain
-              , optional_string()//const optional_string& _keyset_info
-              , optional_string()//const optional_string& _keyset_info2
-              , false//bool _keyset_show_opts
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientKeySetListArgsGrp>()->params//KeysetListArgs()
-              );
-      keyset_client.runMethod();
-      return ;
-  }
-};
-
-/**
- * \class keyset_list_plain_impl
- * \brief admin client implementation of keyset_list_plain
- */
-struct keyset_list_plain_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("keyset_list_plain_impl");
-      Admin::KeysetClient keyset_client (
-              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-              , false //bool _keyset_list
-              , optional_string() //const optional_string& _keyset_check
-              , true//bool _keyset_list_plain
-              , optional_string()//const optional_string& _keyset_info
-              , optional_string()//const optional_string& _keyset_info2
-              , false//bool _keyset_show_opts
-              , KeysetListArgs()
               );
       keyset_client.runMethod();
       return ;

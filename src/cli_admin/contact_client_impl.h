@@ -36,29 +36,6 @@
 
 
 /**
- * \class contact_info_impl
- * \brief admin client implementation of contact_info
- */
-struct contact_info_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("contact_info_impl");
-      Admin::ContactClient contact_client(
-              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-              , false //contact_list
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientContactInfoArgsGrp >()->contact_info //contact_info
-              , false //contact_show_opts bool _contact_show_opts
-              , ContactListArgs()
-              );
-      contact_client.runMethod();
-      return ;
-  }
-};
-
-/**
  * \class contact_list_impl
  * \brief admin client implementation of contact_list
  */
@@ -72,8 +49,6 @@ struct contact_list_impl
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
               , true //contact_list
-              , optional_string() //contact_info
-              , false //contact_show_opts bool _contact_show_opts
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientContactListArgsGrp>()->params
               );
       contact_client.runMethod();

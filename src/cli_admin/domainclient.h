@@ -36,10 +36,7 @@ private:
     ccReg::EPP_var m_epp;
 
     //commands
-    bool domain_list_plain_;
-    optional_string domain_info_;
     bool domain_list_;
-    bool domain_show_opts_;
 
     //domain_list options
     optional_string login_registrar_;
@@ -76,9 +73,7 @@ private:
     static const struct options m_opts[];
 public:
     DomainClient()
-    : domain_list_plain_(false)
-    , domain_list_(false)
-    , domain_show_opts_(false)
+    : domain_list_(false)
     , any_nsset_(false)
     , any_keyset_(false)
     , full_list_(false)
@@ -86,18 +81,12 @@ public:
     DomainClient(
             const std::string &connstring
             , const std::string &nsAddr
-            , bool domain_list_plain
-            , const optional_string& domain_info
             , bool domain_list
-            , bool domain_show_opts
             , const std::string& nameservice_context
             , const DomainListArgs& domain_list_args
             )
     : BaseClient(connstring, nsAddr)
-    , domain_list_plain_(domain_list_plain)
-    , domain_info_(domain_info)
     , domain_list_(domain_list)
-    , domain_show_opts_(domain_show_opts)
     , login_registrar_(domain_list_args.login_registrar)
     , nameservice_context_(nameservice_context)
     , domain_id_(domain_list_args.domain_id)
@@ -137,14 +126,7 @@ public:
     static int getOptsCount();
 
     void runMethod();
-
-    void show_opts();
     void domain_list();
-    void domain_list_plain();
-    void domain_info();
-
-    void domain_list_help();
-    void list_help();
 }; // class DomainClient
 
 } // namespace Admin;

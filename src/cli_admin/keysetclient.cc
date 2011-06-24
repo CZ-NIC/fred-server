@@ -26,18 +26,9 @@ namespace Admin {
 void
 KeysetClient::runMethod()
 {
-    if (keyset_list) {
+    if (keyset_list)
+    {
         list();
-    } else if (keyset_list_plain) {
-        list_plain();
-    } else if (keyset_check.is_value_set()) {
-        check();
-    } else if (keyset_info2.is_value_set()) {
-        info2();
-    } else if (keyset_info.is_value_set()) {
-        info();
-    } else if (keyset_show_opts) {
-        //show_opts();
     }
 }
 
@@ -174,124 +165,6 @@ KeysetClient::list()
 
     unionFilter->clear();
     delete unionFilter;
-}
-
-void
-KeysetClient::list_plain()
-{
-    std::string xml;
-    std::string cltrid;
-
-    xml = "<handle>" + m_list_args.keyset_handle.get_value() + "</handle>";
-    cltrid = "list_keysets";
-    ccReg::Lists *k;
-
-    epp_client_login_return epp_login = epp_client_login(
-            m_list_args.login_registrar.get_value());
-
-    epp_login.r = epp_login.epp->KeySetList(k, epp_login.clientId, cltrid.c_str(), xml.c_str());
-
-    if (epp_login.r->code != 1000) {
-        std::cerr << "An error has occured: " << epp_login.r->code;
-        return;
-    }
-    for (int i = 0; i < (int)k->length(); i++)
-        std::cout << (*k)[i] << std::endl;
-
-    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
-                "<system_delete_logout/>");
-    return;
-}
-
-void
-KeysetClient::check()
-{
-
-    std::string xml;
-    std::string cltrid;
-
-    ccReg::CheckResp *a;
-    
-    std::string name = keyset_check.get_value();
-
-    cltrid = "keyset_check";
-    xml = "<handle>" + name + "</handle>";
-
-    ccReg::Check names;
-    names.length(1);
-    names[0] = CORBA::string_dup(name.c_str());
-
-    epp_client_login_return epp_login = epp_client_login(
-            m_list_args.login_registrar.get_value());
-
-
-    epp_login.r = epp_login.epp->KeySetCheck(names, a, epp_login.clientId, cltrid.c_str(), xml.c_str());
-
-    std::cout << (*a)[0].avail << std::endl;
-    std::cout << (*a)[0].reason << std::endl;
-
-    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
-                    "<system_delete_logout/>");
-    return;
-}
-
-void
-KeysetClient::info()
-{
-    std::string name = keyset_info.get_value();
-    std::string cltrid;
-    std::string xml;
-    xml = "<handle>" + name + "</handle>";
-    cltrid = "info_keyset";
-
-    epp_client_login_return epp_login = epp_client_login(
-            m_list_args.login_registrar.get_value());
-
-    ccReg::KeySet* k = new ccReg::KeySet;
-    epp_login.epp->KeySetInfo(name.c_str(), k, epp_login.clientId, cltrid.c_str(), xml.c_str());
-
-    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
-                    "<system_delete_logout/>");
-
-    std::cout << k->handle << std::endl;
-    std::cout << k->AuthInfoPw << std::endl;
-    std::cout << k->ROID << std::endl;
-    // std::cout << k->dsrec[0].digest << std::endl;
-    std::cout << k->tech[0] << std::endl;
-
-    return;
-}
-
-void
-KeysetClient::info2()
-{
-    std::string key_handle = keyset_info2.get_value();
-    std::string cltrid;
-    std::string xml;
-
-    CORBA::Long count;
-    xml = "<handle>" + key_handle + "</handle>";
-    cltrid = "info_keyset_2";
-    ccReg::InfoType type = ccReg::IT_LIST_KEYSETS;
-
-    epp_client_login_return epp_login = epp_client_login(
-            m_list_args.login_registrar.get_value());
-
-    epp_login.r = epp_login.epp->info(
-            type,
-            key_handle.c_str(),
-            count,
-            epp_login.clientId,
-            cltrid.c_str(),
-            xml.c_str());
-
-    std::cout << "return code: " << epp_login.r->code << std::endl;
-
-
-    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
-                    "<system_delete_logout/>");
-
-    return;
 }
 
 } //namespace Admin;

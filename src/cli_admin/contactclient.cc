@@ -25,37 +25,9 @@ namespace Admin {
 void
 ContactClient::runMethod()
 {
-    if (contact_info.is_value_set()) {
-        info();
-    } else if (contact_list) {
+    if (contact_list) {
         list();
-    } else if (contact_show_opts) {
-        //show_opts();
     }
-}
-
-void
-ContactClient::info()
-{
-    epp_client_login_return epp_login = epp_client_login(
-            params.login_registrar.get_value());
-
-    std::string name = contact_info.get_value();
-    std::string cltrid;
-    std::string xml;
-    xml = "<fqdn>" + name + "</fqdn>";
-    cltrid = "info_contact";
-
-    ccReg::Contact *c = new ccReg::Contact;
-
-    epp_login.epp->ContactInfo(name.c_str(), c, epp_login.clientId, cltrid.c_str(), xml.c_str());
-
-    std::cout << c->Name << std::endl;
-
-    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
-                "<system_delete_logout/>");
-
-    return;
 }
 
 void

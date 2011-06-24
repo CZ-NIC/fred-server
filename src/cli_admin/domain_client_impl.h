@@ -42,10 +42,7 @@ struct domain_list_impl
       Admin::DomainClient domain_client(
           CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
           , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-          , false //domain_list_plain
-          , optional_string()//domain_info
           , true //bool domain_list
-          , false  //domain_show_opts
           , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
           , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientDomainListArgsGrp>()->params
           );
@@ -53,54 +50,5 @@ struct domain_list_impl
       return ;
   }
 };
-
-/**
- * \class domain_list_plain_impl
- * \brief admin client implementation of domain_list_plain
- */
-struct domain_list_plain_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("domain_list_plain_impl");
-      Admin::DomainClient domain_client(
-          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-          , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-          , true //domain_list_plain
-          , optional_string()//domain_info
-          , false //bool domain_list
-          , false  //domain_show_opts
-          , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-          , DomainListArgs()
-          );
-      domain_client.runMethod();
-      return ;
-  }
-};
-
-/**
- * \class domain_info_impl
- * \brief admin client implementation of domain_info
- */
-struct domain_info_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("domain_info_impl");
-      Admin::DomainClient domain_client(
-          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-          , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-          , false //domain_list_plain
-          , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientDomainInfoArgsGrp>()->domain_info //optional_string() //domain_info
-          , false //bool domain_list
-          , false  //domain_show_opts
-          , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-          , DomainListArgs()
-          );
-      domain_client.runMethod();
-      return ;
-  }
-};
-
 
 #endif // DOMAIN_CLIENT_IMPL_H_

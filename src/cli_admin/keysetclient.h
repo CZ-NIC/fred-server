@@ -37,37 +37,22 @@ private:
     ccReg::EPP_var m_epp;
     std::string nameservice_context;
     bool keyset_list;
-    optional_string keyset_check;
-    bool keyset_list_plain;
-    optional_string keyset_info;
-    optional_string keyset_info2;
-    bool keyset_show_opts;
     KeysetListArgs m_list_args;
 
     static const struct options m_opts[];
 public:
     KeysetClient()
     : keyset_list(false)
-    , keyset_list_plain(false)
-    , keyset_show_opts(false)
     { }
     KeysetClient(
             const std::string &connstring,
             const std::string &nsAddr,
             const std::string& _nameservice_context,
             bool _keyset_list,
-            const optional_string& _keyset_check,
-            bool _keyset_list_plain,
-            const optional_string& _keyset_info,
-            const optional_string& _keyset_info2,
-            bool _keyset_show_opts,
             const KeysetListArgs &_list_args)
     : BaseClient(connstring, nsAddr)
     , nameservice_context(_nameservice_context)
     , keyset_list(_keyset_list)
-    , keyset_check(_keyset_check)
-    , keyset_info2(_keyset_info2)
-    , keyset_show_opts(_keyset_show_opts)
     , m_list_args(_list_args)
     {
         m_db = connect_DB(connstring
@@ -78,18 +63,8 @@ public:
     static int getOptsCount();
 
     void runMethod();
-
-    void show_opts();
-
     void list();
-    void list_plain();
-    void check();
-    void info();
-    void info2();
 
-    void list_help();
-    void info_help();
-    void check_help();
 }; // class KeysetClient
 
 } // namespace Admin;

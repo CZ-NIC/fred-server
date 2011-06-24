@@ -36,30 +36,23 @@ private:
     ccReg::EPP_var m_epp;
     std::string nameservice_context;
     bool contact_list;
-    optional_string contact_info;
-    bool contact_show_opts;
     ContactListArgs params;
 
     static const struct options m_opts[];
 public:
     ContactClient()
     : contact_list(false)
-    , contact_show_opts(false)
     { }
     ContactClient(
             const std::string &connstring
             , const std::string &nsAddr
             , const std::string& _nameservice_context
             , bool _contact_list
-            , const optional_string& _contact_info
-            , bool _contact_show_opts
             , const ContactListArgs& _params
             )
     : BaseClient(connstring, nsAddr)
     , nameservice_context(_nameservice_context)
     , contact_list(_contact_list)
-    , contact_info(_contact_info)
-    , contact_show_opts(_contact_show_opts)
     , params(_params)
     {
         m_db = connect_DB(connstring
@@ -70,12 +63,7 @@ public:
     static int getOptsCount();
 
     void runMethod();
-
-    void show_opts();
     void list();
-    void info();
-
-    void list_help();
 }; // class ContactClient
 
 } // namespace Admin;

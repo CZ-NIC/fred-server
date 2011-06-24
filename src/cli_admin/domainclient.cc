@@ -26,25 +26,12 @@
 
 namespace Admin {
 
-
 void
 DomainClient::runMethod()
 {
-    if (domain_list_plain_)
-    {
-        domain_list_plain();
-    }
-        else if (domain_info_.is_value_set())
-    {
-        domain_info();
-    }
-        else if (domain_list_)
+    if (domain_list_)
     {
         domain_list();
-    }
-        else if (domain_show_opts_)
-    {
-        //show_opts();
     }
 }
 
@@ -189,60 +176,5 @@ DomainClient::domain_list()
     delete unionFilter;
 }
 
-void
-DomainClient::domain_info()
-{
-    std::string name = domain_info_.is_value_set()
-                        ? domain_info_.get_value()
-                        : "";
-
-    epp_client_login_return epp_login = epp_client_login(
-            login_registrar_.is_value_set()
-                ? login_registrar_.get_value()
-                : "");
-
-    std::string cltrid;
-    std::string xml;
-    xml = "<fqdn>" + name + "</fqdn>";
-    cltrid = "info_keyset";
-
-    ccReg::Domain *k = new ccReg::Domain;
-    epp_login.epp->DomainInfo(name.c_str(), k, epp_login.clientId, cltrid.c_str(), xml.c_str());
-
-    std::cout << k->name << std::endl;
-    std::cout << k->AuthInfoPw << std::endl;
-    std::cout << k->ROID << std::endl;
-    std::cout << k->keyset << std::endl;
-
-    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",                      \
-                "<system_delete_logout/>");
-    return;
-}
-
-void
-DomainClient::domain_list_plain()
-{
-    epp_client_login_return epp_login = epp_client_login(
-            login_registrar_.is_value_set()
-                ? login_registrar_.get_value()
-                : "");
-
-    std::string name = "";//option domain_list_plain have no argument
-    std::string cltrid;
-    std::string xml;
-    xml = "<fqdn>" + name + "</fqdn>";
-    cltrid = "list_domains";
-
-    ccReg::Lists *k;
-
-    epp_login.r = epp_login.epp->DomainList(k, epp_login.clientId, cltrid.c_str(), xml.c_str());
-
-    for (int i = 0; i < (int)k->length(); i++)
-        std::cout << (*k)[i] << std::endl;
-
-    epp_login.epp->ClientLogout(epp_login.clientId,"system_delete_logout",
-                "<system_delete_logout/>");
-    return;
-}
 
 } // namespace Admin;

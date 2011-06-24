@@ -85,15 +85,7 @@ HandlerGrpVector help_dates_gv = boost::assign::list_of
 
 CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientDomainListArgsGrp),domain_list_impl()))
-//broken options commented out #5552
-//    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientDomainListPlainArgsGrp),domain_list_plain_impl()))
-//    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientDomainInfoArgsGrp),domain_info_impl()))
-//    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientKeySetCheckArgsGrp),keyset_check_impl()))
-//    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientKeySetInfoArgsGrp),keyset_info_impl()))
-//    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientKeySetInfo2ArgsGrp),keyset_info2_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientKeySetListArgsGrp),keyset_list_impl()))
-//    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientKeySetListPlainArgsGrp),keyset_list_plain_impl()))
-//    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientContactInfoArgsGrp),contact_info_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientContactListArgsGrp),contact_list_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientContactReminderArgsGrp),contact_reminder_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceListArgsGrp),invoice_list_impl()))
