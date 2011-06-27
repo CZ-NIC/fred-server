@@ -55,15 +55,6 @@ private:
     ObjectRegularProcedureArgs object_regular_procedure_params;
     DeleteObjectsArgs delete_objects_params;
 
-    void createObjectStateRequestName(
-            const std::string & object_name
-            , unsigned long object_type
-            , std::vector< std::string > object_state_name
-            , const std::string& valid_from
-            , const optional_string& valid_to
-            , DBSharedPtr _m_db
-            , bool _restricted_handles
-            , bool update_object_state);
 
     int createObjectStateRequest(Fred::TID object, unsigned state);
     int deleteObjects(const std::string &typeList, CorbaClient &cc);

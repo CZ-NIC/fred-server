@@ -158,5 +158,154 @@ void update_object_states(
             Database::query_param_list(_object_id));
 }
 
+void createObjectStateRequestName(
+        const std::string & object_name
+        , unsigned long object_type
+        , std::vector< std::string > _object_state_name
+        , const std::string& valid_from
+        , const optional_string& valid_to
+        , DBSharedPtr _m_db
+        , bool _restricted_handles
+        , bool update_object_state
+        )
+{
+    std::string object_state_names;
+
+    for (std::vector<std::string>::iterator i= _object_state_name.begin()
+            ; i != _object_state_name.end()
+            ; ++i) object_state_names += (*i) + " ";
+
+    Logging::Manager::instance_ref().get(PACKAGE).debug(std::string(
+        "createObjectStateRequestName object name: ") + object_name
+        + " object type: " + boost::lexical_cast<std::string>(object_type)
+        + " object state name: " + object_state_names
+        + " valid from: " + valid_from
+        + " valid to: " + valid_to.get_value());
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Transaction tx(conn);
+
+    //get object
+    Database::Result obj_id_res = conn.exec_params(
+            "SELECT id FROM object_registry "
+            " WHERE type=$1::integer AND name=$2::text AND erdate IS NULL"
+            , Database::query_param_list
+                (object_type)(object_name));
+
+    if(obj_id_res.size() != 1)
+        throw std::runtime_error("object not found");
+
+    unsigned long long object_id = obj_id_res[0][0];
+
+
+    for (std::vector<std::string>::iterator i= _object_state_name.begin()
+            ; i != _object_state_name.end()
+            ; ++i)
+    {
+
+        std::string object_state_name(*i);
+
+    //get object state
+    Database::Result obj_state_res = conn.exec_params(
+                "SELECT id FROM enum_object_states "
+                " WHERE name=$1::text"
+                , Database::query_param_list
+                    (object_state_name));
+
+    if(obj_state_res.size() !=1)
+        throw std::runtime_error("object state not found");
+
+    unsigned long long object_state_id = obj_state_res[0][0];
+
+    //get existing state requests for object and state
+    //assuming requests for different states of the same object may overlay
+    Database::Result requests_result = conn.exec_params(
+        "SELECT valid_from, valid_to, canceled FROM object_state_request "
+        " WHERE object_id=$1::bigint AND state_id=$2::bigint "
+        , Database::query_param_list(object_id)(object_state_id));
+
+    //check time
+    std::string tmp_time_from ( valid_from);
+    if(tmp_time_from.empty()) throw std::runtime_error("empty valid_from");
+    tmp_time_from[tmp_time_from.find('T')] = ' ';
+    boost::posix_time::ptime new_valid_from
+        = boost::posix_time::time_from_string(tmp_time_from);
+
+    std::string tmp_time_to ( valid_to.get_value());
+    if(!tmp_time_to.empty()) tmp_time_to[tmp_time_to.find('T')] = ' ';
+
+    boost::posix_time::ptime new_valid_to
+        = tmp_time_to.empty() ? boost::posix_time::pos_infin
+            : boost::posix_time::time_from_string(tmp_time_to);
+
+    if(new_valid_from > new_valid_to )
+        throw std::runtime_error("new_valid_from > new_valid_to");
+
+    for(std::size_t i = 0 ; i < requests_result.size(); ++i)
+    {
+        boost::posix_time::ptime obj_valid_from = requests_result[i][0];
+
+        boost::posix_time::ptime obj_valid_to = requests_result[i][1];
+
+        //if obj_canceled is not null
+        if(requests_result[i][2].isnull() == false)
+        {
+            boost::posix_time::ptime obj_canceled = requests_result[i][2];
+
+            if (obj_canceled < obj_valid_to) obj_valid_to = obj_canceled;
+        }//if obj_canceled is not null
+
+        if(obj_valid_from > obj_valid_to )
+            throw std::runtime_error("obj_valid_from > obj_valid_to");
+
+        if(obj_valid_to.is_special())
+            obj_valid_to = boost::posix_time::pos_infin;
+
+        Logging::Manager::instance_ref().get(PACKAGE).debug(std::string(
+            "createObjectStateRequestName new_valid_from: ")
+            + boost::posix_time::to_iso_extended_string(new_valid_from)
+            + " new_valid_to: " + boost::posix_time::to_iso_extended_string(new_valid_to)
+            + " obj_valid_from: " + boost::posix_time::to_iso_extended_string(obj_valid_from)
+            + " obj_valid_to: " + boost::posix_time::to_iso_extended_string(obj_valid_to)
+        );
+
+
+        //check overlay
+        if(((new_valid_from >= obj_valid_from) && (new_valid_from < obj_valid_to))
+          || ((new_valid_to > obj_valid_from) && (new_valid_to <= obj_valid_to)))
+            throw std::runtime_error("overlayed validity time intervals");
+    }//for check with existing object state requests
+
+    conn.exec_params(
+        "INSERT INTO object_state_request "
+        "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
+        "( $1::bigint , $2::bigint "
+        ",CURRENT_TIMESTAMP, $3::timestamp, "
+        "$4::timestamp )"
+        , Database::query_param_list
+            (object_id)(object_state_id)
+            (new_valid_from)(new_valid_to.is_special()
+                    ? Database::QPNull
+                            : Database::QueryParam(new_valid_to) )
+        );
+
+    }//for object_state
+
+    tx.commit();
+
+    if (update_object_state)
+    {
+        std::auto_ptr<Fred::Manager> regMan(
+            Fred::Manager::create( _m_db, _restricted_handles ));
+
+         Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("regMan->updateObjectStates id: ")
+             +boost::lexical_cast<std::string>(object_id));
+         regMan->updateObjectStates(object_id);
+    }//if (update_object_state)
+
+    return;
+}//createObjectStateRequest
+
 
 };
