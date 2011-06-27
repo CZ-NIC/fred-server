@@ -8,6 +8,16 @@
 #include "concurrent_queue.h"
 #include "cfg/handle_threadgroup_args.h"
 
+/* 
+ * General worker for threaded test:
+ *   run() method must be defined
+ *  template parameters:
+ *    RESULT - what the worker (run() method) returns
+ *    PARAMS - parametres for the worker
+ *
+ *  PARAMS, result queue reference and other
+ *  important objects are declared protected in the class
+ */
 template <typename RESULT, typename PARAMS> class ThreadedTestWorker {
 
 public:
