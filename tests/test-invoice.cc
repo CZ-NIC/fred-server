@@ -1039,7 +1039,14 @@ cent_amount getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_un
 
     BOOST_REQUIRE_MESSAGE(price_res.size() > 0, "Fetching record from price_list");
 
-    return get_price (price_res[0][0]) * (reg_units / (int)price_res[0][1]);
+    int base = (int) price_res[0][1];
+    cent_amount base_price = get_price(price_res[0][0]);
+    if(base > 0) {
+        return base_price * (reg_units / (int)price_res[0][1]);
+    } else {
+        return base_price;
+    }
+
 
 }
 
