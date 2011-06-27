@@ -2537,6 +2537,9 @@ public:
             for (unsigned i=0; i < res3.size(); ++i)
             {
                 Database::ID       id             = res3[i][0];
+                try
+                {
+
                 Database::ID       zone           = res3[i][1];
                 std::string        fqdn           = res3[i][26];
                 Database::DateTime create_time    = (ptime(res3[i][2].isnull()
@@ -2637,6 +2640,14 @@ public:
                                                 filepdf_name,
                                                 filexml_name,
                                                 man));
+                }//try
+                catch (std::exception& ex)
+                {
+                    LOGGER(PACKAGE).error(boost::format("reload continue because of exception invoice id %1% %2%") % id % ex.what());
+                    continue;
+                }
+
+
             }//for res3
 
             /* append list of actions to all selected invoices
