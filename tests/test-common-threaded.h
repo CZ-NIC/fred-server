@@ -105,14 +105,20 @@ template <typename WORKER>
     std::vector<WORKER> tw_vector;
     tw_vector.reserve(thread_number);
 
+    unsigned barriers_number =  thread_number
+            - (thread_number % thread_group_divisor ? 1 : 0)
+            - thread_number/thread_group_divisor;
+
+    if(barriers_number < 1) {
+        barriers_number = 1;
+    }
+
     BOOST_TEST_MESSAGE( std::string("thread barriers:: ")
-            + boost::lexical_cast<std::string>(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-                    - thread_number/thread_group_divisor)
+            + boost::lexical_cast<std::string>(barriers_number)
             );
 
     //synchronization barriers instance
-    boost::barrier sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-            - thread_number/thread_group_divisor);
+    boost::barrier sb(barriers_number);
 
     //thread container
     boost::thread_group threads;
