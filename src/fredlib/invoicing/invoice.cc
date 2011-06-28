@@ -178,7 +178,7 @@ public:
                                        (static_cast<int>(renew ? INVOICING_DomainRenew : INVOICING_DomainCreate))
                                        (zone)
                                        (period)
-                                       (exDate));
+                                       (exDate.is_special() ? Database::QPNull : Database::QueryParam(exDate)));
 
       return id;
   }
@@ -201,8 +201,8 @@ public:
               const Database::ID &zone,
               const Database::ID &registrar,
               const Database::ID &objectId,
-              const Database::Date &exDate,
-              const int &units_count,
+              const Database::Date &_exDate,
+              const int &_units_count,
               bool renew) {
       try {
       // TODO we rely that connection is saved in thread specific data
@@ -238,13 +238,24 @@ public:
           return true;
       }
 
-      cent_amount price = get_price((std::string)res_price[0][0]);
-      if(units_count > 0) {
-          if(res_price[0][1].isnull()) {
-              throw std::runtime_error("Couldn't find price for this operation");
-          }
-          int base_period = res_price[0][1];
-          if(base_period != 0) price *= (units_count / base_period);
+      cent_amount price = get_price((std::string)res_price[0][0]);//price_list.price
+      long base_period ( res_price[0][1]);//price_list.period, null is 0
+
+      Database::Date exDate (_exDate);
+      long units_count(_units_count);
+
+
+      if((!renew)//if create and price_list.period not set
+          && (base_period == 0))
+      {
+          exDate=Database::Date();
+          units_count = 0;
+      }
+
+      //multiply price if period set
+      if((units_count != 0) && (base_period != 0))
+      {
+          price *= (units_count / base_period);
       }
 
       // billing itself
