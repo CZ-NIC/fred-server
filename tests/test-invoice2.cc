@@ -245,14 +245,15 @@ protected:
     {}
 };
 
-struct zone_cz_id_fixture
+struct zone_id_fixture
     : virtual db_conn_acquire_fixture
 {
-    unsigned long long zone_cz_id;
+    unsigned long long zone_id;
 
-    zone_cz_id_fixture()
+    zone_id_fixture(const char* zone_fqdn = "cz")
     try
-    : zone_cz_id(connp->exec("select id from zone where fqdn='cz'")[0][0])
+    : zone_id(connp->exec_params("select id from zone where fqdn=$1::text"
+            , Database::query_param_list(zone_fqdn))[0][0])
     {}
     catch(...)
     {
@@ -260,46 +261,42 @@ struct zone_cz_id_fixture
     }
 
 protected:
-    ~zone_cz_id_fixture()
+    ~zone_id_fixture()
     {}
 };
 
-struct registrar_vat_fixture
+struct registrar_fixture
     : virtual db_conn_acquire_fixture
 {
-        std::string registrar_vat_handle;
-        std::string& registrar_handle;
-        unsigned long long registrar_vat_id;
-        unsigned long long& registrar_id;
+        std::string registrar_handle;
+        unsigned long long registrar_id;
 
-    registrar_vat_fixture()
-        : registrar_handle(registrar_vat_handle)
-        , registrar_id(registrar_vat_id)
+    registrar_fixture()
     {
         try
         {
             std::string time_string(TimeStamp::microsec());
-            registrar_vat_handle = std::string("REG-FRED_VAT")+time_string;
+            registrar_handle = std::string("REG-FRED_VAT")+time_string;
             Fred::Registrar::Manager::AutoPtr regMan
                      = Fred::Registrar::Manager::create(DBSharedPtr());
             Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-            registrar->setName(registrar_vat_handle+"_Name");
-            registrar->setHandle(registrar_vat_handle);//REGISTRAR_ADD_HANDLE_NAME
+            registrar->setName(registrar_handle+"_Name");
+            registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
             registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-            registrar->setStreet1(registrar_vat_handle+"_Street1");
+            registrar->setStreet1(registrar_handle+"_Street1");
             registrar->setVat(true);
             Fred::Registrar::ACL* registrar_acl = registrar->newACL();
             registrar_acl->setCertificateMD5("");
             registrar_acl->setPassword("");
             registrar->save();
-            registrar_vat_id = registrar->getId();
+            registrar_id = registrar->getId();
 
             //add registrar into zone
             std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
             Database::Date rzfromDate;
             Database::Date rztoDate;
 
-            Fred::Registrar::addRegistrarZone(registrar_vat_handle, rzzone, rzfromDate, rztoDate);
+            Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
 
         }
         catch(...)
@@ -308,55 +305,7 @@ struct registrar_vat_fixture
         }
     }
 protected:
-    ~registrar_vat_fixture()
-    {}
-};
-
-struct registrar_novat_fixture
-    : virtual db_conn_acquire_fixture
-{
-        std::string registrar_novat_handle;
-        std::string& registrar_handle;
-        unsigned long long registrar_novat_id;
-        unsigned long long& registrar_id;
-
-    registrar_novat_fixture()
-        : registrar_handle(registrar_novat_handle)
-        , registrar_id(registrar_novat_id)
-    {
-        try
-        {
-            std::string time_string(TimeStamp::microsec());
-            registrar_novat_handle = std::string("REG-FRED_NOVAT")+time_string;
-            Fred::Registrar::Manager::AutoPtr regMan
-                     = Fred::Registrar::Manager::create(DBSharedPtr());
-            Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-            registrar->setName(registrar_novat_handle+"_Name");
-            registrar->setHandle(registrar_novat_handle);//REGISTRAR_ADD_HANDLE_NAME
-            registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-            registrar->setStreet1(registrar_novat_handle+"_Street1");
-            registrar->setVat(false);
-            Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-            registrar_acl->setCertificateMD5("");
-            registrar_acl->setPassword("");
-            registrar->save();
-            registrar_novat_id = registrar->getId();
-
-            //add registrar into zone
-            std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
-            Database::Date rzfromDate;
-            Database::Date rztoDate;
-
-            Fred::Registrar::addRegistrarZone(registrar_novat_handle, rzzone, rzfromDate, rztoDate);
-
-        }
-        catch(...)
-        {
-            fixture_exception_handler("registrar_novat_fixture ctor exception", true)();
-        }
-    }
-protected:
-    ~registrar_novat_fixture()
+    ~registrar_fixture()
     {}
 };
 
@@ -380,7 +329,7 @@ protected:
 };
 
 struct try_insert_invoice_prefix_fixture
-    : virtual zone_cz_id_fixture
+    : virtual zone_id_fixture
     , virtual invoice_manager_fixture
 {
     try_insert_invoice_prefix_fixture()
@@ -391,7 +340,7 @@ struct try_insert_invoice_prefix_fixture
             {
                 try{
                 invMan->insertInvoicePrefix(
-                         zone_cz_id//zoneId
+                         zone_id//zoneId
                         , 0//type
                         , year//year
                         , year*10000//prefix
@@ -400,7 +349,7 @@ struct try_insert_invoice_prefix_fixture
 
                 try{
                 invMan->insertInvoicePrefix(
-                        zone_cz_id//zoneId
+                        zone_id//zoneId
                         , 1//type
                         , year//year
                         , year*10000 + 1000//prefix
@@ -421,8 +370,8 @@ protected:
 
 
 struct create_deposit_invoice_fixture
-: virtual zone_cz_id_fixture
-  , virtual registrar_vat_fixture
+: virtual zone_id_fixture
+  , virtual registrar_fixture
   , virtual invoice_manager_fixture
 {
     std::vector<unsigned long long> deposit_invoice_id_vect;
@@ -440,7 +389,7 @@ struct create_deposit_invoice_fixture
                 unsigned long price = 5000000UL;//cents
 
                 invoiceid = invMan->createDepositInvoice(taxdate//taxdate
-                        , zone_cz_id//zone
+                        , zone_id//zone
                         , registrar_id//registrar
                         , price);//price
                 BOOST_CHECK_EQUAL(invoiceid != 0,true);
@@ -451,7 +400,7 @@ struct create_deposit_invoice_fixture
 
                 taxdate = Database::Date(year,6,10);
                 invoiceid = invMan->createDepositInvoice(taxdate//taxdate
-                        , zone_cz_id//zone
+                        , zone_id//zone
                         , registrar_id//registrar
                         , price);//price
                 BOOST_CHECK_EQUAL(invoiceid != 0,true);
@@ -462,7 +411,7 @@ struct create_deposit_invoice_fixture
 
                 taxdate = Database::Date(year,12,31);
                 invoiceid = invMan->createDepositInvoice(taxdate//taxdate
-                        , zone_cz_id//zone
+                        , zone_id//zone
                         , registrar_id//registrar
                         , price);//price
                 BOOST_CHECK_EQUAL(invoiceid != 0,true);
@@ -490,8 +439,8 @@ struct Case_invoice_registrar1_Fixture
     , virtual set_price_fixture
     , virtual get_renew_operation_price_fixture
     , virtual corba_init_fixture
-    , virtual zone_cz_id_fixture
-    , virtual registrar_vat_fixture
+    , virtual zone_id_fixture
+    , virtual registrar_fixture
     , virtual try_insert_invoice_prefix_fixture
 {
     int j;
