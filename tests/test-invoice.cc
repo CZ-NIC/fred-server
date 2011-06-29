@@ -1272,6 +1272,20 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
     registrar->setName(registrar_handle+"_Name");
     registrar->setOrganization(registrar_handle+"_Organization");
+    registrar->setCity("Brno");
+    registrar->setStreet1("Street 1");
+    registrar->setStreet2("Street 2");
+    registrar->setStreet2("Street 3");
+    registrar->setDic("1234567889");
+    registrar->setEmail("jan.zima@nic.cz");
+    registrar->setFax("+420.123456");
+    registrar->setIco("92345678899");
+    registrar->setPostalCode("11150");
+    registrar->setProvince("noprovince");
+    registrar->setTelephone("+420.987654");
+    registrar->setVarSymb("555666");
+    registrar->setURL("http://ucho.cz");
+
     registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
     registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
     registrar->setVat(true);
