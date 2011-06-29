@@ -2617,7 +2617,7 @@ public:
                 Database::ID       filePDF        = res3[i][14];
                 Database::ID       fileXML        = res3[i][15];
 
-                std::string        c_organization = "";
+                std::string        c_organization = res3[i][16];
                 std::string        c_street1      = res3[i][17];
                 std::string        c_city         = res3[i][18];
                 std::string        c_postal_code  = res3[i][19];
