@@ -190,36 +190,33 @@ protected:
 };
 
 
-struct get_renew_operation_price_fixture
+struct get_operation_price_result_fixture
         : virtual db_conn_acquire_fixture
 {
-    cent_amount renew_operation_price;
+    Database::Result operation_price_result;//operation, price,period, zone.fqdn
 
-    get_renew_operation_price_fixture()
+    get_operation_price_result_fixture()
+    try
+    : operation_price_result(connp->exec(
+        "SELECT enum_operation.operation, price , period, zone.fqdn FROM price_list "
+        " join zone on price_list.zone = zone.id "
+        " join enum_operation on price_list.operation = enum_operation.id "
+        " WHERE valid_from < 'now()' "
+        " and ( valid_to is NULL or valid_to > 'now()' ) "
+        " order by valid_from desc "))
+
+    {}
+    catch(...)
     {
-        try
-        {
-            Database::Result renew_operation_price_result= connp->exec(
-              "SELECT price , period FROM price_list WHERE valid_from < 'now()'  "
-              "and ( valid_to is NULL or valid_to > 'now()' ) "
-              "and operation= (select id from enum_operation where operation = 'RenewDomain' ) "
-              " and zone= (select id from zone where fqdn = 'cz') "
-              "order by valid_from desc limit 1");
-
-            renew_operation_price = get_price(std::string(renew_operation_price_result[0][0]));
-        }
-        catch(...)
-        {
-            fixture_exception_handler("get_renew_operation_price_fixture ctor exception", true)();
-        }
+        fixture_exception_handler("get_operation_price_result_fixture ctor exception", true)();
     }
+
 protected:
-    ~get_renew_operation_price_fixture()
+    ~get_operation_price_result_fixture()
     {}
 };
 
 struct corba_init_fixture
-    : virtual db_conn_acquire_fixture
 {
     corba_init_fixture()
     {
@@ -245,71 +242,6 @@ protected:
     {}
 };
 
-struct zone_id_fixture
-    : virtual db_conn_acquire_fixture
-{
-    unsigned long long zone_id;
-
-    zone_id_fixture(const char* zone_fqdn = "cz")
-    try
-    : zone_id(connp->exec_params("select id from zone where fqdn=$1::text"
-            , Database::query_param_list(zone_fqdn))[0][0])
-    {}
-    catch(...)
-    {
-        fixture_exception_handler("zone_cz_id_fixture ctor exception", true)();
-    }
-
-protected:
-    ~zone_id_fixture()
-    {}
-};
-
-struct registrar_fixture
-    : virtual db_conn_acquire_fixture
-{
-        std::string registrar_handle;
-        unsigned long long registrar_id;
-
-    registrar_fixture()
-    {
-        try
-        {
-            std::string time_string(TimeStamp::microsec());
-            registrar_handle = std::string("REG-FRED_VAT")+time_string;
-            Fred::Registrar::Manager::AutoPtr regMan
-                     = Fred::Registrar::Manager::create(DBSharedPtr());
-            Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-            registrar->setName(registrar_handle+"_Name");
-            registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-            registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-            registrar->setStreet1(registrar_handle+"_Street1");
-            registrar->setVat(true);
-            Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-            registrar_acl->setCertificateMD5("");
-            registrar_acl->setPassword("");
-            registrar->save();
-            registrar_id = registrar->getId();
-
-            //add registrar into zone
-            std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
-            Database::Date rzfromDate;
-            Database::Date rztoDate;
-
-            Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
-
-        }
-        catch(...)
-        {
-            fixture_exception_handler("registrar_vat_fixture ctor exception", true)();
-        }
-    }
-protected:
-    ~registrar_fixture()
-    {}
-};
-
-
 struct invoice_manager_fixture
 {
     std::auto_ptr<Fred::Invoicing::Manager> invMan;
@@ -328,34 +260,58 @@ protected:
     {}
 };
 
+struct zone_fixture
+    : virtual db_conn_acquire_fixture
+{
+        Database::Result zone_result;
+
+    zone_fixture()
+    try
+    : zone_result(connp->exec("select id, fqdn from zone"))
+    {}
+    catch(...)
+    {
+        fixture_exception_handler("zone_fixture ctor exception", true)();
+    }
+
+protected:
+    ~zone_fixture()
+    {}
+};
+
 struct try_insert_invoice_prefix_fixture
-    : virtual zone_id_fixture
+    : virtual zone_fixture
     , virtual invoice_manager_fixture
 {
     try_insert_invoice_prefix_fixture()
     {
         try
         {
-            for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+            for (std::size_t zone_i = 0; zone_i < zone_result.size() ; ++zone_i)
             {
-                try{
-                invMan->insertInvoicePrefix(
-                         zone_id//zoneId
-                        , 0//type
-                        , year//year
-                        , year*10000//prefix
-                        );
-                }catch(...){}
+                unsigned long long zone_id(zone_result[zone_i][0]);
 
-                try{
-                invMan->insertInvoicePrefix(
-                        zone_id//zoneId
-                        , 1//type
-                        , year//year
-                        , year*10000 + 1000//prefix
-                        );
-                }catch(...){}
-            }//for
+                for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+                {
+                    try{
+                    invMan->insertInvoicePrefix(
+                             zone_id//zoneId
+                            , 0//type
+                            , year//year
+                            , year*zone_id*10000//prefix
+                            );
+                    }catch(...){}
+
+                    try{
+                    invMan->insertInvoicePrefix(
+                            zone_id//zoneId
+                            , 1//type
+                            , year//year
+                            , year*zone_id*10000 + 1000//prefix
+                            );
+                    }catch(...){}
+                }//for
+            }//for zone_i
         }
         catch(...)
         {
@@ -368,9 +324,84 @@ protected:
     {}
 };
 
+struct registrar_fixture
+    : virtual db_conn_acquire_fixture
+      , virtual zone_fixture
+{
+
+    Database::Result registrar_result;
+
+    registrar_fixture()
+    {
+        std::string registrar_query(
+                "select id, handle "
+                " from registrar "
+                " where 1=1 "
+                );
+        Database::QueryParams registrar_query_params;
+
+        try
+        {
+            std::string time_string(TimeStamp::microsec());
+
+            for(int vat = 0; vat < 2; ++vat )
+            {
+                std::string registrar_handle;
+                unsigned long long registrar_id;
+
+                registrar_handle = std::string("REG-FRED_")
+                + (vat ? "VAT_" : "NOVAT_") + time_string;
+
+                Fred::Registrar::Manager::AutoPtr regMan
+                         = Fred::Registrar::Manager::create(DBSharedPtr());
+                Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+                registrar->setName(registrar_handle+"_Name");
+                registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+                registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+                registrar->setStreet1(registrar_handle+"_Street1");
+                registrar->setVat(vat);
+                Fred::Registrar::ACL* registrar_acl = registrar->newACL();
+                registrar_acl->setCertificateMD5("");
+                registrar_acl->setPassword("");
+                registrar->save();
+                registrar_id = registrar->getId();
+
+                registrar_query_params.push_back(registrar_id);
+                registrar_query += " and id=$"
+                        +boost::lexical_cast<std::string>(registrar_query_params.size())
+                        +"::bigint";
+
+
+                //add registrar into zone
+                for(std::size_t i = 0 ; i < zone_result.size(); ++i)
+                {
+                    std::string rzzone (zone_result[i][1]);//REGISTRAR_ZONE_FQDN_NAME
+                    Database::Date rzfromDate;
+                    Database::Date rztoDate;
+
+                    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+                }
+
+
+            }//for vat
+
+
+            registrar_result=connp->exec_params(registrar_query, registrar_query_params);
+
+        }
+        catch(...)
+        {
+            fixture_exception_handler("registrar_vat_fixture ctor exception", true)();
+        }
+    }
+protected:
+    ~registrar_fixture()
+    {}
+};
+
 
 struct create_deposit_invoice_fixture
-: virtual zone_id_fixture
+  : virtual zone_fixture
   , virtual registrar_fixture
   , virtual invoice_manager_fixture
 {
@@ -380,47 +411,57 @@ struct create_deposit_invoice_fixture
     {
         try
         {
-            for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+            for(std::size_t registrar_i = 0; registrar_i < registrar_result.size(); ++registrar_i)
             {
-                unsigned long long invoiceid = 0;
-                Database::Date taxdate;
+                unsigned long long registrar_id (registrar_result[registrar_i][0]);
 
-                taxdate = Database::Date(year,1,1);
-                unsigned long price = 5000000UL;//cents
+                for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
+                {
+                    unsigned long long zone_id ( zone_result[zone_i][0]);
 
-                invoiceid = invMan->createDepositInvoice(taxdate//taxdate
-                        , zone_id//zone
-                        , registrar_id//registrar
-                        , price);//price
-                BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                    for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+                    {
+                        unsigned long long invoiceid = 0;
+                        Database::Date taxdate;
 
-                if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
+                        taxdate = Database::Date(year,1,1);
+                        unsigned long price = 5000000UL;//cents
 
-                //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+                        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                                , zone_id//zone
+                                , registrar_id//registrar
+                                , price);//price
+                        BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-                taxdate = Database::Date(year,6,10);
-                invoiceid = invMan->createDepositInvoice(taxdate//taxdate
-                        , zone_id//zone
-                        , registrar_id//registrar
-                        , price);//price
-                BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                        if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
-                if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
+                        //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
-                //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+                        taxdate = Database::Date(year,6,10);
+                        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                                , zone_id//zone
+                                , registrar_id//registrar
+                                , price);//price
+                        BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-                taxdate = Database::Date(year,12,31);
-                invoiceid = invMan->createDepositInvoice(taxdate//taxdate
-                        , zone_id//zone
-                        , registrar_id//registrar
-                        , price);//price
-                BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                        if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
-                if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
+                        //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
-                //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+                        taxdate = Database::Date(year,12,31);
+                        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                                , zone_id//zone
+                                , registrar_id//registrar
+                                , price);//price
+                        BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
-            }//for createDepositInvoice
+                        if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
+
+                        //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
+
+                    }//for createDepositInvoice
+                }//for zone_i
+            }//for registrar
         }
         catch(...)
         {
@@ -437,9 +478,9 @@ protected:
 struct Case_invoice_registrar1_Fixture
     : virtual db_conn_acquire_fixture
     , virtual set_price_fixture
-    , virtual get_renew_operation_price_fixture
+    , virtual get_operation_price_result_fixture
     , virtual corba_init_fixture
-    , virtual zone_id_fixture
+    , virtual zone_fixture
     , virtual registrar_fixture
     , virtual try_insert_invoice_prefix_fixture
 {
