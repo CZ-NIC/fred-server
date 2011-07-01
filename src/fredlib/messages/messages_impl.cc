@@ -470,6 +470,10 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
     }
     // is there anything to send?
     res = conn.exec_params("SELECT la.file_id, la.id, ma.attempt , f.name "
+        " , la.postal_address_name, la.postal_address_organization "
+        " , la.postal_address_street1 , la.postal_address_street2, la.postal_address_street3 "
+        " , la.postal_address_city, la.postal_address_stateorprovince"
+        " , la.postal_address_postalcode , la.postal_address_country "
         " FROM message_archive ma JOIN letter_archive la ON ma.id = la.id "
         " JOIN files f ON la.file_id = f.id "
         " JOIN enum_send_status ms ON ma.status_id = ms.id "
@@ -486,17 +490,27 @@ LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
         return proc_letters;
     }
 
-
     proc_letters.reserve(res.size());
 
     for(unsigned i=0;i<res.size();i++)
     {
-             letter_proc mp;
-             mp.file_id = res[i][0];
-             mp.letter_id = res[i][1];
-             mp.attempt = res[i][2];
-             mp.fname = std::string(res[i][3]);
-             proc_letters.push_back(mp);
+         letter_proc mp;
+         mp.file_id = res[i][0];
+         mp.letter_id = res[i][1];
+         mp.attempt = res[i][2];
+         mp.fname = std::string(res[i][3]);
+
+         mp.postal_address.name = std::string(res[i][4]);
+         mp.postal_address.org = std::string(res[i][5]);
+         mp.postal_address.street1 = std::string(res[i][6]);
+         mp.postal_address.street2 = std::string(res[i][7]);
+         mp.postal_address.street3 = std::string(res[i][8]);
+         mp.postal_address.city = std::string(res[i][9]);
+         mp.postal_address.state = std::string(res[i][10]);
+         mp.postal_address.code = std::string(res[i][11]);
+         mp.postal_address.country = std::string(res[i][12]);
+
+         proc_letters.push_back(mp);
     }
 
     return proc_letters;

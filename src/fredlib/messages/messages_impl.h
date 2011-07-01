@@ -66,6 +66,7 @@ struct letter_proc {
     unsigned long long letter_id;
     unsigned attempt;
     std::string fname;
+    PostalAddress postal_address;
 };//info for letter processing
 
 typedef std::vector<letter_proc> LetterProcInfo;

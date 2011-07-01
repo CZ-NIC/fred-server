@@ -324,6 +324,24 @@ protected:
     {}
 };
 
+///generate test parameters
+struct test_params
+{
+  typedef std::vector<std::vector<std::string> > ParamData;
+  ParamData operator()(ParamData input_options)
+  {
+      ParamData ret_params;
+
+      for(ParamData::const_iterator i = input_options.begin()
+              ; i != input_options.end() ; ++i)
+      {
+
+      }
+
+      return ret_params;
+  }
+};
+
 struct registrar_fixture
     : virtual db_conn_acquire_fixture
       , virtual zone_fixture
@@ -501,6 +519,12 @@ struct Case_invoice_registrar1_Fixture
 BOOST_AUTO_TEST_SUITE( TestInvoice2 )
 
 const std::string server_name = "test-invoice2";
+
+BOOST_AUTO_TEST_CASE( test)
+{
+    //check
+    BOOST_CHECK(true);
+}
 
 
 BOOST_FIXTURE_TEST_CASE( invoice_registrar1, Case_invoice_registrar1_Fixture )
