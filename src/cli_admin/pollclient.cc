@@ -19,6 +19,12 @@
 #include "commonclient.h"
 #include "pollclient.h"
 #include "fredlib/poll.h"
+#include "src/corba/logger_client_impl.h"
+
+#include "util/cfg/faked_args.h"
+#include "util/cfg/handle_corbanameservice_args.h"
+#include "util/cfg/config_handler_decl.h"
+
 
 namespace Admin {
 
@@ -31,6 +37,8 @@ PollClient::runMethod()
     } else if (poll_create_statechanges //POLL_CREATE_STATE_CHANGES_NAME
              ) {
         create_state_changes();
+    } else if (poll_create_request_fee_messages) {
+        create_request_fee_messages();
     }
 }
 
@@ -83,6 +91,32 @@ PollClient::create_state_changes()
             poll_create_statechanges_params.poll_debug ? &std::cout : NULL //POLL_DEBUG_NAME
     );
     return;
+}
+
+void
+PollClient::create_request_fee_messages()
+{
+    // ORB init
+    FakedArgs orb_fa = CfgArgGroups::instance()->fa;
+
+    HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
+               get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+
+    CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
+           , ns_args_ptr->get_nameservice_host()
+           , ns_args_ptr->get_nameservice_port()
+           , ns_args_ptr->get_nameservice_context());
+
+    std::auto_ptr<Fred::LoggerClient> cl(new LoggerCorbaClientImpl());
+
+    std::auto_ptr<Fred::Poll::Manager> pollMan(
+            Fred::Poll::Manager::create(
+                m_db)
+            );
+
+
+    pollMan->createRequestFeeMessages(cl.get());
+
 }
 
 } // namespace Admin;

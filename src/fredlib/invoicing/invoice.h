@@ -25,9 +25,11 @@ typedef unsigned long cent_amount;
 cent_amount get_price(const std::string &str);
 
 // TODO copy of those in action.h
+// mapped from enum_operation
 enum  {
     INVOICING_DomainCreate = 1,
-    INVOICING_DomainRenew = 2
+    INVOICING_DomainRenew = 2,
+    INVOICING_GeneralOperation = 3
 };
 
 /// Member identification (i.e. for sorting) 

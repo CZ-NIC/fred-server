@@ -48,6 +48,7 @@ struct poll_list_all_impl
       , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientPollListAllArgsGrp>()->params //PollListAllArgs()
       , false //poll_create_statechanges
       , PollCreateStatechangesArgs()
+      , false
       );
       poll_client.runMethod();
       return ;
@@ -71,11 +72,38 @@ struct poll_create_statechanges_impl
         , PollListAllArgs()
         , true //poll_create_statechanges
         , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientPollCreateStatechangesArgsGrp>()->params //PollCreateStatechangesArgs()
+        , false
         );
       poll_client.runMethod();
 
       return ;
   }
+};
+
+/**
+ * \class poll_create_request_fee_messages_impl
+ * \brief admin client implementation of creation of poll messages related to request count
+ * and request fee
+ */
+struct poll_create_request_fee_messages_impl
+{
+    void operator()() const
+    {
+        Logging::Context ctx("poll_create_request_fee_messages_impl");
+        Admin::PollClient poll_client(
+          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
+          , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
+          , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
+          , false //poll_list_all
+          , PollListAllArgs()
+          , false //poll_create_statechanges
+          , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientPollCreateStatechangesArgsGrp>()->params //PollCreateStatechangesArgs()
+          , true
+          );
+        poll_client.runMethod();
+
+        return ;
+    }
 };
 
 #endif // POLL_CLIENT_IMPL_H_

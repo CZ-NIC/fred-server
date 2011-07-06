@@ -1,3 +1,15 @@
+2011-07-04 Jiri Sadek, Juraj Vicenik (2.8.1)
+
+  * fixed return type for corba method
+
+2011-07-04 Jiri Sadek, Juraj Vicenik (2.8.0)
+
+  * poll message for requests charging impl.
+
+2011-06-29 Jan Zima (2.7.6)
+
+  * fred-admin - invoice_archive fix (no registrar organization name in pdf)
+
 2011-06-20 Jan Zima (2.7.5)
 
   * createAccountInvoice(s) functions fix (date conversion)

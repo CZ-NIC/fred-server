@@ -359,6 +359,7 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/mail.h \
 		src/fredlib/notify.h \
 		src/fredlib/notify.cc \
+		src/fredlib/logger_client.h \
 		src/fredlib/poll.cc \
 		src/fredlib/poll.h \
 		src/fredlib/file_transferer.h \
@@ -517,7 +518,9 @@ src_corba_libcorba_a_SOURCES = src/corba/nameservice.cc         \
 					 src/corba/pidfile.h              \
 					 src/corba/daemonize.h            \
 					 src/corba/file_manager_client.cc \
-					 src/corba/file_manager_client.h
+					 src/corba/file_manager_client.h  \
+					 src/corba/logger_client_impl.cc  \
+					 src/corba/logger_client_impl.h    
 
 # nodist_src_corba_libcorba_a_SOURCES = src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/Registry.hh
 src_corba_libcorba_a_CPPFLAGS  = $(AM_CPPFLAGS)

@@ -777,6 +777,36 @@ bool ManagerImpl::i_closeSession(ID id)
     return true;
 }
 
+unsigned long long ManagerImpl::i_getRequestCount(const char *datetime_from,
+        const char *datetime_to, const char *service,
+        const char *user) {
+    logd_ctx_init ctx;
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getServices()");
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result res =
+    conn.exec_params("SELECT count(*) FROM request r "
+                     "JOIN service s ON r.service_id = s.id "
+                     "WHERE time_begin > $1::timestamp "
+                         "AND time_begin < $2::timestamp "
+                         "AND is_monitoring = false "
+                         "AND s.name = $3 "
+                         "AND r.user_name = $4 ",
+           Database::query_param_list
+                            (datetime_from)
+                            (datetime_to)
+                            (service)
+                            (user)
+                            );
+
+    if(res.size() != 1 || res[0][0].isnull()) {
+        throw InternalServerError("Count of records not found");
+    }
+
+    return res[0][0];
+}
+
 Manager* Manager::create() {
     TRACE("[CALL] Fred::Logger::Manager::create()");
     return new ManagerImpl();

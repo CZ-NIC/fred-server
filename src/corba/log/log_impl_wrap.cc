@@ -363,3 +363,17 @@ ccReg::Logger::Detail *ccReg_Log_i::createRequestDetail(Fred::Logger::Request *r
 
 	return detail;
 }
+
+CORBA::ULongLong ccReg_Log_i::getRequestCount(const char *datetime_from, const char *datetime_to,
+        const char *service, const char *user)
+{
+    try {
+        return back->i_getRequestCount(datetime_from, datetime_to, service, user);
+    }
+    catch (...) {
+        Logger_common_exception_handler("getRequestCount");
+        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
+    }
+
+}
+

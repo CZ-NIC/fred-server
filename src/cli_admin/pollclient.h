@@ -40,6 +40,7 @@ private:
     PollListAllArgs poll_list_all_params;
     bool poll_create_statechanges;//POLL_CREATE_STATE_CHANGES_NAME
     PollCreateStatechangesArgs poll_create_statechanges_params;
+    bool poll_create_request_fee_messages;
 
     static const struct options m_opts[];
 public:
@@ -55,6 +56,7 @@ public:
         , const PollListAllArgs& _poll_list_all_params
         , bool _poll_create_statechanges
         , const PollCreateStatechangesArgs& _poll_create_statechanges_params
+        , bool _poll_create_request_fee_messages
         )
     : BaseClient(connstring, nsAddr)
     , nameservice_context(_nameservice_context)
@@ -62,6 +64,7 @@ public:
     , poll_list_all_params(_poll_list_all_params)
     , poll_create_statechanges(_poll_create_statechanges)
     , poll_create_statechanges_params(_poll_create_statechanges_params)
+    , poll_create_request_fee_messages(_poll_create_request_fee_messages)
     {
         m_db = connect_DB(connstring
                 , std::runtime_error("PollClient db connection failed"));
@@ -79,6 +82,7 @@ public:
     void set_seen();
     void create_state_changes();
     void create_low_credit();
+    void create_request_fee_messages();
 }; // class PollClient
 
 } // namespace Admin;

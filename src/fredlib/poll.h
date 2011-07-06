@@ -8,6 +8,7 @@
 #include "common_object.h"
 #include <ostream>
 #include "old_utils/dbsql.h"
+#include "logger_client.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -156,6 +157,8 @@ namespace Fred
         const std::string& exceptList, int limit, std::ostream* debug) = 0;
       /// create messages about low credit (called after credit change)
       virtual void createLowCreditMessages() = 0;
+      /// create messages about request count and request fee
+      virtual void createRequestFeeMessages(LoggerClient *logger_client) = 0;
       // create list of messages
       virtual List* createList() = 0;
       /// factory method

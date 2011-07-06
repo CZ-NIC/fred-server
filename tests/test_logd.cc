@@ -141,6 +141,13 @@ public:
 
 	ID find_property_name(const std::string &name);
 
+    unsigned long long getRequestCount(const char *from, const char *to , const char *service, const char *user) {
+        unsigned long long ret = logd->i_getRequestCount(from, to, service, user);
+
+      // TODO proper test   
+
+    }
+
 	// auxiliary testing functions
 	std::auto_ptr<Fred::Logger::RequestProperties> create_generic_properties(int number, int value_id);
 
@@ -1123,6 +1130,21 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 
 }
 
+BOOST_AUTO_TEST_CASE( get_request_count_valid )
+{
+	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    unsigned long long count = test.getRequestCount("2011-01-01", "2011-01-31", "EPP", "REG-FRED_A");
+}
+    
+BOOST_AUTO_TEST_CASE( get_request_count_wrong_date )
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+
+    BOOST_CHECK_THROW(test.getRequestCount("not-a-date-", "2011-01-31", "EPP", "REG-FRED_A"),
+                    std::exception);
+}
 
 BOOST_AUTO_TEST_CASE( getResultCodesByService )
 {

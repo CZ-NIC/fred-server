@@ -16,13 +16,24 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include "sql.h"
 #include "poll.h"
+// for cent_amount for request fee
+#include "invoicing/invoice.h"
 #include "common_impl.h"
 #include "old_utils/dbsql.h"
 
 namespace Fred {
 namespace Poll {
+
+
+/* XXX: copy from invoicing due to unresolved dependencies */
+std::string query_param_price(Fred::Invoicing::cent_amount price)
+{
+    return (boost::format("%1%.%2$02u") % (price/100) % (price >= 0  ? price%100 : (-1*price)%100) ).str();
+}
+
 
 class MessageImpl : public CommonObjectImpl, virtual public Message {
   TID id;
@@ -624,7 +635,7 @@ public:
     {
       sql.str("");
       sql << "SELECT tmp.id, "
-          << "prf.period_from, prf.period_to, "
+          << "prf.period_from, prf.period_to - interval '1 second', "
           << "prf.total_free_count, prf.used_count, "
           << "prf.price "
           << "FROM " << getTempTableName() << " tmp "
@@ -890,6 +901,189 @@ public:
     if (!db->ExecSQL(insertPollCredit))
       throw SQL_ERROR();
     trans.commit();
+  }
+
+  void save_poll_request_fee(
+          Database::ID reg_id,
+          std::string period_from,
+          std::string period_to,
+          unsigned long long total_free_count,
+          unsigned long long request_count,
+          Fred::Invoicing::cent_amount price)
+  {
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Transaction tx(conn);
+
+      Database::Result res_msg_id =
+      conn.exec("SELECT nextval('message_id_seq'::regclass)");
+
+      if(res_msg_id.size() == 0 || res_msg_id[0][0].isnull() ) {
+          throw std::runtime_error("Couldn't get next element from ID sequence for message table");
+      }
+
+      Database::ID poll_msg_id = res_msg_id[0][0];
+
+      conn.exec_params("INSERT INTO message (id, clid, crdate, exdate, msgtype)"
+              " VALUES ($1::integer, $2::integer,"
+              " current_timestamp, current_timestamp + interval '7 days',"
+              " (SELECT id FROM messagetype WHERE name='request_fee_info'))",
+              Database::query_param_list(poll_msg_id)(reg_id));
+
+      conn.exec_params("INSERT INTO poll_request_fee"
+              " (msgid, period_from, period_to, total_free_count, used_count, price)"
+              " VALUES ($1::integer, $2::timestamp AT TIME ZONE 'Europe/Prague',"
+              " $3::timestamp AT TIME ZONE 'Europe/Prague', $4::bigint,"
+              " $5::bigint, $6::numeric(10,2))",
+              Database::query_param_list
+                  (poll_msg_id)
+                  (period_from)
+                  (period_to)
+                  (total_free_count)
+                  (request_count)
+                  (query_param_price(price)));
+
+      tx.commit();
+
+/*
+  CREATE TABLE poll_request_fee (
+        msgid integer NOT NULL REFERENCES message(id),
+        period_from timestamp without time zone NOT NULL,
+        period_to timestamp without time zone NOT NULL,
+        total_free_count bigint NOT NULL,
+        used_count bigint NOT NULL,
+        price numeric(10, 2) NOT NULL
+  );
+*/
+
+  }
+
+  //private:
+  unsigned long long getRegistrarDomainCount(Database::ID regid, const char *date)
+  {
+      Database::Connection conn = Database::Manager::acquire();
+
+      Database::Result res_count = conn.exec_params(
+      "SELECT count(distinct oreg.id) FROM object_registry oreg "
+              "JOIN object_history oh ON oh.id = oreg.id "
+              "JOIN history hist      ON hist.id = oh.historyid "
+              "JOIN domain_history dh ON dh.historyid = hist.id "
+              "JOIN zone z            ON z.id = dh.zone "
+              "WHERE z.fqdn = 'cz' "
+               "   AND oh.clid = $1::integer "
+               "   AND hist.valid_from < $2::timestamp "
+               "   AND (hist.valid_to >= $2::timestamp OR hist.valid_to IS NULL) ",
+                  Database::query_param_list
+                              (regid)
+                              (date)
+                  );
+
+      if(res_count.size() != 1 || res_count[0][0].isnull()) {
+          throw std::runtime_error(
+              (boost::format("Couldn't get domain count for registrar ID %1% to date %2%.")
+                  % regid
+                  % date).str());
+      }
+
+      unsigned long long count = res_count[0][0];
+
+      LOGGER(PACKAGE).info( (boost::format("Domain count for registrar ID %1%: %2%")
+              % regid
+              % count
+              ).str()
+          );
+
+      return count;
+
+  }
+
+
+
+  virtual void createRequestFeeMessages(LoggerClient *logger_client)
+  {
+      Database::Connection conn = Database::Manager::acquire();
+
+      // get reuest fee parametres
+      Database::Result res_params =
+      conn.exec("SELECT count_free_base, count_free_per_domain "
+                "   FROM request_fee_parameter "
+                "   WHERE valid_from < now() "
+                "   ORDER BY valid_from DESC ");
+
+      if(res_params.size() != 1 || res_params[0][0].isnull() || res_params[0][1].isnull()) {
+          throw std::runtime_error("Couldn't find a valid record in request_fee_parameter table");
+      }
+
+      unsigned base_free_count = res_params[0][0];
+      unsigned per_domain_free_count = res_params[0][1];
+      
+      // get per request price
+      Database::Result res_price = conn.exec_params("SELECT price "
+               "FROM price_list pl "
+               "JOIN zone z ON z.id = pl.zone "
+               "WHERE z.fqdn='cz' "
+               " AND valid_from < 'now()'  "
+               " AND ( valid_to IS NULL OR valid_to > 'now()' ) "
+               " AND operation=$1::integer "
+               "ORDER BY valid_from DESC "
+               "LIMIT 1 ",
+               Database::query_param_list( (int)Fred::Invoicing::INVOICING_GeneralOperation)
+              );
+
+      if(res_price.size() != 1 || res_price[0][0].isnull()) {
+          throw std::runtime_error("Entry for request fee not found in price_list");
+      }
+      Fred::Invoicing::cent_amount price_unit_request
+          = Fred::Invoicing::get_price((std::string)res_price[0][0]);
+
+      // from & to date for the calculation
+      boost::gregorian::date today = boost::gregorian::day_clock::universal_day();
+      boost::gregorian::date month_first_day(today.year(), today.month(), 1);
+
+      std::string period_from(boost::gregorian::to_iso_extended_string(month_first_day));
+      std::string period_to(boost::gregorian::to_iso_extended_string(today));
+
+      // iterate registrars
+      Database::Result res_registrars =
+      conn.exec("SELECT id, handle FROM registrar");
+
+      if(res_registrars.size() == 0) {
+          LOGGER(PACKAGE).info("No registrars found");
+          return;
+      }
+
+      for(unsigned i=0;i<res_registrars.size();i++) {
+          // TODO log
+          Database::ID reg_id     = res_registrars[i][0];
+          std::string  reg_handle = res_registrars[i][1];
+
+          unsigned long long domain_count = getRegistrarDomainCount(reg_id, period_from.c_str());
+
+          unsigned long long request_count = logger_client->getRequestCount(
+                  period_from.c_str(),
+                  period_to.c_str(),
+                  "EPP",
+                  reg_handle.c_str());
+
+          unsigned long long total_free_count = std::max((unsigned long long)base_free_count, domain_count * per_domain_free_count );
+
+          // price in cents
+          unsigned long long price = 0;
+          if (request_count > total_free_count) {
+              price = (request_count - total_free_count) * price_unit_request;
+          }
+
+          LOGGER(PACKAGE).info( boost::format(
+                  "Registrar %1%, requests: %2%, limit: %3%, price: %4% ")
+                  % reg_handle
+                  % request_count
+                  % total_free_count
+                  % price
+                  );
+
+          save_poll_request_fee(reg_id, period_from, period_to, total_free_count, request_count, price);
+
+      }
+
   }
 };
 
