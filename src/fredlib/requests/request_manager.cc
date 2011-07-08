@@ -785,18 +785,28 @@ unsigned long long ManagerImpl::i_getRequestCount(const char *datetime_from,
 
     Database::Connection conn = Database::Manager::acquire();
 
+    Database::Result res_servid = conn.exec_params("SELECT id FROM service WHERE name=$1",
+         Database::query_param_list (service));
+
+    if(res_servid.size()!=1 || res_servid[0][0].isnull()) {
+        throw WrongUsageError(
+           (boost::format("Couldn't find corresponding FRED service id in the database, service name given as argument: %1%")
+            % service).str());
+    }
+
+    Database::ID service_id = res_servid[0][0];
+
     Database::Result res =
     conn.exec_params("SELECT count(*) FROM request r "
-                     "JOIN service s ON r.service_id = s.id "
-                     "WHERE time_begin > $1::timestamp "
-                         "AND time_begin < $2::timestamp "
+                     "WHERE time_begin > ($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
+                         "AND time_begin < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
                          "AND is_monitoring = false "
-                         "AND s.name = $3 "
+                         "AND r.service_id = $3 "
                          "AND r.user_name = $4 ",
            Database::query_param_list
                             (datetime_from)
                             (datetime_to)
-                            (service)
+                            (service_id)
                             (user)
                             );
 

@@ -1,3 +1,18 @@
+2011-07-08 Jiri Sadek, Juraj Vicenik (2.8.3)
+
+  * poll request fee - sql timestamp conversion fix
+                     - performance issues fix (proper partition by service)
+                     - message create duplicity check added
+
+2011-07-06 Jiri Sadek (2.8.2)
+
+  * poll request fee - internal interfaces data type changes
+                     - code cleanup
+
+  * fixed function for object state set
+
+  * invoicing tests fix
+
 2011-07-04 Jiri Sadek, Juraj Vicenik (2.8.1)
 
   * fixed return type for corba method
