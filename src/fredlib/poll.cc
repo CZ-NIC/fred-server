@@ -1036,7 +1036,8 @@ public:
                 "SELECT count_free_base, count_free_per_domain"
                 " FROM request_fee_parameter"
                 " WHERE valid_from < now()"
-                " ORDER BY valid_from DESC");
+                " ORDER BY valid_from DESC"
+                " LIMIT 1");
 
       if(res_params.size() != 1 || res_params[0][0].isnull() || res_params[0][1].isnull()) {
           throw std::runtime_error("Couldn't find a valid record in request_fee_parameter table");
