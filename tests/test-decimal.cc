@@ -52,7 +52,7 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-#include "decimal/mpdecimal-2.2/mpdecimal.h"
+#include "util/decimal/mpdecimal-2.2/mpdecimal.h"
 
 BOOST_AUTO_TEST_SUITE(TestDecimal)
 
