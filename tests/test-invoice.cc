@@ -777,7 +777,7 @@ void testChargeEval(const ResultTestCharge &res, bool should_succeed)
 
     if(should_succeed) {
         Database::Result res_ior = conn.exec_params(
-        "SELECT period, ExDate FROM invoice_object_registry WHERE objectid = $1::integer "
+        "SELECT period, ExDate, operation FROM invoice_object_registry WHERE objectid = $1::integer "
                                                         "AND registrarid = $2::integer "
                                                         "AND zone = $3::integer",
                    Database::query_param_list ( res.object_id )
@@ -786,8 +786,18 @@ void testChargeEval(const ResultTestCharge &res, bool should_succeed)
 
         BOOST_REQUIRE_MESSAGE(res_ior.size() == 1, "Incorrect number of records in invoice_object_registry table ");
 
-        BOOST_REQUIRE((unsigned)res_ior[0][0] == res.units);
-        BOOST_REQUIRE(res_ior[0][1] == res.exdate);
+	int  operation        = (int) res_ior[0][2];
+
+	// units number is only saved when renewing 
+	// this is simplified - it depends also on data in price list - it's true only of base_period == 0
+	// which is now the case for 'create' operation
+	if (operation == INVOICING_DomainRenew) {
+        	BOOST_REQUIRE((unsigned)res_ior[0][0] == res.units);
+		BOOST_REQUIRE(res_ior[0][1] == res.exdate);
+	} else if (operation == INVOICING_DomainCreate) {
+		BOOST_REQUIRE((unsigned)res_ior[0][0] == 0);
+		BOOST_REQUIRE(res_ior[0][1].isnull());
+	}
     }
 
 }
