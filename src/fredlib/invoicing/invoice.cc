@@ -238,9 +238,13 @@ public:
           return true;
       }
 
+      if((_units_count > 0) && (res_price[0][1].isnull()))
+      {
+          throw std::runtime_error("Couldn't count price for this operation");
+      }
+
       cent_amount price = get_price((std::string)res_price[0][0]);//price_list.price
       long base_period ( res_price[0][1]);//price_list.period, null is 0
-
 
       Database::Date exDate (_exDate);
       long units_count(_units_count);
@@ -250,15 +254,7 @@ public:
           exDate=Database::Date(boost::gregorian::date());//not_a_date_time
           units_count = 0;
       }
-
-      if((units_count > 0) && (res_price[0][1].isnull()))
-      {
-          throw std::runtime_error("Couldn't find price for this operation");
-      }
-
-
-      //multiply price if period set
-      if((units_count > 0) && (base_period != 0))
+      else if(units_count > 0)//multiply price if period set
       {
           price *= (units_count / base_period);
       }
