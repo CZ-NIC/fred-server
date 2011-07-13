@@ -249,14 +249,21 @@ public:
       Database::Date exDate (_exDate);
       long units_count(_units_count);
 
-      if(base_period == 0) //if price_list.period is 0
+      if (base_period == 0) //if price_list.period is 0
       {
-          exDate=Database::Date(boost::gregorian::date());//not_a_date_time
+          exDate = Database::Date(boost::gregorian::date());//not_a_date_time
           units_count = 0;
       }
-      else if(units_count > 0)//multiply price if period set
+      else if (base_period > 0)
       {
-          price *= (units_count / base_period);
+          if (units_count > 0) //multiply price if period set
+          {
+              price *= (units_count / base_period);
+          }
+      }
+      else
+      {
+          throw std::runtime_error("operation price_list.period is negative");
       }
 
       // billing itself
