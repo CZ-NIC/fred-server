@@ -56,7 +56,7 @@
 #include "corba/EPP.hh"
 #include "epp/epp_impl.h"
 
-//#include "test-common-threaded.h"
+#include "test-common-threaded.h"
 
 
 //not using UTF defined main
@@ -1833,7 +1833,7 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 }
 
 
-#if 0 //bug
+
 
 // thread-safe worker
 // TODO use exdate parameter !!!
@@ -2788,7 +2788,7 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPP)
 
 }
 
-#endif
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestInvoice
 
