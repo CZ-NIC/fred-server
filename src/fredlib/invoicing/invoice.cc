@@ -245,8 +245,7 @@ public:
       Database::Date exDate (_exDate);
       long units_count(_units_count);
 
-      if((!renew)//if create and price_list.period not set
-          && (base_period == 0))
+      if(base_period == 0) //if price_list.period is 0
       {
           exDate=Database::Date(boost::gregorian::date());//not_a_date_time
           units_count = 0;
