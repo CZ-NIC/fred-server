@@ -67,7 +67,12 @@ public:
     WrongUsageError(const std::string msg) : std::runtime_error(msg) {};
 };
 
+struct RequestCountInfoItem {
+    std::string user_handle;
+    unsigned long long count;
+};
 
+typedef std::vector<RequestCountInfoItem>  RequestCountInfo;
 
 class Manager {
 public:
@@ -93,7 +98,8 @@ virtual  bool i_closeSession(Database::ID id) = 0;
   virtual Database::Result i_getServices() = 0;
   virtual Database::Result i_getResultCodesByService(ServiceType service) = 0;
   virtual Database::Result i_getObjectTypes() = 0;
-  virtual unsigned long long i_getRequestCount(const char *datetime_from, const char *datetime_to, const char *service, const char *user) = 0;
+  virtual unsigned long long i_getRequestCount(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service, const std::string &user) = 0;
+  virtual std::auto_ptr<RequestCountInfo> i_getRequestCountUsers(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service) = 0;
 
   virtual List* createList() const = 0;
 
@@ -133,10 +139,11 @@ public:
   Database::Result i_getServices();
   Database::Result i_getResultCodesByService(ServiceType service);
   Database::Result i_getObjectTypes();
-  unsigned long long i_getRequestCount(const char *datetime_from, const char *datetime_to, const char *service, const char *user);
+  unsigned long long i_getRequestCount(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service, const std::string &user);
+  std::auto_ptr<RequestCountInfo> i_getRequestCountUsers(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service);
 
- // for migration tool (util/logd_migration)
- void insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Fred::Logger::RequestProperties& props);
+  // for migration tool (util/logd_migration)
+  void insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Fred::Logger::RequestProperties& props);
 
   List* createList() const;
 

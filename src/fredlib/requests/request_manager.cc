@@ -777,24 +777,36 @@ bool ManagerImpl::i_closeSession(ID id)
     return true;
 }
 
-unsigned long long ManagerImpl::i_getRequestCount(const char *datetime_from,
-        const char *datetime_to, const char *service,
-        const char *user) {
+
+Database::ID getServiceIdForName(const std::string &service_name)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result res_servid = conn.exec_params("SELECT id FROM service WHERE name=$1",
+         Database::query_param_list (service_name));
+
+    if(res_servid.size()!=1 || res_servid[0][0].isnull()) {
+        throw WrongUsageError(
+           (boost::format("Couldn't find corresponding FRED service id in the database, service name given as argument: %1%")
+            % service_name).str());
+    }
+
+    Database::ID ret = res_servid[0][0];
+    return ret;
+}
+
+unsigned long long ManagerImpl::i_getRequestCount(
+        const boost::posix_time::ptime &datetime_from,
+        const boost::posix_time::ptime &datetime_to,
+        const std::string &service,
+        const std::string &user) {
+
     logd_ctx_init ctx;
     TRACE("[CALL] Fred::Logger::ManagerImpl::i_getServices()");
 
     Database::Connection conn = Database::Manager::acquire();
 
-    Database::Result res_servid = conn.exec_params("SELECT id FROM service WHERE name=$1",
-         Database::query_param_list (service));
-
-    if(res_servid.size()!=1 || res_servid[0][0].isnull()) {
-        throw WrongUsageError(
-           (boost::format("Couldn't find corresponding FRED service id in the database, service name given as argument: %1%")
-            % service).str());
-    }
-
-    Database::ID service_id = res_servid[0][0];
+    Database::ID service_id = getServiceIdForName(service);
 
     Database::Result res =
     conn.exec_params("SELECT count(*) FROM request r "
@@ -816,6 +828,50 @@ unsigned long long ManagerImpl::i_getRequestCount(const char *datetime_from,
 
     return res[0][0];
 }
+
+std::auto_ptr<RequestCountInfo>
+ManagerImpl::i_getRequestCountUsers(
+        const boost::posix_time::ptime &datetime_from,
+        const boost::posix_time::ptime &datetime_to,
+        const std::string &service)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::ID service_id = getServiceIdForName(service);
+
+    Database::Result res =
+    conn.exec_params(
+        "SELECT user_name, count(*) FROM request r "
+        " WHERE time_begin > ($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
+        " AND time_begin < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
+        " AND is_monitoring = false "
+        " AND r.service_id = $3 "
+        " AND r.user_name IS NOT NULL "
+        " GROUP BY r.user_name ",
+        Database::query_param_list
+                         (datetime_from)
+                         (datetime_to)
+                         (service_id)
+                         );
+
+    std::auto_ptr<RequestCountInfo> info (new RequestCountInfo());
+
+    // TODO ziadne data
+    info->reserve(res.size());
+
+    for(int i=0; i<res.size(); ++i) {
+        RequestCountInfoItem it;
+
+        it.user_handle = (std::string)res[i][0];
+        it.count       = (unsigned long long)res[i][1];
+
+        info->push_back(it);
+
+    }
+
+    return info;
+}
+
 
 Manager* Manager::create() {
     TRACE("[CALL] Fred::Logger::Manager::create()");

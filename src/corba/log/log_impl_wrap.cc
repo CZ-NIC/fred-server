@@ -368,7 +368,10 @@ CORBA::ULongLong ccReg_Log_i::getRequestCount(const char *datetime_from, const c
         const char *service, const char *user)
 {
     try {
-        return back->i_getRequestCount(datetime_from, datetime_to, service, user);
+        ptime from (time_from_string(datetime_from));
+        ptime to   (time_from_string(datetime_to));
+
+        return back->i_getRequestCount(from, to, service, user);
     }
     catch (...) {
         Logger_common_exception_handler("getRequestCount");
@@ -377,3 +380,29 @@ CORBA::ULongLong ccReg_Log_i::getRequestCount(const char *datetime_from, const c
 
 }
 
+ccReg::RequestCountInfo* ccReg_Log_i::getRequestCountUsers(const char *datetime_from, const char *datetime_to,
+        const char *service)
+{
+    try {
+        ptime from (time_from_string(datetime_from));
+        ptime to   (time_from_string(datetime_to));
+
+        std::auto_ptr<RequestCountInfo> info_ptr = back->i_getRequestCountUsers(from, to, service);
+        RequestCountInfo &info = *(info_ptr.get());
+
+        size_t size = info.size();
+
+        ccReg::RequestCountInfo_var ret = new ccReg::RequestCountInfo();
+        ret->length( size );
+        for (unsigned int i = 0; i < size; ++i) {
+            ret[i].user_handle = CORBA::string_dup(info[i].user_handle.c_str());
+            ret[i].count =       info[i].count;
+        }
+
+        return ret._retn();
+    } catch (...) {
+        Logger_common_exception_handler("getRequestCountUsers");
+        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
+    }
+
+}

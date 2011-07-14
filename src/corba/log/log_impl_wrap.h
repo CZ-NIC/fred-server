@@ -43,6 +43,8 @@ public:
 
   CORBA::ULongLong getRequestCount(const char *datetime_from, const char *datetime_to,
           const char *service, const char *user);
+  ccReg::RequestCountInfo* getRequestCountUsers(const char *datetime_from, const char *datetime_to,
+          const char *service);
 
 
 private:

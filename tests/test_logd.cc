@@ -141,11 +141,22 @@ public:
 
 	ID find_property_name(const std::string &name);
 
-    unsigned long long getRequestCount(const char *from, const char *to , const char *service, const char *user) {
+    unsigned long long getRequestCount( const boost::posix_time::ptime &from,
+                                        const boost::posix_time::ptime &to,
+                                        const std::string              &service,
+                                        const std::string              &user
+                                        ) {
+
         unsigned long long ret = logd->i_getRequestCount(from, to, service, user);
 
       // TODO proper test   
+        return ret;
+    }
 
+    std::auto_ptr<RequestCountInfo> getRequestCountUsers(const boost::posix_time::ptime &from,
+                                                        const boost::posix_time::ptime &to,
+                                                        const std::string              &service) {
+        return logd->i_getRequestCountUsers(from, to , service);
     }
 
 	// auxiliary testing functions
@@ -1130,19 +1141,93 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 
 }
 
+// just call it
+BOOST_AUTO_TEST_CASE( get_request_count_users )
+{
+    TestImplLog test (CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
+    boost::posix_time::ptime end   (time_from_string("2011-01-31"));
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(begin, end, "EPP");
+}
+
+BOOST_AUTO_TEST_CASE( get_request_count_users_compare )
+{
+    TestImplLog test (CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
+    boost::posix_time::ptime end   (time_from_string("2011-06-30"));
+
+    std::auto_ptr<RequestCountInfo> info_ptr = test.getRequestCountUsers(begin, end, "EPP");
+
+    RequestCountInfo &info = *(info_ptr.get());
+
+    size_t size = info.size();
+
+    for (int i=0; i<info.size(); i++ ) {
+        unsigned long long check_count =
+                test.getRequestCount(begin, end, "EPP", info[i].user_handle);
+
+        BOOST_REQUIRE_MESSAGE(check_count == info[i].count,
+            "Count got from getRequestCount and getRequestCountUsers matches");
+    }
+}
+
 BOOST_AUTO_TEST_CASE( get_request_count_valid )
 {
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
-    unsigned long long count = test.getRequestCount("2011-01-01", "2011-01-31", "EPP", "REG-FRED_A");
+    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
+	boost::posix_time::ptime end   (time_from_string("2011-01-31"));
+
+
+    unsigned long long count = test.getRequestCount(begin, end, "EPP", "REG-FRED_A");
 }
+
+const std::string REQUEST_COUNT_QUERY (
+"SELECT COUNT(*) FROM request "
+" WHERE time_begin > ($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC'  "
+" AND time_begin < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC'  "
+" AND user_name = $3 "
+" AND service_id = 3 "
+" AND is_monitoring = false "
+);
+
+BOOST_AUTO_TEST_CASE( get_request_count_check )
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
+    boost::posix_time::ptime end   (time_from_string("2011-01-31"));
+    std::string r_reghandle("REG-FRED_A");
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    unsigned long long count = test.getRequestCount(begin, end, "EPP", r_reghandle);
+
+    Database::Result res_count_check = conn.exec_params(REQUEST_COUNT_QUERY,
+            Database::query_param_list (begin)
+                                       (end)
+                                       (r_reghandle)
+                );
+
+    unsigned long long count_check = res_count_check[0][0];
+
+    BOOST_REQUIRE_MESSAGE(count == count_check, "Nubmer of requests is correct");
+
+}
+
+
+
+
     
 BOOST_AUTO_TEST_CASE( get_request_count_wrong_date )
 {
     TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
-
-    BOOST_CHECK_THROW(test.getRequestCount("not-a-date-", "2011-01-31", "EPP", "REG-FRED_A"),
+    // "not-a-date-"
+    BOOST_CHECK_THROW(test.getRequestCount(boost::posix_time::ptime(), time_from_string("2011-01-31"), "EPP", "REG-FRED_A"),
                     std::exception);
 }
 

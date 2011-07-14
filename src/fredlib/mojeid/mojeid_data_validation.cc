@@ -121,10 +121,6 @@ bool contact_checker_username(const ::MojeID::Contact &_data, FieldErrorMap &_er
 bool generic_checker_phone_format(const std::string &_phone, const boost::regex &_pattern)
 {
     if (boost::algorithm::trim_copy(_phone).length() > 0
-                && _phone.length() != 14) {
-        return false;
-    }
-    else if (boost::algorithm::trim_copy(_phone).length() > 0
                 && !boost::regex_search(
                         _phone,
                         _pattern)) {
@@ -136,9 +132,20 @@ bool generic_checker_phone_format(const std::string &_phone, const boost::regex 
 
 bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
-    bool result = generic_checker_phone_format(
-            static_cast<std::string>(_data.telephone),
-            PHONE_CZ_SK_PATTERN);
+    bool result = true;
+
+    if (boost::algorithm::trim_copy(
+                static_cast<std::string>(_data.telephone)).length() > 0
+                && boost::algorithm::trim_copy(
+                        static_cast<std::string>(_data.telephone)).length() != 14) {
+        result = false;
+    }
+    else if (generic_checker_phone_format(
+                static_cast<std::string>(_data.telephone),
+                PHONE_CZ_SK_PATTERN) == false) {
+        result = false;
+    }
+
     if (result == false) {
         _errors[field_phone] = INVALID;
     }
