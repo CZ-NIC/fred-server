@@ -52,53 +52,85 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-#include "util/decimal/mpdecimal-2.2/mpdecimal.h"
+#include "util/decimal/decimal.h"
 
 BOOST_AUTO_TEST_SUITE(TestDecimal)
 
 const std::string server_name = "test-decimal";
 
-BOOST_AUTO_TEST_CASE( test_decimal )
+
+
+bool check_std_exception_MPD(std::exception const & ex)
+{
+    std::string ex_msg(ex.what());
+    return (ex_msg.find(std::string("MPD")) != std::string::npos);
+}
+
+
+BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
 {
 
-    mpd_context_t ctx;
-    mpd_t *a, *b;
-    mpd_t *result;
-    char *rstring;
+    BOOST_CHECK(Decimal("1") < Decimal("2"));
+    BOOST_CHECK(Decimal("1") <= Decimal("2"));
+    BOOST_CHECK(Decimal("1.1") < Decimal("1.2"));
+    BOOST_CHECK(Decimal("1000") > Decimal("100"));
+    BOOST_CHECK(Decimal("1000") >= Decimal("100"));
+    BOOST_CHECK(Decimal("1000") >= Decimal("1000"));
+    BOOST_CHECK(Decimal("1.1") == Decimal("1.1"));
+    BOOST_CHECK(Decimal("1.1") != Decimal("1.2"));
+    BOOST_CHECK(Decimal("1.11") > Decimal("-1.11"));
+    BOOST_CHECK((Decimal("1.111") + Decimal("1.222")) == Decimal("2.333"));
+    BOOST_CHECK((Decimal("2.333") - Decimal("1.111")) == Decimal("1.222"));
+    BOOST_CHECK((Decimal("2.333") - Decimal("1.111")) != Decimal("1.223"));
+    BOOST_CHECK((Decimal("1.111") * Decimal("1.222")) == Decimal("1.357642"));
+    BOOST_CHECK((Decimal("1.222") / Decimal("1.111"))
+            .round(19, MPD_ROUND_HALF_UP)
+            .round(9, MPD_ROUND_HALF_UP) == Decimal("1.099909991"));
 
-    char status_str[MPD_MAX_FLAG_STRING];
-    clock_t start_clock, end_clock;
+    BOOST_CHECK((Decimal("13").integral_division(Decimal("3"))) == Decimal("4"));
+    BOOST_CHECK((Decimal("13").integral_division_remainder(Decimal("3"))) == Decimal("1"));
 
+    BOOST_CHECK(Decimal("-1").abs() == Decimal("1"));
+    BOOST_CHECK(Decimal("1").abs() == Decimal("1"));
 
-    mpd_init(&ctx, 38);
-    ctx.traps = 0;
+    BOOST_CHECK(Decimal("-1").is_negative());
 
-    result = mpd_new(&ctx);
-    a = mpd_new(&ctx);
-    b = mpd_new(&ctx);
+    BOOST_CHECK(Decimal("1 000").is_nan());
+    BOOST_CHECK(Decimal("1 000").is_special());
+    BOOST_CHECK(Decimal("1,1").is_nan());
+    BOOST_CHECK(Decimal("1,1").is_special());
 
+    BOOST_CHECK_EXCEPTION((Decimal("1") / Decimal("0")).is_infinite()
+            , std::exception
+            , check_std_exception_MPD);//Infinity
 
-    mpd_set_string(a, "11.111", &ctx);
-    mpd_set_string(b, "12.222", &ctx);
+    BOOST_CHECK((Decimal("0") / Decimal("0")).is_nan());//NaN
 
-    start_clock = clock();
+    BOOST_CHECK_EXCEPTION((Decimal("1") / Decimal("-0")).is_infinite()
+            , std::exception
+            , check_std_exception_MPD
+            );//-Infinity
 
-    mpd_add(result,a,b,&ctx);
+    BOOST_CHECK(Decimal("Infinity").is_infinite());//Infinity
+    BOOST_CHECK(Decimal("-Infinity").is_infinite());//Infinity
+    BOOST_CHECK(Decimal("NaN").is_nan());//NaN
+    BOOST_CHECK(Decimal("-NaN").is_nan());//-NaN
 
-    end_clock = clock();
-    //fprintf(stderr, "time: %f\n\n", (double)(end_clock-start_clock)/(double)CLOCKS_PER_SEC);
+    BOOST_CHECK(Decimal("Infinity") == Decimal("Infinity"));
+    BOOST_CHECK(Decimal("Infinity") != Decimal("-Infinity"));
+    BOOST_CHECK(Decimal("NaN") != Decimal("NaN"));
+    BOOST_CHECK(Decimal("NaN") != Decimal("-NaN"));
 
-    rstring = mpd_to_sci(result, 1);
-    mpd_snprint_flags(status_str, MPD_MAX_FLAG_STRING, ctx.status);
+    BOOST_CHECK( (Decimal("Infinity") + Decimal("-Infinity")).is_nan());
 
-    //printf("%s  %s\n", rstring, status_str);
+    Decimal a("1234567890.123456789", 500);
 
-    BOOST_CHECK_EQUAL(std::string("23.333").compare(std::string(rstring)),0);
+    Decimal b = a;//copy ctor
+    BOOST_CHECK(b == a);
 
-    mpd_del(a);
-    mpd_del(b);
-    mpd_del(result);
-    mpd_free(rstring);
+    Decimal c;
+    c = a;//assignment operator
+    BOOST_CHECK(c == a);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestDecimal

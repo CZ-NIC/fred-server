@@ -239,7 +239,7 @@ MPD_CONFIG = @MPD_CONFIG@
 
 util_decimal_libmpdec_a_CFLAGS = \
 	-I $(top_srcdir)/util/decimal/mpdecimal-2.2 -I $(top_builddir)/util/decimal/mpdecimal-2.2  \
-	$(MPD_WARN) $(MPD_CONFIG) -fpic
+	$(CONFIGURE_CFLAGS)
 
 util_decimal_libmpdec_a_SOURCES = \
 	util/decimal/mpdecimal-2.2/basearith.c \
