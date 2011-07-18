@@ -375,7 +375,7 @@ public:
         }
         catch(...)
         {
-            const std::size_t msg_len = 512;
+            const unsigned long msg_len = 512;
             char msg[msg_len]={0};
             snprintf(msg, msg_len
                     ,"Decimal(const std::size_t precision: %u) ctor exception"
@@ -396,7 +396,7 @@ public:
         }
         catch(...)
         {
-            const std::size_t msg_len = 2048;
+            const unsigned long msg_len = 2048;
             char msg[msg_len]={0};
             snprintf(msg, msg_len
                     ,"Decimal(const char *str: %s, const std::size_t precision: %u) ctor exception"
