@@ -127,10 +127,12 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
 
     Decimal b = a;//copy ctor
     BOOST_CHECK(b == a);
+    BOOST_CHECK(b.get_precision() == 500);
 
     Decimal c;
     c = a;//assignment operator
     BOOST_CHECK(c == a);
+    BOOST_CHECK(c.get_precision() == 500);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestDecimal

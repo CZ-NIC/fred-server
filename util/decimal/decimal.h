@@ -201,6 +201,10 @@ class Decimal
     }
 
 public:
+    unsigned long get_precision()
+    {
+        return mpd_getprec(&ctx);
+    }
 
     void set_string(const char *str)
     {
