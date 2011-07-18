@@ -368,7 +368,7 @@ public:
         return *this;
     }//operator=
 
-    Decimal(const std::size_t precision)
+    Decimal(const unsigned precision)
     : traphandler(0)
     , pvalue(0)
     {
@@ -379,16 +379,16 @@ public:
         }
         catch(...)
         {
-            const  int msg_len = 512;
+            const  std::size_t msg_len = 512;
             char msg[msg_len]={0};
             snprintf(msg, msg_len
-                    ,"Decimal(const std::size_t precision: %d) ctor exception"
+                    ,"Decimal(const std::size_t precision: %u) ctor exception"
                     , precision);
             decimal_exception_handler(msg, true)();
         }
     }
 
-    Decimal(const char *str, const std::size_t precision)
+    Decimal(const char *str, const unsigned precision)
     : traphandler(0)
     , pvalue(0)
     {
@@ -400,10 +400,10 @@ public:
         }
         catch(...)
         {
-            const  int msg_len = 2048;
+            const  std::size_t msg_len = 2048;
             char msg[msg_len]={0};
             snprintf(msg, msg_len
-                    ,"Decimal(const char *str: %s, const std::size_t precision: %d) ctor exception"
+                    ,"Decimal(const char *str: %s, const std::size_t precision: %u) ctor exception"
                     , str
                     , precision);
             decimal_exception_handler(msg, true)();
