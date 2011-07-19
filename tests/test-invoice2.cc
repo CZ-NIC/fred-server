@@ -264,13 +264,17 @@ struct create_zone_fixture
 {
     Fred::Zone::Manager::ZoneManagerPtr zoneMan;
     std::string test_zone_fqdn;
+    std::string test_enum_zone_fqdn;
 
     create_zone_fixture()
     try
     : zoneMan (Fred::Zone::Manager::create())
       , test_zone_fqdn(std::string("zone")+TimeStamp::microsec())
+      , test_enum_zone_fqdn(std::string("zone")+TimeStamp::microsec()+".e164.arpa")
+
     {
         zoneMan->addZone(test_zone_fqdn);
+        zoneMan->addZone(test_enum_zone_fqdn);
     }
     catch(...)
     {
@@ -291,8 +295,8 @@ struct zone_fixture
     zone_fixture()
     try
     : zone_result(connp->exec_params(
-        "select id, fqdn from zone where fqdn = $1::text"
-        , Database::query_param_list (test_zone_fqdn)))
+        "select id, fqdn from zone where fqdn = $1::text or fqdn = $2::text "
+        , Database::query_param_list (test_zone_fqdn)(test_enum_zone_fqdn)))
     {}
     catch(...)
     {
