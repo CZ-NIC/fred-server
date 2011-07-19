@@ -2410,9 +2410,9 @@ BOOST_AUTO_TEST_CASE(createDomainThreaded)
             , ns_args_ptr->nameservice_context);
 
     // DEBUG
-    std::cout << " Parameters: host: " << ns_args_ptr->nameservice_host 
-        << " port: " << ns_args_ptr->nameservice_port 
-        << " context: " << ns_args_ptr->nameservice_context << std::endl;
+    //std::cout << " Parameters: host: " << ns_args_ptr->nameservice_host
+    //    << " port: " << ns_args_ptr->nameservice_port
+    //    << " context: " << ns_args_ptr->nameservice_context << std::endl;
     for (int t = 0;t<<fa.get_argc();t++ ) {
         std::cout << " CmdLine Args: " << fa.get_argv() [t] << std::endl;
     }
@@ -2712,9 +2712,9 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPP)
             , ns_args_ptr->nameservice_context);
 
     // DEBUG
-    std::cout << " Parameters: host: " << ns_args_ptr->nameservice_host 
-        << " port: " << ns_args_ptr->nameservice_port 
-        << " context: " << ns_args_ptr->nameservice_context << std::endl;
+    //std::cout << " Parameters: host: " << ns_args_ptr->nameservice_host
+    //    << " port: " << ns_args_ptr->nameservice_port
+    //    << " context: " << ns_args_ptr->nameservice_context << std::endl;
     for (int t = 0;t<<fa.get_argc();t++ ) {
         std::cout << " CmdLine Args: " << fa.get_argv() [t] << std::endl;
     }
