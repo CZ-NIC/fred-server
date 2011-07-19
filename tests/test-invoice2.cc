@@ -354,7 +354,7 @@ struct registrar_fixture
         std::string registrar_query(
                 "select id, handle "
                 " from registrar "
-                " where 1=1 "
+                " where 1=2 "
                 );
         Database::QueryParams registrar_query_params;
 
@@ -362,50 +362,61 @@ struct registrar_fixture
         {
             std::string time_string(TimeStamp::microsec());
 
-            for(int vat = 0; vat < 2; ++vat )
+            for(int in_zone = 0; in_zone < 2; ++in_zone)
             {
-                std::string registrar_handle;
-                unsigned long long registrar_id;
-
-                registrar_handle = std::string("REG-FRED_")
-                + (vat ? "VAT_" : "NOVAT_") + time_string;
-
-                Fred::Registrar::Manager::AutoPtr regMan
-                         = Fred::Registrar::Manager::create(DBSharedPtr());
-                Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-                registrar->setName(registrar_handle+"_Name");
-                registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-                registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-                registrar->setStreet1(registrar_handle+"_Street1");
-                registrar->setVat(vat);
-                Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-                registrar_acl->setCertificateMD5("");
-                registrar_acl->setPassword("");
-                registrar->save();
-                registrar_id = registrar->getId();
-
-                registrar_query_params.push_back(registrar_id);
-                registrar_query += " and id=$"
-                        +boost::lexical_cast<std::string>(registrar_query_params.size())
-                        +"::bigint";
-
-
-                //add registrar into zone
-                for(std::size_t i = 0 ; i < zone_result.size(); ++i)
+                for(int vat = 0; vat < 2; ++vat )
                 {
-                    std::string rzzone (zone_result[i][1]);//REGISTRAR_ZONE_FQDN_NAME
-                    Database::Date rzfromDate;
-                    Database::Date rztoDate;
+                    std::string registrar_handle("REG-FRED_");
+                    registrar_handle += (in_zone ? "INZONE_" : "NOTINZONE_");
+                    registrar_handle += (vat ? "VAT_" : "NOVAT_");
+                    registrar_handle += time_string;
 
-                    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
-                }
+                    unsigned long long registrar_id;
 
+                    //BOOST_TEST_MESSAGE( std::string("Registrar: ")+registrar_handle);
 
-            }//for vat
+                    Fred::Registrar::Manager::AutoPtr regMan
+                             = Fred::Registrar::Manager::create(DBSharedPtr());
+                    Fred::Registrar::Registrar::AutoPtr registrar
+                            = regMan->createRegistrar();
+                    registrar->setName(registrar_handle+"_Name");
+                    registrar->setHandle(registrar_handle);
+                    registrar->setCountry("CZ");
+                    registrar->setStreet1(registrar_handle+"_Street1");
+                    registrar->setVat(vat);
+                    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
+                    registrar_acl->setCertificateMD5("");
+                    registrar_acl->setPassword("");
+                    registrar->save();
+                    registrar_id = registrar->getId();
 
+                    registrar_query_params.push_back(registrar_id);
+                    registrar_query += " or id=$"
+                            +boost::lexical_cast<std::string>(registrar_query_params.size())
+                            +"::bigint";
+
+                    if(in_zone)//add registrar into zone
+                    for(std::size_t i = 0 ; i < zone_result.size(); ++i)
+                    {
+                        std::string rzzone (zone_result[i][1]);
+                        Database::Date rzfromDate;
+                        Database::Date rztoDate;
+
+                        Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+                    }
+
+                }//for vat
+            }//for in_zone
+
+            registrar_query += " order by id";
 
             registrar_result=connp->exec_params(registrar_query, registrar_query_params);
-
+            //BOOST_TEST_MESSAGE( std::string("Registrars query: ") + registrar_query+ " size: " +(boost::lexical_cast<std::string>(registrar_result.size())) );
+            for(std::size_t i = 0; i < registrar_result.size(); ++i)
+            {
+                BOOST_CHECK(registrar_query_params[i].get_data().compare(std::string(registrar_result[i][0])) == 0);
+                //BOOST_TEST_MESSAGE(std::string("id: ") + std::string(registrar_result[i][0])+ " handle: " + std::string(registrar_result[i][1]));
+            }
         }
         catch(...)
         {
@@ -501,6 +512,7 @@ struct Case_invoice_registrar1_Fixture
     , virtual zone_fixture
     , virtual registrar_fixture
     , virtual try_insert_invoice_prefix_fixture
+    , virtual create_deposit_invoice_fixture
 {
     int j;
 
@@ -520,23 +532,11 @@ BOOST_AUTO_TEST_SUITE( TestInvoice2 )
 
 const std::string server_name = "test-invoice2";
 
-BOOST_AUTO_TEST_CASE( test)
-{
-    //check
-    BOOST_CHECK(true);
-}
-
 
 BOOST_FIXTURE_TEST_CASE( invoice_registrar1, Case_invoice_registrar1_Fixture )
 {
     //db
     BOOST_CHECK(static_cast<bool>(connp->exec("select 1")[0][0]));
-}
-
-BOOST_FIXTURE_TEST_CASE( invoice_registrar2, Case_invoice_registrar1_Fixture )
-{
-    //db
-    connp.reset(new Database::Connection((Database::Manager::acquire())));
 }
 
 
