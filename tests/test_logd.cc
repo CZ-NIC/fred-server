@@ -1165,13 +1165,13 @@ BOOST_AUTO_TEST_CASE( get_request_count_users_compare )
 
     size_t size = info.size();
 
-    for (int i=0; i<info.size(); i++ ) {
-        unsigned long long check_count =
-                test.getRequestCount(begin, end, "EPP", info[i].user_handle);
+    for (RequestCountInfo::iterator it = info_ptr->begin(); it != info_ptr->end(); it++) {
+        unsigned long long check_count = test.getRequestCount(begin, end, "EPP", it->first);
 
-        BOOST_REQUIRE_MESSAGE(check_count == info[i].count,
-            "Count got from getRequestCount and getRequestCountUsers matches");
+        BOOST_REQUIRE_MESSAGE(check_count == it->second,
+                "Count got from getRequestCount and getRequestCountUsers matches");
     }
+
 }
 
 BOOST_AUTO_TEST_CASE( get_request_count_valid )

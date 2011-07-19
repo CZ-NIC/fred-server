@@ -1027,7 +1027,7 @@ public:
 
 
 
-  virtual void createRequestFeeMessages(LoggerClient *logger_client)
+  virtual void createRequestFeeMessages(Logger::LoggerClient *logger_client)
   {
       Database::Connection conn = Database::Manager::acquire();
 
@@ -1078,10 +1078,29 @@ public:
           return;
       }
 
+      std::auto_ptr<Fred::Logger::RequestCountInfo> request_counts
+          = logger_client->getRequestCountUsers(
+                   boost::posix_time::ptime(p_from),
+                   boost::posix_time::ptime(p_to),
+                   "EPP");
+
       for (unsigned i = 0;i < res_registrars.size(); i++)
       {
           Database::ID reg_id     = res_registrars[i][0];
           std::string  reg_handle = res_registrars[i][1];
+
+          // find request count for this registrar
+          unsigned long long request_count = 0;
+          Fred::Logger::RequestCountInfo::iterator it = request_counts->find(reg_handle);
+
+          if(it == request_counts->end()) {
+              LOGGER(PACKAGE).info(boost::format("No request count found for registrar %1%, skipping.")
+                                % reg_handle);
+
+              request_count = 0;
+          } else {
+              request_count = it->second;
+          }
 
           // duplicity check
           if (is_poll_request_fee_present(reg_id, p_from, p_to)) {
@@ -1095,14 +1114,10 @@ public:
               continue;
           }
 
+          // get domain count for registrar
           unsigned long long domain_count = getRegistrarDomainCount(reg_id, p_from);
 
-          unsigned long long request_count = logger_client->getRequestCount(
-                  boost::posix_time::ptime(p_from),
-                  boost::posix_time::ptime(p_to),
-                  "EPP",
-                  reg_handle);
-
+          // now count all the number for poll message
           unsigned long long total_free_count = std::max(
                   static_cast<unsigned long long>(base_free_count),
                   domain_count * per_domain_free_count);

@@ -387,16 +387,19 @@ ccReg::RequestCountInfo* ccReg_Log_i::getRequestCountUsers(const char *datetime_
         ptime from (time_from_string(datetime_from));
         ptime to   (time_from_string(datetime_to));
 
-        std::auto_ptr<RequestCountInfo> info_ptr = back->i_getRequestCountUsers(from, to, service);
-        RequestCountInfo &info = *(info_ptr.get());
+        std::auto_ptr<RequestCountInfo> info = back->i_getRequestCountUsers(from, to, service);
 
-        size_t size = info.size();
+        size_t size = info->size();
 
         ccReg::RequestCountInfo_var ret = new ccReg::RequestCountInfo();
         ret->length( size );
-        for (unsigned int i = 0; i < size; ++i) {
-            ret[i].user_handle = CORBA::string_dup(info[i].user_handle.c_str());
-            ret[i].count =       info[i].count;
+
+        unsigned i=0;
+        for(RequestCountInfo::iterator it = info->begin();
+                it != info->end();
+                ++it, ++i) {
+            ret[i].user_handle = CORBA::string_dup((*it).first.c_str());
+            ret[i].count       = (*it).second;
         }
 
         return ret._retn();

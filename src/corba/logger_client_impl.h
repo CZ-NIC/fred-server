@@ -8,7 +8,11 @@
 #include "corba_wrapper_decl.h"
 #include "fredlib/logger_client.h"
 
-class LoggerCorbaClientImpl : public Fred::LoggerClient
+namespace Fred {
+namespace Logger {
+
+
+class LoggerCorbaClientImpl : public LoggerClient
 {
 public:
     LoggerCorbaClientImpl();
@@ -19,11 +23,19 @@ public:
             const std::string &service,
             const std::string &user);
 
+    std::auto_ptr<RequestCountInfo> getRequestCountUsers(
+               const boost::posix_time::ptime &from,
+               const boost::posix_time::ptime &to,
+               const std::string &service);
+
 private:
     ccReg::Logger_var logger_ref;
 
     boost::mutex ref_mutex;
 };
+
+}
+}
 
 /*
 ccReg::Logger_var logger_ref;

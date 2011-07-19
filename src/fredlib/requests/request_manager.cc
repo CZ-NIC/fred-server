@@ -856,17 +856,11 @@ ManagerImpl::i_getRequestCountUsers(
 
     std::auto_ptr<RequestCountInfo> info (new RequestCountInfo());
 
-    // TODO ziadne data
-    info->reserve(res.size());
+    for(int i=0;i<res.size();++i) {
+        std::string user_handle = (std::string)res[i][0];
+        unsigned long long count = (unsigned long long)res[i][1];
 
-    for(int i=0; i<res.size(); ++i) {
-        RequestCountInfoItem it;
-
-        it.user_handle = (std::string)res[i][0];
-        it.count       = (unsigned long long)res[i][1];
-
-        info->push_back(it);
-
+        info->insert(make_pair(user_handle, count));
     }
 
     return info;

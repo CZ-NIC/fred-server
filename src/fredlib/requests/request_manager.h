@@ -67,12 +67,7 @@ public:
     WrongUsageError(const std::string msg) : std::runtime_error(msg) {};
 };
 
-struct RequestCountInfoItem {
-    std::string user_handle;
-    unsigned long long count;
-};
-
-typedef std::vector<RequestCountInfoItem>  RequestCountInfo;
+typedef std::map<std::string, unsigned long long>  RequestCountInfo;
 
 class Manager {
 public:

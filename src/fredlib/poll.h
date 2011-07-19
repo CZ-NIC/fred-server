@@ -158,7 +158,7 @@ namespace Fred
       /// create messages about low credit (called after credit change)
       virtual void createLowCreditMessages() = 0;
       /// create messages about request count and request fee
-      virtual void createRequestFeeMessages(LoggerClient *logger_client) = 0;
+      virtual void createRequestFeeMessages(Logger::LoggerClient *logger_client) = 0;
       // create list of messages
       virtual List* createList() = 0;
       /// factory method

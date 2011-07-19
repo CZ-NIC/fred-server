@@ -107,7 +107,7 @@ PollClient::create_request_fee_messages()
            , ns_args_ptr->get_nameservice_port()
            , ns_args_ptr->get_nameservice_context());
 
-    std::auto_ptr<Fred::LoggerClient> cl(new LoggerCorbaClientImpl());
+    std::auto_ptr<Fred::Logger::LoggerClient> cl(new Fred::Logger::LoggerCorbaClientImpl());
 
     std::auto_ptr<Fred::Poll::Manager> pollMan(
             Fred::Poll::Manager::create(
