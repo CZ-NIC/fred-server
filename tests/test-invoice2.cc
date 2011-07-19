@@ -260,14 +260,39 @@ protected:
     {}
 };
 
+struct create_zone_fixture
+{
+    Fred::Zone::Manager::ZoneManagerPtr zoneMan;
+    std::string test_zone_fqdn;
+
+    create_zone_fixture()
+    try
+    : zoneMan (Fred::Zone::Manager::create())
+      , test_zone_fqdn(std::string("zone")+TimeStamp::microsec())
+    {
+        zoneMan->addZone(test_zone_fqdn);
+    }
+    catch(...)
+    {
+        fixture_exception_handler("create_zone_fixture ctor exception", true)();
+    }
+
+protected:
+    ~create_zone_fixture()
+    {}
+};
+
 struct zone_fixture
     : virtual db_conn_acquire_fixture
+      , virtual create_zone_fixture
 {
         Database::Result zone_result;
 
     zone_fixture()
     try
-    : zone_result(connp->exec("select id, fqdn from zone"))
+    : zone_result(connp->exec_params(
+        "select id, fqdn from zone where fqdn = $1::text"
+        , Database::query_param_list (test_zone_fqdn)))
     {}
     catch(...)
     {
@@ -287,6 +312,8 @@ struct try_insert_invoice_prefix_fixture
     {
         try
         {
+            //BOOST_TEST_MESSAGE(std::string("zone_result.size(): ")+boost::lexical_cast<std::string>(zone_result.size()));
+
             for (std::size_t zone_i = 0; zone_i < zone_result.size() ; ++zone_i)
             {
                 unsigned long long zone_id(zone_result[zone_i][0]);
