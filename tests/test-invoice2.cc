@@ -546,13 +546,31 @@ struct registrar_fixture
         {
             std::string time_string(TimeStamp::microsec());
 
-            registrar_query_params.push_back(
-                create_test_registrar(
-                    std::string("REG-FRED_NOCREDIT_NOTINZONE_")
-                        +time_string));
-            registrar_query += " or id=$"
+
+            for(int in_zone = 0; in_zone < 2; ++in_zone)
+            {
+                std::string registrar_handle
+                    = std::string("REG-FRED_NOCREDIT_");
+                registrar_handle += (in_zone ? "INZONE_" : "NOTINZONE_");
+                registrar_handle += "VAT_";
+                registrar_handle += time_string;
+                registrar_query_params.push_back(
+                    create_test_registrar(registrar_handle));
+                registrar_query += " or id=$"
                     +boost::lexical_cast<std::string>(registrar_query_params.size())
                     +"::bigint";
+
+                if(in_zone)//add registrar into zone
+                for(std::size_t i = 0 ; i < zone_result.size(); ++i)
+                {
+                    std::string rzzone (zone_result[i][1]);
+                    Database::Date rzfromDate;
+                    Database::Date rztoDate;
+
+                    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+                }
+            }//for nocredit
+
 
             for(int in_zone = 0; in_zone < 2; ++in_zone)
             {
