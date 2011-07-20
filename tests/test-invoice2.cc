@@ -514,7 +514,7 @@ struct registrar_fixture
     Database::Result registrar_result;
 
 
-    unsigned long long create_test_registrar(const std::string& registrar_handle, int vat)
+    unsigned long long create_test_registrar(const std::string& registrar_handle, bool vat = true)
     {
         Fred::Registrar::Manager::AutoPtr regMan
                  = Fred::Registrar::Manager::create(DBSharedPtr());
