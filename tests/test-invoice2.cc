@@ -240,6 +240,8 @@ struct create_zone_fixture
     std::string test_zeroprice_enum_zone_fqdn;
     std::string test_zeroperiod_zone_fqdn;
     std::string test_zeroperiod_enum_zone_fqdn;
+    std::string test_differentperiod_zone_fqdn;
+    std::string test_differentperiod_enum_zone_fqdn;
     std::string test_nooperationprice_zone_fqdn;
     std::string test_nooperationprice_enum_zone_fqdn;
 
@@ -252,6 +254,8 @@ struct create_zone_fixture
       , test_zeroprice_enum_zone_fqdn(std::string("zone-zeroprice")+TimeStamp::microsec()+".e164.arpa")
       , test_zeroperiod_zone_fqdn(std::string("zone-zeroperiod")+TimeStamp::microsec())
       , test_zeroperiod_enum_zone_fqdn(std::string("zone-zeroperiod")+TimeStamp::microsec()+".e164.arpa")
+      , test_differentperiod_zone_fqdn(std::string("zone-differentperiod")+TimeStamp::microsec())
+      , test_differentperiod_enum_zone_fqdn(std::string("zone-differentperiod")+TimeStamp::microsec()+".e164.arpa")
       , test_nooperationprice_zone_fqdn(std::string("zone-nooperationprice")+TimeStamp::microsec())
       , test_nooperationprice_enum_zone_fqdn(std::string("zone-nooperationprice")+TimeStamp::microsec()+".e164.arpa")
     {
@@ -261,6 +265,8 @@ struct create_zone_fixture
         zoneMan->addZone(test_zeroprice_enum_zone_fqdn);
         zoneMan->addZone(test_zeroperiod_zone_fqdn);
         zoneMan->addZone(test_zeroperiod_enum_zone_fqdn);
+        zoneMan->addZone(test_differentperiod_zone_fqdn);
+        zoneMan->addZone(test_differentperiod_enum_zone_fqdn);
         zoneMan->addZone(test_nooperationprice_zone_fqdn);
         zoneMan->addZone(test_nooperationprice_enum_zone_fqdn);
     }
@@ -287,9 +293,11 @@ struct zone_fixture
             " or fqdn = $3::text or fqdn = $4::text "
             " or fqdn = $5::text or fqdn = $6::text "
             " or fqdn = $7::text or fqdn = $8::text "
+            " or fqdn = $9::text or fqdn = $10::text "
         , Database::query_param_list (test_zone_fqdn)(test_enum_zone_fqdn)
         (test_zeroprice_zone_fqdn)(test_zeroprice_enum_zone_fqdn)
         (test_zeroperiod_zone_fqdn)(test_zeroperiod_enum_zone_fqdn)
+        (test_differentperiod_zone_fqdn)(test_differentperiod_enum_zone_fqdn)
         (test_nooperationprice_zone_fqdn)(test_nooperationprice_enum_zone_fqdn)
         ))
     {}
@@ -406,6 +414,29 @@ struct operation_price_fixture
                 ("2007-09-29 19:00:00")(Database::QPNull)
                 ("0")("0"));
 
+            //test_differentperiod_zone_fqdn create and renew price
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_differentperiod_zone_fqdn)
+                ("CreateDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("0")("0"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_differentperiod_zone_fqdn)
+                ("RenewDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("140.11")("3"));
+
+            //test_differentperiod_enum_zone_fqdn create and renew price
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_differentperiod_enum_zone_fqdn)
+                ("CreateDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("100.11")("15"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_differentperiod_enum_zone_fqdn)
+                ("RenewDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("200.22")("15"));
         }
         catch(...)
         {
@@ -472,24 +503,6 @@ struct try_insert_invoice_prefix_fixture
 protected:
     ~try_insert_invoice_prefix_fixture()
     {}
-};
-
-///generate test parameters
-struct test_params
-{
-  typedef std::vector<std::vector<std::string> > ParamData;
-  ParamData operator()(ParamData input_options)
-  {
-      ParamData ret_params;
-
-      for(ParamData::const_iterator i = input_options.begin()
-              ; i != input_options.end() ; ++i)
-      {
-
-      }
-
-      return ret_params;
-  }
 };
 
 struct registrar_fixture
