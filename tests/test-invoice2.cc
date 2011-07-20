@@ -505,12 +505,33 @@ protected:
     {}
 };
 
+
 struct registrar_fixture
     : virtual db_conn_acquire_fixture
       , virtual zone_fixture
 {
 
     Database::Result registrar_result;
+
+
+    unsigned long long create_test_registrar(const std::string& registrar_handle, int vat)
+    {
+        Fred::Registrar::Manager::AutoPtr regMan
+                 = Fred::Registrar::Manager::create(DBSharedPtr());
+        Fred::Registrar::Registrar::AutoPtr registrar
+                = regMan->createRegistrar();
+        registrar->setName(registrar_handle+"_Name");
+        registrar->setHandle(registrar_handle);
+        registrar->setCountry("CZ");
+        registrar->setStreet1(registrar_handle+"_Street1");
+        registrar->setVat(vat);
+        Fred::Registrar::ACL* registrar_acl = registrar->newACL();
+        registrar_acl->setCertificateMD5("");
+        registrar_acl->setPassword("");
+        registrar->save();
+        return registrar->getId();
+    }//create_test_registrar
+
 
     registrar_fixture()
     {
@@ -525,6 +546,14 @@ struct registrar_fixture
         {
             std::string time_string(TimeStamp::microsec());
 
+            registrar_query_params.push_back(
+                create_test_registrar(
+                    std::string("REG-FRED_NOCREDIT_NOTINZONE_")
+                        +time_string));
+            registrar_query += " or id=$"
+                    +boost::lexical_cast<std::string>(registrar_query_params.size())
+                    +"::bigint";
+
             for(int in_zone = 0; in_zone < 2; ++in_zone)
             {
                 for(int vat = 0; vat < 2; ++vat )
@@ -538,20 +567,7 @@ struct registrar_fixture
 
                     //BOOST_TEST_MESSAGE( std::string("Registrar: ")+registrar_handle);
 
-                    Fred::Registrar::Manager::AutoPtr regMan
-                             = Fred::Registrar::Manager::create(DBSharedPtr());
-                    Fred::Registrar::Registrar::AutoPtr registrar
-                            = regMan->createRegistrar();
-                    registrar->setName(registrar_handle+"_Name");
-                    registrar->setHandle(registrar_handle);
-                    registrar->setCountry("CZ");
-                    registrar->setStreet1(registrar_handle+"_Street1");
-                    registrar->setVat(vat);
-                    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-                    registrar_acl->setCertificateMD5("");
-                    registrar_acl->setPassword("");
-                    registrar->save();
-                    registrar_id = registrar->getId();
+                    registrar_id = create_test_registrar(registrar_handle, vat);
 
                     registrar_query_params.push_back(registrar_id);
                     registrar_query += " or id=$"
@@ -605,6 +621,9 @@ struct create_deposit_invoice_fixture
         {
             for(std::size_t registrar_i = 0; registrar_i < registrar_result.size(); ++registrar_i)
             {
+                if(std::string(registrar_result[registrar_i][1]).find("NOCREDIT") != std::string::npos)
+                    continue;//dont add credit
+
                 unsigned long long registrar_id (registrar_result[registrar_i][0]);
 
                 for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
