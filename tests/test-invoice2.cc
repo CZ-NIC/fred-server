@@ -521,6 +521,7 @@ struct registrar_fixture
         Fred::Registrar::Registrar::AutoPtr registrar
                 = regMan->createRegistrar();
         registrar->setName(registrar_handle+"_Name");
+        registrar->setOrganization(registrar_handle+"_Organization");
         registrar->setHandle(registrar_handle);
         registrar->setCountry("CZ");
         registrar->setStreet1(registrar_handle+"_Street1");
