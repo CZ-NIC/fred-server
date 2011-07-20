@@ -161,35 +161,6 @@ protected:
     }
 };
 
-struct set_price_fixture
-    : virtual db_conn_acquire_fixture
-{
-    set_price_fixture()
-    {
-        try
-        {
-            connp->exec("update price_list set price = price + 0.11 where zone = 1 and operation = 2");
-        }
-        catch(...)
-        {
-            fixture_exception_handler("set_price_fixture ctor exception", true)();
-        }
-    }
-protected:
-    ~set_price_fixture()
-    {
-        try
-        {
-            connp->exec("update price_list set price = price - 0.11 where zone = 1 and operation = 2");
-        }
-        catch(...)
-        {
-            fixture_exception_handler("set_price_fixture dtor exception", false)();
-        }
-    }
-};
-
-
 struct get_operation_price_result_fixture
         : virtual db_conn_acquire_fixture
 {
@@ -265,16 +236,33 @@ struct create_zone_fixture
     Fred::Zone::Manager::ZoneManagerPtr zoneMan;
     std::string test_zone_fqdn;
     std::string test_enum_zone_fqdn;
+    std::string test_zeroprice_zone_fqdn;
+    std::string test_zeroprice_enum_zone_fqdn;
+    std::string test_zeroperiod_zone_fqdn;
+    std::string test_zeroperiod_enum_zone_fqdn;
+    std::string test_nooperationprice_zone_fqdn;
+    std::string test_nooperationprice_enum_zone_fqdn;
 
     create_zone_fixture()
     try
     : zoneMan (Fred::Zone::Manager::create())
       , test_zone_fqdn(std::string("zone")+TimeStamp::microsec())
       , test_enum_zone_fqdn(std::string("zone")+TimeStamp::microsec()+".e164.arpa")
-
+      , test_zeroprice_zone_fqdn(std::string("zone-zeroprice")+TimeStamp::microsec())
+      , test_zeroprice_enum_zone_fqdn(std::string("zone-zeroprice")+TimeStamp::microsec()+".e164.arpa")
+      , test_zeroperiod_zone_fqdn(std::string("zone-zeroperiod")+TimeStamp::microsec())
+      , test_zeroperiod_enum_zone_fqdn(std::string("zone-zeroperiod")+TimeStamp::microsec()+".e164.arpa")
+      , test_nooperationprice_zone_fqdn(std::string("zone-nooperationprice")+TimeStamp::microsec())
+      , test_nooperationprice_enum_zone_fqdn(std::string("zone-nooperationprice")+TimeStamp::microsec()+".e164.arpa")
     {
         zoneMan->addZone(test_zone_fqdn);
         zoneMan->addZone(test_enum_zone_fqdn);
+        zoneMan->addZone(test_zeroprice_zone_fqdn);
+        zoneMan->addZone(test_zeroprice_enum_zone_fqdn);
+        zoneMan->addZone(test_zeroperiod_zone_fqdn);
+        zoneMan->addZone(test_zeroperiod_enum_zone_fqdn);
+        zoneMan->addZone(test_nooperationprice_zone_fqdn);
+        zoneMan->addZone(test_nooperationprice_enum_zone_fqdn);
     }
     catch(...)
     {
@@ -296,7 +284,14 @@ struct zone_fixture
     try
     : zone_result(connp->exec_params(
         "select id, fqdn from zone where fqdn = $1::text or fqdn = $2::text "
-        , Database::query_param_list (test_zone_fqdn)(test_enum_zone_fqdn)))
+            " or fqdn = $3::text or fqdn = $4::text "
+            " or fqdn = $5::text or fqdn = $6::text "
+            " or fqdn = $7::text or fqdn = $8::text "
+        , Database::query_param_list (test_zone_fqdn)(test_enum_zone_fqdn)
+        (test_zeroprice_zone_fqdn)(test_zeroprice_enum_zone_fqdn)
+        (test_zeroperiod_zone_fqdn)(test_zeroperiod_enum_zone_fqdn)
+        (test_nooperationprice_zone_fqdn)(test_nooperationprice_enum_zone_fqdn)
+        ))
     {}
     catch(...)
     {
@@ -308,6 +303,134 @@ protected:
     {}
 };
 
+
+struct operation_price_fixture
+    : virtual db_conn_acquire_fixture
+    , virtual zone_fixture
+{
+    operation_price_fixture()
+    {
+        try
+        {
+            //connp->exec("update price_list set price = price + 0.11 where zone = 1 and operation = 2");
+
+            std::string insert_operation_price =
+                    "insert into price_list (zone, operation, valid_from, valid_to, price, period) "
+                    " values ( (select id from zone where fqdn = $1::text limit 1) " //cz
+                    " , (select id from enum_operation where operation = $2::text ) " //CreateDomain,
+                    " , $3::timestamp , $4::timestamp " //utc timestamp, valid_to might be null
+                    " , $5::numeric(10,2) , $6::integer)" ; // numeric(10,2) must round to an absolute value less than 10^8 (max +/-99999999.99)
+
+            //test_zone_fqdn create and renew price
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zone_fqdn)
+                ("CreateDomain")
+                ("2007-09-29 19:00:00")("2009-12-31 23:00:00")
+                ("0")("0"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zone_fqdn)
+                ("CreateDomain")
+                ("2009-12-31 23:00:00")(Database::QPNull)
+                ("0")("0"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zone_fqdn)
+                ("RenewDomain")
+                ("2007-09-29 19:00:00")("2009-12-31 23:00:00")
+                ("190")("12"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zone_fqdn)
+                ("RenewDomain")
+                ("2009-12-31 23:00:00")("2011-01-31 23:00:00")
+                ("155")("12"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zone_fqdn)
+                ("RenewDomain")
+                ("2011-01-31 23:00:00")(Database::QPNull)
+                ("140")("12"));
+
+            //test_enum_zone_fqdn create and renew price
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_enum_zone_fqdn)
+                ("CreateDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("0")("0"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_enum_zone_fqdn)
+                ("RenewDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("1")("12"));
+
+            //test_zeroprice_zone_fqdn create and renew price
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zeroprice_zone_fqdn)
+                ("CreateDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("0")("0"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zeroprice_zone_fqdn)
+                ("RenewDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("0")("12"));
+
+            //test_zeroprice_enum_zone_fqdn create and renew price
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zeroprice_enum_zone_fqdn)
+                ("CreateDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("0")("0"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zeroprice_enum_zone_fqdn)
+                ("RenewDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("0")("12"));
+
+
+            //test_zeroperiod_zone_fqdn create and renew price
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zeroperiod_zone_fqdn)
+                ("CreateDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("0")("0"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zeroperiod_zone_fqdn)
+                ("RenewDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("140")("0"));
+
+            //test_zeroperiod_enum_zone_fqdn create and renew price
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zeroperiod_enum_zone_fqdn)
+                ("CreateDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("0")("0"));
+            connp->exec_params(insert_operation_price
+                , Database::query_param_list (test_zeroperiod_enum_zone_fqdn)
+                ("RenewDomain")
+                ("2007-09-29 19:00:00")(Database::QPNull)
+                ("0")("12"));
+
+
+        }
+        catch(...)
+        {
+            fixture_exception_handler("operation_price_fixture ctor exception", true)();
+        }
+    }
+protected:
+    ~operation_price_fixture()
+    {
+        try
+        {
+            connp->exec("update price_list set price = price - 0.11 where zone = 1 and operation = 2");
+        }
+        catch(...)
+        {
+            fixture_exception_handler("operation_price_fixture dtor exception", false)();
+        }
+    }
+};
+
+
 struct try_insert_invoice_prefix_fixture
     : virtual zone_fixture
     , virtual invoice_manager_fixture
@@ -316,7 +439,7 @@ struct try_insert_invoice_prefix_fixture
     {
         try
         {
-            //BOOST_TEST_MESSAGE(std::string("zone_result.size(): ")+boost::lexical_cast<std::string>(zone_result.size()));
+            BOOST_TEST_MESSAGE(std::string("zone_result.size(): ")+boost::lexical_cast<std::string>(zone_result.size()));
 
             for (std::size_t zone_i = 0; zone_i < zone_result.size() ; ++zone_i)
             {
@@ -537,7 +660,7 @@ protected:
 
 struct Case_invoice_registrar1_Fixture
     : virtual db_conn_acquire_fixture
-    , virtual set_price_fixture
+    , virtual operation_price_fixture
     , virtual get_operation_price_result_fixture
     , virtual corba_init_fixture
     , virtual zone_fixture
