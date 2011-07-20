@@ -856,7 +856,7 @@ ManagerImpl::i_getRequestCountUsers(
 
     std::auto_ptr<RequestCountInfo> info (new RequestCountInfo());
 
-    for(int i=0;i<res.size();++i) {
+    for(size_t i=0;i<res.size();++i) {
         std::string user_handle = (std::string)res[i][0];
         unsigned long long count = (unsigned long long)res[i][1];
 

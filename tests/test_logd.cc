@@ -1161,10 +1161,6 @@ BOOST_AUTO_TEST_CASE( get_request_count_users_compare )
 
     std::auto_ptr<RequestCountInfo> info_ptr = test.getRequestCountUsers(begin, end, "EPP");
 
-    RequestCountInfo &info = *(info_ptr.get());
-
-    size_t size = info.size();
-
     for (RequestCountInfo::iterator it = info_ptr->begin(); it != info_ptr->end(); it++) {
         unsigned long long check_count = test.getRequestCount(begin, end, "EPP", it->first);
 
@@ -1172,17 +1168,6 @@ BOOST_AUTO_TEST_CASE( get_request_count_users_compare )
                 "Count got from getRequestCount and getRequestCountUsers matches");
     }
 
-}
-
-BOOST_AUTO_TEST_CASE( get_request_count_valid )
-{
-	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
-
-    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
-	boost::posix_time::ptime end   (time_from_string("2011-01-31"));
-
-
-    unsigned long long count = test.getRequestCount(begin, end, "EPP", "REG-FRED_A");
 }
 
 const std::string REQUEST_COUNT_QUERY (
