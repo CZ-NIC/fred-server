@@ -312,14 +312,12 @@ struct operation_price_fixture
     {
         try
         {
-            //connp->exec("update price_list set price = price + 0.11 where zone = 1 and operation = 2");
-
             std::string insert_operation_price =
-                    "insert into price_list (zone, operation, valid_from, valid_to, price, period) "
-                    " values ( (select id from zone where fqdn = $1::text limit 1) " //cz
-                    " , (select id from enum_operation where operation = $2::text ) " //CreateDomain,
-                    " , $3::timestamp , $4::timestamp " //utc timestamp, valid_to might be null
-                    " , $5::numeric(10,2) , $6::integer)" ; // numeric(10,2) must round to an absolute value less than 10^8 (max +/-99999999.99)
+                "insert into price_list (zone, operation, valid_from, valid_to, price, period) "
+                " values ( (select id from zone where fqdn = $1::text limit 1) " //cz
+                " , (select id from enum_operation where operation = $2::text ) " //CreateDomain,
+                " , $3::timestamp , $4::timestamp " //utc timestamp, valid_to might be null
+                " , $5::numeric(10,2) , $6::integer)" ; // numeric(10,2) must round to an absolute value less than 10^8 (max +/-99999999.99)
 
             //test_zone_fqdn create and renew price
             connp->exec_params(insert_operation_price
@@ -384,7 +382,6 @@ struct operation_price_fixture
                 ("2007-09-29 19:00:00")(Database::QPNull)
                 ("0")("12"));
 
-
             //test_zeroperiod_zone_fqdn create and renew price
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_zeroperiod_zone_fqdn)
@@ -395,20 +392,19 @@ struct operation_price_fixture
                 , Database::query_param_list (test_zeroperiod_zone_fqdn)
                 ("RenewDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("140")("0"));
+                ("140.11")("0"));
 
             //test_zeroperiod_enum_zone_fqdn create and renew price
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_zeroperiod_enum_zone_fqdn)
                 ("CreateDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("0")("0"));
+                ("100.11")("0"));
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_zeroperiod_enum_zone_fqdn)
                 ("RenewDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("0")("12"));
-
+                ("0")("0"));
 
         }
         catch(...)
