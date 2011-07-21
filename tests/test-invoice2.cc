@@ -56,6 +56,8 @@
 #include "corba/EPP.hh"
 #include "epp/epp_impl.h"
 
+#include "util/decimal/decimal.h"
+
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
@@ -160,6 +162,13 @@ protected:
         }
     }
 };
+
+static std::string zone_registrar_credit_query (
+        "select COALESCE(SUM(credit), 0) from invoice "
+        " where zone = $1::bigint and registrarid =$2::bigint "
+        " group by registrarid, zone ");
+
+static int start_year = 2005;
 
 struct get_operation_price_result_fixture
         : virtual db_conn_acquire_fixture
@@ -472,14 +481,14 @@ struct try_insert_invoice_prefix_fixture
             {
                 unsigned long long zone_id(zone_result[zone_i][0]);
 
-                for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+                for (int year = start_year; year < boost::gregorian::day_clock::universal_day().year() + 3 ; ++year)
                 {
                     try{
                     invMan->insertInvoicePrefix(
                              zone_id//zoneId
                             , 0//type
                             , year//year
-                            , year*zone_id*10000//prefix
+                            , year*zone_id*100000//prefix
                             );
                     }catch(...){}
 
@@ -488,7 +497,7 @@ struct try_insert_invoice_prefix_fixture
                             zone_id//zoneId
                             , 1//type
                             , year//year
-                            , year*zone_id*10000 + 1000//prefix
+                            , year*zone_id*100000 + 10000//prefix
                             );
                     }catch(...){}
                 }//for
@@ -607,6 +616,68 @@ struct registrar_fixture
                 }//for vat
             }//for invoice_num
 
+            //big credit registrar
+            for(int vat = 0; vat < 2; ++vat )
+            {
+                std::string registrar_handle("REG-FRED_");
+                registrar_handle += "BIGCREDIT_";
+                registrar_handle += "INZONE_";
+                registrar_handle += (vat ? "VAT_" : "NOVAT_");
+                registrar_handle += time_string;
+
+                unsigned long long registrar_id;
+
+                //BOOST_TEST_MESSAGE( std::string("Registrar: ")+registrar_handle);
+
+                registrar_id = create_test_registrar(registrar_handle, vat);
+
+                registrar_query_params.push_back(registrar_id);
+                registrar_query += " or id=$"
+                        +boost::lexical_cast<std::string>(registrar_query_params.size())
+                        +"::bigint";
+
+                for(std::size_t i = 0 ; i < zone_result.size(); ++i)
+                {
+                    std::string rzzone (zone_result[i][1]);
+                    Database::Date rzfromDate;
+                    Database::Date rztoDate;
+
+                    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+                }
+            }//for vat
+
+            //negative credit registrar
+            for(int vat = 0; vat < 2; ++vat )
+            {
+                std::string registrar_handle("REG-FRED_");
+                registrar_handle += "NEGCREDIT_";
+                registrar_handle += "INZONE_";
+                registrar_handle += (vat ? "VAT_" : "NOVAT_");
+                registrar_handle += time_string;
+
+                unsigned long long registrar_id;
+
+                //BOOST_TEST_MESSAGE( std::string("Registrar: ")+registrar_handle);
+
+                registrar_id = create_test_registrar(registrar_handle, vat);
+
+                registrar_query_params.push_back(registrar_id);
+                registrar_query += " or id=$"
+                        +boost::lexical_cast<std::string>(registrar_query_params.size())
+                        +"::bigint";
+
+                for(std::size_t i = 0 ; i < zone_result.size(); ++i)
+                {
+                    std::string rzzone (zone_result[i][1]);
+                    Database::Date rzfromDate;
+                    Database::Date rztoDate;
+
+                    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+                }
+
+            }//for vat
+
+
             for(int in_zone = 0; in_zone < 2; ++in_zone)
             {
                 for(int vat = 0; vat < 2; ++vat )
@@ -686,7 +757,16 @@ struct create_deposit_invoice_fixture
                     for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
                     {
                         unsigned long long zone_id ( zone_result[zone_i][0]);
-                        int year = 2000;
+
+                        //credit before
+                        Database::Result credit0_res = connp->exec_params(zone_registrar_credit_query
+                                , Database::query_param_list(zone_id)(registrar_id));
+                        std::string credit0_from_query;
+                        if(credit0_res.size() ==  1 && credit0_res[0].size() == 1)
+                            credit0_from_query = std::string(credit0_res[0][0]);
+
+                        //add credit
+                        int year = start_year;
                         {
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
@@ -698,7 +778,15 @@ struct create_deposit_invoice_fixture
                                     , price);//price
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
-                        }//createDepositInvoice
+                        }
+
+                        //credit after
+                        Database::Result credit1_res = connp->exec_params(zone_registrar_credit_query
+                                , Database::query_param_list(zone_id)(registrar_id));
+                        std::string credit1_from_query;
+                        if(credit0_res.size() ==  1 && credit1_res[0].size() == 1)
+                            credit1_from_query = std::string(credit1_res[0][0]);
+
                     }//for zone_i
                     continue;//don't add other credit
                 }//if LOWCREDIT1
@@ -708,7 +796,7 @@ struct create_deposit_invoice_fixture
                     for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
                     {
                         unsigned long long zone_id ( zone_result[zone_i][0]);
-                        int year = 2000;
+                        int year = start_year;
                         {
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
@@ -735,12 +823,58 @@ struct create_deposit_invoice_fixture
                     continue;//don't add other credit
                 }//if LOWCREDIT2
 
+                //big credit
+                if(std::string(registrar_result[registrar_i][1]).find("BIGCREDIT") != std::string::npos)
+                {
+                    for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
+                    {
+                        unsigned long long zone_id ( zone_result[zone_i][0]);
+                        int year = start_year;
+                        {
+                            unsigned long long invoiceid = 0;
+                            Database::Date taxdate;
+                            taxdate = Database::Date(year,1,1);
+                            unsigned long price = 3000000000UL;//cents
+                            invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                                    , zone_id//zone
+                                    , registrar_id//registrar
+                                    , price);//price
+                            BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                            if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
+                        }//createDepositInvoice
+                    }//for zone_i
+                    continue;//don't add other credit
+                }//if BIGCREDIT
+
+                //negative credit
+                if(std::string(registrar_result[registrar_i][1]).find("NEGCREDIT") != std::string::npos)
+                {
+                    for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
+                    {
+                        unsigned long long zone_id ( zone_result[zone_i][0]);
+                        int year = start_year;
+                        {
+                            unsigned long long invoiceid = 0;
+                            Database::Date taxdate;
+                            taxdate = Database::Date(year,1,1);
+                            signed long long price = -3000000000LL;//cents
+                            invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                                    , zone_id//zone
+                                    , registrar_id//registrar
+                                    , price);//price
+                            BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                            if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
+                        }//createDepositInvoice
+                    }//for zone_i
+                    continue;//don't add other credit
+                }//if NEGCREDIT
+
                 //add a lot of credit
                 for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
                 {
                     unsigned long long zone_id ( zone_result[zone_i][0]);
 
-                    for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+                    for (int year = start_year; year < boost::gregorian::day_clock::universal_day().year() + 3 ; ++year)
                     {
                         unsigned long long invoiceid = 0;
                         Database::Date taxdate;
@@ -831,6 +965,4 @@ BOOST_FIXTURE_TEST_CASE( invoice_registrar1, Case_invoice_registrar1_Fixture )
     BOOST_CHECK(static_cast<bool>(connp->exec("select 1")[0][0]));
 }
 
-
 BOOST_AUTO_TEST_SUITE_END();//TestInvoice2
-
