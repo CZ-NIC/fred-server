@@ -829,7 +829,7 @@ struct create_deposit_invoice_fixture
                     for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
                     {
                         unsigned long long zone_id ( zone_result[zone_i][0]);
-                        int year = start_year;
+                        for (int year = start_year; year < boost::gregorian::day_clock::universal_day().year() + 3 ; ++year)
                         {
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
@@ -852,7 +852,7 @@ struct create_deposit_invoice_fixture
                     for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
                     {
                         unsigned long long zone_id ( zone_result[zone_i][0]);
-                        int year = start_year;
+                        for (int year = start_year; year < boost::gregorian::day_clock::universal_day().year() + 3 ; ++year)
                         {
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
