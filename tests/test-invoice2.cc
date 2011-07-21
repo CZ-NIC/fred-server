@@ -516,6 +516,7 @@ struct registrar_fixture
 
     unsigned long long create_test_registrar(const std::string& registrar_handle, bool vat = true)
     {
+        //BOOST_TEST_MESSAGE( std::string("Create test registrar: ")+registrar_handle);
         Fred::Registrar::Manager::AutoPtr regMan
                  = Fred::Registrar::Manager::create(DBSharedPtr());
         Fred::Registrar::Registrar::AutoPtr registrar
@@ -578,7 +579,7 @@ struct registrar_fixture
                 for(int vat = 0; vat < 2; ++vat )
                 {
                     std::string registrar_handle("REG-FRED_");
-                    registrar_handle += (invoice_num ? "LOWCREDIT1_" : "LOWCREDIT2_");
+                    registrar_handle += (invoice_num==1 ? "LOWCREDIT1_" : "LOWCREDIT2_");
                     registrar_handle += "INZONE_";
                     registrar_handle += (vat ? "VAT_" : "NOVAT_");
                     registrar_handle += time_string;
@@ -651,7 +652,7 @@ struct registrar_fixture
         }
         catch(...)
         {
-            fixture_exception_handler("registrar_vat_fixture ctor exception", true)();
+            fixture_exception_handler("registrar_fixture ctor exception", true)();
         }
     }
 protected:
