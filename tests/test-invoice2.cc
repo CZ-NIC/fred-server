@@ -859,7 +859,7 @@ struct create_deposit_invoice_fixture
                         else
                             credit1.set_string("0");
 
-                        std::cout << "credit1: " << credit1.get_string() << std::endl;
+                        //std::cout << "credit1: " << credit1.get_string() << std::endl;
                         BOOST_CHECK(credit1 - credit0 == Decimal("10") - credit_vat);
 
                     }//for zone_i
