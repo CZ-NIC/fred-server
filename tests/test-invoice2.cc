@@ -731,7 +731,6 @@ protected:
     {}
 };
 
-
 struct create_deposit_invoice_fixture
   : virtual zone_fixture
   , virtual registrar_fixture
@@ -739,10 +738,77 @@ struct create_deposit_invoice_fixture
 {
     std::vector<unsigned long long> deposit_invoice_id_vect;
 
+
+    //count VAT from price without tax using coefficient - local CZ rules
+    Decimal count_dph( //returning vat rounded half-up to 2 decimal places
+        Decimal price //Kc incl. vat
+        , Decimal vat_reverse //vat coeff like 0.1597 for vat 19%
+      )
+    {
+        Decimal vat =   price * vat_reverse;
+        vat.round(2,MPD_ROUND_HALF_UP);
+
+        std::cout << (boost::format("count_dph price %1% vat_reverse %2% vat %3%")
+           % price % vat_reverse % vat) << std::endl;
+
+       LOGGER(PACKAGE).debug (
+           boost::format("count_dph price %1% vat_reverse %2% vat %3%")
+           % price % vat_reverse % vat);
+
+       return vat;
+    }
+
+    Decimal test_vat(Decimal price, boost::gregorian::date taxdate, unsigned long long registrar_id)
+    {
+        Database::Result rvat = connp->exec_params("SELECT vat FROM registrar WHERE id=$1::integer",
+                Database::query_param_list(registrar_id));
+
+        if(rvat.size() != 1 || rvat[0][0].isnull() ) {
+            throw std::runtime_error(
+                (boost::format(" Couldn't determine whether the registrar with ID %1% pays VAT.")
+                    % registrar_id).str());
+        }
+        bool pay_vat = rvat[0][0];
+
+        std::cout << "pay_vat: " << pay_vat << std::endl;
+
+        // VAT  percentage
+        Decimal vat_percent("0");
+        // ratio for reverse VAT calculation
+        // price_without_vat = price_with_vat - price_with_vat*vat_reverse
+        // it should have 4 decimal places in the DB
+        Decimal vat_reverse("0");
+
+        Database::Result vat_details = connp->exec_params(
+        "select vat, koef::numeric from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
+        , Database::query_param_list(taxdate.is_special() ? boost::gregorian::day_clock::universal_day() : taxdate )
+        );
+
+        if(vat_details.size() > 1) {
+            throw std::runtime_error("Multiple valid VAT values found.");
+        } else if(vat_details.size() == 0) {
+            throw std::runtime_error("No valid VAT value found.");
+        }
+
+        if(vat_details[0][0].isnull() == false)
+            vat_percent.set_string(vat_details[0][0]);
+
+        std::cout << "vat_percent: " << vat_percent << std::endl;
+
+        if(vat_details[0][1].isnull() == false)
+            vat_reverse.set_string(vat_details[0][1]);
+
+        std::cout << "vat_reverse: " << vat_reverse << std::endl;
+
+        return count_dph(price,vat_reverse);
+    }
+
+
     create_deposit_invoice_fixture()
     {
         try
         {
+
             for(std::size_t registrar_i = 0; registrar_i < registrar_result.size(); ++registrar_i)
             {
                 //if nocredit registrar
@@ -761,9 +827,13 @@ struct create_deposit_invoice_fixture
                         //credit before
                         Database::Result credit0_res = connp->exec_params(zone_registrar_credit_query
                                 , Database::query_param_list(zone_id)(registrar_id));
-                        std::string credit0_from_query;
+                        Decimal credit0;
                         if(credit0_res.size() ==  1 && credit0_res[0].size() == 1)
-                            credit0_from_query = std::string(credit0_res[0][0]);
+                            credit0.set_string(std::string(credit0_res[0][0]));
+                        else
+                            credit0.set_string("0");
+
+                        Decimal credit_vat;
 
                         //add credit
                         int year = start_year;
@@ -778,14 +848,22 @@ struct create_deposit_invoice_fixture
                                     , price);//price
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
+
+
+                            credit_vat = test_vat(Decimal("10"),taxdate, registrar_id);
                         }
 
                         //credit after
                         Database::Result credit1_res = connp->exec_params(zone_registrar_credit_query
                                 , Database::query_param_list(zone_id)(registrar_id));
-                        std::string credit1_from_query;
-                        if(credit0_res.size() ==  1 && credit1_res[0].size() == 1)
-                            credit1_from_query = std::string(credit1_res[0][0]);
+                        Decimal credit1;
+                        if(credit1_res.size() ==  1 && credit1_res[0].size() == 1)
+                            credit1.set_string( std::string(credit1_res[0][0]));
+                        else
+                            credit1.set_string("0");
+
+                        std::cout << "credit1: " << credit1.get_string() << std::endl;
+                        BOOST_CHECK(credit1 - credit0 == Decimal("10") - credit_vat);
 
                     }//for zone_i
                     continue;//don't add other credit

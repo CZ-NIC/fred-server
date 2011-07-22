@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <algorithm>
 #include <functional>
@@ -119,6 +120,12 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
     BOOST_CHECK(Decimal().is_nan());//default ctor init check
     BOOST_CHECK(Decimal().get_string().compare("NaN") == 0);//default ctor init check
 
+    BOOST_CHECK(Decimal(std::string()).is_nan());//string ctor
+    BOOST_CHECK(Decimal(std::string()).get_string().compare("NaN") == 0);//string ctor
+
+    BOOST_CHECK(Decimal(std::string("1.1")) == Decimal("1.1"));//string ctor
+
+
     BOOST_CHECK(Decimal("Infinity") == Decimal("Infinity"));
     BOOST_CHECK(Decimal("Infinity") != Decimal("-Infinity"));
     BOOST_CHECK(Decimal("NaN") != Decimal("NaN"));
@@ -136,6 +143,15 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
     c = a;//assignment operator
     BOOST_CHECK(c == a);
     BOOST_CHECK(c.get_precision() == 500);
+
+    //stream operators
+    Decimal dstream1("111.333");
+    Decimal dstream2;
+    std::stringstream sstr;
+    sstr << dstream1;
+    sstr >> dstream2;
+    BOOST_CHECK(dstream1 == dstream2);
+
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestDecimal

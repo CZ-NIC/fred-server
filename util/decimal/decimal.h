@@ -26,6 +26,7 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 #include <string>
 #include <boost/operators.hpp>
 #include <boost/lexical_cast.hpp>
@@ -225,6 +226,11 @@ public:
         }
     }
 
+    void set_string(const std::string& str)
+    {
+        set_string(str.c_str());
+    }
+
     bool is_special() const
     {
         return mpd_isspecial(pvalue);
@@ -249,7 +255,7 @@ public:
     {
         return mpd_isnegative(pvalue);
     }
-    std::string get_string()
+    std::string get_string() const
     {
         std::string ret;
         try
@@ -268,7 +274,7 @@ public:
     }
 
     //format string fmt syntax is the same as in Python PEP 3101 Standard Format Specifiers
-    std::string get_string(const char* fmt)
+    std::string get_string(const char* fmt) const
     {
         std::string ret;
         try
@@ -316,6 +322,23 @@ public:
             decimal_exception_handler("Decimal(const char *str) ctor exception", true)();
         }
     }
+
+    Decimal(const std::string& str)
+    : traphandler(0)
+    , pvalue(0)
+    {
+        try
+        {
+            init(default_precision);
+            alloc_pvalue();
+            set_string(str);
+        }
+        catch(...)
+        {
+            decimal_exception_handler("Decimal(const std::string& str) ctor exception", true)();
+        }
+    }
+
 
     //copy
     Decimal(const Decimal& param )
@@ -368,26 +391,6 @@ public:
 
         return *this;
     }//operator=
-
-    Decimal(const unsigned precision)
-    : traphandler(0)
-    , pvalue(0)
-    {
-        try
-        {
-            init(precision);
-            alloc_pvalue();
-        }
-        catch(...)
-        {
-            const  std::size_t msg_len = 512;
-            char msg[msg_len]={0};
-            snprintf(msg, msg_len
-                    ,"Decimal(const std::size_t precision: %u) ctor exception"
-                    , precision);
-            decimal_exception_handler(msg, true)();
-        }
-    }
 
     Decimal(const char *str, const unsigned precision)
     : traphandler(0)
@@ -597,6 +600,20 @@ public:
         return *this;
     }
 
+    friend std::ostream &operator<<(std::ostream &stream, Decimal d)
+    {
+        stream << d.get_string();
+        return stream;
+    }
+
+    friend std::istream &operator>>(std::istream &stream, Decimal &d)
+    {
+        std::string tmp_str;
+        stream >> tmp_str;
+        d.set_string(tmp_str);
+        return stream;
+    }
 
 };//class Decimal
+
 #endif // DECIMAL_H_

@@ -14,6 +14,7 @@
 #include "mailer.h"
 #include "db_settings.h"
 #include "model/model_filters.h"
+#include "util/decimal/decimal.h"
 
 namespace Fred {
 namespace Invoicing {

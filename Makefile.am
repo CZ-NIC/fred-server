@@ -544,6 +544,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	src/fredlib/banking/libbanking.a \
     util/log/liblog.a \
 	util/libutil.a \
+	util/decimal/libmpdec.a -lm \
 		    src/corba/libmailer.a \
 	    src/corba/libfilemanager.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
@@ -640,7 +641,6 @@ src/corba/RegistrySK.cc: $(IDLDIR)/Registry.idl $(IDLDIR)/Filters.idl $(IDLDIR)/
 	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Registry.idl
 
 src/corba/WhoisSK.cc: $(IDLDIR)/Whois.idl $(IDLDIR)/Registry.idl $(IDLDIR)/_dataTypes.idl
-	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Whois.idl
 
 src/corba/AdminSK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Whois.idl $(IDLDIR)/Filters.idl $(IDLDIR)/Registry.idl $(IDLDIR)/_dataTypes.idl
 	omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Admin.idl
@@ -768,6 +768,7 @@ src_corba_messages_fred_msgd_LDADD =  src/fredlib/messages/libmessages.a \
                      src/model/libmodel.a src/fredlib/banking/libbanking.a \
                      util/log/liblog.a util/types/libtypes.a \
                      util/db/libdb.a src/old_utils/liboldutils.a \
+                     util/decimal/libmpdec.a -lm \
                      src/corba/libcorbadatatypes.a
 
 #src corba messages
@@ -805,6 +806,7 @@ src_corba_mojeid_fred_mifd_LDADD = $(LIBIDN_LIBS) \
                      src/fredlib/messages/libmessages.a \
                      util/libutil.a util/log/liblog.a util/types/libtypes.a \
                      util/db/libdb.a src/old_utils/liboldutils.a \
+                     util/decimal/libmpdec.a -lm \
                      src/corba/libcorbadatatypes.a
 
 #src corba mojeid
@@ -890,6 +892,7 @@ src_cli_admin_fred_admin_LDADD = \
         util/libutil.a util/log/liblog.a util/types/libtypes.a util/db/libdb.a \
         src/old_utils/liboldutils.a \
         util/hp/libhp.a \
+        util/decimal/libmpdec.a \
         src/corba/libmailer.a \
 	    src/corba/libfilemanager.a
 
