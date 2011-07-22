@@ -116,6 +116,9 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
     BOOST_CHECK(Decimal("NaN").is_nan());//NaN
     BOOST_CHECK(Decimal("-NaN").is_nan());//-NaN
 
+    BOOST_CHECK(Decimal().is_nan());//default ctor init check
+    BOOST_CHECK(Decimal().get_string().compare("NaN") == 0);//default ctor init check
+
     BOOST_CHECK(Decimal("Infinity") == Decimal("Infinity"));
     BOOST_CHECK(Decimal("Infinity") != Decimal("-Infinity"));
     BOOST_CHECK(Decimal("NaN") != Decimal("NaN"));

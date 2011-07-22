@@ -293,6 +293,7 @@ public:
         {
             init(default_precision);
             alloc_pvalue();
+            set_string("");
         }
         catch(...)
         {
