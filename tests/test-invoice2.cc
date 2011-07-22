@@ -748,9 +748,6 @@ struct create_deposit_invoice_fixture
         Decimal vat =   price * vat_reverse;
         vat.round(2,MPD_ROUND_HALF_UP);
 
-        std::cout << (boost::format("count_dph price %1% vat_reverse %2% vat %3%")
-           % price % vat_reverse % vat) << std::endl;
-
        LOGGER(PACKAGE).debug (
            boost::format("count_dph price %1% vat_reverse %2% vat %3%")
            % price % vat_reverse % vat);
@@ -770,7 +767,7 @@ struct create_deposit_invoice_fixture
         }
         bool pay_vat = rvat[0][0];
 
-        std::cout << "pay_vat: " << pay_vat << std::endl;
+        //std::cout << "pay_vat: " << pay_vat << std::endl;
 
         // VAT  percentage
         Decimal vat_percent("0");
@@ -793,14 +790,14 @@ struct create_deposit_invoice_fixture
         if(vat_details[0][0].isnull() == false)
             vat_percent.set_string(vat_details[0][0]);
 
-        std::cout << "vat_percent: " << vat_percent << std::endl;
+        //std::cout << "vat_percent: " << vat_percent << std::endl;
 
         if(vat_details[0][1].isnull() == false)
             vat_reverse.set_string(vat_details[0][1]);
 
-        std::cout << "vat_reverse: " << vat_reverse << std::endl;
+        //std::cout << "vat_reverse: " << vat_reverse << std::endl;
 
-        return count_dph(price,vat_reverse);
+        return pay_vat ? count_dph(price,vat_reverse) : Decimal("0");
     }
 
 
