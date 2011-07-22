@@ -2556,8 +2556,6 @@ public:
             for (unsigned i=0; i < res3.size(); ++i)
             {
                 Database::ID       id             = res3[i][0];
-                try
-                {
 
                 Database::ID       zone           = res3[i][1];
                 std::string        fqdn           = res3[i][26];
@@ -2578,42 +2576,14 @@ public:
                 unsigned long long number         = res3[i][7];
                 Database::ID       registrar_id   = res3[i][8];
 
-                if (get_price(std::string(res3[i][9])) > 2147483647UL)
-                {
-                    LOGGER(PACKAGE).error(boost::format(
-                                    "reload() credit  %1% > 2147483647UL")
-                                    % std::string(res3[i][9]));
-                    continue;
-                }
                 Database::Money    credit         = res3[i][9];
 
-                if (get_price(std::string(res3[i][10])) > 2147483647UL)
-                {
-                    LOGGER(PACKAGE).error(boost::format(
-                                    "reload() price  %1% > 2147483647UL")
-                                    % std::string(res3[i][10]));
-                    continue;
-                }
                 Database::Money    price          = res3[i][10];
 
                 short              vat_rate       = res3[i][11];
 
-                if (get_price(std::string(res3[i][12])) > 2147483647UL)
-                {
-                    LOGGER(PACKAGE).error(boost::format(
-                                    "reload() total  %1% > 2147483647UL")
-                                    % std::string(res3[i][12]));
-                    continue;
-                }
                 Database::Money    total          = res3[i][12];
 
-                if (get_price(std::string(res3[i][13])) > 2147483647UL)
-                {
-                    LOGGER(PACKAGE).error(boost::format(
-                                    "reload() total_vat  %1% > 2147483647UL")
-                                    % std::string(res3[i][13]));
-                    continue;
-                }
                 Database::Money    total_vat      = res3[i][13];
 
                 Database::ID       filePDF        = res3[i][14];
@@ -2659,13 +2629,6 @@ public:
                                                 filepdf_name,
                                                 filexml_name,
                                                 man));
-                }//try
-                catch (std::exception& ex)
-                {
-                    LOGGER(PACKAGE).error(boost::format("reload continue because of exception invoice id %1% %2%") % id % ex.what());
-                    continue;
-                }
-
 
             }//for res3
 
