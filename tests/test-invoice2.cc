@@ -740,6 +740,77 @@ struct create_deposit_invoice_fixture
 
 
     //count VAT from price without tax using coefficient - local CZ rules
+    std::string count_dph( //returning vat rounded half-up to 2 decimal places
+        std::string price //Kc incl. vat
+        , std::string vat_reverse //vat coeff like 0.1597 for vat 19%
+      )
+    {
+
+        Database::Result vat_res = connp->exec_params(
+                "select round($1::numeric * $2::numeric, 2) "
+                ,Database::query_param_list(price)(vat_reverse));
+
+        std::string vat;
+
+        if(vat_res.size() == 1 && vat_res[0].size() == 1)
+            vat =std::string(vat_res[0][0]);
+        else
+            throw std::runtime_error("count_dph error");
+
+        LOGGER(PACKAGE).debug (
+            boost::format("count_dph price %1% vat_reverse %2% vat %3%")
+            % price % vat_reverse % vat);
+
+       return vat;
+    }
+
+    std::string test_vat(std::string price, boost::gregorian::date taxdate, unsigned long long registrar_id)
+    {
+        Database::Result rvat = connp->exec_params("SELECT vat FROM registrar WHERE id=$1::integer",
+                Database::query_param_list(registrar_id));
+
+        if(rvat.size() != 1 || rvat[0][0].isnull() ) {
+            throw std::runtime_error(
+                (boost::format(" Couldn't determine whether the registrar with ID %1% pays VAT.")
+                    % registrar_id).str());
+        }
+        bool pay_vat = rvat[0][0];
+
+        //std::cout << "pay_vat: " << pay_vat << std::endl;
+
+        // VAT  percentage
+        std::string vat_percent("0");
+        // ratio for reverse VAT calculation
+        // price_without_vat = price_with_vat - price_with_vat*vat_reverse
+        // it should have 4 decimal places in the DB
+        std::string vat_reverse("0");
+
+        Database::Result vat_details = connp->exec_params(
+        "select vat, koef::numeric from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
+        , Database::query_param_list(taxdate.is_special() ? boost::gregorian::day_clock::universal_day() : taxdate )
+        );
+
+        if(vat_details.size() > 1) {
+            throw std::runtime_error("Multiple valid VAT values found.");
+        } else if(vat_details.size() == 0) {
+            throw std::runtime_error("No valid VAT value found.");
+        }
+
+        if(vat_details[0][0].isnull() == false)
+            vat_percent=std::string(vat_details[0][0]);
+
+        //std::cout << "vat_percent: " << vat_percent << std::endl;
+
+        if(vat_details[0][1].isnull() == false)
+            vat_reverse=std::string(vat_details[0][1]);
+
+        //std::cout << "vat_reverse: " << vat_reverse << std::endl;
+
+        return pay_vat ? count_dph(price,vat_reverse) : std::string("0");
+    }
+
+
+    //count VAT from price without tax using coefficient - local CZ rules
     Decimal count_dph( //returning vat rounded half-up to 2 decimal places
         Decimal price //Kc incl. vat
         , Decimal vat_reverse //vat coeff like 0.1597 for vat 19%
@@ -824,13 +895,21 @@ struct create_deposit_invoice_fixture
                         //credit before
                         Database::Result credit0_res = connp->exec_params(zone_registrar_credit_query
                                 , Database::query_param_list(zone_id)(registrar_id));
-                        Decimal credit0;
+                        Decimal credit0_dec;
+                        std::string credit0_str;
                         if(credit0_res.size() ==  1 && credit0_res[0].size() == 1)
-                            credit0.set_string(std::string(credit0_res[0][0]));
+                        {
+                            credit0_dec.set_string(std::string(credit0_res[0][0]));
+                            credit0_str = std::string(credit0_res[0][0]);
+                        }
                         else
-                            credit0.set_string("0");
+                        {
+                            credit0_dec.set_string("0");
+                            credit0_str = std::string("0");
+                        }
 
-                        Decimal credit_vat;
+                        Decimal credit_vat_dec;
+                        std::string credit_vat_str;
 
                         //add credit
                         int year = start_year;
@@ -846,21 +925,49 @@ struct create_deposit_invoice_fixture
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
-
-                            credit_vat = test_vat(Decimal("10"),taxdate, registrar_id);
+                            credit_vat_dec = test_vat(Decimal("10"),taxdate, registrar_id);
+                            credit_vat_str = test_vat(std::string("10"),taxdate, registrar_id);
                         }
 
                         //credit after
                         Database::Result credit1_res = connp->exec_params(zone_registrar_credit_query
                                 , Database::query_param_list(zone_id)(registrar_id));
-                        Decimal credit1;
-                        if(credit1_res.size() ==  1 && credit1_res[0].size() == 1)
-                            credit1.set_string( std::string(credit1_res[0][0]));
-                        else
-                            credit1.set_string("0");
+                        Decimal credit1_dec;
+                        std::string credit1_str;
 
-                        //std::cout << "credit1: " << credit1.get_string() << std::endl;
-                        BOOST_CHECK(credit1 - credit0 == Decimal("10") - credit_vat);
+                        if(credit1_res.size() ==  1 && credit1_res[0].size() == 1)
+                        {
+                            credit1_dec.set_string( std::string(credit1_res[0][0]));
+                            credit1_str = std::string(credit1_res[0][0]);
+                        }
+                        else
+                        {
+                            credit1_dec.set_string("0");
+                            credit1_str = std::string("0");
+                        }
+
+                        BOOST_CHECK(credit1_dec - credit0_dec == Decimal("10") - credit_vat_dec);
+
+                        Database::Result credit_difference_result
+                            = connp->exec_params("select $1::numeric - $2::numeric, '10.00'::numeric - $3::numeric "
+                            , Database::query_param_list(credit1_str)(credit0_str)(credit_vat_str));
+                        std::string credit_diff1_str;
+                        std::string credit_diff2_str;
+                        if(credit_difference_result.size() == 1 && credit_difference_result[0].size() == 2)
+                        {
+                            credit_diff1_str = std::string(credit_difference_result[0][0]);
+                            credit_diff2_str = std::string(credit_difference_result[0][1]);
+                        }
+                        else
+                        {
+                            credit_diff1_str = std::string("0");
+                            credit_diff2_str = std::string("0");
+                        }
+
+                        BOOST_CHECK(credit_diff1_str.compare(credit_diff2_str) == 0 );
+                        if(credit_diff1_str.compare(credit_diff2_str) != 0)
+                        std::cout << "credit_diff1_str: " << credit_diff1_str
+                                << " credit_diff2_str: " << credit_diff2_str << std::endl;
 
                     }//for zone_i
                     continue;//don't add other credit
@@ -871,6 +978,29 @@ struct create_deposit_invoice_fixture
                     for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
                     {
                         unsigned long long zone_id ( zone_result[zone_i][0]);
+
+                        //credit before
+                        Database::Result credit0_res = connp->exec_params(zone_registrar_credit_query
+                                , Database::query_param_list(zone_id)(registrar_id));
+                        Decimal credit0_dec;
+                        std::string credit0_str;
+                        if(credit0_res.size() ==  1 && credit0_res[0].size() == 1)
+                        {
+                            credit0_dec.set_string(std::string(credit0_res[0][0]));
+                            credit0_str = std::string(credit0_res[0][0]);
+                        }
+                        else
+                        {
+                            credit0_dec.set_string("0");
+                            credit0_str = std::string("0");
+                        }
+
+                        Decimal credit1_vat_dec;
+                        std::string credit1_vat_str;
+
+                        Decimal credit2_vat_dec;
+                        std::string credit2_vat_str;
+
                         int year = start_year;
                         {
                             unsigned long long invoiceid = 0;
@@ -884,6 +1014,49 @@ struct create_deposit_invoice_fixture
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
+                            credit1_vat_dec = test_vat(Decimal("10"),taxdate, registrar_id);
+                            credit1_vat_str = test_vat(std::string("10"),taxdate, registrar_id);
+
+                            //credit
+                            Database::Result credit1_res = connp->exec_params(zone_registrar_credit_query
+                                    , Database::query_param_list(zone_id)(registrar_id));
+                            Decimal credit1_dec;
+                            std::string credit1_str;
+                            if(credit1_res.size() ==  1 && credit1_res[0].size() == 1)
+                            {
+                                credit1_dec.set_string(std::string(credit1_res[0][0]));
+                                credit1_str = std::string(credit1_res[0][0]);
+                            }
+                            else
+                            {
+                                credit1_dec.set_string("0");
+                                credit1_str = std::string("0");
+                            }
+
+                            BOOST_CHECK(credit1_dec - credit0_dec == Decimal("10") - credit1_vat_dec);
+
+                            Database::Result credit1_difference_result
+                                = connp->exec_params("select $1::numeric - $2::numeric, '10.00'::numeric - $3::numeric "
+                                , Database::query_param_list(credit1_str)(credit0_str)(credit1_vat_str));
+                            std::string credit_diff1_str;
+                            std::string credit_diff2_str;
+                            if(credit1_difference_result.size() == 1 && credit1_difference_result[0].size() == 2)
+                            {
+                                credit_diff1_str = std::string(credit1_difference_result[0][0]);
+                                credit_diff2_str = std::string(credit1_difference_result[0][1]);
+                            }
+                            else
+                            {
+                                credit_diff1_str = std::string("0");
+                                credit_diff2_str = std::string("0");
+                            }
+
+                            BOOST_CHECK(credit_diff1_str.compare(credit_diff2_str) == 0 );
+                            if(credit_diff1_str.compare(credit_diff2_str) != 0)
+                            std::cout << "credit_diff1_str: " << credit_diff1_str
+                                    << " credit_diff2_str: " << credit_diff2_str << std::endl;
+
+
                             taxdate = Database::Date(year,12,31);
                             price = 1000UL;//cents
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
@@ -892,6 +1065,50 @@ struct create_deposit_invoice_fixture
                                     , price);//price
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
+
+                            credit2_vat_dec = test_vat(Decimal("10"),taxdate, registrar_id);
+                            credit2_vat_str = test_vat(std::string("10"),taxdate, registrar_id);
+
+
+                            //credit after
+                            Database::Result credit2_res = connp->exec_params(zone_registrar_credit_query
+                                    , Database::query_param_list(zone_id)(registrar_id));
+                            Decimal credit2_dec;
+                            std::string credit2_str;
+
+                            if(credit2_res.size() ==  1 && credit2_res[0].size() == 1)
+                            {
+                                credit2_dec.set_string( std::string(credit2_res[0][0]));
+                                credit2_str = std::string(credit2_res[0][0]);
+                            }
+                            else
+                            {
+                                credit2_dec.set_string("0");
+                                credit2_str = std::string("0");
+                            }
+
+                            BOOST_CHECK(credit2_dec - credit1_dec == Decimal("10") - credit2_vat_dec);
+
+                            Database::Result credit2_difference_result
+                                = connp->exec_params("select $1::numeric - $2::numeric, '10.00'::numeric - $3::numeric "
+                                , Database::query_param_list(credit2_str)(credit1_str)(credit2_vat_str));
+                            std::string credit_diff3_str;
+                            std::string credit_diff4_str;
+                            if(credit2_difference_result.size() == 1 && credit2_difference_result[0].size() == 2)
+                            {
+                                credit_diff3_str = std::string(credit2_difference_result[0][0]);
+                                credit_diff4_str = std::string(credit2_difference_result[0][1]);
+                            }
+                            else
+                            {
+                                credit_diff3_str = std::string("0");
+                                credit_diff4_str = std::string("0");
+                            }
+
+                            BOOST_CHECK(credit_diff3_str.compare(credit_diff4_str) == 0 );
+                            if(credit_diff3_str.compare(credit_diff4_str) != 0)
+                            std::cout << "credit_diff3_str: " << credit_diff3_str
+                                    << " credit_diff4_str: " << credit_diff4_str << std::endl;
 
                         }//createDepositInvoice
                     }//for zone_i
@@ -932,7 +1149,7 @@ struct create_deposit_invoice_fixture
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
-                            signed long long price = -3000000000LL;//cents
+                            signed long long price = -1000000000LL;//cents
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
