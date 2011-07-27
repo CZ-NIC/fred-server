@@ -152,6 +152,24 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
     sstr >> dstream2;
     BOOST_CHECK(dstream1 == dstream2);
 
+    //format and round money
+    BOOST_CHECK(Decimal("10").get_string(".2f").compare("10.00") == 0);//string ctor
+    BOOST_CHECK(Decimal("10.1").get_string(".2f").compare("10.10") == 0);//string ctor
+    BOOST_CHECK(Decimal("-10").get_string(".2f").compare("-10.00") == 0);//string ctor
+    BOOST_CHECK(Decimal("-10.1").get_string(".2f").compare("-10.10") == 0);//string ctor
+
+    BOOST_CHECK(Decimal("10.005").get_string(".2f").compare("10.01") == 0);//string ctor
+    BOOST_CHECK(Decimal("10000000.1").get_string(".2f").compare("10000000.10") == 0);//string ctor
+    BOOST_CHECK(Decimal("-10.005").get_string(".2f").compare("-10.01") == 0);//string ctor
+    BOOST_CHECK(Decimal("-10000000.1").get_string(".2f").compare("-10000000.10") == 0);//string ctor
+    BOOST_CHECK(Decimal("30000000.1").get_string(".2f").compare("30000000.10") == 0);//string ctor
+    BOOST_CHECK(Decimal("-30000000.1").get_string(".2f").compare("-30000000.10") == 0);//string ctor
+
+    BOOST_CHECK(Decimal("30000000.001").get_string(".2f").compare("30000000.00") == 0);//string ctor
+    BOOST_CHECK(Decimal("-30000000.001").get_string(".2f").compare("-30000000.00") == 0);//string ctor
+    BOOST_CHECK(Decimal("30000000.007").get_string(".2f").compare("30000000.01") == 0);//string ctor
+    BOOST_CHECK(Decimal("-30000000.007").get_string(".2f").compare("-30000000.01") == 0);//string ctor
+
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestDecimal
