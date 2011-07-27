@@ -407,6 +407,13 @@ public:
 // SPEC current time taken from now() in DB (which should be UTC)
 unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int registrarId, cent_amount price)
 {
+
+    if(price > 2147483647UL  ) {
+        throw std::runtime_error(
+            (boost::format("createDepositInvoice: price %1% is too high -- date: %2% zone id: %3% registrar id: %4% ")
+                % price % date % zoneId % registrarId ).str());
+    }
+
     Database::Connection conn = Database::Manager::acquire();
 
     Database::Result rvat = conn.exec_params("SELECT vat FROM registrar WHERE id=$1::integer",
