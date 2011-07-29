@@ -535,6 +535,245 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
+
+
+BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
+{
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+
+    //conf pointers
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+
+    //current time into char string
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_handle(std::string("REG-FRED_CREDITNOTE")+time_string);
+
+    registrar->setName(registrar_handle+"_Name");
+    registrar->setOrganization(registrar_handle+"_Organization");
+    registrar->setCity("Brno");
+    registrar->setStreet1("Street 1");
+    registrar->setStreet2("Street 2");
+    registrar->setStreet2("Street 3");
+    registrar->setDic("1234567889");
+    registrar->setEmail("info@nic.cz");
+    registrar->setFax("+420.123456");
+    registrar->setIco("92345678899");
+    registrar->setPostalCode("11150");
+    registrar->setProvince("noprovince");
+    registrar->setTelephone("+420.987654");
+    registrar->setVarSymb("555666");
+    registrar->setURL("http://ucho.cz");
+
+
+    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+    registrar->setVat(true);
+    registrar->save();
+
+    unsigned long long registrar_inv_id = registrar->getId();
+
+    LOGGER(PACKAGE).debug ( boost::format("createDepositInvoice test registrar_handle %1% registrar_inv_id %2%")
+               % registrar_handle % registrar_inv_id);
+
+
+    std::vector<registrar_credit_item> registrar_credit_vect;
+
+    {//get registrar credit
+        registrar_credit_item ci={1400,std::string("0.00"),0,std::string("0.00"), std::string("0.00"), Database::Date(1400,1,1)};
+
+        Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
+                , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+        if(credit_res.size() ==  1 && credit_res[0].size() == 1) ci.credit_from_query = std::string(credit_res[0][0]);
+
+        Database::Date taxdate (1400,1,1);
+        Database::Result vat_details = conn.exec_params(
+            "select vat, koef from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
+            , Database::query_param_list(taxdate.get()));
+        if(vat_details.size() == 1 && vat_details[0].size() == 2)
+        {
+            ci.vat = vat_details[0][0];
+            ci.koef = std::string(vat_details[0][1]);
+            ci.taxdate = taxdate;
+        }
+
+        registrar_credit_vect.push_back(ci);//save credit
+    }
+
+    //manager
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+    try_insert_invoice_prefix();
+
+    unsigned long long invoiceid = 0;
+    
+    unsigned long long credit_note_id = 0;
+
+    for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
+    {
+        {
+            Database::Date taxdate (year,1,1);
+            invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                    , zone_cz_id//zone
+                    , registrar_inv_id//registrar
+                    , 20000);//price
+            BOOST_CHECK_EQUAL(invoiceid != 0,true);
+
+            //get registrar credit
+            registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("200.00"), Database::Date(1400,1,1)};
+
+            Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
+                    , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+            if(credit_res.size() ==  1 && credit_res[0].size() == 1) ci.credit_from_query = std::string(credit_res[0][0]);
+
+            Database::Result vat_details = conn.exec_params(
+                "select vat, koef from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
+                , Database::query_param_list(taxdate.get()));
+            if(vat_details.size() == 1 && vat_details[0].size() == 2)
+            {
+                ci.vat = vat_details[0][0];
+                ci.koef = std::string(vat_details[0][1]);
+                ci.taxdate= taxdate;
+            }
+
+            registrar_credit_vect.push_back(ci);//save credit
+        }
+
+        {
+	    //credit note
+            Database::Date taxdate (year,1,1);
+            credit_note_id = invMan->createDepositInvoice(taxdate//taxdate
+                    , zone_cz_id//zone
+                    , registrar_inv_id//registrar
+                    , 20000);//price
+            BOOST_CHECK_EQUAL(credit_note_id != 0,true);
+
+            //credit note update
+            conn.exec_params(
+                "update invoice set price=-price,total=-total,totalvat=-totalvat,credit=0 where id=$1::bigint"
+                , Database::query_param_list (credit_note_id)
+            );
+
+            //deposit invoice update
+            conn.exec_params(
+                "update invoice set credit=0 where id=$1::bigint"
+                , Database::query_param_list (invoiceid)
+            );
+
+            //get registrar credit
+            registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("-200.00"), Database::Date(1400,1,1)};
+
+            Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
+                    , Database::query_param_list(zone_cz_id)(registrar_inv_id));
+            if(credit_res.size() ==  1 && credit_res[0].size() == 1) ci.credit_from_query = std::string(credit_res[0][0]);
+
+            Database::Result vat_details = conn.exec_params(
+                "select vat, koef from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
+                , Database::query_param_list(taxdate.get()));
+            if(vat_details.size() == 1 && vat_details[0].size() == 2)
+            {
+                ci.vat = vat_details[0][0];
+                ci.koef = std::string(vat_details[0][1]);
+                ci.taxdate = taxdate;
+            }
+
+            registrar_credit_vect.push_back(ci);//save credit
+        }
+    }//for createDepositInvoice
+
+    std::string dec_credit_query("select 0::numeric ");
+    Database::QueryParams dec_credit_query_params;
+
+    std::string test_credit_str;
+
+    for (std::size_t i = 0 ; i < registrar_credit_vect.size(); ++i)
+    {
+        dec_credit_query_params.push_back(registrar_credit_vect.at(i).price);
+        dec_credit_query_params.push_back(registrar_credit_vect.at(i).koef);
+        dec_credit_query += std::string(" + $")
+                + boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
+                +  "::numeric - ( $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size())
+                +"::numeric * $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
+                +"::numeric )::numeric(10,2) ";//round vat to 2 places
+
+        //std::string fred_credit_str ( str(boost::format("%1$.2f") % registrar_credit_vect.at(i).credit_from_query));
+        std::string fred_credit_str (registrar_credit_vect.at(i).credit_from_query);
+
+        test_credit_str = std::string(conn.exec_params(
+                dec_credit_query
+                , dec_credit_query_params)[0][0]);
+
+        BOOST_CHECK(fred_credit_str.compare(test_credit_str)==0);
+
+        if(fred_credit_str.compare(test_credit_str) != 0 )
+        {
+            std::cout << "taxdate: " << registrar_credit_vect.at(i).taxdate
+                << " year: " << registrar_credit_vect.at(i).year
+                << " price: " << registrar_credit_vect.at(i).price
+                << " credit: " <<  fred_credit_str
+                << " test_credit: " << test_credit_str
+                << " vat koef: " << registrar_credit_vect.at(i).koef
+                << " vat : " << registrar_credit_vect.at(i).vat
+                << std::endl;
+
+
+            std::cout << "\ndec_credit_query: " << dec_credit_query <<  std::endl;
+            std::cout << "\ndec_credit_query_params: ";
+            std::size_t i_num=0;
+            for (Database::QueryParams::iterator it = dec_credit_query_params.begin(); it != dec_credit_query_params.end(); ++it )
+            {
+                ++i_num;
+                std::cout << " $" << i_num << ": " << it->print_buffer();
+            }
+            std::cout << std::endl;
+        }//if not equal
+    }
+
+    std::string test_get_credit_by_zone = invMan->getCreditByZone(registrar_handle,zone_cz_id);
+
+    if(test_get_credit_by_zone.compare(test_credit_str) != 0)
+    {
+        std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone 
+	    << " test_credit_str: " << test_credit_str << std::endl;
+    }
+    BOOST_CHECK((test_get_credit_by_zone.compare(test_credit_str) == 0));
+
+    //try to resolve
+    ccReg::Admin_var admin_ref;
+    admin_ref = ccReg::Admin::_narrow(
+            CorbaContainer::get_instance()->nsresolve("Admin"));
+
+    CORBA::String_var registrar_handle_cpy = CORBA::string_dup(registrar_handle.c_str());
+    CORBA::String_var corba_credit = admin_ref->getCreditByZone(registrar_handle_cpy,zone_cz_id);
+
+    if(std::string(corba_credit.in()).compare(test_credit_str) != 0)
+    {
+        std::cout << "corba_credit: " << std::string(corba_credit.in())
+        << " test_credit_str: " << test_credit_str << std::endl;
+    }
+    BOOST_CHECK((std::string(corba_credit.in()).compare(test_credit_str) == 0));
+
+
+}//BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
+
+
+
 BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 {
     //db
@@ -1287,7 +1526,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     registrar->setStreet2("Street 2");
     registrar->setStreet2("Street 3");
     registrar->setDic("1234567889");
-    registrar->setEmail("jan.zima@nic.cz");
+    registrar->setEmail("info@nic.cz");
     registrar->setFax("+420.123456");
     registrar->setIco("92345678899");
     registrar->setPostalCode("11150");
