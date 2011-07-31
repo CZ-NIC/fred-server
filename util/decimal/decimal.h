@@ -28,6 +28,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <typeinfo>
 #include <boost/operators.hpp>
 #include <boost/lexical_cast.hpp>
 #include "util/decimal/mpdecimal-2.2/mpdecimal.h"
@@ -119,6 +120,30 @@ ex_traphandler(const mpd_context_t *ctx, const mpd_t *pvalue)
     throw std::runtime_error(string_dump_mpd_context(ctx) + " pvalue: " + value );
 }
 
+//compile time type check of types supported by ctor template
+template <typename T> struct supported_types_of_Decimal_{};
+template <> struct supported_types_of_Decimal_<const std::string&>
+{
+    static void Type(const std::string& str)
+    {
+        (void)str.length();
+    };
+};
+template <> struct supported_types_of_Decimal_<std::string>
+{
+    static void Type(const std::string& str)
+    {
+        (void)str.length();
+    };
+};
+template <> struct supported_types_of_Decimal_<const char*>
+{
+    static void Type(const char* str_ptr)
+    {
+        if(str_ptr == 0)
+            throw std::runtime_error("Decimal string pointer is 0");
+    };
+};
 
 class Decimal
 : boost::operators< Decimal >
@@ -202,6 +227,14 @@ class Decimal
     }
 
 public:
+
+    void swap(Decimal& dec) //throw()
+    {
+        std::swap(this->traphandler, dec.traphandler);
+        std::swap(this->ctx, dec.ctx);
+        std::swap(this->pvalue, dec.pvalue);
+    }
+
     unsigned long get_precision()
     {
         return mpd_getprec(&ctx);
@@ -211,6 +244,9 @@ public:
     {
         try
         {
+            if(str == 0)
+                throw std::runtime_error("string string pointer is 0");
+
             uint32_t status = 0;
             mpd_qset_string(pvalue, str, &ctx, &status);
             check_status_exception(&ctx, pvalue, status);
@@ -260,11 +296,16 @@ public:
         std::string ret;
         try
         {
-           //simple
-            char *decstring;
-            decstring = mpd_to_sci(pvalue, 1);
-            if (decstring)
-                ret+=decstring;
+            if(is_special())
+                return ret;//return empty string if special
+            else
+            {
+               //simple
+                char *decstring;
+                decstring = mpd_to_sci(pvalue, 1);
+                if (decstring)
+                    ret+=decstring;
+            }
         }
         catch(...)
         {
@@ -279,10 +320,15 @@ public:
         std::string ret;
         try
         {
-            uint32_t status = 0;
-            char * tmp_ret = mpd_qformat(pvalue, fmt, &ctx, &status);
-            check_status_exception(&ctx, pvalue, status);
-            if(tmp_ret) ret+=tmp_ret;
+            if(is_special())
+                return ret;//return empty string if special
+            else
+            {
+                uint32_t status = 0;
+                char * tmp_ret = mpd_qformat(pvalue, fmt, &ctx, &status);
+                check_status_exception(&ctx, pvalue, status);
+                if(tmp_ret) ret+=tmp_ret;
+            }
         }
         catch(...)
         {
@@ -307,41 +353,28 @@ public:
         }
     }
 
-    explicit Decimal(const char *str)
-    : traphandler(0)
-    , pvalue(0)
+
+    template <class T> Decimal( T  t )
+        : traphandler(0)
+        , pvalue(0)
     {
         try
         {
+            supported_types_of_Decimal_<T>::Type(t);
+
             init(default_precision);
             alloc_pvalue();
-            set_string(str);
+            set_string(t);
         }
         catch(...)
         {
-            decimal_exception_handler("Decimal(const char *str) ctor exception", true)();
+            decimal_exception_handler("Decimal( T t ) ctor exception", true)();
         }
-    }
 
-    Decimal(const std::string& str)
-    : traphandler(0)
-    , pvalue(0)
-    {
-        try
-        {
-            init(default_precision);
-            alloc_pvalue();
-            set_string(str);
-        }
-        catch(...)
-        {
-            decimal_exception_handler("Decimal(const std::string& str) ctor exception", true)();
-        }
     }
-
 
     //copy
-    Decimal(const Decimal& param )
+    Decimal(const Decimal& param)
     : traphandler(0)
     , pvalue(0)
     {
@@ -366,23 +399,7 @@ public:
         try
         {
             if (this != &param)
-            {
-                init(param.ctx.prec);
-                ctx = param.ctx;
-
-                if(pvalue != 0)
-                {
-                    mpd_del(pvalue);
-                    pvalue = 0;
-                }
-
-                pvalue = mpd_qncopy(param.pvalue);
-
-                if (pvalue == 0)
-                {
-                    check_status_exception(&ctx,param.pvalue, MPD_Malloc_error);
-                }
-            }
+              Decimal(param).swap (*this); //copy and swap
         }
         catch(...)
         {
@@ -427,8 +444,19 @@ public:
         {
             Decimal result;
             uint32_t status = 0;
+
+            if(this->is_special())
+                throw std::runtime_error("value is special");
+
+            if(x.is_special())
+                throw std::runtime_error("argument is special");
+
             c = mpd_qcompare(result.pvalue, pvalue, x.pvalue, &ctx, &status);
             check_status_exception(&ctx,pvalue, status);
+
+            if(result.is_special())
+                throw std::runtime_error("result is special");
+
         }
         catch(...)
         {
@@ -444,8 +472,18 @@ public:
         {
             Decimal result;
             uint32_t status = 0;
+
+            if(this->is_special())
+                throw std::runtime_error("value is special");
+
+            if(x.is_special())
+                throw std::runtime_error("argument is special");
+
             c = mpd_qcompare(result.pvalue, pvalue, x.pvalue, &ctx, &status);
             check_status_exception(&ctx,pvalue, status);
+
+            if(result.is_special())
+                throw std::runtime_error("result is special");
         }
         catch(...)
         {
@@ -460,8 +498,19 @@ public:
         {
             Decimal result;
             uint32_t status = 0;
+
+            if(this->is_special())
+                throw std::runtime_error("value is special");
+
+            if(x.is_special())
+                throw std::runtime_error("argument is special");
+
             mpd_qadd(result.pvalue, pvalue, x.pvalue, &ctx, &status);
             check_status_exception(&ctx,pvalue, status);
+
+            if(result.is_special())
+                throw std::runtime_error("result is special");
+
             *this = result;
         }
         catch(...)
@@ -477,8 +526,19 @@ public:
         {
             Decimal result;
             uint32_t status = 0;
+
+            if(this->is_special())
+                throw std::runtime_error("value is special");
+
+            if(x.is_special())
+                throw std::runtime_error("argument is special");
+
             mpd_qsub(result.pvalue, pvalue, x.pvalue, &ctx, &status);
             check_status_exception(&ctx,pvalue, status);
+
+            if(result.is_special())
+                throw std::runtime_error("result is special");
+
             *this = result;
         }
         catch(...)
@@ -494,8 +554,19 @@ public:
         {
             Decimal result;
             uint32_t status = 0;
+
+            if(this->is_special())
+                throw std::runtime_error("value is special");
+
+            if(x.is_special())
+                throw std::runtime_error("argument is special");
+
             mpd_qmul(result.pvalue, pvalue, x.pvalue, &ctx, &status);
             check_status_exception(&ctx,pvalue, status);
+
+            if(result.is_special())
+                throw std::runtime_error("result is special");
+
             *this = result;
         }
         catch(...)
@@ -511,8 +582,19 @@ public:
         {
             Decimal result;
             uint32_t status = 0;
+
+            if(this->is_special())
+                throw std::runtime_error("value is special");
+
+            if(x.is_special())
+                throw std::runtime_error("argument is special");
+
             mpd_qdiv(result.pvalue, pvalue, x.pvalue, &ctx, &status);
             check_status_exception(&ctx,pvalue, status);
+
+            if(result.is_special())
+                throw std::runtime_error("result is special");
+
             *this = result;
         }
         catch(...)
@@ -528,8 +610,19 @@ public:
         {
             Decimal result;
             uint32_t status = 0;
+
+            if(this->is_special())
+                throw std::runtime_error("value is special");
+
+            if(x.is_special())
+                throw std::runtime_error("argument is special");
+
             mpd_qdivint(result.pvalue, pvalue, x.pvalue, &ctx, &status);
             check_status_exception(&ctx,pvalue, status);
+
+            if(result.is_special())
+                throw std::runtime_error("result is special");
+
             *this = result;
         }
         catch(...)
@@ -545,8 +638,19 @@ public:
         {
             Decimal result;
             uint32_t status = 0;
+
+            if(this->is_special())
+                throw std::runtime_error("value is special");
+
+            if(x.is_special())
+                throw std::runtime_error("argument is special");
+
             mpd_qrem(result.pvalue, pvalue, x.pvalue, &ctx, &status);
             check_status_exception(&ctx,pvalue, status);
+
+            if(result.is_special())
+                throw std::runtime_error("result is special");
+
             *this = result;
         }
         catch(...)
@@ -564,17 +668,31 @@ public:
     {
         try
         {
-            int saved_context_round =  mpd_getround(&ctx);
-            if(mpd_qsetround(&ctx, round_type) == 0)
+            Decimal result(*this);//copy
+
+            if(result.is_special())
+                throw std::runtime_error("value is special");
+
+            int saved_context_round =  mpd_getround(&(result.ctx));
+
+            if(mpd_qsetround(&(result.ctx), round_type) == 0)
                 throw std::runtime_error(
                     "Decimal::round unable to set context_newround");
-            std::string new_string(this->get_string((std::string(".")
+
+            std::string new_string(result.get_string((std::string(".")
                 +boost::lexical_cast<std::string>(precision_places)
                 +"f").c_str()));
-            if(mpd_qsetround(&ctx, saved_context_round) == 0)
+
+            if(mpd_qsetround(&(result.ctx), saved_context_round) == 0)
                 throw std::runtime_error(
                     "Decimal::round unable to set saved_context_round");
-            set_string(new_string.c_str());
+
+            result.set_string(new_string.c_str());
+
+            if(result.is_special())
+                throw std::runtime_error("result is special");
+
+            this->swap(result);
         }
         catch(...)
         {
@@ -589,8 +707,16 @@ public:
         {
             Decimal result;
             uint32_t status = 0;
+
+            if(this->is_special())
+                throw std::runtime_error("value is special");
+
             mpd_qabs(result.pvalue, pvalue, &ctx, &status);
             check_status_exception(&ctx,pvalue, status);
+
+            if(result.is_special())
+                throw std::runtime_error("result is special");
+
             *this = result;
         }
         catch(...)
@@ -602,15 +728,34 @@ public:
 
     friend std::ostream &operator<<(std::ostream &stream, Decimal d)
     {
-        stream << d.get_string();
+        try
+        {
+            if(d.is_special())
+                throw std::runtime_error("argument is special");
+
+            stream << d.get_string();
+
+        }
+        catch(...)
+        {
+            decimal_exception_handler("operator<< exception", true)();
+        }
         return stream;
     }
 
     friend std::istream &operator>>(std::istream &stream, Decimal &d)
     {
-        std::string tmp_str;
-        stream >> tmp_str;
-        d.set_string(tmp_str);
+        try
+        {
+            std::string tmp_str;
+            stream >> tmp_str;
+            d.set_string(tmp_str);
+        }
+        catch(...)
+        {
+            decimal_exception_handler("operator>> exception", true)();
+        }
+
         return stream;
     }
 

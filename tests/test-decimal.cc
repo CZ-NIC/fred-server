@@ -67,6 +67,12 @@ bool check_std_exception_MPD(std::exception const & ex)
     return (ex_msg.find(std::string("MPD")) != std::string::npos);
 }
 
+bool check_std_exception(std::exception const & ex)
+{
+    std::string ex_msg(ex.what());
+    return (ex_msg.length() != 0);
+}
+
 
 BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
 {
@@ -103,13 +109,15 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
 
     BOOST_CHECK_EXCEPTION((Decimal("1") / Decimal("0")).is_infinite()
             , std::exception
-            , check_std_exception_MPD);//Infinity
+            , check_std_exception);//Infinity
 
-    BOOST_CHECK((Decimal("0") / Decimal("0")).is_nan());//NaN
+    BOOST_CHECK_EXCEPTION((Decimal("0") / Decimal("0")).is_nan()
+            , std::exception
+            , check_std_exception);
 
     BOOST_CHECK_EXCEPTION((Decimal("1") / Decimal("-0")).is_infinite()
             , std::exception
-            , check_std_exception_MPD
+            , check_std_exception
             );//-Infinity
 
     BOOST_CHECK(Decimal("Infinity").is_infinite());//Infinity
@@ -118,20 +126,30 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
     BOOST_CHECK(Decimal("-NaN").is_nan());//-NaN
 
     BOOST_CHECK(Decimal().is_nan());//default ctor init check
-    BOOST_CHECK(Decimal().get_string().compare("NaN") == 0);//default ctor init check
+    BOOST_CHECK(Decimal().get_string().compare("") == 0);//default ctor init check
 
     BOOST_CHECK(Decimal(std::string()).is_nan());//string ctor
-    BOOST_CHECK(Decimal(std::string()).get_string().compare("NaN") == 0);//string ctor
+    BOOST_CHECK(Decimal(std::string()).get_string().compare("") == 0);//string ctor
 
     BOOST_CHECK(Decimal(std::string("1.1")) == Decimal("1.1"));//string ctor
 
 
-    BOOST_CHECK(Decimal("Infinity") == Decimal("Infinity"));
-    BOOST_CHECK(Decimal("Infinity") != Decimal("-Infinity"));
-    BOOST_CHECK(Decimal("NaN") != Decimal("NaN"));
-    BOOST_CHECK(Decimal("NaN") != Decimal("-NaN"));
+    BOOST_CHECK_EXCEPTION(Decimal("Infinity") == Decimal("Infinity")
+            , std::exception
+            , check_std_exception);
+    BOOST_CHECK_EXCEPTION(Decimal("Infinity") != Decimal("-Infinity")
+            , std::exception
+            , check_std_exception);
+    BOOST_CHECK_EXCEPTION(Decimal("NaN") != Decimal("NaN")
+            , std::exception
+            , check_std_exception);
+    BOOST_CHECK_EXCEPTION(Decimal("NaN") != Decimal("-NaN")
+            , std::exception
+            , check_std_exception);
 
-    BOOST_CHECK( (Decimal("Infinity") + Decimal("-Infinity")).is_nan());
+    BOOST_CHECK_EXCEPTION( (Decimal("Infinity") + Decimal("-Infinity")).is_nan()
+            , std::exception
+            , check_std_exception);
 
     Decimal a("1234567890.123456789", 500);
 
@@ -152,6 +170,13 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
     sstr >> dstream2;
     BOOST_CHECK(dstream1 == dstream2);
 
+    Decimal dec_2;
+    Decimal dec_3("111.222");
+    Decimal dec_4("111.222");
+    dec_2.swap(dec_3);
+
+    BOOST_CHECK(dec_2 == dec_4);
+
     //format and round money
     BOOST_CHECK(Decimal("10").get_string(".2f").compare("10.00") == 0);//string ctor
     BOOST_CHECK(Decimal("10.1").get_string(".2f").compare("10.10") == 0);//string ctor
@@ -169,6 +194,12 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
     BOOST_CHECK(Decimal("-30000000.001").get_string(".2f").compare("-30000000.00") == 0);//string ctor
     BOOST_CHECK(Decimal("30000000.007").get_string(".2f").compare("30000000.01") == 0);//string ctor
     BOOST_CHECK(Decimal("-30000000.007").get_string(".2f").compare("-30000000.01") == 0);//string ctor
+
+    //this have to be disabled by: supported_types_of_Decimal_<T>::Type()
+    //Decimal d0(0);
+    //Decimal d1(1);
+
+
 
 }
 
