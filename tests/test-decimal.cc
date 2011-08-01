@@ -298,6 +298,7 @@ ResultTest testWorker(unsigned long long worker_param)
         if(!(Decimal("30000000.007").get_string(".2f").compare("30000000.01") == 0)) ret.result += 2199023255552ULL;//string ctor
         if(!(Decimal("-30000000.007").get_string(".2f").compare("-30000000.01") == 0)) ret.result += 4398046511104ULL;//string ctor
 
+        if(ret.result != 0) break;
     }
     //some tests
     //ret.result = worker_param;
