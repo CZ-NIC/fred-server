@@ -39,6 +39,9 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
+#include "random_data_generator.h"
+#include "concurrent_queue.h"
+
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
@@ -46,6 +49,8 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
+
+#include "test-common-threaded.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -199,8 +204,139 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
     //Decimal d0(0);
     //Decimal d1(1);
 
+}
 
+//decimal threaded test and threaded test framework test
+struct TestParams
+{
+    unsigned long long test_param;
+    TestParams() : test_param(1)
+    { }
+};
 
+struct ResultTest : TestParams {
+    unsigned long long result;
+    ResultTest()
+    : TestParams()//this shall get called anyway
+    , result(0)
+    { }
+};
+
+ResultTest testWorker(unsigned long long worker_param)
+{
+    ResultTest ret;
+
+    ret.result = 0;
+
+    for(unsigned long long i = 0 ; i < worker_param ; ++i)
+    {
+        if(!(Decimal("1") < Decimal("2"))) ret.result += 1;
+        if(!(Decimal("1") <= Decimal("2"))) ret.result += 2;
+        if(!(Decimal("1.1") < Decimal("1.2"))) ret.result += 4;
+        if(!(Decimal("1000") > Decimal("100"))) ret.result += 8;
+        if(!(Decimal("1000") >= Decimal("100"))) ret.result += 16;
+        if(!(Decimal("1000") >= Decimal("1000"))) ret.result += 32;
+        if(!(Decimal("1.1") == Decimal("1.1"))) ret.result += 64;
+        if(!(Decimal("1.1") != Decimal("1.2"))) ret.result += 128;
+        if(!(Decimal("1.11") > Decimal("-1.11"))) ret.result += 256;
+        if(!(((Decimal("1.111") + Decimal("1.222"))) == Decimal("2.333"))) ret.result += 512;
+        if(!(((Decimal("2.333") - Decimal("1.111"))) == Decimal("1.222"))) ret.result += 1024;
+        if(!(((Decimal("2.333") - Decimal("1.111"))) != Decimal("1.223"))) ret.result += 2048;
+        if(!(((Decimal("1.111") * Decimal("1.222"))) == Decimal("1.357642"))) ret.result += 4096;
+        if(!((Decimal("1.222") / Decimal("1.111")).round(19, MPD_ROUND_HALF_UP)
+            .round(9, MPD_ROUND_HALF_UP) == Decimal("1.099909991"))) ret.result += 8192;
+        if(!((Decimal("13").integral_division(Decimal("3"))) == Decimal("4"))) ret.result += 16384;
+        if(!((Decimal("13").integral_division_remainder(Decimal("3"))) == Decimal("1"))) ret.result += 32768;
+        if(!(Decimal("-1").abs() == Decimal("1"))) ret.result += 65536;
+        if(!(Decimal("1").abs() == Decimal("1"))) ret.result += 131072;
+        if(!(Decimal("-1").is_negative())) ret.result += 262144;
+        if(!(Decimal().get_string().compare("") == 0)) ret.result += 524288;//default ctor init check
+        if(!(Decimal(std::string()).is_nan())) ret.result += 1048576;//string ctor
+        if(!(Decimal(std::string()).get_string().compare("") == 0)) ret.result += 2097152;//string ctor
+        if(!(Decimal(std::string("1.1")) == Decimal("1.1"))) ret.result += 4194304;//string ctor
+
+        Decimal a("1234567890.123456789", 500);
+        Decimal b = a;//copy ctor
+        if(!(b == a)) ret.result += 8388608;
+        if(!(b.get_precision() == 500)) ret.result += 16777216;
+
+        Decimal c;
+        c = a;//assignment operator
+        if(!(c == a)) ret.result += 33554432;
+        if(!(c.get_precision() == 500)) ret.result += 67108864;
+
+        //stream operators
+        Decimal dstream1("111.333");
+        Decimal dstream2;
+        std::stringstream sstr;
+        sstr << dstream1;
+        sstr >> dstream2;
+        if(!(dstream1 == dstream2)) ret.result += 134217728;
+
+        Decimal dec_2;
+        Decimal dec_3("111.222");
+        Decimal dec_4("111.222");
+        dec_2.swap(dec_3);
+
+        if(!(dec_2 == dec_4)) ret.result += 268435456;
+
+        //format and round money
+        if(!(Decimal("10").get_string(".2f").compare("10.00") == 0)) ret.result +=    536870912ULL;//string ctor
+        if(!(Decimal("10.1").get_string(".2f").compare("10.10") == 0)) ret.result += 1073741824ULL;//string ctor
+        if(!(Decimal("-10").get_string(".2f").compare("-10.00") == 0)) ret.result += 2147483648ULL;//string ctor
+        if(!(Decimal("-10.1").get_string(".2f").compare("-10.10") == 0)) ret.result += 4294967296ULL;//string ctor
+
+        if(!(Decimal("10.005").get_string(".2f").compare("10.01") == 0)) ret.result +=              8589934592ULL;//string ctor
+        if(!(Decimal("10000000.1").get_string(".2f").compare("10000000.10") == 0)) ret.result +=   17179869184ULL;//string ctor
+        if(!(Decimal("-10.005").get_string(".2f").compare("-10.01") == 0)) ret.result +=           34359738368ULL;//string ctor
+        if(!(Decimal("-10000000.1").get_string(".2f").compare("-10000000.10") == 0)) ret.result += 68719476736ULL;//string ctor
+        if(!(Decimal("30000000.1").get_string(".2f").compare("30000000.10") == 0)) ret.result += 137438953472ULL;//string ctor
+        if(!(Decimal("-30000000.1").get_string(".2f").compare("-30000000.10") == 0)) ret.result += 274877906944ULL;//string ctor
+
+        if(!(Decimal("30000000.001").get_string(".2f").compare("30000000.00") == 0)) ret.result += 549755813888ULL;//string ctor
+        if(!(Decimal("-30000000.001").get_string(".2f").compare("-30000000.00") == 0)) ret.result += 1099511627776ULL;//string ctor
+        if(!(Decimal("30000000.007").get_string(".2f").compare("30000000.01") == 0)) ret.result += 2199023255552ULL;//string ctor
+        if(!(Decimal("-30000000.007").get_string(".2f").compare("-30000000.01") == 0)) ret.result += 4398046511104ULL;//string ctor
+
+    }
+    //some tests
+    //ret.result = worker_param;
+
+    return ret;
+}
+
+class TestThreadedWorker : public ThreadedTestWorker<ResultTest, TestParams>
+{
+public:
+    typedef ThreadedTestWorker<ResultTest, TestParams>::ThreadedTestResultQueue queue_type;
+
+    TestThreadedWorker(unsigned number
+             , boost::barrier* sb
+             , std::size_t thread_group_divisor
+             , queue_type* result_queue
+             , TestParams params)
+        : ThreadedTestWorker<ResultTest, TestParams>(number, sb, thread_group_divisor, result_queue, params)
+    { }
+
+    ResultTest run(const TestParams &p)
+    {
+       ResultTest ret = testWorker(p.test_param);
+       return ret;
+    }
+};
+
+void result_check(const ResultTest &res)
+{
+    BOOST_CHECK(res.result == 0 );
+}
+
+BOOST_AUTO_TEST_CASE( test_decimal_wrapper_threads )
+{
+    TestParams params;
+    params.test_param = 9999 ;
+
+// test
+    threadedTest< TestThreadedWorker> (params, &result_check);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestDecimal
