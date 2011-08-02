@@ -47,7 +47,7 @@ noinst_HEADERS = util/util.h util/singleton.h util/time_clock.h util/settings.h 
         util/random_data_generator.h util/corba_wrapper.h util/subprocess.h util/string_split.h \
         util/corba_wrapper_decl.h util/map_at.h util/setup_server.h util/setup_server_decl.h \
         util/cfg/config_handler.h util/cfg/faked_args.h util/cfg/handle_args.h \
-        util/cfg/handle_corbanameservice_args.h \
+        util/cfg/handle_corbanameservice_args.h util/decimal/decimal.h \
         util/cfg/handle_database_args.h  util/cfg/handle_general_args.h \
         util/cfg/handle_server_args.h  util/cfg/handle_threadgroup_args.h \
         util/cfg/test_custom_main.h util/cfg/handle_logging_args.h \
