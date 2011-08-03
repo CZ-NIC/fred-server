@@ -2542,7 +2542,7 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 
     // if(operation == INVOICING_DomainCreate) 
     cent_amount counted_price =
-            getOperationPrice(INVOICING_DomainRenew, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
+            getOperationPrice(INVOICING_DomainRenew, zone_cz_id, DEFAULT_REGISTRATION_PERIOD)
             + getOperationPrice(INVOICING_DomainCreate, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
 
     counted_price *= thread_count;
