@@ -2430,7 +2430,6 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 
     MailerManager mailMan(CorbaContainer::get_instance()->getNS());
 
-
     std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i ( new ccReg_EPP_i(
                 db_args_ptr->get_conn_info()
                 , &mailMan, CorbaContainer::get_instance()->getNS()
@@ -2473,8 +2472,30 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
      Database::Date rztoDate;
      Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
 
+     // ------------------ login
+     /// log in while Database::Connection is not acquired yet
 
-     // ### add credit
+     std::string passwd_var("");
+     std::string new_passwd_var("");
+     std::string cltrid_var("omg");
+     std::string xml_var("<omg/>");
+     std::string cert_var("");
+
+     CORBA::Long clientId = 0;
+
+     // ## this uses dbsql's DB - Database::Connection should not exist in the thread when this is called
+     ccReg::Response *r = myccReg_EPP_i->ClientLogin(
+         registrar_handle.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),
+         xml_var.c_str(),clientId,cert_var.c_str(),ccReg::EN);
+
+     if (r->code != 1000 || !clientId) {
+         boost::format msg = boost::format("Error code: %1% - %2% ") % r->code % r->msg;
+         std::cerr << msg.str() << std::endl;
+         throw std::runtime_error(msg.str());
+     }
+
+
+     // --------------------- add credit, acquire connection
      cent_amount amount = 90000 * 100;
      unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
@@ -2504,27 +2525,6 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
         BOOST_FAIL("Couldn't count registrar credit ");
     }
 
-    
-    // ------------------ login
-
-    std::string passwd_var("");
-    std::string new_passwd_var("");
-    std::string cltrid_var("omg");
-    std::string xml_var("<omg/>");
-    std::string cert_var("");
-
-    CORBA::Long clientId = 0;
-
-    ccReg::Response *r = myccReg_EPP_i->ClientLogin(
-        registrar_handle.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),
-        xml_var.c_str(),clientId,cert_var.c_str(),ccReg::EN);
-    
-    if (r->code != 1000 || !clientId) {
-        boost::format msg = boost::format("Error code: %1% - %2% ") % r->code % r->msg;
-        std::cerr << msg.str() << std::endl;
-        throw std::runtime_error(msg.str());
-    }
-
 
 //  ----------- test itself
     ChargeTestParams params;
@@ -2534,27 +2534,20 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
     params.epp_backend = myccReg_EPP_i.get();
     params.clientId = clientId;
 
-
-
-
     unsigned thread_count = threadedTest< TestCreateDomainDirectThreadedWorker>
                                     (params, &testCreateDomainEvalSucc);
 
-    // TODO uncomment this check
-    // TODO uncommenting this check yields SEGFAULT -probably something with
-    // r 16889 and it's connection hack
-    /*
+    Database::Connection conn2 = Database::Manager::acquire();
+
+    // Database::Connection conn_new = Database::Manager::acquire();
     // ----------------------- CHECK CREDIT after
-    Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
+    Database::Result credit_res2 = conn2.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
-    if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) {
+    if(credit_res2.size() ==  1 && !credit_res2[0][0].isnull()) {
         credit_after = get_price((std::string)credit_res2[0][0]);
     } else {
         BOOST_FAIL("Couldn't count registrar credit ");
     }
-
-    // this is how operations are charged
-
 
     // if(operation == INVOICING_DomainCreate) 
     cent_amount counted_price =
@@ -2568,11 +2561,8 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
             % credit_before
             % credit_after
             % counted_price );
-      */
+
 }
-
-
-
 
 BOOST_AUTO_TEST_CASE(createDomainThreaded)
 {
