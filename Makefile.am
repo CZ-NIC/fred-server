@@ -109,7 +109,7 @@ util_types_libtypes_a_SOURCES = util/types/date.cc util/types/date.h util/types/
         util/types/date_interval.h util/types/datetime.cc util/types/datetime.h \
         util/types/datetime_interval.cc  util/types/datetime_interval.h \
         util/types/datetime_common.h util/types/common.h util/types/money.cc \
-        util/types/money.h util/types/id.cc util/types/id.h util/types/null.h \
+        util/types/id.cc util/types/id.h util/types/null.h \
         util/types/data_types.h util/types/convert_common.h util/types/convert_str_base.h \
         util/types/convert_str_pod.h util/types/convert_str_boost_datetime.h \
         util/types/convert_sql_base.h util/types/convert_sql_pod.h \
