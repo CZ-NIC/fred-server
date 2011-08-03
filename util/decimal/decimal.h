@@ -758,7 +758,12 @@ public:
 
         return stream;
     }
-
+/*
+    operator std::string() const
+    {
+        return (is_special() ? std::string("") : get_string());
+    }
+*/
 };//class Decimal
 
 #endif // DECIMAL_H_

@@ -67,7 +67,7 @@ public:
     {
         return m_specSymb.get();
     }
-    const Database::Money &getPrice() const
+    std::string getPrice() const
     {
         return m_price.get();
     }
@@ -157,7 +157,7 @@ public:
     {
         m_specSymb = specSymb;
     }
-    void setPrice(const Database::Money &price)
+    void setPrice(const std::string &price)
     {
         m_price = price;
     }
@@ -256,7 +256,7 @@ protected:
     Field::Field<std::string> m_konstSym;
     Field::Field<std::string> m_varSymb;
     Field::Field<std::string> m_specSymb;
-    Field::Field<Database::Money> m_price;
+    Field::Field<std::string> m_price;
     Field::Field<std::string> m_accountEvid;
     Field::Field<Database::Date> m_accountDate;
     Field::Field<std::string> m_accountMemo;
@@ -280,7 +280,7 @@ public:
     static Model::Field::Basic<ModelBankPayment, std::string> konstSym;
     static Model::Field::Basic<ModelBankPayment, std::string> varSymb;
     static Model::Field::Basic<ModelBankPayment, std::string> specSymb;
-    static Model::Field::Basic<ModelBankPayment, Database::Money> price;
+    static Model::Field::Basic<ModelBankPayment, std::string> price;
     static Model::Field::Basic<ModelBankPayment, std::string> accountEvid;
     static Model::Field::Basic<ModelBankPayment, Database::Date> accountDate;
     static Model::Field::Basic<ModelBankPayment, std::string> accountMemo;

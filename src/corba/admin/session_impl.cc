@@ -1289,8 +1289,8 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Fred::Regist
   detail->telephone = DUPSTRFUN(_registrar->getTelephone);
   detail->fax = DUPSTRFUN(_registrar->getFax);
   detail->email = DUPSTRFUN(_registrar->getEmail);
-  detail->credit = DUPSTRC(formatMoney(_registrar->getCredit()*100));
-  detail->unspec_credit = DUPSTRC(formatMoney(_registrar->getCredit(0)*100));
+  detail->credit = DUPSTRC(formatMoney(_registrar->getCredit()));
+  detail->unspec_credit = DUPSTRC(formatMoney(_registrar->getCredit(0)));
 
   detail->access.length(_registrar->getACLSize());
   for (unsigned i = 0; i < _registrar->getACLSize(); i++) {
@@ -1586,7 +1586,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Fred::Invoicin
   detail->number = DUPSTRC(stringify(_invoice->getPrefix()));
   detail->credit = DUPSTRC(formatMoney(_invoice->getCredit()));
   detail->price = DUPSTRC(formatMoney(_invoice->getPrice()));
-  detail->vatRate = _invoice->getVat();
+  detail->vatRate = DUPSTRC(_invoice->getVat().get_string());
   detail->total = DUPSTRC(formatMoney(_invoice->getTotal()));
   detail->totalVAT = DUPSTRC(formatMoney(_invoice->getTotalVat()));
   detail->varSymbol = DUPSTRC(_invoice->getVarSymbol());

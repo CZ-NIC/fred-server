@@ -17,6 +17,7 @@
 #include "db_settings.h"
 #include "model/model_filters.h"
 #include "old_utils/dbsql.h"
+#include "decimal/decimal.h"
 
 #include "model_registrar_acl.h"
 #include "model_registrar.h"
@@ -81,7 +82,7 @@ struct ZoneAccess
 {
     TID id; /// registrarinvoice record id
     std::string name; /// zone name
-    unsigned long credit; /// registrar's credit
+    Decimal credit; /// registrar's credit
     Database::Date fromdate; /// from day
     Database::Date todate;/// to day
     ZoneAccess()
@@ -92,7 +93,7 @@ struct ZoneAccess
         ,todate()
     {}
     ZoneAccess(std::string _name
-            , unsigned long _credit
+            , Decimal _credit
             , Database::Date _fromdate
             , Database::Date _todate)
     :id()
@@ -103,7 +104,7 @@ struct ZoneAccess
     {}
     ZoneAccess(TID _id
             ,std::string _name
-            , unsigned long _credit
+            , Decimal _credit
             , Database::Date _fromdate
             , Database::Date _todate)
     :id(_id)
@@ -203,11 +204,11 @@ public:
   /// Set hidden flag for system registrar
   virtual void setSystem(bool _system) = 0;
   /// Get total credit
-  virtual unsigned long getCredit() const = 0;
+  virtual Decimal getCredit() const = 0;
   /// Get credit for specific zone, id = 0 is unspecified zone (converted from null in database table invoice)
-  virtual unsigned long getCredit(Database::ID _zone_id) const = 0;
+  virtual Decimal getCredit(Database::ID _zone_id) const = 0;
   /// Set credit for specific zone
-  virtual void setCredit(Database::ID _zone_id, unsigned long _credit) = 0;
+  virtual void setCredit(Database::ID _zone_id, Decimal _credit) = 0;
   /// Create new ACL record
   virtual ACL* newACL() = 0;
   /// Return ACL list size

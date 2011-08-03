@@ -34,13 +34,11 @@ formatTime(ptime p, bool date, bool _to_local)
 }
 
 std::string
-formatMoney(Database::Money m)
+formatMoney(Decimal m)
 {
-  std::stringstream buf;
-  buf << m;
-  // buf << m / 100 << "." << std::setw(2) << std::setfill('0') << m % 100;
-  return buf.str();
+  return m.get_string(".2f");
 }
+
 
 ptime
 makeBoostTime(const ccReg::DateTimeType& t)

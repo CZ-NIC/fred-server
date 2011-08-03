@@ -116,7 +116,7 @@ public:
                 std::string constSymb       = *(++col);
                 std::string varSymb         = *(++col);
                 std::string specSymb        = *(++col);
-                Database::Money price       = *(++col);
+                Decimal price       = std::string(*(++col));
                 std::string accountEvid     = *(++col);
                 Database::Date accountDate  = *(++col);
                 std::string accountMemo     = *(++col);

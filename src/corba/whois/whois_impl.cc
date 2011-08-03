@@ -73,7 +73,7 @@ void ccReg_Whois_i::fillRegistrar(ccReg::WhoisRegistrar& creg
   creg.telephone = DUPSTRFUN(reg->getTelephone);
   creg.fax = DUPSTRFUN(reg->getFax);
   creg.email = DUPSTRFUN(reg->getEmail);
-  creg.credit = DUPSTRC(formatMoney(reg->getCredit()*100));
+  creg.credit = DUPSTRC(formatMoney(reg->getCredit()));
   creg.access.length(reg->getACLSize());
   for (unsigned i=0; i<reg->getACLSize(); i++) {
     creg.access[i].md5Cert = DUPSTRFUN(reg->getACL(i)->getCertificateMD5);

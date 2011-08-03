@@ -145,9 +145,9 @@ XMLcreator::text(const std::string &name, Database::DateTime value)
     this->text(name, stringify(value));
 }
 void 
-XMLcreator::text(const std::string &name, Database::Money value)
+XMLcreator::text(const std::string &name, Decimal value)
 {
-    this->text(name, stringify(value));
+    this->text(name, value.get_string(".2f"));//money
 }
 std::string 
 XMLcreator::finalize()

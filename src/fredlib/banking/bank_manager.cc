@@ -99,7 +99,7 @@ private:
             if (_payment->getInvoiceId() != Database::ID(0)) {
                 return;
             }
-            if (_payment->getPrice() <= Database::Money(0UL)) {
+            if (_payment->getPrice() <= Decimal("0")) {
                 return;
             }
 
@@ -161,7 +161,7 @@ private:
                 }
             }
 
-            Database::Money price = _payment->getPrice();
+            Decimal price = _payment->getPrice();
             Database::Date account_date = _payment->getAccountDate();
             unsigned long long zone_id = getZoneByAccountId(_payment->getAccountId());
 
@@ -169,7 +169,9 @@ private:
                     invoice_manager(Fred::Invoicing::Manager::create());
 
             int invoice_id = invoice_manager->createDepositInvoice(
-                    account_date, (int)zone_id, (int)_registrar_id, (long)price);
+                    account_date, (int)zone_id, (int)_registrar_id
+                    , price);
+
             if (invoice_id > 0) {
                 _payment->setInvoiceId(invoice_id);
                 _payment->setType(2);
@@ -224,11 +226,17 @@ public:
             stream << _in.rdbuf();
             std::string xml = stream.str();
 
+            LOGGER(PACKAGE).debug(boost::format(
+                    "stream loaded into string : %1%")
+                    % xml );
+
             /* parse */
             XMLparser parser;
             if (!parser.parse(xml)) {
                 throw std::runtime_error("parser error");
             }
+
+            LOGGER(PACKAGE).debug("string parsed");
 
             XMLnode root = parser.getRootNode();
             if (root.getName().compare(STATEMENTS_ROOT) != 0) {
@@ -241,7 +249,16 @@ public:
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction tx(conn);
 
+            LOGGER(PACKAGE).debug(boost::format(
+                    "saving transaction for : %1%")
+                    % root.getChildrenSize() );
+
             for (int i = 0; i < root.getChildrenSize(); i++) {
+
+                LOGGER(PACKAGE).debug(boost::format(
+                        "saving node : %1%")
+                        % i );
+
                 /* xml to statement */
                 XMLnode snode = root.getChild(i);
                 StatementImplPtr statement(parse_xml_statement_part(snode));

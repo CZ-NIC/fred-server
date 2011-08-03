@@ -155,7 +155,7 @@ bool check_std_exception_createAccountInvoice(std::exception const & ex)
 }
 
 
-cent_amount getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units);
+Decimal getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units);
 
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
 {
@@ -282,7 +282,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
         invMan->createDepositInvoice(taxdate//taxdate
                 , 0//no zone
                 , registrar_inv_id//registrar
-                , 20000)//price
+                , Decimal("200.00"))//price
     , std::exception, check_std_exception_invoice_prefix);
     
     }
@@ -324,7 +324,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
             invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
-                    , 20000)//price
+                    , Decimal("200.00"))//price
                     , std::exception
                     , check_std_exception_invoice_prefix);
 
@@ -408,7 +408,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , 20000);//price
+                    , Decimal("200.00"));//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , 2147483647UL);//price
+                    , Decimal("21474836.47"));//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
@@ -632,7 +632,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , 20000);//price
+                    , Decimal("200.00"));//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
@@ -661,7 +661,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
             credit_note_id = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , 20000);//price
+                    , Decimal("200.00"));//price
             BOOST_CHECK_EQUAL(credit_note_id != 0,true);
 
             //credit note update
@@ -822,7 +822,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
-                    , 20000);//price
+                    , Decimal("200.00"));//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
@@ -840,7 +840,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
-                    , 20000);//price
+                    , Decimal("200.00"));//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
@@ -920,16 +920,16 @@ struct ResultTestCharge : ChargeTestParams {
     unsigned number;
 
     bool success;
-    cent_amount credit_before;
-    cent_amount credit_after;
-    cent_amount counted_price;
+    Decimal credit_before;
+    Decimal credit_after;
+    Decimal counted_price;
     Database::ID object_id;
     std::string object_handle;
     unsigned units;
     Database::Date exdate;
     std::string test_desc;
 
-    ResultTestCharge() : ChargeTestParams(), success(false), credit_before(0), credit_after(0),
+    ResultTestCharge() : ChargeTestParams(), success(false), credit_before("0"), credit_after("0"),
             object_id(0), object_handle(), units(0), exdate(), test_desc()
         { }
 };
@@ -959,7 +959,7 @@ ResultTestCharge testChargeWorker(Fred::Invoicing::Manager *invMan, Database::Da
     Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                        , Database::query_param_list(zone_id)(registrar_id));
     // TODO add check
-    if(credit_res.size() ==  1 && credit_res[0].size() == 1) ret.credit_before = get_price((std::string)credit_res[0][0]);
+    if(credit_res.size() ==  1 && credit_res[0].size() == 1) ret.credit_before = std::string(credit_res[0][0]);
 
 
     // some fake object in object registry
@@ -987,7 +987,7 @@ ResultTestCharge testChargeWorker(Fred::Invoicing::Manager *invMan, Database::Da
     // CHECK CREDIT after
     Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_id)(registrar_id));
-                   if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) ret.credit_after = get_price((std::string)credit_res2[0][0]);
+                   if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) ret.credit_after = std::string(credit_res2[0][0]);
 
     ret.counted_price = getOperationPrice(operation, zone_id, ret.units);
 
@@ -1132,7 +1132,7 @@ Database::ID createTestRegistrar(const std::string &handle_base)
     return registrar->getId();
 }
 
-void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Database::ID zone_cz_id, Database::ID reg_id, cent_amount amount)
+void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Database::ID zone_cz_id, Database::ID reg_id, Decimal amount)
 {
    Database::ID invoiceid = man->createDepositInvoice(taxdate //taxdate
                    , zone_cz_id//zone
@@ -1178,7 +1178,7 @@ BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
 
     // TODO this should check price_list - if operation price is really 0
     // TODO change date
-    BOOST_CHECK(!invMan->chargeDomainCreate(zone_cz_id, regid, object_id, Database::Date(2012, 1, 1), 12 ));
+    BOOST_CHECK(!invMan->chargeDomainCreate(zone_cz_id, regid, object_id, Database::Date(2012, 1, 1), 0 ));
 
 }
 
@@ -1190,7 +1190,7 @@ void testChargeInsuffCredit(Fred::Invoicing::Manager *invMan, unsigned reg_units
 
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
-    cent_amount amount = ( getOperationPrice(op, zone_id, reg_units) * 0.9) / 2;
+    Decimal amount = ( getOperationPrice(op, zone_id, reg_units) * Decimal("0.9")).integral_division( Decimal("2"));
 
     // add credit for new registrar
     Database::Date taxdate (act_year,1,1);
@@ -1254,7 +1254,7 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
 
     Database::ID regid = createTestRegistrar("REG-FRED_INV");
 
-    cent_amount amount = 20000 * 100;
+    Decimal amount = std::string("20000.00");
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
@@ -1295,7 +1295,7 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
 
 }
 
-cent_amount getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units)
+Decimal getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units)
 {
     //db
     Database::Connection conn = Database::Manager::acquire();
@@ -1308,10 +1308,10 @@ cent_amount getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_un
 
     BOOST_REQUIRE_MESSAGE(price_res.size() > 0, "Fetching record from price_list");
 
-    int base = (int) price_res[0][1];
-    cent_amount base_price = get_price(price_res[0][0]);
-    if(base > 0) {
-        return base_price * (reg_units / (int)price_res[0][1]);
+    Decimal base = std::string(price_res[0][1]);
+    Decimal base_price = std::string(price_res[0][0]);
+    if(base > Decimal("0")) {
+        return base_price * (Decimal(boost::lexical_cast<std::string>(reg_units)).integral_division( base));
     } else {
         return base_price;
     }
@@ -1320,7 +1320,7 @@ cent_amount getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_un
 }
 
 void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned period,
-        Database::Date taxdate, Database::Date exdate, cent_amount amount, bool should_succ)
+        Database::Date taxdate, Database::Date exdate, Decimal amount, bool should_succ)
 {
     // registrar
     Database::ID regid = createTestRegistrar("REG-FRED_2INVNEED");
@@ -1329,7 +1329,7 @@ void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned perio
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
     // add credit - 2 invoices for the same zone:
 
-    if(amount > 0) {
+    if(amount > Decimal("0")) {
         create2Invoices(invMan.get(), taxdate, zone_id, regid, amount);
     }
 
@@ -1351,24 +1351,24 @@ BOOST_AUTO_TEST_CASE( chargeDomain2Invoices )
 
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
-    cent_amount op_price_cz = getOperationPrice(operation, zone_cz_id, period);
+    Decimal op_price_cz = getOperationPrice(operation, zone_cz_id, period);
        // price for invoices so that 2 are not sufficient
        // cent_amount amount = op_price / 3;
 
        // price for invoices so that 2 are needed.
        // TODO hardcoded VAT - change
-    cent_amount amount = ( op_price_cz * 1.22) / 2;
+    Decimal amount = ( op_price_cz * Decimal("1.22")) / Decimal("2");
 
     testCharge2InvoicesWorker(zone_cz_id, operation, period,
             Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), amount, true);
 
-    cent_amount op_price_enum = getOperationPrice(operation, zone_cz_id, period);
+    Decimal op_price_enum = getOperationPrice(operation, zone_cz_id, period);
        // price for invoices so that 2 are not sufficient
        // cent_amount amount = op_price / 3;
 
        // price for invoices so that 2 are needed.
        // TODO hardcoded VAT - change
-    cent_amount amount2 = ( op_price_enum * 1.22) / 2;
+    Decimal amount2 = ( op_price_enum * Decimal("1.22")) / Decimal("2");
 
     testCharge2InvoicesWorker(zone_enum_id, operation, period,
             Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), amount2, true);
@@ -1390,21 +1390,21 @@ BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNotSuff )
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
 
-    cent_amount op_price = getOperationPrice(operation, zone_cz_id, period);
+    Decimal op_price = getOperationPrice(operation, zone_cz_id, period);
        // price for invoices so that 2 are not sufficient
        // cent_amount amount = op_price / 3;
 
        // price for invoices so that 2 are needed.
        // TODO hardcoded VAT - change
-    cent_amount amount = ( op_price * 0.9) / 2;
+    Decimal amount = ( op_price * Decimal("0.9")) / Decimal("2");
 
     testCharge2InvoicesWorker(zone_cz_id, operation, period,
             Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), amount, false);
 
 
 // The same for ENUM
-    cent_amount op_price_enum = getOperationPrice(operation, zone_enum_id, period);
-    cent_amount amount2 = ( op_price_enum * 0.9) / 2;
+    Decimal op_price_enum = getOperationPrice(operation, zone_enum_id, period);
+    Decimal amount2 = ( op_price_enum * Decimal("0.9")) / Decimal("2");
 
     testCharge2InvoicesWorker(zone_enum_id, operation, period,
             Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), amount2, false);
@@ -1431,7 +1431,9 @@ BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNoCred )
                           Database::query_param_list(operation)
                                                   (zone_cz_id));
 
-    if ( check.size() < 1 || check[0][0].isnull() || get_price(check[0][0]) == (cent_amount)0) {
+    if ( check.size() < 1 || check[0][0].isnull()
+            || Decimal(std::string(check[0][0])) == Decimal("0"))
+    {
         BOOST_ERROR("Cannot perform the test - operation not charged");
     }
 
@@ -1443,17 +1445,17 @@ BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNoCred )
                               Database::query_param_list(operation)
                                                       (zone_enum_id));
 
-    if ( check.size() < 1 || check[0][0].isnull() || get_price(check[0][0]) == (cent_amount)0) {
+    if ( check.size() < 1 || check[0][0].isnull() || Decimal(std::string(check[0][0])) == Decimal("0")) {
         BOOST_ERROR("Cannot perform the test - operation not charged");
     }
 
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
     testCharge2InvoicesWorker(zone_cz_id, operation, period,
-            Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), 0, false);
+            Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), Decimal("0"), false);
 
     testCharge2InvoicesWorker(zone_enum_id, operation, period,
-            Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), 0, false);
+            Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), Decimal("0"), false);
 
 }
 
@@ -1494,7 +1496,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     
     //cent_amount create_operation_price = get_price(create_operation_price_result[0][0]);
 
-    cent_amount renew_operation_price = get_price(renew_operation_price_result[0][0]);
+    Decimal renew_operation_price = std::string(renew_operation_price_result[0][0]);
 
 
     //std::cout<< "create_operation_price: " << create_operation_price 
@@ -1562,7 +1564,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         Database::Date taxdate;
 
         taxdate = Database::Date(year,1,1);
-        unsigned long price = 5000000UL;//cents
+        Decimal price = std::string("50000.00");//cents
 
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                 , zone_cz_id//zone
@@ -1592,44 +1594,12 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
     }//for createDepositInvoice
 
-/* https://admin.nic.cz/ticket/5355#comment:123
-    {
-        Database::Date taxdate (2003,6,10);
-        unsigned long price = 15000UL;//cents
-        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
-                , zone_cz_id//zone
-                , registrar_inv_id//registrar
-                , price);//price
-        BOOST_CHECK_EQUAL(invoiceid != 0,true);
-    }
-    {
-        Database::Date taxdate (2006,6,10);
-        unsigned long price = 15000UL;//cents
-        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
-                , zone_cz_id//zone
-                , registrar_inv_id//registrar
-                , price);//price
-        BOOST_CHECK_EQUAL(invoiceid != 0,true);
-    }
-    {
-        Database::Date taxdate (2010,6,10);
-        unsigned long price = 100000UL;//cents
-        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
-                , zone_cz_id//zone
-                , registrar_inv_id//registrar
-                , price);//price
-        BOOST_CHECK_EQUAL(invoiceid != 0,true);
-    }
-*/
-
-
-
      // credit before
     Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                        , Database::query_param_list(zone_cz_id)(registrar_inv_id));
-    cent_amount credit_before = 0UL;
+    Decimal credit_before("0");
     if(credit_res.size() ==  1 && credit_res[0].size() == 1)
-        credit_before = get_price(std::string(credit_res[0][0]));
+        credit_before = std::string(credit_res[0][0]);
 
 //    std::cout << "\ncreateAccountInvoices_registrar: " << registrar_handle
 //            << " credit before: " << credit_before << std::endl;
@@ -1645,7 +1615,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     ccReg::Response_var r;
 
     std::string test_domain_fqdn(std::string("tdomain")+time_string);
-    cent_amount test_operation_price = 0;
+    Decimal test_operation_price ("0");
 
     try
     {
@@ -1713,7 +1683,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                     epp_params_renew,//in EppParams params,
                     ccReg::ExtensionList()//in ExtensionList ext
                     );
-            test_operation_price+=3*renew_operation_price;
+            test_operation_price+=Decimal("3")*renew_operation_price;
         }
 
     }//try
@@ -1759,11 +1729,11 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     }
 
     // credit after
-    cent_amount credit_after_renew = 0UL;
+    Decimal credit_after_renew ("0");
     Database::Result credit_res3 = conn.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
     if(credit_res3.size() ==  1 && credit_res3[0].size() == 1)
-        credit_after_renew = get_price(std::string(credit_res3[0][0]));
+        credit_after_renew = std::string(credit_res3[0][0]);
     //std::cout << "\n\t credit after renew: " << credit_after_renew << std::endl;
 
     //debug print
@@ -1793,15 +1763,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         , todate)
         , std::exception
         , check_std_exception_createAccountInvoice );
-/*
-    // credit after
-    cent_amount credit_after_acc = 0UL;
-    Database::Result credit_res4 = conn.exec_params(zone_registrar_credit_query
-                           , Database::query_param_list(zone_cz_id)(registrar_inv_id));
-    if(credit_res4.size() ==  1 && credit_res4[0].size() == 1)
-        credit_after_acc = get_price(std::string(credit_res4[0][0]));
-    std::cout << "\n\t credit after acc: " << credit_after_acc << std::endl;
-*/
+
     //set operation price back
     conn.exec("update price_list set price = price - 0.11 where zone = 1 and operation = 2");
 }
@@ -1867,24 +1829,6 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
         "select zone, crdate::date, taxdate, prefix , registrarid " // 0 - 4
         ", credit, price, vat, total, totalvat, prefix_type, file , filexml " // 5 - 12
         " from invoice where ");
-
-  /* table invoice
-  id serial NOT NULL, -- unique automatically generated identifier
-  "zone" integer, -- reference to zone
-  crdate timestamp without time zone NOT NULL DEFAULT now(), -- date and time of invoice creation
-  taxdate date NOT NULL, -- date of taxable fulfilment (when payment cames by advance FA)
-  prefix bigint NOT NULL, -- 9 placed number of invoice from invoice_prefix.prefix counted via TaxDate
-  registrarid integer NOT NULL, -- link to registrar
-  credit numeric(10,2) DEFAULT 0.0, -- credit from which is taken till zero, if it is NULL it is normal invoice
-  price numeric(10,2) NOT NULL DEFAULT 0.0, -- invoice high with tax
-  vat integer NOT NULL DEFAULT 19, -- VAT hight from account
-  total numeric(10,2) NOT NULL DEFAULT 0.0, -- amount without tax
-  totalvat numeric(10,2) NOT NULL DEFAULT 0.0, -- tax paid
-  prefix_type integer NOT NULL, -- invoice type (from which year is and which type is according to prefix)
-  file integer, -- link to generated PDF file, it can be NULL till file is generated
-  filexml integer, -- link to generated XML file, it can be NULL till file is generated
- *
- * */
 
     bool inv_query_first_id = true;
 
@@ -2105,8 +2049,8 @@ ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Fred::In
 
     std::string time_string(TimeStamp::microsec());
 
-    ret.credit_before = 0;
-    ret.credit_after = 0;
+    ret.credit_before = Decimal("0");
+    ret.credit_after = Decimal("0");
 
 
     // do the operation
@@ -2186,8 +2130,8 @@ ResultTestCharge testCreateDomainWorker(ccReg::EPP_var epp_ref, Fred::Invoicing:
 
     std::string time_string(TimeStamp::microsec());
 
-    ret.credit_before = 0;
-    ret.credit_after = 0;
+    ret.credit_before = Decimal("0");
+    ret.credit_after = Decimal("0");
 
 
     // do the operation
@@ -2376,7 +2320,7 @@ BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
 
     Database::ID regid = createTestRegistrar("REG-ITHREAD");
 
-    cent_amount amount = 20000 * 100;
+    Decimal amount ("20000.00");
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
@@ -2487,7 +2431,7 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 
 
      // --------------------- add credit, acquire connection
-     cent_amount amount = 90000 * 100;
+     Decimal amount ("90000.00");
      unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
      Database::Connection conn = Database::Manager::acquire();
@@ -2506,12 +2450,12 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 
 
     // CHECK CREDIT before
-    cent_amount credit_before, credit_after;
+    Decimal credit_before, credit_after;
 
     Database::Result credit_res1 = conn.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
     if(credit_res1.size() ==  1 && credit_res1[0].size() == 1) {
-        credit_before = get_price((std::string)credit_res1[0][0]);
+        credit_before.set_string(std::string(credit_res1[0][0]));
     } else {
         BOOST_FAIL("Couldn't count registrar credit ");
     }
@@ -2525,8 +2469,8 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
     params.epp_backend = myccReg_EPP_i.get();
     params.clientId = clientId;
 
-    unsigned thread_count = threadedTest< TestCreateDomainDirectThreadedWorker>
-                                    (params, &testCreateDomainEvalSucc);
+    Decimal thread_count = boost::lexical_cast<std::string>(
+            threadedTest< TestCreateDomainDirectThreadedWorker> (params, &testCreateDomainEvalSucc));
 
     Database::Connection conn2 = Database::Manager::acquire();
 
@@ -2535,13 +2479,13 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
     Database::Result credit_res2 = conn2.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
     if(credit_res2.size() ==  1 && !credit_res2[0][0].isnull()) {
-        credit_after = get_price((std::string)credit_res2[0][0]);
+        credit_after.set_string(std::string(credit_res2[0][0]));
     } else {
         BOOST_FAIL("Couldn't count registrar credit ");
     }
 
     // if(operation == INVOICING_DomainCreate) 
-    cent_amount counted_price =
+    Decimal counted_price =
             getOperationPrice(INVOICING_DomainRenew, zone_cz_id, DEFAULT_REGISTRATION_PERIOD)
             + getOperationPrice(INVOICING_DomainCreate, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
 
@@ -2582,7 +2526,7 @@ BOOST_AUTO_TEST_CASE(createDomainThreaded)
 
 
     // ### add credit
-    cent_amount amount = 90000 * 100;
+    Decimal amount ("90000.00");
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
     Database::Connection conn = Database::Manager::acquire();
@@ -2609,12 +2553,12 @@ BOOST_AUTO_TEST_CASE(createDomainThreaded)
 
     //try get epp reference
     
-    cent_amount credit_before, credit_after;
+    Decimal credit_before, credit_after;
     // CHECK CREDIT before
     Database::Result credit_res1 = conn.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
     if(credit_res1.size() ==  1 && credit_res1[0].size() == 1) {
-        credit_before = get_price((std::string)credit_res1[0][0]);
+        credit_before.set_string(std::string(credit_res1[0][0]));
     } else {
         BOOST_FAIL("Couldn't count registrar credit ");
     }
@@ -2685,7 +2629,7 @@ BOOST_AUTO_TEST_CASE(createDomainThreaded)
     Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
                            , Database::query_param_list(zone_cz_id)(registrar_inv_id));
     if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) {
-        credit_after = get_price((std::string)credit_res2[0][0]);
+        credit_after.set_string(std::string(credit_res2[0][0]));
     } else {
         BOOST_FAIL("Couldn't count registrar credit ");
     }
@@ -2700,11 +2644,11 @@ BOOST_AUTO_TEST_CASE(createDomainThreaded)
     */
 
     // if(operation == INVOICING_DomainCreate) {
-    cent_amount counted_price =
+    Decimal counted_price =
             getOperationPrice(INVOICING_DomainRenew, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
-            + getOperationPrice(INVOICING_DomainCreate, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
+            //+ getOperationPrice(INVOICING_DomainCreate, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
 
-    counted_price *= thread_count;
+    counted_price *= Decimal(boost::lexical_cast<std::string>(thread_count));
 
     BOOST_REQUIRE_MESSAGE(credit_before - credit_after == counted_price, boost::format(
         "Credit before (%1%) and  after (%2%) + price (%3%) threaded test don't match. ")
@@ -2784,7 +2728,7 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
 
 
      // ### add credit
-     cent_amount amount = 90000 * 100;
+     Decimal amount ("90000.00");
      unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
      Database::Connection conn = Database::Manager::acquire();
@@ -2894,7 +2838,7 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPP)
 
 
     // ### add credit
-    cent_amount amount = 20000 * 100;
+    Decimal amount ("20000.00");
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
     Database::Connection conn = Database::Manager::acquire();

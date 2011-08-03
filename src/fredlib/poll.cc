@@ -19,21 +19,12 @@
 #include <algorithm>
 #include "sql.h"
 #include "poll.h"
-// for cent_amount for request fee
 #include "invoicing/invoice.h"
 #include "common_impl.h"
 #include "old_utils/dbsql.h"
 
 namespace Fred {
 namespace Poll {
-
-
-/* XXX: copy from invoicing due to unresolved dependencies */
-std::string query_param_price(Fred::Invoicing::cent_amount price)
-{
-    return (boost::format("%1%.%2$02u") % (price/100) % (price >= 0  ? price%100 : (-1*price)%100) ).str();
-}
-
 
 class MessageImpl : public CommonObjectImpl, virtual public Message {
   TID id;
@@ -936,7 +927,7 @@ public:
           const boost::gregorian::date &period_to,
           const unsigned long long &total_free_count,
           const unsigned long long &request_count,
-          const Fred::Invoicing::cent_amount &price)
+          const Decimal &price)
   {
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction tx(conn);
@@ -967,7 +958,7 @@ public:
                   (period_to)
                   (total_free_count)
                   (request_count)
-                  (query_param_price(price)));
+                  (price.get_string()));
 
       tx.commit();
 
@@ -1064,8 +1055,7 @@ public:
           throw std::runtime_error("Entry for request fee not found in price_list");
       }
 
-      Fred::Invoicing::cent_amount price_unit_request
-          = Fred::Invoicing::get_price((std::string)res_price[0][0]);
+      std::string price_unit_request = res_price[0][0];
 
       // from & to date for the calculation (in local time)
       boost::gregorian::date p_to = boost::gregorian::day_clock::local_day();
@@ -1123,9 +1113,11 @@ public:
                   domain_count * per_domain_free_count);
 
           // price in cents
-          unsigned long long price = 0;
-          if (request_count > total_free_count) {
-              price = (request_count - total_free_count) * price_unit_request;
+          Decimal price ("0");
+          if (request_count > total_free_count)
+          {
+              Decimal count_diff (boost::lexical_cast<std::string> (request_count - total_free_count));
+              price = count_diff * Decimal(price_unit_request);
           }
 
           LOGGER(PACKAGE).info(boost::format(

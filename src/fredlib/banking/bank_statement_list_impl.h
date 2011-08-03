@@ -113,10 +113,10 @@ public:
                 int number                  = *(++col);
                 Database::Date crDate       = *(++col);
                 Database::Date oldDate      = *(++col);
-                Database::Money balance     = *(++col);
-                Database::Money oldBalance  = *(++col);
-                Database::Money credit      = *(++col);
-                Database::Money debet       = *(++col);
+                Decimal balance     = std::string(*(++col));
+                Decimal oldBalance  = std::string(*(++col));
+                Decimal credit      = std::string(*(++col));
+                Decimal debet       = std::string(*(++col));
                 unsigned long long fileId   = *(++col);
 
                 StatementImpl *statement = new StatementImpl();
@@ -135,44 +135,7 @@ public:
             if (isEmpty()) {
                 return;
             }
-            /* TODO payments load
-            if(!partial_load_) {
-                Database::SelectQuery StatementItemQuery;
-                StatementItemQuery.select()
-                    << "t_1.id, t_1.statement_id, t_1.account_number, t_1.bank_code, "
-                    << "t_1.type, t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price, "
-                    << "t_1.account_evid, t_1.account_date, t_1.account_memo, "
-                    << "t_1.invoice_id, t_1.account_name, t_1.crtime";
 
-                StatementItemQuery.from()
-                    << getTempTableName() << " tmp "
-                    << "JOIN bank_payment t_1 ON (tmp.id = t_1.statement_id)";
-                StatementItemQuery.order_by()
-                    << "tmp.id";
-                Database::Result r_stat = conn.exec(StatementItemQuery);
-                Database::Result::Iterator statIt = r_stat.begin();
-                for (; statIt != r_stat.end(); ++statIt) {
-                    Database::Row::Iterator col = (*statIt).begin();
-                    Database::ID id             = *col;
-                    Database::ID statementId    = *(++col);
-                    std::string accountNumber   = *(++col);
-                    std::string bankCode        = *(++col);
-                    int type                    = *(++col);
-                    int code                    = *(++col);
-                    std::string constSymb       = *(++col);
-                    std::string varSymb         = *(++col);
-                    std::string specSymb        = *(++col);
-                    Database::Money price       = *(++col);
-                    std::string accountEvid     = *(++col);
-                    Database::Date accountDate  = *(++col);
-                    std::string accountMemo     = *(++col);
-                    Database::ID invoiceId      = *(++col);
-                    std::string accountName     = *(++col);
-                    Database::Date crTime       = *(++col);
-                }
-
-            }
-            */
             CommonListImplNew::reload();
 
         } catch (Database::Exception &ex) {

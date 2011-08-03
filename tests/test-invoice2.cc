@@ -56,7 +56,7 @@
 #include "corba/EPP.hh"
 #include "epp/epp_impl.h"
 
-#include "util/decimal/decimal.h"
+#include "decimal/decimal.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -810,7 +810,7 @@ struct create_deposit_invoice_fixture
     }
 
 
-    //count VAT from price without tax using coefficient - local CZ rules
+    //count VAT from price with tax using coefficient - local CZ rules
     Decimal count_dph( //returning vat rounded half-up to 2 decimal places
         Decimal price //Kc incl. vat
         , Decimal vat_reverse //vat coeff like 0.1597 for vat 19%
@@ -917,7 +917,7 @@ struct create_deposit_invoice_fixture
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
-                            unsigned long price = 1000UL;//cents
+                            Decimal price ("10");
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
@@ -1006,7 +1006,7 @@ struct create_deposit_invoice_fixture
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
-                            unsigned long price = 1000UL;//cents
+                            Decimal price ("10");
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
@@ -1058,7 +1058,7 @@ struct create_deposit_invoice_fixture
 
 
                             taxdate = Database::Date(year,12,31);
-                            price = 1000UL;//cents
+                            price = Decimal("10");//Kc
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
@@ -1126,7 +1126,7 @@ struct create_deposit_invoice_fixture
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
-                            unsigned long price = 3000000000UL;//cents
+                            Decimal price ("30000000.00");//Kc
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
@@ -1149,7 +1149,7 @@ struct create_deposit_invoice_fixture
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
-                            signed long long price = -1000000000LL;//cents
+                            Decimal price ("-10000000.00");//Kc
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
@@ -1172,7 +1172,7 @@ struct create_deposit_invoice_fixture
                         Database::Date taxdate;
 
                         taxdate = Database::Date(year,1,1);
-                        unsigned long price = 5000000UL;//cents
+                        Decimal price ("50000.00");//Kc
 
                         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                 , zone_id//zone

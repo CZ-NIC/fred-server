@@ -428,7 +428,7 @@ RegistrarClient::price_add()
     if (price_add_params_.valid_to.is_value_set()) {//REGISTRAR_VALID_TO_NAME
         validTo.from_string(price_add_params_.valid_to.get_value());
     }
-    Database::Money price(price_add_params_.operation_price * 100);//REGISTRAR_PRICE_NAME
+    Decimal price(price_add_params_.operation_price.get_value());//REGISTRAR_PRICE_NAME
     int period = 12;
     if (price_add_params_.period.is_value_set()) {//REGISTRAR_PERIOD_NAME
         period = price_add_params_.period.get_value();

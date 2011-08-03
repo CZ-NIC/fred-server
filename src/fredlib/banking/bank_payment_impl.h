@@ -68,9 +68,9 @@ public:
     {
         return ModelBankPayment::getSpecSymb();
     }
-    const Database::Money &getPrice() const
+    Decimal getPrice() const
     {
-        return ModelBankPayment::getPrice();
+        return Decimal(ModelBankPayment::getPrice());
     }
     const std::string &getAccountEvid() const
     {
@@ -145,9 +145,9 @@ public:
     {
         ModelBankPayment::setSpecSymb(specSymb);
     }
-    void setPrice(const Database::Money &price)
+    void setPrice(const Decimal &price)
     {
-        ModelBankPayment::setPrice(price);
+        ModelBankPayment::setPrice(price.get_string());
     }
     void setAccountEvid(const std::string &accountEvid)
     {
@@ -349,8 +349,7 @@ PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)
     // }
     // if (!_node.getChild(ITEM_PRICE).isEmpty()) {
     {
-        Database::Money value;
-        value.format(_node.getChild(ITEM_PRICE).getValue());
+        Decimal value(_node.getChild(ITEM_PRICE).getValue());
         payment->setPrice(value);
     }
     // }

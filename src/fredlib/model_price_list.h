@@ -43,7 +43,7 @@ public:
     {
         return m_validTo.get();
     }
-    const Database::Money &getPrice() const
+    std::string getPrice() const
     {
         return m_price.get();
     }
@@ -83,7 +83,7 @@ public:
     {
         m_validTo = validTo;
     }
-    void setPrice(const Database::Money &price)
+    void setPrice(const std::string &price)
     {
         m_price = price;
     }
@@ -140,7 +140,7 @@ protected:
     Field::Field<unsigned long long> m_operationId;
     Field::Field<Database::DateTime> m_validFrom;
     Field::Field<Database::DateTime> m_validTo;
-    Field::Field<Database::Money> m_price;
+    Field::Field<std::string> m_price;
     Field::Field<int> m_period;
 
     //Field::Lazy::Field<ModelZone *> m_ftab_zone;
@@ -152,7 +152,7 @@ public:
     static Model::Field::Basic<ModelPriceList, unsigned long long> operationId;
     static Model::Field::Basic<ModelPriceList, Database::DateTime> validFrom;
     static Model::Field::Basic<ModelPriceList, Database::DateTime> validTo;
-    static Model::Field::Basic<ModelPriceList, Database::Money> price;
+    static Model::Field::Basic<ModelPriceList, std::string> price;
     static Model::Field::Basic<ModelPriceList, int> period;
 
     //static Model::Field::Related::OneToOne<ModelPriceList, unsigned long long, ModelZone> ftab_zone;

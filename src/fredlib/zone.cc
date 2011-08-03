@@ -1319,7 +1319,7 @@ namespace Fred
               Operation operation,
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
-              const Database::Money &price,
+              const Decimal &price,
               int period)
           throw (SQL_ERROR)
       {
@@ -1332,7 +1332,7 @@ namespace Fred
             	    pl.setValidFrom(validFrom);
             	if(!validTo.get().is_not_a_date_time())
             	    pl.setValidTo(validTo);
-            	pl.setPrice(price);
+            	pl.setPrice(price.get_string());
             	pl.setPeriod(period);
             	pl.insert();
 
@@ -1350,7 +1350,7 @@ namespace Fred
               Operation operation,
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
-              const Database::Money &price,
+              const Decimal &price,
               int period)
           throw (SQL_ERROR)
       {

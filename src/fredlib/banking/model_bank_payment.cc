@@ -13,7 +13,7 @@ DEFINE_BASIC_FIELD(ModelBankPayment, int, status, m_status, table_name, "status"
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, konstSym, m_konstSym, table_name, "konstsym", )
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, varSymb, m_varSymb, table_name, "varsymb", )
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, specSymb, m_specSymb, table_name, "specsymb", )
-DEFINE_BASIC_FIELD(ModelBankPayment, Database::Money, price, m_price, table_name, "price", .setNotNull())
+DEFINE_BASIC_FIELD(ModelBankPayment, std::string, price, m_price, table_name, "price", .setNotNull())
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, accountEvid, m_accountEvid, table_name, "account_evid", )
 DEFINE_BASIC_FIELD(ModelBankPayment, Database::Date, accountDate, m_accountDate, table_name, "account_date", .setNotNull())
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, accountMemo, m_accountMemo, table_name, "account_memo", )

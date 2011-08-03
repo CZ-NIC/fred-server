@@ -29,10 +29,7 @@
 #include "convert_sql_boost_datetime.h"
 #include "date.h"
 #include "datetime.h"
-#include "money.h"
 #include "id.h"
-
-
 
 template<>
 struct SqlConvert<Database::Date> {
@@ -46,8 +43,6 @@ struct SqlConvert<Database::Date> {
   }
 };
 
-
-
 template<>
 struct SqlConvert<Database::DateTime> {
   static Database::DateTime from(const std::string &_in) {
@@ -60,70 +55,16 @@ struct SqlConvert<Database::DateTime> {
   }
 };
 
-
-
-template<>
-struct SqlConvert<Database::Money> {
-  static Database::Money from(const std::string &_in) {
-        try {
-            std::string::size_type i = 0;
-            if ((i = _in.find(".")) == std::string::npos) {
-                return Database::Money(SqlConvert<Database::Money::value_type>::from(_in) * 100);
-            } else {
-                if (_in.substr(i + 1, std::string::npos).find(".") != std::string::npos) {
-                    throw ConversionError("from sql", "SqlConvert<Database::Money>");
-                }
-                bool negative = (_in.find('-') != std::string::npos);
-
-                std::stringstream tmp;
-                tmp << std::setw(2) << std::left << std::setfill('0') << _in.substr(i + 1, (i + 2 < std::string::npos ? 2 : std::string::npos));
-
-                Database::Money::value_type first;
-
-                if (i == 0 || (i == 1 && _in.substr(0, i) == std::string("-"))) {
-                    first = 0;
-                } else {
-                    first = abs(SqlConvert<Database::Money::value_type>::from(_in.substr(0, i)) * 100);
-                }
-
-                Database::Money::value_type last = SqlConvert<Database::Money::value_type>::from(tmp.str());
-                if (negative) {
-                    return Database::Money(-first - last);
-                } else {
-                    return Database::Money(first + last);
-                }
-            }
-        } catch (...) {
-            throw ConversionError("from sql", "SqlConvert<Database::Money>");
-        }
-  }
-
-
-  static std::string to(const Database::Money &_in) {
-    try {
-        return _in.to_string();
-    }
-    catch (...) {
-      throw ConversionError("to sql", "SqlConvert<Database::Money>");
-    }
-  }
-};
-
-
-
 template<>
 struct SqlConvert<Database::ID> {
   static Database::ID from(const std::string &_in) {
     return Database::ID(SqlConvert<Database::ID::value_type>::from(_in));
   }
 
-
   static std::string to(const Database::ID &_in) {
     return SqlConvert<Database::ID::value_type>::to(static_cast<Database::ID::value_type>(_in));
   }
 };
-
-
 
 #endif /*CONVERT_SQL_DB_TYPES_H_*/
 

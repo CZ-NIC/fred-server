@@ -1457,8 +1457,8 @@ public:
                 ::value<Checked::string>()->notifier(save_optional_string(params.valid_to))
                 , "price valid to datetime")
             ("operation_price", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_arg<long long>(params.operation_price))
-                , "operation price")
+                ::value<Checked::string_fpnumber>()->notifier(save_optional_string(params.operation_price))
+                , "operation price like: 140.00")
             ("period", boost::program_options
                 ::value<Checked::ulong>()->notifier(save_optional_ulong(params.period))
                 , "period")

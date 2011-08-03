@@ -48,7 +48,7 @@ public:
     virtual const std::string &getKonstSym() const = 0;
     virtual const std::string &getVarSymb() const = 0;
     virtual const std::string &getSpecSymb() const = 0;
-    virtual const Database::Money &getPrice() const = 0;
+    virtual Decimal getPrice() const = 0;
     virtual const std::string &getAccountEvid() const = 0;
     virtual const Database::Date &getAccountDate() const = 0;
     virtual const std::string &getAccountMemo() const = 0;
@@ -67,7 +67,7 @@ public:
     virtual void setKonstSym(const std::string &konstSym) = 0;
     virtual void setVarSymb(const std::string &varSymb) = 0;
     virtual void setSpecSymb(const std::string &specSymb) = 0;
-    virtual void setPrice(const Database::Money &price) = 0;
+    virtual void setPrice(const Decimal &price) = 0;
     virtual void setAccountEvid(const std::string &accountEvid) = 0;
     virtual void setAccountDate(const Database::Date &accountDate) = 0;
     virtual void setAccountMemo(const std::string &accountMemo) = 0;

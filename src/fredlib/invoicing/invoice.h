@@ -14,16 +14,16 @@
 #include "mailer.h"
 #include "db_settings.h"
 #include "model/model_filters.h"
-#include "util/decimal/decimal.h"
+#include "decimal/decimal.h"
 
 namespace Fred {
 namespace Invoicing {
 
 // input is price in cents(penny)
 // signed type allows negative amounts
-typedef unsigned long cent_amount;
+//typedef unsigned long cent_amount;
 
-cent_amount get_price(const std::string &str);
+
 
 // TODO copy of those in action.h
 // mapped from enum_operation
@@ -47,7 +47,7 @@ enum MemberType {
 };
 
 /// money type
-typedef long long Money;
+typedef Decimal Money;
 /// invoice type
 // duplicity from ccReg.h
 enum Type {
@@ -90,7 +90,7 @@ public:
   // base tax money amount  
   virtual Money getPrice() const = 0;
   // vat rate in percents
-  virtual unsigned getVatRate() const = 0;
+  virtual Decimal getVatRate() const = 0;
   // counted vat (approximatly price * vatRate / 100)
   virtual Money getVat() const = 0;
   // sum of price and vat
@@ -152,7 +152,7 @@ protected:
   }
 public:
   /// reset iterator to first record
-  virtual void resetIterator(unsigned vatRate) = 0;
+  virtual void resetIterator(Decimal vatRate) = 0;
   /// test whether there are any records left 
   virtual bool end() const = 0;
   /// pass to next record
@@ -177,7 +177,7 @@ public:
   virtual TID getRegistrar() const = 0;
   virtual Money getCredit() const = 0;
   virtual Money getPrice() const = 0;
-  virtual short getVatRate() const = 0;
+  virtual Decimal getVatRate() const = 0;
   virtual Money getTotal() const = 0;
   virtual Money getTotalVAT() const = 0;
   virtual const std::string& getVarSymbol() const = 0;
@@ -202,8 +202,8 @@ public:
     // const Database::Date getTaxDate() const = 0;
     virtual TID getPrefix() const = 0;
     virtual TID getRegistrarId() const = 0;
-    virtual int getVat() const = 0;
-    virtual const Database::Money getTotalVat() const = 0;
+    virtual Decimal getVat() const = 0;
+    virtual Money getTotalVat() const = 0;
     // const TID getPrefixTypeId() const = 0;
     virtual TID getFileId() const = 0;
     virtual std::string getFileHandle() const = 0;
@@ -308,7 +308,7 @@ public:
           int type, int year, unsigned long long prefix) = 0;
 
   // added methods
-  virtual  unsigned long long createDepositInvoice(Database::Date date, int zoneId, int registrarId, cent_amount price) = 0;
+  virtual  unsigned long long createDepositInvoice(Database::Date date, int zoneId, int registrarId, Decimal price) = 0;
 
   virtual bool chargeDomainCreate(
           const Database::ID &zone,

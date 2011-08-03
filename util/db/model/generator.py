@@ -102,7 +102,7 @@ def guess_type(type, pkey, fkey):
     elif type == 'smallint':
         return 'short int'
     elif type == 'numeric':
-        return 'Database::Money'
+        return 'std::string'
     elif type == 'date':
         return 'Database::Date'
     elif type.startswith('timestamp'):

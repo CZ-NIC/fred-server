@@ -224,10 +224,10 @@ class RegistrarImpl : public Fred::CommonObjectImplNew,
   typedef std::vector<ACLImplPtr> ACLList;
   typedef ACLList::iterator ACLListIter;
 
-  unsigned long credit; ///< DB: registrar.credit
+  Decimal credit; ///< DB: registrar.credit
 
   ACLList acl; ///< access control
-  typedef std::map<Database::ID, unsigned long> ZoneCreditMap;
+  typedef std::map<Database::ID, Decimal> ZoneCreditMap;
   ZoneCreditMap zone_credit_map;
 
   typedef  boost::shared_ptr<ZoneAccess> ZoneAccessPtr;
@@ -239,7 +239,7 @@ public:
   RegistrarImpl()
   : CommonObjectImplNew()
   , ModelRegistrar()
-  , credit(0)
+  , credit("0")
 
   {}
   RegistrarImpl(TID _id,
@@ -262,7 +262,7 @@ public:
                 const std::string& _fax,
                 const std::string& _email,
                 bool _system,
-                unsigned long _credit) :
+                Decimal _credit) :
         CommonObjectImplNew(),
         ModelRegistrar(),
         credit(_credit)
@@ -455,23 +455,44 @@ public:
 	ModelRegistrar::setSystem(_system);
   }
 
-  virtual unsigned long getCredit() const {
+  virtual Decimal getCredit() const {
     return credit;
   }
   
-  virtual unsigned long getCredit(Database::ID _zone_id) const
+  virtual Decimal getCredit(Database::ID _zone_id) const
   {
-      unsigned long ret = 0;
+      Logging::Context ctx("RegistrarImpl::getCredit");
+      try
+      {
+
+      Decimal ret ("0");
       ZoneCreditMap::const_iterator it;
       it = zone_credit_map.find(_zone_id);
       if(it != zone_credit_map.end())
           ret = it->second;
     return ret;
+
+      }//try
+      catch(const std::exception& ex)
+      {
+          LOGGER(PACKAGE).debug(ex.what());
+          throw;
+      }
   }
   
-  virtual void setCredit(Database::ID _zone_id, unsigned long _credit) {
-    zone_credit_map[_zone_id] = _credit;
-    credit += _credit;
+  virtual void setCredit(Database::ID _zone_id, Decimal _credit)
+  {
+      Logging::Context ctx("RegistrarImpl::setCredit");
+      try
+      {
+          zone_credit_map[_zone_id] = _credit;
+          credit += _credit;
+      }//try
+      catch(const std::exception& ex)
+      {
+          LOGGER(PACKAGE).debug(ex.what());
+          throw;
+      }
   }
   
   virtual unsigned getACLSize() const {
@@ -730,7 +751,7 @@ public:
 
   void putZoneAccess(TID _id
           , std::string _name
-          , unsigned long _credit
+          , Decimal _credit
           , Database::Date _fromdate
           , Database::Date _todate)
   {
@@ -792,15 +813,14 @@ public:
       throw std::bad_cast();
     }
 
+    Decimal lvalue = l_casted->getCredit(zone_id_);
 
-    long long lvalue = l_casted->getCredit(zone_id_);
-
-    long long rvalue = r_casted->getCredit(zone_id_);
+    Decimal rvalue = r_casted->getCredit(zone_id_);
 
      if (rzaptr_)
      {
-         if(rzaptr_->isInZone(l_casted->getId(),zone_id_) == false) lvalue = -1;
-         if(rzaptr_->isInZone(r_casted->getId(),zone_id_) == false) rvalue = -1;
+         if(rzaptr_->isInZone(l_casted->getId(),zone_id_) == false) lvalue = Decimal("-1");
+         if(rzaptr_->isInZone(r_casted->getId(),zone_id_) == false) rvalue = Decimal("-1");
      }
 
     return (asc_ ? (lvalue < rvalue) : (lvalue > rvalue));
@@ -920,7 +940,7 @@ public:
         std::string   fax          = *(++col);
         std::string   email        = *(++col);
         bool          system       = *(++col);
-        unsigned long credit       = 0;
+        Decimal credit ("0");
 
         m_data.push_back(new RegistrarImpl(
                 rid,
@@ -962,7 +982,7 @@ public:
 
         Database::ID  zone_id      = *col;
         Database::ID  registrar_id = *(++col);
-        long credit                = *(++col);
+        Decimal credit (std::string(*(++col)));
         
         RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
         if (registrar_ptr)
@@ -1022,7 +1042,7 @@ public:
         Database::ID azone_id = *col;
         Database::ID registrar_id = *(++col);
         std::string zone_name = *(++col);
-        unsigned long credit = *(++col);
+        Decimal credit (std::string( *(++col)));
         Database::Date fromdate = *(++col);
         Database::Date todate = *(++col);
 

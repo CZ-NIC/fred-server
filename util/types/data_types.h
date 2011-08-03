@@ -7,7 +7,6 @@
 #include "datetime.h"
 #include "datetime_interval.h"
 #include "id.h"
-#include "money.h"
 #include "null.h"
 
 #endif /*DATA_TYPES_H_*/

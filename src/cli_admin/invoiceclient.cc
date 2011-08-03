@@ -311,7 +311,7 @@ InvoiceClient::credit()
         invMan(Fred::Invoicing::Manager::create());
 
     std::string taxDate;
-    unsigned long price;
+    Decimal price;
     int zoneId, regId;
     bool regFilled = false;
     bool priceFilled = false;
@@ -329,13 +329,11 @@ InvoiceClient::credit()
     }
 
     if (credit_params.price.is_value_set()) {
-        // invoice->setPrice(Database::Money(
-        price = Fred::Invoicing::get_price(credit_params.price.get_value());
+        price = credit_params.price.get_value();
         priceFilled = true;
     }
 
     if (credit_params.taxdate.is_value_set()) {
-        // invoice->setTaxDate(Database::Date(
         taxDate = credit_params.taxdate.get_value();
     } else {
         Database::Date now(Database::NOW);

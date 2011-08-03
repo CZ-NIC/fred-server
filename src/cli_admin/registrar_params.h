@@ -25,6 +25,7 @@
 #define REGISTRAR_PARAMS_H_
 
 #include "util/types/optional.h"
+#include "util/decimal/decimal.h"
 
 /**
  * \class ZoneAddArgs
@@ -336,7 +337,7 @@ struct PriceAddArgs
 {
     optional_string valid_from;
     optional_string valid_to;
-    long long operation_price;
+    optional_string operation_price;
     optional_ulong period;
     optional_string zone_fqdn;
     optional_id zone_id;
@@ -344,14 +345,13 @@ struct PriceAddArgs
     bool renew;
 
     PriceAddArgs()
-    : operation_price(0)
-    , create(false)
+    : create(false)
     , renew(false)
     {}//ctor
     PriceAddArgs(
             const optional_string& _valid_from
             , const optional_string& _valid_to
-            , const long long _operation_price
+            , const optional_string& _operation_price
             , const optional_ulong& _period
             , const optional_string& _zone_fqdn
             , const optional_id& _zone_id

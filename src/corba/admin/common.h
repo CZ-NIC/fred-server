@@ -17,7 +17,7 @@ using namespace boost::gregorian;
 
 std::string formatDate(date d);
 std::string formatTime(ptime p, bool date, bool _to_local = false);
-std::string formatMoney(Database::Money m);
+std::string formatMoney(Decimal m);
 ptime makeBoostTime(const ccReg::DateTimeType& t);
 date makeBoostDate(const ccReg::DateType& t);
 ccReg::DateTimeType makeCorbaTime(ptime p, bool _to_local = false);

@@ -9,6 +9,7 @@
 #include <libxml/encoding.h>
 
 #include "types/data_types.h"
+#include "decimal/decimal.h"
 
 #include "config.h"
 
@@ -67,35 +68,6 @@ const std::string ITEM_DATE                     =  "date";
 const std::string ITEM_CRTIME                   =  "crtime";
 const std::string ITEM_NAME                     =  "name";
 
-/*
-#define STATEMENTS_ROOT             "statements"
-#define STATEMENT_STATEMENT         "statement"
-#define STATEMENT_ACCOUNT_NUMBER    "account_number"
-#define STATEMENT_NUMBER            "number"
-#define STATEMENT_DATE              "date"
-#define STATEMENT_BALANCE           "balance"
-#define STATEMENT_OLD_DATE          "old_date"
-#define STATEMENT_OLD_BALANCE       "oldBalance"
-#define STATEMENT_CREDIT            "credit"
-#define STATEMENT_DEBET             "debet"
-#define STATEMENT_ITEMS             "items"
-#define ITEM_ITEM                   "item"
-#define ITEM_IDENT                  "ident"
-#define ITEM_ACCOUNT_NUMBER         "account_number"
-#define ITEM_ACCOUNT_BANK_CODE      "account_bank_code"
-#define ITEM_CONST_SYMBOL           "const_symbol"
-#define ITEM_VAR_SYMBOL             "var_symbol"
-#define ITEM_SPEC_SYMBOL            "spec_symbol"
-#define ITEM_PRICE                  "price"
-#define ITEM_TYPE                   "type"
-#define ITEM_CODE                   "code"
-#define ITEM_MEMO                   "memo"
-#define ITEM_DATE                   "date"
-#define ITEM_CRTIME                 "crtime"
-#define ITEM_NAME                   "name"
-*/
-
-
 #define TEST_NODE_PRESENCE(parent, name)                                \
     if (!parent.hasChild(name)) {                                       \
         LOGGER(PACKAGE).error(boost::format("``%1%'' node not found")   \
@@ -126,7 +98,7 @@ public:
     void text(const std::string &name, Database::ID value);
     void text(const std::string &name, Database::Date value);
     void text(const std::string &name, Database::DateTime value);
-    void text(const std::string &name, Database::Money value);
+    void text(const std::string &name, Decimal value);
     std::string finalize();
 }; // class XMLcreator;
 

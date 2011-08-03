@@ -39,19 +39,19 @@ public:
     {
         return m_balanceOldDate.get();
     }
-    const Database::Money &getBalanceOld() const
+    std::string getBalanceOld() const
     {
         return m_balanceOld.get();
     }
-    const Database::Money &getBalanceNew() const
+    std::string getBalanceNew() const
     {
         return m_balanceNew.get();
     }
-    const Database::Money &getBalanceCredit() const
+    std::string getBalanceCredit() const
     {
         return m_balanceCredit.get();
     }
-    const Database::Money &getBalanceDebet() const
+    std::string getBalanceDebet() const
     {
         return m_balanceDebet.get();
     }
@@ -91,19 +91,19 @@ public:
     {
         m_balanceOldDate = balanceOldDate;
     }
-    void setBalanceOld(const Database::Money &balanceOld)
+    void setBalanceOld(const std::string &balanceOld)
     {
         m_balanceOld = balanceOld;
     }
-    void setBalanceNew(const Database::Money &balanceNew)
+    void setBalanceNew(const std::string &balanceNew)
     {
         m_balanceNew = balanceNew;
     }
-    void setBalanceCredit(const Database::Money &balanceCredit)
+    void setBalanceCredit(const std::string &balanceCredit)
     {
         m_balanceCredit = balanceCredit;
     }
-    void setBalanceDebet(const Database::Money &balanceDebet)
+    void setBalanceDebet(const std::string &balanceDebet)
     {
         m_balanceDebet = balanceDebet;
     }
@@ -165,10 +165,10 @@ protected:
     Field::Field<int> m_num;
     Field::Field<Database::Date> m_createDate;
     Field::Field<Database::Date> m_balanceOldDate;
-    Field::Field<Database::Money> m_balanceOld;
-    Field::Field<Database::Money> m_balanceNew;
-    Field::Field<Database::Money> m_balanceCredit;
-    Field::Field<Database::Money> m_balanceDebet;
+    Field::Field<std::string> m_balanceOld;
+    Field::Field<std::string> m_balanceNew;
+    Field::Field<std::string> m_balanceCredit;
+    Field::Field<std::string> m_balanceDebet;
     Field::Field<unsigned long long> m_fileId;
 
     //Field::Lazy::Field<ModelBankAccount *> m_account;
@@ -180,10 +180,10 @@ public:
     static Model::Field::Basic<ModelBankStatement, int> num;
     static Model::Field::Basic<ModelBankStatement, Database::Date> createDate;
     static Model::Field::Basic<ModelBankStatement, Database::Date> balanceOldDate;
-    static Model::Field::Basic<ModelBankStatement, Database::Money> balanceOld;
-    static Model::Field::Basic<ModelBankStatement, Database::Money> balanceNew;
-    static Model::Field::Basic<ModelBankStatement, Database::Money> balanceCredit;
-    static Model::Field::Basic<ModelBankStatement, Database::Money> balanceDebet;
+    static Model::Field::Basic<ModelBankStatement, std::string> balanceOld;
+    static Model::Field::Basic<ModelBankStatement, std::string> balanceNew;
+    static Model::Field::Basic<ModelBankStatement, std::string> balanceCredit;
+    static Model::Field::Basic<ModelBankStatement, std::string> balanceDebet;
     static Model::Field::Basic<ModelBankStatement, unsigned long long> fileId;
 
     //static Model::Field::Related::OneToOne<ModelBankStatement, unsigned long long, ModelBankAccount> account;

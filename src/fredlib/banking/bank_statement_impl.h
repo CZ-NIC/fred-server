@@ -48,19 +48,19 @@ public:
     {
         return ModelBankStatement::getBalanceOldDate();
     }
-    const Database::Money &getBalanceOld() const
+    Decimal getBalanceOld() const
     {
         return ModelBankStatement::getBalanceOld();
     }
-    const Database::Money &getBalanceNew() const
+    Decimal getBalanceNew() const
     {
         return ModelBankStatement::getBalanceNew();
     }
-    const Database::Money &getBalanceCredit() const
+    Decimal getBalanceCredit() const
     {
         return ModelBankStatement::getBalanceCredit();
     }
-    const Database::Money &getBalanceDebet() const
+    Decimal getBalanceDebet() const
     {
         return ModelBankStatement::getBalanceDebet();
     }
@@ -88,21 +88,21 @@ public:
     {
         ModelBankStatement::setBalanceOldDate(balanceOldDate);
     }
-    void setBalanceOld(const Database::Money &balanceOld)
+    void setBalanceOld(const Decimal &balanceOld)
     {
-        ModelBankStatement::setBalanceOld(balanceOld);
+        ModelBankStatement::setBalanceOld(balanceOld.get_string());
     }
-    void setBalanceNew(const Database::Money &balanceNew)
+    void setBalanceNew(const Decimal &balanceNew)
     {
-        ModelBankStatement::setBalanceNew(balanceNew);
+        ModelBankStatement::setBalanceNew(balanceNew.get_string());
     }
-    void setBalanceCredit(const Database::Money &balanceCredit)
+    void setBalanceCredit(const Decimal &balanceCredit)
     {
-        ModelBankStatement::setBalanceCredit(balanceCredit);
+        ModelBankStatement::setBalanceCredit(balanceCredit.get_string());
     }
-    void setBalanceDebet(const Database::Money &balanceDebet)
+    void setBalanceDebet(const Decimal &balanceDebet)
     {
-        ModelBankStatement::setBalanceDebet(balanceDebet);
+        ModelBankStatement::setBalanceDebet(balanceDebet.get_string());
     }
     void setFileId(const unsigned long long &fileId)
     {
@@ -148,7 +148,7 @@ public:
 
     bool isValid() const
     {
-        Database::Money zero(0UL);
+        Decimal zero("0");
         if (getAccountId() != 0
                 && getCreateDate().is_special()
                 && getBalanceOldDate().is_special()
@@ -255,23 +255,19 @@ StatementImplPtr parse_xml_statement_part(const XMLnode &_node)
         statement->setBalanceOldDate(Database::Date(_node.getChild(STATEMENT_OLD_DATE).getValue()));
     }
     if (!_node.getChild(STATEMENT_BALANCE).isEmpty()) {
-        Database::Money money;
-        money.format(_node.getChild(STATEMENT_OLD_BALANCE).getValue());
+        Decimal money(_node.getChild(STATEMENT_OLD_BALANCE).getValue());
         statement->setBalanceOld(money);
     }
     if (!_node.getChild(STATEMENT_OLD_BALANCE).isEmpty()) {
-        Database::Money money;
-        money.format(_node.getChild(STATEMENT_BALANCE).getValue());
+        Decimal money(_node.getChild(STATEMENT_BALANCE).getValue());
         statement->setBalanceNew(money);
     }
     if (!_node.getChild(STATEMENT_CREDIT).isEmpty()) {
-        Database::Money money;
-        money.format(_node.getChild(STATEMENT_CREDIT).getValue());
+        Decimal money(_node.getChild(STATEMENT_CREDIT).getValue());
         statement->setBalanceCredit(money);
     }
     if (!_node.getChild(STATEMENT_DEBET).isEmpty()) {
-        Database::Money money;
-        money.format(_node.getChild(STATEMENT_DEBET).getValue());
+        Decimal money(_node.getChild(STATEMENT_DEBET).getValue());
         statement->setBalanceDebet(money);
     }
 

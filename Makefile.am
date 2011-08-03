@@ -6,6 +6,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS} $(AM_CFLAGS) \
               -I $(top_srcdir)/src/fredlib/banking \
               -I $(top_srcdir)/src/corba -I $(top_srcdir)/src/corba/admin \
               -I $(top_srcdir)/util/db -I$(top_srcdir)/util \
+              -I $(top_srcdir)/util/decimal \
               -I $(top_builddir)/src/corba -I $(top_builddir)/src
 
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
@@ -92,7 +93,7 @@ SERVER_TESTS = tests/test-server
 
 #TESTS = $(SERVER_TESTS)
 
-noinst_PROGRAMS = util/log/test-log util/types/test_money \
+noinst_PROGRAMS = util/log/test-log \
         util/db/test-db util/db/test-mockdb util/hp/client-hp \
         util/hp/crc32 src/model/test-model \
         $(SERVER_TESTS)
@@ -115,8 +116,6 @@ util_types_libtypes_a_SOURCES = util/types/date.cc util/types/date.h util/types/
         util/types/convert_sql_boost_datetime.h util/types/convert_sql_db_types.h \
         util/types/stringify.h util/types/sqlize.h util/types/birthdate.cc \
         util/types/birthdate.h
-
-util_types_test_money_SOURCES = util/types/test_money.cc $(UTIL_TYPES_SRC)
 
 #util types
 
