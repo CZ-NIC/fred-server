@@ -80,7 +80,8 @@ public:
                        ("registrar")
                        ("registrar_name")
                        ("registrar_url")
-                       ("registrar_memo")
+                       ("registrar_memo_cz")
+                       ("registrar_memo_en")
                        ("registrar_reply_to")
                        ("name")
                        ("address")
@@ -194,7 +195,8 @@ public:
                 " r.handle AS registrar,"
                 " r.name AS registrar_name,"
                 " r.url AS registrar_url,"
-                " rrp.template_memo AS registrar_memo,"
+                " split_part(rrp.template_memo, '~@~', 1) AS registrar_memo_cz,"
+                " split_part(rrp.template_memo, '~@~', 2) AS registrar_memo_en,"
                 " rrp.reply_to AS registrar_reply_to,"
                 " c.name AS name,"
                 " c.street1 || ', ' || c.city || ', ' || c.postalcode as address,"
