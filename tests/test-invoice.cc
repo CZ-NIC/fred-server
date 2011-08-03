@@ -2276,9 +2276,6 @@ public:
        return ret;
     }
 
-private:
-    ChargeTestParams params;
-
 };
 
 
@@ -2312,9 +2309,6 @@ public:
        return ret;
     }
 
-private:
-    ChargeTestParams params;
-
 };
 
 class TestChargeThreadWorker : public ThreadedTestWorker<ResultTestCharge, ChargeTestParams>
@@ -2347,9 +2341,6 @@ public:
 
        return ret;
     }
-
-private:
-    ChargeTestParams params;
 
 };
 
