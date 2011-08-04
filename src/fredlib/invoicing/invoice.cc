@@ -112,7 +112,7 @@ public:
 
   const VAT *getVAT(Decimal rate);
   /// find unarchived invoices. archive then and send them by email
-  InvoiceIdVect archiveInvoices(bool send);
+  InvoiceIdVect archiveInvoices(bool send, InvoiceIdVect archive_only_this_if_set = InvoiceIdVect());
   /// create empty list of invoices      
   virtual List* createList();
   /// return credit for registrar by zone
@@ -3142,7 +3142,8 @@ public:
     return ci == vatList.end() ? NULL : &(*ci);
   }
   
-  InvoiceIdVect ManagerImpl::archiveInvoices(bool send) {
+  InvoiceIdVect ManagerImpl::archiveInvoices(bool send
+          , InvoiceIdVect archive_only_this_if_set) {
       
       if(docman == NULL || mailman == NULL) {
         LOGGER(PACKAGE).error("archiveInvoices: No docman or mailman specified in c-tor. ");
@@ -3156,6 +3157,13 @@ public:
       ExporterArchiver exporter(docman);
       ListImpl l(this);
       l.setArchivedFilter(ListImpl::AF_UNSET);
+
+      for(InvoiceIdVect::const_iterator it = archive_only_this_if_set.begin()
+              ; it != archive_only_this_if_set.end() ; ++it )
+      {
+          l.setIdFilter(*it);//archive only set id
+      }
+
       l.reload();
       ret_inv = l.doExport(&exporter);
       if (send) {

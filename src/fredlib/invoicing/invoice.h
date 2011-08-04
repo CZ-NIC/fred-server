@@ -289,7 +289,7 @@ public:
   virtual ~Manager() {
   }
   /// find unarchived invoices and archive then in PDF format
-  virtual InvoiceIdVect archiveInvoices(bool send) = 0;
+  virtual InvoiceIdVect archiveInvoices(bool send, InvoiceIdVect archive_only_this_if_set = InvoiceIdVect()) = 0;
   /// create empty list of invoices
   virtual List* createList() = 0;
   /// return credit for registrar by zone
