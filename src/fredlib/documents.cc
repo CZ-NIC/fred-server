@@ -39,10 +39,22 @@ namespace Fred
       const std::string name_str; ///< template of unique name in tmp directory
       std::vector<char> name; ///< buffer of unique name in tmp directory
      public:
-      class OPEN_ERROR {}; ///< error in file opening
-      class NAME_ERROR {}; ///< error in name generation
+
+    struct OPEN_ERROR : public std::runtime_error
+    {
+       OPEN_ERROR()
+       : std::runtime_error("TmpFile: error in file opening")
+       {}
+    };
+    struct NAME_ERROR : public std::runtime_error
+    {
+      NAME_ERROR()
+       : std::runtime_error("TmpFile: error in name generation")
+       {}
+    };
+
       /// initialize unique name 
-      TmpFile() throw (OPEN_ERROR)
+      TmpFile()
           : name_str("/tmp/fred-gendoc-XXXXXX")
           , name(name_str.begin(), name_str.end())
       {
@@ -64,7 +76,7 @@ namespace Fred
         remove(&name[0]);
       }
       /// open file with unique name in given mode
-      void open(std::ios::openmode mode) throw (OPEN_ERROR)
+      void open(std::ios::openmode mode)
       {
         std::fstream::open(&name[0],mode);
         if (!is_open()) throw OPEN_ERROR();
@@ -125,7 +137,7 @@ namespace Fred
         out = _out ? _out : &outBuffer;
       }
       /// generate document
-      TID generate() throw (Generator::ERROR)
+      TID generate()
       {
         TmpFile outputFile;
         std::stringstream cmd;
@@ -170,7 +182,7 @@ namespace Fred
       {
         return bufferFile;
       }
-      virtual TID closeInput() throw (Generator::ERROR)
+      virtual TID closeInput()
       {
         bufferFile.close();
         return generate();
@@ -228,7 +240,7 @@ namespace Fred
       virtual Generator *createOutputGenerator(
         GenerationType type, std::ostream& output,
         const std::string& lang
-      ) const throw (Generator::ERROR)
+      ) const
       {
         GenerationMapType::const_iterator i = templateMap.find(type);
         if (i == templateMap.end()) throw Generator::ERROR();
@@ -240,7 +252,7 @@ namespace Fred
         GenerationType type, 
         const std::string& filename, unsigned filetype,
         const std::string& lang         
-      ) const throw (Generator::ERROR)
+      ) const
       {
         GenerationMapType::const_iterator i = templateMap.find(type);
         if (i == templateMap.end()) throw Generator::ERROR();
@@ -253,7 +265,7 @@ namespace Fred
         GenerationType type, 
         std::istream& input, std::ostream& output,
         const std::string& lang
-      ) const throw (Generator::ERROR)
+      ) const
       {
         Generator *g = createOutputGenerator(type,output,lang);
         g->getInput() << input.rdbuf();
@@ -263,7 +275,7 @@ namespace Fred
         GenerationType type,
         std::istream& input, const std::string& name, unsigned filetype,
         const std::string& lang
-      ) const throw (Generator::ERROR)
+      ) const
       {
         Generator *g = createSavingGenerator(type,name,filetype,lang);
         g->getInput() << input.rdbuf();
