@@ -994,6 +994,7 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 
 
 install-tests: $(SERVER_TESTS)
+	test -z "$(bindir)" || $(MKDIR_P) "$(bindir)"
 	$(INSTALL_PROGRAM) $(SERVER_TESTS) $(bindir)
 
 testdatadir = $(docdir)
