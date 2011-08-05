@@ -35,6 +35,16 @@ void row_map_copy(std::map<std::string, std::string> &_dest,
     }
 }
 
+void row_map_copy_single(std::map<std::string, std::string> &_dest,
+        const Database::Row &_row, const std::string &_key)
+{
+
+    if (_row[_key].isnull()) {
+        _dest[_key] = std::string("");
+    } else {
+        _dest[_key] = static_cast<std::string> (_row[_key]);
+    }
+}
 
 void insert_parameter_list(std::map<std::string, std::string> &_params,
                              const std::string &_base_key,
@@ -47,8 +57,6 @@ void insert_parameter_list(std::map<std::string, std::string> &_params,
                        _list[i]));
     }
 }
-
-
 
 class ReminderEmail
 {
@@ -63,11 +71,17 @@ public:
 
 
     ReminderEmail(const Database::Row &_contact_data,
-                  const Database::Row &_linked_data)
+                  const Database::Row &_linked_data_domain,
+                  const Database::Row &_linked_data_nsset,
+                  const Database::Row &_linked_data_keyset)
     {
         /* check if results have all necessary data */
         if (static_cast<unsigned long long>(_contact_data["id"])
-                != static_cast<unsigned long long>(_linked_data["id"]))
+                != static_cast<unsigned long long>(_linked_data_domain["id"])
+            && static_cast<unsigned long long>(_contact_data["id"])
+                != static_cast<unsigned long long>(_linked_data_nsset["id"])
+            && static_cast<unsigned long long>(_contact_data["id"])
+                != static_cast<unsigned long long>(_linked_data_keyset["id"]))
         {
             throw IntegrityError("rows contact id mismatch!");
         }
@@ -94,12 +108,10 @@ public:
                        ("email")
                        ("notify_email"));
 
-        row_map_copy(email_params_, _linked_data,
-                list_of("arr_domains")
-                       ("arr_nssets")
-                       ("arr_keysets")
-                       ("arr_domains_owner")
-                       ("arr_domains_admin_c"));
+        // email_params_["arr_domains"] direct TODO
+        row_map_copy_single(email_params_, _linked_data_domain, "arr_domains");
+        row_map_copy_single(email_params_, _linked_data_nsset, "arr_nssets");
+        row_map_copy_single(email_params_, _linked_data_keyset, "arr_keysets");
 
         /* transform objects arrays to clearsilver list */
         insert_parameter_list(email_params_, "domains", Database::array_to_vector(email_params_["arr_domains"]));
@@ -155,7 +167,9 @@ private:
     Database::Result dummy1_;
     Database::Result dummy2_;
     Database::Result contact_data_;
-    Database::Result linked_data_;
+    Database::Result linked_data_domain_;
+    Database::Result linked_data_nsset_;
+    Database::Result linked_data_keyset_;
 
 
 
@@ -217,29 +231,75 @@ public:
                 " LEFT JOIN enum_ssntype est ON est.id = c.ssntype)"
                 " ON coreg.id = tmp.contact_id"
                 " ORDER BY tmp.contact_id")),
-          linked_data_(conn_.exec(
-                "SELECT tmp.contact_id AS id,"
-                " array_filter_null(array_accum(DISTINCT doreg.name)) AS arr_domains_admin_c,"
-                " array_filter_null(array_accum(DISTINCT doreg2.name)) AS arr_domains_owner,"
-                " array_filter_null(array_uniq(array_accum(DISTINCT doreg.name)||array_accum(DISTINCT doreg2.name))) AS arr_domains,"
-                " array_filter_null(array_accum(DISTINCT noreg.name)) AS arr_nssets,"
-                " array_filter_null(array_accum(DISTINCT koreg.name)) AS arr_keysets"
-                " FROM tmp_reminder tmp"
-                " LEFT JOIN (domain_contact_map dcm"
-                " JOIN object_registry doreg ON doreg.id = dcm.domainid"
-                " ) ON dcm.contactid = tmp.contact_id"
-                " LEFT JOIN (domain d"
-                " JOIN object_registry doreg2 ON doreg2.id = d.id"
-                " ) ON d.registrant = tmp.contact_id"
-                " LEFT JOIN (nsset_contact_map ncm"
-                " JOIN object_registry noreg ON noreg.id = ncm.nssetid"
-                " ) ON ncm.contactid = tmp.contact_id"
-                " LEFT JOIN (keyset_contact_map kcm"
-                " JOIN object_registry koreg ON koreg.id = kcm.keysetid"
-                " ) ON kcm.contactid = tmp.contact_id"
-                " GROUP BY tmp.contact_id"))
+          linked_data_domain_(conn_.exec(
+                  " SELECT t.contact_id AS id, array_filter_null(array_accum(t.name)) AS arr_domains"
+                   " FROM ( "
+                   "     SELECT tmp.contact_id, oreg.name"
+                   "     FROM tmp_reminder tmp"
+                   "     LEFT JOIN domain_contact_map dcm ON dcm.contactid = tmp.contact_id"
+                   "     LEFT JOIN object_registry oreg ON oreg.id = dcm.domainid"
+                   "     UNION          "
+                   "     SELECT tmp.contact_id, oreg.name"
+                   "     FROM tmp_reminder tmp"
+                   "     LEFT JOIN domain d ON d.registrant = tmp.contact_id"
+                   "     LEFT JOIN object_registry oreg ON oreg.id = d.id"
+                   " ) t"
+                   " GROUP BY t.contact_id")),
+          linked_data_nsset_(conn_.exec(
+                  " SELECT tmp.contact_id AS id, "
+                  "  array_filter_null(array_accum(DISTINCT noreg.name)) AS arr_nssets"
+                  "  FROM tmp_reminder tmp "
+                  "  LEFT JOIN nsset_contact_map ncm ON ncm.contactid = tmp.contact_id"
+                  "  LEFT JOIN object_registry noreg ON noreg.id = ncm.nssetid"
+                  "  GROUP BY tmp.contact_id")),
+          linked_data_keyset_(conn_.exec(
+                  "SELECT tmp.contact_id AS id, "
+                  " array_filter_null(array_accum(DISTINCT koreg.name)) AS arr_keysets "
+                  " FROM tmp_reminder tmp "
+                  " LEFT JOIN keyset_contact_map kcm ON kcm.contactid = tmp.contact_id "
+                  " LEFT JOIN object_registry koreg ON koreg.id = kcm.keysetid"
+                  " GROUP BY tmp.contact_id"))
+
+                   /*
+// linked_data_domain_
+                SELECT t.contact_id AS id, array_filter_null(array_accum(t.name)) AS arr_domains
+                 FROM
+                 (
+                 SELECT tmp.contact_id, oreg.name
+                 FROM tmp_reminder tmp
+                 JOIN domain_contact_map dcm ON dcm.contactid = tmp.contact_id
+                 JOIN object_registry oreg ON oreg.id = dcm.domainid
+
+                 UNION
+
+                 SELECT tmp.contact_id, oreg.name
+                 FROM tmp_reminder tmp
+                 JOIN domain d ON d.registrant = tmp.contact_id
+                 JOIN object_registry oreg ON oreg.id = d.id
+                 ) t
+                 GROUP BY t.contact_id
+
+
+                 SELECT tmp.contact_id AS id,
+                 array_filter_null(array_accum(DISTINCT noreg.name)) AS arr_nssets
+                 FROM tmp_reminder tmp
+                 LEFT JOIN nsset_contact_map ncm ON ncm.contactid = tmp.contact_id
+                 JOIN object_registry noreg ON noreg.id = ncm.nssetid
+                 GROUP BY tmp.contact_id
+
+                 SELECT tmp.contact_id AS id,
+                 array_filter_null(array_accum(DISTINCT koreg.name)) AS arr_keysets
+                 FROM tmp_reminder tmp
+                 LEFT JOIN keyset_contact_map kcm ON kcm.contactid = tmp.contact_id
+                 JOIN object_registry koreg ON koreg.id = kcm.keysetid
+                 GROUP BY tmp.contact_id
+                 */
+
     {
-        if (contact_data_.size() != linked_data_.size()) {
+        if (contact_data_.size() != linked_data_domain_.size()
+             && contact_data_.size() != linked_data_nsset_.size()
+             && contact_data_.size() != linked_data_keyset_.size()
+        ) {
             throw std::runtime_error("selected size of contact data and linked object mismatch!");
         }
     }
@@ -273,7 +333,7 @@ public:
         unsigned long long lindex = index_;
         index_ += 1;
 
-        return ReminderEmail(contact_data_[lindex], linked_data_[lindex]);
+        return ReminderEmail(contact_data_[lindex], linked_data_domain_[lindex], linked_data_nsset_[lindex], linked_data_keyset_[lindex]);
     }
 };
 
@@ -306,10 +366,8 @@ void run_reminder(Mailer::Manager *_mailer, const boost::gregorian::date &_date)
                 LOGGER(PACKAGE).info(boost::format("processing %1% (crdate: %2%) %3%")
                             % params["roid"] % params["crdate"] % params["handle"]);
                 LOGGER(PACKAGE).debug(boost::format(
-                            "%1% data ((owner: %2%, admin-c: %3%) => domains: %4%, nssets: %5%, keysets: %6%)")
+                            "%1% data (domains: %2%, nssets: %3%, keysets: %4%)")
                             % params["handle"]
-                            % params["arr_domains_owner"]
-                            % params["arr_domains_admin_c"]
                             % params["arr_domains"]
                             % params["arr_nssets"]
                             % params["arr_keysets"]);
