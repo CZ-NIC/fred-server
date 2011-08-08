@@ -78,9 +78,9 @@ public:
         /* check if results have all necessary data */
         if (static_cast<unsigned long long>(_contact_data["id"])
                 != static_cast<unsigned long long>(_linked_data_domain["id"])
-            && static_cast<unsigned long long>(_contact_data["id"])
+            || static_cast<unsigned long long>(_contact_data["id"])
                 != static_cast<unsigned long long>(_linked_data_nsset["id"])
-            && static_cast<unsigned long long>(_contact_data["id"])
+            || static_cast<unsigned long long>(_contact_data["id"])
                 != static_cast<unsigned long long>(_linked_data_keyset["id"]))
         {
             throw IntegrityError("rows contact id mismatch!");
