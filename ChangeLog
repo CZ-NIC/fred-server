@@ -1,3 +1,10 @@
+2011-08-11 Jiri Sadek, Juraj Vicenik (2.8.4)
+
+  * logger - request count interface has now proper data types for dates
+           - added method counting request for all usernames
+
+  * mojeid - fixed fax format checker
+
 2011-07-08 Jiri Sadek, Juraj Vicenik (2.8.3)
 
   * poll request fee - sql timestamp conversion fix
