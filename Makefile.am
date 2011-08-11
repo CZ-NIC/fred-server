@@ -57,7 +57,7 @@ noinst_HEADERS = util/util.h util/singleton.h util/time_clock.h util/settings.h 
         util/cfg/handle_logd_args.h util/cfg/handle_rifd_args.h \
         util/cfg/command_selection_args.h util/cfg/check_args.h \
         util/cfg/validate_args.h util/cfg/handle_sms_args.h util/types/optional.h \
-        util/types/optional_from_program_options.h
+        util/types/optional_from_program_options.h tests/exception-test.h
 
 #former noinst_LIBRARIES
 #util/db/libmockdb.a
@@ -89,7 +89,7 @@ util_log_liblog_a_SOURCES = util/log/logger.cc util/log/log.cc \
         util/log/log_types.h util/log/logger.h util/log/context.h
 
 #tests
-SERVER_TESTS = tests/test-server
+SERVER_TESTS = tests/test-server tests/test-exception
 
 #TESTS = $(SERVER_TESTS)
 
@@ -991,7 +991,18 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
             src/corba/libmailer.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
 
+#non corba tests with overloaded global operator new
+tests_test_exception_SOURCES = tests/test-exception.cc
 
+tests_test_exception_LDFLAGS = -lm $(POSTGRESQL_LDFLAGS) \
+                     $(BOOST_LDFLAGS) \
+                     $(AM_LDFLAGS)
+
+tests_test_exception_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
+        $(BOOST_REGEX_LIB) $(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
+        $(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS) \
+        util/decimal/libmpdec.a
+        
 
 install-tests: $(SERVER_TESTS)
 	test -z "$(bindir)" || $(MKDIR_P) "$(bindir)"
