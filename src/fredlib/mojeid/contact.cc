@@ -7,7 +7,8 @@ namespace MojeID {
 
 
 unsigned long long db_contact_object_create(const unsigned long long &_registrar_id,
-                                            const std::string &_handle)
+                                            const std::string &_handle,
+                                            const std::string &_auth_info)
 {
     /* object_registry record */
     Database::Connection conn = Database::Manager::acquire();
@@ -27,7 +28,7 @@ unsigned long long db_contact_object_create(const unsigned long long &_registrar
                 " $3::text)",
             Database::query_param_list(id)
                 (_registrar_id)
-                (Random::string_alphanum(8)));
+                (_auth_info));
 
     return id;
 }
@@ -198,7 +199,9 @@ unsigned long long contact_create(const unsigned long long &_action_id,
                                   const unsigned long long &_registrar_id,
                                   MojeID::Contact &_data)
 {
-    _data.id = db_contact_object_create(_registrar_id, _data.handle);
+    std::string auth_info = (_data.auth_info.isnull() == true) ? Random::string_alphanum(8)
+            : static_cast<std::string>(_data.auth_info);
+    _data.id = db_contact_object_create(_registrar_id, _data.handle, auth_info);
     db_contact_insert(_data);
     unsigned long long hid = db_contact_insert_history(_action_id, _request_id, _data.id);
     Database::Connection conn = Database::Manager::acquire();
