@@ -144,6 +144,9 @@ public:
 
   ccReg::EnumList* getBankAccounts();
 
+  /* get last counted number of epp request done by registrar
+   * for now it returns data of last poll request fee message */
+  ccReg::RegistrarRequestCountInfo* getRegistrarRequestCount(const char* _registrar);
 
 private:
   std::string _createQueryForEnumDomainsByRegistrant(const std::string &select_part, const std::string &name, bool by_person, bool by_org);

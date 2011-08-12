@@ -159,6 +159,8 @@ namespace Fred
       virtual void createLowCreditMessages() = 0;
       /// create messages about request count and request fee
       virtual void createRequestFeeMessages(Logger::LoggerClient *logger_client) = 0;
+      /// get last request fee message data
+      virtual MessageRequestFeeInfo* getLastRequestFeeInfoMessage(const std::string &_registrar) const = 0;
       // create list of messages
       virtual List* createList() = 0;
       /// factory method

@@ -38,6 +38,7 @@
 #include "corba/mailer_manager.h"
 #include "fredlib/messages/messages_impl.h"
 #include "fredlib/object_states.h"
+#include "fredlib/poll.h"
 #include "bank_payment.h"
 
 #include "log/logger.h"
@@ -1499,3 +1500,35 @@ ccReg::EnumList* ccReg_Admin_i::getBankAccounts()
   }
 }//ccReg_Admin_i::getBankAccounts
 
+
+ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const char* _registrar)
+{
+    try {
+        Logging::Context ctx(server_name_);
+        ConnectionReleaser releaser;
+
+        DBSharedPtr ldb_dc_guard = connect_DB(m_connection_string, DB_CONNECT_FAILED());
+        std::auto_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
+        std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi(poll_mgr->getLastRequestFeeInfoMessage(_registrar));
+
+        ccReg::RegistrarRequestCountInfo_var ret = new ccReg::RegistrarRequestCountInfo;
+        ret->periodFrom = CORBA::string_dup(formatTime(rfi->getPeriodFrom(), true).c_str());
+        ret->periodTo = CORBA::string_dup(formatTime(rfi->getPeriodTo(), true).c_str());
+        ret->totalFreeCount = rfi->getTotalFreeCount();
+        ret->usedCount = rfi->getUsedCount();
+        ret->price = CORBA::string_dup(rfi->getPrice().c_str());
+
+        return ret._retn();
+    }
+    catch (Fred::NOT_FOUND&) {
+        throw ccReg::Admin::ObjectNotFound();
+    }
+    catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(ex.what());
+        throw ccReg::Admin::InternalServerError();
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("unknown error");
+        throw ccReg::Admin::InternalServerError();
+    }
+}

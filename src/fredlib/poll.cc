@@ -331,12 +331,21 @@ class ListImpl : public CommonListImpl, virtual public List {
   bool nonExpiredFilter;
   bool nonSeenFilter;
   unsigned type;
+  std::string order_by_dir;
 
 public:
   ListImpl(DBSharedPtr _db) :
     CommonListImpl(_db), registrarFilter(0), nonExpiredFilter(false),
-        nonSeenFilter(false), type(0) {
+        nonSeenFilter(false), type(0), order_by_dir("ASC") {
   }
+
+  void setOrderByDesc() {
+      order_by_dir = "DESC";
+  }
+  void setOrderByAsc() {
+      order_by_dir = "ASC";
+  }
+
   virtual Message* getMessage(unsigned idx) {
     return dynamic_cast<Message *>(get(idx));
   }
@@ -387,7 +396,7 @@ public:
     if (type)
       where << "AND m.msgtype=" << type << " ";
     if (!count)
-      where << "ORDER BY m.id ASC ";
+      where << "ORDER BY m.id " << order_by_dir << " ";
     if (limit)
       where << "LIMIT " << load_limit_ << " ";
     sql << from.rdbuf();
@@ -1132,6 +1141,37 @@ public:
           save_poll_request_fee(reg_id, p_from, p_to, total_free_count, request_count, price);
       }
   }
+
+
+  virtual MessageRequestFeeInfo* getLastRequestFeeInfoMessage(const std::string &_registrar) const
+  {
+      TRACE("[CALL] Poll::Manager::getLastRequestFeeInfoMessage");
+
+      ListImpl l(db);
+
+      unsigned int rid = db->GetRegistrarID(_registrar.c_str());
+      if (!rid) {
+          throw NOT_FOUND();
+      }
+      LOGGER(PACKAGE).debug(boost::format("registar %1% => id=%2%") % _registrar % rid);
+
+      l.setRegistrarFilter(rid);
+      l.setTypeFilter(MT_REQUEST_FEE_INFO);
+      l.setOrderByDesc();
+      l.setLimit(1);
+      l.reload();
+
+      Message *m = l.extractFirst();
+      if (!m) {
+          throw NOT_FOUND();
+      }
+      MessageRequestFeeInfo* rfi = dynamic_cast<MessageRequestFeeInfo*>(m);
+      if (!rfi) {
+          throw NOT_FOUND();
+      }
+      return rfi;
+  }
+
 };
 
 Manager *Manager::create(DBSharedPtr db) {
