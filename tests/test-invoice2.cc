@@ -55,6 +55,7 @@
 #include "corba/Admin.hh"
 #include "corba/EPP.hh"
 #include "epp/epp_impl.h"
+#include "types/money.h"
 
 #include "decimal/decimal.h"
 
@@ -811,12 +812,12 @@ struct create_deposit_invoice_fixture
 
 
     //count VAT from price with tax using coefficient - local CZ rules
-    Decimal count_dph( //returning vat rounded half-up to 2 decimal places
-        Decimal price //Kc incl. vat
+    Money count_dph( //returning vat rounded half-up to 2 decimal places
+        Money price //Kc incl. vat
         , Decimal vat_reverse //vat coeff like 0.1597 for vat 19%
       )
     {
-        Decimal vat =   price * vat_reverse;
+        Money vat =   price * vat_reverse;
         vat.round(2,MPD_ROUND_HALF_UP);
 
        LOGGER(PACKAGE).debug (
@@ -826,7 +827,7 @@ struct create_deposit_invoice_fixture
        return vat;
     }
 
-    Decimal test_vat(Decimal price, boost::gregorian::date taxdate, unsigned long long registrar_id)
+    Money test_vat(Money price, boost::gregorian::date taxdate, unsigned long long registrar_id)
     {
         Database::Result rvat = connp->exec_params("SELECT vat FROM registrar WHERE id=$1::integer",
                 Database::query_param_list(registrar_id));
@@ -868,7 +869,7 @@ struct create_deposit_invoice_fixture
 
         //std::cout << "vat_reverse: " << vat_reverse << std::endl;
 
-        return pay_vat ? count_dph(price,vat_reverse) : Decimal("0");
+        return pay_vat ? count_dph(price,vat_reverse) : Money("0");
     }
 
 
@@ -895,7 +896,7 @@ struct create_deposit_invoice_fixture
                         //credit before
                         Database::Result credit0_res = connp->exec_params(zone_registrar_credit_query
                                 , Database::query_param_list(zone_id)(registrar_id));
-                        Decimal credit0_dec;
+                        Money credit0_dec;
                         std::string credit0_str;
                         if(credit0_res.size() ==  1 && credit0_res[0].size() == 1)
                         {
@@ -908,7 +909,7 @@ struct create_deposit_invoice_fixture
                             credit0_str = std::string("0");
                         }
 
-                        Decimal credit_vat_dec;
+                        Money credit_vat_dec;
                         std::string credit_vat_str;
 
                         //add credit
@@ -917,7 +918,7 @@ struct create_deposit_invoice_fixture
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
-                            Decimal price ("10");
+                            Money price ("10");
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
@@ -925,14 +926,14 @@ struct create_deposit_invoice_fixture
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
-                            credit_vat_dec = test_vat(Decimal("10"),taxdate, registrar_id);
+                            credit_vat_dec = test_vat(Money("10"),taxdate, registrar_id);
                             credit_vat_str = test_vat(std::string("10"),taxdate, registrar_id);
                         }
 
                         //credit after
                         Database::Result credit1_res = connp->exec_params(zone_registrar_credit_query
                                 , Database::query_param_list(zone_id)(registrar_id));
-                        Decimal credit1_dec;
+                        Money credit1_dec;
                         std::string credit1_str;
 
                         if(credit1_res.size() ==  1 && credit1_res[0].size() == 1)
@@ -946,7 +947,7 @@ struct create_deposit_invoice_fixture
                             credit1_str = std::string("0");
                         }
 
-                        BOOST_CHECK(credit1_dec - credit0_dec == Decimal("10") - credit_vat_dec);
+                        BOOST_CHECK(credit1_dec - credit0_dec == Money("10") - credit_vat_dec);
 
                         Database::Result credit_difference_result
                             = connp->exec_params("select $1::numeric - $2::numeric, '10.00'::numeric - $3::numeric "
@@ -982,7 +983,7 @@ struct create_deposit_invoice_fixture
                         //credit before
                         Database::Result credit0_res = connp->exec_params(zone_registrar_credit_query
                                 , Database::query_param_list(zone_id)(registrar_id));
-                        Decimal credit0_dec;
+                        Money credit0_dec;
                         std::string credit0_str;
                         if(credit0_res.size() ==  1 && credit0_res[0].size() == 1)
                         {
@@ -995,10 +996,10 @@ struct create_deposit_invoice_fixture
                             credit0_str = std::string("0");
                         }
 
-                        Decimal credit1_vat_dec;
+                        Money credit1_vat_dec;
                         std::string credit1_vat_str;
 
-                        Decimal credit2_vat_dec;
+                        Money credit2_vat_dec;
                         std::string credit2_vat_str;
 
                         int year = start_year;
@@ -1006,7 +1007,7 @@ struct create_deposit_invoice_fixture
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
-                            Decimal price ("10");
+                            Money price ("10");
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
@@ -1014,13 +1015,13 @@ struct create_deposit_invoice_fixture
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
-                            credit1_vat_dec = test_vat(Decimal("10"),taxdate, registrar_id);
+                            credit1_vat_dec = test_vat(Money("10"),taxdate, registrar_id);
                             credit1_vat_str = test_vat(std::string("10"),taxdate, registrar_id);
 
                             //credit
                             Database::Result credit1_res = connp->exec_params(zone_registrar_credit_query
                                     , Database::query_param_list(zone_id)(registrar_id));
-                            Decimal credit1_dec;
+                            Money credit1_dec;
                             std::string credit1_str;
                             if(credit1_res.size() ==  1 && credit1_res[0].size() == 1)
                             {
@@ -1033,7 +1034,7 @@ struct create_deposit_invoice_fixture
                                 credit1_str = std::string("0");
                             }
 
-                            BOOST_CHECK(credit1_dec - credit0_dec == Decimal("10") - credit1_vat_dec);
+                            BOOST_CHECK(credit1_dec - credit0_dec == Money("10") - credit1_vat_dec);
 
                             Database::Result credit1_difference_result
                                 = connp->exec_params("select $1::numeric - $2::numeric, '10.00'::numeric - $3::numeric "
@@ -1058,7 +1059,7 @@ struct create_deposit_invoice_fixture
 
 
                             taxdate = Database::Date(year,12,31);
-                            price = Decimal("10");//Kc
+                            price = Money("10");//Kc
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
@@ -1066,14 +1067,14 @@ struct create_deposit_invoice_fixture
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
-                            credit2_vat_dec = test_vat(Decimal("10"),taxdate, registrar_id);
+                            credit2_vat_dec = test_vat(Money("10"),taxdate, registrar_id);
                             credit2_vat_str = test_vat(std::string("10"),taxdate, registrar_id);
 
 
                             //credit after
                             Database::Result credit2_res = connp->exec_params(zone_registrar_credit_query
                                     , Database::query_param_list(zone_id)(registrar_id));
-                            Decimal credit2_dec;
+                            Money credit2_dec;
                             std::string credit2_str;
 
                             if(credit2_res.size() ==  1 && credit2_res[0].size() == 1)
@@ -1087,7 +1088,7 @@ struct create_deposit_invoice_fixture
                                 credit2_str = std::string("0");
                             }
 
-                            BOOST_CHECK(credit2_dec - credit1_dec == Decimal("10") - credit2_vat_dec);
+                            BOOST_CHECK(credit2_dec - credit1_dec == Money("10") - credit2_vat_dec);
 
                             Database::Result credit2_difference_result
                                 = connp->exec_params("select $1::numeric - $2::numeric, '10.00'::numeric - $3::numeric "
@@ -1126,7 +1127,7 @@ struct create_deposit_invoice_fixture
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
-                            Decimal price ("30000000.00");//Kc
+                            Money price ("30000000.00");//Kc
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
@@ -1149,7 +1150,7 @@ struct create_deposit_invoice_fixture
                             unsigned long long invoiceid = 0;
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
-                            Decimal price ("-10000000.00");//Kc
+                            Money price ("-10000000.00");//Kc
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
@@ -1172,7 +1173,7 @@ struct create_deposit_invoice_fixture
                         Database::Date taxdate;
 
                         taxdate = Database::Date(year,1,1);
-                        Decimal price ("50000.00");//Kc
+                        Money price ("50000.00");//Kc
 
                         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                 , zone_id//zone

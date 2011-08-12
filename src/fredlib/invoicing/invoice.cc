@@ -125,7 +125,7 @@ public:
 
 
 
-  void updateObjectPrice(Database::Connection &conn, Database::ID rec_id, Decimal price, Database::ID invoiceID)
+  void updateObjectPrice(Database::Connection &conn, Database::ID rec_id, Money price, Database::ID invoiceID)
   {
       conn.exec_params("INSERT INTO invoice_object_registry_price_map (id, invoiceID, price) "
           "VALUES ($1::integer, $2::integer, $3::numeric(10,2)) ",
@@ -154,9 +154,9 @@ public:
       return id;
   }
 
-  void invoiceLowerCredit(Database::Connection &conn, Decimal price, Database::ID invoiceID) {
+  void invoiceLowerCredit(Database::Connection &conn, Money price, Database::ID invoiceID) {
 
-      if(price == Decimal("0")) {
+      if(price == Money("0")) {
           LOGGER(PACKAGE).debug ( boost::format("Zero price for invoiceID %1%, credit unchanged.") % invoiceID);
           return;
       }
@@ -212,7 +212,7 @@ public:
           throw std::runtime_error("Couldn't count price for this operation");
       }
 
-      Decimal price = std::string(res_price[0][0]);//price_list.price
+      Money price = std::string(res_price[0][0]);//price_list.price
       Decimal base_period = std::string(res_price[0][1]);//price_list.period, null is 0
 
       Database::Date exDate (_exDate);
@@ -256,7 +256,7 @@ public:
       }
 
       Database::ID inv_id1 = res_inv[0][0];
-      Decimal credit1 = std::string(res_inv[0][1]);
+      Money credit1 = std::string(res_inv[0][1]);
       if(price <= credit1) {
           // count if off the first invoice
 
@@ -280,7 +280,7 @@ public:
           // there is the second invoice
 
           Database::ID inv_id2 = res_inv[1][0];
-          Decimal credit2 = std::string(res_inv[1][1]);
+          Money credit2 = std::string(res_inv[1][1]);
 
           if(credit1 + credit2 < price) {
               LOGGER(PACKAGE).info((boost::format("Credit not sufficient for registrar ID %1% operation %2% on object %3%, invoices: %4%, %5%")
@@ -295,7 +295,7 @@ public:
               % registrar % zone % objectId % price % exDate
               % inv_id1 % inv_id2);
 
-          Decimal price_remainder = price - credit1;
+          Money price_remainder = price - credit1;
 
           Database::ID invoice_obj_reg_id = createInvoiceObjectRegistry(conn, objectId, registrar, zone, _units_count, exDate, renew);
 
@@ -347,12 +347,12 @@ public:
   }
 
   //count VAT from price with tax using coefficient - local CZ rules
-  Decimal count_dph( //returning vat rounded half-up to 2 decimal places
-      Decimal price //Kc incl. vat
+  Money count_dph( //returning vat rounded half-up to 2 decimal places
+      Money price //Kc incl. vat
       , Decimal vat_reverse //vat coeff like 0.1597 for vat 19%
     )
   {
-      Decimal vat =   price * vat_reverse;
+      Money vat =   price * vat_reverse;
       vat.round(2,MPD_ROUND_HALF_UP);
 
      LOGGER(PACKAGE).debug (
@@ -369,7 +369,7 @@ public:
 
 // TODO what exceptions to throw and whether to log errors
 // SPEC current time taken from now() in DB (which should be UTC)
-unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int registrarId, Decimal price)
+unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int registrarId, Money price)
 {
 
     Database::Connection conn = Database::Manager::acquire();
@@ -393,8 +393,8 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
     // it should have 4 decimal places in the DB
     Decimal vat_reverse("0");
 
-    Decimal vat_amount("0");
-    Decimal total("0");
+    Money vat_amount("0");
+    Money total("0");
 
     if (pay_vat) {
 
@@ -426,7 +426,7 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
     } else {
         total = price;
     }
-    Decimal credit = total;
+    Money credit = total;
 
 
     // get new invoice prefix and its type
@@ -596,22 +596,22 @@ unsigned long long GetPrefixType(const std::string& dateStr, int typ, unsigned l
 }
 
 // count new balance on advance invoice from total and all usages of that invoice
-Decimal GetInvoiceBalance(unsigned long long aID, Decimal credit)
+Decimal GetInvoiceBalance(unsigned long long aID, Money credit)
 {
-    Decimal price;
+    Money price;
     try
     {
         LOGGER(PACKAGE).debug ( boost::format("GetInvoiceBalance: zalohova FA %1%") % aID);
 
         Database::Connection conn = Database::Manager::acquire();//get db conn
-        Decimal total, suma;
+        Money total, suma;
         Database::Result res = conn.exec_params(
                 "select total from invoice where id=$1::bigint"
                 , Database::query_param_list(aID));
 
         if(res.size() == 1 && (res[0][0].isnull() == false))
         {
-            total = Decimal(std::string(res[0][0]));
+            total = Money(std::string(res[0][0]));
 
             LOGGER(PACKAGE).debug ( boost::format("celkovy zaklad faktury %1%") % total);
 
@@ -620,7 +620,7 @@ Decimal GetInvoiceBalance(unsigned long long aID, Decimal credit)
                 , Database::query_param_list(aID));
             if(res.size() == 1 && (res[0][0].isnull() == false))
             {
-                suma = Decimal(std::string(res[0][0]));
+                suma = Money(std::string(res[0][0]));
                 LOGGER(PACKAGE).debug ( boost::format("sectweny credit %1%  pro zal FA") % suma);
 
                 price = total - suma - credit;
@@ -648,9 +648,9 @@ Decimal GetInvoiceBalance(unsigned long long aID, Decimal credit)
 }
 
 // return accounted price for invoice  iID from advance invoice  FA aID
-Decimal GetInvoiceSumaPrice(unsigned long long iID, unsigned long long aID)
+Money GetInvoiceSumaPrice(unsigned long long iID, unsigned long long aID)
 {
-    Decimal price;
+    Money price;
     try
     {
         LOGGER(PACKAGE).debug ( boost::format("GetInvoiceSumaPrice invoiceID %1% zalohova FA %2%")
@@ -664,7 +664,7 @@ Decimal GetInvoiceSumaPrice(unsigned long long iID, unsigned long long aID)
 
         if(!res[0][0].isnull())
         {
-            price = Decimal(std::string(res[0][0]));
+            price = Money(std::string(res[0][0]));
             LOGGER(PACKAGE).debug ( boost::format("celkovy strezeny credit z dane zal  Fa %1%") % price);
         }//if res not null
 
@@ -686,7 +686,7 @@ Decimal GetInvoiceSumaPrice(unsigned long long iID, unsigned long long aID)
 //returning invoiceID
 unsigned long long  MakeNewInvoice(
   const std::string& taxDateStr, const std::string& fromdateStr, const std::string& todateStr,
-  unsigned long long zone, unsigned long long  regID, Decimal price, std::size_t count)
+  unsigned long long zone, unsigned long long  regID, Money price, std::size_t count)
 {
     unsigned long long invoiceID =0;
     try
@@ -833,7 +833,7 @@ unsigned long long MakeFactoring(unsigned long long regID
         }
 
         // find out total invoiced price if it exists al least one record
-        Decimal price("0");
+        Money price("0");
         if (count > 0)
         {
             Database::Result res = conn.exec_params(
@@ -843,7 +843,7 @@ unsigned long long MakeFactoring(unsigned long long regID
                 " AND crdate < $1::timestamp AND zone=$2::bigint and registrarid=$3::bigint "
                 " AND  invoice_object_registry.invoiceid is null"
                 , Database::query_param_list(timestampStr)(zone)(regID));
-            price = Decimal(std::string(res[0][0]));
+            price = Money(std::string(res[0][0]));
 
             LOGGER(PACKAGE).debug ( boost::format("Total price %1%")
                 % price);
@@ -892,9 +892,9 @@ unsigned long long MakeFactoring(unsigned long long regID
                     unsigned long long aID = res[i][0];
                     LOGGER(PACKAGE).debug ( boost::format("zalohova FA -> %1%")
                                                 % aID);
-                    Decimal credit = GetInvoiceSumaPrice(invoiceID, aID);
-                    Decimal balance = GetInvoiceBalance(aID, credit); // actual available balance
-                    if (balance >= Decimal("0"))
+                    Money credit = GetInvoiceSumaPrice(invoiceID, aID);
+                    Money balance = GetInvoiceBalance(aID, credit); // actual available balance
+                    if (balance >= Money("0"))
                     {
                         LOGGER(PACKAGE).debug ( boost::format("zalohova FA  %1% credit %2% balance %3%")
                             % aID % credit % balance);
@@ -1464,7 +1464,7 @@ public:
         date firstdate = pa->getExDate() - months(pa->getUnitsCount());
         // money that still need to be partitioned
         Money remains = pa->getPrice();
-        while (remains != Decimal("0")) {
+        while (remains != Money("0")) {
           Money part;
           unsigned year = lastdate.year();
           if (year == firstdate.year())
@@ -1481,7 +1481,7 @@ public:
 
           vatRatesRecordsType::const_iterator vrrti =
           records.find(pa->getVatRate());
-          Decimal tmp_part ("0");
+          Money tmp_part ("0");
           if(vrrti != records.end())
           {
               RecordsType::const_iterator rt =
@@ -1793,9 +1793,9 @@ public:
     std::string _price_per_unit = std::string(*(++_col));
     Database::ID       id             = *(++_col);
 
-    Decimal    price(_price);
+    Money    price(_price);
     Decimal    vat_rate(_vat_rate);
-    Decimal price_per_unit(_price_per_unit);
+    Money price_per_unit(_price_per_unit);
 
     LOGGER(PACKAGE).debug(
         boost::format(
@@ -1836,11 +1836,11 @@ public:
     std::string _total_vat   = std::string(*(++_col));
     Database::DateTime crtime   = *(++_col);
     
-    Decimal price(_price);
+    Money price(_price);
     Decimal vat_rate(_vat_rate);
-    Decimal credit(_credit);
-    Decimal total_price(_total_price);
-    Decimal total_vat(_total_vat);
+    Money credit(_credit);
+    Money total_price(_total_price);
+    Money total_vat(_total_vat);
 
     LOGGER(PACKAGE).debug(
         boost::format(
@@ -2411,11 +2411,11 @@ public:
                                                                  : IT_ACCOUNT;
           unsigned long long number         = *(++col);
           Database::ID       registrar_id   = *(++col);
-          Decimal    credit    = std::string(*(++col));
-          Decimal    price     = std::string(*(++col));
+          Money    credit    = std::string(*(++col));
+          Money    price     = std::string(*(++col));
           Decimal    vat_rate = std::string( *(++col));
-          Decimal    total     = std::string(*(++col));
-          Decimal    total_vat = std::string(*(++col));
+          Money    total     = std::string(*(++col));
+          Money    total_vat = std::string(*(++col));
           Database::ID       filePDF        = *(++col);
           Database::ID       fileXML        = *(++col);
           std::string        c_organization = *(++col);
@@ -2745,15 +2745,15 @@ public:
                 unsigned long long number         = res3[i][7];
                 Database::ID       registrar_id   = res3[i][8];
 
-                Decimal    credit         = std::string(res3[i][9]);
+                Money    credit         = std::string(res3[i][9]);
 
-                Decimal    price          = std::string(res3[i][10]);
+                Money    price          = std::string(res3[i][10]);
 
                 std::string        vat_rate       = res3[i][11];
 
-                Decimal    total          = std::string(res3[i][12]);
+                Money    total          = std::string(res3[i][12]);
 
-                Decimal    total_vat      = std::string(res3[i][13]);
+                Money    total_vat      = std::string(res3[i][13]);
 
                 Database::ID       filePDF        = res3[i][14];
                 Database::ID       fileXML        = res3[i][15];

@@ -44,6 +44,7 @@
 #include "concurrent_queue.h"
 #include "model_files.h"
 #include "model_bank_payment.h"
+#include "types/money.h"
 
 #include "decimal/decimal.h"
 
@@ -258,7 +259,7 @@ struct mbp_insert_data
     std::string konstsym;// 10 numletters
     std::string varsymb;// 10 numletters
     std::string specsymb;// 10 numletters
-    Decimal price;//string
+    Money price;//string
     std::string account_evid;//20 numletters
     Database::Date account_date; //some date
     std::string account_memo; //64 chars
@@ -316,8 +317,8 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
             if(insert_data.konstsym.compare(res[0][8])) ret+=256;
             if(insert_data.varsymb.compare(res[0][9])) ret+=512;
             if(insert_data.specsymb.compare(res[0][10])) ret+=1024;
-            if(Decimal(insert_data.price)
-                != Decimal(std::string(res[0][11]))) ret+=2048;
+            if(Money(insert_data.price)
+                != Money(std::string(res[0][11]))) ret+=2048;
             if(insert_data.account_evid.compare(res[0][12])) ret+=4096;
             if(insert_data.account_date.to_string()
                 .compare(Database::Date(std::string(res[0][13])).to_string()))
@@ -397,7 +398,7 @@ unsigned mbp_reload_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
         if(mbp2.getKonstSym().compare("")) ret+=256;
         if(mbp2.getVarSymb().compare("")) ret+=512;
         if(mbp2.getSpecSymb().compare("")) ret+=1024;
-        if(Decimal(mbp2.getPrice()) != Decimal("12345.00")) ret+=2048;
+        if(Money(mbp2.getPrice()) != Money("12345.00")) ret+=2048;
         if(mbp2.getAccountEvid().compare("")) ret+=4096;
         if(mbp2.getAccountDate() != Database::Date("2000-01-01")) ret+=8192;
         if(mbp2.getAccountMemo().compare("")) ret+=16384;
@@ -434,7 +435,7 @@ unsigned mbp_update_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
     {
         //mbp1.setAccountId(mbp2.getAccountId());
         mbp1.setStatus(mbp2.getStatus());
-        mbp1.setPrice(Decimal("12345.00").get_string());
+        mbp1.setPrice(Money("12345.00").get_string());
         mbp1.update();
         mbp1.reload();
 

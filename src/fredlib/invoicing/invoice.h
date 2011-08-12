@@ -15,6 +15,7 @@
 #include "db_settings.h"
 #include "model/model_filters.h"
 #include "decimal/decimal.h"
+#include "types/money.h"
 
 namespace Fred {
 namespace Invoicing {
@@ -46,8 +47,6 @@ enum MemberType {
   MT_PRICE
 };
 
-/// money type
-typedef Decimal Money;
 /// invoice type
 // duplicity from ccReg.h
 enum Type {
@@ -202,7 +201,7 @@ public:
     // const Database::Date getTaxDate() const = 0;
     virtual TID getPrefix() const = 0;
     virtual TID getRegistrarId() const = 0;
-    virtual Decimal getVat() const = 0;
+    virtual Money getVat() const = 0;
     virtual Money getTotalVat() const = 0;
     // const TID getPrefixTypeId() const = 0;
     virtual TID getFileId() const = 0;
@@ -308,7 +307,7 @@ public:
           int type, int year, unsigned long long prefix) = 0;
 
   // added methods
-  virtual  unsigned long long createDepositInvoice(Database::Date date, int zoneId, int registrarId, Decimal price) = 0;
+  virtual  unsigned long long createDepositInvoice(Database::Date date, int zoneId, int registrarId, Money price) = 0;
 
   virtual bool chargeDomainCreate(
           const Database::ID &zone,

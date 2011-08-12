@@ -31,6 +31,7 @@
 //#include "sql.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/log.h"
+#include "types/money.h"
 
 #include "model/model_filters.h"
 #include "log/logger.h"
@@ -224,10 +225,10 @@ class RegistrarImpl : public Fred::CommonObjectImplNew,
   typedef std::vector<ACLImplPtr> ACLList;
   typedef ACLList::iterator ACLListIter;
 
-  Decimal credit; ///< DB: registrar.credit
+  Money credit; ///< DB: registrar.credit
 
   ACLList acl; ///< access control
-  typedef std::map<Database::ID, Decimal> ZoneCreditMap;
+  typedef std::map<Database::ID, Money> ZoneCreditMap;
   ZoneCreditMap zone_credit_map;
 
   typedef  boost::shared_ptr<ZoneAccess> ZoneAccessPtr;
@@ -262,7 +263,7 @@ public:
                 const std::string& _fax,
                 const std::string& _email,
                 bool _system,
-                Decimal _credit) :
+                Money _credit) :
         CommonObjectImplNew(),
         ModelRegistrar(),
         credit(_credit)
@@ -455,17 +456,17 @@ public:
 	ModelRegistrar::setSystem(_system);
   }
 
-  virtual Decimal getCredit() const {
+  virtual Money getCredit() const {
     return credit;
   }
   
-  virtual Decimal getCredit(Database::ID _zone_id) const
+  virtual Money getCredit(Database::ID _zone_id) const
   {
       Logging::Context ctx("RegistrarImpl::getCredit");
       try
       {
 
-      Decimal ret ("0");
+      Money ret ("0");
       ZoneCreditMap::const_iterator it;
       it = zone_credit_map.find(_zone_id);
       if(it != zone_credit_map.end())
@@ -480,7 +481,7 @@ public:
       }
   }
   
-  virtual void setCredit(Database::ID _zone_id, Decimal _credit)
+  virtual void setCredit(Database::ID _zone_id, Money _credit)
   {
       Logging::Context ctx("RegistrarImpl::setCredit");
       try
@@ -751,7 +752,7 @@ public:
 
   void putZoneAccess(TID _id
           , std::string _name
-          , Decimal _credit
+          , Money _credit
           , Database::Date _fromdate
           , Database::Date _todate)
   {
@@ -813,14 +814,14 @@ public:
       throw std::bad_cast();
     }
 
-    Decimal lvalue = l_casted->getCredit(zone_id_);
+    Money lvalue = l_casted->getCredit(zone_id_);
 
-    Decimal rvalue = r_casted->getCredit(zone_id_);
+    Money rvalue = r_casted->getCredit(zone_id_);
 
      if (rzaptr_)
      {
-         if(rzaptr_->isInZone(l_casted->getId(),zone_id_) == false) lvalue = Decimal("-1");
-         if(rzaptr_->isInZone(r_casted->getId(),zone_id_) == false) rvalue = Decimal("-1");
+         if(rzaptr_->isInZone(l_casted->getId(),zone_id_) == false) lvalue = Money("-1");
+         if(rzaptr_->isInZone(r_casted->getId(),zone_id_) == false) rvalue = Money("-1");
      }
 
     return (asc_ ? (lvalue < rvalue) : (lvalue > rvalue));
@@ -940,7 +941,7 @@ public:
         std::string   fax          = *(++col);
         std::string   email        = *(++col);
         bool          system       = *(++col);
-        Decimal credit ("0");
+        Money credit ("0");
 
         m_data.push_back(new RegistrarImpl(
                 rid,
@@ -982,7 +983,7 @@ public:
 
         Database::ID  zone_id      = *col;
         Database::ID  registrar_id = *(++col);
-        Decimal credit (std::string(*(++col)));
+        Money credit (std::string(*(++col)));
         
         RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
         if (registrar_ptr)
@@ -1042,7 +1043,7 @@ public:
         Database::ID azone_id = *col;
         Database::ID registrar_id = *(++col);
         std::string zone_name = *(++col);
-        Decimal credit (std::string( *(++col)));
+        Money credit (std::string( *(++col)));
         Database::Date fromdate = *(++col);
         Database::Date todate = *(++col);
 

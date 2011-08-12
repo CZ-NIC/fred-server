@@ -31,6 +31,8 @@
 #include "model_zone_soa.h"
 #include "model_price_list.h"
 
+#include "types/money.h"
+
 #include "log/logger.h"
 #include "log/context.h"
 
@@ -1319,7 +1321,7 @@ namespace Fred
               Operation operation,
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
-              const Decimal &price,
+              const Money &price,
               int period)
           throw (SQL_ERROR)
       {

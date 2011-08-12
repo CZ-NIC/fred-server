@@ -20,6 +20,7 @@
 #include "registrarclient.h"
 
 #include "corba/file_manager_client.h"
+#include "types/money.h"
 
 #include <string>
 #include <vector>
@@ -428,7 +429,7 @@ RegistrarClient::price_add()
     if (price_add_params_.valid_to.is_value_set()) {//REGISTRAR_VALID_TO_NAME
         validTo.from_string(price_add_params_.valid_to.get_value());
     }
-    Decimal price(price_add_params_.operation_price.get_value());//REGISTRAR_PRICE_NAME
+    Money price(price_add_params_.operation_price.get_value());//REGISTRAR_PRICE_NAME
     int period = 12;
     if (price_add_params_.period.is_value_set()) {//REGISTRAR_PERIOD_NAME
         period = price_add_params_.period.get_value();

@@ -1,6 +1,7 @@
 #include "common.h"
 
 #include "types/stringify.h"
+#include "types/money.h"
 
 std::string
 formatDate(date d)
@@ -34,7 +35,7 @@ formatTime(ptime p, bool date, bool _to_local)
 }
 
 std::string
-formatMoney(Decimal m)
+formatMoney(Money m)
 {
   return m.get_string(".2f");
 }

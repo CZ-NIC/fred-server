@@ -7,6 +7,7 @@
 #include "bank_payment_impl.h"
 #include "common_impl_new.h"
 #include "db_settings.h"
+#include "types/money.h"
 
 
 namespace Fred {
@@ -48,19 +49,19 @@ public:
     {
         return ModelBankStatement::getBalanceOldDate();
     }
-    Decimal getBalanceOld() const
+    Money getBalanceOld() const
     {
         return ModelBankStatement::getBalanceOld();
     }
-    Decimal getBalanceNew() const
+    Money getBalanceNew() const
     {
         return ModelBankStatement::getBalanceNew();
     }
-    Decimal getBalanceCredit() const
+    Money getBalanceCredit() const
     {
         return ModelBankStatement::getBalanceCredit();
     }
-    Decimal getBalanceDebet() const
+    Money getBalanceDebet() const
     {
         return ModelBankStatement::getBalanceDebet();
     }
@@ -88,19 +89,19 @@ public:
     {
         ModelBankStatement::setBalanceOldDate(balanceOldDate);
     }
-    void setBalanceOld(const Decimal &balanceOld)
+    void setBalanceOld(const Money &balanceOld)
     {
         ModelBankStatement::setBalanceOld(balanceOld.get_string());
     }
-    void setBalanceNew(const Decimal &balanceNew)
+    void setBalanceNew(const Money &balanceNew)
     {
         ModelBankStatement::setBalanceNew(balanceNew.get_string());
     }
-    void setBalanceCredit(const Decimal &balanceCredit)
+    void setBalanceCredit(const Money &balanceCredit)
     {
         ModelBankStatement::setBalanceCredit(balanceCredit.get_string());
     }
-    void setBalanceDebet(const Decimal &balanceDebet)
+    void setBalanceDebet(const Money &balanceDebet)
     {
         ModelBankStatement::setBalanceDebet(balanceDebet.get_string());
     }
@@ -148,7 +149,7 @@ public:
 
     bool isValid() const
     {
-        Decimal zero("0");
+        Money zero("0");
         if (getAccountId() != 0
                 && getCreateDate().is_special()
                 && getBalanceOldDate().is_special()
@@ -255,19 +256,19 @@ StatementImplPtr parse_xml_statement_part(const XMLnode &_node)
         statement->setBalanceOldDate(Database::Date(_node.getChild(STATEMENT_OLD_DATE).getValue()));
     }
     if (!_node.getChild(STATEMENT_BALANCE).isEmpty()) {
-        Decimal money(_node.getChild(STATEMENT_OLD_BALANCE).getValue());
+        Money money(_node.getChild(STATEMENT_OLD_BALANCE).getValue());
         statement->setBalanceOld(money);
     }
     if (!_node.getChild(STATEMENT_OLD_BALANCE).isEmpty()) {
-        Decimal money(_node.getChild(STATEMENT_BALANCE).getValue());
+        Money money(_node.getChild(STATEMENT_BALANCE).getValue());
         statement->setBalanceNew(money);
     }
     if (!_node.getChild(STATEMENT_CREDIT).isEmpty()) {
-        Decimal money(_node.getChild(STATEMENT_CREDIT).getValue());
+        Money money(_node.getChild(STATEMENT_CREDIT).getValue());
         statement->setBalanceCredit(money);
     }
     if (!_node.getChild(STATEMENT_DEBET).isEmpty()) {
-        Decimal money(_node.getChild(STATEMENT_DEBET).getValue());
+        Money money(_node.getChild(STATEMENT_DEBET).getValue());
         statement->setBalanceDebet(money);
     }
 

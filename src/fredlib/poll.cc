@@ -22,6 +22,7 @@
 #include "invoicing/invoice.h"
 #include "common_impl.h"
 #include "old_utils/dbsql.h"
+#include "types/money.h"
 
 namespace Fred {
 namespace Poll {
@@ -927,7 +928,7 @@ public:
           const boost::gregorian::date &period_to,
           const unsigned long long &total_free_count,
           const unsigned long long &request_count,
-          const Decimal &price)
+          const Money &price)
   {
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction tx(conn);
@@ -1112,11 +1113,11 @@ public:
                   static_cast<unsigned long long>(base_free_count),
                   domain_count * per_domain_free_count);
 
-          // price in cents
-          Decimal price ("0");
+          // price in Decimal
+          Money price ("0");
           if (request_count > total_free_count)
           {
-              Decimal count_diff (boost::lexical_cast<std::string> (request_count - total_free_count));
+              Money count_diff (boost::lexical_cast<std::string> (request_count - total_free_count));
               price = count_diff * Decimal(price_unit_request);
           }
 

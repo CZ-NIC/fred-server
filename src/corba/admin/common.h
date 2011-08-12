@@ -11,13 +11,14 @@
 
 #include "fredlib/registry.h"
 #include "fredlib/invoicing/invoice.h"
+#include "types/money.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
 std::string formatDate(date d);
 std::string formatTime(ptime p, bool date, bool _to_local = false);
-std::string formatMoney(Decimal m);
+std::string formatMoney(Money m);
 ptime makeBoostTime(const ccReg::DateTimeType& t);
 date makeBoostDate(const ccReg::DateType& t);
 ccReg::DateTimeType makeCorbaTime(ptime p, bool _to_local = false);

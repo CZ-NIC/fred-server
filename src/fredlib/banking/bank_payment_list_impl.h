@@ -6,6 +6,7 @@
 #include "bank_payment_list.h"
 #include "common_impl_new.h"
 #include "db_settings.h"
+#include "types/money.h"
 
 namespace Fred {
 namespace Banking {
@@ -116,7 +117,7 @@ public:
                 std::string constSymb       = *(++col);
                 std::string varSymb         = *(++col);
                 std::string specSymb        = *(++col);
-                Decimal price       = std::string(*(++col));
+                Money price       = std::string(*(++col));
                 std::string accountEvid     = *(++col);
                 Database::Date accountDate  = *(++col);
                 std::string accountMemo     = *(++col);

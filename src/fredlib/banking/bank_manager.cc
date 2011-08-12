@@ -10,6 +10,7 @@
 #include "invoicing/invoice.h"
 #include "registrar.h"
 #include "types/stringify.h"
+#include "types/money.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -99,7 +100,7 @@ private:
             if (_payment->getInvoiceId() != Database::ID(0)) {
                 return;
             }
-            if (_payment->getPrice() <= Decimal("0")) {
+            if (_payment->getPrice() <= Money("0")) {
                 return;
             }
 
@@ -161,7 +162,7 @@ private:
                 }
             }
 
-            Decimal price = _payment->getPrice();
+            Money price = _payment->getPrice();
             Database::Date account_date = _payment->getAccountDate();
             unsigned long long zone_id = getZoneByAccountId(_payment->getAccountId());
 

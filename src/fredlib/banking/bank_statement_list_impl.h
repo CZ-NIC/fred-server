@@ -6,6 +6,7 @@
 #include "bank_statement_list.h"
 #include "common_impl_new.h"
 #include "db_settings.h"
+#include "types/money.h"
 
 namespace Fred {
 namespace Banking {
@@ -113,10 +114,10 @@ public:
                 int number                  = *(++col);
                 Database::Date crDate       = *(++col);
                 Database::Date oldDate      = *(++col);
-                Decimal balance     = std::string(*(++col));
-                Decimal oldBalance  = std::string(*(++col));
-                Decimal credit      = std::string(*(++col));
-                Decimal debet       = std::string(*(++col));
+                Money balance     = std::string(*(++col));
+                Money oldBalance  = std::string(*(++col));
+                Money credit      = std::string(*(++col));
+                Money debet       = std::string(*(++col));
                 unsigned long long fileId   = *(++col);
 
                 StatementImpl *statement = new StatementImpl();

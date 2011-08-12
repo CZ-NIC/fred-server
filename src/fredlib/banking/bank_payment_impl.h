@@ -6,6 +6,7 @@
 #include "common_impl_new.h"
 #include "model_bank_payment.h"
 #include "db_settings.h"
+#include "types/money.h"
 
 namespace Fred {
 namespace Banking {
@@ -68,9 +69,9 @@ public:
     {
         return ModelBankPayment::getSpecSymb();
     }
-    Decimal getPrice() const
+    Money getPrice() const
     {
-        return Decimal(ModelBankPayment::getPrice());
+        return Money(ModelBankPayment::getPrice());
     }
     const std::string &getAccountEvid() const
     {
@@ -145,7 +146,7 @@ public:
     {
         ModelBankPayment::setSpecSymb(specSymb);
     }
-    void setPrice(const Decimal &price)
+    void setPrice(const Money &price)
     {
         ModelBankPayment::setPrice(price.get_string());
     }
@@ -349,7 +350,7 @@ PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)
     // }
     // if (!_node.getChild(ITEM_PRICE).isEmpty()) {
     {
-        Decimal value(_node.getChild(ITEM_PRICE).getValue());
+        Money value(_node.getChild(ITEM_PRICE).getValue());
         payment->setPrice(value);
     }
     // }

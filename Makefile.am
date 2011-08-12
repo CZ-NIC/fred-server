@@ -57,7 +57,7 @@ noinst_HEADERS = util/util.h util/singleton.h util/time_clock.h util/settings.h 
         util/cfg/handle_logd_args.h util/cfg/handle_rifd_args.h \
         util/cfg/command_selection_args.h util/cfg/check_args.h \
         util/cfg/validate_args.h util/cfg/handle_sms_args.h util/types/optional.h \
-        util/types/optional_from_program_options.h tests/exception-test.h
+        util/types/optional_from_program_options.h util/types/money.h tests/exception-test.h
 
 #former noinst_LIBRARIES
 #util/db/libmockdb.a

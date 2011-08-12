@@ -22,6 +22,7 @@
 #include "exceptions.h"
 #include "common_new.h"
 #include "bank_payment.h"
+#include "types/money.h"
 
 namespace Fred {
 namespace Banking {
@@ -44,20 +45,20 @@ public:
     virtual const int &getNum() const = 0;
     virtual const Database::Date &getCreateDate() const = 0;
     virtual const Database::Date &getBalanceOldDate() const = 0;
-    virtual Decimal getBalanceOld() const = 0;
-    virtual Decimal getBalanceNew() const = 0;
-    virtual Decimal getBalanceCredit() const = 0;
-    virtual Decimal getBalanceDebet() const = 0;
+    virtual Money getBalanceOld() const = 0;
+    virtual Money getBalanceNew() const = 0;
+    virtual Money getBalanceCredit() const = 0;
+    virtual Money getBalanceDebet() const = 0;
     virtual const unsigned long long &getFileId() const = 0;
     virtual void setId(const unsigned long long &id) = 0;
     virtual void setAccountId(const unsigned long long &accountId) = 0;
     virtual void setNum(const int &num) = 0;
     virtual void setCreateDate(const Database::Date &createDate) = 0;
     virtual void setBalanceOldDate(const Database::Date &balanceOldDate) = 0;
-    virtual void setBalanceOld(const Decimal &balanceOld) = 0;
-    virtual void setBalanceNew(const Decimal &balanceNew) = 0;
-    virtual void setBalanceCredit(const Decimal &balanceCredit) = 0;
-    virtual void setBalanceDebet(const Decimal &balanceDebet) = 0;
+    virtual void setBalanceOld(const Money &balanceOld) = 0;
+    virtual void setBalanceNew(const Money &balanceNew) = 0;
+    virtual void setBalanceCredit(const Money &balanceCredit) = 0;
+    virtual void setBalanceDebet(const Money &balanceDebet) = 0;
     virtual void setFileId(const unsigned long long &fileId) = 0;
 
     virtual unsigned int getPaymentCount() const = 0;

@@ -118,7 +118,7 @@ public:
             insert_data.konstsym=rdg_.xnumstring(10);// 10 numletters
             insert_data.varsymb=rdg_.xnumstring(10);// 10 numletters
             insert_data.specsymb=rdg_.xnumstring(10);// 10 numletters
-            insert_data.price=Decimal(rdg_.xnumstring(8)+"."+rdg_.xnumstring(2));//8.2 numletters
+            insert_data.price=Money(rdg_.xnumstring(8)+"."+rdg_.xnumstring(2));//8.2 numletters
             insert_data.account_evid=rdg_.xnumstring(20);//20 numletters
             insert_data.account_date=rdg_.xdate(); //some date
             insert_data.account_memo=rdg_.xstring(63); //63 chars

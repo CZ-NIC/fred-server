@@ -11,6 +11,7 @@
 #include "common_object.h"
 #include "object.h"
 #include "types/data_types.h"
+#include "types/money.h"
 #include "decimal.h"
 #include "types.h" 
 #include "exceptions.h"
@@ -308,7 +309,7 @@ namespace Fred
               Operation operation,
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
-              const Decimal &price,
+              const Money &price,
               int period)
           throw (SQL_ERROR) = 0;
       virtual void addPrice(
@@ -316,7 +317,7 @@ namespace Fred
               Operation operation,
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
-              const Decimal &price,
+              const Money &price,
               int period)
           throw (SQL_ERROR) = 0;
       /// Return list of zones

@@ -21,6 +21,7 @@
 #include "invoiceclient.h"
 #include "fredlib/invoicing/invoice.h"
 #include "../fredlib/model_zone.h"
+#include "types/money.h"
 namespace Admin {
 
 
@@ -311,7 +312,7 @@ InvoiceClient::credit()
         invMan(Fred::Invoicing::Manager::create());
 
     std::string taxDate;
-    Decimal price;
+    Money price;
     int zoneId, regId;
     bool regFilled = false;
     bool priceFilled = false;

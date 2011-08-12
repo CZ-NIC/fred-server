@@ -9,6 +9,7 @@
 #include <libxml/encoding.h>
 
 #include "types/data_types.h"
+#include "types/money.h"
 #include "decimal/decimal.h"
 
 #include "config.h"
@@ -98,7 +99,7 @@ public:
     void text(const std::string &name, Database::ID value);
     void text(const std::string &name, Database::Date value);
     void text(const std::string &name, Database::DateTime value);
-    void text(const std::string &name, Decimal value);
+    void text(const std::string &name, Money value);
     std::string finalize();
 }; // class XMLcreator;
 
