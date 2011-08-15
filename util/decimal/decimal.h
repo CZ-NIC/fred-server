@@ -31,6 +31,7 @@
 #include <typeinfo>
 #include <boost/operators.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/noncopyable.hpp>
 #include "util/decimal/mpdecimal-2.2/mpdecimal.h"
 
 class decimal_exception_handler
@@ -90,6 +91,43 @@ template <class T> std::string decode_status(const T arg)
     //if( arg & MPD_Max_status ) ret += " MPD_Max_status ";
     return ret;
 }
+
+class dealocate_mpd_memory : boost::noncopyable
+{
+    char* ptr_;
+
+    void release_ptr()
+    {
+        if(ptr_)
+        {
+            mpd_free(ptr_);
+            ptr_ = 0;
+        }
+    }
+public:
+    dealocate_mpd_memory()
+    :ptr_(0)
+    {}
+    dealocate_mpd_memory(char* ptr)
+    :ptr_(ptr)
+    {}
+
+    virtual ~dealocate_mpd_memory()
+     {
+        release_ptr();
+     }
+
+    char *get_ptr()
+    {
+        return ptr_;
+    }
+
+    void set_ptr(char* ptr)
+    {
+        release_ptr();
+        ptr_=ptr;
+    }
+};
 
 static std::string string_dump_mpd_context(const mpd_context_t *ctx)
 {
@@ -301,10 +339,10 @@ public:
             else
             {
                //simple
-                char *decstring;
-                decstring = mpd_to_sci(pvalue, 1);
-                if (decstring)
-                    ret+=decstring;
+                dealocate_mpd_memory decstring;
+                decstring.set_ptr( mpd_to_sci(pvalue, 1));
+                if (decstring.get_ptr())
+                    ret+=decstring.get_ptr();
             }
         }
         catch(...)
@@ -325,9 +363,10 @@ public:
             else
             {
                 uint32_t status = 0;
-                char * tmp_ret = mpd_qformat(pvalue, fmt, &ctx, &status);
+                dealocate_mpd_memory tmp_ret(mpd_qformat(pvalue, fmt, &ctx, &status));
                 check_status_exception(&ctx, pvalue, status);
-                if(tmp_ret) ret+=tmp_ret;
+                if(tmp_ret.get_ptr())
+                    ret+=tmp_ret.get_ptr();
             }
         }
         catch(...)

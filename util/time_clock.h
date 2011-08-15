@@ -25,19 +25,10 @@
 #include <iostream>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/test/unit_test.hpp>
 #include <boost/function.hpp>
 
 //callback for implementation of the message print
 typedef boost::function<void (const std::string& msg)> MessagePrint;
-
-struct boost_message_print
-{
-    void operator()(const std::string& msg)
-    {
-        BOOST_MESSAGE(msg);
-    }
-};
 
 struct cerr_print
 {
@@ -64,12 +55,12 @@ public:
     ElapsedTime()
     : start_(boost::posix_time::microsec_clock::universal_time())
     , label_("elapsed time: ")
-    , mprint_(boost_message_print())
+    , mprint_(cout_print())
     {}
     ElapsedTime(const std::string& label)
     : start_(boost::posix_time::microsec_clock::universal_time())
     , label_(label)
-    , mprint_(boost_message_print())
+    , mprint_(cout_print())
     {}
     ElapsedTime(const std::string& label, MessagePrint mprint)
     : start_(boost::posix_time::microsec_clock::universal_time())

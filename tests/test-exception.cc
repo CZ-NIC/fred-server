@@ -17,8 +17,6 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define BOOST_TEST_MODULE Test Exception
-
 #include <memory>
 #include <stdexcept>
 #include <iostream>
@@ -41,24 +39,10 @@
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
-#include "cfg/handle_general_args.h"
-#include "cfg/handle_server_args.h"
-#include "cfg/handle_threadgroup_args.h"
-
 #include "exception-test.h"
 
 #include "decimal/decimal.h"
-
-//args processing config for custom main
-HandlerPtrVector global_hpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
-(HandleArgsPtr(new HandleServerArgs))
-(HandleArgsPtr(new HandleThreadGroupArgs))
-;
-
-#include "cfg/test_custom_main.h"
-
+/*
 class ElapsedTimeFixture
 {
     ElapsedTime et_;
@@ -66,20 +50,14 @@ public:
     ElapsedTimeFixture()
     : et_("elapsed time: ", cout_print())
     {}
-};
-
-BOOST_GLOBAL_FIXTURE(ElapsedTimeFixture);
-
-
-
+} ElapsedTimeFixture_instance;
+*/
 
 ExceptionTest& ExceptionTest::instance()
 {
     static ExceptionTest instance;
     return instance;//with g++ it is thread safe
 }
-
-BOOST_AUTO_TEST_SUITE(TestException)
 
 void test_decimal_wrapper_exceptions_fun()
 {
@@ -218,8 +196,10 @@ void test_decimal_wrapper_exceptions_fun()
 
 
 
-BOOST_AUTO_TEST_CASE( test_decimal_wrapper_exceptions )
+struct test_decimal_wrapper_exceptions
 {
+    test_decimal_wrapper_exceptions()
+    {
     unsigned long long ex_count = 0;
     for(unsigned long long i = 0; i < ex_count+1; ++i)
     {
@@ -242,6 +222,7 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper_exceptions )
         }
         catch(const std::exception& ex)
         {
+            puts("catch std::exception");
             puts(ex.what());
         }
 
@@ -261,11 +242,10 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper_exceptions )
     << "iterations: " << iterations
     << " paths: " << paths
             << std::endl;
+    }
+    virtual ~test_decimal_wrapper_exceptions(){}
 
-}
-
-BOOST_AUTO_TEST_SUITE_END();//TestException
-
+};
 
 bool check_std_exception(std::exception const & ex)
 {
@@ -328,4 +308,12 @@ void operator delete[](void* ptr) throw()
 void operator delete[](void* ptr, const std::nothrow_t&) throw()
 {
     operator delete(ptr);
+}
+
+
+
+int main(int argc, char * argv[])
+{
+    test_decimal_wrapper_exceptions test_decimal_wrapper_exceptions_instance;
+    return 0;
 }
