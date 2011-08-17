@@ -172,8 +172,10 @@ public:
               const Database::ID &objectId,
               const Database::Date &_exDate,
               const int &_units_count,
-              bool renew) {
-      try {
+              bool renew)
+  {
+      try
+      {
       // TODO we rely that connection is saved in thread specific data
       Database::Connection conn = Database::Manager::acquire();
 
@@ -193,7 +195,7 @@ public:
           }
       }
 
-     // find operation price in pennies/cents:
+     // find operation price:
      Database::Result res_price = conn.exec_params("SELECT price , period FROM price_list WHERE valid_from < 'now()'  "
               "and ( valid_to is NULL or valid_to > 'now()' ) "
               "and operation=$1::integer and zone=$2::integer "
@@ -240,73 +242,67 @@ public:
       // lock invoices suitable for charging
       Database::Result res_inv = conn.exec_params("SELECT id, credit FROM invoice "
               "WHERE registrarid=$1::integer and zone=$2::integer and credit > 0 "
-              "order by id limit 2 "
+              "order by id "
               "FOR UPDATE",
               Database::query_param_list(registrar)
                                         (zone));
 
-      if(res_inv.size() == 0) {
-          throw std::runtime_error((boost::format("No usable invoices found for registrar ID %1%") % registrar).str());
+      if(res_inv.size() == 0)
+      {
+          throw std::runtime_error((boost::format(
+                  "No usable invoices found for registrar ID %1%")
+                  % registrar).str());
       }
 
-      // do we have only one invoice which can be used?
-      bool single_invoice = true;
-      if(res_inv.size() != 1) {
-          single_invoice = false;
-      }
+      Money credit_sum("0");
+      for(Database::Result::size_type i = 0; i < res_inv.size(); ++i )
+      {
+          credit_sum += Money(std::string(res_inv[i][1]));//sum credit
+      }//for credit sum
 
-      Database::ID inv_id1 = res_inv[0][0];
-      Money credit1 = std::string(res_inv[0][1]);
-      if(price <= credit1) {
-          // count if off the first invoice
-
+      if(price <= credit_sum)
+      {
           LOGGER(PACKAGE).debug ( boost::format(
-              "domainBilling: RegistrarId %1%, zoneId %2%, objectId %3%, price %4% exDate %5%, single invoice %6% ")
-              % registrar % zone % objectId % price % exDate
-              % inv_id1);
+              "domainBilling: RegistrarId %1%, zoneId %2%, objectId %3%, price %4% exDate %5% ")
+              % registrar % zone % objectId % price % exDate);
 
           Database::ID invoice_obj_reg_id = createInvoiceObjectRegistry(conn, objectId, registrar, zone, _units_count, exDate, renew);
 
-          updateObjectPrice(conn, invoice_obj_reg_id, price, inv_id1);
-          invoiceLowerCredit(conn, price, inv_id1);
+          Money price_left_to_subtract_from_credit (price);
 
-      } else {
-          // if single_invoice is set, res_inv[1][*] is not valid
-          if(single_invoice) {
-              LOGGER(PACKAGE).info((boost::format("Credit not sufficient for registrar ID %1%, invoice: %2%")
-                  % registrar % inv_id1).str());
-              return false;
-          }
-          // there is the second invoice
+          for(Database::Result::size_type i = 0; i < res_inv.size(); ++i )
+          {
+              Database::ID inv_id = res_inv[i][0];//invoice id
+              std::string invoice_credit_str = res_inv[i][1];
+              Money invoice_credit (invoice_credit_str);//credit left from invoice
 
-          Database::ID inv_id2 = res_inv[1][0];
-          Money credit2 = std::string(res_inv[1][1]);
+              Money credit_to_take_from_this_invoice;
+              if(price_left_to_subtract_from_credit <= invoice_credit)
+              {
+                  credit_to_take_from_this_invoice = price_left_to_subtract_from_credit;
+              }
+              else
+              {
+                  credit_to_take_from_this_invoice = invoice_credit;
+              }
 
-          if(credit1 + credit2 < price) {
-              LOGGER(PACKAGE).info((boost::format("Credit not sufficient for registrar ID %1% operation %2% on object %3%, invoices: %4%, %5%")
-                   % registrar
-                   % static_cast<int>(renew ? INVOICING_DomainRenew : INVOICING_DomainCreate)
-                   % objectId % inv_id1 % inv_id2).str());
-              return false;
-          }
+              updateObjectPrice(conn, invoice_obj_reg_id, credit_to_take_from_this_invoice, inv_id);
+              invoiceLowerCredit(conn, credit_to_take_from_this_invoice, inv_id);
 
-          LOGGER(PACKAGE).debug ( boost::format(
-              "domainBilling: RegistrarId %1%, zoneId %2%, objectId %3%, price %4% exDate %5%, two invoices %6%, %7%")
-              % registrar % zone % objectId % price % exDate
-              % inv_id1 % inv_id2);
+              price_left_to_subtract_from_credit -= credit_to_take_from_this_invoice;
+              if(price_left_to_subtract_from_credit < Money("0"))
+                  throw std::runtime_error("price_left_to_subtract_from_credit < 0");//arithmetic error
+              if(price_left_to_subtract_from_credit == Money("0")) break;//ok
+          }//for invoices with credit
 
-          Money price_remainder = price - credit1;
-
-          Database::ID invoice_obj_reg_id = createInvoiceObjectRegistry(conn, objectId, registrar, zone, _units_count, exDate, renew);
-
-          updateObjectPrice(conn, invoice_obj_reg_id, credit1, inv_id1);
-          updateObjectPrice(conn, invoice_obj_reg_id, price_remainder, inv_id2);
-
-          // first invoice goes to zero balance
-          invoiceLowerCredit(conn, credit1, inv_id1);
-          // remaining price of the operation
-          invoiceLowerCredit(conn, price_remainder, inv_id2);
-
+          if(price_left_to_subtract_from_credit != Money("0"))
+              throw std::runtime_error("price_left_to_subtract_from_credit != 0");////arithmetic error
+      }
+      else
+      {
+          LOGGER(PACKAGE).info((boost::format("Credit not sufficient for registrar ID %1%")
+                           % registrar).str());
+          return false;
       }
 
       } catch( std::exception &ex) {
