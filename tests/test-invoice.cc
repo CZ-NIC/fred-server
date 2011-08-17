@@ -1035,7 +1035,6 @@ void testChargeEval(const ResultTestCharge &res, bool should_succeed)
         	BOOST_REQUIRE((unsigned)res_ior[0][0] == res.units);
 		BOOST_REQUIRE(res_ior[0][1] == res.exdate);
 	} else if (operation == INVOICING_DomainCreate) {
-		BOOST_REQUIRE((unsigned)res_ior[0][0] == 0);
 		BOOST_REQUIRE(res_ior[0][1].isnull());
 	}
     }
