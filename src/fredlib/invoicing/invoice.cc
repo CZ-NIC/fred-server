@@ -171,7 +171,7 @@ public:
               const Database::ID &registrar,
               const Database::ID &objectId,
               const Database::Date &_exDate,
-              const int &_units_count,
+              int units_count,
               bool renew)
   {
       try
@@ -209,28 +209,30 @@ public:
           return true;
       }
 
-      if((_units_count > 0) && (res_price[0][1].isnull()))
+      if((units_count > 0) && (res_price[0][1].isnull()))
       {
           throw std::runtime_error("Couldn't count price for this operation");
       }
 
       Money price = std::string(res_price[0][0]);//price_list.price
-      Decimal base_period = std::string(res_price[0][1]);//price_list.period, null is 0
+      int base_period = res_price[0][1];
 
       Database::Date exDate (_exDate);
-      Decimal units_count(boost::lexical_cast<std::string>(_units_count));
 
-      if (base_period == Decimal("0")) //if price_list.period is 0
+      if (base_period == 0) //if price_list.period is 0
       {
           exDate = Database::Date(boost::gregorian::date());//not_a_date_time
-          units_count = Decimal("0");
+          units_count = 0;
       }
-      else if (base_period > Decimal("0"))
+      else if (base_period > 0)
       {
-          if (units_count > Decimal("0")) //multiply price if period set
+          if (units_count > 0) //multiply price if period set
           {
               //replaced integral division
-              price =  (price * units_count / base_period).round(2, MPD_ROUND_HALF_UP);
+              price =  (price
+                          * Decimal(boost::lexical_cast<std::string>(units_count))
+                          / Decimal(boost::lexical_cast<std::string>(base_period))
+                        ).round(2, MPD_ROUND_HALF_UP);
           }
       }
       else
@@ -266,7 +268,7 @@ public:
               "domainBilling: RegistrarId %1%, zoneId %2%, objectId %3%, price %4% exDate %5% ")
               % registrar % zone % objectId % price % exDate);
 
-          Database::ID invoice_obj_reg_id = createInvoiceObjectRegistry(conn, objectId, registrar, zone, _units_count, exDate, renew);
+          Database::ID invoice_obj_reg_id = createInvoiceObjectRegistry(conn, objectId, registrar, zone, units_count, exDate, renew);
 
           Money price_left_to_subtract_from_credit (price);
 
