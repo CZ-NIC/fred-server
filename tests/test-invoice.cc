@@ -1278,18 +1278,25 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
 
     testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainCreate, zone_cz_id, regid);
     testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainCreate, zone_enum_id, regid);
+     testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainCreate, zone_cz_id, regid);
+    testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainCreate, zone_enum_id, regid);
+     testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainRenew, zone_cz_id, regid);
+   testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainRenew, zone_enum_id, regid);
+    testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainRenew, zone_cz_id, regid);
+   testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainRenew, zone_enum_id, regid);
+
+
     testChargeSucc(invMan.get(), exdate, 19, INVOICING_DomainCreate, zone_cz_id, regid);
     testChargeSucc(invMan.get(), exdate, 19, INVOICING_DomainCreate, zone_enum_id, regid);
-    testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainCreate, zone_cz_id, regid);
-    testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainCreate, zone_enum_id, regid);
+
+
     testChargeSucc(invMan.get(), exdate2, 19, INVOICING_DomainCreate, zone_cz_id, regid);
     testChargeSucc(invMan.get(), exdate2, 19, INVOICING_DomainCreate, zone_enum_id, regid);
-    testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainRenew, zone_cz_id, regid);
-   testChargeSucc(invMan.get(), exdate, 24, INVOICING_DomainRenew, zone_enum_id, regid);
+
+
    testChargeSucc(invMan.get(), exdate, 19, INVOICING_DomainRenew, zone_cz_id, regid);
    testChargeSucc(invMan.get(), exdate, 19, INVOICING_DomainRenew, zone_enum_id, regid);
-   testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainRenew, zone_cz_id, regid);
-   testChargeSucc(invMan.get(), exdate2, 24, INVOICING_DomainRenew, zone_enum_id, regid);
+
    testChargeSucc(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_cz_id, regid);
    testChargeSucc(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_enum_id, regid);
 
@@ -1308,10 +1315,14 @@ Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units)
 
     BOOST_REQUIRE_MESSAGE(price_res.size() > 0, "Fetching record from price_list");
 
-    Decimal base = std::string(price_res[0][1]);
+    Decimal base_period = std::string(price_res[0][1]);
     Money base_price = std::string(price_res[0][0]);
-    if(base > Decimal("0")) {
-        return base_price * (Decimal(boost::lexical_cast<std::string>(reg_units)).integral_division( base));
+    if(base_period > Decimal("0")) {
+        return (base_price
+                    * Decimal(boost::lexical_cast<std::string>(reg_units))
+                    / base_period
+                ).round(2, MPD_ROUND_HALF_UP);
+
     } else {
         return base_price;
     }
