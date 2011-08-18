@@ -1308,8 +1308,16 @@ Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units)
     Database::Connection conn = Database::Manager::acquire();
 
     // TODO more detailed
-    Database::Result price_res = conn.exec_params("SELECT price , period FROM price_list where zone=$1::integer and operation=$2::integer "
-                              "and valid_from<now() and ((valid_to is null) or (valid_to>now()))  order by valid_from desc limit 1 ",
+    Database::Result price_res = conn.exec_params(
+        "SELECT "
+            " price , period,"
+            " CASE WHEN period = 0::numeric(10,2) "
+                " THEN price"
+                " ELSE  (price * $1::numeric / period)::numeric(10,2)  END "
+            " AS  actual_price"
+        " FROM price_list where zone=$1::integer and operation=$2::integer "
+            " AND valid_from<now()"
+            " AND ((valid_to is null) or (valid_to>now()))  order by valid_from desc limit 1 ",
                               Database::query_param_list  (zone_id)
                                                           (op));
 
