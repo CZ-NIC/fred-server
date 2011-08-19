@@ -947,7 +947,9 @@ tests_test_server_SOURCES = tests/test-server.cc \
                      tests/test-invoice.cc \
                      tests/test-common-threaded.h \
                      tests/test-invoice2.cc \
-                     tests/test-decimal.cc 
+                     tests/test-decimal.cc  \
+                     tests/test-shellcmd.cc
+                     
                      
 tests_test_server_LDFLAGS = -lm $(POSTGRESQL_LDFLAGS) \
                      $(BOOST_LDFLAGS) \

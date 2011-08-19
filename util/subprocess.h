@@ -226,7 +226,7 @@ public:
         }
     }
 
-    SubProcessOutput execute()
+    SubProcessOutput execute(std::string stdin_str = std::string())
     {
         close_pipes();
         create_pipes();
@@ -316,9 +316,11 @@ public:
 
             //child input
             fprintf(child_stdin_close_guard.get(), "%s\n", cmd_.c_str());
-            fprintf(child_stdin_close_guard.get(), "%s\n", "exit");
+            if(!stdin_str.empty()) fprintf(child_stdin_close_guard.get(), "%s\n", stdin_str.c_str());
 
             child_stdin_close_guard.reset((FILE*)(0));//flush and close input
+            //failed close is better than leaked file descriptor
+            //p[STDIN_FILENO][1]= -1;//fclose inFileSharedPtr deleter is closing also file descriptor
 
             signal(SIGALRM, handleSIGALARM);     //install the handler
 
@@ -371,7 +373,9 @@ public:
                 }//if read data
                 ret.stdout+=buf;
             }//while(true)
-            child_stdin_close_guard.reset((FILE*)(0));//flush and close output
+            child_stdout_close_guard.reset((FILE*)(0));//flush and close output
+            //failed close is better than leaked file descriptor
+            //p[STDOUT_FILENO][0]= -1;//fclose inFileSharedPtr deleter is closing also file descriptor
 
             //child erroutput
             while(true)
@@ -390,6 +394,8 @@ public:
                 ret.stderr+=buf;
             }//while(true)
             child_stderr_close_guard.reset((FILE*)(0));//flush and close output
+            //failed close is better than leaked file descriptor
+            //p[STDERR_FILENO][0]= -1;//fclose inFileSharedPtr deleter is closing also file descriptor
 
             return ret;//return outputs
         }
