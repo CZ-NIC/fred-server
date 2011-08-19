@@ -93,7 +93,28 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
     BOOST_CHECK(sub_output2.stderr.empty());
     BOOST_CHECK(sub_output2.stdout.compare("kuk\n") == 0);
 
-    //if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+    //checks from notify_registered_letters_manual_send_impl
+    //if rm is there
+    {
+      SubProcessOutput sub_output = ShellCmd("rm --version", 10).execute();
+      BOOST_CHECK(sub_output.stderr.empty());
+    }
+    //if gs is there
+    {
+      SubProcessOutput sub_output = ShellCmd("gs --version", 10).execute();
+      BOOST_CHECK(sub_output.stderr.empty());
+    }
+    //if base64 is there
+    {
+      SubProcessOutput sub_output = ShellCmd("base64 --version", 10).execute();
+      BOOST_CHECK(sub_output.stderr.empty());
+    }
+    //if sendmail is there
+    {
+      SubProcessOutput sub_output = ShellCmd("ls /usr/sbin/sendmail", 10).execute();
+      BOOST_CHECK(sub_output.stderr.empty());
+    }
+
 }
 
 //TODO: test with threads
