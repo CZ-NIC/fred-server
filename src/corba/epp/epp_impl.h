@@ -294,6 +294,11 @@ public:
 
   const std::string& getDatabaseString();
 
+
+  // block registrar - this typically isn't called by apache EPP
+  void destroyAllRegistrarSessions(CORBA::Long reg_id);
+
+
 private:
   Session *session;
   int numSession; // number of active session

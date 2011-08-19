@@ -657,6 +657,38 @@ void ccReg_EPP_i::GarbageSesion()
 
 }
 
+void ccReg_EPP_i::destroyAllRegistrarSessions(CORBA::Long reg_id)
+{
+    Logging::Context::clear();
+    Logging::Context ctx("rifd");
+    ConnectionReleaser releaser;
+
+    LOGGER(PACKAGE).notice( boost::format("Destroying all session for registrar ID %1% ") % reg_id );
+
+    boost::mutex::scoped_lock lock(session_mutex_);
+
+    for (int i = 0; i < maxSession; i ++) {
+
+      if (session[i].clientID && session[i].registrarID == reg_id) {
+          LOGGER(PACKAGE).notice( boost::format("Disconnecting session clientID %1%, registrar %2% ")
+                          % session[i].clientID % reg_id );
+
+        // garbage collector
+        // clear unused sessions
+
+          session[i].clientID=0;
+          session[i].registrarID=0;
+          session[i].language =0;
+          session[i].timestamp=0;
+          numSession--;
+      }
+
+    }
+
+    lock.unlock();
+}
+
+
 int ccReg_EPP_i::GetRegistrarID(
   int clientID)
 {
