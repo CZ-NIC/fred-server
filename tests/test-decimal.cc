@@ -65,14 +65,14 @@ BOOST_AUTO_TEST_SUITE(TestDecimal)
 const std::string server_name = "test-decimal";
 
 
-
-bool check_std_exception_MPD(std::exception const & ex)
+/*
+static bool check_std_exception_MPD(std::exception const & ex)
 {
     std::string ex_msg(ex.what());
     return (ex_msg.find(std::string("MPD")) != std::string::npos);
 }
-
-bool check_std_exception(std::exception const & ex)
+*/
+static bool check_std_exception(std::exception const & ex)
 {
     std::string ex_msg(ex.what());
     return (ex_msg.length() != 0);
@@ -222,7 +222,7 @@ struct ResultTest : TestParams {
     { }
 };
 
-ResultTest testWorker(unsigned long long worker_param)
+static ResultTest testWorker(unsigned long long worker_param)
 {
     ResultTest ret;
 
@@ -326,7 +326,7 @@ public:
     }
 };
 
-void result_check(const ResultTest &res)
+static void result_check(const ResultTest &res)
 {
     BOOST_CHECK(res.result == 0 );
 }
