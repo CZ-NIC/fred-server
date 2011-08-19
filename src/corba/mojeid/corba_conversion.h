@@ -174,10 +174,12 @@ bool corba_unwrap_nullable_boolean(const NullableBoolean *_v, const bool null_va
 Nullable<std::string> corba_unwrap_nullable_date(const NullableDate *_v)
 {
     if (_v) {
-        boost::gregorian::date tmp(_v->_value().year,
-                                  _v->_value().month,
-                                  _v->_value().day);
-        return to_iso_extended_string(tmp);
+        boost::format date_fmt = boost::format ("%1%-%2%-%3%")
+                            % _v->_value().year
+                            % _v->_value().month
+                            % _v->_value().day;
+
+        return Nullable<std::string>(date_fmt.str());
     }
     else {
         return Nullable<std::string>();
