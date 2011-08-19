@@ -112,7 +112,7 @@ struct SubProcessOutput
 
 /**
  * \class ShellCmd
- * \brief shell command wrapper, after command is entered "\n exit \n" to terminate shell
+ * \brief shell command wrapper, after command is entered "\n" is added
  */
 
 class ShellCmd
