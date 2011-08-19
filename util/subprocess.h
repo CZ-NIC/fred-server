@@ -322,6 +322,8 @@ public:
             //failed close is better than leaked file descriptor
             //p[STDIN_FILENO][1]= -1;//fclose inFileSharedPtr deleter is closing also file descriptor
 
+            //waitpid need default SIGCHLD handler to work
+            sighandler_t sig_chld_h = signal(SIGCHLD, SIG_DFL);
             signal(SIGALRM, handleSIGALARM);     //install the handler
 
             // wait for child completion
@@ -396,6 +398,8 @@ public:
             child_stderr_close_guard.reset((FILE*)(0));//flush and close output
             //failed close is better than leaked file descriptor
             //p[STDERR_FILENO][0]= -1;//fclose inFileSharedPtr deleter is closing also file descriptor
+
+            signal(SIGCHLD, sig_chld_h);//restore saved SIGCHLD handler
 
             return ret;//return outputs
         }

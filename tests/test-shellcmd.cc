@@ -93,6 +93,25 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
     BOOST_CHECK(sub_output2.stderr.empty());
     BOOST_CHECK(sub_output2.stdout.compare("kuk\n") == 0);
 
+    {
+        SubProcessOutput sub_output;
+        try
+        {
+            sub_output = ShellCmd(
+                    "head", "/bin/bash",10).execute("kuk");
+        }
+        catch(const std::exception& ex)
+        {
+            std::cout << "std::exception: " << ex.what() << std::endl;
+        }
+/*
+        std::cout << "test_shellcmd_wrapper sub_output.stdout: " << sub_output.stdout
+            << " sub_output.stderr: " << sub_output.stderr << std::endl;
+*/
+        BOOST_CHECK(sub_output.stderr.empty());
+        BOOST_CHECK(sub_output.stdout.compare("kuk\n") == 0);
+    }
+
     //checks from notify_registered_letters_manual_send_impl
     //if rm is there
     {
