@@ -75,13 +75,4 @@ void print_version();
 void print_moo();
 void help_dates();
 
-struct epp_client_login_return
-{
-    ccReg::EPP_var epp;
-    CORBA::Long clientId;
-    ccReg::Response_var r;
-};
-
-epp_client_login_return epp_client_login(const std::string& login_registrar);
-
 #endif // _COMMONCLIENT_H_
