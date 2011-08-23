@@ -23,6 +23,8 @@
 #include "model_registrar_acl.h"
 #include "model_registrar.h"
 
+#include "epp_corba_client.h"
+
 using namespace boost::posix_time;
 
 /// forward declared parameter type 
@@ -543,6 +545,10 @@ public:
   virtual MembershipByRegistrarSeq getMembershipByRegistrar( const TID& registrar_id) =0;
   ///get membership by groups
   virtual MembershipByGroupSeq getMembershipByGroup( const TID& group_id) =0;
+
+  virtual void blockRegistrar(const TID &registrar_id, const EppCorbaClient *epp_cli) = 0;
+  virtual void unblockRegistrar(const TID &registrar_id, const TID &request_id) = 0;
+
 
   typedef std::auto_ptr<Fred::Registrar::Manager> AutoPtr;
 

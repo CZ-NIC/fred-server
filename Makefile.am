@@ -410,6 +410,7 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/notify.h \
 		src/fredlib/notify.cc \
 		src/fredlib/logger_client.h \
+		src/fredlib/epp_corba_client.h \
 		src/fredlib/poll.cc \
 		src/fredlib/poll.h \
 		src/fredlib/file_transferer.h \
@@ -571,7 +572,11 @@ src_corba_libcorba_a_SOURCES = src/corba/nameservice.cc         \
 					 src/corba/file_manager_client.cc \
 					 src/corba/file_manager_client.h  \
 					 src/corba/logger_client_impl.cc  \
-					 src/corba/logger_client_impl.h    
+					 src/corba/logger_client_impl.h   \
+					 src/corba/epp_corba_client_impl.cc \
+					 src/corba/epp_corba_client_impl.h  \
+					 src/corba/epp_corba_client.h
+				
 
 # nodist_src_corba_libcorba_a_SOURCES = src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/Registry.hh
 src_corba_libcorba_a_CPPFLAGS  = $(AM_CPPFLAGS)
@@ -930,6 +935,7 @@ tests_test_server_SOURCES = tests/test-server.cc \
                      tests/test-model.h \
                      tests/test-registrar-group.cc \
                      tests/test-registrar-group.h \
+                     tests/test-registrar-blocking.cc \
                      src/corba/admin/filter_impl.cc \
                      src/corba/admin/filter_impl.h \
                      tests/test-registrar-certification.cc \
@@ -947,8 +953,11 @@ tests_test_server_SOURCES = tests/test-server.cc \
                      tests/test-invoice.cc \
                      tests/test-common-threaded.h \
                      tests/test-invoice2.cc \
-                     tests/test-decimal.cc  \
-                     tests/test-shellcmd.cc
+                     tests/test-decimal.cc \
+                     tests/test-shellcmd.cc \
+                     src/corba/epp_corba_client_impl.cc \
+                     src/corba/epp_corba_client_impl.h  \
+                     src/corba/epp_corba_client.h
                      
                      
 tests_test_server_LDFLAGS = -lm $(POSTGRESQL_LDFLAGS) \

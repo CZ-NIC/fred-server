@@ -1874,7 +1874,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
   Logging::Context ctx("rifd");
   ConnectionReleaser releaser;
 
-  DB DBsql;
+  DBAutoPtr db_connect(new DB());
   int regID=0, id=0;
   int language=0;
   ccReg::Response_var ret;
@@ -1887,85 +1887,106 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
   LOG( NOTICE_LOG, "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] ", ClID, clTRID, passwd, newpass );
   LOG( NOTICE_LOG, "ClientLogin:  certID  [%s] language  [%d] ", certID, lang );
 
-  if (DBsql.OpenDatabase(database) ) {
+  if (db_connect->OpenDatabase(database)) {
+    DBSharedPtr DBsql = DBDisconnectPtr(db_connect.release());
 
     // get ID of registrar by handle
-    if ( (regID = DBsql.GetNumericFromTable("REGISTRAR", "id", "handle",
-        ( char * ) ClID ) ) == 0) {
-      LOG( NOTICE_LOG, "bad username [%s]", ClID );
-      // bad username
-      ret->code = COMMAND_AUTH_ERROR;
-    } else if ( !DBsql.TestRegistrarACL(regID, passwd, certID) ) {
-        // test password and certificate fingerprint in the table RegistrarACL
-      LOG( NOTICE_LOG, "password [%s]  or certID [%s]  not accept", passwd , certID );
-      ret->code = COMMAND_AUTH_ERROR;
-    } else if (DBsql.BeginTransaction() ) {
-      id = DBsql.GetSequenceID("login"); // get sequence ID from login table
+    if ((regID = DBsql->GetNumericFromTable("REGISTRAR", "id", "handle",
+            (char *) ClID)) == 0) {
+        LOG(NOTICE_LOG, "bad username [%s]", ClID);
+        // bad username
+        ret->code = COMMAND_AUTH_ERROR;
+    } else {
+        // we've got regID normal operation
+        std::ostringstream blocking_query;
 
-      // write to table
-      DBsql.INSERT("Login");
-      DBsql.INTO("id");
-      DBsql.INTO("registrarid");
-      DBsql.INTO("logintrid");
-      DBsql.VALUE(id);
-      DBsql.VALUE(regID);
-      DBsql.VALUE(clTRID);
+        blocking_query << " SELECT id FROM registrar_disconnect"
+                    " WHERE blocked_from <= now()"
+                    " AND (now() <= blocked_to OR blocked_to IS NULL)"
+                    " AND registrarid = "
+                       << regID;
 
-      if (DBsql.EXEC() ) // if sucess write
-      {
-        clientID = id;
+        DBSharedPtr db_freeselect_guard = DBFreeSelectPtr(DBsql.get());
 
-        LOG( NOTICE_LOG, "GET clientID  -> %d", (int ) clientID );
+        if (!DBsql->ExecSelect(blocking_query.str().c_str())) {
+            LOGGER(PACKAGE).error(
+                    "Cannot retrieve data from registrar_disconnect table");
+            ret->code = COMMAND_FAILED;
+        } else if (DBsql->GetSelectRows() > 0) {
+            // registrar blocked
+            LOGGER(PACKAGE).notice((boost::format("Registrar %1% login attempt while blocked. ") % ClID).str());
+            ret->code = COMMAND_MAX_SESSION_LIMIT;
+        } else if ( !DBsql->TestRegistrarACL(regID, passwd, certID) ) {
+            // test password and certificate fingerprint in the table RegistrarACL
+            LOG( NOTICE_LOG, "password [%s]  or certID [%s]  not accept", passwd , certID );
+            ret->code = COMMAND_AUTH_ERROR;
+        } else if (DBsql->BeginTransaction() ) {
+            id = DBsql->GetSequenceID("login"); // get sequence ID from login table
 
-        // change language
-        if (lang == ccReg::CS) {
-          LOG( NOTICE_LOG, "SET LANG to CS" );
+            // write to table
+            DBsql->INSERT("Login");
+            DBsql->INTO("id");
+            DBsql->INTO("registrarid");
+            DBsql->INTO("logintrid");
+            DBsql->VALUE(id);
+            DBsql->VALUE(regID);
+            DBsql->VALUE(clTRID);
 
-          DBsql.UPDATE("Login");
-          DBsql.SSET("lang", "cs");
-          DBsql.WHEREID(clientID);
-          language=1;
-          if (DBsql.EXEC() == false)
-            ret->code = COMMAND_FAILED; // if failed
+            if (DBsql->EXEC() ) // if sucess write
+            {
+                clientID = id;
+
+                LOG( NOTICE_LOG, "GET clientID  -> %d", (int ) clientID );
+
+                // change language
+                if (lang == ccReg::CS) {
+                    LOG( NOTICE_LOG, "SET LANG to CS" );
+
+                    DBsql->UPDATE("Login");
+                    DBsql->SSET("lang", "cs");
+                    DBsql->WHEREID(clientID);
+                    language=1;
+                    if (DBsql->EXEC() == false)
+                    ret->code = COMMAND_FAILED; // if failed
+                }
+
+                // change password if set new
+                if (strlen(newpass) ) {
+                    LOG( NOTICE_LOG, "change password  [%s]  to  newpass [%s] ", passwd, newpass );
+
+                    DBsql->UPDATE("REGISTRARACL");
+                    DBsql->SET("password", newpass);
+                    DBsql->WHERE("registrarid", regID);
+
+                    if (DBsql->EXEC() == false)
+                    ret->code = COMMAND_FAILED; // if failed
+                }
+
+                if (ret->code == 0) {
+                    if (LoginSession(clientID, regID, language) )
+                    ret->code = COMMAND_OK;
+                    else {
+                        clientID=0; //  not login
+                        ret->code =COMMAND_MAX_SESSION_LIMIT; // maximal limit of connection sessions
+                    }
+                }
+            }
+
+            // end of transaction
+            DBsql->QuitTransaction(ret->code);
         }
-
-        // change password if set new
-        if (strlen(newpass) ) {
-          LOG( NOTICE_LOG, "change password  [%s]  to  newpass [%s] ", passwd, newpass );
-
-          DBsql.UPDATE("REGISTRARACL");
-          DBsql.SET("password", newpass);
-          DBsql.WHERE("registrarid", regID);
-
-          if (DBsql.EXEC() == false)
-            ret->code = COMMAND_FAILED; // if failed
-        }
-
-        if (ret->code == 0) {
-          if (LoginSession(clientID, regID, language) )
-            ret->code = COMMAND_OK;
-          else {
-            clientID=0; //  not login
-            ret->code =COMMAND_MAX_SESSION_LIMIT; // maximal limit of connection sessions
-          }
-        }
-      }
-
-      // end of transaction
-      DBsql.QuitTransaction(ret->code);
     }
 
     // write  to table action aand return  svTRID
-    if (DBsql.BeginAction(clientID, EPP_ClientLogin, clTRID, XML) ) {
-      ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
+    if (DBsql->BeginAction(clientID, EPP_ClientLogin, clTRID, XML) ) {
+        ret->svTRID = CORBA::string_dup(DBsql->EndAction(ret->code) );
 
-      ret->msg =CORBA::string_dup(GetErrorMessage(ret->code,
-          GetRegistrarLang(clientID) ) );
+        ret->msg =CORBA::string_dup(GetErrorMessage(ret->code,
+                        GetRegistrarLang(clientID) ) );
     } else {
-      ServerInternalError("ClientLogin");
+        ServerInternalError("ClientLogin");
     }
 
-    DBsql.Disconnect();
   }
 
   if (ret->code == 0)

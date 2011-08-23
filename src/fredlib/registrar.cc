@@ -2362,6 +2362,112 @@ public:
           return ret;
       }//getMembershipByGroup
 
+      // this method relies that records in registrar_disconnect table don't overlap
+      // and it doesn't take ownership of epp_cli pointer
+      virtual void blockRegistrar(const TID &registrar_id, const EppCorbaClient *epp_cli)
+      {
+          Database::Connection conn = Database::Manager::acquire();
+
+          LOGGER(PACKAGE).info(boost::format("blockRegistrar(%1%) called") % registrar_id);
+
+          Database::Transaction trans(conn);
+
+          // thread safety - don't create 2 records
+          conn.exec("LOCK TABLE registrar_disconnect IN SHARE MODE");
+
+          // TODO maybe check registrar_id existence
+          Database::Result res =
+          conn.exec_params("SELECT id, blocked_from, blocked_to, "
+                  "   date_trunc('month', blocked_from) = date_trunc('month', now()) AS blocked_this_month"
+                  " FROM registrar_disconnect "
+                  " WHERE registrarid = $1::integer"
+                  " ORDER BY blocked_from ASC"
+                  " LIMIT 1",
+                  Database::query_param_list(registrar_id));
+
+          if(res.size() > 0) {
+              // there is a record, we have to deal with it
+
+              if(res[0][2].isnull() ||  (res[0][2].operator ptime() > boost::posix_time::microsec_clock::universal_time()))  {
+                  LOGGER(PACKAGE).error(boost::format (
+                      "Registrar %1% is already blocked, from: %2% record id: %3%")
+                                      % registrar_id % res[0][1] % res[0][0]
+                  );
+
+                  return;
+              }
+
+              if((bool)res[0][3] == true) {
+                  LOGGER(PACKAGE).notice(boost::format (
+                      "Registrar %1% has already been unblocked this month, from: %2%, to: %3%, record id: %4%")
+                              % registrar_id % res[0][1] % res[0][2] % res[0][0]
+                  );
+
+                  return;
+              }
+          }
+
+          conn.exec_params ("INSERT INTO registrar_disconnect (registrarid) VALUES ($1::integer) ",
+                  Database::query_param_list(registrar_id));
+
+          trans.commit();
+
+          LOGGER(PACKAGE).info(boost::format("Registrar %1% blocked, destroying all his sessions ") % registrar_id);
+
+          epp_cli->callDestroyAllRegistrarSessions(registrar_id);
+
+      }
+
+      // this method relies that records in registrar_disconnect table don't overlap
+      virtual void unblockRegistrar(const TID &registrar_id, const TID &request_id)
+      {
+          Database::Connection conn = Database::Manager::acquire();
+
+          Database::Transaction trans(conn);
+
+          Database::Result res = conn.exec_params("SELECT id, blocked_to"
+                  " FROM registrar_disconnect"
+                  " WHERE registrarid = $1::integer"
+                  " ORDER BY blocked_from ASC"
+                  " LIMIT 1"
+                  " FOR UPDATE",
+                  Database::query_param_list(registrar_id) );
+
+          if(res.size() == 0) {
+              boost::format msg = boost::format("Trying to unblock registrar %1% which is not blocked. ") % registrar_id;
+              LOGGER(PACKAGE).error(msg);
+              throw std::runtime_error(msg.str());
+          } else {
+              Database::ID blocking_id = res[0][0];
+
+              if(!res[0][1].isnull() || res[0][1].operator ptime() < boost::posix_time::microsec_clock::universal_time()) {
+                  boost::format msg = boost::format(
+                      "Trying to unblock registrar %1% which is not currently blocked: last blocking: %2%, id: %3% ")
+                          % registrar_id % res[0][1] % res[0][0];
+                  LOGGER(PACKAGE).error(msg);
+                  throw std::runtime_error(msg.str());
+              }
+
+              if(request_id == 0) {
+                  conn.exec_params("UPDATE registrar_disconnect SET blocked_to = now() WHERE id = $1::integer",
+                          Database::query_param_list(blocking_id) );
+                  trans.commit();
+
+                  LOGGER(PACKAGE).notice(boost::format("Registrar %1% was unblocked (no request_id supplied)") % registrar_id);
+              } else {
+                  conn.exec_params("UPDATE registrar_disconnect SET blocked_to = now(), unblock_request_id = $1::bigint WHERE id = $2::integer",
+                          Database::query_param_list(request_id)
+                                                    (blocking_id) );
+                  trans.commit();
+
+                  LOGGER(PACKAGE).notice(boost::format("Registrar %1% was unblocked by request ID %2% ")
+                      % registrar_id % request_id );
+              }
+          }
+
+      }
+
+
 }; // class ManagerImpl
 
 unsigned long long RegistrarZoneAccess::max_id(ColIndex idx, Database::Result& result)
