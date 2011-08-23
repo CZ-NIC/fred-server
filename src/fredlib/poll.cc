@@ -990,7 +990,7 @@ public:
    * date is in local time
    */
   //private:
-  unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::gregorian::date &date)
+  unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::gregorian::date &date, unsigned int zone_id)
   {
       Database::Connection conn = Database::Manager::acquire();
 
@@ -999,13 +999,12 @@ public:
               " JOIN object_history oh ON oh.id = oreg.id"
               " JOIN history hist ON hist.id = oh.historyid"
               " JOIN domain_history dh ON dh.historyid = hist.id"
-              " JOIN zone z ON z.id = dh.zone"
-              " WHERE z.fqdn = 'cz'"
-              " AND oh.clid = $1::integer"
-              " AND hist.valid_from < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
-              " AND (hist.valid_to >= ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
+              " WHERE dh.zone = $1::integer"
+              " AND oh.clid = $2::integer"
+              " AND hist.valid_from < ($3::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
+              " AND (hist.valid_to >= ($3::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
               " OR hist.valid_to IS NULL)",
-              Database::query_param_list(regid)(date));
+              Database::query_param_list(zone_id)(regid)(date));
 
       if(res_count.size() != 1 || res_count[0][0].isnull()) {
           throw std::runtime_error(
@@ -1034,7 +1033,7 @@ public:
 
       // get reuest fee parametres
       Database::Result res_params = conn.exec(
-                "SELECT count_free_base, count_free_per_domain"
+                "SELECT count_free_base, count_free_per_domain, zone"
                 " FROM request_fee_parameter"
                 " WHERE valid_from < now()"
                 " ORDER BY valid_from DESC"
@@ -1046,20 +1045,22 @@ public:
 
       unsigned int base_free_count = res_params[0][0];
       unsigned int per_domain_free_count = res_params[0][1];
+      unsigned int zone_id = res_params[0][2];
 
       // get per request price
       Database::Result res_price = conn.exec_params(
                "SELECT price"
                " FROM price_list pl"
-               " JOIN zone z ON z.id = pl.zone"
-               " WHERE z.fqdn='cz'"
+               " WHERE pl.zone=$1::integer"
                " AND valid_from < 'now()'"
                " AND ( valid_to IS NULL OR valid_to > 'now()')"
-               " AND operation=$1::integer"
+               " AND operation=$2::integer"
                " ORDER BY valid_from DESC"
                " LIMIT 1",
                Database::query_param_list
-                    (static_cast<int>(Fred::Invoicing::INVOICING_GeneralOperation)));
+                    (zone_id)
+                    (static_cast<int>(Fred::Invoicing::INVOICING_GeneralOperation))
+      );
 
       if(res_price.size() != 1 || res_price[0][0].isnull()) {
           throw std::runtime_error("Entry for request fee not found in price_list");
@@ -1115,7 +1116,7 @@ public:
           }
 
           // get domain count for registrar
-          unsigned long long domain_count = getRegistrarDomainCount(reg_id, p_from);
+          unsigned long long domain_count = getRegistrarDomainCount(reg_id, p_from, zone_id);
 
           // now count all the number for poll message
           unsigned long long total_free_count = std::max(
