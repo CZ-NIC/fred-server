@@ -795,6 +795,10 @@ Database::ID getServiceIdForName(const std::string &service_name)
     return ret;
 }
 
+/*
+ * Request count during specified period for specified service and request.user_name
+ * timestamps in local time
+ */
 unsigned long long ManagerImpl::i_getRequestCount(
         const boost::posix_time::ptime &datetime_from,
         const boost::posix_time::ptime &datetime_to,
@@ -809,12 +813,14 @@ unsigned long long ManagerImpl::i_getRequestCount(
     Database::ID service_id = getServiceIdForName(service);
 
     Database::Result res =
-    conn.exec_params("SELECT count(*) FROM request r "
-                     "WHERE time_begin > ($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
-                         "AND time_begin < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
-                         "AND is_monitoring = false "
-                         "AND r.service_id = $3 "
-                         "AND r.user_name = $4 ",
+    conn.exec_params("SELECT count(*) FROM request r"
+                     " JOIN result_code rc ON rc.id = r.result_code_id"
+                     " WHERE rc.result_code not in (2400,2500)"
+                     " AND time_begin > ($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC'"
+                         " AND time_begin < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC'"
+                         " AND is_monitoring = false"
+                         " AND r.service_id = $3"
+                         " AND r.user_name = $4",
            Database::query_param_list
                             (datetime_from)
                             (datetime_to)

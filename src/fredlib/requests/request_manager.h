@@ -134,6 +134,7 @@ public:
   Database::Result i_getServices();
   Database::Result i_getResultCodesByService(ServiceType service);
   Database::Result i_getObjectTypes();
+  // timestamps in local time
   unsigned long long i_getRequestCount(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service, const std::string &user);
   std::auto_ptr<RequestCountInfo> i_getRequestCountUsers(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service);
 
