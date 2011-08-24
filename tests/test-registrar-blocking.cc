@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE( test_block_registrar )
     std::auto_ptr<EppCorbaClientImpl> epp_cli (new EppCorbaClientImpl());
     regMan->blockRegistrar(1, epp_cli.get());
 
-    std::cout << "Successfully blocked " << std::endl;
+    //std::cout << "Successfully blocked " << std::endl;
 
     // regMan->unblockRegistrar(1, 0);
 
