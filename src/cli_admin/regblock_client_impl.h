@@ -16,6 +16,12 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _REGBLOCK_CLIENT_IMPL_H_
+#define _REGBLOCK_CLIENT_IMPL_H_
+
+#include "src/corba/logger_client_impl.h"
+#include "src/corba/epp_corba_client_impl.h"
+
 namespace Admin {
 
 class RegBlockClient {
@@ -40,8 +46,10 @@ public:
         if(over_limit) {
             init_corba_container();
             std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
-            // TODO
-            throw std::runtime_error("Not implemented yet ");
+            std::auto_ptr<Fred::Logger::LoggerClient> log_cli(new Fred::Logger::LoggerCorbaClientImpl());
+
+            regMan->blockClientsOverLimit(epp_cli.get(), log_cli.get());
+
         } else if (list_only) {
             // TODO
             throw std::runtime_error("Not implemented yet ");
@@ -74,3 +82,6 @@ private:
 };
 
 };
+
+
+#endif // _REGBLOCK_CLIENT_IMPL_H_

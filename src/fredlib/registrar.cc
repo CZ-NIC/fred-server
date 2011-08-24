@@ -2473,7 +2473,6 @@ public:
 
       }
 
-      /*
       void blockClientsOverLimit(const EppCorbaClient *epp_client,
             Logger::LoggerClient *logger_client) {
         std::string price_unit_request;
@@ -2488,19 +2487,22 @@ public:
         // from & to date for the calculation (in local time)
         boost::gregorian::date today = boost::gregorian::day_clock::local_day();
         boost::gregorian::date p_from(today.year(), today.month(), 1);
-        boost::posix_time::ptime p_to(
-                boost::posix_time::microsec_clock::local_time());
+        boost::posix_time::ptime p_to(boost::posix_time::microsec_clock::local_time());
 
-        // iterate registrars
+        // iterate registrars who have record in request_fee_registrar_parameter
         // join parametres TODO
         Database::Connection conn = Database::Manager::acquire();
         Database::Result res_registrars = conn.exec(
-                "SELECT id, handle FROM registrar");
+                "SELECT r.id, r.handle, rp.request_price_limit, rp.email FROM registrar r"
+                " JOIN request_fee_registrar_parameter rp"
+                " ON r.id = rp.registrar_id");
         if (res_registrars.size() == 0) {
-            LOGGER(PACKAGE).info("No registrars found");
+            LOGGER(PACKAGE).info("No registrars with request price limit found");
             return;
         }
 
+        // TODO why should we compute request count for all of them? But maybe it's not so much different
+        // to think
         std::auto_ptr<Fred::Logger::RequestCountInfo> request_counts =
                 logger_client->getRequestCountUsers(boost::posix_time::ptime(
                         p_from), p_to, "EPP");
@@ -2508,6 +2510,7 @@ public:
         for (unsigned i = 0; i < res_registrars.size(); i++) {
             Database::ID reg_id = res_registrars[i][0];
             std::string reg_handle = res_registrars[i][1];
+            Decimal     reg_price_limit((std::string)res_registrars[i][2]);
 
             // find request count for this registrar
             unsigned long long request_count = 0;
@@ -2544,18 +2547,23 @@ public:
                 price = count_diff * Decimal(price_unit_request);
             }
 
-            // TODO
-            blockRegistrar(0, epp_client);
-
             LOGGER(PACKAGE).info(boost::format(
-                    "Saving poll request fee message, registrar"
-                        " %1%, requests: %2%, limit: %3%, price: %4%")
-                    % reg_handle % request_count % total_free_count % price);
+                             "Request count data for registrar"
+                                 " %1%, price limit: %2% requests: %3%, total free: %4%, price: %5%")
+                             % reg_handle % reg_price_limit % request_count % total_free_count % price);
+
+            // TODO
+            if(reg_price_limit > Decimal("0") && price > reg_price_limit) {
+                LOGGER(PACKAGE).warning(boost::format(
+                        "Blocking registrar %1%: price limit %2% exceeded. Current price: %3%").str());
+                (void)blockRegistrar(reg_id, epp_client);
+            }
+
 
         }
 
     }
-    */
+
 
 }; // class ManagerImpl
 

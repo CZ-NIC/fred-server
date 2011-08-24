@@ -1060,7 +1060,7 @@ public:
 
           LOGGER(PACKAGE).info(boost::format(
                   "Saving poll request fee message, registrar"
-                  " %1%, requests: %2%, limit: %3%, price: %4%")
+                  " %1%, requests: %2%, total free: %3%, price: %4%")
                   % reg_handle
                   % request_count
                   % total_free_count

@@ -550,6 +550,9 @@ public:
   virtual bool blockRegistrar(const TID &registrar_id, const EppCorbaClient *epp_cli) = 0;
   virtual void unblockRegistrar(const TID &registrar_id, const TID &request_id) = 0;
 
+  virtual void blockClientsOverLimit(const EppCorbaClient *epp_client,
+        Logger::LoggerClient *logger_client) = 0;
+
 
   typedef std::auto_ptr<Fred::Registrar::Manager> AutoPtr;
 
