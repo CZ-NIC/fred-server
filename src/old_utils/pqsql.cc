@@ -238,6 +238,7 @@ void PQ::Disconnect()
   LOG( NOTICE_LOG , "PQ: finish");
   if(connection != NULL) {
       PQfinish(connection);
+      connection = NULL;
   }
 }
 
