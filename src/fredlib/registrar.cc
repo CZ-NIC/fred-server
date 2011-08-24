@@ -2407,7 +2407,8 @@ public:
               }
           }
 
-          conn.exec_params ("INSERT INTO registrar_disconnect (registrarid) VALUES ($1::integer) ",
+          conn.exec_params ("INSERT INTO registrar_disconnect (registrarid, blocked_to) VALUES "
+                  "($1::integer, date_trunc('month', now()) + interval '1 month' - interval '1 second') ",
                   Database::query_param_list(registrar_id));
 
           trans.commit();
