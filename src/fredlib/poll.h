@@ -37,6 +37,9 @@ namespace Fred
       MT_REQUEST_FEE_INFO = 16
     };
 
+    void getRequestFeeParams(std::string &price_unit_request, unsigned &base_free_count, unsigned &per_domain_free_count, unsigned &zone_id);
+    unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::gregorian::date &date, unsigned int zone_id);
+
     class Message
     {
      public:

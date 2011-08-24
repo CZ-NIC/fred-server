@@ -48,6 +48,7 @@
 #include "enumparam_params.h"
 #include "object_params.h"
 #include "file_params.h"
+#include "regblock_params.h"
 
 /**
  * \class HandleAdminClientDomainListArgsGrp
@@ -966,6 +967,137 @@ public:
         return option_group_index;
     }//handle
 };//class HandleAdminClientPollCreateRequestFeeMessagesArgsGrp
+
+
+class HandleAdminClientBlockRegistrarIdArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegBlockArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("block_registrar_id");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("block_registrar options")));
+        cfg_opts->add_options()
+            ("block_registrar_id", boost::program_options
+             ::value<Checked::id>()->notifier(save_optional_id(params.block_id))
+                  , "Block registrar with given ID")
+          ;
+
+        return cfg_opts;
+    }
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};
+
+class HandleAdminClientUnblockRegistrarIdArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegBlockArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("unblock_registrar_id");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("unblock registrar options")));
+        cfg_opts->add_options()
+            ("unblock_registrar_id", boost::program_options
+             ::value<Checked::id>()->notifier(save_optional_id(params.unblock_id))
+                  , "Unblock registrar with given ID")
+          ;
+
+        return cfg_opts;
+
+    }
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};
+
+class HandleAdminClientListBlockedRegsArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegBlockArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("list_blocked_registrars");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("block_registrar options")));
+        cfg_opts->add_options()
+            ("list_blocked_registrars" , boost::program_options
+                    ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.list_only)),
+                     "List registrars which were recently blocked or unblocked")
+          ;
+
+        return cfg_opts;
+
+    }
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};
+
+class HandleAdminClientBlockRegistrarsOverLimitArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    RegBlockArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("block_registrars_over_limit");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("block_registrar options")));
+        cfg_opts->add_options()
+            ("block_registrars_over_limit" ,boost::program_options
+                    ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.over_limit)),
+                    "Automatically block registrar which have set and exceeded a limit on number of requests")
+          ;
+
+        return cfg_opts;
+    }
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};
 
 /**
  * \class HandleAdminClientZoneAddArgsGrp

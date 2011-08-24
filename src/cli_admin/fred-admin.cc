@@ -53,6 +53,7 @@
 #include "cli_admin/enumparam_client_impl.h"
 #include "cli_admin/object_client_impl.h"
 #include "cli_admin/file_client_impl.h"
+#include "cli_admin/regblock_client.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_logging_args.h"
@@ -100,6 +101,10 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientPollListAllArgsGrp),poll_list_all_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientPollCreateStatechangesArgsGrp),poll_create_statechanges_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientPollCreateRequestFeeMessagesArgsGrp), poll_create_request_fee_messages_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientBlockRegistrarIdArgsGrp), block_registrar_id_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientUnblockRegistrarIdArgsGrp), unblock_registrar_id_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientListBlockedRegsArgsGrp), list_blocked_regs_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientBlockRegistrarsOverLimitArgsGrp), block_registrars_over_limit_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientZoneAddArgsGrp),zone_add_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientRegistrarAddArgsGrp),registrar_add_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientRegistrarAddZoneArgsGrp),registrar_add_zone_impl()))

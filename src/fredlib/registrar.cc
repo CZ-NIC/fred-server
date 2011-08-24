@@ -45,6 +45,9 @@
 
 #include "zone.h"
 
+// TODO just for getRequestFeeParametres
+#include "poll.h"
+
 namespace Fred {
 namespace Registrar {
 
@@ -2364,7 +2367,7 @@ public:
 
       // this method relies that records in registrar_disconnect table don't overlap
       // and it doesn't take ownership of epp_cli pointer
-      virtual void blockRegistrar(const TID &registrar_id, const EppCorbaClient *epp_cli)
+      virtual bool blockRegistrar(const TID &registrar_id, const EppCorbaClient *epp_cli)
       {
           Database::Connection conn = Database::Manager::acquire();
 
@@ -2389,21 +2392,19 @@ public:
               // there is a record, we have to deal with it
 
               if(res[0][2].isnull() ||  (res[0][2].operator ptime() > boost::posix_time::microsec_clock::universal_time()))  {
-                  LOGGER(PACKAGE).error(boost::format (
-                      "Registrar %1% is already blocked, from: %2% record id: %3%")
-                                      % registrar_id % res[0][1] % res[0][0]
-                  );
-
-                  return;
+                  boost::format msg = boost::format (
+                          "Registrar %1% is already blocked, from: %2% record id: %3%")
+                                          % registrar_id % res[0][1] % res[0][0];
+                  LOGGER(PACKAGE).error(msg.str());
+                  return false;
               }
 
               if((bool)res[0][3] == true) {
-                  LOGGER(PACKAGE).notice(boost::format (
-                      "Registrar %1% has already been unblocked this month, from: %2%, to: %3%, record id: %4%")
-                              % registrar_id % res[0][1] % res[0][2] % res[0][0]
-                  );
-
-                  return;
+                  boost::format msg = boost::format (
+                          "Registrar %1% has already been unblocked this month, from: %2%, to: %3%, record id: %4%")
+                                  % registrar_id % res[0][1] % res[0][2] % res[0][0];
+                  LOGGER(PACKAGE).notice(msg.str());
+                  return false;
               }
           }
 
@@ -2417,6 +2418,7 @@ public:
 
           epp_cli->callDestroyAllRegistrarSessions(registrar_id);
 
+          return true;
       }
 
       // this method relies that records in registrar_disconnect table don't overlap
@@ -2441,10 +2443,13 @@ public:
           } else {
               Database::ID blocking_id = res[0][0];
 
-              if(!res[0][1].isnull() || res[0][1].operator ptime() < boost::posix_time::microsec_clock::universal_time()) {
+              if(!res[0][1].isnull() && res[0][1].operator ptime() < boost::posix_time::microsec_clock::universal_time()) {
                   boost::format msg = boost::format(
-                      "Trying to unblock registrar %1% which is not currently blocked: last blocking: %2%, id: %3% ")
-                          % registrar_id % res[0][1] % res[0][0];
+                      "Trying to unblock registrar %1% which is not currently blocked: last blocking with ID %2% ended: %3%")
+                          % registrar_id
+                          % res[0][0]
+                          % res[0][1].operator ptime();
+
                   LOGGER(PACKAGE).error(msg);
                   throw std::runtime_error(msg.str());
               }
@@ -2468,6 +2473,89 @@ public:
 
       }
 
+      /*
+      void blockClientsOverLimit(const EppCorbaClient *epp_client,
+            Logger::LoggerClient *logger_client) {
+        std::string price_unit_request;
+        unsigned int base_free_count;
+        unsigned int per_domain_free_count;
+        unsigned int zone_id;
+
+        Fred::Poll::getRequestFeeParams(price_unit_request, base_free_count,
+                per_domain_free_count, zone_id);
+
+        /////////////////////// TODO
+        // from & to date for the calculation (in local time)
+        boost::gregorian::date today = boost::gregorian::day_clock::local_day();
+        boost::gregorian::date p_from(today.year(), today.month(), 1);
+        boost::posix_time::ptime p_to(
+                boost::posix_time::microsec_clock::local_time());
+
+        // iterate registrars
+        // join parametres TODO
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result res_registrars = conn.exec(
+                "SELECT id, handle FROM registrar");
+        if (res_registrars.size() == 0) {
+            LOGGER(PACKAGE).info("No registrars found");
+            return;
+        }
+
+        std::auto_ptr<Fred::Logger::RequestCountInfo> request_counts =
+                logger_client->getRequestCountUsers(boost::posix_time::ptime(
+                        p_from), p_to, "EPP");
+
+        for (unsigned i = 0; i < res_registrars.size(); i++) {
+            Database::ID reg_id = res_registrars[i][0];
+            std::string reg_handle = res_registrars[i][1];
+
+            // find request count for this registrar
+            unsigned long long request_count = 0;
+            Fred::Logger::RequestCountInfo::iterator it = request_counts->find(
+                    reg_handle);
+
+            if (it == request_counts->end()) {
+                LOGGER(PACKAGE).info(boost::format(
+                        "No request count found for registrar %1%, skipping.")
+                        % reg_handle);
+                request_count = 0;
+            } else {
+                request_count = it->second;
+            }
+
+            // TODO
+
+
+            // get domain count for registrar
+            unsigned long long
+                    domain_count = Fred::Poll::getRegistrarDomainCount(reg_id,
+                            p_from, zone_id);
+
+            // now count all the number for poll message
+            unsigned long long total_free_count = std::max(
+                    static_cast<unsigned long long> (base_free_count),
+                    domain_count * per_domain_free_count);
+
+            // price in Decimal
+            Money price("0");
+            if (request_count > total_free_count) {
+                Money count_diff(boost::lexical_cast<std::string>(request_count
+                        - total_free_count));
+                price = count_diff * Decimal(price_unit_request);
+            }
+
+            // TODO
+            blockRegistrar(0, epp_client);
+
+            LOGGER(PACKAGE).info(boost::format(
+                    "Saving poll request fee message, registrar"
+                        " %1%, requests: %2%, limit: %3%, price: %4%")
+                    % reg_handle % request_count % total_free_count % price);
+
+        }
+
+    }
+    */
 
 }; // class ManagerImpl
 
