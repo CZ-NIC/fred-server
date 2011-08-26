@@ -88,9 +88,6 @@ public:
   //----------------------------
   // EPP function for table action and action_xml
 
-  // save EPP masagege about transfered object to the table messages 
-  bool SaveEPPTransferMessage(
-    int oldregID, int regID, int objectID, int type);
 
   // save generated  XML from  mod_eppd
   int SaveXMLout(
