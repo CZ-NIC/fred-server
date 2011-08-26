@@ -81,76 +81,9 @@ public:
   ///------------------------
   //   BILLING
 
-  // get price for operation defined in enum_operation_table from table price_list
-  long GetPrice(
-    int operation, int zone, int period);
-  bool SaveInvoiceCredit(
-    int regID, int objectID, int operation, int zone, int period,
-    const char *ExDate, long price, long price2, int invoiceID, int invoiceID2);
-  //  get credit from invoice  
-  bool InvoiceCountCredit(
-    long price, int invoiceID);
-
-  // operation  CREATE
-  bool BillingCreateDomain(
-    int regID, int zone, int objectID);
-  // operation RENEW
-  bool BillingRenewDomain(
-    int regID, int zone, int objectID, int period, const char *ExDate);
-
-  // count credit from invoce 
-  bool UpdateInvoiceCredit(
-    int regID, int operation, int zone, int period, const char *ExDate,
-    int objectID);
 
   long GetRegistrarCredit(
     int regID, int zoneID);
-
-  ///-------------------
-  // BANKING 
-
-  // return id of the account 
-  int GetBankAccount(
-    const char *accountStr, const char *codeStr);
-  // return number of the account for zone
-  int GetBankAccountZone(
-    int accountID);
-
-  // test oldBalance at account 
-  int TestBankAccount(
-    const char *accountStr, int num, long oldBalance, char* bank);
-
-  // update Balance  at the account
-  bool UpdateBankAccount(
-    int accountID, char *date, int num, long newBalance);
-
-  // save bankstatement  head list for account 
-  int SaveBankHead(
-    int accountID, int num, char *date, char *oldDate, long oldBalance,
-    long newBalance, long credit, long debet);
-
-  // save bank item for statement
-  int SaveBankItem(
-    int statemetID, char *account, char *bank, char *evidNum, char *date,
-    char *memo, int code, char *konstSymb, char *varSymb, char *specsymb,
-    long price);
-
-  // e-banka function for table bank_ebanka_list on-line bankstatement  via https
-  int TestEBankaList(
-    const char*ident); // return ident for E-banka list
-
-  int SaveEBankaList(
-    int account_id, const char *ident, long price, const char *datetimeStr,
-    const char *accountStr, const char *codeStr, const char *varsymb,
-    const char *konstsymb, const char *nameStr, const char *memoStr);
-
-  // gererated invoice from incoming price to the e-banka 
-  bool UpdateEBankaListInvoice(
-    int id, int invoiceID);
-
-  // this bank statement is processed
-  bool UpdateBankStatementItem(
-    int id, int invoiceID);
 
   //----------------------------
   // EPP function for table action and action_xml
