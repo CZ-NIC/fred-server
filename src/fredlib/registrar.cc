@@ -2414,7 +2414,7 @@ public:
 
           trans.commit();
 
-          LOGGER(PACKAGE).info(boost::format("Registrar %1% blocked, destroying all his sessions ") % registrar_id);
+          LOGGER(PACKAGE).notice(boost::format("Registrar %1% blocked, destroying all his sessions ") % registrar_id);
 
           epp_cli->callDestroyAllRegistrarSessions(registrar_id);
 
@@ -2554,7 +2554,7 @@ public:
             // TODO
             if(reg_price_limit > Decimal("0") && price > reg_price_limit) {
                 LOGGER(PACKAGE).warning((boost::format(
-                        "Blocking registrar %1%: price limit %2% exceeded. Current price: %3%")
+                        "Registrar %1% might be blocked: price limit %2% exceeded. Current price: %3%")
                         % reg_handle
                         % reg_price_limit
                         % price
