@@ -17,8 +17,8 @@ unsigned long long LoggerCorbaClientImpl::getRequestCount(
             const std::string &service,
             const std::string &user)
 {
-    std::string c_from = boost::gregorian::to_iso_extended_string(from.date());
-    std::string c_to = boost::gregorian::to_iso_extended_string(to.date());
+    std::string c_from = boost::posix_time::to_iso_string(from);
+    std::string c_to = boost::posix_time::to_iso_string(to);
 
     return logger_ref->getRequestCount(c_from.c_str(), c_to.c_str(), service.c_str(), user.c_str());
 }
@@ -29,8 +29,8 @@ std::auto_ptr<RequestCountInfo> LoggerCorbaClientImpl::getRequestCountUsers(
            const boost::posix_time::ptime &to,
            const std::string &service)
 {
-    std::string c_from = boost::gregorian::to_iso_extended_string(from.date());
-    std::string c_to = boost::gregorian::to_iso_extended_string(to.date());
+    std::string c_from = boost::posix_time::to_iso_string(from);
+    std::string c_to = boost::posix_time::to_iso_string(to);
 
     ccReg::RequestCountInfo_var info = logger_ref->getRequestCountUsers(c_from.c_str(), c_to.c_str(), service.c_str());
 

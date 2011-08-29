@@ -368,8 +368,9 @@ CORBA::ULongLong ccReg_Log_i::getRequestCount(const char *datetime_from, const c
         const char *service, const char *user)
 {
     try {
-        ptime from (time_from_string(datetime_from));
-        ptime to   (time_from_string(datetime_to));
+
+        ptime from (from_iso_string(datetime_from));
+        ptime to   (from_iso_string(datetime_to));
 
         return back->i_getRequestCount(from, to, service, user);
     }
@@ -384,9 +385,9 @@ ccReg::RequestCountInfo* ccReg_Log_i::getRequestCountUsers(const char *datetime_
         const char *service)
 {
     try {
-        ptime from (time_from_string(datetime_from));
-        ptime to   (time_from_string(datetime_to));
 
+        ptime from (from_iso_string(datetime_from));
+        ptime to   (from_iso_string(datetime_to));
         std::auto_ptr<RequestCountInfo> info = back->i_getRequestCountUsers(from, to, service);
 
         size_t size = info->size();
