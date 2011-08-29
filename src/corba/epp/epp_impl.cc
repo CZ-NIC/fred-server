@@ -1915,7 +1915,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
         } else if (DBsql->GetSelectRows() > 0) {
             // registrar blocked
             LOGGER(PACKAGE).notice((boost::format("Registrar %1% login attempt while blocked. ") % ClID).str());
-            ret->code = COMMAND_MAX_SESSION_LIMIT;
+            ret->code = COMMAND_AUTOR_ERROR;
         } else if ( !DBsql->TestRegistrarACL(regID, passwd, certID) ) {
             // test password and certificate fingerprint in the table RegistrarACL
             LOG( NOTICE_LOG, "password [%s]  or certID [%s]  not accept", passwd , certID );
