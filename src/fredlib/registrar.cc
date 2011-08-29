@@ -2490,7 +2490,6 @@ public:
         boost::posix_time::ptime p_to(boost::posix_time::microsec_clock::local_time());
 
         // iterate registrars who have record in request_fee_registrar_parameter
-        // join parametres TODO
         Database::Connection conn = Database::Manager::acquire();
         Database::Result res_registrars = conn.exec(
                 "SELECT r.id, r.handle, rp.request_price_limit, rp.email FROM registrar r"
@@ -2554,8 +2553,12 @@ public:
 
             // TODO
             if(reg_price_limit > Decimal("0") && price > reg_price_limit) {
-                LOGGER(PACKAGE).warning(boost::format(
-                        "Blocking registrar %1%: price limit %2% exceeded. Current price: %3%").str());
+                LOGGER(PACKAGE).warning((boost::format(
+                        "Blocking registrar %1%: price limit %2% exceeded. Current price: %3%")
+                        % reg_handle
+                        % reg_price_limit
+                        % price
+                        ).str());
                 (void)blockRegistrar(reg_id, epp_client);
             }
 
