@@ -1030,9 +1030,6 @@ public:
           Fred::Logger::RequestCountInfo::iterator it = request_counts->find(reg_handle);
 
           if(it == request_counts->end()) {
-              LOGGER(PACKAGE).info(boost::format("No request count found for registrar %1%, skipping.")
-                                % reg_handle);
-
               request_count = 0;
           } else {
               request_count = it->second;
