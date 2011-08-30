@@ -996,7 +996,15 @@ public:
 
       // from & to date for the calculation (in local time)
       boost::gregorian::date p_to = boost::gregorian::day_clock::local_day();
-      boost::gregorian::date p_from(p_to.year(), p_to.month(), 1);
+      boost::gregorian::date p_from;
+      if (p_to.day() == 1) {
+          p_from = p_to - boost::gregorian::months(1);
+      }
+      else {
+          p_from = boost::gregorian::date(p_to.year(), p_to.month(), 1);
+      }
+      LOGGER(PACKAGE).debug(boost::format("creating request fee messages"
+                  " for interval <%1%; %2%)") % p_from % p_to);
 
       // iterate registrars
       Database::Connection conn = Database::Manager::acquire();
