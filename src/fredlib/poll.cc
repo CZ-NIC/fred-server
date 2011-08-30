@@ -1006,9 +1006,16 @@ public:
       LOGGER(PACKAGE).debug(boost::format("creating request fee messages"
                   " for interval <%1%; %2%)") % p_from % p_to);
 
-      // iterate registrars
+      // get registrars who has access to configured zone
       Database::Connection conn = Database::Manager::acquire();
-      Database::Result res_registrars = conn.exec("SELECT id, handle FROM registrar");
+      Database::Result res_registrars = conn.exec_params(
+              "SELECT r.id, r.handle FROM registrar r"
+              " JOIN registrarinvoice ri ON ri.registrarid = r.id"
+              " WHERE ri.zone = $1::integer"
+              " AND ri.fromdate <= current_date"
+              " AND (ri.todate >= current_date OR ri.todate is null)",
+              Database::query_param_list(zone_id));
+
       if(res_registrars.size() == 0) {
           LOGGER(PACKAGE).info("No registrars found");
           return;
@@ -1020,6 +1027,7 @@ public:
                    boost::posix_time::ptime(p_to),
                    "EPP");
 
+      // iterate registrars
       for (unsigned i = 0;i < res_registrars.size(); i++)
       {
           Database::ID reg_id     = res_registrars[i][0];
