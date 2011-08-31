@@ -3246,6 +3246,49 @@ public:
      return new ManagerImpl();
  }
 
+
+ void getRequestFeeParams(std::string &price_unit_request, unsigned &base_free_count, unsigned &per_domain_free_count, unsigned &zone_id)
+ {
+     Database::Connection conn = Database::Manager::acquire();
+
+     // get reuest fee parametres
+     Database::Result res_params = conn.exec(
+               "SELECT count_free_base, count_free_per_domain, zone"
+               " FROM request_fee_parameter"
+               " WHERE valid_from < now()"
+               " ORDER BY valid_from DESC"
+               " LIMIT 1");
+
+     if(res_params.size() != 1 || res_params[0][0].isnull() || res_params[0][1].isnull()) {
+         throw std::runtime_error("Couldn't find a valid record in request_fee_parameter table");
+     }
+
+     base_free_count = res_params[0][0];
+     per_domain_free_count = res_params[0][1];
+     zone_id = res_params[0][2];
+
+     // get per request price
+     Database::Result res_price = conn.exec_params(
+              "SELECT price"
+              " FROM price_list pl"
+              " WHERE pl.zone=$1::integer"
+              " AND valid_from < 'now()'"
+              " AND ( valid_to IS NULL OR valid_to > 'now()')"
+              " AND operation=$2::integer"
+              " ORDER BY valid_from DESC"
+              " LIMIT 1",
+              Database::query_param_list
+                   (zone_id)
+                   (static_cast<int>(Fred::Invoicing::INVOICING_GeneralOperation))
+     );
+
+     if(res_price.size() != 1 || res_price[0][0].isnull()) {
+         throw std::runtime_error("Entry for request fee not found in price_list");
+     }
+
+     price_unit_request = std::string(res_price[0][0]);
+ }
+
   
 }; // Invoicing
 }; // Fred

@@ -46,8 +46,8 @@
 #include "zone.h"
 #include "subprocess.h"
 
-// TODO just for getRequestFeeParametres
-#include "poll.h"
+// for getRequestFeeParametres
+#include "invoicing/invoice.h"
 
 #include "domain.h"
 
@@ -2489,7 +2489,7 @@ public:
         unsigned int base_free_count;
         unsigned int per_domain_free_count;
         unsigned int zone_id;
-        Fred::Poll::getRequestFeeParams(price_unit_request, base_free_count,
+        Fred::Invoicing::getRequestFeeParams(price_unit_request, base_free_count,
                 per_domain_free_count, zone_id);
 
         // from & to date for the calculation (in local time)

@@ -327,6 +327,9 @@ public:
   virtual void createAccountInvoice(const std::string& registrarHandle, const std::string& zone_fqdn, boost::gregorian::date taxdate, boost::gregorian::date todate) = 0;
 
 }; // Manager
+
+void getRequestFeeParams(std::string &price_unit_request, unsigned &base_free_count, unsigned &per_domain_free_count, unsigned &zone_id);
+
 }
 ; // Invoicing
 }
