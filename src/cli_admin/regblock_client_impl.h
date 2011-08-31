@@ -26,42 +26,39 @@ namespace Admin {
 
 class RegBlockClient {
 private:
-    bool over_limit;
-    bool list_only;
-    optional_ulonglong block_id;
-    optional_ulonglong unblock_id;
+    RegBlockArgs params;
     Fred::Registrar::Manager::AutoPtr regMan;
 
 public:
     RegBlockClient(
-            const RegBlockArgs &params) :
-               over_limit(params.over_limit),
-               list_only(params.list_only),
-               block_id(params.block_id),
-               unblock_id(params.unblock_id),
+            const RegBlockArgs &p) :
+               params(p),
                regMan(Fred::Registrar::Manager::create(DBDisconnectPtr(0)))
     { }
 
     void runMethod() {
-        if(over_limit) {
+        if(params.over_limit) {
             init_corba_container();
             std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
             std::auto_ptr<Fred::Logger::LoggerClient> log_cli(new Fred::Logger::LoggerCorbaClientImpl());
 
-            regMan->blockClientsOverLimit(epp_cli.get(), log_cli.get());
+            regMan->blockClientsOverLimit(epp_cli.get(),
+                        log_cli.get(),
+                        params.shell_cmd_timeout,
+                        params.notify_email);
 
-        } else if (list_only) {
+        } else if (params.list_only) {
             // TODO
             throw std::runtime_error("Not implemented yet ");
-        } else if (block_id.get_value() != 0) {
+        } else if (params.block_id.get_value() != 0) {
             init_corba_container();
             std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
 
-            if(!regMan->blockRegistrar(block_id, epp_cli.get())) {
+            if(!regMan->blockRegistrar(params.block_id, epp_cli.get())) {
                 std::cout << "Registrar not blocked: see log for details" << std::endl;
             }
-        } else if (unblock_id.get_value() != 0) {
-            regMan->unblockRegistrar(unblock_id, 0);
+        } else if (params.unblock_id.get_value() != 0) {
+            regMan->unblockRegistrar(params.unblock_id, 0);
         }
     }
 

@@ -1086,6 +1086,14 @@ public:
             ("block_registrars_over_limit" ,boost::program_options
                     ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.over_limit)),
                     "Automatically block registrar which have set and exceeded a limit on number of requests")
+            ("email", boost::program_options
+                    ::value<Checked::string>()
+                     ->notifier(save_arg<std::string>(params.notify_email))
+                     , "email address used for notification when registrar is automatically blocked")
+            ("shell_cmd_timeout", boost::program_options
+                    ::value<Checked::ulong>()->default_value(10)
+                     ->notifier(save_arg<unsigned>(params.shell_cmd_timeout))
+                     , "set alarm timeout for shell commands (sendmail,..) [s]")
           ;
 
         return cfg_opts;

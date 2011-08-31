@@ -44,6 +44,7 @@
 #include "model_registrar_group_map.h"
 
 #include "zone.h"
+#include "subprocess.h"
 
 // TODO just for getRequestFeeParametres
 #include "poll.h"
@@ -2395,7 +2396,7 @@ public:
                   boost::format msg = boost::format (
                           "Registrar %1% is already blocked, from: %2% record id: %3%")
                                           % registrar_id % res[0][1] % res[0][0];
-                  LOGGER(PACKAGE).error(msg.str());
+                  LOGGER(PACKAGE).notice(msg.str());
                   return false;
               }
 
@@ -2474,16 +2475,21 @@ public:
       }
 
       void blockClientsOverLimit(const EppCorbaClient *epp_client,
-            Logger::LoggerClient *logger_client) {
+            Logger::LoggerClient *logger_client,
+            unsigned cmd_timeout,
+            std::string email) {
+
+        if(email.empty()) {
+            throw std::runtime_error("No notify email specified, use parametre --email ");
+        }
+
         std::string price_unit_request;
         unsigned int base_free_count;
         unsigned int per_domain_free_count;
         unsigned int zone_id;
-
         Fred::Poll::getRequestFeeParams(price_unit_request, base_free_count,
                 per_domain_free_count, zone_id);
 
-        /////////////////////// TODO
         // from & to date for the calculation (in local time)
         boost::gregorian::date today = boost::gregorian::day_clock::local_day();
         boost::gregorian::date p_from(today.year(), today.month(), 1);
@@ -2525,9 +2531,6 @@ public:
                 request_count = it->second;
             }
 
-            // TODO
-
-
             // get domain count for registrar
             unsigned long long
                     domain_count = Fred::Poll::getRegistrarDomainCount(reg_id,
@@ -2553,13 +2556,33 @@ public:
 
             // TODO
             if(reg_price_limit > Decimal("0") && price > reg_price_limit) {
-                LOGGER(PACKAGE).warning((boost::format(
-                        "Registrar %1% might be blocked: price limit %2% exceeded. Current price: %3%")
-                        % reg_handle
-                        % reg_price_limit
-                        % price
-                        ).str());
-                (void)blockRegistrar(reg_id, epp_client);
+                if (blockRegistrar(reg_id, epp_client)) {
+                    boost::format msg = boost::format(
+                            "Registrar %1% blocked: price limit %2% exceeded. Current price: %3%")
+                            % reg_handle
+                            % reg_price_limit
+                            % price;
+
+                    LOGGER(PACKAGE).warning(msg.str());
+
+                    //check if sendmail is present in the system
+                    SubProcessOutput sub_output_test = ShellCmd("ls /usr/sbin/sendmail", cmd_timeout).execute();
+                    if (!sub_output_test.stderr.empty()) {
+                        throw std::runtime_error(sub_output_test.stderr);
+                    }
+
+                    std::string cmd = (boost::format("{\n"
+                    "echo \"Subject: Registrar %1% (ID: %2%) was blocked - requests over limit $(date +'%%Y-%%m-%%d')\n"
+                    "From: %3%\nContent-Type: text/plain; charset=UTF-8; format=flowed"
+                    "\nContent-Transfer-Encoding: 8bit\n\n%4% \n\";"
+                    "\n} | /usr/sbin/sendmail %5%") % reg_handle % reg_id % email % msg.str() % email).str();
+
+                    SubProcessOutput sub_output = ShellCmd(cmd, cmd_timeout).execute();
+                    if (!sub_output.stderr.empty()) {
+                        throw std::runtime_error(sub_output.stderr);
+                    }
+
+                }
             }
 
 
