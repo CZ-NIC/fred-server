@@ -149,8 +149,8 @@ private:
             }
 
             /* automatic pair payment with registrar */
+            Fred::Registrar::Manager::AutoPtr rmanager(Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
             if (_registrar_id == 0) {
-                Fred::Registrar::Manager::AutoPtr rmanager(Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
                 _registrar_id = rmanager->getRegistrarByPayment(_payment->getVarSymb(),
                                                                 _payment->getAccountMemo());
                 /* did we find suitable registrar? */
@@ -165,6 +165,17 @@ private:
             Money price = _payment->getPrice();
             Database::Date account_date = _payment->getAccountDate();
             unsigned long long zone_id = getZoneByAccountId(_payment->getAccountId());
+
+            /* zone access check */
+            if (!rmanager->hasRegistrarZoneAccess(_registrar_id, zone_id)) {
+                LOGGER(PACKAGE).warning(boost::format(
+                        "registrar (id=%1%) has not access to zone (id=%2%)"
+                        " => processing canceled (payment id=%3%)")
+                        % _registrar_id
+                        % zone_id
+                        % _payment->getId());
+                return;
+            }
 
             std::auto_ptr<Fred::Invoicing::Manager>
                     invoice_manager(Fred::Invoicing::Manager::create());

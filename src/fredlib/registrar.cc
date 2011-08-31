@@ -2593,6 +2593,22 @@ public:
     }
 
 
+    virtual bool hasRegistrarZoneAccess(const unsigned long long &_registrar_id,
+                                        const unsigned long long &_zone_id)
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result za = conn.exec_params(
+                "SELECT ri.id FROM registrar r"
+                " JOIN registrarinvoice ri ON ri.registrarid = r.id"
+                " WHERE ri.registrarid = $1::integer"
+                " AND ri.zone = $2::integer"
+                " AND ri.fromdate <= current_date"
+                " AND (ri.todate >= current_date OR ri.todate is null)",
+                Database::query_param_list(_registrar_id)(_zone_id));
+        return za.size() != 0;
+    }
+
+
 }; // class ManagerImpl
 
 unsigned long long RegistrarZoneAccess::max_id(ColIndex idx, Database::Result& result)
