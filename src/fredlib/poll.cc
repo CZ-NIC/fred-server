@@ -23,6 +23,7 @@
 #include "common_impl.h"
 #include "old_utils/dbsql.h"
 #include "types/money.h"
+#include "domain.h"
 
 namespace Fred {
 namespace Poll {
@@ -1056,7 +1057,7 @@ public:
           }
 
           // get domain count for registrar
-          unsigned long long domain_count = getRegistrarDomainCount(reg_id, p_from, zone_id);
+          unsigned long long domain_count = Fred::Domain::getRegistrarDomainCount(reg_id, p_from, zone_id);
 
           // now count all the number for poll message
           unsigned long long total_free_count = std::max(
@@ -1117,47 +1118,6 @@ public:
 
 Manager *Manager::create(DBSharedPtr db) {
   return new ManagerImpl(db);
-}
-
-
-/// TODO move this
-/*
- * return number of domains under regid to date 'date'
- * date is in local time
- */
-unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::gregorian::date &date, unsigned int zone_id)
-{
-    Database::Connection conn = Database::Manager::acquire();
-
-    Database::Result res_count = conn.exec_params(
-            "SELECT count(distinct oreg.id) FROM object_registry oreg"
-            " JOIN object_history oh ON oh.id = oreg.id"
-            " JOIN history hist ON hist.id = oh.historyid"
-            " JOIN domain_history dh ON dh.historyid = hist.id"
-            " WHERE dh.zone = $1::integer"
-            " AND oh.clid = $2::integer"
-            " AND hist.valid_from < ($3::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
-            " AND (hist.valid_to >= ($3::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
-            " OR hist.valid_to IS NULL)",
-            Database::query_param_list(zone_id)(regid)(date));
-
-    if(res_count.size() != 1 || res_count[0][0].isnull()) {
-        throw std::runtime_error(
-            (boost::format("Couldn't get domain count for registrar ID %1% to date %2%.")
-                % regid
-                % date).str());
-    }
-
-    unsigned long long count = res_count[0][0];
-
-    LOGGER(PACKAGE).info( (boost::format("Domain count for registrar ID %1%: %2%")
-            % regid
-            % count
-            ).str()
-        );
-
-    return count;
-
 }
 
 

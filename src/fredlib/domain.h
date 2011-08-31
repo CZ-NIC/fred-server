@@ -220,6 +220,8 @@ public:
   static Manager *create(DBSharedPtr db, Zone::Manager *zm);
 };
 
+unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::gregorian::date &date, unsigned int zone_id);
+
 } // namespace Domain
 } // namespace Fred
 

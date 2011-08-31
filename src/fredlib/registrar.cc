@@ -49,6 +49,8 @@
 // TODO just for getRequestFeeParametres
 #include "poll.h"
 
+#include "domain.h"
+
 namespace Fred {
 namespace Registrar {
 
@@ -2533,7 +2535,7 @@ public:
 
             // get domain count for registrar
             unsigned long long
-                    domain_count = Fred::Poll::getRegistrarDomainCount(reg_id,
+                    domain_count = Fred::Domain::getRegistrarDomainCount(reg_id,
                             p_from, zone_id);
 
             // now count all the number for poll message
