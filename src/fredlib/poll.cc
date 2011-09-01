@@ -24,9 +24,12 @@
 #include "old_utils/dbsql.h"
 #include "types/money.h"
 #include "domain.h"
+#include "registrar.h"
 
 namespace Fred {
 namespace Poll {
+
+using namespace Fred::Registrar;
 
 class MessageImpl : public CommonObjectImpl, virtual public Message {
   TID id;
@@ -972,30 +975,10 @@ public:
                   (price.get_string()));
 
       tx.commit();
-
-/*
-  CREATE TABLE poll_request_fee (
-        msgid integer NOT NULL REFERENCES message(id),
-        period_from timestamp without time zone NOT NULL,
-        period_to timestamp without time zone NOT NULL,
-        total_free_count bigint NOT NULL,
-        used_count bigint NOT NULL,
-        price numeric(10, 2) NOT NULL
-  );
-*/
-
   }
 
   virtual void createRequestFeeMessages(Logger::LoggerClient *logger_client)
   {
-      std::string price_unit_request;
-      unsigned int base_free_count;
-      unsigned int per_domain_free_count;
-      unsigned int zone_id;
-
-      Fred::Invoicing::getRequestFeeParams(price_unit_request, base_free_count, per_domain_free_count, zone_id);
-
-      // from & to date for the calculation (in local time)
       boost::gregorian::date p_to = boost::gregorian::day_clock::local_day();
       boost::gregorian::date p_from;
       if (p_to.day() == 1) {
@@ -1004,83 +987,43 @@ public:
       else {
           p_from = boost::gregorian::date(p_to.year(), p_to.month(), 1);
       }
+
       LOGGER(PACKAGE).debug(boost::format("creating request fee messages"
                   " for interval <%1%; %2%)") % p_from % p_to);
 
-      // get registrars who has access to configured zone
-      Database::Connection conn = Database::Manager::acquire();
-      Database::Result res_registrars = conn.exec_params(
-              "SELECT r.id, r.handle FROM registrar r"
-              " JOIN registrarinvoice ri ON ri.registrarid = r.id"
-              " WHERE ri.zone = $1::integer"
-              " AND ri.fromdate <= current_date"
-              " AND (ri.todate >= current_date OR ri.todate is null)",
-              Database::query_param_list(zone_id));
+      std::auto_ptr<RequestFeeDataMap> request_fee
+          = getRequestFeeDataMap(
+                  logger_client,
+                  boost::posix_time::ptime(p_from),
+                  boost::posix_time::ptime(p_to));
 
-      if(res_registrars.size() == 0) {
-          LOGGER(PACKAGE).info("No registrars found");
-          return;
-      }
-
-      std::auto_ptr<Fred::Logger::RequestCountInfo> request_counts
-          = logger_client->getRequestCountUsers(
-                   boost::posix_time::ptime(p_from),
-                   boost::posix_time::ptime(p_to),
-                   "EPP");
-
-      // iterate registrars
-      for (unsigned i = 0;i < res_registrars.size(); i++)
-      {
-          Database::ID reg_id     = res_registrars[i][0];
-          std::string  reg_handle = res_registrars[i][1];
-
-          // find request count for this registrar
-          unsigned long long request_count = 0;
-          Fred::Logger::RequestCountInfo::iterator it = request_counts->find(reg_handle);
-
-          if(it == request_counts->end()) {
-              request_count = 0;
-          } else {
-              request_count = it->second;
-          }
+      for (RequestFeeDataMap::iterator it = request_fee->begin();
+              it != request_fee->end();
+              it++) {
+          RequestFeeData rfd = it->second;
 
           // duplicity check
-          if (is_poll_request_fee_present(reg_id, p_from, p_to)) {
-              LOGGER(PACKAGE).info(boost::format(
-                 "Poll request fee message for parametres registrar"
-                 " %1%, from: %2%, to %3% already created, skipping")
-                    % reg_id
-                    % p_from
-                    % p_to);
+         if (is_poll_request_fee_present(rfd.reg_id, p_from, p_to)) {
+             LOGGER(PACKAGE).info(boost::format(
+                "Poll request fee message for parametres registrar"
+                " %1%, from: %2%, to %3% already created, skipping")
+                   % rfd.reg_id
+                   % p_from
+                   % p_to);
 
-              continue;
-          }
+             continue;
+         }
 
-          // get domain count for registrar
-          unsigned long long domain_count = Fred::Domain::getRegistrarDomainCount(reg_id, p_from, zone_id);
+         LOGGER(PACKAGE).info(boost::format(
+                 "Saving poll request fee message, registrar"
+                 " %1%, requests: %2%, total free: %3%, price: %4%")
+                 % rfd.reg_handle
+                 % rfd.request_count
+                 % rfd.request_total_free
+                 % rfd.price);
 
-          // now count all the number for poll message
-          unsigned long long total_free_count = std::max(
-                  static_cast<unsigned long long>(base_free_count),
-                  domain_count * per_domain_free_count);
+         save_poll_request_fee(rfd.reg_id, p_from, p_to, rfd.request_total_free, rfd.request_count, rfd.price);
 
-          // price in Decimal
-          Money price ("0");
-          if (request_count > total_free_count)
-          {
-              Money count_diff (boost::lexical_cast<std::string> (request_count - total_free_count));
-              price = count_diff * Decimal(price_unit_request);
-          }
-
-          LOGGER(PACKAGE).info(boost::format(
-                  "Saving poll request fee message, registrar"
-                  " %1%, requests: %2%, total free: %3%, price: %4%")
-                  % reg_handle
-                  % request_count
-                  % total_free_count
-                  % price);
-
-          save_poll_request_fee(reg_id, p_from, p_to, total_free_count, request_count, price);
       }
   }
 

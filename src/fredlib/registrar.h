@@ -452,6 +452,28 @@ struct MembershipByGroup
 };
 typedef  std::vector<MembershipByGroup> MembershipByGroupSeq;
 
+struct RequestFeeData {
+
+RequestFeeData(std::string _reg_handle,
+               Database::ID _reg_id,
+               unsigned long long _request_count,
+               unsigned long long _request_total_free,
+               Decimal _price) :
+                   reg_handle(_reg_handle),
+                   reg_id(_reg_id),
+                   request_count(_request_count),
+                   request_total_free(_request_total_free),
+                   price(_price)
+    { }
+
+    std::string reg_handle;
+    Database::ID reg_id;
+    unsigned long long request_count;
+    unsigned long long request_total_free;
+    Decimal price;
+};
+
+typedef std::map<std::string, RequestFeeData> RequestFeeDataMap;
 
 /// Main entry point for Registrar namespace
 class Manager {
@@ -579,6 +601,11 @@ public:
     void reload();///load from database
     bool isInZone(unsigned long long registrar_id,unsigned long long zone_id);///look if registrar currently have access to zone by id
 };//class RegistrarZoneAccess
+
+std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
+        Logger::LoggerClient *logger_client,
+        boost::posix_time::ptime p_from,
+        boost::posix_time::ptime p_to);
 
 };//namespace Registrar
 };//namespace Fred

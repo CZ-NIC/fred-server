@@ -2485,13 +2485,6 @@ public:
             throw std::runtime_error("No notify email specified, use parametre --email ");
         }
 
-        std::string price_unit_request;
-        unsigned int base_free_count;
-        unsigned int per_domain_free_count;
-        unsigned int zone_id;
-        Fred::Invoicing::getRequestFeeParams(price_unit_request, base_free_count,
-                per_domain_free_count, zone_id);
-
         // from & to date for the calculation (in local time)
         boost::gregorian::date today = boost::gregorian::day_clock::local_day();
         boost::gregorian::date p_from(today.year(), today.month(), 1);
@@ -2508,90 +2501,53 @@ public:
             return;
         }
 
-        // TODO why should we compute request count for all of them? But maybe it's not so much different
-        // to think
-        std::auto_ptr<Fred::Logger::RequestCountInfo> request_counts =
-                logger_client->getRequestCountUsers(boost::posix_time::ptime(
-                        p_from), p_to, "EPP");
+        std::auto_ptr<RequestFeeDataMap> request_fee_data =
+                getRequestFeeDataMap(logger_client, boost::posix_time::ptime(p_from), p_to);
 
         for (unsigned i = 0; i < res_registrars.size(); i++) {
-            Database::ID reg_id = res_registrars[i][0];
             std::string reg_handle = res_registrars[i][1];
-            Decimal     reg_price_limit((std::string)res_registrars[i][2]);
+            Decimal reg_price_limit((std::string)res_registrars[i][2]);
 
-            // find request count for this registrar
-            unsigned long long request_count = 0;
-            Fred::Logger::RequestCountInfo::iterator it = request_counts->find(
-                    reg_handle);
-
-            if (it == request_counts->end()) {
-                LOGGER(PACKAGE).info(boost::format(
-                        "No request count found for registrar %1%, skipping.")
-                        % reg_handle);
-                request_count = 0;
-            } else {
-                request_count = it->second;
+            RequestFeeDataMap::iterator it = request_fee_data->find(reg_handle);
+            if(it == request_fee_data->end()) {
+                // data for registrar not found in map, proceed to next
+                continue;
             }
 
-            // get domain count for registrar
-            unsigned long long
-                    domain_count = Fred::Domain::getRegistrarDomainCount(reg_id,
-                            p_from, zone_id);
+            RequestFeeData rfd = it->second;
 
-            // now count all the number for poll message
-            unsigned long long total_free_count = std::max(
-                    static_cast<unsigned long long> (base_free_count),
-                    domain_count * per_domain_free_count);
+            if(reg_price_limit > Decimal("0") && rfd.price > reg_price_limit) {
+               if (blockRegistrar(rfd.reg_id, epp_client)) {
+                   boost::format msg = boost::format(
+                           "Registrar %1% blocked: price limit %2% exceeded. Current price: %3%")
+                           % reg_handle
+                           % reg_price_limit
+                           % rfd.price;
 
-            // price in Decimal
-            Money price("0");
-            if (request_count > total_free_count) {
-                Money count_diff(boost::lexical_cast<std::string>(request_count
-                        - total_free_count));
-                price = count_diff * Decimal(price_unit_request);
-            }
+                   LOGGER(PACKAGE).warning(msg.str());
 
-            LOGGER(PACKAGE).info(boost::format(
-                             "Request count data for registrar"
-                                 " %1%, price limit: %2% requests: %3%, total free: %4%, price: %5%")
-                             % reg_handle % reg_price_limit % request_count % total_free_count % price);
+                   //check if sendmail is present in the system
+                   SubProcessOutput sub_output_test = ShellCmd("ls /usr/sbin/sendmail", cmd_timeout).execute();
+                   if (!sub_output_test.stderr.empty()) {
+                       throw std::runtime_error(sub_output_test.stderr);
+                   }
 
-            // TODO
-            if(reg_price_limit > Decimal("0") && price > reg_price_limit) {
-                if (blockRegistrar(reg_id, epp_client)) {
-                    boost::format msg = boost::format(
-                            "Registrar %1% blocked: price limit %2% exceeded. Current price: %3%")
-                            % reg_handle
-                            % reg_price_limit
-                            % price;
+                   std::string cmd = (boost::format("{\n"
+                   "echo \"Subject: Registrar %1% (ID: %2%) was blocked - requests over limit $(date +'%%Y-%%m-%%d')\n"
+                   "From: %3%\nContent-Type: text/plain; charset=UTF-8; format=flowed"
+                   "\nContent-Transfer-Encoding: 8bit\n\n%4% \n\";"
+                   "\n} | /usr/sbin/sendmail %5%") % reg_handle % rfd.reg_id % email % msg.str() % email).str();
 
-                    LOGGER(PACKAGE).warning(msg.str());
+                   SubProcessOutput sub_output = ShellCmd(cmd, cmd_timeout).execute();
+                   if (!sub_output.stderr.empty()) {
+                       throw std::runtime_error(sub_output.stderr);
+                   }
 
-                    //check if sendmail is present in the system
-                    SubProcessOutput sub_output_test = ShellCmd("ls /usr/sbin/sendmail", cmd_timeout).execute();
-                    if (!sub_output_test.stderr.empty()) {
-                        throw std::runtime_error(sub_output_test.stderr);
-                    }
-
-                    std::string cmd = (boost::format("{\n"
-                    "echo \"Subject: Registrar %1% (ID: %2%) was blocked - requests over limit $(date +'%%Y-%%m-%%d')\n"
-                    "From: %3%\nContent-Type: text/plain; charset=UTF-8; format=flowed"
-                    "\nContent-Transfer-Encoding: 8bit\n\n%4% \n\";"
-                    "\n} | /usr/sbin/sendmail %5%") % reg_handle % reg_id % email % msg.str() % email).str();
-
-                    SubProcessOutput sub_output = ShellCmd(cmd, cmd_timeout).execute();
-                    if (!sub_output.stderr.empty()) {
-                        throw std::runtime_error(sub_output.stderr);
-                    }
-
-                }
-            }
-
+               }
+           }
 
         }
-
-    }
-
+      }
 
     virtual bool hasRegistrarZoneAccess(const unsigned long long &_registrar_id,
                                         const unsigned long long &_zone_id)
@@ -2697,6 +2653,85 @@ Manager::AutoPtr Manager::create(DBSharedPtr db)
 {
   TRACE("[CALL] Fred::Registrar::Manager::create(db)");
   return Manager::AutoPtr(new ManagerImpl(db));
+}
+
+std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
+        Logger::LoggerClient *logger_client, boost::posix_time::ptime p_from,
+        boost::posix_time::ptime p_to) {
+    std::auto_ptr<RequestFeeDataMap> ret(new RequestFeeDataMap());
+
+    std::string price_unit_request;
+    unsigned int base_free_count;
+    unsigned int per_domain_free_count;
+    unsigned int zone_id;
+    Fred::Invoicing::getRequestFeeParams(price_unit_request, base_free_count,
+            per_domain_free_count, zone_id);
+
+    // get registrars who has access to configured zone
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res_registrars = conn.exec_params(
+            "SELECT r.id, r.handle FROM registrar r"
+                " JOIN registrarinvoice ri ON ri.registrarid = r.id"
+                " WHERE ri.zone = $1::integer"
+                " AND ri.fromdate <= current_date"
+                " AND (ri.todate >= current_date OR ri.todate is null)",
+            Database::query_param_list(zone_id));
+
+    if (res_registrars.size() == 0) {
+        LOGGER(PACKAGE).info("getRequestFeeDataMap: No registrars found");
+        return ret;
+    }
+
+    // TODO why should we compute request count for all of them? But maybe it's not so much different
+    // to think
+    std::auto_ptr<Fred::Logger::RequestCountInfo> request_counts =
+            logger_client->getRequestCountUsers(p_from, p_to, "EPP");
+
+    for (unsigned i = 0; i < res_registrars.size(); i++) {
+        Database::ID reg_id = res_registrars[i][0];
+        std::string reg_handle = res_registrars[i][1];
+
+        // find request count for this registrar
+        unsigned long long request_count = 0;
+        Fred::Logger::RequestCountInfo::iterator it = request_counts->find(
+                reg_handle);
+
+        if (it == request_counts->end()) {
+            LOGGER(PACKAGE).info(boost::format(
+                    "No request count found for registrar %1%, skipping.")
+                    % reg_handle);
+            request_count = 0;
+        } else {
+            request_count = it->second;
+        }
+
+        // get domain count for registrar
+        unsigned long long domain_count =
+                Fred::Domain::getRegistrarDomainCount(reg_id,
+                        boost::gregorian::date(p_from.date()), zone_id);
+
+        // now count all the number for poll message
+        unsigned long long total_free_count = std::max(
+                static_cast<unsigned long long> (base_free_count), domain_count
+                        * per_domain_free_count);
+
+        // price in Decimal TODO
+        Money price("0");
+        if (request_count > total_free_count) {
+            Money count_diff(boost::lexical_cast<std::string>(request_count
+                    - total_free_count));
+            price = count_diff * Decimal(price_unit_request);
+        }
+
+        ret->insert(RequestFeeDataMap::value_type(reg_handle, RequestFeeData(
+                reg_handle, reg_id, request_count, total_free_count, price)));
+
+        LOGGER(PACKAGE).info(boost::format("Request count data for registrar"
+            " %1%, requests: %2%, total free: %3%, price: %4%") % reg_handle
+                % request_count % total_free_count % price);
+    }
+
+    return ret;
 }
 
 }
