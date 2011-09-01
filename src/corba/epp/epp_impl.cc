@@ -1890,29 +1890,14 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
   if (db_connect->OpenDatabase(database)) {
     DBSharedPtr DBsql = DBDisconnectPtr(db_connect.release());
 
-    // get ID of registrar by handle
-    if ((regID = DBsql->GetNumericFromTable("REGISTRAR", "id", "handle",
-            (char *) ClID)) == 0) {
-        LOG(NOTICE_LOG, "bad username [%s]", ClID);
-        // bad username
-        ret->code = COMMAND_AUTH_ERROR;
-    } else {
-        // we've got regID normal operation
-        std::ostringstream blocking_query;
-
-        blocking_query << " SELECT id FROM registrar_disconnect"
-                    " WHERE blocked_from <= now()"
-                    " AND (now() <= blocked_to OR blocked_to IS NULL)"
-                    " AND registrarid = "
-                       << regID;
-
-        DBSharedPtr db_freeselect_guard = DBFreeSelectPtr(DBsql.get());
-
-        if (!DBsql->ExecSelect(blocking_query.str().c_str())) {
-            LOGGER(PACKAGE).error(
-                    "Cannot retrieve data from registrar_disconnect table");
-            ret->code = COMMAND_FAILED;
-        } else if (DBsql->GetSelectRows() > 0) {
+    try {
+        // get ID of registrar by handle
+        if ((regID = DBsql->GetNumericFromTable("REGISTRAR", "id", "handle",
+                (char *) ClID)) == 0) {
+            LOG(NOTICE_LOG, "bad username [%s]", ClID);
+            // bad username
+            ret->code = COMMAND_AUTH_ERROR;
+        } else if (Fred::Registrar::isRegistrarBlocked(regID)) {
             // registrar blocked
             LOGGER(PACKAGE).notice((boost::format("Registrar %1% login attempt while blocked. ") % ClID).str());
             ret->code = COMMAND_AUTOR_ERROR;
@@ -1975,6 +1960,11 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             // end of transaction
             DBsql->QuitTransaction(ret->code);
         }
+    } catch(std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("Exception in ccReg_EPP_i::ClientLogin: %1%") % ex.what());
+        ret->code = COMMAND_FAILED;
+    } catch(...) {
+        LOGGER(PACKAGE).error("Unknown exception in ccReg_EPP_i::ClientLogin");
     }
 
     // write  to table action aand return  svTRID

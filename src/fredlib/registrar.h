@@ -602,6 +602,8 @@ public:
     bool isInZone(unsigned long long registrar_id,unsigned long long zone_id);///look if registrar currently have access to zone by id
 };//class RegistrarZoneAccess
 
+bool isRegistrarBlocked(Database::ID regId);
+
 std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
         Logger::LoggerClient *logger_client,
         boost::posix_time::ptime p_from,

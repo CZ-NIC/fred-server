@@ -2567,6 +2567,24 @@ public:
 
 }; // class ManagerImpl
 
+bool isRegistrarBlocked(Database::ID regId)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Result block_res
+        = conn.exec_params(" SELECT id FROM registrar_disconnect"
+                    " WHERE blocked_from <= now()"
+                    " AND (now() <= blocked_to OR blocked_to IS NULL)"
+                    " AND registrarid = $1::integer", Database::query_param_list (regId)
+            );
+
+    if(block_res.size() > 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 unsigned long long RegistrarZoneAccess::max_id(ColIndex idx, Database::Result& result)
 {
     TRACE("[CALL] RegistrarZoneAccess::max_id");
