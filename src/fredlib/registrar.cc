@@ -2476,14 +2476,10 @@ public:
 
       }
 
-      void blockClientsOverLimit(const EppCorbaClient *epp_client,
-            Logger::LoggerClient *logger_client,
-            unsigned cmd_timeout,
-            std::string email) {
+      std::auto_ptr<RequestFeeDataMap> blockClientsOverLimit(const EppCorbaClient *epp_client,
+            Logger::LoggerClient *logger_client) {
 
-        if(email.empty()) {
-            throw std::runtime_error("No notify email specified, use parametre --email ");
-        }
+        std::auto_ptr<RequestFeeDataMap> ret(new RequestFeeDataMap());
 
         // from & to date for the calculation (in local time)
         boost::gregorian::date today = boost::gregorian::day_clock::local_day();
@@ -2498,7 +2494,7 @@ public:
                 " ON r.id = rp.registrar_id");
         if (res_registrars.size() == 0) {
             LOGGER(PACKAGE).info("No registrars with request price limit found");
-            return;
+            return ret;
         }
 
         std::auto_ptr<RequestFeeDataMap> request_fee_data =
@@ -2526,27 +2522,14 @@ public:
 
                    LOGGER(PACKAGE).warning(msg.str());
 
-                   //check if sendmail is present in the system
-                   SubProcessOutput sub_output_test = ShellCmd("ls /usr/sbin/sendmail", cmd_timeout).execute();
-                   if (!sub_output_test.stderr.empty()) {
-                       throw std::runtime_error(sub_output_test.stderr);
-                   }
-
-                   std::string cmd = (boost::format("{\n"
-                   "echo \"Subject: Registrar %1% (ID: %2%) was blocked - requests over limit $(date +'%%Y-%%m-%%d')\n"
-                   "From: %3%\nContent-Type: text/plain; charset=UTF-8; format=flowed"
-                   "\nContent-Transfer-Encoding: 8bit\n\n%4% \n\";"
-                   "\n} | /usr/sbin/sendmail %5%") % reg_handle % rfd.reg_id % email % msg.str() % email).str();
-
-                   SubProcessOutput sub_output = ShellCmd(cmd, cmd_timeout).execute();
-                   if (!sub_output.stderr.empty()) {
-                       throw std::runtime_error(sub_output.stderr);
-                   }
+                   rfd.price_limit = reg_price_limit;
+                   ret->insert(RequestFeeDataMap::value_type(reg_handle, rfd));
 
                }
            }
 
         }
+        return ret;
       }
 
     virtual bool hasRegistrarZoneAccess(const unsigned long long &_registrar_id,
@@ -2742,7 +2725,7 @@ std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
         }
 
         ret->insert(RequestFeeDataMap::value_type(reg_handle, RequestFeeData(
-                reg_handle, reg_id, request_count, total_free_count, price)));
+                reg_handle, reg_id, request_count, total_free_count, price, Decimal("0"))));
 
         LOGGER(PACKAGE).info(boost::format("Request count data for registrar"
             " %1%, requests: %2%, total free: %3%, price: %4%") % reg_handle

@@ -42,10 +42,48 @@ public:
             std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
             std::auto_ptr<Fred::Logger::LoggerClient> log_cli(new Fred::Logger::LoggerCorbaClientImpl());
 
-            regMan->blockClientsOverLimit(epp_cli.get(),
-                        log_cli.get(),
-                        params.shell_cmd_timeout,
-                        params.notify_email);
+            if(params.notify_email.empty()) {
+                throw std::runtime_error("No notify email specified, use parametre --email ");
+            }
+
+            std::auto_ptr<Fred::Registrar::RequestFeeDataMap> blocked_registrars
+                = regMan->blockClientsOverLimit(
+                        epp_cli.get(),
+                        log_cli.get()
+                        );
+
+            if(!blocked_registrars->empty()) {
+                SubProcessOutput sub_output_test = ShellCmd("ls /usr/sbin/sendmail", params.shell_cmd_timeout).execute();
+                if (!sub_output_test.stderr.empty()) {
+                    throw std::runtime_error(sub_output_test.stderr);
+                }
+            }
+
+            // send some notification that registrars were blocked
+            for ( Fred::Registrar::RequestFeeDataMap::iterator it = blocked_registrars->begin();
+                    it != blocked_registrars->end();
+                    ++it) {
+                Fred::Registrar::RequestFeeData rfd = it->second;
+
+                boost::format msg = boost::format(
+                                        "Registrar %1% blocked: price limit %2% exceeded. Current price: %3%")
+                                        % it->first
+                                        % rfd.price_limit
+                                        % rfd.price;
+
+                //check if sendmail is present in the system
+
+                std::string cmd = (boost::format("{\n"
+                "echo \"Subject: Registrar %1% (ID: %2%) was blocked - requests over limit $(date +'%%Y-%%m-%%d')\n"
+                "Content-Type: text/plain; charset=UTF-8; format=flowed"
+                "\nContent-Transfer-Encoding: 8bit\n\n%3% \n\";"
+                "\n} | /usr/sbin/sendmail %4%") % it->first % rfd.reg_id % msg.str() % params.notify_email).str();
+
+                SubProcessOutput sub_output = ShellCmd(cmd, params.shell_cmd_timeout).execute();
+                if (!sub_output.stderr.empty()) {
+                    throw std::runtime_error(sub_output.stderr);
+                }
+            }
 
         } else if (params.list_only) {
             // TODO

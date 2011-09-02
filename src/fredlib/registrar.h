@@ -458,12 +458,14 @@ RequestFeeData(std::string _reg_handle,
                Database::ID _reg_id,
                unsigned long long _request_count,
                unsigned long long _request_total_free,
-               Decimal _price) :
+               Decimal _price,
+               Decimal _price_limit) :
                    reg_handle(_reg_handle),
                    reg_id(_reg_id),
                    request_count(_request_count),
                    request_total_free(_request_total_free),
-                   price(_price)
+                   price(_price),
+                   price_limit(_price_limit)
     { }
 
     std::string reg_handle;
@@ -471,6 +473,7 @@ RequestFeeData(std::string _reg_handle,
     unsigned long long request_count;
     unsigned long long request_total_free;
     Decimal price;
+    Decimal price_limit;
 };
 
 typedef std::map<std::string, RequestFeeData> RequestFeeDataMap;
@@ -572,10 +575,8 @@ public:
   virtual bool blockRegistrar(const TID &registrar_id, const EppCorbaClient *epp_cli) = 0;
   virtual void unblockRegistrar(const TID &registrar_id, const TID &request_id) = 0;
 
-  virtual void blockClientsOverLimit(const EppCorbaClient *epp_client,
-        Logger::LoggerClient *logger_client,
-        unsigned cmd_timeout,
-        std::string email) = 0;
+  virtual std::auto_ptr<RequestFeeDataMap> blockClientsOverLimit(const EppCorbaClient *epp_client,
+          Logger::LoggerClient *logger_client) = 0;
 
   virtual bool hasRegistrarZoneAccess(const unsigned long long &_registrar_id,
                                       const unsigned long long &_zone_id) = 0;
