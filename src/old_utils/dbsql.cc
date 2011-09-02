@@ -112,10 +112,17 @@ bool DB::TestRegistrarACL(
   char sqlString[512];
   bool ret =false;
 
-  snprintf( sqlString, sizeof(sqlString), 
-      "SELECT  registrarid FROM registraracl WHERE registrarid=%d and cert=\'%s\' and password=\'%s\'; ",
-      regID, cert, pass);
-  if (ExecSelect(sqlString) ) {
+  // snprintf( sqlString, sizeof(sqlString), 
+  //     "SELECT  registrarid FROM registraracl WHERE registrarid=%d and cert=\'%s\' and password=\'%s\'; ",
+  //     regID, cert, pass);
+
+  std::stringstream query;
+  query << "SELECT registrarid FROM registraracl"
+        << " WHERE registrarid = " << regID
+        << " AND cert = '" << Escape2(cert) << "'"
+        << " AND password = '" << Escape2(pass) << "'";
+
+  if (ExecSelect(query.str().c_str()) ) {
 
     if (GetSelectRows() > 0)
       ret = true;
@@ -1067,10 +1074,14 @@ const char * DB::GetValueFromTable(
   char sqlString[512];
   int size;
 
-  snprintf(sqlString, sizeof(sqlString), "SELECT  %s FROM %s WHERE %s=\'%s\';", vname, table,
-      fname, value);
+  // snprintf(sqlString, sizeof(sqlString), "SELECT  %s FROM %s WHERE %s=\'%s\';", vname, table,
+  //     fname, value);
 
-  if (ExecSelect(sqlString) ) {
+  std::stringstream query;
+  query << "SELECT " << vname << " FROM " << table
+        << " WHERE " << fname << " = '" << Escape2(value) << "'";
+
+  if (ExecSelect(query.str().c_str()) ) {
     if (GetSelectRows() == 1) // if selected only one record 
     {
       size = GetValueLength( 0, 0);
