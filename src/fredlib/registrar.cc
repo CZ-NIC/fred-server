@@ -2489,7 +2489,7 @@ public:
         // iterate registrars who have record in request_fee_registrar_parameter
         Database::Connection conn = Database::Manager::acquire();
         Database::Result res_registrars = conn.exec(
-                "SELECT r.id, r.handle, rp.request_price_limit, rp.email FROM registrar r"
+                "SELECT r.handle, rp.request_price_limit, rp.email FROM registrar r"
                 " JOIN request_fee_registrar_parameter rp"
                 " ON r.id = rp.registrar_id");
         if (res_registrars.size() == 0) {
@@ -2501,8 +2501,8 @@ public:
                 getRequestFeeDataMap(logger_client, boost::posix_time::ptime(p_from), p_to);
 
         for (unsigned i = 0; i < res_registrars.size(); i++) {
-            std::string reg_handle = res_registrars[i][1];
-            Decimal reg_price_limit((std::string)res_registrars[i][2]);
+            std::string reg_handle = res_registrars[i][0];
+            Decimal reg_price_limit((std::string)res_registrars[i][1]);
 
             RequestFeeDataMap::iterator it = request_fee_data->find(reg_handle);
             if(it == request_fee_data->end()) {
