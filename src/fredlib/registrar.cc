@@ -2504,29 +2504,41 @@ public:
             std::string reg_handle = res_registrars[i][0];
             Decimal reg_price_limit((std::string)res_registrars[i][1]);
 
-            RequestFeeDataMap::iterator it = request_fee_data->find(reg_handle);
-            if(it == request_fee_data->end()) {
-                // data for registrar not found in map, proceed to next
-                continue;
+            try {
+                RequestFeeDataMap::iterator it = request_fee_data->find(reg_handle);
+                if(it == request_fee_data->end()) {
+                    // data for registrar not found in map, proceed to next
+                    continue;
+                }
+
+                RequestFeeData rfd = it->second;
+
+                if(reg_price_limit > Decimal("0") && rfd.price > reg_price_limit) {
+                   if (blockRegistrar(rfd.reg_id, epp_client)) {
+                       boost::format msg = boost::format(
+                               "Registrar %1% blocked: price limit %2% exceeded. Current price: %3%")
+                               % reg_handle
+                               % reg_price_limit
+                               % rfd.price;
+
+                       LOGGER(PACKAGE).warning(msg.str());
+
+                       rfd.price_limit = reg_price_limit;
+                       ret->insert(RequestFeeDataMap::value_type(reg_handle, rfd));
+
+                   }
+                }
+            } catch (std::exception &ex) {
+                LOGGER(PACKAGE).error(
+                    boost::format("Exception caught while processing data for registrar %1%: %2%. ")
+                        % reg_handle
+                        % ex.what()
+                        );
+            } catch (...) {
+                LOGGER(PACKAGE).error(
+                    boost::format("Unknown exception caught while processing data for registrar %1%.")
+                        % reg_handle);
             }
-
-            RequestFeeData rfd = it->second;
-
-            if(reg_price_limit > Decimal("0") && rfd.price > reg_price_limit) {
-               if (blockRegistrar(rfd.reg_id, epp_client)) {
-                   boost::format msg = boost::format(
-                           "Registrar %1% blocked: price limit %2% exceeded. Current price: %3%")
-                           % reg_handle
-                           % reg_price_limit
-                           % rfd.price;
-
-                   LOGGER(PACKAGE).warning(msg.str());
-
-                   rfd.price_limit = reg_price_limit;
-                   ret->insert(RequestFeeDataMap::value_type(reg_handle, rfd));
-
-               }
-           }
 
         }
         return ret;
