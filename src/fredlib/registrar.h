@@ -581,6 +581,7 @@ public:
   virtual bool hasRegistrarZoneAccess(const unsigned long long &_registrar_id,
                                       const unsigned long long &_zone_id) = 0;
 
+  virtual void checkRegistrarExists( const TID & registrar_id) = 0;
 
   typedef std::auto_ptr<Fred::Registrar::Manager> AutoPtr;
 

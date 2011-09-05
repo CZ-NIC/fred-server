@@ -2109,16 +2109,7 @@ public:
     {
         Database::Connection conn = Database::Manager::acquire();
 
-        Database::Result reg_id = conn.exec_params(
-                "select id from registrar where id = $1::integer"
-                , Database::query_param_list (registrar_id));
-        if(reg_id.size() != 1)
-        {
-            throw std::runtime_error(
-                std::string("getRegistrarCertifications: registrar with id: ")
-                + boost::lexical_cast<std::string>(registrar_id)
-                + " doesn't exist" );
-        }
+        checkRegistrarExists(registrar_id);
 
         CertificationSeq ret;//returned
 
@@ -2557,6 +2548,23 @@ public:
                 " AND (ri.todate >= current_date OR ri.todate is null)",
                 Database::query_param_list(_registrar_id)(_zone_id));
         return za.size() != 0;
+    }
+
+    virtual void checkRegistrarExists( const TID & registrar_id)
+    {
+        Database::Connection conn = Database::Manager::acquire();
+
+        Database::Result reg_id = conn.exec_params(
+                "select id from registrar where id = $1::integer"
+                , Database::query_param_list (registrar_id));
+        if(reg_id.size() != 1)
+        {
+            LOGGER(PACKAGE).error(
+                std::string("getRegistrarCertifications: registrar with id: ")
+                + boost::lexical_cast<std::string>(registrar_id)
+                + " doesn't exist" );
+            throw Fred::NOT_FOUND();
+        }
     }
 
 
