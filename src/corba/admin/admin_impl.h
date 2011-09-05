@@ -148,6 +148,15 @@ public:
    * for now it returns data of last poll request fee message */
   ccReg::RegistrarRequestCountInfo* getRegistrarRequestCount(const char* _registrar);
 
+  bool isRegistrarBlocked(ccReg::TID reg_id) throw (
+          ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound);
+
+  bool blockRegistrar(ccReg::TID reg_id) throw (
+          ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound);
+
+  void unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) throw (
+          ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound, ccReg::Admin::ObjectNotBlocked);
+
 private:
   std::string _createQueryForEnumDomainsByRegistrant(const std::string &select_part, const std::string &name, bool by_person, bool by_org);
 

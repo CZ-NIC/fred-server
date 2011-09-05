@@ -2433,7 +2433,7 @@ public:
           if(res.size() == 0) {
               boost::format msg = boost::format("Trying to unblock registrar %1% which is not blocked. ") % registrar_id;
               LOGGER(PACKAGE).error(msg);
-              throw std::runtime_error(msg.str());
+              throw Fred::NOT_BLOCKED();
           } else {
               Database::ID blocking_id = res[0][0];
 
@@ -2445,7 +2445,7 @@ public:
                           % res[0][1].operator ptime();
 
                   LOGGER(PACKAGE).error(msg);
-                  throw std::runtime_error(msg.str());
+                  throw Fred::NOT_BLOCKED();
               }
 
               if(request_id == 0) {

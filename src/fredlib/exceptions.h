@@ -27,7 +27,12 @@ struct ALREADY_EXISTS : public std::runtime_error
     ALREADY_EXISTS() : std::runtime_error("already exists") { }
 };
 
-}
+/// object is not blocked - e.g. registrar not blocked
+struct NOT_BLOCKED : public std::runtime_error
+{
+    NOT_BLOCKED() : std::runtime_error("object is not blocked") { };
+};
 
+};
 
 #endif

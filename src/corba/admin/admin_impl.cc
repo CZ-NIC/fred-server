@@ -48,6 +48,7 @@
 
 #include "corba/connection_releaser.h"
 
+#include "epp_corba_client_impl.h"
 
 class Registry_RegistrarCertification_i;
 class Registry_RegistrarGroup_i;
@@ -1532,3 +1533,83 @@ ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const 
         throw ccReg::Admin::InternalServerError();
     }
 }
+
+bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id) throw (
+         ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound)
+{
+    try {
+        Logging::Context(server_name_);
+        ConnectionReleaser release;
+        TRACE(boost::format("[CALL] ccReg_Admin_i::isRegistrarBlocked(%1%)") % reg_id);
+
+        std::auto_ptr<Fred::Registrar::Manager> regman(
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+
+        regman->checkRegistrarExists(reg_id);
+        return Fred::Registrar::isRegistrarBlocked(reg_id);
+    } catch (Fred::NOT_FOUND &) {
+        throw ccReg::Admin::ObjectNotFound();
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(ex.what());
+        throw ccReg::Admin::InternalServerError();
+    } catch (...) {
+        LOGGER(PACKAGE).error("unknown error in isRegistrarBlocked");
+        throw ccReg::Admin::InternalServerError();
+    }
+
+}
+
+bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id) throw (
+         ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound)
+{
+    try {
+        Logging::Context(server_name_);
+        ConnectionReleaser release;
+        TRACE(boost::format("[CALL] ccReg_Admin_i::blockRegistrar(%1%)") % reg_id);
+
+        std::auto_ptr<Fred::Registrar::Manager> regman(
+                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+
+        regman->checkRegistrarExists(reg_id);
+
+        std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
+        return regman->blockRegistrar(reg_id, epp_cli.get());
+    } catch (Fred::NOT_FOUND &) {
+        throw ccReg::Admin::ObjectNotFound();
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(ex.what());
+        throw ccReg::Admin::InternalServerError();
+    } catch (...) {
+        LOGGER(PACKAGE).error("unknown error in blockRegistrar");
+        throw ccReg::Admin::InternalServerError();
+    }
+
+}
+
+void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) throw (
+         ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound, ccReg::Admin::ObjectNotBlocked)
+{
+    try {
+        Logging::Context(server_name_);
+        ConnectionReleaser release;
+        TRACE(boost::format("[CALL] ccReg_Admin_i::unblockRegistrar(%1%, %2%)") % reg_id % request_id);
+
+        std::auto_ptr<Fred::Registrar::Manager> regman(
+                Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+
+        regman->checkRegistrarExists(reg_id);
+        regman->unblockRegistrar(reg_id, request_id);
+    } catch (Fred::NOT_FOUND &) {
+        throw ccReg::Admin::ObjectNotFound();
+    } catch (Fred::NOT_BLOCKED &) {
+        throw ccReg::Admin::ObjectNotBlocked();
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(ex.what());
+        throw ccReg::Admin::InternalServerError();
+    } catch (...) {
+        LOGGER(PACKAGE).error("unknown error in unblockRegistrar");
+        throw ccReg::Admin::InternalServerError();
+    }
+}
+
+
