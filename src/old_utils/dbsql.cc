@@ -109,7 +109,6 @@ long DB::GetRegistrarCredit(
 bool DB::TestRegistrarACL(
   int regID, const char * pass, const char * cert)
 {
-  char sqlString[512];
   bool ret =false;
 
   // snprintf( sqlString, sizeof(sqlString), 
@@ -1071,7 +1070,6 @@ int DB::GetClientDomainRegistrant(
 const char * DB::GetValueFromTable(
   const char *table, const char *vname, const char *fname, const char *value)
 {
-  char sqlString[512];
   int size;
 
   // snprintf(sqlString, sizeof(sqlString), "SELECT  %s FROM %s WHERE %s=\'%s\';", vname, table,
