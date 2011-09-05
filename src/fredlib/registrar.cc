@@ -2403,7 +2403,7 @@ public:
           }
 
           conn.exec_params ("INSERT INTO registrar_disconnect (registrarid, blocked_to) VALUES "
-                  "($1::integer, date_trunc('month', now()) + interval '1 month' - interval '1 second') ",
+                  "($1::integer, date_trunc('month', now()) + interval '1 month') ",
                   Database::query_param_list(registrar_id));
 
           trans.commit();
@@ -2577,7 +2577,7 @@ bool isRegistrarBlocked(Database::ID regId)
     Result block_res
         = conn.exec_params(" SELECT id FROM registrar_disconnect"
                     " WHERE blocked_from <= now()"
-                    " AND (now() <= blocked_to OR blocked_to IS NULL)"
+                    " AND (now() < blocked_to OR blocked_to IS NULL)"
                     " AND registrarid = $1::integer", Database::query_param_list (regId)
             );
 
