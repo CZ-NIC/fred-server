@@ -70,7 +70,8 @@ public:
                 msg << (boost::format("Registrar %1% blocked: price limit %2% exceeded. Current price: %3%  \n")
                         % it->first
                         % rfd.price_limit
-                        % rfd.price).str();
+                        % rfd.price).str()
+                    << std::endl;
 
                 //check if sendmail is present in the system
             }
