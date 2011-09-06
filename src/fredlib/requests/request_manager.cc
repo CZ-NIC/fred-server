@@ -847,10 +847,12 @@ ManagerImpl::i_getRequestCountUsers(
 
     Database::Result res =
     conn.exec_params(
-        "SELECT user_name, count(*) FROM request r "
-        " WHERE time_begin > ($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
-        " AND time_begin < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
-        " AND is_monitoring = false "
+        "SELECT r.user_name, count(*) FROM request r "
+        " JOIN result_code rc ON rc.id = r.result_code_id"
+        " WHERE rc.result_code not in (2400,2500)"
+        " AND r.time_begin > ($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
+        " AND r.time_begin < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
+        " AND r.is_monitoring = false "
         " AND r.service_id = $3 "
         " AND r.user_name IS NOT NULL "
         " GROUP BY r.user_name ",
