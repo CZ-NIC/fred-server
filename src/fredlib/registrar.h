@@ -583,6 +583,13 @@ public:
 
   virtual void checkRegistrarExists( const TID & registrar_id) = 0;
 
+  virtual bool isRegistrarBlocked(Database::ID regId) = 0;
+
+  virtual std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
+          Logger::LoggerClient *logger_client,
+          boost::posix_time::ptime p_from,
+          boost::posix_time::ptime p_to) = 0;
+
   typedef std::auto_ptr<Fred::Registrar::Manager> AutoPtr;
 
   /// Factory method
@@ -604,12 +611,6 @@ public:
     bool isInZone(unsigned long long registrar_id,unsigned long long zone_id);///look if registrar currently have access to zone by id
 };//class RegistrarZoneAccess
 
-bool isRegistrarBlocked(Database::ID regId);
-
-std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
-        Logger::LoggerClient *logger_client,
-        boost::posix_time::ptime p_from,
-        boost::posix_time::ptime p_to);
 
 };//namespace Registrar
 };//namespace Fred

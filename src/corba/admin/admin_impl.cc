@@ -1546,7 +1546,7 @@ bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id) throw (
                 Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
 
         regman->checkRegistrarExists(reg_id);
-        return Fred::Registrar::isRegistrarBlocked(reg_id);
+        return regman->isRegistrarBlocked(reg_id);
     } catch (Fred::NOT_FOUND &) {
         throw ccReg::Admin::ObjectNotFound();
     } catch (std::exception &ex) {

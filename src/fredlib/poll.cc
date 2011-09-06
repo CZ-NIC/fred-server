@@ -991,8 +991,10 @@ public:
       LOGGER(PACKAGE).debug(boost::format("creating request fee messages"
                   " for interval <%1%; %2%)") % p_from % p_to);
 
+      std::auto_ptr<Fred::Registrar::Manager> regman(
+               Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
       std::auto_ptr<RequestFeeDataMap> request_fee
-          = getRequestFeeDataMap(
+          = regman->getRequestFeeDataMap(
                   logger_client,
                   boost::posix_time::ptime(p_from),
                   boost::posix_time::ptime(p_to));

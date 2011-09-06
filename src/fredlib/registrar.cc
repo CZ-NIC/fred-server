@@ -2567,26 +2567,106 @@ public:
         }
     }
 
+    bool isRegistrarBlocked(Database::ID regId)
+    {
+        Database::Connection conn = Database::Manager::acquire();
+
+        Result block_res
+            = conn.exec_params(" SELECT id FROM registrar_disconnect"
+                        " WHERE blocked_from <= now()"
+                        " AND (now() < blocked_to OR blocked_to IS NULL)"
+                        " AND registrarid = $1::integer", Database::query_param_list (regId)
+                );
+
+        if(block_res.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
+            Logger::LoggerClient *logger_client, boost::posix_time::ptime p_from,
+            boost::posix_time::ptime p_to) {
+        std::auto_ptr<RequestFeeDataMap> ret(new RequestFeeDataMap());
+
+        std::string price_unit_request;
+        unsigned int base_free_count;
+        unsigned int per_domain_free_count;
+        unsigned int zone_id;
+        Fred::Invoicing::getRequestFeeParams(price_unit_request, base_free_count,
+                per_domain_free_count, zone_id);
+
+        // get registrars who has access to configured zone
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result res_registrars = conn.exec_params(
+                "SELECT r.id, r.handle FROM registrar r"
+                    " JOIN registrarinvoice ri ON ri.registrarid = r.id"
+                    " WHERE ri.zone = $1::integer"
+                    " AND ri.fromdate <= current_date"
+                    " AND (ri.todate >= current_date OR ri.todate is null)",
+                Database::query_param_list(zone_id));
+
+        if (res_registrars.size() == 0) {
+            LOGGER(PACKAGE).info("getRequestFeeDataMap: No registrars found");
+            return ret;
+        }
+
+        // TODO why should we compute request count for all of them? But maybe it's not so much different
+        // to think
+        std::auto_ptr<Fred::Logger::RequestCountInfo> request_counts =
+                logger_client->getRequestCountUsers(p_from, p_to, "EPP");
+
+        for (unsigned i = 0; i < res_registrars.size(); i++) {
+            Database::ID reg_id = res_registrars[i][0];
+            std::string reg_handle = res_registrars[i][1];
+
+            // find request count for this registrar
+            unsigned long long request_count = 0;
+            Fred::Logger::RequestCountInfo::iterator it = request_counts->find(
+                    reg_handle);
+
+            if (it == request_counts->end()) {
+                LOGGER(PACKAGE).info(boost::format(
+                        "No request count found for registrar %1%, skipping.")
+                        % reg_handle);
+                request_count = 0;
+            } else {
+                request_count = it->second;
+            }
+
+            // get domain count for registrar
+            unsigned long long domain_count =
+                    Fred::Domain::getRegistrarDomainCount(reg_id,
+                            boost::gregorian::date(p_from.date()), zone_id);
+
+            // now count all the number for poll message
+            unsigned long long total_free_count = std::max(
+                    static_cast<unsigned long long> (base_free_count), domain_count
+                            * per_domain_free_count);
+
+            // price in Decimal TODO
+            Money price("0");
+            if (request_count > total_free_count) {
+                Money count_diff(boost::lexical_cast<std::string>(request_count
+                        - total_free_count));
+                price = count_diff * Decimal(price_unit_request);
+            }
+
+            ret->insert(RequestFeeDataMap::value_type(reg_handle, RequestFeeData(
+                    reg_handle, reg_id, request_count, total_free_count, price, Decimal("0"))));
+
+            LOGGER(PACKAGE).info(boost::format("Request count data for registrar"
+                " %1%, requests: %2%, total free: %3%, price: %4%") % reg_handle
+                    % request_count % total_free_count % price);
+        }
+
+        return ret;
+    }
 
 }; // class ManagerImpl
 
-bool isRegistrarBlocked(Database::ID regId)
-{
-    Database::Connection conn = Database::Manager::acquire();
 
-    Result block_res
-        = conn.exec_params(" SELECT id FROM registrar_disconnect"
-                    " WHERE blocked_from <= now()"
-                    " AND (now() < blocked_to OR blocked_to IS NULL)"
-                    " AND registrarid = $1::integer", Database::query_param_list (regId)
-            );
-
-    if(block_res.size() > 0) {
-        return true;
-    } else {
-        return false;
-    }
-}
 
 unsigned long long RegistrarZoneAccess::max_id(ColIndex idx, Database::Result& result)
 {
@@ -2676,84 +2756,7 @@ Manager::AutoPtr Manager::create(DBSharedPtr db)
   return Manager::AutoPtr(new ManagerImpl(db));
 }
 
-std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
-        Logger::LoggerClient *logger_client, boost::posix_time::ptime p_from,
-        boost::posix_time::ptime p_to) {
-    std::auto_ptr<RequestFeeDataMap> ret(new RequestFeeDataMap());
 
-    std::string price_unit_request;
-    unsigned int base_free_count;
-    unsigned int per_domain_free_count;
-    unsigned int zone_id;
-    Fred::Invoicing::getRequestFeeParams(price_unit_request, base_free_count,
-            per_domain_free_count, zone_id);
-
-    // get registrars who has access to configured zone
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result res_registrars = conn.exec_params(
-            "SELECT r.id, r.handle FROM registrar r"
-                " JOIN registrarinvoice ri ON ri.registrarid = r.id"
-                " WHERE ri.zone = $1::integer"
-                " AND ri.fromdate <= current_date"
-                " AND (ri.todate >= current_date OR ri.todate is null)",
-            Database::query_param_list(zone_id));
-
-    if (res_registrars.size() == 0) {
-        LOGGER(PACKAGE).info("getRequestFeeDataMap: No registrars found");
-        return ret;
-    }
-
-    // TODO why should we compute request count for all of them? But maybe it's not so much different
-    // to think
-    std::auto_ptr<Fred::Logger::RequestCountInfo> request_counts =
-            logger_client->getRequestCountUsers(p_from, p_to, "EPP");
-
-    for (unsigned i = 0; i < res_registrars.size(); i++) {
-        Database::ID reg_id = res_registrars[i][0];
-        std::string reg_handle = res_registrars[i][1];
-
-        // find request count for this registrar
-        unsigned long long request_count = 0;
-        Fred::Logger::RequestCountInfo::iterator it = request_counts->find(
-                reg_handle);
-
-        if (it == request_counts->end()) {
-            LOGGER(PACKAGE).info(boost::format(
-                    "No request count found for registrar %1%, skipping.")
-                    % reg_handle);
-            request_count = 0;
-        } else {
-            request_count = it->second;
-        }
-
-        // get domain count for registrar
-        unsigned long long domain_count =
-                Fred::Domain::getRegistrarDomainCount(reg_id,
-                        boost::gregorian::date(p_from.date()), zone_id);
-
-        // now count all the number for poll message
-        unsigned long long total_free_count = std::max(
-                static_cast<unsigned long long> (base_free_count), domain_count
-                        * per_domain_free_count);
-
-        // price in Decimal TODO
-        Money price("0");
-        if (request_count > total_free_count) {
-            Money count_diff(boost::lexical_cast<std::string>(request_count
-                    - total_free_count));
-            price = count_diff * Decimal(price_unit_request);
-        }
-
-        ret->insert(RequestFeeDataMap::value_type(reg_handle, RequestFeeData(
-                reg_handle, reg_id, request_count, total_free_count, price, Decimal("0"))));
-
-        LOGGER(PACKAGE).info(boost::format("Request count data for registrar"
-            " %1%, requests: %2%, total free: %3%, price: %4%") % reg_handle
-                % request_count % total_free_count % price);
-    }
-
-    return ret;
-}
 
 }
 ; // namespace Registrar

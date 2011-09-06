@@ -1890,6 +1890,8 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
   if (db_connect->OpenDatabase(database)) {
     DBSharedPtr DBsql = DBDisconnectPtr(db_connect.release());
 
+    std::auto_ptr<Fred::Registrar::Manager> regman(
+         Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
     try {
         // get ID of registrar by handle
         if ((regID = DBsql->GetNumericFromTable("REGISTRAR", "id", "handle",
@@ -1897,7 +1899,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             LOG(NOTICE_LOG, "bad username [%s]", ClID);
             // bad username
             ret->code = COMMAND_AUTH_ERROR;
-        } else if (Fred::Registrar::isRegistrarBlocked(regID)) {
+        } else if (regman->isRegistrarBlocked(regID)) {
             // registrar blocked
             LOGGER(PACKAGE).notice((boost::format("Registrar %1% login attempt while blocked. ") % ClID).str());
             ret->code = COMMAND_AUTOR_ERROR;

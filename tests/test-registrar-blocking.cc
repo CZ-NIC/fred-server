@@ -54,8 +54,7 @@ Database::ID block_reg_and_test(Fred::Registrar::Manager *regman)
 
     BOOST_REQUIRE(regman->blockRegistrar(reg_id, epp_cli.get()) == true);
 
-    BOOST_REQUIRE(Fred::Registrar::isRegistrarBlocked(reg_id));
-    // BOOST_REQUIRE(regman->isRegistrarBlocked(reg_id));
+    BOOST_REQUIRE(regman->isRegistrarBlocked(reg_id));
     // this is gonna be correct
     return reg_id;
 }
@@ -102,7 +101,7 @@ BOOST_AUTO_TEST_CASE(test_unblock_registrar)
 
     regman->unblockRegistrar(reg_id, 767);
 
-    BOOST_REQUIRE(!Fred::Registrar::isRegistrarBlocked(reg_id));
+    BOOST_REQUIRE(!regman->isRegistrarBlocked(reg_id));
 
 }
 
