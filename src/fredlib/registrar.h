@@ -581,6 +581,7 @@ public:
   virtual bool hasRegistrarZoneAccess(const unsigned long long &_registrar_id,
                                       const unsigned long long &_zone_id) = 0;
 
+  /// logs error and throws when registrar doesn't exist
   virtual void checkRegistrarExists( const TID & registrar_id) = 0;
 
   virtual bool isRegistrarBlocked(Database::ID regId) = 0;

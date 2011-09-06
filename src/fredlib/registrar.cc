@@ -2550,6 +2550,7 @@ public:
         return za.size() != 0;
     }
 
+    /// logs error and throws when registrar doesn't exist
     virtual void checkRegistrarExists( const TID & registrar_id)
     {
         Database::Connection conn = Database::Manager::acquire();
@@ -2560,7 +2561,7 @@ public:
         if(reg_id.size() != 1)
         {
             LOGGER(PACKAGE).error(
-                std::string("getRegistrarCertifications: registrar with id: ")
+                std::string("checkRegistrarExists: registrar with id: ")
                 + boost::lexical_cast<std::string>(registrar_id)
                 + " doesn't exist" );
             throw Fred::NOT_FOUND();
