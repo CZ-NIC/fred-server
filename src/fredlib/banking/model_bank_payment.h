@@ -23,12 +23,6 @@ public:
     {
         return m_accountId.get();
     }
-    /*
-    ModelBankStatementHead *getStatement()
-    {
-        return statement.getRelated(this);
-    }
-    */
     const std::string &getAccountNumber() const
     {
         return m_accountNumber.get();
@@ -37,12 +31,6 @@ public:
     {
         return m_bankCodeId.get();
     }
-    /*
-    ModelEnumBankCode *getBankCode()
-    {
-        return bankCode.getRelated(this);
-    }
-    */
     const int &getCode() const
     {
         return m_code.get();
@@ -83,16 +71,6 @@ public:
     {
         return m_accountMemo.get();
     }
-    const unsigned long long &getInvoiceId() const
-    {
-        return m_invoiceId.get();
-    }
-    /*
-    ModelInvoice *getInvoice()
-    {
-        return invoice.getRelated(this);
-    }
-    */
     const std::string &getAccountName() const
     {
         return m_accountName.get();
@@ -113,12 +91,6 @@ public:
     {
         m_accountId = accountId;
     }
-    /*
-    void setStatement(ModelBankStatementHead *foreign_value)
-    {
-        statement.setRelated(this, foreign_value);
-    }
-    */
     void setAccountNumber(const std::string &accountNumber)
     {
         m_accountNumber = accountNumber;
@@ -127,12 +99,6 @@ public:
     {
         m_bankCodeId = bankCodeId;
     }
-    /*
-    void setBankCode(ModelEnumBankCode *foreign_value)
-    {
-        bankCode.setRelated(this, foreign_value);
-    }
-    */
     void setCode(const int &code)
     {
         m_code = code;
@@ -182,12 +148,6 @@ public:
     {
         m_invoiceId = invoiceId;
     }
-    /*
-    void setInvoice(ModelInvoice *foreign_value)
-    {
-        invoice.setRelated(this, foreign_value);
-    }
-    */
     void setAccountName(const std::string &accountName)
     {
         if (accountName.size() >= 64) {
@@ -264,10 +224,6 @@ protected:
     Field::Field<std::string> m_accountName;
     Field::Field<Database::DateTime> m_crTime;
 
-    //Field::Lazy::Field<ModelBankStatementHead *> m_statement;
-    //Field::Lazy::Field<ModelEnumBankCode *> m_bankCode;
-    //Field::Lazy::Field<ModelInvoice *> m_invoice;
-
 public:
     static Model::Field::PrimaryKey<ModelBankPayment, unsigned long long> id;
     static Model::Field::Basic<ModelBankPayment, unsigned long long> statementId;
@@ -287,10 +243,6 @@ public:
     static Model::Field::Basic<ModelBankPayment, unsigned long long> invoiceId;
     static Model::Field::Basic<ModelBankPayment, std::string> accountName;
     static Model::Field::Basic<ModelBankPayment, Database::DateTime> crTime;
-
-    //static Model::Field::Related::OneToOne<ModelBankPayment, unsigned long long, ModelBankStatementHead> statement;
-    //static Model::Field::Related::OneToOne<ModelBankPayment, std::string, ModelEnumBankCode> bankCode;
-    //static Model::Field::Related::OneToOne<ModelBankPayment, unsigned long long, ModelInvoice> invoice;
 
 private:
     static std::string table_name;  /** < model table name */

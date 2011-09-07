@@ -82,62 +82,89 @@ private:
         }
     }
 
+    void pay_invoice(unsigned long long registrar_id
+            , unsigned long long zone_id
+            , unsigned long long bank_payment_id
+            , Money price
+            , unsigned long long invoice_id)
+    {
+        Logging::Context ctx("pay_invoice");
+        Database::Connection conn = Database::Manager::acquire();
+
+        Database::Result registrar_credit_id_result
+            = conn.exec_params("SELECT id FROM registrar_credit "
+                    " WHERE registrar_id = $1::bigint AND zone_id = $2::bigint"
+                    ,Database::query_param_list(registrar_id)(zone_id));
+
+        unsigned long long registrar_credit_id = 0;
+        if(registrar_credit_id_result.size() == 1 )
+        {
+            registrar_credit_id = registrar_credit_id_result[0][0];
+        }
+        if(registrar_credit_id == 0)
+        {
+            throw std::runtime_error("pay_invoice: registrar_credit not found");
+        }
+
+        Database::Result registrar_credit_transaction_id_result
+            = conn.exec_params(
+                "INSERT INTO registrar_credit_transaction "
+                " (id,balance_change, registrar_credit_id) "
+                " VALUES (DEFAULT, $1::numeric, $2::bigint) "
+                " RETURNING id"
+                ,Database::query_param_list(price.get_string())
+                (registrar_credit_id));
+
+        unsigned long long registrar_credit_transaction_id = 0;
+        if(registrar_credit_transaction_id_result.size() == 1 )
+        {
+            registrar_credit_transaction_id = registrar_credit_transaction_id_result[0][0];
+        }
+        if(registrar_credit_transaction_id == 0)
+        {
+            throw std::runtime_error("pay_invoice: registrar_credit_transaction not found");
+        }
+
+        //insert_bank_payment_registrar_credit_transaction_map
+        conn.exec_params(
+        "INSERT INTO bank_payment_registrar_credit_transaction_map "
+                " (bank_payment_id, registrar_credit_transaction_id) "
+                " VALUES ($1::bigint, $2::bigint) "
+        ,Database::query_param_list(bank_payment_id)
+        (registrar_credit_transaction_id));
+
+        //insert_invoice_registrar_credit_transaction_map
+        conn.exec_params(
+        "INSERT INTO invoice_registrar_credit_transaction_map "
+               " (invoice_id, registrar_credit_transaction_id) "
+               " VALUES (i.id, c.id) "
+        ,Database::query_param_list(invoice_id)
+                (registrar_credit_transaction_id));
+    }
+
+
     void processPayment(PaymentImpl *_payment,
                         unsigned long long _registrar_id = 0)
     {
         Logging::Context ctx("payment processing");
-        try {
+        try
+        {
             /* is payment in db? */
-            if (_payment->getId() == Database::ID(0)) {
+            if (_payment->getId() == Database::ID(0))
+            {
                 throw std::runtime_error("cannot process payment which was not"
                         "saved");
             }
+            _payment->reload();
+            if (_payment->getPrice() <= Money("0")) return;
 
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction transaction(conn);
 
-            _payment->reload();
-            if (_payment->getInvoiceId() != Database::ID(0)) {
-                return;
-            }
-            if (_payment->getPrice() <= Money("0")) {
-                return;
-            }
-
-            /* process only payemts from specific accounts
-             * XXX: this should be in database not hardcoded */
-            std::vector<std::string> allowed;
-            allowed.push_back("188208275/0300");
-            allowed.push_back("756/2400");
-            allowed.push_back("210345314/0300");
-            allowed.push_back("617/2400");
-            allowed.push_back("756/5500");
-            allowed.push_back("617/5500");
-
-            std::stringstream account_query;
-            account_query << "SELECT account_number || '/' || bank_code FROM "
-                          << "bank_account WHERE id = "
-                          << Database::Value(_payment->getAccountId());
-            Database::Result result = conn.exec(account_query.str());
-            if (result.size() != 1) {
-                throw std::runtime_error("oops! payment has no record in "
-                        "bank_account table");
-            }
-            std::string test = result[0][0];
-
-            std::vector<std::string>::const_iterator it = std::find(allowed.begin(), allowed.end(), test);
-            if (it == allowed.end()) {
-                LOGGER(PACKAGE).debug(boost::format(
-                            "account %1% is excluded from processing "
-                            "-> processing canceled")
-                            % test);
-                return;
-            }
-
             /* we process only payment with code = 1 (normal transaction)
              * and status = 1 (realized transfer) and type = 1 (not assigned) */
-            if (_payment->getStatus() != 1 || _payment->getCode() != 1
-                    || _payment->getType() != 1) {
+            if(!_payment->is_eligible_to_process())
+            {
                 LOGGER(PACKAGE).info(boost::format(
                             "payment id=%1% not eligible -- status: %2% != 1 "
                             "code: %3% != 1 type: %4% != 1 => processing canceled")
@@ -162,8 +189,6 @@ private:
                 }
             }
 
-            Money price = _payment->getPrice();
-            Database::Date account_date = _payment->getAccountDate();
             unsigned long long zone_id = getZoneByAccountId(_payment->getAccountId());
 
             /* zone access check */
@@ -177,23 +202,60 @@ private:
                 return;
             }
 
-            std::auto_ptr<Fred::Invoicing::Manager>
-                    invoice_manager(Fred::Invoicing::Manager::create());
+            //find_unpaid_account_invoices
+            Database::Result unpaid_account_invoices_result = conn.exec_params
+                ("SELECT i.id, i.balance, i.vat "
+                " FROM invoice i "
+                   " JOIN invoice_prefix ip ON i.invoice_prefix_id = ip.id AND ip.typ = 1 "   // account invoice prefix typ = 1
+                " WHERE i.balance > 0 " // unpaid account balance is positive number
+                   " AND i.registrar_id = $1::bigint"
+                   " AND i.zone_id = $2::bigint "
+                " ORDER BY i.id "
+                , Database::query_param_list(_registrar_id)(zone_id));
 
-            int invoice_id = invoice_manager->createDepositInvoice(
-                    account_date, (int)zone_id, (int)_registrar_id
-                    , price);
+            Money payment_price_rest = _payment->getPrice();
 
-            if (invoice_id > 0) {
-                _payment->setInvoiceId(invoice_id);
-                _payment->setType(2);
-                _payment->save();
-                LOGGER(PACKAGE).info(boost::format(
-                            "payment paired with registrar (id=%1%) "
-                            "=> deposit invoice created (id=%2% price=%3%)")
-                            % _registrar_id
-                            % invoice_id % stringify(price));
+            for(unsigned i = 0 ; i < unpaid_account_invoices_result.size(); ++i)
+            {
+                unsigned long long unpaid_account_invoice_id
+                    = unpaid_account_invoices_result[i][0];
+                Money uaci_balance
+                    = std::string(unpaid_account_invoices_result[i][1]);
+                Decimal uaci_vat
+                    = std::string(unpaid_account_invoices_result[i][2]);
+                Money unpaid_price_with_vat = uaci_balance
+                        + uaci_balance * uaci_vat / Decimal("100");
+                Money partial_price
+                    = (payment_price_rest <= unpaid_price_with_vat)
+                        ? payment_price_rest : unpaid_price_with_vat;
+                payment_price_rest -= partial_price;
+                pay_invoice(_registrar_id , zone_id, _payment->getId()
+                        , partial_price, unpaid_account_invoice_id);
             }
+
+            // create advance invoice for rest amount after paying possible debt (account invoice)
+            if (payment_price_rest > Money("0"))
+            {
+                Database::Date account_date = _payment->getAccountDate();
+
+                std::auto_ptr<Fred::Invoicing::Manager>
+                        invoice_manager(Fred::Invoicing::Manager::create());
+
+                unsigned long long advance_invoice_id
+                    = invoice_manager->createDepositInvoice(
+                        account_date, zone_id, _registrar_id
+                        , payment_price_rest
+                        , boost::posix_time::microsec_clock::universal_time());
+
+                pay_invoice(_registrar_id , zone_id, _payment->getId()
+                        , payment_price_rest, advance_invoice_id);
+            }
+
+            _payment->setType(2);
+            _payment->save();
+            LOGGER(PACKAGE).info(boost::format(
+                        "payment paired with registrar (id=%1%) "
+                        ) % _registrar_id );
 
             transaction.commit();
         }

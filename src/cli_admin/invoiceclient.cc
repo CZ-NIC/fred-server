@@ -356,7 +356,7 @@ InvoiceClient::credit()
         return;
     }
 
-    invMan->createDepositInvoice(taxDate, zoneId, regId, price);
+    invMan->createDepositInvoice(taxDate, zoneId, regId, price, boost::posix_time::microsec_clock::universal_time());
 
 }
 

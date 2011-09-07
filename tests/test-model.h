@@ -250,7 +250,6 @@ struct mbp_insert_data
     unsigned long long id; //filled by model
     unsigned statement_id;//fk bank_statement (id) - none
     unsigned account_id; //fk bank_account (id) - num 1-6
-    unsigned invoice_id; //fk invoice (id) - none
     std::string account_number;//17 numletters
     std::string bank_code;//4 numletters
     int operation_code; // num 1-5
@@ -294,13 +293,12 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
         std::string query = str(boost::format(
                 "select id, statement_id, account_id, account_number, bank_code " //0-4
                 ", code, \"type\" ,status, konstsym, varsymb, specsymb, price " //5-11
-                ", account_evid, account_date, account_memo, invoice_id " //12-15
-                ", account_name, crtime " //16-17
+                ", account_evid, account_date, account_memo"//12-14
+                ", account_name, crtime " //15-16
                 " from bank_payment WHERE id = %1%") % mbp1.getId() );
         //save id - this should not change
         insert_data.id = mbp1.getId();
         insert_data.statement_id = 0;
-        insert_data.invoice_id = 0;
         Database::Result res = conn.exec( query );
         if ((res.size() > 0) && (res[0].size() == 18))
         {    //check data inserted by model
@@ -329,22 +327,21 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
                         <<"\nresult: " << std::string(res[0][14]) );
                     ret+=16384;
                 }
-            if(insert_data.invoice_id
-                    != static_cast<unsigned long long>(res[0][15])) ret+=32768;
-            if(insert_data.account_name.compare(res[0][16]))
+
+            if(insert_data.account_name.compare(res[0][15]))
             {
 
                 BOOST_TEST_MESSAGE( "\n\ninsert_data.account_name: " << insert_data.account_name
                         << " insert_data.account_name.size: " << insert_data.account_name.size()
                         << "\nresult id: " << static_cast<unsigned long long>(res[0][0])
-                        <<" result: " << std::string(res[0][16])
-                        << " result.size: " << std::string(res[0][16]).size()
+                        <<" result: " << std::string(res[0][15])
+                        << " result.size: " << std::string(res[0][15]).size()
                         );
 
                 ret+=65536;
             }
             if(insert_data.crtime.to_string()
-                .compare(Database::DateTime(std::string(res[0][17])).to_string()))
+                .compare(Database::DateTime(std::string(res[0][16])).to_string()))
                     ret+=131072;
         }//if res size
         else ret+=262144;
@@ -378,7 +375,7 @@ unsigned mbp_reload_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
             " statement_id=null, account_id=null, account_number=E'', bank_code=E''"
             ", code=0, \"type\"=0, status=2, konstsym=E'', varsymb=E'', specsymb=E''"
             ", price='12345.00', account_evid=E'', account_date='2000-01-01', account_memo=E''"
-            ", invoice_id=null, account_name=E'', crtime='2000-01-01 00:00:01'"
+            ", account_name=E'', crtime='2000-01-01 00:00:01'"
             " WHERE id = %1%") % mbp1.getId() );
         conn.exec( query );
         tx.commit();
@@ -402,7 +399,6 @@ unsigned mbp_reload_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
         if(mbp2.getAccountEvid().compare("")) ret+=4096;
         if(mbp2.getAccountDate() != Database::Date("2000-01-01")) ret+=8192;
         if(mbp2.getAccountMemo().compare("")) ret+=16384;
-        if(mbp2.getInvoiceId() != 0) ret+=32768;
         if(mbp2.getAccountName().compare("")) ret+=65536;
         if(Database::DateTime(mbp2.getCrTime()).to_string().compare(
                 Database::DateTime("2000-01-01 00:00:01").to_string() )) ret+=131072;
@@ -455,7 +451,6 @@ unsigned mbp_update_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
         if(mbp2.getAccountEvid().compare(mbp1.getAccountEvid())) ret+=4096;
         if(mbp2.getAccountDate() != mbp1.getAccountDate()) ret+=8192;
         if(mbp2.getAccountMemo().compare(mbp1.getAccountMemo())) ret+=16384;
-        if(mbp2.getInvoiceId() != mbp1.getInvoiceId()) ret+=32768;
         if(mbp2.getAccountName().compare(mbp1.getAccountName())) ret+=65536;
         if(Database::DateTime(mbp2.getCrTime()).to_string().compare(
                 Database::DateTime(mbp1.getCrTime()).to_string() )) ret+=131072;

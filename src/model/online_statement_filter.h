@@ -21,7 +21,6 @@ public:
     virtual Value<std::string> &addVarSymbol() = 0;
     virtual Value<std::string> &addAccountName() = 0;
     virtual Value<std::string> &addIdentifier() = 0;
-    virtual Value<Database::ID> &addInvoiceId() = 0;
     // TODO maybe other items from bank_ebanka_list
 
     friend class boost::serialization::access;
@@ -47,7 +46,6 @@ public:
     virtual Value<std::string> &addVarSymbol();
     virtual Value<std::string> &addAccountName();
     virtual Value<std::string> &addIdentifier();
-    virtual Value<Database::ID> &addInvoiceId();
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(

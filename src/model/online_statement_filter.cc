@@ -111,16 +111,6 @@ OnlineStatementImpl::addIdentifier()
     return *tmp;
 }
 
-Value<Database::ID> &
-OnlineStatementImpl::addInvoiceId()
-{
-    Value<Database::ID> *tmp = new Value<Database::ID>(
-            Column("invoice_id", joinOnlineStatementTable()));
-    add(tmp);
-    tmp->setName("InvoiceId");
-    return *tmp;
-}
-
 } // namespace Filters
 } // namespace Database
 

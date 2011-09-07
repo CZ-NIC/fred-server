@@ -23,7 +23,7 @@ public:
     virtual Value<std::string> &addConstSymbol() = 0;
     virtual Value<std::string> &addVarSymbol() = 0;
     virtual Value<std::string> &addSpecSymbol() = 0;
-    virtual Value<Database::ID> &addInvoiceId() = 0;
+
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(
@@ -49,7 +49,7 @@ public:
     virtual Value<std::string> &addConstSymbol();
     virtual Value<std::string> &addVarSymbol();
     virtual Value<std::string> &addSpecSymbol();
-    virtual Value<Database::ID> &addInvoiceId();
+
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(

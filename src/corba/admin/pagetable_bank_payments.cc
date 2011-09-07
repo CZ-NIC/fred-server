@@ -69,7 +69,7 @@ ccReg_Payments_i::getRow(CORBA::UShort row)
 
     MAKE_OID(oid_id, data->getId(), C_STR(data->getId()), FT_STATEMENTITEM);
     MAKE_OID(oid_statement_id, data->getStatementId(), C_STR(data->getStatementId()), FT_STATEMENTHEAD);
-    MAKE_OID(oid_invoice_id, data->getInvoiceId(), C_STR(data->getInvoicePrefix()), FT_INVOICE);
+    MAKE_OID(oid_invoice_id, data->getAdvanceInvoiceId(), C_STR(data->getInvoicePrefix()), FT_INVOICE);
 
  //   (*tr)[0] <<= oid_id;
  //   (*tr)[1] <<= oid_statement_id;

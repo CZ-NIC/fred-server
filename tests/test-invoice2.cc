@@ -922,7 +922,8 @@ struct create_deposit_invoice_fixture
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
-                                    , price);//price
+                                    , price//price
+                                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
@@ -1011,7 +1012,8 @@ struct create_deposit_invoice_fixture
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
-                                    , price);//price
+                                    , price//price
+                                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
@@ -1063,7 +1065,8 @@ struct create_deposit_invoice_fixture
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
-                                    , price);//price
+                                    , price//price
+                                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
@@ -1131,7 +1134,8 @@ struct create_deposit_invoice_fixture
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
-                                    , price);//price
+                                    , price//price
+                                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
                         }//createDepositInvoice
@@ -1154,7 +1158,8 @@ struct create_deposit_invoice_fixture
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
-                                    , price);//price
+                                    , price//price
+                                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
                         }//createDepositInvoice
@@ -1178,7 +1183,8 @@ struct create_deposit_invoice_fixture
                         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                 , zone_id//zone
                                 , registrar_id//registrar
-                                , price);//price
+                                , price//price
+                                , boost::posix_time::microsec_clock::universal_time());//invoice_date
                         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
                         if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
@@ -1189,7 +1195,8 @@ struct create_deposit_invoice_fixture
                         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                 , zone_id//zone
                                 , registrar_id//registrar
-                                , price);//price
+                                , price//price
+                                , boost::posix_time::microsec_clock::universal_time());//invoice_date
                         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
                         if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
@@ -1200,7 +1207,8 @@ struct create_deposit_invoice_fixture
                         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                 , zone_id//zone
                                 , registrar_id//registrar
-                                , price);//price
+                                , price//price
+                                , boost::posix_time::microsec_clock::universal_time());//invoice_date
                         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
                         if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);

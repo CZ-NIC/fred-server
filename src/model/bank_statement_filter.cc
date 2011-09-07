@@ -138,20 +138,6 @@ BankStatementImpl::addSpecSymbol()
     return *tmp;
 }
 
-Value<Database::ID> &
-BankStatementImpl::addInvoiceId()
-{
-    joins.push_back(new Join(
-                Column("id", joinBankStatementTable()),
-                SQL_OP_EQ,
-                Column("statement_id", joinStatementItemTable())));
-    Value<Database::ID> *tmp = new Value<Database::ID>(
-            Column("invoice_id", joinStatementItemTable()));
-    add(tmp);
-    tmp->setName("InvoiceId");
-    return *tmp;
-}
-
 
 } // namespace Database
 } // namespace Filters

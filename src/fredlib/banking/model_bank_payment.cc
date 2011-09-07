@@ -17,14 +17,8 @@ DEFINE_BASIC_FIELD(ModelBankPayment, std::string, price, m_price, table_name, "p
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, accountEvid, m_accountEvid, table_name, "account_evid", )
 DEFINE_BASIC_FIELD(ModelBankPayment, Database::Date, accountDate, m_accountDate, table_name, "account_date", .setNotNull())
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, accountMemo, m_accountMemo, table_name, "account_memo", )
-DEFINE_BASIC_FIELD(ModelBankPayment, unsigned long long, invoiceId, m_invoiceId, table_name, "invoice_id",.setForeignKey() )
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, accountName, m_accountName, table_name, "account_name", )
 DEFINE_BASIC_FIELD(ModelBankPayment, Database::DateTime, crTime, m_crTime, table_name, "crtime", .setDefault())
-//DEFINE_BASIC_FIELD(ModelBankPayment, Database::DateTime, crTime, m_crTime, table_name, "crtime", .setDefault().setNotNull())
-
-//DEFINE_ONE_TO_ONE(ModelBankPayment, ModelBankStatementHead, statement, m_statement, unsigned long long, statementId, m_statementId)
-//DEFINE_ONE_TO_ONE(ModelBankPayment, ModelEnumBankCode, bankCode, m_bankCode, std::string, bankCodeId, m_bankCodeId)
-//DEFINE_ONE_TO_ONE(ModelBankPayment, ModelInvoice, invoice, m_invoice, unsigned long long, invoiceId, m_invoiceId)
 
 ModelBankPayment::field_list ModelBankPayment::fields = list_of<ModelBankPayment::field_list::value_type>
     (&ModelBankPayment::id)
@@ -42,7 +36,6 @@ ModelBankPayment::field_list ModelBankPayment::fields = list_of<ModelBankPayment
     (&ModelBankPayment::accountEvid)
     (&ModelBankPayment::accountDate)
     (&ModelBankPayment::accountMemo)
-    (&ModelBankPayment::invoiceId)
     (&ModelBankPayment::accountName)
     (&ModelBankPayment::crTime)
 ;

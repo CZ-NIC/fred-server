@@ -367,9 +367,9 @@ public:
 
 // TODO what exceptions to throw and whether to log errors
 // SPEC current time taken from now() in DB (which should be UTC)
-unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int registrarId, Money price)
+unsigned long long  createDepositInvoice(Database::Date tax_date, unsigned long long zoneId
+        , unsigned long long registrarId, Money price, boost::posix_time::ptime invoice_date)
 {
-
     Database::Connection conn = Database::Manager::acquire();
 
     Database::Result rvat = conn.exec_params("SELECT vat FROM registrar WHERE id=$1::integer",
@@ -398,7 +398,7 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
 
         Database::Result vat_details = conn.exec_params(
                 "select vat, koef::numeric from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
-                , Database::query_param_list(date.is_special() ? boost::gregorian::day_clock::universal_day() : date.get() )
+                , Database::query_param_list(tax_date.is_special() ? boost::gregorian::day_clock::universal_day() : tax_date.get() )
                 );
 
         if(vat_details.size() > 1) {
@@ -430,10 +430,10 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
     // get new invoice prefix and its type
     // TODO unclear thread safety in the old implementation
     Database::Result ip_res = conn.exec_params(
-        "SELECT id, prefix  FROM invoice_prefix WHERE zone=$1::integer AND  typ=$2::integer AND year=$3::numeric FOR UPDATE",
+        "SELECT id, prefix  FROM invoice_prefix WHERE zone_id=$1::integer AND  typ=$2::integer AND year=$3::numeric FOR UPDATE",
         Database::query_param_list(zoneId)
                                 (IT_DEPOSIT)
-                                (date.year())
+                                (tax_date.year())
                                 );
 
     if(ip_res.size() == 0 || ip_res[0][0].isnull() || ip_res[0][0].isnull()) {
@@ -460,15 +460,18 @@ unsigned long long  createDepositInvoice(Database::Date date, int zoneId, int re
     if(credit.get_string().empty()) throw std::runtime_error("credit empty");
 
     conn.exec_params(
-            "INSERT INTO invoice (id, prefix, zone, prefix_type, registrarid, taxDate, price, vat, total, totalVAT, credit) VALUES "
-            "($1::integer, $2::bigint, $3::integer, $4::integer, $5::integer, $6::date, $7::numeric(10,2), $8::integer, "
-            "$9::numeric(10,2), $10::numeric(10,2), $11::numeric(10,2))", // total, totalVAT, credit
+            "INSERT INTO invoice (id, prefix, zone_id, invoice_prefix_id, registrar_id "
+            ", crdate, taxDate, operations_price, vat, total, totalVAT, balance) VALUES "
+            "($1::bigint, $2::bigint, $3::bigint, $4::bigint, $5::bigint, $6::timestamp, "
+            " $7::date, $8::numeric(10,2), $9::integer, "
+            "$10::numeric(10,2), $11::numeric(10,2), $12::numeric(10,2))", // total, totalVAT, balance
         Database::query_param_list(invoiceId)
                                 (inv_prefix)
                                 (zoneId)
                                 (inv_prefix_type)
                                 (registrarId)
-                                (date)
+                                (invoice_date)
+                                (tax_date)
                                 (price.get_string())
                                 (vat_percent)
                                 (total.get_string())
@@ -805,7 +808,7 @@ unsigned long long MakeFactoring(unsigned long long regID
         }
 
         if (fromdateStr.empty())
-        {
+        {// for new registrar with no previous account invoice
             Database::Result res = conn.exec_params(
                 "SELECT  fromdate  from registrarinvoice "
                 " WHERE zone=$1::bigint and registrarid=$2::bigint"
@@ -864,13 +867,6 @@ unsigned long long MakeFactoring(unsigned long long regID
                     (invoiceID)(timestampStr)(zone)(regID));
 
             }
-
-            // set last date into tabel registrarinvoice
-            conn.exec_params(
-                "UPDATE registrarinvoice SET lastdate=$1::date "
-                " WHERE zone=$2::bigint and registrarid=$3::bigint"
-                , Database::query_param_list
-                (todateStr)(zone)(regID));
 
             // if invoice was created
             if (invoiceID > 0)

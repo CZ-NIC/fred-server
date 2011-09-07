@@ -538,7 +538,6 @@ COMPOUND_CLASS(StatementItem, BankPayment, Compound,
     FILTER_ADD(Str, addSpecSymb);
     FILTER_ADD(Str, addAccountEvid);
     FILTER_ADD(Date, addAccountDate);
-    FILTER_ADD(Id, addInvoiceId);
     FILTER_ADD(Str, addAccountName);
     FILTER_ADD(DateTime, addCrTime);
     FILTER_ADD(Str, addAccountMemo);
@@ -556,7 +555,6 @@ COMPOUND_CLASS(StatementHead, BankStatement, Compound,
     FILTER_ADD(Str, addConstSymbol);
     FILTER_ADD(Str, addVarSymbol);
     FILTER_ADD(Str, addSpecSymbol);
-    FILTER_ADD(Id, addInvoiceId);
 );
 
 

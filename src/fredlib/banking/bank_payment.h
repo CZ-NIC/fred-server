@@ -53,7 +53,7 @@ public:
     virtual const std::string &getAccountEvid() const = 0;
     virtual const Database::Date &getAccountDate() const = 0;
     virtual const std::string &getAccountMemo() const = 0;
-    virtual const unsigned long long &getInvoiceId() const = 0;
+    virtual const unsigned long long &getAdvanceInvoiceId() const = 0;
     virtual const std::string &getAccountName() const = 0;
     virtual const Database::DateTime &getCrTime() const = 0;
     virtual const std::string &getDestAccount() const = 0;
@@ -72,7 +72,7 @@ public:
     virtual void setAccountEvid(const std::string &accountEvid) = 0;
     virtual void setAccountDate(const Database::Date &accountDate) = 0;
     virtual void setAccountMemo(const std::string &accountMemo) = 0;
-    virtual void setInvoiceId(const unsigned long long &invoiceId) = 0;
+    virtual void setAdvanceInvoiceId(const unsigned long long &invoiceId) = 0;
     virtual void setAccountName(const std::string &accountName) = 0;
     virtual void setCrTime(const Database::DateTime &crTime) = 0;
     virtual void setDestAccount(const std::string &destAccount) = 0;

@@ -121,16 +121,6 @@ BankPaymentImpl::addAccountDate()
     return *tmp;
 }
 
-Value<Database::ID> &
-BankPaymentImpl::addInvoiceId()
-{
-    Value<Database::ID> *tmp = new Value<Database::ID>(
-            Column("invoice_id", joinBankPaymentTable()));
-    add(tmp);
-    tmp->setName("InvoiceId");
-    return *tmp;
-}
-
 Value<std::string> &
 BankPaymentImpl::addAccountName()
 {

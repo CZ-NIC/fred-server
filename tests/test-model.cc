@@ -109,7 +109,6 @@ public:
             mbp_insert_data insert_data;//mostly randomly generated data
             insert_data.statement_id=0;//fk bank_statement (id) - none
             insert_data.account_id=rdg_.xnum1_6(); //fk bank_account (id) - num 1-6
-            insert_data.invoice_id=0; //fk invoice (id) - none
             insert_data.account_number=rdg_.xnumstring(17);//17 numletters
             insert_data.bank_code=rdg_.xnumstring(4);//4 numletters
             insert_data.operation_code=rdg_.xnum1_5(); // num 1-5

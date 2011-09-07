@@ -754,7 +754,7 @@ void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const Fred::Banki
         d.accountEvid     = DUPSTRFUN(_payment->getAccountEvid);
         d.accountDate     = DUPSTRDATED(_payment->getAccountDate);
         d.accountMemo     = DUPSTRFUN(_payment->getAccountMemo);
-        d.invoiceId       = _payment->getInvoiceId();
+        d.invoiceId       = _payment->getAdvanceInvoiceId();
         d.accountName     = DUPSTRFUN(_payment->getAccountName);
         d.crTime          = DUPSTRDATE(_payment->getCrTime);
 }

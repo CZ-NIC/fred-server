@@ -18,10 +18,14 @@ class PaymentImpl : virtual public Payment,
 {
 private:
     unsigned long long iprefix_;
+    unsigned long long advance_invoice_id_;
     std::string dest_account;
 
 public:
-    PaymentImpl() : ModelBankPayment(), iprefix_(0)
+    PaymentImpl()
+    : ModelBankPayment()
+    , iprefix_(0)
+    , advance_invoice_id_(0)
     {
     }
 
@@ -85,9 +89,9 @@ public:
     {
         return ModelBankPayment::getAccountMemo();
     }
-    const unsigned long long &getInvoiceId() const
+    const unsigned long long &getAdvanceInvoiceId() const
     {
-        return ModelBankPayment::getInvoiceId();
+        return advance_invoice_id_;
     }
     const std::string &getAccountName() const
     {
@@ -162,9 +166,9 @@ public:
     {
         ModelBankPayment::setAccountMemo(accountMemo);
     }
-    void setInvoiceId(const unsigned long long &invoiceId)
+    void setAdvanceInvoiceId(const unsigned long long &invoiceId)
     {
-        ModelBankPayment::setInvoiceId(invoiceId);
+        advance_invoice_id_ = invoiceId;
     }
     void setAccountName(const std::string &accountName)
     {
@@ -281,6 +285,21 @@ public:
                         "payment: %1%") % toString()));
         }
     }
+
+    bool is_eligible_to_process() const
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result have_zone_result = conn.exec_params
+            ("SELECT zone IS NOT NULL FROM bank_account  WHERE id =$1::bigint"
+            , Database::query_param_list(getAccountId()));
+
+        bool bank_account_have_zone = false;
+        if (have_zone_result.size() == 1 ) bank_account_have_zone = have_zone_result[0][0];
+
+        return bank_account_have_zone && (getStatus() == 1)
+                && (getCode() == 1) && (getType() == 1);
+    }
+
 };
 
 typedef std::auto_ptr<PaymentImpl> PaymentImplPtr;
@@ -298,7 +317,7 @@ COMPARE_CLASS_IMPL_NEW(PaymentImpl, Price);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, AccountEvid);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, AccountDate);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, AccountMemo);
-COMPARE_CLASS_IMPL_NEW(PaymentImpl, InvoiceId);
+COMPARE_CLASS_IMPL_NEW(PaymentImpl, AdvanceInvoiceId);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, AccountName);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, CrTime);
 

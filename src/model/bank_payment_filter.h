@@ -24,7 +24,6 @@ public:
     virtual Value<std::string> &addSpecSymb() = 0;
     virtual Value<std::string> &addAccountEvid() = 0;
     virtual Interval<Database::DateInterval> &addAccountDate() = 0;
-    virtual Value<Database::ID> &addInvoiceId() = 0;
     virtual Value<std::string> &addAccountName() = 0;
     virtual Interval<Database::DateTimeInterval> &addCrTime() = 0;
     virtual BankStatement &addBankStatement() = 0;
@@ -56,7 +55,6 @@ public:
     virtual Value<std::string> &addSpecSymb();
     virtual Value<std::string> &addAccountEvid();
     virtual Interval<Database::DateInterval> &addAccountDate();
-    virtual Value<Database::ID> &addInvoiceId();
     virtual Value<std::string> &addAccountName();
     virtual Interval<Database::DateTimeInterval> &addCrTime();
     virtual BankStatement &addBankStatement();
