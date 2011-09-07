@@ -250,7 +250,7 @@ private:
                 pay_invoice(_registrar_id , zone_id, _payment->getId()
                         , payment_price_rest, advance_invoice_id);
             }
-
+            //set_payment_as_processed
             _payment->setType(2);
             _payment->save();
             LOGGER(PACKAGE).info(boost::format(
