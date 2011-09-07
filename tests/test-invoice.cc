@@ -2086,7 +2086,8 @@ ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Fred::In
         // TODO use exdate param
         CORBA::String_var exdate;
 
-        std::string test_domain_fqdn( std::string("tdomain")+time_string+".cz" );
+        std::string test_domain_fqdn((boost::format("tdomain%1%-%2%.cz") % time_string % number).str());
+
         ret.object_handle = test_domain_fqdn;
 
         try {
@@ -2167,7 +2168,8 @@ ResultTestCharge testCreateDomainWorker(ccReg::EPP_var epp_ref, Fred::Invoicing:
                 // CORBA::String_var exdate(exdate_); TODO
                 CORBA::String_var exdate;
 
-        std::string test_domain_fqdn(std::string("tdomain")+time_string+".cz");
+        std::string test_domain_fqdn((boost::format("tdomain%1%-%2%.cz") % time_string % number).str());
+
         ret.object_handle = test_domain_fqdn;
 
         try {
@@ -2589,14 +2591,6 @@ BOOST_AUTO_TEST_CASE(createDomainThreaded)
             , ns_args_ptr->nameservice_host
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
-
-    // DEBUG
-    //std::cout << " Parameters: host: " << ns_args_ptr->nameservice_host
-    //    << " port: " << ns_args_ptr->nameservice_port
-    //    << " context: " << ns_args_ptr->nameservice_context << std::endl;
-    for (int t = 0;t<<fa.get_argc();t++ ) {
-        std::cout << " CmdLine Args: " << fa.get_argv() [t] << std::endl;
-    }
 
     // EPP CORBA ref
     ccReg::EPP_var epp_ref;
