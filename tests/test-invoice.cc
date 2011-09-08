@@ -41,21 +41,16 @@
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
 #include "cfg/handle_logging_args.h"
-#include "cfg/handle_database_args.h"
-#include "cfg/handle_corbanameservice_args.h"
-#include "cfg/handle_registry_args.h"
-#include "cfg/handle_rifd_args.h"
+
 
 #include "types/money.h"
 #include "fredlib/registrar.h"
 #include "fredlib/invoicing/invoice.h"
-#include "mailer_manager.h"
+
 #include "time_clock.h"
 #include "file_manager_client.h"
 #include "fredlib/banking/bank_common.h"
 #include "corba/Admin.hh"
-#include "corba/EPP.hh"
-#include "epp/epp_impl.h"
 
 #include "test-common-threaded.h"
 
@@ -64,6 +59,7 @@
 #define BOOST_TEST_NO_MAIN
 
 #include "tests-common.h"
+#include "test-invoice-common.h"
 
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
@@ -340,18 +336,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     //db
     Database::Connection conn = Database::Manager::acquire();
 
-    //corba config
-    FakedArgs fa = CfgArgs::instance()->fa;
-
-    //conf pointers
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
-
+    init_corba_container();
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
@@ -547,18 +532,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
     //db
     Database::Connection conn = Database::Manager::acquire();
 
-    //corba config
-    FakedArgs fa = CfgArgs::instance()->fa;
-
-    //conf pointers
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
-
+    init_corba_container();
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
@@ -1122,7 +1096,7 @@ void testChargeFail(Fred::Invoicing::Manager *invMan, Database::Date exdate, uns
 }
 
 // Fred::Registrar::Registrar::AutoPtr createTestRegistrar(const std::string &handle_base)
-Database::ID createTestRegistrar(const std::string &handle_base)
+Database::ID createTestRegistrar()
 {
 
     std::string time_string(TimeStamp::microsec());
@@ -1168,10 +1142,16 @@ BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
-    Database::ID regid = createTestRegistrar("REG-FRED_INV");
+    Database::ID regid = createTestRegistrar();
 
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+
+
+
+
+
 
     // some fake object in object registry
     // TODO create unique handle for the object
@@ -1196,7 +1176,7 @@ BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
 void testChargeInsuffCredit(Fred::Invoicing::Manager *invMan, unsigned reg_units, unsigned op,
         Database::ID zone_id)
 {
-    Database::ID reg_id = createTestRegistrar("REG-FRED_INV");
+    Database::ID reg_id = createTestRegistrar();
 
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
@@ -1263,7 +1243,7 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
     Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
     Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
 
-    Database::ID regid = createTestRegistrar("REG-FRED_INV");
+    Database::ID regid = createTestRegistrar();
 
     Money amount = std::string("20000.00");
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
@@ -1355,7 +1335,7 @@ void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned perio
         Database::Date taxdate, Database::Date exdate, Money amount, bool should_succ)
 {
     // registrar
-    Database::ID regid = createTestRegistrar("REG-FRED_2INVNEED");
+    Database::ID regid = createTestRegistrar();
 
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
@@ -1532,15 +1512,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     //std::cout<< "create_operation_price: " << create_operation_price 
     //    << "renew_operation_price: " << renew_operation_price << std::endl;
 
-    //corba config
-    FakedArgs fa = CfgArgs::instance()->fa;
-    //conf pointers
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
+    init_corba_container();
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
@@ -1818,24 +1790,19 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
     //db
     Database::Connection conn = Database::Manager::acquire();
 
-    //corba config
-    FakedArgs fa = CfgArgs::instance()->fa;
+    init_corba_container();
 
-    //conf pointers
-    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleRegistryArgs>();
     HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
-
+            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
+               ->get_handler_ptr_by_type<HandleRegistryArgs>();
 
     std::string corbaNS =ns_args_ptr->nameservice_host
             + ":"
             + boost::lexical_cast<std::string>(ns_args_ptr->nameservice_port);
+
+
+
 
     std::auto_ptr<Fred::Document::Manager> docMan(
               Fred::Document::Manager::create(
@@ -2063,9 +2030,9 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 
 // thread-safe worker
 // TODO use exdate parameter !!!
-ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Fred::Invoicing::Manager *invMan, Database::Date exdate_, unsigned reg_units,
-        unsigned operation, Database::ID zone_id, Database::ID registrar_id,
-        unsigned number, unsigned clientId)
+ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Database::Date exdate_, unsigned reg_units,
+        unsigned operation, Database::ID registrar_id,
+        unsigned number, unsigned clientId, int zone_id)
 {
     ResultTestCharge ret;
 
@@ -2245,9 +2212,7 @@ public:
 
        Database::Date exdate(act_year + 1, 1, 1);
 
-       std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
-
-       ResultTestCharge ret = testCreateDomainDirectWorker(p.epp_backend, invMan.get(), exdate, DEFAULT_REGISTRATION_PERIOD, INVOICING_DomainCreate, p.zone_id, p.regid,   number_, p.clientId );
+       ResultTestCharge ret = testCreateDomainDirectWorker(p.epp_backend, exdate, DEFAULT_REGISTRATION_PERIOD, INVOICING_DomainCreate, p.regid,   number_, p.clientId, p.zone_id );
 
        // copy all the parametres to Result
        ret.number = number_;
@@ -2323,27 +2288,6 @@ public:
 
 };
 
-void EPP_backend_init(ccReg_EPP_i *epp_i, HandleRifdArgs *rifd_args_ptr)
-{
-    epp_i->CreateSession(
-            rifd_args_ptr->rifd_session_max
-            , rifd_args_ptr->rifd_session_timeout);
-
-    // load all country code from table enum_country
-    if (epp_i->LoadCountryCode() <= 0) {
-      throw std::runtime_error("EPP backend init: database error: load country code");
-    }
-
-    // load error messages to memory
-    if (epp_i->LoadErrorMessages() <= 0) {
-      throw std::runtime_error("EPP backend init: database error: load error messages");
-    }
-
-    // load reason messages to memory
-    if (epp_i->LoadReasonMessages() <= 0) {
-      throw std::runtime_error("EPP backend init: database error: load reason messages" );
-    }
-}
 
 
 BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
@@ -2353,7 +2297,7 @@ BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
     Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
     // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
 
-    Database::ID regid = createTestRegistrar("REG-ITHREAD");
+    Database::ID regid = createTestRegistrar();
 
     Money amount ("20000.00");
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
@@ -2380,44 +2324,8 @@ BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
 
 BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 {
-  // init  
-    //corba config
-    FakedArgs fa = CfgArgs::instance()->fa;
-
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
-
-    //conf pointers
-    HandleDatabaseArgs* db_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleDatabaseArgs>();
-    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleRegistryArgs>();
-    HandleRifdArgs* rifd_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleRifdArgs>();
-
-    MailerManager mailMan(CorbaContainer::get_instance()->getNS());
-
-    std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i ( new ccReg_EPP_i(
-                db_args_ptr->get_conn_info()
-                , &mailMan, CorbaContainer::get_instance()->getNS()
-                , registry_args_ptr->restricted_handles
-                , registry_args_ptr->disable_epp_notifier
-                , registry_args_ptr->lock_epp_commands
-                , registry_args_ptr->nsset_level
-                , registry_args_ptr->docgen_path
-                , registry_args_ptr->docgen_template_path
-                , registry_args_ptr->fileclient_path
-                , rifd_args_ptr->rifd_session_max
-                , rifd_args_ptr->rifd_session_timeout
-                , rifd_args_ptr->rifd_session_registrar_max
-                , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
-        ));
-
-     EPP_backend_init( myccReg_EPP_i.get(), rifd_args_ptr);
+    
+     std::auto_ptr<ccReg_EPP_i> epp = create_epp_backend_object();
 
     // registrar
      std::string time_string(TimeStamp::microsec());
@@ -2446,32 +2354,17 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
      // ------------------ login
      /// log in while Database::Connection is not acquired yet
 
-     std::string passwd_var("");
-     std::string new_passwd_var("");
-     std::string cltrid_var("omg");
-     std::string xml_var("<omg/>");
-     std::string cert_var("");
-
-     CORBA::Long clientId = 0;
-
-     // ## this uses dbsql's DB - Database::Connection should not exist in the thread when this is called
-     ccReg::Response *r = myccReg_EPP_i->ClientLogin(
-         registrar_handle.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),
-         xml_var.c_str(),clientId,cert_var.c_str(),ccReg::EN);
-
-     if (r->code != 1000 || !clientId) {
-         boost::format msg = boost::format("Error code: %1% - %2% ") % r->code % r->msg;
-         std::cerr << msg.str() << std::endl;
-         throw std::runtime_error(msg.str());
-     }
-
+     CORBA::Long clientId = epp_backend_login(epp.get(), registrar_handle);
 
      // --------------------- add credit, acquire connection
      Money amount ("90000.00");
      unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
+
+
      Database::Connection conn = Database::Manager::acquire();
      Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
 
      // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
      std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
@@ -2503,7 +2396,7 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
     params.zone_id = zone_cz_id ;
     params.regid = registrar_inv_id;
     params.epp_ref  = NULL;
-    params.epp_backend = myccReg_EPP_i.get();
+    params.epp_backend = epp.get();
     params.clientId = clientId;
 
     Decimal thread_count = boost::lexical_cast<std::string>(
@@ -2602,15 +2495,7 @@ BOOST_AUTO_TEST_CASE(createDomainThreaded)
         BOOST_FAIL("Couldn't count registrar credit ");
     }
 
-    //corba config
-    FakedArgs fa = CfgArgs::instance()->fa;
-    //conf pointers
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
+    init_corba_container();
 
     // EPP CORBA ref
     ccReg::EPP_var epp_ref;
@@ -2689,50 +2574,161 @@ BOOST_AUTO_TEST_CASE(createDomainThreaded)
 }
 
 
+BOOST_AUTO_TEST_CASE(pruser_working)
+    {
+
+        //corba config
+        FakedArgs fa = CfgArgs::instance()->fa;
+
+        HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+        CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+                , ns_args_ptr->nameservice_host
+                , ns_args_ptr->nameservice_port
+                , ns_args_ptr->nameservice_context);
+
+        //conf pointers
+        HandleDatabaseArgs* db_args_ptr = CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleDatabaseArgs>();
+        HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleRegistryArgs>();
+        HandleRifdArgs* rifd_args_ptr = CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleRifdArgs>();
+
+        MailerManager mailMan(CorbaContainer::get_instance()->getNS());
+
+
+        std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i ( new ccReg_EPP_i(
+                    db_args_ptr->get_conn_info()
+                    , &mailMan, CorbaContainer::get_instance()->getNS()
+                    , registry_args_ptr->restricted_handles
+                    , registry_args_ptr->disable_epp_notifier
+                    , registry_args_ptr->lock_epp_commands
+                    , registry_args_ptr->nsset_level
+                    , registry_args_ptr->docgen_path
+                    , registry_args_ptr->docgen_template_path
+                    , registry_args_ptr->fileclient_path
+                    , rifd_args_ptr->rifd_session_max
+                    , rifd_args_ptr->rifd_session_timeout
+                    , rifd_args_ptr->rifd_session_registrar_max
+                    , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
+            ));
+
+        EPP_backend_init( myccReg_EPP_i.get(), rifd_args_ptr);
+
+       // login
+        // registrar
+         std::string time_string(TimeStamp::microsec());
+         std::string registrar_handle(std::string("REG-DIRECTCALL")+time_string);
+
+         std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
+         Fred::Registrar::Manager::AutoPtr regMan
+                  = Fred::Registrar::Manager::create(DBSharedPtr());
+         Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+         registrar->setName(registrar_handle+"_Name");
+         registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+         registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+         registrar->setVat(true);
+         Fred::Registrar::ACL* registrar_acl = registrar->newACL();
+         registrar_acl->setCertificateMD5("");
+         registrar_acl->setPassword("");
+         registrar->save();
+         unsigned long long registrar_inv_id = registrar->getId();
+
+         //add registrar into zone
+         std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
+         Database::Date rzfromDate;
+         Database::Date rztoDate;
+         Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+
+
+         // ### add credit
+         Money amount ("90000.00");
+         unsigned act_year = boost::gregorian::day_clock::universal_day().year();
+
+         Database::Connection conn = Database::Manager::acquire();
+         Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+         // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
+         std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+         Database::Date taxdate (act_year,1,1);
+         Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
+                         , zone_cz_id//zone
+                         , registrar_inv_id//registrar
+                         , amount//price
+                         , boost::posix_time::microsec_clock::universal_time());//invoice_date
+         BOOST_CHECK_EQUAL(invoiceid != 0,true);
+
+
+
+        // ------------------ login
+
+        std::string passwd_var("");
+        std::string new_passwd_var("");
+        std::string cltrid_var("omg");
+        std::string xml_var("<omg/>");
+        std::string cert_var("");
+
+        CORBA::Long clientId = 0;
+
+        ccReg::Response *r = myccReg_EPP_i->ClientLogin(
+            registrar_handle.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),
+            xml_var.c_str(),clientId,cert_var.c_str(),ccReg::EN);
+
+        if (r->code != 1000 || !clientId) {
+            boost::format msg = boost::format("Error code: %1% - %2% ") % r->code % r->msg;
+            std::cerr << msg.str() << std::endl;
+            throw std::runtime_error(msg.str());
+        }
+
+        // call
+        int i = 1;
+        ccReg::Period_str period;
+        period.count = 1;
+        period.unit = ccReg::unit_year;
+        ccReg::EppParams epp_params;
+        epp_params.requestID = clientId + i;
+        epp_params.sessionID = clientId;
+        epp_params.clTRID = "";
+        epp_params.XML = "";
+        CORBA::String_var crdate;
+        CORBA::String_var exdate;
+
+        std::string test_domain_fqdn(std::string("tdomain")+time_string);
+
+        try {
+            r = myccReg_EPP_i->DomainCreate(
+                (test_domain_fqdn+".cz").c_str(), // fqdn
+                "KONTAKT",                // contact
+                "",                       // nsset
+                "",                       // keyset
+                "",                       // authinfo
+                period,                   // reg. period
+                ccReg::AdminContact(),    // admin contact list
+                crdate,                   // create datetime (output)
+                exdate,                   // expiration date (output)
+                epp_params,               // common call params
+                ccReg::ExtensionList());
+
+        } catch (ccReg::EPP::EppError &ex) {
+            boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
+            throw std::runtime_error(message.str());
+        }
+
+        if(r->code != 1000) {
+            std::cerr << "ERROR: Return code: " << r->code << std::endl;
+            throw std::runtime_error("Error received from DomainCreate call");
+        }
+    }
+
+
 
 BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
 {
 
-    //corba config
-    FakedArgs fa = CfgArgs::instance()->fa;
+    std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
 
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
-
-    //conf pointers
-    HandleDatabaseArgs* db_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleDatabaseArgs>();
-    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleRegistryArgs>();
-    HandleRifdArgs* rifd_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleRifdArgs>();
-
-    MailerManager mailMan(CorbaContainer::get_instance()->getNS());
-
-
-    std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i ( new ccReg_EPP_i(
-                db_args_ptr->get_conn_info()
-                , &mailMan, CorbaContainer::get_instance()->getNS()
-                , registry_args_ptr->restricted_handles
-                , registry_args_ptr->disable_epp_notifier
-                , registry_args_ptr->lock_epp_commands
-                , registry_args_ptr->nsset_level
-                , registry_args_ptr->docgen_path
-                , registry_args_ptr->docgen_template_path
-                , registry_args_ptr->fileclient_path
-                , rifd_args_ptr->rifd_session_max
-                , rifd_args_ptr->rifd_session_timeout
-                , rifd_args_ptr->rifd_session_registrar_max
-                , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
-        ));
-
-    EPP_backend_init( myccReg_EPP_i.get(), rifd_args_ptr);
-
-   // login
     // registrar
      std::string time_string(TimeStamp::microsec());
      std::string registrar_handle(std::string("REG-DIRECTCALL")+time_string);
@@ -2780,42 +2776,32 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
 
     // ------------------ login
 
-    std::string passwd_var("");
-    std::string new_passwd_var("");
-    std::string cltrid_var("omg");
-    std::string xml_var("<omg/>");
-    std::string cert_var("");
+    CORBA::Long clientId = epp_backend_login(myccReg_EPP_i.get(), registrar_handle);
 
-    CORBA::Long clientId = 0;
+    testCreateDomainDirectWorker(myccReg_EPP_i.get(), Database::Date(), 12,
+           INVOICING_DomainCreate, registrar->getId(), 1, clientId, zone_cz_id);
 
-    ccReg::Response *r = myccReg_EPP_i->ClientLogin(
-        registrar_handle.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),
-        xml_var.c_str(),clientId,cert_var.c_str(),ccReg::EN);
-    
-    if (r->code != 1000 || !clientId) {
-        boost::format msg = boost::format("Error code: %1% - %2% ") % r->code % r->msg;
-        std::cerr << msg.str() << std::endl;
-        throw std::runtime_error(msg.str());
-    }
+    /*
+    reg_units = 6;
+    int number   = 1;
 
     // call
-    int i = 1;
     ccReg::Period_str period;
-    period.count = 1;
-    period.unit = ccReg::unit_year;
+    period.count = reg_units;
+    period.unit = ccReg::unit_month;
     ccReg::EppParams epp_params;
-    epp_params.requestID = clientId + i;
+    epp_params.requestID = clientId + number;
     epp_params.sessionID = clientId;
     epp_params.clTRID = "";
     epp_params.XML = "";
     CORBA::String_var crdate;
     CORBA::String_var exdate;
 
-    std::string test_domain_fqdn(std::string("tdomain")+time_string);
+        std::string test_domain_fqdn((boost::format("tdomain%1%-%2%.cz") % time_string % number).str());
 
     try {
         r = myccReg_EPP_i->DomainCreate(
-            (test_domain_fqdn+".cz").c_str(), // fqdn
+            (test_domain_fqdn).c_str(), // fqdn
             "KONTAKT",                // contact
             "",                       // nsset
             "",                       // keyset
@@ -2836,6 +2822,7 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
         std::cerr << "ERROR: Return code: " << r->code << std::endl;
         throw std::runtime_error("Error received from DomainCreate call");
     }
+    */
 }
 
 
@@ -2898,24 +2885,7 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPP)
     //try get epp reference
     
 
-
-    //corba config
-    FakedArgs fa = CfgArgs::instance()->fa;
-    //conf pointers
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
-
-    // DEBUG
-    //std::cout << " Parameters: host: " << ns_args_ptr->nameservice_host
-    //    << " port: " << ns_args_ptr->nameservice_port
-    //    << " context: " << ns_args_ptr->nameservice_context << std::endl;
-    for (int t = 0;t<<fa.get_argc();t++ ) {
-        std::cout << " CmdLine Args: " << fa.get_argv() [t] << std::endl;
-    }
+    init_corba_container();
 
     // EPP CORBA ref
     ccReg::EPP_var epp_ref;

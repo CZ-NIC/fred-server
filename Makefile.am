@@ -953,6 +953,8 @@ tests_test_server_SOURCES = tests/test-server.cc \
 					 tests/tests-common.cc \
 					 tests/tests-common.h \
 					 tests/test-filters-date-time.cc \
+					 tests/test-invoice-common.h \
+					 tests/test-invoice-common.cc \
                      tests/test-invoice.cc \
                      tests/test-common-threaded.h \
                      tests/test-invoice2.cc \

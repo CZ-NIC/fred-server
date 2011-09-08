@@ -12,22 +12,8 @@
 #include "cfg/handle_corbanameservice_args.h"
 
 #include "epp_corba_client_impl.h"
+#include "test-invoice-common.h"
 
-
-void  init_corba_container()
-{
- //corba config
-    FakedArgs orb_fa = CfgArgs::instance()->fa;
-
-    //conf pointers
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-
-    CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
-}
 
 // TODO: this should also be used in invoice test
 Database::ID create_registrar(Fred::Registrar::Manager *regMan)
