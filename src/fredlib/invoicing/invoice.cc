@@ -1218,9 +1218,11 @@ bool charge_operation_auto_price(
         }
 
         Money price_list_price = std::string(operation_price_list_result[0][2]);
-        unsigned long  price_list_quantity = operation_price_list_result[0][3];
+        Decimal  price_list_quantity = std::string(operation_price_list_result[0][3]);
 
-        Money price =  price_list_price * quantity / price_list_quantity;//count_price
+        Money price =  price_list_price
+                * Decimal(boost::lexical_cast<std::string>(quantity))
+                / price_list_quantity;//count_price
 
         return charge_operation(operation, zone_id, registrar_id, object_id, crdate, date_from, date_to, quantity, price);
     }//try
@@ -1262,7 +1264,7 @@ bool charge_operation_custom_price(
             throw std::runtime_error("charge_operation_custom_price: operation is for auto processing");
         }
 
-        return charge_operation(operation, zone, registrar, object, crdate, date_from, date_to, quantity, price);
+        return charge_operation(operation, zone_id, registrar_id, object_id, crdate, date_from, date_to, quantity, price);
     }//try
     catch(const std::exception& ex)
     {
