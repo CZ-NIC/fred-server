@@ -1155,22 +1155,21 @@ bool charge_operation(
         unsigned long long registrar_credit_transaction_id = registrar_credit_transaction_result[0][0];
 
         // new record to invoice_operation
-        Database::Result invoice_operation_result
-            = conn.exec_params(
-               "INSERT INTO invoice_operation "
-                " (id, object_id, registrar_id, operation_id, zone_id" //4
-                " , crdate, quantity, date_from,  date_to "
-                " , registrar_credit_transaction_id) "
-                "  VALUES (DEFAULT, $1::bignum, $2::bignum, $3::bignum, $4::bignum "
-                " , $5::timestamp, $6::integer, $7::date, $8::date "
-                " , $9::bigint) "
-              " RETURNING id "
+        //Database::Result invoice_operation_result =
+        conn.exec_params(
+            "INSERT INTO invoice_operation "
+            " (id, object_id, registrar_id, operation_id, zone_id" //4
+            " , crdate, quantity, date_from,  date_to "
+            " , registrar_credit_transaction_id) "
+            "  VALUES (DEFAULT, $1::bignum, $2::bignum, $3::bignum, $4::bignum "
+            " , $5::timestamp, $6::integer, $7::date, $8::date "
+            " , $9::bigint) "
+            //" RETURNING id "
             , Database::query_param_list(object_id ? object_id : Database::QPNull)
             (registrar_id)(operation_id)(zone_id)
             (crdate)(quantity)(date_from)(date_to)
             (registrar_credit_transaction_id)
             );
-
 
     }
     catch(const std::exception& ex)
