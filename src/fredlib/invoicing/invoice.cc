@@ -320,6 +320,9 @@ public:
 
   }
 
+
+
+
   virtual bool chargeDomainCreate(
           const Database::ID &zone,
           const Database::ID &registrar,
@@ -1055,8 +1058,129 @@ void createAccountInvoice( const std::string& registrarHandle, const std::string
       LOGGER(PACKAGE).error("createAccountInvoice failed.");
       throw std::runtime_error("createAccountInvoice failed");
     }
-
 }//createAccountInvoice
+
+
+
+// WARNING: this is called from epp_impl.cc and it's sharing connection with dbsql's DB
+// so it must *NOT* create Database::Transactions
+bool charge_operation(
+    const std::string& operation
+    , unsigned long long zone_id
+    , unsigned long long registrar_id
+    , unsigned long long object_id
+    , boost::posix_time::ptime crdate
+    , boost::gregorian::date date_from
+    , boost::gregorian::date date_to
+    , unsigned long quantity
+    , Money price)
+{
+    //if (registrar is "system registrar") return ok //no charging
+    try
+    {
+        // TODO we rely that connection is saved in thread specific data
+        Database::Connection conn = Database::Manager::acquire();
+
+        // find out whether the registrar in question is system registrar
+        bool system = false;
+        Database::Result rsys =
+          conn.exec_params("SELECT system FROM registrar WHERE id=$1::integer",
+              Database::query_param_list(registrar_id));
+        if(rsys.size() != 1 || rsys[0][0].isnull()) {
+            throw std::runtime_error((boost::format("Registrar ID %1% not found ") % registrar_id).str());
+        } else {
+            system = rsys[0][0];
+            if(system) {
+                LOGGER(PACKAGE).info ( (boost::format("Registrar ID %1% has system flag set, not billing") % registrar_id).str());
+                // no billing for system registrar
+                return true;
+            }
+        }
+
+        //get_operation_payment_settings
+        Database::Result operation_price_list_result
+            = conn.exec_params(
+            "SELECT enable_postpaid_operation, operation_id, "
+                " FROM price_list pl "
+                    " JOIN enum_operation eo ON pl.operation_id = eo.id "
+                    " JOIN zone z ON z.id = pl.zone_id "
+                " WHERE pl.zone_id = $1::bignum AND eo.operation = $2::text "
+            , Database::query_param_list(zone_id)(operation));
+
+        if(operation_price_list_result.size() != 1)
+        {
+            throw std::runtime_error("charge_operation: operation not found");
+        }
+
+        bool enable_postpaid_operation = operation_price_list_result[0][0];
+        unsigned long long operation_id = operation_price_list_result[0][1];
+
+        //get_registrar_credit - lock record in registrar_credit table for registrar and zone
+        Database::Result locked_registrar_credit_result
+            = conn.exec_params(
+            "SELECT id, credit "
+                 " FROM registrar_credit "
+                 " WHERE registrar_id = $1::bigint "
+                     " AND zone_id = $2::bigint "
+             " FOR UPDATE "
+            , Database::query_param_list(registrar_id)(zone_id));
+
+        if(locked_registrar_credit_result.size() != 1)
+        {
+            throw std::runtime_error("charge_operation: registrar_credit not found");
+        }
+
+        unsigned long long registrar_credit_id = locked_registrar_credit_result[0][0];
+        Money registrar_credit_balance = std::string(locked_registrar_credit_result[0][1]);
+
+        if(registrar_credit_balance < price && !enable_postpaid_operation)
+        {
+            throw std::runtime_error("charge_operation: insufficient balance");
+        }
+
+        // save info about debt into credit
+        Database::Result registrar_credit_transaction_result
+            = conn.exec_params(
+              "INSERT INTO registrar_credit_transaction "
+                  " (id, balance_change, registrar_credit_id) "
+                  " VALUES (DEFAULT, $1::numeric , $2::bigint) "
+              " RETURNING id "
+            , Database::query_param_list(price)(registrar_credit_id));
+
+        if(registrar_credit_transaction_result.size() != 1)
+        {
+            throw std::runtime_error("charge_operation: registrar_credit_transaction failed");
+        }
+
+        unsigned long long registrar_credit_transaction_id = registrar_credit_transaction_result[0][0];
+
+        // new record to invoice_operation
+        Database::Result invoice_operation_result
+            = conn.exec_params(
+               "INSERT INTO invoice_operation "
+                " (id, object_id, registrar_id, operation_id, zone_id" //4
+                " , crdate, quantity, date_from,  date_to "
+                " , registrar_credit_transaction_id) "
+                "  VALUES (DEFAULT, $1::bignum, $2::bignum, $3::bignum, $4::bignum "
+                " , $5::timestamp, $6::integer, $7::date, $8::date "
+                " , $9::bigint) "
+              " RETURNING id "
+            , Database::query_param_list(object_id ? object_id : Database::QPNull)
+            (registrar_id)(operation_id)(zone_id)
+            (crdate)(quantity)(date_from)(date_to)
+            (registrar_credit_transaction_id)
+            );
+
+
+    }
+    catch(const std::exception& ex)
+    {
+        throw;
+    }
+
+    return true;
+
+}
 
 }; // ManagerImpl
 
