@@ -1100,12 +1100,16 @@ bool charge_operation(
         //get_operation_payment_settings
         Database::Result operation_price_list_result
             = conn.exec_params(
-            "SELECT enable_postpaid_operation, operation_id, "
+            "SELECT enable_postpaid_operation, operation_id, price, quantity"
                 " FROM price_list pl "
                     " JOIN enum_operation eo ON pl.operation_id = eo.id "
                     " JOIN zone z ON z.id = pl.zone_id "
-                " WHERE pl.zone_id = $1::bignum AND eo.operation = $2::text "
-            , Database::query_param_list(zone_id)(operation));
+                " WHERE valid_from < $1::timestamp "
+                      " AND (pl.valid_to is NULL OR pl.valid_to > crdate ) "
+                " AND pl.zone_id = $2::bignum AND eo.operation = $3::text "
+                " ORDER BY pl.valid_from DESC "
+                " LIMIT 1 "
+            , Database::query_param_list(crdate)(zone_id)(operation));
 
         if(operation_price_list_result.size() != 1)
         {
@@ -1178,8 +1182,96 @@ bool charge_operation(
     }
 
     return true;
-
 }
+
+bool charge_operation_auto_price(
+        const std::string& operation
+        , unsigned long long zone_id
+        , unsigned long long registrar_id
+        , unsigned long long object_id
+        , boost::posix_time::ptime crdate
+        , boost::gregorian::date date_from
+        , boost::gregorian::date date_to
+        , unsigned long quantity)
+{
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();
+
+        //get_price_list_info
+        Database::Result operation_price_list_result
+            = conn.exec_params(
+            "SELECT enable_postpaid_operation, operation_id, price, quantity "
+                " FROM price_list pl "
+                    " JOIN enum_operation eo ON pl.operation_id = eo.id "
+                    " JOIN zone z ON z.id = pl.zone_id "
+                " WHERE valid_from < $1::timestamp "
+                      " AND (pl.valid_to is NULL OR pl.valid_to > crdate ) "
+                " AND pl.zone_id = $2::bignum AND eo.operation = $3::text "
+                " ORDER BY pl.valid_from DESC "
+                " LIMIT 1 "
+            , Database::query_param_list(crdate)(zone_id)(operation));
+
+        if(operation_price_list_result.size() != 1)
+        {
+            throw std::runtime_error("charge_operation_auto_price: operation not found");
+        }
+
+        Money price_list_price = std::string(operation_price_list_result[0][2]);
+        unsigned long  price_list_quantity = operation_price_list_result[0][3];
+
+        Money price =  price_list_price * quantity / price_list_quantity;//count_price
+
+        return charge_operation(operation, zone_id, registrar_id, object_id, crdate, date_from, date_to, quantity, price);
+    }//try
+    catch(const std::exception& ex)
+    {
+        throw;
+    }
+
+    return false;
+}
+
+bool charge_operation_custom_price(
+        const std::string& operation
+        , unsigned long long zone_id
+        , unsigned long long registrar_id
+        , unsigned long long object_id
+        , boost::posix_time::ptime crdate
+        , boost::gregorian::date date_from
+        , boost::gregorian::date date_to
+        , unsigned long quantity
+        , Money price)
+{
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();
+
+        //assert(operation is not for auto processing) - get_operation_payment_settings
+        Database::Result operation_price_list_result
+            = conn.exec_params(
+            "SELECT enable_postpaid_operation, operation_id "
+                " FROM price_list pl "
+                    " JOIN enum_operation eo ON pl.operation_id = eo.id "
+                    " JOIN zone z ON z.id = pl.zone_id "
+                " WHERE pl.zone_id = $1::bignum AND eo.operation = $2::text "
+            , Database::query_param_list(zone_id)(operation));
+
+        if(operation_price_list_result.size() > 0)
+        {
+            throw std::runtime_error("charge_operation_custom_price: operation is for auto processing");
+        }
+
+        return charge_operation(operation, zone, registrar, object, crdate, date_from, date_to, quantity, price);
+    }//try
+    catch(const std::exception& ex)
+    {
+        throw;
+    }
+
+    return false;
+}
+
 
 }; // ManagerImpl
 
