@@ -86,7 +86,10 @@ void Compound::clear() {
   filter_list.clear();
   std::for_each(joins.begin(),joins.end(),boost::checked_deleter<Join>());
   joins.clear();
-  if (join_on) delete join_on;
+  if (join_on) {
+      delete join_on;
+      join_on = 0;
+  }
 }
 
 template<class Tp> Tp* Compound::find() {
