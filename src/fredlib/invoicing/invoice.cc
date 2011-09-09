@@ -610,6 +610,15 @@ public:
 unsigned long long  createDepositInvoice(Database::Date tax_date, unsigned long long zoneId
         , unsigned long long registrarId, Money price, boost::posix_time::ptime invoice_date)
 {
+
+    if ((invoice_date.date() - tax_date) > boost::gregorian::days(15) )
+    {
+        throw std::runtime_error(
+            "createDepositInvoice: invoice_date is more than"
+            " 15 days later than tax_date");
+    }
+
+
     Database::Connection conn = Database::Manager::acquire();
 
     Database::Result rvat = conn.exec_params("SELECT vat FROM registrar WHERE id=$1::integer",
