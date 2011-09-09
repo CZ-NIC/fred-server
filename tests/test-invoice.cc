@@ -154,6 +154,55 @@ bool check_std_exception_createAccountInvoice(std::exception const & ex)
 
 Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units);
 
+
+
+Fred::Registrar::Registrar::AutoPtr createTestRegistrarClass()
+{
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_handle = std::string("REG-FREDTEST") + time_string;
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+
+    registrar->setName(registrar_handle+"_Name");
+    registrar->setOrganization(registrar_handle+"_Organization");
+    registrar->setCity("Brno");
+    registrar->setStreet1("Street 1");
+    registrar->setStreet2("Street 2");
+    registrar->setStreet2("Street 3");
+    registrar->setDic("1234567889");
+    registrar->setEmail("info@nic.cz");
+    registrar->setFax("+420.123456");
+    registrar->setIco("92345678899");
+    registrar->setPostalCode("11150");
+    registrar->setProvince("noprovince");
+    registrar->setTelephone("+420.987654");
+    registrar->setVarSymb("555666");
+    registrar->setURL("http://ucho.cz");
+
+    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+    registrar->setVat(true);
+    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
+    registrar_acl->setCertificateMD5("");
+    registrar_acl->setPassword("");
+    registrar->save();
+
+//add registrar into zone
+    std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
+    Database::Date rzfromDate;
+    Database::Date rztoDate;
+    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);                          
+
+    return registrar;
+}
+
+Database::ID createTestRegistrar()
+{
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+    return registrar->getId();
+}
+
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
 {
     //db
@@ -252,20 +301,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
     //db
     Database::Connection conn = Database::Manager::acquire();
 
-    Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(DBSharedPtr());
-    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-
-    //current time into char string
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_novat_handle(std::string("REG-FRED_NOVAT_INV")+time_string);
-
-    registrar->setHandle(registrar_novat_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar->setVat(true);
-    registrar->save();
-
-    unsigned long long registrar_inv_id = registrar->getId();
+    unsigned long long registrar_inv_id = createTestRegistrar();
 
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
@@ -279,8 +315,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
         invMan->createDepositInvoice(taxdate//taxdate
                 , 0//no zone
                 , registrar_inv_id//registrar
-                , Money("200.00")//price
-                , boost::posix_time::microsec_clock::universal_time())//invoice_date
+                , Money("200.00")
+                , boost::posix_time::microsec_clock::universal_time())//price
     , std::exception, check_std_exception_invoice_prefix);
     
     }
@@ -296,20 +332,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
-    Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(DBSharedPtr());
-    Fred::Registrar::Registrar::AutoPtr registrar_novat = regMan->createRegistrar();
-
-    //current time into char string
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_novat_handle(std::string("REG-FRED_NOVAT_INV")+time_string);
-
-    registrar_novat->setHandle(registrar_novat_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar_novat->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar_novat->setVat(false);
-    registrar_novat->save();
-
-    unsigned long long registrar_novat_inv_id = registrar_novat->getId();
+    unsigned long long registrar_novat_inv_id = createTestRegistrar();
 
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
@@ -322,8 +345,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
             invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
-                    , Money("200.00")//price
-                    , boost::posix_time::microsec_clock::universal_time())//invoice_date
+                    , Money("200.00")
+                    , boost::posix_time::microsec_clock::universal_time())//price
                     , std::exception
                     , check_std_exception_invoice_prefix);
 
@@ -340,23 +363,12 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
-    Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(DBSharedPtr());
-    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-
-    //current time into char string
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle(std::string("REG-FRED_INV")+time_string);
-
-    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar->setVat(true);
-    registrar->save();
-
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
     unsigned long long registrar_inv_id = registrar->getId();
+    std::string registrar_handle = registrar->getHandle();
 
-    LOGGER(PACKAGE).debug ( boost::format("createDepositInvoice test registrar_handle %1% registrar_inv_id %2%")
-               % registrar_handle % registrar_inv_id);
+    LOGGER(PACKAGE).debug ( boost::format("createDepositInvoice test registrar_id %2%")
+               % registrar_inv_id);
 
 
     std::vector<registrar_credit_item> registrar_credit_vect;
@@ -396,8 +408,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , Money("200.00")//price
-                    , boost::posix_time::microsec_clock::universal_time()); //invoice_date
+                    , Money("200.00")
+                    , boost::posix_time::microsec_clock::universal_time());//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
@@ -425,8 +437,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , Money("21474836.47")//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                    , Money("21474836.47")
+                    , boost::posix_time::microsec_clock::universal_time());//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
@@ -476,6 +488,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
         if(fred_credit_str.compare(test_credit_str) != 0 )
         {
+            /*
             std::cout << "taxdate: " << registrar_credit_vect.at(i).taxdate
                 << " year: " << registrar_credit_vect.at(i).year
                 << " price: " << registrar_credit_vect.at(i).price
@@ -488,6 +501,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
             std::cout << "\ndec_credit_query: " << dec_credit_query <<  std::endl;
             std::cout << "\ndec_credit_query_params: ";
+
             std::size_t i_num=0;
             for (Database::QueryParams::iterator it = dec_credit_query_params.begin(); it != dec_credit_query_params.end(); ++it )
             {
@@ -495,6 +509,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
                 std::cout << " $" << i_num << ": " << it->print_buffer();
             }
             std::cout << std::endl;
+            */
         }//if not equal
     }
 
@@ -502,8 +517,10 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
     if(test_get_credit_by_zone.compare(test_credit_str) != 0)
     {
+        /*
         std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone 
 	    << " test_credit_str: " << test_credit_str << std::endl;
+	    */
     }
     BOOST_CHECK((test_get_credit_by_zone.compare(test_credit_str) == 0));
 
@@ -517,8 +534,10 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
     if(std::string(corba_credit.in()).compare(test_credit_str) != 0)
     {
+        /*
         std::cout << "corba_credit: " << std::string(corba_credit.in())
         << " test_credit_str: " << test_credit_str << std::endl;
+        */
     }
     BOOST_CHECK((std::string(corba_credit.in()).compare(test_credit_str) == 0));
 
@@ -536,36 +555,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
-    Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(DBSharedPtr());
-    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-
-    //current time into char string
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle(std::string("REG-FRED_CREDITNOTE")+time_string);
-
-    registrar->setName(registrar_handle+"_Name");
-    registrar->setOrganization(registrar_handle+"_Organization");
-    registrar->setCity("Brno");
-    registrar->setStreet1("Street 1");
-    registrar->setStreet2("Street 2");
-    registrar->setStreet2("Street 3");
-    registrar->setDic("1234567889");
-    registrar->setEmail("info@nic.cz");
-    registrar->setFax("+420.123456");
-    registrar->setIco("92345678899");
-    registrar->setPostalCode("11150");
-    registrar->setProvince("noprovince");
-    registrar->setTelephone("+420.987654");
-    registrar->setVarSymb("555666");
-    registrar->setURL("http://ucho.cz");
-
-
-    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar->setVat(true);
-    registrar->save();
-
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+    std::string registrar_handle = registrar->getHandle();
     unsigned long long registrar_inv_id = registrar->getId();
 
     LOGGER(PACKAGE).debug ( boost::format("createDepositInvoice test registrar_handle %1% registrar_inv_id %2%")
@@ -611,8 +602,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , Money("200.00")//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                    , Money("200.00")
+                    , boost::posix_time::microsec_clock::universal_time());//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
@@ -641,8 +632,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
             credit_note_id = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , Money("200.00")//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                    , Money("200.00")
+                    , boost::posix_time::microsec_clock::universal_time());//price
             BOOST_CHECK_EQUAL(credit_note_id != 0,true);
 
             //credit note update
@@ -704,6 +695,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
 
         if(fred_credit_str.compare(test_credit_str) != 0 )
         {
+            /*
             std::cout << "taxdate: " << registrar_credit_vect.at(i).taxdate
                 << " year: " << registrar_credit_vect.at(i).year
                 << " price: " << registrar_credit_vect.at(i).price
@@ -723,6 +715,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
                 std::cout << " $" << i_num << ": " << it->print_buffer();
             }
             std::cout << std::endl;
+            */
         }//if not equal
     }
 
@@ -730,8 +723,10 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
 
     if(test_get_credit_by_zone.compare(test_credit_str) != 0)
     {
+        /*
         std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone 
 	    << " test_credit_str: " << test_credit_str << std::endl;
+	    */
     }
     BOOST_CHECK((test_get_credit_by_zone.compare(test_credit_str) == 0));
 
@@ -745,8 +740,10 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
 
     if(std::string(corba_credit.in()).compare(test_credit_str) != 0)
     {
+        /*
         std::cout << "corba_credit: " << std::string(corba_credit.in())
         << " test_credit_str: " << test_credit_str << std::endl;
+        */
     }
     BOOST_CHECK((std::string(corba_credit.in()).compare(test_credit_str) == 0));
 
@@ -762,20 +759,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
-    Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(DBSharedPtr());
-    Fred::Registrar::Registrar::AutoPtr registrar_novat = regMan->createRegistrar();
-
-    //current time into char string
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_novat_handle(std::string("REG-FRED_NOVAT_INV")+time_string);
-
-    registrar_novat->setHandle(registrar_novat_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar_novat->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar_novat->setVat(false);
-    registrar_novat->save();
-
-    unsigned long long registrar_novat_inv_id = registrar_novat->getId();
+    unsigned long long registrar_novat_inv_id = createTestRegistrar();
 
     std::vector<registrar_credit_item> registrar_novat_credit_vect;
 
@@ -803,8 +787,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
-                    , Money("200.00")//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                    , Money("200.00")
+                    , boost::posix_time::microsec_clock::universal_time());//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
@@ -822,8 +806,8 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
-                    , Money("200.00")//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                    , Money("200.00")
+                    , boost::posix_time::microsec_clock::universal_time());//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
             //get registrar credit
@@ -861,6 +845,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
         if(fred_credit_str.compare(test_credit_str) != 0 )
         {
+            /*
             std::cout << " year: " << registrar_novat_credit_vect.at(i).year
                 << " price: " << registrar_novat_credit_vect.at(i).price
                 << " credit: " <<  fred_credit_str
@@ -879,6 +864,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
                 std::cout << " $" << i_num << ": " << it->print_buffer();
             }
             std::cout << std::endl;
+            */
 
         }//if not equal
     }
@@ -891,11 +877,10 @@ struct ChargeTestParams {
     Database::ID regid;
 
     ccReg_EPP_i *epp_backend;
-    ccReg::EPP_var epp_ref;
 
     unsigned clientId;
 
-    ChargeTestParams() : zone_id(0), regid(0), epp_backend(NULL), epp_ref(NULL), clientId(0)
+    ChargeTestParams() : zone_id(0), regid(0), epp_backend(NULL), clientId(0)
     { }
 };
 
@@ -1095,39 +1080,20 @@ void testChargeFail(Fred::Invoicing::Manager *invMan, Database::Date exdate, uns
     testChargeEval(res, false);
 }
 
-// Fred::Registrar::Registrar::AutoPtr createTestRegistrar(const std::string &handle_base)
-Database::ID createTestRegistrar()
-{
-
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle = std::string("REG-FRED_2INVNEED") + time_string;
-
-    Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(DBSharedPtr());
-    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-
-    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar->setVat(true);
-    registrar->save();
-
-    return registrar->getId();
-}
-
 void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Database::ID zone_cz_id, Database::ID reg_id, Money amount)
 {
    Database::ID invoiceid = man->createDepositInvoice(taxdate //taxdate
                    , zone_cz_id//zone
                    , reg_id//registrar
-                   , amount//price
-                   , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                   , amount
+                   , boost::posix_time::microsec_clock::universal_time());//price
    BOOST_CHECK_EQUAL(invoiceid != 0,true);
    // add credit for new registrar
    Database::ID invoiceid2 = man->createDepositInvoice(taxdate //taxdate
                    , zone_cz_id//zone
                    , reg_id//registrar
-                   , amount//price
-                   , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                   , amount
+                   , boost::posix_time::microsec_clock::universal_time());//price
    BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
 }
 
@@ -1188,8 +1154,8 @@ void testChargeInsuffCredit(Fred::Invoicing::Manager *invMan, unsigned reg_units
                     Database::Date (act_year,1,1)//taxdate
                     , zone_id//zone
                     , reg_id//registrar
-                    , amount//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                    , amount
+                    , boost::posix_time::microsec_clock::universal_time());//price
 
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
@@ -1255,15 +1221,15 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
     Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
                     , zone_cz_id//zone
                     , regid//registrar
-                    , amount//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                    , amount
+                    , boost::posix_time::microsec_clock::universal_time());//price
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
     // add credit for new registrar
     Database::ID invoiceid2 = invMan->createDepositInvoice(taxdate //taxdate
                     , zone_enum_id//zone
                     , regid//registrar
-                    , amount//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                    , amount
+                    , boost::posix_time::microsec_clock::universal_time());//price
     BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
 
     Database::Date exdate(act_year + 1, 1, 1);
@@ -1515,44 +1481,13 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     init_corba_container();
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-
-    // registrar
+    // handle which doesn't match  any registrar
     std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle(std::string("REG-FRED_ACCINV")+time_string);
-    std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
-    Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(DBSharedPtr());
-    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-    registrar->setName(registrar_handle+"_Name");
-    registrar->setOrganization(registrar_handle+"_Organization");
-    registrar->setCity("Brno");
-    registrar->setStreet1("Street 1");
-    registrar->setStreet2("Street 2");
-    registrar->setStreet2("Street 3");
-    registrar->setDic("1234567889");
-    registrar->setEmail("info@nic.cz");
-    registrar->setFax("+420.123456");
-    registrar->setIco("92345678899");
-    registrar->setPostalCode("11150");
-    registrar->setProvince("noprovince");
-    registrar->setTelephone("+420.987654");
-    registrar->setVarSymb("555666");
-    registrar->setURL("http://ucho.cz");
+    std::string noregistrar_handle(std::string("REG-NOTEXIST")+time_string);
 
-    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar->setVat(true);
-    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-    registrar_acl->setCertificateMD5("");
-    registrar_acl->setPassword("");
-    registrar->save();
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+    std::string registrar_handle =     registrar->getHandle();
     unsigned long long registrar_inv_id = registrar->getId();
-
-    //add registrar into zone
-    std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
-    Database::Date rzfromDate;
-    Database::Date rztoDate;
-    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);                          
 
     try_insert_invoice_prefix();
 
@@ -1571,8 +1506,8 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
-                , price//price
-                , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                , price
+                , boost::posix_time::microsec_clock::universal_time());//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
         //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
@@ -1581,8 +1516,8 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
-                , price//price
-                , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                , price
+                , boost::posix_time::microsec_clock::universal_time());//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
         //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
@@ -1591,8 +1526,8 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
-                , price//price
-                , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                , price
+                , boost::posix_time::microsec_clock::universal_time());//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
         //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
@@ -1744,10 +1679,12 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     //debug print
     if(credit_before - credit_after_renew != test_operation_price)
     {
+        /*
         std::cout << "\ncredit_before: " << credit_before
                 << " credit_after_renew: " << credit_after_renew
                 << " test_operation_price: " << test_operation_price
                 << std::endl;
+                */
     }
     BOOST_CHECK(credit_before - credit_after_renew == test_operation_price);
 
@@ -2110,88 +2047,6 @@ ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Database
 }
 
 
-// thread-safe worker
-// TODO use exdate parameter !!!
-ResultTestCharge testCreateDomainWorker(ccReg::EPP_var epp_ref, Fred::Invoicing::Manager *invMan, Database::Date exdate_, unsigned reg_units,
-        unsigned operation, Database::ID zone_id, Database::ID registrar_id,
-        unsigned number, unsigned clientId)
-{
-    ResultTestCharge ret;
-
-    ret.exdate = exdate_;
-    ret.units = reg_units;
-    ret.zone_id = zone_id;
-    ret.regid = registrar_id;
-
-    ret.success = true;
-
-    ret.test_desc =
-        (boost::format("test create domain operation charging - exdate: %1%, reg_units: %2%, operation: %3% , zone_id: %4%, registrar_id: %5%")
-        % ret.exdate % ret.units % operation % zone_id % registrar_id).str();
-
-    std::string time_string(TimeStamp::microsec());
-
-    ret.credit_before = Money("0");
-    ret.credit_after = Money("0");
-
-
-    // do the operation
-    if ( operation == INVOICING_DomainCreate ) {
-        ccReg::Response_var r;
-
-        ccReg::Period_str period;
-                period.count = reg_units;
-                period.unit = ccReg::unit_month;
-                ccReg::EppParams epp_params;
-                epp_params.requestID = clientId + number;
-                epp_params.sessionID = clientId;
-                epp_params.clTRID = "";
-                epp_params.XML = "";
-                CORBA::String_var crdate;
-                // CORBA::String_var exdate(exdate_); TODO
-                CORBA::String_var exdate;
-
-        std::string test_domain_fqdn((boost::format("tdomain%1%-%2%.cz") % time_string % number).str());
-
-        ret.object_handle = test_domain_fqdn;
-
-        try {
-            r = epp_ref->DomainCreate(
-                (test_domain_fqdn).c_str(), // fqdn
-                "KONTAKT",                // contact
-                "",                       // nsset
-                "",                       // keyset
-                "",                       // authinfo
-                period,                   // reg. period
-                ccReg::AdminContact(),    // admin contact list
-                crdate,                   // create datetime (output)
-                exdate,                   // expiration date (output)
-                epp_params,               // common call params
-                ccReg::ExtensionList());
-
-        } catch (ccReg::EPP::EppError &ex) {
-            boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
-            throw std::runtime_error(message.str());
-        }
-
-        if(r->code != 1000) {
-            std::cerr << "ERROR: Return code: " << r->code << std::endl;
-            throw std::runtime_error("Error received");
-        }
-
-    } else if (operation == INVOICING_DomainRenew) {
-        THREAD_BOOST_ERROR("Not implemented");
-    } else {
-        THREAD_BOOST_ERROR("Not implemented");
-    }
-
-
-
-
-    return ret;
-}
-
-
 
 class TestCreateDomainDirectThreadedWorker : public ThreadedTestWorker<ResultTestCharge, ChargeTestParams>
 {
@@ -2223,37 +2078,6 @@ public:
 };
 
 
-
-class TestCreateDomainThreadedWorker : public ThreadedTestWorker<ResultTestCharge, ChargeTestParams>
-{
-public:
-    typedef ThreadedTestWorker<ResultTestCharge, ChargeTestParams>::ThreadedTestResultQueue queue_type;
-
-    TestCreateDomainThreadedWorker(unsigned number
-             , boost::barrier* sb
-             , std::size_t thread_group_divisor
-             , queue_type* result_queue
-             , ChargeTestParams params
-                    )
-        : ThreadedTestWorker<ResultTestCharge, ChargeTestParams>(number, sb, thread_group_divisor, result_queue, params)
-            { }
-    // this shouldn't throw
-    ResultTestCharge run(const ChargeTestParams &p) {
-       unsigned act_year = boost::gregorian::day_clock::universal_day().year();
-
-       Database::Date exdate(act_year + 1, 1, 1);
-
-       std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
-
-       ResultTestCharge ret = testCreateDomainWorker(p.epp_ref, invMan.get(), exdate, DEFAULT_REGISTRATION_PERIOD, INVOICING_DomainCreate, p.zone_id, p.regid,   number_, p.clientId );
-
-       // copy all the parametres to Result
-       ret.number = number_;
-
-       return ret;
-    }
-
-};
 
 class TestChargeThreadWorker : public ThreadedTestWorker<ResultTestCharge, ChargeTestParams>
 {
@@ -2309,8 +2133,8 @@ BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
     Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
                     , zone_cz_id//zone
                     , regid//registrar
-                    , amount//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                    , amount
+                    , boost::posix_time::microsec_clock::universal_time());//price
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
     ChargeTestParams params;
@@ -2327,29 +2151,12 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
     
      std::auto_ptr<ccReg_EPP_i> epp = create_epp_backend_object();
 
-    // registrar
      std::string time_string(TimeStamp::microsec());
-     std::string registrar_handle(std::string("REG-DIRECTCALL")+time_string);
-
-     std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
-     Fred::Registrar::Manager::AutoPtr regMan
-              = Fred::Registrar::Manager::create(DBSharedPtr());
-     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-     registrar->setName(registrar_handle+"_Name");
-     registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-     registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-     registrar->setVat(true);
-     Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-     registrar_acl->setCertificateMD5("");
-     registrar_acl->setPassword("");
-     registrar->save();
+     std::string noregistrar_handle(std::string("REG-NOTEXISTS")+time_string);
+    // registrar
+     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+     std::string registrar_handle  = registrar->getHandle();
      unsigned long long registrar_inv_id = registrar->getId();
-
-     //add registrar into zone
-     std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
-     Database::Date rzfromDate;
-     Database::Date rztoDate;
-     Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
 
      // ------------------ login
      /// log in while Database::Connection is not acquired yet
@@ -2373,8 +2180,8 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
      Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
                      , zone_cz_id//zone
                      , registrar_inv_id//registrar
-                     , amount//price
-                     , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                     , amount
+                     , boost::posix_time::microsec_clock::universal_time());//price
      BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
 
@@ -2395,7 +2202,6 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
     ChargeTestParams params;
     params.zone_id = zone_cz_id ;
     params.regid = registrar_inv_id;
-    params.epp_ref  = NULL;
     params.epp_backend = epp.get();
     params.clientId = clientId;
 
@@ -2429,300 +2235,6 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 
 }
 
-BOOST_AUTO_TEST_CASE(createDomainThreaded)
-{
-    // registrar
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle(std::string("REG-FRED_")+time_string);
-
-    Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(DBSharedPtr());
-    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-    registrar->setName(registrar_handle+"_Name");
-    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar->setVat(true);
-    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-    registrar_acl->setCertificateMD5("");
-    registrar_acl->setPassword("");
-    registrar->save();
-    unsigned long long registrar_inv_id = registrar->getId();
-
-    //add registrar into zone
-    std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
-    Database::Date rzfromDate;
-    Database::Date rztoDate;
-    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
-
-
-    // ### add credit
-    Money amount ("90000.00");
-    unsigned act_year = boost::gregorian::day_clock::universal_day().year();
-
-    Database::Connection conn = Database::Manager::acquire();
-    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-
-    // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
-
-    // add credit for new registrar
-    try_insert_invoice_prefix();
-    Database::Date taxdate (act_year,1,1);
-    Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
-                    , zone_cz_id//zone
-                    , registrar_inv_id//registrar
-                    , amount//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
-    BOOST_CHECK_EQUAL(invoiceid != 0,true);
-
-
-    //Database::ID invoiceid2 = invMan->createDepositInvoice(taxdate //taxdate
-     //               , zone_enum_id//zone
-      //              , registrar_inv_id//registrar
-       //             , amount//price
-    //                , boost::posix_time::microsec_clock::universal_time());//invoice_date
-    //BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
-
-    //try get epp reference
-    
-    Money credit_before, credit_after;
-    // CHECK CREDIT before
-    Database::Result credit_res1 = conn.exec_params(zone_registrar_credit_query
-                           , Database::query_param_list(zone_cz_id)(registrar_inv_id));
-    if(credit_res1.size() ==  1 && credit_res1[0].size() == 1) {
-        credit_before.set_string(std::string(credit_res1[0][0]));
-    } else {
-        BOOST_FAIL("Couldn't count registrar credit ");
-    }
-
-    init_corba_container();
-
-    // EPP CORBA ref
-    ccReg::EPP_var epp_ref;
-    epp_ref = ccReg::EPP::_narrow(
-        CorbaContainer::get_instance()->nsresolve("EPP"));
-
-
-    //login
-    CORBA::Long clientId = 0;
-    ccReg::Response_var r;
-
-    CORBA::String_var registrar_handle_var = CORBA::string_dup(registrar_handle.c_str());
-    CORBA::String_var passwd_var = CORBA::string_dup("");
-    CORBA::String_var new_passwd_var = CORBA::string_dup("");
-    CORBA::String_var cltrid_var = CORBA::string_dup("omg");
-    CORBA::String_var xml_var = CORBA::string_dup("<omg/>");
-    CORBA::String_var cert_var = CORBA::string_dup("");
-
-    try {
-        r = epp_ref->ClientLogin(
-                registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
-                xml_var,clientId,cert_var,ccReg::EN);
-
-        if (r->code != 1000 || !clientId) {
-            std::cerr << "Cannot connect: " << r->code << std::endl;
-            throw std::runtime_error("Cannot connect ");
-        }
-    } catch (ccReg::EPP::EppError &ex) {
-        boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
-        throw std::runtime_error(message.str());
-    }
-
-    ChargeTestParams params;
-    params.zone_id = zone_cz_id ;
-    params.regid = registrar_inv_id;
-    params.epp_ref  = epp_ref;
-    params.clientId = clientId;
-
-
-
-
-// TODO this is it ....
-    unsigned thread_count = threadedTest< TestCreateDomainThreadedWorker>
-                                    (params, &testCreateDomainEvalSucc);
-
-    // CHECK CREDIT after
-    Database::Result credit_res2 = conn.exec_params(zone_registrar_credit_query
-                           , Database::query_param_list(zone_cz_id)(registrar_inv_id));
-    if(credit_res2.size() ==  1 && credit_res2[0].size() == 1) {
-        credit_after.set_string(std::string(credit_res2[0][0]));
-    } else {
-        BOOST_FAIL("Couldn't count registrar credit ");
-    }
-
-
-
-    // this is how operations are charged
-    /*
-    if(operation == INVOICING_DomainRenew) {
-        ret.counted_price = getOperationPrice(operation, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
-    }
-    */
-
-    // if(operation == INVOICING_DomainCreate) {
-    Money counted_price =
-            getOperationPrice(INVOICING_DomainRenew, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
-            //+ getOperationPrice(INVOICING_DomainCreate, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
-
-    counted_price *= Decimal(boost::lexical_cast<std::string>(thread_count));
-
-    BOOST_REQUIRE_MESSAGE(credit_before - credit_after == counted_price, boost::format(
-        "Credit before (%1%) and  after (%2%) + price (%3%) threaded test don't match. ")
-            % credit_before
-            % credit_after
-            % counted_price );
-}
-
-
-BOOST_AUTO_TEST_CASE(pruser_working)
-    {
-
-        //corba config
-        FakedArgs fa = CfgArgs::instance()->fa;
-
-        HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-        CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-                , ns_args_ptr->nameservice_host
-                , ns_args_ptr->nameservice_port
-                , ns_args_ptr->nameservice_context);
-
-        //conf pointers
-        HandleDatabaseArgs* db_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleDatabaseArgs>();
-        HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleRegistryArgs>();
-        HandleRifdArgs* rifd_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleRifdArgs>();
-
-        MailerManager mailMan(CorbaContainer::get_instance()->getNS());
-
-
-        std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i ( new ccReg_EPP_i(
-                    db_args_ptr->get_conn_info()
-                    , &mailMan, CorbaContainer::get_instance()->getNS()
-                    , registry_args_ptr->restricted_handles
-                    , registry_args_ptr->disable_epp_notifier
-                    , registry_args_ptr->lock_epp_commands
-                    , registry_args_ptr->nsset_level
-                    , registry_args_ptr->docgen_path
-                    , registry_args_ptr->docgen_template_path
-                    , registry_args_ptr->fileclient_path
-                    , rifd_args_ptr->rifd_session_max
-                    , rifd_args_ptr->rifd_session_timeout
-                    , rifd_args_ptr->rifd_session_registrar_max
-                    , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
-            ));
-
-        EPP_backend_init( myccReg_EPP_i.get(), rifd_args_ptr);
-
-       // login
-        // registrar
-         std::string time_string(TimeStamp::microsec());
-         std::string registrar_handle(std::string("REG-DIRECTCALL")+time_string);
-
-         std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
-         Fred::Registrar::Manager::AutoPtr regMan
-                  = Fred::Registrar::Manager::create(DBSharedPtr());
-         Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-         registrar->setName(registrar_handle+"_Name");
-         registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-         registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-         registrar->setVat(true);
-         Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-         registrar_acl->setCertificateMD5("");
-         registrar_acl->setPassword("");
-         registrar->save();
-         unsigned long long registrar_inv_id = registrar->getId();
-
-         //add registrar into zone
-         std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
-         Database::Date rzfromDate;
-         Database::Date rztoDate;
-         Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
-
-
-         // ### add credit
-         Money amount ("90000.00");
-         unsigned act_year = boost::gregorian::day_clock::universal_day().year();
-
-         Database::Connection conn = Database::Manager::acquire();
-         Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-
-         // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
-         std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
-
-         Database::Date taxdate (act_year,1,1);
-         Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
-                         , zone_cz_id//zone
-                         , registrar_inv_id//registrar
-                         , amount//price
-                         , boost::posix_time::microsec_clock::universal_time());//invoice_date
-         BOOST_CHECK_EQUAL(invoiceid != 0,true);
-
-
-
-        // ------------------ login
-
-        std::string passwd_var("");
-        std::string new_passwd_var("");
-        std::string cltrid_var("omg");
-        std::string xml_var("<omg/>");
-        std::string cert_var("");
-
-        CORBA::Long clientId = 0;
-
-        ccReg::Response *r = myccReg_EPP_i->ClientLogin(
-            registrar_handle.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),
-            xml_var.c_str(),clientId,cert_var.c_str(),ccReg::EN);
-
-        if (r->code != 1000 || !clientId) {
-            boost::format msg = boost::format("Error code: %1% - %2% ") % r->code % r->msg;
-            std::cerr << msg.str() << std::endl;
-            throw std::runtime_error(msg.str());
-        }
-
-        // call
-        int i = 1;
-        ccReg::Period_str period;
-        period.count = 1;
-        period.unit = ccReg::unit_year;
-        ccReg::EppParams epp_params;
-        epp_params.requestID = clientId + i;
-        epp_params.sessionID = clientId;
-        epp_params.clTRID = "";
-        epp_params.XML = "";
-        CORBA::String_var crdate;
-        CORBA::String_var exdate;
-
-        std::string test_domain_fqdn(std::string("tdomain")+time_string);
-
-        try {
-            r = myccReg_EPP_i->DomainCreate(
-                (test_domain_fqdn+".cz").c_str(), // fqdn
-                "KONTAKT",                // contact
-                "",                       // nsset
-                "",                       // keyset
-                "",                       // authinfo
-                period,                   // reg. period
-                ccReg::AdminContact(),    // admin contact list
-                crdate,                   // create datetime (output)
-                exdate,                   // expiration date (output)
-                epp_params,               // common call params
-                ccReg::ExtensionList());
-
-        } catch (ccReg::EPP::EppError &ex) {
-            boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
-            throw std::runtime_error(message.str());
-        }
-
-        if(r->code != 1000) {
-            std::cerr << "ERROR: Return code: " << r->code << std::endl;
-            throw std::runtime_error("Error received from DomainCreate call");
-        }
-    }
-
-
 
 BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
 {
@@ -2730,29 +2242,9 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
     std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
 
     // registrar
-     std::string time_string(TimeStamp::microsec());
-     std::string registrar_handle(std::string("REG-DIRECTCALL")+time_string);
-
-     std::string noregistrar_handle(std::string("REG-FRED_NOACCINV")+time_string);
-     Fred::Registrar::Manager::AutoPtr regMan
-              = Fred::Registrar::Manager::create(DBSharedPtr());
-     Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-     registrar->setName(registrar_handle+"_Name");
-     registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-     registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-     registrar->setVat(true);
-     Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-     registrar_acl->setCertificateMD5("");
-     registrar_acl->setPassword("");
-     registrar->save();
-     unsigned long long registrar_inv_id = registrar->getId();
-
-     //add registrar into zone
-     std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
-     Database::Date rzfromDate;
-     Database::Date rztoDate;
-     Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
-
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+    unsigned long long registrar_inv_id = registrar->getId();
+    std::string registrar_handle = registrar->getHandle();
 
      // ### add credit
      Money amount ("90000.00");
@@ -2768,8 +2260,8 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
      Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
                      , zone_cz_id//zone
                      , registrar_inv_id//registrar
-                     , amount//price
-                     , boost::posix_time::microsec_clock::universal_time());//invoice_date
+                     , amount
+                     , boost::posix_time::microsec_clock::universal_time());//price
      BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
 
@@ -2824,148 +2316,6 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
     }
     */
 }
-
-
-
-BOOST_AUTO_TEST_CASE(testCreateDomainEPP)
-{
-    // init
-
-
-    // registrar
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle(std::string("REG-FRED_")+time_string);
-
-    Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(DBSharedPtr());
-    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-    registrar->setName(registrar_handle+"_Name");
-    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar->setVat(true);
-    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-    registrar_acl->setCertificateMD5("");
-    registrar_acl->setPassword("");
-    registrar->save();
-    unsigned long long registrar_inv_id = registrar->getId();
-
-    //add registrar into zone
-    std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
-    Database::Date rzfromDate;
-    Database::Date rztoDate;
-    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
-
-
-    // ### add credit
-    Money amount ("20000.00");
-    unsigned act_year = boost::gregorian::day_clock::universal_day().year();
-
-    Database::Connection conn = Database::Manager::acquire();
-    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-
-    // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
-
-    Database::Date taxdate (act_year,1,1);
-    Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
-                    , zone_cz_id//zone
-                    , registrar_inv_id//registrar
-                    , amount//price
-                    , boost::posix_time::microsec_clock::universal_time());//invoice_date
-    BOOST_CHECK_EQUAL(invoiceid != 0,true);
-    // add credit for new registrar
-
-    //Database::ID invoiceid2 = invMan->createDepositInvoice(taxdate //taxdate
-     //               , zone_enum_id//zone
-      //              , registrar_inv_id//registrar
-       //             , amount//price
-       //             , Database::NOW);//invoice_date
-    //BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
-
-    //try get epp reference
-    
-
-    init_corba_container();
-
-    // EPP CORBA ref
-    ccReg::EPP_var epp_ref;
-    epp_ref = ccReg::EPP::_narrow(
-        CorbaContainer::get_instance()->nsresolve("EPP"));
-
-
-    //login
-    CORBA::Long clientId = 0;
-    ccReg::Response_var r;
-
-    CORBA::String_var registrar_handle_var = CORBA::string_dup(registrar_handle.c_str());
-    CORBA::String_var passwd_var = CORBA::string_dup("");
-    CORBA::String_var new_passwd_var = CORBA::string_dup("");
-    CORBA::String_var cltrid_var = CORBA::string_dup("omg");
-    CORBA::String_var xml_var = CORBA::string_dup("<omg/>");
-    CORBA::String_var cert_var = CORBA::string_dup("");
-
-    try {
-        r = epp_ref->ClientLogin(
-                registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
-                xml_var,clientId,cert_var,ccReg::EN);
-
-        if (r->code != 1000 || !clientId) {
-            std::cerr << "Cannot connect: " << r->code << std::endl;
-            throw std::runtime_error("Cannot connect ");
-        }
-    } catch (ccReg::EPP::EppError &ex) {
-        boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
-        throw std::runtime_error(message.str());
-    }
-
-
-
-
-
-    
-    // ####call
-    // std::string time_string(TimeStamp::microsec());
-
-
-
-
-
-
-    
-    int i = 1;
-    ccReg::Period_str period;
-            period.count = 1;
-            period.unit = ccReg::unit_year;
-            ccReg::EppParams epp_params;
-            epp_params.requestID = clientId + i;
-            epp_params.sessionID = clientId;
-            epp_params.clTRID = "";
-            epp_params.XML = "";
-            CORBA::String_var crdate;
-            CORBA::String_var exdate;
-
-    std::string test_domain_fqdn(std::string("tdomain")+time_string);
-
-    r = epp_ref->DomainCreate(
-        (test_domain_fqdn+".cz").c_str(), // fqdn
-        "KONTAKT",                // contact
-        "",                       // nsset
-        "",                       // keyset
-        "",                       // authinfo
-        period,                   // reg. period
-        ccReg::AdminContact(),    // admin contact list
-        crdate,                   // create datetime (output)
-        exdate,                   // expiration date (output)
-        epp_params,               // common call params
-        ccReg::ExtensionList());
-
-    if(r->code != 1000) {
-        std::cerr << "ERROR: Return code: " << r->code << std::endl;
-        throw std::runtime_error("Error received");
-    }
-
-}
-
 
 
 BOOST_AUTO_TEST_SUITE_END();//TestInvoice
