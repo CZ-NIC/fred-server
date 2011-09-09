@@ -83,6 +83,14 @@ public:
   Decimal koef; ///< koeficient for VAT counting
   date validity; ///< valid to this date
 };
+
+struct AdvanceInvoice
+{
+    unsigned long long invoice_id;
+    Money balance;
+    Money credit_change;
+};
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 //  ManagerImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1156,6 +1164,276 @@ unsigned long long MakeFactoring(unsigned long long regID
 
     return invoiceID;
 }
+
+unsigned long long insert_account_invoice(
+        unsigned long long registrar_id
+        , unsigned long long zone_id
+        , Money sum_op_price
+        , boost::gregorian::date tax_date
+        , boost::posix_time::ptime invoice_date //default = today
+        )
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+
+    if ((invoice_date.date() - tax_date) > boost::gregorian::days(15) )
+    {
+        throw std::runtime_error(
+            "insert_account_invoice: invoice_date is more than"
+            " 15 days later than tax_date");
+    }
+
+    Database::Result rvat_result = conn.exec_params(
+            "SELECT vat FROM registrar WHERE id = $1::bigint"
+            , Database::query_param_list(registrar_id));
+    if(rvat_result.size() != 1 )
+    {
+        throw std::runtime_error(
+                "insert_account_invoice: registrar vat not found");
+    }
+    bool rvat = rvat_result[0][0];
+
+    Database::Result vat_details_result = conn.exec_params(
+        "SELECT vat, koef::numeric "
+        " FROM price_vat "
+        " WHERE valid_to > $1::date " // -- utc end of period date
+        "   OR valid_to is NULL "
+        " ORDER BY valid_to LIMIT 1 "
+        , Database::query_param_list(tax_date));
+    if(vat_details_result.size() != 1 )
+    {
+        throw std::runtime_error(
+                "insert_account_invoice: vat details not found");
+    }
+
+    Decimal vat_rate =  std::string(vat_details_result[0][0]);
+    Decimal vat_coefficient =  std::string(vat_details_result[0][0]);
+
+    Database::Result invoice_prefix_result = conn.exec_params(
+        "SELECT id, prefix "
+        " FROM invoice_prefix "
+        " WHERE zone_id = $1::bigint AND typ = 1 " //typ = IT_ACCOUNT
+        "   AND year = $2::numeric "
+        " FOR UPDATE "
+        , Database::query_param_list(zone_id)(tax_date.year()));
+
+    if(invoice_prefix_result.size() != 1 )
+    {
+        throw std::runtime_error(
+                "insert_account_invoice: invoice_prefix not found");
+    }
+
+    unsigned long long invoice_prefix_id = invoice_prefix_result[0][0];
+    unsigned long long prefix = invoice_prefix_result[0][1];
+
+    conn.exec_params(
+        "UPDATE invoice_prefix SET prefix = prefix + 1 WHERE id = $1::bigint"
+        , Database::query_param_list(invoice_prefix_id));
+
+    Database::Result invoice_result = conn.exec_params(
+    "INSERT INTO invoice"
+        " (id, prefix, zone_id, invoice_prefix_id, registrar_id "
+        " , crdate, taxDate, operations_price, vat "
+        " , total, totalVAT, balance) "
+        " VALUES (DEFAULT, $1::bigint, $2::bigint, $3::bigint "
+        " , $4::bigint, $5::timestamp, $6::date, $7::numeric(10,2) "
+        " , $8::numeric, 0, 0, 0) "
+    " RETURNING id "
+    , Database::query_param_list(prefix)(zone_id)(invoice_prefix_id)
+    (registrar_id)(invoice_date)(tax_date)(sum_op_price.get_string())
+    (rvat ? vat_rate.get_string() : Decimal("0").get_string())
+    );
+
+    if(invoice_result.size() != 1 )
+    {
+        throw std::runtime_error(
+                "insert_account_invoice: insert invoice failed");
+    }
+
+    unsigned long long invoice_id = invoice_result[0][0];
+
+    tx.commit();
+    return invoice_id;
+}
+
+
+unsigned long long create_account_invoice
+    ( unsigned long long registrar_id
+    , unsigned long long zone_id
+    , boost::gregorian::date to_date
+    , boost::gregorian::date tax_date //default = to_date - may be different from to_date, affects selection of advance payments
+    , boost::posix_time::ptime invoice_date //default = today - account invoice interval to date including to_date
+    )
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    if ((invoice_date.date() - to_date) > boost::gregorian::days(15) )
+    {
+        throw std::runtime_error(
+            "create_account_invoice: invoice_date is more than"
+            " 15 days later than to_date");
+    }
+
+    //from_date = get_last_account_date(registrar, zone)
+    Database::Result from_date_result = conn.exec_params(
+        "SELECT date( todate + interval'1 day')  as fromdate "
+        " FROM invoice_generation "
+        " WHERE zone_id=$1::bigint "
+        "  AND registrar_id =$2::bigint "
+        " ORDER BY id DESC LIMIT 1 "
+        , Database::query_param_list(zone_id)(registrar_id)
+        );
+
+    boost::gregorian::date from_date;
+
+    if (from_date_result.size() == 1)
+    {
+        from_date = from_date_result[0][0];
+    }
+    else
+    {
+        Database::Result from_date_registrar_result = conn.exec_params(
+            "SELECT  fromdate  FROM registrarinvoice "// --for new registrar
+            " WHERE zone=$1::bigint and registrarid=$2::bigint "
+            , Database::query_param_list(zone_id)(registrar_id));
+        if(from_date_registrar_result.size() != 1 )
+        {
+            throw std::runtime_error(
+                    "create_account_invoice: from_date not found");
+        }
+
+        from_date = from_date_registrar_result[0][0];
+    }
+
+    //ig = insert_invoice_generation(registar, zone, from_date, to_date)
+    Database::Result invoice_generation_result = conn.exec_params(
+        "INSERT INTO invoice_generation "
+        " (id, fromdate, todate, registrar_id, zone_id, invoice_id) "
+        " VALUES (DEFAULT, $1::date, $2::date, $3::bigint, $4::bigint, NULL ) "
+        " RETURNING id "
+    , Database::query_param_list(from_date)(to_date)(registrar_id)(zone_id));
+
+    if(invoice_generation_result.size() != 1)
+    {
+        throw std::runtime_error(
+                "create_account_invoice: invoice_generation failed");
+    }
+
+    //unsigned long long invoice_generation_id = invoice_generation_result[0][0];
+
+    // all operations without invoice_id set in invoice_operation with price from registrar_credit_transaction table
+    //op_list = get_unaccounted_operations(registrar, zone, from_date, to_date)
+    Database::Result unaccounted_operations_result = conn.exec_params(
+        "SELECT io.id, io.operation_id, io.crdate, io.date_to, rct.balance_change * -1 as price "// --negative balance change is positive price
+        " FROM invoice_operation io "
+        " JOIN registrar_credit_transaction rct ON rct.id = io.registrar_credit_transaction_id "
+        " WHERE io.ac_invoice_id IS NULL "
+            " AND io.crdate >= $1::date AND io.crdate <= $2::date "
+            " AND io.registrar_id =  $3::bigint "
+            " AND io.zone_id =  $4::bigint "
+        " ORDER BY io.crdate, io.id"
+    , Database::query_param_list(from_date)(to_date)(registrar_id)(zone_id));
+
+    //if (sum_op_price = count_sum_price(op_list) == 0) return
+    Money sum_op_price("0");
+    for(unsigned long i = 0; i < unaccounted_operations_result.size(); ++i)
+    {
+        Money price = std::string(unaccounted_operations_result[i][4]);//price
+        sum_op_price += price;
+    }
+
+    if(sum_op_price == Money("0")) return 0;
+
+    //aci = insert_account_invoice(registrar, zone, sum_op_price, tax_date, invoice_date)
+    unsigned long long aci = insert_account_invoice(
+             registrar_id
+            , zone_id
+            ,  sum_op_price
+            , tax_date
+            , invoice_date //default = today
+            );
+
+    //adi_list = get_advance_invoices(registrar, zone, tax_date) , 0 as credit_change
+    Database::Result advance_invoices_result = conn.exec_params(
+    "SELECT i.id, i.balance FROM invoice i JOIN invoice_prefix ip ON i.invoice_prefix_id = ip.id "
+        " WHERE ip.typ = 0 " //--IT_ADVANCE
+        " AND i.zone_id = $1::bigint AND i.registrar_id = $2::bigint AND i.balance > 0 AND i.taxdate <= $3::date "
+        " ORDER BY i.crdate, i.id "
+    , Database::query_param_list(zone_id)(registrar_id)(tax_date));
+    std::vector<AdvanceInvoice> adi_list;
+    //init adi_list
+    for (std::size_t i = 0; i < advance_invoices_result.size(); ++i)
+    {
+        AdvanceInvoice adi;
+        adi.invoice_id = advance_invoices_result[i][0];//invoice id
+        adi.balance = std::string(advance_invoices_result[i][1]);//balance
+        adi.credit_change = Money("0");
+        adi_list.push_back(adi);
+    }
+
+    Money price_left ("0"); //price of operations not paid ahead
+
+    //for op in op_list
+    for(unsigned long i = 0; i < unaccounted_operations_result.size(); ++i)
+    {
+        unsigned long long invoice_operation_id = unaccounted_operations_result[i][0];//invoice_operation.id
+        //update_operation_set_account_invoice - add operation to new account invoice
+        conn.exec_params(
+            "UPDATE invoice_operation SET ac_invoice_id=$1::bigint WHERE id = $2::bigint"
+            , Database::query_param_list(aci)//created account invoice id
+            (invoice_operation_id));
+        Money price_to_pull_off = std::string(unaccounted_operations_result[i][4]);//price
+
+        //compute from which advance invoice was paid
+        for (std::size_t i = 0; i < adi_list.size(); ++i)
+        {
+            if(adi_list[i].balance == Money("0")) continue;
+
+            Money partial_charge = (price_to_pull_off <= adi_list[i].balance)
+                    ? price_to_pull_off : adi_list[i].balance;
+
+            adi_list[i].balance -= partial_charge;
+            adi_list[i].credit_change += partial_charge;
+            price_to_pull_off -= partial_charge;
+
+            //insert_invoice_operation_charge_map
+            conn.exec_params("INSERT INTO invoice_operation_charge_map "
+                 " (invoice_operation_id, invoice_id, price) "
+                 " VALUES(op.io.id, adi.id, parital_charge) "
+                , Database::query_param_list(invoice_operation_id)
+                (adi_list[i].invoice_id)(partial_charge.get_string()));
+
+            if (price_to_pull_off == Money("0")) break;
+        }//for adi_list
+
+        price_left += price_to_pull_off;
+    }//for operations
+
+    for (std::size_t i = 0; i < adi_list.size(); ++i)
+    {
+        //update_invoice_balance(adi)
+        conn.exec_params("UPDATE invoice SET balance = $1::numeric(10,2) WHERE id = $2::bigint"
+            , Database::query_param_list(adi_list[i].balance.get_string())(adi_list[i].invoice_id));
+
+        //insert_invoice_credit_payment_map(aci, adi)
+        conn.exec_params("INSER INTO invoice_credit_payment_map "
+            " (ac_invoice_id, ad_invoice_id, credit, balance) "
+            " VALUES($1::bigint, $2::bigint, $3::numeric(10,2), $4::numeric(10,2)) "
+            , Database::query_param_list(aci)(adi_list[i].invoice_id)
+            (adi_list[i].credit_change.get_string())
+            (adi_list[i].balance.get_string()));
+    }
+    //update_account_invoice(aci,price_left)
+    conn.exec_params("UPDATE invoice "
+      " SET total = $1::numeric(10,2), totalvat = "
+      " (SELECT ($1::numeric * vat / 100::numeric)::numeric(10,2) FROM invoice WHERE id = $2::bigint) "
+      " WHERE id = $2::bigint "
+    , Database::query_param_list(price_left.get_string()) (aci));
+
+    return aci;
+}
+
+
 
 void createAccountInvoices( const std::string& zone_fqdn,  boost::gregorian::date taxdate, boost::gregorian::date todate)
 {
