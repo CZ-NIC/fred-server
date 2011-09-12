@@ -587,18 +587,18 @@ public:
 };//class HandleAdminClientInvoiceCreditArgsGrp
 
 /**
- * \class HandleAdminClientInvoiceFactoringArgsGrp
- * \brief admin client invoice_factoring options handler
+ * \class HandleAdminClientInvoiceBillingArgsGrp
+ * \brief admin client invoice_billing options handler
  */
-class HandleAdminClientInvoiceFactoringArgsGrp : public HandleCommandGrpArgs
+class HandleAdminClientInvoiceBillingArgsGrp : public HandleCommandGrpArgs
 {
 public:
 
-    InvoiceFactoringArgs params;
+    InvoiceBillingArgs params;
 
     CommandDescription get_command_option()
     {
-        return CommandDescription("invoice_factoring");
+        return CommandDescription("invoice_billing");
     }
 
     boost::shared_ptr<boost::program_options::options_description>
@@ -606,9 +606,9 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("invoice_factoring options")));
+                        std::string("invoice_billing options")));
         cfg_opts->add_options()
-            ("invoice_factoring", "invoice factoring")
+            ("invoice_billing", "invoice billing")
             ("zone_fqdn", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.zone_fqdn))
                 , "zone name")
@@ -617,10 +617,11 @@ public:
                 , "registrar handle")
             ("todate", boost::program_options
                     ::value<Checked::string>()->notifier(save_optional_string(params.todate))
-                , "todate, default in impl is first day of this month, arg format viz --help_dates")
+                , "todate, default in impl is first day of this month,"
+                " meaning is end of interval NOT including \"todate\" arg format viz --help_dates")
             ("taxdate", boost::program_options
               ::value<Checked::string>()->notifier(save_optional_string(params.taxdate))
-              , "tax date, default in impl is last day of previous month, arg format viz --help_dates")
+              , "tax date, default in impl is date of last day of previous month which is last day of accounting interval, arg format viz --help_dates")
                 ;
         return cfg_opts;
     }//get_options_description
@@ -631,7 +632,7 @@ public:
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
-};//class HandleAdminClientInvoiceFactoringArgsGrp
+};//class HandleAdminClientInvoiceBillingArgsGrp
 
 /**
  * \class HandleAdminClientInvoiceAddPrefixArgsGrp

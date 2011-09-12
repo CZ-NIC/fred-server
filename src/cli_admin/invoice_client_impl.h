@@ -50,7 +50,7 @@ struct invoice_list_impl
               , false//bool _invoice_list_filters
               , false//bool _invoice_archive
               , false//bool _invoice_credit
-              , false//bool _invoice_factoring
+              , false//bool _invoice_billing
               , false//bool _invoice_add_prefix
               , false//bool _invoice_create
               , false//bool _invoice_show_opts
@@ -59,7 +59,7 @@ struct invoice_list_impl
               , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
               , false//bool _invoice_dont_send
               , InvoiceCreditArgs()
-              , InvoiceFactoringArgs()
+              , InvoiceBillingArgs()
               , InvoicePrefixArgs()
               , InvoiceCreateArgs()
               );
@@ -87,7 +87,7 @@ struct invoice_archive_impl
               , false//bool _invoice_list_filters
               , true//bool _invoice_archive
               , false//bool _invoice_credit
-              , false//bool _invoice_factoring
+              , false//bool _invoice_billing
               , false//bool _invoice_add_prefix
               , false//bool _invoice_create
               , false//bool _invoice_show_opts
@@ -96,7 +96,7 @@ struct invoice_archive_impl
               , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceArchiveArgsGrp>()->invoice_dont_send//bool _invoice_dont_send
               , InvoiceCreditArgs()
-              , InvoiceFactoringArgs()
+              , InvoiceBillingArgs()
               , InvoicePrefixArgs()
               , InvoiceCreateArgs()
               );
@@ -124,7 +124,7 @@ struct invoice_credit_impl
               , false//bool _invoice_list_filters
               , false//bool _invoice_archive
               , true//bool _invoice_credit
-              , false//bool _invoice_factoring
+              , false//bool _invoice_billing
               , false//bool _invoice_add_prefix
               , false//bool _invoice_create
               , false//bool _invoice_show_opts
@@ -133,7 +133,7 @@ struct invoice_credit_impl
               , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
               , false//bool _invoice_dont_send
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceCreditArgsGrp>()->params//InvoiceCreditArgs()
-              , InvoiceFactoringArgs()
+              , InvoiceBillingArgs()
               , InvoicePrefixArgs()
               , InvoiceCreateArgs()
               );
@@ -144,14 +144,14 @@ struct invoice_credit_impl
 };
 
 /**
- * \class invoice_factoring_impl
- * \brief admin client implementation of invoice_factoring
+ * \class invoice_billing_impl
+ * \brief admin client implementation of invoice_billing
  */
-struct invoice_factoring_impl
+struct invoice_billing_impl
 {
   void operator()() const
   {
-      Logging::Context ctx("invoice_factoring_impl");
+      Logging::Context ctx("invoice_billing_impl");
       Admin::InvoiceClient invoice_client(
               CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
@@ -161,7 +161,7 @@ struct invoice_factoring_impl
               , false//bool _invoice_list_filters
               , false//bool _invoice_archive
               , false//bool _invoice_credit
-              , true//bool _invoice_factoring
+              , true//bool _invoice_billing
               , false//bool _invoice_add_prefix
               , false//bool _invoice_create
               , false//bool _invoice_show_opts
@@ -170,7 +170,7 @@ struct invoice_factoring_impl
               , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
               , false//bool _invoice_dont_send
               , InvoiceCreditArgs()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceFactoringArgsGrp>()->params//InvoiceFactoringArgs()
+              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceBillingArgsGrp>()->params//InvoiceBillingArgs()
               , InvoicePrefixArgs()
               , InvoiceCreateArgs()
               );
@@ -198,7 +198,7 @@ struct invoice_add_prefix_impl
               , false//bool _invoice_list_filters
               , false//bool _invoice_archive
               , false//bool _invoice_credit
-              , false//bool _invoice_factoring
+              , false//bool _invoice_billing
               , true//bool _invoice_add_prefix
               , false//bool _invoice_create
               , false//bool _invoice_show_opts
@@ -207,7 +207,7 @@ struct invoice_add_prefix_impl
               , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
               , false//bool _invoice_dont_send
               , InvoiceCreditArgs()
-              , InvoiceFactoringArgs()
+              , InvoiceBillingArgs()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceAddPrefixArgsGrp>()->params//InvoicePrefixArgs()
               , InvoiceCreateArgs()
               );
@@ -235,7 +235,7 @@ struct create_invoice_impl
               , false//bool _invoice_list_filters
               , false//bool _invoice_archive
               , false//bool _invoice_credit
-              , false//bool _invoice_factoring
+              , false//bool _invoice_billing
               , false//bool _invoice_add_prefix
               , true//bool _invoice_create
               , false//bool _invoice_show_opts
@@ -244,7 +244,7 @@ struct create_invoice_impl
               , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
               , false//bool _invoice_dont_send
               , InvoiceCreditArgs()
-              , InvoiceFactoringArgs()
+              , InvoiceBillingArgs()
               , InvoicePrefixArgs()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceCreateArgsGrp>()->params//InvoiceCreateArgs()
               );

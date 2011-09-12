@@ -108,10 +108,10 @@ struct InvoiceCreditArgs
 };//struct InvoiceCreditArgs
 
 /**
- * \class InvoiceFactoringArgs
- * \brief admin client invoice_factoring params
+ * \class InvoiceBillingArgs
+ * \brief admin client invoice_billing params
  */
-struct InvoiceFactoringArgs
+struct InvoiceBillingArgs
 {
     optional_string zone_fqdn;
     optional_string registrar_handle;
@@ -119,10 +119,10 @@ struct InvoiceFactoringArgs
     optional_string taxdate;
 
 
-    InvoiceFactoringArgs()
+    InvoiceBillingArgs()
     {}//ctor
 
-    InvoiceFactoringArgs(
+    InvoiceBillingArgs(
         const optional_string& _zone_fqdn
         , const optional_string& _registrar_handle
         , const optional_string& _todate
@@ -133,7 +133,7 @@ struct InvoiceFactoringArgs
     , todate(_todate)
     , taxdate(_taxdate)
     {}
-};//struct InvoiceFactoringArgs
+};//struct InvoiceBillingArgs
 
 /**
  * \class InvoicePrefixArgs

@@ -39,8 +39,8 @@ InvoiceClient::runMethod()
         //show_opts();
     } else if (invoice_credit) {
         credit();
-    } else if (invoice_factoring) {
-        factoring();
+    } else if (invoice_billing) {
+        billing();
     } else if (invoice_add_prefix) {
         add_invoice_prefix();
     } else if (invoice_create) {
@@ -362,7 +362,7 @@ InvoiceClient::credit()
 
 
 void
-InvoiceClient::factoring()
+InvoiceClient::billing()
 {
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
@@ -376,21 +376,21 @@ InvoiceClient::factoring()
     Database::ID registrarId;
     std::string registrarName;
 
-    if (factoring_params.zone_fqdn.is_value_set()) {
-        zoneName = factoring_params.zone_fqdn.get_value();
+    if (billing_params.zone_fqdn.is_value_set()) {
+        zoneName = billing_params.zone_fqdn.get_value();
         zoneFilled = true;
     }
 
-    if (factoring_params.registrar_handle.is_value_set()) {
-        registrarName = factoring_params.registrar_handle.get_value();
+    if (billing_params.registrar_handle.is_value_set()) {
+        registrarName = billing_params.registrar_handle.get_value();
         regFilled = true;
     }
     Database::Date now(Database::NOW);
     Database::Date first_this(now.get().year(), now.get().month(), 1);
     Database::Date last_prev(first_this - Database::Days(1));
 
-    if (factoring_params.todate.is_value_set()) {
-        toDate = Database::Date(createDateTime(factoring_params.todate.get_value()));
+    if (billing_params.todate.is_value_set()) {
+        toDate = Database::Date(createDateTime(billing_params.todate.get_value()));
 
         if(toDate.is_special()) {
             std::cerr << "Invalid date given for ``todate'' " << std::endl;
@@ -400,8 +400,8 @@ InvoiceClient::factoring()
         toDate = first_this;
     }
     
-    if (factoring_params.taxdate.is_value_set()) {
-        taxDate = Database::Date(factoring_params.taxdate.get_value());
+    if (billing_params.taxdate.is_value_set()) {
+        taxDate = Database::Date(billing_params.taxdate.get_value());
 
         if(taxDate.is_special()) {
             std::cerr << "Invalid date given for ``taxdate'' " << std::endl;
@@ -419,7 +419,7 @@ InvoiceClient::factoring()
     std::string toDate_str(toDate.to_string());
     std::string taxDate_str(taxDate.to_string());
 
-    LOGGER(PACKAGE).debug ( boost::format("InvoiceClient::factoring"
+    LOGGER(PACKAGE).debug ( boost::format("InvoiceClient::billing"
             " zoneName %1%  registrarName %2% taxDate_str %3%  toDate_str %4%")
     % zoneName % registrarName % taxDate_str % toDate_str );
 

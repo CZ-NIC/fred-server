@@ -42,7 +42,7 @@ private:
     bool invoice_list_filters;
     bool invoice_archive;
     bool invoice_credit;
-    bool invoice_factoring;
+    bool invoice_billing;
     bool invoice_add_prefix;
     bool invoice_create;
     bool invoice_show_opts;
@@ -54,7 +54,7 @@ private:
     bool invoice_dont_send;
 
     InvoiceCreditArgs credit_params;
-    InvoiceFactoringArgs factoring_params;
+    InvoiceBillingArgs billing_params;
     InvoicePrefixArgs prefix_params;
     InvoiceCreateArgs create_params;
 
@@ -67,7 +67,7 @@ public:
     , invoice_list_filters(false)
     , invoice_archive(false)
     , invoice_credit(false)
-    , invoice_factoring(false)
+    , invoice_billing(false)
     , invoice_add_prefix(false)
     , invoice_create(false)
     , invoice_show_opts(false)
@@ -82,7 +82,7 @@ public:
             , bool _invoice_list_filters
             , bool _invoice_archive
             , bool _invoice_credit
-            , bool _invoice_factoring
+            , bool _invoice_billing
             , bool _invoice_add_prefix
             , bool _invoice_create
             , bool _invoice_show_opts
@@ -91,7 +91,7 @@ public:
             , const optional_string& _fileclient_path
             , bool _invoice_dont_send
             , const InvoiceCreditArgs& _credit_params
-            , const InvoiceFactoringArgs& _factoring_params
+            , const InvoiceBillingArgs& _billing_params
             , const InvoicePrefixArgs& _prefix_params
             , const InvoiceCreateArgs& _create_params
             )
@@ -102,7 +102,7 @@ public:
     , invoice_list_filters(_invoice_list_filters)
     , invoice_archive(_invoice_archive)
     , invoice_credit(_invoice_credit)
-    , invoice_factoring(_invoice_factoring)
+    , invoice_billing(_invoice_billing)
     , invoice_add_prefix(_invoice_add_prefix)
     , invoice_create(_invoice_create)
     , invoice_show_opts(_invoice_show_opts)
@@ -111,7 +111,7 @@ public:
     , fileclient_path(_fileclient_path)
     , invoice_dont_send(_invoice_dont_send)
     , credit_params(_credit_params)
-    , factoring_params(_factoring_params)
+    , billing_params(_billing_params)
     , prefix_params(_prefix_params)
     , create_params(_create_params)
     {
@@ -130,12 +130,12 @@ public:
     void add_invoice_prefix();
 
     void credit();
-    void factoring();
+    void billing();
     void create_invoice();
 
     // added in order to make it work with old invoicing
 private:
-    int factoring(const char *registrarHandle,
+    int billing(const char *registrarHandle,
       const char *zone_fqdn, const char *taxdateStr, const char *todateStr);
     void filter_reload_invoices(Fred::Invoicing::Manager *invMan, Fred::Invoicing::List *invList);
 

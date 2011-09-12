@@ -12,12 +12,7 @@ private:
     NameService *ns_;
 
     std::string m_connection_string;
-    bool factoringOne(
-            Fred::Invoicing::Manager *manager,
-            ccReg::TID zone,
-            ccReg::TID registrar,
-            const Database::Date &todate,
-            const Database::Date &taxdate);
+
 public:
     ccReg_BankingInvoicing_i(NameService *_ns) : ns_(_ns)
     { }
