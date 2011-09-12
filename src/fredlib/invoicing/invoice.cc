@@ -1480,7 +1480,14 @@ void createAccountInvoices( const std::string& zone_fqdn,  boost::gregorian::dat
             unsigned long long regID = res[i][0];//regID
             unsigned long long zoneID =res[i][1];//zoneID
 
-            unsigned long long invoiceID = MakeFactoring(regID, zoneID, timestampStr,taxdateStr);
+            unsigned long long invoiceID =
+                    create_account_invoice
+                    ( regID, zoneID
+                    , todate
+                    , taxdate //default = to_date - may be different from to_date, affects selection of advance payments
+                    , boost::posix_time::time_from_string(timestampStr) //invoice_date //default = today - account invoice interval to date including to_date
+                    );
+                    //MakeFactoring(regID, zoneID, timestampStr,taxdateStr);
             LOGGER(PACKAGE).notice(boost::format(
              "Vygenerovana fa invoiceID %1% pro regID %2% zoneID %3% timestampStr %4% taxdateStr %5%")
              % invoiceID % regID % zoneID % timestampStr % taxdateStr);
@@ -1544,7 +1551,13 @@ void createAccountInvoice( const std::string& registrarHandle, const std::string
                 % regID % zone % taxdateStr % timestampStr );
 
                 // make invoice
-                MakeFactoring(regID, zone, timestampStr, taxdateStr);
+                create_account_invoice
+                    ( regID, zone
+                    , todate
+                    , taxdate //default = to_date - may be different from to_date, affects selection of advance payments
+                    , boost::posix_time::time_from_string(timestampStr) //invoice_date //default = today - account invoice interval to date including to_date
+                    );
+                //MakeFactoring(regID, zone, timestampStr, taxdateStr);
 
             }
             else
