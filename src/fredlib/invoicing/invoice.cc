@@ -1444,7 +1444,12 @@ unsigned long long create_account_invoice
 
 
 
-void createAccountInvoices( const std::string& zone_fqdn,  boost::gregorian::date taxdate, boost::gregorian::date todate)
+void createAccountInvoices(
+        const std::string& zone_fqdn
+        ,  boost::gregorian::date taxdate
+        , boost::gregorian::date todate
+        , boost::posix_time::ptime invoicedate
+        )
 {
     Logging::Context ctx("createAccountInvoices");
     try
@@ -1455,9 +1460,8 @@ void createAccountInvoices( const std::string& zone_fqdn,  boost::gregorian::dat
         std::string taxdateStr(boost::gregorian::to_iso_extended_string(taxdate));
         std::string todateStr(boost::gregorian::to_iso_extended_string(todate));
 
-        //local todate into utc timestamp
-        boost::posix_time::ptime local_todate_timestamp (todate, boost::posix_time::time_duration(0,0,0));
-        std::string local_todate_timestamp_str = boost::posix_time::to_iso_extended_string(local_todate_timestamp);
+        //local invoicedate into utc timestamp
+        std::string local_todate_timestamp_str = boost::posix_time::to_iso_extended_string(invoicedate);
         local_todate_timestamp_str[local_todate_timestamp_str.find('T')] = ' ';//replace  T with [space]
         std::string  timestampStr(conn.exec(std::string("select '")
             +local_todate_timestamp_str+" Europe/Prague' AT TIME ZONE 'UTC'")[0][0]);
@@ -1508,7 +1512,13 @@ void createAccountInvoices( const std::string& zone_fqdn,  boost::gregorian::dat
 }//createAccountInvoices
 
 // close invoice to registar handle for zone make taxDate to the todateStr
-void createAccountInvoice( const std::string& registrarHandle, const std::string& zone_fqdn, boost::gregorian::date taxdate, boost::gregorian::date todate)
+void createAccountInvoice(
+        const std::string& registrarHandle
+        , const std::string& zone_fqdn
+        , boost::gregorian::date taxdate
+        , boost::gregorian::date todate
+        , boost::posix_time::ptime invoicedate
+        )
 {
     Logging::Context ctx("createAccountInvoice");
     try

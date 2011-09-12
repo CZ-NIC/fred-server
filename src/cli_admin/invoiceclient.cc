@@ -364,77 +364,104 @@ InvoiceClient::credit()
 void
 InvoiceClient::billing()
 {
+    //zone
+    std::string zone_name;
+    if (billing_params.zone_fqdn.is_value_set())
+    {
+        zone_name = billing_params.zone_fqdn.get_value();
+    }
+    else
+    {
+        throw std::runtime_error("billing: zone_fqdn not set");
+    }
+
+    //registrar
+    std::string registrar_name;
+    if (billing_params.registrar_handle.is_value_set())
+    {
+        registrar_name = billing_params.registrar_handle.get_value();
+    }
+
+    //todate
+    boost::gregorian::date todate;
+    if (billing_params.todate.is_value_set())
+    {
+        todate = billing_params.todate.get_value();
+
+        if(todate.is_special())
+        {
+            std::cerr << "Invalid date given for ``todate'' " << std::endl;
+            throw std::runtime_error("billing: invalid todate set");
+        }
+    }
+    else
+    {
+        boost::gregorian::date tmp_today
+            = boost::posix_time::second_clock::local_time().date();
+        todate = boost::gregorian::date(tmp_today.year()
+            , tmp_today.month(), 1);//first day of current month
+    }
+    
+    //taxdate
+    boost::gregorian::date taxdate;
+    if (billing_params.taxdate.is_value_set())
+    {
+        taxdate = billing_params.taxdate.get_value();
+
+        if(taxdate.is_special())
+        {
+            std::cerr << "Invalid date given for ``taxdate'' " << std::endl;
+            throw std::runtime_error("billing: invalid taxdate set");
+        }
+    }
+    else
+    {
+        boost::gregorian::date tmp_today
+            = boost::posix_time::second_clock::local_time().date();
+        taxdate = boost::gregorian::date(tmp_today.year()
+            , tmp_today.month(), 1) - boost::gregorian::days(1);//last day of last month
+    }
+
+    //invoicedate
+    boost::posix_time::ptime invoicedate;
+    if (billing_params.invoicedate.is_value_set())
+    {
+        invoicedate = billing_params.invoicedate.get_value();
+
+        if(invoicedate.is_special())
+        {
+            std::cerr << "Invalid date given for ``invoicedate'' " << std::endl;
+            throw std::runtime_error("billing: invalid invoicedate set");
+        }
+    }
+    else
+    {
+        invoicedate = boost::posix_time::microsec_clock::local_time();
+    }
+
+
+
+    LOGGER(PACKAGE).debug ( boost::format("InvoiceClient::billing"
+            " zonename %1%  registrarname %2% taxdate %3%  todate %4% invoicedate %5%")
+    % zone_name % registrar_name
+    % boost::gregorian::to_simple_string(taxdate)
+    % boost::gregorian::to_simple_string(todate)
+    % boost::posix_time::to_simple_string(invoicedate));
+
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
-    bool zoneFilled = false;
-    bool regFilled = false;
-    Database::ID zoneId;
-    std::string zoneName;
-    Database::Date toDate;
-    Database::Date taxDate;
-    Database::ID registrarId;
-    std::string registrarName;
-
-    if (billing_params.zone_fqdn.is_value_set()) {
-        zoneName = billing_params.zone_fqdn.get_value();
-        zoneFilled = true;
+    if (!billing_params.registrar_handle.is_value_set()) {
+        invMan->createAccountInvoices( zone_name
+                , taxdate, todate, invoicedate
+        );
     }
-
-    if (billing_params.registrar_handle.is_value_set()) {
-        registrarName = billing_params.registrar_handle.get_value();
-        regFilled = true;
+    else
+    {
+        invMan->createAccountInvoice( registrar_name, zone_name
+                , taxdate, todate, invoicedate
+        );
     }
-    Database::Date now(Database::NOW);
-    Database::Date first_this(now.get().year(), now.get().month(), 1);
-    Database::Date last_prev(first_this - Database::Days(1));
-
-    if (billing_params.todate.is_value_set()) {
-        toDate = Database::Date(createDateTime(billing_params.todate.get_value()));
-
-        if(toDate.is_special()) {
-            std::cerr << "Invalid date given for ``todate'' " << std::endl;
-            toDate = first_this;
-        }
-    } else {
-        toDate = first_this;
-    }
-    
-    if (billing_params.taxdate.is_value_set()) {
-        taxDate = Database::Date(billing_params.taxdate.get_value());
-
-        if(taxDate.is_special()) {
-            std::cerr << "Invalid date given for ``taxdate'' " << std::endl;
-            taxDate = last_prev;
-        }
-    } else {
-        taxDate = last_prev;
-    }
-    
-    if (!zoneFilled) {
-        std::cerr << "Zone is not set, use ``zone_fqdn'' to set it" << std::endl;
-        return;
-    }
-
-    std::string toDate_str(toDate.to_string());
-    std::string taxDate_str(taxDate.to_string());
-
-    LOGGER(PACKAGE).debug ( boost::format("InvoiceClient::billing"
-            " zoneName %1%  registrarName %2% taxDate_str %3%  toDate_str %4%")
-    % zoneName % registrarName % taxDate_str % toDate_str );
-
-    boost::gregorian::from_simple_string(taxDate_str);
-
-    if (!regFilled) {
-        invMan->createAccountInvoices( zoneName
-                , boost::gregorian::from_simple_string(taxDate_str)
-                , boost::gregorian::from_simple_string(toDate_str));
-    } else {
-        invMan->createAccountInvoice( registrarName, zoneName
-                , boost::gregorian::from_simple_string(taxDate_str)
-                , boost::gregorian::from_simple_string(toDate_str));
-    }
-
 }
 
 void

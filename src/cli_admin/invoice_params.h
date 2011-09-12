@@ -115,8 +115,9 @@ struct InvoiceBillingArgs
 {
     optional_string zone_fqdn;
     optional_string registrar_handle;
-    optional_string todate;
-    optional_string taxdate;
+    optional_date todate;
+    optional_date taxdate;
+    optional_ptime invoicedate;
 
 
     InvoiceBillingArgs()

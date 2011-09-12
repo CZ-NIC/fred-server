@@ -35,6 +35,9 @@
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/strong_typedef.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+
 
 #include "faked_args.h"
 #include "handle_args.h"
@@ -49,6 +52,9 @@ struct Checked
     typedef ulonglong id;
     typedef double fpnumber;
     BOOST_STRONG_TYPEDEF(std::string, string_fpnumber);
+    typedef boost::gregorian::date date;
+    typedef boost::posix_time::ptime ptime;
+
 };
 
 
@@ -475,6 +481,194 @@ namespace boost
                 v = any(s);
             }
         }//validate checked_string_fpnumber
+
+        void validate(boost::any& v,
+                      const std::vector<std::string>& values,
+                      Checked::date* target_type, int)
+        {
+            using namespace boost;
+            using namespace boost::program_options;
+            using namespace std;
+
+            // Make sure no previous assignment to 'a' was made.
+            validators::check_first_occurrence(v);
+            // Extract the first string from 'values'. If there is more than
+            // one string, it's an error, and exception will be thrown.
+            const std::string& s = validators::get_single_string(values);
+
+
+            //date check YYYY-MM-DD or YYYY/MM/DD
+            static const boost::regex date_regex("((19|20)\\d\\d)([/-])(0[1-9]|1[012])([/-])(0[1-9]|[12][0-9]|3[01])");
+
+            if (!s.empty() //string not empty
+                && // and
+                (
+                    (*s.begin() == '\'' && *s.rbegin() == '\'') //quoted by '\'
+                    ||                                          //or
+                    (*s.begin() == '"' && *s.rbegin() == '"')   //quoted by '"'
+                )
+            )
+            {
+                std::string str_inside_quotes = s.substr(1, s.size()-2);
+
+                if (!boost::regex_match(str_inside_quotes, date_regex))
+                {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+                    throw validation_error(
+                            std::string("invalid quoted argument value"));
+#endif
+                }
+
+                try
+                {
+                    boost::gregorian::date tmp_date = boost::gregorian::from_string(str_inside_quotes);
+                    if (tmp_date.is_special()) throw std::runtime_error("invalid date");
+                }
+                catch(const std::exception& ex)
+                {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+
+                    throw validation_error(
+                            std::string("invalid quoted argument value cast"));
+#endif
+                }
+
+                v = any(str_inside_quotes);
+            }
+            else
+            {
+                if (!s.empty()) //string not empty
+                {
+
+                    if (!boost::regex_match(s, date_regex))
+                    {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+                        throw validation_error(
+                                std::string("invalid argument value"));
+#endif
+                    }
+
+                    try
+                    {
+                        boost::gregorian::date tmp_date = boost::gregorian::from_string(s);
+                        if (tmp_date.is_special()) throw std::runtime_error("invalid date");
+                    }
+                    catch(const std::exception& ex)
+                    {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+                        throw validation_error(
+                                std::string("invalid argument value cast"));
+#endif
+                    }
+                }
+
+                v = any(s);
+            }
+        }//validate checked_date
+
+
+
+        void validate(boost::any& v,
+                      const std::vector<std::string>& values,
+                      Checked::ptime* target_type, int)
+        {
+            using namespace boost;
+            using namespace boost::program_options;
+            using namespace std;
+
+            // Make sure no previous assignment to 'a' was made.
+            validators::check_first_occurrence(v);
+            // Extract the first string from 'values'. If there is more than
+            // one string, it's an error, and exception will be thrown.
+            const std::string& s = validators::get_single_string(values);
+
+
+            //ptime check YYYY-MM-DD hh:mm:ss or YYYY/MM/DD hh:mm:ss
+            static const boost::regex ptime_regex(
+                "((19|20)\\d\\d)([/-])(0[1-9]|1[012])([/-])(0[1-9]|[12][0-9]|3[01]) (0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])");
+
+            if (!s.empty() //string not empty
+                && // and
+                (
+                    (*s.begin() == '\'' && *s.rbegin() == '\'') //quoted by '\'
+                    ||                                          //or
+                    (*s.begin() == '"' && *s.rbegin() == '"')   //quoted by '"'
+                )
+            )
+            {
+                std::string str_inside_quotes = s.substr(1, s.size()-2);
+
+                if (!boost::regex_match(str_inside_quotes, ptime_regex))
+                {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+                    throw validation_error(
+                            std::string("invalid quoted argument value"));
+#endif
+                }
+
+                try
+                {
+                    boost::posix_time::ptime tmp_ptime = boost::posix_time::time_from_string(str_inside_quotes);
+                    if (tmp_ptime.is_special()) throw std::runtime_error("invalid ptime");
+                }
+                catch(const std::exception& ex)
+                {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+
+                    throw validation_error(
+                            std::string("invalid quoted argument value cast"));
+#endif
+                }
+
+                v = any(str_inside_quotes);
+            }
+            else
+            {
+                if (!s.empty()) //string not empty
+                {
+
+                    if (!boost::regex_match(s, ptime_regex))
+                    {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+                        throw validation_error(
+                                std::string("invalid argument value"));
+#endif
+                    }
+
+                    try
+                    {
+                        boost::posix_time::ptime tmp_ptime = boost::posix_time::time_from_string(s);
+                        if (tmp_ptime.is_special()) throw std::runtime_error("invalid ptime");
+
+                    }
+                    catch(const std::exception& ex)
+                    {
+#if ( BOOST_VERSION > 104100 )
+                    boost::throw_exception(invalid_option_value(s));
+#else
+                        throw validation_error(
+                                std::string("invalid argument value cast"));
+#endif
+                    }
+                }
+
+                v = any(s);
+            }
+        }//validate checked ptime
 
     }//namespace program_options
 }//namespace boost

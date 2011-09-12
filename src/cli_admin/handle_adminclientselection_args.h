@@ -616,12 +616,15 @@ public:
                 ::value<Checked::string>()->notifier(save_optional_string(params.registrar_handle))
                 , "registrar handle")
             ("todate", boost::program_options
-                    ::value<Checked::string>()->notifier(save_optional_string(params.todate))
+                    ::value<Checked::date>()->notifier(save_optional_date(params.todate))
                 , "todate, default in impl is first day of this month,"
-                " meaning is end of interval NOT including \"todate\" arg format viz --help_dates")
+                " meaning is end of interval NOT including \"todate\" arg format YYYY-MM-DD")
             ("taxdate", boost::program_options
-              ::value<Checked::string>()->notifier(save_optional_string(params.taxdate))
-              , "tax date, default in impl is date of last day of previous month which is last day of accounting interval, arg format viz --help_dates")
+              ::value<Checked::date>()->notifier(save_optional_date(params.taxdate))
+              , "tax date, default in impl is date of last day of previous month which is last day of accounting interval, arg format YYYY-MM-DD")
+            ("invoicedate", boost::program_options
+                ::value<Checked::ptime>()->notifier(save_optional_ptime(params.invoicedate))
+                , "invoice date is timestamp of invoice, default in impl is local now(), arg format YYYY-MM-DD hh:mm:ss")
                 ;
         return cfg_opts;
     }//get_options_description

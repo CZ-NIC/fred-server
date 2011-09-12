@@ -323,8 +323,17 @@ public:
           const Database::Date &exDate,
           const int &units_count) = 0;
 
-  virtual void createAccountInvoices(const std::string& zone_fqdn, boost::gregorian::date taxdate, boost::gregorian::date todate) = 0;
-  virtual void createAccountInvoice(const std::string& registrarHandle, const std::string& zone_fqdn, boost::gregorian::date taxdate, boost::gregorian::date todate) = 0;
+  virtual void createAccountInvoices(
+          const std::string& zone_fqdn
+          , boost::gregorian::date taxdate
+          , boost::gregorian::date todate
+          , boost::posix_time::ptime invoicedate) = 0;
+  virtual void createAccountInvoice(
+          const std::string& registrarHandle
+          , const std::string& zone_fqdn
+          , boost::gregorian::date taxdate
+          , boost::gregorian::date todate
+          , boost::posix_time::ptime invoicedate) = 0;
 
 }; // Manager
 

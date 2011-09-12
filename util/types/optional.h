@@ -25,6 +25,9 @@
 #define OPTIONAL_H_
 
 #include <string>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+
 
 /**
  * \class OptionalType
@@ -70,6 +73,94 @@ public:
     operator const TYPE& () const { return value_; }
 };//OptionalType
 
+template <> class OptionalType <boost::gregorian::date>
+{
+public:
+    typedef  boost::gregorian::date TypeOfValue;
+private:
+    boost::gregorian::date value_;
+    bool is_value_set_;
+public:
+    OptionalType()
+    : value_()
+    , is_value_set_(false)
+    {}//ctor
+    OptionalType(const boost::gregorian::date& value)
+    : value_(value)
+    , is_value_set_(true)
+    {}//init
+    OptionalType(const std::string& value)
+        : value_(boost::gregorian::from_string(value))
+        , is_value_set_(true)
+        {}//init
+    OptionalType(OptionalType const & rhs)
+    : value_(rhs.value_)
+    , is_value_set_(rhs.is_value_set_)
+    {}//copy
+    OptionalType& operator=(OptionalType const & rhs)
+    {
+        if (this != &rhs)
+        {
+            value_=rhs.value_;
+            is_value_set_ = rhs.is_value_set_;
+        }
+        return *this;
+    }//assignment
+
+    //getters
+    boost::gregorian::date get_value() const { return value_; }
+    bool is_value_set() const { return is_value_set_; }
+
+    // conversion is possible but explicit using look more readable
+    operator bool () const { return is_value_set_; }
+    operator const boost::gregorian::date& () const { return value_; }
+};//OptionalType
+
+
+template <> class OptionalType <boost::posix_time::ptime>
+{
+public:
+    typedef  boost::posix_time::ptime TypeOfValue;
+private:
+    boost::posix_time::ptime value_;
+    bool is_value_set_;
+public:
+    OptionalType()
+    : value_()
+    , is_value_set_(false)
+    {}//ctor
+    OptionalType(const boost::posix_time::ptime& value)
+    : value_(value)
+    , is_value_set_(true)
+    {}//init
+    OptionalType(const std::string& value)
+        : value_(boost::posix_time::time_from_string(value))
+        , is_value_set_(true)
+        {}//init
+    OptionalType(OptionalType const & rhs)
+    : value_(rhs.value_)
+    , is_value_set_(rhs.is_value_set_)
+    {}//copy
+    OptionalType& operator=(OptionalType const & rhs)
+    {
+        if (this != &rhs)
+        {
+            value_=rhs.value_;
+            is_value_set_ = rhs.is_value_set_;
+        }
+        return *this;
+    }//assignment
+
+    //getters
+    boost::posix_time::ptime get_value() const { return value_; }
+    bool is_value_set() const { return is_value_set_; }
+
+    // conversion is possible but explicit using look more readable
+    operator bool () const { return is_value_set_; }
+    operator const boost::posix_time::ptime& () const { return value_; }
+};//OptionalType
+
+
 typedef OptionalType<std::string> optional_string;
 typedef OptionalType<unsigned long long> optional_id;
 typedef OptionalType<unsigned long long> optional_ulonglong;
@@ -77,6 +168,8 @@ typedef OptionalType<unsigned long> optional_ulong;
 typedef OptionalType<long> optional_long;
 typedef OptionalType<bool> optional_bool;
 typedef OptionalType<double> optional_double;
+typedef OptionalType<boost::gregorian::date> optional_date;
+typedef OptionalType<boost::posix_time::ptime> optional_ptime;
 
 //save ARG into VALUE
 //boost program options notifiers not only for OptionalType
@@ -98,12 +191,45 @@ public:
     }
 };
 
+template <>
+class save_arg<boost::gregorian::date>
+{
+    boost::gregorian::date& val_;
+public:
+    //ctor taking reference to variable where arg value will be stored
+    save_arg(boost::gregorian::date& val) : val_(val) {}
+
+    void operator()(const std::string& arg)//assign value
+    {
+        //std::cout << "notify_arg: " << arg << std::endl;
+        val_=boost::gregorian::from_string(arg);
+    }
+};
+
+template <>
+class save_arg<boost::posix_time::ptime>
+{
+    boost::posix_time::ptime& val_;
+public:
+    //ctor taking reference to variable where arg value will be stored
+    save_arg(boost::posix_time::ptime& val) : val_(val) {}
+
+    void operator()(const std::string& arg)//assign value
+    {
+        //std::cout << "notify_arg: " << arg << std::endl;
+        val_=boost::posix_time::time_from_string(arg);
+    }
+};
+
+
 typedef save_arg<optional_string> save_optional_string;
 typedef save_arg<optional_id> save_optional_id;
 typedef save_arg<optional_ulonglong> save_optional_ulonglong;
 typedef save_arg<optional_ulong> save_optional_ulong;
 typedef save_arg<optional_bool> save_optional_bool;
 typedef save_arg<optional_double> save_optional_double;
+typedef save_arg<optional_date> save_optional_date;
+typedef save_arg<optional_ptime> save_optional_ptime;
 
 //for VALUEs and ARGs like std::vector or compatible
 template <typename VALUE> class insert_arg
