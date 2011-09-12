@@ -16,6 +16,11 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// id of parameter "expiration_dns_protection_period"
+#define EP_OUTZONE 4
+// id of parameter "expiration_registration_protection_period"
+#define EP_DELETE 6
+
 #include "notify.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/log.h"
@@ -197,15 +202,24 @@ namespace Fred
           {
             std::stringstream sql;
             sql << "SELECT dom.name, cor.name, nor.name, r.handle, "
-                << "eh.exdate, dh.exdate "
+                << "eh.exdate, dh.exdate, "
+                << "dh.exdate::date + "
+                << "(SELECT val || ' day' FROM enum_parameters WHERE id = "
+                << EP_OUTZONE << ")::interval," // 3
+                << "dh.exdate::date + "
+                << "(SELECT val || ' day' FROM enum_parameters WHERE id = "
+                << EP_DELETE << ")::interval " // 3
                 << "FROM object_registry dom, object_history doh, "
                 << "registrar r, object_registry cor, domain_history dh "
+                << "JOIN enum_parameter eo ON (eo.id=" << EP_OUTZONE << ") "
+                << "JOIN enum_parameter ed ON (ed.id=" << EP_DELETE << ") "
                 << "LEFT JOIN object_registry nor ON (nor.id=dh.nsset) "
                 << "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
                 << "WHERE dom.historyid=doh.historyid AND doh.clid=r.id "
                 << "AND dom.historyid=dh.historyid AND dh.registrant=cor.id "
                 << "AND dom.id=" << domain;
             if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+            if (db->GetSelectRows() != 1) throw SQL_ERROR();
             params["checkdate"] = to_iso_extended_string(
               date(day_clock::local_day())
             );
@@ -217,12 +231,10 @@ namespace Fred
               params["valdate"] = to_iso_extended_string(val);
             date ex(MAKE_DATE(0,5));
             params["exdate"] = to_iso_extended_string(ex);
-            params["dnsdate"] = to_iso_extended_string(
-              ex + date_duration(30)
-            );
-            params["exregdate"] = to_iso_extended_string(
-              ex + date_duration(45)
-            );
+            date dnsdate(MAKE_DATE(0,6));
+            params["dnsdate"] = to_iso_extended_string(dnsdate);
+            date exregdate(MAKE_DATE(0,7));
+            params["exregdate"] = to_iso_extended_string(exregdate);
             params["statechangedate"] = to_iso_extended_string(stamp.date());
             std::string regHandle = db->GetFieldValue(0,3);
             db->FreeSelect();
@@ -268,12 +280,8 @@ namespace Fred
         if (!d->getValExDate().is_special())
           params["valdate"] = to_iso_extended_string(d->getValExDate());
         params["exdate"] = to_iso_extended_string(d->getExpirationDate());
-        params["dnsdate"] = to_iso_extended_string(
-          d->getExpirationDate() + date_duration(30)
-        );
-        params["exregdate"] = to_iso_extended_string(
-          d->getExpirationDate() + date_duration(45)
-        );
+        params["dnsdate"] = to_iso_extended_string(d->getOutZoneDate());
+        params["exregdate"] = to_iso_extended_string(d->getCancelDate());
         params["statechangedate"] = to_iso_extended_string(stamp.date());
         // fill information about registrar
         Registrar::Registrar::AutoPtr regbyhandle ( rm->getRegistrarByHandle(d->getRegistrarHandle()));
@@ -664,7 +672,9 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
           std::stringstream sql;
           sql << "SELECT dobr.name,r.name,CURRENT_DATE," // 0 1 2
-              << "d.exdate::date + INTERVAL '45 days'," // 3
+              << "d.exdate::date + "
+              << "(SELECT val || ' day' FROM enum_parameters WHERE id = "
+              << EP_DELETE << ")::interval," // 3
               << "c.name, c.organization, " // 4 5
               << "TRIM(COALESCE(c.street1,'') || ' ' || "
               << "COALESCE(c.street2,'') || ' ' || "
