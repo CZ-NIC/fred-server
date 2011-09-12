@@ -135,8 +135,6 @@ public:
 
     // added in order to make it work with old invoicing
 private:
-    void factoring_all(const char *zone_fqdn,
-      const char *taxdateStr, const char *todateStr);
     int factoring(const char *registrarHandle,
       const char *zone_fqdn, const char *taxdateStr, const char *todateStr);
     void filter_reload_invoices(Fred::Invoicing::Manager *invMan, Fred::Invoicing::List *invList);
