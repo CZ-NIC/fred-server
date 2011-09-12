@@ -401,7 +401,7 @@ InvoiceClient::billing()
         todate = boost::gregorian::date(tmp_today.year()
             , tmp_today.month(), 1);//first day of current month
     }
-    
+
     //taxdate
     boost::gregorian::date taxdate;
     if (billing_params.taxdate.is_value_set())
@@ -439,28 +439,27 @@ InvoiceClient::billing()
         invoicedate = boost::posix_time::microsec_clock::local_time();
     }
 
-
-
     LOGGER(PACKAGE).debug ( boost::format("InvoiceClient::billing"
-            " zonename %1%  registrarname %2% taxdate %3%  todate %4% invoicedate %5%")
+            " zonename %1%  registrarname %2% taxdate %3%  todate (not included) %4% invoicedate %5%")
     % zone_name % registrar_name
     % boost::gregorian::to_simple_string(taxdate)
     % boost::gregorian::to_simple_string(todate)
     % boost::posix_time::to_simple_string(invoicedate));
+
+    //conversion from command line params into implementation params
+    todate -= boost::gregorian::days(1); //today from date after range into last day of range
 
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
     if (!billing_params.registrar_handle.is_value_set()) {
         invMan->createAccountInvoices( zone_name
-                , taxdate, todate, invoicedate
-        );
+                , taxdate, todate, invoicedate);
     }
     else
     {
         invMan->createAccountInvoice( registrar_name, zone_name
-                , taxdate, todate, invoicedate
-        );
+                , taxdate, todate, invoicedate);
     }
 }
 

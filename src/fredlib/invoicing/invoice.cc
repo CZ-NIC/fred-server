@@ -1269,7 +1269,7 @@ unsigned long long insert_account_invoice(
 unsigned long long create_account_invoice
     ( unsigned long long registrar_id
     , unsigned long long zone_id
-    , boost::gregorian::date to_date
+    , boost::gregorian::date to_date //end of billing range
     , boost::gregorian::date tax_date //default = to_date - may be different from to_date, affects selection of advance payments
     , boost::posix_time::ptime invoice_date //default = today - account invoice interval to date including to_date
     )
