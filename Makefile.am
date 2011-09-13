@@ -393,6 +393,8 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/keyset.h \
 		src/fredlib/registrar.cc \
 		src/fredlib/registrar.h \
+		src/fredlib/credit.cc \
+		src/fredlib/credit.h \
 		src/fredlib/public_request.cc \
 		src/fredlib/public_request.h \
 		src/fredlib/invoicing/invoice.cc \

@@ -19,6 +19,7 @@
 #include <math.h>
 #include "commonclient.h"
 #include "invoiceclient.h"
+#include "credit.h"
 #include "fredlib/invoicing/invoice.h"
 #include "../fredlib/model_zone.h"
 #include "types/money.h"
@@ -355,7 +356,11 @@ InvoiceClient::credit()
         return;
     }
 
-    invMan->createDepositInvoice(taxDate, zoneId, regId, price, boost::posix_time::microsec_clock::universal_time());
+    unsigned long long invoice_id
+        = invMan->createDepositInvoice(taxDate, zoneId, regId, price, boost::posix_time::microsec_clock::universal_time());
+
+    Fred::Credit::add_credit_to_invoice()( regId,  zoneId, price, invoice_id);
+
 
 }
 

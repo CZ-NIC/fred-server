@@ -7,6 +7,7 @@
 #include "bank_statement_list_impl.h"
 #include "bank_common.h"
 #include "bank_manager.h"
+#include "credit.h"
 #include "invoicing/invoice.h"
 #include "registrar.h"
 #include "types/stringify.h"
@@ -91,39 +92,9 @@ private:
         Logging::Context ctx("pay_invoice");
         Database::Connection conn = Database::Manager::acquire();
 
-        Database::Result registrar_credit_id_result
-            = conn.exec_params("SELECT id FROM registrar_credit "
-                    " WHERE registrar_id = $1::bigint AND zone_id = $2::bigint"
-                    ,Database::query_param_list(registrar_id)(zone_id));
-
-        unsigned long long registrar_credit_id = 0;
-        if(registrar_credit_id_result.size() == 1 )
-        {
-            registrar_credit_id = registrar_credit_id_result[0][0];
-        }
-        if(registrar_credit_id == 0)
-        {
-            throw std::runtime_error("pay_invoice: registrar_credit not found");
-        }
-
-        Database::Result registrar_credit_transaction_id_result
-            = conn.exec_params(
-                "INSERT INTO registrar_credit_transaction "
-                " (id,balance_change, registrar_credit_id) "
-                " VALUES (DEFAULT, $1::numeric, $2::bigint) "
-                " RETURNING id"
-                ,Database::query_param_list(price.get_string())
-                (registrar_credit_id));
-
-        unsigned long long registrar_credit_transaction_id = 0;
-        if(registrar_credit_transaction_id_result.size() == 1 )
-        {
-            registrar_credit_transaction_id = registrar_credit_transaction_id_result[0][0];
-        }
-        if(registrar_credit_transaction_id == 0)
-        {
-            throw std::runtime_error("pay_invoice: registrar_credit_transaction not found");
-        }
+        //add credit
+        unsigned long long registrar_credit_transaction_id =
+        Fred::Credit::add_credit_to_invoice()( registrar_id,  zone_id, price, invoice_id);
 
         //insert_bank_payment_registrar_credit_transaction_map
         conn.exec_params(
@@ -133,13 +104,7 @@ private:
         ,Database::query_param_list(bank_payment_id)
         (registrar_credit_transaction_id));
 
-        //insert_invoice_registrar_credit_transaction_map
-        conn.exec_params(
-        "INSERT INTO invoice_registrar_credit_transaction_map "
-               " (invoice_id, registrar_credit_transaction_id) "
-               " VALUES (i.id, c.id) "
-        ,Database::query_param_list(invoice_id)
-                (registrar_credit_transaction_id));
+
     }
 
 
