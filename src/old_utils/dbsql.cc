@@ -83,20 +83,24 @@ DB::~DB()
 
 }
 
-long DB::GetRegistrarCredit(
+std::string DB::GetRegistrarCredit(
   int regID, int zoneID)
 {
-  long price=0;
+  std::string price = "0";
   char sqlString[128];
 
   snprintf(sqlString, sizeof(sqlString), 
       "SELECT sum( credit) FROM invoice  WHERE  registrarid=%d and zone=%d; ",
       regID, zoneID);
 
-  if (ExecSelect(sqlString) ) {
+  std::stringstream query;
+  query << "SELECT credit FROM registrar_credit"
+        << " WHERE registrar_id = " << regID
+        << " AND zone_id = " << zoneID;
 
+  if (ExecSelect(query.str().c_str())) {
     if (GetSelectRows() == 1) {
-      price = (long) rint( 100.0 * atof(GetFieldValue( 0, 0) ) );
+      price = std::string(GetFieldValue(0, 0));
     }
 
     FreeSelect();

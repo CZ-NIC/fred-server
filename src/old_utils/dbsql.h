@@ -82,7 +82,7 @@ public:
   //   BILLING
 
 
-  long GetRegistrarCredit(
+  std::string GetRegistrarCredit(
     int regID, int zoneID);
 
   //----------------------------

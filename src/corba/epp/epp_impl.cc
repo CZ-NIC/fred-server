@@ -1751,11 +1751,10 @@ ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID,
         const char* clTRID, const char* XML)
 {
     Logging::Context::clear();
-  Logging::Context ctx("rifd");
+    Logging::Context ctx("rifd");
     Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
     ConnectionReleaser releaser;
 
-    long price;
     unsigned int z, seq, zoneID;
     short int code = 0;
 
@@ -1772,12 +1771,12 @@ ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID,
         for (z = 0; z < zones.size(); z++) {
             zoneID = zones[z];
             // credit of the registrar
-            price = action.getDB()->GetRegistrarCredit(action.getRegistrar(), zoneID);
+            std::string price = action.getDB()->GetRegistrarCredit(action.getRegistrar(), zoneID);
 
             //  return all not depend on            if( price >  0)
             {
                 credit->length(seq+1);
-                credit[seq].price = price;
+                credit[seq].price = CORBA::string_dup(price.c_str());
                 credit[seq].zone_fqdn = CORBA::string_dup(GetZoneFQDN(action.getDB(), zoneID).c_str() );
                 seq++;
             }
