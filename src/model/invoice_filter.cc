@@ -27,7 +27,7 @@ Value<Database::ID>& InvoiceImpl::addId() {
 }
 
 Value<Database::ID>& InvoiceImpl::addZoneId() {
-  Value<Database::ID> *tmp = new Value<Database::ID>(Column("zone", joinInvoiceTable()));
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("zone_id", joinInvoiceTable()));
   tmp->setName("ZoneId");
   add(tmp);
   return *tmp;
@@ -38,7 +38,7 @@ InvoiceImpl::addZone()
 {
     Zone *tmp = new ZoneImpl();
     tmp->joinOn(new Join(
-                Column("zone", joinInvoiceTable()),
+                Column("zone_id", joinInvoiceTable()),
                 SQL_OP_EQ,
                 Column("id", tmp->joinZoneTable())
                 ));
@@ -49,7 +49,7 @@ InvoiceImpl::addZone()
 
 Value<int>& InvoiceImpl::addType() {
   addJoin(new Join(
-                   Column("prefix_type", joinInvoiceTable()),
+                   Column("invoice_prefix_id", joinInvoiceTable()),
                    SQL_OP_EQ,
                    Column("id", joinTable("invoice_prefix"))
                    ));
@@ -102,7 +102,7 @@ Registrar& InvoiceImpl::addRegistrar() {
   Registrar *tmp = new RegistrarImpl();
   add(tmp);
   tmp->joinOn(new Join(
-                       Column("registrarid", joinInvoiceTable()), 
+                       Column("registrar_id", joinInvoiceTable()), 
                        SQL_OP_EQ, 
                        Column("id", tmp->joinRegistrarTable())));
   tmp->setName("Registrar");
@@ -115,10 +115,10 @@ Object& InvoiceImpl::addObject() {
   addJoin(new Join(
                    Column("id", joinInvoiceTable()),
                    SQL_OP_EQ,
-                   Column("invoiceid", joinTable("invoice_object_registry"))
+                   Column("ac_invoice_id", joinTable("invoice_operation"))
                    ));
   tmp->joinOn(new Join(
-                       Column("objectid", joinTable("invoice_object_registry")),
+                       Column("object_id", joinTable("invoice_operation")),
                        SQL_OP_EQ, 
                        Column("id", tmp->joinObjectTable())
                        ));
