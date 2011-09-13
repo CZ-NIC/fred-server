@@ -88,7 +88,7 @@ namespace Fred
                 conn.exec_params(
                 "INSERT INTO invoice_registrar_credit_transaction_map "
                        " (invoice_id, registrar_credit_transaction_id) "
-                       " VALUES (i.id, c.id) "
+                       " VALUES ($1::bigint, $2::bigint) "
                 ,Database::query_param_list(invoice_id)
                         (registrar_credit_transaction_id));
 
