@@ -777,7 +777,7 @@ long long GetInvoicePrefix(const std::string &dateStr, int typ, unsigned long lo
         Database::Connection conn = Database::Manager::acquire();//get db conn
 
         Database::Result res = conn.exec_params(
-            "SELECT id , prefix   FROM invoice_prefix WHERE zone=$1::bigint AND  typ=$2::integer AND year=$3::numeric FOR UPDATE"
+            "SELECT id , prefix   FROM invoice_prefix WHERE zone_id=$1::bigint AND  typ=$2::integer AND year=$3::numeric FOR UPDATE"
             , Database::query_param_list (zone) (typ) (year));
 
         if(res.size() == 1 && (res[0][0].isnull() == false))
@@ -3750,7 +3750,7 @@ public:
       TRACE("Invoicing::Manager::insertInvoicePrefix(...)");
       Database::Connection conn = Database::Manager::acquire();
       std::stringstream query;
-      query << "INSERT INTO invoice_prefix (zone, typ, year, prefix) VALUES"
+      query << "INSERT INTO invoice_prefix (zone_id, typ, year, prefix) VALUES"
           << "(" << zoneId << ", "
           << type << ", "
           << year << ", "

@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix )
             )));
 
     BOOST_CHECK((conn.exec_params(
-        "select * from invoice_prefix where zone=$1::bigint and typ=0 and "
+        "select * from invoice_prefix where zone_id=$1::bigint and typ=0 and "
         " year=$2::integer and prefix=$3::bigint"
         , Database::query_param_list(zone_cz_id)(year)(year*10000)).size() == 1));
 
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix )
             )));
 
     BOOST_CHECK((conn.exec_params(
-        "select * from invoice_prefix where zone=$1::bigint and typ=1 and "
+        "select * from invoice_prefix where zone_id=$1::bigint and typ=1 and "
         " year=$2::integer and prefix=$3::bigint"
         , Database::query_param_list(zone_cz_id)(year)(year*10000 + 1000)).size() == 1));
 
