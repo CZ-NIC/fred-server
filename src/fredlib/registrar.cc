@@ -166,6 +166,8 @@ unsigned long addRegistrarZone(
         {
             toStr = "NULL";
         }
+
+        Database::Transaction trans(conn);
         std::stringstream sql;
         sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,todate) "
                "SELECT (SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle) << "' LIMIT 1) "
@@ -175,8 +177,19 @@ unsigned long addRegistrarZone(
         LOGGER(PACKAGE).debug(boost::format("addRegistrarZone Q1: %1%")
         % sql.str() );
 
-
         conn.exec(sql.str());
+
+        // init registrar credit to 0
+        conn.exec_params("INSERT INTO registrar_credit (credit, registrar_id, zone_id) VALUES "
+                "(0, "
+                "(SELECT id FROM registrar WHERE handle=$1), "
+                "(SELECT id FROM zone WHERE fqdn=$2) ) ",
+                Database::query_param_list
+                        (registrarHandle)
+                        (zone) );
+
+
+
 
         std::stringstream sql2;
 
@@ -202,6 +215,7 @@ unsigned long addRegistrarZone(
 
         if((res.size() == 1) && (res[0].size() == 1))
         {
+            trans.commit();
             Database::ID ret = res[0][0];
             return ret;
         }
