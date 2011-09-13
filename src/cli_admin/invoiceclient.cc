@@ -311,7 +311,7 @@ InvoiceClient::credit()
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
-    std::string taxDate;
+    boost::gregorian::date taxDate;
     Money price;
     int zoneId, regId;
     bool regFilled = false;
@@ -335,10 +335,9 @@ InvoiceClient::credit()
     }
 
     if (credit_params.taxdate.is_value_set()) {
-        taxDate = credit_params.taxdate.get_value();
+        taxDate = boost::gregorian::from_string(credit_params.taxdate.get_value());
     } else {
-        Database::Date now(Database::NOW);
-        taxDate = now.to_string();
+        taxDate = boost::gregorian::date();
     }
 
 

@@ -236,14 +236,15 @@ private:
             // create advance invoice for rest amount after paying possible debt (account invoice)
             if (payment_price_rest > Money("0"))
             {
-                Database::Date account_date = _payment->getAccountDate();
+                //Database::Date account_date = _payment->getAccountDate();
+                boost::gregorian::date tax_date = boost::gregorian::day_clock::local_day();
 
                 std::auto_ptr<Fred::Invoicing::Manager>
                         invoice_manager(Fred::Invoicing::Manager::create());
 
                 unsigned long long advance_invoice_id
                     = invoice_manager->createDepositInvoice(
-                        account_date, zone_id, _registrar_id
+                        tax_date, zone_id, _registrar_id
                         , payment_price_rest
                         , boost::posix_time::microsec_clock::universal_time());
 

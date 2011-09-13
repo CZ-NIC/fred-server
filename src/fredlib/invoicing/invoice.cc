@@ -607,7 +607,7 @@ public:
 
 // TODO what exceptions to throw and whether to log errors
 // SPEC current time taken from now() in DB (which should be UTC)
-unsigned long long  createDepositInvoice(Database::Date tax_date, unsigned long long zoneId
+unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsigned long long zoneId
         , unsigned long long registrarId, Money price, boost::posix_time::ptime invoice_date)
 {
 
@@ -646,8 +646,12 @@ unsigned long long  createDepositInvoice(Database::Date tax_date, unsigned long 
     if (pay_vat) {
 
         Database::Result vat_details = conn.exec_params(
-                "select vat, koef::numeric from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
-                , Database::query_param_list(tax_date.is_special() ? boost::gregorian::day_clock::universal_day() : tax_date.get() )
+                "select vat, koef::numeric from price_vat where valid_to > ($1::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC' or valid_to is null order by valid_to limit 1"
+                , Database::query_param_list(
+                        tax_date.is_special()
+                            ? (boost::gregorian::day_clock::local_day())
+                            : (tax_date)
+                              )
                 );
 
         if(vat_details.size() > 1) {
