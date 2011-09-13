@@ -991,10 +991,9 @@ public:
         return;
       
       Database::SelectQuery credit_query;
-      credit_query.select() << "zone, registrarid, COALESCE(SUM(credit), 0)";
-      credit_query.from() << "invoice";
-      credit_query.group_by() << "registrarid, zone";
-      credit_query.order_by() << "registrarid";
+      credit_query.select() << "zone_id, registrar_id, credit";
+      credit_query.from() << "registrar_credit";
+      credit_query.order_by() << "registrar_id";
 
       resetIDSequence();
       Database::Result r_credit = conn.exec(credit_query);
@@ -1035,17 +1034,15 @@ public:
 
       resetIDSequence();
       Database::SelectQuery azone_query;
-      azone_query.select() <<   "ri.id as id, ri.registrarid as registrarid ,z.fqdn as name, "
+      azone_query.select() <<   "ri.id as id, ri.registrarid as registrarid, z.fqdn as name, "
                                 "case when ri.fromdate = mtd.max_fromdate then cr.credit else null end as credit  "
                                 ", ri.fromdate as fromdate , ri.todate as todate ";
       azone_query.from() <<   "registrarinvoice ri "
                               "join zone z on ri.zone = z.id "
-                              "left join (select i.zone, i.registrarid "
-                                  ", COALESCE(SUM(credit), 0) as credit "
-                                  "from invoice i "
-                                  "group by i.registrarid, i.zone "
-                                  ") as cr on cr.zone = ri.zone "
-                                  "and ri.registrarid = cr.registrarid "
+                              "left join (select zone_id, registrar_id, credit "
+                                  "from registrar_credit "
+                                  ") as cr on cr.zone_id = ri.zone "
+                                  "and ri.registrarid = cr.registrar_id "
                               "join (select ri.registrarid as rid, ri.zone as zid "
                                   ",max(fromdate) as max_fromdate "
                                   "from registrarinvoice ri "
