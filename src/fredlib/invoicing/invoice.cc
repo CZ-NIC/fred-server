@@ -379,7 +379,8 @@ public:
 
           if(operation_price_list_result.size() != 1)
           {
-              throw std::runtime_error("charge_operation: operation not found");
+              //operation not found in price_list no billing
+              return true;
           }
 
           bool enable_postpaid_operation = operation_price_list_result[0][0];
