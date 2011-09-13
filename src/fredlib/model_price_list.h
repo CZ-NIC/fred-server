@@ -47,9 +47,13 @@ public:
     {
         return m_price.get();
     }
-    const int &getPeriod() const
+    const int &getQuantity() const
     {
-        return m_period.get();
+        return m_quantity.get();
+    }
+    const bool &getEnablePostpaidOperation() const
+    {
+        return m_enable_postpaid_operation.get();
     }
     void setId(const unsigned long long &id)
     {
@@ -87,9 +91,13 @@ public:
     {
         m_price = price;
     }
-    void setPeriod(const int &period)
+    void setQuantity(const int &quantity)
     {
-        m_period = period;
+        m_quantity = quantity;
+    }
+    void setEnablePostpaidOperation(const bool &postpaid)
+    {
+        m_enable_postpaid_operation = postpaid;
     }
 
     friend class Model::Base;
@@ -141,7 +149,8 @@ protected:
     Field::Field<Database::DateTime> m_validFrom;
     Field::Field<Database::DateTime> m_validTo;
     Field::Field<std::string> m_price;
-    Field::Field<int> m_period;
+    Field::Field<int> m_quantity;
+    Field::Field<bool> m_enable_postpaid_operation;
 
     //Field::Lazy::Field<ModelZone *> m_ftab_zone;
     //Field::Lazy::Field<ModelEnumOperation *> m_ftab_operation;
@@ -153,7 +162,8 @@ public:
     static Model::Field::Basic<ModelPriceList, Database::DateTime> validFrom;
     static Model::Field::Basic<ModelPriceList, Database::DateTime> validTo;
     static Model::Field::Basic<ModelPriceList, std::string> price;
-    static Model::Field::Basic<ModelPriceList, int> period;
+    static Model::Field::Basic<ModelPriceList, int> quantity;
+    static Model::Field::Basic<ModelPriceList, bool> enable_postpaid_operation;
 
     //static Model::Field::Related::OneToOne<ModelPriceList, unsigned long long, ModelZone> ftab_zone;
     //static Model::Field::Related::OneToOne<ModelPriceList, unsigned long long, ModelEnumOperation> ftab_operation;

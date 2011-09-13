@@ -1335,7 +1335,7 @@ namespace Fred
             	if(!validTo.get().is_not_a_date_time())
             	    pl.setValidTo(validTo);
             	pl.setPrice(price.get_string());
-            	pl.setPeriod(period);
+            	pl.setQuantity(period);
             	pl.insert();
 
             }//try
