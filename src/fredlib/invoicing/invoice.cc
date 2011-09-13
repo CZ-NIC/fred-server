@@ -1179,7 +1179,7 @@ unsigned long long insert_account_invoice(
         , unsigned long long zone_id
         , Money sum_op_price
         , boost::gregorian::date tax_date
-        , boost::posix_time::ptime invoice_date //default = today
+        , boost::posix_time::ptime invoice_date //local timestamp, default = today
         )
 {
     Database::Connection conn = Database::Manager::acquire();
@@ -1245,7 +1245,7 @@ unsigned long long insert_account_invoice(
         " , crdate, taxDate, operations_price, vat "
         " , total, totalVAT, balance) "
         " VALUES (DEFAULT, $1::bigint, $2::bigint, $3::bigint "
-        " , $4::bigint, $5::timestamp, $6::date, $7::numeric(10,2) "
+        " , $4::bigint, ($5::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' , $6::date, $7::numeric(10,2) "
         " , $8::numeric, 0, 0, 0) "
     " RETURNING id "
     , Database::query_param_list(prefix)(zone_id)(invoice_prefix_id)
@@ -1271,7 +1271,7 @@ unsigned long long create_account_invoice
     , unsigned long long zone_id
     , boost::gregorian::date to_date //end of billing range
     , boost::gregorian::date tax_date //default = to_date - may be different from to_date, affects selection of advance payments
-    , boost::posix_time::ptime invoice_date //default = today - account invoice interval to date including to_date
+    , boost::posix_time::ptime invoice_date //local timestamp, default = today - account invoice interval to date including to_date
     )
 {
     Database::Connection conn = Database::Manager::acquire();
@@ -1447,8 +1447,8 @@ unsigned long long create_account_invoice
 void createAccountInvoices(
         const std::string& zone_fqdn
         ,  boost::gregorian::date taxdate
-        , boost::gregorian::date todate
-        , boost::posix_time::ptime invoicedate
+        , boost::gregorian::date todate //including end of range
+        , boost::posix_time::ptime invoicedate //timestamp in local time
         )
 {
     Logging::Context ctx("createAccountInvoices");
@@ -1459,13 +1459,6 @@ void createAccountInvoices(
 
         std::string taxdateStr(boost::gregorian::to_iso_extended_string(taxdate));
         std::string todateStr(boost::gregorian::to_iso_extended_string(todate));
-
-        //local invoicedate into utc timestamp
-        std::string local_todate_timestamp_str = boost::posix_time::to_iso_extended_string(invoicedate);
-        local_todate_timestamp_str[local_todate_timestamp_str.find('T')] = ' ';//replace  T with [space]
-        std::string  timestampStr(conn.exec(std::string("select '")
-            +local_todate_timestamp_str+" Europe/Prague' AT TIME ZONE 'UTC'")[0][0]);
-
 
         Database::Result res = conn.exec_params(
           "SELECT r.id, z.id FROM registrar r, registrarinvoice i, zone z WHERE r.id=i.registrarid"
@@ -1489,12 +1482,12 @@ void createAccountInvoices(
                     ( regID, zoneID
                     , todate
                     , taxdate //default = to_date - may be different from to_date, affects selection of advance payments
-                    , boost::posix_time::time_from_string(timestampStr) //invoice_date //default = today - account invoice interval to date including to_date
+                    , invoicedate//invoice_date //default = today - account invoice interval to date including to_date
                     );
                     //MakeFactoring(regID, zoneID, timestampStr,taxdateStr);
             LOGGER(PACKAGE).notice(boost::format(
-             "Vygenerovana fa invoiceID %1% pro regID %2% zoneID %3% timestampStr %4% taxdateStr %5%")
-             % invoiceID % regID % zoneID % timestampStr % taxdateStr);
+             "Vygenerovana fa invoiceID %1% pro regID %2% zoneID %3% taxdateStr %4%")
+             % invoiceID % regID % zoneID % taxdateStr);
         }//for i
 
         tx.commit();
@@ -1516,8 +1509,8 @@ void createAccountInvoice(
         const std::string& registrarHandle
         , const std::string& zone_fqdn
         , boost::gregorian::date taxdate
-        , boost::gregorian::date todate
-        , boost::posix_time::ptime invoicedate
+        , boost::gregorian::date todate //including end of range
+        , boost::posix_time::ptime invoicedate //timestamp in local time
         )
 {
     Logging::Context ctx("createAccountInvoice");
@@ -1549,13 +1542,6 @@ void createAccountInvoice(
             {
                 zone = res[0][0];//zone
 
-                //local todate into utc timestamp
-                boost::posix_time::ptime local_todate_timestamp (todate, boost::posix_time::time_duration(0,0,0));
-                std::string local_todate_timestamp_str = boost::posix_time::to_iso_extended_string(local_todate_timestamp);
-                local_todate_timestamp_str[local_todate_timestamp_str.find('T')] = ' ';//replace  T with [space]
-                std::string  timestampStr(conn.exec(std::string("select '")
-                    +local_todate_timestamp_str+" Europe/Prague' AT TIME ZONE 'UTC'")[0][0]);
-
                 LOGGER(PACKAGE).debug ( boost::format("ManagerImpl::createAccountInvoice"
                         " regID %1%  zone %2% taxdateStr %3%  timestampStr %4%")
                 % regID % zone % taxdateStr % timestampStr );
@@ -1565,7 +1551,7 @@ void createAccountInvoice(
                     ( regID, zone
                     , todate
                     , taxdate //default = to_date - may be different from to_date, affects selection of advance payments
-                    , boost::posix_time::time_from_string(timestampStr) //invoice_date //default = today - account invoice interval to date including to_date
+                    , invoicedate //invoice_date //default = today - account invoice interval to date including to_date
                     );
                 //MakeFactoring(regID, zone, timestampStr, taxdateStr);
 
