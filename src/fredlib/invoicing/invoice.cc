@@ -716,8 +716,8 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
             "INSERT INTO invoice (id, prefix, zone_id, invoice_prefix_id, registrar_id "
             ", crdate, taxDate, operations_price, vat, total, totalVAT, balance) VALUES "
             "($1::bigint, $2::bigint, $3::bigint, $4::bigint, $5::bigint, $6::timestamp, "
-            " $7::date, $8::numeric(10,2), $9::integer, "
-            "$10::numeric(10,2), $11::numeric(10,2), $12::numeric(10,2))", // total, totalVAT, balance
+            " $7::date, NULL, $8::numeric, "
+            "$9::numeric(10,2), $10::numeric(10,2), $11::numeric(10,2))", // total, totalVAT, balance
         Database::query_param_list(invoiceId)
                                 (inv_prefix)
                                 (zoneId)
@@ -725,7 +725,6 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
                                 (registrarId)
                                 (invoice_date)
                                 (tax_date)
-                                (price.get_string())
                                 (vat_percent)
                                 (total.get_string())
                                 (vat_amount.get_string())
