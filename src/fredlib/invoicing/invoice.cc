@@ -415,7 +415,7 @@ public:
                     " (id, balance_change, registrar_credit_id) "
                     " VALUES (DEFAULT, $1::numeric , $2::bigint) "
                 " RETURNING id "
-              , Database::query_param_list(price)(registrar_credit_id));
+              , Database::query_param_list(Money("0") - price)(registrar_credit_id));
 
           if(registrar_credit_transaction_result.size() != 1)
           {
