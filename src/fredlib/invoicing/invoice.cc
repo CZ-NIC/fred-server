@@ -371,8 +371,8 @@ public:
                       " JOIN enum_operation eo ON pl.operation_id = eo.id "
                       " JOIN zone z ON z.id = pl.zone_id "
                   " WHERE valid_from < $1::timestamp "
-                        " AND (pl.valid_to is NULL OR pl.valid_to > crdate ) "
-                  " AND pl.zone_id = $2::bignum AND eo.operation = $3::text "
+                        " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp) "
+                  " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
                   " ORDER BY pl.valid_from DESC "
                   " LIMIT 1 "
               , Database::query_param_list(crdate)(zone_id)(operation));
@@ -431,7 +431,7 @@ public:
               " (id, object_id, registrar_id, operation_id, zone_id" //4
               " , crdate, quantity, date_from,  date_to "
               " , registrar_credit_transaction_id) "
-              "  VALUES (DEFAULT, $1::bignum, $2::bignum, $3::bignum, $4::bignum "
+              "  VALUES (DEFAULT, $1::bigint, $2::bigint, $3::bigint, $4::bigint "
               " , $5::timestamp, $6::integer, $7::date, $8::date "
               " , $9::bigint) "
               //" RETURNING id "
@@ -472,8 +472,8 @@ public:
                       " JOIN enum_operation eo ON pl.operation_id = eo.id "
                       " JOIN zone z ON z.id = pl.zone_id "
                   " WHERE valid_from < $1::timestamp "
-                        " AND (pl.valid_to is NULL OR pl.valid_to > crdate ) "
-                  " AND pl.zone_id = $2::bignum AND eo.operation = $3::text "
+                        " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp ) "
+                  " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
                   " ORDER BY pl.valid_from DESC "
                   " LIMIT 1 "
               , Database::query_param_list(crdate)(zone_id)(operation));
@@ -522,7 +522,7 @@ public:
                   " FROM price_list pl "
                       " JOIN enum_operation eo ON pl.operation_id = eo.id "
                       " JOIN zone z ON z.id = pl.zone_id "
-                  " WHERE pl.zone_id = $1::bignum AND eo.operation = $2::text "
+                  " WHERE pl.zone_id = $1::bigint AND eo.operation = $2::text "
               , Database::query_param_list(zone_id)(operation));
 
           if(operation_price_list_result.size() > 0)
