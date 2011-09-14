@@ -535,6 +535,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         src/corba/libcorbaregistry.a \
         src/corba/libcorbafilters.a \
         src/corba/libcorbadatatypes.a \
+	src/fredlib/banking/libbanking.a \
 	src/fredlib/libfred.a \
 	src/fredlib/messages/libmessages.a \
 	src/model/libmodel.a \
@@ -543,7 +544,6 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
     src/old_utils/liboldutils.a \
 	src/fredlib/requests/librequests.a \
 	src/fredlib/mojeid/libmojeid.a \
-	src/fredlib/banking/libbanking.a \
     util/log/liblog.a \
 	util/libutil.a \
 	util/decimal/libmpdec.a -lm \

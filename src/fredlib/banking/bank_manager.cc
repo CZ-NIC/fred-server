@@ -94,7 +94,7 @@ private:
 
         //add credit
         unsigned long long registrar_credit_transaction_id =
-        Fred::Credit::add_credit_to_invoice()( registrar_id,  zone_id, price, invoice_id);
+        Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoice_id);
 
         //insert_bank_payment_registrar_credit_transaction_map
         conn.exec_params(
