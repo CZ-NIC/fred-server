@@ -357,7 +357,7 @@ InvoiceClient::credit()
     }
 
     unsigned long long invoice_id
-        = invMan->createDepositInvoice(taxDate, zoneId, regId, price, boost::posix_time::microsec_clock::universal_time());
+        = invMan->createDepositInvoice(taxDate, zoneId, regId, price, boost::posix_time::microsec_clock::local_time());
 
     Fred::Credit::add_credit_to_invoice()( regId,  zoneId, price, invoice_id);
 

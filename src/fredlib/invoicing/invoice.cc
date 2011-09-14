@@ -607,9 +607,11 @@ public:
      */
 
 // TODO what exceptions to throw and whether to log errors
-// SPEC current time taken from now() in DB (which should be UTC)
+
 unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsigned long long zoneId
-        , unsigned long long registrarId, Money price, boost::posix_time::ptime invoice_date)
+        , unsigned long long registrarId, Money price
+        , boost::posix_time::ptime invoice_date //local timestamp
+        )
 {
 
     if ((invoice_date.date() - tax_date) > boost::gregorian::days(15) )
@@ -716,7 +718,8 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
     conn.exec_params(
             "INSERT INTO invoice (id, prefix, zone_id, invoice_prefix_id, registrar_id "
             ", crdate, taxDate, operations_price, vat, total, totalVAT, balance) VALUES "
-            "($1::bigint, $2::bigint, $3::bigint, $4::bigint, $5::bigint, $6::timestamp, "
+            "($1::bigint, $2::bigint, $3::bigint, $4::bigint, $5::bigint, "
+            " ($6::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC', "
             " $7::date, NULL, $8::numeric, "
             "$9::numeric(10,2), $10::numeric(10,2), $11::numeric(10,2))", // total, totalVAT, balance
         Database::query_param_list(invoiceId)

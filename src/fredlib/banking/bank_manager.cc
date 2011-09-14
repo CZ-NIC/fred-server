@@ -211,7 +211,7 @@ private:
                     = invoice_manager->createDepositInvoice(
                         tax_date, zone_id, _registrar_id
                         , payment_price_rest
-                        , boost::posix_time::microsec_clock::universal_time());
+                        , boost::posix_time::microsec_clock::local_time());
 
                 pay_invoice(_registrar_id , zone_id, _payment->getId()
                         , payment_price_rest, advance_invoice_id);
