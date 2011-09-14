@@ -138,99 +138,54 @@ unsigned long addRegistrarZone(
           const std::string zone,
           const Database::Date &fromDate,
           const Database::Date &toDate)
-  {///expecting external transaction, no transaction inside
+  {
       try
       {
 
-          LOGGER(PACKAGE).debug(boost::format("addRegistrarZone registrarHandle: %1% zone: %2% fromDate: %3% toDate: %4%")
-          % registrarHandle % zone % fromDate.to_string() % toDate.to_string() );
+        LOGGER(PACKAGE).debug(
+                boost::format("addRegistrarZone registrarHandle: %1% zone: %2% fromDate: %3% toDate: %4%")
+                % registrarHandle % zone % fromDate.to_string() % toDate.to_string());
 
         Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction trans(conn);
 
-        std::string fromStr;
-        std::string toStr;
-
-        if (!fromDate.is_special())
-        {
-            fromStr = "'" + fromDate.to_string() + "'";
-        }
-        else
-        {
-            fromStr = "CURRENT_DATE";
-        }
-
-        if (!toDate.is_special())
-        {
-            toStr = "'" + toDate.to_string() + "'";
-        }
-        else
-        {
-            toStr = "NULL";
-        }
-
-        Database::Result res_reg = conn.exec_params("SELECT id FROM registrar WHERE handle=$1::text",
+        Database::Result res_reg = conn.exec_params(
+                "SELECT id FROM registrar WHERE handle=$1::text",
                 Database::query_param_list(registrarHandle));
         if(res_reg.size() == 0) {
             throw std::runtime_error("Registrar does not exist");
-        } 
+        }
+
         Database::ID reg_id = res_reg[0][0];
 
-        Database::Result res_zone = conn.exec_params("SELECT id FROM zone WHERE fqdn=$1::text",
+        Database::Result res_zone = conn.exec_params(
+                "SELECT id FROM zone WHERE fqdn=$1::text",
                 Database::query_param_list(zone));
         if(res_zone.size() == 0) {
             throw std::runtime_error("Zone does not exist");
         }
-        Database::ID zone_id = res_zone[0][0];
-        
-        // start transaction to include insert of access and initial 0 credit
-        Database::Transaction trans(conn);
 
-        conn.exec_params(
+        Database::ID zone_id = res_zone[0][0];
+
+        Database::Result res = conn.exec_params(
                "INSERT INTO registrarinvoice (registrarid,zone,fromdate,todate) "
-               "VALUES ($1::bigint, $2::bigint, $3::date, $4::date) ",
+               "VALUES ($1::bigint, $2::bigint, $3::date, $4::date) RETURNING id",
                     Database::query_param_list(reg_id)
                                            (zone_id)
-                                           (fromStr)
-                                           (toStr));
+                                           (fromDate.is_special()
+                                                ? Database::QueryParam(boost::posix_time::microsec_clock::local_time().date())
+                                                : Database::QueryParam(fromDate.get()))
+                                           (toDate.is_special()
+                                                ? Database::QPNull
+                                                : Database::QueryParam(toDate.get())));
 
 
         Fred::Credit::init_new_registrar_credit(reg_id, zone_id);
 
-        std::stringstream sql2;
-
-        sql2 << "SELECT ri.id FROM registrarinvoice ri "
-            "WHERE ri.registrarid = (SELECT id FROM registrar WHERE handle='"
-                << conn.escape(registrarHandle) << "' LIMIT 1) "
-            "and ri.zone = (SELECT id FROM zone WHERE fqdn='"
-                << conn.escape(zone) << "' LIMIT 1) "
-            "and ri.fromdate = date (" << fromStr << ") ";
-
-        if(toStr.compare("NULL") == 0)
-            sql2 << "and ri.todate is null ";
-        else
-            sql2 <<  "and ri.todate = date(" << toStr << ") ";
-
-        sql2 <<  "LIMIT 1 ";
-
-        LOGGER(PACKAGE).debug(boost::format("addRegistrarZone Q2: %1%")
-        % sql2.str() );
-
-
-        Database::Result res = conn.exec(sql2.str());
-
-        /*
-        conn.exec_params("SELECT ri.id FROM registrarinvoice ri "
-            "WHERE ri.registrarid = $1::bigint "
-            "AND ri.zone = $2::bigint "
-            "AND ri.fromdate = $3::date "
-            "kk
-            */
-
         if((res.size() == 1) && (res[0].size() == 1))
         {
             trans.commit();
-            Database::ID ret = res[0][0];
-            return ret;
+            return static_cast<unsigned long>(res[0][0]);
         }
         else
         {
