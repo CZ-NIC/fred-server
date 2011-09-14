@@ -56,6 +56,8 @@ BOOST_AUTO_TEST_CASE( test_block_registrar )
     std::auto_ptr<Fred::Registrar::Manager> regMan(
             Fred::Registrar::Manager::create(m_db));
 
+    Database::ID registrar_id = create_registrar(regMan.get());
+
     init_corba_container();
 
     std::auto_ptr<EppCorbaClientImpl> epp_cli (new EppCorbaClientImpl());
@@ -64,7 +66,7 @@ BOOST_AUTO_TEST_CASE( test_block_registrar )
     // registrar_disconnect must be cleaned after this call or it could use own registrar
     // regMan->blockRegistrar(1, epp_cli.get());
 
-    regMan->blockRegistrar(1, epp_cli.get() );
+    regMan->blockRegistrar(registrar_id, epp_cli.get() );
 
 }
 
