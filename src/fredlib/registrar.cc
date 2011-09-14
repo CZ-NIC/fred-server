@@ -50,6 +50,7 @@
 #include "invoicing/invoice.h"
 
 #include "domain.h"
+#include "credit.h"
 
 namespace Fred {
 namespace Registrar {
@@ -167,29 +168,33 @@ unsigned long addRegistrarZone(
             toStr = "NULL";
         }
 
+        Database::Result res_reg = conn.exec_params("SELECT id FROM registrar WHERE handle=$1::text",
+                Database::query_param_list(registrarHandle));
+        if(res_reg.size() == 0) {
+            throw std::runtime_error("Registrar does not exist");
+        } 
+        Database::ID reg_id = res_reg[0][0];
+
+        Database::Result res_zone = conn.exec_params("SELECT id FROM zone WHERE fqdn=$1::text",
+                Database::query_param_list(zone));
+        if(res_zone.size() == 0) {
+            throw std::runtime_error("Zone does not exist");
+        }
+        Database::ID zone_id = res_zone[0][0];
+        
+        // start transaction to include insert of access and initial 0 credit
         Database::Transaction trans(conn);
-        std::stringstream sql;
-        sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,todate) "
-               "SELECT (SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle) << "' LIMIT 1) "
-               ",(SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "' LIMIT 1) "
-               ", " << fromStr << "," << toStr;
 
-        LOGGER(PACKAGE).debug(boost::format("addRegistrarZone Q1: %1%")
-        % sql.str() );
-
-        conn.exec(sql.str());
-
-        // init registrar credit to 0
-        conn.exec_params("INSERT INTO registrar_credit (credit, registrar_id, zone_id) VALUES "
-                "(0, "
-                "(SELECT id FROM registrar WHERE handle=$1), "
-                "(SELECT id FROM zone WHERE fqdn=$2) ) ",
-                Database::query_param_list
-                        (registrarHandle)
-                        (zone) );
+        conn.exec_params(
+               "INSERT INTO registrarinvoice (registrarid,zone,fromdate,todate) "
+               "VALUES ($1::bigint, $2::bigint, $3::date, $4::date) ",
+                    Database::query_param_list(reg_id)
+                                           (zone_id)
+                                           (fromStr)
+                                           (toStr));
 
 
-
+        Fred::Credit::init_new_registrar_credit(reg_id, zone_id);
 
         std::stringstream sql2;
 
@@ -212,6 +217,14 @@ unsigned long addRegistrarZone(
 
 
         Database::Result res = conn.exec(sql2.str());
+
+        /*
+        conn.exec_params("SELECT ri.id FROM registrarinvoice ri "
+            "WHERE ri.registrarid = $1::bigint "
+            "AND ri.zone = $2::bigint "
+            "AND ri.fromdate = $3::date "
+            "kk
+            */
 
         if((res.size() == 1) && (res[0].size() == 1))
         {
