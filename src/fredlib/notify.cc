@@ -16,11 +16,6 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// id of parameter "expiration_dns_protection_period"
-#define EP_OUTZONE 4
-// id of parameter "expiration_registration_protection_period"
-#define EP_DELETE 6
-
 #include "notify.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/log.h"
@@ -36,6 +31,12 @@ namespace Fred
   namespace Notify
   {
     
+    // id of parameter "expiration_dns_protection_period"
+    const int EP_OUTZONE = 4;
+    // id of parameter "expiration_registration_protection_period"
+    const int EP_DELETE = 6;
+
+
     class ManagerImpl : virtual public Manager
     {
       DBSharedPtr db;
@@ -211,8 +212,6 @@ namespace Fred
                 << EP_DELETE << ")::interval " // 3
                 << "FROM object_registry dom, object_history doh, "
                 << "registrar r, object_registry cor, domain_history dh "
-                << "JOIN enum_parameter eo ON (eo.id=" << EP_OUTZONE << ") "
-                << "JOIN enum_parameter ed ON (ed.id=" << EP_DELETE << ") "
                 << "LEFT JOIN object_registry nor ON (nor.id=dh.nsset) "
                 << "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
                 << "WHERE dom.historyid=doh.historyid AND doh.clid=r.id "
