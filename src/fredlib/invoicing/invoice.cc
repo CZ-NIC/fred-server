@@ -398,7 +398,11 @@ public:
 
           if(locked_registrar_credit_result.size() != 1)
           {
-              throw std::runtime_error("charge_operation: registrar_credit not found");
+              LOGGER(PACKAGE).debug ( boost::format("ManagerImpl::charge_operation"
+                              " zone_id %1% registrar_id %2% registrar_credit not found")
+                      % zone_id % registrar_id );
+
+              return false;
           }
 
           unsigned long long registrar_credit_id = locked_registrar_credit_result[0][0];
@@ -406,7 +410,8 @@ public:
 
           if(registrar_credit_balance < price && !enable_postpaid_operation)
           {
-              throw std::runtime_error("charge_operation: insufficient balance");
+              //insufficient balance
+              return false;
           }
 
           // save info about debt into credit
