@@ -312,55 +312,53 @@ InvoiceClient::credit()
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
-    boost::gregorian::date taxDate;
-    Money price;
-    int zoneId, regId;
-    bool regFilled = false;
-    bool priceFilled = false;
-    bool zoneFilled = false;
+    boost::posix_time::ptime local_current_timestamp
+        = boost::posix_time::microsec_clock::local_time();
 
-
-    if (credit_params.zone_id.is_value_set()) {
+    unsigned long long zoneId = 0;
+    if (credit_params.zone_id.is_value_set())
+    {
         zoneId = credit_params.zone_id.get_value();
-        zoneFilled = true;
+    }
+    else
+    {
+        throw std::runtime_error("Zone id is not set, use --zone_id to set it ");
     }
 
-    if (credit_params.registrar_id.is_value_set()) {
+    unsigned long long regId = 0;
+    if (credit_params.registrar_id.is_value_set())
+    {
         regId = credit_params.registrar_id.get_value();
-        regFilled = true;
+    }
+    else
+    {
+        throw std::runtime_error("Registrar is not set, use ``--registrar_id'' to set it");
     }
 
-    if (credit_params.price.is_value_set()) {
+    Money price;
+    if (credit_params.price.is_value_set())
+    {
         price = credit_params.price.get_value();
-        priceFilled = true;
+    }
+    else
+    {
+        throw std::runtime_error("Price is not set, use ``--price'' to set it");
     }
 
-    if (credit_params.taxdate.is_value_set()) {
+    boost::gregorian::date taxDate;
+    if (credit_params.taxdate.is_value_set())
+    {
         taxDate = boost::gregorian::from_string(credit_params.taxdate.get_value());
-    } else {
-        taxDate = boost::gregorian::date();
     }
-
-
-    // TODO error messages are not precise for version2.3
-    if (!regFilled) {
-        std::cerr << "Registrar is not set, use ``--registrar_id'' to set it" << std::endl;
-        return;
-    }
-    if (!priceFilled) {
-        std::cerr << "Price is not set, use ``--price'' to set it" << std::endl;
-        return;
-    }
-    if (!zoneFilled) {
-        std::cerr << "Zone id is not set, use --zone_id to set it " << std::endl;
-        return;
+    else
+    {
+        taxDate = local_current_timestamp.date();
     }
 
     unsigned long long invoice_id
-        = invMan->createDepositInvoice(taxDate, zoneId, regId, price, boost::posix_time::microsec_clock::local_time());
+        = invMan->createDepositInvoice(taxDate, zoneId, regId, price, local_current_timestamp);
 
     Fred::Credit::add_credit_to_invoice()( regId,  zoneId, price, invoice_id);
-
 
 }
 
