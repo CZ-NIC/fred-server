@@ -466,44 +466,43 @@ public:
           , boost::gregorian::date date_to //local date
           , unsigned long quantity)
   {
-      try
+      Database::Connection conn = Database::Manager::acquire();
+
+      //get_price_list_info
+      Database::Result operation_price_list_result
+          = conn.exec_params(
+          "SELECT enable_postpaid_operation, operation_id, price, quantity "
+              " FROM price_list pl "
+                  " JOIN enum_operation eo ON pl.operation_id = eo.id "
+                  " JOIN zone z ON z.id = pl.zone_id "
+              " WHERE valid_from < ($1::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC' "
+                  " AND (pl.valid_to is NULL OR pl.valid_to > ($1::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC' ) "
+              " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
+              " ORDER BY pl.valid_from DESC "
+              " LIMIT 1 "
+          , Database::query_param_list(crdate)(zone_id)(operation));
+
+      if(operation_price_list_result.size() != 1)
       {
-          Database::Connection conn = Database::Manager::acquire();
-
-          //get_price_list_info
-          Database::Result operation_price_list_result
-              = conn.exec_params(
-              "SELECT enable_postpaid_operation, operation_id, price, quantity "
-                  " FROM price_list pl "
-                      " JOIN enum_operation eo ON pl.operation_id = eo.id "
-                      " JOIN zone z ON z.id = pl.zone_id "
-                  " WHERE valid_from < ($1::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC' "
-                      " AND (pl.valid_to is NULL OR pl.valid_to > ($1::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC' ) "
-                  " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
-                  " ORDER BY pl.valid_from DESC "
-                  " LIMIT 1 "
-              , Database::query_param_list(crdate)(zone_id)(operation));
-
-          if(operation_price_list_result.size() != 1)
-          {
-              throw std::runtime_error("charge_operation_auto_price: operation not found");
-          }
-
-          Money price_list_price = std::string(operation_price_list_result[0][2]);
-          Decimal  price_list_quantity = std::string(operation_price_list_result[0][3]);
-
-          Money price =  price_list_price
-                  * Decimal(boost::lexical_cast<std::string>(quantity))
-                  / price_list_quantity;//count_price
-
-          return charge_operation(operation, zone_id, registrar_id, object_id, crdate, date_from, date_to, quantity, price);
-      }//try
-      catch(const std::exception& ex)
-      {
-          throw;
+          throw std::runtime_error("charge_operation_auto_price: operation not found");
       }
 
-      return false;
+      Money price_list_price = std::string(operation_price_list_result[0][2]);
+      Decimal  price_list_quantity = std::string(operation_price_list_result[0][3]);
+
+      if(price_list_quantity == Decimal("0"))
+      {
+          throw std::runtime_error(
+                  "charge_operation_auto_price: price_list_quantity == 0");
+      }
+
+      Money price =  price_list_price
+              * Decimal(boost::lexical_cast<std::string>(quantity))
+              / price_list_quantity;//count_price
+
+      return charge_operation(operation, zone_id, registrar_id
+          , object_id, crdate, date_from, date_to, quantity, price);
+
   }
 
   virtual bool charge_operation_custom_price(
