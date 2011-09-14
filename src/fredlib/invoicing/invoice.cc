@@ -3391,23 +3391,24 @@ public:
   
   std::string ManagerImpl::getCreditByZone(const std::string& registrarHandle, TID zone) {
       Database::Connection conn = Database::Manager::acquire();
-    std::string sql
-    ("SELECT (COALESCE(SUM(credit), 0))::numeric(1000,2) "
-     "FROM invoice i JOIN registrar r ON (i.registrarid=r.id) "
-     "WHERE i.zone = $1::bigint AND r.handle = $2::text");
 
-    Database::Result res = conn.exec_params(sql
-            , Database::query_param_list(zone)(registrarHandle));
-    std::string result = std::string(res[0][0]);
+      Database::Result res = conn.exec_params(
+              "SELECT credit FROM registrar_credit rc"
+              " JOIN registrar r ON (rc.registrar_id = r.id)"
+              " WHERE rc.zone_id = $1::bigint AND r.handle = $2::text",
+              Database::query_param_list(zone)(registrarHandle));
 
-    LOGGER(PACKAGE).debug(std::string("ManagerImpl::getCreditByZone res[0][0]: ")
-        + result
-        + " registrarHandle: " + registrarHandle
-        + " zone id: " + boost::lexical_cast<std::string>(zone)
-        + " sql: " + sql
-    );
-    return result;
-    
+      std::string result = "0";
+      if (res.size() == 1) {
+          result = std::string(res[0][0]);
+      }
+
+      LOGGER(PACKAGE).debug(std::string("Invoice::ManagerImpl::getCreditByZone():")
+            + " registrar=" + registrarHandle
+            + " zone_id=" + boost::lexical_cast<std::string>(zone)
+            + " credit=" + result);
+
+      return result;
   }
 
   bool ManagerImpl::insertInvoicePrefix(unsigned long long zoneId,
