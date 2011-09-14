@@ -202,7 +202,12 @@ private:
             if (payment_price_rest > Money("0"))
             {
                 //Database::Date account_date = _payment->getAccountDate();
-                boost::gregorian::date tax_date = boost::gregorian::day_clock::local_day();
+
+                boost::posix_time::ptime local_current_timestamp
+                    = boost::posix_time::microsec_clock::local_time();
+
+
+                boost::gregorian::date tax_date = local_current_timestamp.date();
 
                 std::auto_ptr<Fred::Invoicing::Manager>
                         invoice_manager(Fred::Invoicing::Manager::create());
@@ -211,7 +216,7 @@ private:
                     = invoice_manager->createDepositInvoice(
                         tax_date, zone_id, _registrar_id
                         , payment_price_rest
-                        , boost::posix_time::microsec_clock::local_time());
+                        , local_current_timestamp);
 
                 pay_invoice(_registrar_id , zone_id, _payment->getId()
                         , payment_price_rest, advance_invoice_id);
