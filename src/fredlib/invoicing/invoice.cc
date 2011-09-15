@@ -901,7 +901,7 @@ unsigned long long create_account_invoice
             //insert_invoice_operation_charge_map
             conn.exec_params("INSERT INTO invoice_operation_charge_map "
                  " (invoice_operation_id, invoice_id, price) "
-                 " VALUES(op.io.id, adi.id, parital_charge) "
+                 " VALUES ($1::bigint, $2::bigint, $3::numeric(10,2)) "
                 , Database::query_param_list(invoice_operation_id)
                 (adi_list[i].invoice_id)(partial_charge.get_string()));
 
@@ -918,7 +918,7 @@ unsigned long long create_account_invoice
             , Database::query_param_list(adi_list[i].balance.get_string())(adi_list[i].invoice_id));
 
         //insert_invoice_credit_payment_map(aci, adi)
-        conn.exec_params("INSER INTO invoice_credit_payment_map "
+        conn.exec_params("INSERT INTO invoice_credit_payment_map "
             " (ac_invoice_id, ad_invoice_id, credit, balance) "
             " VALUES($1::bigint, $2::bigint, $3::numeric(10,2), $4::numeric(10,2)) "
             , Database::query_param_list(aci)(adi_list[i].invoice_id)
