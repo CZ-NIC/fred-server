@@ -919,17 +919,20 @@ unsigned long long create_account_invoice
 
     for (std::size_t i = 0; i < adi_list.size(); ++i)
     {
-        //update_invoice_balance(adi)
-        conn.exec_params("UPDATE invoice SET balance = $1::numeric(10,2) WHERE id = $2::bigint"
-            , Database::query_param_list(adi_list[i].balance.get_string())(adi_list[i].invoice_id));
+        if(adi_list[i].credit_change > Money("0"))
+        {
+            //update_invoice_balance(adi)
+            conn.exec_params("UPDATE invoice SET balance = $1::numeric(10,2) WHERE id = $2::bigint"
+                , Database::query_param_list(adi_list[i].balance.get_string())(adi_list[i].invoice_id));
 
-        //insert_invoice_credit_payment_map(aci, adi)
-        conn.exec_params("INSERT INTO invoice_credit_payment_map "
-            " (ac_invoice_id, ad_invoice_id, credit, balance) "
-            " VALUES($1::bigint, $2::bigint, $3::numeric(10,2), $4::numeric(10,2)) "
-            , Database::query_param_list(aci)(adi_list[i].invoice_id)
-            (adi_list[i].credit_change.get_string())
-            (adi_list[i].balance.get_string()));
+            //insert_invoice_credit_payment_map(aci, adi)
+            conn.exec_params("INSERT INTO invoice_credit_payment_map "
+                " (ac_invoice_id, ad_invoice_id, credit, balance) "
+                " VALUES($1::bigint, $2::bigint, $3::numeric(10,2), $4::numeric(10,2)) "
+                , Database::query_param_list(aci)(adi_list[i].invoice_id)
+                (adi_list[i].credit_change.get_string())
+                (adi_list[i].balance.get_string()));
+        }
     }
     //update_account_invoice(aci,price_left)
     conn.exec_params("UPDATE invoice "
