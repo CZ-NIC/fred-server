@@ -3047,7 +3047,7 @@ public:
                 resetIDSequence();
                 Database::SelectQuery source_query;
                 source_query.select() << "tmp.id, icm.credit, sri.vat, sri.prefix, "
-                                      << "ipm.balance, sri.id, sri.total, "
+                                      << "icm.balance, sri.id, sri.total, "
                                       << "sri.totalvat, sri.crdate";
                 source_query.from() << "tmp_invoice_filter_result tmp "
                                     << "JOIN invoice_credit_payment_map icm ON (tmp.id = icm.ac_invoice_id) "
