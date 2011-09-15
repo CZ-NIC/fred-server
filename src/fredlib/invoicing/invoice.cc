@@ -2782,24 +2782,24 @@ public:
             if (registrarFilter)
             {
                 sql_params.push_back(boost::lexical_cast<std::string>(registrarFilter));
-                where << "AND " << "i.registrarid" << "= $" << sql_params.size() << "::bigint ";
+                where << "AND " << "i.registrar_id" << "= $" << sql_params.size() << "::bigint ";
             }
             if (zoneFilter)
             {
                 sql_params.push_back(boost::lexical_cast<std::string>(zoneFilter));
-                where << "AND " << "i.zone" << "= $" << sql_params.size() << "::bigint ";
+                where << "AND " << "i.zone_id" << "= $" << sql_params.size() << "::bigint ";
             }
             if (typeFilter && typeFilter<=2)
             {
                 from << ", invoice_prefix ip ";
-                where << "AND i.prefix_type=ip.id ";
+                where << "AND i.invoice_prefix_id=ip.id ";
                 sql_params.push_back(boost::lexical_cast<std::string>(typeFilter-1));
                 where << "AND " << "ip.typ" << "=$" << sql_params.size() << "::integer ";
             }
             if (!varSymbolFilter.empty() || !registrarHandleFilter.empty())
             {
                 from << ", registrar r ";
-                where << "AND i.registrarid=r.id ";
+                where << "AND i.registrar_id=r.id ";
                 if (!varSymbolFilter.empty())
                 {
                     sql_params.push_back(boost::lexical_cast<std::string>(varSymbolFilter));
@@ -2817,36 +2817,36 @@ public:
             {
                 sql_params.push_back(boost::lexical_cast<std::string>(numberFilter));
                 where << "AND "
-                    << "i.prefix" << " ILIKE TRANSLATE($" << sql_params.size() << "::text,'*?','%_') ";
+                    << "(i.prefix)::text" << " ILIKE TRANSLATE($" << sql_params.size() << "::text,'*?','%_') ";
             }
             if (!crDateFilter.begin().is_special())
             {
                 sql_params.push_back(boost::lexical_cast<std::string>(
                         to_iso_extended_string(crDateFilter.begin().date())));
                  where << "AND " << "i.crdate" << ">=$"
-                   <<  sql_params.size() << "::text ";
+                   <<  sql_params.size() << "::timestamp ";
             }
             if (!crDateFilter.end().is_special())
             {
-                sql_params.push_back(boost::lexical_cast<std::string>(
-                        to_iso_extended_string(crDateFilter.end().date())
-                        )+ " 23:59:59");
-                where << "AND " << "i.crdate" << "<=$"
-                        <<  sql_params.size() << "::text ";
+                sql_params.push_back(
+                    to_iso_extended_string(crDateFilter.end().date() + boost::gregorian::days(1))
+                    );
+                where << "AND " << "i.crdate" << " < $"
+                        <<  sql_params.size() << "::timestamp ";
             }
             if ((!taxDateFilter.begin().is_special()))
             {
                 sql_params.push_back(boost::lexical_cast<std::string>(
-                        to_iso_extended_string(taxDateFilter.begin())));
+                    to_iso_extended_string(taxDateFilter.begin())));
                where << "AND " << "i.taxdate" << ">=$"
-                 <<  sql_params.size() << "::text ";
+                 <<  sql_params.size() << "::timestamp ";
             }
             if ((!taxDateFilter.end().is_special()))
             {
-                sql_params.push_back(boost::lexical_cast<std::string>(
-                        to_iso_extended_string(taxDateFilter.end())));
-                where << "AND " << "i.taxdate" << "<=$"
-                    << sql_params.size() << "::text ";
+                sql_params.push_back(
+                    to_iso_extended_string(taxDateFilter.end().date() + boost::gregorian::days(1)));
+                where << "AND " << "i.taxdate" << " < $"
+                    << sql_params.size() << "::timestamp ";
             }
             switch (archiveFilter)
             {
@@ -2857,15 +2857,15 @@ public:
             }
             if (objectIdFilter)
             {
-                from << ", invoice_object_registry ior ";
-                where << "AND i.id=ior.invoiceid ";
+                from << ", invoice_operation io ";
+                where << "AND i.id=io.ac_invoice_id ";
                 sql_params.push_back(boost::lexical_cast<std::string>(objectIdFilter));
-                where << "AND " << "ior.objectid" << "=$" << sql_params.size() << "::bigint ";
+                where << "AND " << "io.object_id" << "=$" << sql_params.size() << "::bigint ";
             }
             if (!objectNameFilter.empty())
             {
-                from << ", invoice_object_registry iorh, object_registry obr ";
-                where << "AND i.id=iorh.invoiceid AND obr.id=iorh.objectid ";
+                from << ", invoice_operation ioh, object_registry obr ";
+                where << "AND i.id=ioh.ac_invoice_id AND obr.id=ioh.object_id ";
                 sql_params.push_back(boost::lexical_cast<std::string>(objectNameFilter));
                 where << "AND "
                        << "obr.name" << " ILIKE TRANSLATE($" << sql_params.size() << "::text,'*?','%_') ";
@@ -2873,14 +2873,14 @@ public:
 
             if (!advanceNumberFilter.empty())
             {
-                from << ", invoice_object_registry ior2 "
-                << ", invoice_object_registry_price_map iorpm "
+                from << ", invoice_operation io2 "
+                << ", invoice_operation_charge_map iocm "
                 << ", invoice advi ";
-                where << "AND i.id=ior2.invoiceid "
-                << "AND iorpm.id=ior2.id AND iorpm.invoiceid=advi.id ";
+                where << "AND i.id=io2.ac_invoice_id "
+                << "AND iocm.invoice_operation_id=io2.id AND iocm.invoice_id=advi.id ";
                 sql_params.push_back(boost::lexical_cast<std::string>(advanceNumberFilter));
                 where << "AND "
-                       << "advi.prefix" << " ILIKE TRANSLATE($" << sql_params.size() << "::text,'*?','%_') ";
+                       << "(advi.prefix)::text" << " ILIKE TRANSLATE($" << sql_params.size() << "::text,'*?','%_') ";
             }
             // complete sql end do the query
             sql << from.rdbuf() << where.rdbuf();
@@ -2891,10 +2891,10 @@ public:
 
             Database::Result res3 = conn.exec(
                   "SELECT "
-                  " i.id, i.zone, i.crdate::timestamptz AT TIME ZONE 'Europe/Prague',"
+                  " i.id, i.zone_id, i.crdate::timestamptz AT TIME ZONE 'Europe/Prague',"
                   " i.taxdate, ig.fromdate, "
-                  " ig.todate, ip.typ, i.prefix, i.registrarid, i.credit, "
-                  " i.price, i.vat, i.total, i.totalvat, "
+                  " ig.todate, ip.typ, i.prefix, i.registrar_id, i.balance, "
+                  " i.operations_price, i.vat, i.total, i.totalvat, "
                   " i.file, i.fileXML, "
                   " r.organization, r.street1, "
                   " r.city, r.postalcode, TRIM(r.ico), TRIM(r.dic), TRIM(r.varsymb), "
@@ -2902,10 +2902,10 @@ public:
                   "FROM "
                   " tmp_invoice_filter_result it "
                   " JOIN invoice i ON (it.id=i.id) "
-                  " JOIN zone z ON (i.zone=z.id) "
-                  " JOIN registrar r ON (i.registrarid=r.id) "
-                  " JOIN invoice_prefix ip ON (ip.id=i.prefix_type) "
-                  " LEFT JOIN invoice_generation ig ON (i.id=ig.invoiceid) "
+                  " JOIN zone z ON (i.zone_id=z.id) "
+                  " JOIN registrar r ON (i.registrar_id=r.id) "
+                  " JOIN invoice_prefix ip ON (ip.id=i.invoice_prefix_id) "
+                  " LEFT JOIN invoice_generation ig ON (i.id=ig.invoice_id) "
                   // temporary static sorting
                   " ORDER BY it.id"
               );
@@ -2914,8 +2914,8 @@ public:
             {
                 LOGGER(PACKAGE).debug(
                     boost::format(
-                    "res3 i.id %1% i.zone %2% i.typ %3% i.prefix %4%"
-                    " i.registrarid %5% i.credit %6% i.price %7% i.vat %8%"
+                    "res3 i.id %1% i.zone_id %2% i.typ %3% i.prefix %4%"
+                    " i.registrar_id %5% i.balance %6% i.operations_price %7% i.vat %8%"
                     " i.total %9% i.totalvat %10%")
                     % std::string(res3[i][0])
                     % std::string(res3[i][1])
@@ -3013,20 +3013,20 @@ public:
              */
             if (!partialLoad) {
               Database::SelectQuery action_query;
-              action_query.select() << "tmp.id, SUM(ipm.price), i.vat, o.name, "
-                                    << "ior.crdate::timestamptz AT TIME ZONE 'Europe/Prague', "
-                                    << "ior.exdate, ior.operation, ior.period, "
+              action_query.select() << "tmp.id, SUM(icm.price), i.vat, o.name, "
+                                    << "io.date_from::timestamptz AT TIME ZONE 'Europe/Prague', "
+                                    << "io.date_to, io.operation_id, io.quantity, "
                                     << "CASE "
-                                    << "  WHEN ior.period = 0 THEN 0 "
-                                    << "  ELSE SUM(ipm.price) * 12 / ior.period END, "
+                                    << "  WHEN io.quantity = 0 THEN 0 "
+                                    << "  ELSE SUM(icm.price) * 12 / io.quantity END, "
                                     << "o.id";
               action_query.from() << "tmp_invoice_filter_result tmp "
-                                  << "JOIN invoice_object_registry ior ON (tmp.id = ior.invoiceid) "
-                                  << "JOIN object_registry o ON (ior.objectid = o.id) "
-                                  << "JOIN invoice_object_registry_price_map ipm ON (ior.id = ipm.id) "
-                                  << "JOIN invoice i ON (ipm.invoiceid = i.id) ";
-              action_query.group_by() << "tmp.id, o.name, ior.crdate, ior.exdate, "
-                                      << "ior.operation, ior.period, o.id, i.vat";
+                                  << "JOIN invoice_operation io ON (tmp.id = io.ac_invoice_id) "
+                                  << "JOIN object_registry o ON (io.object_id = o.id) "
+                                  << "JOIN invoice_operation_charge_map icm ON (io.id = icm.invoice_operation_id) "
+                                  << "JOIN invoice i ON (icm.invoice_id = i.id) ";
+              action_query.group_by() << "tmp.id, o.name, io.date_from, io.date_to, "
+                                      << "io.operation_id, io.quantity, o.id, i.vat";
               action_query.order_by() << "tmp.id";
 
               resetIDSequence();
@@ -3045,12 +3045,12 @@ public:
             {
                 resetIDSequence();
                 Database::SelectQuery source_query;
-                source_query.select() << "tmp.id, ipm.credit, sri.vat, sri.prefix, "
+                source_query.select() << "tmp.id, icm.credit, sri.vat, sri.prefix, "
                                       << "ipm.balance, sri.id, sri.total, "
                                       << "sri.totalvat, sri.crdate";
                 source_query.from() << "tmp_invoice_filter_result tmp "
-                                    << "JOIN invoice_credit_payment_map ipm ON (tmp.id = ipm.invoiceid) "
-                                    << "JOIN invoice sri ON (ipm.ainvoiceid = sri.id) ";
+                                    << "JOIN invoice_credit_payment_map icm ON (tmp.id = icm.ac_invoice_id) "
+                                    << "JOIN invoice sri ON (icm.ad_invoice_id = sri.id) ";
                 source_query.order_by() << "tmp.id";
 
                 resetIDSequence();
