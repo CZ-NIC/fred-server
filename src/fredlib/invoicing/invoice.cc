@@ -2385,10 +2385,10 @@ public:
           % getTempTableName() % tmp_table_query.str());
 
       Database::SelectQuery object_info_query;
-      object_info_query.select() << "t_1.id, t_1.zone, t_2.fqdn, "
+      object_info_query.select() << "t_1.id, t_1.zone_id, t_2.fqdn, "
                                  << "t_1.crdate::timestamptz AT TIME ZONE 'Europe/Prague', "
                                  << "t_1.taxdate, t_5.fromdate, t_5.todate, t_4.typ, t_1.prefix, "
-                                 << "t_1.registrarid, t_1.credit, t_1.price, "
+                                 << "t_1.registrar_id, t_1.balance, t_1.operations_price, "
                                  << "t_1.vat, t_1.total, t_1.totalvat, "
                                  << "t_1.file, t_1.fileXML, t_3.organization, t_3.street1, "
                                  << "t_3.city, t_3.postalcode, "
@@ -2398,10 +2398,10 @@ public:
 
       object_info_query.from() << "tmp_invoice_filter_result tmp "
                                << "JOIN invoice t_1 ON (tmp.id = t_1.id) "
-                               << "JOIN zone t_2 ON (t_1.zone = t_2.id) "
-                               << "JOIN registrar t_3 ON (t_1.registrarid = t_3.id) "
-                               << "JOIN invoice_prefix t_4 ON (t_4.id = t_1.prefix_type) "
-                               << "LEFT JOIN invoice_generation t_5 ON (t_1.id = t_5.invoiceid) "
+                               << "JOIN zone t_2 ON (t_1.zone_id = t_2.id) "
+                               << "JOIN registrar t_3 ON (t_1.registrar_id = t_3.id) "
+                               << "JOIN invoice_prefix t_4 ON (t_4.id = t_1.invoice_prefix_id) "
+                               << "LEFT JOIN invoice_generation t_5 ON (t_1.id = t_5.invoice_id) "
                                << "LEFT JOIN files t_6 ON (t_1.file = t_6.id) "
                                << "LEFT JOIN files t_7 ON (t_1.filexml = t_7.id)";
 
