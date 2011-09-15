@@ -2493,12 +2493,12 @@ public:
          */
         resetIDSequence();
         Database::SelectQuery source_query;
-        source_query.select() << "tmp.id, ipm.credit, sri.vat, sri.prefix, "
-                              << "ipm.balance, sri.id, sri.total, "
+        source_query.select() << "tmp.id, icm.credit, sri.vat, sri.prefix, "
+                              << "icm.balance, sri.id, sri.total, "
                               << "sri.totalvat, sri.crdate";
         source_query.from() << "tmp_invoice_filter_result tmp "
-                            << "JOIN invoice_credit_payment_map ipm ON (tmp.id = ipm.invoiceid) "
-                            << "JOIN invoice sri ON (ipm.ainvoiceid = sri.id) ";
+                            << "JOIN invoice_credit_payment_map icm ON (tmp.id = icm.ac_invoice_id) "
+                            << "JOIN invoice sri ON (icm.ad_invoice_id = sri.id) ";
         source_query.order_by() << "tmp.id";
         
         resetIDSequence();
@@ -2519,20 +2519,20 @@ public:
          */
         if (!partialLoad) {
           Database::SelectQuery action_query;
-          action_query.select() << "tmp.id, SUM(ipm.price), i.vat, o.name, "
-                                << "ior.crdate::timestamptz AT TIME ZONE 'Europe/Prague', "
-                                << "ior.exdate, ior.operation, ior.period, "
+          action_query.select() << "tmp.id, SUM(icm.price), i.vat, o.name, "
+                                << "io.date_from::timestamptz AT TIME ZONE 'Europe/Prague', "
+                                << "io.date_to, io.operation_id, io.quantity, "
                                 << "CASE "
-                                << "  WHEN ior.period = 0 THEN 0 "
-                                << "  ELSE SUM(ipm.price) * 12 / ior.period END, "
+                                << "  WHEN io.quantity = 0 THEN 0 "
+                                << "  ELSE SUM(icm.price) * 12 / io.quantity END, "
                                 << "o.id";
           action_query.from() << "tmp_invoice_filter_result tmp "
-                              << "JOIN invoice_object_registry ior ON (tmp.id = ior.invoiceid) "
-                              << "JOIN object_registry o ON (ior.objectid = o.id) "
-                              << "JOIN invoice_object_registry_price_map ipm ON (ior.id = ipm.id) "
-                              << "JOIN invoice i ON (ipm.invoiceid = i.id) ";
-          action_query.group_by() << "tmp.id, o.name, ior.crdate, ior.exdate, "
-                                  << "ior.operation, ior.period, o.id, i.vat";
+                              << "JOIN invoice_operation io ON (tmp.id = io.ac_invoice_id) "
+                              << "JOIN object_registry o ON (io.object_id = o.id) "
+                              << "JOIN invoice_operation_charge_map icm ON (io.id = icm.invoice_operation_id) "
+                              << "JOIN invoice i ON (icm.invoice_id = i.id) ";
+          action_query.group_by() << "tmp.id, o.name, io.date_from, io.date_to, "
+                                  << "io.operation_id, io.quantity, o.id, i.vat";
           action_query.order_by() << "tmp.id";
         
           resetIDSequence();
