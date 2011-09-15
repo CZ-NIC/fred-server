@@ -179,9 +179,9 @@ struct get_operation_price_result_fixture
     get_operation_price_result_fixture()
     try
     : operation_price_result(connp->exec(
-        "SELECT enum_operation.operation, price , period, zone.fqdn FROM price_list "
-        " join zone on price_list.zone = zone.id "
-        " join enum_operation on price_list.operation = enum_operation.id "
+        "SELECT enum_operation.operation, price, quantity, zone.fqdn FROM price_list "
+        " join zone on price_list.zone_id = zone.id "
+        " join enum_operation on price_list.operation_id = enum_operation.id "
         " WHERE valid_from < 'now()' "
         " and ( valid_to is NULL or valid_to > 'now()' ) "
         " order by valid_from desc "))
@@ -331,7 +331,7 @@ struct operation_price_fixture
         try
         {
             std::string insert_operation_price =
-                "insert into price_list (zone, operation, valid_from, valid_to, price, period) "
+                "insert into price_list (zone_id, operation_id, valid_from, valid_to, price, quantity) "
                 " values ( (select id from zone where fqdn = $1::text limit 1) " //cz
                 " , (select id from enum_operation where operation = $2::text ) " //CreateDomain,
                 " , $3::timestamp , $4::timestamp " //utc timestamp, valid_to might be null
@@ -458,7 +458,7 @@ protected:
     {
         try
         {
-            connp->exec("update price_list set price = price - 0.11 where zone = 1 and operation = 2");
+            connp->exec("update price_list set price = price - 0.11 where zone_id = 1 and operation_id = 2");
         }
         catch(...)
         {

@@ -123,9 +123,8 @@ struct registrar_credit_item
 };
 
 static std::string zone_registrar_credit_query (
-        "select COALESCE(SUM(credit), 0) from invoice "
-        " where zone = $1::bigint and registrarid =$2::bigint "
-        " group by registrarid, zone ");
+        "SELECT credit FROM registrar_credit"
+        " WHERE zone_id = $1::bigint AND registrar_id =$2::bigint");
 
 bool check_std_exception_invoice_prefix(std::exception const & ex)
 {
@@ -367,7 +366,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     unsigned long long registrar_inv_id = registrar->getId();
     std::string registrar_handle = registrar->getHandle();
 
-    LOGGER(PACKAGE).debug ( boost::format("createDepositInvoice test registrar_id %2%")
+    LOGGER(PACKAGE).debug ( boost::format("createDepositInvoice test registrar_id %1%")
                % registrar_inv_id);
 
 
@@ -1269,16 +1268,16 @@ Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units)
     // TODO more detailed
     Database::Result price_res = conn.exec_params(
         "SELECT "
-            " price , period,"
-            " CASE WHEN period = 0::numeric(10,2) "
+            " price, quantity,"
+            " CASE WHEN quantity = 0::numeric(10,2) "
                 " THEN price"
-                " ELSE  (price * $1::numeric / period)::numeric(10,2)  END "
+                " ELSE  (price * $1::numeric / quantity)::numeric(10,2)  END "
             " AS  actual_price"
-        " FROM price_list where zone=$1::integer and operation=$2::integer "
-            " AND valid_from<now()"
-            " AND ((valid_to is null) or (valid_to>now()))  order by valid_from desc limit 1 ",
-                              Database::query_param_list  (zone_id)
-                                                          (op));
+        " FROM price_list where zone_id = $1::integer and operation_id = $2::integer "
+            " AND valid_from < now()"
+            " AND ((valid_to is null) or (valid_to > now())) order by valid_from desc limit 1 ",
+                              Database::query_param_list(zone_id)
+                                                        (op));
 
     BOOST_REQUIRE_MESSAGE(price_res.size() > 0, "Fetching record from price_list");
 
@@ -1402,8 +1401,8 @@ BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNoCred )
     unsigned period = 12;
 
     Database::Result check = conn.exec_params("SELECT price FROM price_list "
-                                                  "WHERE operation = $1::integer "
-                                                  "AND zone = $2::integer "
+                                                  "WHERE operation_id = $1::integer "
+                                                  "AND zone_id = $2::integer "
                                                   "AND valid_from < now()  "
                                                   "AND ( valid_to IS NULL OR valid_to > now() ) ",
                           Database::query_param_list(operation)
@@ -1416,8 +1415,8 @@ BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNoCred )
     }
 
     check = conn.exec_params("SELECT price FROM price_list "
-                                                      "WHERE operation = $1::integer "
-                                                      "AND zone = $2::integer "
+                                                      "WHERE operation_id = $1::integer "
+                                                      "AND zone_id = $2::integer "
                                                       "AND valid_from < now()  "
                                                       "AND ( valid_to IS NULL OR valid_to > now() ) ",
                               Database::query_param_list(operation)
@@ -1456,7 +1455,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     //db
     Database::Connection conn = Database::Manager::acquire();
     //set operation price
-    conn.exec("update price_list set price = price + 0.11 where zone = 1 and operation = 2");
+    conn.exec("update price_list set price = price + 0.11 where zone_id = 1 and operation_id = 2");
 /*
     Database::Result create_operation_price_result= conn.exec(
         "SELECT price , period FROM price_list WHERE valid_from < 'now()'  "
@@ -1466,11 +1465,10 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     );
 */
     Database::Result renew_operation_price_result= conn.exec(
-        "SELECT price , period FROM price_list WHERE valid_from < 'now()'  "
-        "and ( valid_to is NULL or valid_to > 'now()' ) "
-	"and operation=2 and zone=1 "
-	"order by valid_from desc limit 1"
-    );
+        "SELECT price, quantity FROM price_list WHERE valid_from < 'now()'"
+        " and ( valid_to is NULL or valid_to > 'now()' ) "
+        "and operation_id = 2 and zone_id = 1"
+        "order by valid_from desc limit 1");
 
     Money renew_operation_price = std::string(renew_operation_price_result[0][0]);
 
@@ -1708,7 +1706,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         , check_std_exception_createAccountInvoice );
 
     //set operation price back
-    conn.exec("update price_list set price = price - 0.11 where zone = 1 and operation = 2");
+    conn.exec("update price_list set price = price - 0.11 where zone_id = 1 and operation_id = 2");
 }
 
 
