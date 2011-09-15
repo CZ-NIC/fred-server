@@ -821,7 +821,7 @@ unsigned long long create_account_invoice
                 "create_account_invoice: invoice_generation failed");
     }
 
-    //unsigned long long invoice_generation_id = invoice_generation_result[0][0];
+    unsigned long long invoice_generation_id = invoice_generation_result[0][0];
 
     // all operations without invoice_id set in invoice_operation with price from registrar_credit_transaction table
     //op_list = get_unaccounted_operations(registrar, zone, from_date, to_date)
@@ -854,6 +854,12 @@ unsigned long long create_account_invoice
             , tax_date
             , invoice_date //default = today
             );
+
+    //update invoice_generation
+    conn.exec_params(
+        "UPDATE invoice_generation SET invoice_id = $1::bigint "
+        " WHERE id = $2::bigint"
+        , Database::query_param_list(aci)(invoice_generation_id));
 
     //adi_list = get_advance_invoices(registrar, zone, tax_date) , 0 as credit_change
     Database::Result advance_invoices_result = conn.exec_params(
