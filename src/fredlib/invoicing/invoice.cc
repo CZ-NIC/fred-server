@@ -3221,7 +3221,7 @@ public:
               " WHERE rc.zone_id = $1::bigint AND r.handle = $2::text",
               Database::query_param_list(zone)(registrarHandle));
 
-      std::string result = "0";
+      std::string result = "0.00";
       if (res.size() == 1) {
           result = std::string(res[0][0]);
       }
