@@ -1833,7 +1833,7 @@ public:
               )
       % _id % _zone % _zoneName % _crTime % _taxDate
       % _accountPeriod % _type %  _number
-      % _registrar % _credit.get_string() //credit is null for account invoices
+      % _registrar % (_credit.is_special() ? std::string(" null ") : _credit.get_string()) //credit is null for account invoices
       % _price % _vatRate % _total
       % _totalVAT % _filePDF % _fileXML % _varSymbol
       //% _client % _filepdf_name % _filexml_name
@@ -3362,13 +3362,13 @@ public:
       ExporterArchiver exporter(docman);
       ListImpl l(this);
       l.setArchivedFilter(ListImpl::AF_UNSET);
-
+/* TODO
       for(InvoiceIdVect::const_iterator it = archive_only_this_if_set.begin()
               ; it != archive_only_this_if_set.end() ; ++it )
       {
           l.setIdFilter(*it);//archive only set id
       }
-
+*/
       l.reload();
       ret_inv = l.doExport(&exporter);
       if (send) {
