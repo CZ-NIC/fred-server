@@ -1834,7 +1834,8 @@ public:
       % _id % _zone % _zoneName % _crTime % _taxDate
       % _accountPeriod % _type %  _number
       % _registrar % (_credit.is_special() ? std::string(" null ") : _credit.get_string()) //credit is null for account invoices
-      % _price % _vatRate % _total
+      % (_price.is_special() ? std::string(" null ") : _price.get_string())
+      % _vatRate % _total
       % _totalVAT % _filePDF % _fileXML % _varSymbol
       //% _client % _filepdf_name % _filexml_name
       //% _manager
