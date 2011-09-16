@@ -49,6 +49,9 @@ ObjectClient::runMethod()
     }   else if (object_regular_procedure//m_conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)
             ) {
         regular_procedure();
+    }   else if (object_delete_candidates//m_conf.hasOpt(OBJECT_DELETE_CANDIDATE)
+            ) {
+        delete_candidates();
     }
 }
 
@@ -199,11 +202,16 @@ ObjectClient::deleteObjects(
         "LEFT JOIN domain d ON (d.id=o.id)";
     if (!typeList.empty())
         sql << "WHERE o.type IN (" << typeList << ") ";
-    sql << " ORDER BY CASE WHEN o.type = 3 THEN 1 ELSE 2 END ASC, s.id";
+    sql << " ORDER BY CASE WHEN o.type = 3 THEN 1 ELSE 2 END ASC, random()";
     unsigned int limit = 0;
     if (delete_objects_params.object_delete_limit.is_value_set()//m_conf.hasOpt(OBJECT_DELETE_LIMIT_NAME)
             ) {
         limit = delete_objects_params.object_delete_limit.get_value();//m_conf.get<unsigned int>(OBJECT_DELETE_LIMIT_NAME);
+    }
+    unsigned int parts = 0;
+    if (delete_objects_params.object_delete_parts.is_value_set()
+            ) {
+        parts = delete_objects_params.object_delete_parts.get_value();
     }
     if (limit > 0)
         sql << "LIMIT " << limit;
@@ -262,7 +270,13 @@ ObjectClient::deleteObjects(
             std::cerr << "Cannot connect: " << r->code << std::endl;
             throw -3;
         }
-        for (unsigned int i = 0; i < (unsigned int)m_db->GetSelectRows(); i++) {
+        unsigned int totalCount = (unsigned int)m_db->GetSelectRows();
+        // limit number of object to just first part from total
+        // could be done by COUNT(*) and LIMIT in SQL but this would need to
+        // issue another SQL
+        if (parts > 0) totalCount = totalCount/parts;
+
+        for (unsigned int i = 0; i < totalCount; i++) {
             std::string name = m_db->GetFieldValue(i, 0);
             std::string cltrid;
             std::string xml;
@@ -432,9 +446,9 @@ ObjectClient::regular_procedure()
         pollMan->createStateMessages(pollExcept, 0, NULL);
 
         std::string deleteTypes("");
-        if (object_regular_procedure_params.object_delete_types.is_value_set()//m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)
+        if (delete_objects_params.object_delete_types.is_value_set()//m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)
                 ) {
-            deleteTypes = object_regular_procedure_params.object_delete_types.get_value();//m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
+            deleteTypes = delete_objects_params.object_delete_types.get_value();//m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
         }
         if ((i = deleteObjects(deleteTypes, *(cc.get()))) != 0) {
             LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occured in deleteObject: %d", i);
@@ -465,6 +479,50 @@ ObjectClient::regular_procedure()
 
     return;
 } // ObjectClient::regular_procedure
+
+void
+ObjectClient::delete_candidates()
+{
+    int i;
+    std::auto_ptr<CorbaClient> cc;
+    try {
+        for (i = 0; i < RESOLVE_TRY; i++) {
+            try {
+                cc.reset(new CorbaClient(0, NULL, m_nsAddr, nameservice_context//m_conf.get<std::string>(NS_CONTEXT_NAME)
+                        ));
+                if (cc.get() != NULL) {
+                    break;
+                }
+            } catch (NameService::NOT_RUNNING) {
+                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching NOT_RUNNING", i + 1, RESOLVE_TRY);
+            } catch (NameService::BAD_CONTEXT) {
+                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching BAD_CONTEXT", i + 1, RESOLVE_TRY);
+            }
+        }
+        std::string deleteTypes("");
+        if (delete_objects_params.object_delete_types.is_value_set()//m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)
+                ) {
+            deleteTypes = delete_objects_params.object_delete_types.get_value();//m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
+        }
+        if ((i = deleteObjects(deleteTypes, *(cc.get()))) != 0) {
+            LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occured in deleteObject: %d", i);
+            return;
+        }
+
+    } catch (ccReg::Admin::SQL_ERROR) {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): SQL_ERROR catched");
+    } catch (NameService::NOT_RUNNING) {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): NOT_RUNNING catched");
+    } catch (NameService::BAD_CONTEXT) {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): BAD_CONTEXT catched");
+    } catch (CORBA::Exception &e) {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): CORBA exception catched");
+    } catch (...) {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): unknown exception catched");
+    }
+
+    return;
+} // ObjectClient::delete_candidates
 
 } // namespace Admin;
 

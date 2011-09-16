@@ -107,18 +107,15 @@ struct ObjectUpdateStatesArgs
 struct ObjectRegularProcedureArgs
 {
     optional_string poll_except_types;//OBJECT_POLL_EXCEPT_TYPES_NAME
-    optional_string object_delete_types;//OBJECT_DELETE_TYPES_NAME
     optional_string notify_except_types;//OBJECT_NOTIFY_EXCEPT_TYPES_NAME
 
     ObjectRegularProcedureArgs()
     {}//ctor
     ObjectRegularProcedureArgs(
             const optional_string& _poll_except_types
-             , const optional_string& _object_delete_types
              , const optional_string& _notify_except_types
             )
     : poll_except_types(_poll_except_types)
-    , object_delete_types(_object_delete_types)
     , notify_except_types(_notify_except_types)
     {}//init ctor
 };//struct ObjectRegularProcedureArgs
@@ -130,6 +127,8 @@ struct ObjectRegularProcedureArgs
 struct DeleteObjectsArgs
 {
     optional_ulonglong object_delete_limit;//OBJECT_DELETE_LIMIT_NAME
+    optional_string object_delete_types;//OBJECT_DELETE_TYPES_NAME
+    optional_ulonglong object_delete_parts;//OBJECT_DELETE_PARTS_NAME
     bool object_delete_debug;//OBJECT_DEBUG_NAME
 
     DeleteObjectsArgs()
@@ -137,9 +136,13 @@ struct DeleteObjectsArgs
     {}//ctor
     DeleteObjectsArgs(
              const optional_ulonglong& _object_delete_limit
+             , const optional_string& _object_delete_types
+             , const optional_ulonglong& _object_delete_parts
              , const bool _object_delete_debug
             )
     : object_delete_limit(_object_delete_limit)
+    , object_delete_types(_object_delete_types)
+    , object_delete_parts(_object_delete_parts)
     , object_delete_debug(_object_delete_debug)
     {}//init ctor
 };//struct DeleteObjectsArgs

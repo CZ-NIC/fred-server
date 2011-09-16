@@ -1984,6 +1984,54 @@ public:
 
 
 /**
+ * \class HandleAdminClientObjectDeleteCandidatesArgsGrp
+ * \brief admin client object_delete_candidates options handler
+ */
+class HandleAdminClientObjectDeleteCandidatesArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    DeleteObjectsArgs delete_objects_params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("object_delete_candidates");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("object_delete_candidates options")));
+        cfg_opts->add_options()
+            ("object_delete_candidates"
+                    ,"delete all objects with state delete_candidate")
+            ("object_delete_types",boost::program_options
+                 ::value<Checked::string>()->notifier(save_optional_string(delete_objects_params.object_delete_types))
+                  ,"only this type of object will be delete during mass delete")
+            ("object_delete_limit", boost::program_options
+                ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(delete_objects_params.object_delete_limit))
+                , "limit for object deleting")
+            ("object_delete_parts", boost::program_options
+                    ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(delete_objects_params.object_delete_parts))
+                    , "limit for object deleting set to (total count/parts) - just one part of total count will be processed")
+            ("object_delete_debug", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(delete_objects_params.object_delete_debug))
+                , "object delete debug")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientObjectDeleteCandidatesArgsGrp
+
+
+
+/**
  * \class HandleAdminClientObjectRegularProcedureArgsGrp
  * \brief admin client object_regular_procedure options handler
  */
@@ -2012,7 +2060,7 @@ public:
                     ::value<Checked::string>()->notifier(save_optional_string(regular_procedure_params.poll_except_types))
                      ,"list of poll message types ignored in creation (only states now)")
             ("object_delete_types",boost::program_options
-                 ::value<Checked::string>()->notifier(save_optional_string(regular_procedure_params.object_delete_types))
+                 ::value<Checked::string>()->notifier(save_optional_string(delete_objects_params.object_delete_types))
                   ,"only this type of object will be delete during mass delete")
             ("notify_except_types",boost::program_options
                ::value<Checked::string>()->notifier(save_optional_string(regular_procedure_params.notify_except_types))

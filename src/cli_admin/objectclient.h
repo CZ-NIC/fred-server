@@ -53,6 +53,7 @@ private:
     ObjectUpdateStatesArgs object_update_states_params;
     bool object_regular_procedure;
     ObjectRegularProcedureArgs object_regular_procedure_params;
+    bool object_delete_candidates;
     DeleteObjectsArgs delete_objects_params;
 
 
@@ -68,6 +69,7 @@ public:
     , object_new_state_request_name(false)
     , object_update_states(false)
     , object_regular_procedure(false)
+    , object_delete_candidates(false)
     { }
     ObjectClient(
             const std::string &connstring
@@ -86,6 +88,7 @@ public:
             , const ObjectUpdateStatesArgs& _object_update_states_params
             , const bool _object_regular_procedure
             , const ObjectRegularProcedureArgs& _object_regular_procedure_params
+            , const bool _object_delete_candidates
             , const DeleteObjectsArgs& _delete_objects_params
             )
     : BaseClient(connstring, nsAddr)
@@ -103,6 +106,7 @@ public:
     , object_update_states_params(_object_update_states_params)
     , object_regular_procedure(_object_regular_procedure)
     , object_regular_procedure_params(_object_regular_procedure_params)
+    , object_delete_candidates(_object_delete_candidates)
     , delete_objects_params(_delete_objects_params)
     {
         m_db = connect_DB(connstring
