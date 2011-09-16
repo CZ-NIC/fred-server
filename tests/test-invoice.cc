@@ -48,6 +48,7 @@
 #include "fredlib/invoicing/invoice.h"
 
 #include "time_clock.h"
+#include "credit.h"
 #include "file_manager_client.h"
 #include "fredlib/banking/bank_common.h"
 #include "corba/Admin.hh"
@@ -410,6 +411,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
                     , Money("200.00")
                     , boost::posix_time::ptime(taxdate));//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
+            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, Money("200.00"), invoiceid);
 
             //get registrar credit
             registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("200.00"), Database::Date(1400,1,1)};
@@ -439,6 +441,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
                     , Money("21474836.47")
                     , boost::posix_time::ptime(taxdate));//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
+            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, Money("21474836.47"), invoiceid);
 
             //get registrar credit
             registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("21474836.47"), Database::Date(1400,1,1)};
@@ -604,6 +607,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
                     , Money("200.00")
                     , boost::posix_time::ptime(taxdate));//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
+            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, Money("200.00"), invoiceid);
 
             //get registrar credit
             registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("200.00"), Database::Date(1400,1,1)};
@@ -631,21 +635,10 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
             credit_note_id = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
-                    , Money("200.00")
+                    , Money("-200.00")
                     , boost::posix_time::ptime(taxdate));//price
             BOOST_CHECK_EQUAL(credit_note_id != 0,true);
-
-            //credit note update
-            conn.exec_params(
-                "update invoice set price=-price,total=-total,totalvat=-totalvat,credit=0 where id=$1::bigint"
-                , Database::query_param_list (credit_note_id)
-            );
-
-            //deposit invoice update
-            conn.exec_params(
-                "update invoice set credit=0 where id=$1::bigint"
-                , Database::query_param_list (invoiceid)
-            );
+            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, Money("-200.00"), credit_note_id);
 
             //get registrar credit
             registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("-200.00"), Database::Date(1400,1,1)};
@@ -789,6 +782,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
                     , Money("200.00")
                     , boost::posix_time::ptime(taxdate));//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
+            Fred::Credit::add_credit_to_invoice( registrar_novat_inv_id,  zone_cz_id, Money("200.00"), invoiceid);
 
             //get registrar credit
             registrar_credit_item ci={year,"0.00",0,"0.00", "200.00"};
@@ -808,6 +802,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
                     , Money("200.00")
                     , boost::posix_time::ptime(taxdate));//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
+            Fred::Credit::add_credit_to_invoice( registrar_novat_inv_id,  zone_cz_id, Money("200.00"), invoiceid);
 
             //get registrar credit
             registrar_credit_item ci={year,"0.00",0,"0.00", "200.00"};
@@ -1087,6 +1082,8 @@ void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Data
                    , amount
                    , boost::posix_time::ptime(taxdate));//price
    BOOST_CHECK_EQUAL(invoiceid != 0,true);
+   Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, amount, invoiceid);
+
    // add credit for new registrar
    Database::ID invoiceid2 = man->createDepositInvoice(taxdate //taxdate
                    , zone_cz_id//zone
@@ -1094,6 +1091,7 @@ void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Data
                    , amount
                    , boost::posix_time::ptime(taxdate));//price
    BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
+   Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, amount, invoiceid2);
 }
 
 BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
@@ -1155,6 +1153,7 @@ void testChargeInsuffCredit(Fred::Invoicing::Manager *invMan, unsigned reg_units
                     , reg_id//registrar
                     , amount
                     , boost::posix_time::ptime(taxdate));//price
+    Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, amount, invoiceid);
 
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
@@ -1222,6 +1221,8 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
                     , regid//registrar
                     , amount
                     , boost::posix_time::ptime(taxdate));//price
+    Fred::Credit::add_credit_to_invoice( regid,  zone_cz_id, amount, invoiceid);
+
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
     // add credit for new registrar
     Database::ID invoiceid2 = invMan->createDepositInvoice(taxdate //taxdate
@@ -1230,6 +1231,7 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
                     , amount
                     , boost::posix_time::ptime(taxdate));//price
     BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
+    Fred::Credit::add_credit_to_invoice( regid,  zone_enum_id, amount, invoiceid2);
 
     Database::Date exdate(act_year + 1, 1, 1);
     Database::Date exdate2(act_year + 5, 4, 30);
@@ -1507,6 +1509,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , price
                 , boost::posix_time::ptime(taxdate));//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
+        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, price, invoiceid);
 
         //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
@@ -1517,6 +1520,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , price
                 , boost::posix_time::ptime(taxdate));//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
+        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, price, invoiceid);
 
         //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
@@ -1527,6 +1531,8 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , price
                 , boost::posix_time::ptime(taxdate));//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
+        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, price, invoiceid);
+
 
         //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
@@ -2135,6 +2141,7 @@ BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
                     , amount
                     , boost::posix_time::ptime(taxdate));//price
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
+    Fred::Credit::add_credit_to_invoice( regid,  zone_cz_id, amount, invoiceid);
 
     ChargeTestParams params;
     params.zone_id = zone_cz_id ;
@@ -2182,6 +2189,7 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
                      , amount
                      , boost::posix_time::ptime(taxdate));//price
      BOOST_CHECK_EQUAL(invoiceid != 0,true);
+     Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, amount, invoiceid);
 
 
 
@@ -2262,7 +2270,7 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
                      , amount
                      , boost::posix_time::ptime(taxdate));//price
      BOOST_CHECK_EQUAL(invoiceid != 0,true);
-
+     Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, amount, invoiceid);
 
 
     // ------------------ login

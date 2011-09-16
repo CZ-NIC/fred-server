@@ -50,6 +50,7 @@
 #include "fredlib/invoicing/invoice.h"
 #include "mailer_manager.h"
 #include "time_clock.h"
+#include "credit.h"
 #include "file_manager_client.h"
 #include "fredlib/banking/bank_common.h"
 #include "corba/Admin.hh"
@@ -925,6 +926,8 @@ struct create_deposit_invoice_fixture
                                     , price//price
                                     , boost::posix_time::ptime(taxdate));//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
                             credit_vat_dec = test_vat(Money("10"),taxdate, registrar_id);
@@ -1015,6 +1018,8 @@ struct create_deposit_invoice_fixture
                                     , price//price
                                     , boost::posix_time::ptime(taxdate));//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
                             credit1_vat_dec = test_vat(Money("10"),taxdate, registrar_id);
@@ -1068,6 +1073,8 @@ struct create_deposit_invoice_fixture
                                     , price//price
                                     , boost::posix_time::ptime(taxdate));//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
                             credit2_vat_dec = test_vat(Money("10"),taxdate, registrar_id);
@@ -1136,6 +1143,7 @@ struct create_deposit_invoice_fixture
                                     , registrar_id//registrar
                                     , price//price
                                     , boost::posix_time::ptime(taxdate));//invoice_date
+                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
                         }//createDepositInvoice
@@ -1161,6 +1169,7 @@ struct create_deposit_invoice_fixture
                                     , price//price
                                     , boost::posix_time::ptime(taxdate));//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
                         }//createDepositInvoice
                     }//for zone_i
@@ -1186,6 +1195,7 @@ struct create_deposit_invoice_fixture
                                 , price//price
                                 , boost::posix_time::ptime(taxdate));//invoice_date
                         BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                        Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
 
                         if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
@@ -1198,6 +1208,7 @@ struct create_deposit_invoice_fixture
                                 , price//price
                                 , boost::posix_time::ptime(taxdate));//invoice_date
                         BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                        Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
 
                         if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
@@ -1210,6 +1221,7 @@ struct create_deposit_invoice_fixture
                                 , price//price
                                 , boost::posix_time::ptime(taxdate));//invoice_date
                         BOOST_CHECK_EQUAL(invoiceid != 0,true);
+                        Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
 
                         if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
