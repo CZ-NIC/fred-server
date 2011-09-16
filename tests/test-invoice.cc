@@ -983,14 +983,14 @@ void testChargeEval(const ResultTestCharge &res, bool should_succeed)
 
     if(should_succeed) {
         Database::Result res_ior = conn.exec_params(
-        "SELECT period, ExDate, operation FROM invoice_object_registry WHERE objectid = $1::integer "
-                                                        "AND registrarid = $2::integer "
-                                                        "AND zone = $3::integer",
+        "SELECT quantity, date_to, operation_id FROM invoice_operation WHERE object_id = $1::integer "
+                                                        "AND registrar_id = $2::integer "
+                                                        "AND zone_id = $3::integer",
                    Database::query_param_list ( res.object_id )
                                               ( res.regid)
                                               ( res.zone_id));
 
-        BOOST_REQUIRE_MESSAGE(res_ior.size() == 1, "Incorrect number of records in invoice_object_registry table ");
+        BOOST_REQUIRE_MESSAGE(res_ior.size() == 1, "Incorrect number of records in invoice_operation table ");
 
 	int  operation        = (int) res_ior[0][2];
 
@@ -1013,7 +1013,7 @@ void testChargeEval(const ResultTestCharge &res, bool should_succeed)
  *    - res.success must be true
  *    - created object exists in object_registry (this is disputable -
  *       in our case testing charging means testing domain creation
- *    - correct records in invoice_object_registry bound to object
+ *    - correct records in invoice_operation bound to object
  *
  */
 void testCreateDomainEval(const ResultTestCharge &res, bool should_succeed)
@@ -1040,14 +1040,14 @@ void testCreateDomainEval(const ResultTestCharge &res, bool should_succeed)
         unsigned object_id = res_or[0][0];
 
         Database::Result res_ior = conn.exec_params(
-        "SELECT period, ExDate FROM invoice_object_registry WHERE objectid = $1::integer "
-                                                        "AND registrarid = $2::integer "
-                                                        "AND zone = $3::integer",
+        "SELECT quantity, date_to FROM invoice_operation WHERE object_id = $1::integer "
+                                                        "AND registrar_id = $2::integer "
+                                                        "AND zone_id = $3::integer",
                    Database::query_param_list ( object_id )
                                               ( res.regid)
                                               ( res.zone_id));
 
-        boost::format msg = boost::format("Incorrect number of records in invoice_object_registry table, object_id: %1%, regid: %2%, zone_id: %3% ")
+        boost::format msg = boost::format("Incorrect number of records in invoice_operation table, object_id: %1%, regid: %2%, zone_id: %3% ")
             % object_id % res.regid % res.zone_id;
         BOOST_REQUIRE_MESSAGE(res_ior.size() == 2, msg.str());
     }
