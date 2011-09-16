@@ -880,17 +880,19 @@ public:
     // registrar and zone is older than last advance invoice,
     // insert new poll message
     const char *insertTemp = "INSERT INTO tmp_poll_credit_insert "
-      "SELECT nextval('message_id_seq'),"
-      " i.zone, i.registrarid, SUM(i.credit), MIN(l.credlimit) "
-      "FROM invoice_prefix ip, poll_credit_zone_limit l, invoice i "
-      "LEFT JOIN (SELECT m.clid, pc.zone, MAX(m.crdate) AS crdate "
-      "           FROM message m, poll_credit pc "
-      "           WHERE m.id=pc.msgid GROUP BY m.clid, pc.zone) AS mt "
-      "ON (mt.clid=i.registrarid AND mt.zone=i.zone) "
-      "WHERE i.prefix_type=ip.id AND ip.typ=0 AND i.zone=l.zone "
-      "GROUP BY i.registrarid,i.zone "
-      "HAVING SUM(i.credit)<MIN(credlimit) "
-      "AND (MAX(mt.crdate) ISNULL OR MAX(i.crdate)>MAX(mt.crdate))";
+        "SELECT nextval('message_id_seq') , rc.zone_id, rc.registrar_id, rc.credit, l.credlimit, mt.*, rc.* "
+         "FROM registrar_credit rc "
+             "JOIN poll_credit_zone_limit l ON rc.zone_id = l.zone "
+             "LEFT JOIN (SELECT m.clid, pc.zone, MAX(m.crdate) AS crdate "
+                         "FROM message m, poll_credit pc "
+                         "WHERE m.id=pc.msgid GROUP BY m.clid, pc.zone) AS mt "
+                 "ON (mt.clid=rc.registrar_id AND mt.zone=rc.zone_id) "
+             "LEFT JOIN (SELECT i.registrar_id, i.zone_id, MAX(i.crdate) AS crdate "
+                         "FROM invoice i JOIN invoice_prefix ip ON i.invoice_prefix_id = ip.id AND ip.typ=0 "
+                         "GROUP BY i.registrar_id, i.zone_id) AS iii "
+                 "ON (iii.registrar_id=rc.registrar_id AND iii.zone_id=rc.zone_id) "
+         "WHERE rc.credit < l.credlimit AND (mt.crdate IS NULL OR mt.crdate < iii.crdate ) ";
+
     if (!db->ExecSQL(insertTemp))
       throw SQL_ERROR();
     // insert into table message appropriate part from temp table
