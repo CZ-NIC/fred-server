@@ -1762,7 +1762,7 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 
     //read processed invoices query
     std::string inv_query(
-        "select zone, crdate::date, taxdate, prefix, registrar_id " // 0 - 4
+        "select zone_id, crdate::date, taxdate, prefix, registrar_id " // 0 - 4
         ", balance, operations_price, vat, total, totalvat, invoice_prefix_id, file , filexml " // 5 - 12
         " from invoice where ");
 
