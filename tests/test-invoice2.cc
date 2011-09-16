@@ -342,12 +342,12 @@ struct operation_price_fixture
                 , Database::query_param_list (test_zone_fqdn)
                 ("CreateDomain")
                 ("2007-09-29 19:00:00")("2009-12-31 23:00:00")
-                ("0")("0"));
+                ("0")("1"));
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_zone_fqdn)
                 ("CreateDomain")
                 ("2009-12-31 23:00:00")(Database::QPNull)
-                ("0")("0"));
+                ("0")("1"));
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_zone_fqdn)
                 ("RenewDomain")
@@ -369,7 +369,7 @@ struct operation_price_fixture
                 , Database::query_param_list (test_enum_zone_fqdn)
                 ("CreateDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("0")("0"));
+                ("0")("1"));
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_enum_zone_fqdn)
                 ("RenewDomain")
@@ -381,7 +381,7 @@ struct operation_price_fixture
                 , Database::query_param_list (test_zeroprice_zone_fqdn)
                 ("CreateDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("0")("0"));
+                ("0")("1"));
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_zeroprice_zone_fqdn)
                 ("RenewDomain")
@@ -393,7 +393,7 @@ struct operation_price_fixture
                 , Database::query_param_list (test_zeroprice_enum_zone_fqdn)
                 ("CreateDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("0")("0"));
+                ("0")("1"));
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_zeroprice_enum_zone_fqdn)
                 ("RenewDomain")
@@ -405,31 +405,31 @@ struct operation_price_fixture
                 , Database::query_param_list (test_zeroperiod_zone_fqdn)
                 ("CreateDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("0")("0"));
+                ("0")("1"));
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_zeroperiod_zone_fqdn)
                 ("RenewDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("140.11")("0"));
+                ("140.11")("1"));
 
             //test_zeroperiod_enum_zone_fqdn create and renew price
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_zeroperiod_enum_zone_fqdn)
                 ("CreateDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("100.11")("0"));
+                ("100.11")("1"));
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_zeroperiod_enum_zone_fqdn)
                 ("RenewDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("0")("0"));
+                ("0")("1"));
 
             //test_differentperiod_zone_fqdn create and renew price
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_differentperiod_zone_fqdn)
                 ("CreateDomain")
                 ("2007-09-29 19:00:00")(Database::QPNull)
-                ("0")("0"));
+                ("0")("1"));
             connp->exec_params(insert_operation_price
                 , Database::query_param_list (test_differentperiod_zone_fqdn)
                 ("RenewDomain")
