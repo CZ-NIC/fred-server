@@ -880,7 +880,7 @@ public:
     // registrar and zone is older than last advance invoice,
     // insert new poll message
     const char *insertTemp = "INSERT INTO tmp_poll_credit_insert "
-        "SELECT nextval('message_id_seq') , rc.zone_id, rc.registrar_id, rc.credit, l.credlimit, mt.*, rc.* "
+        "SELECT nextval('message_id_seq') , rc.zone_id, rc.registrar_id, rc.credit, l.credlimit "
          "FROM registrar_credit rc "
              "JOIN poll_credit_zone_limit l ON rc.zone_id = l.zone "
              "LEFT JOIN (SELECT m.clid, pc.zone, MAX(m.crdate) AS crdate "
