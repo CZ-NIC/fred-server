@@ -487,7 +487,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
         if(fred_credit_str.compare(test_credit_str) != 0 )
         {
-            /*
+
             std::cout << "taxdate: " << registrar_credit_vect.at(i).taxdate
                 << " year: " << registrar_credit_vect.at(i).year
                 << " price: " << registrar_credit_vect.at(i).price
@@ -508,7 +508,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
                 std::cout << " $" << i_num << ": " << it->print_buffer();
             }
             std::cout << std::endl;
-            */
+
         }//if not equal
     }
 
