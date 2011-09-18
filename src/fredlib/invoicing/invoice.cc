@@ -3302,10 +3302,10 @@ public:
      Database::Result res_price = conn.exec_params(
               "SELECT price"
               " FROM price_list pl"
-              " WHERE pl.zone=$1::integer"
+              " WHERE pl.zone_id=$1::integer"
               " AND valid_from < 'now()'"
               " AND ( valid_to IS NULL OR valid_to > 'now()')"
-              " AND operation=$2::integer"
+              " AND operation_id=$2::integer"
               " ORDER BY valid_from DESC"
               " LIMIT 1",
               Database::query_param_list
