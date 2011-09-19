@@ -853,7 +853,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
         if(fred_credit_str.compare(test_credit_str) != 0 )
         {
-            /*
+
             std::cout << " year: " << registrar_novat_credit_vect.at(i).year
                 << " price: " << registrar_novat_credit_vect.at(i).price
                 << " credit: " <<  fred_credit_str
@@ -872,7 +872,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
                 std::cout << " $" << i_num << ": " << it->print_buffer();
             }
             std::cout << std::endl;
-            */
+
 
         }//if not equal
     }
