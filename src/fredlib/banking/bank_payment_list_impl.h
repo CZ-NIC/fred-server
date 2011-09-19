@@ -92,17 +92,19 @@ public:
             Database::SelectQuery object_info_query;
             object_info_query.select()
                 << "t_1.id, t_1.statement_id, t_1.account_number, t_1.bank_code, "
-                << "t_1.type, t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price, "
-                << "t_1.account_evid, t_1.account_date, t_1.account_memo, "
-                << "t_2.id, t_1.account_name, t_1.crtime, "
-                << "t_2.prefix, t_3.account_name || ' ' || t_3.account_number || '/' || t_3.bank_code";
+                 "t_1.type, t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price, "
+                 "t_1.account_evid, t_1.account_date, t_1.account_memo, "
+                 "t_2.id, t_1.account_name, t_1.crtime, "
+                 "t_2.prefix, t_3.account_name || ' ' || t_3.account_number || '/' || t_3.bank_code";
             object_info_query.from()
-                << getTempTableName() << " tmp "
-                << "JOIN bank_payment t_1 ON (tmp.id = t_1.id) "
-                << "LEFT JOIN bank_payment_invoice_map t_4 ON (t_4.bank_payment_id = t_1.id) "
-                << "LEFT JOIN invoice t_2 ON (t_4.invoice_id = t_2.id) "
-                << "LEFT JOIN invoice_prefix t_5 ON (t_2.prefix_type = t_5.id and t_5.typ = 0) "//typ advance invoice
-                << "JOIN bank_account t_3 ON (t_1.account_id = t_3.id) ";
+                << getTempTableName()
+                << " tmp "
+                 " JOIN bank_payment t_1 ON (tmp.id = t_1.id) "
+                 " LEFT JOIN bank_payment_registrar_credit_transaction_map t_6 ON t_6.bank_payment_id = t_1.id "
+                 " LEFT JOIN invoice_registrar_credit_transaction_map t_7 ON t_6.registrar_credit_transaction_id = t_7.registrar_credit_transaction_id "
+                 " LEFT JOIN invoice t_2 ON (t_7.invoice_id = t_2.id) "
+                 " LEFT JOIN invoice_prefix t_5 ON (t_2.invoice_prefix_id = t_5.id and t_5.typ = 0) "//typ advance invoice
+                 " JOIN bank_account t_3 ON (t_1.account_id = t_3.id) ";
             object_info_query.order_by()
                 << "tmp.id DESC";
 
