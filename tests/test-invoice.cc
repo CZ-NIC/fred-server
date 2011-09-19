@@ -310,13 +310,14 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
         int year = boost::gregorian::day_clock::universal_day().year();
 
         Database::Date taxdate (year,1,1);
-	
+        Money out_credit;
         BOOST_CHECK_EXCEPTION(
         invMan->createDepositInvoice(taxdate//taxdate
                 , 0//no zone
                 , registrar_inv_id//registrar
                 , Money("200.00")
-                , boost::posix_time::ptime(taxdate))//price
+                , boost::posix_time::ptime(taxdate)
+                , out_credit)//price
     , std::exception, check_std_exception_invoice_prefix);
     
     }
@@ -341,12 +342,13 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
     {
         {
             Database::Date taxdate (year,1,1);
+            Money out_credit;
             BOOST_CHECK_EXCEPTION(
             invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
                     , Money("200.00")
-                    , boost::posix_time::ptime(taxdate))//price
+                    , boost::posix_time::ptime(taxdate), out_credit)//price
                     , std::exception
                     , check_std_exception_invoice_prefix);
 
@@ -405,13 +407,15 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     {
         {
             Database::Date taxdate (year,1,1);
+            Money out_credit;
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
                     , Money("200.00")
-                    , boost::posix_time::ptime(taxdate));//price
+                    , boost::posix_time::ptime(taxdate)
+            , out_credit);//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
-            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, Money("200.00"), invoiceid);
+            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
             //get registrar credit
             registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("200.00"), Database::Date(1400,1,1)};
@@ -435,13 +439,15 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
 
         {
             Database::Date taxdate (year,12,31);
+            Money out_credit;
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
                     , Money("21474836.47")
-                    , boost::posix_time::ptime(taxdate));//price
+                    , boost::posix_time::ptime(taxdate)
+                    , out_credit);//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
-            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, Money("21474836.47"), invoiceid);
+            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
             //get registrar credit
             registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("21474836.47"), Database::Date(1400,1,1)};
@@ -601,13 +607,15 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
     {
         {
             Database::Date taxdate (year,1,1);
+            Money out_credit;
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
                     , Money("200.00")
-                    , boost::posix_time::ptime(taxdate));//price
+                    , boost::posix_time::ptime(taxdate)
+                    , out_credit);//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
-            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, Money("200.00"), invoiceid);
+            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
             //get registrar credit
             registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("200.00"), Database::Date(1400,1,1)};
@@ -632,13 +640,15 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
         {
 	    //credit note
             Database::Date taxdate (year,1,1);
+            Money out_credit;
             credit_note_id = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_inv_id//registrar
                     , Money("-200.00")
-                    , boost::posix_time::ptime(taxdate));//price
+                    , boost::posix_time::ptime(taxdate)
+                    , out_credit);//price
             BOOST_CHECK_EQUAL(credit_note_id != 0,true);
-            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, Money("-200.00"), credit_note_id);
+            Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, credit_note_id);
 
             //get registrar credit
             registrar_credit_item ci={year,std::string("0.00"),0,std::string("0.00"), std::string("-200.00"), Database::Date(1400,1,1)};
@@ -776,13 +786,15 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
     {
         {
             Database::Date taxdate (year,1,1);
+            Money out_credit;
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
                     , Money("200.00")
-                    , boost::posix_time::ptime(taxdate));//price
+                    , boost::posix_time::ptime(taxdate)
+                    , out_credit);//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
-            Fred::Credit::add_credit_to_invoice( registrar_novat_inv_id,  zone_cz_id, Money("200.00"), invoiceid);
+            Fred::Credit::add_credit_to_invoice( registrar_novat_inv_id,  zone_cz_id, out_credit, invoiceid);
 
             //get registrar credit
             registrar_credit_item ci={year,"0.00",0,"0.00", "200.00"};
@@ -796,13 +808,15 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 
         {
             Database::Date taxdate (year,12,31);
+            Money out_credit;
             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                     , zone_cz_id//zone
                     , registrar_novat_inv_id//registrar
                     , Money("200.00")
-                    , boost::posix_time::ptime(taxdate));//price
+                    , boost::posix_time::ptime(taxdate)
+                    , out_credit);//price
             BOOST_CHECK_EQUAL(invoiceid != 0,true);
-            Fred::Credit::add_credit_to_invoice( registrar_novat_inv_id,  zone_cz_id, Money("200.00"), invoiceid);
+            Fred::Credit::add_credit_to_invoice( registrar_novat_inv_id,  zone_cz_id, out_credit, invoiceid);
 
             //get registrar credit
             registrar_credit_item ci={year,"0.00",0,"0.00", "200.00"};
@@ -1076,22 +1090,25 @@ void testChargeFail(Fred::Invoicing::Manager *invMan, Database::Date exdate, uns
 
 void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Database::ID zone_cz_id, Database::ID reg_id, Money amount)
 {
+    Money out_credit;
    Database::ID invoiceid = man->createDepositInvoice(taxdate //taxdate
                    , zone_cz_id//zone
                    , reg_id//registrar
                    , amount
-                   , boost::posix_time::ptime(taxdate));//price
+                   , boost::posix_time::ptime(taxdate)
+                   , out_credit);//price
    BOOST_CHECK_EQUAL(invoiceid != 0,true);
-   Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, amount, invoiceid);
+   Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, out_credit, invoiceid);
 
    // add credit for new registrar
    Database::ID invoiceid2 = man->createDepositInvoice(taxdate //taxdate
                    , zone_cz_id//zone
                    , reg_id//registrar
                    , amount
-                   , boost::posix_time::ptime(taxdate));//price
+                   , boost::posix_time::ptime(taxdate)
+                   , out_credit);//price
    BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
-   Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, amount, invoiceid2);
+   Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, out_credit, invoiceid2);
 }
 
 BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
@@ -1147,13 +1164,15 @@ void testChargeInsuffCredit(Fred::Invoicing::Manager *invMan, unsigned reg_units
 
     // add credit for new registrar
     Database::Date taxdate (act_year,1,1);
+    Money out_credit;
     Database::ID invoiceid = invMan->createDepositInvoice(
                     Database::Date (act_year,1,1)//taxdate
                     , zone_id//zone
                     , reg_id//registrar
                     , amount
-                    , boost::posix_time::ptime(taxdate));//price
-    Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, amount, invoiceid);
+                    , boost::posix_time::ptime(taxdate)
+                    , out_credit);//price
+    Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, out_credit, invoiceid);
 
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
@@ -1216,12 +1235,14 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
 
     // add credit for new registrar
     Database::Date taxdate (act_year,1,1);
+    Money out_credit;
     Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
                     , zone_cz_id//zone
                     , regid//registrar
                     , amount
-                    , boost::posix_time::ptime(taxdate));//price
-    Fred::Credit::add_credit_to_invoice( regid,  zone_cz_id, amount, invoiceid);
+                    , boost::posix_time::ptime(taxdate)
+                    , out_credit);//price
+    Fred::Credit::add_credit_to_invoice( regid,  zone_cz_id, out_credit, invoiceid);
 
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
     // add credit for new registrar
@@ -1229,9 +1250,10 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
                     , zone_enum_id//zone
                     , regid//registrar
                     , amount
-                    , boost::posix_time::ptime(taxdate));//price
+                    , boost::posix_time::ptime(taxdate)
+                    , out_credit);//price
     BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
-    Fred::Credit::add_credit_to_invoice( regid,  zone_enum_id, amount, invoiceid2);
+    Fred::Credit::add_credit_to_invoice( regid,  zone_enum_id, out_credit, invoiceid2);
 
     Database::Date exdate(act_year + 1, 1, 1);
     Database::Date exdate2(act_year + 5, 4, 30);
@@ -1503,13 +1525,14 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         taxdate = Database::Date(year,1,1);
         Money price = std::string("50000.00");//money
 
+        Money out_credit;
         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
                 , price
-                , boost::posix_time::ptime(taxdate));//price
+                , boost::posix_time::ptime(taxdate), out_credit);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
-        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, price, invoiceid);
+        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
         //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
@@ -1518,9 +1541,9 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
                 , price
-                , boost::posix_time::ptime(taxdate));//price
+                , boost::posix_time::ptime(taxdate), out_credit);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
-        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, price, invoiceid);
+        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
         //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
 
@@ -1529,9 +1552,9 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                 , zone_cz_id//zone
                 , registrar_inv_id//registrar
                 , price
-                , boost::posix_time::ptime(taxdate));//price
+                , boost::posix_time::ptime(taxdate), out_credit);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
-        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, price, invoiceid);
+        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
 
         //std::cout << "deposit invoice id: " << invoiceid << " year: " << year << " price: " << price << " registrar_handle: " << registrar_handle <<  " registrar_inv_id: " << registrar_inv_id << std::endl;
@@ -2135,13 +2158,14 @@ BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
 
     // add credit for new registrar
     Database::Date taxdate (act_year,1,1);
+    Money out_credit;
     Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
                     , zone_cz_id//zone
                     , regid//registrar
                     , amount
-                    , boost::posix_time::ptime(taxdate));//price
+                    , boost::posix_time::ptime(taxdate), out_credit);//price
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
-    Fred::Credit::add_credit_to_invoice( regid,  zone_cz_id, amount, invoiceid);
+    Fred::Credit::add_credit_to_invoice( regid,  zone_cz_id, out_credit, invoiceid);
 
     ChargeTestParams params;
     params.zone_id = zone_cz_id ;
@@ -2183,13 +2207,14 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
      std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
      Database::Date taxdate (act_year,1,1);
+     Money out_credit;
      Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
                      , zone_cz_id//zone
                      , registrar_inv_id//registrar
                      , amount
-                     , boost::posix_time::ptime(taxdate));//price
+                     , boost::posix_time::ptime(taxdate), out_credit);//price
      BOOST_CHECK_EQUAL(invoiceid != 0,true);
-     Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, amount, invoiceid);
+     Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
 
 
@@ -2264,13 +2289,14 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
      std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
      Database::Date taxdate (act_year,1,1);
+     Money out_credit;
      Database::ID invoiceid = invMan->createDepositInvoice(taxdate //taxdate
                      , zone_cz_id//zone
                      , registrar_inv_id//registrar
                      , amount
-                     , boost::posix_time::ptime(taxdate));//price
+                     , boost::posix_time::ptime(taxdate), out_credit);//price
      BOOST_CHECK_EQUAL(invoiceid != 0,true);
-     Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, amount, invoiceid);
+     Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
 
     // ------------------ login

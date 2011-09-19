@@ -307,7 +307,7 @@ public:
           int type, int year, unsigned long long prefix) = 0;
 
   // added methods
-  virtual  unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsigned long long zoneId, unsigned long long registrarId, Money price, boost::posix_time::ptime invoice_date) = 0;
+  virtual  unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsigned long long zoneId, unsigned long long registrarId, Money price, boost::posix_time::ptime invoice_date, Money& out_credit) = 0;
 
   virtual bool chargeDomainCreate(
           const Database::ID &zone,

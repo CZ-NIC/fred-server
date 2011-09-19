@@ -428,6 +428,7 @@ public:
 unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsigned long long zoneId
         , unsigned long long registrarId, Money price
         , boost::posix_time::ptime invoice_date //local timestamp
+        , Money& out_credit
         )
 {
 
@@ -494,7 +495,7 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
     } else {
         total = price;
     }
-    Money credit = total;
+    out_credit = total;
 
 
     // get new invoice prefix and its type
@@ -527,7 +528,7 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
     if(price.get_string().empty()) throw std::runtime_error("price empty");
     if(total.get_string().empty()) throw std::runtime_error("total empty");
     if(vat_amount.get_string().empty()) throw std::runtime_error("vat_amount empty");
-    if(credit.get_string().empty()) throw std::runtime_error("credit empty");
+    if(out_credit.get_string().empty()) throw std::runtime_error("credit empty");
 
     conn.exec_params(
             "INSERT INTO invoice (id, prefix, zone_id, invoice_prefix_id, registrar_id "
@@ -546,7 +547,7 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
                                 (vat_percent)
                                 (total.get_string())
                                 (vat_amount.get_string())
-                                (credit.get_string())
+                                (out_credit.get_string())
                                 );
 
     return invoiceId;

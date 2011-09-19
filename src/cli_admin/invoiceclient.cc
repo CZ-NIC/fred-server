@@ -355,10 +355,11 @@ InvoiceClient::credit()
         taxDate = local_current_timestamp.date();
     }
 
+    Money out_credit;
     unsigned long long invoice_id
-        = invMan->createDepositInvoice(taxDate, zoneId, regId, price, local_current_timestamp);
+        = invMan->createDepositInvoice(taxDate, zoneId, regId, price, local_current_timestamp, out_credit);
 
-    Fred::Credit::add_credit_to_invoice( regId,  zoneId, price, invoice_id);
+    Fred::Credit::add_credit_to_invoice( regId,  zoneId, out_credit, invoice_id);
 
 }
 

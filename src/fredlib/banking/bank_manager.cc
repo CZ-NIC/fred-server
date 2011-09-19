@@ -212,14 +212,16 @@ private:
                 std::auto_ptr<Fred::Invoicing::Manager>
                         invoice_manager(Fred::Invoicing::Manager::create());
 
+                Money out_credit;
+
                 unsigned long long advance_invoice_id
                     = invoice_manager->createDepositInvoice(
                         tax_date, zone_id, _registrar_id
                         , payment_price_rest
-                        , local_current_timestamp);
+                        , local_current_timestamp, out_credit);
 
                 pay_invoice(_registrar_id , zone_id, _payment->getId()
-                        , payment_price_rest, advance_invoice_id);
+                        , out_credit, advance_invoice_id);
             }
             //set_payment_as_processed
             _payment->setType(2);

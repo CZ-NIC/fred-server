@@ -919,13 +919,14 @@ struct create_deposit_invoice_fixture
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
                             Money price ("10");
+                            Money out_credit;
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
                                     , price//price
-                                    , boost::posix_time::ptime(taxdate));//invoice_date
+                                    , boost::posix_time::ptime(taxdate), out_credit);//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
-                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, out_credit, invoiceid);
 
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
@@ -1020,13 +1021,14 @@ struct create_deposit_invoice_fixture
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
                             Money price ("10");
+                            Money out_credit;
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
                                     , price//price
-                                    , boost::posix_time::ptime(taxdate));//invoice_date
+                                    , boost::posix_time::ptime(taxdate), out_credit);//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
-                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, out_credit, invoiceid);
 
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
@@ -1079,9 +1081,10 @@ struct create_deposit_invoice_fixture
                                     , zone_id//zone
                                     , registrar_id//registrar
                                     , price//price
-                                    , boost::posix_time::ptime(taxdate));//invoice_date
+                                    , boost::posix_time::ptime(taxdate)//invoice_date
+                                    , out_credit);
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
-                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, out_credit, invoiceid);
 
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
@@ -1146,12 +1149,13 @@ struct create_deposit_invoice_fixture
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
                             Money price ("30000000.00");//Kc
+                            Money out_credit;
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
                                     , price//price
-                                    , boost::posix_time::ptime(taxdate));//invoice_date
-                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+                                    , boost::posix_time::ptime(taxdate), out_credit);//invoice_date
+                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, out_credit, invoiceid);
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
                         }//createDepositInvoice
@@ -1171,13 +1175,14 @@ struct create_deposit_invoice_fixture
                             Database::Date taxdate;
                             taxdate = Database::Date(year,1,1);
                             Money price ("-10000000.00");//Kc
+                            Money out_credit;
                             invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                     , zone_id//zone
                                     , registrar_id//registrar
                                     , price//price
-                                    , boost::posix_time::ptime(taxdate));//invoice_date
+                                    , boost::posix_time::ptime(taxdate), out_credit);//invoice_date
                             BOOST_CHECK_EQUAL(invoiceid != 0,true);
-                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+                            Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, out_credit, invoiceid);
                             if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
                         }//createDepositInvoice
                     }//for zone_i
@@ -1196,14 +1201,14 @@ struct create_deposit_invoice_fixture
 
                         taxdate = Database::Date(year,1,1);
                         Money price ("50000.00");//Kc
-
+                        Money out_credit;
                         invoiceid = invMan->createDepositInvoice(taxdate//taxdate
                                 , zone_id//zone
                                 , registrar_id//registrar
                                 , price//price
-                                , boost::posix_time::ptime(taxdate));//invoice_date
+                                , boost::posix_time::ptime(taxdate), out_credit);//invoice_date
                         BOOST_CHECK_EQUAL(invoiceid != 0,true);
-                        Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+                        Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, out_credit, invoiceid);
 
                         if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
@@ -1214,9 +1219,9 @@ struct create_deposit_invoice_fixture
                                 , zone_id//zone
                                 , registrar_id//registrar
                                 , price//price
-                                , boost::posix_time::ptime(taxdate));//invoice_date
+                                , boost::posix_time::ptime(taxdate), out_credit);//invoice_date
                         BOOST_CHECK_EQUAL(invoiceid != 0,true);
-                        Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+                        Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, out_credit, invoiceid);
 
                         if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
@@ -1227,9 +1232,9 @@ struct create_deposit_invoice_fixture
                                 , zone_id//zone
                                 , registrar_id//registrar
                                 , price//price
-                                , boost::posix_time::ptime(taxdate));//invoice_date
+                                , boost::posix_time::ptime(taxdate), out_credit);//invoice_date
                         BOOST_CHECK_EQUAL(invoiceid != 0,true);
-                        Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoiceid);
+                        Fred::Credit::add_credit_to_invoice( registrar_id,  zone_id, out_credit, invoiceid);
 
                         if (invoiceid != 0) deposit_invoice_id_vect.push_back(invoiceid);
 
