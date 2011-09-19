@@ -607,25 +607,6 @@ public:
         }
     }
 
-    bool setInvoiceToStatementItem(
-            Database::ID statementId,
-            Database::ID invoiceId)
-    {
-        TRACE("[CALL] Fred::Invoicing::Manager::setInvoiceToStatementItem()");
-        Database::Query update;
-        update.buffer()
-            << "UPDATE bank_payment SET invoice_id="
-            << Database::Value(invoiceId)
-            << " WHERE id=" << Database::Value(statementId);
-        Database::Connection conn = Database::Manager::acquire();
-        try {
-            conn.exec(update);
-        } catch (...) {
-            return false;
-        }
-        return true;
-    }
-
     virtual bool pairPaymentWithRegistrar(
                 const Database::ID &paymentId,
                 const std::string &_registrarHandle) {
