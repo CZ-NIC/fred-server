@@ -950,7 +950,16 @@ struct create_deposit_invoice_fixture
                             credit1_str = std::string("0");
                         }
 
+                        if(!(credit1_dec - credit0_dec == Money("10") - credit_vat_dec))
+                        {
+                            std::cout << "\n!(credit1_dec - credit0_dec == Money(\"10\") - credit_vat_dec) \n"
+                                    << "credit1_dec: " << credit1_dec << " credit0_dec: " << credit0_dec
+                                    << " credit_vat_dec: " << credit_vat_dec
+                                    << " credit_vat_str: " << credit_vat_str
+                                    << std::endl;
+                        }
                         BOOST_CHECK(credit1_dec - credit0_dec == Money("10") - credit_vat_dec);
+
 
                         Database::Result credit_difference_result
                             = connp->exec_params("select $1::numeric - $2::numeric, '10.00'::numeric - $3::numeric "
