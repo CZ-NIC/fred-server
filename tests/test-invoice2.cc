@@ -166,9 +166,8 @@ protected:
 };
 
 static std::string zone_registrar_credit_query (
-        "select COALESCE(SUM(credit), 0) from invoice "
-        " where zone = $1::bigint and registrarid =$2::bigint "
-        " group by registrarid, zone ");
+    "SELECT credit FROM registrar_credit"
+    " WHERE zone_id = $1::bigint AND registrar_id =$2::bigint");
 
 static int start_year = 2005;
 
