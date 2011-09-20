@@ -1156,7 +1156,7 @@ BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
 
     // TODO this should check price_list - if operation price is really 0
     // TODO change date
-    BOOST_CHECK(!invMan->chargeDomainCreate(zone_cz_id, regid, object_id, Database::Date(2012, 1, 1), 0 ));
+    BOOST_CHECK(invMan->chargeDomainCreate(zone_cz_id, regid, object_id, Database::Date(2012, 1, 1), 0 ));
 
 }
 
