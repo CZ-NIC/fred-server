@@ -1605,7 +1605,7 @@ public:
                 , "operation price like: 140.00")
             ("period", boost::program_options
                 ::value<Checked::ulong>()->notifier(save_optional_ulong(params.period))
-                , "period")
+                , "period in years")
             ("zone_fqdn", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.zone_fqdn))
                 , "zone fqdn")

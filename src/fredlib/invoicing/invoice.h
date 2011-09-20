@@ -136,7 +136,7 @@ public:
   virtual boost::gregorian::date getExDate() const = 0;
   /// type of action (creation or registration extension)
   virtual PaymentActionType getAction() const = 0;
-  /// number of month for extenstion otherwise 0
+  /// number of yearth for extenstion
   virtual unsigned getUnitsCount() const = 0;
   /// price (without vat) per unit
   virtual Money getPricePerUnit() const = 0;

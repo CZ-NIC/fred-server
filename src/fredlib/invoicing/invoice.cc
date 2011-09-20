@@ -151,7 +151,7 @@ public:
       , boost::posix_time::ptime crdate //local timestamp
       , boost::gregorian::date date_from //local date
       , boost::gregorian::date date_to //local date
-      , unsigned long quantity
+      , Decimal quantity
       , Money price)
   {
       //if (registrar is "system registrar") return ok //no charging
@@ -256,7 +256,7 @@ public:
               //" RETURNING id "
               , Database::query_param_list(object_id ? object_id : Database::QPNull)
               (registrar_id)(operation_id)(zone_id)
-              (crdate)(quantity)(date_from)(date_to.is_special() ? Database::QPNull : Database::QueryParam(date_to))
+              (crdate)(quantity.get_string())(date_from)(date_to.is_special() ? Database::QPNull : Database::QueryParam(date_to))
               (registrar_credit_transaction_id)
               );
 
@@ -277,7 +277,7 @@ public:
           , boost::posix_time::ptime crdate //local timestamp
           , boost::gregorian::date date_from //local date
           , boost::gregorian::date date_to //local date
-          , unsigned long quantity)
+          , Decimal quantity)
   {
       Database::Connection conn = Database::Manager::acquire();
 
@@ -310,7 +310,7 @@ public:
       }
 
       Money price =  price_list_price
-              * Decimal(boost::lexical_cast<std::string>(quantity))
+              * quantity
               / price_list_quantity;//count_price
 
       return charge_operation(operation, zone_id, registrar_id
@@ -326,7 +326,7 @@ public:
           , boost::posix_time::ptime crdate //local timestamp
           , boost::gregorian::date date_from //local date
           , boost::gregorian::date date_to //local date
-          , unsigned long quantity
+          , Decimal quantity
           , Money price)
   {
       try
@@ -378,7 +378,7 @@ public:
                 , boost::posix_time::microsec_clock::local_time()//boost::posix_time::ptime crdate
                 , exDate.get() - boost::gregorian::months(units_count)//boost::gregorian::date date_from
                 , boost::gregorian::date()//boost::gregorian::date date_to
-                , 1//unsigned long quantity
+                , Decimal(boost::lexical_cast<std::string>(1))// quantity
                 );
   }
 
@@ -398,7 +398,7 @@ public:
                 , boost::posix_time::microsec_clock::local_time()//boost::posix_time::ptime crdate
                 , exDate.get() - boost::gregorian::months(units_count)//boost::gregorian::date date_from
                 , exDate.get()//boost::gregorian::date date_to
-                , units_count//unsigned long quantity
+                , Decimal(boost::lexical_cast<std::string>(units_count))/Decimal("12") //unsigned long quantity - for renew in years
                 );
   }
 
@@ -2042,7 +2042,7 @@ public:
           << TAG(timestamp,pa->getActionTime());
           if (!pa->getExDate().is_special())
           out << TAG(expiration,pa->getExDate());
-          out << TAG(count,pa->getUnitsCount()/12) // in years
+          out << TAG(count,pa->getUnitsCount())
           << TAG(price,OUTMONEY(pa->getPricePerUnit()))
           << TAG(total,OUTMONEY(pa->getPrice()))
           << TAG(vat_rate,pa->getVatRate())
