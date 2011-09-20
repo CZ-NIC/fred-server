@@ -335,6 +335,9 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
 
     unsigned long long registrar_novat_inv_id = createTestRegistrar();
 
+    conn.exec_params("UPDATE registrar SET vat=false WHERE id = $1::bigint"
+                , Database::query_param_list(registrar_novat_inv_id));
+
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
@@ -762,6 +765,9 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
     unsigned long long registrar_novat_inv_id = createTestRegistrar();
+
+    conn.exec_params("UPDATE registrar SET vat=false WHERE id = $1::bigint"
+            , Database::query_param_list(registrar_novat_inv_id));
 
     std::vector<registrar_credit_item> registrar_novat_credit_vect;
 
