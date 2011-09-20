@@ -52,7 +52,7 @@ namespace Fred
              }
              if(registrar_credit_id == 0)
              {
-                 throw std::runtime_error("pay_invoice: registrar_credit not found");
+                 throw std::runtime_error("add_credit_to_invoice: registrar_credit not found");
              }
 
              Database::Result registrar_credit_transaction_id_result
@@ -72,7 +72,7 @@ namespace Fred
              }
              if(registrar_credit_transaction_id == 0)
              {
-                 throw std::runtime_error("pay_invoice: registrar_credit_transaction not found");
+                 throw std::runtime_error("add_credit_to_invoice: registrar_credit_transaction not found");
              }
 
              //insert_invoice_registrar_credit_transaction_map
