@@ -203,7 +203,6 @@ public:
     virtual TID getRegistrarId() const = 0;
     virtual Money getVat() const = 0;
     virtual Money getTotalVat() const = 0;
-    // const TID getPrefixTypeId() const = 0;
     virtual TID getFileId() const = 0;
     virtual std::string getFileHandle() const = 0;
     virtual TID getFileXmlId() const = 0;
