@@ -933,6 +933,7 @@ ResultTestCharge testChargeWorker(Fred::Invoicing::Manager *invMan, Database::Da
         % ret.exdate % ret.units % operation % zone_id % registrar_id).str();
 
     Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
 
     std::string time_string(TimeStamp::microsec());
     std::string object_roid = std::string("ROID-TEST_INVOICE")  + time_string;
@@ -973,6 +974,7 @@ ResultTestCharge testChargeWorker(Fred::Invoicing::Manager *invMan, Database::Da
 
     ret.counted_price = getOperationPrice(operation, zone_id, ret.units);
 
+    tx.commit();
     return ret;
 }
 
