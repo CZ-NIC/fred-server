@@ -256,7 +256,7 @@ public:
               //" RETURNING id "
               , Database::query_param_list(object_id ? object_id : Database::QPNull)
               (registrar_id)(operation_id)(zone_id)
-              (crdate)(quantity)(date_from)(date_to)
+              (crdate)(quantity)(date_from)(date_to.is_special() ? Database::QPNull : Database::QueryParam(date_to))
               (registrar_credit_transaction_id)
               );
 
@@ -377,8 +377,8 @@ public:
                 , objectId//unsigned long long object_id
                 , boost::posix_time::microsec_clock::local_time()//boost::posix_time::ptime crdate
                 , exDate.get() - boost::gregorian::months(units_count)//boost::gregorian::date date_from
-                , exDate.get()//boost::gregorian::date date_to
-                , units_count//unsigned long quantity
+                , boost::gregorian::date()//boost::gregorian::date date_to
+                , 1//unsigned long quantity
                 );
   }
 
