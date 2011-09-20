@@ -188,11 +188,12 @@ Fred::Registrar::Registrar::AutoPtr createTestRegistrarClass()
     registrar_acl->setPassword("");
     registrar->save();
 
-//add registrar into zone
+    //add registrar into zone
     std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
     Database::Date rzfromDate;
     Database::Date rztoDate;
-    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);                          
+    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+    Fred::Registrar::addRegistrarZone(registrar_handle, "0.2.4.e164.arpa", rzfromDate, rztoDate);
 
     return registrar;
 }
