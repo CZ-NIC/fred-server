@@ -72,7 +72,7 @@
 
 BOOST_AUTO_TEST_SUITE(TestInvoice)
 
-const unsigned DEFAULT_REGISTRATION_PERIOD = 24;
+const unsigned DEFAULT_REGISTRATION_PERIOD = 2;
 
 using namespace Fred::Invoicing;
 
@@ -1888,7 +1888,8 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
             Fred::Banking::XMLnode entry = vat_rates.getChild("entry");
             if (entry.getName().compare("entry") != 0) throw std::runtime_error("xml element name is not \"entry\"");
 
-            if (invoice_prefix_typ == 1) std::cout << "acc invoice" << std::endl;
+            if (invoice_prefix_typ == 1) //std::cout << "acc invoice" << std::endl
+                ;
 
             /* not working this way
             if(vat_rates.hasChild("entry"))
