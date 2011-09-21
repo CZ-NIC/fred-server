@@ -300,7 +300,7 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
         insert_data.id = mbp1.getId();
         insert_data.statement_id = 0;
         Database::Result res = conn.exec( query );
-        if ((res.size() > 0) && (res[0].size() == 18))
+        if ((res.size() > 0) && (res[0].size() == 17))
         {    //check data inserted by model
             if(insert_data.id != static_cast<unsigned long long>(res[0][0]) ) ret+=1;
             if(insert_data.statement_id
