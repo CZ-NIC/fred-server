@@ -1802,7 +1802,7 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 
     //read processed invoices query
     std::string inv_query(
-        "select i.zone_id, i.crdate::date, i.taxdate, i.prefix, i.registrar_id " // 0 - 4
+        "select i.zone_id, ((i.crdate at time zone 'UTC') at time zone 'Europe/Prague')::date, i.taxdate, i.prefix, i.registrar_id " // 0 - 4
         ", i.balance, i.operations_price, i.vat, i.total, i.totalvat, i.invoice_prefix_id, i.file , i.filexml " // 5 - 12
         ", ip.typ " // 13
         " from invoice_prefix ip join invoice i on i.invoice_prefix_id = ip.id where ");
