@@ -367,7 +367,7 @@ public:
           const Database::ID &registrar,
           const Database::ID &objectId,
           const Database::Date &exDate,
-          const int &units_count)
+          const int &units_count)//in months
   {
       TRACE("[CALL] Fred::Invoicing::Manager::chargeDomainCreate()");
       // new implementation
@@ -387,7 +387,7 @@ public:
           const Database::ID &registrar,
           const Database::ID &objectId,
           const Database::Date &exDate,
-          const int &units_count)
+          const int &units_count)//in months
   {
       TRACE("[CALL] Fred::Invoicing::Manager::chargeDomainRenew()");
       // new implementation
