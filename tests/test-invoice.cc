@@ -1128,6 +1128,7 @@ BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
 
     //db
     Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
 
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
@@ -1159,6 +1160,7 @@ BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
     // TODO change date
     BOOST_CHECK(invMan->chargeDomainCreate(zone_cz_id, regid, object_id, Database::Date(2012, 1, 1), 0 ));
 
+    tx.commit();
 }
 
 // try to charge create domain with insufficient credit
