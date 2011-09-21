@@ -961,9 +961,9 @@ ResultTestCharge testChargeWorker(Fred::Invoicing::Manager *invMan, Database::Da
     ret.object_id = res_or[0][0];
 
     if (operation == INVOICING_DomainCreate ) {
-        ret.success = invMan->chargeDomainCreate(zone_id, registrar_id, ret.object_id, exdate, ret.units );
+        ret.success = invMan->chargeDomainCreate(zone_id, registrar_id, ret.object_id, exdate, ret.units * 12 );
     } else if (operation == INVOICING_DomainRenew) {
-        ret.success = invMan->chargeDomainRenew(zone_id, registrar_id, ret.object_id, exdate, ret.units );
+        ret.success = invMan->chargeDomainRenew(zone_id, registrar_id, ret.object_id, exdate, ret.units * 12 );
     } else {
         THREAD_BOOST_ERROR("Not implemented");
     }
@@ -1206,25 +1206,25 @@ BOOST_AUTO_TEST_CASE( chargeDomainInsuffCredit )
     //manager
     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
-    testChargeInsuffCredit(invMan.get(),  24, INVOICING_DomainCreate, zone_cz_id);
-    testChargeInsuffCredit(invMan.get(),  24, INVOICING_DomainCreate, zone_enum_id);
-    testChargeInsuffCredit(invMan.get(),  19, INVOICING_DomainCreate, zone_cz_id);
-    testChargeInsuffCredit(invMan.get(),  19, INVOICING_DomainCreate, zone_enum_id);
+    testChargeInsuffCredit(invMan.get(),  2, INVOICING_DomainCreate, zone_cz_id);
+    testChargeInsuffCredit(invMan.get(),  2, INVOICING_DomainCreate, zone_enum_id);
+    //testChargeInsuffCredit(invMan.get(),  19, INVOICING_DomainCreate, zone_cz_id);
+    //testChargeInsuffCredit(invMan.get(),  19, INVOICING_DomainCreate, zone_enum_id);
 
-    testChargeInsuffCredit(invMan.get(), 24, INVOICING_DomainCreate, zone_cz_id);
-    testChargeInsuffCredit(invMan.get(), 24, INVOICING_DomainCreate, zone_enum_id);
-    testChargeInsuffCredit(invMan.get(), 19, INVOICING_DomainCreate, zone_cz_id);
-    testChargeInsuffCredit(invMan.get(), 19, INVOICING_DomainCreate, zone_enum_id);
+    testChargeInsuffCredit(invMan.get(), 2, INVOICING_DomainCreate, zone_cz_id);
+    testChargeInsuffCredit(invMan.get(), 2, INVOICING_DomainCreate, zone_enum_id);
+    //testChargeInsuffCredit(invMan.get(), 19, INVOICING_DomainCreate, zone_cz_id);
+    //testChargeInsuffCredit(invMan.get(), 19, INVOICING_DomainCreate, zone_enum_id);
 
-    testChargeInsuffCredit(invMan.get(),  24, INVOICING_DomainRenew, zone_cz_id);
-    testChargeInsuffCredit(invMan.get(),  24, INVOICING_DomainRenew, zone_enum_id);
-    testChargeInsuffCredit(invMan.get(),  19, INVOICING_DomainRenew, zone_cz_id);
-    testChargeInsuffCredit(invMan.get(),  19, INVOICING_DomainRenew, zone_enum_id);
+    testChargeInsuffCredit(invMan.get(),  2, INVOICING_DomainRenew, zone_cz_id);
+    testChargeInsuffCredit(invMan.get(),  2, INVOICING_DomainRenew, zone_enum_id);
+    //testChargeInsuffCredit(invMan.get(),  19, INVOICING_DomainRenew, zone_cz_id);
+    //testChargeInsuffCredit(invMan.get(),  19, INVOICING_DomainRenew, zone_enum_id);
 
-    testChargeInsuffCredit(invMan.get(), 24, INVOICING_DomainRenew, zone_cz_id);
-    testChargeInsuffCredit(invMan.get(), 24, INVOICING_DomainRenew, zone_enum_id);
-    testChargeInsuffCredit(invMan.get(), 19, INVOICING_DomainRenew, zone_cz_id);
-    testChargeInsuffCredit(invMan.get(), 19, INVOICING_DomainRenew, zone_enum_id);
+    testChargeInsuffCredit(invMan.get(), 2, INVOICING_DomainRenew, zone_cz_id);
+    testChargeInsuffCredit(invMan.get(), 2, INVOICING_DomainRenew, zone_enum_id);
+    //testChargeInsuffCredit(invMan.get(), 19, INVOICING_DomainRenew, zone_cz_id);
+    //testChargeInsuffCredit(invMan.get(), 19, INVOICING_DomainRenew, zone_enum_id);
 }
 
 // not thread safe - database data can change in the meantime
