@@ -2759,7 +2759,7 @@ public:
                                     << "io.date_to, io.operation_id, io.quantity, "
                                     << "CASE "
                                     << "  WHEN io.quantity = 0 THEN 0 "
-                                    << "  ELSE SUM(icm.price) * 12 / io.quantity END, "
+                                    << "  ELSE SUM(icm.price) / io.quantity END, "
                                     << "o.id";
               action_query.from() << "tmp_invoice_filter_result tmp "
                                   << "JOIN invoice_operation io ON (tmp.id = io.ac_invoice_id) "
