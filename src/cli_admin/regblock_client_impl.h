@@ -59,6 +59,7 @@ public:
                 }
             }
 
+            Database::Connection conn = Database::Manager::acquire();
             std::ostringstream msg;
 
             // send some notification that registrars were blocked
@@ -67,20 +68,36 @@ public:
                     ++it) {
                 Fred::Registrar::RequestFeeData rfd = it->second;
 
-                msg << (boost::format("Registrar %1% blocked: price limit %2% exceeded. Current price: %3%  \n")
+                Result res_contacts = conn.exec_params("SELECT email, telephone FROM request_fee_registrar_parameter WHERE registrar_id=$1::bigint",
+                        Database::query_param_list(rfd.reg_id));
+
+                msg << (boost::format("Registrar %1% blocked: price limit %2%, current price: %3%, e-mail: %4%, phone: %5%, link: https://manager.nic.cz/registrar/detail/?id=%6% \n")
                         % it->first
                         % rfd.price_limit
-                        % rfd.price).str()
+                        % rfd.price
+                        % res_contacts[0][0]
+                        % res_contacts[0][1]
+                        % rfd.reg_id).str()
                     << std::endl;
 
                 //check if sendmail is present in the system
             }
 
-            std::string cmd = (boost::format("{\n"
-              "echo \"Subject: Registrars blocked - requests over limit $(date +'%%Y-%%m-%%d')\n"
+            std::string cmd;
+            if(blocked_registrars->begin() == blocked_registrars->end()) {
+                cmd = (boost::format("{\n"
+                        "echo \"Subject: No registrars blocked, date $(date +'%%Y-%%m-%%d')\n"
+                        "Content-Type: text/plain; charset=UTF-8; format=flowed"
+                        "\nContent-Transfer-Encoding: 8bit\n\n \";"
+                        "\n} | /usr/sbin/sendmail %1%" ) % params.notify_email).str();
+
+            } else {
+                cmd = (boost::format("{\n"
+              "echo \"Subject: REGISTRARS BLOCKED - requests over limit $(date +'%%Y-%%m-%%d')\n"
               "Content-Type: text/plain; charset=UTF-8; format=flowed"
               "\nContent-Transfer-Encoding: 8bit\n\n%1% \n\";"
               "\n} | /usr/sbin/sendmail %2%") % msg.str() % params.notify_email).str();
+            }
 
             SubProcessOutput sub_output = ShellCmd(cmd, params.shell_cmd_timeout).execute();
             if (!sub_output.stderr.empty()) {
