@@ -72,7 +72,7 @@
 
 BOOST_AUTO_TEST_SUITE(TestInvoice)
 
-const unsigned DEFAULT_REGISTRATION_PERIOD = 2;
+
 
 using namespace Fred::Invoicing;
 
@@ -2052,7 +2052,7 @@ ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Database
 
         ccReg::Period_str period;
         period.count = reg_units;
-        period.unit = ccReg::unit_month;
+        period.unit = ccReg::unit_year;
         ccReg::EppParams epp_params;
         epp_params.requestID = clientId + number;
         epp_params.sessionID = clientId;
@@ -2123,7 +2123,8 @@ public:
 
        Database::Date exdate(act_year + 1, 1, 1);
 
-       ResultTestCharge ret = testCreateDomainDirectWorker(p.epp_backend, exdate, DEFAULT_REGISTRATION_PERIOD, INVOICING_DomainCreate, p.regid,   number_, p.clientId, p.zone_id );
+       ResultTestCharge ret = testCreateDomainDirectWorker(p.epp_backend, exdate
+               , 1, INVOICING_DomainCreate, p.regid,   number_, p.clientId, p.zone_id );
 
        // copy all the parametres to Result
        ret.number = number_;
@@ -2282,8 +2283,8 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 
     // if(operation == INVOICING_DomainCreate) 
     Money counted_price =
-            getOperationPrice(INVOICING_DomainRenew, zone_cz_id, DEFAULT_REGISTRATION_PERIOD)
-            + getOperationPrice(INVOICING_DomainCreate, zone_cz_id, DEFAULT_REGISTRATION_PERIOD);
+            getOperationPrice(INVOICING_DomainRenew, zone_cz_id, 1)
+            + getOperationPrice(INVOICING_DomainCreate, zone_cz_id, 1);
 
     counted_price *= thread_count;
 
