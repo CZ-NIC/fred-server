@@ -2332,7 +2332,7 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
 
     CORBA::Long clientId = epp_backend_login(myccReg_EPP_i.get(), registrar_handle);
 
-    testCreateDomainDirectWorker(myccReg_EPP_i.get(), Database::Date(), 12,
+    testCreateDomainDirectWorker(myccReg_EPP_i.get(), Database::Date(), 1,
            INVOICING_DomainCreate, registrar->getId(), 1, clientId, zone_cz_id);
 
     /*
