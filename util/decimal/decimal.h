@@ -478,7 +478,7 @@ public:
 
     bool operator< (const Decimal& x) const
     {
-        int c;
+        int c = 0;
         try
         {
             Decimal result;
@@ -506,7 +506,7 @@ public:
 
     bool operator==(const Decimal& x) const
     {
-        int c;
+        int c = -1;
         try
         {
             Decimal result;
