@@ -1322,7 +1322,8 @@ namespace Fred
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
               const Money &price,
-              int period)
+              int period
+              , const bool enable_postpaid_operation)
       {
             try
             {
@@ -1343,6 +1344,7 @@ namespace Fred
             	    pl.setValidTo(validTo);
             	pl.setPrice(price.get_string());
             	pl.setQuantity(period);
+            	pl.setEnablePostpaidOperation(enable_postpaid_operation);
             	pl.insert();
 
             }//try
@@ -1360,7 +1362,8 @@ namespace Fred
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
               const Decimal &price,
-              int period)
+              int period
+              , const bool enable_postpaid_operation)
       {
           try
           {
@@ -1372,7 +1375,7 @@ namespace Fred
   			if(res.size() == 0) throw std::runtime_error("addPrice: zone not found");
   			int zoneId = res[0][0];
 
-  			addPrice(zoneId, operation, validFrom, validTo, price, period);
+  			addPrice(zoneId, operation, validFrom, validTo, price, period, enable_postpaid_operation);
           }//try
           catch (...)
           {

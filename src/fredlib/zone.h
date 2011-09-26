@@ -310,14 +310,16 @@ namespace Fred
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
               const Money &price,
-              int period) = 0;
+              int period
+              , const bool enable_postpaid_operation) = 0;
       virtual void addPrice(
               const std::string &zone,
               const std::string& operation,
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
               const Money &price,
-              int period) = 0;
+              int period
+              , const bool enable_postpaid_operation) = 0;
       /// Return list of zones
         //virtual ZoneList *getList() = 0;
         ///list factory

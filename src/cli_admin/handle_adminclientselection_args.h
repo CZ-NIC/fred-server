@@ -1615,6 +1615,9 @@ public:
             ("operation", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.operation))
                 , "charged operation like: CreateDomain, RenewDomain, GeneralEppOperation")
+            ("enable_postpaid_operation", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.enable_postpaid_operation))
+                , "operation charge don't need prepaid credit")
                 ;
         return cfg_opts;
     }//get_options_description

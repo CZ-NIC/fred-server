@@ -342,8 +342,10 @@ struct PriceAddArgs
     optional_string zone_fqdn;
     optional_id zone_id;
     optional_string operation;
+    bool enable_postpaid_operation;
 
     PriceAddArgs()
+    : enable_postpaid_operation(false)
     {}//ctor
     PriceAddArgs(
             const optional_string& _valid_from
@@ -353,6 +355,7 @@ struct PriceAddArgs
             , const optional_string& _zone_fqdn
             , const optional_id& _zone_id
             , const optional_string& _operation
+            , bool _enable_postpaid_operation
             )
     : valid_from(_valid_from)
     , valid_to(_valid_to)
@@ -361,6 +364,7 @@ struct PriceAddArgs
     , zone_fqdn(_zone_fqdn)
     , zone_id(_zone_id)
     , operation(_operation)
+    , enable_postpaid_operation(_enable_postpaid_operation)
     {}//init ctor
 };//struct PriceAddArgs
 

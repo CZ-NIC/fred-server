@@ -446,15 +446,16 @@ RegistrarClient::price_add()
     }
     std::string operation = price_add_params_.operation.get_value();
 
-
     if (price_add_params_.zone_fqdn.is_value_set()) {//REGISTRAR_ZONE_FQDN_NAME
         std::string zone = price_add_params_.zone_fqdn.get_value();//REGISTRAR_ZONE_FQDN_NAME
         zoneMan->addPrice(zone, operation, validFrom,
-                validTo, price, period);
+                validTo, price, period
+                , price_add_params_.enable_postpaid_operation);
     } else {
         unsigned int zoneId = price_add_params_.zone_id.get_value();//REGISTRAR_ZONE_ID_NAME
         zoneMan->addPrice(zoneId, operation, validFrom,
-                validTo, price, period);
+                validTo, price, period
+                , price_add_params_.enable_postpaid_operation);
     }
 
 }
