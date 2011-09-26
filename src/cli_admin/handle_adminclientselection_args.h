@@ -1612,12 +1612,9 @@ public:
             ("zone_id", boost::program_options
                 ::value<Checked::id>()->notifier(save_optional_id(params.zone_id))
                 , "zone id")
-            ("renew", boost::program_options
-                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.renew))
-                , "domain renew operation")
-            ("create", boost::program_options
-                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.create))
-                , "domain create operation")
+            ("operation", boost::program_options
+                ::value<Checked::string>()->notifier(save_optional_string(params.operation))
+                , "charged operation like: CreateDomain, RenewDomain, GeneralEppOperation")
                 ;
         return cfg_opts;
     }//get_options_description

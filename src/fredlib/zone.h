@@ -306,20 +306,18 @@ namespace Fred
 
       virtual void addPrice(
               int zone,
-              Operation operation,
+              const std::string& operation,
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
               const Money &price,
-              int period)
-          throw (SQL_ERROR) = 0;
+              int period) = 0;
       virtual void addPrice(
               const std::string &zone,
-              Operation operation,
+              const std::string& operation,
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
               const Money &price,
-              int period)
-          throw (SQL_ERROR) = 0;
+              int period) = 0;
       /// Return list of zones
         //virtual ZoneList *getList() = 0;
         ///list factory

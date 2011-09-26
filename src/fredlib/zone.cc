@@ -1318,18 +1318,25 @@ namespace Fred
 
       virtual void addPrice(
               int zoneId,
-              Operation operation,
+              const std::string& operation,
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
               const Money &price,
               int period)
-          throw (SQL_ERROR)
       {
             try
             {
+                Database::Connection conn = Database::Manager::acquire();
+
+                Database::Result res_op = conn.exec_params(
+                        "SELECT id FROM enum_operation WHERE operation=$1::text"
+                        , Database::query_param_list(operation));
+                if(res_op.size() == 0) throw std::runtime_error("addPrice: operation not found");
+                int operationId = res_op[0][0];
+
             	ModelPriceList pl;
             	pl.setZoneId(zoneId);
-            	pl.setOperationId((operation == CREATE) ? 1 : 2);
+            	pl.setOperationId(operationId);
             	if(!validFrom.get().is_not_a_date_time())
             	    pl.setValidFrom(validFrom);
             	if(!validTo.get().is_not_a_date_time())
@@ -1342,36 +1349,35 @@ namespace Fred
             catch (...)
             {
                 LOGGER(PACKAGE).error("addPrice: an error has occured");
-                throw SQL_ERROR();
+                throw;
             }//catch (...)
 
       }//addPrice
 
       virtual void addPrice(
               const std::string &zone,
-              Operation operation,
+              const std::string& operation,
               const Database::DateTime &validFrom,
               const Database::DateTime &validTo,
               const Decimal &price,
               int period)
-          throw (SQL_ERROR)
       {
           try
           {
           	Database::Connection conn = Database::Manager::acquire();
 
-          	std::stringstream sql;
-  			sql << "SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "'";
-
-  			Database::Result res = conn.exec(sql.str());
+  			Database::Result res = conn.exec_params(
+  			        "SELECT id FROM zone WHERE fqdn=$1::text"
+  			        , Database::query_param_list(zone));
+  			if(res.size() == 0) throw std::runtime_error("addPrice: zone not found");
   			int zoneId = res[0][0];
 
   			addPrice(zoneId, operation, validFrom, validTo, price, period);
           }//try
           catch (...)
           {
-              LOGGER(PACKAGE).error("addPrice: getting zoneId an error has occured");
-              throw SQL_ERROR();
+              LOGGER(PACKAGE).error("addPrice: an error has occured");
+              throw;
           }//catch (...)
       }//addPrice
 

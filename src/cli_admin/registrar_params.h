@@ -341,12 +341,9 @@ struct PriceAddArgs
     optional_ulong period;
     optional_string zone_fqdn;
     optional_id zone_id;
-    bool create;
-    bool renew;
+    optional_string operation;
 
     PriceAddArgs()
-    : create(false)
-    , renew(false)
     {}//ctor
     PriceAddArgs(
             const optional_string& _valid_from
@@ -355,8 +352,7 @@ struct PriceAddArgs
             , const optional_ulong& _period
             , const optional_string& _zone_fqdn
             , const optional_id& _zone_id
-            , const bool _create
-            , const bool _renew
+            , const optional_string& _operation
             )
     : valid_from(_valid_from)
     , valid_to(_valid_to)
@@ -364,8 +360,7 @@ struct PriceAddArgs
     , period(_period)
     , zone_fqdn(_zone_fqdn)
     , zone_id(_zone_id)
-    , create(_create)
-    , renew(_renew)
+    , operation(_operation)
     {}//init ctor
 };//struct PriceAddArgs
 

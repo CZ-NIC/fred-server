@@ -439,28 +439,24 @@ RegistrarClient::price_add()
         std::cerr << "You have to specity either ``--zone_fqdn'' or ``--zone_id''." << std::endl;
         return;
     }
-    if (price_add_params_.create) {//REGISTRAR_CREATE_OPERATION_NAME
-        if (price_add_params_.zone_fqdn.is_value_set()) {//REGISTRAR_ZONE_FQDN_NAME
-            std::string zone = price_add_params_.zone_fqdn.get_value();//REGISTRAR_ZONE_FQDN_NAME
-            zoneMan->addPrice(zone, Fred::Zone::CREATE, validFrom,
-                    validTo, price, period);
-        } else {
-            unsigned int zoneId = price_add_params_.zone_id.get_value();//REGISTRAR_ZONE_ID_NAME
-            zoneMan->addPrice(zoneId, Fred::Zone::CREATE, validFrom,
-                    validTo, price, period);
-        }
+
+    if (!price_add_params_.operation.is_value_set())
+    {
+        throw std::runtime_error("RegistrarClient::price_add: operation not set");
     }
-    if (price_add_params_.renew) {//REGISTRAR_RENEW_OPERATION_NAME
-        if (price_add_params_.zone_fqdn.is_value_set()) {//REGISTRAR_ZONE_FQDN_NAME
-            std::string zone = price_add_params_.zone_fqdn.get_value();
-            zoneMan->addPrice(zone, Fred::Zone::RENEW, validFrom,
-                    validTo, price, period);
-        } else {
-            unsigned int zoneId = price_add_params_.zone_id.get_value();//REGISTRAR_ZONE_ID_NAME
-            zoneMan->addPrice(zoneId, Fred::Zone::RENEW, validFrom,
-                    validTo, price, period);
-        }
+    std::string operation = price_add_params_.operation.get_value();
+
+
+    if (price_add_params_.zone_fqdn.is_value_set()) {//REGISTRAR_ZONE_FQDN_NAME
+        std::string zone = price_add_params_.zone_fqdn.get_value();//REGISTRAR_ZONE_FQDN_NAME
+        zoneMan->addPrice(zone, operation, validFrom,
+                validTo, price, period);
+    } else {
+        unsigned int zoneId = price_add_params_.zone_id.get_value();//REGISTRAR_ZONE_ID_NAME
+        zoneMan->addPrice(zoneId, operation, validFrom,
+                validTo, price, period);
     }
+
 }
 
 } // namespace Admin;
