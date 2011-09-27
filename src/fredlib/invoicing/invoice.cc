@@ -2037,8 +2037,13 @@ public:
           out << TAGSTART(item)
           << TAG(subject,pa->getObjectName())
           << TAG(code,
-              (pa->getAction() == PAT_CREATE_DOMAIN ?
-                  "RREG" : "RUDR"))
+              (pa->getAction() == PAT_CREATE_DOMAIN ? "RREG"
+              : (pa->getAction() == PAT_RENEW_DOMAIN ? "RUDR"
+                : (pa->getAction() == PAT_REQUESTS_OVER_LIMIT ? "RPOZ"
+                  : throw std::runtime_error("unknown action code"),"")
+                )
+              )
+             )//TAG code
           << TAG(timestamp,pa->getActionTime());
           if (!pa->getExDate().is_special())
           out << TAG(expiration,pa->getExDate());

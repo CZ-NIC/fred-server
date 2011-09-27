@@ -116,8 +116,9 @@ public:
 };
 
 enum PaymentActionType {
-  PAT_CREATE_DOMAIN,
-  PAT_RENEW_DOMAIN
+  PAT_CREATE_DOMAIN
+  , PAT_RENEW_DOMAIN
+  , PAT_REQUESTS_OVER_LIMIT
 };
 std::string PaymentActionType2Str(PaymentActionType type);
 
