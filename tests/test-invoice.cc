@@ -1901,14 +1901,14 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
             Fred::Banking::XMLnode vat_rates = delivery.getChild("vat_rates");
             if (vat_rates.getName().compare("vat_rates") != 0) throw std::runtime_error("xml element name is not \"vat_rates\"");
 
-
+            /*
             Fred::Banking::XMLnode entry = vat_rates.getChild("entry");
             if (entry.getName().compare("entry") != 0) throw std::runtime_error("xml element name is not \"entry\"");
 
             if (invoice_prefix_typ == 1) //std::cout << "acc invoice" << std::endl
                 ;
 
-            /* not working this way
+            //not working this way
             if(vat_rates.hasChild("entry"))
             {
                 Fred::Banking::XMLnode entry = vat_rates.getChild("entry");
