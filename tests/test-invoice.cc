@@ -1348,9 +1348,16 @@ void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned perio
     ResultTestCharge res = testChargeWorker(invMan.get(), exdate, 12, INVOICING_DomainRenew, zone_id, regid);
     testChargeEval(res, should_succ);
 
+
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+    // zone IDs
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+
     invMan->charge_operation_auto_price(
               "GeneralEppOperation"
-              , zone_id
+              , zone_cz_id
               , regid
               , 0 //object_id
               , boost::posix_time::second_clock::local_time() //crdate //local timestamp
