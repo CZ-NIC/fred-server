@@ -854,7 +854,7 @@ unsigned long long create_account_invoice
     }
     //update_account_invoice(aci,price_left)
     conn.exec_params("UPDATE invoice "
-      " SET total = $1::numeric(10,2), totalvat = "
+      " SET balance = $1::numeric(10,2), total = $1::numeric(10,2), totalvat = "
       " (SELECT ($1::numeric * vat / 100::numeric)::numeric(10,2) FROM invoice WHERE id = $2::bigint) "
       " WHERE id = $2::bigint "
     , Database::query_param_list(price_left.get_string()) (aci));
