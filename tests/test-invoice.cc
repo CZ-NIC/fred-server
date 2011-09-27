@@ -1347,6 +1347,16 @@ void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned perio
 
     ResultTestCharge res = testChargeWorker(invMan.get(), exdate, 12, INVOICING_DomainRenew, zone_id, regid);
     testChargeEval(res, should_succ);
+
+    invMan->charge_operation_auto_price(
+              "GeneralEppOperation"
+              , zone_id
+              , regid
+              , 0 //object_id
+              , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+              , exdate.get() - boost::gregorian::months(1)//date_from //local date
+              , exdate.get()// date_to //local date
+              , Decimal ("200000000"));
 }
 
 BOOST_AUTO_TEST_CASE( chargeDomain2Invoices )

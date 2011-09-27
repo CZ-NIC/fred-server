@@ -308,6 +308,16 @@ public:
   // added methods
   virtual  unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsigned long long zoneId, unsigned long long registrarId, Money price, boost::posix_time::ptime invoice_date, Money& out_credit) = 0;
 
+  virtual bool charge_operation_auto_price(
+            const std::string& operation
+            , unsigned long long zone_id
+            , unsigned long long registrar_id
+            , unsigned long long object_id
+            , boost::posix_time::ptime crdate //local timestamp
+            , boost::gregorian::date date_from //local date
+            , boost::gregorian::date date_to //local date
+            , Decimal quantity) = 0;
+
   virtual bool chargeDomainCreate(
           const Database::ID &zone,
           const Database::ID &registrar,
