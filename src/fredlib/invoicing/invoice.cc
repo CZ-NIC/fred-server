@@ -2024,7 +2024,7 @@ public:
       << TAG(total,OUTMONEY(i->getPrice()))
       << TAG(paid,
           OUTMONEY((i->getType() != IT_DEPOSIT ? (i->getPrice()*Money("-1")) : Money("0"))))
-      << TAG(to_be_paid,OUTMONEY((i->getType() != IT_DEPOSIT ? Money("0") : i->getTotal() + i->getTotalVAT())))
+      << TAG(to_be_paid,OUTMONEY((i->getType() == IT_DEPOSIT ? Money("0") : i->getTotal() + i->getTotalVAT())))
       << TAGEND(sumarize)
       << TAGEND(delivery);
       if (i->getSourceCount()) {
