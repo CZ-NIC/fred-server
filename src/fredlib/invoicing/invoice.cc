@@ -832,6 +832,17 @@ unsigned long long create_account_invoice
             if (price_to_pull_off == Money("0")) break;
         }//for adi_list
 
+        if(price_to_pull_off > Money("0"))
+        {
+            //insert_invoice_operation_charge_map
+            conn.exec_params("INSERT INTO invoice_operation_charge_map "
+                 " (invoice_operation_id, invoice_id, price) "
+                 " VALUES ($1::bigint, $2::bigint, $3::numeric(10,2)) "
+                , Database::query_param_list(invoice_operation_id)
+                (aci)(price_to_pull_off.get_string()));
+
+        }
+
         price_left += price_to_pull_off;
     }//for operations
 
