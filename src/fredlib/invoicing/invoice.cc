@@ -1418,7 +1418,7 @@ public:
       try
       {
         // non periodical actions are ignored
-        if (!pa->getUnitsCount() || pa->getExDate().is_special())
+        if (pa->getFromDate().is_special() || pa->getExDate().is_special())
           return;
         // lastdate will be subtracted down in every iteration
         date lastdate = pa->getExDate();
