@@ -2023,7 +2023,7 @@ public:
       << TAGSTART(sumarize)
       << TAG(total,OUTMONEY(i->getPrice()))
       << TAG(paid,
-          OUTMONEY((i->getType() != IT_DEPOSIT ? (i->getPrice()*Money("-1")) : Money("0"))))
+          OUTMONEY((i->getType() == IT_DEPOSIT ? Money("0") : ((i->getPrice() - i->getTotal() )*Money("-1")) )))
       << TAG(to_be_paid,OUTMONEY((i->getType() == IT_DEPOSIT ? Money("0") : i->getTotal() + i->getTotalVAT())))
       << TAGEND(sumarize)
       << TAGEND(delivery);
