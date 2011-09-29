@@ -2460,9 +2460,9 @@ public:
                                 << "o.id";
           action_query.from() << "tmp_invoice_filter_result tmp "
                               << "JOIN invoice_operation io ON (tmp.id = io.ac_invoice_id) "
-                              << "JOIN object_registry o ON (io.object_id = o.id) "
-                              << "JOIN invoice_operation_charge_map icm ON (io.id = icm.invoice_operation_id) "
-                              << "JOIN invoice i ON (icm.invoice_id = i.id) ";
+                              << "JOIN invoice i ON (tmp.id = i.id) "
+                              << "LEFT JOIN invoice_operation_charge_map icm ON (io.id = icm.invoice_operation_id) "
+                              << "LEFT JOIN object_registry o ON (io.object_id = o.id) ";
           action_query.group_by() << "tmp.id, o.name, io.date_from, io.date_to, "
                                   << "io.operation_id, io.quantity, o.id, i.vat";
           action_query.order_by() << "tmp.id";
@@ -2768,9 +2768,9 @@ public:
                                     << "o.id";
               action_query.from() << "tmp_invoice_filter_result tmp "
                                   << "JOIN invoice_operation io ON (tmp.id = io.ac_invoice_id) "
-                                  << "JOIN object_registry o ON (io.object_id = o.id) "
-                                  << "JOIN invoice_operation_charge_map icm ON (io.id = icm.invoice_operation_id) "
-                                  << "JOIN invoice i ON (icm.invoice_id = i.id) ";
+                                  << "JOIN invoice i ON (tmp.id = i.id) "
+                                  << "LEFT JOIN invoice_operation_charge_map icm ON (io.id = icm.invoice_operation_id) "
+                                  << "LEFT JOIN object_registry o ON (io.object_id = o.id) ";
               action_query.group_by() << "tmp.id, o.name, io.date_from, io.date_to, "
                                       << "io.operation_id, io.quantity, o.id, i.vat";
               action_query.order_by() << "tmp.id";
