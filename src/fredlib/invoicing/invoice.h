@@ -133,6 +133,8 @@ public:
   virtual const std::string& getObjectName() const = 0;
   /// time of action 
   virtual boost::posix_time::ptime getActionTime() const = 0;
+  /// fromdate when operation started otherwise (not-a-date)
+  virtual boost::gregorian::date getFromDate() const = 0;
   /// exdate when operation was renew otherwise (not-a-date)
   virtual boost::gregorian::date getExDate() const = 0;
   /// type of action (creation or registration extension)

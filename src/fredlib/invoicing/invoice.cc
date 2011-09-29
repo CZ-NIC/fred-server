@@ -1331,6 +1331,7 @@ public:
 class PaymentActionImpl : public PaymentImpl, virtual public PaymentAction {
   std::string objectName; ///< name of object affected by payment action
   ptime actionTime; ///< time of payment action
+  date fromDate; ///< fromdate of domain
   date exDate; ///< exdate of domain 
   PaymentActionType action; ///< type of action that is subject of payment
   unsigned unitsCount; ///< number of months to expiration of domain
@@ -1339,11 +1340,12 @@ class PaymentActionImpl : public PaymentImpl, virtual public PaymentAction {
 public:
   /// init content from sql result (ignore first column)
   PaymentActionImpl(Money _price, Decimal _vat_rate, Money _vat,
-                    std::string& _object_name, ptime _action_time, date _exdate,
+                    std::string& _object_name, ptime _action_time, date _fromdate, date _exdate,
                     PaymentActionType _type, unsigned _units, Money _price_per_unit, TID _id) :
                       PaymentImpl(_price, _vat_rate, _vat),
                       objectName(_object_name),
                       actionTime(_action_time),
+                      fromDate(_fromdate),
                       exDate(_exdate),
                       action(_type),
                       unitsCount(_units),
@@ -1360,6 +1362,10 @@ public:
   virtual ptime getActionTime() const {
     return actionTime;
   }
+  virtual date getFromDate() const {
+    return fromDate;
+  }
+
   virtual date getExDate() const {
     return exDate;
   }
@@ -1417,7 +1423,7 @@ public:
         // lastdate will be subtracted down in every iteration
         date lastdate = pa->getExDate();
         // firstdate is for detection when to stop and for portion counting
-        date firstdate = pa->getExDate() - months(pa->getUnitsCount());
+        date firstdate = pa->getFromDate();
         // money that still need to be partitioned
         Money remains = pa->getPrice();
         while (remains != Money("0")) {
@@ -1742,7 +1748,8 @@ public:
     std::string _price = std::string(*_col);
     std::string _vat_rate = std::string( *(++_col));
     std::string        object_name = *(++_col);
-    Database::DateTime action_time = *(++_col); 
+    Database::DateTime action_time = *(++_col);
+    Database::Date     fromdate      = *(++_col);
     Database::Date     exdate      = *(++_col);
     PaymentActionType  type        = (int)*(++_col) == 1 ? PAT_CREATE_DOMAIN 
                                                          : PAT_RENEW_DOMAIN;
@@ -1773,6 +1780,7 @@ public:
                                                           man->countVAT(price, vat_rate, true),
                                                           object_name,
                                                           action_time,
+                                                          fromdate,
                                                           exdate,
                                                           type,
                                                           units,
@@ -2463,8 +2471,8 @@ public:
         if (!partialLoad) {
           Database::SelectQuery action_query;
           action_query.select() << "tmp.id, SUM(icm.price), i.vat, o.name, "
-                                << "io.date_from::timestamptz AT TIME ZONE 'Europe/Prague', "
-                                << "io.date_to, io.operation_id, io.quantity, "
+                                << "io.crdate::timestamptz AT TIME ZONE 'Europe/Prague', "
+                                << "io.date_from, io.date_to, io.operation_id, io.quantity, "
                                 << "CASE "
                                 << "  WHEN io.quantity = 0 THEN 0 "
                                 << "  ELSE SUM(icm.price) / io.quantity END, "
@@ -2771,8 +2779,8 @@ public:
             if (!partialLoad) {
               Database::SelectQuery action_query;
               action_query.select() << "tmp.id, SUM(icm.price), i.vat, o.name, "
-                                    << "io.date_from::timestamptz AT TIME ZONE 'Europe/Prague', "
-                                    << "io.date_to, io.operation_id, io.quantity, "
+                                    << "io.crdate::timestamptz AT TIME ZONE 'Europe/Prague', "
+                                    << "io.date_from, io.date_to, io.operation_id, io.quantity, "
                                     << "CASE "
                                     << "  WHEN io.quantity = 0 THEN 0 "
                                     << "  ELSE SUM(icm.price) / io.quantity END, "
