@@ -1995,14 +1995,34 @@ public:
       << TAGEND(payment)
       << TAGSTART(delivery)
       << TAGSTART(vat_rates);
+
+
+      bool added_price = false;
+
       for (unsigned j=0; j<i->getPaymentCount(); j++) {
         const Payment *p = i->getPaymentByIdx(j);
-        out << TAGSTART(entry)
-        << TAG(vatperc,p->getVatRate())
-        << TAG(basetax,OUTMONEY(p->getPrice()))
-        << TAG(vat,OUTMONEY(p->getVat()))
-        << TAG(total,OUTMONEY(p->getPriceWithVat()))
-        << TAGSTART(years);
+
+        if(added_price == false && (i->getVatRate() == p->getVatRate()))
+        {//add ac invoice to vat details
+            out << TAGSTART(entry)
+            << TAG(vatperc,p->getVatRate())
+            << TAG(basetax,OUTMONEY( (p->getPrice() + i->getTotal()) ))
+            << TAG(vat,OUTMONEY( (p->getVat() + i->getTotalVAT()) ))
+            << TAG(total,OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
+            << TAGSTART(years);
+
+            added_price = true;
+        }
+        else
+        {
+            out << TAGSTART(entry)
+            << TAG(vatperc,p->getVatRate())
+            << TAG(basetax,OUTMONEY(p->getPrice()))
+            << TAG(vat,OUTMONEY(p->getVat()))
+            << TAG(total,OUTMONEY(p->getPriceWithVat()))
+            << TAGSTART(years);
+        }
+
         for (
             i->getAnnualPartitioning()->resetIterator(p->getVatRate());
             !i->getAnnualPartitioning()->end();
@@ -2024,7 +2044,7 @@ public:
       << TAG(total,OUTMONEY(i->getPrice()))
       << TAG(paid,
           OUTMONEY((i->getType() == IT_DEPOSIT ? Money("0") : ((i->getPrice() - i->getTotal() )*Money("-1")) )))
-      << TAG(to_be_paid,OUTMONEY((i->getType() == IT_DEPOSIT ? Money("0") : i->getTotal() + i->getTotalVAT())))
+      << TAG(to_be_paid,OUTMONEY( (i->getType() == IT_DEPOSIT ? Money("0") : i->getTotal() + i->getTotalVAT()) ))
       << TAGEND(sumarize)
       << TAGEND(delivery);
       if (i->getSourceCount()) {
