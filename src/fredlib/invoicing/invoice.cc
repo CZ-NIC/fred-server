@@ -2004,11 +2004,27 @@ public:
 
         if(added_price == false && (i->getVatRate() == p->getVatRate()))
         {//add ac invoice to vat details
+
+            out << TAGSTART(entry)
+            << TAG(vatperc,p->getVatRate())
+            << TAG(basetax,OUTMONEY( (p->getPrice() + i->getTotal()) ))
+            << TAG(vat,OUTMONEY( (p->getVat() + i->getTotalVAT()) ))
+            << TAG(total,OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
+            << TAG(totalvat,OUTMONEY( (p->getVat() + i->getTotalVAT()) ))
+            << TAG(paid,OUTMONEY(p->getPriceWithVat()))
+            << TAG(paidvat,OUTMONEY(p->getVat()))
+            << TAGSTART(years);
+
+
+
             out << TAGSTART(entry)
             << TAG(vatperc,p->getVatRate())
             << TAG(basetax, " -basetax- " )//OUTMONEY( (p->getPrice() + i->getTotal()) ))
             << TAG(vat, " -vat- ")//OUTMONEY( (p->getVat() + i->getTotalVAT()) ))
             << TAG(total, " -total- ")//OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
+            << TAG(totalvat, " -totalvat- ")//OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
+            << TAG(paid, " -paid- ")//OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
+            << TAG(paidvat, " -paidvat- ")//OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
             << TAGSTART(years);
 
             added_price = true;
@@ -2020,6 +2036,9 @@ public:
             << TAG(basetax,OUTMONEY(p->getPrice()))
             << TAG(vat,OUTMONEY(p->getVat()))
             << TAG(total,OUTMONEY(p->getPriceWithVat()))
+            << TAG(totalvat,OUTMONEY(p->getVat()))
+            << TAG(paid,OUTMONEY(p->getPriceWithVat()))
+            << TAG(paidvat,OUTMONEY(p->getVat()))
             << TAGSTART(years);
         }
 
@@ -2038,7 +2057,23 @@ public:
         }
         out << TAGEND(years)
         << TAGEND(entry);
-      }
+      }//for payment count
+
+      if(added_price == false )
+      {//add ac invoice to vat details
+        out << TAGSTART(entry)
+        << TAG(vatperc,i->getVatRate())
+        << TAG(basetax,OUTMONEY(i->getTotal()))
+        << TAG(vat,OUTMONEY(i->getTotalVAT()))
+        << TAG(total,OUTMONEY( (i->getTotal() + i->getTotalVAT()) ))
+        << TAG(totalvat,OUTMONEY(i->getTotalVAT()))
+        << TAG(paid,OUTMONEY(Money("0")))
+        << TAG(paidvat,OUTMONEY(Money("0")))
+        ;
+        added_price = true;
+       }
+
+
       out << TAGEND(vat_rates)
       << TAGSTART(sumarize)
       << TAG(total,OUTMONEY(i->getPrice()))
