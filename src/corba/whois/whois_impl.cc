@@ -32,7 +32,6 @@
 
 #include "corba/connection_releaser.h"
 
-int i;
 
 ccReg_Whois_i::ccReg_Whois_i(const std::string& _database
         , const std::string& _server_name
