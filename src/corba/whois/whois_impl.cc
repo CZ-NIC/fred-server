@@ -32,6 +32,8 @@
 
 #include "corba/connection_releaser.h"
 
+int i;
+
 ccReg_Whois_i::ccReg_Whois_i(const std::string& _database
         , const std::string& _server_name
         , bool _registry_restricted_handles
@@ -653,9 +655,16 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
         dl->setLimit(limit);
         dl->reload();
         ccReg::DomainDetails_var dlist = new ccReg::DomainDetails;
-        dlist->length(dl->getCount());
-        for (unsigned i=0; i<dl->getCount(); i++)
-        fillDomain(&dlist[i], dl->getDomain(i));
+        dlist->length(0);
+        for (unsigned i=0; i<dl->getCount(); i++) {
+            if (dm->isDeletePending(
+                        r->getZoneManager()->encodeIDN(dl->getDomain(i)->getFQDN())) == false)
+            {
+                unsigned int l = dlist->length();
+                dlist->length(l + 1);
+                fillDomain(&dlist[l], dl->getDomain(i));
+            }
+        }
         return dlist._retn();
     }//try
     catch (const ccReg::Whois::InternalServerError& )
@@ -819,16 +828,36 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
             r(Fred::Manager::create(ldb_disconnect_guard
                     , registry_restricted_handles_));
         Fred::Domain::Manager *dm = r->getDomainManager();
-        std::auto_ptr<Fred::Domain::List> dl(dm->createList());
-        dl->setWildcardExpansion(false);
-        dl->setFQDNFilter(r->getZoneManager()->encodeIDN(fqdn));
-        dl->reload();
-        if (dl->getCount() != 1) {
-        throw ccReg::Whois::ObjectNotFound();
+
+        if (dm->isDeletePending(r->getZoneManager()->encodeIDN(fqdn)))
+        {
+            const Fred::StatusDesc *dc = registry_manager_->getStatusDesc("deleteCandidate");
+            if (!dc) {
+                throw ccReg::Whois::InternalServerError();
+            }
+
+            ccReg::DomainDetail *cd = new ccReg::DomainDetail();
+            cd->fqdn = fqdn;
+            cd->statusList.length(1);
+            cd->statusList[0] = dc->getId();
+            return cd;
         }
-        ccReg::DomainDetail* cd = new ccReg::DomainDetail;
-        fillDomain(cd, dl->getDomain(0));
-        return cd;
+        else
+        {
+            std::auto_ptr<Fred::Domain::List> dl(dm->createList());
+            dl->setWildcardExpansion(false);
+            dl->setFQDNFilter(r->getZoneManager()->encodeIDN(fqdn));
+            dl->reload();
+
+            if (dl->getCount() != 1) {
+                throw ccReg::Whois::ObjectNotFound();
+            }
+            else {
+                ccReg::DomainDetail* cd = new ccReg::DomainDetail;
+                fillDomain(cd, dl->getDomain(0));
+                return cd;
+            }
+        }
     }//try
     catch (const ccReg::Whois::ObjectNotFound& )
     {

@@ -93,6 +93,7 @@ public:
   virtual void initStates() = 0;
   /// return status description
   virtual const StatusDesc* getStatusDesc(TID status) const = 0;
+  virtual const StatusDesc* getStatusDesc(const std::string &_name) const = 0;
   /// return status list count 
   virtual unsigned getStatusDescCount() const = 0;
   /// return status desctription by index

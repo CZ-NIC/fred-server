@@ -354,6 +354,19 @@ public:
     return &(*it);
   }
 
+  virtual const StatusDesc* getStatusDesc(const std::string &_name) const
+  {
+      for (std::vector<StatusDescImpl>::const_iterator it = statusList.begin();
+              it != statusList.end();
+              ++it)
+      {
+          if (it->getName() == _name) {
+              return &(*it);
+          }
+      }
+      return 0;
+  }
+
   virtual unsigned getStatusDescCount() const {
     return statusList.size();
   }

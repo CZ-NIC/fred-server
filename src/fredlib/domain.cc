@@ -1350,6 +1350,28 @@ public:
     db->FreeSelect();
     return ret;
   }
+
+  bool isDeletePending(const std::string &_fqdn) const
+  {
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result result = conn.exec_params(
+              "SELECT oreg.name FROM object_registry oreg"
+              " JOIN object_state os ON os.object_id = oreg.id"
+              " JOIN enum_object_states eos ON  eos.id = os.state_id"
+              " WHERE oreg.type = 3"
+              " AND eos.name = 'deleteCandidate'"
+              " AND (oreg.erdate is null"
+              " OR (oreg.erdate >= date_trunc('day', current_timestamp)"
+              " AND oreg.erdate < date_trunc('day', current_timestamp + interval '1 day')))"
+              " AND oreg.name = $1::text", Database::query_param_list(_fqdn));
+      if (result.size() > 0) {
+          return true;
+      }
+      else {
+          return false;
+      }
+  }
+
   virtual List *createList() {
     return new ListImpl(db, zm);
   }

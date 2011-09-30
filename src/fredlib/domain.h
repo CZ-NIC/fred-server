@@ -214,6 +214,8 @@ public:
   virtual unsigned long getSignedDomainCount(const std::string & _fqdn) const = 0;
   /// return current count of enum numbers
   virtual unsigned long getEnumNumberCount() const = 0;
+  /// test fqdn to be delete pending 
+  virtual bool isDeletePending(const std::string &_fqdn) const = 0;
   /// create list of domains
   virtual List *createList() = 0;
   /// factory method
