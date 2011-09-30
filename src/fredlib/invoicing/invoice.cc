@@ -2051,7 +2051,7 @@ public:
         << TAGEND(entry);
       }//for payment count
 
-      if(added_price == false )
+      if((added_price == false) && (i->getTotal() != Money("0")))
       {//add ac invoice to vat details
         out << TAGSTART(entry)
         << TAG(vatperc,i->getVatRate())
@@ -2064,7 +2064,6 @@ public:
         << TAGEND(entry);
         added_price = true;
        }
-
 
       out << TAGEND(vat_rates)
       << TAGSTART(sumarize)
