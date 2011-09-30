@@ -1751,8 +1751,9 @@ public:
     Database::DateTime action_time = *(++_col);
     Database::Date     fromdate      = *(++_col);
     Database::Date     exdate      = *(++_col);
-    PaymentActionType  type        = (int)*(++_col) == 1 ? PAT_CREATE_DOMAIN 
-                                                         : PAT_RENEW_DOMAIN;
+    int operation_id =  *(++_col);
+    PaymentActionType  type        = PaymentActionType (operation_id - 1); //PaymentActionType = id -1
+
     unsigned           units          = *(++_col); 
     std::string _price_per_unit = std::string(*(++_col));
     Database::ID       id             = *(++_col);
