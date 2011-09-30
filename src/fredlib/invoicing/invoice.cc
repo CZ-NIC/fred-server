@@ -2007,8 +2007,8 @@ public:
 
             out << TAGSTART(entry)
             << TAG(vatperc,p->getVatRate())
-            << TAG(basetax,OUTMONEY( (p->getPrice() + i->getTotal()) ))
-            << TAG(vat,OUTMONEY( (p->getVat() + i->getTotalVAT()) ))
+            << TAG(basetax,OUTMONEY(i->getTotal()))
+            << TAG(vat,OUTMONEY(i->getTotalVAT()))
             << TAG(total,OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
             << TAG(totalvat,OUTMONEY( (p->getVat() + i->getTotalVAT()) ))
             << TAG(paid,OUTMONEY(p->getPriceWithVat()))
