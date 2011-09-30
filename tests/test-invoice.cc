@@ -1363,7 +1363,7 @@ void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned perio
               , boost::posix_time::second_clock::local_time() //crdate //local timestamp
               , exdate.get() - boost::gregorian::months(1)//date_from //local date
               , exdate.get()// date_to //local date
-              , Decimal ("2000000"));
+              , Decimal ("900000"));
 }
 
 BOOST_AUTO_TEST_CASE( chargeDomain2Invoices )
