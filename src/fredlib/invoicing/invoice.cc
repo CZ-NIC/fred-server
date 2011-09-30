@@ -1387,6 +1387,9 @@ public:
             case PAT_RENEW_DOMAIN:
                 return "RENEW";
                 break;
+            case PAT_REQUESTS_OVER_LIMIT:
+                return "REQ";
+                break;
             default:
                 return "UNKNOWN";
                 break;
@@ -2103,7 +2106,7 @@ public:
               (pa->getAction() == PAT_CREATE_DOMAIN ? "RREG"
               : (pa->getAction() == PAT_RENEW_DOMAIN ? "RUDR"
                 : (pa->getAction() == PAT_REQUESTS_OVER_LIMIT ? "RPOZ"
-                  : throw std::runtime_error("unknown action code"),"")
+                  : "RUNK")
                 )
               )
              )//TAG code
