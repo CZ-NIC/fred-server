@@ -2015,18 +2015,6 @@ public:
             << TAG(paidvat,OUTMONEY(p->getVat()))
             << TAGSTART(years);
 
-
-
-            out << TAGSTART(entry)
-            << TAG(vatperc,p->getVatRate())
-            << TAG(basetax, " -basetax- " )//OUTMONEY( (p->getPrice() + i->getTotal()) ))
-            << TAG(vat, " -vat- ")//OUTMONEY( (p->getVat() + i->getTotalVAT()) ))
-            << TAG(total, " -total- ")//OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
-            << TAG(totalvat, " -totalvat- ")//OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
-            << TAG(paid, " -paid- ")//OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
-            << TAG(paidvat, " -paidvat- ")//OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
-            << TAGSTART(years);
-
             added_price = true;
         }
         else
