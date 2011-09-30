@@ -2057,7 +2057,7 @@ public:
         << TAG(totalvat,OUTMONEY(i->getTotalVAT()))
         << TAG(paid,OUTMONEY(Money("0")))
         << TAG(paidvat,OUTMONEY(Money("0")))
-        ;
+        << TAGEND(entry);
         added_price = true;
        }
 
