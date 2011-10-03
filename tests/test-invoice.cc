@@ -1502,6 +1502,164 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_default )
         , todate, boost::posix_time::ptime(todate));
 }
 
+BOOST_AUTO_TEST_CASE( createAccountInvoice_request )
+{
+    //db
+    Database::Connection conn = Database::Manager::acquire();
+    init_corba_container();
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+    std::string registrar_handle =     registrar->getHandle();
+    unsigned long long registrar_inv_id = registrar->getId();
+    std::string time_string(TimeStamp::microsec());
+    try_insert_invoice_prefix();
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        Fred::Invoicing::Manager::create());
+    //add credit
+    unsigned long long invoiceid = 0;
+    Database::Date taxdate;
+    taxdate = Database::Date(2010,1,1);
+    Money price = std::string("50000.00");//money
+    Money out_credit;
+    invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+            , zone_cz_id//zone
+            , registrar_inv_id//registrar
+            , price
+            , boost::posix_time::ptime(taxdate), out_credit);//price
+    BOOST_CHECK_EQUAL(invoiceid != 0,true);
+    Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
+
+    //try get epp reference
+    ccReg::EPP_var epp_ref;
+    epp_ref = ccReg::EPP::_narrow(CorbaContainer::get_instance()->nsresolve("EPP"));
+
+    //login
+    CORBA::Long clientId = 0;
+    ccReg::Response_var r;
+
+    std::string test_domain_fqdn(std::string("testdomain"));
+
+    try
+    {
+        CORBA::String_var registrar_handle_var = CORBA::string_dup(registrar_handle.c_str());
+        CORBA::String_var passwd_var = CORBA::string_dup("");
+        CORBA::String_var new_passwd_var = CORBA::string_dup("");
+        CORBA::String_var cltrid_var = CORBA::string_dup("omg");
+        CORBA::String_var xml_var = CORBA::string_dup("<omg/>");
+        CORBA::String_var cert_var = CORBA::string_dup("");
+
+        r = epp_ref->ClientLogin(
+            registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
+            xml_var,clientId,cert_var,ccReg::EN);
+
+        if (r->code != 1000 || !clientId) {
+            std::cerr << "Cannot connect: " << r->code << std::endl;
+            throw std::runtime_error("Cannot connect ");
+        }
+
+
+
+        for (int i =0 ; i < 10; i+=2)
+        {
+            ccReg::Period_str period;
+            period.count = 1;
+            period.unit = ccReg::unit_year;
+            ccReg::EppParams epp_params;
+            epp_params.requestID = clientId + i;
+            epp_params.sessionID = clientId;
+            epp_params.clTRID = "";
+            epp_params.XML = "";
+            CORBA::String_var crdate;
+            CORBA::String_var exdate;
+
+            r = epp_ref->DomainCreate(
+                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i)+".cz").c_str(), // fqdn
+                    "KONTAKT",                // contact
+                    "",                       // nsset
+                    "",                       // keyset
+                    "",                       // authinfo
+                    period,                   // reg. period
+                    ccReg::AdminContact(),    // admin contact list
+                    crdate,                   // create datetime (output)
+                    exdate,                   // expiration date (output)
+                    epp_params,               // common call params
+                    ccReg::ExtensionList());
+
+            ++i;
+
+            ccReg::EppParams epp_params_renew;
+            epp_params_renew.requestID = clientId+i;
+            epp_params_renew.sessionID = clientId;
+            epp_params_renew.clTRID = "";
+            epp_params_renew.XML = "";
+
+
+            period.count = 3;
+            CORBA::String_var exdate1;
+            r = epp_ref->DomainRenew(
+                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
+                    exdate,//curExpDate
+                    period, //Period_str
+                    exdate1,//out timestamp exDate,
+                    epp_params_renew,//in EppParams params,
+                    ccReg::ExtensionList()//in ExtensionList ext
+                    );
+
+        }
+
+    }//try
+    catch(ccReg::EPP::EppError &_epp_error)
+    {
+        std::string error_msg = str(boost::format("code: %1%  message: %2%  svtrid: %3%")
+                                    % _epp_error.errCode
+                                    % _epp_error.errMsg
+                                    % _epp_error.svTRID);
+
+        LOGGER(PACKAGE).error(error_msg);
+        std::cerr << error_msg << std::endl;
+        throw;
+    }
+    catch(CORBA::TRANSIENT&)
+    {
+        Logging::Manager::instance_ref().get(PACKAGE).error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
+        std::cerr << "Caught exception CORBA::TRANSIENT -- unable to contact the "
+             << "server." << std::endl;
+        throw;
+    }
+    catch(CORBA::SystemException& ex)
+    {
+        Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::SystemException: ")+ex._name() );
+        std::cerr << "Caught CORBA::SystemException" << ex._name() << std::endl;
+        throw;
+    }
+    catch(CORBA::Exception& ex)
+    {
+        Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::Exception: ")+ex._name() );
+        std::cerr << "Caught CORBA::Exception: " << ex._name() << std::endl;
+        throw;
+    }
+    catch(omniORB::fatalException& fe)
+    {
+        std::string errmsg = std::string("Caught omniORB::fatalException: ")
+                        + std::string("  file: ") + std::string(fe.file())
+                        + std::string("  line: ") + boost::lexical_cast<std::string>(fe.line())
+                        + std::string("  mesg: ") + std::string(fe.errmsg());
+        Logging::Manager::instance_ref().get(PACKAGE).error(errmsg);
+        std::cerr << errmsg  << std::endl;
+        throw;
+    }
+
+    {
+        boost::gregorian::date taxdate(day_clock::local_day().end_of_month());
+        boost::gregorian::date todate(taxdate + boost::gregorian::days(1));
+
+        invMan->createAccountInvoice( registrar_handle, std::string("cz")
+            , taxdate
+            , todate, boost::posix_time::ptime(todate));
+    }
+
+}
+
 BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 {
     //db
