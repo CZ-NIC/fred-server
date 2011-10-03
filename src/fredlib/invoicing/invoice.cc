@@ -3272,7 +3272,7 @@ public:
 
      // get reuest fee parametres
      Database::Result res_params = conn.exec(
-               "SELECT count_free_base, count_free_per_domain, zone"
+               "SELECT count_free_base, count_free_per_domain, zone_id"
                " FROM request_fee_parameter"
                " WHERE valid_from < now()"
                " ORDER BY valid_from DESC"
