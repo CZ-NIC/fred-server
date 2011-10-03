@@ -1669,8 +1669,40 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request )
                          , Decimal ("100000"));
     }
 
+    {
+
+        HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+        HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
+                   ->get_handler_ptr_by_type<HandleRegistryArgs>();
+
+        std::string corbaNS =ns_args_ptr->nameservice_host
+                + ":"
+                + boost::lexical_cast<std::string>(ns_args_ptr->nameservice_port);
+
+
+
+
+        std::auto_ptr<Fred::Document::Manager> docMan(
+                  Fred::Document::Manager::create(
+                      registry_args_ptr->docgen_path
+                      , registry_args_ptr->docgen_template_path
+                      , registry_args_ptr->fileclient_path
+                      , corbaNS)
+                  );
+
+        //manager init
+        MailerManager mailMan(CorbaContainer::get_instance()->getNS());
+        std::auto_ptr<Fred::Invoicing::Manager> invMan(
+            Fred::Invoicing::Manager::create(
+            docMan.get(),&mailMan));
+
+        FileManagerClient fm_client(
+                 CorbaContainer::get_instance()->getNS());
+
         //call archive invoices and get processed invoice ids
-       InvoiceIdVect inv_id_vect = invMan->archiveInvoices(false);
+        InvoiceIdVect inv_id_vect = invMan->archiveInvoices(true);
+    }
 
 
 }
