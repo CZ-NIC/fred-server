@@ -1670,7 +1670,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request )
     }
 
         //call archive invoices and get processed invoice ids
-       InvoiceIdVect inv_id_vect = invMan->archiveInvoices(true);
+       InvoiceIdVect inv_id_vect = invMan->archiveInvoices(false);
 
 
 }
