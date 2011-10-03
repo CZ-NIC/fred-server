@@ -1506,6 +1506,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request )
 {
     //db
     Database::Connection conn = Database::Manager::acquire();
+    conn.exec("update price_list set price = 140 from zone where price_list.zone_id = zone.id and zone.fqdn='cz' and price_list.operation_id = 2");
     init_corba_container();
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
@@ -1594,6 +1595,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request )
             epp_params_renew.XML = "";
 
 
+            period.unit = ccReg::unit_year;
             period.count = 3;
             CORBA::String_var exdate1;
             r = epp_ref->DomainRenew(
