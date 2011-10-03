@@ -1016,7 +1016,35 @@ void createAccountInvoice(
     }
 }//createAccountInvoice
 
+std::vector<unpaid_account_invoice> find_unpaid_account_invoices(
+        unsigned long long registrar_id
+        , unsigned long long zone_id)
+{
+    std::vector<unpaid_account_invoice> ret;
 
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result unpaid_account_invoices_result = conn.exec_params
+        ("SELECT i.id, i.balance, i.vat "
+        " FROM invoice i "
+           " JOIN invoice_prefix ip ON i.invoice_prefix_id = ip.id AND ip.typ = 1 "   // account invoice prefix typ = 1
+        " WHERE i.balance > 0 " // unpaid account balance is positive number
+           " AND i.registrar_id = $1::bigint"
+           " AND i.zone_id = $2::bigint "
+        " ORDER BY i.id "
+        , Database::query_param_list(registrar_id)(zone_id));
+
+    for(unsigned i = 0 ; i < unpaid_account_invoices_result.size(); ++i)
+    {
+        unpaid_account_invoice uai;
+        uai.id = unpaid_account_invoices_result[i][0];
+        uai.balance = std::string(unpaid_account_invoices_result[i][1]);
+        uai.vat = std::string(unpaid_account_invoices_result[i][2]);
+        ret.push_back(uai);
+    }
+
+    return ret;
+}//find_unpaid_account_invoices
 
 
 

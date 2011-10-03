@@ -283,6 +283,14 @@ public:
 
 typedef std::vector<unsigned long long> InvoiceIdVect;//exported invoices for test
 
+//unpaid invoices
+struct unpaid_account_invoice
+{
+    unsigned long long id;
+    Money balance;
+    Decimal vat;
+};
+
 /// facade of invoicing subsystem
 class Manager {
 public:
@@ -346,6 +354,10 @@ public:
           , boost::gregorian::date taxdate
           , boost::gregorian::date todate
           , boost::posix_time::ptime invoicedate) = 0;
+
+  virtual std::vector<unpaid_account_invoice> find_unpaid_account_invoices(
+          unsigned long long registrar_id
+          , unsigned long long zone_id) = 0;
 
 }; // Manager
 

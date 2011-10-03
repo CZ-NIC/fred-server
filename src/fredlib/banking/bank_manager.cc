@@ -167,27 +167,23 @@ private:
                 return;
             }
 
+            std::auto_ptr<Fred::Invoicing::Manager>
+                    invoice_manager(Fred::Invoicing::Manager::create());
+
             //find_unpaid_account_invoices
-            Database::Result unpaid_account_invoices_result = conn.exec_params
-                ("SELECT i.id, i.balance, i.vat "
-                " FROM invoice i "
-                   " JOIN invoice_prefix ip ON i.invoice_prefix_id = ip.id AND ip.typ = 1 "   // account invoice prefix typ = 1
-                " WHERE i.balance > 0 " // unpaid account balance is positive number
-                   " AND i.registrar_id = $1::bigint"
-                   " AND i.zone_id = $2::bigint "
-                " ORDER BY i.id "
-                , Database::query_param_list(_registrar_id)(zone_id));
+
+            std::vector<Fred::Invoicing::unpaid_account_invoice> uai_vect
+                = invoice_manager->find_unpaid_account_invoices(
+                     _registrar_id, zone_id);
 
             Money payment_price_rest = _payment->getPrice();
 
-            for(unsigned i = 0 ; i < unpaid_account_invoices_result.size(); ++i)
+            for(unsigned i = 0 ; i < uai_vect.size(); ++i)
             {
-                unsigned long long unpaid_account_invoice_id
-                    = unpaid_account_invoices_result[i][0];
-                Money uaci_balance
-                    = std::string(unpaid_account_invoices_result[i][1]);
-                Decimal uaci_vat
-                    = std::string(unpaid_account_invoices_result[i][2]);
+                unsigned long long unpaid_account_invoice_id = uai_vect[i].id;
+                Money uaci_balance = uai_vect[i].balance;
+                Decimal uaci_vat = uai_vect[i].vat;
+
                 Money unpaid_price_with_vat = uaci_balance
                         + uaci_balance * uaci_vat / Decimal("100");
                 Money partial_price
@@ -209,8 +205,6 @@ private:
 
                 boost::gregorian::date tax_date = local_current_timestamp.date();
 
-                std::auto_ptr<Fred::Invoicing::Manager>
-                        invoice_manager(Fred::Invoicing::Manager::create());
 
                 Money out_credit;
 
