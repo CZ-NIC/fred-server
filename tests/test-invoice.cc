@@ -1594,15 +1594,38 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request )
             epp_params_renew.clTRID = "";
             epp_params_renew.XML = "";
 
-
             period.unit = ccReg::unit_year;
-            period.count = 3;
+            period.count = 1;
             CORBA::String_var exdate1;
             r = epp_ref->DomainRenew(
                     (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
                     exdate,//curExpDate
                     period, //Period_str
                     exdate1,//out timestamp exDate,
+                    epp_params_renew,//in EppParams params,
+                    ccReg::ExtensionList()//in ExtensionList ext
+                    );
+
+            period.unit = ccReg::unit_year;
+            period.count = 2;
+            CORBA::String_var exdate2;
+            r = epp_ref->DomainRenew(
+                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
+                    exdate,//curExpDate
+                    period, //Period_str
+                    exdate2,//out timestamp exDate,
+                    epp_params_renew,//in EppParams params,
+                    ccReg::ExtensionList()//in ExtensionList ext
+                    );
+
+            period.unit = ccReg::unit_year;
+            period.count = 3;
+            CORBA::String_var exdate3;
+            r = epp_ref->DomainRenew(
+                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
+                    exdate,//curExpDate
+                    period, //Period_str
+                    exdate3,//out timestamp exDate,
                     epp_params_renew,//in EppParams params,
                     ccReg::ExtensionList()//in ExtensionList ext
                     );
