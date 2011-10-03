@@ -1654,10 +1654,6 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request )
         boost::gregorian::date taxdate(day_clock::local_day().end_of_month());
         boost::gregorian::date todate(taxdate + boost::gregorian::days(1));
 
-        invMan->createAccountInvoice( registrar_handle, std::string("cz")
-            , taxdate
-            , todate, boost::posix_time::ptime(todate));
-
         invMan->charge_operation_auto_price(
                          "GeneralEppOperation"
                          , zone_cz_id
@@ -1667,6 +1663,12 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request )
                          , todate - boost::gregorian::months(1)//date_from //local date
                          , todate// date_to //local date
                          , Decimal ("100000"));
+
+
+        invMan->createAccountInvoice( registrar_handle, std::string("cz")
+            , taxdate
+            , todate, boost::posix_time::ptime(todate));
+
     }
 
     {
