@@ -1595,37 +1595,13 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request )
             epp_params_renew.XML = "";
 
             period.unit = ccReg::unit_year;
-            period.count = 1;
+            period.count = 3;
             CORBA::String_var exdate1;
             r = epp_ref->DomainRenew(
                     (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
                     exdate,//curExpDate
                     period, //Period_str
                     exdate1,//out timestamp exDate,
-                    epp_params_renew,//in EppParams params,
-                    ccReg::ExtensionList()//in ExtensionList ext
-                    );
-
-            period.unit = ccReg::unit_year;
-            period.count = 2;
-            CORBA::String_var exdate2;
-            r = epp_ref->DomainRenew(
-                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
-                    exdate,//curExpDate
-                    period, //Period_str
-                    exdate2,//out timestamp exDate,
-                    epp_params_renew,//in EppParams params,
-                    ccReg::ExtensionList()//in ExtensionList ext
-                    );
-
-            period.unit = ccReg::unit_year;
-            period.count = 3;
-            CORBA::String_var exdate3;
-            r = epp_ref->DomainRenew(
-                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
-                    exdate,//curExpDate
-                    period, //Period_str
-                    exdate3,//out timestamp exDate,
                     epp_params_renew,//in EppParams params,
                     ccReg::ExtensionList()//in ExtensionList ext
                     );
@@ -1681,7 +1657,20 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request )
         invMan->createAccountInvoice( registrar_handle, std::string("cz")
             , taxdate
             , todate, boost::posix_time::ptime(todate));
+
+        invMan->charge_operation_auto_price(
+                         "GeneralEppOperation"
+                         , zone_cz_id
+                         , registrar_inv_id
+                         , 0 //object_id
+                         , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                         , todate - boost::gregorian::months(1)//date_from //local date
+                         , todate// date_to //local date
+                         , Decimal ("100000"));
     }
+
+
+
 
 }
 
