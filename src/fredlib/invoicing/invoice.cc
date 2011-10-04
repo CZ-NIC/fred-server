@@ -2036,7 +2036,7 @@ public:
       for (unsigned j=0; j<i->getPaymentCount(); j++) {
         const Payment *p = i->getPaymentByIdx(j);
 
-        if(added_price == false && (i->getVatRate() == p->getVatRate()))
+        if(added_price == false && (i->getVatRate() == p->getVatRate()) && (i->getType() == IT_ACCOUNT))
         {//add ac invoice to vat details
 
             out << TAGSTART(entry)
