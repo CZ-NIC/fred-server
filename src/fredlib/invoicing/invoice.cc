@@ -2081,7 +2081,7 @@ public:
         << TAGEND(entry);
       }//for payment count
 
-      if((added_price == false) && (i->getTotal() != Money("0")))
+      if((added_price == false) && (i->getTotal() != Money("0")) && (i->getType() == IT_ACCOUNT))
       {//add ac invoice to vat details
         out << TAGSTART(entry)
         << TAG(vatperc,i->getVatRate())
