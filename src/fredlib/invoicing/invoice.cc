@@ -3176,7 +3176,13 @@ public:
   Money ManagerImpl::countVAT(Money price, Decimal vatRate, bool base) {
     const VAT *v = getVAT(vatRate);
     Decimal coef = v ? v->koef : Decimal("0");
-    return (price * coef / (Decimal("1") - (base ? coef : Decimal("0")))).round(2,MPD_ROUND_HALF_UP);
+    Money vat = (price * coef / (Decimal("1") - (base ? coef : Decimal("0")))).round(2,MPD_ROUND_HALF_UP);
+    LOGGER(PACKAGE).debug(
+        std::string("ManagerImpl::countVAT: ")+ vat.get_string()
+        + " price: " + price.get_string()+ " vatRate: " + vatRate.get_string()
+        + " base: " + (base ? "true": "false") + " coef: " + coef.get_string()
+        );
+    return vat;
   }
   
   const VAT * ManagerImpl::getVAT(Decimal rate) {
