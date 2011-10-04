@@ -1525,7 +1525,19 @@ public:
     return vat;
   }
   Money getPriceWithVat() const {
-    return getPrice() + getVat();
+
+      Money price = getPrice();
+      Money vat = getVat();
+
+      Money price_with_vat = price + vat;
+
+      LOGGER(PACKAGE).debug(std::string(
+              "AnnualPartitioningImpl::getPriceWithVat: ")
+              + price_with_vat.get_string()
+              + " price: " + price.get_string()
+              + " vat: " + vat.get_string());
+
+    return price_with_vat;
   }
 };
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
