@@ -1520,7 +1520,9 @@ public:
     return end() ? Decimal("0") : j->first;
   }
   Money getVat() const {
-    return man->countVAT(getPrice(), getVatRate(), true);
+      Money vat = man->countVAT(getPrice(), getVatRate(), true);
+      LOGGER(PACKAGE).debug(std::string("AnnualPartitioningImpl::getVat: ")+ vat.get_string());
+    return vat;
   }
   Money getPriceWithVat() const {
     return getPrice() + getVat();
