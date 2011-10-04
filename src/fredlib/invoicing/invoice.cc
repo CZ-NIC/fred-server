@@ -3178,7 +3178,7 @@ public:
     Decimal coef = v ? v->koef : Decimal("0");
 
     Money vat = (
-            base ? (price * coef) : (price * vatRate / Decimal("100"))
+            base ?  (price * vatRate / Decimal("100")) : (price * coef)
             ).round(2,MPD_ROUND_HALF_UP);
 
     //Money vat = (price * coef / (Decimal("1") - (base ? coef : Decimal("0")))).round(2,MPD_ROUND_HALF_UP);
