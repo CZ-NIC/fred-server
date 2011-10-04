@@ -1746,7 +1746,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
     CORBA::Long clientId = 0;
     ccReg::Response_var r;
 
-    std::string test_domain_fqdn(std::string("testdomain"));
+    std::string test_domain_fqdn(std::string("testdomain2"));
 
     try
     {
