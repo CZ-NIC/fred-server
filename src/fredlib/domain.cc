@@ -1360,10 +1360,13 @@ public:
               " JOIN enum_object_states eos ON  eos.id = os.state_id"
               " WHERE oreg.type = 3"
               " AND eos.name = 'deleteCandidate'"
+              " AND os.valid_from < current_timestamp"
               " AND (os.valid_to > current_timestamp OR os.valid_to is null)"
               " AND (oreg.erdate is null"
-              " OR (oreg.erdate >= date_trunc('day', current_timestamp)"
-              " AND oreg.erdate < date_trunc('day', current_timestamp + interval '1 day')))"
+              " OR ((oreg.erdate::timestamp AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague'"
+              " >= date_trunc('day', (current_timestamp::timestamp AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague')"
+              " AND (oreg.erdate::timestamp AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague'"
+              " < date_trunc('day', (current_timestamp::timestamp AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' +  interval '1 day')))"
               " AND oreg.name = $1::text", Database::query_param_list(_fqdn));
       if (result.size() > 0) {
           return true;
