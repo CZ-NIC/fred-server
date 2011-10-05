@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( test_division )
 
     Decimal test_payment ("18000");
 
-    for(unsigned long long i = 0; i < 20000000; ++i)
+    for(unsigned long long i = 0; i < 2000000; ++i)
     {
         Decimal test_payment_vat = test_payment*vat_coef;
         Decimal test_price_vat = price * (test_payment_vat) / (test_payment - test_payment_vat);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE( test_division )
                     << std::endl;
         }
 
-        test_payment+=Decimal("1.01");
+        test_payment+=Decimal("111.11");
     }//for
 }
 
