@@ -425,13 +425,16 @@ public:
 
       std::cout <<  boost::posix_time::to_iso_string (
                   boost::date_time::c_local_adjustor<ptime>::utc_to_local(
-                          ret->getPeriodTo()
+                          ret->getPeriodTo() + boost::posix_time::seconds(1)
                           )
                   )
            << std::endl;
 
-      if( boost::date_time::c_local_adjustor<ptime>::utc_to_local(ret->getPeriodTo()).date()
-          != boost::gregorian::day_clock::universal_day()) {
+      if( boost::date_time::c_local_adjustor<ptime>::utc_to_local(
+              ret->getPeriodTo() + boost::posix_time::seconds(1)
+              ).date()
+          != boost::gregorian::day_clock::universal_day()
+        ) {
           throw std::runtime_error("The last request fee poll message is not up to date.");
       }
 
