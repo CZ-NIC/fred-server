@@ -47,10 +47,13 @@
 #include "fredlib/registrar.h"
 #include "fredlib/invoicing/invoice.h"
 
+#include "poll.h"
 #include "time_clock.h"
 #include "credit.h"
 #include "file_manager_client.h"
 #include "fredlib/banking/bank_common.h"
+#include "exceptions.h"
+
 #include "corba/Admin.hh"
 
 #include "test-common-threaded.h"
@@ -59,7 +62,6 @@
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
-#include "tests-common.h"
 #include "test-invoice-common.h"
 
 #include "cfg/config_handler_decl.h"
@@ -2812,6 +2814,54 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
         throw std::runtime_error("Error received from DomainCreate call");
     }
     */
+}
+
+// TODO use in testcases.
+const Decimal get_credit(Database::ID reg_id, Database::ID zone_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
+            , Database::query_param_list(zone_id)(reg_id));
+
+    if(credit_res.size() == 1 && credit_res[0].size() == 1) {
+        return Decimal(std::string(credit_res[0][0]));
+    } else {
+        boost::format msg("Credit for registrar %1% and zone %2% not found. ");
+        msg % reg_id % zone_id;
+        throw std::runtime_error(msg.str());
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_charge_for_requests)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        Fred::Invoicing::Manager::create());
+
+    DBSharedPtr ldb_dc_guard = connect_DB(Database::Manager::getConnectionString(), std::runtime_error("Failed to connect to database: class DB"));
+    std::auto_ptr<Fred::Poll::Manager> pollMan(
+        Fred::Poll::Manager::create(ldb_dc_guard)
+    );
+
+    pollMan->save_poll_request_fee(registrar->getId(), boost::gregorian::day_clock::local_day() - date_duration(10), boost::gregorian::day_clock::local_day(), 10, 9999, Decimal("10000"));
+
+    Decimal credit_before = get_credit(registrar->getId(), zone_cz_id );
+    try {
+        invMan->chargeRequestFee(registrar->getId(), registrar->getHandle());
+    } catch (const Fred::NOT_FOUND &ex) {
+        boost::format msg("Last poll message for registrar %1%: %2% not found");
+        msg % registrar->getId() % registrar->getHandle();
+
+        BOOST_FAIL(msg.str());
+    }
+
+    Decimal credit_after = get_credit(registrar->getId(), zone_cz_id );
+    // check via price_list TODO
 }
 
 

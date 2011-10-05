@@ -40,6 +40,7 @@
 #include "types/sqlize.h"
 
 #include "documents.h"
+#include "poll.h"
 
 #include "log/logger.h"
 
@@ -400,6 +401,66 @@ public:
                 , exDate.get()//boost::gregorian::date date_to
                 , Decimal(boost::lexical_cast<std::string>(units_count))/Decimal("12") //unsigned long quantity - for renew in years
                 );
+  }
+
+  // period from is determined by the poll message
+  // ...which has to be up to current date
+  // returns false only on error (just like other charge* functions
+  virtual bool chargeRequestFee(
+          const Database::ID &registrar_id,
+          const std::string &registrar_handle)
+  {
+      TRACE("[CALL] Fred::Invoicing::Manager::chargeRequestFee()");
+
+      Database::Connection conn = Database::Manager::acquire();
+      unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+
+      DBSharedPtr ldb_dc_guard = connect_DB(Database::Manager::getConnectionString(),
+              std::runtime_error("Faild to connect to database: class DB"));
+      std::auto_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
+
+          // TODO what to do with the pointer
+      Fred::Poll::MessageRequestFeeInfo *ret;
+      ret = poll_mgr->getLastRequestFeeInfoMessage(registrar_handle);
+
+      std::cout <<  boost::posix_time::to_iso_string (
+                  boost::date_time::c_local_adjustor<ptime>::utc_to_local(
+                          ret->getPeriodTo()
+                          )
+                  )
+           << std::endl;
+
+      if( boost::date_time::c_local_adjustor<ptime>::utc_to_local(ret->getPeriodTo()).date()
+          != boost::gregorian::day_clock::universal_day()) {
+          throw std::runtime_error("The last request fee poll message is not up to date.");
+      }
+
+      unsigned long long paid_requests = 0;
+
+      if(ret->getUsedCount() <= ret->getTotalFreeCount()) {
+          boost::format msg("Registrar %1% (ID %2%) has not exceeded request count limit set to %3%. ");
+          msg % registrar_handle % registrar_id % ret->getTotalFreeCount();
+
+          LOGGER(PACKAGE).info(msg);
+          return true;
+      } else {
+          paid_requests = ret->getUsedCount() - ret->getTotalFreeCount();
+          boost::format msg(" Registrar %1% (ID %2%) will be charged sum %3% for %4% requests over limit");
+          msg % registrar_handle % registrar_id % paid_requests % ret->getPrice();
+
+          LOGGER(PACKAGE).info(msg);
+      }
+
+      return charge_operation_auto_price("GeneralEppOperation",//const std::string& operation
+              zone_cz_id,//unsigned long long zone_id
+              registrar_id, //unsigned long long registrar_id
+              0, //unsigned long long object_id
+              boost::posix_time::microsec_clock::local_time(), //boost::posix_time::ptime crdate
+              ret->getPeriodFrom().date(), //boost::gregorian::date date_from
+              ret->getPeriodTo().date(), //boost::gregorian::date date_to
+              Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years
+              );
+
   }
 
   //count VAT from price with tax using coefficient - local CZ rules

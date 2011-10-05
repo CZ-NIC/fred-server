@@ -22,7 +22,6 @@
 #include "invoicing/invoice.h"
 #include "common_impl.h"
 #include "old_utils/dbsql.h"
-#include "types/money.h"
 #include "domain.h"
 #include "registrar.h"
 

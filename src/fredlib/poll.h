@@ -4,6 +4,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "types.h"
+#include "types/money.h"
 #include "exceptions.h"
 #include "common_object.h"
 #include <ostream>
@@ -164,6 +165,14 @@ namespace Fred
       virtual MessageRequestFeeInfo* getLastRequestFeeInfoMessage(const std::string &_registrar) const = 0;
       // create list of messages
       virtual List* createList() = 0;
+      /// create poll message about request fees - meant mostly for use in tests
+      virtual void save_poll_request_fee(
+              const Database::ID &reg_id,
+              const boost::gregorian::date &period_from,
+              const boost::gregorian::date &period_to,
+              const unsigned long long &total_free_count,
+              const unsigned long long &request_count,
+              const Money &price) = 0;
       /// factory method
       static Manager *create(DBSharedPtr db);
     };

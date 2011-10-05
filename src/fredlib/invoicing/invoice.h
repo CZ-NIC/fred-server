@@ -343,6 +343,10 @@ public:
           const Database::Date &exDate,
           const int &units_count) = 0;
 
+  virtual bool chargeRequestFee(
+          const Database::ID &registrar_id,
+          const std::string &registrar_handle) = 0;
+
   virtual void createAccountInvoices(
           const std::string& zone_fqdn
           , boost::gregorian::date taxdate
