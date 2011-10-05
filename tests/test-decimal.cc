@@ -79,6 +79,34 @@ static bool check_std_exception(std::exception const & ex)
 }
 
 
+BOOST_AUTO_TEST_CASE( test_division )
+{
+    Decimal payment("50000");
+    Decimal price("12240");
+    Decimal vat_coef("0.1667");
+    Decimal price_vat = price * vat_coef / (Decimal("1") - vat_coef);//current alg.
+
+    Decimal test_payment ("18000");
+
+    for(unsigned long long i = 0; i < 20000000; ++i)
+    {
+        Decimal test_payment_vat = test_payment*vat_coef;
+        Decimal test_price_vat = price * (test_payment_vat) / (test_payment - test_payment_vat);
+
+        BOOST_CHECK(price_vat == test_price_vat);
+
+        if(price_vat != test_price_vat)
+        {
+            std::cout << "test_payment: " << test_payment.get_string()
+                    << " price_vat: " << price_vat.get_string()
+                    << " test_price_vat: " << test_price_vat.get_string()
+                    << std::endl;
+        }
+
+        test_payment+=Decimal("1.01");
+    }//for
+}
+
 BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
 {
 
