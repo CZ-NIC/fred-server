@@ -88,10 +88,10 @@ BOOST_AUTO_TEST_CASE( test_division )
 
     Decimal test_payment ("18000");
 
-    for(unsigned long long i = 0; i < 2000000; ++i)
+    for(unsigned long long i = 0; i < 1000000; ++i)
     {
         Decimal test_payment_vat = test_payment*vat_coef;
-        Decimal test_price_vat = price * (test_payment_vat) / (test_payment - test_payment_vat);
+        Decimal test_price_vat = price * test_payment_vat / (test_payment - test_payment_vat);
 
         BOOST_CHECK(price_vat == test_price_vat);
 
