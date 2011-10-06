@@ -275,6 +275,7 @@ public:
         : MessageImpl(_type, _id, _registrar, _crTime, _expTime, _seen),
           period_from_(),
           period_to_(),
+          period_to_utc_date_(),
           total_free_count_(0),
           used_count_(0),
           price_("0.00")
@@ -289,6 +290,11 @@ public:
     const ptime& getPeriodTo() const
     {
         return period_to_;
+    }
+
+    const boost::gregorian::date getPeriodToUtcDate() const
+    {
+        return period_to_utc_date_;
     }
 
     const unsigned long long& getTotalFreeCount() const
@@ -308,12 +314,14 @@ public:
 
     void setData(const ptime &_period_from,
                  const ptime &_period_to,
+                 const boost::gregorian::date &_period_to_utc_date,
                  const unsigned long long &_total_free_count,
                  const unsigned long long &_used_count,
                  const std::string &_price)
     {
         period_from_ = _period_from;
         period_to_ = _period_to;
+        period_to_utc_date_ = _period_to_utc_date;
         total_free_count_ = _total_free_count;
         used_count_ = _used_count;
         price_ = _price;
@@ -322,6 +330,7 @@ public:
 private:
     ptime period_from_;
     ptime period_to_;
+    boost::gregorian::date period_to_utc_date_;
     unsigned long long total_free_count_;
     unsigned long long used_count_;
     std::string price_;
@@ -639,7 +648,9 @@ public:
     {
       sql.str("");
       sql << "SELECT tmp.id, "
-          << "prf.period_from, prf.period_to - interval '1 second', "
+          << "prf.period_from, "
+          << "prf.period_to - interval '1 second', "
+	  << "((prf.period_to AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague')::date,  "
           << "prf.total_free_count, prf.used_count, "
           << "prf.price "
           << "FROM " << getTempTableName() << " tmp "
@@ -651,13 +662,15 @@ public:
       for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
         MessageRequestFeeInfoImpl *m = dynamic_cast<MessageRequestFeeInfoImpl *>(
                 findIDSequence(STR_TO_ID(db->GetFieldValue(i, 0))));
-        if (!m)
+        if (!m) {
           throw SQL_ERROR();
+        }
         m->setData(time_from_string(db->GetFieldValue(i, 1)),
                    time_from_string(db->GetFieldValue(i, 2)),
-                   boost::lexical_cast<unsigned long long>(db->GetFieldValue(i, 3)),
+                   boost::gregorian::from_string(db->GetFieldValue(i, 3)),
                    boost::lexical_cast<unsigned long long>(db->GetFieldValue(i, 4)),
-                   db->GetFieldValue(i, 5));
+                   boost::lexical_cast<unsigned long long>(db->GetFieldValue(i, 5)),
+                   db->GetFieldValue(i, 6));
       }
     } // hasRequestFeeInfo
   }

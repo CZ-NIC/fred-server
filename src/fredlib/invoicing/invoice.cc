@@ -422,11 +422,15 @@ public:
       std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
           = poll_mgr->getLastRequestFeeInfoMessage(registrar_handle);
 
-      if( boost::date_time::c_local_adjustor<ptime>::utc_to_local(
+      std::cout << "Date from new getter: " << rfi->getPeriodToUtcDate() << std::endl;
+
+      if( rfi->getPeriodToUtcDate() != boost::gregorian::day_clock::universal_day()) {
+          /*
+              boost::date_time::c_local_adjustor<ptime>::utc_to_local(
               rfi->getPeriodTo() + boost::posix_time::seconds(1)
               ).date()
           != boost::gregorian::day_clock::universal_day()
-        ) {
+        ) */
           throw std::runtime_error("The last request fee poll message is not up to date.");
       }
 
