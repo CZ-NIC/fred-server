@@ -848,6 +848,7 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
             }
 
             ccReg::DomainDetail *cd = new ccReg::DomainDetail();
+            cd->id = 0;
             cd->fqdn = fqdn;
             cd->statusList.length(1);
             cd->statusList[0] = dc->getId();
