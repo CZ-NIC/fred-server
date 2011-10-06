@@ -1031,7 +1031,7 @@ public:
   }
 
 
-  virtual MessageRequestFeeInfo* getLastRequestFeeInfoMessage(const std::string &_registrar) const
+  virtual std::auto_ptr<MessageRequestFeeInfo> getLastRequestFeeInfoMessage(const std::string &_registrar) const
   {
       TRACE("[CALL] Poll::Manager::getLastRequestFeeInfoMessage");
 
@@ -1057,7 +1057,7 @@ public:
       if (!rfi) {
           throw NOT_FOUND();
       }
-      return rfi;
+      return std::auto_ptr<MessageRequestFeeInfo> (rfi);
   }
 
 };

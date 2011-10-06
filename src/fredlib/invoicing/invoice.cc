@@ -419,19 +419,11 @@ public:
               std::runtime_error("Faild to connect to database: class DB"));
       std::auto_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
 
-          // TODO what to do with the pointer
-      Fred::Poll::MessageRequestFeeInfo *ret;
-      ret = poll_mgr->getLastRequestFeeInfoMessage(registrar_handle);
-
-      std::cout <<  boost::posix_time::to_iso_string (
-                  boost::date_time::c_local_adjustor<ptime>::utc_to_local(
-                          ret->getPeriodTo() + boost::posix_time::seconds(1)
-                          )
-                  )
-           << std::endl;
+      std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
+          = poll_mgr->getLastRequestFeeInfoMessage(registrar_handle);
 
       if( boost::date_time::c_local_adjustor<ptime>::utc_to_local(
-              ret->getPeriodTo() + boost::posix_time::seconds(1)
+              rfi->getPeriodTo() + boost::posix_time::seconds(1)
               ).date()
           != boost::gregorian::day_clock::universal_day()
         ) {
@@ -440,16 +432,16 @@ public:
 
       unsigned long long paid_requests = 0;
 
-      if(ret->getUsedCount() <= ret->getTotalFreeCount()) {
+      if(rfi->getUsedCount() <= rfi->getTotalFreeCount()) {
           boost::format msg("Registrar %1% (ID %2%) has not exceeded request count limit set to %3%. ");
-          msg % registrar_handle % registrar_id % ret->getTotalFreeCount();
+          msg % registrar_handle % registrar_id % rfi->getTotalFreeCount();
 
           LOGGER(PACKAGE).info(msg);
           return true;
       } else {
-          paid_requests = ret->getUsedCount() - ret->getTotalFreeCount();
+          paid_requests = rfi->getUsedCount() - rfi->getTotalFreeCount();
           boost::format msg(" Registrar %1% (ID %2%) will be charged sum %3% for %4% requests over limit");
-          msg % registrar_handle % registrar_id % paid_requests % ret->getPrice();
+          msg % registrar_handle % registrar_id % paid_requests % rfi->getPrice();
 
           LOGGER(PACKAGE).info(msg);
       }
@@ -459,8 +451,8 @@ public:
               registrar_id, //unsigned long long registrar_id
               0, //unsigned long long object_id
               boost::posix_time::microsec_clock::local_time(), //boost::posix_time::ptime crdate
-              ret->getPeriodFrom().date(), //boost::gregorian::date date_from
-              ret->getPeriodTo().date(), //boost::gregorian::date date_to
+              rfi->getPeriodFrom().date(), //boost::gregorian::date date_from
+              rfi->getPeriodTo().date(), //boost::gregorian::date date_to
               Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years
               );
 

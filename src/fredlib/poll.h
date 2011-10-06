@@ -162,7 +162,7 @@ namespace Fred
       /// create messages about request count and request fee
       virtual void createRequestFeeMessages(Logger::LoggerClient *logger_client) = 0;
       /// get last request fee message data
-      virtual MessageRequestFeeInfo* getLastRequestFeeInfoMessage(const std::string &_registrar) const = 0;
+      virtual std::auto_ptr<MessageRequestFeeInfo> getLastRequestFeeInfoMessage(const std::string &_registrar) const = 0;
       // create list of messages
       virtual List* createList() = 0;
       /// create poll message about request fees - meant mostly for use in tests
