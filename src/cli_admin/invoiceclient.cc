@@ -389,7 +389,7 @@ InvoiceClient::billing()
     boost::gregorian::date todate;
     if (billing_params.todate.is_value_set())
     {
-        todate = billing_params.todate.get_value();
+        todate = boost::gregorian::from_simple_string(billing_params.todate.get_value());
 
         if(todate.is_special())
         {
@@ -409,7 +409,7 @@ InvoiceClient::billing()
     boost::gregorian::date taxdate;
     if (billing_params.taxdate.is_value_set())
     {
-        taxdate = billing_params.taxdate.get_value();
+        taxdate = boost::gregorian::from_simple_string(billing_params.taxdate.get_value());
 
         if(taxdate.is_special())
         {
@@ -429,7 +429,7 @@ InvoiceClient::billing()
     boost::posix_time::ptime invoicedate;
     if (billing_params.invoicedate.is_value_set())
     {
-        invoicedate = billing_params.invoicedate.get_value();
+        invoicedate = boost::posix_time::time_from_string(billing_params.invoicedate.get_value());
 
         if(invoicedate.is_special())
         {

@@ -115,9 +115,9 @@ struct InvoiceBillingArgs
 {
     optional_string zone_fqdn;
     optional_string registrar_handle;
-    optional_date todate;
-    optional_date taxdate;
-    optional_ptime invoicedate;
+    optional_string todate;
+    optional_string taxdate;
+    optional_string invoicedate;
 
 
     InvoiceBillingArgs()
@@ -128,11 +128,13 @@ struct InvoiceBillingArgs
         , const optional_string& _registrar_handle
         , const optional_string& _todate
         , const optional_string& _taxdate
+        , const optional_string& _invoicedate
         )
     : zone_fqdn(_zone_fqdn)
     , registrar_handle(_registrar_handle)
     , todate(_todate)
     , taxdate(_taxdate)
+    , invoicedate(_invoicedate)
     {}
 };//struct InvoiceBillingArgs
 
