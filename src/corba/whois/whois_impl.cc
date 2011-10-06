@@ -656,12 +656,24 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
         ccReg::DomainDetails_var dlist = new ccReg::DomainDetails;
         dlist->length(0);
         for (unsigned i=0; i<dl->getCount(); i++) {
+            Fred::Domain::Domain *d = dl->getDomain(i);
+            if (!d) {
+                throw ccReg::Whois::InternalServerError();
+                /* or continue? */
+            }
+
             if (dm->isDeletePending(
-                        r->getZoneManager()->encodeIDN(dl->getDomain(i)->getFQDN())) == false)
+                        r->getZoneManager()->encodeIDN(d->getFQDN())) == false)
             {
                 unsigned int l = dlist->length();
                 dlist->length(l + 1);
-                fillDomain(&dlist[l], dl->getDomain(i));
+                fillDomain(&dlist[l], d);
+            }
+            else
+            {
+                LOGGER(PACKAGE).debug(boost::format(
+                        "%1% removed from list - delete pending status")
+                        % d->getFQDN());
             }
         }
         return dlist._retn();
