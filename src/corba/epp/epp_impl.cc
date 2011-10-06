@@ -4359,7 +4359,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   for (unsigned i=0; i<dom->getStatusCount(); i++) {
     Fred::TID stateId = dom->getStatusByIdx(i)->getStatusId();
     const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
-    if (!sd || !sd->getExternal())
+    if (!sd || !sd->getExternal() || sd->getName() == "deleteCandidate")
       continue;
     d->stat.length(d->stat.length()+1);
     d->stat[d->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
