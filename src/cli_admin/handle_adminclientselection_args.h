@@ -621,8 +621,8 @@ public:
                 " meaning is start of interval including \"fromdate\" arg format YYYY-MM-DD")
             ("todate", boost::program_options
                     ::value<Checked::string>()->notifier(save_optional_string(params.todate))
-                , "todate, default in impl is first day of this month,"
-                " meaning is end of interval NOT including \"todate\" arg format YYYY-MM-DD")
+                , "todate, default in impl is first day of this month, todate have to be before today except custom interval when fromdate is set"
+                ",  meaning is end of interval NOT including \"todate\" arg format YYYY-MM-DD")
             ("taxdate", boost::program_options
               ::value<Checked::string>()->notifier(save_optional_string(params.taxdate))
               , "tax date, default in impl is date of last day of previous month which is last day of accounting interval, arg format YYYY-MM-DD")
