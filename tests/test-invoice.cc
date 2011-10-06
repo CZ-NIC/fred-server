@@ -2276,10 +2276,6 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
     {
         unsigned long long  file_id = invoice_res[i][12];
 
-        //
-        int invoice_prefix_typ = invoice_res[i][13];
-        //Decimal invoice_vat = std::string(invoice_res[i][7]);
-
         std::vector<char> out_buffer;
         fm_client.download(file_id, out_buffer);
 
