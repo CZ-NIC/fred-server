@@ -734,14 +734,21 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
   new_request->setReason(_reason);
   new_request->setEmailToAnswer(_email_to_answer);
   new_request->setRequestId(requestId);
-  for (unsigned i=0; i<_object_ids.length(); i++)
+  for (unsigned i=0; i<_object_ids.length(); i++) {
+    if (_object_ids[i] == 0) {
+        throw ccReg::Admin::OBJECT_NOT_FOUND();
+    }
     new_request->addObject(Fred::PublicRequest::OID(_object_ids[i]));
+  }
   try {
     if (!new_request->check()) throw ccReg::Admin::REQUEST_BLOCKED();
     new_request->save();
     return new_request->getId();
   }
   catch (ccReg::Admin::REQUEST_BLOCKED) {
+    throw;
+  }
+  catch (ccReg::Admin::OBJECT_NOT_FOUND) {
     throw;
   }
   catch (...) {
