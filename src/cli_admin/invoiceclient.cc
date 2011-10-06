@@ -385,6 +385,19 @@ InvoiceClient::billing()
         registrar_name = billing_params.registrar_handle.get_value();
     }
 
+    //fromdate
+    boost::gregorian::date fromdate;
+    if (billing_params.fromdate.is_value_set())
+    {
+        fromdate = boost::gregorian::from_simple_string(billing_params.fromdate.get_value());
+
+        if(fromdate.is_special())
+        {
+            std::cerr << "Invalid date given for ``fromdate'' " << std::endl;
+            throw std::runtime_error("billing: invalid fromdate set");
+        }
+    }//not set fromdate is default
+
     //todate
     boost::gregorian::date todate;
     if (billing_params.todate.is_value_set())
@@ -457,12 +470,12 @@ InvoiceClient::billing()
 
     if (!billing_params.registrar_handle.is_value_set()) {
         invMan->createAccountInvoices( zone_name
-                , taxdate, todate, invoicedate);
+                , taxdate, fromdate, todate, invoicedate);
     }
     else
     {
         invMan->createAccountInvoice( registrar_name, zone_name
-                , taxdate, todate, invoicedate);
+                , taxdate, fromdate, todate, invoicedate);
     }
 }
 

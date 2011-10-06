@@ -115,6 +115,7 @@ struct InvoiceBillingArgs
 {
     optional_string zone_fqdn;
     optional_string registrar_handle;
+    optional_string fromdate;
     optional_string todate;
     optional_string taxdate;
     optional_string invoicedate;
@@ -126,12 +127,14 @@ struct InvoiceBillingArgs
     InvoiceBillingArgs(
         const optional_string& _zone_fqdn
         , const optional_string& _registrar_handle
+        , const optional_string& _fromdate
         , const optional_string& _todate
         , const optional_string& _taxdate
         , const optional_string& _invoicedate
         )
     : zone_fqdn(_zone_fqdn)
     , registrar_handle(_registrar_handle)
+    , fromdate(_fromdate)
     , todate(_todate)
     , taxdate(_taxdate)
     , invoicedate(_invoicedate)

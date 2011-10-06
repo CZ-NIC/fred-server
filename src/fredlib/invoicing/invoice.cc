@@ -746,6 +746,7 @@ unsigned long long insert_account_invoice(
 unsigned long long create_account_invoice
     ( unsigned long long registrar_id
     , unsigned long long zone_id
+    , boost::gregorian::date from_date //optional start of billing range
     , boost::gregorian::date to_date //end of billing range
     , boost::gregorian::date tax_date //default = to_date - may be different from to_date, affects selection of advance payments
     , boost::posix_time::ptime invoice_date //local timestamp, default = today - account invoice interval to date including to_date
@@ -760,36 +761,56 @@ unsigned long long create_account_invoice
             " 15 days later than to_date");
     }
 
-    //from_date = get_last_account_date(registrar, zone)
-    Database::Result from_date_result = conn.exec_params(
-        "SELECT date( todate + interval'1 day')  as fromdate "
-        " FROM invoice_generation "
-        " WHERE zone_id=$1::bigint "
-        "  AND registrar_id =$2::bigint "
-        " ORDER BY id DESC LIMIT 1 "
-        , Database::query_param_list(zone_id)(registrar_id)
-        );
-
-    boost::gregorian::date from_date;
-
-    if (from_date_result.size() == 1)
+    if(from_date.is_special())
     {
-        from_date = from_date_result[0][0];
-    }
-    else
-    {
-        Database::Result from_date_registrar_result = conn.exec_params(
-            "SELECT  fromdate  FROM registrarinvoice "// --for new registrar
-            " WHERE zone=$1::bigint and registrarid=$2::bigint "
-            , Database::query_param_list(zone_id)(registrar_id));
-        if(from_date_registrar_result.size() != 1 )
+
+
+        boost::gregorian::date today
+            = boost::posix_time::second_clock::local_time().date();
+        if(to_date >= today)
         {
             throw std::runtime_error(
-                    "create_account_invoice: from_date not found");
+                        "create_account_invoice: todate >= today"
+                        " - for custom account invoice range set fromdate");
         }
 
-        from_date = from_date_registrar_result[0][0];
+        //from_date = get_last_account_date(registrar, zone)
+        Database::Result from_date_result = conn.exec_params(
+            "SELECT date( todate + interval'1 day')  as fromdate "
+            " FROM invoice_generation "
+            " WHERE zone_id=$1::bigint "
+            "  AND registrar_id =$2::bigint "
+            " ORDER BY id DESC LIMIT 1 "
+            , Database::query_param_list(zone_id)(registrar_id)
+            );
+
+        if (from_date_result.size() == 1)
+        {
+            from_date = from_date_result[0][0];
+        }
+        else
+        {
+            Database::Result from_date_registrar_result = conn.exec_params(
+                "SELECT  fromdate  FROM registrarinvoice "// --for new registrar
+                " WHERE zone=$1::bigint and registrarid=$2::bigint "
+                , Database::query_param_list(zone_id)(registrar_id));
+            if(from_date_registrar_result.size() != 1 )
+            {
+                throw std::runtime_error(
+                        "create_account_invoice: from_date not found");
+            }
+
+            from_date = from_date_registrar_result[0][0];
+        }
+    }//if from_date not set
+
+    if (from_date > to_date )
+    {
+        throw std::runtime_error(
+            "create_account_invoice: from_date > to_date");
     }
+
+
 
     //ig = insert_invoice_generation(registar, zone, from_date, to_date)
     Database::Result invoice_generation_result = conn.exec_params(
@@ -951,7 +972,8 @@ unsigned long long create_account_invoice
 
 void createAccountInvoices(
         const std::string& zone_fqdn
-        ,  boost::gregorian::date taxdate
+        , boost::gregorian::date taxdate
+        , boost::gregorian::date fromdate
         , boost::gregorian::date todate //including end of range
         , boost::posix_time::ptime invoicedate //timestamp in local time
         )
@@ -963,6 +985,7 @@ void createAccountInvoices(
         Database::Transaction tx(conn);
 
         std::string taxdateStr(boost::gregorian::to_iso_extended_string(taxdate));
+        std::string fromdateStr (boost::gregorian::to_iso_extended_string(fromdate));
         std::string todateStr(boost::gregorian::to_iso_extended_string(todate));
 
         Database::Result res = conn.exec_params(
@@ -973,8 +996,8 @@ void createAccountInvoices(
           );
 
         LOGGER(PACKAGE).debug ( boost::format("ManagerImpl::createAccountInvoices"
-                " zone_fqdn %1%  taxdateStr %2% todateStr %3%")
-        % zone_fqdn % taxdateStr % todateStr);
+                " zone_fqdn %1%  taxdateStr %2% fromdateStr %3% todateStr %4%")
+        % zone_fqdn % taxdateStr % fromdateStr % todateStr);
 
 
         for(std::size_t i = 0; i < res.size(); ++i)
@@ -985,7 +1008,7 @@ void createAccountInvoices(
             unsigned long long invoiceID =
                     create_account_invoice
                     ( regID, zoneID
-                    , todate
+                    , fromdate, todate
                     , taxdate //default = to_date - may be different from to_date, affects selection of advance payments
                     , invoicedate//invoice_date //default = today - account invoice interval to date including to_date
                     );
@@ -1014,6 +1037,7 @@ void createAccountInvoice(
         const std::string& registrarHandle
         , const std::string& zone_fqdn
         , boost::gregorian::date taxdate
+        , boost::gregorian::date fromdate //optional start of range
         , boost::gregorian::date todate //including end of range
         , boost::posix_time::ptime invoicedate //timestamp in local time
         )
@@ -1025,6 +1049,7 @@ void createAccountInvoice(
         Database::Transaction tx(conn);
 
         std::string taxdateStr(boost::gregorian::to_iso_extended_string(taxdate));
+        std::string fromdateStr (boost::gregorian::to_iso_extended_string(fromdate));
         std::string todateStr(boost::gregorian::to_iso_extended_string(todate));
 
         std::string timestampStr;
@@ -1054,7 +1079,7 @@ void createAccountInvoice(
                 // make invoice
                 create_account_invoice
                     ( regID, zone
-                    , todate
+                    , fromdate, todate
                     , taxdate //default = to_date - may be different from to_date, affects selection of advance payments
                     , invoicedate //invoice_date //default = today - account invoice interval to date including to_date
                     );

@@ -615,6 +615,10 @@ public:
             ("registrar_handle", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.registrar_handle))
                 , "registrar handle")
+            ("fromdate", boost::program_options
+                    ::value<Checked::string>()->notifier(save_optional_string(params.fromdate))
+                , "fromdate, default in impl is day after end of previous account invoice, usually first day of last month,"
+                " meaning is start of interval including \"fromdate\" arg format YYYY-MM-DD")
             ("todate", boost::program_options
                     ::value<Checked::string>()->notifier(save_optional_string(params.todate))
                 , "todate, default in impl is first day of this month,"

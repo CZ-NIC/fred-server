@@ -1501,6 +1501,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_default )
 
     invMan->createAccountInvoices( std::string("cz")
         , taxdate
+        , boost::gregorian::date()//from_date not set
         , todate, boost::posix_time::ptime(todate));
 }
 
@@ -1669,6 +1670,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
 
         invMan->createAccountInvoice( registrar_handle, std::string("cz")
             , taxdate
+            , boost::gregorian::date()//from_date not set
             , todate, boost::posix_time::ptime(todate));
 
     }
@@ -1877,6 +1879,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
 
         invMan->createAccountInvoice( registrar_handle, std::string("cz")
             , taxdate
+            , boost::gregorian::date()//from_date not set
             , todate, boost::posix_time::ptime(todate));
 
     }
@@ -2168,16 +2171,19 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
     invMan->createAccountInvoice( registrar_handle, std::string("cz")
         , boost::gregorian::from_simple_string((Database::Date(2001,1,31)).to_string())
+        , boost::gregorian::date()//from_date not set
         , boost::gregorian::from_simple_string((Database::Date(2001,2,1)).to_string())
         , boost::posix_time::ptime(boost::gregorian::from_simple_string((Database::Date(2001,2,1)).to_string())));
 
     invMan->createAccountInvoice( registrar_handle, std::string("cz")
         , taxdate
+        , boost::gregorian::date()//from_date not set
         , todate, boost::posix_time::ptime(todate));
 
     BOOST_CHECK_EXCEPTION(
     invMan->createAccountInvoice( noregistrar_handle, std::string("cz")
         , taxdate
+        , boost::gregorian::date()//from_date not set
         , todate, boost::posix_time::ptime(todate))
         , std::exception
         , check_std_exception_createAccountInvoice );
