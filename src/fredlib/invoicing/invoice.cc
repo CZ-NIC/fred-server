@@ -728,6 +728,12 @@ unsigned long long insert_account_invoice(
 
     unsigned long long invoice_id = invoice_result[0][0];
 
+    if(invoice_id == 0 )
+    {
+        throw std::runtime_error(
+                "insert_account_invoice: insert invoice failed - invoice_id == 0");
+    }
+
     tx.commit();
     return invoice_id;
 }
@@ -828,6 +834,13 @@ unsigned long long create_account_invoice
             , tax_date
             , invoice_date //default = today
             );
+
+    if(aci == 0 )
+    {
+        throw std::runtime_error(
+                "create_account_invoice: insert_account_invoice failed - invoice_id == 0");
+    }
+
 
     //update invoice_generation
     conn.exec_params(
