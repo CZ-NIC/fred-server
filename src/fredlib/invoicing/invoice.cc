@@ -413,29 +413,27 @@ public:
       TRACE("[CALL] Fred::Invoicing::Manager::chargeRequestFee()");
 
       Database::Connection conn = Database::Manager::acquire();
+
+      // TODO zone is in config for the registrar
       unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
       DBSharedPtr ldb_dc_guard = connect_DB(Database::Manager::getConnectionString(),
               std::runtime_error("Faild to connect to database: class DB"));
       std::auto_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
 
+      // poll message must be valid for whole last month - that's the one from 1. day of this month
+      boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
+      boost::gregorian::date poll_message_date(local_today.year(), local_today.month(), 1);
+
+      std::cout << "Data for the poll message to find " << ptime(poll_message_date) << std::endl;
+
+      // TODO handle NULL fields in this method
       std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
-          = poll_mgr->getLastRequestFeeInfoMessage(registrar_handle);
-
-      std::cout << "Date from new getter: " << rfi->getPeriodToUtcDate() << std::endl;
-
-      if( rfi->getPeriodToUtcDate() != boost::gregorian::day_clock::universal_day()) {
-          /*
-              boost::date_time::c_local_adjustor<ptime>::utc_to_local(
-              rfi->getPeriodTo() + boost::posix_time::seconds(1)
-              ).date()
-          != boost::gregorian::day_clock::universal_day()
-        ) */
-          throw std::runtime_error("The last request fee poll message is not up to date.");
-      }
+          = poll_mgr->getRequestFeeInfoMessage(registrar_id, ptime(poll_message_date));
 
       unsigned long long paid_requests = 0;
 
+      // was number of free requests exceeded
       if(rfi->getUsedCount() <= rfi->getTotalFreeCount()) {
           boost::format msg("Registrar %1% (ID %2%) has not exceeded request count limit set to %3%. ");
           msg % registrar_handle % registrar_id % rfi->getTotalFreeCount();

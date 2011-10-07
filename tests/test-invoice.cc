@@ -2850,7 +2850,10 @@ BOOST_AUTO_TEST_CASE(test_charge_for_requests)
         Fred::Poll::Manager::create(ldb_dc_guard)
     );
 
-    pollMan->save_poll_request_fee(registrar->getId(), boost::gregorian::day_clock::local_day() - date_duration(10), boost::gregorian::day_clock::local_day(), 10, 9999, Decimal("10000"));
+    // poll message relevant for charging is the one from the first day of current month
+    boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
+    boost::gregorian::date poll_date(local_today.year(), local_today.month(), 1);
+    pollMan->save_poll_request_fee(registrar->getId(), poll_date - months(1), poll_date, 10, 9999, Decimal("10000"));
 
     Decimal credit_before = get_credit(registrar->getId(), zone_cz_id );
     try {

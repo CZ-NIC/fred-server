@@ -1073,6 +1073,37 @@ public:
       return std::auto_ptr<MessageRequestFeeInfo> (rfi);
   }
 
+  virtual std::auto_ptr<MessageRequestFeeInfo> getRequestFeeInfoMessage(const Database::ID &registrar_id, const ptime &period_to) const
+  {
+     Database::Connection conn = Database::Manager::acquire();
+
+     Result r =
+     conn.exec_params("SELECT    m.msgtype, m.id, m.clid, m.crdate, m.exdate, m.seen, "
+                             "prf.period_from, prf.period_to, prf.total_free_count, prf.used_count, prf.price "
+                         "FROM poll_request_fee prf "
+                           "JOIN message m ON prf.msgid = m.id "
+                         "WHERE m.clid = $1::bigint "
+                          "AND  period_to =  ($2::timestamp AT TIME ZONE 'Europe/Prague' AT TIME ZONE 'UTC') "
+                          "AND m.msgtype = $3::integer",
+                          Database::query_param_list(registrar_id)
+                                                     (period_to)
+                                                     (MT_REQUEST_FEE_INFO));
+
+     if(r.size() < 1) {
+         boost::format msg ("Poll request fee message for registrar %1% with period_to %2% not found");
+         msg % registrar_id % period_to;
+         throw std::runtime_error(msg.str());
+     }
+
+     std::auto_ptr<MessageRequestFeeInfoImpl> rfi (new MessageRequestFeeInfoImpl(
+             r[0][0], r[0][1], r[0][2], r[0][3], r[0][4], r[0][5])
+     );
+
+     rfi->setData(r[0][6], r[0][7], boost::gregorian::date(), r[0][8], r[0][9], r[0][10]);
+
+     return std::auto_ptr<Fred::Poll::MessageRequestFeeInfo>(rfi);
+  }
+
 };
 
 Manager *Manager::create(DBSharedPtr db) {
