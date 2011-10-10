@@ -2574,8 +2574,9 @@ public:
         unsigned int base_free_count;
         unsigned int per_domain_free_count;
         unsigned int zone_id;
-        Fred::Invoicing::getRequestFeeParams(price_unit_request, base_free_count,
-                per_domain_free_count, zone_id);
+        Fred::Invoicing::getRequestFeeParams(&base_free_count,
+                &per_domain_free_count, &zone_id);
+        price_unit_request = Fred::Invoicing::getRequestUnitPrice(zone_id);
 
         // get registrars who has access to configured zone
         Database::Connection conn = Database::Manager::acquire();

@@ -414,8 +414,8 @@ public:
 
       Database::Connection conn = Database::Manager::acquire();
 
-      // TODO zone is in config for the registrar
-      unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+      unsigned charge_zone_id;
+      getRequestFeeParams(&charge_zone_id);
 
       DBSharedPtr ldb_dc_guard = connect_DB(Database::Manager::getConnectionString(),
               std::runtime_error("Faild to connect to database: class DB"));
@@ -449,7 +449,7 @@ public:
       }
 
       return charge_operation_auto_price("GeneralEppOperation",//const std::string& operation
-              zone_cz_id,//unsigned long long zone_id
+              charge_zone_id,//unsigned long long zone_id
               registrar_id, //unsigned long long registrar_id
               0, //unsigned long long object_id
               boost::posix_time::microsec_clock::local_time(), //boost::posix_time::ptime crdate
@@ -3413,26 +3413,9 @@ public:
      return new ManagerImpl();
  }
 
-
- void getRequestFeeParams(std::string &price_unit_request, unsigned &base_free_count, unsigned &per_domain_free_count, unsigned &zone_id)
+ std::string getRequestUnitPrice(unsigned zone_id)
  {
      Database::Connection conn = Database::Manager::acquire();
-
-     // get reuest fee parametres
-     Database::Result res_params = conn.exec(
-               "SELECT count_free_base, count_free_per_domain, zone_id"
-               " FROM request_fee_parameter"
-               " WHERE valid_from < now()"
-               " ORDER BY valid_from DESC"
-               " LIMIT 1");
-
-     if(res_params.size() != 1 || res_params[0][0].isnull() || res_params[0][1].isnull()) {
-         throw std::runtime_error("Couldn't find a valid record in request_fee_parameter table");
-     }
-
-     base_free_count = res_params[0][0];
-     per_domain_free_count = res_params[0][1];
-     zone_id = res_params[0][2];
 
      // get per request price
      Database::Result res_price = conn.exec_params(
@@ -3453,7 +3436,34 @@ public:
          throw std::runtime_error("Entry for request fee not found in price_list");
      }
 
-     price_unit_request = std::string(res_price[0][0]);
+     return std::string(res_price[0][0]);
+ }
+
+ void getRequestFeeParams(unsigned *zone_id, unsigned *base_free_count, unsigned *per_domain_free_count)
+ {
+     Database::Connection conn = Database::Manager::acquire();
+
+     // get reuest fee parametres
+     Database::Result res_params = conn.exec(
+               "SELECT count_free_base, count_free_per_domain, zone_id"
+               " FROM request_fee_parameter"
+               " WHERE valid_from < now()"
+               " ORDER BY valid_from DESC"
+               " LIMIT 1");
+
+     if(res_params.size() != 1 || res_params[0][0].isnull() || res_params[0][1].isnull()) {
+         throw std::runtime_error("Couldn't find a valid record in request_fee_parameter table");
+     }
+
+     if(base_free_count != NULL) {
+         *base_free_count = res_params[0][0];
+     }
+     if(per_domain_free_count != NULL) {
+         *per_domain_free_count = res_params[0][1];
+     }
+     if(zone_id != NULL) {
+         *zone_id = res_params[0][2];
+     }
  }
 
   
