@@ -129,6 +129,11 @@ static std::string zone_registrar_credit_query (
         "SELECT credit FROM registrar_credit"
         " WHERE zone_id = $1::bigint AND registrar_id =$2::bigint");
 
+bool check_dummy(std::exception const & ex)
+{
+    return true;
+}
+
 bool check_std_exception_invoice_prefix(std::exception const & ex)
 {
     std::string ex_msg(ex.what());
@@ -2818,6 +2823,7 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
     */
 }
 
+//// Test reuqest fee charging
 // TODO use in testcases.
 const Decimal get_credit(Database::ID reg_id, Database::ID zone_id)
 {
@@ -2835,30 +2841,53 @@ const Decimal get_credit(Database::ID reg_id, Database::ID zone_id)
     }
 }
 
-BOOST_AUTO_TEST_CASE(test_charge_for_requests)
+// poll message for given time period,
+// default is poll message for the last month
+void insert_poll_request_fee(Database::ID reg_id,
+        date poll_from = date(),
+        date poll_to   = date()
+
+        )
+{
+    DBSharedPtr ldb_dc_guard = connect_DB(Database::Manager::getConnectionString(), std::runtime_error("Failed to connect to database: class DB"));
+    std::auto_ptr<Fred::Poll::Manager> pollMan(
+        Fred::Poll::Manager::create(ldb_dc_guard)
+    );
+
+    if(poll_from == date()) {
+        date local_today = day_clock::local_day();
+        poll_from = date(local_today.year(), local_today.month(), 1) - months(1);
+    }
+    if(poll_to == date()) {
+        poll_to = poll_from + months(1);
+    }
+
+    pollMan->save_poll_request_fee(reg_id, poll_from, poll_to, 10, 9999, Decimal("10000"));
+}
+
+// TODO use it where it's needed
+Database::ID get_zone_cz_id()
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+    return zone_cz_id;
+}
+
+BOOST_AUTO_TEST_CASE(test_charge_request)
+{
+    Database::ID zone_cz_id = get_zone_cz_id();
 
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
 
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
 
-    DBSharedPtr ldb_dc_guard = connect_DB(Database::Manager::getConnectionString(), std::runtime_error("Failed to connect to database: class DB"));
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
-        Fred::Poll::Manager::create(ldb_dc_guard)
-    );
-
-    // poll message relevant for charging is the one from the first day of current month
-    boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
-    boost::gregorian::date poll_date(local_today.year(), local_today.month(), 1);
-    pollMan->save_poll_request_fee(registrar->getId(), poll_date - months(1), poll_date, 10, 9999, Decimal("10000"));
+    insert_poll_request_fee(registrar->getId());
 
     Decimal credit_before = get_credit(registrar->getId(), zone_cz_id );
     try {
-        invMan->chargeRequestFee(registrar->getId(), registrar->getHandle());
-    } catch (const Fred::NOT_FOUND &ex) {
+        BOOST_CHECK(invMan->chargeRequestFee(registrar->getId(), registrar->getHandle()));
+    } catch (const std::runtime_error &ex) {
         boost::format msg("Last poll message for registrar %1%: %2% not found");
         msg % registrar->getId() % registrar->getHandle();
 
@@ -2869,6 +2898,54 @@ BOOST_AUTO_TEST_CASE(test_charge_for_requests)
     // check via price_list TODO
 }
 
+BOOST_AUTO_TEST_CASE(test_charge_request_double)
+{
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+       Fred::Invoicing::Manager::create());
+
+    insert_poll_request_fee(registrar->getId());
+
+    try {
+        BOOST_CHECK(invMan->chargeRequestFee(registrar->getId(), registrar->getHandle()));
+        BOOST_CHECK(!invMan->chargeRequestFee(registrar->getId(), registrar->getHandle()));
+    } catch (const std::runtime_error &ex) {
+        boost::format msg("Last poll message for registrar %1%: %2% not found");
+        msg % registrar->getId() % registrar->getHandle();
+
+        BOOST_FAIL(msg.str());
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
+{
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+    Database::ID reg_id = registrar->getId();
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+       Fred::Invoicing::Manager::create());
+
+    date local_today = day_clock::local_day();
+    for (unsigned month = 1; month < local_today.month(); ++month) {
+        date date_to = date(local_today.year(), month, 1);
+        insert_poll_request_fee(reg_id, date_to-months(1), date_to );
+    }
+
+    date first_day_this_month = date(local_today.year(), local_today.month(), 1);
+    insert_poll_request_fee(reg_id,
+            first_day_this_month,
+            first_day_this_month + days(1)
+            );
+
+    insert_poll_request_fee(reg_id,
+            first_day_this_month - months(1),
+            first_day_this_month - days(1)
+            );
+
+    BOOST_CHECK_EXCEPTION(invMan->chargeRequestFee(reg_id, registrar->getHandle()), std::runtime_error, check_dummy);
+
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestInvoice
 
