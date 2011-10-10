@@ -407,8 +407,7 @@ public:
   // ...which has to be up to current date
   // returns false only on error (just like other charge* functions
   virtual bool chargeRequestFee(
-          const Database::ID &registrar_id,
-          const std::string &registrar_handle)
+          const Database::ID &registrar_id)
   {
       TRACE("[CALL] Fred::Invoicing::Manager::chargeRequestFee()");
 
@@ -431,33 +430,30 @@ public:
       std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
           = poll_mgr->getRequestFeeInfoMessage(registrar_id, ptime(poll_message_date));
 
-      unsigned long long paid_requests = 0;
-
       // was number of free requests exceeded
       if(rfi->getUsedCount() <= rfi->getTotalFreeCount()) {
-          boost::format msg("Registrar %1% (ID %2%) has not exceeded request count limit set to %3%. ");
-          msg % registrar_handle % registrar_id % rfi->getTotalFreeCount();
+          boost::format msg("Registrar ID %1% has not exceeded request count limit set to %2%. ");
+          msg % registrar_id % rfi->getTotalFreeCount();
 
           LOGGER(PACKAGE).info(msg);
           return true;
       } else {
-          paid_requests = rfi->getUsedCount() - rfi->getTotalFreeCount();
-          boost::format msg(" Registrar %1% (ID %2%) will be charged sum %3% for %4% requests over limit");
-          msg % registrar_handle % registrar_id % paid_requests % rfi->getPrice();
+          unsigned long long paid_requests = rfi->getUsedCount() - rfi->getTotalFreeCount();
+          boost::format msg(" Registrar ID %1% will be charged sum %2% for %3% requests over limit");
+          msg % registrar_id % paid_requests % rfi->getPrice();
 
           LOGGER(PACKAGE).info(msg);
+
+          return charge_operation_auto_price("GeneralEppOperation",//const std::string& operation
+                charge_zone_id,//unsigned long long zone_id
+                registrar_id, //unsigned long long registrar_id
+                0, //unsigned long long object_id
+                boost::posix_time::microsec_clock::local_time(), //boost::posix_time::ptime crdate
+                rfi->getPeriodFrom().date(), //boost::gregorian::date date_from
+                rfi->getPeriodTo().date(), //boost::gregorian::date date_to
+                Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years
+                );
       }
-
-      return charge_operation_auto_price("GeneralEppOperation",//const std::string& operation
-              charge_zone_id,//unsigned long long zone_id
-              registrar_id, //unsigned long long registrar_id
-              0, //unsigned long long object_id
-              boost::posix_time::microsec_clock::local_time(), //boost::posix_time::ptime crdate
-              rfi->getPeriodFrom().date(), //boost::gregorian::date date_from
-              rfi->getPeriodTo().date(), //boost::gregorian::date date_to
-              Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years
-              );
-
   }
 
   //count VAT from price with tax using coefficient - local CZ rules

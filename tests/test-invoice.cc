@@ -2886,7 +2886,7 @@ BOOST_AUTO_TEST_CASE(test_charge_request)
 
     Decimal credit_before = get_credit(registrar->getId(), zone_cz_id );
     try {
-        BOOST_CHECK(invMan->chargeRequestFee(registrar->getId(), registrar->getHandle()));
+        BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
     } catch (const std::runtime_error &ex) {
         boost::format msg("Last poll message for registrar %1%: %2% not found");
         msg % registrar->getId() % registrar->getHandle();
@@ -2908,8 +2908,8 @@ BOOST_AUTO_TEST_CASE(test_charge_request_double)
     insert_poll_request_fee(registrar->getId());
 
     try {
-        BOOST_CHECK(invMan->chargeRequestFee(registrar->getId(), registrar->getHandle()));
-        BOOST_CHECK(!invMan->chargeRequestFee(registrar->getId(), registrar->getHandle()));
+        BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
+        BOOST_CHECK(!invMan->chargeRequestFee(registrar->getId()));
     } catch (const std::runtime_error &ex) {
         boost::format msg("Last poll message for registrar %1%: %2% not found");
         msg % registrar->getId() % registrar->getHandle();
@@ -2943,7 +2943,7 @@ BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
             first_day_this_month - days(1)
             );
 
-    BOOST_CHECK_EXCEPTION(invMan->chargeRequestFee(reg_id, registrar->getHandle()), std::runtime_error, check_dummy);
+    BOOST_CHECK_EXCEPTION(invMan->chargeRequestFee(reg_id), std::runtime_error, check_dummy);
 
 }
 
