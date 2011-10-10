@@ -1719,7 +1719,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
       type = ccReg::polltype_request_fee_info;
       ccReg::PollMsg_RequestFeeInfo *hdm = new ccReg::PollMsg_RequestFeeInfo;
       hdm->periodFrom = CORBA::string_dup(formatTime(mrf->getPeriodFrom()).c_str());
-      hdm->periodTo = CORBA::string_dup(formatTime(mrf->getPeriodTo()).c_str());
+      hdm->periodTo = CORBA::string_dup(formatTime(mrf->getPeriodTo() - boost::posix_time::seconds(1)).c_str());
       hdm->totalFreeCount = mrf->getTotalFreeCount();
       hdm->usedCount = mrf->getUsedCount();
       hdm->price = CORBA::string_dup(mrf->getPrice().c_str());

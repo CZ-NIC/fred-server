@@ -113,7 +113,6 @@ namespace Fred
          virtual ~MessageRequestFeeInfo() {}
          virtual const ptime& getPeriodFrom() const = 0;
          virtual const ptime& getPeriodTo() const = 0;
-         virtual const boost::gregorian::date getPeriodToUtcDate() const = 0;
          virtual const unsigned long long& getTotalFreeCount() const = 0;
          virtual const unsigned long long& getUsedCount() const = 0;
          virtual const std::string& getPrice() const = 0;

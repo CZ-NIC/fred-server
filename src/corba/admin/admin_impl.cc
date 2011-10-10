@@ -1521,7 +1521,7 @@ ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const 
 
         ccReg::RegistrarRequestCountInfo_var ret = new ccReg::RegistrarRequestCountInfo;
         ret->periodFrom = CORBA::string_dup(formatTime(rfi->getPeriodFrom(), true, true).c_str());
-        ret->periodTo = CORBA::string_dup(formatTime(rfi->getPeriodTo(), true, true).c_str());
+        ret->periodTo = CORBA::string_dup(formatTime(rfi->getPeriodTo() - boost::posix_time::seconds(1), true, true).c_str());
         ret->totalFreeCount = rfi->getTotalFreeCount();
         ret->usedCount = rfi->getUsedCount();
         ret->price = CORBA::string_dup(rfi->getPrice().c_str());
