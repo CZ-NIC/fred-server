@@ -403,15 +403,13 @@ public:
                 );
   }
 
-  // period from is determined by the poll message
-  // ...which has to be up to current date
+  /// charge registrar for requests for last month (if limit in request_fee_parameters was exceeded)
+  // period from is determined by the poll message from 1st of current month (which contains data for last month)
   // returns false only on error (just like other charge* functions
   virtual bool chargeRequestFee(
           const Database::ID &registrar_id)
   {
       TRACE("[CALL] Fred::Invoicing::Manager::chargeRequestFee()");
-
-      Database::Connection conn = Database::Manager::acquire();
 
       unsigned charge_zone_id;
       getRequestFeeParams(&charge_zone_id);
@@ -429,6 +427,25 @@ public:
       // TODO handle NULL fields in this method
       std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
           = poll_mgr->getRequestFeeInfoMessage(registrar_id, ptime(poll_message_date));
+
+      // check if requests were already charged for this registrar and month combination
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result res = conn.exec_params(
+        "SELECT io.id "
+          "FROM invoice_operation io "
+          "JOIN enum_operation eo ON eo.id=io.operation_id  "
+        "WHERE eo.operation='GeneralEppOperation' "
+          "AND registrar_id = $1::bigint "
+          "AND date_to = $2::date",
+            Database::query_param_list (registrar_id)
+                                      (poll_message_date)
+                                      );
+      if(res.size() > 0) {
+          boost::format msg("Registrar %1% was already charged for requests in period ending %2%.");
+          msg % registrar_id % poll_message_date;
+          LOGGER(PACKAGE).error(msg.str());
+          return false;
+      }
 
       // was number of free requests exceeded
       if(rfi->getUsedCount() <= rfi->getTotalFreeCount()) {
@@ -449,8 +466,8 @@ public:
                 registrar_id, //unsigned long long registrar_id
                 0, //unsigned long long object_id
                 boost::posix_time::microsec_clock::local_time(), //boost::posix_time::ptime crdate
-                rfi->getPeriodFrom().date(), //boost::gregorian::date date_from
-                rfi->getPeriodTo().date(), //boost::gregorian::date date_to
+                boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodFrom()).date(), //boost::gregorian::date date_from
+                boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodTo()).date(), //boost::gregorian::date date_to
                 Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years
                 );
       }
