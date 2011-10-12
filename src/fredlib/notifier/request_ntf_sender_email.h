@@ -14,24 +14,6 @@
 namespace Fred {
 
 
-template<class T>
-std::string container2comma_list(const T &_cont)
-{
-    if (_cont.empty()) {
-        return "";
-    }
-
-    std::stringstream tmp;
-    typename T::const_iterator it = _cont.begin();
-    tmp << *it;
-    for (++it; it != _cont.end(); ++it) {
-        tmp << ", " << *it;
-    }
-    return tmp.str();
-}
-
-
-
 class NotificationEmailSender
 {
 public:
@@ -56,7 +38,7 @@ public:
                     % _ntf.get_request_type());
 
         /* collect email addreses from notification recipients */
-        std::string anyarray = "{" + container2comma_list(_ntf.get_recipients()) + "}";
+        std::string anyarray = "{" + Util::container2comma_list(_ntf.get_recipients()) + "}";
         Database::Connection conn = Database::Manager::acquire();
         Database::Result nemails = conn.exec_params(
                 "SELECT notifyemail FROM contact_history"
@@ -76,7 +58,7 @@ public:
         }
         else {
             LOGGER(PACKAGE).debug(boost::format("recipients: %1%")
-                    % container2comma_list(rcpts_emails));
+                    % Util::container2comma_list(rcpts_emails));
         }
 
         Mailer::Handles     m_handles;

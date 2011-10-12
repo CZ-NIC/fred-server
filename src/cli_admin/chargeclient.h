@@ -34,6 +34,8 @@ public:
     void chargeRequestFeeOneReg(const std::string &handle);
     void chargeRequestFeeAllRegs(const std::string &except_handles);
 
+private:
+    unsigned long long getRegistrarID(const std::string &handle);
 
 };
 }; // namespace Admin

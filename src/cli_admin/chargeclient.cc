@@ -18,6 +18,7 @@
 
 #include "chargeclient.h"
 #include "invoicing/invoice.h"
+#include "util/util.h"
 
 namespace Admin {
     void ChargeClient::runMethod()
@@ -31,19 +32,24 @@ namespace Admin {
         }
     }
 
-    void ChargeClient::chargeRequestFeeOneReg(const std::string &handle)
-    {
-
+    unsigned long long ChargeClient::getRegistrarID(const std::string &handle) {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result result = conn.exec_params(
                 "SELECT id FROM registrar WHERE handle = $1::text",
                 Database::query_param_list(handle));
 
         if (result.size() != 1) {
-            throw std::runtime_error("failed to find specified registrar in database");
+            boost::format msg("Registrar with handle %1% not found in database.");
+            msg % handle;
+            throw std::runtime_error(msg.str());
         }
 
-        Database::ID reg_id = result[0][0];
+        return result[0][0];
+    }
+
+    void ChargeClient::chargeRequestFeeOneReg(const std::string &handle)
+    {
+        Database::ID reg_id = getRegistrarID(handle);
 
         std::auto_ptr<Fred::Invoicing::Manager> invMan(
           Fred::Invoicing::Manager::create());
@@ -57,15 +63,36 @@ namespace Admin {
         Fred::Invoicing::Manager::create());
 
         Database::Connection conn = Database::Manager::acquire();
-        Database::Result res
-            = conn.exec("SELECT id, handle FROM registrar WHERE system = false");
 
-        if(!except_handles.empty()) {
-            throw std::runtime_error("not implemented yet");
+        Database::Result result;
+        if(except_handles.empty()) {
+            result = conn.exec("SELECT id FROM registrar WHERE system = false");
+        } else {
+
+            // TODO split string
+            std::cout << "Split string: " << std::endl;
+            std::stringstream parse(except_handles);
+            std::string element;
+
+            std::vector<Database::ID> reg_id_list;
+
+            while(std::getline(parse, element, ',')) {
+                std::cout << "Registrar handle: " << element << " " << std::endl;
+
+                Database::ID reg_id = getRegistrarID(element);
+
+                reg_id_list.push_back(reg_id);
+            }
+
+            std::string id_array = "{" + Util::container2comma_list(reg_id_list) + "}";
+            result = conn.exec_params("SELECT id FROM registrar "
+                    "WHERE system = false "
+                    "AND id != ALL ($1::bigint[])",
+                    Database::query_param_list(id_array));
         }
 
-        for(unsigned i=0;i<res.size();++i) {
-            invMan->chargeRequestFee(res[0][0]);
+        for(unsigned i=0;i<result.size();++i) {
+            invMan->chargeRequestFee(result[0][0]);
         }
     }
 

@@ -6,6 +6,21 @@
 
 namespace Util {
 
+template<class T>
+std::string container2comma_list(const T &_cont)
+{
+    if (_cont.empty()) {
+        return "";
+    }
+
+    std::stringstream tmp;
+    typename T::const_iterator it = _cont.begin();
+    tmp << *it;
+    for (++it; it != _cont.end(); ++it) {
+        tmp << ", " << *it;
+    }
+    return tmp.str();
+}
 
 inline std::string escape(std::string _input,
                    const std::string _what = "'\\",
