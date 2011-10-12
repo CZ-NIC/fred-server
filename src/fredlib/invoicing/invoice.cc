@@ -428,7 +428,7 @@ public:
       std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
           = poll_mgr->getRequestFeeInfoMessage(registrar_id, ptime(poll_message_date));
 
-      // check if requests were already charged for this registrar and month combination
+      // check if requests were already charged to this registrar and month combination
       Database::Connection conn = Database::Manager::acquire();
       Database::Result res = conn.exec_params(
         "SELECT io.id "
@@ -3457,25 +3457,29 @@ public:
 
      // get reuest fee parametres
      Database::Result res_params = conn.exec(
-               "SELECT count_free_base, count_free_per_domain, zone_id"
+               "SELECT zone_id, count_free_base, count_free_per_domain"
                " FROM request_fee_parameter"
                " WHERE valid_from < now()"
                " ORDER BY valid_from DESC"
                " LIMIT 1");
 
-     if(res_params.size() != 1 || res_params[0][0].isnull() || res_params[0][1].isnull()) {
+     if(res_params.size() != 1
+             || res_params[0][0].isnull()
+             || res_params[0][1].isnull()
+             || res_params[0][2].isnull()) {
          throw std::runtime_error("Couldn't find a valid record in request_fee_parameter table");
      }
 
+     if(zone_id != NULL) {
+         *zone_id = res_params[0][0];
+     }
      if(base_free_count != NULL) {
-         *base_free_count = res_params[0][0];
+         *base_free_count = res_params[0][1];
      }
      if(per_domain_free_count != NULL) {
-         *per_domain_free_count = res_params[0][1];
+         *per_domain_free_count = res_params[0][2];
      }
-     if(zone_id != NULL) {
-         *zone_id = res_params[0][2];
-     }
+
  }
 
   

@@ -49,6 +49,7 @@
 #include "object_params.h"
 #include "file_params.h"
 #include "regblock_params.h"
+#include "charge_params.h"
 
 /**
  * \class HandleAdminClientDomainListArgsGrp
@@ -1634,6 +1635,44 @@ public:
     }//handle
 };//class HandleAdminClientRegistrarAclAddArgsGrp
 
+/*
+ * \class HandleAdminClientChargeRequestFeeArgsGrp
+ * \brief charge request fee to a registrar(s)
+ */
+class HandleAdminClientChargeRequestFeeArgsGrp : public HandleCommandGrpArgs {
+public:
+    ChargeRequestFeeArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("charge_request_fee");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                        new boost::program_options::options_description(
+                                std::string("charge_request_fee options")));
+
+        cfg_opts->add_options()
+                ("charge_request_fee", "Charge fee for requests over limit to a registrar")
+                ("only_registrar", boost::program_options
+                        ::value<Checked::string>()->notifier(save_optional_string(params.only_registrar)),
+                         "Charge requests over limit only to specified registrar handle")
+                ("all_except_registrars", boost::program_options
+                        ::value<Checked::string>()->notifier(save_optional_string(params.except_registrars)),
+                         "Charge requests over limit to all registrars except specified IDs")
+                         ;
+
+        return cfg_opts;
+    }
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};
 
 /**
  * \class HandleAdminClientNotifyStateChangesArgsGrp

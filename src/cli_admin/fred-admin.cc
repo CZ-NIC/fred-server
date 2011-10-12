@@ -54,6 +54,7 @@
 #include "cli_admin/object_client_impl.h"
 #include "cli_admin/file_client_impl.h"
 #include "cli_admin/regblock_client.h"
+#include "cli_admin/charge_client_impl.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_logging_args.h"
@@ -115,6 +116,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientZoneNsAddArgsGrp),zone_ns_add_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientRegistrarAclAddArgsGrp),registrar_acl_add_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientPriceAddArgsGrp),price_add_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientChargeRequestFeeArgsGrp),charge_request_fee_impl() ))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientNotifyStateChangesArgsGrp),notify_state_changes_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientNotifyLettersPostservisSendArgsGrp),notify_letters_postservis_send_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientNotifyRegisteredLettersManualSendArgsGrp),notify_registered_letters_manual_send_impl()))

@@ -869,7 +869,11 @@ src_cli_admin_fred_admin_SOURCES = src/cli_admin/fred-admin.cc \
          src/cli_admin/file_client_impl.h \
          src/cli_admin/regblock_params.h \
          src/cli_admin/regblock_client.h  \
-         src/cli_admin/regblock_client_impl.h
+         src/cli_admin/regblock_client_impl.h \
+         src/cli_admin/charge_params.h \
+         src/cli_admin/chargeclient.cc \
+         src/cli_admin/chargeclient.h \
+         src/cli_admin/charge_client_impl.h
 
 
 src_cli_admin_fred_admin_LDFLAGS = -lm $(POSTGRESQL_LDFLAGS) \
