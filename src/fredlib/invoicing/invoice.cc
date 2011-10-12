@@ -590,26 +590,20 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
         Database::query_param_list(inv_prefix + 1)
                                   (inv_prefix_type));
 
-    Database::Result curr_id = conn.exec("SELECT nextval('invoice_id_seq'::regclass)");
-    if(curr_id.size() != 1 || curr_id[0][0].isnull()) {
-        throw std::runtime_error("Couldn't fetch new invoice ID");
-    }
-    unsigned long long  invoiceId = curr_id[0][0];
-
     if(price.get_string().empty()) throw std::runtime_error("price empty");
     if(total.get_string().empty()) throw std::runtime_error("total empty");
     if(vat_amount.get_string().empty()) throw std::runtime_error("vat_amount empty");
     if(out_credit.get_string().empty()) throw std::runtime_error("credit empty");
 
-    conn.exec_params(
+    Database::Result curr_id = conn.exec_params(
             "INSERT INTO invoice (id, prefix, zone_id, invoice_prefix_id, registrar_id "
             ", crdate, taxDate, operations_price, vat, total, totalVAT, balance) VALUES "
-            "($1::bigint, $2::bigint, $3::bigint, $4::bigint, $5::bigint, "
-            " ($6::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC', "
-            " $7::date, NULL, $8::numeric, "
-            "$9::numeric(10,2), $10::numeric(10,2), $11::numeric(10,2))", // total, totalVAT, balance
-        Database::query_param_list(invoiceId)
-                                (inv_prefix)
+            "(DEFAULT, $1::bigint, $2::bigint, $3::bigint, $4::bigint, "
+            " ($5::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC', "
+            " $6::date, NULL, $7::numeric, "
+            "$8::numeric(10,2), $9::numeric(10,2), $10::numeric(10,2)) " // total, totalVAT, balance
+            " RETURNING id "
+            , Database::query_param_list(inv_prefix)
                                 (zoneId)
                                 (inv_prefix_type)
                                 (registrarId)
@@ -621,8 +615,13 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
                                 (out_credit.get_string())
                                 );
 
-    return invoiceId;
+    if(curr_id.size() != 1 || curr_id[0][0].isnull()) {
+        throw std::runtime_error("Couldn't create new invoice");
+    }
 
+    unsigned long long  invoiceId = curr_id[0][0];
+
+    return invoiceId;
 }
 
 int GetSystemVAT() // return VAT for invoicing depend on the time
