@@ -2446,7 +2446,8 @@ public:
 
       }
 
-      void blockClientsOverLimit(const EppCorbaClient *epp_client,
+      // throws when no registrars are present in DB
+      void blockRegistrarsOverLimit(const EppCorbaClient *epp_client,
             Logger::LoggerClient *logger_client) {
         // from & to date for the calculation (in local time)
         boost::gregorian::date today = boost::gregorian::day_clock::local_day();
@@ -2616,8 +2617,7 @@ public:
                 Database::query_param_list(zone_id));
 
         if (res_registrars.size() == 0) {
-            LOGGER(PACKAGE).info("getRequestFeeDataMap: No registrars found");
-            return ret;
+            throw std::runtime_error("getRequestFeeDataMap: No registrars found");
         }
 
         // TODO why should we compute request count for all of them? But maybe it's not so much different
@@ -2653,7 +2653,6 @@ public:
                     static_cast<unsigned long long> (base_free_count), domain_count
                             * per_domain_free_count);
 
-            // price in Decimal TODO
             Money price("0");
             if (request_count > total_free_count) {
                 Money count_diff(boost::lexical_cast<std::string>(request_count

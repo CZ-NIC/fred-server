@@ -129,7 +129,7 @@ private:
        std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
        std::auto_ptr<Fred::Logger::LoggerClient> log_cli(new Fred::Logger::LoggerCorbaClientImpl());
 
-       regMan->blockClientsOverLimit(
+       regMan->blockRegistrarsOverLimit(
                    epp_cli.get(),
                    log_cli.get()
                    );
