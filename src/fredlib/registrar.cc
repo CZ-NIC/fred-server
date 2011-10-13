@@ -2446,11 +2446,8 @@ public:
 
       }
 
-      std::auto_ptr<RequestFeeDataMap> blockClientsOverLimit(const EppCorbaClient *epp_client,
+      void blockClientsOverLimit(const EppCorbaClient *epp_client,
             Logger::LoggerClient *logger_client) {
-
-        std::auto_ptr<RequestFeeDataMap> ret(new RequestFeeDataMap());
-
         // from & to date for the calculation (in local time)
         boost::gregorian::date today = boost::gregorian::day_clock::local_day();
         boost::gregorian::date p_from(today.year(), today.month(), 1);
@@ -2464,7 +2461,7 @@ public:
                 " ON r.id = rp.registrar_id");
         if (res_registrars.size() == 0) {
             LOGGER(PACKAGE).info("No registrars with request price limit found");
-            return ret;
+            return;
         }
 
         std::auto_ptr<RequestFeeDataMap> request_fee_data =
@@ -2481,7 +2478,7 @@ public:
                     continue;
                 }
 
-                RequestFeeData rfd = it->second;
+                RequestFeeData &rfd = it->second;
 
                 if(reg_price_limit > Decimal("0") && rfd.price > reg_price_limit) {
                    if (blockRegistrar(rfd.reg_id, epp_client)) {
@@ -2492,10 +2489,6 @@ public:
                                % rfd.price;
 
                        LOGGER(PACKAGE).warning(msg.str());
-
-                       rfd.price_limit = reg_price_limit;
-                       ret->insert(RequestFeeDataMap::value_type(reg_handle, rfd));
-
                    }
                 }
             } catch (std::exception &ex) {
@@ -2511,7 +2504,6 @@ public:
             }
 
         }
-        return ret;
       }
 
 

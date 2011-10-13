@@ -129,8 +129,7 @@ private:
        std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
        std::auto_ptr<Fred::Logger::LoggerClient> log_cli(new Fred::Logger::LoggerCorbaClientImpl());
 
-       std::auto_ptr<RequestFeeDataMap> blocked_registrars
-           = regMan->blockClientsOverLimit(
+       regMan->blockClientsOverLimit(
                    epp_cli.get(),
                    log_cli.get()
                    );
