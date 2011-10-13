@@ -2514,6 +2514,41 @@ public:
         return ret;
       }
 
+
+    virtual BlockedRegistrars getRegistrarsBlockedToday()
+    {
+        Database::Connection conn = Database::Manager::acquire();
+
+        Database::Result blocked = conn.exec(
+            "SELECT rd.registrarid, r.handle, (rd.blocked_from AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague') as blocked_from, rfrp.request_price_limit, rfrp.email, rfrp.telephone "
+            "FROM registrar_disconnect rd "
+            "LEFT JOIN request_fee_registrar_parameter rfrp ON rfrp.registrar_id = rd.registrarid "
+            "JOIN registrar r ON r.id = rd.registrarid "
+            "WHERE blocked_from >= date_trunc('day', now())"
+        );
+
+        BlockedRegistrars ret(new std::vector<BlockedReg>);
+        if(blocked.size() == 0) {
+            return ret;
+        }
+
+        ret->reserve(blocked.size());
+
+        for(unsigned i=0; i<blocked.size(); ++i) {
+            BlockedReg br;
+            br.reg_id         = blocked[i][0]; //reg_id
+            br.reg_handle     = std::string(blocked[i][1]); //reg_handle
+            br.from_timestamp = std::string(blocked[i][2]); //from_timestamp
+            br.price_limit    = Decimal(std::string(blocked[i][3])); //price_limit
+            br.email          = std::string(blocked[i][4]); // email
+            br.telephone      = std::string(blocked[i][5]);  // telephone
+
+            ret->push_back(br);
+        }
+
+        return ret;
+    }
+
     virtual bool hasRegistrarZoneAccess(const unsigned long long &_registrar_id,
                                         const unsigned long long &_zone_id)
     {

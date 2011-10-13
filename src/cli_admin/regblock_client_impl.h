@@ -22,6 +22,8 @@
 #include "src/corba/logger_client_impl.h"
 #include "src/corba/epp_corba_client_impl.h"
 
+using namespace Fred::Registrar;
+
 namespace Admin {
 
 class RegBlockClient {
@@ -38,72 +40,7 @@ public:
 
     void runMethod() {
         if(params.over_limit) {
-            init_corba_container();
-            std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
-            std::auto_ptr<Fred::Logger::LoggerClient> log_cli(new Fred::Logger::LoggerCorbaClientImpl());
-
-            if(params.notify_email.empty()) {
-                throw std::runtime_error("No notify email specified, use parametre --email ");
-            }
-
-            std::auto_ptr<Fred::Registrar::RequestFeeDataMap> blocked_registrars
-                = regMan->blockClientsOverLimit(
-                        epp_cli.get(),
-                        log_cli.get()
-                        );
-
-            if(!blocked_registrars->empty()) {
-                SubProcessOutput sub_output_test = ShellCmd("ls /usr/sbin/sendmail", params.shell_cmd_timeout).execute();
-                if (!sub_output_test.stderr.empty()) {
-                    throw std::runtime_error(sub_output_test.stderr);
-                }
-            }
-
-            Database::Connection conn = Database::Manager::acquire();
-            std::ostringstream msg;
-
-            // send some notification that registrars were blocked
-            for ( Fred::Registrar::RequestFeeDataMap::iterator it = blocked_registrars->begin();
-                    it != blocked_registrars->end();
-                    ++it) {
-                Fred::Registrar::RequestFeeData rfd = it->second;
-
-                Result res_contacts = conn.exec_params("SELECT email, telephone FROM request_fee_registrar_parameter WHERE registrar_id=$1::bigint",
-                        Database::query_param_list(rfd.reg_id));
-
-                msg << (boost::format("Registrar %1% blocked: price limit %2%, current price: %3%, e-mail: %4%, phone: %5%, link: https://manager.nic.cz/registrar/detail/?id=%6% \n")
-                        % it->first
-                        % rfd.price_limit
-                        % rfd.price
-                        % res_contacts[0][0]
-                        % res_contacts[0][1]
-                        % rfd.reg_id).str()
-                    << std::endl;
-
-                //check if sendmail is present in the system
-            }
-
-            std::string cmd;
-            if(blocked_registrars->begin() == blocked_registrars->end()) {
-                cmd = (boost::format("{\n"
-                        "echo \"Subject: No registrars blocked, date $(date +'%%Y-%%m-%%d')\n"
-                        "Content-Type: text/plain; charset=UTF-8; format=flowed"
-                        "\nContent-Transfer-Encoding: 8bit\n\n \";"
-                        "\n} | /usr/sbin/sendmail %1%" ) % params.notify_email).str();
-
-            } else {
-                cmd = (boost::format("{\n"
-              "echo \"Subject: REGISTRARS BLOCKED - requests over limit $(date +'%%Y-%%m-%%d')\n"
-              "Content-Type: text/plain; charset=UTF-8; format=flowed"
-              "\nContent-Transfer-Encoding: 8bit\n\n%1% \n\";"
-              "\n} | /usr/sbin/sendmail %2%") % msg.str() % params.notify_email).str();
-            }
-
-            SubProcessOutput sub_output = ShellCmd(cmd, params.shell_cmd_timeout).execute();
-            if (!sub_output.stderr.empty()) {
-                throw std::runtime_error(sub_output.stderr);
-            }
-
+            block_clients_over_limit();
         } else if (params.list_only) {
             // TODO
             throw std::runtime_error("Not implemented yet ");
@@ -121,7 +58,8 @@ public:
 
 
 private:
-    void init_corba_container() {
+    void init_corba_container()
+    {
         // ORB init
         FakedArgs orb_fa = CfgArgGroups::instance()->fa;
 
@@ -132,6 +70,76 @@ private:
                , ns_args_ptr->get_nameservice_host()
                , ns_args_ptr->get_nameservice_port()
                , ns_args_ptr->get_nameservice_context());
+    }
+
+    void send_block_notification()
+    {
+       // check if sendmail is present
+       SubProcessOutput sub_output_test = ShellCmd("ls /usr/sbin/sendmail", params.shell_cmd_timeout).execute();
+       if (!sub_output_test.stderr.empty()) {
+           LOGGER(PACKAGE).error(sub_output_test.stderr);
+       }
+
+       BlockedRegistrars blocked_registrars = regMan->getRegistrarsBlockedToday();
+
+       std::string cmd;
+       if(blocked_registrars->empty()) {
+           cmd = (boost::format("{\n"
+                   "echo \"Subject: No registrars blocked, date $(date +'%%Y-%%m-%%d')\n"
+                   "Content-Type: text/plain; charset=UTF-8; format=flowed"
+                   "\nContent-Transfer-Encoding: 8bit\n\n \";"
+                   "\n} | /usr/sbin/sendmail %1%" ) % params.notify_email).str();
+       } else {
+           // there are some entries to send
+           std::ostringstream msg;
+
+           for (
+                   std::vector<BlockedReg>::iterator it = blocked_registrars->begin();
+                   it != blocked_registrars->end();
+                   ++it) {
+
+               // TODO: include price as before: "Registrar %1% blocked: price limit %2%, current price: %3%,
+               // e-mail: %4%, phone: %5%, link: https://manager.nic.cz/registrar/detail/?id=%6% \n")
+               msg << (boost::format(
+               "Registrar %1% blocked: price limit %2%, e-mail: %3%, phone: %4%, "
+               "link: https://manager.nic.cz/registrar/detail/?id=%5% \n")
+                   % it->reg_handle
+                   % it->price_limit
+                   % it->email
+                   % it->telephone
+                   % it->reg_id).str()
+               << std::endl;
+           }
+           cmd = (boost::format("{\n"
+             "echo \"Subject: REGISTRARS BLOCKED - requests over limit, date $(date +'%%Y-%%m-%%d')\n"
+             "Content-Type: text/plain; charset=UTF-8; format=flowed"
+             "\nContent-Transfer-Encoding: 8bit\n\n%1% \n\";"
+             "\n} | /usr/sbin/sendmail %2%") % msg.str() % params.notify_email).str();
+       }
+
+       SubProcessOutput sub_output = ShellCmd(cmd, params.shell_cmd_timeout).execute();
+       if (!sub_output.stderr.empty()) {
+           throw std::runtime_error(sub_output.stderr);
+       }
+    }
+
+    void block_clients_over_limit()
+    {
+       init_corba_container();
+       std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
+       std::auto_ptr<Fred::Logger::LoggerClient> log_cli(new Fred::Logger::LoggerCorbaClientImpl());
+
+       std::auto_ptr<RequestFeeDataMap> blocked_registrars
+           = regMan->blockClientsOverLimit(
+                   epp_cli.get(),
+                   log_cli.get()
+                   );
+
+       if(!params.notify_email.empty()) {
+           send_block_notification();
+       } else {
+           LOGGER(PACKAGE).info("No email specified, not trying to send information about blocked registrars");
+       }
     }
 };
 

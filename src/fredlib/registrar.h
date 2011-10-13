@@ -478,6 +478,17 @@ RequestFeeData(std::string _reg_handle,
 
 typedef std::map<std::string, RequestFeeData> RequestFeeDataMap;
 
+struct BlockedReg {
+    Database::ID reg_id;
+    std::string reg_handle;
+    std::string from_timestamp;
+    Decimal price_limit;
+    std::string email;
+    std::string telephone;
+};
+
+typedef std::auto_ptr< std::vector<BlockedReg> > BlockedRegistrars;
+
 /// Main entry point for Registrar namespace
 class Manager {
 public:
@@ -577,6 +588,8 @@ public:
 
   virtual std::auto_ptr<RequestFeeDataMap> blockClientsOverLimit(const EppCorbaClient *epp_client,
           Logger::LoggerClient *logger_client) = 0;
+
+  virtual BlockedRegistrars getRegistrarsBlockedToday(void) = 0;
 
   virtual bool hasRegistrarZoneAccess(const unsigned long long &_registrar_id,
                                       const unsigned long long &_zone_id) = 0;
