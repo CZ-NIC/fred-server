@@ -2662,7 +2662,7 @@ public:
             }
 
             ret->insert(RequestFeeDataMap::value_type(reg_handle, RequestFeeData(
-                    reg_handle, reg_id, request_count, total_free_count, price, Decimal("0"))));
+                    reg_handle, reg_id, request_count, total_free_count, price)));
 
             LOGGER(PACKAGE).info(boost::format("Request count data for registrar"
                 " %1%, requests: %2%, total free: %3%, price: %4%") % reg_handle

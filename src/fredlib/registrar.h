@@ -458,14 +458,12 @@ RequestFeeData(std::string _reg_handle,
                Database::ID _reg_id,
                unsigned long long _request_count,
                unsigned long long _request_total_free,
-               Decimal _price,
-               Decimal _price_limit) :
+               Decimal _price) :
                    reg_handle(_reg_handle),
                    reg_id(_reg_id),
                    request_count(_request_count),
                    request_total_free(_request_total_free),
-                   price(_price),
-                   price_limit(_price_limit)
+                   price(_price)
     { }
 
     std::string reg_handle;
@@ -473,7 +471,6 @@ RequestFeeData(std::string _reg_handle,
     unsigned long long request_count;
     unsigned long long request_total_free;
     Decimal price;
-    Decimal price_limit;
 };
 
 typedef std::map<std::string, RequestFeeData> RequestFeeDataMap;
