@@ -134,6 +134,35 @@ bool check_dummy(std::exception const & ex)
     return true;
 }
 
+/*
+//  old handler
+// this one rethrows - does not work well with boost framework
+void handle_epp_exception(ccReg::EPP::EppError &ex) 
+{
+    std::string error_msg = str(boost::format("code: %1%  message: %2%  svtrid: %3%")
+					% _epp_error.errCode
+					% _epp_error.errMsg
+					% _epp_error.svTRID);
+
+    LOGGER(PACKAGE).error(error_msg);
+    std::cerr << error_msg << std::endl;
+    throw;    
+}
+*/
+
+
+void handle_epp_exception(ccReg::EPP::EppError &ex) 
+{
+    std::ostringstream msg;
+    msg << " EPP Exception: " << ex.errCode << ": " << ex.errMsg << ", Reason: ";
+
+    for (unsigned i=0;i<ex.errorList.length();i++) {
+        msg << ex.errorList[i].reason;
+    }
+    throw std::runtime_error(msg.str());
+}
+
+
 bool check_std_exception_invoice_prefix(std::exception const & ex)
 {
     std::string ex_msg(ex.what());
@@ -1023,7 +1052,7 @@ void testChargeEval(const ResultTestCharge &res, bool should_succeed)
 	// this is simplified - it depends also on data in price list - it's true only of base_period == 0
 	// which is now the case for 'create' operation
 	if (operation == INVOICING_DomainRenew) {
-        	BOOST_REQUIRE((unsigned)res_ior[0][0] == res.units);
+		BOOST_REQUIRE((unsigned)res_ior[0][0] == res.units);
 		BOOST_REQUIRE(res_ior[0][1] == res.exdate);
 	} else if (operation == INVOICING_DomainCreate) {
 		BOOST_REQUIRE(res_ior[0][1].isnull());
@@ -1495,14 +1524,16 @@ BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNoCred )
 
 }
 
-BOOST_AUTO_TEST_CASE( createAccountInvoices_default )
+// test createAccountInvoices with default values supplied by fred-admin
+BOOST_AUTO_TEST_CASE( createAccountInvoices_defaultValues )
 {
 
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
 
-    boost::gregorian::date taxdate(day_clock::local_day().end_of_month());
-    boost::gregorian::date todate(taxdate + boost::gregorian::days(1));
+    boost::gregorian::date local = day_clock::local_day();		
+    boost::gregorian::date todate(local.year(), local.month(), 1);
+    boost::gregorian::date taxdate(todate);
 
     invMan->createAccountInvoices( std::string("cz")
         , taxdate
@@ -1619,14 +1650,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
     }//try
     catch(ccReg::EPP::EppError &_epp_error)
     {
-        std::string error_msg = str(boost::format("code: %1%  message: %2%  svtrid: %3%")
-                                    % _epp_error.errCode
-                                    % _epp_error.errMsg
-                                    % _epp_error.svTRID);
-
-        LOGGER(PACKAGE).error(error_msg);
-        std::cerr << error_msg << std::endl;
-        throw;
+        handle_epp_exception(_epp_error);
     }
     catch(CORBA::TRANSIENT&)
     {
@@ -1828,14 +1852,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
     }//try
     catch(ccReg::EPP::EppError &_epp_error)
     {
-        std::string error_msg = str(boost::format("code: %1%  message: %2%  svtrid: %3%")
-                                    % _epp_error.errCode
-                                    % _epp_error.errMsg
-                                    % _epp_error.svTRID);
-
-        LOGGER(PACKAGE).error(error_msg);
-        std::cerr << error_msg << std::endl;
-        throw;
+        handle_epp_exception(_epp_error);
     }
     catch(CORBA::TRANSIENT&)
     {
@@ -2112,14 +2129,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     }//try
     catch(ccReg::EPP::EppError &_epp_error)
     {
-        std::string error_msg = str(boost::format("code: %1%  message: %2%  svtrid: %3%")
-                                    % _epp_error.errCode
-                                    % _epp_error.errMsg
-                                    % _epp_error.svTRID);
-
-        LOGGER(PACKAGE).error(error_msg);
-        std::cerr << error_msg << std::endl;
-        throw;
+        handle_epp_exception(_epp_error);
     }
     catch(CORBA::TRANSIENT&)
     {
@@ -2174,17 +2184,20 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     boost::gregorian::date taxdate(day_clock::local_day().end_of_month());
     boost::gregorian::date todate(taxdate + boost::gregorian::days(1));
 
+    conn.exec_params("DELETE FROM invoice_generation WHERE registrar_id = $1::bigint", Database::query_param_list(registrar_inv_id));
     invMan->createAccountInvoice( registrar_handle, std::string("cz")
         , boost::gregorian::from_simple_string((Database::Date(2001,1,31)).to_string())
         , boost::gregorian::date()//from_date not set
         , boost::gregorian::from_simple_string((Database::Date(2001,2,1)).to_string())
         , boost::posix_time::ptime(boost::gregorian::from_simple_string((Database::Date(2001,2,1)).to_string())));
 
+    conn.exec_params("DELETE FROM invoice_generation WHERE registrar_id = $1::bigint", Database::query_param_list(registrar_inv_id));
     invMan->createAccountInvoice( registrar_handle, std::string("cz")
         , taxdate
         , boost::gregorian::date()//from_date not set
         , todate, boost::posix_time::ptime(todate));
 
+    conn.exec_params("DELETE FROM invoice_generation WHERE registrar_id = $1::bigint", Database::query_param_list(registrar_inv_id));
     BOOST_CHECK_EXCEPTION(
     invMan->createAccountInvoice( noregistrar_handle, std::string("cz")
         , taxdate
@@ -2390,7 +2403,7 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
                             )==0);
                 
                 BOOST_CHECK(
-		            ((entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][5])//invoice credit
+			    ((entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][5])//invoice credit
                             )==0)
                     || (entry.getChild("basetax").getValue().compare(std::string(invoice_res[i][6])//invoice price
                             )==0)
@@ -2398,7 +2411,7 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
                             )==0)) );
 
                 BOOST_CHECK(
-		            ((entry.getChild("vat").getValue().compare(std::string(invoice_res[i][9])//invoice totalvat
+			    ((entry.getChild("vat").getValue().compare(std::string(invoice_res[i][9])//invoice totalvat
                             )==0)
                     || (std::string("0.00").compare(std::string(invoice_res[i][9])//invoice totalvat
                             )==0)) );
@@ -2525,8 +2538,7 @@ ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Database
                 ccReg::ExtensionList());
 
         } catch (ccReg::EPP::EppError &ex) {
-            boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
-            throw std::runtime_error(message.str());
+            handle_epp_exception(ex);
         }
 
         if(r->code != 1000) {
