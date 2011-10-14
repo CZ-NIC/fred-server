@@ -1001,7 +1001,7 @@ void createAccountInvoices(
         Database::Result res = conn.exec_params(
           "SELECT r.id, z.id FROM registrar r, registrarinvoice i, zone z WHERE r.id=i.registrarid"
           " AND r.system=false AND i.zone=z.id AND z.fqdn=$1::text"
-          " AND i.fromdate<=CURRENT_DATE"
+          " AND i.fromdate<CURRENT_DATE"
           , Database::query_param_list (zone_fqdn)
           );
 
