@@ -576,8 +576,7 @@ src_corba_libcorba_a_SOURCES = src/corba/nameservice.cc         \
 					 src/corba/logger_client_impl.cc  \
 					 src/corba/logger_client_impl.h   \
 					 src/corba/epp_corba_client_impl.cc \
-					 src/corba/epp_corba_client_impl.h  \
-					 src/corba/epp_corba_client.h
+					 src/corba/epp_corba_client_impl.h
 				
 
 # nodist_src_corba_libcorba_a_SOURCES = src/corba/RegistrySK.cc src/corba/RegistryDynSK.cc src/corba/Registry.hh
@@ -967,8 +966,7 @@ tests_test_server_SOURCES = tests/test-server.cc \
                      tests/test-decimal.cc \
                      tests/test-shellcmd.cc \
                      src/corba/epp_corba_client_impl.cc \
-                     src/corba/epp_corba_client_impl.h  \
-                     src/corba/epp_corba_client.h
+                     src/corba/epp_corba_client_impl.h
                      
                      
 tests_test_server_LDFLAGS = -lm $(POSTGRESQL_LDFLAGS) \
