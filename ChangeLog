@@ -2,8 +2,11 @@
 
   * refactoring of invoicing module
       - database schema rework
-	  - post paid operations (allowed negative credit)
-	  - request fee charging impl (fred-admin)
+      - post paid operations (allowed negative credit)
+      - registrar credit separation from invoices
+      - distribution of charged operation (price) to deposit invoices moved
+      to billing
+      - request fee charging impl (fred-admin)
 
   * registrar request fee limits and blocking feature
 
