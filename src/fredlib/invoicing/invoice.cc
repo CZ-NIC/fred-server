@@ -991,6 +991,9 @@ void createAccountInvoices(
     Logging::Context ctx("createAccountInvoices");
     try
     {
+        if(zone_fqdn.empty()) throw std::runtime_error("createAccountInvoices: zone_fqdn is empty");
+        if(todate.is_special()) throw std::runtime_error("createAccountInvoices: todate not set");
+
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
@@ -999,7 +1002,7 @@ void createAccountInvoices(
         std::string todateStr(boost::gregorian::to_iso_extended_string(todate));
 
         Database::Result res = conn.exec_params(
-           "SELECT DISTINCT oq.registrar_id, oq.zone_id"
+           "SELECT DISTINCT oq.registrar_id, oq.zone_id "
            " , oq.fromdate_ig, oq.i_fromdate, oq.i_todate "
            " FROM (SELECT r.id as registrar_id, z.id as zone_id "
            " , i.fromdate as i_fromdate, i.todate as i_todate "
