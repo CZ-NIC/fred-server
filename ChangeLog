@@ -1,3 +1,35 @@
+2011-10-17 Jiri Sadek (2.8.10)
+
+  * fixed whois handling of deleteCandidate state (new registered domain in
+    actual day)
+
+2011-10-11 Jiri Sadek (2.8.9)
+
+  * fixed fred-admin object_delete_canadidates command (debug output)
+
+2011-09-27 Jiri Sadek, Juraj Vicenik, Jan Zima (2.8.8)
+
+  * domain deletion is now batched in daily procedure
+
+  * during delete day, domains to be deleted or already deleted
+    are shown in whois with special state deleteCandidate (which is now external)
+
+2011-09-27 Jiri Sadek, Juraj Vicenik, Jan Zima (2.8.7)
+
+  * fixed creating request fee poll messages - logger call date/time
+    conversions
+
+2011-09-26 Jiri Sadek, Juraj Vicenik, Jan Zima (2.8.6)
+
+  * fred-adifd - interface for getting last request fee info data
+
+  * epp - interface for deleting all sessions for given registrar
+
+  * fixed creating request fee poll messagess on first day of month
+
+  * object state changes notifications now uses correctly enum
+    parameters config
+
 2011-09-02 Jiri Sadek (2.8.5)
 
   * epp - fix sql input data escape in client login
@@ -8,6 +40,8 @@
            - added method counting request for all usernames
 
   * mojeid - fixed fax format checker
+
+  * whois reminder - sql optimization
 
 2011-07-08 Jiri Sadek, Juraj Vicenik (2.8.3)
 
