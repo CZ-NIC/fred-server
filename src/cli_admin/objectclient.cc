@@ -228,9 +228,15 @@ ObjectClient::deleteObjects(
     debug = delete_objects_params.object_delete_debug//m_conf.hasOpt(OBJECT_DEBUG_NAME)
             ? &std::cout : NULL;
 
+    unsigned int totalCount = (unsigned int)m_db->GetSelectRows();
+    // limit number of object to just first part from total
+    // could be done by COUNT(*) and LIMIT in SQL but this would need to
+    // issue another SQL
+    if (parts > 0) totalCount = totalCount/parts;
+
     if (debug) {
         *debug << "<objects>\n";
-        for (unsigned int i = 0; i < (unsigned int)m_db->GetSelectRows(); i++) {
+        for (unsigned int i = 0; i < totalCount; i++) {
             *debug << "<object name='" << m_db->GetFieldValue(i, 0) << "'/>\n";
         }
         *debug << "</objects>\n";
@@ -270,11 +276,6 @@ ObjectClient::deleteObjects(
             std::cerr << "Cannot connect: " << r->code << std::endl;
             throw -3;
         }
-        unsigned int totalCount = (unsigned int)m_db->GetSelectRows();
-        // limit number of object to just first part from total
-        // could be done by COUNT(*) and LIMIT in SQL but this would need to
-        // issue another SQL
-        if (parts > 0) totalCount = totalCount/parts;
 
         for (unsigned int i = 0; i < totalCount; i++) {
             std::string name = m_db->GetFieldValue(i, 0);
