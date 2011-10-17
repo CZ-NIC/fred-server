@@ -1016,7 +1016,7 @@ void createAccountInvoices(
            " OR oq.i_todate is null)) --fromdate "
            " OR (oq.i_fromdate <= $3::date "
            " AND (oq.i_todate >= $3::date OR oq.i_todate is null))  --todate "
-          , Database::query_param_list (zone_fqdn)(fromdate)(todate)
+          , Database::query_param_list (zone_fqdn)(fromdate.is_special() ? Database::QPNull : fromdate )(todate)
           );
 
         LOGGER(PACKAGE).debug ( boost::format("ManagerImpl::createAccountInvoices"
