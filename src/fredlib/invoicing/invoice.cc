@@ -999,10 +999,23 @@ void createAccountInvoices(
         std::string todateStr(boost::gregorian::to_iso_extended_string(todate));
 
         Database::Result res = conn.exec_params(
-          //select registrar which one of access to zone intervals overlaps with account interval
-          "SELECT DISTINCT r.id, z.id FROM registrar r, registrarinvoice i, zone z WHERE r.id=i.registrarid"
-          " AND r.system=false AND i.zone=z.id AND z.fqdn=$1::text"
-          " AND ((i.fromdate, i.todate) OVERLAPS ( $2::date, $3::date))"
+           "SELECT DISTINCT oq.registrar_id, oq.zone_id"
+           " , oq.fromdate_ig, oq.i_fromdate, oq.i_todate "
+           " FROM (SELECT r.id as registrar_id, z.id as zone_id "
+           " , i.fromdate as i_fromdate, i.todate as i_todate "
+           " , (SELECT date( todate + interval'1 day')  as fromdate "
+           " FROM invoice_generation "
+           " WHERE zone_id=z.id "
+           " AND registrar_id =r.id "
+           " ORDER BY id DESC LIMIT 1 ) as fromdate_ig "
+           " FROM registrar r, registrarinvoice i, zone z "
+           " WHERE r.id=i.registrarid AND r.system=false "
+           " AND i.zone=z.id AND z.fqdn=$1::text) as oq "
+           " WHERE (oq.i_fromdate <= coalesce($2::date,oq.fromdate_ig, oq.i_fromdate ) "
+           "   AND (oq.i_todate >= coalesce($2::date,oq.fromdate_ig, i_fromdate ) "
+           " OR oq.i_todate is null)) --fromdate "
+           " OR (oq.i_fromdate <= $3::date "
+           " AND (oq.i_todate >= $3::date OR oq.i_todate is null))  --todate "
           , Database::query_param_list (zone_fqdn)(fromdate)(todate)
           );
 
