@@ -1,6 +1,6 @@
 2011-10-18 Jiri Sadek, Juraj Vicenik, Jan Zima (2.9.0)
 
-  * refactoring of invoicing module
+  * invoicing
       - database schema rework
       - post paid operations (allowed negative credit)
       - registrar credit separation from invoices
