@@ -1,3 +1,20 @@
+2011-10-18 Jiri Sadek, Juraj Vicenik, Jan Zima (2.9.0)
+
+  * refactoring of invoicing module
+      - database schema rework
+	  - post paid operations (allowed negative credit)
+	  - request fee charging impl (fred-admin)
+
+  * registrar request fee limits and blocking feature
+
+  * whois reminder - now reminds only contact with linked status
+
+  * Decimal wrapper for mpdecimal library (by Stefan Krah
+    <skrah@bytereef.org>) - use for money operations
+
+  * mojeid - invalid date format unhadled exception fix
+           - authinfo save fix
+
 2011-10-17 Jiri Sadek (2.8.10)
 
   * fixed whois handling of deleteCandidate state (new registered domain in
