@@ -6,7 +6,7 @@
       - registrar credit separation from invoices
       - distribution of charged operation (price) to deposit invoices moved
       to billing
-	  - invoice_factoring command renamed to invoice_billing (fred-admin)
+      - invoice_factoring command renamed to invoice_billing (fred-admin)
       - request fee charging impl - charge_request_fee command (fred-admin)
 
   * banking - check of registrar zone access in payment import
