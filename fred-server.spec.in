@@ -8,8 +8,8 @@ License:        GPL
 URL:            http://fred.nic.cz
 Source:         %{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
-BuildRequires:  libomniorb-devel, boost-devel, postgresql-devel
-Requires: omniORB, boost, postgresql-libs, fred-pyfred, fred-doc2pdf fred-db redhat-lsb
+BuildRequires:  libomniorb-devel, boost-devel, postgresql-devel, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel
+Requires: omniORB, boost, postgresql-libs, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf fred-db redhat-lsb
 
 %description
 FRED (Free Registry for Enum and Domain) is free registry system for 
