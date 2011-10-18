@@ -1041,6 +1041,7 @@ public:
 
       unsigned int rid = db->GetRegistrarID(_registrar.c_str());
       if (!rid) {
+          LOGGER(PACKAGE).error("Registrar ID not found");
           throw NOT_FOUND();
       }
       LOGGER(PACKAGE).debug(boost::format("registar %1% => id=%2%") % _registrar % rid);
@@ -1053,10 +1054,12 @@ public:
 
       Message *m = l.extractFirst();
       if (!m) {
+          LOGGER(PACKAGE).error("Registrar ID not found");
           throw NOT_FOUND();
       }
       MessageRequestFeeInfo* rfi = dynamic_cast<MessageRequestFeeInfo*>(m);
       if (!rfi) {
+          LOGGER(PACKAGE).error("Dynamic cast to MessageRequestFeeInfo failed");
           throw NOT_FOUND();
       }
       return std::auto_ptr<MessageRequestFeeInfo> (rfi);
