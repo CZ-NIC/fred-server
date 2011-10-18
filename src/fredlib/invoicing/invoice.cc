@@ -1034,6 +1034,8 @@ void createAccountInvoices(
             unsigned long long regID = res[i][0];//regID
             unsigned long long zoneID =res[i][1];//zoneID
 
+            try
+            {
             unsigned long long invoiceID =
                     create_account_invoice
                     ( regID, zoneID
@@ -1045,6 +1047,13 @@ void createAccountInvoices(
             LOGGER(PACKAGE).notice(boost::format(
              "Vygenerovana fa invoiceID %1% pro regID %2% zoneID %3% taxdateStr %4%")
              % invoiceID % regID % zoneID % taxdateStr);
+            }
+            catch (const std::exception& ex)
+            {
+                LOGGER(PACKAGE).error(boost::format(
+                 "createAccountInvoices regID %1% zoneID %2% taxdateStr %3% : %4%")
+                  % regID % zoneID % taxdateStr % ex.what());
+            }
         }//for i
 
         tx.commit();
