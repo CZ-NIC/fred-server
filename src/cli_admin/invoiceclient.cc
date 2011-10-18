@@ -432,10 +432,7 @@ InvoiceClient::billing()
     }
     else
     {
-        boost::gregorian::date tmp_today
-            = boost::posix_time::second_clock::local_time().date();
-        taxdate = boost::gregorian::date(tmp_today.year()
-            , tmp_today.month(), 1) - boost::gregorian::days(1);//last day of last month
+        taxdate = todate - boost::gregorian::days(1);//last day of last month
     }
 
     //invoicedate
