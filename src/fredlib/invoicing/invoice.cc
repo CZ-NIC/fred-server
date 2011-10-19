@@ -1017,10 +1017,12 @@ void createAccountInvoices(
            " WHERE r.id=i.registrarid AND r.system=false "
            " AND i.zone=z.id AND z.fqdn=$1::text) as oq "
            " WHERE (oq.i_fromdate <= coalesce(oq.p_fromdate,oq.fromdate_ig, oq.i_fromdate ) "
-           "   AND (oq.i_todate >= coalesce(oq.p_fromdate,oq.fromdate_ig, i_fromdate ) "
-           " OR oq.i_todate is null)) "
+           "   AND (oq.i_todate >= coalesce(oq.p_fromdate,oq.fromdate_ig, i_fromdate) "
+           "   OR oq.i_todate is null)) "
            " OR (oq.i_fromdate <= oq.p_todate "
            " AND (oq.i_todate >= oq.p_todate OR oq.i_todate is null)) "
+           " OR (oq.i_fromdate > coalesce(oq.p_fromdate,oq.fromdate_ig, oq.i_fromdate ) "
+           " AND (oq.i_todate < oq.p_todate)) "
           , Database::query_param_list (zone_fqdn)(fromdate.is_special() ? Database::QPNull : fromdate )(todate)
           );
 
