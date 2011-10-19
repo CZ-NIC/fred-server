@@ -2938,10 +2938,6 @@ BOOST_AUTO_TEST_CASE(test_charge_request_double)
     BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
     BOOST_CHECK(!invMan->chargeRequestFee(registrar->getId()));
 
-    boost::format msg("Last poll message for registrar %1%: %2% not found");
-    msg % registrar->getId() % registrar->getHandle();
-
-    BOOST_FAIL(msg.str());
 }
 
 BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
