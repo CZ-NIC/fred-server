@@ -1577,7 +1577,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
     CORBA::Long clientId = 0;
     ccReg::Response_var r;
 
-    std::string test_domain_fqdn(std::string("testdomain"));
+    std::string test_domain_fqdn(std::string("testdomain") + time_string);
 
     try
     {
@@ -1613,7 +1613,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
             CORBA::String_var exdate;
 
             r = epp_ref->DomainCreate(
-                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i)+".cz").c_str(), // fqdn
+                    (test_domain_fqdn + boost::lexical_cast<std::string>(i) + ".cz").c_str(), // fqdn
                     "KONTAKT",                // contact
                     "",                       // nsset
                     "",                       // keyset
@@ -1637,7 +1637,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
             period.count = 3;
             CORBA::String_var exdate1;
             r = epp_ref->DomainRenew(
-                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
+                    (test_domain_fqdn + boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
                     exdate,//curExpDate
                     period, //Period_str
                     exdate1,//out timestamp exDate,
@@ -1683,8 +1683,10 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
     }
 
     {
-        boost::gregorian::date taxdate(day_clock::local_day().end_of_month());
-        boost::gregorian::date todate(taxdate + boost::gregorian::days(1));
+        boost::gregorian::date todate( day_clock::local_day() );
+        boost::gregorian::date fromdate( todate - months(1) );
+        boost::gregorian::date taxdate(todate);
+
 
         invMan->charge_operation_auto_price(
                          "GeneralEppOperation"
@@ -1699,7 +1701,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
 
         invMan->createAccountInvoice( registrar_handle, std::string("cz")
             , taxdate
-            , boost::gregorian::date()//from_date not set
+            , fromdate //from_date not set
             , todate, boost::posix_time::ptime(todate));
 
     }
@@ -1779,7 +1781,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
     CORBA::Long clientId = 0;
     ccReg::Response_var r;
 
-    std::string test_domain_fqdn(std::string("testdomain2"));
+    std::string test_domain_fqdn(std::string("testdomain2") + time_string);
 
     try
     {
@@ -1815,7 +1817,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
             CORBA::String_var exdate;
 
             r = epp_ref->DomainCreate(
-                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i)+".cz").c_str(), // fqdn
+                    (test_domain_fqdn+boost::lexical_cast<std::string>(i)+".cz").c_str(), // fqdn
                     "KONTAKT",                // contact
                     "",                       // nsset
                     "",                       // keyset
@@ -1839,7 +1841,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
             period.count = 3;
             CORBA::String_var exdate1;
             r = epp_ref->DomainRenew(
-                    (test_domain_fqdn+"i"+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
+                    (test_domain_fqdn+boost::lexical_cast<std::string>(i-1)+".cz").c_str(), // fqdn
                     exdate,//curExpDate
                     period, //Period_str
                     exdate1,//out timestamp exDate,
@@ -1885,8 +1887,9 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
     }
 
     {
-        boost::gregorian::date taxdate(day_clock::local_day().end_of_month());
-        boost::gregorian::date todate(taxdate + boost::gregorian::days(1));
+        boost::gregorian::date todate( day_clock::local_day() );
+        boost::gregorian::date fromdate( todate - months(1) );
+        boost::gregorian::date taxdate(todate);
 
         invMan->charge_operation_auto_price(
                          "GeneralEppOperation"
@@ -1901,7 +1904,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
 
         invMan->createAccountInvoice( registrar_handle, std::string("cz")
             , taxdate
-            , boost::gregorian::date()//from_date not set
+            , fromdate //from_date not set
             , todate, boost::posix_time::ptime(todate));
 
     }
@@ -2181,30 +2184,48 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     }
     BOOST_CHECK(credit_before - credit_after_renew == test_operation_price);
 
-    boost::gregorian::date taxdate(day_clock::local_day().end_of_month());
-    boost::gregorian::date todate(taxdate + boost::gregorian::days(1));
+    conn.exec_params("DELETE FROM invoice_generation WHERE registrar_id = $1::bigint", Database::query_param_list(registrar_inv_id));
+    {
+        date taxdate(boost::gregorian::from_simple_string((Database::Date(2001,1,31)).to_string()));
+        date todate ( boost::gregorian::from_simple_string((Database::Date(2001,2,1)).to_string()));
+        date fromdate(todate - months(1));
+
+        invMan->createAccountInvoice( registrar_handle, std::string("cz")
+            , taxdate 
+            , fromdate//from_date not set
+            , todate 
+            , boost::posix_time::ptime(todate));
+    }
 
     conn.exec_params("DELETE FROM invoice_generation WHERE registrar_id = $1::bigint", Database::query_param_list(registrar_inv_id));
-    invMan->createAccountInvoice( registrar_handle, std::string("cz")
-        , boost::gregorian::from_simple_string((Database::Date(2001,1,31)).to_string())
-        , boost::gregorian::date()//from_date not set
-        , boost::gregorian::from_simple_string((Database::Date(2001,2,1)).to_string())
-        , boost::posix_time::ptime(boost::gregorian::from_simple_string((Database::Date(2001,2,1)).to_string())));
+    {   
+        boost::gregorian::date todate( day_clock::local_day() );
+        boost::gregorian::date fromdate( todate - months(1) );
+        boost::gregorian::date taxdate(todate);
+
+        invMan->createAccountInvoice( registrar_handle, std::string("cz")
+            , taxdate
+            , fromdate//from_date not set
+            , todate 
+            , boost::posix_time::ptime(todate));
+    }
 
     conn.exec_params("DELETE FROM invoice_generation WHERE registrar_id = $1::bigint", Database::query_param_list(registrar_inv_id));
-    invMan->createAccountInvoice( registrar_handle, std::string("cz")
-        , taxdate
-        , boost::gregorian::date()//from_date not set
-        , todate, boost::posix_time::ptime(todate));
+    {
+        boost::gregorian::date todate( day_clock::local_day() );
+        boost::gregorian::date fromdate( todate - months(1) );
+        boost::gregorian::date taxdate(todate);
 
-    conn.exec_params("DELETE FROM invoice_generation WHERE registrar_id = $1::bigint", Database::query_param_list(registrar_inv_id));
-    BOOST_CHECK_EXCEPTION(
-    invMan->createAccountInvoice( noregistrar_handle, std::string("cz")
-        , taxdate
-        , boost::gregorian::date()//from_date not set
-        , todate, boost::posix_time::ptime(todate))
-        , std::exception
-        , check_std_exception_createAccountInvoice );
+        BOOST_CHECK_EXCEPTION(
+            invMan->createAccountInvoice( noregistrar_handle, std::string("cz")
+                , taxdate
+                , fromdate//from_date not set
+                , todate
+                , boost::posix_time::ptime(todate)
+            )
+            , std::exception
+            , check_std_exception_createAccountInvoice );
+    }
 
     //set operation price back
     conn.exec("update price_list set price = price - 0.11 where zone_id = 1 and operation_id = 2");
