@@ -2704,8 +2704,8 @@ public:
                                 << "o.id";
           action_query.from() << "tmp_invoice_filter_result tmp "
                               << "JOIN invoice_operation io ON (tmp.id = io.ac_invoice_id) "
-                              << "JOIN invoice i ON (tmp.id = i.id) "
                               << "JOIN invoice_operation_charge_map icm ON (io.id = icm.invoice_operation_id) "
+                              << "JOIN invoice i ON (icm.invoice_id = i.id) "
                               << "LEFT JOIN object_registry o ON (io.object_id = o.id) ";
           action_query.group_by() << "tmp.id, o.name, io.crdate, io.date_from, io.date_to, "
                                   << "io.operation_id, io.quantity, o.id, i.vat";
@@ -3012,8 +3012,8 @@ public:
                                     << "o.id";
               action_query.from() << "tmp_invoice_filter_result tmp "
                                   << "JOIN invoice_operation io ON (tmp.id = io.ac_invoice_id) "
-                                  << "JOIN invoice i ON (tmp.id = i.id) "
                                   << "JOIN invoice_operation_charge_map icm ON (io.id = icm.invoice_operation_id) "
+                                  << "JOIN invoice i ON (icm.invoice_id = i.id) "
                                   << "LEFT JOIN object_registry o ON (io.object_id = o.id) ";
               action_query.group_by() << "tmp.id, o.name, io.crdate, io.date_from, io.date_to, "
                                       << "io.operation_id, io.quantity, o.id, i.vat";
