@@ -422,8 +422,6 @@ public:
       boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
       boost::gregorian::date poll_message_date(local_today.year(), local_today.month(), 1);
 
-      std::cout << "Data for the poll message to find " << ptime(poll_message_date) << std::endl;
-
       // TODO handle NULL fields in this method
       std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
           = poll_mgr->getRequestFeeInfoMessage(registrar_id, ptime(poll_message_date));
