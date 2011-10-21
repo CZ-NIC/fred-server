@@ -1603,7 +1603,11 @@ public:
           else {
             // count portion of remains and update lastdate
             date newdate = date(year, 1, 1) - days(1);
-            part = remains * Decimal(boost::lexical_cast<std::string>((lastdate - newdate).days() / (lastdate - firstdate).days()));
+            part = remains *
+                    Decimal(boost::lexical_cast<std::string>(
+                            (lastdate - newdate).days()))
+                  / Decimal(boost::lexical_cast<std::string>(
+                          (lastdate - firstdate).days()));
             lastdate = newdate;
           }
           if(part.is_special()) throw std::runtime_error("addAction part is special");
