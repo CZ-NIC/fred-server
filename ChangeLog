@@ -3,6 +3,7 @@
   * billing fixes
       - interval for operations selection
       - annual partitioning
+      - default taxdate
 
   * rpm dependencies
 
