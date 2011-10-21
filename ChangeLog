@@ -1,3 +1,11 @@
+2011-10-21 Jiri Sadek, Juraj Vicenik, Jan Zima (2.9.1)
+
+  * billing fixes
+      - interval for operations selection
+      - annual partitioning
+
+  * rpm dependencies
+
 2011-10-18 Jiri Sadek, Juraj Vicenik, Jan Zima (2.9.0)
 
   * invoicing
