@@ -953,6 +953,8 @@ struct ResultTestCharge : ChargeTestParams {
         { }
 };
 
+/*
+ * TODO to be updated - inconsistent INSERT
 // thread-safe worker
 // all CHECKs were changed to REQUIRE
 ResultTestCharge testChargeWorker(Fred::Invoicing::Manager *invMan, Database::Date exdate, unsigned reg_units,
@@ -1014,6 +1016,7 @@ ResultTestCharge testChargeWorker(Fred::Invoicing::Manager *invMan, Database::Da
     tx.commit();
     return ret;
 }
+*/
 
 void testChargeEval(const ResultTestCharge &res, bool should_succeed)
 {
@@ -1119,6 +1122,7 @@ void testCreateDomainEvalSucc(const ResultTestCharge &res)
     testCreateDomainEval(res, true);
 }
 
+/*
 void testChargeSucc(Fred::Invoicing::Manager *invMan, Database::Date &exdate, unsigned reg_units,
         unsigned operation, Database::ID zone_id, Database::ID registrar_id)
 {
@@ -1132,6 +1136,7 @@ void testChargeFail(Fred::Invoicing::Manager *invMan, Database::Date exdate, uns
     ResultTestCharge res = testChargeWorker(invMan, exdate, reg_units, operation, zone_id, registrar_id);
     testChargeEval(res, false);
 }
+*/
 
 void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Database::ID zone_cz_id, Database::ID reg_id, Money amount)
 {
@@ -1156,6 +1161,7 @@ void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Data
    Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, out_credit, invoiceid2);
 }
 
+/*
 BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
 {
 
@@ -1199,6 +1205,7 @@ BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
     tx.commit();
 }
 
+TODO: modify
 // try to charge create domain with insufficient credit
 void testChargeInsuffCredit(Fred::Invoicing::Manager *invMan, unsigned reg_units, unsigned op,
         Database::ID zone_id)
@@ -1228,7 +1235,9 @@ void testChargeInsuffCredit(Fred::Invoicing::Manager *invMan, unsigned reg_units
     testChargeFail(invMan, exdate, reg_units, INVOICING_DomainRenew, zone_id, reg_id);
     testChargeFail(invMan, exdate2, reg_units, INVOICING_DomainRenew, zone_id, reg_id);
 }
+*/
 
+/*
 // not thread safe - database data can change in the meantime
 BOOST_AUTO_TEST_CASE( chargeDomainInsuffCredit )
 {
@@ -1262,7 +1271,9 @@ BOOST_AUTO_TEST_CASE( chargeDomainInsuffCredit )
     //testChargeInsuffCredit(invMan.get(), 19, INVOICING_DomainRenew, zone_cz_id);
     //testChargeInsuffCredit(invMan.get(), 19, INVOICING_DomainRenew, zone_enum_id);
 }
+*/
 
+/*
 // not thread safe - database data can change in the meantime
 BOOST_AUTO_TEST_CASE( chargeDomain )
 {
@@ -1330,6 +1341,7 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
    testChargeSucc(invMan.get(), exdate2, 19, INVOICING_DomainRenew, zone_enum_id, regid);
 
 }
+*/
 
 Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units)
 {
@@ -1367,6 +1379,8 @@ Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units)
 
 }
 
+/*
+ * TODO rework
 void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned period,
         Database::Date taxdate, Database::Date exdate, Money amount, bool should_succ)
 {
@@ -1523,6 +1537,7 @@ BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNoCred )
             Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), Money("0"), false);
 
 }
+*/
 
 // test createAccountInvoices with default values supplied by fred-admin
 BOOST_AUTO_TEST_CASE( createAccountInvoices_defaultValues )
@@ -2612,7 +2627,7 @@ public:
 };
 
 
-
+/*
 class TestChargeThreadWorker : public ThreadedTestWorker<ResultTestCharge, ChargeTestParams>
 {
 public:
@@ -2681,6 +2696,7 @@ BOOST_AUTO_TEST_CASE(chargeDomainThreaded)
     threadedTest< TestChargeThreadWorker> (params, &testChargeEvalSucc);
 
 }
+*/
 
 BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 {
