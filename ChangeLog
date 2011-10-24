@@ -1,6 +1,6 @@
 2011-10-24 Juraj Vicenik, Jan Zima (2.9.2)
 
-  * billing fix - annual partitioning
+  * billing fix - annual partitioning (unrepeated operations)
 
   * fix registrar blocking (limit 0)
 
