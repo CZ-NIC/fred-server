@@ -2481,7 +2481,9 @@ public:
 
                 RequestFeeData &rfd = it->second;
 
-                if(reg_price_limit > Decimal("0") && rfd.price > reg_price_limit) {
+                // reg_price_limit always has valid value,
+                // while price for requests can be 0
+                if(rfd.price > Decimal("0") && rfd.price > reg_price_limit) {
                    if (blockRegistrar(rfd.reg_id, epp_client)) {
                        boost::format msg = boost::format(
                                "Registrar %1% blocked: price limit %2% exceeded. Current price: %3%")
