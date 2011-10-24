@@ -1585,11 +1585,15 @@ public:
       Logging::Context ctx("AnnualPartitioningImpl::addAction");
       try
       {
-        // non periodical actions are ignored
-        if (pa->getFromDate().is_special() || pa->getExDate().is_special())
-          return;
+    	//check fromdate
+        if (pa->getFromDate().is_special())
+          throw std::runtime_error(
+        		  "AnnualPartitioningImpl::addAction: from date is special");
         // lastdate will be subtracted down in every iteration
-        date lastdate = pa->getExDate();
+        // non periodical actions shell not be ignored
+
+        date lastdate = pa->getExDate().is_special()
+        		? pa->getFromDate() : pa->getExDate();
         // firstdate is for detection when to stop and for portion counting
         date firstdate = pa->getFromDate();
         // money that still need to be partitioned
