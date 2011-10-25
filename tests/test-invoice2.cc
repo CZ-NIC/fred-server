@@ -1292,7 +1292,7 @@ struct create_geneppoperation_fixture
                   {
                       unsigned long long zone_id ( zone_result[zone_i][0]);
 
-                    if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
+                    //if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
                     {
                       invMan->charge_operation_auto_price(
                                 "GeneralEppOperation"
@@ -1313,7 +1313,7 @@ struct create_geneppoperation_fixture
                   for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
                   {
                       unsigned long long zone_id ( zone_result[zone_i][0]);
-                      if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
+                      //if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
                       {
                         invMan->charge_operation_auto_price(
                                   "GeneralEppOperation"
@@ -1338,7 +1338,7 @@ struct create_geneppoperation_fixture
                   {
                       unsigned long long zone_id ( zone_result[zone_i][0]);
 
-                      if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
+                      //if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
                       {
                         invMan->charge_operation_auto_price(
                                   "GeneralEppOperation"
@@ -1361,7 +1361,7 @@ struct create_geneppoperation_fixture
                   {
                       unsigned long long zone_id ( zone_result[zone_i][0]);
 
-                      if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
+                      //if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
                       {
                         invMan->charge_operation_auto_price(
                                   "GeneralEppOperation"
@@ -1383,7 +1383,7 @@ struct create_geneppoperation_fixture
               {
                   unsigned long long zone_id ( zone_result[zone_i][0]);
 
-                  if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
+                  //if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
                   {
                     invMan->charge_operation_auto_price(
                               "GeneralEppOperation"
