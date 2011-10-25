@@ -2872,6 +2872,15 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
     */
 }
 
+// TODO use it where it's needed
+Database::ID get_zone_cz_id()
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+    return zone_cz_id;
+}
+
+
 //// Test reuqest fee charging
 // TODO use in testcases.
 const Decimal get_credit(Database::ID reg_id, Database::ID zone_id)
@@ -2889,6 +2898,184 @@ const Decimal get_credit(Database::ID reg_id, Database::ID zone_id)
         throw std::runtime_error(msg.str());
     }
 }
+
+void get_vat(int &vat_percent, std::string &vat_koef, date taxdate = day_clock::local_day())
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result vat_details = conn.exec_params(
+                "select vat, koef from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
+                , Database::query_param_list(taxdate));
+
+    if(vat_details.size() == 1 && vat_details[0].size() == 2) {
+        vat_percent = vat_details[0][0];
+        vat_koef = boost::lexical_cast<std::string>(vat_details[0][1]);
+    } else {
+        throw std::runtime_error("Entry in price_vat not found.");
+    }
+}
+
+
+BOOST_AUTO_TEST_CASE(make_debt)
+{
+    const Decimal postpaid_operation ("100000");
+    // assuming that price of request is 0.1
+    const Decimal unit_price ("0.1");
+    Database::ID reg_id  = createTestRegistrar();
+    Database::ID zone_id = get_zone_cz_id();
+
+    date today = day_clock::local_day();
+    Database::Date taxdate(today);
+
+    Money price = std::string("5000.00");//money
+    Money out_credit;
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+    unsigned long long  invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+        , zone_id//zone
+        , reg_id//registrar
+        , price
+        , boost::posix_time::ptime(taxdate), out_credit);//price
+    BOOST_CHECK_EQUAL(invoiceid != 0,true);
+    Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, out_credit, invoiceid);
+
+    Decimal credit_before = get_credit(reg_id, zone_id);
+    std::cout << "Creadit before: " << credit_before << std::endl;
+
+    BOOST_CHECK(
+            invMan->charge_operation_auto_price(
+         "GeneralEppOperation"
+         , zone_id
+         , reg_id
+         , 0 //object_id
+         , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+         , today - boost::gregorian::months(1)//date_from //local date
+         , today // date_to //local date
+         , postpaid_operation )
+    );
+
+    Decimal credit_between = get_credit(reg_id, zone_id);
+    BOOST_CHECK(credit_before - credit_between == unit_price * postpaid_operation);
+    std::cout << "Creadit between: " << credit_between << std::endl;
+
+    BOOST_CHECK(!invMan->chargeDomainCreate(
+            zone_id
+            , reg_id
+            , 0 //object_id
+            , today + years(1)
+            , 1)
+    );
+
+    Decimal credit_after = get_credit(reg_id, zone_id);
+    BOOST_CHECK(credit_after == credit_between);
+}
+
+/*
+ * This does not work yet because the credit estimation is too precise compared to tested code :)
+BOOST_AUTO_TEST_CASE(pay_debt)
+{
+    const Decimal postpaid_operation ("100000");
+    const Decimal unit_price ("0.1");
+    Database::ID reg_id  = createTestRegistrar();
+    Database::ID zone_id = get_zone_cz_id();
+
+    date today = day_clock::local_day();
+    Database::Date taxdate(today);
+
+    Money price = std::string("5000.00");//money
+    Money out_credit;
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+
+    unsigned long long  invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+        , zone_id//zone
+        , reg_id//registrar
+        , price
+        , boost::posix_time::ptime(taxdate), out_credit);//price
+    BOOST_CHECK_EQUAL(invoiceid != 0,true);
+    Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, out_credit, invoiceid);
+
+// assuming that price of request is 0.1
+    BOOST_CHECK(
+            invMan->charge_operation_auto_price(
+         "GeneralEppOperation"
+         , zone_id
+         , reg_id
+         , 0 //object_id
+         , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+         , today - boost::gregorian::months(1)//date_from //local date
+         , today // date_to //local date
+         , postpaid_operation )
+    );
+
+    // recharge 1000
+    const Decimal recharge("1000");
+    unsigned long long  invoiceid2 = invMan->createDepositInvoice(taxdate//taxdate
+        , zone_id//zone
+        , reg_id//registrar
+        , recharge
+        , boost::posix_time::ptime(taxdate), out_credit);//price
+    BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
+    Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, out_credit, invoiceid2);
+
+    int vat;
+    std::string koef;
+    get_vat(vat, koef);
+    Decimal vat_ratio = Decimal("1") - Decimal(boost::lexical_cast<std::string>(vat)) / Decimal("100");
+    Decimal estimated_credit = vat_ratio * (price + recharge) - unit_price * postpaid_operation;
+    Decimal credit_after = get_credit(reg_id, zone_id);
+
+    std::cout << "3 Real credit by query: " << credit_after << std::endl;
+    std::cout << "Estimated credit:     " << estimated_credit << std::endl;
+
+    BOOST_CHECK(credit_after == estimated_credit);
+
+    BOOST_CHECK(!invMan->chargeDomainCreate(
+            zone_id
+            , reg_id
+            , 0 //object_id
+            , today + years(1)
+            , 1)
+    );
+
+    Decimal credit_end = get_credit(reg_id, zone_id);
+    BOOST_CHECK(credit_after == credit_end);
+
+}
+*/
+
+/*
+BOOST_AUTO_TESTCASE()
+{
+
+    Database::Date taxdate;
+
+        taxdate = Database::Date(year,1,1);
+        Money price = std::string("50000.00");//money
+        Money out_credit;
+
+Money prices[] = { std::string("500"), std::string("300"), std::string("1000") };
+const size_t count = 4;
+
+for(unsigned i=0; i<count; i++)
+    unsigned long long  invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+        , zone_cz_id//zone
+        , registrar_inv_id//registrar
+        , prices[i]
+        , boost::posix_time::ptime(taxdate), out_credit);//price
+BOOST_CHECK_EQUAL(invoiceid != 0,true);
+Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
+}
+*/
+
+
+
+
+
+
+
+
 
 // poll message for given time period,
 // default is poll message for the last month
@@ -2914,13 +3101,6 @@ void insert_poll_request_fee(Database::ID reg_id,
     pollMan->save_poll_request_fee(reg_id, poll_from, poll_to, 10, 9999, Decimal("10000"));
 }
 
-// TODO use it where it's needed
-Database::ID get_zone_cz_id()
-{
-    Database::Connection conn = Database::Manager::acquire();
-    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-    return zone_cz_id;
-}
 
 BOOST_AUTO_TEST_CASE(test_charge_request)
 {
