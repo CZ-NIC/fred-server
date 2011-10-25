@@ -1255,6 +1255,162 @@ protected:
     {}
 };
 
+struct create_geneppoperation_fixture
+: virtual zone_fixture
+, virtual registrar_fixture
+, virtual invoice_manager_fixture
+{
+  create_geneppoperation_fixture()
+  {
+      try
+      {
+          boost::gregorian::date tmp_today
+                  = boost::posix_time::second_clock::local_time().date();//today
+
+          boost::gregorian::date first_of_this_month = boost::gregorian::date(tmp_today.year()
+                  , tmp_today.month(), 1);//first day of current month
+
+          boost::gregorian::date last_day_of_last_month = first_of_this_month
+                  - boost::gregorian::days(1);//last day of last month
+
+          boost::gregorian::date first_day_of_last_month = boost::gregorian::date(last_day_of_last_month.year()
+                  , last_day_of_last_month.month(), 1);//first day of last month
+
+
+          for(std::size_t registrar_i = 0; registrar_i < registrar_result.size(); ++registrar_i)
+          {
+              //if nocredit registrar
+              if(std::string(registrar_result[registrar_i][1]).find("NOCREDIT") != std::string::npos)
+                  continue;//don't add credit
+
+              unsigned long long registrar_id (registrar_result[registrar_i][0]);
+
+              //if lowcredit registrar
+              if(std::string(registrar_result[registrar_i][1]).find("LOWCREDIT1") != std::string::npos)
+              {
+                  for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
+                  {
+                      unsigned long long zone_id ( zone_result[zone_i][0]);
+
+                    if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
+                    {
+                      invMan->charge_operation_auto_price(
+                                "GeneralEppOperation"
+                                , zone_id
+                                , registrar_id
+                                , 0 //object_id
+                                , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                , first_day_of_last_month//date_from //local date
+                                , last_day_of_last_month// date_to //local date
+                                , Decimal ("900000"));
+                    }
+                  }//for zone_i
+                  continue;//don't add other credit
+              }//if LOWCREDIT1
+
+              if(std::string(registrar_result[registrar_i][1]).find("LOWCREDIT2") != std::string::npos)
+              {
+                  for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
+                  {
+                      unsigned long long zone_id ( zone_result[zone_i][0]);
+                      if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
+                      {
+                        invMan->charge_operation_auto_price(
+                                  "GeneralEppOperation"
+                                  , zone_id
+                                  , registrar_id
+                                  , 0 //object_id
+                                  , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                , first_day_of_last_month//date_from //local date
+                                , last_day_of_last_month// date_to //local date
+                                  , Decimal ("800000"));
+                      }
+
+
+                  }//for zone_i
+                  continue;//don't add other credit
+              }//if LOWCREDIT2
+
+              //big credit
+              if(std::string(registrar_result[registrar_i][1]).find("BIGCREDIT") != std::string::npos)
+              {
+                  for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
+                  {
+                      unsigned long long zone_id ( zone_result[zone_i][0]);
+
+                      if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
+                      {
+                        invMan->charge_operation_auto_price(
+                                  "GeneralEppOperation"
+                                  , zone_id
+                                  , registrar_id
+                                  , 0 //object_id
+                                  , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                , first_day_of_last_month//date_from //local date
+                                , last_day_of_last_month// date_to //local date
+                                  , Decimal ("700000"));
+                      }
+                  }//for zone_i
+                  continue;//don't add other credit
+              }//if BIGCREDIT
+
+              //negative credit
+              if(std::string(registrar_result[registrar_i][1]).find("NEGCREDIT") != std::string::npos)
+              {
+                  for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
+                  {
+                      unsigned long long zone_id ( zone_result[zone_i][0]);
+
+                      if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
+                      {
+                        invMan->charge_operation_auto_price(
+                                  "GeneralEppOperation"
+                                  , zone_id
+                                  , registrar_id
+                                  , 0 //object_id
+                                  , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                , first_day_of_last_month//date_from //local date
+                                , last_day_of_last_month// date_to //local date
+                                  , Decimal ("600000"));
+                      }
+
+                  }//for zone_i
+                  continue;//don't add other credit
+              }//if NEGCREDIT
+
+              //add a lot of credit
+              for(std::size_t zone_i = 0; zone_i < zone_result.size(); ++zone_i)
+              {
+                  unsigned long long zone_id ( zone_result[zone_i][0]);
+
+                  if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
+                  {
+                    invMan->charge_operation_auto_price(
+                              "GeneralEppOperation"
+                              , zone_id
+                              , registrar_id
+                              , 0 //object_id
+                              , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                            , first_day_of_last_month//date_from //local date
+                            , last_day_of_last_month// date_to //local date
+                              , Decimal ("500000"));
+                  }
+
+              }//for zone_i
+          }//for registrar
+      }
+      catch(...)
+      {
+          fixture_exception_handler("create_geneppoperation_fixture ctor exception", true)();
+      }
+}
+
+protected:
+  ~create_geneppoperation_fixture()
+  {}
+};
+
+
 
 struct Case_invoice_registrar1_Fixture
     : virtual db_conn_acquire_fixture
@@ -1265,6 +1421,7 @@ struct Case_invoice_registrar1_Fixture
     , virtual registrar_fixture
     , virtual try_insert_invoice_prefix_fixture
     , virtual create_deposit_invoice_fixture
+    , virtual create_geneppoperation_fixture
 {
     int j;
 
