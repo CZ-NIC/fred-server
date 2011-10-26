@@ -372,6 +372,7 @@ public:
   {
       TRACE("[CALL] Fred::Invoicing::Manager::chargeDomainCreate()");
       // new implementation
+      if(objectId == 0) throw std::runtime_error("chargeDomainCreate: objectId == 0");
       return charge_operation_auto_price("CreateDomain"//const std::string& operation
                 , zone//unsigned long long zone_id
                 , registrar//unsigned long long registrar_id
@@ -392,6 +393,7 @@ public:
   {
       TRACE("[CALL] Fred::Invoicing::Manager::chargeDomainRenew()");
       // new implementation
+      if(objectId == 0) throw std::runtime_error("chargeDomainRenew: objectId == 0");
       return charge_operation_auto_price("RenewDomain"//const std::string& operation
                 , zone//unsigned long long zone_id
                 , registrar//unsigned long long registrar_id
