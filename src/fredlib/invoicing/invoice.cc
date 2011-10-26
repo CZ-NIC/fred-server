@@ -1050,9 +1050,11 @@ void createAccountInvoices(
             }
             catch (const std::exception& ex)
             {
-                LOGGER(PACKAGE).error(boost::format(
-                 "createAccountInvoices regID %1% zoneID %2% taxdateStr %3% : %4%")
-                  % regID % zoneID % taxdateStr % ex.what());
+                std::string err_msg = str(boost::format(
+                        "createAccountInvoices regID %1% zoneID %2% taxdateStr %3% : %4%")
+                         % regID % zoneID % taxdateStr % ex.what());
+                LOGGER(PACKAGE).error(err_msg);
+                std::cerr << err_msg << std::endl;
             }
         }//for i
 
