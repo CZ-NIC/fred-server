@@ -1054,7 +1054,7 @@ void createAccountInvoices(
                         "createAccountInvoices regID %1% zoneID %2% taxdateStr %3% : %4%")
                          % regID % zoneID % taxdateStr % ex.what());
                 LOGGER(PACKAGE).error(err_msg);
-                std::cerr << err_msg << std::endl;
+                std::cerr << "Error: " << err_msg << std::endl;
             }
         }//for i
 
