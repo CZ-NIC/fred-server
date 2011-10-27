@@ -992,7 +992,7 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("block_registrar options")));
+                        std::string("block_registrar_id options")));
         cfg_opts->add_options()
             ("block_registrar_id", boost::program_options
              ::value<Checked::id>()->notifier(save_optional_id(params.block_id))
@@ -1024,7 +1024,7 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("unblock registrar options")));
+                        std::string("unblock_registrar_id options")));
         cfg_opts->add_options()
             ("unblock_registrar_id", boost::program_options
              ::value<Checked::id>()->notifier(save_optional_id(params.unblock_id))
@@ -1057,7 +1057,7 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("block_registrar options")));
+                        std::string("list_blocked_registrars options")));
         cfg_opts->add_options()
             ("list_blocked_registrars" , boost::program_options
                     ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.list_only)),
@@ -1090,7 +1090,7 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("block_registrar options")));
+                        std::string("block_registrars_over_limit options")));
         cfg_opts->add_options()
             ("block_registrars_over_limit" ,boost::program_options
                     ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.over_limit)),
