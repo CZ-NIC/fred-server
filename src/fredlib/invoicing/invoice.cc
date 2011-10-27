@@ -407,7 +407,7 @@ public:
 
   /// charge registrar for requests for last month (if limit in request_fee_parameters was exceeded)
   // period from is determined by the poll message from 1st of current month (which contains data for last month)
-  // returns false only on error (just like other charge* functions
+  // returns false in case insufficient balance (==applies only to prepaid operations) as in chargeDomain*()
   virtual bool chargeRequestFee(
           const Database::ID &registrar_id)
   {
@@ -444,7 +444,8 @@ public:
           boost::format msg("Registrar %1% was already charged for requests in period ending %2%.");
           msg % registrar_id % poll_message_date;
           LOGGER(PACKAGE).error(msg.str());
-          return false;
+          // no charging - return true
+          return true;
       }
 
       // was number of free requests exceeded
