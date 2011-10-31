@@ -92,9 +92,9 @@ namespace Admin {
         }
 
         for(unsigned i=0;i<result.size();++i) {
-            if( !invMan->chargeRequestFee(result[0][0]) ) {
+            if( !invMan->chargeRequestFee(result[i][0]) ) {
                 boost::format msg("Balance not sufficient for charging requests for registrar ID %1%");
-                msg % result[0][0];
+                msg % result[i][0];
                 LOGGER(PACKAGE).warning(msg);
             }
         }
