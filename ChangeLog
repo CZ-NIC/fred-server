@@ -1,3 +1,7 @@
+2011-10-31 Jiri Sadek (2.9.4)
+
+  * chargeRequestFee fix (all registrars)
+
 2011-10-28 Juraj Vicenik, Jan Zima (2.9.3)
 
   * fred-admin help description fixes
