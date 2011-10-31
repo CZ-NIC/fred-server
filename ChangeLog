@@ -1,3 +1,9 @@
+2011-10-31 Jiri Sadek, Juraj Vicenik, Jan Zima (2.9.5)
+
+  * whois reminder fix for linked status (must be valid)
+
+  * bank payment import fix (statement/payment list check)
+
 2011-10-31 Jiri Sadek (2.9.4)
 
   * chargeRequestFee fix (all registrars)
