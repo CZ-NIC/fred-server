@@ -51,19 +51,19 @@ public:
     }
     Money getBalanceOld() const
     {
-        return ModelBankStatement::getBalanceOld();
+        return Money(ModelBankStatement::getBalanceOld());
     }
     Money getBalanceNew() const
     {
-        return ModelBankStatement::getBalanceNew();
+        return Money(ModelBankStatement::getBalanceNew());
     }
     Money getBalanceCredit() const
     {
-        return ModelBankStatement::getBalanceCredit();
+        return Money(ModelBankStatement::getBalanceCredit());
     }
     Money getBalanceDebet() const
     {
-        return ModelBankStatement::getBalanceDebet();
+        return Money(ModelBankStatement::getBalanceDebet());
     }
     const unsigned long long &getFileId() const
     {
@@ -150,16 +150,33 @@ public:
     bool isValid() const
     {
         Money zero("0");
-        if (getAccountId() != 0
-                && getCreateDate().is_special()
-                && getBalanceOldDate().is_special()
-                && getBalanceNew() == zero
-                && getBalanceOld() == zero
-                && getBalanceCredit() == zero
-                && getBalanceDebet() == zero) {
+        try
+        {
+            bool crdate_is_special = getCreateDate().is_special();
+            bool balanceolddate_is_special = getBalanceOldDate().is_special();
+            bool balance_new_is_zero = (getBalanceNew() == zero);
+            bool balance_old_is_zero = (getBalanceOld() == zero);
+            bool balance_credit_is_zero = (getBalanceCredit() == zero);
+            bool balance_debet_is_zero = (getBalanceDebet() == zero);
 
+            if (getAccountId() != 0
+                && crdate_is_special
+                && balanceolddate_is_special
+                && balance_new_is_zero
+                && balance_old_is_zero
+                && balance_credit_is_zero
+                && balance_debet_is_zero) 
+                {
+                    return false;
+                }
+        }
+        catch(const std::exception& ex)
+        {
+            LOGGER(PACKAGE).warning(
+                    boost::format("isValid: %1%") % ex.what());
             return false;
         }
+
         return true;
     }
 
