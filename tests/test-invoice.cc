@@ -2909,7 +2909,7 @@ void get_vat(int &vat_percent, std::string &vat_koef, date taxdate = day_clock::
 
     if(vat_details.size() == 1 && vat_details[0].size() == 2) {
         vat_percent = vat_details[0][0];
-        vat_koef = boost::lexical_cast<std::string>(vat_details[0][1]);
+        vat_koef = std::string(vat_details[0][1]);
     } else {
         throw std::runtime_error("Entry in price_vat not found.");
     }
@@ -2971,9 +2971,7 @@ BOOST_AUTO_TEST_CASE(make_debt)
     BOOST_CHECK(credit_after == credit_between);
 }
 
-/*
- * This does not work yet because the credit estimation is too precise compared to tested code :)
-BOOST_AUTO_TEST_CASE(pay_debt)
+BOOST_AUTO_TEST_CASE(lower_debt)
 {
     const Decimal postpaid_operation ("100000");
     const Decimal unit_price ("0.1");
@@ -3010,7 +3008,7 @@ BOOST_AUTO_TEST_CASE(pay_debt)
     );
 
     // recharge 1000
-    const Decimal recharge("1000");
+    const Decimal recharge("1500");
     unsigned long long  invoiceid2 = invMan->createDepositInvoice(taxdate//taxdate
         , zone_id//zone
         , reg_id//registrar
@@ -3022,28 +3020,21 @@ BOOST_AUTO_TEST_CASE(pay_debt)
     int vat;
     std::string koef;
     get_vat(vat, koef);
-    Decimal vat_ratio = Decimal("1") - Decimal(boost::lexical_cast<std::string>(vat)) / Decimal("100");
-    Decimal estimated_credit = vat_ratio * (price + recharge) - unit_price * postpaid_operation;
-    Decimal credit_after = get_credit(reg_id, zone_id);
+    Decimal vat_ratio = Decimal("1") - Decimal(koef);
 
-    std::cout << "3 Real credit by query: " << credit_after << std::endl;
-    std::cout << "Estimated credit:     " << estimated_credit << std::endl;
+    Decimal estimated_credit = Decimal(
+                       Decimal(vat_ratio * price).round(2, MPD_ROUND_HALF_UP)
+                     + Decimal(vat_ratio * recharge).round(2, MPD_ROUND_HALF_UP)
+                     - unit_price * postpaid_operation
+        ).round(2, MPD_ROUND_HALF_UP);
+
+    vat_ratio * (price + recharge) - unit_price * postpaid_operation;
+    Decimal credit_after = get_credit(reg_id, zone_id);
 
     BOOST_CHECK(credit_after == estimated_credit);
 
-    BOOST_CHECK(!invMan->chargeDomainCreate(
-            zone_id
-            , reg_id
-            , 0 //object_id
-            , today + years(1)
-            , 1)
-    );
-
-    Decimal credit_end = get_credit(reg_id, zone_id);
-    BOOST_CHECK(credit_after == credit_end);
-
+    // TODO maybe try to create a domain, it shouldn't work
 }
-*/
 
 /*
 BOOST_AUTO_TESTCASE()
