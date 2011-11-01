@@ -3114,6 +3114,7 @@ BOOST_AUTO_TEST_CASE(test_charge_request)
 
 BOOST_AUTO_TEST_CASE(test_charge_request_double)
 {
+    Database::ID zone_cz_id = get_zone_cz_id();
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
 
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
@@ -3121,10 +3122,16 @@ BOOST_AUTO_TEST_CASE(test_charge_request_double)
 
     insert_poll_request_fee(registrar->getId());
 
-
+    Decimal credit_before = get_credit(registrar->getId(), zone_cz_id);
     BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
-    BOOST_CHECK(!invMan->chargeRequestFee(registrar->getId()));
 
+
+    Decimal credit_between = get_credit(registrar->getId(), zone_cz_id);
+    // double charging still return true
+    BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
+    Decimal credit_after = get_credit(registrar->getId(), zone_cz_id);
+
+    BOOST_CHECK(credit_between == credit_after);
 }
 
 BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
