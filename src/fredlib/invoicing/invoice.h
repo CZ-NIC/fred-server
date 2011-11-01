@@ -344,7 +344,8 @@ public:
           const int &units_count) = 0;
 
   virtual bool chargeRequestFee(
-          const Database::ID &registrar_id) = 0;
+          const Database::ID &registrar_id,
+          date poll_msg_period_to = date()) = 0;
 
   virtual void createAccountInvoices(
           const std::string& zone_fqdn

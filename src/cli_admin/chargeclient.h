@@ -31,8 +31,8 @@ public:
     { }
 
     void runMethod();
-    void chargeRequestFeeOneReg(const std::string &handle);
-    void chargeRequestFeeAllRegs(const std::string &except_handles);
+    void chargeRequestFeeOneReg(const std::string &handle, const boost::gregorian::date &poll_msg_period_to);
+    void chargeRequestFeeAllRegs(const std::string &except_handles, const boost::gregorian::date &poll_msg_period_to);
 
 private:
     unsigned long long getRegistrarID(const std::string &handle);

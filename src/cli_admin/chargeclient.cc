@@ -23,12 +23,21 @@
 namespace Admin {
     void ChargeClient::runMethod()
     {
+        boost::gregorian::date poll_msg_period_to;
+        if(params.poll_msg_period_to.is_value_set()) {
+            poll_msg_period_to = from_simple_string(params.poll_msg_period_to.get_value());
+
+            if(poll_msg_period_to.is_special()) {
+                throw std::runtime_error("charge: Invalid poll_msg_period_to.");
+            }
+        }
+
         if(params.only_registrar.is_value_set()) {
-            chargeRequestFeeOneReg(params.only_registrar);
+            chargeRequestFeeOneReg(params.only_registrar, poll_msg_period_to);
         } else if(params.except_registrars.is_value_set()) {
-            chargeRequestFeeAllRegs(params.except_registrars);
+            chargeRequestFeeAllRegs(params.except_registrars, poll_msg_period_to);
         } else {
-            chargeRequestFeeAllRegs(std::string());
+            chargeRequestFeeAllRegs(std::string(), poll_msg_period_to);
         }
     }
 
@@ -47,17 +56,17 @@ namespace Admin {
         return result[0][0];
     }
 
-    void ChargeClient::chargeRequestFeeOneReg(const std::string &handle)
+    void ChargeClient::chargeRequestFeeOneReg(const std::string &handle, const date &poll_msg_period_to)
     {
         Database::ID reg_id = getRegistrarID(handle);
 
         std::auto_ptr<Fred::Invoicing::Manager> invMan(
           Fred::Invoicing::Manager::create());
 
-        invMan->chargeRequestFee(reg_id);
+        invMan->chargeRequestFee(reg_id, poll_msg_period_to);
     }
 
-    void ChargeClient::chargeRequestFeeAllRegs(const std::string &except_handles)
+    void ChargeClient::chargeRequestFeeAllRegs(const std::string &except_handles, const date &poll_msg_period_to)
     {
         std::auto_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
@@ -92,7 +101,7 @@ namespace Admin {
         }
 
         for(unsigned i=0;i<result.size();++i) {
-            if( !invMan->chargeRequestFee(result[i][0]) ) {
+            if( !invMan->chargeRequestFee(result[i][0], poll_msg_period_to) ) {
                 boost::format msg("Balance not sufficient for charging requests for registrar ID %1%");
                 msg % result[i][0];
                 LOGGER(PACKAGE).warning(msg);

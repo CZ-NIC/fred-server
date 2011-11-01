@@ -30,16 +30,19 @@
 struct ChargeRequestFeeArgs {
     optional_string only_registrar;
     optional_string except_registrars;
+    optional_string poll_msg_period_to;
 
     ChargeRequestFeeArgs()
     { }
 
     ChargeRequestFeeArgs(
             const optional_string& _only_registrar,
-            const optional_string& _except_registrars
+            const optional_string& _except_registrars,
+            const optional_string& _poll_msg_period_to
             ) :
         only_registrar(_only_registrar),
-        except_registrars(_except_registrars)
+        except_registrars(_except_registrars),
+        poll_msg_period_to(_poll_msg_period_to)
     { }
 };
 

@@ -1661,6 +1661,9 @@ public:
                 ("all_except_registrars", boost::program_options
                         ::value<Checked::string>()->notifier(save_optional_string(params.except_registrars)),
                          "Charge requests over limit to all registrars except specified IDs")
+                ("poll_msg_period_to", boost::program_options
+                        ::value<Checked::string>()->notifier(save_optional_string(params.poll_msg_period_to)),
+                         "`Period to' of the poll message on which charging should be based")
                          ;
 
         return cfg_opts;

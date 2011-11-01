@@ -409,7 +409,8 @@ public:
   // period from is determined by the poll message from 1st of current month (which contains data for last month)
   // returns false in case insufficient balance (==applies only to prepaid operations) as in chargeDomain*()
   virtual bool chargeRequestFee(
-          const Database::ID &registrar_id)
+          const Database::ID &registrar_id,
+          date poll_msg_period_to)
   {
       TRACE("[CALL] Fred::Invoicing::Manager::chargeRequestFee()");
 
@@ -422,11 +423,17 @@ public:
 
       // poll message must be valid for whole last month - that's the one from 1. day of this month
       boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
-      boost::gregorian::date poll_message_date(local_today.year(), local_today.month(), 1);
+      if(poll_msg_period_to.is_special()) {
+          poll_msg_period_to = date(local_today.year(), local_today.month(), 1);
+      } else {
+          boost::format msg("Using custom poll message for request fee charging, reg: %1%, poll message date: %2% ");
+          msg % registrar_id % poll_msg_period_to;
+          LOGGER(PACKAGE).info(msg);
+      }
 
       // TODO handle NULL fields in this method
       std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
-          = poll_mgr->getRequestFeeInfoMessage(registrar_id, ptime(poll_message_date));
+          = poll_mgr->getRequestFeeInfoMessage(registrar_id, ptime(poll_msg_period_to));
 
       // check if requests were already charged to this registrar and month combination
       Database::Connection conn = Database::Manager::acquire();
@@ -438,11 +445,11 @@ public:
           "AND registrar_id = $1::bigint "
           "AND date_to = $2::date",
             Database::query_param_list (registrar_id)
-                                      (poll_message_date)
+                                      (poll_msg_period_to)
                                       );
       if(res.size() > 0) {
           boost::format msg("Registrar %1% was already charged for requests in period ending %2%.");
-          msg % registrar_id % poll_message_date;
+          msg % registrar_id % poll_msg_period_to;
           LOGGER(PACKAGE).error(msg.str());
           // no charging - return true
           return true;
