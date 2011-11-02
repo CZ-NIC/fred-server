@@ -473,7 +473,7 @@ public:
                 charge_zone_id,//unsigned long long zone_id
                 registrar_id, //unsigned long long registrar_id
                 0, //unsigned long long object_id
-                boost::posix_time::microsec_clock::local_time(), //boost::posix_time::ptime crdate
+                boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodTo()) - seconds(1), //boost::posix_time::ptime crdate
                 boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodFrom()).date(), //boost::gregorian::date date_from
                 boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodTo()).date(), //boost::gregorian::date date_to
                 Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years
