@@ -1081,8 +1081,13 @@ public:
                                                      (period_to)
                                                      (MT_REQUEST_FEE_INFO));
 
-     if(r.size() != 1) {
+     if(r.size() < 1) {
          boost::format msg ("Poll request fee message for registrar %1% with period_to %2% not found");
+         msg % registrar_id % period_to;
+         throw std::runtime_error(msg.str());
+     }
+     if(r.size() > 1) {
+         boost::format msg ("Duplicit request fee poll messages: Registrar %1% with period_to %2%. Database inconsistent.");
          msg % registrar_id % period_to;
          throw std::runtime_error(msg.str());
      }
