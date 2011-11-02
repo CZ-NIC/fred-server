@@ -1343,20 +1343,16 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
 }
 */
 
-Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units)
+Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned requested_quantity)
 {
     //db
     Database::Connection conn = Database::Manager::acquire();
 
     // TODO more detailed
     Database::Result price_res = conn.exec_params(
-        "SELECT "
-            " price, quantity,"
-            " CASE WHEN quantity = 0::numeric(10,2) "
-                " THEN price"
-                " ELSE  (price * $1::numeric / quantity)::numeric(10,2)  END "
-            " AS  actual_price"
-        " FROM price_list where zone_id = $1::integer and operation_id = $2::integer "
+        "SELECT"
+            " price, quantity"
+        " FROM price_list where zone_id = $1::integer and operation_id = $2::integer"
             " AND valid_from < now()"
             " AND ((valid_to is null) or (valid_to > now())) order by valid_from desc limit 1 ",
                               Database::query_param_list(zone_id)
@@ -1368,7 +1364,7 @@ Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units)
     Money base_price = std::string(price_res[0][0]);
     if(base_period > Decimal("0")) {
         return (base_price
-                    * Decimal(boost::lexical_cast<std::string>(reg_units))
+                    * Decimal(boost::lexical_cast<std::string>(requested_quantity))
                     / base_period
                 ).round(2, MPD_ROUND_HALF_UP);
 
@@ -3071,15 +3067,21 @@ Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, 
 // poll message for given time period,
 // default is poll message for the last month
 void insert_poll_request_fee(Database::ID reg_id,
+        Decimal price,
         date poll_from = date(),
         date poll_to   = date()
 
         )
 {
+    Database::ID zone_cz_id = get_zone_cz_id();
+
     DBSharedPtr ldb_dc_guard = connect_DB(Database::Manager::getConnectionString(), std::runtime_error("Failed to connect to database: class DB"));
     std::auto_ptr<Fred::Poll::Manager> pollMan(
         Fred::Poll::Manager::create(ldb_dc_guard)
     );
+
+    Decimal req_unit_price = getOperationPrice(INVOICING_GeneralOperation, zone_cz_id, 1);
+    Decimal req_count = price / req_unit_price;
 
     if(poll_from == date()) {
         date local_today = day_clock::local_day();
@@ -3089,44 +3091,57 @@ void insert_poll_request_fee(Database::ID reg_id,
         poll_to = poll_from + months(1);
     }
 
-    pollMan->save_poll_request_fee(reg_id, poll_from, poll_to, 10, 9999, Decimal("10000"));
+    std::cout << "req_count value: " << req_count.get_string() << std::endl;
+
+    // TODO remove difficult conversion from Decimal to unsigned long long
+    pollMan->save_poll_request_fee(
+        reg_id,
+        poll_from,
+        poll_to,
+        0,
+        boost::lexical_cast<unsigned long long>(
+            boost::lexical_cast<float>(req_count.get_string())
+        ),
+        price
+    );
 }
 
 
 BOOST_AUTO_TEST_CASE(test_charge_request)
 {
+    Decimal price ("10000");
     Database::ID zone_cz_id = get_zone_cz_id();
 
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
-
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
 
-    insert_poll_request_fee(registrar->getId());
+    insert_poll_request_fee(registrar->getId(), price);
 
     Decimal credit_before = get_credit(registrar->getId(), zone_cz_id );
-
     BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
-
     Decimal credit_after = get_credit(registrar->getId(), zone_cz_id );
-    // check via price_list TODO
+
+    BOOST_CHECK(credit_before - credit_after == price);
 }
 
 BOOST_AUTO_TEST_CASE(test_charge_request_double)
 {
+    Decimal price ("10000");
+
     Database::ID zone_cz_id = get_zone_cz_id();
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
 
     std::auto_ptr<Fred::Invoicing::Manager> invMan(
        Fred::Invoicing::Manager::create());
 
-    insert_poll_request_fee(registrar->getId());
+    insert_poll_request_fee(registrar->getId(), price);
 
     Decimal credit_before = get_credit(registrar->getId(), zone_cz_id);
     BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
-
-
     Decimal credit_between = get_credit(registrar->getId(), zone_cz_id);
+
+    BOOST_CHECK(credit_before - credit_between == price);
     // double charging still return true
     BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
     Decimal credit_after = get_credit(registrar->getId(), zone_cz_id);
@@ -3145,16 +3160,18 @@ BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
     date local_today = day_clock::local_day();
     for (unsigned month = 1; month < local_today.month(); ++month) {
         date date_to = date(local_today.year(), month, 1);
-        insert_poll_request_fee(reg_id, date_to-months(1), date_to );
+        insert_poll_request_fee(reg_id, Decimal("10000"), date_to-months(1), date_to );
     }
 
     date first_day_this_month = date(local_today.year(), local_today.month(), 1);
     insert_poll_request_fee(reg_id,
+            Decimal("10000"),
             first_day_this_month,
             first_day_this_month + days(1)
             );
 
     insert_poll_request_fee(reg_id,
+            Decimal("10000"),
             first_day_this_month - months(1),
             first_day_this_month - days(1)
             );
