@@ -73,9 +73,21 @@ namespace Admin {
 
         Database::Connection conn = Database::Manager::acquire();
 
+        unsigned zone_id;
+        Fred::Invoicing::getRequestFeeParams(&zone_id);
+
         Database::Result result;
         if(except_handles.empty()) {
-            result = conn.exec("SELECT id FROM registrar WHERE system = false");
+            result = conn.exec_params("SELECT r.id "
+                    "FROM registrar r "
+                    "JOIN registrarinvoice ri "
+                        "ON ri.registrarid = r.id "
+                        "AND now () > ri.fromdate "
+                        "AND (ri.todate IS NULL OR now() < ri.todate) "
+                    "WHERE r.system  = false "
+                        "AND ri.zone=$1::integer "
+                    "ORDER BY r.id",
+                    Database::query_param_list(zone_id));
         } else {
 
             // TODO split string
@@ -100,13 +112,19 @@ namespace Admin {
                     Database::query_param_list(id_array));
         }
 
+        Database::Transaction tx(conn);
+
         for(unsigned i=0;i<result.size();++i) {
+            // let exceptions in charging terminate the whole transaction
             if( !invMan->chargeRequestFee(result[i][0], poll_msg_period_to) ) {
                 boost::format msg("Balance not sufficient for charging requests for registrar ID %1%");
                 msg % result[i][0];
-                LOGGER(PACKAGE).warning(msg);
+                LOGGER(PACKAGE).error(msg);
+                throw std::runtime_error(msg.str());
             }
         }
+
+        tx.commit();
     }
 
 }; // namespace Admin
