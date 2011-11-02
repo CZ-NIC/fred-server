@@ -172,8 +172,6 @@ public:
         }
         catch(const std::exception& ex)
         {
-            LOGGER(PACKAGE).warning(
-                    boost::format("isValid: %1%") % ex.what());
             return false;
         }
 
