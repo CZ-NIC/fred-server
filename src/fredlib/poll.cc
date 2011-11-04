@@ -980,19 +980,22 @@ public:
       tx.commit();
   }
 
-  virtual void createRequestFeeMessages(Logger::LoggerClient *logger_client)
+  virtual void createRequestFeeMessages(Logger::LoggerClient *logger_client, boost::gregorian::date period_to)
   {
-      boost::gregorian::date p_to = boost::gregorian::day_clock::local_day();
+      if(period_to.is_special()) {
+          period_to = boost::gregorian::day_clock::local_day();
+      }
+
       boost::gregorian::date p_from;
-      if (p_to.day() == 1) {
-          p_from = p_to - boost::gregorian::months(1);
+      if (period_to.day() == 1) {
+          p_from = period_to - boost::gregorian::months(1);
       }
       else {
-          p_from = boost::gregorian::date(p_to.year(), p_to.month(), 1);
+          p_from = boost::gregorian::date(period_to.year(), period_to.month(), 1);
       }
 
       LOGGER(PACKAGE).debug(boost::format("creating request fee messages"
-                  " for interval <%1%; %2%)") % p_from % p_to);
+                  " for interval <%1%; %2%)") % p_from % period_to);
 
       std::auto_ptr<Fred::Registrar::Manager> regman(
                Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
@@ -1000,7 +1003,7 @@ public:
           = regman->getRequestFeeDataMap(
                   logger_client,
                   boost::posix_time::ptime(p_from),
-                  boost::posix_time::ptime(p_to));
+                  boost::posix_time::ptime(period_to));
 
       for (RequestFeeDataMap::iterator it = request_fee->begin();
               it != request_fee->end();
@@ -1008,13 +1011,13 @@ public:
           RequestFeeData rfd = it->second;
 
           // duplicity check
-         if (is_poll_request_fee_present(rfd.reg_id, p_from, p_to)) {
+         if (is_poll_request_fee_present(rfd.reg_id, p_from, period_to)) {
              LOGGER(PACKAGE).info(boost::format(
                 "Poll request fee message for parametres registrar"
                 " %1%, from: %2%, to %3% already created, skipping")
                    % rfd.reg_id
                    % p_from
-                   % p_to);
+                   % period_to);
 
              continue;
          }
@@ -1027,7 +1030,7 @@ public:
                  % rfd.request_total_free
                  % rfd.price);
 
-         save_poll_request_fee(rfd.reg_id, p_from, p_to, rfd.request_total_free, rfd.request_count, rfd.price);
+         save_poll_request_fee(rfd.reg_id, p_from, period_to, rfd.request_total_free, rfd.request_count, rfd.price);
 
       }
   }

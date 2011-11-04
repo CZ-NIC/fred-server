@@ -96,6 +96,17 @@ PollClient::create_state_changes()
 void
 PollClient::create_request_fee_messages()
 {
+    boost::gregorian::date period_to;
+    if(poll_create_request_fee_messages_params.poll_period_to.is_value_set()) {
+        period_to = from_simple_string(
+            poll_create_request_fee_messages_params.poll_period_to.get_value()
+        );
+
+        if(period_to.is_special()) {
+            throw std::runtime_error("charge: Invalid poll_msg_period_to.");
+        }
+    }
+
     // ORB init
     FakedArgs orb_fa = CfgArgGroups::instance()->fa;
 
@@ -114,8 +125,7 @@ PollClient::create_request_fee_messages()
                 m_db)
             );
 
-
-    pollMan->createRequestFeeMessages(cl.get());
+    pollMan->createRequestFeeMessages(cl.get(), period_to);
 
 }
 

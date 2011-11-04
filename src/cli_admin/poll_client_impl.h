@@ -49,6 +49,7 @@ struct poll_list_all_impl
       , false //poll_create_statechanges
       , PollCreateStatechangesArgs()
       , false
+      , PollCreateRequestFeeMessagesArgs()
       );
       poll_client.runMethod();
       return ;
@@ -73,6 +74,7 @@ struct poll_create_statechanges_impl
         , true //poll_create_statechanges
         , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientPollCreateStatechangesArgsGrp>()->params //PollCreateStatechangesArgs()
         , false
+        , PollCreateRequestFeeMessagesArgs()
         );
       poll_client.runMethod();
 
@@ -97,8 +99,9 @@ struct poll_create_request_fee_messages_impl
           , false //poll_list_all
           , PollListAllArgs()
           , false //poll_create_statechanges
-          , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientPollCreateStatechangesArgsGrp>()->params //PollCreateStatechangesArgs()
+          , PollCreateStatechangesArgs()
           , true
+          , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientPollCreateRequestFeeMessagesArgsGrp>()->params
           );
         poll_client.runMethod();
 

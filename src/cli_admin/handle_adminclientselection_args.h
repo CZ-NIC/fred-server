@@ -953,6 +953,7 @@ public:
 class HandleAdminClientPollCreateRequestFeeMessagesArgsGrp : public HandleCommandGrpArgs
 {
 public:
+    PollCreateRequestFeeMessagesArgs params;
     CommandDescription get_command_option()
     {
         return CommandDescription("poll_create_request_fee_messages");
@@ -965,7 +966,11 @@ public:
                 new boost::program_options::options_description(
                         std::string("poll_create_request_fee_messages options")));
         cfg_opts->add_options()
-            ("poll_create_request_fee_messages", "create requests fee info messages");
+            ("poll_create_request_fee_messages", "create requests fee info messages")
+            ("poll_period_to", boost::program_options::value<Checked::string>()->notifier(
+                    save_optional_string(params.poll_period_to)),
+                    "create request fee poll messages for given date")
+            ;
         return cfg_opts;
     }//get_options_description
     std::size_t handle( int argc, char* argv[],  FakedArgs &fa

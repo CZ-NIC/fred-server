@@ -160,7 +160,7 @@ namespace Fred
       /// create messages about low credit (called after credit change)
       virtual void createLowCreditMessages() = 0;
       /// create messages about request count and request fee
-      virtual void createRequestFeeMessages(Logger::LoggerClient *logger_client) = 0;
+      virtual void createRequestFeeMessages(Logger::LoggerClient *logger_client, boost::gregorian::date period_to) = 0;
       /// get last request fee message data
       virtual std::auto_ptr<MessageRequestFeeInfo> getLastRequestFeeInfoMessage(const std::string &_registrar) const = 0;
       /// get request fee message data with specified PeriodTo

@@ -81,6 +81,19 @@ struct PollCreateStatechangesArgs
 
 };
 
+struct PollCreateRequestFeeMessagesArgs
+{
+    optional_string poll_period_to;
+
+    PollCreateRequestFeeMessagesArgs()
+    { }
+
+    PollCreateRequestFeeMessagesArgs(
+            const optional_string &_poll_period_to
+            )
+    : poll_period_to(_poll_period_to)
+    { }
+};
 
 
 #endif // BANK_PARAMS_H_
