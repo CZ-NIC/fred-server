@@ -1,3 +1,13 @@
+2011-11-07 Juraj Vicenik, Jan Zima (2.9.6)
+
+  * custom date for creating request fee poll messages
+
+  * custom date (poll message) for request fee charging
+
+  * request fee charging fixess (invoice operation crdate, transaction added)
+
+  * several log message corrected
+
 2011-10-31 Jiri Sadek, Juraj Vicenik, Jan Zima (2.9.5)
 
   * whois reminder fix for linked status (must be valid)
