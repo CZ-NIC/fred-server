@@ -134,6 +134,15 @@ bool check_dummy(std::exception const & ex)
     return true;
 }
 
+// TODO use it where it's needed
+Database::ID get_zone_cz_id()
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+    return zone_cz_id;
+}
+
+
 /*
 //  old handler
 // this one rethrows - does not work well with boost framework
@@ -185,6 +194,12 @@ bool check_std_exception_createAccountInvoice(std::exception const & ex)
 {
     std::string ex_msg(ex.what());
     return (ex_msg.find(std::string("createAccountInvoice")) != std::string::npos);
+}
+
+bool check_std_exception_billing_fail(std::exception const & ex)
+{
+    std::string ex_msg(ex.what());
+    return (ex_msg.find(std::string("Billing failure")) != std::string::npos);
 }
 
 
@@ -2785,12 +2800,22 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 
 }
 
-
-BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
+void createCzDomain(Database::ID regid, const std::string &reg_handle)
 {
+    Database::ID zone_cz_id = get_zone_cz_id();
 
     std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
 
+   // ------------------ login
+
+   CORBA::Long clientId = epp_backend_login(myccReg_EPP_i.get(), reg_handle);
+
+   testCreateDomainDirectWorker(myccReg_EPP_i.get(), Database::Date(), 1,
+          INVOICING_DomainCreate, regid, 1, clientId, zone_cz_id);
+}
+
+BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
+{
     // registrar
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
     unsigned long long registrar_inv_id = registrar->getId();
@@ -2816,64 +2841,7 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
      BOOST_CHECK_EQUAL(invoiceid != 0,true);
      Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
-
-    // ------------------ login
-
-    CORBA::Long clientId = epp_backend_login(myccReg_EPP_i.get(), registrar_handle);
-
-    testCreateDomainDirectWorker(myccReg_EPP_i.get(), Database::Date(), 1,
-           INVOICING_DomainCreate, registrar->getId(), 1, clientId, zone_cz_id);
-
-    /*
-    reg_units = 6;
-    int number   = 1;
-
-    // call
-    ccReg::Period_str period;
-    period.count = reg_units;
-    period.unit = ccReg::unit_month;
-    ccReg::EppParams epp_params;
-    epp_params.requestID = clientId + number;
-    epp_params.sessionID = clientId;
-    epp_params.clTRID = "";
-    epp_params.XML = "";
-    CORBA::String_var crdate;
-    CORBA::String_var exdate;
-
-        std::string test_domain_fqdn((boost::format("tdomain%1%-%2%.cz") % time_string % number).str());
-
-    try {
-        r = myccReg_EPP_i->DomainCreate(
-            (test_domain_fqdn).c_str(), // fqdn
-            "KONTAKT",                // contact
-            "",                       // nsset
-            "",                       // keyset
-            "",                       // authinfo
-            period,                   // reg. period
-            ccReg::AdminContact(),    // admin contact list
-            crdate,                   // create datetime (output)
-            exdate,                   // expiration date (output)
-            epp_params,               // common call params
-            ccReg::ExtensionList());
-
-    } catch (ccReg::EPP::EppError &ex) {
-        boost::format message = boost::format(" EPP Exception: %1%: %2%") % ex.errCode % ex.errMsg;
-        throw std::runtime_error(message.str());
-    }
-
-    if(r->code != 1000) {
-        std::cerr << "ERROR: Return code: " << r->code << std::endl;
-        throw std::runtime_error("Error received from DomainCreate call");
-    }
-    */
-}
-
-// TODO use it where it's needed
-Database::ID get_zone_cz_id()
-{
-    Database::Connection conn = Database::Manager::acquire();
-    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-    return zone_cz_id;
+     createCzDomain(registrar->getId(), registrar_handle);
 }
 
 
@@ -2914,10 +2882,12 @@ void get_vat(int &vat_percent, std::string &vat_koef, date taxdate = day_clock::
 
 BOOST_AUTO_TEST_CASE(make_debt)
 {
-    const Decimal postpaid_operation ("100000");
+    const Decimal postpaid_op_price ("100000");
     // assuming that price of request is 0.1
     const Decimal unit_price ("0.1");
-    Database::ID reg_id  = createTestRegistrar();
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+
+    Database::ID reg_id = registrar->getId();
     Database::ID zone_id = get_zone_cz_id();
 
     date today = day_clock::local_day();
@@ -2937,7 +2907,7 @@ BOOST_AUTO_TEST_CASE(make_debt)
     Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, out_credit, invoiceid);
 
     Decimal credit_before = get_credit(reg_id, zone_id);
-    std::cout << "Creadit before: " << credit_before << std::endl;
+    std::cout << "Credit before: " << credit_before << std::endl;
 
     BOOST_CHECK(
             invMan->charge_operation_auto_price(
@@ -2948,19 +2918,17 @@ BOOST_AUTO_TEST_CASE(make_debt)
          , boost::posix_time::second_clock::local_time() //crdate //local timestamp
          , today - boost::gregorian::months(1)//date_from //local date
          , today // date_to //local date
-         , postpaid_operation )
+         , postpaid_op_price )
     );
 
     Decimal credit_between = get_credit(reg_id, zone_id);
-    BOOST_CHECK(credit_before - credit_between == unit_price * postpaid_operation);
-    std::cout << "Creadit between: " << credit_between << std::endl;
+    BOOST_CHECK(credit_before - credit_between == unit_price * postpaid_op_price);
+    std::cout << "Credit between: " << credit_between << std::endl;
 
-    BOOST_CHECK(!invMan->chargeDomainCreate(
-            zone_id
-            , reg_id
-            , 0 //object_id
-            , today + years(1)
-            , 1)
+    BOOST_CHECK_EXCEPTION(
+            createCzDomain(reg_id, registrar->getHandle()),
+            std::runtime_error,
+            check_std_exception_billing_fail
     );
 
     Decimal credit_after = get_credit(reg_id, zone_id);
@@ -2971,8 +2939,10 @@ BOOST_AUTO_TEST_CASE(lower_debt)
 {
     const Decimal postpaid_operation ("100000");
     const Decimal unit_price ("0.1");
-    Database::ID reg_id  = createTestRegistrar();
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
     Database::ID zone_id = get_zone_cz_id();
+
+    Database::ID reg_id = registrar->getId();
 
     date today = day_clock::local_day();
     Database::Date taxdate(today);
@@ -3012,6 +2982,12 @@ BOOST_AUTO_TEST_CASE(lower_debt)
         , boost::posix_time::ptime(taxdate), out_credit);//price
     BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
     Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, out_credit, invoiceid2);
+
+    BOOST_CHECK_EXCEPTION(
+            createCzDomain(reg_id, registrar->getHandle()),
+            std::runtime_error,
+            check_std_exception_billing_fail
+    );
 
     int vat;
     std::string koef;
