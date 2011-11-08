@@ -19,6 +19,17 @@ void init_corba_container() {
 
 }
 
+void handle_epp_exception(ccReg::EPP::EppError &ex)
+{
+    std::ostringstream msg;
+    msg << " EPP Exception: " << ex.errCode << ": " << ex.errMsg << ", Reason: ";
+
+    for (unsigned i=0;i<ex.errorList.length();i++) {
+        msg << ex.errorList[i].reason;
+    }
+    throw std::runtime_error(msg.str());
+}
+
 void EPP_backend_init(ccReg_EPP_i *epp_i, HandleRifdArgs *rifd_args_ptr)
 {
     epp_i->CreateSession(

@@ -962,6 +962,8 @@ tests_test_server_SOURCES = tests/test-server.cc \
 					 tests/test-invoice-common.cc \
                      tests/test-invoice.cc \
                      tests/test-common-threaded.h \
+                     tests/test-common-registry.h \
+                     tests/test-common-registry.cc \                     
                      tests/test-invoice2.cc \
                      tests/test-decimal.cc \
                      tests/test-shellcmd.cc \

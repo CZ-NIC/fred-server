@@ -36,6 +36,8 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "test-common-registry.h"
+
 #include "setup_server_decl.h"
 
 #include "cfg/handle_general_args.h"
@@ -44,7 +46,7 @@
 
 
 #include "types/money.h"
-#include "fredlib/registrar.h"
+//#include "fredlib/registrar.h"
 #include "fredlib/invoicing/invoice.h"
 
 #include "poll.h"
@@ -81,39 +83,6 @@ using namespace Fred::Invoicing;
 const std::string server_name = "test-invoice";
 
 
-//insertInvoicePrefix
-void try_insert_invoice_prefix()
-{
-    //db
-    Database::Connection conn = Database::Manager::acquire();
-    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
-            Fred::Invoicing::Manager::create());
-
-    for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
-    {
-        try{
-        invMan->insertInvoicePrefix(
-                 zone_cz_id//zoneId
-                , 0//type
-                , year//year
-                , year*10000//prefix
-                );
-        }catch(...){}
-
-        try{
-        invMan->insertInvoicePrefix(
-                zone_cz_id//zoneId
-                , 1//type
-                , year//year
-                , year*10000 + 1000//prefix
-                );
-        }catch(...){}
-
-}//for insertInvoicePrefix
-}
-
 
 struct registrar_credit_item
 {
@@ -125,23 +94,28 @@ struct registrar_credit_item
   Database::Date taxdate;
 };
 
-static std::string zone_registrar_credit_query (
-        "SELECT credit FROM registrar_credit"
-        " WHERE zone_id = $1::bigint AND registrar_id =$2::bigint");
-
-bool check_dummy(std::exception const & ex)
+void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Database::ID zone_cz_id, Database::ID reg_id, Money amount)
 {
-    return true;
-}
+    Money out_credit;
+   Database::ID invoiceid = man->createDepositInvoice(taxdate //taxdate
+                   , zone_cz_id//zone
+                   , reg_id//registrar
+                   , amount
+                   , boost::posix_time::ptime(taxdate)
+                   , out_credit);//price
+   BOOST_CHECK_EQUAL(invoiceid != 0,true);
+   Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, out_credit, invoiceid);
 
-// TODO use it where it's needed
-Database::ID get_zone_cz_id()
-{
-    Database::Connection conn = Database::Manager::acquire();
-    Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-    return zone_cz_id;
+   // add credit for new registrar
+   Database::ID invoiceid2 = man->createDepositInvoice(taxdate //taxdate
+                   , zone_cz_id//zone
+                   , reg_id//registrar
+                   , amount
+                   , boost::posix_time::ptime(taxdate)
+                   , out_credit);//price
+   BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
+   Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, out_credit, invoiceid2);
 }
-
 
 /*
 //  old handler
@@ -158,102 +132,6 @@ void handle_epp_exception(ccReg::EPP::EppError &ex)
     throw;    
 }
 */
-
-
-void handle_epp_exception(ccReg::EPP::EppError &ex) 
-{
-    std::ostringstream msg;
-    msg << " EPP Exception: " << ex.errCode << ": " << ex.errMsg << ", Reason: ";
-
-    for (unsigned i=0;i<ex.errorList.length();i++) {
-        msg << ex.errorList[i].reason;
-    }
-    throw std::runtime_error(msg.str());
-}
-
-
-bool check_std_exception_invoice_prefix(std::exception const & ex)
-{
-    std::string ex_msg(ex.what());
-    return (ex_msg.find(std::string("Missing invoice prefix")) != std::string::npos);
-}
-
-bool check_std_exception_out_of_range(std::exception const & ex)
-{
-    std::string ex_msg(ex.what());
-    return (ex_msg.find(std::string("Out of range")) != std::string::npos);
-}
-
-bool check_std_exception_archiveInvoices(std::exception const & ex)
-{
-    std::string ex_msg(ex.what());
-    return (ex_msg.find(std::string("archiveInvoices")) != std::string::npos);
-}
-
-bool check_std_exception_createAccountInvoice(std::exception const & ex)
-{
-    std::string ex_msg(ex.what());
-    return (ex_msg.find(std::string("createAccountInvoice")) != std::string::npos);
-}
-
-bool check_std_exception_billing_fail(std::exception const & ex)
-{
-    std::string ex_msg(ex.what());
-    return (ex_msg.find(std::string("Billing failure")) != std::string::npos);
-}
-
-
-Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned reg_units);
-
-
-
-Fred::Registrar::Registrar::AutoPtr createTestRegistrarClass()
-{
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle = std::string("REG-FREDTEST") + time_string;
-    Fred::Registrar::Manager::AutoPtr regMan
-             = Fred::Registrar::Manager::create(DBSharedPtr());
-    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-
-    registrar->setName(registrar_handle+"_Name");
-    registrar->setOrganization(registrar_handle+"_Organization");
-    registrar->setCity("Brno");
-    registrar->setStreet1("Street 1");
-    registrar->setStreet2("Street 2");
-    registrar->setStreet2("Street 3");
-    registrar->setDic("1234567889");
-    registrar->setEmail("info@nic.cz");
-    registrar->setFax("+420.123456");
-    registrar->setIco("92345678899");
-    registrar->setPostalCode("11150");
-    registrar->setProvince("noprovince");
-    registrar->setTelephone("+420.987654");
-    registrar->setVarSymb("555666");
-    registrar->setURL("http://ucho.cz");
-
-    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar->setVat(true);
-    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
-    registrar_acl->setCertificateMD5("");
-    registrar_acl->setPassword("");
-    registrar->save();
-
-    //add registrar into zone
-    std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
-    Database::Date rzfromDate;
-    Database::Date rztoDate;
-    Fred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
-    Fred::Registrar::addRegistrarZone(registrar_handle, "0.2.4.e164.arpa", rzfromDate, rztoDate);
-
-    return registrar;
-}
-
-Database::ID createTestRegistrar()
-{
-    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
-    return registrar->getId();
-}
 
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
 {
@@ -1153,28 +1031,7 @@ void testChargeFail(Fred::Invoicing::Manager *invMan, Database::Date exdate, uns
 }
 */
 
-void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Database::ID zone_cz_id, Database::ID reg_id, Money amount)
-{
-    Money out_credit;
-   Database::ID invoiceid = man->createDepositInvoice(taxdate //taxdate
-                   , zone_cz_id//zone
-                   , reg_id//registrar
-                   , amount
-                   , boost::posix_time::ptime(taxdate)
-                   , out_credit);//price
-   BOOST_CHECK_EQUAL(invoiceid != 0,true);
-   Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, out_credit, invoiceid);
 
-   // add credit for new registrar
-   Database::ID invoiceid2 = man->createDepositInvoice(taxdate //taxdate
-                   , zone_cz_id//zone
-                   , reg_id//registrar
-                   , amount
-                   , boost::posix_time::ptime(taxdate)
-                   , out_credit);//price
-   BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
-   Fred::Credit::add_credit_to_invoice( reg_id,  zone_cz_id, out_credit, invoiceid2);
-}
 
 /*
 BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
@@ -1358,37 +1215,6 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
 }
 */
 
-Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned requested_quantity)
-{
-    //db
-    Database::Connection conn = Database::Manager::acquire();
-
-    // TODO more detailed
-    Database::Result price_res = conn.exec_params(
-        "SELECT"
-            " price, quantity"
-        " FROM price_list where zone_id = $1::integer and operation_id = $2::integer"
-            " AND valid_from < now()"
-            " AND ((valid_to is null) or (valid_to > now())) order by valid_from desc limit 1 ",
-                              Database::query_param_list(zone_id)
-                                                        (op));
-
-    BOOST_REQUIRE_MESSAGE(price_res.size() > 0, "Fetching record from price_list");
-
-    Decimal base_period = std::string(price_res[0][1]);
-    Money base_price = std::string(price_res[0][0]);
-    if(base_period > Decimal("0")) {
-        return (base_price
-                    * Decimal(boost::lexical_cast<std::string>(requested_quantity))
-                    / base_period
-                ).round(2, MPD_ROUND_HALF_UP);
-
-    } else {
-        return base_price;
-    }
-
-
-}
 
 /*
  * TODO rework
@@ -2594,13 +2420,10 @@ ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Database
         }
 
     } else if (operation == INVOICING_DomainRenew) {
-        THREAD_BOOST_ERROR("Not implemented");
+        throw std::runtime_error("Not implemented");
     } else {
-        THREAD_BOOST_ERROR("Not implemented");
+        throw std::runtime_error("Not implemented");
     }
-
-
-
 
     return ret;
 }
@@ -2845,39 +2668,6 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
 }
 
 
-//// Test reuqest fee charging
-// TODO use in testcases.
-const Decimal get_credit(Database::ID reg_id, Database::ID zone_id)
-{
-    Database::Connection conn = Database::Manager::acquire();
-
-    Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
-            , Database::query_param_list(zone_id)(reg_id));
-
-    if(credit_res.size() == 1 && credit_res[0].size() == 1) {
-        return Decimal(std::string(credit_res[0][0]));
-    } else {
-        boost::format msg("Credit for registrar %1% and zone %2% not found. ");
-        msg % reg_id % zone_id;
-        throw std::runtime_error(msg.str());
-    }
-}
-
-void get_vat(int &vat_percent, std::string &vat_koef, date taxdate = day_clock::local_day())
-{
-    Database::Connection conn = Database::Manager::acquire();
-
-    Database::Result vat_details = conn.exec_params(
-                "select vat, koef from price_vat where valid_to > $1::date or valid_to is null order by valid_to limit 1"
-                , Database::query_param_list(taxdate));
-
-    if(vat_details.size() == 1 && vat_details[0].size() == 2) {
-        vat_percent = vat_details[0][0];
-        vat_koef = std::string(vat_details[0][1]);
-    } else {
-        throw std::runtime_error("Entry in price_vat not found.");
-    }
-}
 
 
 BOOST_AUTO_TEST_CASE(make_debt)
@@ -3038,49 +2828,6 @@ Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, 
 
 
 
-
-
-// poll message for given time period,
-// default is poll message for the last month
-void insert_poll_request_fee(Database::ID reg_id,
-        Decimal price,
-        date poll_from = date(),
-        date poll_to   = date()
-
-        )
-{
-    Database::ID zone_cz_id = get_zone_cz_id();
-
-    DBSharedPtr ldb_dc_guard = connect_DB(Database::Manager::getConnectionString(), std::runtime_error("Failed to connect to database: class DB"));
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
-        Fred::Poll::Manager::create(ldb_dc_guard)
-    );
-
-    Decimal req_unit_price = getOperationPrice(INVOICING_GeneralOperation, zone_cz_id, 1);
-    Decimal req_count = price / req_unit_price;
-
-    if(poll_from == date()) {
-        date local_today = day_clock::local_day();
-        poll_from = date(local_today.year(), local_today.month(), 1) - months(1);
-    }
-    if(poll_to == date()) {
-        poll_to = poll_from + months(1);
-    }
-
-    std::cout << "req_count value: " << req_count.get_string() << std::endl;
-
-    // TODO remove difficult conversion from Decimal to unsigned long long
-    pollMan->save_poll_request_fee(
-        reg_id,
-        poll_from,
-        poll_to,
-        0,
-        boost::lexical_cast<unsigned long long>(
-            boost::lexical_cast<float>(req_count.get_string())
-        ),
-        price
-    );
-}
 
 
 BOOST_AUTO_TEST_CASE(test_charge_request)
