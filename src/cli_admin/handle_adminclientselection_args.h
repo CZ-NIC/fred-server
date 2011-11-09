@@ -1665,10 +1665,12 @@ public:
                          "Charge requests over limit only to specified registrar handle")
                 ("all_except_registrars", boost::program_options
                         ::value<Checked::string>()->notifier(save_optional_string(params.except_registrars)),
-                         "Charge requests over limit to all registrars except specified IDs")
+                         "Charge requests over limit to all registrars except specified comma separated handles")
                 ("poll_msg_period_to", boost::program_options
                         ::value<Checked::string>()->notifier(save_optional_string(params.poll_msg_period_to)),
-                         "`Period to' of the poll message on which charging should be based")
+                         "`Period to' of the poll message on which charging should be based. "
+                         "It has to be first day of a month and it represents requests for the previous month. "
+                         "e.g.: 2011-10-01 would call charging for September 2011. ")
                          ;
 
         return cfg_opts;

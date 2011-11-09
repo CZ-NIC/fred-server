@@ -23,12 +23,29 @@
 namespace Admin {
     void ChargeClient::runMethod()
     {
+        // parse period_to input
         boost::gregorian::date poll_msg_period_to;
         if(params.poll_msg_period_to.is_value_set()) {
             poll_msg_period_to = from_simple_string(params.poll_msg_period_to.get_value());
 
             if(poll_msg_period_to.is_special()) {
                 throw std::runtime_error("charge: Invalid poll_msg_period_to.");
+            }
+        }
+
+        // validate input and determine what period to use
+        boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
+
+        if(poll_msg_period_to.is_special()) {
+            poll_msg_period_to = date(local_today.year(), local_today.month(), 1);
+        } else {
+            if(poll_msg_period_to.day() != 1) {
+                throw std::runtime_error("Invalid poll message period_to - must be beginning of month");
+            }
+            if(poll_msg_period_to.month() > local_today.month()) {
+                std::string msg("Warning: charging for requests in the future.");
+                std::cout << msg << std::endl;
+                LOGGER(PACKAGE).warning(msg);
             }
         }
 
@@ -76,18 +93,23 @@ namespace Admin {
         unsigned zone_id;
         Fred::Invoicing::getRequestFeeParams(&zone_id);
 
+        date poll_msg_period_from = poll_msg_period_to - months(1);
+
+
         Database::Result result;
         if(except_handles.empty()) {
             result = conn.exec_params("SELECT r.id "
                     "FROM registrar r "
                     "JOIN registrarinvoice ri "
                         "ON ri.registrarid = r.id "
-                        "AND now () > ri.fromdate "
-                        "AND (ri.todate IS NULL OR now() < ri.todate) "
+                        "AND $1::date >= ri.fromdate "
+                        "AND (ri.todate IS NULL OR $1::date <= ri.todate) "
                     "WHERE r.system  = false "
-                        "AND ri.zone=$1::integer "
+                        "AND ri.zone=$2::integer "
                     "ORDER BY r.id",
-                    Database::query_param_list(zone_id));
+                    Database::query_param_list(poll_msg_period_from)
+                                              (zone_id)
+                );
         } else {
 
             // TODO split string

@@ -2824,10 +2824,13 @@ Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, 
 
 
 
+bool default_charge_request_fee(Fred::Invoicing::Manager *manager, Database::ID reg_id)
+{
+    boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
+    date poll_msg_period_to = date(local_today.year(), local_today.month(), 1);
 
-
-
-
+    return manager->chargeRequestFee(reg_id, poll_msg_period_to);
+}
 
 
 BOOST_AUTO_TEST_CASE(test_charge_request)
@@ -2842,7 +2845,7 @@ BOOST_AUTO_TEST_CASE(test_charge_request)
     insert_poll_request_fee(registrar->getId(), price);
 
     Decimal credit_before = get_credit(registrar->getId(), zone_cz_id );
-    BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
+    BOOST_CHECK(default_charge_request_fee(invMan.get(), registrar->getId()));
     Decimal credit_after = get_credit(registrar->getId(), zone_cz_id );
 
     BOOST_CHECK(credit_before - credit_after == price);
@@ -2861,12 +2864,12 @@ BOOST_AUTO_TEST_CASE(test_charge_request_double)
     insert_poll_request_fee(registrar->getId(), price);
 
     Decimal credit_before = get_credit(registrar->getId(), zone_cz_id);
-    BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
+    BOOST_CHECK(default_charge_request_fee(invMan.get(), registrar->getId()));
     Decimal credit_between = get_credit(registrar->getId(), zone_cz_id);
 
     BOOST_CHECK(credit_before - credit_between == price);
     // double charging still return true
-    BOOST_CHECK(invMan->chargeRequestFee(registrar->getId()));
+    BOOST_CHECK(default_charge_request_fee(invMan.get(), registrar->getId()));
     Decimal credit_after = get_credit(registrar->getId(), zone_cz_id);
 
     BOOST_CHECK(credit_between == credit_after);
@@ -2899,7 +2902,7 @@ BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
             first_day_this_month - days(1)
             );
 
-    BOOST_CHECK_EXCEPTION(invMan->chargeRequestFee(reg_id), std::runtime_error, check_dummy);
+    BOOST_CHECK_EXCEPTION(default_charge_request_fee(invMan.get(), reg_id), std::runtime_error, check_dummy);
 
 }
 
