@@ -102,12 +102,15 @@ namespace Admin {
                     "FROM registrar r "
                     "JOIN registrarinvoice ri "
                         "ON ri.registrarid = r.id "
-                        "AND $1::date >= ri.fromdate "
-                        "AND (ri.todate IS NULL OR $1::date <= ri.todate) "
+                        "AND ( "
+                            "($1::date <= ri.fromdate AND $2::date > ri.fromdate) "
+                            "OR ($1::date >= ri.fromdate AND  COALESCE ((ri.todate > $2::date), true)) "
+                        ") "
                     "WHERE r.system  = false "
-                        "AND ri.zone=$2::integer "
+                        "AND ri.zone=$3::integer "
                     "ORDER BY r.id",
                     Database::query_param_list(poll_msg_period_from)
+                                              (poll_msg_period_to)
                                               (zone_id)
                 );
         } else {
