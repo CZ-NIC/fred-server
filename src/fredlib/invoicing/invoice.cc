@@ -632,37 +632,6 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
     return invoiceId;
 }
 
-int GetSystemVAT() // return VAT for invoicing depend on the time
-{
-    int dph=0;
-    try
-    {
-        Database::Connection conn = Database::Manager::acquire();//get db conn
-        Database::Result res = conn.exec(
-            "select vat from price_vat where valid_to > now() or valid_to is null order by valid_to limit 1");
-
-        if(res.size() == 1 && (res[0][0].isnull() == false))
-        {
-            dph = res[0][0];
-        }
-        else
-            throw std::runtime_error("select vat from price_vat where valid_to > now() or valid_to is null order by valid_to limit 1 failed");
-    }//try
-    catch( std::exception &ex)
-    {
-        LOGGER(PACKAGE).error ( boost::format("GetSystemVAT failed: %1% ") % ex.what());
-        throw std::runtime_error(std::string("GetSystemVAT failed: ") + ex.what());
-    }
-    catch(...)
-    {
-        LOGGER(PACKAGE).error("GetSystemVAT failed.");
-        throw std::runtime_error("GetSystemVAT failed");
-    }
-
-    return dph;
-
-}
-
 unsigned long long insert_account_invoice(
         unsigned long long registrar_id
         , unsigned long long zone_id
