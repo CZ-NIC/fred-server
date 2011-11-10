@@ -2466,7 +2466,7 @@ public:
         }
 
         std::auto_ptr<RequestFeeDataMap> request_fee_data =
-                getRequestFeeDataMap(logger_client, boost::posix_time::ptime(p_from), p_to);
+                getRequestFeeDataMap(logger_client, boost::posix_time::ptime(p_from), p_to, today);
 
         for (unsigned i = 0; i < res_registrars.size(); i++) {
             std::string reg_handle = res_registrars[i][0];
@@ -2597,7 +2597,8 @@ public:
 
     std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
             Logger::LoggerClient *logger_client, boost::posix_time::ptime p_from,
-            boost::posix_time::ptime p_to) {
+            boost::posix_time::ptime p_to,
+            boost::gregorian::date zone_access_date) {
         std::auto_ptr<RequestFeeDataMap> ret(new RequestFeeDataMap());
 
         std::string price_unit_request;
@@ -2614,9 +2615,11 @@ public:
                 "SELECT r.id, r.handle FROM registrar r"
                     " JOIN registrarinvoice ri ON ri.registrarid = r.id"
                     " WHERE ri.zone = $1::integer"
-                    " AND ri.fromdate <= current_date"
-                    " AND (ri.todate >= current_date OR ri.todate is null)",
-                Database::query_param_list(zone_id));
+                    " AND ri.fromdate <= $2::date"
+                    " AND (ri.todate >= $2::date OR ri.todate is null)",
+                Database::query_param_list(zone_id)
+                                            (zone_access_date)
+            );
 
         if (res_registrars.size() == 0) {
             throw std::runtime_error("getRequestFeeDataMap: No registrars found");

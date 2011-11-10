@@ -599,7 +599,8 @@ public:
   virtual std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
           Logger::LoggerClient *logger_client,
           boost::posix_time::ptime p_from,
-          boost::posix_time::ptime p_to) = 0;
+          boost::posix_time::ptime p_to,
+          boost::gregorian::date zone_access_date) = 0;
 
   typedef std::auto_ptr<Fred::Registrar::Manager> AutoPtr;
 

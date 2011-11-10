@@ -1003,7 +1003,8 @@ public:
           = regman->getRequestFeeDataMap(
                   logger_client,
                   boost::posix_time::ptime(p_from),
-                  boost::posix_time::ptime(period_to));
+                  boost::posix_time::ptime(period_to),
+                  period_to - days(1));
 
       for (RequestFeeDataMap::iterator it = request_fee->begin();
               it != request_fee->end();
