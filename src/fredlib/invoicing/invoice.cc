@@ -407,9 +407,8 @@ public:
 
   /// charge registrar for requests over limit in request_fee_parameters
   // poll_msg_period_to specifies end of period for which it should be charged,
-  //     it must be the first day in month
-  // there must be a poll message (type request fee) for the correct period:
-  //       (poll_msg_period_to - 1 month) - poll_msg_period_to
+  //     it's the first day in month in case of charging for the previous month
+  // there must be a poll message (type request fee) for the correct period
   // returns false in case insufficient balance (==applies only to prepaid operations) as in chargeDomain*()
   virtual bool chargeRequestFee(
           const Database::ID &registrar_id,
@@ -424,13 +423,13 @@ public:
               std::runtime_error("Faild to connect to database: class DB"));
       std::auto_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
 
-      // valid period to is 1.day in month, otherwise there would have to be more precise duplicity check:
-      if(poll_msg_period_to.day() != 1) {
-          throw std::runtime_error("Invalid poll message period_to - must be beginning of month");
-      }
+      date poll_msg_period_from;
 
-      // poll message must be valid for whole last month - that's the one from 1. day of this month
-      date poll_msg_period_from = poll_msg_period_to - months(1);
+      if(poll_msg_period_to.day() == 1) {
+          poll_msg_period_from = poll_msg_period_to - months(1);
+      } else {
+          poll_msg_period_from = date(poll_msg_period_to.year(), poll_msg_period_to.month(), 1);
+      }
 
       boost::format msg("Charging registrar %1% for requests in period from %2% to %3%. ");
       msg % registrar_id % poll_msg_period_from % poll_msg_period_to;

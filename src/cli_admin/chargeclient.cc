@@ -39,9 +39,6 @@ namespace Admin {
         if(poll_msg_period_to.is_special()) {
             poll_msg_period_to = date(local_today.year(), local_today.month(), 1);
         } else {
-            if(poll_msg_period_to.day() != 1) {
-                throw std::runtime_error("Invalid poll message period_to - must be beginning of month");
-            }
             if(poll_msg_period_to.month() > local_today.month()) {
                 std::string msg("Warning: charging for requests in the future.");
                 std::cout << msg << std::endl;
@@ -93,8 +90,13 @@ namespace Admin {
         unsigned zone_id;
         Fred::Invoicing::getRequestFeeParams(&zone_id);
 
-        date poll_msg_period_from = poll_msg_period_to - months(1);
+        date poll_msg_period_from;
 
+        if(poll_msg_period_to.day() == 1) {
+            poll_msg_period_from = poll_msg_period_to - months(1);
+        } else {
+            poll_msg_period_from = date(poll_msg_period_to.year(), poll_msg_period_to.month(), 1);
+        }
 
         Database::Result result;
         if(except_handles.empty()) {
