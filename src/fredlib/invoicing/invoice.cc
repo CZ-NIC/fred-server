@@ -2163,6 +2163,20 @@ public:
       out << TAGEND(client)
       << TAGSTART(supplier);
       doExport(i->getSupplier());
+
+      //date check
+      if(i->getCrTime().date().is_special())
+          throw std::runtime_error("doExport invoice crtime date is special");
+      if(i->getTaxDate().is_special())
+          throw std::runtime_error("doExport invoice taxdate is special");
+      if (i->getType() == IT_ACCOUNT)
+      {
+          if(i->getAccountPeriod().begin().is_special())
+              throw std::runtime_error("doExport invoice period_from is special");
+          if(i->getAccountPeriod().end().is_special())
+              throw std::runtime_error("doExport invoice period_to is special");
+      }
+
       out << TAGEND(supplier)
       << TAGSTART(payment)
       << TAG(invoice_number,i->getNumber())
@@ -3375,7 +3389,12 @@ public:
         m.load();
         m.send();
       }
+    }//try
+    catch (const std::exception& ex) {
+      LOGGER(PACKAGE).error(std::string("Exception in archiveInvoices: ") + ex.what());
+      throw;
     }
+
     catch (...) {
       LOGGER(PACKAGE).error("Exception in archiveInvoices.");
       throw;
