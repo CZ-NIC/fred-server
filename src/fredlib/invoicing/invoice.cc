@@ -150,8 +150,8 @@ public:
       , unsigned long long registrar_id
       , unsigned long long object_id
       , boost::posix_time::ptime crdate //local timestamp
-      , boost::gregorian::date date_from //local date
-      , boost::gregorian::date date_to //local date
+      , boost::gregorian::date date_from //local date included in interval
+      , boost::gregorian::date date_to //local date not included in interval, can be unspecified
       , Decimal quantity
       , Money price)
   {
@@ -453,13 +453,14 @@ public:
           "JOIN enum_operation eo ON eo.id=io.operation_id  "
         "WHERE eo.operation='GeneralEppOperation' "
           "AND registrar_id = $1::bigint "
-          "AND date_to = $2::date",
+          "AND date_trunc('month', date_from) <= date_trunc('month', $2::date) "
+          "AND date_trunc('month', $2::date) <= date_trunc('month', date_to - interval '1 day') ",
             Database::query_param_list (registrar_id)
-                                      (poll_msg_period_to)
+                                      (poll_msg_period_from)
                                       );
       if(res.size() > 0) {
-          boost::format msg("Registrar %1% was already charged for requests in period ending %2%.");
-          msg % registrar_id % poll_msg_period_to;
+          boost::format msg("Registrar %1% was already charged for requests in period overlapping %2% to %3%. ");
+          msg % registrar_id % poll_msg_period_from % poll_msg_period_to;
           LOGGER(PACKAGE).error(msg.str());
           // no charging - return true
           return true;
