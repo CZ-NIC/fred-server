@@ -2036,7 +2036,6 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     }
     BOOST_CHECK(credit_before - credit_after_renew == test_operation_price);
 
-    conn.exec_params("DELETE FROM invoice_generation WHERE registrar_id = $1::bigint", Database::query_param_list(registrar_inv_id));
     {
         date taxdate(boost::gregorian::from_simple_string((Database::Date(2001,1,31)).to_string()));
         date todate ( boost::gregorian::from_simple_string((Database::Date(2001,2,1)).to_string()));
@@ -2049,7 +2048,6 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
             , boost::posix_time::ptime(todate));
     }
 
-    conn.exec_params("DELETE FROM invoice_generation WHERE registrar_id = $1::bigint", Database::query_param_list(registrar_inv_id));
     {   
         boost::gregorian::date todate( day_clock::local_day() );
         boost::gregorian::date fromdate( todate - months(1) );
@@ -2062,7 +2060,6 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
             , boost::posix_time::ptime(todate));
     }
 
-    conn.exec_params("DELETE FROM invoice_generation WHERE registrar_id = $1::bigint", Database::query_param_list(registrar_inv_id));
     {
         boost::gregorian::date todate( day_clock::local_day() );
         boost::gregorian::date fromdate( todate - months(1) );
