@@ -270,8 +270,6 @@ void insert_poll_request_fee(Database::ID reg_id,
         poll_to = poll_from + months(1);
     }
 
-    std::cout << "req_count value: " << req_count.get_string() << std::endl;
-
     // TODO remove difficult conversion from Decimal to unsigned long long
     pollMan->save_poll_request_fee(
         reg_id,

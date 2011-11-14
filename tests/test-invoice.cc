@@ -2697,7 +2697,6 @@ BOOST_AUTO_TEST_CASE(make_debt)
     Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, out_credit, invoiceid);
 
     Decimal credit_before = get_credit(reg_id, zone_id);
-    std::cout << "Credit before: " << credit_before << std::endl;
 
     BOOST_CHECK(
             invMan->charge_operation_auto_price(
@@ -2713,7 +2712,6 @@ BOOST_AUTO_TEST_CASE(make_debt)
 
     Decimal credit_between = get_credit(reg_id, zone_id);
     BOOST_CHECK(credit_before - credit_between == unit_price * postpaid_op_price);
-    std::cout << "Credit between: " << credit_between << std::endl;
 
     BOOST_CHECK_EXCEPTION(
             createCzDomain(reg_id, registrar->getHandle()),
