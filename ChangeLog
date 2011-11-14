@@ -1,3 +1,9 @@
+2011-11-14 Juraj Vicenik, Jan Zima (2.9.7)
+
+  * request fee charging fixes (registrar in zone sql, time period, defaults)
+
+  * invoice xml export fix (check for valid date period - -inf,+inf problem)
+
 2011-11-07 Juraj Vicenik, Jan Zima (2.9.6)
 
   * custom date for creating request fee poll messages
