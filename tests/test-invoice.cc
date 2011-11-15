@@ -1385,11 +1385,13 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_defaultValues )
 
     boost::gregorian::date local = day_clock::local_day();		
     boost::gregorian::date todate(local.year(), local.month(), 1);
+    boost::gregorian::date fromdate(todate - months(1));
     boost::gregorian::date taxdate(todate);
 
     invMan->createAccountInvoices( std::string("cz")
         , taxdate
-        , boost::gregorian::date()//from_date not set
+        , fromdate
+        // , boost::gregorian::date()//from_date not set
         , todate, boost::posix_time::ptime(todate));
 }
 
