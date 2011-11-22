@@ -51,6 +51,7 @@ using namespace Fred::Invoicing;
 BOOST_AUTO_TEST_SUITE(TestInvoiceAccount)
 
 
+// test createAccountInvoices with default values supplied by fred-admin
 BOOST_AUTO_TEST_CASE( createAccountInvoices_defaultValues )
 {
 

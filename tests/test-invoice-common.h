@@ -9,6 +9,14 @@
 #include "corba/EPP.hh"
 #include "corba/epp/epp_impl.h"
 
+
+// thrown in case test has failed (something than CAN go wrong, not an error in test)
+class CreateDomainFailed : public std::runtime_error {
+public:
+    CreateDomainFailed(const std::string &msg) : std::runtime_error(msg) 
+    { }
+};
+
 void init_corba_container();
 
 void handle_epp_exception(ccReg::EPP::EppError &ex);

@@ -27,7 +27,7 @@ void handle_epp_exception(ccReg::EPP::EppError &ex)
     for (unsigned i=0;i<ex.errorList.length();i++) {
         msg << ex.errorList[i].reason;
     }
-    throw std::runtime_error(msg.str());
+    throw CreateDomainFailed(msg.str());
 }
 
 void EPP_backend_init(ccReg_EPP_i *epp_i, HandleRifdArgs *rifd_args_ptr)
