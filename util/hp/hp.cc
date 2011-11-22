@@ -76,7 +76,7 @@ std::string make_curl_log_file_name(const std::string& dir_name
             ? std::string("")
             : (dir_name
                 + boost::posix_time::to_iso_string(
-                    boost::posix_time::microsec_clock().local_time()
+                    boost::posix_time::microsec_clock::local_time()
                     )
                 +file_name_suffix)
             );

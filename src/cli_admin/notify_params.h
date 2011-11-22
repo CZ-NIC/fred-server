@@ -86,7 +86,7 @@ struct RegisteredLettersManualSendArgs
     unsigned long shell_cmd_timeout;//secs
 
 
-    RegisteredLettersManualSendArgs()
+    RegisteredLettersManualSendArgs() : shell_cmd_timeout(0)
     {}//ctor
     RegisteredLettersManualSendArgs(
             const optional_string& _working_directory

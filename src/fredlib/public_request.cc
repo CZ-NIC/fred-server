@@ -2163,7 +2163,7 @@ public:
       }
   }
 
-  const bool getDemoMode() const
+  bool getDemoMode() const
   {
       return demo_mode_;
   }

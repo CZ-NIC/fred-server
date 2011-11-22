@@ -17,12 +17,6 @@ Query::Query(const char* _str_query) {
   m_initialized = true;
 }
 
-
-Query::Query(const Query& _q) {
-  sql_buffer << _q.sql_buffer;
-}
-
-
 std::ostream& operator<<(std::ostream &_os, const Query& _q) {
   return _os << _q.sql_buffer.str();
 }

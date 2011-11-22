@@ -22,7 +22,7 @@ namespace Database {
 /*
  * Base Query class
  */
-class Query : public Statement {
+class Query : public Statement, public boost::noncopyable {
 public:
 	Query() :
 		m_initialized(false) {

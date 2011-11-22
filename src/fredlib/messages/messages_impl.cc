@@ -788,24 +788,27 @@ LetterInfo Manager::get_letter_info_by_id(unsigned long long id)
          "  , postal_address_country"
          " FROM letter_archive WHERE id= $1::integer"
         , Database::query_param_list (id));
-    if (res.size() == 1)
-    {
-        li.file_id = res[0][0];
-        li.batch_id = std::string(res[0][1]);
-        li.postal_address.name = std::string(res[0][2]);
-        li.postal_address.org = std::string(res[0][3]);
-        li.postal_address.street1 = std::string(res[0][4]);
-        li.postal_address.street2 = std::string(res[0][5]);
-        li.postal_address.street3 = std::string(res[0][6]);
-        li.postal_address.city = std::string(res[0][7]);
-        li.postal_address.state = std::string(res[0][8]);
-        li.postal_address.code = std::string(res[0][9]);
-        li.postal_address.country = std::string(res[0][10]);
 
-        li.fname = get_file_name_by_file_id(li.file_id);
+    if (res.size() != 1) {
+        throw std::runtime_error("ccReg_Session_i::createMessageDetail message_content");
     }
 
+    li.file_id = res[0][0];
+    li.batch_id = std::string(res[0][1]);
+    li.postal_address.name = std::string(res[0][2]);
+    li.postal_address.org = std::string(res[0][3]);
+    li.postal_address.street1 = std::string(res[0][4]);
+    li.postal_address.street2 = std::string(res[0][5]);
+    li.postal_address.street3 = std::string(res[0][6]);
+    li.postal_address.city = std::string(res[0][7]);
+    li.postal_address.state = std::string(res[0][8]);
+    li.postal_address.code = std::string(res[0][9]);
+    li.postal_address.country = std::string(res[0][10]);
+
+    li.fname = get_file_name_by_file_id(li.file_id);
+
     return li;
+
 }
 
 void MessageReload::operator ()

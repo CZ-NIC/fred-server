@@ -228,12 +228,23 @@ void createObjectStateRequestName(
     //check time
     std::string tmp_time_from ( valid_from);
     if(tmp_time_from.empty()) throw std::runtime_error("empty valid_from");
-    tmp_time_from[tmp_time_from.find('T')] = ' ';
+
+    size_t idx_from = tmp_time_from.find('T');
+    if(idx_from == std::string::npos) {
+        throw std::runtime_error("wrong date format. ");
+    }
+    tmp_time_from[idx_from] = ' ';
     boost::posix_time::ptime new_valid_from
         = boost::posix_time::time_from_string(tmp_time_from);
 
     std::string tmp_time_to ( valid_to.get_value());
-    if(!tmp_time_to.empty()) tmp_time_to[tmp_time_to.find('T')] = ' ';
+    if(!tmp_time_to.empty()) {
+        size_t idx_to = tmp_time_to.find('T');   
+        if(idx_to == std::string::npos) {
+            throw std::runtime_error("Wrong date format in valid_to");
+        }
+        tmp_time_to[idx_to] = ' ';
+    }
 
     boost::posix_time::ptime new_valid_to
         = tmp_time_to.empty() ? boost::posix_time::pos_infin

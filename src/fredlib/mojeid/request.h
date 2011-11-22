@@ -98,7 +98,7 @@ public:
     }
 
 
-    const unsigned long long get_request_id() const
+    unsigned long long get_request_id() const
     {
         return request_id_;
     }

@@ -117,7 +117,10 @@ public:
     , null_(false)
     {
         buffer_ = boost::posix_time::to_iso_extended_string(value);
-        buffer_[buffer_.find('T')] = ' ';
+        size_t idx = buffer_.find('T');
+        if(idx != std::string::npos) {
+            buffer_[idx] = ' ';
+        } 
     }
 
     //gregorian date
