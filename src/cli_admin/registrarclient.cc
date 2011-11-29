@@ -141,10 +141,10 @@ RegistrarClient::zone_add()
     int exPeriodMax = 120;
     int ttl = 18000;
     std::string hostmaster = "hostmaster@localhost";
-    int updateRetr = 3600;
-    int refresh = 16000;
-    int expiry = 1209600;
-    int minimum = 7200;
+    int updateRetr = 300;
+    int refresh = 900;
+    int expiry = 604800;
+    int minimum = 900;
     std::string nsFqdn("localhost");
 
     if (zone_add_params_.ex_period_min.is_value_set()) {
@@ -172,7 +172,7 @@ RegistrarClient::zone_add()
         minimum = zone_add_params_.minimum.get_value();
     };//REGISTRAR_MINIMUM_NAME
     if (zone_add_params_.ns_fqdn.is_value_set()) {
-        zone_add_params_.ns_fqdn.get_value();
+        nsFqdn = zone_add_params_.ns_fqdn.get_value();
     };//REGISTRAR_NS_FQDN_NAME
     try {
         zoneMan->addZone(fqdn, exPeriodMin, exPeriodMax, ttl, hostmaster,
