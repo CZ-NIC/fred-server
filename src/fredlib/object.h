@@ -87,9 +87,9 @@ public:
   }
 
   virtual Database::ID getHistoryId() const = 0;
-  virtual Database::ID getActionId() const = 0; 
-  virtual Database::DateTime getActionStartTime() const = 0;
-  virtual void setAction(const Database::ID& _id, const Database::DateTime& _start_time) = 0;
+  virtual Database::ID getRequestId() const = 0; 
+  virtual Database::DateTime getRequestStartTime() const = 0;
+  virtual void setRequestId(const Database::ID& _id, const Database::DateTime& _start_time) = 0;
 
   /// Return time of object registration
   virtual ptime getCreateDate() const = 0;

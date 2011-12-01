@@ -95,17 +95,17 @@ Database::ID Fred::ObjectImpl::getHistoryId() const {
   return history_id;
 }
 
-Database::ID Fred::ObjectImpl::getActionId() const {
-  return action_id;
+Database::ID Fred::ObjectImpl::getRequestId() const {
+  return request_id;
 }
 
-Database::DateTime Fred::ObjectImpl::getActionStartTime() const {
-  return action_start_time;
+Database::DateTime Fred::ObjectImpl::getRequestStartTime() const {
+  return request_start_time;
 }
 
-void Fred::ObjectImpl::setAction(const Database::ID& _id, const Database::DateTime& _start_time) {
-  action_id = _id;
-  action_start_time = _start_time;
+void Fred::ObjectImpl::setRequestId(const Database::ID& _id, const Database::DateTime& _start_time) {
+  request_id = _id;
+  request_start_time = _start_time;
 }
 
 ptime Fred::ObjectImpl::getCreateDate() const {
@@ -320,7 +320,7 @@ void Fred::ObjectListImpl::reload(bool _history) {
   states_query.order_by() << "tmp.id";
 
   Database::SelectQuery actions_query;
-  actions_query.select() << "tmp.id, h.action, h.valid_from";
+  actions_query.select() << "tmp.id, h.request_id, h.valid_from";
   actions_query.from() << getTempTableName() << " tmp "
                        << "JOIN history h ON (tmp.id = h.id)";
   actions_query.order_by() << "tmp.id";
@@ -355,12 +355,12 @@ void Fred::ObjectListImpl::reload(bool _history) {
       Database::Row::Iterator col = (*it).begin();
 
       Database::ID       object_historyid = *col;
-      Database::ID       action_id        = *(++col);
+      Database::ID       request_id        = *(++col);
       Database::DateTime start_date       = *(++col);
       
       ObjectImpl *object_ptr = dynamic_cast<ObjectImpl *>(findHistoryIDSequence(object_historyid));
       if (object_ptr)
-        object_ptr->setAction(action_id, start_date);
+        object_ptr->setRequestId(request_id, start_date);
     }
   }
   catch (Database::Exception& ex) {

@@ -70,8 +70,8 @@ namespace Fred {
     typedef std::vector<StatusImpl> StatusList;
     StatusList slist;
 
-    Database::ID action_id;
-    Database::DateTime action_start_time;
+    Database::ID request_id;
+    Database::DateTime request_start_time;
 
    public:
     ObjectImpl();
@@ -84,9 +84,9 @@ namespace Fred {
     );
 
     Database::ID getHistoryId() const;
-    Database::ID getActionId() const; 
-    Database::DateTime getActionStartTime() const;
-    void setAction(const Database::ID& _id, const Database::DateTime& _start_time);
+    Database::ID getRequestId() const; 
+    Database::DateTime getRequestStartTime() const;
+    void setRequestId(const Database::ID& _id, const Database::DateTime& _start_time);
 
     ptime getCreateDate() const;
     ptime getTransferDate() const;
