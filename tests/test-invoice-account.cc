@@ -483,21 +483,17 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 {
     //db
     Database::Connection conn = Database::Manager::acquire();
+
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
     //set operation price
-    conn.exec("update price_list set price = price + 0.11 where zone_id = 1 and operation_id = 2");
-/*
-    Database::Result create_operation_price_result= conn.exec(
-        "SELECT price , period FROM price_list WHERE valid_from < 'now()'  "
-        "and ( valid_to is NULL or valid_to > 'now()' ) "
-	"and operation=1 and zone=2 "
-	"order by valid_from desc limit 1"
-    );
-*/
-    Database::Result renew_operation_price_result= conn.exec(
+    conn.exec_params("update price_list set price = price + 0.11 where zone_id = $1::bigint and operation_id = 2", 
+	Database::query_param_list(zone_cz_id));
+
+    Database::Result renew_operation_price_result = conn.exec_params(
         "SELECT price, quantity FROM price_list WHERE valid_from < 'now()'"
         " and ( valid_to is NULL or valid_to > 'now()' ) "
-        "and operation_id = 2 and zone_id = 1"
-        "order by valid_from desc limit 1");
+        "and operation_id = 2 and zone_id = $1::bigint "
+        "order by valid_from desc limit 1", Database::query_param_list(zone_cz_id));
 
     Money renew_operation_price = std::string(renew_operation_price_result[0][0]);
 
@@ -507,7 +503,6 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
     init_corba_container();
 
-    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
     // handle which doesn't match  any registrar
     std::string time_string(TimeStamp::microsec());
     std::string noregistrar_handle(std::string("REG-NOTEXIST")+time_string);
@@ -754,7 +749,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     }
 
     //set operation price back
-    conn.exec("update price_list set price = price - 0.11 where zone_id = 1 and operation_id = 2");
+    conn.exec_params("update price_list set price = price - 0.11 where zone_id = $1::bigint and operation_id = 2", Database::query_param_list(zone_cz_id));
 }
 
 
