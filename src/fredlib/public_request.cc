@@ -2136,8 +2136,9 @@ public:
       return request->getObject(0).id;
   }
 
-  virtual std::string getIdentification(
-          Database::ID _contact_id)
+  virtual std::string getPublicRequestAuthIdentification(
+          unsigned long long &_contact_id,
+          std::vector<unsigned int> &_request_type_list)
   {
       Database::Connection conn = Database::Manager::acquire();
       Database::Result rid = conn.exec_params(
@@ -2145,8 +2146,11 @@ public:
               " JOIN public_request pr ON (pra.id=pr.id)"
               " JOIN public_request_objects_map prom ON (prom.request_id=pr.id)"
               " WHERE pr.resolve_time IS NULL AND pr.status = 0"
-              " AND object_id = $1::integer",
-              Database::query_param_list(_contact_id));
+              " AND object_id = $1::integer"
+              " AND pr.request_type =ANY ($2::int[])",
+              Database::query_param_list
+                (_contact_id)
+                ("{" + Util::container2comma_list(_request_type_list) + "}"));
       if (rid.size() != 1)
           throw NOT_FOUND();
 

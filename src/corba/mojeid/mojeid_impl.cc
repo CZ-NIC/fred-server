@@ -210,7 +210,11 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         IdentificationRequestPtr new_request = contactCreateWorker (cid, hid, _contact, _method, request);
 
         IdentificationRequestManagerPtr request_manager;
-        _identification = corba_wrap_string(request_manager->getIdentification(cid).c_str());
+        std::vector<unsigned int> request_type_list = boost::assign::list_of
+            (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
+            (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+        _identification = corba_wrap_string(
+                request_manager->getPublicRequestAuthIdentification(cid, request_type_list).c_str());
 
         /* save contact and request (one transaction) */
         request.end_prepare(_trans_id);
@@ -513,7 +517,11 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
         new_request->save();
 
         IdentificationRequestManagerPtr request_manager;
-        _identification = corba_wrap_string(request_manager->getIdentification(cinfo.id).c_str());
+        std::vector<unsigned int> request_type_list = boost::assign::list_of
+            (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
+            (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+        _identification = corba_wrap_string(
+                request_manager->getPublicRequestAuthIdentification(cinfo.id, request_type_list).c_str());
 
         tx.prepare(_trans_id);
 
@@ -1018,7 +1026,12 @@ char* ServerImpl::getIdentificationInfo(CORBA::ULongLong _contact_id)
                 % _contact_id);
 
         IdentificationRequestManagerPtr request_manager;
-        return corba_wrap_string(request_manager->getIdentification(_contact_id).c_str());
+        std::vector<unsigned int> request_type_list = boost::assign::list_of
+            (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
+            (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+        unsigned long long cid = static_cast<unsigned long long>(_contact_id);
+        return corba_wrap_string(
+                request_manager->getPublicRequestAuthIdentification(cid, request_type_list).c_str());
     }
     catch (std::exception &_ex) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());

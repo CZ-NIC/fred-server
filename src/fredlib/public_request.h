@@ -265,8 +265,9 @@ public:
           const std::string &_password,
           const unsigned long long &_request_id) = 0;
 
-  virtual std::string getIdentification(
-          Database::ID contact) = 0;
+  virtual std::string getPublicRequestAuthIdentification(
+          unsigned long long &_contact_id,
+          std::vector<unsigned int> &_request_type_list) = 0;
 
   /* config - this should be in contructor */
   virtual const std::string& getIdentificationMailAuthHostname() const = 0;
