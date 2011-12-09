@@ -78,7 +78,8 @@ noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/d
         src/corba/libcorbaregistry.a src/corba/libcorbawhois.a \
         src/corba/libcorbaadmin.a src/corba/libcorbalogger.a \
         src/corba/libcorbatechcheck.a src/corba/libcorbaepp.a \
-        src/corba/libcorbazonegenerator.a
+        src/corba/libcorbazonegenerator.a \
+		src/fredlib/public_request/libpublic_request.a
 
 util_libutil_a_SOURCES = util/random.cc
 
@@ -395,8 +396,6 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/registrar.h \
 		src/fredlib/credit.cc \
 		src/fredlib/credit.h \
-		src/fredlib/public_request.cc \
-		src/fredlib/public_request.h \
 		src/fredlib/invoicing/invoice.cc \
 		src/fredlib/invoicing/invoice.h \
 		src/fredlib/zone.cc \
@@ -441,6 +440,17 @@ src_fredlib_libfred_a_SOURCES = src/fredlib/registry.cc \
 		src/fredlib/reminder.h
 
 #src fredlib
+
+src_fredlib_public_request_libpublic_request_a_SOURCES = \
+    src/fredlib/public_request/public_request.cc \
+    src/fredlib/public_request/public_request.h \
+    src/fredlib/public_request/public_request_impl.cc \
+    src/fredlib/public_request/public_request_impl.h \
+    src/fredlib/public_request/public_request_authinfo_impl.h \
+    src/fredlib/public_request/public_request_block_impl.h \
+    src/fredlib/public_request/public_request_verification_impl.h
+
+#src fredlib public_request
 
 src_fredlib_banking_libbanking_a_SOURCES =  \
 		src/fredlib/banking/model_bank_statement.cc \
@@ -535,6 +545,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         src/corba/libcorbaregistry.a \
         src/corba/libcorbafilters.a \
         src/corba/libcorbadatatypes.a \
+    src/fredlib/public_request/libpublic_request.a \
 	src/fredlib/banking/libbanking.a \
 	src/fredlib/libfred.a \
 	src/fredlib/messages/libmessages.a \
@@ -807,6 +818,7 @@ src_corba_mojeid_fred_mifd_LDADD = $(LIBIDN_LIBS) \
                      src/fredlib/notifier/libnotifier.a \
                      src/fredlib/libfred.a \
                      src/model/libmodel.a \
+                     src/fredlib/public_request/libpublic_request.a \
                      src/fredlib/banking/libbanking.a \
                      src/fredlib/mojeid/libmojeid.a \
                      src/fredlib/messages/libmessages.a \
@@ -984,6 +996,7 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	src/corba/epp/libepp_impl.a \
 	src/corba/libcorba.a \
 	src/corba/whois/libwhois_impl.a \
+    src/fredlib/public_request/libpublic_request.a \
 	src/fredlib/libfred.a \
 	src/fredlib/messages/libmessages.a \
 	src/model/libmodel.a \

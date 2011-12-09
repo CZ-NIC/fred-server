@@ -7,7 +7,7 @@
 
 #include "corba_wrapper_decl.h"
 #include "fredlib/registry.h"
-#include "fredlib/public_request.h"
+#include "fredlib/public_request/public_request.h"
 #include "corba/mailer_manager.h"
 
 

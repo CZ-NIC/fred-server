@@ -276,6 +276,9 @@ public:
   virtual void setDemoMode(bool _demo_mode) = 0;
 };
 
+
+
+
 }
 }
 

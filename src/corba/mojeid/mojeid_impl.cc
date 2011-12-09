@@ -12,7 +12,7 @@
 #include "fredlib/db_settings.h"
 #include "fredlib/registry.h"
 #include "fredlib/contact.h"
-#include "fredlib/public_request.h"
+#include "fredlib/public_request/public_request.h"
 #include "fredlib/object_states.h"
 #include "fredlib/mojeid/contact.h"
 #include "fredlib/mojeid/request.h"

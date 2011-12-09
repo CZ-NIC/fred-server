@@ -7,7 +7,7 @@
 #include "contact.h"
 #include "nsset.h"
 #include "keyset.h"
-#include "public_request.h"
+#include "public_request/public_request.h"
 #include "invoicing/invoice.h"
 #include "bank_manager.h"
 #include "mail.h"
