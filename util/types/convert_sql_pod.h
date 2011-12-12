@@ -65,17 +65,10 @@ struct SqlConvert<bool> {
   }
 
 
-  static std::string to(const bool &_in) {
-    switch (_in) {
-      case true:
-        return "t";
-
-      case false:
-        return "f";
-
-      default:
-        throw ConversionError("to sql", "SqlCovert<bool>");
-    }
+  static std::string to(const bool &_in)
+  {
+    if(_in) return "t";
+    else return "f";
   }
 };
 
