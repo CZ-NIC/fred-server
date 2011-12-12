@@ -177,7 +177,7 @@ public:
   }
 
 
-  void setValue(class_name *_object, const Database::Value &_value, bool _is_set) {
+  virtual void setValue(class_name *_object, const Database::Value &_value, bool _is_set) {
     value_(*_object) = _value;
     value_(*_object).changed(_is_set);
   }
@@ -253,7 +253,7 @@ public:
   }
 
 
-  void setValue(class_name *_object, const value_type &_value) {
+  virtual void setValue(class_name *_object, const value_type &_value, bool _is_set) {
     this->value_(*_object) = _value;
   }
 
