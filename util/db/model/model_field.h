@@ -249,7 +249,7 @@ public:
 
 
   void markSerialized(class_name *_object) {
-      value_(*_object).changed(true);
+    this->value_(*_object).changed(true);
   }
 
 
