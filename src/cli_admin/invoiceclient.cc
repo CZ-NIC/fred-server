@@ -524,4 +524,11 @@ InvoiceClient::create_invoice()
     }
 }
 
+void create_invoice_prefixes()
+{
+    std::auto_ptr<Fred::Invoicing::Manager>
+        invMan(Fred::Invoicing::Manager::create());
+    invMan->createInvoicePrefixes();
+}
+
 } // namespace Admin;

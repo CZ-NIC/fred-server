@@ -141,7 +141,11 @@ private:
 
 }; // class InvoiceClient
 
+void create_invoice_prefixes();
+
 } // namespace Admin;
+
+
 
 #endif // _INVOICECLIENT_H_
 

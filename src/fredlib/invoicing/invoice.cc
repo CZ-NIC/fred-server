@@ -132,6 +132,9 @@ public:
   virtual bool insertInvoicePrefix(const std::string &zoneName,
           int type, int year, unsigned long long prefix);
 
+  virtual void createInvoicePrefixes();
+
+
   void invoiceLowerCredit(Database::Connection &conn, Money price, Database::ID invoiceID) {
 
       if(price == Money("0")) {
@@ -3461,6 +3464,120 @@ public:
       return insertInvoicePrefix((unsigned long long)res[0][0], type, year, prefix);
   }
   
+  ///create next year invoice prefixes for zones (cz,0.2.4.e164.arpa) and invoice types (0,1) if they don't exist
+  void ManagerImpl::createInvoicePrefixes()
+  {
+      TRACE("Invoicing::Manager::createInvoicePrefixes()");
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Transaction tx(conn);
+      boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
+      int next_year = local_today.year() + 1;
+
+      //invoice type 0-advance 1-account
+
+      //get existing prefixes
+      Database::Result exist_res = conn.exec_params(
+        "select z.fqdn, ip.typ, ip.year, ip.prefix "
+        " from invoice_prefix ip join zone z on ip.zone_id=z.id "
+        " where ip.year = $1::integer and (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
+        " and (ip.typ=0 or ip.typ=1) "
+          , Database::query_param_list (next_year));
+
+      //print existing prefixes to stderr
+      if(exist_res.size() > 0)
+      {
+          std::cerr << "already existing prefixes for next year: " << next_year <<std::endl;
+          std::cerr << "zone_fqdn | typ | year | prefix"  <<std::endl;
+      }
+      for(unsigned i = 0 ; i < exist_res.size(); ++i)
+      {
+          std::cerr
+              << std::string(exist_res [i][0]) << " | "
+              << std::string(exist_res [i][1]) << " | "
+              << std::string(exist_res [i][2]) << " | "
+              << std::string(exist_res [i][3])
+          << std::endl;
+      }
+
+      //get nonexisting prefixes
+      //this might have already been in db - remove after fix in db
+      conn.exec("create temp table invoice_type (typ integer, description text)");
+      conn.exec("insert into invoice_type (typ , description) values (0,'advance')");
+      conn.exec("insert into invoice_type (typ , description) values (1,'account')");
+
+      if(exist_res.size() > 0)
+      {
+          Database::Result add_res = conn.exec_params(
+              //"insert into invoice_prefix(zone_id, typ, year, prefix) "
+              " select zone_fqdn, typ, year, prefix from "
+              //--2 add
+              " (select z.fqdn as zone_fqdn, it.typ as typ, $1::integer as year, (case "
+              "  when z.fqdn = 'cz' and it.typ=0 then 240000001 + mod($1::integer , 100)*100000 "
+              "  when z.fqdn = 'cz' and it.typ=1 then 230000001 + mod($1::integer , 100)*100000 "
+              "  when z.fqdn = '0.2.4.e164.arpa' and it.typ=0 then 110000001 + mod($1::integer , 100)*100000 "
+              "  when z.fqdn = '0.2.4.e164.arpa' and it.typ=1 then 120000001 + mod($1::integer , 100)*100000 "
+              " end)::numeric as prefix "
+              " from zone z join invoice_type it on (it.typ=0 or it.typ=1) "
+              " where (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
+              " EXCEPT "
+              //--those already there
+              " select z.fqdn as zone_fqdn, ip.typ as typ, ip.year as year, (case "
+              "  when z.fqdn = 'cz' and ip.typ=0 then 240000001 + mod($1::integer , 100)*100000 "
+              " when z.fqdn = 'cz' and ip.typ=1 then 230000001 + mod($1::integer , 100)*100000 "
+              " when z.fqdn = '0.2.4.e164.arpa' and ip.typ=0 then 110000001 + mod($1::integer , 100)*100000 "
+              " when z.fqdn = '0.2.4.e164.arpa' and ip.typ=1 then 120000001 + mod($1::integer , 100)*100000 "
+              " end)::numeric as prefix "
+              " from invoice_prefix ip join zone z on ip.zone_id=z.id "
+              " where ip.year = $1::integer and (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
+              " and (ip.typ=0 or ip.typ=1)) as add_pfx "
+              , Database::query_param_list (next_year));
+
+          //print existing prefixes to stderr
+          std::cerr << "\nto add " << add_res.size() <<" prefixes for next year: " << next_year <<std::endl;
+          if(add_res.size() > 0) std::cerr << "zone_fqdn | typ | year | prefix"  <<std::endl;
+
+          for(unsigned i = 0 ; i < add_res.size(); ++i)
+          {
+              std::cerr
+                  << std::string(add_res [i][0]) << " | "
+                  << std::string(add_res [i][1]) << " | "
+                  << std::string(add_res [i][2]) << " | "
+                  << std::string(add_res [i][3])
+              << std::endl;
+          }
+
+      }//if prefix exist
+
+      //insert new prefixes
+      conn.exec_params(
+          "insert into invoice_prefix(zone_id, typ, year, prefix) "
+          " select zone_id, typ, year, prefix from "
+          //--2 add
+          " (select z.id as zone_id, it.typ as typ, $1::integer as year, (case "
+          "  when z.fqdn = 'cz' and it.typ=0 then 240000001 + mod($1::integer , 100)*100000 "
+          "  when z.fqdn = 'cz' and it.typ=1 then 230000001 + mod($1::integer , 100)*100000 "
+          "  when z.fqdn = '0.2.4.e164.arpa' and it.typ=0 then 110000001 + mod($1::integer , 100)*100000 "
+          "  when z.fqdn = '0.2.4.e164.arpa' and it.typ=1 then 120000001 + mod($1::integer , 100)*100000 "
+          " end)::numeric as prefix "
+          " from zone z join invoice_type it on (it.typ=0 or it.typ=1) "
+          " where (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
+          " EXCEPT "
+          //--those already there
+          " select z.id as zone_id, ip.typ as typ, ip.year as year, (case "
+          "  when z.fqdn = 'cz' and ip.typ=0 then 240000001 + mod($1::integer , 100)*100000 "
+          " when z.fqdn = 'cz' and ip.typ=1 then 230000001 + mod($1::integer , 100)*100000 "
+          " when z.fqdn = '0.2.4.e164.arpa' and ip.typ=0 then 110000001 + mod($1::integer , 100)*100000 "
+          " when z.fqdn = '0.2.4.e164.arpa' and ip.typ=1 then 120000001 + mod($1::integer , 100)*100000 "
+          " end)::numeric as prefix "
+          " from invoice_prefix ip join zone z on ip.zone_id=z.id "
+          " where ip.year = $1::integer and (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
+          " and (ip.typ=0 or ip.typ=1)) as add_pfx "
+          , Database::query_param_list (next_year));
+
+      tx.commit();
+
+  }
+
  Manager *Manager::create(
                            Document::Manager *_doc_manager, 
                            Mailer::Manager *_mail_manager) {

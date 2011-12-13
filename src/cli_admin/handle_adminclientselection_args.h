@@ -692,6 +692,40 @@ public:
     }//handle
 };//class HandleAdminClientInvoiceAddPrefixArgsGrp
 
+//////////////////////////////////////////////////
+/**
+ * \class HandleAdminClientCreateInvoicePrefixesArgsGrp
+ * \brief admin client create_invoice_prefixes options handler
+ */
+class HandleAdminClientCreateInvoicePrefixesArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("create_invoice_prefixes");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("create_invoice_prefixes options")));
+        cfg_opts->add_options()
+            ("create_invoice_prefixes", "create next year invoice prefixes for zones (cz,0.2.4.e164.arpa) and invoice types (0-advance,1-account) if they don't exist")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientCreateInvoicePrefixesArgsGrp
+
 /**
  * \class HandleAdminClientInvoiceCreateArgsGrp
  * \brief admin client create_invoice options handler

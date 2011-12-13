@@ -218,6 +218,22 @@ struct invoice_add_prefix_impl
 };
 
 /**
+ * \class create_invoice_prefixes_impl
+ * \brief admin client implementation of create_invoice_prefixes_impl
+ */
+struct create_invoice_prefixes_impl
+{
+  void operator()() const
+  {
+      Logging::Context ctx("create_invoice_prefixes_impl");
+      Admin::create_invoice_prefixes();
+      return ;
+  }
+};
+
+
+
+/**
  * \class create_invoiceimpl
  * \brief admin client implementation of create_invoice
  */

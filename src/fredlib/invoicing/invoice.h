@@ -315,6 +315,7 @@ public:
           int type, int year, unsigned long long prefix) = 0;
   virtual bool insertInvoicePrefix(const std::string &zoneName,
           int type, int year, unsigned long long prefix) = 0;
+  virtual void createInvoicePrefixes() = 0;
 
   // added methods
   virtual  unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsigned long long zoneId, unsigned long long registrarId, Money price, boost::posix_time::ptime invoice_date, Money& out_credit) = 0;
