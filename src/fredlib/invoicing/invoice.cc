@@ -3473,12 +3473,13 @@ public:
       boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
       int next_year = local_today.year() + 1;
 
-      //invoice type 0-advance 1-account
+      //invoice type 0-advance 1-account ...
 
       //get existing prefixes
       Database::Result exist_res = conn.exec_params(
         "select z.fqdn, ip.typ, ip.year, ip.prefix "
         " from invoice_prefix ip join zone z on ip.zone_id=z.id "
+        " join invoice_type it "
         " where ip.year = $1::integer and (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
         " and (ip.typ=0 or ip.typ=1) "
           , Database::query_param_list (next_year));
@@ -3500,11 +3501,6 @@ public:
       }
 
       //get nonexisting prefixes
-      //this might have already been in db - remove after fix in db
-      conn.exec("create temp table invoice_type (typ integer, description text)");
-      conn.exec("insert into invoice_type (typ , description) values (0,'advance')");
-      conn.exec("insert into invoice_type (typ , description) values (1,'account')");
-
       if(exist_res.size() > 0)
       {
           Database::Result add_res = conn.exec_params(
