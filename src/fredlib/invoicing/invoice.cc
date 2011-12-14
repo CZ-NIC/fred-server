@@ -3477,7 +3477,7 @@ public:
 
       //get existing prefixes
       Database::Result exist_res = conn.exec_params(
-        "select z.fqdn, ip.typ, ip.year, ip.prefix "
+        "select z.fqdn, it.description, ip.year, ip.prefix "
         " from invoice_prefix ip join zone z on ip.zone_id=z.id "
         " join invoice_type it on ip.typ = it.typ "
         " where ip.year = $1::integer and (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
