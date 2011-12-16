@@ -531,7 +531,7 @@ void create_invoice_prefixes()
     invMan->createInvoicePrefixes();
 }
 
-void add_invoice_number_prefix(const AddInvoiceNumberPrefixArgs& params)
+void add_invoice_number_prefix(AddInvoiceNumberPrefixArgs params)
 {
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
