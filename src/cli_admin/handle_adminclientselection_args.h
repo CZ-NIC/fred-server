@@ -713,7 +713,8 @@ public:
                 new boost::program_options::options_description(
                         std::string("create_invoice_prefixes options")));
         cfg_opts->add_options()
-            ("create_invoice_prefixes", "create next year invoice prefixes for zones (cz,0.2.4.e164.arpa) and invoice types (0-advance,1-account) if they don't exist")
+            ("create_invoice_prefixes"
+            , "create next year invoice prefixes for zones and invoice types in invoice_number_prefix if they don't exist")
             ;
         return cfg_opts;
     }//get_options_description

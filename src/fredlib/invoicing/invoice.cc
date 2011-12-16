@@ -3464,7 +3464,7 @@ public:
       return insertInvoicePrefix((unsigned long long)res[0][0], type, year, prefix);
   }
   
-  ///create next year invoice prefixes for zones (cz,0.2.4.e164.arpa) and invoice types (0,1) if they don't exist
+  ///create next year invoice prefixes for zones and invoice types in invoice_number_prefix if they don't exist
   void ManagerImpl::createInvoicePrefixes()
   {
       TRACE("Invoicing::Manager::createInvoicePrefixes()");
@@ -3477,11 +3477,13 @@ public:
 
       //get existing prefixes
       Database::Result exist_res = conn.exec_params(
-        "select z.fqdn, it.name, ip.year, ip.prefix "
-        " from invoice_prefix ip join zone z on ip.zone_id=z.id "
-        " join invoice_type it on ip.typ = it.id "
-        " where ip.year = $1::integer and (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
-        " and (it.name='advance' or it.name='account') "
+          "select z.fqdn, it.name, ip.year, ip.prefix "
+          " from invoice_prefix ip "
+          " join zone z on ip.zone_id=z.id "
+          " join invoice_type it on ip.typ = it.id "
+          " join invoice_number_prefix inp "
+          "  on inp.zone_id = z.id and inp.invoice_type_id = it.id "
+          " where ip.year = $1::integer "
           , Database::query_param_list (next_year));
 
       //print existing prefixes to stderr
@@ -3504,29 +3506,24 @@ public:
       if(exist_res.size() > 0)
       {
           Database::Result add_res = conn.exec_params(
-              //"insert into invoice_prefix(zone_id, typ, year, prefix) "
               " select zone_fqdn, typ, year, prefix from "
               //--2 add
-              " (select z.fqdn as zone_fqdn, it.name as typ, $1::integer as year, (case "
-              "  when z.fqdn = 'cz' and it.name='advance' then 240000001 + mod($1::integer , 100)*100000 "
-              "  when z.fqdn = 'cz' and it.name='account' then 230000001 + mod($1::integer , 100)*100000 "
-              "  when z.fqdn = '0.2.4.e164.arpa' and it.name='advance' then 110000001 + mod($1::integer , 100)*100000 "
-              "  when z.fqdn = '0.2.4.e164.arpa' and it.name='account' then 120000001 + mod($1::integer , 100)*100000 "
-              " end)::numeric as prefix "
-              " from zone z join invoice_type it on (it.name='advance' or it.name='account') "
-              " where (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
+              " ( "
+              " select z.fqdn as zone_fqdn, it.name as typ, $1::integer as year "
+              " , inp.prefix::numeric * 10000000 + mod($1::integer , 100) * 100000 + 1 as prefix "
+              " from zone z "
+              " join invoice_number_prefix inp on inp.zone_id = z.id "
+              " join invoice_type it on it.id = inp.invoice_type_id "
               " EXCEPT "
               //--those already there
-              " select z.fqdn as zone_fqdn, it.name as typ, ip.year as year, (case "
-              "  when z.fqdn = 'cz' and it.name='advance' then 240000001 + mod($1::integer , 100)*100000 "
-              " when z.fqdn = 'cz' and it.name='account' then 230000001 + mod($1::integer , 100)*100000 "
-              " when z.fqdn = '0.2.4.e164.arpa' and it.name='advance' then 110000001 + mod($1::integer , 100)*100000 "
-              " when z.fqdn = '0.2.4.e164.arpa' and it.name='account' then 120000001 + mod($1::integer , 100)*100000 "
-              " end)::numeric as prefix "
-              " from invoice_prefix ip join zone z on ip.zone_id=z.id "
-              " join invoice_type it on (it.id=ip.typ) "
-              " where ip.year = $1::integer and (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
-              " and (it.name='advance' or it.name='account')) as add_pfx "
+              " select z.fqdn as zone_fqdn, it.name as typ, ip.year as year "
+              " , inp.prefix::numeric * 10000000 + mod($1::integer , 100) * 100000 + 1 as prefix "
+              " from invoice_prefix ip "
+              " join zone z on ip.zone_id=z.id "
+              " join invoice_type it on it.id=ip.typ "
+              " join invoice_number_prefix inp on inp.zone_id = z.id and inp.invoice_type_id = it.id "
+              " where ip.year = $1::integer "
+              " ) as add_pfx "
               , Database::query_param_list (next_year));
 
           //print existing prefixes to stderr
@@ -3550,26 +3547,22 @@ public:
           "insert into invoice_prefix(zone_id, typ, year, prefix) "
           " select zone_id, typ, year, prefix from "
           //--2 add
-          " (select z.id as zone_id, it.id as typ, $1::integer as year, (case "
-          "  when z.fqdn = 'cz' and it.name='advance' then 240000001 + mod($1::integer , 100)*100000 "
-          "  when z.fqdn = 'cz' and it.name='account' then 230000001 + mod($1::integer , 100)*100000 "
-          "  when z.fqdn = '0.2.4.e164.arpa' and it.name='advance' then 110000001 + mod($1::integer , 100)*100000 "
-          "  when z.fqdn = '0.2.4.e164.arpa' and it.name='account' then 120000001 + mod($1::integer , 100)*100000 "
-          " end)::numeric as prefix "
-          " from zone z join invoice_type it on (it.name='advance' or it.name='account') "
-          " where (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
+          " ( "
+          " select z.id as zone_id, it.id as typ, $1::integer as year "
+          " , inp.prefix::numeric * 10000000 + mod($1::integer , 100) * 100000 + 1 as prefix "
+          " from zone z "
+          " join invoice_number_prefix inp on inp.zone_id = z.id "
+          " join invoice_type it on it.id = inp.invoice_type_id "
           " EXCEPT "
           //--those already there
-          " select z.id as zone_id, ip.typ as typ, ip.year as year, (case "
-          "  when z.fqdn = 'cz' and it.name='advance' then 240000001 + mod($1::integer , 100)*100000 "
-          " when z.fqdn = 'cz' and it.name='account' then 230000001 + mod($1::integer , 100)*100000 "
-          " when z.fqdn = '0.2.4.e164.arpa' and it.name='advance' then 110000001 + mod($1::integer , 100)*100000 "
-          " when z.fqdn = '0.2.4.e164.arpa' and it.name='account' then 120000001 + mod($1::integer , 100)*100000 "
-          " end)::numeric as prefix "
-          " from invoice_prefix ip join zone z on ip.zone_id=z.id "
-          " join invoice_type it on (it.id=ip.typ) "
-          " where ip.year = $1::integer and (z.fqdn = 'cz' or z.fqdn = '0.2.4.e164.arpa') "
-          " and (it.name='advance' or it.name='account')) as add_pfx "
+          " select z.id as zone_id, ip.typ as typ, ip.year as year "
+          " , inp.prefix::numeric * 10000000 + mod($1::integer , 100) * 100000 + 1 as prefix "
+          " from invoice_prefix ip "
+          " join zone z on ip.zone_id=z.id "
+          " join invoice_type it on it.id=ip.typ "
+          " join invoice_number_prefix inp on inp.zone_id = z.id and inp.invoice_type_id = it.id "
+          " where ip.year = $1::integer "
+          " ) as add_pfx "
           , Database::query_param_list (next_year));
 
       tx.commit();
