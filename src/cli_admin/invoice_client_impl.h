@@ -231,6 +231,22 @@ struct create_invoice_prefixes_impl
   }
 };
 
+/**
+ * \class add_invoice_number_prefix_impl
+ * \brief admin client implementation of add_invoice_number_prefix_impl
+ */
+struct add_invoice_number_prefix_impl
+{
+  void operator()() const
+  {
+      Logging::Context ctx("add_invoice_number_prefix_impl");
+      Admin::add_invoice_number_prefix(CfgArgGroups::instance()
+          ->get_handler_ptr_by_type
+              <HandleAdminClientAddInvoiceNumberPrefixArgsGrp>()
+          ->params);
+      return ;
+  }
+};
 
 
 /**

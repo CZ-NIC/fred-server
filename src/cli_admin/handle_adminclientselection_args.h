@@ -692,7 +692,6 @@ public:
     }//handle
 };//class HandleAdminClientInvoiceAddPrefixArgsGrp
 
-//////////////////////////////////////////////////
 /**
  * \class HandleAdminClientCreateInvoicePrefixesArgsGrp
  * \brief admin client create_invoice_prefixes options handler
@@ -726,6 +725,52 @@ public:
         return option_group_index;
     }//handle
 };//class HandleAdminClientCreateInvoicePrefixesArgsGrp
+
+/**
+ * \class HandleAdminClientAddInvoiceNumberPrefixArgsGrp
+ * \brief admin client add_invoice_number_prefix options handler
+ */
+class HandleAdminClientAddInvoiceNumberPrefixArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    AddInvoiceNumberPrefixArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("add_invoice_number_prefix");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("add_invoice_number_prefix options")));
+        cfg_opts->add_options()
+            ("add_invoice_number_prefix"
+            , "add invoice number prefix for zones and invoice types in invoice_number_prefix if they don't exist")
+            ("prefix", boost::program_options
+                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.prefix))
+                , "two-digit invoice number prefix ")
+            ("zone_fqdn", boost::program_options
+                ::value<Checked::string>()->notifier(save_optional_string(params.zone_fqdn))
+                , "zone name")
+            ("invoice_type_name", boost::program_options
+                ::value<Checked::string>()->notifier(save_optional_string(params.invoice_type_name))
+                , "name of invoice type (advance, account, ...)")
+            ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientAddInvoiceNumberPrefixArgsGrp
+
 
 /**
  * \class HandleAdminClientInvoiceCreateArgsGrp

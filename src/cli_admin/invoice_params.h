@@ -192,4 +192,29 @@ struct InvoiceCreateArgs
     {}
 };//struct InvoiceCreateArgs
 
+/**
+ * \class AddInvoiceNumberPrefixArgs
+ * \brief admin client add_invoice_number_prefix params
+ */
+struct AddInvoiceNumberPrefixArgs
+{
+    optional_ulong prefix;
+    optional_string zone_fqdn;
+    optional_string invoice_type_name;
+
+    AddInvoiceNumberPrefixArgs()
+    {}//ctor
+
+    AddInvoiceNumberPrefixArgs(
+            const optional_ulong& _prefix
+            , const optional_string& _zone_fqdn
+            , const optional_string& _invoice_type_name
+        )
+    : prefix(_prefix)
+    , zone_fqdn(_zone_fqdn)
+    , invoice_type_name(_invoice_type_name)
+    {}
+
+};//struct AddInvoiceNumberPrefixArgs
+
 #endif // INVOICE_PARAMS_H_

@@ -531,4 +531,15 @@ void create_invoice_prefixes()
     invMan->createInvoicePrefixes();
 }
 
+void add_invoice_number_prefix(const AddInvoiceNumberPrefixArgs& params)
+{
+    std::auto_ptr<Fred::Invoicing::Manager>
+        invMan(Fred::Invoicing::Manager::create());
+    invMan->addInvoiceNumberPrefix(
+            params.prefix
+            , params.zone_fqdn
+            , params.invoice_type_name
+            );
+}
+
 } // namespace Admin;

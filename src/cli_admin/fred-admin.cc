@@ -96,6 +96,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceBillingArgsGrp),invoice_billing_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceAddPrefixArgsGrp),invoice_add_prefix_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientCreateInvoicePrefixesArgsGrp),create_invoice_prefixes_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientAddInvoiceNumberPrefixArgsGrp),add_invoice_number_prefix_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceCreateArgsGrp),create_invoice_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientBankPaymentListArgsGrp),payment_list_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientBankImportXMLArgsGrp),bank_import_xml_impl()))

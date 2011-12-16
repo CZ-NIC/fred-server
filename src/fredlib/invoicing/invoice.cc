@@ -133,6 +133,9 @@ public:
           int type, int year, unsigned long long prefix);
 
   virtual void createInvoicePrefixes();
+  virtual void addInvoiceNumberPrefix( unsigned long prefix
+            , const std::string& zone_fqdn
+            , const std::string invoice_type_name);
 
 
   void invoiceLowerCredit(Database::Connection &conn, Money price, Database::ID invoiceID) {
@@ -3568,6 +3571,23 @@ public:
       tx.commit();
 
   }
+/// add invoice number prefix for zone and invoice type
+  void ManagerImpl::addInvoiceNumberPrefix( unsigned long prefix
+          , const std::string& zone_fqdn
+          , const std::string invoice_type_name)
+  {
+      TRACE("Invoicing::Manager::addInvoiceNumberPrefix");
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Transaction tx(conn);
+
+      conn.exec_params(
+          "insert into invoice_number_prefix( prefix, zone_id, invoice_type_id) "
+          " values ($1::integer , (select id from zone where fqdn=$2::text) "
+          " , (select id from invoice_type where name=$3::text))"
+          , Database::query_param_list (prefix)(zone_fqdn)(invoice_type_name));
+      tx.commit();
+  }
+
 
  Manager *Manager::create(
                            Document::Manager *_doc_manager, 
