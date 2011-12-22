@@ -1211,16 +1211,27 @@ ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hou
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rstates = conn.exec_params(
-                "SELECT c.id, os.valid_from, eos.name"
-                " FROM object_state os"
-                " JOIN enum_object_states eos ON eos.id = os.state_id"
-                " JOIN contact c ON c.id = os.object_id"
-                " WHERE os.valid_to IS NULL"
-                " AND os.valid_from > now() - $1::interval"
-                " AND eos.name =ANY ($2::text[])",
-                Database::query_param_list
-                    (boost::lexical_cast<std::string>(_last_hours) + " hours")
-                    ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}"));
+                "SELECT c.id, os.valid_from, CASE "
+                " WHEN bool_or (eos_mojeid.name = 'validatedContact') "
+                "  THEN 'validatedContact' "
+                " WHEN bool_or (eos_mojeid.name = 'identifiedContact') "
+                "  THEN 'identifiedContact' "
+                " WHEN bool_or (eos_mojeid.name = 'conditionallyIdentifiedContact') "
+                "  THEN 'conditionallyIdentifiedContact' "
+                " END AS name "
+                " FROM contact c "
+                " JOIN object_registry obr ON c.id=obr.id "
+                " JOIN registrar r on obr.crid = r.id and r.handle='REG-MOJEID' "
+                " JOIN object_state os ON c.id = os.object_id "
+                " JOIN enum_object_states eos ON eos.id = os.state_id AND eos.name = 'mojeidContact' "
+                " JOIN object_state os_mojeid ON c.id = os_mojeid.object_id "
+                " JOIN enum_object_states eos_mojeid ON eos_mojeid.id = os_mojeid.state_id "
+                "  AND eos_mojeid.name = ANY ('{\"conditionallyIdentifiedContact\", \"identifiedContact\", \"validatedContact\"}') "
+                " WHERE os.valid_to IS NULL "
+                " AND os.valid_from > now() - $1::interval "
+                " GROUP BY c.id, os.valid_from "
+                , Database::query_param_list
+                    (boost::lexical_cast<std::string>(_last_hours) + " hours"));
 
         ContactStateInfoList_var ret = new ContactStateInfoList;
         ret->length(0);
