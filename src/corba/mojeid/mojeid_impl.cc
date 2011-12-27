@@ -1285,16 +1285,30 @@ ContactStateInfo ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rstates = conn.exec_params(
-                "SELECT c.id, os.valid_from, eos.name"
-                " FROM contact c"
-                " LEFT JOIN (object_state os"
-                " JOIN enum_object_states eos ON eos.id = os.state_id"
-                " AND eos.name =ANY ($2::text[]))"
-                " ON os.object_id = c.id AND os.valid_to IS NULL"
-                " WHERE c.id = $1::integer",
-                Database::query_param_list
-                    (_contact_id)
-                    ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}"));
+                "SELECT c.id, os.valid_from, CASE "
+                " WHEN bool_or (eos_mojeid.name = 'validatedContact') "
+                "  THEN 'validatedContact' "
+                " WHEN bool_or (eos_mojeid.name = 'identifiedContact') "
+                "  THEN 'identifiedContact' "
+                " WHEN bool_or (eos_mojeid.name = 'conditionallyIdentifiedContact') "
+                "  THEN 'conditionallyIdentifiedContact' "
+                " END AS name "
+                " FROM contact c "
+                " LEFT JOIN ( "
+                " object_registry obr "
+                " JOIN registrar r on obr.crid = r.id and r.handle=$1::text "
+                " JOIN object_state os ON obr.id = os.object_id "
+                " JOIN enum_object_states eos ON eos.id = os.state_id AND eos.name = 'mojeidContact' "
+                " JOIN object_state os_mojeid ON obr.id = os_mojeid.object_id "
+                " JOIN enum_object_states eos_mojeid ON eos_mojeid.id = os_mojeid.state_id "
+                "  AND eos_mojeid.name = ANY ('{\"conditionallyIdentifiedContact\", \"identifiedContact\", \"validatedContact\"}') "
+                " ) ON c.id=obr.id "
+                " WHERE os.valid_to IS NULL "
+                " AND c.id = $2::bigint "
+                " GROUP BY c.id, os.valid_from "
+                , Database::query_param_list
+                    (server_conf_->registrar_handle)
+                    (_contact_id));
 
         if (rstates.size() == 0) {
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
