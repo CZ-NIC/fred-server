@@ -1221,16 +1221,17 @@ ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hou
                 " END AS name "
                 " FROM contact c "
                 " JOIN object_registry obr ON c.id=obr.id "
-                " JOIN registrar r on obr.crid = r.id and r.handle='REG-MOJEID' "
+                " JOIN registrar r on obr.crid = r.id and r.handle=$1::text "
                 " JOIN object_state os ON c.id = os.object_id "
                 " JOIN enum_object_states eos ON eos.id = os.state_id AND eos.name = 'mojeidContact' "
                 " JOIN object_state os_mojeid ON c.id = os_mojeid.object_id "
                 " JOIN enum_object_states eos_mojeid ON eos_mojeid.id = os_mojeid.state_id "
                 "  AND eos_mojeid.name = ANY ('{\"conditionallyIdentifiedContact\", \"identifiedContact\", \"validatedContact\"}') "
                 " WHERE os.valid_to IS NULL "
-                " AND os.valid_from > now() - $1::interval "
+                " AND os.valid_from > now() - $2::interval "
                 " GROUP BY c.id, os.valid_from "
                 , Database::query_param_list
+                (server_conf_->registrar_handle)
                     (boost::lexical_cast<std::string>(_last_hours) + " hours"));
 
         ContactStateInfoList_var ret = new ContactStateInfoList;
