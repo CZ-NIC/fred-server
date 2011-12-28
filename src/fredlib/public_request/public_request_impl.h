@@ -156,6 +156,8 @@ public:
     virtual unsigned getPDFType() const;
 
     virtual void postCreate();
+
+    Manager* getPublicRequestManager() const;
 };
 
 
@@ -169,15 +171,6 @@ protected:
     std::string identification_;
     std::string password_;
 
-    static const size_t PASSWORD_CHUNK_LENGTH = 8;
-    ::MojeID::ContactValidator contact_validator_;
-
-    enum LetterType
-    {
-        LETTER_PIN2,
-        LETTER_PIN3
-    };
-
 
 public:
     PublicRequestAuthImpl();
@@ -185,6 +178,10 @@ public:
     virtual ~PublicRequestAuthImpl() { }
 
     virtual void init(Database::Row::Iterator& _it);
+
+    virtual std::string getIdentification() const;
+
+    virtual std::string getPassword() const;
 
     virtual bool authenticate(const std::string &_password);
 
@@ -199,20 +196,6 @@ public:
     std::string getTemplateName() const;
 
     void fillTemplateParams(Mailer::Parameters& params) const;
-
-    typedef std::map<std::string, std::string> MessageData;
-
-    const MessageData collectMessageData();
-
-    void sendEmailPassword(MessageData &_data, const unsigned short &_type) const;
-
-    void sendLetterPassword(MessageData &_data, const LetterType &_type) const;
-
-    void sendSmsPassword(MessageData &_data) const;
-
-    std::string generateRandomPassword(const size_t _length);
-
-    std::string generateAuthInfoPassword();
 
     virtual std::string generatePasswords() = 0;
 

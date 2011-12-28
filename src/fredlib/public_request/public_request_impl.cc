@@ -6,7 +6,7 @@
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
 #include "random.h"
-#include "map_at.h"
+
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
@@ -366,6 +366,14 @@ void PublicRequestImpl::save()
         transaction.commit();
         LOGGER(PACKAGE).info(boost::format("request id='%1%' for objects={%2%} created successfully")
                   % id_ % objects_str);
+
+        Database::Result res = conn.exec_params(
+               "SELECT create_time FROM public_request WHERE id = $1::integer",
+               Database::query_param_list(this->getId()));
+        if (res.size() == 1) {
+            create_time_ = res[0][0];
+        }
+
         // handle special behavior (i.e. processing request after creation)
         postCreate();
       }
@@ -668,6 +676,12 @@ void PublicRequestImpl::postCreate()
 }
 
 
+Manager* PublicRequestImpl::getPublicRequestManager() const
+{
+    return man_;
+}
+
+
 PublicRequestAuthImpl::PublicRequestAuthImpl()
     : PublicRequestImpl(), authenticated_(false)
 {
@@ -680,6 +694,18 @@ void PublicRequestAuthImpl::init(Database::Row::Iterator& _it)
     PublicRequestImpl::init(_it);
     identification_ = static_cast<std::string>(*(++_it));
     password_ = static_cast<std::string>(*(++_it));
+}
+
+
+std::string PublicRequestAuthImpl::getIdentification() const
+{
+    return identification_;
+}
+
+
+std::string PublicRequestAuthImpl::getPassword() const
+{
+    return password_;
 }
 
 
@@ -708,14 +734,11 @@ void PublicRequestAuthImpl::save()
     else {
         /* insert */
 
-        /* need one and only one contact for request */
+        /* need only one object for request (not necessary but for simplicity */
         if (this->getObjectSize() != 1) {
             throw std::runtime_error("public request auth requires"
                     " (only) one object to work with");
         }
-
-        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
-        contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
@@ -794,295 +817,7 @@ void PublicRequestAuthImpl::fillTemplateParams(Mailer::Parameters& params) const
 {
 }
 
-typedef std::map<std::string, std::string> MessageData;
 
-const MessageData PublicRequestAuthImpl::collectMessageData()
-{
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result result = conn.exec_params(
-            "SELECT c.name, c.organization, c.street1, c.city,"
-            " c.stateorprovince, c.postalcode, c.country, c.email,"
-            " oreg.historyid, c.telephone, ec.country, ec.country_cs"
-            " FROM contact c"
-            " JOIN object_registry oreg ON oreg.id = c.id"
-            " JOIN enum_country ec ON ec.id = c.country "
-            " WHERE c.id = $1::integer",
-            Database::query_param_list(getObject(0).id));
-    if (result.size() != 1)
-        throw std::runtime_error("unable to get data for"
-                " password messages");
-
-    Database::Result res = conn.exec_params(
-           "SELECT create_time FROM public_request WHERE id = $1::integer",
-           Database::query_param_list(id_));
-    if (res.size() == 1)
-        create_time_ = res[0][0];
-    else
-        throw std::runtime_error("unable to find public request");
-
-
-    MessageData data;
-
-    std::string name = static_cast<std::string>(result[0][0]);
-    std::size_t pos = name.find_last_of(" ");
-    data["firstname"] = name.substr(0, pos);
-    data["lastname"] = name.substr(pos + 1);
-    data["organization"] = static_cast<std::string>(result[0][1]);
-    data["street"] = static_cast<std::string>(result[0][2]);
-    data["city"] = static_cast<std::string>(result[0][3]);
-    data["stateorprovince"] = static_cast<std::string>(result[0][4]);
-    data["postalcode"] = static_cast<std::string>(result[0][5]);
-    data["country"] = static_cast<std::string>(result[0][6]);
-    data["email"] = static_cast<std::string>(result[0][7]);
-    data["hostname"] = man_->getIdentificationMailAuthHostname();
-    data["identification"] = identification_;
-    data["handle"] = boost::algorithm::to_lower_copy(getObject(0).handle);
-    /* password split */
-    data["pin1"] = password_.substr(0, -PASSWORD_CHUNK_LENGTH + password_.length());
-    data["pin2"] = password_.substr(-PASSWORD_CHUNK_LENGTH + password_.length());
-    data["pin3"] = password_;
-    data["reqdate"] = boost::gregorian::to_iso_extended_string(getCreateTime().date());
-    data["contact_id"]=boost::lexical_cast<std::string>(getObject(0).id);
-    data["contact_hid"]= static_cast<std::string>(result[0][8]);
-    data["phone"]= static_cast<std::string>(result[0][9]);
-    data["country_name"]= static_cast<std::string>(result[0][10]);
-    data["country_cs_name"]= static_cast<std::string>(result[0][11]);
-
-    return data;
-}
-
-/* helper method for sending email password */
-void PublicRequestAuthImpl::sendEmailPassword(MessageData &_data, const unsigned short &_type) const
-{
-    LOGGER(PACKAGE).debug("public request auth - send email password");
-
-    Mailer::Attachments attach;
-    Mailer::Handles handles;
-    Mailer::Parameters params;
-
-    params["rtype"]     = boost::lexical_cast<std::string>(_type);
-    params["firstname"] = map_at(_data, "firstname");
-    params["lastname"]  = map_at(_data, "lastname");
-    params["email"]     = map_at(_data, "email");
-    params["hostname"]  = map_at(_data, "hostname");
-    params["handle"]    = map_at(_data, "handle");
-    params["identification"] = map_at(_data, "identification");
-    params["passwd"]    = map_at(_data, "pin1");
-
-    Database::Connection conn = Database::Manager::acquire();
-
-    /* for demo purpose we send second half of password as well */
-    if (man_->getDemoMode() == true) {
-        params["passwd2"] = map_at(_data, "pin2");
-        unsigned long long file_id = 0;
-
-        Database::Result result = conn.exec_params(
-                "select la.file_id from letter_archive la "
-                " join message_archive ma on ma.id=la.id "
-                " join public_request_messages_map prmm on prmm.message_archive_id = ma.id "
-                " where prmm.public_request_id = $1::integer and prmm.message_archive_id is not null "
-                ,Database::query_param_list (this->getId())
-        );
-        if(result.size() == 1)
-        {
-            //letter file_id
-            file_id = result[0][0];
-            attach.push_back(file_id);
-        }
-
-
-
-    }
-
-    handles.push_back(getObject(0).handle);
-
-    unsigned long long id = man_->getMailerManager()->sendEmail(
-            "",           /* default sender */
-            params["email"],
-            "",           /* default subject */
-            "mojeid_identification",
-            params,
-            handles,
-            attach
-            );
-
-
-    Database::Transaction tx(conn);
-    conn.exec_params("INSERT INTO public_request_messages_map "
-            " (public_request_id, message_archive_id, mail_archive_id) "
-            " VALUES ($1::integer, $2::integer, $3::integer)",
-            Database::query_param_list
-                (this->getId())
-                (Database::QPNull)
-                (id));
-    tx.commit();
-}
-
-void PublicRequestAuthImpl::sendLetterPassword(MessageData &_data, const LetterType &_type) const
-{
-    LOGGER(PACKAGE).debug("public request auth - send letter password");
-
-    std::stringstream xml_data, xml_part_code;
-    Document::GenerationType doc_type;
-
-    if (_type == LETTER_PIN2) {
-        xml_part_code << "<pin2>" << map_at(_data, "pin2") << "</pin2>";
-        doc_type = Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN2;
-    }
-    else if (_type == LETTER_PIN3) {
-        xml_part_code << "<pin3>" << map_at(_data, "pin3") << "</pin3>";
-        doc_type = Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3;
-    }
-    else {
-        throw std::runtime_error("unknown letter type");
-    }
-
-
-    std::string addr_country = ((map_at(_data, "country_cs_name")).empty()
-            ? map_at(_data, "country_name")
-            : map_at(_data, "country_cs_name"));
-
-    xml_data << "<?xml version='1.0' encoding='utf-8'?>"
-             << "<mojeid_auth>"
-             << "<user>"
-             << "<actual_date>" << map_at(_data, "reqdate") << "</actual_date>"
-             << "<name>" << map_at(_data, "firstname")
-                         << " " << map_at(_data, "lastname") << "</name>"
-             << "<organization>" << map_at(_data, "organization") << "</organization>"
-             << "<street>" << map_at(_data, "street") << "</street>"
-             << "<city>" << map_at(_data, "city") << "</city>"
-             << "<stateorprovince>" << map_at(_data, "stateorprovince") << "</stateorprovince>"
-             << "<postal_code>" << map_at(_data, "postalcode") << "</postal_code>"
-             << "<country>" << addr_country << "</country>"
-             << "<account>"
-             << "<username>" << map_at(_data, "handle") << "</username>"
-             << "<first_name>" << map_at(_data, "firstname") << "</first_name>"
-             << "<last_name>" << map_at(_data, "lastname") << "</last_name>"
-             << "<email>" << map_at(_data, "email") << "</email>"
-             << "</account>"
-             << "<auth>"
-             << "<codes>"
-             << xml_part_code.str()
-             << "</codes>"
-             << "<link>" << map_at(_data, "hostname") << "</link>"
-             << "</auth>"
-             << "</user>"
-             << "</mojeid_auth>";
-
-        unsigned long long file_id = man_->getDocumentManager()->generateDocumentAndSave(
-            doc_type,
-            xml_data,
-            "identification_request-" + boost::lexical_cast<std::string>(this->getId()) + ".pdf",
-            7,
-            "");
-
-        Fred::Messages::PostalAddress pa;
-        pa.name    = map_at(_data, "firstname") + " " + map_at(_data, "lastname");
-        pa.org     = map_at(_data, "organization");
-        pa.street1 = map_at(_data, "street");
-        pa.street2 = std::string("");
-        pa.street3 = std::string("");
-        pa.city    = map_at(_data, "city");
-        pa.state   = map_at(_data, "stateorprovince");
-        pa.code    = map_at(_data, "postalcode");
-        pa.country = map_at(_data, "country_name");
-
-        unsigned long long message_id =
-            man_->getMessagesManager()->save_letter_to_send(
-                map_at(_data, "handle").c_str()//contact handle
-                , pa
-                , file_id
-                , ((_type == LETTER_PIN2) ? "mojeid_pin2"
-                        : ((_type == LETTER_PIN3) ? "mojeid_pin3" : "")) //message type
-                , boost::lexical_cast<unsigned long >(map_at(_data, "contact_id"))//contact object_registry.id
-                , boost::lexical_cast<unsigned long >(map_at(_data, "contact_hid"))//contact_history.historyid
-                , ((_type == LETTER_PIN2) ? "registered_letter"
-                        : ((_type == LETTER_PIN3) ? "letter" : ""))//comm_type letter or registered_letter
-                );
-
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
-        conn.exec_params("INSERT INTO public_request_messages_map "
-                " (public_request_id, message_archive_id, mail_archive_id) "
-                " VALUES ($1::integer, $2::integer, $3::integer)",
-                Database::query_param_list
-                    (this->getId())
-                    (message_id)
-                    (Database::QPNull));
-        tx.commit();
-}
-
-void PublicRequestAuthImpl::sendSmsPassword(MessageData &_data) const
-{
-    LOGGER(PACKAGE).debug("public request auth - send sms password");
-
-    unsigned long long message_id =
-    man_->getMessagesManager()->save_sms_to_send(
-            map_at(_data, "handle").c_str()
-            , map_at(_data, "phone").c_str()
-
-            , (std::string("Potvrzujeme uspesne zalozeni uctu mojeID. "
-                    "Pro aktivaci Vaseho uctu je nutne vlozit kody "
-                    "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: ")
-             + map_at(_data, "pin2")
-             ).c_str()
-
-             , "mojeid_pin2"
-            , boost::lexical_cast<unsigned long >(map_at(_data, "contact_id"))//contact object_registry.id
-            , boost::lexical_cast<unsigned long >(map_at(_data, "contact_hid"))//contact_history.historyid
-            );
-
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-    conn.exec_params("INSERT INTO public_request_messages_map "
-            " (public_request_id, message_archive_id, mail_archive_id) "
-            " VALUES ($1::integer, $2::integer, $3::integer)",
-            Database::query_param_list
-                (this->getId())
-                (message_id)
-                (Database::QPNull));
-    tx.commit();
-}
-
-std::string PublicRequestAuthImpl::generateRandomPassword(const size_t _length)
-{
-    return Random::string_from(_length, 
-            "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
-}
-
-std::string PublicRequestAuthImpl::generateAuthInfoPassword()
-{
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result rauthinfo = conn.exec_params(
-            "SELECT substr(replace(o.authinfopw, ' ', ''), 1, $1::integer) "
-            " FROM object o JOIN contact c ON c.id = o.id"
-            " WHERE c.id = $2::integer",
-            Database::query_param_list(PASSWORD_CHUNK_LENGTH)
-                                      (this->getObject(0).id));
-    if (rauthinfo.size() != 1) {
-        throw std::runtime_error(str(boost::format(
-                    "cannot retrieve authinfo for contact id=%1%")
-                    % this->getObject(0).id));
-    }
-    std::string passwd;
-    /* pin1 */
-    if (rauthinfo[0][0].isnull()) {
-        passwd = generateRandomPassword(PASSWORD_CHUNK_LENGTH);
-    }
-    else {
-        passwd = static_cast<std::string>(rauthinfo[0][0]);
-        LOGGER(PACKAGE).debug(boost::format("authinfo w/o spaces='%s'") % passwd);
-        /* fill with random to PASSWORD_CHUNK_LENGTH size */
-        size_t to_fill = 0;
-        if ((to_fill = (PASSWORD_CHUNK_LENGTH - passwd.length())) > 0) {
-            passwd += generateRandomPassword(to_fill);
-            LOGGER(PACKAGE).debug(boost::format("authinfo filled='%s'") % passwd);
-        }
-    }
-    /* append pin2 */
-    passwd += generateRandomPassword(PASSWORD_CHUNK_LENGTH);
-    return passwd;
-}
 
 bool PublicRequestAuthImpl::check() const
 {

@@ -8,6 +8,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/format.hpp>
+#include <boost/utility.hpp>
 
 #include "common_object.h"
 #include "registrar.h"
@@ -139,7 +140,10 @@ struct RequestExists : public std::runtime_error
 /*
  * Request interface
  */
-class PublicRequest : virtual public Fred::CommonObject {
+class PublicRequest
+    : virtual public Fred::CommonObject,
+      private boost::noncopyable
+{
 public:
   virtual ~PublicRequest() {
   }
@@ -202,8 +206,7 @@ public:
     virtual ~PublicRequestAuth() { }
 
     /* try to authenticate public request by comparing _password with the one
-     * stored in database. it should save it to internal state and processAction(...)
-     * should be checking */
+     * stored in database. it should save it to internal state and processAction(...) */
     virtual bool authenticate(const std::string &_password) = 0;
 
     virtual void sendPasswords() = 0;
