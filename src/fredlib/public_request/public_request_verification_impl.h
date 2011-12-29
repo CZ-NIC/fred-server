@@ -91,14 +91,6 @@ public:
     ContactVerification() : PublicRequestAuthImpl() { }
 
 
-    void save()
-    {
-        ::MojeID::Contact cdata = ::MojeID::contact_info(this->getObject(0).id);
-        contact_validator_.check(cdata);
-        PublicRequestAuthImpl::save();
-    }
-
-
     void sendEmailPassword(const EmailType &_type)
     {
         LOGGER(PACKAGE).debug("public request auth - send email password");
@@ -365,6 +357,9 @@ public:
     {
         /* insert */
         if (!this->getId()) {
+            ::MojeID::Contact cdata = ::MojeID::contact_info(this->getObject(0).id);
+            contact_validator_.check(cdata);
+
             bool check_ok = true;
 
             /* contact prohibits operations:
@@ -528,6 +523,9 @@ public:
     void save()
     {
         if (!this->getId()) {
+            ::MojeID::Contact cdata = ::MojeID::contact_info(this->getObject(0).id);
+            contact_validator_.check(cdata);
+
             bool check_ok = true;
 
             /* don't check this when contact is already CI - we are creating
