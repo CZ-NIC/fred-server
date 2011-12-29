@@ -1289,7 +1289,8 @@ ContactStateInfo ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rstates = conn.exec_params(
-                "SELECT mojeid_contact.id, os.valid_from, CASE "
+                "SELECT c.id, mcs.valid_from, mcs.name FROM contact c "
+                " LEFT JOIN (SELECT mojeid_contact.id, os.valid_from, CASE "
                 " WHEN bool_or (eos.name = 'validatedContact') "
                 "   THEN 'validatedContact' "
                 "  WHEN bool_or (eos.name = 'identifiedContact') "
@@ -1312,6 +1313,8 @@ ContactStateInfo ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
                 " WHERE os.valid_to IS NULL "
                 "   AND eos.name = ANY ('{\"conditionallyIdentifiedContact\", \"identifiedContact\", \"validatedContact\"}') "
                 " GROUP BY mojeid_contact.id, os.valid_from "
+                " ) AS mcs ON mcs.id = c.id "
+                " WHERE c.id = $2::bigint "
                 , Database::query_param_list
                     (server_conf_->registrar_handle)
                     (_contact_id));
