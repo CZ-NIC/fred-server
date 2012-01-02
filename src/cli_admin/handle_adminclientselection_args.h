@@ -700,6 +700,8 @@ class HandleAdminClientCreateInvoicePrefixesArgsGrp : public HandleCommandGrpArg
 {
 public:
 
+    CreateInvoicePrefixesArgs params;
+
     CommandDescription get_command_option()
     {
         return CommandDescription("create_invoice_prefixes");
@@ -714,6 +716,9 @@ public:
         cfg_opts->add_options()
             ("create_invoice_prefixes"
             , "create next year invoice prefixes for zones and invoice types in invoice_number_prefix if they don't exist")
+            ("for_current_year",  boost::program_options
+                     ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.for_current_year))
+                      ,"make prefixes for the current year instead")
             ;
         return cfg_opts;
     }//get_options_description

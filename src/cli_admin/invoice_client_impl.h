@@ -226,7 +226,11 @@ struct create_invoice_prefixes_impl
   void operator()() const
   {
       Logging::Context ctx("create_invoice_prefixes_impl");
-      Admin::create_invoice_prefixes();
+      Admin::create_invoice_prefixes(CfgArgGroups::instance()
+      ->get_handler_ptr_by_type
+          <HandleAdminClientCreateInvoicePrefixesArgsGrp>()
+      ->params);
+
       return ;
   }
 };

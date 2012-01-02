@@ -171,6 +171,26 @@ struct InvoicePrefixArgs
     {}
 };//struct InvoicePrefixArgs
 
+
+/**
+ * \class CreateInvoicePrefixesArgs
+ * \brief admin client create_invoice_prefixes params
+ */
+struct CreateInvoicePrefixesArgs
+{
+    bool for_current_year;
+
+    CreateInvoicePrefixesArgs()
+    : for_current_year(false)
+    {}//ctor
+
+    CreateInvoicePrefixesArgs(
+        bool _for_current_year
+        )
+    : for_current_year(_for_current_year)
+    {}
+};//struct CreateInvoicePrefixesArgs
+
 /**
  * \class InvoiceCreateArgs
  * \brief admin client invoice_create params

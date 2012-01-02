@@ -141,7 +141,7 @@ private:
 
 }; // class InvoiceClient
 
-void create_invoice_prefixes();
+void create_invoice_prefixes(CreateInvoicePrefixesArgs params);
 void add_invoice_number_prefix(AddInvoiceNumberPrefixArgs params);
 
 } // namespace Admin;

@@ -524,11 +524,11 @@ InvoiceClient::create_invoice()
     }
 }
 
-void create_invoice_prefixes()
+void create_invoice_prefixes(CreateInvoicePrefixesArgs params)
 {
     std::auto_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
-    invMan->createInvoicePrefixes();
+    invMan->createInvoicePrefixes(params.for_current_year);
 }
 
 void add_invoice_number_prefix(AddInvoiceNumberPrefixArgs params)

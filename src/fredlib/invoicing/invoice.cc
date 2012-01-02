@@ -132,7 +132,7 @@ public:
   virtual bool insertInvoicePrefix(const std::string &zoneName,
           int type, int year, unsigned long long prefix);
 
-  virtual void createInvoicePrefixes();
+  virtual void createInvoicePrefixes(bool for_current_year);
   virtual void addInvoiceNumberPrefix( unsigned long prefix
             , const std::string& zone_fqdn
             , const std::string invoice_type_name);
@@ -3468,13 +3468,13 @@ public:
   }
   
   ///create next year invoice prefixes for zones and invoice types in invoice_number_prefix if they don't exist
-  void ManagerImpl::createInvoicePrefixes()
+  void ManagerImpl::createInvoicePrefixes(bool for_current_year)
   {
       TRACE("Invoicing::Manager::createInvoicePrefixes()");
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction tx(conn);
       boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
-      int next_year = local_today.year() + 1;
+      int next_year = local_today.year() + (for_current_year ? 0 : 1);
 
       //invoice type 0-advance 1-account ...
 

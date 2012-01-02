@@ -315,7 +315,7 @@ public:
           int type, int year, unsigned long long prefix) = 0;
   virtual bool insertInvoicePrefix(const std::string &zoneName,
           int type, int year, unsigned long long prefix) = 0;
-  virtual void createInvoicePrefixes() = 0;
+  virtual void createInvoicePrefixes(bool for_current_year) = 0;
 
   virtual void addInvoiceNumberPrefix( unsigned long prefix
           , const std::string& zone_fqdn
