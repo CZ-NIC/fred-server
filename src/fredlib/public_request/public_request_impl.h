@@ -3,7 +3,6 @@
 
 #include "public_request.h"
 #include "common_impl.h"
-#include "mojeid/mojeid_data_validation.h"
 
 namespace Fred {
 namespace PublicRequest {

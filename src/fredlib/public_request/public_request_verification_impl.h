@@ -5,9 +5,9 @@
 #include "types/birthdate.h"
 #include "types/stringify.h"
 #include "object_states.h"
-#include "mojeid/contact.h"
+#include "contact_verification/contact.h"
+#include "contact_verification/contact_verification.h"
 #include "mojeid/request.h"
-#include "mojeid/mojeid_data_validation.h"
 #include "mojeid/mojeid_contact_states.h"
 #include "map_at.h"
 
@@ -16,10 +16,10 @@ namespace Fred {
 namespace PublicRequest {
 
 
-class ContactVerification : public PublicRequestAuthImpl
+class ContactVerification : public Fred::PublicRequest::PublicRequestAuthImpl
 {
 protected:
-    ::MojeID::ContactValidator contact_validator_;
+    Fred::Contact::Verification::ContactValidator contact_validator_;
     static const size_t PASSWORD_CHUNK_LENGTH = 8;
 
 
@@ -97,9 +97,9 @@ public:
 
         MessageData data = this->collectMessageData();
 
-        Mailer::Attachments attach;
-        Mailer::Handles handles;
-        Mailer::Parameters params;
+        Fred::Mailer::Attachments attach;
+        Fred::Mailer::Handles handles;
+        Fred::Mailer::Parameters params;
 
         unsigned short type = ((_type == EMAIL_PIN2_SMS) ? 1
                                 : (_type == EMAIL_PIN2_LETTER) ? 2 : 0);
@@ -165,15 +165,15 @@ public:
         MessageData data = collectMessageData();
 
         std::stringstream xmldata, xml_part_code;
-        Document::GenerationType doc_type;
+        Fred::Document::GenerationType doc_type;
 
         if (_type == LETTER_PIN2) {
             xml_part_code << "<pin2>" << map_at(data, "pin2") << "</pin2>";
-            doc_type = Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN2;
+            doc_type = Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN2;
         }
         else if (_type == LETTER_PIN3) {
             xml_part_code << "<pin3>" << map_at(data, "pin3") << "</pin3>";
-            doc_type = Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3;
+            doc_type = Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3;
         }
         else {
             throw std::runtime_error("unknown letter type");
@@ -344,7 +344,7 @@ class ConditionalContactIdentificationImpl : public ContactVerification
 public:
     ConditionalContactIdentificationImpl() : ContactVerification()
     {
-        contact_validator_ = ::MojeID::create_conditional_identification_validator();
+        contact_validator_ = Fred::Contact::Verification::create_conditional_identification_validator();
     }
 
 
@@ -357,7 +357,8 @@ public:
     {
         /* insert */
         if (!this->getId()) {
-            ::MojeID::Contact cdata = ::MojeID::contact_info(this->getObject(0).id);
+            Fred::Contact::Verification::Contact cdata
+                = Fred::Contact::Verification::contact_info(this->getObject(0).id);
             contact_validator_.check(cdata);
 
             bool check_ok = true;
@@ -419,7 +420,8 @@ public:
             throw ObjectChanged();
         }
 
-        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
+        Fred::Contact::Verification::Contact cdata
+            = Fred::Contact::Verification::contact_info(getObject(0).id);
         contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
@@ -438,12 +440,12 @@ public:
         if (act_registrar != this->getRegistrarId()) {
             /* run transfer command */
             ::MojeID::Request request(205, this->getRegistrarId(), this->getResolveRequestId());
-            ::MojeID::contact_transfer(
+            Fred::Contact::Verification::contact_transfer(
                     request.get_id(),
                     request.get_request_id(),
                     request.get_registrar_id(),
                     this->getObject(0).id);
-            ::MojeID::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
+            Fred::Contact::Verification::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
             request.end_success();
         }
 
@@ -495,7 +497,7 @@ class ContactIdentificationImpl : public ContactVerification
 public:
     ContactIdentificationImpl() : ContactVerification()
     {
-        contact_validator_ = ::MojeID::create_identification_validator();
+        contact_validator_ = Fred::Contact::Verification::create_identification_validator();
     }
 
     /* XXX: change validator in case contact is already CI */
@@ -504,7 +506,7 @@ public:
         PublicRequestImpl::addObject(_oid);
 
         if (checkState(this->getObject(0).id, 21) == true) {
-            contact_validator_ = ::MojeID::create_finish_identification_validator();
+            contact_validator_ = Fred::Contact::Verification::create_finish_identification_validator();
         }
     }
 
@@ -523,7 +525,8 @@ public:
     void save()
     {
         if (!this->getId()) {
-            ::MojeID::Contact cdata = ::MojeID::contact_info(this->getObject(0).id);
+            Fred::Contact::Verification::Contact cdata
+                = Fred::Contact::Verification::contact_info(this->getObject(0).id);
             contact_validator_.check(cdata);
 
             bool check_ok = true;
@@ -595,7 +598,8 @@ public:
             throw ObjectChanged();
         }
 
-        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
+        Fred::Contact::Verification::Contact cdata
+            = Fred::Contact::Verification::contact_info(getObject(0).id);
         contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
@@ -614,12 +618,12 @@ public:
         if (act_registrar != this->getRegistrarId()) {
             /* run transfer command */
             ::MojeID::Request request(205, this->getRegistrarId(), this->getResolveRequestId());
-            ::MojeID::contact_transfer(
+            Fred::Contact::Verification::contact_transfer(
                     request.get_id(),
                     request.get_request_id(),
                     request.get_registrar_id(),
                     this->getObject(0).id);
-            ::MojeID::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
+            Fred::Contact::Verification::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
             request.end_success();
         }
 
@@ -713,7 +717,7 @@ public:
     }
 
 
-    virtual void fillTemplateParams(Mailer::Parameters& params) const
+    virtual void fillTemplateParams(Fred::Mailer::Parameters& params) const
     {
         params["reqdate"] = stringify(getCreateTime().date());
         params["reqid"] = stringify(getId());

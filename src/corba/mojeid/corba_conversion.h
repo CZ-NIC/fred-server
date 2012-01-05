@@ -2,9 +2,8 @@
 #define CORBA_CONVERT_H_
 
 #include "corba/MojeID.hh"
-#include "fredlib/mojeid/nullable.h"
-#include "fredlib/mojeid/contact.h"
-#include "fredlib/mojeid/mojeid_data_validation.h"
+#include "fredlib/contact_verification/contact.h"
+#include "fredlib/contact_verification/data_validation.h"
 
 #include <string>
 #include <boost/algorithm/string.hpp>
@@ -187,9 +186,9 @@ Nullable<std::string> corba_unwrap_nullable_date(const NullableDate *_v)
 }
 
 
-MojeID::Contact corba_unwrap_contact(const Contact &_contact)
+Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contact)
 {
-    MojeID::Contact data;
+    Fred::Contact::Verification::Contact data;
 
     for (unsigned int i = 0; i < _contact.phones.length(); ++i) {
         std::string type = corba_unwrap_string(_contact.phones[i].type);
@@ -253,7 +252,7 @@ MojeID::Contact corba_unwrap_contact(const Contact &_contact)
     return data;
 }
 
-Contact* corba_wrap_contact(const MojeID::Contact &_contact)
+Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact)
 {
     Contact *data = new Contact();
     data->id           = corba_wrap_nullable_ulonglong(_contact.id);
@@ -326,14 +325,14 @@ Contact* corba_wrap_contact(const MojeID::Contact &_contact)
 
 
 Registry::MojeID::Server::ValidationError corba_wrap_validation_error(
-        const ::MojeID::ValidationError &_value)
+        const Fred::Contact::Verification::ValidationError &_value)
 {
     switch (_value) {
-        case ::MojeID::NOT_AVAILABLE:
+        case Fred::Contact::Verification::NOT_AVAILABLE:
             return Registry::MojeID::Server::NOT_AVAILABLE;
-        case ::MojeID::INVALID:
+        case Fred::Contact::Verification::INVALID:
             return Registry::MojeID::Server::INVALID;
-        case ::MojeID::REQUIRED:
+        case Fred::Contact::Verification::REQUIRED:
             return Registry::MojeID::Server::REQUIRED;
         default:
             throw std::runtime_error("unknown validation error type");
@@ -342,14 +341,14 @@ Registry::MojeID::Server::ValidationError corba_wrap_validation_error(
 
 
 Registry::MojeID::Server::ValidationErrorList_var corba_wrap_validation_error_list(
-        const ::MojeID::FieldErrorMap &_errors)
+        const Fred::Contact::Verification::FieldErrorMap &_errors)
 {
     Registry::MojeID::Server::ValidationErrorList_var cerrors
         = new Registry::MojeID::Server::ValidationErrorList;
     cerrors->length(_errors.size());
 
-    ::MojeID::FieldErrorMap::const_iterator it = _errors.begin();
-    ::MojeID::FieldErrorMap::size_type i = 0;
+    Fred::Contact::Verification::FieldErrorMap::const_iterator it = _errors.begin();
+    Fred::Contact::Verification::FieldErrorMap::size_type i = 0;
     for (; it != _errors.end(); ++it, ++i) {
         cerrors[i].name = corba_wrap_string(it->first);
         cerrors[i].error = corba_wrap_validation_error(it->second);

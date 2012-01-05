@@ -14,7 +14,8 @@
 #include "fredlib/contact.h"
 #include "fredlib/public_request/public_request.h"
 #include "fredlib/object_states.h"
-#include "fredlib/mojeid/contact.h"
+#include "fredlib/contact_verification/contact.h"
+#include "fredlib/contact_verification/contact_verification.h"
 #include "fredlib/mojeid/request.h"
 #include "fredlib/mojeid/mojeid_contact_states.h"
 
@@ -84,13 +85,13 @@ IdentificationRequestPtr ServerImpl::contactCreateWorker(unsigned long long &cid
     check_result = contact_mgr->checkAvail(static_cast<std::string> (_contact.username), cinfo);
 
     if (check_result != Fred::Contact::Manager::CA_FREE) {
-        ::MojeID::FieldErrorMap errors;
-        errors[::MojeID::field_username] = ::MojeID::NOT_AVAILABLE;
-        throw ::MojeID::DataValidationError(errors);
+        Fred::Contact::Verification::FieldErrorMap errors;
+        errors[Fred::Contact::Verification::field_username] = Fred::Contact::Verification::NOT_AVAILABLE;
+        throw Fred::Contact::Verification::DataValidationError(errors);
     }
 
-    ::MojeID::Contact data = corba_unwrap_contact(_contact);
-    hid = ::MojeID::contact_create(_request.get_id(),
+    Fred::Contact::Verification::Contact data = corba_unwrap_contact(_contact);
+    hid = Fred::Contact::Verification::contact_create(_request.get_id(),
             _request.get_request_id(), _request.get_registrar_id(), data);
     cid = data.id;
 
@@ -170,7 +171,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
         /* return new contact id */
         return cid;
-    } catch (::MojeID::DataValidationError &_ex) {
+    } catch (Fred::Contact::Verification::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
     } catch (std::exception &_ex) {
@@ -239,7 +240,7 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         /* return new contact id */
         return cid;
     }
-    catch (::MojeID::DataValidationError &_ex) {
+    catch (Fred::Contact::Verification::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
     }
@@ -301,7 +302,7 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
                     " ident=%1%") % _ident_request_id);
         throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
     }
-    catch (::MojeID::DataValidationError &_ex) {
+    catch (Fred::Contact::Verification::DataValidationError &_ex) {
         LOGGER(PACKAGE).error(boost::format(
                     "cannot process identification request"
                     " (contact data cannot be validated) ident=%1%")
@@ -360,7 +361,7 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
-        ::MojeID::FieldErrorMap errors;
+        Fred::Contact::Verification::FieldErrorMap errors;
         /* contact is blocked or prohibits operations:
          *   7 | serverBlocked
          *   3 | serverTransferProhibited
@@ -371,15 +372,15 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
                 || (Fred::object_has_state(cinfo.id, ::MojeID::IDENTIFIED_CONTACT) == true)
                 || (Fred::object_has_state(cinfo.id, ::MojeID::VALIDATED_CONTACT) == true)) {
 
-            errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
+            errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::NOT_AVAILABLE;
         }
         else if ((Fred::object_has_state(cinfo.id, "serverTransferProhibited") == true)
                 || (Fred::object_has_state(cinfo.id, "serverUpdateProhibited") == true)) {
 
-            errors[::MojeID::field_status] = ::MojeID::INVALID;
+            errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::INVALID;
         }
         if (errors.size() > 0) {
-            throw ::MojeID::DataValidationError(errors);
+            throw Fred::Contact::Verification::DataValidationError(errors);
         }
 
         /* create public request */
@@ -421,12 +422,12 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
     catch (Fred::PublicRequest::NotApplicable &_ex) {
         LOGGER(PACKAGE).error(boost::format(
                     "cannot create transfer request (%1%)") % _ex.what());
-        ::MojeID::FieldErrorMap errors;
-        errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
+        Fred::Contact::Verification::FieldErrorMap errors;
+        errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::NOT_AVAILABLE;
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(errors));
     }
-    catch (::MojeID::DataValidationError &_ex) {
+    catch (Fred::Contact::Verification::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
     }
@@ -467,7 +468,7 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
-        ::MojeID::FieldErrorMap errors;
+        Fred::Contact::Verification::FieldErrorMap errors;
         /* contact is blocked or prohibits operations:
          *   7 | serverBlocked
          *   3 | serverTransferProhibited
@@ -478,15 +479,15 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
                 || (Fred::object_has_state(cinfo.id, ::MojeID::IDENTIFIED_CONTACT) == true)
                 || (Fred::object_has_state(cinfo.id, ::MojeID::VALIDATED_CONTACT) == true)) {
 
-            errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
+            errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::NOT_AVAILABLE;
         }
         else if ((Fred::object_has_state(cinfo.id, "serverTransferProhibited") == true)
                 || (Fred::object_has_state(cinfo.id, "serverUpdateProhibited") == true)) {
 
-            errors[::MojeID::field_status] = ::MojeID::INVALID;
+            errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::INVALID;
         }
         if (errors.size() > 0) {
-            throw ::MojeID::DataValidationError(errors);
+            throw Fred::Contact::Verification::DataValidationError(errors);
         }
 
         /* create public request */
@@ -549,12 +550,12 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
     catch (Fred::PublicRequest::NotApplicable &_ex) {
         LOGGER(PACKAGE).error(boost::format(
                     "cannot create transfer request (%1%)") % _ex.what());
-        ::MojeID::FieldErrorMap errors;
-        errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
+        Fred::Contact::Verification::FieldErrorMap errors;
+        errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::NOT_AVAILABLE;
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(errors));
     }
-    catch (::MojeID::DataValidationError &_ex) {
+    catch (Fred::Contact::Verification::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
     }
@@ -758,12 +759,12 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
                     % cid % handle % cinfo.id % cinfo.name));
         }
 
-        ::MojeID::Contact data = corba_unwrap_contact(_contact);
-        ::MojeID::ContactValidator validator = ::MojeID::create_contact_update_validator();
+        Fred::Contact::Verification::Contact data = corba_unwrap_contact(_contact);
+        Fred::Contact::Verification::ContactValidator validator = Fred::Contact::Verification::create_contact_update_validator();
         validator.check(data);
 
         if (Fred::object_has_state(cid, ::MojeID::VALIDATED_CONTACT) == true) {
-            if (::MojeID::check_validated_contact_diff(data, ::MojeID::contact_info(cid)) == false) {
+            if (Fred::Contact::Verification::check_validated_contact_diff(data, Fred::Contact::Verification::contact_info(cid)) == false) {
                 /* change contact status to identified */
                 if (Fred::cancel_object_state(cid, ::MojeID::VALIDATED_CONTACT)) {
                     Fred::insert_object_state(cid, ::MojeID::IDENTIFIED_CONTACT);
@@ -771,7 +772,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
             }
         }
 
-        unsigned long long hid = ::MojeID::contact_update(
+        unsigned long long hid = Fred::Contact::Verification::contact_update(
                 request.get_id(),
                 request.get_request_id(),
                 request.get_registrar_id(),
@@ -798,7 +799,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
     catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
     }
-    catch (::MojeID::DataValidationError &_ex) {
+    catch (Fred::Contact::Verification::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
     }
@@ -834,7 +835,7 @@ Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
-        Contact *data = corba_wrap_contact(::MojeID::contact_info(_id));
+        Contact *data = corba_wrap_contact(Fred::Contact::Verification::contact_info(_id));
 
         LOGGER(PACKAGE).info("request completed successfully");
         return data;

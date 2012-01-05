@@ -1,11 +1,13 @@
-#ifndef MOJEID_CONTACT_H_
-#define MOJEID_CONTACT_H_
+#ifndef VERIFICATION_CONTACT_H_
+#define VERIFICATION_CONTACT_H_
 
-#include "nullable.h"
+#include "util/db/nullable.h"
 #include <string>
 #include <map>
 
-namespace MojeID {
+namespace Fred {
+namespace Contact {
+namespace Verification {
 
 
 class Contact
@@ -61,13 +63,15 @@ unsigned long long contact_update(const unsigned long long &_action_id,
                                   const unsigned long long &_registrar_id,
                                   Contact &_data);
 
-const MojeID::Contact contact_info(const unsigned long long &_id);
+const Contact contact_info(const unsigned long long &_id);
 
 
 void contact_transfer_poll_message(const unsigned long long &_old_registrar_id,
                                    const unsigned long long &_contact_id);
 
 }
+}
+}
 
-#endif /*MOJEID_CONTACT_H_*/
+#endif /*VERIFICATION_CONTACT_H_*/
 

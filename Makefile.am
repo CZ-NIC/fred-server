@@ -79,7 +79,8 @@ noinst_LIBRARIES = util/libutil.a util/log/liblog.a util/types/libtypes.a util/d
         src/corba/libcorbaadmin.a src/corba/libcorbalogger.a \
         src/corba/libcorbatechcheck.a src/corba/libcorbaepp.a \
         src/corba/libcorbazonegenerator.a \
-		src/fredlib/public_request/libpublic_request.a
+		src/fredlib/public_request/libpublic_request.a \
+		src/fredlib/contact_verification/libcontactverification.a
 
 util_libutil_a_SOURCES = util/random.cc
 
@@ -160,7 +161,8 @@ util_db_libdb_a_SOURCES = util/db/query/query_old.cc \
 		  util/db/manager_tss.h                  \
 		  util/db/db_exceptions.h                \
 		  util/db/database.h                     \
-		  util/db/manager_old_db.h
+		  util/db/manager_old_db.h               \
+		  util/db/nullable.h
 
 UTIL_MOCKDB_SRC = util/db/query/query_old.cc \
 		  util/db/query/filter.cc                \
@@ -452,6 +454,16 @@ src_fredlib_public_request_libpublic_request_a_SOURCES = \
 
 #src fredlib public_request
 
+src_fredlib_contact_verification_libcontactverification_a_SOURCES = \
+    src/fredlib/contact_verification/contact.cc \
+    src/fredlib/contact_verification/contact.h \
+    src/fredlib/contact_verification/data_validation.cc \
+	src/fredlib/contact_verification/data_validation.h \
+	src/fredlib/contact_verification/contact_verification.cc \
+	src/fredlib/contact_verification/contact_verification.h
+
+#src fredlib contact verification
+
 src_fredlib_banking_libbanking_a_SOURCES =  \
 		src/fredlib/banking/model_bank_statement.cc \
 		src/fredlib/banking/model_bank_statement.h \
@@ -508,12 +520,7 @@ src_fredlib_requests_librequests_a_SOURCES =  \
 #src fredlib requests
 
 src_fredlib_mojeid_libmojeid_a_SOURCES = \
-		  src/fredlib/mojeid/contact.h \
-		  src/fredlib/mojeid/contact.cc \
-		  src/fredlib/mojeid/nullable.h \
 		  src/fredlib/mojeid/request.h \
-		  src/fredlib/mojeid/mojeid_data_validation.h \
-		  src/fredlib/mojeid/mojeid_data_validation.cc \
 		  src/fredlib/mojeid/mojeid_contact_states.h
 
 #src fredlib mojeid
@@ -546,6 +553,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         src/corba/libcorbafilters.a \
         src/corba/libcorbadatatypes.a \
     src/fredlib/public_request/libpublic_request.a \
+	src/fredlib/contact_verification/libcontactverification.a \
 	src/fredlib/banking/libbanking.a \
 	src/fredlib/libfred.a \
 	src/fredlib/messages/libmessages.a \
@@ -818,6 +826,7 @@ src_corba_mojeid_fred_mifd_LDADD = $(LIBIDN_LIBS) \
                      src/fredlib/notifier/libnotifier.a \
                      src/fredlib/libfred.a \
                      src/model/libmodel.a \
+					 src/fredlib/contact_verification/libcontactverification.a \
                      src/fredlib/public_request/libpublic_request.a \
                      src/fredlib/banking/libbanking.a \
                      src/fredlib/mojeid/libmojeid.a \
@@ -997,6 +1006,7 @@ tests_test_server_LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	src/corba/libcorba.a \
 	src/corba/whois/libwhois_impl.a \
     src/fredlib/public_request/libpublic_request.a \
+    src/fredlib/contact_verification/libcontactverification.a \
 	src/fredlib/libfred.a \
 	src/fredlib/messages/libmessages.a \
 	src/model/libmodel.a \
