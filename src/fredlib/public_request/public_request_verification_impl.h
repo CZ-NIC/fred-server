@@ -451,6 +451,7 @@ public:
 
         /* set state */
         insertNewStateRequest(getId(), getObject(0).id, 21);
+        insertNewStateRequest(getId(), getObject(0).id, 24);
 
         /* prohibit operations on contact */
         if (checkState(this->getObject(0).id, 1) == false) {
@@ -632,6 +633,10 @@ public:
 
         /* set new state */
         insertNewStateRequest(getId(), getObject(0).id, 22);
+
+        if (checkState(this->getObject(0).id, 24) == false) {
+            insertNewStateRequest(getId(), getObject(0).id, 24);
+        }
 
         /* prohibit operations on contact */
         if (checkState(this->getObject(0).id, 1) == false) {

@@ -618,23 +618,25 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
 
         boost::format lock_state = boost::format(
         " SELECT os.state_id FROM object_state os WHERE os.state_id = ANY ( SELECT id from enum_object_states where name = "
-            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6% }') ) AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) AND os.object_id = $1::integer FOR UPDATE")
+            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6%, %7% }') ) AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) AND os.object_id = $1::integer FOR UPDATE")
            % "serverDeleteProhibited" 
            % "serverTransferProhibited"
            % "serverUpdateProhibited"
            % ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT
            % ::MojeID::IDENTIFIED_CONTACT
-           % ::MojeID::VALIDATED_CONTACT;
+           % ::MojeID::VALIDATED_CONTACT
+           % ::MojeID::MOJEID_CONTACT;
 
         boost::format lock_state_request = boost::format(
         " SELECT * FROM object_state os WHERE os.state_id = ANY ( SELECT id from enum_object_states where name = "
-            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6% }') ) AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) AND os.object_id = $1::integer FOR UPDATE")
+            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6%, %7% }') ) AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) AND os.object_id = $1::integer FOR UPDATE")
            % "serverDeleteProhibited" 
            % "serverTransferProhibited"
            % "serverUpdateProhibited"
            % ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT
            % ::MojeID::IDENTIFIED_CONTACT
-           % ::MojeID::VALIDATED_CONTACT;
+           % ::MojeID::VALIDATED_CONTACT
+           % ::MojeID::MOJEID_CONTACT;
 
         // fetch the result and convert to strings
         std::vector<int> drop_states_codes;
@@ -656,6 +658,7 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
         bool haveDeleteProhibited = false;
         bool haveTransferProhibited = false;
         bool haveUpdateProhibited = false;
+        bool haveMojeidContact = false;
         std::string mojeid_state;
 
         for(std::vector<std::string>::const_iterator it = drop_states.begin();
@@ -675,6 +678,8 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
                     haveTransferProhibited = true;
                 } else if(std::string("serverUpdateProhibited") == *it) {
                     haveUpdateProhibited = true;
+                } else if (::MojeID::MOJEID_CONTACT == *it) {
+                    haveMojeidContact = true;
                 } else {
                     throw std::runtime_error("Programming error: discrepancy between SQL and processing code");
                 }
@@ -684,6 +689,7 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
         if (!haveDeleteProhibited 
             || !haveTransferProhibited
             || !haveUpdateProhibited
+            || !haveMojeidContact
             || mojeid_state.empty()) {
             throw std::runtime_error("Contact is not in all expected states");
         }
