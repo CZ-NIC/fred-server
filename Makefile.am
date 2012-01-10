@@ -826,7 +826,7 @@ src_corba_mojeid_fred_mifd_LDADD = $(LIBIDN_LIBS) \
                      src/fredlib/notifier/libnotifier.a \
                      src/fredlib/libfred.a \
                      src/model/libmodel.a \
-					 src/fredlib/contact_verification/libcontactverification.a \
+                     src/fredlib/contact_verification/libcontactverification.a \
                      src/fredlib/public_request/libpublic_request.a \
                      src/fredlib/banking/libbanking.a \
                      src/fredlib/mojeid/libmojeid.a \
