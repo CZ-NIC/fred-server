@@ -19,7 +19,7 @@ char* corba_wrap_string(const char* _s)
 }
 
 
-const char* corba_wrap_string(const std::string &_s)
+char* corba_wrap_string(const std::string &_s)
 {
     return corba_wrap_string(_s.c_str());
 }
