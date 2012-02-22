@@ -4,7 +4,7 @@ namespace Fred {
 namespace NSSet {
 
 
-const NSSet* get_nsset_by_hid(Manager *_m,
+std::auto_ptr<const NSSet> get_nsset_by_hid(Manager *_m,
                               const unsigned long long &_hid)
 {
     return get_object_by_hid<NSSet, Manager, List, Database::Filters::NSSetHistoryImpl>(_m, _hid);
@@ -74,10 +74,10 @@ Fred::ChangesMap diff(Manager *_m,
                       const unsigned long long &_prev_hid,
                       const unsigned long long &_act_hid)
 {
-    const NSSet *prev_c = get_nsset_by_hid(_m, _prev_hid);
-    const NSSet *act_c = get_nsset_by_hid(_m, _act_hid);
+    std::auto_ptr<const NSSet> prev_c = get_nsset_by_hid(_m, _prev_hid);
+    std::auto_ptr<const NSSet> act_c = get_nsset_by_hid(_m, _act_hid);
 
-    return diff(prev_c, act_c);
+    return diff(prev_c.get(), act_c.get());
 }
 
 

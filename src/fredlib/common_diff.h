@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <memory>
 
 #include "types/stringify.h"
 #include "object.h"
@@ -16,7 +17,7 @@ typedef std::map<std::string, std::pair<std::string, std::string> > ChangesMap;
 
 /* test */
 template<class T, class MT, class LT, class FT>
-const T* get_object_by_hid(MT *_m,
+std::auto_ptr<const T> get_object_by_hid(MT *_m,
                            const unsigned long long &_hid)
 {
     Settings settings;
@@ -35,14 +36,13 @@ const T* get_object_by_hid(MT *_m,
                         "get_object_by_hid: not found (hid=%1%)") % _hid));
     }
 
-    const T* object_data = dynamic_cast<T*>(data->get(0));
-    if (!object_data) {
+    T* object_data_ptr = dynamic_cast<T*>(data->get(0));
+    if (!object_data_ptr) {
         throw std::runtime_error("get_object_by_hid: cast error");
     }
 
     data->release(0);
-
-    return object_data;
+    return std::auto_ptr<const T> (object_data_ptr);
 }
 
 

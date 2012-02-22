@@ -4,7 +4,7 @@ namespace Fred {
 namespace Domain {
 
 
-const Domain* get_domain_by_hid(Manager *_m,
+std::auto_ptr<const Domain> get_domain_by_hid(Manager *_m,
                                 const unsigned long long &_hid)
 {
     return get_object_by_hid<Domain, Manager, List, Database::Filters::DomainHistoryImpl>(_m, _hid);
@@ -67,10 +67,10 @@ Fred::ChangesMap diff(Manager *_m,
                       const unsigned long long &_prev_hid,
                       const unsigned long long &_act_hid)
 {
-    const Domain *prev_d = get_domain_by_hid(_m, _prev_hid);
-    const Domain *act_d = get_domain_by_hid(_m, _act_hid);
+    std::auto_ptr<const Domain> prev_d = get_domain_by_hid(_m, _prev_hid);
+    std::auto_ptr<const Domain> act_d = get_domain_by_hid(_m, _act_hid);
 
-    return diff(prev_d, act_d);
+    return diff(prev_d.get(), act_d.get());
 }
 
 
