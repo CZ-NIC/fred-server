@@ -59,10 +59,10 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_registry_manager->dbManagerInit();
   m_registry_manager->initStates();
 
-  m_document_manager.reset(Fred::Document::Manager::create(docgen_path_,
+  m_document_manager = Fred::Document::Manager::create(docgen_path_,
                                                            docgen_template_path_,
                                                            fileclient_path_,
-                                                               ns->getHostName()));
+                                                               ns->getHostName());
   m_publicrequest_manager.reset(Fred::PublicRequest::Manager::create(m_registry_manager->getDomainManager(),
                                                                          m_registry_manager->getContactManager(),
                                                                          m_registry_manager->getNSSetManager(),

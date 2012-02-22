@@ -512,13 +512,12 @@ public:
                 std::stringstream filename;
                 filename << "letter-" << exDate << "-" << state_id << ".pdf";
 
-                gPDF.reset(
+                gPDF =
                   docm->createSavingGenerator(
                     Document::GT_WARNING_LETTER,
                     filename.str(), WARNING_LETTER_FILE_TYPE,
                     "" // default language
-                  )
-                );
+                  );
                 std::ostream& out(gPDF->getInput());
 
                 out << "<messages>";

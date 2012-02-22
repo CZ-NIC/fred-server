@@ -41,7 +41,7 @@ public:
         registry_manager_.reset(Fred::Manager::create(
                     DBDisconnectPtr(0),
                     rconf->restricted_handles));
-        doc_manager_.reset(Fred::Document::Manager::create(
+        doc_manager_ = (Fred::Document::Manager::create(
                     rconf->docgen_path,
                     rconf->docgen_template_path,
                     rconf->fileclient_path,
