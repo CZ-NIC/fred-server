@@ -335,7 +335,7 @@ Registry::MojeID::Server::ValidationError corba_wrap_validation_error(
         case Fred::Contact::Verification::REQUIRED:
             return Registry::MojeID::Server::REQUIRED;
         default:
-            throw std::runtime_error("unknown validation error type");
+            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR("corba_wrap_validation_error failed");
     }
 }
 
