@@ -198,9 +198,9 @@ public:
                 " WHERE coreg.type = 1 AND coreg.erdate IS NULL"
                 " AND eos.name = 'linked'"
                 " AND os.valid_from < current_timestamp AND (os.valid_to > current_timestamp OR os.valid_to is null)"
-                " AND extract('month' FROM ($1::date - interval '10 month')) = extract('month' FROM coreg.crdate)"
-                " AND extract('day' FROM ($1::date - interval '10 month')) = extract('day' FROM coreg.crdate)"
-                " AND extract('year' FROM ($1::date - interval '10 month')) >= extract('year' FROM coreg.crdate)"
+                " AND extract('month' FROM ($1::date - interval '300 day')) = extract('month' FROM coreg.crdate)"
+                " AND extract('day' FROM ($1::date - interval '300 day')) = extract('day' FROM coreg.crdate)"
+                " AND extract('year' FROM ($1::date - interval '300 day')) >= extract('year' FROM coreg.crdate)"
                 " AND (o.update IS NULL OR o.update::date NOT BETWEEN ($1::date - interval '2 month') AND $1::date)"
                 " AND rcmm.contact_id IS NULL"
                 " ORDER BY crdate",
