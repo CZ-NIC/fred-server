@@ -57,7 +57,13 @@ Registry::TableRow* ccReg_Invoices_i::getRow(CORBA::UShort row)
   (*tr)[0] <<= stringify(formatTime(inv->getCrDate(), true,false).c_str()).c_str();
   (*tr)[1] <<= C_STR(inv->getPrefix());
   (*tr)[2] <<= oid_registrar;
-  (*tr)[3] <<= formatMoney(inv->getPrice()).c_str();
+
+  if(invoice_type == Fred::Invoicing::IT_DEPOSIT) {
+      (*tr)[3] <<= formatMoney( inv->getTotal() + inv->getTotalVAT() ).c_str();
+  } else {
+      (*tr)[3] <<= formatMoney(inv->getPrice()).c_str();
+  }
+
   (*tr)[4] <<= C_STR(credit);
   (*tr)[5] <<= C_STR(itype);
   (*tr)[6] <<= C_STR(inv->getZoneFqdn());
