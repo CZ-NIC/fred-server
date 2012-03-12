@@ -21,6 +21,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sstream>
+#include <vector>
 
 #ifdef TIMELOG
 #include <sys/time.h>
@@ -245,10 +246,9 @@ void PQ::Disconnect()
 std::string PQ::Escape2(
   const std::string& str)
 {
-  char *buffer = new char[3*str.length()];
-  PQescapeStringConn(connection, buffer, str.c_str(), str.length(), NULL);
-  std::string ret = buffer;
-  delete[] buffer;
+  std::vector<char> buffer(3*str.length()+10,0);
+  PQescapeStringConn(connection, &buffer[0], str.c_str(), str.length(), NULL);
+  std::string ret (&buffer[0]);
   return ret;
 }
 
