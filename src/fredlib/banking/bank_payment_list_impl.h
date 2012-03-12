@@ -99,12 +99,14 @@ public:
             object_info_query.from()
                 << getTempTableName()
                 << " tmp "
-                 " JOIN bank_payment t_1 ON (tmp.id = t_1.id) "
-                 " LEFT JOIN bank_payment_registrar_credit_transaction_map t_6 ON t_6.bank_payment_id = t_1.id "
-                 " LEFT JOIN invoice_registrar_credit_transaction_map t_7 ON t_6.registrar_credit_transaction_id = t_7.registrar_credit_transaction_id "
-                 " LEFT JOIN invoice t_2 ON (t_7.invoice_id = t_2.id) "
-                 " LEFT JOIN invoice_prefix t_5 ON (t_2.invoice_prefix_id = t_5.id and t_5.typ = 0) "//typ advance invoice
-                 " JOIN bank_account t_3 ON (t_1.account_id = t_3.id) ";
+                " JOIN bank_payment t_1 ON (tmp.id = t_1.id) "
+                " LEFT JOIN ( "
+                " bank_payment_registrar_credit_transaction_map t_6 "
+                " JOIN invoice_registrar_credit_transaction_map t_7 ON t_6.registrar_credit_transaction_id = t_7.registrar_credit_transaction_id "
+                " JOIN invoice t_2 ON (t_7.invoice_id = t_2.id) "
+                " JOIN invoice_prefix t_5 ON (t_2.invoice_prefix_id = t_5.id and t_5.typ = 0) " //typ advance invoice
+                " ) ON t_6.bank_payment_id = t_1.id "
+                " JOIN bank_account t_3 ON (t_1.account_id = t_3.id) ";
             object_info_query.order_by()
                 << "tmp.id DESC";
 
