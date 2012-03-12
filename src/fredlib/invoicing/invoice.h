@@ -115,10 +115,13 @@ public:
   virtual boost::posix_time::ptime getCrTime() const = 0;
 };
 
+//this relies on PaymentActionType (operation_id - 1) in InvoiceImpl::addAction
 enum PaymentActionType {
   PAT_CREATE_DOMAIN
   , PAT_RENEW_DOMAIN
   , PAT_REQUESTS_OVER_LIMIT
+  , PAT_FINE
+  , PAT_FEE
 };
 std::string PaymentActionType2Str(PaymentActionType type);
 

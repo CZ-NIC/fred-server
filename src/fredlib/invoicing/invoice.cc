@@ -2304,7 +2304,11 @@ public:
               (pa->getAction() == PAT_CREATE_DOMAIN ? "RREG"
               : (pa->getAction() == PAT_RENEW_DOMAIN ? "RUDR"
                 : (pa->getAction() == PAT_REQUESTS_OVER_LIMIT ? "REPP"
-                  : "RUNK")
+                  : (pa->getAction() == PAT_FINE ? "RPOK"
+                    : (pa->getAction() == PAT_FEE ? "RPOP"
+                      : "RUNK")
+                    )
+                  )
                 )
               )
              )//TAG code
