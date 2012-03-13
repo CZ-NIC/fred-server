@@ -258,8 +258,9 @@ void EPPNotifier::AddDomainAdmin(
   int i, num;
   char sqlString[128];
 
+  /* Ticket #6684 - remove temp-c notification */
   snprintf(sqlString, sizeof(sqlString),
-      "SELECT  contactid  from domain_contact_map where domainid=%d", domainID);
+      "SELECT  contactid  from domain_contact_map where domainid=%d and role = 1", domainID);
 
   if (db->ExecSelect(sqlString) ) {
     num = db->GetSelectRows();
