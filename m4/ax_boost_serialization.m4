@@ -1,4 +1,6 @@
-##### http://autoconf-archive.cryp.to/ax_boost_serialization.html
+# ===========================================================================
+#  http://www.gnu.org/software/autoconf-archive/ax_boost_serialization.html
+# ===========================================================================
 #
 # SYNOPSIS
 #
@@ -6,10 +8,9 @@
 #
 # DESCRIPTION
 #
-#   Test for Serialization library from the Boost C++ libraries. The
-#   macro requires a preceding call to AX_BOOST_BASE. Further
-#   documentation is available at
-#   <http://randspringer.de/boost/index.html>.
+#   Test for Serialization library from the Boost C++ libraries. The macro
+#   requires a preceding call to AX_BOOST_BASE. Further documentation is
+#   available at <http://randspringer.de/boost/index.html>.
 #
 #   This macro calls:
 #
@@ -19,17 +20,16 @@
 #
 #     HAVE_BOOST_SERIALIZATION
 #
-# LAST MODIFICATION
+# LICENSE
 #
-#   2007-11-22
+#   Copyright (c) 2008 Thomas Porschberg <thomas@randspringer.de>
 #
-# COPYLEFT
-#
-#   Copyright (c) 2007 Thomas Porschberg <thomas@randspringer.de>
-#
-#   Copying and distribution of this file, with or without
-#   modification, are permitted in any medium without royalty provided
-#   the copyright notice and this notice are preserved.
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 18
 
 AC_DEFUN([AX_BOOST_SERIALIZATION],
 [
@@ -45,7 +45,7 @@ AC_DEFUN([AX_BOOST_SERIALIZATION],
             ax_boost_user_serialization_lib=""
         else
 		    want_boost="yes"
-        	ax_boost_user_serialization_lib="$withval"
+		ax_boost_user_serialization_lib="$withval"
 		fi
         ],
         [want_boost="yes"]
@@ -76,16 +76,26 @@ AC_DEFUN([AX_BOOST_SERIALIZATION],
                    ax_cv_boost_serialization=yes, ax_cv_boost_serialization=no)
          AC_LANG_POP([C++])
 		])
-		link_serialization="no"
 		if test "x$ax_cv_boost_serialization" = "xyes"; then
 			AC_DEFINE(HAVE_BOOST_SERIALIZATION,,[define if the Boost::Serialization library is available])
-			BN=boost_serialization
+            BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
             if test "x$ax_boost_user_serialization_lib" = "x"; then
-			    for ax_lib in $BN $BN-mt $BN-$CC $BN-$CC-mt $BN-$CC-mt-s $BN-$CC-s \
-			    $BN-mgw $BN-mgw $BN-mgw-mt $BN-mgw-mt-s $BN-mgw-s ; do
-			    AC_CHECK_LIB($ax_lib, main, [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break], [link_serialization="no"])
-  			done
-            else 
+                for libextension in `ls $BOOSTLIBDIR/libboost_serialization*.so* $BOOSTLIBDIR/libboost_serialization*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_serialization.*\)\.so.*$;\1;' -e 's;^lib\(boost_serialization.*\)\.a*$;\1;'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break],
+                                 [link_serialization="no"])
+				done
+                if test "x$link_serialization" != "xyes"; then
+                for libextension in `ls $BOOSTLIBDIR/boost_serialization*.{dll,a}* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_serialization.*\)\.dll.*$;\1;' -e 's;^\(boost_serialization.*\)\.a*$;\1;'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break],
+                                 [link_serialization="no"])
+				done
+                fi
+
+            else
                for ax_lib in $ax_boost_user_serialization_lib boost_serialization-$ax_boost_user_serialization_lib; do
 				      AC_CHECK_LIB($ax_lib, main,
                                    [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break],
@@ -93,16 +103,15 @@ AC_DEFUN([AX_BOOST_SERIALIZATION],
                   done
 
             fi
+            if test "x$ax_lib" = "x"; then
+                AC_MSG_ERROR(Could not find a version of the library!)
+            fi
 			if test "x$link_serialization" != "xyes"; then
 				AC_MSG_ERROR(Could not link against $ax_lib !)
 			fi
 		fi
 
-		if test "x$link_serialization" != "xyes"; then
-			AC_MSG_ERROR(Boost::Serialization not found!)
-		fi
-
 		CPPFLAGS="$CPPFLAGS_SAVED"
-    	LDFLAGS="$LDFLAGS_SAVED"
+	LDFLAGS="$LDFLAGS_SAVED"
 	fi
 ])
