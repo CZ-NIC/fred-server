@@ -1182,6 +1182,71 @@ std::vector<unpaid_account_invoice> find_unpaid_account_invoices(
 }//find_unpaid_account_invoices
 
 
+    Money lower_account_invoice_balance_by_paid_amount( //returning paid amount without vat for credit transaction
+        Money paid  //paid amount with vat
+        , Decimal invoice_vat_rate //vat rate of account invoice
+        , unsigned long long invoice_id) //account invoice id
+    {
+        Logging::Context ctx("lower_account_invoice_balance_by_paid_amount");
+        Database::Connection conn = Database::Manager::acquire();
+
+        //check if account invoice
+        Database::Result check_inv_type =
+        conn.exec_params("select ip.typ from invoice i "
+            " join invoice_prefix ip on i.invoice_prefix_id = ip.id "
+            " where i.id = $1::bigint"
+            , Database::query_param_list(invoice_id));
+
+        Money balance_change
+            = Money(paid - paid * invoice_vat_rate
+                / ( Decimal("100") + invoice_vat_rate )
+                ).round(2, MPD_ROUND_HALF_UP);
+
+        //if account invoice before invoice_type table
+        if (check_inv_type.size() > 0 && std::string(check_inv_type[0][0]).compare("1") == 0)
+        {
+            //update invoice set balance = balance - price
+            conn.exec_params(
+            "UPDATE invoice SET balance = balance - $1::numeric(10,2) WHERE id = $2::bigint"
+            , Database::query_param_list(balance_change.get_string())(invoice_id));
+        }
+        else
+        {
+            throw std::runtime_error(
+                    "lower_account_invoice_balance_by_paid_amount: not an account invoice");
+        }
+        return balance_change;
+    }//lower_account_invoice_balance_by_paid_amount
+
+    Money zero_account_invoice_balance(unsigned long long invoice_id) //account invoice id
+    {
+        Logging::Context ctx("zero_account_invoice_balance");
+        Database::Connection conn = Database::Manager::acquire();
+
+        //check if account invoice and get rest of the balance
+        Database::Result check_inv_type =
+            conn.exec_params("SELECT ip.typ, i.balance FROM invoice i "
+            " JOIN invoice_prefix ip ON i.invoice_prefix_id = ip.id "
+            " WHERE i.id = $1::bigint "
+            " FOR UPDATE OF i"
+            , Database::query_param_list(invoice_id));
+
+        //if account invoice before invoice_type table
+        if (check_inv_type.size() > 0 && std::string(check_inv_type[0][0]).compare("1") == 0)
+        {
+            //update invoice set balance = 0
+            conn.exec_params(
+            "UPDATE invoice SET balance = 0 WHERE id = $1::bigint"
+            , Database::query_param_list(invoice_id));
+        }
+        else
+        {
+            throw std::runtime_error(
+                    "zero_account_invoice_balance: not an account invoice");
+        }
+        return Money(std::string(check_inv_type[0][1]));
+    }//zero_account_invoice_balance
+
 
 }; // ManagerImpl
 

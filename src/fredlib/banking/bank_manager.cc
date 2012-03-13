@@ -107,7 +107,6 @@ private:
 
     }
 
-
     void processPayment(PaymentImpl *_payment,
                         unsigned long long _registrar_id = 0)
     {
@@ -178,20 +177,42 @@ private:
 
             Money payment_price_rest = _payment->getPrice();
 
+            //for unpaid_account_invoices
             for(unsigned i = 0 ; i < uai_vect.size(); ++i)
             {
                 unsigned long long unpaid_account_invoice_id = uai_vect[i].id;
-                Money uaci_balance = uai_vect[i].balance;
+                Money uaci_balance = uai_vect[i].balance;//w/o vat
                 Decimal uaci_vat = uai_vect[i].vat;
-
                 Money unpaid_price_with_vat = uaci_balance
                         + uaci_balance * uaci_vat / Decimal("100");
+
+                //if payment is not big enough to pay this account invoice
+                bool is_partial_payment = (payment_price_rest <= unpaid_price_with_vat);
+
                 Money partial_price
-                    = (payment_price_rest <= unpaid_price_with_vat)
+                    = is_partial_payment
                         ? payment_price_rest : unpaid_price_with_vat;
-                payment_price_rest -= partial_price;
-                pay_invoice(_registrar_id , zone_id, _payment->getId()
-                        , partial_price, unpaid_account_invoice_id);
+                if(partial_price > Money("0"))//don't do zero transactions
+                {
+                    payment_price_rest -= partial_price;
+                    if(is_partial_payment)
+                    {
+                        Money balance_change //is partial_price without vat
+                            = invoice_manager->lower_account_invoice_balance_by_paid_amount(
+                                partial_price, uaci_vat , unpaid_account_invoice_id);
+                        pay_invoice(_registrar_id , zone_id, _payment->getId()
+                            , balance_change, unpaid_account_invoice_id);
+                    }
+                    else
+                    {
+                        Money balance_change //is rest of invoice balance without vat
+                            = invoice_manager->zero_account_invoice_balance(
+                                unpaid_account_invoice_id);
+                        pay_invoice(_registrar_id , zone_id, _payment->getId()
+                            , balance_change, unpaid_account_invoice_id);
+                    }
+                }
+
             }
 
             // create advance invoice for rest amount after paying possible debt (account invoice)

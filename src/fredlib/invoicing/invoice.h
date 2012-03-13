@@ -373,6 +373,12 @@ public:
           unsigned long long registrar_id
           , unsigned long long zone_id) = 0;
 
+  virtual Money lower_account_invoice_balance_by_paid_amount(Money paid
+          , Decimal invoice_vat_rate
+          , unsigned long long invoice_id) = 0;
+
+  virtual Money zero_account_invoice_balance(unsigned long long invoice_id) = 0;
+
 }; // Manager
 
 std::string getRequestUnitPrice(unsigned zone_id);
