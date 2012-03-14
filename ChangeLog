@@ -1,3 +1,23 @@
+2012-03-13 Jiri Sadek, Juraj Vicenik, Jan Zima (2.9.9)
+
+  * memory leaks fixes - objects changes notifier, documents
+
+  * whois reminder fix - interval change for contact selection (duplicate
+    email sending)
+
+  * epp - removed temp-c domain notification
+
+  * banking - payment import/processing fix (negative credit balance)
+            - daphne bank payment list fix (duplicate payment)
+
+  * invoicing - invoice total price in page table fix
+
+  * build fix - Makefile.am
+
+2011-12-23 Jiri Sadek (2.9.8)
+
+  * adifd - history record switched from action_id to logger request_id
+
 2011-11-14 Juraj Vicenik, Jan Zima (2.9.7)
 
   * request fee charging fixes (registrar in zone sql, time period, defaults)
