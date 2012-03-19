@@ -517,7 +517,7 @@ namespace Fred
 			              sql << "AND " << "z.fqdn" << " ILIKE TRANSLATE('"
 			              << conn.escape(fqdn) << "','*?','%_') ";//if (!fqdn.empty())
 
-			          sql << " ORDER BY z.id";
+			          sql << " ORDER BY length(z.fqdn) DESC";
 
 			          Database::Result res = conn.exec(sql.str());
 
