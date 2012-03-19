@@ -1,3 +1,7 @@
+2012-03-19 Jiri Sadek (2.9.10)
+
+  * fix zone selection for domain registration
+
 2012-03-13 Jiri Sadek, Juraj Vicenik, Jan Zima (2.9.9)
 
   * memory leaks fixes - objects changes notifier, documents
