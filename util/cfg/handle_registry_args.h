@@ -51,6 +51,7 @@ public:
     std::string docgen_template_path;
     unsigned int docgen_domain_count_limit;
     std::string fileclient_path;
+    std::string disable_epp_notifier_cltrid_prefix;
 
     boost::shared_ptr<po::options_description>
     get_options_description()
@@ -81,7 +82,11 @@ public:
                  "")
                 ("registry.fileclient_path",
                  po::value<std::string>(),
-                 "");
+                 "")
+                ("registry.disable_epp_notifier_cltrid_prefix",
+                 po::value<std::string>()->default_value("do_not_notify"),
+                 "disable epp command notification with specific cltrid prefix"
+                 " (only for system registrar)");
 
         return opts_descs;
     }//get_options_description
@@ -101,6 +106,7 @@ public:
                 ? std::string() : vm["registry.docgen_template_path"].as<std::string>());
         fileclient_path = (vm.count("registry.fileclient_path") == 0
                 ? std::string() : vm["registry.fileclient_path"].as<std::string>());
+        disable_epp_notifier_cltrid_prefix = vm["registry.disable_epp_notifier_cltrid_prefix"].as<std::string>();
     }//handle
 };//HandleRegistryArgs
 
@@ -142,6 +148,8 @@ public:
         {return HandleRegistryArgs::docgen_domain_count_limit;}
     const std::string& get_fileclient_path()
         {return HandleRegistryArgs::fileclient_path;}
+    const std::string& get_disable_epp_notifier_cltrid_prefix()
+        {return HandleRegistryArgs::disable_epp_notifier_cltrid_prefix;}
 };//class HandleRegistryArgsGrp
 
 #endif //HANDLE_REGISTRY_ARGS_H_

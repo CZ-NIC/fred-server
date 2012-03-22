@@ -279,7 +279,8 @@ ObjectClient::deleteObjects(
 
         for (unsigned int i = 0; i < totalCount; i++) {
             std::string name = m_db->GetFieldValue(i, 0);
-            std::string cltrid;
+            /* we don't want to notify delete commands - add configured cltrid prefix */
+            std::string cltrid = disable_epp_notifier_cltrid_prefix;
             std::string xml;
             xml = "<name>" + name + "</name>";
 
@@ -291,25 +292,25 @@ ObjectClient::deleteObjects(
             try {
                 switch (atoi(m_db->GetFieldValue(i, 1))) {
                     case 1:
-                        cltrid = "delete_contact";
+                        cltrid += "_delete_contact";
                         params.clTRID    = cltrid.c_str();
                         r = epp->ContactDelete(
                                 name.c_str(), params);
                         break;
                     case 2:
-                        cltrid = "delete_nsset";
+                        cltrid += "_delete_nsset";
                         params.clTRID    = cltrid.c_str();
                         r = epp->NSSetDelete(
                                 name.c_str(), params);
                         break;
                     case 3:
-                        cltrid = "delete_unpaid_zone_" + std::string(m_db->GetFieldValue(i, 2));
+                        cltrid += "_delete_unpaid_zone_" + std::string(m_db->GetFieldValue(i, 2));
                         params.clTRID    = cltrid.c_str();
                         r = epp->DomainDelete(
                                 name.c_str(), params);
                         break;
                     case 4:
-                        cltrid = "delete_keyset";
+                        cltrid += "_delete_keyset";
                         params.clTRID    = cltrid.c_str();
                         r = epp->KeySetDelete(
                                 name.c_str(), params);

@@ -56,6 +56,8 @@ private:
     bool object_delete_candidates;
     DeleteObjectsArgs delete_objects_params;
 
+    std::string disable_epp_notifier_cltrid_prefix;
+
 
     int createObjectStateRequest(Fred::TID object, unsigned state);
     int deleteObjects(const std::string &typeList, CorbaClient &cc);
@@ -90,6 +92,7 @@ public:
             , const ObjectRegularProcedureArgs& _object_regular_procedure_params
             , const bool _object_delete_candidates
             , const DeleteObjectsArgs& _delete_objects_params
+            , const std::string disable_epp_notifier_cltrid_prefix
             )
     : BaseClient(connstring, nsAddr)
     , nameservice_context(_nameservice_context)
@@ -108,6 +111,7 @@ public:
     , object_regular_procedure_params(_object_regular_procedure_params)
     , object_delete_candidates(_object_delete_candidates)
     , delete_objects_params(_delete_objects_params)
+    , disable_epp_notifier_cltrid_prefix(disable_epp_notifier_cltrid_prefix)
     {
         m_db = connect_DB(connstring
                 , std::runtime_error("ObjectClient db connection failed"));

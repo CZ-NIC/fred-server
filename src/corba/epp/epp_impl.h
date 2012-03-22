@@ -55,8 +55,8 @@ private:
   unsigned int nsset_level_;
   std::string docgen_path_;
   std::string docgen_template_path_;
-
   std::string fileclient_path_;
+  std::string disable_epp_notifier_cltrid_prefix_;
 
   unsigned rifd_session_max_;
   unsigned rifd_session_timeout_;
@@ -86,12 +86,19 @@ public:
           , const std::string& docgen_path
           , const std::string& docgen_template_path
           , const std::string& fileclient_path
+          , const std::string& disable_epp_notifier_cltrid_prefix
           , unsigned rifd_session_max
           , unsigned rifd_session_timeout
           , unsigned rifd_session_registrar_max
           , bool rifd_epp_update_domain_keyset_clear
           );
   virtual ~ccReg_EPP_i();
+
+
+  const std::string& get_disable_epp_notifier_cltrid_prefix() const
+  {
+      return disable_epp_notifier_cltrid_prefix_;
+  }
 
   // get zones parametrs
   int GetZoneExPeriodMin(DBSharedPtr db, int id);

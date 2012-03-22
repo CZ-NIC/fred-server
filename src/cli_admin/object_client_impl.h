@@ -59,6 +59,7 @@ struct object_new_state_request_impl
               , ObjectRegularProcedureArgs()//const ObjectRegularProcedureArgs& _object_regular_procedure_params
               , false//const bool _object_delete_candidates
               , DeleteObjectsArgs()//const DeleteObjectsArgs& _delete_objects_params
+              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_disable_epp_notifier_cltrid_prefix()
               );
        pom.runMethod();
   }
@@ -94,6 +95,7 @@ struct object_new_state_request_name_impl
               , ObjectRegularProcedureArgs()//const ObjectRegularProcedureArgs& _object_regular_procedure_params
               , false//const bool _object_delete_candidates
               , DeleteObjectsArgs()//const DeleteObjectsArgs& _delete_objects_params
+              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_disable_epp_notifier_cltrid_prefix()
               );
        pom.runMethod();
   }
@@ -128,6 +130,7 @@ struct object_update_states_impl
               , ObjectRegularProcedureArgs()//const ObjectRegularProcedureArgs& _object_regular_procedure_params
               , false//const bool _object_delete_candidates
               , DeleteObjectsArgs()//const DeleteObjectsArgs& _delete_objects_params
+              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_disable_epp_notifier_cltrid_prefix()
               );
        pom.runMethod();
   }
@@ -162,6 +165,7 @@ struct object_regular_procedure_impl
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientObjectRegularProcedureArgsGrp>()->regular_procedure_params //ObjectRegularProcedureArgs()//const ObjectRegularProcedureArgs& _object_regular_procedure_params
               , false//const bool _object_delete_candidates
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientObjectRegularProcedureArgsGrp>()->delete_objects_params//DeleteObjectsArgs()//const DeleteObjectsArgs& _delete_objects_params
+              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_disable_epp_notifier_cltrid_prefix()
               );
        pom.runMethod();
   }
@@ -196,6 +200,7 @@ struct object_delete_candidates_impl
               , ObjectRegularProcedureArgs()
               , true//const bool _object_delete_candidates
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientObjectDeleteCandidatesArgsGrp>()->delete_objects_params//DeleteObjectsArgs()//const DeleteObjectsArgs& _delete_objects_params
+              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_disable_epp_notifier_cltrid_prefix()
               );
        pom.runMethod();
   }

@@ -77,6 +77,7 @@ std::auto_ptr<ccReg_EPP_i> create_epp_backend_object()
                 , registry_args_ptr->docgen_path
                 , registry_args_ptr->docgen_template_path
                 , registry_args_ptr->fileclient_path
+                , registry_args_ptr->disable_epp_notifier_cltrid_prefix
                 , rifd_args_ptr->rifd_session_max
                 , rifd_args_ptr->rifd_session_timeout
                 , rifd_args_ptr->rifd_session_registrar_max

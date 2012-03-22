@@ -108,27 +108,6 @@ static bool testObjectHasState(
 }
 
 
-/* HACK - for disable notification when delete commands called through cli_admin
- * Ticket #1622
- */
-static bool disableNotification(DBSharedPtr db, int _reg_id, const char* _cltrid)
-{
-  LOGGER(PACKAGE).debug(boost::format("disable delete command notification check (registrator=%1% cltrid=%2%)")
-                                      % _reg_id % _cltrid);
-
-  if (std::strcmp(_cltrid, "delete_contact")       != 0 &&
-      std::strcmp(_cltrid, "delete_nsset")         != 0 &&
-      std::strcmp(_cltrid, "delete_keyset")        != 0 &&
-      std::strcmp(_cltrid, "delete_unpaid_zone_0") != 0 &&
-      std::strcmp(_cltrid, "delete_unpaid_zone_1") != 0 &&
-      std::strcmp(_cltrid, "delete_unpaid_zone_2") != 0 &&
-      std::strcmp(_cltrid, "delete_unpaid_zone_3") != 0)
-    return false;
-
-  return db->GetRegistrarSystem(_reg_id);
-}
-/* HACK END */
-
 Database::Connection wrapped_acquire(ccReg_EPP_i *epp)
 {
 
@@ -153,6 +132,7 @@ class EPPAction
   int clientID;
   int code; ///< needed for destructor where Response is invalidated
   EPPNotifier *notifier;
+  std::string cltrid;
 public:
   struct ACTION_START_ERROR
   {
@@ -163,7 +143,7 @@ public:
   ) throw (ccReg::EPP::EppError) :
     ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
     regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
-    notifier(0)
+    notifier(0), cltrid(clTRID)
   {
     Logging::Context::push(str(boost::format("action-%1%") % action));
 
@@ -199,7 +179,7 @@ public:
     ) throw (ccReg::EPP::EppError) :
       ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
       regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
-      notifier(0)
+      notifier(0), cltrid(clTRID)
     {
       Logging::Context::push(str(boost::format("action-inv-%1%") % action));
 
@@ -233,8 +213,18 @@ public:
   {
     db->QuitTransaction(code);
     db->EndAction(code);
-    if (notifier) {
-        notifier->Send();
+
+    if (notifier && (code == COMMAND_OK)) {
+        /* disable notifier for configured cltrid prefix */
+        if (boost::starts_with(cltrid, epp->get_disable_epp_notifier_cltrid_prefix())
+                && db->GetRegistrarSystem(getRegistrar()))
+        {
+            LOGGER(PACKAGE).debug(boost::format("disable command notification "
+                  "(registrator=%1% cltrid=%2%)") % getRegistrar() % cltrid);
+        }
+        else {
+            notifier->Send();
+        }
     }
 
     Logging::Context::pop();
@@ -451,6 +441,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     , const std::string& docgen_path
     , const std::string& docgen_template_path
     , const std::string& fileclient_path
+    , const std::string& disable_epp_notifier_cltrid_prefix
     , unsigned rifd_session_max
     , unsigned rifd_session_timeout
     , unsigned rifd_session_registrar_max
@@ -469,6 +460,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     , docgen_path_(docgen_path)
     , docgen_template_path_(docgen_template_path)
     , fileclient_path_(fileclient_path)
+    , disable_epp_notifier_cltrid_prefix_(disable_epp_notifier_cltrid_prefix)
     , rifd_session_max_(rifd_session_max)
     , rifd_session_timeout_(rifd_session_timeout)
     , rifd_session_registrar_max_(rifd_session_registrar_max)
@@ -2536,11 +2528,8 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
         code = COMMAND_FAILED;
     }
     if (!code) {
-        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
-        if (notify) {
-            ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id )); // notifier maneger before delete
-            ntf->constructMessages(); // need to run all sql queries before delete take place (Ticket #1622)
-        }
+        ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id )); // notifier maneger before delete
+        ntf->constructMessages(); // need to run all sql queries before delete take place (Ticket #1622)
 
         // test to  table  domain domain_contact_map and nsset_contact_map for relations
         if (action.getDB()->TestContactRelations(id) ) // can not be deleted
@@ -2556,8 +2545,8 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
 
         }
 
-        if (code == COMMAND_OK && notify)
-            ntf->Send(); // run notifier
+        if (code == COMMAND_OK)
+            action.setNotifier(ntf.get());
 
     }
 
@@ -2966,7 +2955,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
         ntf.reset(new EPPNotifier(
                     disable_epp_notifier_, mm ,
                     action.getDB(), action.getRegistrar() , id ));
-        ntf->Send(); // send message with  objectID
+        action.setNotifier(ntf.get());
     }
 
 
@@ -3197,7 +3186,7 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
         {
             ntf.reset(new EPPNotifier(disable_epp_notifier_,
                         mm , action.getDB(), action.getRegistrar() , id ));
-            ntf->Send();
+            action.setNotifier(ntf.get());
         }
 
     }
@@ -3435,10 +3424,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
         code = COMMAND_FAILED;
     }
     if (!code) {
-        // create notifier
-        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
-        if (notify)
-            ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
+        ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
 
         // test to  table domain if relations to nsset
         if (action.getDB()->TestNSSetRelations(id) ) //  can not be delete
@@ -3453,8 +3439,8 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
             }
         }
 
-        if (code == COMMAND_OK && notify)
-            ntf->Send(); // send messages by notifier
+        if (code == COMMAND_OK)
+            action.setNotifier(ntf.get());
     }
 
     // EPP exception
@@ -3798,7 +3784,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
             if (code == COMMAND_OK) // run notifier
             {
                 ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
-                ntf->Send(); //send messages
+                action.setNotifier(ntf.get());
             }
 
         }
@@ -4469,18 +4455,15 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
         code = COMMAND_FAILED;
     }
     if (!code) {
-        // run notifier
-        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
-        if (notify)
-            ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
+        ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
 
         if (action.getDB()->SaveObjectDelete(id) ) //save object as delete
         {
             if (action.getDB()->DeleteDomainObject(id) )
                 code = COMMAND_OK; // if succesfully deleted
         }
-        if (code == COMMAND_OK && notify)
-            ntf->Send(); // if is ok send messages
+        if (code == COMMAND_OK)
+            action.setNotifier(ntf.get());
     }
 
     // EPP exception
@@ -5365,7 +5348,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                 ntf.reset(new EPPNotifier(
                                             disable_epp_notifier_,
                                             mm , action.getDB(), action.getRegistrar(), id ));
-                                ntf->Send(); // send messages
+                                action.setNotifier(ntf.get());
                             }
 
                     }
@@ -5608,7 +5591,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     if (code == COMMAND_OK) // run notifier
     {
         ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
-        ntf->Send(); // send mesages to default contats
+        action.setNotifier(ntf.get());
     }
     // EPP exception
     if (code > COMMAND_EXCEPTION) {
@@ -5809,10 +5792,7 @@ ccReg_EPP_i::KeySetDelete(
         code = COMMAND_FAILED;
     }
     if (!code) {
-        //create notifier
-        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
-        if (notify)
-            ntf.reset(new EPPNotifier(
+        ntf.reset(new EPPNotifier(
                       disable_epp_notifier_,
                       mm,
                       action.getDB(),
@@ -5826,8 +5806,8 @@ ccReg_EPP_i::KeySetDelete(
                 if (action.getDB()->DeleteKeySetObject(id))
                     code = COMMAND_OK;
         }
-        if (code == COMMAND_OK && notify)
-            ntf->Send();
+        if (code == COMMAND_OK)
+            action.setNotifier(ntf.get());
     }
     if (code > COMMAND_EXCEPTION) {
         action.failed(code);
@@ -6264,7 +6244,7 @@ ccReg_EPP_i::KeySetCreate(
                             action.getRegistrar(),
                             id)
                         );
-                ntf->Send();
+                action.setNotifier(ntf.get());
             }
         }
     }
