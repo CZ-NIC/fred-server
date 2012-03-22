@@ -1,3 +1,7 @@
+2012-03-22 Jiri Sadek (2.9.11)
+
+  * epp - do not notify command with specific cltrid (system registrar only)
+
 2012-03-19 Jiri Sadek (2.9.10)
 
   * fix zone selection for domain registration
