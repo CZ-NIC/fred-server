@@ -3,9 +3,7 @@
 #include "fredlib/db_settings.h"
 
 
-namespace Fred {
-namespace Contact {
-namespace Verification {
+namespace MojeID {
 
 
 unsigned long long db_contact_object_create(const unsigned long long &_registrar_id,
@@ -199,7 +197,7 @@ unsigned long long db_contact_insert_history(const unsigned long long &_action_i
 unsigned long long contact_create(const unsigned long long &_action_id,
                                   const unsigned long long &_request_id,
                                   const unsigned long long &_registrar_id,
-                                  Contact &_data)
+                                  MojeID::Contact &_data)
 {
     std::string auth_info = (_data.auth_info.isnull() == true) ? Random::string_alphanum(8)
             : static_cast<std::string>(_data.auth_info);
@@ -248,7 +246,7 @@ unsigned long long contact_update(const unsigned long long &_action_id,
 }
 
 
-const Contact contact_info(const unsigned long long &_id)
+const MojeID::Contact contact_info(const unsigned long long &_id)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -335,7 +333,5 @@ void contact_transfer_poll_message(const unsigned long long &_old_registrar_id,
 }
 
 
-}
-}
 }
 

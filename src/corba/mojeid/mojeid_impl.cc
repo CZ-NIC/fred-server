@@ -14,8 +14,7 @@
 #include "fredlib/contact.h"
 #include "fredlib/public_request/public_request.h"
 #include "fredlib/object_states.h"
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/contact_verification.h"
+#include "fredlib/mojeid/contact.h"
 #include "fredlib/mojeid/request.h"
 #include "fredlib/mojeid/mojeid_contact_states.h"
 
@@ -85,13 +84,13 @@ IdentificationRequestPtr ServerImpl::contactCreateWorker(unsigned long long &cid
     check_result = contact_mgr->checkAvail(static_cast<std::string> (_contact.username), cinfo);
 
     if (check_result != Fred::Contact::Manager::CA_FREE) {
-        Fred::Contact::Verification::FieldErrorMap errors;
-        errors[Fred::Contact::Verification::field_username] = Fred::Contact::Verification::NOT_AVAILABLE;
-        throw Fred::Contact::Verification::DataValidationError(errors);
+        ::MojeID::FieldErrorMap errors;
+        errors[::MojeID::field_username] = ::MojeID::NOT_AVAILABLE;
+        throw ::MojeID::DataValidationError(errors);
     }
 
-    Fred::Contact::Verification::Contact data = corba_unwrap_contact(_contact);
-    hid = Fred::Contact::Verification::contact_create(_request.get_id(),
+    ::MojeID::Contact data = corba_unwrap_contact(_contact);
+    hid = ::MojeID::contact_create(_request.get_id(),
             _request.get_request_id(), _request.get_registrar_id(), data);
     cid = data.id;
 
@@ -171,7 +170,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
 
         /* return new contact id */
         return cid;
-    } catch (Fred::Contact::Verification::DataValidationError &_ex) {
+    } catch (::MojeID::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
     } catch (std::exception &_ex) {
@@ -240,7 +239,7 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         /* return new contact id */
         return cid;
     }
-    catch (Fred::Contact::Verification::DataValidationError &_ex) {
+    catch (::MojeID::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
     }
@@ -302,7 +301,7 @@ CORBA::ULongLong ServerImpl::processIdentification(const char* _ident_request_id
                     " ident=%1%") % _ident_request_id);
         throw Registry::MojeID::Server::IDENTIFICATION_FAILED();
     }
-    catch (Fred::Contact::Verification::DataValidationError &_ex) {
+    catch (::MojeID::DataValidationError &_ex) {
         LOGGER(PACKAGE).error(boost::format(
                     "cannot process identification request"
                     " (contact data cannot be validated) ident=%1%")
@@ -361,7 +360,7 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
-        Fred::Contact::Verification::FieldErrorMap errors;
+        ::MojeID::FieldErrorMap errors;
         /* contact is blocked or prohibits operations:
          *   7 | serverBlocked
          *   3 | serverTransferProhibited
@@ -372,15 +371,15 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
                 || (Fred::object_has_state(cinfo.id, ::MojeID::IDENTIFIED_CONTACT) == true)
                 || (Fred::object_has_state(cinfo.id, ::MojeID::VALIDATED_CONTACT) == true)) {
 
-            errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::NOT_AVAILABLE;
+            errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
         }
         else if ((Fred::object_has_state(cinfo.id, "serverTransferProhibited") == true)
                 || (Fred::object_has_state(cinfo.id, "serverUpdateProhibited") == true)) {
 
-            errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::INVALID;
+            errors[::MojeID::field_status] = ::MojeID::INVALID;
         }
         if (errors.size() > 0) {
-            throw Fred::Contact::Verification::DataValidationError(errors);
+            throw ::MojeID::DataValidationError(errors);
         }
 
         /* create public request */
@@ -422,12 +421,12 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
     catch (Fred::PublicRequest::NotApplicable &_ex) {
         LOGGER(PACKAGE).error(boost::format(
                     "cannot create transfer request (%1%)") % _ex.what());
-        Fred::Contact::Verification::FieldErrorMap errors;
-        errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::NOT_AVAILABLE;
+        ::MojeID::FieldErrorMap errors;
+        errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(errors));
     }
-    catch (Fred::Contact::Verification::DataValidationError &_ex) {
+    catch (::MojeID::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
     }
@@ -468,7 +467,7 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
-        Fred::Contact::Verification::FieldErrorMap errors;
+        ::MojeID::FieldErrorMap errors;
         /* contact is blocked or prohibits operations:
          *   7 | serverBlocked
          *   3 | serverTransferProhibited
@@ -479,15 +478,15 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
                 || (Fred::object_has_state(cinfo.id, ::MojeID::IDENTIFIED_CONTACT) == true)
                 || (Fred::object_has_state(cinfo.id, ::MojeID::VALIDATED_CONTACT) == true)) {
 
-            errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::NOT_AVAILABLE;
+            errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
         }
         else if ((Fred::object_has_state(cinfo.id, "serverTransferProhibited") == true)
                 || (Fred::object_has_state(cinfo.id, "serverUpdateProhibited") == true)) {
 
-            errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::INVALID;
+            errors[::MojeID::field_status] = ::MojeID::INVALID;
         }
         if (errors.size() > 0) {
-            throw Fred::Contact::Verification::DataValidationError(errors);
+            throw ::MojeID::DataValidationError(errors);
         }
 
         /* create public request */
@@ -550,12 +549,12 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
     catch (Fred::PublicRequest::NotApplicable &_ex) {
         LOGGER(PACKAGE).error(boost::format(
                     "cannot create transfer request (%1%)") % _ex.what());
-        Fred::Contact::Verification::FieldErrorMap errors;
-        errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::NOT_AVAILABLE;
+        ::MojeID::FieldErrorMap errors;
+        errors[::MojeID::field_status] = ::MojeID::NOT_AVAILABLE;
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(errors));
     }
-    catch (Fred::Contact::Verification::DataValidationError &_ex) {
+    catch (::MojeID::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
     }
@@ -618,25 +617,23 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
 
         boost::format lock_state = boost::format(
         " SELECT os.state_id FROM object_state os WHERE os.state_id = ANY ( SELECT id from enum_object_states where name = "
-            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6%, %7% }') ) AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) AND os.object_id = $1::integer FOR UPDATE")
+            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6% }') ) AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) AND os.object_id = $1::integer FOR UPDATE")
            % "serverDeleteProhibited" 
            % "serverTransferProhibited"
            % "serverUpdateProhibited"
            % ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT
            % ::MojeID::IDENTIFIED_CONTACT
-           % ::MojeID::VALIDATED_CONTACT
-           % ::MojeID::MOJEID_CONTACT;
+           % ::MojeID::VALIDATED_CONTACT;
 
         boost::format lock_state_request = boost::format(
         " SELECT * FROM object_state os WHERE os.state_id = ANY ( SELECT id from enum_object_states where name = "
-            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6%, %7% }') ) AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) AND os.object_id = $1::integer FOR UPDATE")
+            "ANY( '{ %1%, %2%, %3%, %4%, %5%, %6% }') ) AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) AND os.object_id = $1::integer FOR UPDATE")
            % "serverDeleteProhibited" 
            % "serverTransferProhibited"
            % "serverUpdateProhibited"
            % ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT
            % ::MojeID::IDENTIFIED_CONTACT
-           % ::MojeID::VALIDATED_CONTACT
-           % ::MojeID::MOJEID_CONTACT;
+           % ::MojeID::VALIDATED_CONTACT;
 
         // fetch the result and convert to strings
         std::vector<int> drop_states_codes;
@@ -658,7 +655,6 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
         bool haveDeleteProhibited = false;
         bool haveTransferProhibited = false;
         bool haveUpdateProhibited = false;
-        bool haveMojeidContact = false;
         std::string mojeid_state;
 
         for(std::vector<std::string>::const_iterator it = drop_states.begin();
@@ -678,8 +674,6 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
                     haveTransferProhibited = true;
                 } else if(std::string("serverUpdateProhibited") == *it) {
                     haveUpdateProhibited = true;
-                } else if (::MojeID::MOJEID_CONTACT == *it) {
-                    haveMojeidContact = true;
                 } else {
                     throw std::runtime_error("Programming error: discrepancy between SQL and processing code");
                 }
@@ -689,7 +683,6 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
         if (!haveDeleteProhibited 
             || !haveTransferProhibited
             || !haveUpdateProhibited
-            || !haveMojeidContact
             || mojeid_state.empty()) {
             throw std::runtime_error("Contact is not in all expected states");
         }
@@ -765,12 +758,12 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
                     % cid % handle % cinfo.id % cinfo.name));
         }
 
-        Fred::Contact::Verification::Contact data = corba_unwrap_contact(_contact);
-        Fred::Contact::Verification::ContactValidator validator = Fred::Contact::Verification::create_contact_update_validator();
+        ::MojeID::Contact data = corba_unwrap_contact(_contact);
+        ::MojeID::ContactValidator validator = ::MojeID::create_contact_update_validator();
         validator.check(data);
 
         if (Fred::object_has_state(cid, ::MojeID::VALIDATED_CONTACT) == true) {
-            if (Fred::Contact::Verification::check_validated_contact_diff(data, Fred::Contact::Verification::contact_info(cid)) == false) {
+            if (::MojeID::check_validated_contact_diff(data, ::MojeID::contact_info(cid)) == false) {
                 /* change contact status to identified */
                 if (Fred::cancel_object_state(cid, ::MojeID::VALIDATED_CONTACT)) {
                     Fred::insert_object_state(cid, ::MojeID::IDENTIFIED_CONTACT);
@@ -778,7 +771,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
             }
         }
 
-        unsigned long long hid = Fred::Contact::Verification::contact_update(
+        unsigned long long hid = ::MojeID::contact_update(
                 request.get_id(),
                 request.get_request_id(),
                 request.get_registrar_id(),
@@ -805,7 +798,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
     catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
         throw;
     }
-    catch (Fred::Contact::Verification::DataValidationError &_ex) {
+    catch (::MojeID::DataValidationError &_ex) {
         throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
                 corba_wrap_validation_error_list(_ex.errors));
     }
@@ -841,7 +834,7 @@ Contact* ServerImpl::contactInfo(const CORBA::ULongLong _id)
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
         }
 
-        Contact *data = corba_wrap_contact(Fred::Contact::Verification::contact_info(_id));
+        Contact *data = corba_wrap_contact(::MojeID::contact_info(_id));
 
         LOGGER(PACKAGE).info("request completed successfully");
         return data;
@@ -1218,32 +1211,16 @@ ContactStateInfoList* ServerImpl::getContactsStates(const CORBA::ULong _last_hou
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rstates = conn.exec_params(
-        "SELECT mojeid_contact.id, os.valid_from, CASE "
-         " WHEN bool_or (eos.name = 'validatedContact') "
-          " THEN 'validatedContact' "
-         " WHEN bool_or (eos.name = 'identifiedContact') "
-           " THEN 'identifiedContact' "
-         " WHEN bool_or (eos.name = 'conditionallyIdentifiedContact') "
-          " THEN 'conditionallyIdentifiedContact' "
-         " END AS name "
-        " FROM (SELECT c.id AS id "
-          " FROM contact c "
-           " JOIN object o ON c.id=o.id "
-           " JOIN registrar r on o.clid = r.id "
-           " JOIN object_state os ON o.id = os.object_id "
-           " JOIN enum_object_states eos ON eos.id = os.state_id "
-          " WHERE os.valid_to IS NULL "
-           " AND r.handle=$1::text "
-           " AND eos.name = 'mojeidContact') AS mojeid_contact "
-         " JOIN object_state os ON mojeid_contact.id = os.object_id "
-         " JOIN enum_object_states eos ON eos.id = os.state_id "
-        " WHERE os.valid_to IS NULL "
-           " AND os.valid_from > now() - $2::interval "
-          " AND eos.name = ANY ('{\"conditionallyIdentifiedContact\", \"identifiedContact\", \"validatedContact\"}') "
-        " GROUP BY mojeid_contact.id, os.valid_from "
-        , Database::query_param_list
-        (server_conf_->registrar_handle)
-            (boost::lexical_cast<std::string>(_last_hours) + " hours"));
+                "SELECT c.id, os.valid_from, eos.name"
+                " FROM object_state os"
+                " JOIN enum_object_states eos ON eos.id = os.state_id"
+                " JOIN contact c ON c.id = os.object_id"
+                " WHERE os.valid_to IS NULL"
+                " AND os.valid_from > now() - $1::interval"
+                " AND eos.name =ANY ($2::text[])",
+                Database::query_param_list
+                    (boost::lexical_cast<std::string>(_last_hours) + " hours")
+                    ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}"));
 
         ContactStateInfoList_var ret = new ContactStateInfoList;
         ret->length(0);
@@ -1296,35 +1273,16 @@ ContactStateInfo ServerImpl::getContactState(const CORBA::ULongLong _contact_id)
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rstates = conn.exec_params(
-                "SELECT c.id, mcs.valid_from, mcs.name FROM contact c "
-                " LEFT JOIN (SELECT mojeid_contact.id, os.valid_from, CASE "
-                " WHEN bool_or (eos.name = 'validatedContact') "
-                "   THEN 'validatedContact' "
-                "  WHEN bool_or (eos.name = 'identifiedContact') "
-                "   THEN 'identifiedContact' "
-                "  WHEN bool_or (eos.name = 'conditionallyIdentifiedContact') "
-                "   THEN 'conditionallyIdentifiedContact' "
-                "  END AS name "
-                " FROM (SELECT c.id AS id "
-                "   FROM contact c "
-                "    JOIN object o ON c.id=o.id "
-                "    JOIN registrar r on o.clid = r.id "
-                "    JOIN object_state os ON o.id = os.object_id "
-                "    JOIN enum_object_states eos ON eos.id = os.state_id "
-                "   WHERE os.valid_to IS NULL "
-                "    AND r.handle=$1::text "
-                "    AND c.id = $2::bigint "
-                "    AND eos.name = 'mojeidContact') AS mojeid_contact "
-                "  JOIN object_state os ON mojeid_contact.id = os.object_id "
-                "  JOIN enum_object_states eos ON eos.id = os.state_id "
-                " WHERE os.valid_to IS NULL "
-                "   AND eos.name = ANY ('{\"conditionallyIdentifiedContact\", \"identifiedContact\", \"validatedContact\"}') "
-                " GROUP BY mojeid_contact.id, os.valid_from "
-                " ) AS mcs ON mcs.id = c.id "
-                " WHERE c.id = $2::bigint "
-                , Database::query_param_list
-                    (server_conf_->registrar_handle)
-                    (_contact_id));
+                "SELECT c.id, os.valid_from, eos.name"
+                " FROM contact c"
+                " LEFT JOIN (object_state os"
+                " JOIN enum_object_states eos ON eos.id = os.state_id"
+                " AND eos.name =ANY ($2::text[]))"
+                " ON os.object_id = c.id AND os.valid_to IS NULL"
+                " WHERE c.id = $1::integer",
+                Database::query_param_list
+                    (_contact_id)
+                    ("{conditionallyIdentifiedContact, identifiedContact, validatedContact}"));
 
         if (rstates.size() == 0) {
             throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();

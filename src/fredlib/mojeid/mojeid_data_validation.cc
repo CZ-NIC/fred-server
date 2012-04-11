@@ -1,12 +1,10 @@
 #include "log/logger.h"
 #include "fredlib/db_settings.h"
-#include "data_validation.h"
+#include "mojeid_data_validation.h"
 
 #include <boost/algorithm/string.hpp>
 
-namespace Fred {
-namespace Contact {
-namespace Verification {
+namespace MojeID {
 
 
 const boost::regex USERNAME_PATTERN("^[a-z0-9](-?[a-z0-9])*$");
@@ -19,8 +17,62 @@ const boost::regex POSTALCODE_CZ_PATTERN("^[0-9]{3} ?[0-9]{2}$");
 const std::string EMAIL_PHONE_PROTECTION_PERIOD = "1 month";
 
 
+ContactValidator create_default_contact_validator()
+{
+    ContactValidator tmp;
+    tmp.add_checker(contact_checker_name);
+    tmp.add_checker(contact_checker_username);
+    tmp.add_checker(contact_checker_address_required);
+    tmp.add_checker(contact_checker_email_format);
+    tmp.add_checker(contact_checker_email_required);
+    tmp.add_checker(contact_checker_phone_format);
+    tmp.add_checker(contact_checker_birthday);
+    tmp.add_checker(contact_checker_notify_email_format);
+    tmp.add_checker(contact_checker_fax_format);
+    return tmp;
+}
 
-bool contact_checker_name(const Contact &_data, FieldErrorMap &_errors)
+
+ContactValidator create_conditional_identification_validator()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_email_unique);
+    tmp.add_checker(contact_checker_address_country);
+    tmp.add_checker(contact_checker_address_postalcode_format_cz);
+    tmp.add_checker(contact_checker_phone_required);
+    tmp.add_checker(contact_checker_phone_unique);
+    return tmp;
+}
+
+
+ContactValidator create_identification_validator()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_address_country);
+    tmp.add_checker(contact_checker_address_postalcode_format_cz);
+    tmp.add_checker(contact_checker_email_unique);
+    return tmp;
+}
+
+
+ContactValidator create_finish_identification_validator()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_address_country);
+    tmp.add_checker(contact_checker_address_postalcode_format_cz);
+    return tmp;
+}
+
+
+ContactValidator create_contact_update_validator()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_auth_info);
+    return tmp;
+}
+
+
+bool contact_checker_name(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
@@ -41,7 +93,7 @@ bool contact_checker_name(const Contact &_data, FieldErrorMap &_errors)
 }
 
 
-bool contact_checker_username(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_username(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
     /* contact handle has to be in domain-token
@@ -78,7 +130,7 @@ bool generic_checker_phone_format(const std::string &_phone, const boost::regex 
 }
 
 
-bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
@@ -101,7 +153,7 @@ bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors)
 }
 
 
-bool contact_checker_fax_format(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_fax_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = generic_checker_phone_format(
             static_cast<std::string>(_data.fax),
@@ -113,7 +165,7 @@ bool contact_checker_fax_format(const Contact &_data, FieldErrorMap &_errors)
 }
 
 
-bool contact_checker_auth_info(const Contact &_data
+bool contact_checker_auth_info(const ::MojeID::Contact &_data
         , FieldErrorMap &_errors)
 {
     bool result = true;
@@ -136,7 +188,7 @@ bool contact_checker_auth_info(const Contact &_data
 }
 
 
-bool contact_checker_phone_required(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_phone_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
@@ -150,7 +202,7 @@ bool contact_checker_phone_required(const Contact &_data, FieldErrorMap &_errors
 }
 
 
-bool contact_checker_phone_unique(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_phone_unique(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
@@ -195,7 +247,7 @@ bool generic_checker_email_format(const std::string &_email)
 }
 
 
-bool contact_checker_email_format(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_email_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = generic_checker_email_format(static_cast<std::string>(_data.email));
     if (result == false) {
@@ -205,7 +257,7 @@ bool contact_checker_email_format(const Contact &_data, FieldErrorMap &_errors)
 }
 
 
-bool contact_checker_notify_email_format(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_notify_email_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = generic_checker_email_format(static_cast<std::string>(_data.notifyemail));
     if (result == false) {
@@ -215,7 +267,7 @@ bool contact_checker_notify_email_format(const Contact &_data, FieldErrorMap &_e
 }
 
 
-bool contact_checker_email_required(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_email_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
@@ -229,7 +281,7 @@ bool contact_checker_email_required(const Contact &_data, FieldErrorMap &_errors
 }
 
 
-bool contact_checker_email_unique(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_email_unique(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
@@ -262,7 +314,7 @@ bool contact_checker_email_unique(const Contact &_data, FieldErrorMap &_errors)
 }
 
 
-bool contact_checker_address_required(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_address_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
     /* main address is required */
@@ -291,7 +343,7 @@ bool contact_checker_address_required(const Contact &_data, FieldErrorMap &_erro
 }
 
 
-bool contact_checker_address_postalcode_format_cz(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_address_postalcode_format_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
@@ -306,7 +358,7 @@ bool contact_checker_address_postalcode_format_cz(const Contact &_data, FieldErr
 }
 
 
-bool contact_checker_address_country(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_address_country(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
@@ -320,7 +372,7 @@ bool contact_checker_address_country(const Contact &_data, FieldErrorMap &_error
 }
 
 
-bool contact_checker_birthday(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_birthday(const ::MojeID::Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
@@ -344,8 +396,8 @@ bool contact_checker_birthday(const Contact &_data, FieldErrorMap &_errors)
 
 
 bool check_validated_contact_diff(
-        const Contact &_c1,
-        const Contact &_c2)
+        const ::MojeID::Contact &_c1,
+        const ::MojeID::Contact &_c2)
 {
     /* name */
     if (_c1.name != _c2.name) {
@@ -379,7 +431,4 @@ bool check_validated_contact_diff(
 
 
 }
-}
-}
-
 
