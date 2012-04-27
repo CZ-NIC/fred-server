@@ -223,7 +223,8 @@ sbin_PROGRAMS = \
 # util/libutil.a
 #
 util_libutil_a_SOURCES = \
-		util/random.cc
+		util/random.cc \
+		util/util.cc
 #
 # util/libutil.a
 
@@ -565,10 +566,6 @@ src_model_libmodel_a_SOURCES = \
 		src/model/nsset_filter.h \
 		src/model/registrar_filter.cc \
 		src/model/registrar_filter.h \
-		src/model/epp_action_filter.cc \
-		src/model/epp_action_filter.h \
-		src/model/epp_session_filter.cc \
-		src/model/epp_session_filter.h \
 		src/model/filter_filter.cc \
 		src/model/filter_filter.h \
 		src/model/object_state_filter.cc \
@@ -807,6 +804,8 @@ src_fredlib_mojeid_libmojeid_a_SOURCES = \
 		src/fredlib/mojeid/mojeid_data_validation.h \
 		src/fredlib/mojeid/mojeid_data_validation.cc \
 		src/fredlib/mojeid/mojeid_contact_states.h
+#
+# src/fredlib/mojeid/libmojeid.a
 
 
 # src/fredlib/notifier/libnotifier.a
@@ -820,7 +819,6 @@ src_fredlib_notifier_libnotifier_a_SOURCES = \
 		src/fredlib/notifier/ntf_except.h
 #
 # src/fredlib/notifier/libnotifier.a
-
 
 
 BUILT_SOURCES = \
@@ -1003,8 +1001,6 @@ src_corba_admin_libadmin_impl_a_SOURCES = \
 		src/corba/admin/pagetable_contacts.h \
 		src/corba/admin/pagetable_domains.cc \
 		src/corba/admin/pagetable_domains.h \
-		src/corba/admin/pagetable_eppactions.cc \
-		src/corba/admin/pagetable_eppactions.h \
 		src/corba/admin/pagetable_filters.cc \
 		src/corba/admin/pagetable_filters.h \
 		src/corba/admin/pagetable_invoices.cc \
@@ -1055,6 +1051,8 @@ src_corba_whois_libwhois_impl_a_SOURCES = \
 # src/corba/epp/libepp_impl.a
 #
 src_corba_epp_libepp_impl_a_SOURCES = \
+		src/corba/epp/epp_session.h \
+		src/corba/epp/epp_session.cc \
 		src/corba/epp/epp_impl.cc \
 		src/corba/epp/epp_impl.h \
 		src/corba/epp/messages.cc \
@@ -1104,8 +1102,8 @@ src_corba_fred_rifd_LDADD = \
 		util/db/libdb.a \
 		util/types/libtypes.a \
 		util/log/liblog.a \
-		util/libutil.a \
 		src/old_utils/liboldutils.a \
+		util/libutil.a \
 		util/decimal/libmpdec.a -lm \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
@@ -1147,8 +1145,8 @@ src_corba_fred_adifd_LDADD = \
 		util/db/libdb.a \
 		util/types/libtypes.a \
 		util/log/liblog.a \
-		util/libutil.a \
 		src/old_utils/liboldutils.a \
+		util/libutil.a \
 		util/decimal/libmpdec.a -lm \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
@@ -1273,6 +1271,7 @@ src_corba_messages_fred_msgd_LDADD = \
 		util/types/libtypes.a \
 		util/db/libdb.a \
 		src/old_utils/liboldutils.a \
+		util/libutil.a \
 		src/corba/libcorbadatatypes.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(OMNIORB4_LIBS) \
@@ -1410,11 +1409,11 @@ src_cli_admin_fred_admin_LDADD = \
 		src/corba/libfilemanager.a \
 		src/fredlib/messages/libmessages.a \
 		src/fredlib/requests/librequests.a \
-		util/libutil.a \
 		util/log/liblog.a \
 		util/types/libtypes.a \
 		util/db/libdb.a \
 		src/old_utils/liboldutils.a \
+		util/libutil.a \
 		util/hp/libhp.a \
 		util/decimal/libmpdec.a -lm \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -1465,7 +1464,6 @@ tools_logd_migration_migrate_log_LDADD = \
 		$(POSTGRESQL_LIB)
 #
 # tools/logd_migration
-
 
 
 # tests

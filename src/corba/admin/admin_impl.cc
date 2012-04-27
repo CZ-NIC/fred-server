@@ -452,26 +452,6 @@ CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
   return ret;
 }
 
-Registry::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
-  Logging::Context ctx(server_name_);
-  ConnectionReleaser releaser;
-
-  DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                , ccReg::Admin::SQL_ERROR());
-
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
-          , restricted_handles_));
-  Fred::Registrar::Manager *rm = r->getRegistrarManager();
-  Registry::EPPActionTypeSeq *et = new Registry::EPPActionTypeSeq;
-  
-  et->length(rm->getEPPActionTypeCount());
-  for (unsigned i=0; i<rm->getEPPActionTypeCount(); i++) {
-    (*et)[i].id = rm->getEPPActionTypeByIdx(i).id;
-    (*et)[i].name = DUPSTRC(rm->getEPPActionTypeByIdx(i).name);
-  }
-
-  return et;
-}
 
 Registry::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
   Logging::Context ctx(server_name_);

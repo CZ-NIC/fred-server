@@ -162,14 +162,11 @@ public:
   virtual const std::string& getEmailToAnswer() const = 0;
   virtual void setEmailToAnswer(const std::string& _email) = 0;
   virtual const Database::ID getAnswerEmailId() const = 0;
-  virtual const Database::ID getEppActionId() const = 0;
-  virtual void setEppActionId(const Database::ID& _epp_action_id) = 0;
   virtual void setRegistrarId(const Database::ID& _registrar_id) = 0;
   virtual void setRequestId(const Database::ID& _request_id) = 0;
   virtual void addObject(const OID& _oid) = 0;
   virtual const OID& getObject(unsigned _idx) const = 0;
   virtual unsigned getObjectSize() const = 0;
-  virtual const std::string getSvTRID() const = 0;
   virtual const Database::ID getRegistrarId() const = 0;
   virtual const std::string getRegistrarHandle() const = 0;
   virtual const std::string getRegistrarName() const = 0;

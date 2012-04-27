@@ -418,18 +418,6 @@ COMPOUND_CLASS(KeySet, KeySet, Obj,
     FILTER_ADD(Contact, addTechContact);
 );
 
-COMPOUND_CLASS(Action, EppAction, Compound,
-    FILTER_ADD(Registrar, addRegistrar);
-    FILTER_ADD(Obj, addObject);
-    FILTER_ADD(Int, addType);
-    FILTER_ADD(Int, addResponse);
-    FILTER_ADD(DateTime, addTime);
-    FILTER_ADD(Str, addClTRID);
-    FILTER_ADD(Str, addSvTRID);
-    FILTER_ADD(Str, addRequestHandle);
-    FILTER_ADD(Int, addEppCodeResponse);
-);
-
 COMPOUND_CLASS(Filter, FilterFilter, Compound,
     FILTER_ADD(Id, addUserId);
     FILTER_ADD(Id, addGroupId);
@@ -658,7 +646,6 @@ ITERATOR_ADD_E_METHOD_IMPL(Int,Value<int>);
 ITERATOR_ADD_E_METHOD_IMPL(IntInterval,Interval<int>);
 ITERATOR_ADD_E_METHOD_IMPL(Bool,Value<bool>);
 ITERATOR_ADD_E_METHOD_IMPL(Id,Value<Database::ID>);
-ITERATOR_ADD_E_METHOD_IMPL(Action,EppAction);
 ITERATOR_ADD_E_METHOD_IMPL(Date,Interval<Database::DateInterval>);
 ITERATOR_ADD_E_METHOD_IMPL(DateTime,Interval<Database::DateTimeInterval>);
 ITERATOR_ADD_E_METHOD_IMPL(ServiceType,ServiceType);
@@ -702,7 +689,6 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Int,Value<int>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Id,Value<Database::ID>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Bool,Value<bool>);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(Action,EppAction);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Date,Interval<Database::DateInterval>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(DateTime,Interval<Database::DateTimeInterval>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Obj,Object);

@@ -9,8 +9,6 @@
 #include "nsset_filter.h"
 #include "registrar_filter.h"
 #include "object_state_filter.h"
-#include "epp_action_filter.h"
-#include "epp_session_filter.h"
 #include "filter_filter.h"
 #include "invoice_filter.h"
 #include "public_request_filter.h"

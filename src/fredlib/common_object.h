@@ -19,7 +19,6 @@ enum FilterType {
   FT_NSSET,
   FT_KEYSET,
   FT_DOMAIN,
-  FT_ACTION,
   FT_INVOICE,
   FT_PUBLICREQUEST,
   FT_MAIL,

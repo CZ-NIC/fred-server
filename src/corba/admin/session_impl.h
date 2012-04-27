@@ -12,7 +12,6 @@
 
 #include "pagetable_impl.h"
 #include "pagetable_registrars.h"
-#include "pagetable_eppactions.h"
 #include "pagetable_domains.h"
 #include "pagetable_contacts.h"
 #include "pagetable_nssets.h"
@@ -68,7 +67,6 @@ private:
   ccReg_Messages_i* m_messages;
   ccReg_Zones_i* m_zones;
   ccReg_Registrars_i* m_registrars;
-  ccReg_EPPActions_i* m_eppactions;
   ccReg_Domains_i* m_domains;
   ccReg_Contacts_i* m_contacts;
   ccReg_NSSets_i* m_nssets;
@@ -115,7 +113,6 @@ private:
   Registry::NSSet::Detail* getNSSetDetail(ccReg::TID _id);
   Registry::KeySet::Detail *getKeySetDetail(ccReg::TID _id);
   Registry::Registrar::Detail* getRegistrarDetail(ccReg::TID _id);
-  Registry::EPPAction::Detail* getEppActionDetail(ccReg::TID _id);
   Registry::PublicRequest::Detail* getPublicRequestDetail(ccReg::TID _id);
   Registry::Mailing::Detail* getMailDetail(ccReg::TID _id);
   Registry::Invoicing::Detail* getInvoiceDetail(ccReg::TID _id);
@@ -136,7 +133,6 @@ private:
   Registry::NSSet::Detail* createHistoryNSSetDetail(Fred::NSSet::List* _list);
   Registry::KeySet::Detail* createHistoryKeySetDetail(Fred::KeySet::List* _list);
   Registry::Registrar::Detail* createRegistrarDetail(Fred::Registrar::Registrar* _registrar);
-  Registry::EPPAction::Detail* createEppActionDetail(Fred::Registrar::EPPAction *_action);
   Registry::PublicRequest::Detail* createPublicRequestDetail(Fred::PublicRequest::PublicRequest* _request);
   Registry::Mailing::Detail* createMailDetail(Fred::Mail::Mail *_mail);
   Registry::Invoicing::Detail* createInvoiceDetail(Fred::Invoicing::Invoice *_invoice);

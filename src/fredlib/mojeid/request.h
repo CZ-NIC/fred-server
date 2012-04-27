@@ -13,15 +13,12 @@ private:
     unsigned long long registrar_id_;
     std::string clienttrid_;
 
-    /* id to action table - temporary */
-    unsigned long long id_;
     /* id to logger request table */
     unsigned long long request_id_;
 
     int status_;
 
     std::auto_ptr<Database::Transaction> tx_;
-    std::string servertrid_;
 
 public:
     Database::Connection conn;
@@ -33,7 +30,6 @@ public:
         : request_code_(_request_code),
           registrar_id_(_registrar_id),
           clienttrid_(_clienttrid),
-          id_(0),
           request_id_(_request_id),
           status_(0),
           tx_(0),
@@ -45,26 +41,6 @@ public:
                         "logger request_id");
                 throw 0;
             }
-            Database::Result rnext = conn.exec(
-                    "SELECT nextval('action_id_seq'::regclass)");
-            if (rnext.size() != 1) {
-                throw 0;
-            }
-            if ((id_ = rnext[0][0]) == 0) {
-                throw 0;
-            }
-
-            servertrid_ = str(boost::format("MojedID-%010d") % id_);
-
-            conn.exec_params(
-                    "INSERT INTO action"
-                    " (id, clientid, action, clienttrid, servertrid)"
-                    " VALUES ($1::integer, NULL, $2::integer, $3::text, $4::text)",
-                    Database::query_param_list
-                        (id_)
-                        (request_code_)
-                        (clienttrid_)
-                        (servertrid_));
         }
         catch (...) {
             throw std::runtime_error("unable to create request log (action)");
@@ -78,19 +54,6 @@ public:
     {
         end_failure();
     }
-
-
-    const unsigned long long& get_id() const
-    {
-        return id_;
-    }
-
-
-    const std::string& get_servertrid() const
-    {
-        return servertrid_;
-    }
-
 
     const unsigned long long& get_registrar_id() const
     {
@@ -118,10 +81,6 @@ public:
         if (status_ == 0) {
             tx_->commit();
             status_ = 2;
-            conn.exec_params(
-                    "UPDATE action SET response = 1000, enddate = now()"
-                    " WHERE id = $1::integer",
-                    Database::query_param_list(id_));
         }
     }
 
@@ -131,10 +90,6 @@ public:
         if (status_ == 0) {
             tx_->rollback();
             status_ = 1;
-            conn.exec_params(
-                    "UPDATE action SET response = 2400, enddate = now()"
-                    " WHERE id = $1::integer",
-                    Database::query_param_list(id_));
         }
     }
 

@@ -119,10 +119,6 @@ int main(int argc, char *argv[])
                     % rifd_args_ptr->rifd_session_max
                     % rifd_args_ptr->rifd_session_timeout);
 
-            myccReg_EPP_i->CreateSession(
-                    rifd_args_ptr->rifd_session_max
-                    , rifd_args_ptr->rifd_session_timeout);
-
             ccReg::timestamp_var ts;
             char *version = myccReg_EPP_i->version(ts);
             LOGGER(PACKAGE).info(boost::format("RIFD server version: %1% (%2%)")

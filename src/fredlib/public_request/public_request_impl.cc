@@ -230,7 +230,7 @@ bool object_was_changed_since_request_create(const unsigned long long _request_i
 
 
 PublicRequestImpl::PublicRequestImpl()
-    : CommonObjectImpl(0), type_(), epp_action_id_(0), create_request_id_(0),
+    : CommonObjectImpl(0), type_(), create_request_id_(0),
       resolve_request_id_(0), status_(PRS_NEW), answer_email_id_(0),
       registrar_id_(0), man_()
 {
@@ -240,7 +240,6 @@ PublicRequestImpl::PublicRequestImpl()
 PublicRequestImpl::PublicRequestImpl(
         Database::ID _id,
         Fred::PublicRequest::Type _type,
-        Database::ID _epp_action_id,
         Database::ID _create_request_id,
         Database::DateTime _create_time,
         Fred::PublicRequest::Status _status,
@@ -248,17 +247,16 @@ PublicRequestImpl::PublicRequestImpl(
         std::string _reason,
         std::string _email_to_answer,
         Database::ID _answer_email_id,
-        std::string _svtrid,
         Database::ID _registrar_id,
         std::string _registrar_handle,
         std::string _registrar_name,
         std::string _registrar_url)
-    : CommonObjectImpl(_id), type_(_type), epp_action_id_(_epp_action_id),
+    : CommonObjectImpl(_id), type_(_type),
       create_request_id_(_create_request_id), resolve_request_id_(0),
       create_time_(_create_time), status_(_status),
       resolve_time_(_resolve_time), reason_(_reason),
       email_to_answer_(_email_to_answer), answer_email_id_(_answer_email_id),
-      svtrid_(_svtrid), registrar_id_(_registrar_id),
+      registrar_id_(_registrar_id),
       registrar_handle_(_registrar_handle),
       registrar_name_(_registrar_name), registrar_url_(_registrar_url),
       man_()
@@ -275,7 +273,6 @@ void PublicRequestImpl::setManager(Manager* _man)
 void PublicRequestImpl::init(Database::Row::Iterator& _it)
 {
     id_               = (unsigned long long)*_it;
-    epp_action_id_    = *(++_it);
     create_request_id_  = *(++_it);
     resolve_request_id_ = *(++_it);
     create_time_      = *(++_it);
@@ -284,7 +281,6 @@ void PublicRequestImpl::init(Database::Row::Iterator& _it)
     reason_           = (std::string)*(++_it);
     email_to_answer_  = (std::string)*(++_it);
     answer_email_id_  = *(++_it);
-    svtrid_           = (std::string)*(++_it);
     registrar_id_     = *(++_it);
     registrar_handle_ = (std::string)*(++_it);
     registrar_name_   = (std::string)*(++_it);
@@ -337,7 +333,6 @@ void PublicRequestImpl::save()
       Database::InsertQuery insert_request("public_request");
 
       insert_request.add("request_type", type_);
-      insert_request.add("epp_action_id", epp_action_id_);
       insert_request.add("create_request_id", create_request_id_);
       insert_request.add("status", status_);
       insert_request.add("reason", reason_);
@@ -459,20 +454,6 @@ const Database::ID PublicRequestImpl::getAnswerEmailId() const
     return answer_email_id_;
 }
 
-
-const Database::ID PublicRequestImpl::getEppActionId() const
-{
-    return epp_action_id_;
-}
-
-
-void PublicRequestImpl::setEppActionId(const Database::ID& _epp_action_id)
-{
-    epp_action_id_ = _epp_action_id;
-    modified_ = true;
-}
-
-
 const Database::ID PublicRequestImpl::getRequestId() const
 {
     return create_request_id_;
@@ -515,13 +496,6 @@ unsigned PublicRequestImpl::getObjectSize() const
 {
     return objects_.size();
 }
-
-
-const std::string PublicRequestImpl::getSvTRID() const
-{
-    return svtrid_;
-}
-
 
 const Database::ID PublicRequestImpl::getRegistrarId() const
 {

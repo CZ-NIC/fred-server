@@ -32,10 +32,6 @@ void handle_epp_exception(ccReg::EPP::EppError &ex)
 
 void EPP_backend_init(ccReg_EPP_i *epp_i, HandleRifdArgs *rifd_args_ptr)
 {
-    epp_i->CreateSession(
-            rifd_args_ptr->rifd_session_max
-            , rifd_args_ptr->rifd_session_timeout);
-
     // load all country code from table enum_country
     if (epp_i->LoadCountryCode() <= 0) {
       throw std::runtime_error("EPP backend init: database error: load country code");
@@ -97,11 +93,11 @@ CORBA::Long epp_backend_login(ccReg_EPP_i *epp, std::string registrar_handle)
     std::string xml_var("<omg/>");
     std::string cert_var("");
 
-    CORBA::Long clientId = 0;
+    CORBA::ULongLong clientId = 0;
 
     ccReg::Response *r = epp->ClientLogin(
-        registrar_handle.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),
-        xml_var.c_str(),clientId,cert_var.c_str(),ccReg::EN);
+        registrar_handle.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),xml_var.c_str(),clientId, 0,
+        cert_var.c_str(),ccReg::EN);
     
     if (r->code != 1000 || !clientId) {
         boost::format msg = boost::format("Error code: %1% - %2% ") % r->code % r->msg;

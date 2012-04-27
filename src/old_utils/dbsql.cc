@@ -33,25 +33,6 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 using namespace boost::posix_time;
 
-void
-ParsedAction::add(unsigned id, const std::string& value)
-{
-  elements[id] = value;
-}
-
-bool 
-ParsedAction::executeSQL(Fred::TID actionid, DB* db)
-{
-  std::map<unsigned, std::string>::const_iterator i;
-  for (i=elements.begin();i!=elements.end();i++) {
-    std::stringstream sql;
-    sql << "INSERT INTO action_elements (actionid,elementid,value) VALUES ("
-        << actionid << "," << i->first << ", LOWER('" << db->Escape2(i->second) << "'))";
-    if (!db->ExecSQL(sql.str().c_str()))
-        return false;
-  }
-  return true;
-}
 
 // for invoice  type 
 #define INVOICE_FA  1 // normal invoice
@@ -63,7 +44,6 @@ DB::DB()
   // set mem buffers 
   svrTRID = NULL;
   memHandle=NULL;
-  actionID = 0;
   enum_action=0;
   loginID = 0;
 }
@@ -136,129 +116,42 @@ bool DB::TestRegistrarACL(
   return ret;
 }
 
-int DB::SaveXMLout(
-  const char *svTRID, const char *xml)
-{
-  int update_id;
-
-  update_id = GetNumericFromTable("action", "id", "serverTRID", svTRID);
-
-  if (update_id > 0) {
-
-    if (strlen(xml) ) {
-      UPDATE("Action_XML");
-      SET("xml_out", xml);
-      WHERE("actionID", update_id);
-      if (EXEC() )
-        return true;
-    }
-
-  }
-
-  // default
-  return false;
-}
-
 // action 
 bool DB::BeginAction(
-  int clientID, int action, const char *clTRID, const char *xml,
-  ParsedAction* paction, unsigned long long requestID
+  unsigned long long clientID, int action, const char *clTRID, const char *xml,
+  unsigned long long requestID
 )
 {
-
-  bool ret = false;
 
   if (!BeginTransaction())
       return false;
   
-  // actionID for loging all action
-  actionID = GetSequenceID("action");
   loginID = clientID; // id of corba client
   historyID = 0; // history ID 
 
-
-  if (actionID) {
-
-    //    make  server ticket  svrTRID
-
-    if (svrTRID==NULL) {
+  if (svrTRID==NULL) {
       svrTRID= new char[MAX_SVTID];
-
-      snprintf(svrTRID, MAX_SVTID, "ccReg-%010d", actionID);
+      strncpy(svrTRID,
+          Util::make_svtrid(requestID).c_str(),
+          MAX_SVTID - 1
+      );
 
       LOG( SQL_LOG , "Make svrTRID: %s" , svrTRID );
-    }
-
-    // EPP operation
-    enum_action=action;
-
-    // write to action table
-    INSERT("ACTION");
-    INTO("id");
-    if (clientID > 0)
-      INTO("clientID");
-    INTO("action");
-    INTO("clienttrid");
-
-    VALUE(actionID);
-    if (clientID > 0)
-      VALUE(clientID);
-    VALUE(action);
-    VALUE(clTRID);
-
-    if (EXEC() ) {
-      // write XML from epp-client
-      if (strlen(xml) ) {
-        INSERT("Action_XML");
-        VALUE(actionID);
-        VALUE(xml);
-        if (EXEC() )
-          ret = true;
-      } else
-        ret = true;
-    }
-
-    if (ret == true) {
-      if (paction)
-        ret = paction->executeSQL(actionID,this);
-    }
   }
 
-  QuitTransaction(ret ? CMD_OK : 0);
+  QuitTransaction(CMD_OK);
 
-  return ret;
+  enum_action = action;
+
+  return true;
 }
 
 // end of EPP operation
 const char * DB::EndAction(
   int response)
 {
-  int id;
-
-  if (actionID == 0)
-    return "no action";
-  else {
-
-    UPDATE("ACTION");
-    if (response > 0)
-      SET("response", response);
-    SET("enddate", "now");
-    SSET("servertrid", svrTRID); // without escape
-    WHEREID(actionID);
-
-    // update table
-    id = actionID;
-    actionID = 0;    
     LOG( SQL_LOG , "EndAction svrTRID: %s" , svrTRID );
-
-    if (EXEC() )
-      return svrTRID;
-    else {
-      LOG( ERROR_LOG , "End action DATABASE_ERROR" );
-      return "";
-    }
-
-  }
+    return svrTRID;
 
 }
 
@@ -1295,17 +1188,14 @@ int DB::MakeHistory(
 {
   char sqlString[128];
 
-  if (actionID) {
-   // assert(requestID != 0); #4974 - allow 0
-    LOG( SQL_LOG , "MakeHistory actionID -> %d, requestID -> %llu " ,
-            actionID, requestID);
+    LOG( SQL_LOG , "MakeHistory requestID -> %llu " ,
+            requestID);
     historyID = GetSequenceID("HISTORY");
     if (historyID) {
-      LOG( SQL_LOG , "MakeHistory actionID -> %d, requestID -> %llu " ,
-              actionID, requestID);
+      LOG( SQL_LOG , "MakeHistory requestID -> %llu " , requestID);
       snprintf(sqlString, sizeof(sqlString),
-          "INSERT INTO HISTORY ( id , action, request_id ) VALUES ( %d  , %d , %llu );",
-          historyID, actionID, requestID);
+          "INSERT INTO HISTORY ( id , request_id ) VALUES ( %d  , %llu );",
+          historyID, requestID);
       if (ExecSQL(sqlString) ) {
         if (SaveHistory("OBJECT", "id", objectID) ) // save object table to history 
         {
@@ -1318,7 +1208,6 @@ int DB::MakeHistory(
         }
       }
     }
-  }
 
   // default
   return 0;

@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
     epp_ref = ccReg::EPP::_narrow(CorbaContainer::get_instance()->nsresolve("EPP"));
 
     //login
-    CORBA::Long clientId = 0;
+    CORBA::ULongLong clientId = 0;
     ccReg::Response_var r;
 
     std::string test_domain_fqdn(std::string("testdomain") + time_string);
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
 
         r = epp_ref->ClientLogin(
             registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
-            xml_var,clientId,cert_var,ccReg::EN);
+            xml_var,clientId,0,cert_var,ccReg::EN);
 
         if (r->code != 1000 || !clientId) {
             std::cerr << "Cannot connect: " << r->code << std::endl;
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
             period.unit = ccReg::unit_year;
             ccReg::EppParams epp_params;
             epp_params.requestID = clientId + i;
-            epp_params.sessionID = clientId;
+            epp_params.loginID = clientId;
             epp_params.clTRID = "";
             epp_params.XML = "";
             CORBA::String_var crdate;
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
 
             ccReg::EppParams epp_params_renew;
             epp_params_renew.requestID = clientId+i;
-            epp_params_renew.sessionID = clientId;
+            epp_params_renew.loginID = clientId;
             epp_params_renew.clTRID = "";
             epp_params_renew.XML = "";
 
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
     epp_ref = ccReg::EPP::_narrow(CorbaContainer::get_instance()->nsresolve("EPP"));
 
     //login
-    CORBA::Long clientId = 0;
+    CORBA::ULongLong clientId = 0;
     ccReg::Response_var r;
 
     std::string test_domain_fqdn(std::string("testdomain2") + time_string);
@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
 
         r = epp_ref->ClientLogin(
             registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
-            xml_var,clientId,cert_var,ccReg::EN);
+            xml_var,clientId,0,cert_var,ccReg::EN);
 
         if (r->code != 1000 || !clientId) {
             std::cerr << "Cannot connect: " << r->code << std::endl;
@@ -339,7 +339,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
             period.unit = ccReg::unit_year;
             ccReg::EppParams epp_params;
             epp_params.requestID = clientId + i;
-            epp_params.sessionID = clientId;
+            epp_params.loginID = clientId;
             epp_params.clTRID = "";
             epp_params.XML = "";
             CORBA::String_var crdate;
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
 
             ccReg::EppParams epp_params_renew;
             epp_params_renew.requestID = clientId+i;
-            epp_params_renew.sessionID = clientId;
+            epp_params_renew.loginID = clientId;
             epp_params_renew.clTRID = "";
             epp_params_renew.XML = "";
 
@@ -578,7 +578,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
         CorbaContainer::get_instance()->nsresolve("EPP"));
 
     //login
-    CORBA::Long clientId = 0;
+    CORBA::ULongLong clientId = 0;
     ccReg::Response_var r;
 
     std::string test_domain_fqdn(std::string("tdomain")+time_string);
@@ -595,7 +595,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
         r = epp_ref->ClientLogin(
             registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
-            xml_var,clientId,cert_var,ccReg::EN);
+            xml_var,clientId,0,cert_var,ccReg::EN);
 
         if (r->code != 1000 || !clientId) {
             std::cerr << "Cannot connect: " << r->code << std::endl;
@@ -611,7 +611,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
             period.unit = ccReg::unit_year;
             ccReg::EppParams epp_params;
             epp_params.requestID = clientId + i;
-            epp_params.sessionID = clientId;
+            epp_params.loginID = clientId;
             epp_params.clTRID = "";
             epp_params.XML = "";
             CORBA::String_var crdate;
@@ -635,7 +635,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
             ccReg::EppParams epp_params_renew;
             epp_params_renew.requestID = clientId+i;
-            epp_params_renew.sessionID = clientId;
+            epp_params_renew.loginID = clientId;
             epp_params_renew.clTRID = "";
             epp_params_renew.XML = "";
 

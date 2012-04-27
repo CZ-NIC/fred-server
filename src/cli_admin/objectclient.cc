@@ -244,7 +244,7 @@ ObjectClient::deleteObjects(
         return 0;
     }
     try {
-        CORBA::Long clientId = 0;
+        CORBA::ULongLong clientId = 0;
 
         for (int i = 0; i < RESOLVE_TRY; i++) {
             try {
@@ -269,8 +269,8 @@ ObjectClient::deleteObjects(
         }
 
         ccReg::Response_var r = epp->ClientLogin(
-                handle.c_str(),password.c_str(),"","system_delete_login",
-                "<system_delete_login/>",clientId,cert.c_str(),ccReg::EN);
+                handle.c_str(),password.c_str(),"","system_delete_login", "<system_delete_login/>"
+                ,clientId, 0 ,cert.c_str(),ccReg::EN);
         if (r->code != 1000 || !clientId) {
             LOG(ERROR_LOG, "Cannot connect: %d", r->code);
             std::cerr << "Cannot connect: " << r->code << std::endl;
@@ -285,7 +285,7 @@ ObjectClient::deleteObjects(
             xml = "<name>" + name + "</name>";
 
             ccReg::EppParams params;
-            params.sessionID    = clientId;
+            params.loginID    = clientId;
             params.requestID    = 0;
             params.XML          = xml.c_str();
 
@@ -331,7 +331,13 @@ ObjectClient::deleteObjects(
                 // proceed with next domain
             }
         }
-        epp->ClientLogout(clientId, "system_delete_logout", "<system_delete_logout/>");
+
+        ccReg::EppParams par_logout;
+        par_logout.clTRID = "system_delete_logout";
+        par_logout.XML = "<system_delete_logout/>";
+        par_logout.loginID = clientId;
+
+        epp->ClientLogout(par_logout);
         m_db->FreeSelect();
         return 0;
     }

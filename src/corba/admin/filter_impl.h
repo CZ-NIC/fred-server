@@ -35,7 +35,6 @@ public:
   ccReg::Filters::NSSet_ptr addE(Database::Filters::NSSet* f);
   ccReg::Filters::KeySet_ptr addE(Database::Filters::KeySet* f);
   ccReg::Filters::Registrar_ptr addE(Database::Filters::Registrar* f);
-  ccReg::Filters::Action_ptr addE(Database::Filters::EppAction* f);
   ccReg::Filters::PublicRequest_ptr addE(Database::Filters::PublicRequest* f);
   ccReg::Filters::Invoice_ptr addE(Database::Filters::Invoice* f);
   ccReg::Filters::Mail_ptr addE(Database::Filters::Mail* f);

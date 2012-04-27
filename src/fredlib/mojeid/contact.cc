@@ -148,8 +148,7 @@ void db_contact_update(Contact &_data)
 }
 
 
-unsigned long long db_contact_insert_history(const unsigned long long &_action_id,
-                                             const unsigned long long &_request_id,
+unsigned long long db_contact_insert_history(const unsigned long long &_request_id,
                                              const unsigned long long &_contact_id)
 {
     if (_contact_id == 0) {
@@ -158,9 +157,9 @@ unsigned long long db_contact_insert_history(const unsigned long long &_action_i
 
     Database::Connection conn = Database::Manager::acquire();
 
-    conn.exec_params("INSERT INTO history (id, action, request_id)"
-                     " VALUES (DEFAULT, $1::integer, $2::bigint)",
-                     Database::query_param_list(_action_id)(_request_id));
+    conn.exec_params("INSERT INTO history (id, request_id)"
+                     " VALUES (DEFAULT, $1::bigint)",
+                     Database::query_param_list(_request_id));
     Database::Result rhistory = conn.exec("SELECT currval('history_id_seq')");
     unsigned long long history_id = 0;
     history_id = rhistory[0][0];
@@ -194,8 +193,7 @@ unsigned long long db_contact_insert_history(const unsigned long long &_action_i
 }
 
 
-unsigned long long contact_create(const unsigned long long &_action_id,
-                                  const unsigned long long &_request_id,
+unsigned long long contact_create(const unsigned long long &_request_id,
                                   const unsigned long long &_registrar_id,
                                   MojeID::Contact &_data)
 {
@@ -203,7 +201,7 @@ unsigned long long contact_create(const unsigned long long &_action_id,
             : static_cast<std::string>(_data.auth_info);
     _data.id = db_contact_object_create(_registrar_id, _data.handle, auth_info);
     db_contact_insert(_data);
-    unsigned long long hid = db_contact_insert_history(_action_id, _request_id, _data.id);
+    unsigned long long hid = db_contact_insert_history(_request_id, _data.id);
     Database::Connection conn = Database::Manager::acquire();
     conn.exec_params("UPDATE object_registry SET crhistoryid = $1::integer"
                      " WHERE id = $2::integer",
@@ -212,8 +210,7 @@ unsigned long long contact_create(const unsigned long long &_action_id,
 }
 
 
-unsigned long long contact_transfer(const unsigned long long &_action_id,
-                                    const unsigned long long &_request_id,
+unsigned long long contact_transfer(const unsigned long long &_request_id,
                                     const unsigned long long &_registrar_id,
                                     const unsigned long long &_contact_id)
 {
@@ -224,12 +221,11 @@ unsigned long long contact_transfer(const unsigned long long &_action_id,
                          (_registrar_id)
                          (Random::string_alphanum(8))
                          (_contact_id));
-    return db_contact_insert_history(_action_id, _request_id, _contact_id);
+    return db_contact_insert_history(_request_id, _contact_id);
 }
 
 
-unsigned long long contact_update(const unsigned long long &_action_id,
-                                  const unsigned long long &_request_id,
+unsigned long long contact_update(const unsigned long long &_request_id,
                                   const unsigned long long &_registrar_id,
                                   Contact &_data)
 {
@@ -242,7 +238,7 @@ unsigned long long contact_update(const unsigned long long &_action_id,
                         (_data.id)
                         (_data.auth_info));
     db_contact_update(_data);
-    return db_contact_insert_history(_action_id, _request_id, _data.id);
+    return db_contact_insert_history(_request_id, _data.id);
 }
 
 

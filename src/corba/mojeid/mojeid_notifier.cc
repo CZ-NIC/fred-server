@@ -12,7 +12,7 @@ void notify_contact_create(const unsigned long long &_request_id,
 {
     Logging::Context ctx("notifier");
 
-    Fred::RequestNotification ntf(_request_id, "MojeID");
+    Fred::RequestNotification ntf(_request_id);
 
     if (ntf.get_request_type() == CMD_CONTACT_CREATE) {
         Fred::request_contact_create(ntf);
@@ -28,7 +28,7 @@ void notify_contact_update(const unsigned long long &_request_id,
 {
     Logging::Context ctx("notifier");
 
-    Fred::RequestNotification ntf(_request_id, "MojeID");
+    Fred::RequestNotification ntf(_request_id);
 
     if (ntf.get_request_type() == CMD_CONTACT_UPDATE) {
         Fred::request_contact_update(ntf);
@@ -44,7 +44,7 @@ void notify_contact_transfer(const unsigned long long &_request_id,
 {
     Logging::Context ctx("notifier");
 
-    Fred::RequestNotification ntf(_request_id, "MojeID");
+    Fred::RequestNotification ntf(_request_id);
 
     if (ntf.get_request_type() == CMD_CONTACT_TRANSFER) {
         Fred::request_contact_transfer(ntf);

@@ -75,13 +75,6 @@ Value<Database::ID>& PublicRequestImpl::addAnswerEmailId() {
   return *tmp;
 }
 
-Value<Database::ID>& PublicRequestImpl::addEppActionId() {
-  Value<Database::ID> *tmp = new Value<Database::ID>(Column("epp_action_id", joinRequestTable()));
-  tmp->setName("EppActionId");
-  add(tmp);
-  return *tmp;
-}
-
 Value<Database::ID>& PublicRequestImpl::addRegistrarId() {
   Value<Database::ID> *tmp = new Value<Database::ID>(Column("registrar_id", joinRequestTable()));
   tmp->setName("RegistrarId");

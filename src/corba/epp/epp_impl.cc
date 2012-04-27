@@ -50,7 +50,6 @@
 // logger
 #include "old_utils/log.h"
 
-
 // MailerManager is connected in constructor
 #include "fredlib/domain.h"
 #include "fredlib/contact.h"
@@ -129,7 +128,7 @@ class EPPAction
   ccReg_EPP_i *epp;
   DBSharedPtr  db;
   int regID;
-  int clientID;
+  unsigned long long clientID;
   int code; ///< needed for destructor where Response is invalidated
   EPPNotifier *notifier;
   std::string cltrid;
@@ -138,8 +137,8 @@ public:
   {
   };
   EPPAction(
-    ccReg_EPP_i *_epp, int _clientID, int action, const char *clTRID,
-    const char *xml, ParsedAction *paction = NULL
+    ccReg_EPP_i *_epp, unsigned long long _clientID, int action, const char *clTRID,
+    const char *xml, unsigned long long requestId
   ) throw (ccReg::EPP::EppError) :
     ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
     regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
@@ -153,7 +152,7 @@ public:
     }
     db = DBDisconnectPtr(_db.release());
 
-    if (!db->BeginAction(clientID, action, clTRID, xml, paction)) {
+    if (!db->BeginAction(clientID, action, clTRID, xml, requestId)) {
       epp->ServerInternalError("Cannot beginAction");
     }
     if (!regID) {
@@ -174,8 +173,8 @@ public:
 
   ///// TODO hack for new invoicing
   EPPAction(
-      ccReg_EPP_i *_epp, int _clientID, int action, const char *clTRID,
-      const char *xml, ParsedAction *paction, Database::Connection conn
+      ccReg_EPP_i *_epp, unsigned long long _clientID, int action, const char *clTRID,
+      const char *xml, Database::Connection conn, unsigned long long requestId
     ) throw (ccReg::EPP::EppError) :
       ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
       regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
@@ -190,7 +189,7 @@ public:
       // ConnectionReleaser will take care of disconnect
       db.reset(new DB(conn));
 
-      if (!db->BeginAction(clientID, action, clTRID, xml, paction)) {
+      if (!db->BeginAction(clientID, action, clTRID, xml, requestId)) {
         epp->ServerInternalError("Cannot beginAction");
       }
       if (!regID) {
@@ -468,16 +467,11 @@ ccReg_EPP_i::ccReg_EPP_i(
 
     db_disconnect_guard_(DBDisconnectPtr(0)),
     regMan(),
-    session(),
-    numSession(),
-    maxSession(),
-    maxWaitClient(),
+    epp_sessions(rifd_session_max, rifd_session_registrar_max, rifd_session_timeout),
     ErrorMsg(),
     ReasonMsg(),
     CC(),
-    max_zone(),
-    testInfo(false),
-    session_mutex_()
+    max_zone()
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
@@ -498,7 +492,6 @@ ccReg_EPP_i::~ccReg_EPP_i()
 
   delete ReasonMsg;
   delete ErrorMsg;
-  delete [] session;
 
   LOG( ERROR_LOG, "EPP_i destructor");
 }
@@ -529,197 +522,26 @@ void ccReg_EPP_i::NoMessages(
 }
 // END
 
-void ccReg_EPP_i::CreateSession(
-  int max, long wait)
-{
-  int i;
-
-  LOG( DEBUG_LOG , "SESSION CREATE max %d wait %ld" , max , wait );
-
-  boost::mutex::scoped_lock lock(session_mutex_);
-
-  session = new Session[max];
-  numSession=0; //  number of the active session
-  maxSession=max; // maximum number of sessions
-  maxWaitClient=wait; // timeout
-  for (i = 0; i < max; i ++) {
-    session[i].clientID=0;
-    session[i].registrarID=0;
-    session[i].language =0;
-    session[i].timestamp=0;
-  }
-
-}
-
-// session manager
-bool ccReg_EPP_i::LoginSession(
-  long loginID, int registrarID, int language)
-{
-  int i;
-
-  GarbageSesion();
-
-  boost::mutex::scoped_lock lock(session_mutex_);
-
-  if (numSession < maxSession) {
-    // count sessions for given registrar
-    unsigned count = 0;
-    for (i=0; i<maxSession; i++) {
-      if (session[i].registrarID == registrarID) {
-        count++;
-      }
-    }
-    if (count >= rifd_session_registrar_max_) {
-      LOG( DEBUG_LOG , "SESSION max per registrar exceeded clientID %d registrarID %d lang %d" , loginID , registrarID , language );
-      //
-      return false;
-    }
-    // find first session to free
-    for (i = 0; i < maxSession; i ++) {
-      if (session[i].clientID== 0) {
-        LOG( DEBUG_LOG , "SESSION  login  clientID %d registrarID %d lang %d" , loginID , registrarID , language );
-        session[i].clientID=loginID;
-        session[i].registrarID=registrarID;
-        session[i].language = language;
-        session[i].timestamp=( long long ) time(NULL);
-        numSession++;
-        LOG( DEBUG_LOG , "SESSION  num %d numSession %d timespatmp %lld" , i , numSession , session[i].timestamp );
-        return true;
-      }
-    }
-  } else {
-    LOG( ERROR_LOG , "SESSION MAX_CLIENTS %d" , maxSession );
-  }
-
-  return false;
-}
-
-bool ccReg_EPP_i::LogoutSession(
-  long loginID)
-{
-  int i;
-
-  boost::mutex::scoped_lock lock(session_mutex_);
-
-  for (i = 0; i < maxSession; i ++) {
-    if (session[i].clientID== loginID) {
-      session[i].clientID=0;
-      session[i].registrarID=0;
-      session[i].language =0;
-      session[i].timestamp=0;
-      numSession--;
-      LOG( DEBUG_LOG , "SESSION LOGOUT %d numSession %d" , i , numSession );
-      return true;
-    }
-  }
-
-  LOG( DEBUG_LOG , "SESSION LOGOUT UNKNOWN loginID %d" , loginID );
-
-  return false;
-}
-
-void ccReg_EPP_i::GarbageSesion()
-{
-  int i;
-  long long t;
-
-  LOG( DEBUG_LOG , "SESSION GARBAGE" );
-  t = ( long long ) time(NULL);
-
-  boost::mutex::scoped_lock lock(session_mutex_);
-
-  for (i = 0; i < maxSession; i ++) {
-
-    if (session[i].clientID) {
-      LOG( DEBUG_LOG , "SESSION  maxWait %lld time %lld timestamp session[%d].timestamp  %lld" , maxWaitClient , t , i , session[i].timestamp );
-
-      // garbage collector
-      // clear unused sessions
-      if (t > session[i].timestamp + maxWaitClient) {
-        LOG( DEBUG_LOG , "SESSION[%d] TIMEOUT %lld GARBAGE" , i , session[i].timestamp);
-        session[i].clientID=0;
-        session[i].registrarID=0;
-        session[i].language =0;
-        session[i].timestamp=0;
-        numSession--;
-      }
-    }
-
-  }
-
-}
-
 void ccReg_EPP_i::destroyAllRegistrarSessions(CORBA::Long reg_id)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
     ConnectionReleaser releaser;
 
-    LOGGER(PACKAGE).notice( boost::format("Destroying all session for registrar ID %1% ") % reg_id );
+    epp_sessions.destroy_all_registrar_sessions(reg_id);
 
-    boost::mutex::scoped_lock lock(session_mutex_);
-
-    for (int i = 0; i < maxSession; i ++) {
-
-      if (session[i].clientID && session[i].registrarID == reg_id) {
-          LOGGER(PACKAGE).notice( boost::format("Disconnecting session clientID %1%, registrar %2% ")
-                          % session[i].clientID % reg_id );
-
-        // garbage collector
-        // clear unused sessions
-
-          session[i].clientID=0;
-          session[i].registrarID=0;
-          session[i].language =0;
-          session[i].timestamp=0;
-          numSession--;
-      }
-
-    }
-
-    lock.unlock();
 }
 
-
 int ccReg_EPP_i::GetRegistrarID(
-  int clientID)
+  unsigned long long clientID)
 {
-  int regID=0;
-  int i;
-
-  LOG( DEBUG_LOG , "SESSION GetRegistrarID %d" , clientID );
-
-  boost::mutex::scoped_lock lock(session_mutex_);
-
-  for (i = 0; i < maxSession; i ++) {
-
-    if (session[i].clientID==clientID) {
-      session[i].timestamp= ( long long ) time(NULL);
-      LOG( DEBUG_LOG , "SESSION[%d] loginID %d -> regID %d" , i , clientID , session[i].registrarID );
-      LOG( DEBUG_LOG , "SESSION[%d] TIMESTMAP %lld" , i , session[i].timestamp );
-      regID = session[i].registrarID;
-    }
-
-  }
-
-  return regID;
+  return epp_sessions.get_registrar_id(clientID);
 }
 
 int ccReg_EPP_i::GetRegistrarLang(
-  int clientID)
+  unsigned long long clientID)
 {
-  int i;
-
-  boost::mutex::scoped_lock lock(session_mutex_);
-
-  for (i = 0; i < numSession; i ++) {
-    if (session[i].clientID==clientID) {
-      LOG( DEBUG_LOG , "SESSION[%d]  loginID %d -> lang %d" , i , clientID , session[i].language );
-      return session[i].language;
-    }
-  }
-
-  return 0;
+  return epp_sessions.get_registrar_lang(clientID);
 }
 
 // Load table to memory for speed
@@ -1340,60 +1162,17 @@ int ccReg_EPP_i::getFQDN(
 }
 
 void ccReg_EPP_i::sessionClosed(
-  CORBA::Long clientID)
+  CORBA::ULongLong clientID)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
   Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
   ConnectionReleaser releaser;
 
-  LOG( DEBUG_LOG , "SESSION CLOSED by clientID %ld, Calling SESSION LOGOUT", clientID );
-  LogoutSession(clientID);
+  LOGGER(PACKAGE).debug( boost::format("sessionClosed called for clientID %1%") % clientID);
+  epp_sessions.logout_session(clientID);
 }
 
-/***********************************************************************
- *
- * FUNCTION:    SaveOutXML
- *
- * DESCRIPTION: save exit XML according to server generated
- *              transaction ID
- *
- * PARAMETERS:  svTRID - client transaction number
- *              XML - xml exit string from mod_eppd
- *
- * RETURNED:    true if success save
- *
- ***********************************************************************/
-
-CORBA::Boolean ccReg_EPP_i::SaveOutXML(
-  const char* svTRID, const char* XML)
-{
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("%1%") % svTRID));
-  ConnectionReleaser releaser;
-
-  DB DBsql;
-  int ok;
-
-  if (DBsql.OpenDatabase(database) ) {
-    if (DBsql.BeginTransaction() ) {
-
-      if (DBsql.SaveXMLout(svTRID, XML) )
-        ok=CMD_OK;
-      else
-        ok=0;
-
-      DBsql.QuitTransaction(ok);
-    }
-
-    DBsql.Disconnect();
-  } else
-    ServerInternalError("SaveOutXML");
-
-  // default
-  return true;
-}
 
 /***********************************************************************
  *
@@ -1404,6 +1183,7 @@ CORBA::Boolean ccReg_EPP_i::SaveOutXML(
  *
  * PARAMETERS:  clTRID - client transaction number
  *              clientID - client identification
+ *              requestId - fred-logd request ID
  *              errCode - save error report from client into table action
  *
  * RETURNED:    svTRID and errCode msg
@@ -1411,7 +1191,7 @@ CORBA::Boolean ccReg_EPP_i::SaveOutXML(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::GetTransaction(
-  CORBA::Short errCode, CORBA::Long clientID, const char* clTRID,
+  CORBA::Short errCode, CORBA::ULongLong clientID, ccReg::TID requestId, const char* clTRID,
   const ccReg::XmlErrors& errorCodes, ccReg::ErrorStrings_out errStrings)
 {
   Logging::Context::clear();
@@ -1424,7 +1204,7 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
   ret = new ccReg::Response;
   int i, len;
 
-  LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ", (int ) clientID, clTRID );
+  LOG( NOTICE_LOG, "GetTransaction: clientID -> %llu clTRID [%s] ", clientID, clTRID );
   LOG( NOTICE_LOG, "GetTransaction:  errCode %d", (int ) errCode );
 
   len = errorCodes.length();
@@ -1463,7 +1243,7 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
 
   if (DBsql.OpenDatabase(database) ) {
     if (errCode > 0) {
-      if (DBsql.BeginAction(clientID, EPP_UnknowAction, clTRID, "")) {
+      if (DBsql.BeginAction(clientID, EPP_UnknowAction, clTRID, "", requestId)) {
           // error code
           ret->code = errCode;
           // write to the  action table
@@ -1495,8 +1275,7 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
  * PARAMETERS:  msgID - front message number
  *        OUT:  count -  messages numbers
  *        OUT:  newmsgID - number of new message
- *              clTRID - transaction client number
- *              clientID - client identification
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
@@ -1504,20 +1283,20 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
 
 ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
   const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID,
-  CORBA::Long clientID, const char* clTRID, const char* XML)
+  const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   LOG(
       NOTICE_LOG,
-      "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s",
-      (int) clientID, clTRID, msgID
+      "PollAcknowledgement: clientID -> %llu clTRID [%s] msgID -> %s",
+       params.loginID, static_cast<const char*>(params.clTRID), msgID
   );
   // start EPP action - this will handle all init stuff
-  EPPAction a(this, clientID, EPP_PollAcknowledgement, clTRID, XML);
+  EPPAction a(this, params.loginID, EPP_PollAcknowledgement,static_cast<const char*>(params.clTRID), params.XML, params.requestID);
   try {
     std::auto_ptr<Fred::Poll::Manager> pollMan(
         Fred::Poll::Manager::create(a.getDB())
@@ -1558,8 +1337,7 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
  *        OUT:  qDate - message date and time
  *        OUT:  type - message type
  *        OUT:  msg  - message content as structure
- *              clTRID - transaction client number
- *              clientID - client identification
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
@@ -1567,20 +1345,20 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
 
 ccReg::Response* ccReg_EPP_i::PollRequest(
   CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate,
-  ccReg::PollType& type, CORBA::Any_OUT_arg msg, CORBA::Long clientID,
-  const char* clTRID, const char* XML)
+  ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params
+  )
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   LOG(
       NOTICE_LOG,
-      "PollRequest: clientID -> %d clTRID [%s]", (int ) clientID, clTRID
+      "PollRequest: clientID -> %llu clTRID [%s]", params.loginID,static_cast<const char*>(params.clTRID)
   );
   // start EPP action - this will handle all init stuff
-  EPPAction a(this, clientID, EPP_PollResponse, clTRID, XML);
+  EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
   std::auto_ptr<Fred::Poll::Message> m;
   try {
     std::auto_ptr<Fred::Poll::Manager> pollMan(
@@ -1730,8 +1508,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
  * FUNCTION:    ClientCredit
  *
  * DESCRIPTION: information about credit amount of logged registrar
- * PARAMETERS:  clientID - id of connected client
- *              clTRID - transaction client number
+ * PARAMETERS:  params - common EPP parametres
  *        OUT:  credit - credit amount in haler
  *
  * RETURNED:    svTRID and errCode
@@ -1739,12 +1516,11 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
  ***********************************************************************/
 
 ccReg::Response *
-ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID,
-        const char* clTRID, const char* XML)
+ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, const ccReg::EppParams &params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     unsigned int z, seq, zoneID;
@@ -1754,9 +1530,9 @@ ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID,
     credit->length(0);
     seq=0;
 
-    LOG( NOTICE_LOG, "ClientCredit: clientID -> %d clTRID [%s]", (int ) clientID, clTRID );
+    LOG( NOTICE_LOG, "ClientCredit: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID) );
 
-    EPPAction action(this, clientID, EPP_ClientCredit, clTRID, XML);
+    EPPAction action(this, params.loginID, EPP_ClientCredit, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     try {
         std::vector<int> zones = GetAllZonesIDs(action.getDB());
@@ -1796,43 +1572,25 @@ ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID,
  *
  * DESCRIPTION: client logout for record into table login
  *              about logout date
- * PARAMETERS:  clientID - connected client id
- *              clTRID - transaction client number
+ * PARAMETERS:  params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
  ***********************************************************************/
 
 ccReg::Response *
-ccReg_EPP_i::ClientLogout(CORBA::Long clientID, const char *clTRID, const char* XML)
+ccReg_EPP_i::ClientLogout(const ccReg::EppParams &params)
 {
     Logging::Context::clear();
   Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    int lang=0; // default
-    short int code = 0;
+    LOG( NOTICE_LOG, "ClientLogout: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID) );
+    EPPAction action(this, params.loginID, EPP_ClientLogout, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
-    LOG( NOTICE_LOG, "ClientLogout: clientID -> %d clTRID [%s]", (int ) clientID, clTRID );
-    EPPAction action(this, clientID, EPP_ClientLogout, clTRID, XML);
-
-    action.getDB()->UPDATE("Login");
-    action.getDB()->SET("logoutdate", "now");
-    action.getDB()->SET("logouttrid", clTRID);
-    action.getDB()->WHEREID(clientID);
-
-    if (action.getDB()->EXEC() ) {
-        lang = action.getLang(); // remember lang of the client before logout
-
-        LogoutSession(clientID); // logout session
-        code = COMMAND_LOGOUT; // succesfully logout
-        action.setCode(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("ClientLogout");
-    }
+    epp_sessions.logout_session(params.loginID);
+    action.setCode(COMMAND_LOGOUT);
 
     return action.getRet()._retn();
 }
@@ -1847,8 +1605,10 @@ ccReg_EPP_i::ClientLogout(CORBA::Long clientID, const char *clTRID, const char* 
  * PARAMETERS:  ClID - registrar identifier
  *              passwd - current password
  *              newpasswd - new password for change
- *        OUT:  clientID - connected client id
  *              clTRID - transaction client number
+ *              XML - xml representation of the command
+ *        OUT:  clientID - connected client id
+ *              requestId - fred-logd request ID associated with login
  *              certID - certificate fingerprint
  *              language - communication language of client en or cs empty value = en
  *
@@ -1858,7 +1618,9 @@ ccReg_EPP_i::ClientLogout(CORBA::Long clientID, const char *clTRID, const char* 
 
 ccReg::Response * ccReg_EPP_i::ClientLogin(
   const char *ClID, const char *passwd, const char *newpass,
-  const char *clTRID, const char* XML, CORBA::Long & clientID,
+  const char *clTRID, const char* XML,
+  CORBA::ULongLong & out_clientID,
+  ccReg::TID requestId,
   const char *certID, ccReg::Languages lang)
 {
   Logging::Context::clear();
@@ -1866,16 +1628,16 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
   ConnectionReleaser releaser;
 
   DBAutoPtr db_connect(new DB());
-  int regID=0, id=0;
+  int regID=0;
   int language=0;
   ccReg::Response_var ret;
   ret = new ccReg::Response;
 
   // default
   ret->code = 0;
-  clientID = 0;
+  out_clientID = 0;
 
-  LOG( NOTICE_LOG, "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] ", ClID, clTRID, passwd, newpass );
+  LOG( NOTICE_LOG, "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] ", ClID, static_cast<const char*>(clTRID), passwd, newpass );
   LOG( NOTICE_LOG, "ClientLogin:  certID  [%s] language  [%d] ", certID, lang );
 
   if (db_connect->OpenDatabase(database)) {
@@ -1899,34 +1661,13 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             LOG( NOTICE_LOG, "password [%s]  or certID [%s]  not accept", passwd , certID );
             ret->code = COMMAND_AUTH_ERROR;
         } else if (DBsql->BeginTransaction() ) {
-            id = DBsql->GetSequenceID("login"); // get sequence ID from login table
-
-            // write to table
-            DBsql->INSERT("Login");
-            DBsql->INTO("id");
-            DBsql->INTO("registrarid");
-            DBsql->INTO("logintrid");
-            DBsql->VALUE(id);
-            DBsql->VALUE(regID);
-            DBsql->VALUE(clTRID);
-
-            if (DBsql->EXEC() ) // if sucess write
-            {
-                clientID = id;
-
-                LOG( NOTICE_LOG, "GET clientID  -> %d", (int ) clientID );
 
                 // change language
                 if (lang == ccReg::CS) {
                     LOG( NOTICE_LOG, "SET LANG to CS" );
 
-                    DBsql->UPDATE("Login");
-                    DBsql->SSET("lang", "cs");
-                    DBsql->WHEREID(clientID);
-                    language=1;
-                    if (DBsql->EXEC() == false)
-                    ret->code = COMMAND_FAILED; // if failed
-                }
+          language=1;
+        }
 
                 // change password if set new
                 if (strlen(newpass) ) {
@@ -1941,18 +1682,26 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
                 }
 
                 if (ret->code == 0) {
-                    if (LoginSession(clientID, regID, language) )
-                    ret->code = COMMAND_OK;
-                    else {
-                        clientID=0; //  not login
+                    try {
+                        out_clientID = epp_sessions.login_session(regID, language);
+
+                        LOGGER(PACKAGE).notice(boost::format("ClientLogin: username %1%, regID %2%, clTRID %3%, lang %4% got clientID %5%")
+                                                    % ClID % regID % static_cast<const char*>(clTRID) % language % out_clientID);
+
+                        ret->code = COMMAND_OK;
+                    } catch (const NumberSessionLimit &ex) {
+
+                        LOGGER(PACKAGE).error(boost::format("ClientLogin: username %1%, regID %2% clTRID %3%, lang %4% login FAILED, reason %5% ")
+                                                    % ClID % regID % static_cast<const char*>(clTRID) % language % ex.what());
+                        out_clientID=0; //  not login
                         ret->code =COMMAND_MAX_SESSION_LIMIT; // maximal limit of connection sessions
                     }
                 }
-            }
 
             // end of transaction
             DBsql->QuitTransaction(ret->code);
         }
+
     } catch(std::exception &ex) {
         LOGGER(PACKAGE).error(boost::format("Exception in ccReg_EPP_i::ClientLogin: %1%") % ex.what());
         ret->code = COMMAND_FAILED;
@@ -1961,11 +1710,11 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
     }
 
     // write  to table action aand return  svTRID
-    if (DBsql->BeginAction(clientID, EPP_ClientLogin, clTRID, XML) ) {
+    if (DBsql->BeginAction(out_clientID, EPP_ClientLogin, static_cast<const char*>(clTRID), XML, requestId) ) {
         ret->svTRID = CORBA::string_dup(DBsql->EndAction(ret->code) );
 
         ret->msg =CORBA::string_dup(GetErrorMessage(ret->code,
-                        GetRegistrarLang(clientID) ) );
+                        GetRegistrarLang(out_clientID) ) );
     } else {
         ServerInternalError("ClientLogin");
     }
@@ -1992,10 +1741,9 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
  *              table - name of table CONTACT NSSET DOMAIN or KEYSET
  *              fname - name of array in database HANDLE or FQDN
  *              chck - string sequence of object type Check
+ *              param - common EPP parametres
  *        OUT:  a - (1) object doesn't exist and it is free
  *                  (0) object is already established
- *              clientID - connected client id
- *              clTRID - client transaction number
  *
  * RETURNED:    svTRID and errCode
  *
@@ -2003,8 +1751,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
 
 ccReg::Response *
 ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
-        const ccReg::Check& chck, ccReg::CheckResp_out a, CORBA::Long clientID,
-        const char* clTRID, const char* XML)
+        const ccReg::Check& chck, ccReg::CheckResp_out a, const ccReg::EppParams &params)
 {
     unsigned long i, len;
 
@@ -2020,16 +1767,11 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
     len = chck.length();
     a->length(len);
 
-    ParsedAction paction;
-    for (unsigned i=0; i<len; i++) {
-        paction.add((unsigned)1,(const char *)chck[i]);
-    }
-
-    EPPAction action(this, clientID, act, clTRID, XML, &paction);
+    EPPAction action(this, params.loginID, act, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
 
 
-    LOG( NOTICE_LOG , "OBJECT %d  Check: clientID -> %d clTRID [%s] " , act , (int ) clientID , clTRID );
+    LOG( NOTICE_LOG , "OBJECT %d  Check: clientID -> %llu clTRID [%s] " , act , params.loginID , static_cast<const char*>(params.clTRID) );
 
     for (i = 0; i < len; i ++) {
         switch (act) {
@@ -2254,57 +1996,52 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
 }
 
 ccReg::Response* ccReg_EPP_i::ContactCheck(
-  const ccReg::Check& handle, ccReg::CheckResp_out a, CORBA::Long clientID,
-  const char* clTRID, const char* XML)
+  const ccReg::Check& handle, ccReg::CheckResp_out a, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  return ObjectCheck( EPP_ContactCheck , "CONTACT" , "handle" , handle , a , clientID , clTRID , XML);
+  return ObjectCheck( EPP_ContactCheck , "CONTACT" , "handle" , handle , a , params);
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetCheck(
-  const ccReg::Check& handle, ccReg::CheckResp_out a, CORBA::Long clientID,
-  const char* clTRID, const char* XML)
+  const ccReg::Check& handle, ccReg::CheckResp_out a, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  return ObjectCheck( EPP_NSsetCheck , "NSSET" , "handle" , handle , a , clientID , clTRID , XML);
+  return ObjectCheck( EPP_NSsetCheck , "NSSET" , "handle" , handle , a , params);
 }
 
 ccReg::Response* ccReg_EPP_i::DomainCheck(
-  const ccReg::Check& fqdn, ccReg::CheckResp_out a, CORBA::Long clientID,
-  const char* clTRID, const char* XML)
+  const ccReg::Check& fqdn, ccReg::CheckResp_out a, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  return ObjectCheck( EPP_DomainCheck , "DOMAIN" , "fqdn" , fqdn , a , clientID , clTRID , XML);
+  return ObjectCheck( EPP_DomainCheck , "DOMAIN" , "fqdn" , fqdn , a , params);
 }
 
 ccReg::Response *
 ccReg_EPP_i::KeySetCheck(
         const ccReg::Check &handle,
         ccReg::CheckResp_out a,
-        CORBA::Long clientID,
-        const char *clTRID,
-        const char *XML)
+        const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
     return ObjectCheck(
             EPP_KeySetCheck, "KEYSET", "handle", handle,
-            a, clientID, clTRID, XML);
+            a, params);
 }
 
 /***********************************************************************
@@ -2315,31 +2052,27 @@ ccReg_EPP_i::KeySetCheck(
  *              empty value if contact doesn't exist
  * PARAMETERS:  handle - contact identifier
  *        OUT:  c - contact structure detailed description
- *              clientID - connected client id
- *              clTRID - client transaction number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::ContactInfo(
-  const char* handle, ccReg::Contact_out c, CORBA::Long clientID,
-  const char* clTRID, const char* XML)
+  const char* handle, ccReg::Contact_out c, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   LOG(
       NOTICE_LOG ,
-      "ContactInfo: clientID -> %d clTRID [%s] handle [%s] ",
-      (int) clientID, clTRID, handle
+      "ContactInfo: clientID -> %llu clTRID [%s] handle [%s] ",
+       params.loginID, static_cast<const char*>(params.clTRID), handle
   );
-  ParsedAction paction;
-  paction.add(1,(const char*)handle);
   // start EPP action - this will handle all init stuff
-  EPPAction a(this, clientID, EPP_ContactInfo, clTRID, XML, &paction);
+  EPPAction a(this, params.loginID, EPP_ContactInfo, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
   // initialize managers for contact manipulation
   std::auto_ptr<Fred::Contact::Manager>
       cman(Fred::Contact::Manager::create(a.getDB(),
@@ -2470,8 +2203,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
  *              to other tables and cannot be deleted
  *              contact can be DELETED only registrar, who created contact
  * PARAMETERS:  handle - contact identifier
- *              clientID - connected client id
- *              clTRID - client transaction number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
@@ -2482,19 +2214,16 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
     int id;
     short int code = 0;
 
-    ParsedAction paction;
-    paction.add(1,(const char *)handle);
+    EPPAction action(this, params.loginID, EPP_ContactDelete, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
-    EPPAction action(this, params.sessionID, EPP_ContactDelete, params.clTRID, params.XML, &paction);
-
-    LOGGER(PACKAGE).notice(boost::format("ContactDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle );
+    LOGGER(PACKAGE).notice(boost::format("ContactDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
 
     id = getIdOfContact(action.getDB(), handle, restricted_handles_
             , lock_epp_commands_, true);
@@ -2571,8 +2300,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
  *		who created contact or those, who has by contact some domain
  * PARAMETERS:  handle - contact identifier
  *              c      - ContactChange  changed information about contact
- *              clientID - connected client id
- *              clTRID - client transaction number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
@@ -2584,7 +2312,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -2593,12 +2321,9 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     char streetStr[10];
     short int code = 0;
 
-    ParsedAction paction;
-    paction.add(1,(const char*)handle);
+    EPPAction action(this, params.loginID, EPP_ContactUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
-    EPPAction action(this, params.sessionID, EPP_ContactUpdate, params.clTRID, params.XML, &paction);
-
-    LOGGER(PACKAGE).notice(boost::format("ContactUpdate: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle );
+    LOGGER(PACKAGE).notice(boost::format("ContactUpdate: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
     LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag % c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail );
             
 
@@ -2763,8 +2488,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
  * PARAMETERS:  handle - identifier of contact
  *              c      - ContactChange information about contact
  *        OUT:  crDate - object creation date
- *              clientID - id of connected client
- *              clTRID - client transaction number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
@@ -2776,7 +2500,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -2786,15 +2510,12 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
     char streetStr[10];
     short int code = 0;
 
-    ParsedAction paction;
-    paction.add(1,(const char*)handle);
-
     crDate = CORBA::string_dup("");
 
 
-    EPPAction action(this, params.sessionID, EPP_ContactCreate, params.clTRID, params.XML, &paction);
+    EPPAction action(this, params.loginID, EPP_ContactCreate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
-    LOGGER(PACKAGE).notice(boost::format("ContactCreate: clientID -> %1% clTRID [%2%] handle [%3%]") % (int ) params.sessionID % (const char*)params.clTRID % handle );
+    LOGGER(PACKAGE).notice(boost::format("ContactCreate: clientID -> %1% clTRID [%2%] handle [%3%]") % (int ) params.loginID % (const char*)params.clTRID % handle );
 
     LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag %
             c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail);
@@ -2979,8 +2700,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
  *              and saving change into history
  * PARAMETERS:  handle - contact identifier
  *              authInfo - password  authentication
- *              clientID - id of connected client
- *              clTRID - client transaction number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
@@ -2998,12 +2718,9 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
     int id = 0;
     short int code = 0;
 
-    ParsedAction paction;
-    paction.add(1,(const char*)name);
+    EPPAction action(this, params.loginID, (int)act, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
-    EPPAction action(this, params.sessionID, (int)act, params.clTRID, params.XML, &paction);
-
-    LOGGER(PACKAGE).notice(boost::format("ObjectContact: act %1%  clientID -> %2% clTRID [%3%] object [%4%] authInfo [%5%] ") % act % (int ) params.sessionID % (const char*)params.clTRID % name % authInfo );
+    LOGGER(PACKAGE).notice(boost::format("ObjectContact: act %1%  clientID -> %2% clTRID [%3%] object [%4%] authInfo [%5%] ") % act % (int ) params.loginID % (const char*)params.clTRID % name % authInfo );
 
     int zone = 0; // for domain zone check
     switch (act) {
@@ -3207,7 +2924,7 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   return ObjectTransfer( EPP_ContactTransfer , "CONTACT" , "handle" , handle, authInfo, params);
@@ -3218,7 +2935,7 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   return ObjectTransfer( EPP_NSsetTransfer , "NSSET" , "handle" , handle, authInfo, params);
@@ -3229,7 +2946,7 @@ ccReg::Response* ccReg_EPP_i::DomainTransfer(
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   return ObjectTransfer( EPP_DomainTransfer , "DOMAIN" , "fqdn" , fqdn, authInfo, params);
@@ -3243,7 +2960,7 @@ ccReg_EPP_i::KeySetTransfer(
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
     return ObjectTransfer(EPP_KeySetTransfer, "KEYSET", "handle", handle,
@@ -3260,31 +2977,28 @@ ccReg_EPP_i::KeySetTransfer(
  *
  * PARAMETERS:  handle - identifier of contact
  *        OUT:  n - structure of NSSet detailed description
- *              clientID - id of connected client
- *              clTRID - client transaction number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::NSSetInfo(
-  const char* handle, ccReg::NSSet_out n, CORBA::Long clientID,
-  const char* clTRID, const char* XML)
+  const char* handle, ccReg::NSSet_out n,
+  const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   LOG(
       NOTICE_LOG,
-      "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] ",
-      (int) clientID, clTRID, handle
+      "NSSetInfo: clientID -> %llu clTRID [%s] handle [%s] ",
+       params.loginID, static_cast<const char*>(params.clTRID), handle
   );
-  ParsedAction paction;
-  paction.add(1,(const char*)handle);
   // start EPP action - this will handle all init stuff
-  EPPAction a(this, clientID, EPP_NSsetInfo, clTRID, XML, &paction);
+  EPPAction a(this, params.loginID, EPP_NSsetInfo, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
   // initialize managers for nsset manipulation
   std::auto_ptr<Fred::Zone::Manager>
       zman(Fred::Zone::Manager::create() );
@@ -3367,8 +3081,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
  *              or those who administers it
  *              nsset cannot be deleted if there is link into domain table
  * PARAMETERS:  handle - nsset identifier
- *              clientID - id of connected client
- *              clTRID - client transaction number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
@@ -3379,19 +3092,16 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
     int id;
     short int code = 0;
 
-    ParsedAction paction;
-    paction.add(1,(const char*)handle);
+    EPPAction action(this, params.loginID, EPP_NSsetDelete, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
-    EPPAction action(this, params.sessionID, EPP_NSsetDelete, params.clTRID, params.XML, &paction);
-
-    LOGGER(PACKAGE).notice(boost::format("NSSetDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle );
+    LOGGER(PACKAGE).notice(boost::format("NSSetDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
 
     // lock row
     id = getIdOfNSSet(action.getDB(), handle, restricted_handles_
@@ -3467,8 +3177,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
  *              dns - sequence of DNS records
  *              level - tech check  level
  *        OUT:  crDate - object creation date
- *              clientID - id of connected client
- *              clTRID - transaction client number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
@@ -3481,7 +3190,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -3492,14 +3201,11 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
     int *tch= NULL;
     short int code = 0;
 
-    LOGGER(PACKAGE).notice(boost::format("NSSetCreate: clientID -> %1% clTRID [%2%] handle [%3%]  authInfoPw [%4%]") % (int ) params.sessionID % (const char*)params.clTRID % handle % authInfoPw );
+    LOGGER(PACKAGE).notice(boost::format("NSSetCreate: clientID -> %1% clTRID [%2%] handle [%3%]  authInfoPw [%4%]") % (int ) params.loginID % (const char*)params.clTRID % handle % authInfoPw );
     LOGGER(PACKAGE).notice(boost::format("NSSetCreate: tech check level %1% tech num %2%") % (int) level % (int) tech.length() );
 
-    ParsedAction paction;
-    paction.add(1,(const char*)handle);
-
     crDate = CORBA::string_dup("");
-    EPPAction action(this, params.sessionID, EPP_NSsetCreate, params.clTRID, params.XML, &paction);
+    EPPAction action(this, params.loginID, EPP_NSsetCreate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     std::auto_ptr<Fred::Zone::Manager> zman(
             Fred::Zone::Manager::create());
@@ -3818,8 +3524,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
  *              tech_add - sequence of added technical contacts
  *              tech_rem - sequence of technical contact for deleting
  *              level - tech check level
- *              clientID - client connected id
- *              clTRID - client transaction number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
@@ -3833,7 +3538,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -3857,13 +3562,10 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
             tch_rem[i] = 0;
     }
 
-    ParsedAction paction;
-    paction.add(1,(const char*)handle);
-
-    EPPAction action(this, params.sessionID, EPP_NSsetUpdate, params.clTRID, params.XML, &paction);
+    EPPAction action(this, params.loginID, EPP_NSsetUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
 
-    LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: clientID -> %1% clTRID [%2%] handle [%3%] authInfo_chg  [%4%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle % authInfo_chg);
+    LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: clientID -> %1% clTRID [%2%] handle [%3%] authInfo_chg  [%4%] ") % (int ) params.loginID % (const char*)params.clTRID % handle % authInfo_chg);
     LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: tech check level %1%") % (int) level );
 
     std::auto_ptr<Fred::Zone::Manager> zman(
@@ -4280,30 +3982,26 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
  *              empty value if domain doesn't exists
  * PARAMETERS:  fqdn - domain identifier its name
  *        OUT:  d - domain structure detailed description
- *              clientID - client id
- *              clTRID - transaction client number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::DomainInfo(
-  const char* fqdn, ccReg::Domain_out d, CORBA::Long clientID,
-  const char* clTRID, const char* XML)
+  const char* fqdn, ccReg::Domain_out d, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   LOG(
-      NOTICE_LOG, "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] ",
-      (int) clientID, clTRID, fqdn
+      NOTICE_LOG, "DomainInfo: clientID -> %llu clTRID [%s] fqdn  [%s] ",
+       params.loginID, static_cast<const char*>(params.clTRID), fqdn
   );
-  ParsedAction paction;
-  paction.add(1,(const char*)fqdn);
   // start EPP action - this will handle all init stuff
-  EPPAction a(this, clientID, EPP_DomainInfo, clTRID, XML, &paction);
+  EPPAction a(this, params.loginID, EPP_DomainInfo, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
   // initialize managers for domain manipulation
   std::auto_ptr<Fred::Zone::Manager>
       zman(Fred::Zone::Manager::create() );
@@ -4402,8 +4100,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
  * DESCRIPTION: domain delete and save into history
  *
  * PARAMETERS:  fqdn - domain identifier its name
- *              clientID - client id
- *              clTRID - transaction client number
+ *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
  *
@@ -4414,19 +4111,16 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
     int id, zone;
     short int code = 0;
 
-    ParsedAction paction;
-    paction.add(1,(const char*)fqdn);
+    EPPAction action(this, params.loginID, EPP_DomainDelete, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
-    EPPAction action(this, params.sessionID, EPP_DomainDelete, params.clTRID, params.XML, &paction);
-
-    LOGGER(PACKAGE).notice(boost::format("DomainDelete: clientID -> %1% clTRID [%2%] fqdn  [%3%] ") % (int ) params.sessionID % params.clTRID % fqdn );
+    LOGGER(PACKAGE).notice(boost::format("DomainDelete: clientID -> %1% clTRID [%2%] fqdn  [%3%] ") % (int ) params.loginID % static_cast<const char*>(params.clTRID) % fqdn );
 
     if ( (id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
             , true, &zone) ) <= 0) {
@@ -4492,8 +4186,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
  *              admin_add - sequence of added administration contacts
  *              admin_rem - sequence of deleted administration contacts
  *              tmpcontact_rem - sequence of deleted temporary contacts
- *              clientID - client id
- *              clTRID - transaction client number
+ *              params - common EPP parametres
  *              ext - ExtensionList
  *
  * RETURNED:    svTRID and errCode
@@ -4508,7 +4201,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -4522,13 +4215,10 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
     seq=0;
 
-    ParsedAction paction;
-    paction.add(1,(const char*)fqdn);
-
-    EPPAction action(this, params.sessionID, EPP_DomainUpdate, params.clTRID, params.XML, &paction);
+    EPPAction action(this, params.loginID, EPP_DomainUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     LOGGER(PACKAGE).notice(boost::format ("DomainUpdate: clientID -> %1% clTRID [%2%] fqdn  [%3%] registrant_chg  [%4%] authInfo_chg [%5%]  nsset_chg [%6%] keyset_chg[%7%] ext.length %8%") %
-            (int ) params.sessionID % (const char*)params.clTRID % fqdn % registrant_chg % authInfo_chg % nsset_chg % keyset_chg % (long)ext.length() );
+            (int ) params.loginID % (const char*)params.clTRID % fqdn % registrant_chg % authInfo_chg % nsset_chg % keyset_chg % (long)ext.length() );
 
     ac_add.resize(admin_add.length());
     ac_rem.resize(admin_rem.length());
@@ -4964,8 +4654,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
  *              admin - sequence of administration contacts
  *        OUT:  crDate - date of object creation
  *        OUT:  exDate - date of object expiration
- *              clientID - client id
- *              clTRID - transaction client number
+ *              params - common EPP parametres
  *              ext - ExtensionList
  *
  * RETURNED:    svTRID and errCode
@@ -4988,7 +4677,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -5005,19 +4694,16 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     Fred::Domain::CheckAvailType dType;
     short int code = 0;
 
-    ParsedAction paction;
-    paction.add(1,(const char*)fqdn);
-
     crDate = CORBA::string_dup("");
     exDate = CORBA::string_dup("");
 
     Database::Connection conn = wrapped_acquire(this);
-    EPPAction action(this, params.sessionID, EPP_DomainCreate, params.clTRID, params.XML, &paction, conn);
+    EPPAction action(this, params.loginID, EPP_DomainCreate, static_cast<const char*>(params.clTRID), params.XML, conn, params.requestID);
 
     ad.resize(admin.length());
 
     LOGGER(PACKAGE).notice(boost::format("DomainCreate: clientID -> %1% clTRID [%2%] fqdn  [%3%] ") %
-            (int ) params.sessionID % (const char*)params.clTRID % fqdn );
+            (int ) params.loginID % (const char*)params.clTRID % fqdn );
     LOGGER(PACKAGE).notice(boost::format("DomainCreate:  Registrant  [%1%]  nsset [%2%]  keyset [%3%] AuthInfoPw [%4%]") %
             Registrant % nsset % keyset % AuthInfoPw);
 
@@ -5386,8 +5072,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
  *              curExpDate - date of domain expiration !!! time in a GMT format 00:00:00
  *              period - period of renewal in mounths
  *        OUT:  exDate - date and time of new domain expiration
- *              clientID - connected client id
- *              clTRID - transaction client number
+ *              params - common EPP parametres
  *              ext - ExtensionList
  *
  * RETURNED:    svTRID and errCode
@@ -5401,7 +5086,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -5412,17 +5097,14 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     char periodStr[10];
     short int code = 0;
 
-    ParsedAction paction;
-    paction.add(1,(const char*)fqdn);
-
 
     Database::Connection conn = wrapped_acquire(this);
-    EPPAction action(this, params.sessionID, EPP_DomainRenew, params.clTRID, params.XML, &paction, conn);
+    EPPAction action(this, params.loginID, EPP_DomainRenew, static_cast<const char*>(params.clTRID), params.XML, conn, params.requestID);
 
     // default
     exDate = CORBA::string_dup("");
 
-    LOGGER(PACKAGE).notice(boost::format("DomainRenew: clientID -> %1% clTRID [%2%] fqdn  [%3%] curExpDate [%4%]") % (int ) params.sessionID % (const char*)params.clTRID % fqdn % (const char *) curExpDate );
+    LOGGER(PACKAGE).notice(boost::format("DomainRenew: clientID -> %1% clTRID [%2%] fqdn  [%3%] curExpDate [%4%]") % (int ) params.loginID % (const char*)params.clTRID % fqdn % (const char *) curExpDate );
 
     //  period count
     if (period.unit == ccReg::unit_year) {
@@ -5614,21 +5296,17 @@ ccReg::Response *
 ccReg_EPP_i::KeySetInfo(
         const char *handle,
         ccReg::KeySet_out k,
-        CORBA::Long clientID,
-        const char *clTRID,
-        const char *XML)
+        const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-    LOG(NOTICE_LOG, "KeySetInfo: clientID -> %d clTRID [%s] handle [%s] ",
-            (int)clientID, clTRID, handle);
-    ParsedAction paction;
-    paction.add(1, (const char *)handle);
+    LOG(NOTICE_LOG, "KeySetInfo: clientID -> %llu clTRID [%s] handle [%s] ",
+            params.loginID, static_cast<const char*>(params.clTRID), handle);
 
-    EPPAction a(this, clientID, EPP_KeySetInfo, clTRID, XML, &paction);
+    EPPAction a(this, params.loginID, EPP_KeySetInfo, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     std::auto_ptr<Fred::KeySet::Manager> kman(
             Fred::KeySet::Manager::create(
@@ -5749,20 +5427,17 @@ ccReg_EPP_i::KeySetDelete(
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
     int                 id;
     std::auto_ptr<EPPNotifier> ntf;
     short int code = 0;
 
-    ParsedAction paction;
-    paction.add(1, (const char *)handle);
-
-    EPPAction action(this, params.sessionID, EPP_KeySetDelete, params.clTRID, params.XML, &paction);
+    EPPAction action(this, params.loginID, EPP_KeySetDelete, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     LOGGER(PACKAGE).notice( boost::format("KeySetDelete: clientID -> %1% clTRID [%2%] handle [%3%]") %
-            (int)params.sessionID % (const char*)params.clTRID % handle);
+            (int)params.loginID % (const char*)params.clTRID % handle);
 
     id = getIdOfKeySet(action.getDB(), handle, restricted_handles_
             , lock_epp_commands_, true);
@@ -5872,7 +5547,7 @@ ccReg_EPP_i::KeySetCreate(
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
     std::auto_ptr<EPPNotifier>  ntf;
     int                         id, techid, dsrecID;
@@ -5881,14 +5556,11 @@ ccReg_EPP_i::KeySetCreate(
     short int                   code = 0;
 
     LOGGER(PACKAGE).notice( boost::format("KeySetCreate: clientID -> %1% clTRID [%2%] handle [%3%] authInfoPw [%4%]") %
-            (int)params.sessionID % (const char*)params.clTRID % handle % authInfoPw);
-
-    ParsedAction paction;
-    paction.add(1, (const char *)handle);
+            (int)params.loginID % (const char*)params.clTRID % handle % authInfoPw);
 
     crDate = CORBA::string_dup("");
 
-    EPPAction action(this, params.sessionID, EPP_KeySetCreate, params.clTRID, params.XML, &paction);
+    EPPAction action(this, params.loginID, EPP_KeySetCreate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
@@ -6299,15 +5971,12 @@ ccReg_EPP_i::KeySetUpdate(
         techRem[i] = 0;
     }
 
-    ParsedAction paction;
-    paction.add(1, (const char *)handle);
-
-    EPPAction action(this, params.sessionID, EPP_KeySetUpdate, params.clTRID, params.XML, &paction);
+    EPPAction action(this, params.loginID, EPP_KeySetUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     LOGGER(PACKAGE).notice ( boost::format("KeySetUpdate: clientId -> %1% clTRID[%2%] handle[%3%] "
             "authInfo_chg[%4%] tech_add[%5%] tech_rem[%6%] dsrec_add[%7%] "
             "dsrec_rem[%8%] dnskey_add[%9%] dnskey_rem[%10%]") %
-            (int)params.sessionID % (const char*)params.clTRID % handle % authInfo_chg % tech_add.length() %
+            (int)params.loginID % (const char*)params.clTRID % handle % authInfo_chg % tech_add.length() %
             tech_rem.length() % dsrec_add.length() % dsrec_rem.length() %
             dnsk_add.length() % dnsk_rem.length());
 
@@ -7090,8 +6759,7 @@ isValidBase64(const char *str, int *ret)
 // primitive list of objects
 ccReg::Response *
 ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
-        ccReg::Lists_out list, CORBA::Long clientID, const char* clTRID,
-        const char* XML)
+        ccReg::Lists_out list, const ccReg::EppParams &params)
 {
     int rows =0, i;
     int type;
@@ -7100,9 +6768,9 @@ ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
 
     list = new ccReg::Lists;
 
-    LOG( NOTICE_LOG , "LIST %d  clientID -> %d clTRID [%s] " , act , (int ) clientID , clTRID );
+    LOG( NOTICE_LOG , "LIST %d  clientID -> %llu clTRID [%s] " , act , params.loginID, static_cast<const char*>(params.clTRID) );
 
-    EPPAction action(this, clientID, act, clTRID, XML);
+    EPPAction action(this, params.loginID, act, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     // by the object
     switch (act) {
@@ -7150,65 +6818,59 @@ ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
 }
 
 ccReg::Response* ccReg_EPP_i::ContactList(
-  ccReg::Lists_out contacts, CORBA::Long clientID, const char* clTRID,
-  const char* XML)
+  ccReg::Lists_out contacts, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  return FullList( EPP_ListContact , "CONTACT" , "HANDLE" , contacts , clientID, clTRID, XML);
+  return FullList( EPP_ListContact , "CONTACT" , "HANDLE" , contacts , params);
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetList(
-  ccReg::Lists_out nssets, CORBA::Long clientID, const char* clTRID,
-  const char* XML)
+  ccReg::Lists_out nssets, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  return FullList( EPP_ListNSset , "NSSET" , "HANDLE" , nssets , clientID, clTRID, XML);
+  return FullList( EPP_ListNSset , "NSSET" , "HANDLE" , nssets , params);
 }
 
 ccReg::Response* ccReg_EPP_i::DomainList(
-  ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID,
-  const char* XML)
+  ccReg::Lists_out domains, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  return FullList( EPP_ListDomain , "DOMAIN" , "fqdn" , domains , clientID, clTRID, XML);
+  return FullList( EPP_ListDomain , "DOMAIN" , "fqdn" , domains , params);
 }
 
 ccReg::Response *
 ccReg_EPP_i::KeySetList(
-        ccReg::Lists_out keysets,
-        CORBA::Long clientID,
-        const char *clTRID,
-        const char *XML)
+        ccReg::Lists_out keysets, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
     return FullList(
-            EPP_ListKeySet, "KEYSET", "HANDLE", keysets, clientID, clTRID, XML);
+            EPP_ListKeySet, "KEYSET", "HANDLE", keysets, params);
 }
 
 // function for run nsset tests
 ccReg::Response* ccReg_EPP_i::nssetTest(
   const char* handle, CORBA::Short level, const ccReg::Lists& fqdns,
-  CORBA::Long clientID, const char* clTRID, const char* XML)
+  const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
 
@@ -7217,16 +6879,16 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
   int nssetid;
   bool internalError = false;
 
-  LOG( NOTICE_LOG , "nssetTest nsset %s  clientID -> %d clTRID [%s] \n" , handle, (int ) clientID , clTRID );
+  LOG( NOTICE_LOG , "nssetTest nsset %s  clientID -> %llu clTRID [%s] \n" , handle, params.loginID, static_cast<const char*>(params.clTRID) );
 
   DBAutoPtr _db( new DB);
   bool db_connected_ = _db->OpenDatabase(database);
   DBSharedPtr DBsql = DBDisconnectPtr(_db.release());
 
-  if ( (regID = GetRegistrarID(clientID) ))
+  if ( (regID = GetRegistrarID(params.loginID) ))
     if (db_connected_) {
 
-      if ( (DBsql->BeginAction(clientID, EPP_NSsetTest, clTRID, XML) )) {
+      if ( (DBsql->BeginAction(params.loginID, EPP_NSsetTest, static_cast<const char*>(params.clTRID), params.XML, params.requestID) )) {
 
         if ( (nssetid = getIdOfNSSet(DBsql, handle
                 , restricted_handles_, lock_epp_commands_) > 0 ))// TODO   ret->code =  SetReasonNSSetHandle( errors  , nssetid , GetRegistrarLang( clientID ) );
@@ -7241,18 +6903,18 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
           for (unsigned i=0; i<fqdns.length(); i++)
             ifqdns.push_back((const char *)fqdns[i]);
           try {
-            tc.checkFromRegistrar(regHandle,handle,level,ifqdns,clTRID);
+            tc.checkFromRegistrar(regHandle,handle,level,ifqdns,params.clTRID);
           }
           catch (TechCheckManager::INTERNAL_ERROR) {
-            LOG(ERROR_LOG,"Tech check internal error nsset [%s] clientID -> %d clTRID [%s] " , handle , (int ) clientID , clTRID );
+            LOG(ERROR_LOG,"Tech check internal error nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
           catch (TechCheckManager::REGISTRAR_NOT_FOUND) {
-            LOG(ERROR_LOG,"Tech check reg not found nsset [%s] clientID -> %d clTRID [%s] " , handle , (int ) clientID , clTRID );
+            LOG(ERROR_LOG,"Tech check reg not found nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
           catch (TechCheckManager::NSSET_NOT_FOUND) {
-            LOG(ERROR_LOG,"Tech check nsset not found nset [%s] clientID -> %d clTRID [%s] " , handle , (int ) clientID , clTRID );
+            LOG(ERROR_LOG,"Tech check nsset not found nset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
         } else {
@@ -7264,7 +6926,7 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
       }
 
       ret->msg =CORBA::string_dup(GetErrorMessage(ret->code,
-          GetRegistrarLang(clientID) ) );
+          GetRegistrarLang(params.loginID) ) );
 
       if (internalError)
         ServerInternalError("NSSetTest");
@@ -7284,16 +6946,13 @@ ccReg_EPP_i::ObjectSendAuthInfo(
     char FQDN[164];
     short int code = 0;
 
-    ParsedAction paction;
-    paction.add(1,(const char*)name);
-
-    EPPAction action(this, params.sessionID, act, params.clTRID, params.XML, &paction);
+    EPPAction action(this, params.loginID, act, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     // Database::Manager db(new Database::ConnectionFactory(database));
     // std::auto_ptr<Database::Connection> conn;
     // try { conn.reset(db.getConnection()); } catch (...) {}
 
-    LOG( NOTICE_LOG , "ObjectSendAuthInfo type %d  object [%s]  clientID -> %d clTRID [%s] " , act , name , (int ) params.sessionID , (const char*)params.clTRID );
+    LOG( NOTICE_LOG , "ObjectSendAuthInfo type %d  object [%s]  clientID -> %llu clTRID [%s] " , act , name , params.loginID , static_cast<const char*>(params.clTRID) );
 
     switch (act) {
         case EPP_ContactSendAuthInfo:
@@ -7368,15 +7027,14 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                 );
         try {
             LOG(
-                    NOTICE_LOG , "createRequest objectID %d actionID %d" ,
-                    id,action.getDB()->GetActionID()
+                    NOTICE_LOG , "createRequest objectID %d" ,
+                    id
                );
             std::auto_ptr<Fred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
                         Fred::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
 
-	    new_request->setEppActionId(action.getDB()->GetActionID());
             new_request->setRequestId(params.requestID);
-            new_request->setRegistrarId(GetRegistrarID(params.sessionID));
+            new_request->setRegistrarId(GetRegistrarID(params.loginID));
             new_request->addObject(Fred::PublicRequest::OID(id));
             if (!new_request->check()) {
                 LOG(WARNING_LOG, "authinfo request for %s is prohibited",name);
@@ -7408,7 +7066,7 @@ ccReg::Response* ccReg_EPP_i::domainSendAuthInfo(
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   return ObjectSendAuthInfo( EPP_DomainSendAuthInfo , "DOMAIN" , "fqdn" , fqdn , params);
@@ -7418,7 +7076,7 @@ ccReg::Response* ccReg_EPP_i::contactSendAuthInfo(
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   return ObjectSendAuthInfo( EPP_ContactSendAuthInfo , "CONTACT" , "handle" , handle , params);
@@ -7428,7 +7086,7 @@ ccReg::Response* ccReg_EPP_i::nssetSendAuthInfo(
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   return ObjectSendAuthInfo( EPP_NSSetSendAuthInfo , "NSSET" , "handle" , handle , params);
@@ -7441,7 +7099,7 @@ ccReg_EPP_i::keysetSendAuthInfo(
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
     return ObjectSendAuthInfo(
@@ -7451,19 +7109,19 @@ ccReg_EPP_i::keysetSendAuthInfo(
 
 ccReg::Response* ccReg_EPP_i::info(
   ccReg::InfoType type, const char* handle, CORBA::Long& count,
-  CORBA::Long clientID, const char* clTRID, const char* XML)
+  const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   LOG(
       NOTICE_LOG,
-      "Info: clientID -> %d clTRID [%s]", (int ) clientID, clTRID
+      "Info: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID)
   );
   // start EPP action - this will handle all init stuff
-  EPPAction a(this, clientID, EPP_Info, clTRID, XML);
+  EPPAction a(this, params.loginID, EPP_Info, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
   try {
     std::auto_ptr<Fred::Zone::Manager> zoneMan(
         Fred::Zone::Manager::create()
@@ -7522,20 +7180,19 @@ ccReg::Response* ccReg_EPP_i::info(
 }
 
 ccReg::Response* ccReg_EPP_i::getInfoResults(
-  ccReg::Lists_out handles, CORBA::Long clientID, const char* clTRID,
-  const char* XML)
+  ccReg::Lists_out handles, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
   LOG(
       NOTICE_LOG,
-      "getResults: clientID -> %d clTRID [%s]", (int ) clientID, clTRID
+      "getResults: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID)
   );
   // start EPP action - this will handle all init stuff
-  EPPAction a(this, clientID, EPP_GetInfoResults, clTRID, XML);
+  EPPAction a(this, params.loginID, EPP_GetInfoResults, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
   try {
     std::auto_ptr<Fred::Zone::Manager> zoneMan(
         Fred::Zone::Manager::create()

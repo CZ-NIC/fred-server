@@ -146,7 +146,5 @@ void add_invoice_number_prefix(AddInvoiceNumberPrefixArgs params);
 
 } // namespace Admin;
 
-
-
 #endif // _INVOICECLIENT_H_
 

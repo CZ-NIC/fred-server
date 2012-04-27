@@ -21,8 +21,7 @@ public:
     typedef std::vector<unsigned long long> RecipientList;
 
 
-    RequestNotification(const unsigned long long &_request_id,
-                        /* TEMP */ const std::string &_service_name);
+    RequestNotification(const unsigned long long &_request_id);
 
 
     void add_recipient(const unsigned long long &_contact_hid)
@@ -93,7 +92,7 @@ public:
 
     const std::string get_ticket_id() const
     {
-        return str(boost::format("%s-%010d") % service_name_ % action_id_);
+        return Util::make_svtrid(request_id_);
     }
 
 
@@ -126,8 +125,6 @@ private:
 
 
     unsigned long long request_id_;
-    unsigned long long action_id_;
-    std::string        service_name_;
     std::string        request_type_;
     std::string        registrar_info_;
     unsigned long long object_id_;

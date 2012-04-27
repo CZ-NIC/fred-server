@@ -46,6 +46,7 @@ inline std::string escape2(std::string _input) {
   return _input;
 }
 
+std::string make_svtrid(unsigned long long request_id);
 
 }
 

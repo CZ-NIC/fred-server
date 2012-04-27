@@ -848,7 +848,7 @@ ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Database
         period.unit = ccReg::unit_year;
         ccReg::EppParams epp_params;
         epp_params.requestID = clientId + number;
-        epp_params.sessionID = clientId;
+        epp_params.loginID = clientId;
         epp_params.clTRID = "";
         epp_params.XML = "";
         CORBA::String_var crdate;

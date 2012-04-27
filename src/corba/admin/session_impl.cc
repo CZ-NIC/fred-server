@@ -83,7 +83,6 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_keysets = new ccReg_KeySets_i(m_registry_manager->getKeySetManager()->createList(), &settings_);
   m_registrars = new ccReg_Registrars_i(m_registry_manager->getRegistrarManager()->createList()
           ,m_registry_manager->getZoneManager()->createList());
-  m_eppactions = new ccReg_EPPActions_i(m_registry_manager->getRegistrarManager()->getEPPActionList());
   m_invoices = new ccReg_Invoices_i(m_invoicing_manager->createList());
   m_filters = new ccReg_Filters_i(m_registry_manager->getFilterManager()->getList());
   m_publicrequests = new ccReg_PublicRequests_i(m_publicrequest_manager->createList());
@@ -95,7 +94,6 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_zones = new ccReg_Zones_i(m_registry_manager->getZoneManager()->createList());
   m_messages = new ccReg_Messages_i(m_registry_manager->getMessageManager()->createList());
 
-  m_eppactions->setDB();
   m_registrars->setDB();
   m_contacts->setDB();
   m_domains->setDB();
@@ -119,7 +117,6 @@ ccReg_Session_i::~ccReg_Session_i() {
   TRACE("[CALL] ccReg_Session_i::~ccReg_Session_i()");
 
   delete m_registrars;
-  delete m_eppactions;
   delete m_domains;
   delete m_contacts;
   delete m_nssets;
@@ -211,8 +208,6 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
       return m_keysets->_this();
     case ccReg::FT_DOMAIN:
       return m_domains->_this();
-    case ccReg::FT_ACTION:
-      return m_eppactions->_this();
     case ccReg::FT_INVOICE:
       return m_invoices->_this();
     case ccReg::FT_STATEMENTITEM:
@@ -280,10 +275,6 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
 
     case ccReg::FT_MAIL:
       *result <<= getMailDetail(_id);
-      break;
-
-    case ccReg::FT_ACTION:
-      *result <<= getEppActionDetail(_id);
       break;
 
     case ccReg::FT_LOGGER:
@@ -617,34 +608,6 @@ Registry::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
     return createMailDetail(tmp_mail_list->get(0));
   }
 }
-
-Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id) {
-  // Fred::Registrar::EPPAction *action = m_eppactions->findId(_id);
-  // if (action && !action->getEPPMessageIn().empty()) {
-  //   return createEppActionDetail(action);
-  // } else {
-  /* disable cache */
-  if (0) {
-  }
-  else {
-    LOGGER(PACKAGE).debug(boost::format("constructing eppaction filter for object id=%1%' detail")
-        % _id);
-    std::auto_ptr<Fred::Registrar::EPPActionList> tmp_action_list(m_registry_manager->getRegistrarManager()->createEPPActionList());
-
-    Database::Filters::Union union_filter;
-    Database::Filters::EppAction *filter = new Database::Filters::EppActionImpl();
-    filter->addId().setValue(Database::ID(_id));
-    union_filter.addFilter(filter);
-
-    tmp_action_list->reload(union_filter);
-
-    if (tmp_action_list->size() != 1) {
-      throw ccReg::Admin::ObjectNotFound();
-    }
-    return createEppActionDetail(tmp_action_list->get(0));
-  }
-}
-
 
 
 // ccReg::Logger::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
@@ -1534,10 +1497,6 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Fred
   detail->answerEmail.handle = DUPSTRC(stringify(_request->getAnswerEmailId()));
   detail->answerEmail.type   = ccReg::FT_MAIL;
 
-  detail->action.id     = _request->getEppActionId();
-  detail->action.handle = DUPSTRFUN(_request->getSvTRID);
-  detail->action.type   = ccReg::FT_ACTION;
-
   detail->registrar.id     = _request->getRegistrarId();
   detail->registrar.handle = DUPSTRFUN(_request->getRegistrarHandle);
   detail->registrar.type   = ccReg::FT_REGISTRAR;
@@ -1661,26 +1620,6 @@ Registry::Mailing::Detail* ccReg_Session_i::createMailDetail(Fred::Mail::Mail *_
     detail->attachments[i].handle = attachment.handle.c_str();
     detail->attachments[i].type   = ccReg::FT_FILE;
   }
-
-  return detail;
-}
-
-Registry::EPPAction::Detail* ccReg_Session_i::createEppActionDetail(Fred::Registrar::EPPAction *_action) {
-  Registry::EPPAction::Detail *detail = new Registry::EPPAction::Detail();
-
-  detail->id               = _action->getId();
-  detail->xml              = DUPSTRFUN(_action->getEPPMessageIn);
-  detail->xml_out          = DUPSTRFUN(_action->getEPPMessageOut);
-  detail->time             = DUPSTRDATE(_action->getStartTime);
-  detail->type             = DUPSTRFUN(_action->getTypeName);
-  detail->objectHandle     = DUPSTRFUN(_action->getHandle);
-  detail->result           = _action->getResult();
-  detail->clTRID           = DUPSTRFUN(_action->getClientTransactionId);
-  detail->svTRID           = DUPSTRFUN(_action->getServerTransactionId);
-
-  detail->registrar.id     = _action->getRegistrarId();
-  detail->registrar.handle = DUPSTRFUN(_action->getRegistrarHandle);
-  detail->registrar.type   = ccReg::FT_REGISTRAR;
 
   return detail;
 }

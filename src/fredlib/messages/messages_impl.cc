@@ -808,7 +808,6 @@ LetterInfo Manager::get_letter_info_by_id(unsigned long long id)
     li.fname = get_file_name_by_file_id(li.file_id);
 
     return li;
-
 }
 
 void MessageReload::operator ()

@@ -2,7 +2,6 @@
 #define PUBLIC_REQUEST_FILTER_H_
 
 #include "db/query/base_filters.h"
-#include "epp_action_filter.h"
 #include "object_filter.h"
 
 namespace Database {
@@ -24,7 +23,6 @@ public:
   virtual Value<std::string>& addReason() = 0;
   virtual Value<std::string>& addEmailToAnswer() = 0;
   virtual Value<Database::ID>& addAnswerEmailId() = 0;
-  virtual Value<Database::ID>& addEppActionId() = 0;
   virtual Value<Database::ID>& addRegistrarId() = 0;
   virtual Object& addObject() = 0;
 
@@ -54,7 +52,6 @@ public:
   virtual Value<std::string>& addReason();
   virtual Value<std::string>& addEmailToAnswer();
   virtual Value<Database::ID>& addAnswerEmailId();
-  virtual Value<Database::ID>& addEppActionId();
   virtual Value<Database::ID>& addRegistrarId();
   virtual Object& addObject();
   virtual Registrar& addRegistrar();

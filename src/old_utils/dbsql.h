@@ -21,14 +21,6 @@
 #define MAX_SVTID 64 // length of the server  ticket  svTRID
 
 class DB;
-class ParsedAction 
-{
-  std::map<unsigned, std::string> elements;
-public:
-  void add(unsigned id, const std::string& value);
-  bool executeSQL(Fred::TID actionid, DB* db);
-};
-
 
 class DB : public PQ
 {
@@ -42,7 +34,6 @@ public:
   {
       svrTRID = NULL;
       memHandle=NULL;
-      actionID = 0;      
       enum_action=0;
       loginID = 0;
   }
@@ -89,14 +80,10 @@ public:
   // EPP function for table action and action_xml
 
 
-  // save generated  XML from  mod_eppd
-  int SaveXMLout(
-    const char *svTRID, const char *xml);
-
   // start of the EPP operation with clientID and save xml from epp-client 
   bool BeginAction(   
-    int clientID, int action, const char *clTRID, const char *xml,
-    ParsedAction* paction = NULL, unsigned long long requestID = 0
+    unsigned long long clientID, int action, const char *clTRID, const char *xml,
+    unsigned long long requestID
   );
   // end of the EPP operation
   const char * EndAction(
@@ -116,15 +103,7 @@ public:
   int GetEPPAction()
   {
     return enum_action;
-  } // return  EPP operation  
-  int GetActionID()
-  {
-    return actionID;
-  } // retrun action.id 
-  int GetLoginID()
-  {
-    return loginID;
-  } // return clientID
+  } // return  EPP operation
 
   //----------------------------
   // DATABASE  functions
@@ -457,9 +436,8 @@ private:
   char *svrTRID;
   char *sqlBuffer;
   char dtStr[MAX_DATE+1]; //  pfor return date
-  int actionID; // id from action table  
   int historyID; // id from history table
-  int loginID; // id of the client action.clientID
+  unsigned long long loginID; // id of the client action.clientID
   short enum_action; // ID of the EPP operation from enum_action
 };//class DB
 

@@ -46,18 +46,15 @@ public:
 };
 
 
-unsigned long long contact_create(const unsigned long long &_action_id,
-                                  const unsigned long long &_request_id,
+unsigned long long contact_create(const unsigned long long &_request_id,
                                   const unsigned long long &_registrar_id,
                                   Contact &_data);
 
-unsigned long long contact_transfer(const unsigned long long &_action_id,
-                                    const unsigned long long &_request_id,
+unsigned long long contact_transfer(const unsigned long long &_request_id,
                                     const unsigned long long &_registrar_id,
                                     const unsigned long long &_contact_id);
 
-unsigned long long contact_update(const unsigned long long &_action_id,
-                                  const unsigned long long &_request_id,
+unsigned long long contact_update(const unsigned long long &_request_id,
                                   const unsigned long long &_registrar_id,
                                   Contact &_data);
 

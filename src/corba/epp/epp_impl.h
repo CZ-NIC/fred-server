@@ -11,13 +11,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
-struct Session
-{
-  int clientID;
-  int registrarID;
-  int language;
-  long long timestamp;
-};
+#include "epp_session.h"
 
 //value class to fix return of local char*
 class EppString
@@ -117,23 +111,11 @@ public:
   // parse extension for domain enum.exdate
   void GetValExpDateFromExtension(char *valexpDate, const ccReg::ExtensionList& ext);
 
-  // session manager
-  void CreateSession(int max, long wait);
-  // startiong session for registrar with language
-  bool LoginSession(long loginID, int registrarID, int language);
-  //  logout session
-  bool LogoutSession(long loginID);
-  void GarbageSesion(); // clear unused sessions
   // get RegistrarID
-  int GetRegistrarID(int clientID);
+  int GetRegistrarID(unsigned long long clientID);
   // get uses language
-  int GetRegistrarLang(int clientID);
+  int GetRegistrarLang(unsigned long long clientID);
   //  get number of active sessions
-  int GetNumSession()
-  {
-    return numSession;
-  }
-  ;
 
   // send    exception ServerIntError
   void ServerInternalError(const char *fce, const char *svTRID="DUMMY-SVTRID") throw (ccReg::EPP::EppError);
@@ -208,36 +190,34 @@ public:
   short int SetReasonKeySetHandle(ccReg::Errors_var &err, const char *handle, int lang);
 
   // general list function
-  ccReg::Response* FullList(short act, const char *table, const char *fname, ccReg::Lists_out list, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* FullList(short act, const char *table, const char *fname, ccReg::Lists_out list, const ccReg::EppParams &params);
 
   // general check function for all objects
-  ccReg::Response* ObjectCheck(short act, const char * table, const char *fname, const ccReg::Check& chck, ccReg::CheckResp_out a, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* ObjectCheck(short act, const char * table, const char *fname, const ccReg::Check& chck, ccReg::CheckResp_out a, const ccReg::EppParams &params);
 
   // general send auth info for objects
   ccReg::Response * ObjectSendAuthInfo(short act, const char * table, const char *fname, const char *name, const ccReg::EppParams &params);
 
-  CORBA::Boolean SaveOutXML(const char* svTRID, const char* XML);
-
-  void sessionClosed(CORBA::Long clientID);
+  void sessionClosed(CORBA::ULongLong clientID);
 
   // methods corresponding to defined IDL attributes and operations
-  ccReg::Response* GetTransaction(CORBA::Short errCode, CORBA::Long clientID, const char* clTRID, const ccReg::XmlErrors& errorCodes, ccReg::ErrorStrings_out errStrings); 
-  ccReg::Response* PollAcknowledgement(const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* PollRequest(CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate, ccReg::PollType& type, CORBA::Any_OUT_arg msg, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* GetTransaction(CORBA::Short errCode, CORBA::ULongLong clientID, ccReg::TID requestId, const char* clTRID, const ccReg::XmlErrors& errorCodes, ccReg::ErrorStrings_out errStrings);
+  ccReg::Response* PollAcknowledgement(const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID, const ccReg::EppParams &params);
+  ccReg::Response* PollRequest(CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate, ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params);
 
-  ccReg::Response* ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, const char* XML, CORBA::Long& clientID, const char* certID, ccReg::Languages lang);
-  ccReg::Response* ClientLogout(CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* ContactCheck(const ccReg::Check& handle, ccReg::CheckResp_out a, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* ContactInfo(const char* handle, ccReg::Contact_out c, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char *clTRID, const char* XML, CORBA::ULongLong& out_clientID, ccReg::TID requestId, const char* certID, ccReg::Languages lang);
+  ccReg::Response* ClientLogout(const ccReg::EppParams &params);
+  ccReg::Response* ClientCredit(ccReg::ZoneCredit_out credit, const ccReg::EppParams &params);
+  ccReg::Response* ContactCheck(const ccReg::Check& handle, ccReg::CheckResp_out a, const ccReg::EppParams &params);
+  ccReg::Response* ContactInfo(const char* handle, ccReg::Contact_out c, const ccReg::EppParams &params);
   ccReg::Response* ContactDelete(const char* handle, const ccReg::EppParams &params);
   ccReg::Response* ContactUpdate(const char* handle, const ccReg::ContactChange& c, const ccReg::EppParams &params);
   ccReg::Response* ContactCreate(const char* handle, const ccReg::ContactChange& c, ccReg::timestamp_out crDate, const ccReg::EppParams &params);
   ccReg::Response* ContactTransfer(const char* handle, const char* authInfo, const ccReg::EppParams &params);
 
-  ccReg::Response* NSSetCheck(const ccReg::Check& handle, ccReg::CheckResp_out a, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* NSSetCheck(const ccReg::Check& handle, ccReg::CheckResp_out a, const ccReg::EppParams &params);
 
-  ccReg::Response* NSSetInfo(const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* NSSetInfo(const char* handle, ccReg::NSSet_out n, const ccReg::EppParams &params);
 
   ccReg::Response* NSSetDelete(const char* handle, const ccReg::EppParams &params);
 
@@ -247,9 +227,9 @@ public:
 
   ccReg::Response* NSSetTransfer(const char* handle, const char* authInfo, const ccReg::EppParams &params);
 
-  ccReg::Response *KeySetCheck( const ccReg::Check &handle, ccReg::CheckResp_out a, CORBA::Long clientID, const char *clTRID, const char *XML);
+  ccReg::Response *KeySetCheck( const ccReg::Check &handle, ccReg::CheckResp_out a, const ccReg::EppParams &params);
 
-  ccReg::Response *KeySetInfo( const char *handle, ccReg::KeySet_out k, CORBA::Long clientID, const char *clTRID, const char *XML);
+  ccReg::Response *KeySetInfo( const char *handle, ccReg::KeySet_out k, const ccReg::EppParams &params);
 
   ccReg::Response *KeySetDelete( const char *handle, const ccReg::EppParams &params);
 
@@ -259,8 +239,8 @@ public:
 
   ccReg::Response *KeySetTransfer( const char *handle, const char *authInfo, const ccReg::EppParams &params);
 
-  ccReg::Response* DomainCheck(const ccReg::Check& fqdn, ccReg::CheckResp_out a, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* DomainInfo(const char* fqdn, ccReg::Domain_out d, CORBA::Long clientID, const char* clTRID, const char* XML); 
+  ccReg::Response* DomainCheck(const ccReg::Check& fqdn, ccReg::CheckResp_out a, const ccReg::EppParams &params);
+  ccReg::Response* DomainInfo(const char* fqdn, ccReg::Domain_out d, const ccReg::EppParams &params);
   ccReg::Response* DomainDelete(const char* fqdn, const ccReg::EppParams & params);
   // TODO add keyset to domain
   ccReg::Response* DomainUpdate(const char* fqdn, const char* registrant_chg, const char* authInfo_chg, const char* nsset_chg, const char *keyset_chg, const ccReg::AdminContact& admin_add, const ccReg::AdminContact& admin_rem, const ccReg::AdminContact& tmpcontact_rem, const ccReg::EppParams &params, const ccReg::ExtensionList& ext);
@@ -272,7 +252,7 @@ public:
   ccReg::Response* DomainTransfer(const char* fqdn, const char* authInfo, const ccReg::EppParams &params);
 
   // tech check nsset
-  ccReg::Response* nssetTest(const char* handle, CORBA::Short level, const ccReg::Lists& fqdns, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* nssetTest(const char* handle, CORBA::Short level, const ccReg::Lists& fqdns, const ccReg::EppParams &params);
 
   //common function for transfer object 
   ccReg::Response* ObjectTransfer(short act, const char*table, const char *fname, const char *name, const char* authInfo, const ccReg::EppParams &params);
@@ -287,17 +267,17 @@ public:
   ccReg::Response *keysetSendAuthInfo( const char *handle, const ccReg::EppParams &params);
 
   // EPP print out
-  ccReg::Response* ContactList(ccReg::Lists_out contacts, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* ContactList(ccReg::Lists_out contacts, const ccReg::EppParams &params);
 
-  ccReg::Response* NSSetList(ccReg::Lists_out nssets, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* NSSetList(ccReg::Lists_out nssets, const ccReg::EppParams &params);
 
-  ccReg::Response* DomainList(ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* DomainList(ccReg::Lists_out domains, const ccReg::EppParams &params);
 
-  ccReg::Response *KeySetList( ccReg::Lists_out keysets, CORBA::Long clientID, const char *clTRID, const char *XML);
+  ccReg::Response *KeySetList( ccReg::Lists_out keysets, const ccReg::EppParams &params);
 
   // Info messages
-  ccReg::Response* info(ccReg::InfoType type, const char* handle, CORBA::Long& count, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* getInfoResults(ccReg::Lists_out handles, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* info(ccReg::InfoType type, const char* handle, CORBA::Long& count, const ccReg::EppParams &params);
+  ccReg::Response* getInfoResults(ccReg::Lists_out handles, const ccReg::EppParams &params);
 
   const std::string& getDatabaseString();
 
@@ -307,15 +287,9 @@ public:
 
 
 private:
-  Session *session;
-  int numSession; // number of active session
-  int maxSession; // maximal sessions
-  long long maxWaitClient; //  connection timeout 
+  EppSessionContainer epp_sessions;
   Mesg *ErrorMsg;
   Mesg *ReasonMsg;
   std::auto_ptr<CountryCode> CC;
   int max_zone;
-  bool testInfo; // TODO: remove 
-
-  boost::mutex session_mutex_;
 };

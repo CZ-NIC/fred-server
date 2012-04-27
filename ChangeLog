@@ -1,3 +1,7 @@
+2012-04-27 Jiri Sadek, Juraj Vicenik, Jan Zima (2.10.0)
+
+  * epp action removed from fred
+
 2012-03-22 Jiri Sadek (2.9.11)
 
   * epp - do not notify command with specific cltrid (system registrar only)

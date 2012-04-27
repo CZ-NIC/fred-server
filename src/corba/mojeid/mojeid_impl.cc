@@ -90,7 +90,7 @@ IdentificationRequestPtr ServerImpl::contactCreateWorker(unsigned long long &cid
     }
 
     ::MojeID::Contact data = corba_unwrap_contact(_contact);
-    hid = ::MojeID::contact_create(_request.get_id(),
+    hid = ::MojeID::contact_create(
             _request.get_request_id(), _request.get_registrar_id(), data);
     cid = data.id;
 
@@ -109,7 +109,6 @@ IdentificationRequestPtr ServerImpl::contactCreateWorker(unsigned long long &cid
     IdentificationRequestPtr new_request(type);
     new_request->setRegistrarId(_request.get_registrar_id());
     new_request->setRequestId(_request.get_request_id());
-    new_request->setEppActionId(_request.get_id());
     new_request->addObject(Fred::PublicRequest::OID(cid, static_cast<std::string> (_contact.username),
             Fred::PublicRequest::OT_CONTACT));
     new_request->save();
@@ -132,7 +131,7 @@ CORBA::ULongLong ServerImpl::contactCreate(const Contact &_contact,
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
         ::MojeID::Request request(204, mojeid_registrar_id_, _request_id);
-        Logging::Context ctx_request(request.get_servertrid());
+        Logging::Context ctx_request(Util::make_svtrid(_request_id));
 
         unsigned long long cid;
         unsigned long long hid;
@@ -202,7 +201,7 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
         ::MojeID::Request request(204, mojeid_registrar_id_, _request_id, _trans_id);
-        Logging::Context ctx_request(request.get_servertrid());
+        Logging::Context ctx_request(Util::make_svtrid(_request_id));
 
         unsigned long long cid;
         unsigned long long hid;
@@ -224,7 +223,6 @@ CORBA::ULongLong ServerImpl::contactCreatePrepare(const Contact &_contact,
         trans_data d(MOJEID_CONTACT_CREATE);
         d.cid = cid;
         d.prid = new_request->getId();
-        d.eppaction_id = request.get_id();
         d.request_id =   request.get_request_id();
         transaction_data.insert(std::make_pair(_trans_id, d));
 
@@ -400,7 +398,6 @@ CORBA::ULongLong ServerImpl::contactTransfer(const char *_handle,
         IdentificationRequestPtr new_request(type);
         new_request->setRegistrarId(mojeid_registrar_id_);
         new_request->setRequestId(_request_id);
-        new_request->setEppActionId(0);
         new_request->addObject(
                 Fred::PublicRequest::OID(
                     cinfo.id, handle, Fred::PublicRequest::OT_CONTACT));
@@ -510,7 +507,6 @@ CORBA::ULongLong ServerImpl::contactTransferPrepare(const char *_handle,
         IdentificationRequestPtr new_request(type);
         new_request->setRegistrarId(mojeid_registrar_id_);
         new_request->setRequestId(_request_id);
-        new_request->setEppActionId(0);
         new_request->addObject(
                 Fred::PublicRequest::OID(
                     cinfo.id, handle, Fred::PublicRequest::OT_CONTACT));
@@ -732,7 +728,7 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         /* start new request - here for logging into action table - until
          * fred-logd fully migrated */
         ::MojeID::Request request(203, mojeid_registrar_id_, _request_id, _trans_id);
-        Logging::Context ctx_request(request.get_servertrid());
+        Logging::Context ctx_request(Util::make_svtrid(_request_id));
 
         if (_contact.id == 0) {
             throw std::runtime_error("contact.id is null");
@@ -772,7 +768,6 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         }
 
         unsigned long long hid = ::MojeID::contact_update(
-                request.get_id(),
                 request.get_request_id(),
                 request.get_registrar_id(),
                 data);
@@ -786,7 +781,6 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         trans_data tr_data(MOJEID_CONTACT_UPDATE);
 
         tr_data.cid = cid;
-        tr_data.eppaction_id = request.get_id();
         tr_data.request_id = request.get_request_id();
 
         boost::mutex::scoped_lock td_lock(td_mutex);
@@ -883,8 +877,8 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
 
         tr_data = it->second;
 
-        LOGGER(PACKAGE).info(boost::format("Transaction data for %1% retrieved: cid %2%, prid %3%, epp_id %4%, rid %5%")
-                % _trans_id % tr_data.cid % tr_data.prid % tr_data.eppaction_id % tr_data.request_id);
+        LOGGER(PACKAGE).info(boost::format("Transaction data for %1% retrieved: cid %2%, prid %3%, rid %4%")
+                % _trans_id % tr_data.cid % tr_data.prid % tr_data.request_id);
 
         if(tr_data.cid == 0) {
             throw std::runtime_error((boost::format(
@@ -938,12 +932,6 @@ void ServerImpl::commitPreparedTransaction(const char* _trans_id)
         LOGGER(PACKAGE).error("request notification failed");
     }
 
-    /* TEMP: until we finish migration to request logger */
-    // not all operations use epp action ID
-    if(tr_data.op != MOJEID_CONTACT_UNIDENTIFY) {
-        finishEppAction(tr_data.eppaction_id);
-    }
-
     LOGGER(PACKAGE).info("request completed successfully");
 
 }
@@ -982,32 +970,6 @@ void ServerImpl::rollbackPreparedTransaction(const char* _trans_id)
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
-    }
-
-    /* TEMP: until we finish migration to request logger */
-    try {
-        if(tr.eppaction_id == 0) {
-            LOGGER(PACKAGE).info("unable to find action - assuming it"
-                                " was not used. ");
-            return;
-        }
-
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result result = conn.exec_params(
-                "SELECT id FROM action WHERE"
-                " enddate IS NULL AND response IS NULL"
-                " AND id = $1::integer",
-                Database::query_param_list(tr.eppaction_id));
-        
-        if (result.size() != 1) {
-            LOGGER(PACKAGE).error("Rollback: Couldn't find action which according to map should've existed. ");
-        } else {
-            conn.exec_params("UPDATE action SET response = 2400, enddate = now()"
-                    " WHERE id = $1::integer", Database::query_param_list(tr.eppaction_id));
-        }
-    }
-    catch (...) {
-        LOGGER(PACKAGE).error("error occured when updating action response");
     }
 
     LOGGER(PACKAGE).info("rollback completed");
@@ -1401,37 +1363,6 @@ void updateObjectStates(unsigned long long cid) throw()
         LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (%2%)") % ex.what() % cid);
     } catch (...) {
         LOGGER(PACKAGE).error(boost::format("update_object_states failed for cid %1% (unknown exception)") % cid);
-    }
-}
-
-/* TEMP: until we finish migration to request logger */
-// failure in this method is not fatal - swallow exceptions
-void finishEppAction(unsigned long long eppaction_id) throw()
-{
-    try {
-        if (eppaction_id == 0) {
-            LOGGER(PACKAGE).info("unable to find action - assuming it"
-                    " was not used. ");
-        } else {
-            Database::Connection conn = Database::Manager::acquire();
-            Database::Result ractionid = conn.exec_params(
-                    "SELECT response FROM action"
-                    " WHERE id = $1::integer",
-                    Database::query_param_list(eppaction_id));
-            if (ractionid.size() != 1) {
-                LOGGER(PACKAGE).error("unable to find unique action based on ID stored in map");
-            } else {
-                if (!ractionid[0][0].isnull()) {
-                    LOGGER(PACKAGE).error("Action already completed");
-                } else {
-                    conn.exec_params("UPDATE action SET response = 1000, enddate = now()"
-                          " WHERE id = $1::integer", Database::query_param_list(eppaction_id));
-                }
-            }
-        }
-    }
-    catch (...) {
-        LOGGER(PACKAGE).error("error occured when updating action response");
     }
 }
 

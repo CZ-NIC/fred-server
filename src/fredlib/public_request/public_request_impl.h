@@ -46,7 +46,6 @@ class PublicRequestImpl
 {
 protected:
     Fred::PublicRequest::Type type_;
-    Database::ID epp_action_id_;
     Database::ID create_request_id_;
     Database::ID resolve_request_id_;
     Database::DateTime create_time_;
@@ -56,7 +55,6 @@ protected:
     std::string email_to_answer_;
     Database::ID answer_email_id_;
 
-    std::string svtrid_;
     Database::ID registrar_id_;
     std::string registrar_handle_;
     std::string registrar_name_;
@@ -72,7 +70,6 @@ public:
 
     PublicRequestImpl(Database::ID _id,
               Fred::PublicRequest::Type _type,
-              Database::ID _epp_action_id,
               Database::ID _create_request_id,
               Database::DateTime _create_time,
               Fred::PublicRequest::Status _status,
@@ -80,7 +77,6 @@ public:
               std::string _reason,
               std::string _email_to_answer,
               Database::ID _answer_email_id,
-              std::string _svtrid,
               Database::ID _registrar_id,
               std::string _registrar_handle,
               std::string _registrar_name,
@@ -115,10 +111,6 @@ public:
 
     virtual const Database::ID getAnswerEmailId() const;
 
-    virtual const Database::ID getEppActionId() const;
-
-    virtual void setEppActionId(const Database::ID& _epp_action_id);
-
     virtual const Database::ID getRequestId() const;
 
     virtual const Database::ID getResolveRequestId() const;
@@ -132,8 +124,6 @@ public:
     virtual const OID& getObject(unsigned _idx) const;
 
     virtual unsigned getObjectSize() const;
-
-    virtual const std::string getSvTRID() const;
 
     virtual const Database::ID getRegistrarId() const;
 

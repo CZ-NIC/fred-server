@@ -25,13 +25,12 @@ enum mojeid_operation_type {
 
 struct trans_data {
 
-    explicit trans_data(const mojeid_operation_type &operation) : op(operation), cid(0), prid(0), eppaction_id(0), request_id(0)
+    explicit trans_data(const mojeid_operation_type &operation) : op(operation), cid(0), prid(0), request_id(0)
     { }
 
     mojeid_operation_type op;
     unsigned long long cid;
     unsigned long long prid;
-    unsigned long long eppaction_id;
     unsigned long long request_id;
 };
 

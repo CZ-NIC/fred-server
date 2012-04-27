@@ -99,7 +99,6 @@ public:
   CORBA::Long getSignedDomainCount(const char *_fqdn);
   CORBA::Long getEnumNumberCount();
   // counters
-  Registry::EPPActionTypeSeq* getEPPActionTypeList();
   Registry::CountryDescSeq* getCountryDescList();
   char* getDefaultCountry();
   Registry::ObjectStatusDescSeq* getObjectStatusDescList(const char *lang);
