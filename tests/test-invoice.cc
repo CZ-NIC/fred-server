@@ -1565,10 +1565,10 @@ BOOST_AUTO_TEST_CASE(lower_debt)
     Decimal vat_ratio = Decimal("1") - Decimal(koef);
 
     Decimal estimated_credit = Decimal(
-                       Decimal(vat_ratio * price).round(2, MPD_ROUND_HALF_UP)
-                     + Decimal(vat_ratio * recharge).round(2, MPD_ROUND_HALF_UP)
+                       Decimal(vat_ratio * price).round_half_up(2)
+                     + Decimal(vat_ratio * recharge).round_half_up(2)
                      - unit_price * postpaid_operation
-        ).round(2, MPD_ROUND_HALF_UP);
+        ).round_half_up(2);
 
     vat_ratio * (price + recharge) - unit_price * postpaid_operation;
     Decimal credit_after = get_credit(reg_id, zone_id);

@@ -198,7 +198,7 @@ Money getOperationPrice(unsigned op, Database::ID zone_id, unsigned requested_qu
         return (base_price
                     * Decimal(boost::lexical_cast<std::string>(requested_quantity))
                     / base_period
-                ).round(2, MPD_ROUND_HALF_UP);
+                ).round_half_up(2);
 
     } else {
         return base_price;

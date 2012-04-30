@@ -505,7 +505,7 @@ public:
     )
   {
       Money vat =   price * vat_reverse;
-      vat.round(2,MPD_ROUND_HALF_UP);
+      vat.round_half_up(2);
 
      LOGGER(PACKAGE).debug (
          boost::format("count_dph price %1% vat_reverse %2% vat %3%")
@@ -3415,9 +3415,9 @@ public:
     const VAT *v = getVAT(vatRate);
     Decimal coef = v ? v->koef : Decimal("0");
 
-    //Money vat = (base ?  (price * vatRate / Decimal("100")) : (price * coef)).round(2,MPD_ROUND_HALF_UP);
+    //Money vat = (base ?  (price * vatRate / Decimal("100")) : (price * coef)).round_half_up(2);
 
-    Money vat = (price * coef / (Decimal("1") - (base ? coef : Decimal("0")))).round(2,MPD_ROUND_HALF_UP);
+    Money vat = (price * coef / (Decimal("1") - (base ? coef : Decimal("0")))).round_half_up(2);
     LOGGER(PACKAGE).debug(
         std::string("ManagerImpl::countVAT: ")+ vat.get_string()
         + " price: " + price.get_string()+ " vatRate: " + vatRate.get_string()

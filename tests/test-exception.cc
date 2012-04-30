@@ -83,8 +83,8 @@ void test_decimal_wrapper_exceptions_fun()
     ((Decimal("1.111") * Decimal("1.222")) == Decimal("1.357642"));
 
     ((Decimal("1.222") / Decimal("1.111"))
-            .round(19, MPD_ROUND_HALF_UP)
-            .round(9, MPD_ROUND_HALF_UP) == Decimal("1.099909991"));
+            .round_half_up(19)
+            .round_half_up(9) == Decimal("1.099909991"));
 
     ((Decimal("13").integral_division(Decimal("3"))) == Decimal("4"));
     ((Decimal("13").integral_division_remainder(Decimal("3"))) == Decimal("1"));

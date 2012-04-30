@@ -124,8 +124,8 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
     BOOST_CHECK((Decimal("2.333") - Decimal("1.111")) != Decimal("1.223"));
     BOOST_CHECK((Decimal("1.111") * Decimal("1.222")) == Decimal("1.357642"));
     BOOST_CHECK((Decimal("1.222") / Decimal("1.111"))
-            .round(19, MPD_ROUND_HALF_UP)
-            .round(9, MPD_ROUND_HALF_UP) == Decimal("1.099909991"));
+            .round_half_up(19)
+            .round_half_up(9) == Decimal("1.099909991"));
 
     BOOST_CHECK((Decimal("13").integral_division(Decimal("3"))) == Decimal("4"));
     BOOST_CHECK((Decimal("13").integral_division_remainder(Decimal("3"))) == Decimal("1"));
@@ -271,8 +271,8 @@ static ResultTest testWorker(unsigned long long worker_param)
         if(!(((Decimal("2.333") - Decimal("1.111"))) == Decimal("1.222"))) ret.result += 1024;
         if(!(((Decimal("2.333") - Decimal("1.111"))) != Decimal("1.223"))) ret.result += 2048;
         if(!(((Decimal("1.111") * Decimal("1.222"))) == Decimal("1.357642"))) ret.result += 4096;
-        if(!((Decimal("1.222") / Decimal("1.111")).round(19, MPD_ROUND_HALF_UP)
-            .round(9, MPD_ROUND_HALF_UP) == Decimal("1.099909991"))) ret.result += 8192;
+        if(!((Decimal("1.222") / Decimal("1.111")).round_half_up(19)
+            .round_half_up(9) == Decimal("1.099909991"))) ret.result += 8192;
         if(!((Decimal("13").integral_division(Decimal("3"))) == Decimal("4"))) ret.result += 16384;
         if(!((Decimal("13").integral_division_remainder(Decimal("3"))) == Decimal("1"))) ret.result += 32768;
         if(!(Decimal("-1").abs() == Decimal("1"))) ret.result += 65536;
@@ -439,8 +439,8 @@ public:
                 if(!(((Decimal("2.333") - Decimal("1.111"))) == Decimal("1.222"))) res.ret += 1024;
                 if(!(((Decimal("2.333") - Decimal("1.111"))) != Decimal("1.223"))) res.ret += 2048;
                 if(!(((Decimal("1.111") * Decimal("1.222"))) == Decimal("1.357642"))) res.ret += 4096;
-                if(!((Decimal("1.222") / Decimal("1.111")).round(19, MPD_ROUND_HALF_UP)
-                    .round(9, MPD_ROUND_HALF_UP) == Decimal("1.099909991"))) res.ret += 8192;
+                if(!((Decimal("1.222") / Decimal("1.111")).round_half_up(19)
+                    .round_half_up(9) == Decimal("1.099909991"))) res.ret += 8192;
             }
 
 

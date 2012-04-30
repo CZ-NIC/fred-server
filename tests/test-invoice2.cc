@@ -818,7 +818,7 @@ struct create_deposit_invoice_fixture
       )
     {
         Money vat =   price * vat_reverse;
-        vat.round(2,MPD_ROUND_HALF_UP);
+        vat.round_half_up(2);
 
        LOGGER(PACKAGE).debug (
            boost::format("count_dph price %1% vat_reverse %2% vat %3%")

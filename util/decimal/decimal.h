@@ -701,9 +701,7 @@ public:
 
 
 
-    Decimal& round(long precision_places
-            , int round_type// MPD_ROUND_* from enum in mpdecimal.h
-            )
+    Decimal& round_half_up(long precision_places)
     {
         try
         {
@@ -714,9 +712,9 @@ public:
 
             int saved_context_round =  mpd_getround(&(result.ctx));
 
-            if(mpd_qsetround(&(result.ctx), round_type) == 0)
+            if(mpd_qsetround(&(result.ctx), MPD_ROUND_HALF_UP) == 0)
                 throw std::runtime_error(
-                    "Decimal::round unable to set context_newround");
+                    "Decimal::round_half_up unable to set context_newround");
 
             std::string new_string(result.get_string((std::string(".")
                 +boost::lexical_cast<std::string>(precision_places)
@@ -724,7 +722,7 @@ public:
 
             if(mpd_qsetround(&(result.ctx), saved_context_round) == 0)
                 throw std::runtime_error(
-                    "Decimal::round unable to set saved_context_round");
+                    "Decimal::round_half_up unable to set saved_context_round");
 
             result.set_string(new_string.c_str());
 
@@ -735,7 +733,7 @@ public:
         }
         catch(...)
         {
-            decimal_exception_handler("round() exception", true)();
+            decimal_exception_handler("round_half_up() exception", true)();
         }
         return *this;
     }
