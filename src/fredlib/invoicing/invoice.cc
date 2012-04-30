@@ -1200,7 +1200,7 @@ std::vector<unpaid_account_invoice> find_unpaid_account_invoices(
         Money balance_change
             = Money(paid - paid * invoice_vat_rate
                 / ( Decimal("100") + invoice_vat_rate )
-                ).round(2, MPD_ROUND_HALF_UP);
+                ).round_half_up(2);
 
         //if account invoice before invoice_type table
         if (check_inv_type.size() > 0 && std::string(check_inv_type[0][0]).compare("1") == 0)
