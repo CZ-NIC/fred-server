@@ -242,7 +242,7 @@ MojeID::Contact corba_unwrap_contact(const Contact &_contact)
     data.auth_info = corba_unwrap_normalize_nullable_string(_contact.auth_info);
     data.disclosename = true;
     data.discloseorganization = true;
-    data.discloseaddress = true;
+    data.discloseaddress = corba_unwrap_nullable_boolean(_contact.disclose_address, false);
     data.disclosetelephone = corba_unwrap_nullable_boolean(_contact.disclose_phone, false);
     data.disclosefax = corba_unwrap_nullable_boolean(_contact.disclose_fax, false);
     data.discloseemail = corba_unwrap_nullable_boolean(_contact.disclose_email, false);
