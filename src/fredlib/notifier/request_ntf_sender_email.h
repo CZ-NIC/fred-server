@@ -81,22 +81,39 @@ public:
             m_params["changes." + it->first + ".new"] = it->second.second;
         }
 
+        //#6547 send only if there are some changes
+        if(m_params["changes"].compare("1") == 0)
+        {
+            LOGGER(PACKAGE).info(boost::format(
+                "Changes found - request_id=%1%  object_id=%2%  request_type=%3%")
+                % _ntf.get_request_id()
+                % _ntf.get_object_id()
+                % _ntf.get_request_type());
 
-        for (unsigned int i = 0; i < rcpts_emails.size(); ++i) {
-            try {
-                unsigned long long msg_id = mm_->sendEmail("", rcpts_emails[i], "", m_template_name, m_params, m_handles, m_attachs);
+            for (unsigned int i = 0; i < rcpts_emails.size(); ++i) {
                 try {
-                    _ntf.save_relation(msg_id);
+                    unsigned long long msg_id = mm_->sendEmail("", rcpts_emails[i], "", m_template_name, m_params, m_handles, m_attachs);
+                    try {
+                        _ntf.save_relation(msg_id);
+                    }
+                    catch (...) {
+                        LOGGER(PACKAGE).error(boost::format("request notification save failure"
+                                    " (request_id=%1% msg_id=%2%)") % _ntf.get_request_id() % msg_id);
+                    }
                 }
                 catch (...) {
-                    LOGGER(PACKAGE).error(boost::format("request notification save failure"
-                                " (request_id=%1% msg_id=%2%)") % _ntf.get_request_id() % msg_id);
+                    LOGGER(PACKAGE).error(boost::format("sending failure (email=%1%  ticket=%2%)")
+                            % rcpts_emails[i] % m_params["ticket"]);
                 }
             }
-            catch (...) {
-                LOGGER(PACKAGE).error(boost::format("sending failure (email=%1%  ticket=%2%)")
-                        % rcpts_emails[i] % m_params["ticket"]);
-            }
+        }//if changes
+        else
+        {
+            LOGGER(PACKAGE).info(boost::format(
+                "No changes found - request_id=%1%  object_id=%2%  request_type=%3%")
+                % _ntf.get_request_id()
+                % _ntf.get_object_id()
+                % _ntf.get_request_type());
         }
     }
 

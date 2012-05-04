@@ -86,8 +86,19 @@ bool EPPNotifier::Send()
       return false;
     }
 
-    // mailer manager send emails
-    mm->sendEmail("", emails, "", getTemplate(), params, handles, attach);
+    //#6547 send only if there are some changes
+    //"changes" key is added in constructMessages()
+    if(params["changes"].compare("1") == 0)
+    {
+        // mailer manager send emails
+        mm->sendEmail("", emails, "", getTemplate(), params, handles, attach);
+    }
+    else
+    {
+        LOG(DEBUG_LOG, "EPPNotifier: no changes found - not sending");
+        return false;
+    }
+
   }
   catch (...) {
     LOGGER(PACKAGE).error(boost::format("EPPNotifier: notification for '%1%' failed! "
