@@ -2247,8 +2247,9 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
     try {
         if (!code && (
                     testObjectHasState(action,id,FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action,id,FLAG_serverUpdateProhibited)
-                    ))
+                    testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
+                    testObjectHasState(action,id,FLAG_deleteCandidate)
+        ))
         {
             LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
             code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -2351,7 +2352,8 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                 ccReg::registrar_autor, 0, REASON_MSG_REGISTRAR_AUTOR);
     }
     try {
-        if (!code && testObjectHasState(action,id,FLAG_serverUpdateProhibited))
+        if (!code && (testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
+            testObjectHasState(action,id,FLAG_deleteCandidate)))
         {
             LOG( WARNING_LOG, "update of object %s is prohibited" , handle );
             code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -2782,7 +2784,8 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
         }
 
         try {
-            if (!code && testObjectHasState(action,id,FLAG_serverTransferProhibited)) {
+            if (!code && (testObjectHasState(action,id,FLAG_serverTransferProhibited) ||
+                    testObjectHasState(action,id,FLAG_deleteCandidate))) {
                 LOG( WARNING_LOG, "transfer of object %s is prohibited" , name );
                 code = COMMAND_STATUS_PROHIBITS_OPERATION;
             }
@@ -3124,7 +3127,8 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
     try {
         if (!code && (
                     testObjectHasState(action,id,FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action,id,FLAG_serverUpdateProhibited)
+                    testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
+                    testObjectHasState(action,id,FLAG_deleteCandidate)
                     ))
         {
             LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
@@ -3588,7 +3592,8 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
                 REASON_MSG_REGISTRAR_AUTOR);
     }
     try {
-        if (!code && testObjectHasState(action,nssetID,FLAG_serverUpdateProhibited))
+        if (!code && (testObjectHasState(action,nssetID,FLAG_serverUpdateProhibited) ||
+                testObjectHasState(action,nssetID,FLAG_deleteCandidate)))
         {
             LOG( WARNING_LOG, "update of object %s is prohibited" , handle );
             code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -4139,7 +4144,8 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     try {
         if (!code && (
                     testObjectHasState(action,id,FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action,id,FLAG_serverUpdateProhibited)
+                    testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
+                    testObjectHasState(action,id,FLAG_deleteCandidate)
                     ))
         {
             LOG( WARNING_LOG, "delete of object %s is prohibited" , fqdn );
@@ -4247,7 +4253,8 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
     if (!code) {
         try {
-            if (!code && testObjectHasState(action,id,FLAG_serverUpdateProhibited)) {
+            if (!code && (testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
+                    testObjectHasState(action,id,FLAG_deleteCandidate))) {
                 LOG( WARNING_LOG, "update of object %s is prohibited" , fqdn );
                 code = COMMAND_STATUS_PROHIBITS_OPERATION;
             }
@@ -5458,7 +5465,8 @@ ccReg_EPP_i::KeySetDelete(
     try {
         if (!code && (
                     testObjectHasState(action, id, FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action, id, FLAG_serverUpdateProhibited)
+                    testObjectHasState(action, id, FLAG_serverUpdateProhibited) ||
+                    testObjectHasState(action,id,FLAG_deleteCandidate)
                     )) {
             LOG(WARNING_LOG, "delete of object %s is prohibited", handle);
             code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -6006,7 +6014,8 @@ ccReg_EPP_i::KeySetUpdate(
                ccReg::keyset_dsrecord, 0, REASON_MSG_DSRECORD_LIMIT);
     }
     try {
-        if (!code && testObjectHasState(action, keysetId, FLAG_serverUpdateProhibited)) {
+        if (!code && (testObjectHasState(action, keysetId, FLAG_serverUpdateProhibited) ||
+                testObjectHasState(action,keysetId,FLAG_deleteCandidate))) {
             LOG(WARNING_LOG, "update of object %s is prohibited", handle);
             code = COMMAND_STATUS_PROHIBITS_OPERATION;
         }
