@@ -300,6 +300,36 @@ init_cz()
     $ADMCMD --enum_parameter_change \
         --parameter_name=roid_suffix \
         --parameter_value=CZ
+    $ADMCMD --price_add --operation='CreateDomain' \
+	--valid_from='2009-12-31 23:00:00' --zone_fqdn cz \
+	--operation_price 0 --period 1 
+    $ADMCMD --price_add --operation='CreateDomain' \
+	--valid_from='2009-12-31 23:00:00' --zone_fqdn cz \
+	--operation_price 0 --period 1 
+    $ADMCMD --price_add --operation='CreateDomain' \
+	--valid_from='2007-09-29 19:15:56.186031' \
+	--valid_to='2009-12-31 23:00:00' --zone_fqdn cz \
+	--operation_price 0 --period 1
+    $ADMCMD --price_add --operation='RenewDomain' \
+	--valid_from='2009-12-31 23:00:00' \
+	--valid_to='2011-01-31 23:00:00' \
+	--zone_fqdn cz --operation_price 155 --period 1
+    $ADMCMD --price_add --operation='RenewDomain' \
+	--valid_from='2011-01-31 23:00:00' --zone_fqdn cz \
+	--operation_price 140 --period 1
+    $ADMCMD --price_add --operation='RenewDomain' \
+	--valid_from='2007-09-29 19:15:56.159594' \
+	--valid_to='2009-12-31 23:00:00' --zone_fqdn cz \
+	--operation_price 190 --period 1
+    $ADMCMD --price_add --operation='CreateDomain' \
+	--valid_from='2007-01-22 13:00:00' --zone_fqdn 0.2.4.e164.arpa \
+	--operation_price 0 --period 1
+    $ADMCMD --price_add --operation='RenewDomain' \
+	--valid_from='2007-01-22 13:00:00' --zone_fqdn 0.2.4.e164.arpa \
+	--operation_price 1 --period 1
+    $ADMCMD --price_add --operation='GeneralEppOperation' \
+	--valid_from='2011-05-31 22:00:00' --zone_fqdn cz \
+	--operation_price 0.10 --period 1  --enable_postpaid_operation
     exit 0
 }
 
