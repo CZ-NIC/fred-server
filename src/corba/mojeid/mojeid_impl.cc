@@ -17,6 +17,7 @@
 #include "fredlib/mojeid/contact.h"
 #include "fredlib/mojeid/request.h"
 #include "fredlib/mojeid/mojeid_contact_states.h"
+#include "fredlib/mojeid/mojeid_data_validation.h"
 
 #include "corba/connection_releaser.h"
 
@@ -1324,6 +1325,41 @@ CORBA::ULongLong ServerImpl::getContactId(const char* _handle)
     throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
 }
 
+ContactHandleList* ServerImpl::getMojeidEnabledContactHandles()
+{
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("get-mojeid-enabled-contact-handles");
+    ConnectionReleaser releaser;
+
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result res = conn.exec_params(
+            "SELECT name FROM object_registry WHERE type = 1 "
+            " AND ((erdate is NULL) or (erdate > (CURRENT_TIMESTAMP "
+            " - (SELECT val || ' month' FROM enum_parameters "
+            "  WHERE name = 'handle_registration_protection_period' "
+            " )::interval)) )  AND lower(name) ~ $1::text"
+            , Database::query_param_list(::MojeID::USERNAME_PATTERN.str()));
+        ContactHandleList_var ret = new ContactHandleList();
+        ret->length(res.size());
+        for (Database::Result::size_type i=0; i<res.size(); ++i)
+        {
+            ret[i]  = corba_wrap_string(res[i][0]);
+        }
+        return ret._retn();
+    }//try
+    catch (std::exception &_ex)
+    {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
+}
 
 void sendAuthPasswords(unsigned long long cid, unsigned long long prid) {
     try {
