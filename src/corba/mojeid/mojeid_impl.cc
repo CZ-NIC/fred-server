@@ -1325,10 +1325,10 @@ CORBA::ULongLong ServerImpl::getContactId(const char* _handle)
     throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
 }
 
-ContactHandleList* ServerImpl::getMojeidEnabledContactHandles()
+ContactHandleList* ServerImpl::getUnregistrableHandles()
 {
     Logging::Context ctx_server(create_ctx_name(server_name_));
-    Logging::Context ctx("get-mojeid-enabled-contact-handles");
+    Logging::Context ctx("get-unregistrable-handles");
     ConnectionReleaser releaser;
 
     try

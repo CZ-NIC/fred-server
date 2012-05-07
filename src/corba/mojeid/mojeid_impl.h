@@ -107,7 +107,7 @@ class ServerImpl : public POA_Registry::MojeID::Server,
 
         CORBA::ULongLong getContactId(const char* _handle);
 
-        ContactHandleList* getMojeidEnabledContactHandles();
+        ContactHandleList* getUnregistrableHandles();
 };
 
 void sendAuthPasswords(unsigned long long cid, unsigned long long prid);
