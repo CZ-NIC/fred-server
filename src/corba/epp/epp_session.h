@@ -23,6 +23,9 @@ public:
   long long timestamp;
 
   Session()
+  : registrarID(0)
+  , language(0)
+  , timestamp(0)
   { }
 
   Session(int _registrarID, int _language, long long _timestamp) :

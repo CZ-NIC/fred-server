@@ -152,6 +152,7 @@ void EppSessionContainer::logout_session_worker(unsigned long long loginId)
     if(found == sessions.end()) {
         LOGGER(PACKAGE).error( boost::format("logout_session_worker: loginID %1% not found") % loginId );
         // not considered a serious error, not throwing
+        return;
     }
 
     unsigned regId = found->second.registrarID;
@@ -164,7 +165,7 @@ void EppSessionContainer::logout_session_worker(unsigned long long loginId)
         reg_sessions_count = reg_found->second;
     }
 
-    if(reg_sessions_count <= 0) {
+    if(reg_sessions_count == 0) {
         std::string msg("Internal error - number of registrar sessions inconsistent");
         LOGGER(PACKAGE).error(msg);
         throw std::runtime_error(msg);
