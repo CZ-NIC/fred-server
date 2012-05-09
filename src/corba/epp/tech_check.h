@@ -45,14 +45,14 @@ class TechCheckManager {
   void checkFromRegistrar(
     const std::string& registrar, const std::string& nsset, 
     int level, const FQDNList& fqdns, const char *cltrid
-  ) throw (INTERNAL_ERROR, REGISTRAR_NOT_FOUND, NSSET_NOT_FOUND);
+  );
   
  private:
   NameService          *ns_ptr;
   ccReg::TechCheck_var tc;
   boost::mutex         mutex;
 
-  void _resolveInit() throw (RESOLVE_FAILED);
+  void _resolveInit();
 };
 
 #endif
