@@ -118,10 +118,10 @@ public:
   //  get number of active sessions
 
   // send    exception ServerIntError
-  void ServerInternalError(const char *fce, const char *svTRID="DUMMY-SVTRID") throw (ccReg::EPP::EppError);
+  void ServerInternalError(const char *fce, const char *svTRID="DUMMY-SVTRID");
   // EPP exception 
   void EppError(short errCode, const char *errMsg, const char *svTRID,
-    ccReg::Errors_var& errors) throw (ccReg::EPP::EppError);
+    ccReg::Errors_var& errors);
 
   void NoMessages(short errCode, const char *errMsg, const char *svTRID);
 

@@ -93,7 +93,6 @@ char *removeWhitespaces(const char *encoded);
 
 static bool testObjectHasState(
   DBSharedPtr db, Fred::TID object_id, unsigned state_id)
-    throw (Fred::SQL_ERROR)
 {
   bool returnState;
   std::stringstream sql;
@@ -139,7 +138,7 @@ public:
   EPPAction(
     ccReg_EPP_i *_epp, unsigned long long _clientID, int action, const char *clTRID,
     const char *xml, unsigned long long requestId
-  ) throw (ccReg::EPP::EppError) :
+  ) :
     ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
     regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
     notifier(0), cltrid(clTRID)
@@ -175,7 +174,7 @@ public:
   EPPAction(
       ccReg_EPP_i *_epp, unsigned long long _clientID, int action, const char *clTRID,
       const char *xml, Database::Connection conn, unsigned long long requestId
-    ) throw (ccReg::EPP::EppError) :
+    ) :
       ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
       regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
       notifier(0), cltrid(clTRID)
@@ -252,7 +251,7 @@ public:
     return errors;
   }
   void failed(
-    int _code) throw (ccReg::EPP::EppError)
+    int _code)
   {
       TRACE(">> failed");
     code = ret->code = _code;
@@ -275,13 +274,13 @@ public:
       return errCode;
   }
   void failedInternal(
-    const char *msg) throw (ccReg::EPP::EppError)
+    const char *msg)
   {
       TRACE(">> failed internal");
     code = ret->code = COMMAND_FAILED;
     epp->ServerInternalError(msg, db->GetsvTRID());
   }
-  void NoMessage() throw (ccReg::EPP::NoMessages)
+  void NoMessage()
   {
     code = ret->code = COMMAND_NO_MESG;
     ccReg::Response_var& r(getRet());
@@ -498,7 +497,7 @@ ccReg_EPP_i::~ccReg_EPP_i()
 
 // HANDLE EXCEPTIONS
 void ccReg_EPP_i::ServerInternalError(
-  const char *fce, const char *svTRID) throw (ccReg::EPP::EppError)
+  const char *fce, const char *svTRID)
 {
   LOG( ERROR_LOG ,"Internal errror in fce %s svTRID[%s] " , fce , svTRID );
   throw ccReg::EPP::EppError( COMMAND_FAILED , "" , svTRID , ccReg::Errors(0) );
@@ -506,8 +505,6 @@ void ccReg_EPP_i::ServerInternalError(
 
 void ccReg_EPP_i::EppError(
   short errCode, const char *msg, const char *svTRID, ccReg::Errors_var& errors)
-    throw (ccReg::EPP::EppError)
-
 {
   LOG( WARNING_LOG ,"EppError errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
   throw ccReg::EPP::EppError( errCode , msg , svTRID , errors );
