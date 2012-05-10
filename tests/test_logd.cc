@@ -12,6 +12,8 @@
 
 #include <stdio.h>
 
+#include "time_clock.h"
+
 #include "requests/request_impl.h"
 #include "requests/request.h"
 #include "requests/request_manager.h"
@@ -408,20 +410,24 @@ bool TestImplLog::closeRequest(const Database::ID id, const char *content, const
 			}
 		} else {
 			BOOST_CHECK(!res[0][0].isnull());
-                        Database::ID db_id = res[0][1];
-                        BOOST_CHECK(session_id == db_id);
+			if(session_id != 0) {
+                Database::ID db_id = res[0][1];
+                BOOST_CHECK(session_id == db_id);
+			}
 		}
 
 	} else {
 		BOOST_CHECK(!res[0][0].isnull());
 		BOOST_CHECK(std::string(content) == (std::string)res[0][1]);
-                Database::ID db_id = res[0][2];
-                BOOST_CHECK(session_id == db_id);
+		if(session_id != 0) {
+            Database::ID db_id = res[0][2];
+            BOOST_CHECK(session_id == db_id);
+		}
 	}
 
 	check_db_properties_subset(id, props, true);
         // TODO 
-        check_obj_references_subset(id, refs);
+    check_obj_references_subset(id, refs);
 
 	return result;
 }
@@ -1451,6 +1457,83 @@ BOOST_AUTO_TEST_CASE (threaded_property_add_test)
 
 }
 
+
+
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(test_request_count)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::auto_ptr<Fred::Logger::RequestProperties> props1;
+
+    props1 = test.create_generic_properties(17, global_call_count++);
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    ID r1 = test.createRequest("", LC_EPP, "", *props1, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r1, "");
+    ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r2, "");
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
+
+    RequestCountInfo::iterator it = info->find(reg_handle);
+
+    BOOST_REQUIRE(it != info->end());
+
+    BOOST_CHECK(it->second == 18);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_several)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::auto_ptr<Fred::Logger::RequestProperties> props1;
+
+    props1 = test.create_generic_properties(17, global_call_count++);
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    ID r1 = test.createRequest("", LC_EPP, "", *props1, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r1, "");
+    ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r2, "");
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+
+    Database::Connection conn = Database::Manager::acquire();
+    conn.exec_params("INSERT INTO request(time_begin, service_id, is_monitoring, user_name) VALUES "
+            "($1::timestamp, 3, false, $2)", Database::query_param_list
+                (current_tstamp - days(2))
+                (reg_handle)
+            );
+
+    Result res = conn.exec("SELECT currval('request_id_seq') AS id");
+
+    ID r3 = res[0][0];
+
+    conn.exec_params("UPDATE request SET result_code_id = 9 WHERE id = $1",
+            Database::query_param_list (r3)
+    );
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - days(3), current_tstamp + days(3), "EPP");
+
+    RequestCountInfo::iterator it = info->find(reg_handle);
+
+    BOOST_REQUIRE(it != info->end());
+
+    BOOST_CHECK(it->second == 19);
+}
 
 /*
 // TODO testcases

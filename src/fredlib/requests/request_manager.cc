@@ -494,7 +494,6 @@ bool ManagerImpl::i_addRequestProperties(ID id, const Fred::Logger::RequestPrope
 
 // close the record with given ID (end time is filled thus no further
 // modification is possible after this call)
-// TODO session_id is optional - refactor code
 // EXCEPTIONS MUST be handled in the caller
 bool ManagerImpl::i_closeRequest(
         ID id,
@@ -562,7 +561,6 @@ bool ManagerImpl::i_closeRequest(
 #ifdef LOGD_VERIFY_INPUT
     boost::format query_check;
     query_check = boost::format("select session_id, time_end from request where id=%1%") % id;
-    // TODO you really should update the session_id
 
     Result res_check = db.exec(query_check.str());
 
@@ -795,39 +793,177 @@ Database::ID getServiceIdForName(const std::string &service_name)
     return ret;
 }
 
+void convert_timestamps_to_utc(ptime &from, ptime &to, const ptime &from_localtime, const ptime &to_localtime)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Result res_times = conn.exec_params( " SELECT "
+        "($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC', "
+        "($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' " ,
+        Database::query_param_list
+        (from_localtime)
+        (to_localtime)
+        );
+
+    from = res_times[0][0];
+    to   = res_times[0][1];
+}
+
+
 /*
  * Request count during specified period for specified service and request.user_name
  * timestamps in local time
  */
 unsigned long long ManagerImpl::i_getRequestCount(
-        const boost::posix_time::ptime &datetime_from,
-        const boost::posix_time::ptime &datetime_to,
+        const boost::posix_time::ptime &from_localtime,
+        const boost::posix_time::ptime &to_localtime,
         const std::string &service,
-        const std::string &user) {
-
+        const std::string &user)
+{
     logd_ctx_init ctx;
-    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getServices()");
-
-    Database::Connection conn = Database::Manager::acquire();
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestCount()");
 
     Database::ID service_id = getServiceIdForName(service);
 
-    Database::Result res =
-    conn.exec_params("SELECT count(*) FROM request r"
-                     " JOIN result_code rc ON rc.id = r.result_code_id"
-                     " WHERE rc.result_code not in (2400,2500)"
-                     " AND time_begin >= ($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC'"
-                         " AND time_begin < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC'"
-                         " AND is_monitoring = false"
-                         " AND r.service_id = $3"
-                         " AND r.user_name = $4",
-           Database::query_param_list
-                            (datetime_from)
-                            (datetime_to)
-                            (service_id)
-                            (user)
-                            );
+    ptime datetime_from, datetime_to;
+    convert_timestamps_to_utc(datetime_from, datetime_to, from_localtime, to_localtime);
 
+    date from_date = datetime_from.date();
+    date to_date   = datetime_to.date();
+
+    // first day
+    unsigned long long total = getRequestCountWorker(datetime_from, ptime(from_date+days(1)), service_id, user);
+
+    // the rest
+    for(date d = from_date+days(1);
+        d < to_date;
+        d += days(1)) {
+
+            total += getRequestCountWorker(ptime(d), ptime(d+days(1)), service_id, user);
+    }
+
+    // last day
+    if(to_date != from_date) {
+        total += getRequestCountWorker(ptime(to_date), datetime_to, service_id, user);
+    }
+
+    return total;
+}
+
+
+std::auto_ptr<RequestCountInfo>
+ManagerImpl::i_getRequestCountUsers(
+        const boost::posix_time::ptime &datetime_from_local,
+        const boost::posix_time::ptime &datetime_to_local,
+        const std::string &service)
+{
+    logd_ctx_init ctx;
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestCountUsers()");
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    std::auto_ptr<RequestCountInfo> info (new RequestCountInfo());
+    Database::ID service_id = getServiceIdForName(service);
+
+    ptime datetime_from, datetime_to;
+    convert_timestamps_to_utc(datetime_from, datetime_to, datetime_from_local, datetime_to_local);
+
+    date from_date = datetime_from.date();
+    date to_date   = datetime_to.date();
+
+    // first day
+    incrementRequestCounts(info.get(),
+            getRequestCountUsersWorker(
+                        datetime_from, ptime(from_date+days(1)), service_id
+                    )
+    );
+
+    // the rest
+    for(date d = from_date+days(1);
+        d < to_date;
+        d += days(1)) {
+            incrementRequestCounts(info.get(), getRequestCountUsersWorker(
+                    ptime(d), ptime(d + days(1)), service_id
+                )
+            );
+    }
+
+    // last day
+    if(to_date != from_date) {
+        incrementRequestCounts(info.get(), getRequestCountUsersWorker(
+                ptime(to_date) , datetime_to, service_id
+            )
+        );
+    }
+
+    return info;
+}
+
+
+// timestamps are in UTC
+Result ManagerImpl::getRequestCountUsersWorker(ptime from, ptime to, int service_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Result res = conn.exec_params(
+        " SELECT r.user_name, count(*) FROM request r "
+        " LEFT JOIN request_property_value rpv ON ( "
+        "   rpv.request_id = r.id "
+        "  AND rpv.request_service_id = $1::integer "
+        "  AND rpv.request_time_begin >= $2::timestamp "
+        "  AND rpv.request_time_begin < $3::timestamp "
+        "  AND rpv.request_monitoring = false "
+        " ) "
+        " LEFT JOIN request_property_name rpn ON rpn.id = rpv.property_name_id "
+        "  AND rpn.name = 'handle' "
+        " JOIN result_code rc ON rc.id = r.result_code_id "
+        "  AND rc.name NOT IN ('CommandFailed', 'CommandFailedServerClosingConnection') "
+        "WHERE r.service_id = $1::integer "
+        " AND r.time_begin >= $2::timestamp "
+        " AND r.time_begin < $3::timestamp "
+        " AND r.is_monitoring = false "
+        "GROUP BY r.user_name "
+        "ORDER BY r.user_name; ",
+        Database::query_param_list
+                        (service_id)
+                        (from)
+                        (to)
+    );
+
+    return res;
+}
+
+unsigned long long ManagerImpl::getRequestCountWorker(ptime from, ptime to, int service_id, std::string user_name)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result res =
+    conn.exec_params(
+        " SELECT count(*) FROM request r "
+        " LEFT JOIN request_property_value rpv ON ( "
+        "  rpv.request_id = r.id "
+        " AND rpv.request_service_id = $3::integer "
+        " AND rpv.request_time_begin >= $1::timestamp "
+        " AND rpv.request_time_begin < $2::timestamp "
+        " AND rpv.request_monitoring = false "
+        " )  "
+        " LEFT JOIN request_property_name rpn ON rpn.id = rpv.property_name_id "
+        "  AND rpn.name = 'handle' "
+        " JOIN result_code rc ON rc.id = r.result_code_id "
+        "  AND rc.name NOT IN ('CommandFailed', 'CommandFailedServerClosingConnection') "
+        " WHERE r.service_id = $3::integer "
+        " AND r.time_begin >= $1::timestamp "
+        " AND r.time_begin < $2::timestamp "
+        " AND r.is_monitoring = false "
+        " AND r.user_name = $4; ",
+       Database::query_param_list
+                        (from)
+                        (to)
+                        (service_id)
+                        (user_name)
+                        );
+
+    // count cannot be NULL or nonexistent, so we can check it here
     if(res.size() != 1 || res[0][0].isnull()) {
         throw InternalServerError("Count of records not found");
     }
@@ -835,45 +971,25 @@ unsigned long long ManagerImpl::i_getRequestCount(
     return res[0][0];
 }
 
-std::auto_ptr<RequestCountInfo>
-ManagerImpl::i_getRequestCountUsers(
-        const boost::posix_time::ptime &datetime_from,
-        const boost::posix_time::ptime &datetime_to,
-        const std::string &service)
+void ManagerImpl::incrementRequestCounts(RequestCountInfo *inf_ptr, Result res)
 {
-    Database::Connection conn = Database::Manager::acquire();
 
-    Database::ID service_id = getServiceIdForName(service);
-
-    Database::Result res =
-    conn.exec_params(
-        "SELECT r.user_name, count(*) FROM request r "
-        " JOIN result_code rc ON rc.id = r.result_code_id"
-        " WHERE rc.result_code not in (2400,2500)"
-        " AND r.time_begin >= ($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
-        " AND r.time_begin < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' "
-        " AND r.is_monitoring = false "
-        " AND r.service_id = $3 "
-        " AND r.user_name IS NOT NULL "
-        " GROUP BY r.user_name ",
-        Database::query_param_list
-                         (datetime_from)
-                         (datetime_to)
-                         (service_id)
-                         );
-
-    std::auto_ptr<RequestCountInfo> info (new RequestCountInfo());
+    RequestCountInfo &inf = *inf_ptr;
 
     for(size_t i=0;i<res.size();++i) {
         std::string user_handle = (std::string)res[i][0];
         unsigned long long count = (unsigned long long)res[i][1];
 
-        info->insert(make_pair(user_handle, count));
+        unsigned long long new_value = 0;
+        RequestCountInfo::iterator it = inf.find(user_handle);
+
+        if(it != inf.end()) {
+            inf[user_handle] = it->second + count;
+        } else {
+            inf[user_handle] = count;
+        }
     }
-
-    return info;
 }
-
 
 Manager* Manager::create() {
     TRACE("[CALL] Fred::Logger::Manager::create()");

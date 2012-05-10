@@ -153,6 +153,9 @@ private:
   inline Database::ID find_last_request_id(Connection &conn);
   inline void getSessionUser(Connection &conn, Database::ID session_id, std::string *user_name, Database::ID *user_id);
 
+  Result getRequestCountUsersWorker(ptime from, ptime to, int service_id);
+  unsigned long long getRequestCountWorker(ptime from, ptime to, int service_id, std::string user_name);
+  void incrementRequestCounts(RequestCountInfo *inf_ptr, Result res);
 };
 
 }
