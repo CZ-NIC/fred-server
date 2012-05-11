@@ -693,6 +693,22 @@ void ServerImpl::contactUnidentifyPrepare(const CORBA::ULongLong _contact_id,
             "AND pr.request_type IN (12,13,14) AND object_id = $1::integer",
                 Database::query_param_list(_contact_id));
 
+        //#6813
+        ::MojeID::Contact tmp_contact = ::MojeID::contact_info(_contact_id);
+        if(tmp_contact.discloseaddress == false)
+        {
+            tmp_contact.discloseaddress = true;
+
+            unsigned long long hid = ::MojeID::contact_update(
+                            _request_id,
+                            mojeid_registrar_id_,
+                            tmp_contact);
+
+            LOGGER(PACKAGE).info(boost::format(
+                            "contact updated -- handle: %1%  id: %2%  history_id: %3%")
+                            % tmp_contact.handle % _contact_id % hid);
+        }
+
 
         tx.prepare(_trans_id);
 
