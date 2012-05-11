@@ -18,6 +18,7 @@
 #include "fredlib/mojeid/request.h"
 #include "fredlib/mojeid/mojeid_contact_states.h"
 #include "fredlib/mojeid/mojeid_data_validation.h"
+#include "fredlib/mojeid/mojeid_disclose_policy.h"
 
 #include "corba/connection_releaser.h"
 
@@ -767,6 +768,8 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
                 }
             }
         }
+
+        CznicDiscloseFlagPolicy().apply(data);
 
         unsigned long long hid = ::MojeID::contact_update(
                 request.get_request_id(),

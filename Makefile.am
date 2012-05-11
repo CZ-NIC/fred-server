@@ -803,7 +803,8 @@ src_fredlib_mojeid_libmojeid_a_SOURCES = \
 		src/fredlib/mojeid/request.h \
 		src/fredlib/mojeid/mojeid_data_validation.h \
 		src/fredlib/mojeid/mojeid_data_validation.cc \
-		src/fredlib/mojeid/mojeid_contact_states.h
+		src/fredlib/mojeid/mojeid_contact_states.h \
+		src/fredlib/mojeid/mojeid_disclose_policy.h
 #
 # src/fredlib/mojeid/libmojeid.a
 
