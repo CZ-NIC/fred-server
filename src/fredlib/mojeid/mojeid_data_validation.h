@@ -111,6 +111,7 @@ ContactValidator create_identification_validator();
 ContactValidator create_finish_identification_validator();
 ContactValidator create_contact_update_validator();
 
+bool check_conditionally_identified_contact_diff(const ::MojeID::Contact &_c1, const ::MojeID::Contact &_c2);
 bool check_validated_contact_diff(const ::MojeID::Contact &_c1, const ::MojeID::Contact &_c2);
 
 

@@ -382,6 +382,60 @@ bool contact_checker_birthday(const ::MojeID::Contact &_data, FieldErrorMap &_er
     return result;
 }
 
+/// return true in case the contacts are equal in terms registry data
+bool check_conditionally_identified_contact_diff(
+        const ::MojeID::Contact &_c1,
+        const ::MojeID::Contact &_c2)
+{
+    /* name */
+    if (_c1.name != _c2.name) {
+        return false;
+    }
+    /* organization */
+    if (static_cast<std::string>(_c1.organization) != static_cast<std::string>(_c2.organization)) {
+        return false;
+    }
+    /* dic */
+    if (static_cast<std::string>(_c1.vat) != static_cast<std::string>(_c2.vat)) {
+        return false;
+    }
+    /* address */
+    if ((static_cast<std::string>(_c1.street1) != static_cast<std::string>(_c2.street1))
+            || (static_cast<std::string>(_c1.street2) != static_cast<std::string>(_c2.street2))
+            || (static_cast<std::string>(_c1.street3) != static_cast<std::string>(_c2.street3))
+            || (static_cast<std::string>(_c1.city) != static_cast<std::string>(_c2.city))
+            || (static_cast<std::string>(_c1.stateorprovince) != static_cast<std::string>(_c2.stateorprovince))
+            || (static_cast<std::string>(_c1.country) != static_cast<std::string>(_c2.country))
+            || (static_cast<std::string>(_c1.postalcode) != static_cast<std::string>(_c2.postalcode))) {
+        return false;
+    }
+    /* personal identification */
+    if (static_cast<std::string>(_c1.ssn) != static_cast<std::string>(_c2.ssn)
+            || (static_cast<std::string>(_c1.ssntype) != static_cast<std::string>(_c2.ssntype))) {
+        return false;
+    }
+    /* telephone and email */
+    if ((static_cast<std::string>(_c1.telephone) != static_cast<std::string>(_c2.telephone))
+            || (static_cast<std::string>(_c1.fax) != static_cast<std::string>(_c2.fax))
+            || (static_cast<std::string>(_c1.email) != static_cast<std::string>(_c2.email))
+            || (static_cast<std::string>(_c1.notifyemail) != static_cast<std::string>(_c2.notifyemail))) {
+        return false;
+    }
+    /* all disclose disclose flags */
+    if ( (_c1.disclosename != _c2.disclosename)
+            || (_c1.discloseorganization != _c2.discloseorganization)
+            || (_c1.discloseaddress != _c2.discloseaddress)
+            || (_c1.disclosetelephone != _c2.disclosetelephone)
+            || (_c1.disclosefax != _c2.disclosefax)
+            || (_c1.discloseemail != _c2.discloseemail)
+            || (_c1.disclosevat != _c2.disclosevat)
+            || (_c1.discloseident != _c2.discloseident)
+            || (_c1.disclosenotifyemail != _c2.disclosenotifyemail)) {
+        return false;
+    }
+
+    return true;
+}
 
 
 bool check_validated_contact_diff(

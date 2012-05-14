@@ -776,6 +776,19 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
         ::MojeID::ContactValidator validator = ::MojeID::create_contact_update_validator();
         validator.check(data);
 
+        if (Fred::object_has_state(cid, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT) == true) {
+
+            if (::MojeID::check_conditionally_identified_contact_diff(data, ::MojeID::contact_info(cid)) == false) {
+                LOGGER(PACKAGE).info( boost::format(
+                        "tried to update conditionally identified contact -- handle: %1%  id: %2% ")
+                        % handle % cid);
+
+                ::MojeID::FieldErrorMap errors;
+                errors[::MojeID::field_status] = ::MojeID::INVALID;
+                throw ::MojeID::DataValidationError(errors);
+            }
+        }
+
         if (Fred::object_has_state(cid, ::MojeID::VALIDATED_CONTACT) == true) {
             if (::MojeID::check_validated_contact_diff(data, ::MojeID::contact_info(cid)) == false) {
                 /* change contact status to identified */
