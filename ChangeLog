@@ -1,3 +1,22 @@
+2012-05-14 Jiri Sadek, Juraj Vicenik, Jan Zima (2.11.0)
+
+  * mojeid
+      - allow to change discloseaddress flag
+      - constant pins in demo mode
+      - as-you-type check backend method returning unregistrable handles
+
+  * request fee
+      - count requests for commands with object handle list as parameter
+      - poll commands are excluded from request fee
+
+  * disable update request notification if there are no changes
+
+  * refuse to change object in deleteCandidate status
+
+  * invoicing - fred-admin interface for adding new prefixes
+
+  * epp code fixes - throw spec removed
+
 2012-04-27 Jiri Sadek, Juraj Vicenik, Jan Zima (2.10.0)
 
   * epp action removed from fred
