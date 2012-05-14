@@ -4,6 +4,7 @@
       - allow to change discloseaddress flag
       - constant pins in demo mode
       - as-you-type check backend method returning unregistrable handles
+      - add check to don't allow data update for conditionally identified contact
 
   * request fee
       - count requests for commands with object handle list as parameter
