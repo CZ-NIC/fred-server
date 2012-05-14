@@ -294,12 +294,14 @@ init_cz()
     $ADMCMD --registrar_add_zone \
         --zone_fqdn=cz --handle=REG-FRED_B \
         --from_date="2007-01-01"
+    # change some parameters specific for .cz
     $ADMCMD --enum_parameter_change \
         --parameter_name=handle_registration_protection_period \
         --parameter_value=2
     $ADMCMD --enum_parameter_change \
         --parameter_name=roid_suffix \
         --parameter_value=CZ
+    # configure price list as on production
     $ADMCMD --price_add --operation='CreateDomain' \
 	--valid_from='2009-12-31 23:00:00' --zone_fqdn cz \
 	--operation_price 0 --period 1 
@@ -330,6 +332,19 @@ init_cz()
     $ADMCMD --price_add --operation='GeneralEppOperation' \
 	--valid_from='2011-05-31 22:00:00' --zone_fqdn cz \
 	--operation_price 0.10 --period 1  --enable_postpaid_operation
+    # configure prefixes for invoices
+    $ADMCMD --add_invoice_number_prefix \
+	--prefix=24 --zone_fqdn=cz --invoice_type_name=advance
+    $ADMCMD --add_invoice_number_prefix \
+	--prefix=23 --zone_fqdn=cz --invoice_type_name=account
+    $ADMCMD --add_invoice_number_prefix \
+	--prefix=11 --zone_fqdn=0.2.4.e164.arpa --invoice_type_name=advance
+    $ADMCMD --add_invoice_number_prefix \
+	--prefix=12 --zone_fqdn=0.2.4.e164.arpa --invoice_type_name=account
+    $ADMCMD --create_invoice_prefixes --for_current_year
+    # add some testing credit for both registrars
+    
+
     exit 0
 }
 
