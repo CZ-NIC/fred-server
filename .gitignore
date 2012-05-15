@@ -1,3 +1,13 @@
+Makefile
+config.h
+config.log
+config.status
+config/hpmail.conf
+config/server.conf
+fred-server.spec
+init-scripts/fred-server
+stamp-h1
+util/decimal/mpdecimal-2.2/mpdecimal.h
 .cproject
 .gitignore*
 .project
