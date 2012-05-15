@@ -1393,6 +1393,37 @@ ContactHandleList* ServerImpl::getUnregistrableHandles()
     }
 }
 
+char *ServerImpl::contactAuthInfo(const CORBA::ULongLong _contact_id)
+{
+    Logging::Context ctx_server(create_ctx_name(server_name_));
+    Logging::Context ctx("contact-authinfo");
+    ConnectionReleaser releaser;
+
+    LOGGER(PACKAGE).info(boost::format("contactAuthInfo, contact_id: %1%") % _contact_id);
+
+    try {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result res = conn.exec_params(
+                "SELECT authinfopw FROM object o JOIN contact c ON c.id = o.id WHERE o.id = $1::integer",
+                Database::query_param_list(_contact_id));
+
+        if(res.size() == 0) {
+            throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+        }
+
+        return corba_wrap_string(res[0][0]);
+
+    } catch (Registry::MojeID::Server::OBJECT_NOT_EXISTS) {
+        throw;
+    } catch (std::exception &_ex) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
+    } catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
+}
+
 void sendAuthPasswords(unsigned long long cid, unsigned long long prid) {
     try {
         IdentificationRequestManagerPtr mgr;
