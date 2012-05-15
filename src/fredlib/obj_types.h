@@ -38,6 +38,7 @@
 
 #include "fredlib/db_settings.h"
 #include "model/model_filters.h"
+#include "types/stringify.h"
 
 namespace Fred
 {
@@ -188,7 +189,11 @@ public:
             if(get(col).empty())
                 return std::string("");
             else
-	        return formatTime(boost::posix_time::from_iso_string(get(col)), true, true);
+            {
+                return stringify(
+                        boost::date_time::c_local_adjustor<ptime>::utc_to_local(
+                            boost::posix_time::from_iso_string(get(col))));
+            }
         }
             break;
         default:
