@@ -49,7 +49,13 @@ unsigned long long EppSessionContainer::login_session(int regId, int lang)
     sessions[loginId] = new_session;
 
     /// fill registrar sessoin count
-    registrar_session_count[regId] = reg_sessions_count + 1;
+    try {
+        registrar_session_count[regId] = reg_sessions_count + 1;
+    } catch(...) {
+        // rollback the first operation in case of a failure
+        sessions.erase(loginId);
+        throw;
+    }
 
     return loginId;
 }
@@ -172,7 +178,7 @@ void EppSessionContainer::logout_session_worker(unsigned long long loginId)
     }
 
     registrar_session_count[regId] = reg_sessions_count - 1;
-
+    //this operation is nothrow thus we already have the strong guarantee
     sessions.erase(found);
 
     LOGGER(PACKAGE).debug( boost::format("logout_session_worker: loginId %1% logged out, actual number of all sessions: %2%") % loginId % sessions.size() );
