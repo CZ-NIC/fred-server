@@ -298,6 +298,8 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
     case ccReg::FT_OBJ:
     case ccReg::FT_FILE:
       LOGGER(PACKAGE).error("Calling method with not implemented parameter!");
+      throw ccReg::Admin::OBJECT_NOT_FOUND();
+      break;
     default:
       throw ccReg::Admin::OBJECT_NOT_FOUND();
       break;
