@@ -134,7 +134,7 @@ public:
 	bool         closeSession(Database::ID id);
 
 	// TODO change this and test combination of session / request (session)
-	Database::ID createRequest(const char *ip_addr, const ServiceType serv, const char * content, const Fred::Logger::RequestProperties &props = TestImplLog::no_props, bool is_monitoring = false, const Fred::Logger::ObjectReferences &refs = TestImplLog::no_objs, Database::ID session_id=0);
+	Database::ID createRequest(const char *ip_addr, const ServiceType serv, const char * content, const Fred::Logger::RequestProperties &props = TestImplLog::no_props, bool is_monitoring = false, const Fred::Logger::ObjectReferences &refs = TestImplLog::no_objs, Database::ID session_id=0, Database::ID request_type_id = UNKNOWN_ACTION);
 
 	bool addRequestProperties(const Database::ID id, const Fred::Logger::RequestProperties &props = TestImplLog::no_props);
 	bool closeRequest(const Database::ID id, const char * content, const Fred::Logger::RequestProperties &props = TestImplLog::no_props, const Fred::Logger::ObjectReferences &refs = TestImplLog::no_objs, long result_code = 1000, Database::ID session_id = 0);
@@ -163,12 +163,14 @@ public:
 
 	// auxiliary testing functions
 	std::auto_ptr<Fred::Logger::RequestProperties> create_generic_properties(int number, int value_id);
+	std::auto_ptr<Fred::Logger::RequestProperties> create_properties_req_count(unsigned num_handles, unsigned num_others, int value_id);
 
         void check_obj_references(ID rec_id, const Fred::Logger::ObjectReferences &refs);
         void check_obj_references_subset(ID rec_id, const Fred::Logger::ObjectReferences &refs);
 	void check_db_properties_subset(ID rec_id, const Fred::Logger::RequestProperties &props, bool output);
 	bool property_match(const Row r, const Fred::Logger::RequestProperty &p, bool output) ;
 
+	void insert_custom_request(ptime timestamp, const std::string &user);
 
 // different tests
 	void check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props, bool output);
@@ -250,7 +252,29 @@ std::string create_date_str(int y, int m)
 	return ret.str();
 }
 
+Database::ID get_request_type_id(const std::string &request_name)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec_params("select id FROM request_type WHERE name = $1::text", Database::query_param_list(request_name) );
 
+    if(res.size() != 1) {
+        throw std::runtime_error("Couldn't find unique request type with given name. ");
+    }
+
+    return res[0][0];
+}
+
+Database::ID get_result_code_id(const std::string &result_code_name)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec_params("SELECT id FROM result_code WHERE name = $1::text", Database::query_param_list(result_code_name));
+
+    if(res.size() != 1) {
+        throw std::runtime_error("Couldn't find unique result code for the given name");
+    }
+
+    return res[0][0];
+}
 
 struct MyFixture;
 
@@ -294,6 +318,27 @@ Database::ID TestImplLog::createSession(Database::ID user_id, const char *user_n
 	return ret;
 }
 
+void TestImplLog::insert_custom_request(ptime timestamp, const std::string &user)
+{
+    // request with different time
+    Database::Connection conn = Database::Manager::acquire();
+    conn.exec_params("INSERT INTO request(time_begin, service_id, is_monitoring, user_name) VALUES "
+            "(($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC', 3, false, $2)", Database::query_param_list
+                (timestamp)
+                (user)
+            );
+
+    Result res = conn.exec("SELECT currval('request_id_seq') AS id");
+
+    ID ret = res[0][0];
+
+    MyFixture::id_list_entry.push_back(ret);
+
+    conn.exec_params("UPDATE request SET result_code_id = 9 WHERE id = $1",
+            Database::query_param_list (ret)
+    );
+}
+
 bool TestImplLog::closeSession(Database::ID id)
 {
 	bool ret = logd->i_closeSession(id);
@@ -318,14 +363,14 @@ bool TestImplLog::closeSession(Database::ID id)
 }
 
 //TODO check object refs
-Database::ID TestImplLog::createRequest(const char *ip_addr, const ServiceType serv, const char * content, const Fred::Logger::RequestProperties &props, bool is_monitoring, const Fred::Logger::ObjectReferences &refs, Database::ID session_id)
+Database::ID TestImplLog::createRequest(const char *ip_addr, const ServiceType serv, const char * content, const Fred::Logger::RequestProperties &props, bool is_monitoring, const Fred::Logger::ObjectReferences &refs, Database::ID session_id, Database::ID request_type_id)
 {
 
 	if(serv > LC_MAX_SERVICE) {
 		BOOST_FAIL(boost::format (" ---------Invalid service num %1% ") % serv);
 	}
 
-	Database::ID ret = logd->i_createRequest(ip_addr, serv, content, props, refs, UNKNOWN_ACTION, session_id); boost::format query;
+	Database::ID ret = logd->i_createRequest(ip_addr, serv, content, props, refs, request_type_id, session_id); boost::format query;
 
 	if(ret == 0) return 0;
 
@@ -461,6 +506,30 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_generic_prope
 	}
 
 	return ret;
+}
+
+std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_req_count(unsigned num_handles, unsigned num_others, int value_id)
+{
+    std::auto_ptr<Fred::Logger::RequestProperties> ret(new Fred::Logger::RequestProperties(num_handles + num_others));
+    Fred::Logger::RequestProperties &ref = *ret;
+
+    for(int i=0;i<num_handles;i++) {
+        ref[i].name = "handle";
+        ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
+
+        ref[i].child = false;
+        ref[i].output = false;
+    }
+
+    for(int i=num_handles;i< (num_others+num_handles);i++) {
+        ref[i].name = "not_handle";
+        ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
+
+        ref[i].child = false;
+        ref[i].output = false;
+    }
+
+    return ret;
 }
 
 // r is row produced by:
@@ -1147,81 +1216,6 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 
 }
 
-// just call it
-BOOST_AUTO_TEST_CASE( get_request_count_users )
-{
-    TestImplLog test (CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
-
-    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
-    boost::posix_time::ptime end   (time_from_string("2011-01-31"));
-
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(begin, end, "EPP");
-}
-
-BOOST_AUTO_TEST_CASE( get_request_count_users_compare )
-{
-    TestImplLog test (CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
-
-    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
-    boost::posix_time::ptime end   (time_from_string("2011-06-30"));
-
-    std::auto_ptr<RequestCountInfo> info_ptr = test.getRequestCountUsers(begin, end, "EPP");
-
-    for (RequestCountInfo::iterator it = info_ptr->begin(); it != info_ptr->end(); it++) {
-        unsigned long long check_count = test.getRequestCount(begin, end, "EPP", it->first);
-
-        BOOST_REQUIRE_MESSAGE(check_count == it->second,
-                "Count got from getRequestCount and getRequestCountUsers matches");
-    }
-
-}
-
-const std::string REQUEST_COUNT_QUERY (
-"SELECT COUNT(*) FROM request "
-" WHERE time_begin > ($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC'  "
-" AND time_begin < ($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC'  "
-" AND user_name = $3 "
-" AND service_id = 3 "
-" AND is_monitoring = false "
-);
-
-BOOST_AUTO_TEST_CASE( get_request_count_check )
-{
-    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
-
-    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
-    boost::posix_time::ptime end   (time_from_string("2011-01-31"));
-    std::string r_reghandle("REG-FRED_A");
-
-    Database::Connection conn = Database::Manager::acquire();
-
-    unsigned long long count = test.getRequestCount(begin, end, "EPP", r_reghandle);
-
-    Database::Result res_count_check = conn.exec_params(REQUEST_COUNT_QUERY,
-            Database::query_param_list (begin)
-                                       (end)
-                                       (r_reghandle)
-                );
-
-    unsigned long long count_check = res_count_check[0][0];
-
-    BOOST_REQUIRE_MESSAGE(count == count_check, "Nubmer of requests is correct");
-
-}
-
-
-
-
-    
-BOOST_AUTO_TEST_CASE( get_request_count_wrong_date )
-{
-    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
-
-    // "not-a-date-"
-    BOOST_CHECK_THROW(test.getRequestCount(boost::posix_time::ptime(), time_from_string("2011-01-31"), "EPP", "REG-FRED_A"),
-                    std::exception);
-}
-
 BOOST_AUTO_TEST_CASE( getResultCodesByService )
 {
 //    try
@@ -1463,6 +1457,41 @@ BOOST_AUTO_TEST_CASE (threaded_property_add_test)
 
 
 
+BOOST_AUTO_TEST_CASE( get_request_count_users_compare )
+{
+    TestImplLog test (CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
+    boost::posix_time::ptime end   (time_from_string("2011-06-30"));
+
+    std::auto_ptr<RequestCountInfo> info_ptr = test.getRequestCountUsers(begin, end, "EPP");
+
+    for (RequestCountInfo::iterator it = info_ptr->begin(); it != info_ptr->end(); it++) {
+        unsigned long long check_count = test.getRequestCount(begin, end, "EPP", it->first);
+
+        BOOST_REQUIRE_MESSAGE(check_count == it->second,
+                "Count got from getRequestCount and getRequestCountUsers matches");
+    }
+
+}
+
+BOOST_AUTO_TEST_CASE( get_request_count_wrong_date )
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    // "not-a-date-"
+    BOOST_CHECK_THROW(test.getRequestCount(boost::posix_time::ptime(), time_from_string("2011-01-31"), "EPP", "REG-FRED_A"),
+                    std::exception);
+}
+
+BOOST_AUTO_TEST_CASE( get_request_count_users_wrong_date )
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    BOOST_CHECK_THROW(test.getRequestCountUsers(boost::posix_time::ptime(), time_from_string("2011-01-31"), "EPP"),
+                    std::exception);
+
+}
 
 BOOST_AUTO_TEST_CASE(test_request_count)
 {
@@ -1490,9 +1519,206 @@ BOOST_AUTO_TEST_CASE(test_request_count)
     BOOST_REQUIRE(it != info->end());
 
     BOOST_CHECK(it->second == 18);
+
+    unsigned long long count = test.getRequestCount(current_tstamp - hours(1), current_tstamp + hours(1), "EPP", reg_handle);
+
+    BOOST_CHECK(count == 18);
 }
 
-BOOST_AUTO_TEST_CASE(test_request_count_several)
+BOOST_AUTO_TEST_CASE(test_request_count_props_handle)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::auto_ptr<Fred::Logger::RequestProperties> props1;
+
+    props1 = test.create_properties_req_count(7, 10, global_call_count++);
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    ID r1 = test.createRequest("", LC_EPP, "", *props1, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r1, "");
+    ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r2, "");
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
+
+    RequestCountInfo::iterator it = info->find(reg_handle);
+
+    BOOST_REQUIRE(it != info->end());
+
+    BOOST_CHECK(it->second == 8);
+
+    /// the other method (for 1 user)
+    unsigned long long count = test.getRequestCount(current_tstamp - hours(1), current_tstamp + hours(1), "EPP", reg_handle);
+
+    BOOST_CHECK(count == 8);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_errors_simple)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    ID r1 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r1, "", TestImplLog::no_props, TestImplLog::no_objs, get_result_code_id("CommandFailed") );
+
+    ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r2, "", TestImplLog::no_props, TestImplLog::no_objs, get_result_code_id("CommandFailedServerClosingConnection") );
+
+    ID r3 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r3, "");
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
+    RequestCountInfo::iterator it = info->find(reg_handle);
+    BOOST_REQUIRE(it != info->end());
+
+    BOOST_CHECK(it->second == 1);
+
+    unsigned long long count = test.getRequestCount(current_tstamp - hours(1), current_tstamp + hours(1), "EPP", reg_handle);
+    BOOST_CHECK(count == 1);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_errors_props)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::auto_ptr<Fred::Logger::RequestProperties> props_in;
+    props_in = test.create_generic_properties(17, global_call_count++);
+
+    std::auto_ptr<Fred::Logger::RequestProperties> props_out;
+    props_out = test.create_generic_properties(5, global_call_count++);
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    ID r1 = test.createRequest("", LC_EPP, "", *props_in, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r1, "", *props_out, TestImplLog::no_objs, get_result_code_id("CommandFailed") );
+
+    ID r2 = test.createRequest("", LC_EPP, "", *props_in, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r2, "", *props_out, TestImplLog::no_objs, get_result_code_id("CommandFailedServerClosingConnection") );
+
+    ID r3 = test.createRequest("", LC_EPP, "", *props_in, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r3, "", *props_out);
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
+
+    RequestCountInfo::iterator it = info->find(reg_handle);
+
+    BOOST_REQUIRE(it != info->end());
+
+    BOOST_CHECK(it->second == 22);
+
+    unsigned long long count = test.getRequestCount(current_tstamp - hours(1), current_tstamp + hours(1), "EPP", reg_handle);
+    BOOST_CHECK(count == 22);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_poll_simple)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    Database::ID greeting_id = get_request_type_id("ClientGreeting");
+    Database::ID contact_check_id = get_request_type_id("ContactCheck");
+    Database::ID poll_ack_id = get_request_type_id("PollAcknowledgement");
+    Database::ID poll_resp_id = get_request_type_id("PollResponse");
+
+    // these requests should not be counted
+
+    ID r1 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, poll_ack_id);
+    test.closeRequest(r1, "");
+    ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, poll_resp_id);
+    test.closeRequest(r2, "");
+
+    // these two count
+    ID r3 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, greeting_id);
+    test.closeRequest(r3, "");
+    ID r4 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, contact_check_id);
+    test.closeRequest(r4, "");
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP");
+    RequestCountInfo::iterator it = info->find(reg_handle);
+
+    BOOST_REQUIRE(it != info->end());
+    BOOST_CHECK(it->second == 2);
+
+    unsigned long long count = test.getRequestCount(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP", reg_handle);
+    BOOST_CHECK(count == 2);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_poll_props)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::auto_ptr<Fred::Logger::RequestProperties> props1;
+
+    props1 = test.create_generic_properties(17, global_call_count++);
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    Database::ID greeting_id = get_request_type_id("ClientGreeting");
+    Database::ID contact_check_id = get_request_type_id("ContactCheck");
+    Database::ID poll_ack_id = get_request_type_id("PollAcknowledgement");
+    Database::ID poll_resp_id = get_request_type_id("PollResponse");
+
+    // these requests should not be counted
+    ID r1 = test.createRequest("", LC_EPP, "", *props1, false, TestImplLog::no_objs, session_id, poll_ack_id);
+    test.closeRequest(r1, "");
+    ID r2 = test.createRequest("", LC_EPP, "", *props1, false, TestImplLog::no_objs, session_id, poll_resp_id);
+    test.closeRequest(r2, "");
+
+    // these two count
+    ID r3 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, greeting_id);
+    test.closeRequest(r3, "");
+    ID r4 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, contact_check_id);
+    test.closeRequest(r4, "");
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP");
+
+    RequestCountInfo::iterator it = info->find(reg_handle);
+
+    BOOST_REQUIRE(it != info->end());
+
+    BOOST_CHECK(it->second == 2);
+
+    unsigned long long count = test.getRequestCount(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP", reg_handle);
+    BOOST_CHECK(count == 2);
+}
+
+void test_registrar_request_count(TestImplLog &test, boost::posix_time::ptime p_from, boost::posix_time::ptime p_to, const std::string &reg_name, unsigned long long req_count)
+{
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(p_from, p_to, "EPP");
+
+    RequestCountInfo::iterator it = info->find(reg_name);
+
+    if(req_count > 0) {
+        BOOST_REQUIRE(it != info->end());
+        BOOST_CHECK(it->second == req_count);
+    } else {
+        BOOST_CHECK(it == info->end() || it->second == 0);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_past)
 {
     TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
@@ -1511,28 +1737,84 @@ BOOST_AUTO_TEST_CASE(test_request_count_several)
 
     ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
 
-    Database::Connection conn = Database::Manager::acquire();
-    conn.exec_params("INSERT INTO request(time_begin, service_id, is_monitoring, user_name) VALUES "
-            "($1::timestamp, 3, false, $2)", Database::query_param_list
-                (current_tstamp - days(2))
-                (reg_handle)
-            );
-
-    Result res = conn.exec("SELECT currval('request_id_seq') AS id");
-
-    ID r3 = res[0][0];
-
-    conn.exec_params("UPDATE request SET result_code_id = 9 WHERE id = $1",
-            Database::query_param_list (r3)
-    );
+    test.insert_custom_request(current_tstamp - days(2), reg_handle);
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - days(3), current_tstamp + days(3), "EPP");
 
     RequestCountInfo::iterator it = info->find(reg_handle);
 
     BOOST_REQUIRE(it != info->end());
-
     BOOST_CHECK(it->second == 19);
+
+    unsigned long long count = test.getRequestCount(current_tstamp - days(3), current_tstamp + days(3), "EPP", reg_handle);
+    BOOST_CHECK(count == 19);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_cur_month)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    ID r1 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r1, "");
+    ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
+    test.closeRequest(r2, "");
+
+    boost::gregorian::date current_date = boost::gregorian::day_clock::local_day();
+
+    boost::gregorian::date from_date = boost::gregorian::date(current_date.year(), current_date.month(), 1);
+    boost::gregorian::date to_date = from_date + boost::gregorian::months(1);
+
+    test.insert_custom_request(boost::posix_time::ptime(from_date - months(1)), reg_handle);
+
+    ptime p_from(from_date);
+    ptime p_to(to_date);
+
+    test_registrar_request_count(test, p_from, p_to, reg_handle, 2);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_irregular)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    boost::gregorian::date current_date = boost::gregorian::day_clock::local_day();
+
+    /// last month
+    boost::gregorian::date to_date = boost::gregorian::date(current_date.year(), current_date.month(), 1);
+
+    boost::gregorian::date from_date = to_date - boost::gregorian::months(1);
+
+    ptime p_from(from_date);
+    ptime p_to(to_date);
+
+    // request outside of the interval:
+    test.insert_custom_request(p_to + seconds(1), reg_handle);
+    test_registrar_request_count(test, p_from, p_to, reg_handle, 0);
+
+    test.insert_custom_request(p_from - seconds(1), reg_handle);
+    test_registrar_request_count(test, p_from, p_to, reg_handle, 0);
+
+    // requests inside the interval
+    test.insert_custom_request(p_to - seconds(1), reg_handle);
+    test_registrar_request_count(test, p_from, p_to, reg_handle, 1);
+    test.insert_custom_request(p_from + seconds(1), reg_handle);
+    test_registrar_request_count(test, p_from, p_to, reg_handle, 2);
+    test.insert_custom_request(boost::posix_time::ptime(to_date - weeks(2)) + seconds(1), reg_handle);
+    test_registrar_request_count(test, p_from, p_to, reg_handle, 3);
+
+    // borders, `from' included, `to' not
+    test.insert_custom_request(boost::posix_time::ptime(p_from), reg_handle);
+    test_registrar_request_count(test, p_from, p_to, reg_handle, 4);
+
+    test.insert_custom_request(boost::posix_time::ptime(p_to), reg_handle);
+    test_registrar_request_count(test, p_from, p_to, reg_handle, 4);
 }
 
 /*
