@@ -814,7 +814,7 @@ struct ResultTestCharge : ChargeTestParams {
     Database::Date exdate;
     std::string test_desc;
 
-    ResultTestCharge() : ChargeTestParams(), credit_before("0"), credit_after("0"), counted_price("0"),
+    ResultTestCharge() : ChargeTestParams(), number(0), credit_before("0"), credit_after("0"), counted_price("0"),
             operation(0), object_handle(), units(0), exdate(), test_desc()
         { }
 };
