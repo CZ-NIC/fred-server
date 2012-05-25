@@ -276,7 +276,7 @@ public:
 
   virtual PublicRequest* createRequest(
     Type _type
-  ) const throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) {
+  ) const {
     // TRACE("[CALL] Fred::Request::Manager::createRequest()");
     PublicRequestImpl *request = 0;
     switch(_type) {
@@ -310,6 +310,8 @@ public:
         request = new ContactIdentificationImpl(); break;
       case PRT_CONTACT_VALIDATION:
         request = new ValidationRequestImpl(); break;
+      default:
+        throw std::runtime_error("Unknown public request type specified.");
     }
     request->setType(_type);
     request->setManager((Manager *)this);

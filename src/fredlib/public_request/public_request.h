@@ -252,8 +252,7 @@ public:
                       std::ostream& _output) const 
     throw (NOT_FOUND, SQL_ERROR, Document::Generator::ERROR) = 0;
   
-  virtual PublicRequest* createRequest(Type _type) const
-    throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) = 0;
+  virtual PublicRequest* createRequest(Type _type) const = 0;
 
   virtual void processRequest(Database::ID _id,
                               bool _invalidate,
