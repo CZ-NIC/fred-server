@@ -831,6 +831,7 @@ ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Database
     ret.zone_id = zone_id;
     ret.regid = registrar_id;
     ret.operation = operation;
+    ret.number = 0;
 
     ret.test_desc =
         (boost::format("test create domain operation charging - exdate: %1%, reg_units: %2%, operation: %3% , zone_id: %4%, registrar_id: %5%")
