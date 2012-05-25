@@ -22,9 +22,9 @@ public:
     return res;
   }
   virtual void processAction(bool _check) {
-    if (_check && !check()) throw REQUEST_BLOCKED();
+    if (_check && !check());
   }
-  std::string getAuthInfo() const throw (Database::Exception) {
+  std::string getAuthInfo() const {
     // just one object is supported
     if (!getObjectSize() || getObjectSize() > 1) return "";
     Database::SelectQuery sql;

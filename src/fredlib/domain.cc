@@ -967,7 +967,7 @@ public:
     }
 
   }//reload(Database::Filters::Union &uf)
-  virtual void reload() throw (SQL_ERROR) {
+  virtual void reload() {
     std::map<TID,std::string> registrars;
     std::ostringstream sql;
     sql << "SELECT id, handle FROM registrar";

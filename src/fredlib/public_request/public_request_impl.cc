@@ -575,7 +575,7 @@ std::string PublicRequestImpl::getEmails() const
 
 
 /// send email with answer and return its id
-TID PublicRequestImpl::sendEmail() const throw (Mailer::NOT_SEND)
+TID PublicRequestImpl::sendEmail() const
 {
     Mailer::Parameters params;
     fillTemplateParams(params);

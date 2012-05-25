@@ -135,7 +135,7 @@ public:
 
     virtual std::string getEmails() const;
 
-    virtual TID sendEmail() const throw (Mailer::NOT_SEND);
+    virtual TID sendEmail() const;
 
     virtual void processAction(bool check);
 

@@ -238,7 +238,7 @@ public:
   virtual void getPdf(Database::ID _id,
                       const std::string& _lang,
                       std::ostream& _output) const
-    throw (NOT_FOUND, SQL_ERROR, Document::Generator::ERROR) {
+                                                    {
     TRACE(boost::format("[CALL] Fred::Request::Manager::getPdf(%1%, '%2%')") %
           _id % _lang);
     std::auto_ptr<List> l(loadRequest(_id));

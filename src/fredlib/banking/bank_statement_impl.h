@@ -126,7 +126,7 @@ public:
         return ModelBankStatement::toString();
     }
 
-    void save() throw (SQL_ERROR)
+    void save()
     {
         try {
             if (getId() == 0) {

@@ -204,14 +204,14 @@ public:
             return m_admins[idx].handle;
     }
 
-    const std::string& getAdminHandleByIdx(unsigned idx) const throw (NOT_FOUND)
+    const std::string& getAdminHandleByIdx(unsigned idx) const
     {
         if (idx >= getAdminCount())
            throw NOT_FOUND();
         return m_admins[idx].handle;
     }
 
-    TID getAdminIdByIdx(unsigned idx) const throw (NOT_FOUND)
+    TID getAdminIdByIdx(unsigned idx) const
     {
         if (idx >= getAdminCount())
             throw NOT_FOUND();

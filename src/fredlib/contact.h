@@ -107,7 +107,7 @@ public:
   /// testing new reload function
   virtual void reload(Database::Filters::Union &uf) = 0;
   /// reload list with current filter
-  virtual void reload() throw (SQL_ERROR) = 0;
+  virtual void reload() = 0;
   /// clear filter data
   virtual void clearFilter() = 0;
   /// sort by column
@@ -146,8 +146,7 @@ public:
   virtual CheckAvailType checkAvail(
           const unsigned long long &_id,
           NameIdPair& conflict,
-          bool lock = false) const 
-      throw (SQL_ERROR) = 0;
+          bool lock = false) const = 0;
   virtual unsigned long long findRegistrarId(
           const unsigned long long &_id) const = 0;
   /// factory method

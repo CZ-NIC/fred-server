@@ -296,7 +296,7 @@ public:
     sql << from.rdbuf();
     sql << where.rdbuf();
   }
-  void reload() throw (SQL_ERROR) {
+  void reload() {
     std::map<TID,std::string> registrars;
     std::ostringstream sql;
     sql << "SELECT id, handle FROM registrar";
@@ -719,7 +719,7 @@ public:
 
   virtual CheckAvailType checkAvail(
           const unsigned long long &_id,
-          NameIdPair& conflict, bool lock) const throw (SQL_ERROR)
+          NameIdPair& conflict, bool lock) const
   {
       Database::Connection conn = Database::Manager::acquire();
       Database::Result rcheck = conn.exec_params(

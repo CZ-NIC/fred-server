@@ -76,9 +76,9 @@ public:
     /// return admin's handle by index
     virtual std::string getAdminByIdx(unsigned int idx) const = 0;
     /// return handle of admin contact by index
-    virtual const std::string& getAdminHandleByIdx(unsigned idx) const throw (NOT_FOUND) = 0;
+    virtual const std::string& getAdminHandleByIdx(unsigned idx) const = 0;
     /// return id of admin contact by index
-    virtual TID getAdminIdByIdx(unsigned idx) const throw (NOT_FOUND) = 0;
+    virtual TID getAdminIdByIdx(unsigned idx) const = 0;
     /// return count of DS records
     virtual unsigned int getDSRecordCount() const = 0;
     /// return appropriate DS record by index

@@ -1004,8 +1004,7 @@ Manager* Manager::create() {
     return new ManagerImpl();
 }
 
-Manager *Manager::create(const std::string conn_db, const std::string &monitoring_hosts_file)
-throw (Manager::DB_CONNECT_FAILED) {
+Manager *Manager::create(const std::string conn_db, const std::string &monitoring_hosts_file) {
     TRACE("[CALL] Fred::Logger::Manager::create(std::string, std::string)");
     return new ManagerImpl(monitoring_hosts_file);
 }

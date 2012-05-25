@@ -99,7 +99,7 @@ virtual  bool i_closeSession(Database::ID id) = 0;
   virtual List* createList() const = 0;
 
   static Manager *create();
-  static Manager *create(const std::string conn_db, const std::string &monitoring_hosts_file = std::string()) throw(DB_CONNECT_FAILED);
+  static Manager *create(const std::string conn_db, const std::string &monitoring_hosts_file = std::string());
 
 };
 

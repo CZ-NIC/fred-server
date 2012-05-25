@@ -65,7 +65,7 @@ public:
     virtual Payment* getPaymentByIdx(const unsigned long long _id) const = 0;
 
     virtual std::string toString() const = 0;
-    virtual void save() throw (SQL_ERROR) = 0;
+    virtual void save() = 0;
 };
 
 // smart pointer

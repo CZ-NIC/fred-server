@@ -186,7 +186,7 @@ public:
   /// testing new reload function
   virtual void reload(Database::Filters::Union &uf) = 0;
   /// reload list with current filter
-  virtual void reload() throw (SQL_ERROR) = 0;
+  virtual void reload() = 0;
   /// clear filter data
   virtual void clearFilter() = 0;
   /// sort
