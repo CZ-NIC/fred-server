@@ -29,6 +29,7 @@ public:
         fl.l_whence = SEEK_SET;
         fl.l_start = 0;
         fl.l_len = 1;
+        fl.l_pid = 0;
 
         if ((fdlock = open(_lockpath.c_str(), O_WRONLY|O_CREAT, 0666)) == -1) {
             throw FileLockError(_lockpath, "open call");
