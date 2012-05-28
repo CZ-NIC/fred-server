@@ -24,7 +24,11 @@
 #define MOJEID_DISCLOSE_POLICY_H_
 
 #include <string>
+#include <vector>
+#include <stdexcept>
 #include <boost/noncopyable.hpp>
+#include <boost/function.hpp>
+#include <boost/assign.hpp>
 
 #include "fredlib/object_states.h"
 #include "fredlib/mojeid/contact.h"
@@ -34,14 +38,68 @@ class CznicDiscloseFlagPolicy
 : public boost::noncopyable
 {
 public:
+    typedef boost::function<void(CznicDiscloseFlagPolicy& policy)> PolicyCallback;
+    typedef std::vector<PolicyCallback> PolicyCallbackVector;
+private:
+    ::MojeID::Contact* contact_ptr_;
+    PolicyCallbackVector policy_vect_;
+public:
+
+    CznicDiscloseFlagPolicy(PolicyCallbackVector policy_vect)
+    :contact_ptr_(0)
+    , policy_vect_(policy_vect)
+    {}
+
+    virtual ~CznicDiscloseFlagPolicy(){}
+
+    void append_policy_callback(PolicyCallback pc)
+    {
+        policy_vect_.push_back(pc);
+    }
+
+    void clear_policy_callback()
+    {
+        policy_vect_.clear();
+    }
+
+
     void apply(::MojeID::Contact& contact)
     {
-        if((Fred::object_has_state(contact.id
-                , ::MojeID::VALIDATED_CONTACT) == false)
-            || !contact.organization.isnull()
-            || std::string(contact.organization).compare("") != 0)
+        contact_ptr_ = &contact;
+        for(PolicyCallbackVector::iterator it = policy_vect_.begin()
+            ; it != policy_vect_.end(); ++it)
         {
-            contact.discloseaddress=true;
+            if(*it) it->operator()(*this);
+        }
+
+    }
+
+    ::MojeID::Contact& get_contact()
+    {
+        if(contact_ptr_ == 0)
+        {
+            throw std::runtime_error("CznicDiscloseFlagPolicy::get_contact()"
+                " error - pointer to contact not set");
+        }
+        return *contact_ptr_;
+    }
+};
+
+struct SetDiscloseAddrTrue
+{
+    void operator()(CznicDiscloseFlagPolicy& policy)
+    {
+        policy.get_contact().discloseaddress=true;
+    }
+};
+
+struct SetDiscloseAddrTrueIfOrganization
+{
+    void operator()(CznicDiscloseFlagPolicy& policy)
+    {
+        if(std::string(policy.get_contact().organization).compare("") != 0)
+        {
+            policy.get_contact().discloseaddress=true;
         }
     }
 };

@@ -789,16 +789,21 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
             }
         }
 
+        CznicDiscloseFlagPolicy::PolicyCallbackVector pcv =
+        boost::assign::list_of(SetDiscloseAddrTrueIfOrganization());
+        CznicDiscloseFlagPolicy contact_disclose_policy (pcv);
+
         if (Fred::object_has_state(cid, ::MojeID::VALIDATED_CONTACT) == true) {
             if (::MojeID::check_validated_contact_diff(data, ::MojeID::contact_info(cid)) == false) {
                 /* change contact status to identified */
                 if (Fred::cancel_object_state(cid, ::MojeID::VALIDATED_CONTACT)) {
                     Fred::insert_object_state(cid, ::MojeID::IDENTIFIED_CONTACT);
+                    contact_disclose_policy.append_policy_callback(SetDiscloseAddrTrue());
                 }
             }
         }
 
-        CznicDiscloseFlagPolicy().apply(data);
+        contact_disclose_policy.apply(data);
 
         unsigned long long hid = ::MojeID::contact_update(
                 request.get_request_id(),
