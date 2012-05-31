@@ -349,6 +349,7 @@ COMPARE_CLASS_IMPL(RequestImpl, ActionType)
 COMPARE_CLASS_IMPL(RequestImpl, SessionId)
 COMPARE_CLASS_IMPL(RequestImpl, UserName)
 COMPARE_CLASS_IMPL(RequestImpl, IsMonitoring)
+COMPARE_CLASS_IMPL(RequestImpl, ResultCodeName)
 COMPARE_CLASS_IMPL(RequestImpl, RawRequest)
 COMPARE_CLASS_IMPL(RequestImpl, RawResponse)
 
@@ -610,6 +611,9 @@ public:
               break;
           case MT_MONITORING:
               stable_sort(data_.begin(), data_.end(), CompareIsMonitoring(_asc));
+              break;
+          case MT_RESULT_CODE:
+              stable_sort(data_.begin(), data_.end(), CompareResultCodeName(_asc));
               break;
           default:
               break;

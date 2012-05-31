@@ -90,6 +90,9 @@ void ccReg_Logger_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
     case 6:
       m_lel->sort(Fred::Logger::MT_MONITORING, dir);
       break;
+    case 7:
+      m_lel->sort(Fred::Logger::MT_RESULT_CODE, dir);
+      break;
 
   }
 }

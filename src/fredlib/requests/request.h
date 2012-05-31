@@ -75,6 +75,7 @@ public:
   virtual boost::shared_ptr<RequestProperties> getProperties() = 0;
   virtual boost::shared_ptr<ObjectReferences> getReferences()  = 0;
   virtual const std::pair<int, std::string> getResultCode() const = 0;
+  virtual const std::string& getResultCodeName() const = 0;
 
 };
 

@@ -98,6 +98,9 @@ public:
   virtual const std::pair<int, std::string> getResultCode() const {
     return std::make_pair(rc_code, rc_name);
   }
+  virtual const std::string& getResultCodeName() const {
+    return rc_name;
+  }
 };
 
 }
