@@ -156,7 +156,7 @@ void EppSessionContainer::logout_session_worker(unsigned long long loginId)
     std::map<unsigned long long, Session>::iterator found = sessions.find(loginId);
 
     if(found == sessions.end()) {
-        LOGGER(PACKAGE).error( boost::format("logout_session_worker: loginID %1% not found") % loginId );
+        LOGGER(PACKAGE).warning( boost::format("logout_session_worker: loginID %1% not found") % loginId );
         // not considered a serious error, not throwing
         return;
     }
