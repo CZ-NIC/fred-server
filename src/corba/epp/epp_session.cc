@@ -76,14 +76,17 @@ void EppSessionContainer::destroy_all_registrar_sessions(long regId)
 
     for (std::map<unsigned long long, Session>::iterator it = sessions.begin();
             it != sessions.end();
-            ++it) {
+            ) {
 
+        std::map<unsigned long long, Session>::iterator it_next = it;
+        it_next++;
         if(it->second.registrarID == regId) {
             LOGGER(PACKAGE).notice( boost::format("Disconnecting session clientID %1%, registrar %2% ")
                                               % it->first % regId );
 
             logout_session_worker(it->first);
         }
+        it = it_next;
     }
 
     std::map<int, int>::iterator found = registrar_session_count.find(regId);
