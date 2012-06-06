@@ -88,16 +88,21 @@ bool EPPNotifier::Send()
 
     //#6547 send only if there are some changes
     //"changes" key is added in constructMessages()
-    if(params["changes"].compare("1") == 0)
+    Fred::Mailer::Parameters::const_iterator params_changes_it
+        = params.find("changes");
+    if((params_changes_it != params.end())
+        && (params_changes_it->second.compare("0") == 0))
+    {
+        LOG(DEBUG_LOG, "EPPNotifier: update request - no changes found - not sending");
+        return false;
+    }
+    else
     {
         // mailer manager send emails
         mm->sendEmail("", emails, "", getTemplate(), params, handles, attach);
     }
-    else
-    {
-        LOG(DEBUG_LOG, "EPPNotifier: no changes found - not sending");
-        return false;
-    }
+
+
 
   }
   catch (...) {

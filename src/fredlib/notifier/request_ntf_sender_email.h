@@ -82,16 +82,22 @@ public:
         }
 
         //#6547 send only if there are some changes
-        if(m_params["changes"].compare("1") == 0)
+        Fred::Mailer::Parameters::const_iterator params_changes_it
+            = m_params.find("changes");
+        if((params_changes_it != m_params.end())
+            && (params_changes_it->second.compare("0") == 0))
         {
             LOGGER(PACKAGE).info(boost::format(
-                "Changes found - request_id=%1%  object_id=%2%  request_type=%3%")
+                "update request - no changes found - request_id=%1%  object_id=%2%  request_type=%3%")
                 % _ntf.get_request_id()
                 % _ntf.get_object_id()
                 % _ntf.get_request_type());
-
+        }
+        else
+        {
             for (unsigned int i = 0; i < rcpts_emails.size(); ++i) {
                 try {
+                    LOGGER(PACKAGE).info(boost::format("notifying %1%") % rcpts_emails[i]);
                     unsigned long long msg_id = mm_->sendEmail("", rcpts_emails[i], "", m_template_name, m_params, m_handles, m_attachs);
                     try {
                         _ntf.save_relation(msg_id);
@@ -107,14 +113,6 @@ public:
                 }
             }
         }//if changes
-        else
-        {
-            LOGGER(PACKAGE).info(boost::format(
-                "No changes found - request_id=%1%  object_id=%2%  request_type=%3%")
-                % _ntf.get_request_id()
-                % _ntf.get_object_id()
-                % _ntf.get_request_type());
-        }
     }
 
 
