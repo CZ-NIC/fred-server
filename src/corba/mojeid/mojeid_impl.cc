@@ -789,14 +789,12 @@ void ServerImpl::contactUpdatePrepare(const Contact &_contact,
             }
         }
 
-        CznicDiscloseFlagPolicy::PolicyCallbackVector pcv
+        DiscloseFlagPolicy::PolicyCallbackVector pcv
             = boost::assign::list_of
-                (CznicDiscloseFlagPolicy
-                        ::PolicyCallback(SetDiscloseAddrTrueIfOrganization()))
-                (CznicDiscloseFlagPolicy
-                        ::PolicyCallback(SetDiscloseAddrTrueIfNotValidated()));
+                (DiscloseFlagPolicy::PolicyCallback(SetDiscloseAddrTrueIfOrganization()))
+                (DiscloseFlagPolicy::PolicyCallback(SetDiscloseAddrTrueIfNotValidated()));
 
-        CznicDiscloseFlagPolicy contact_disclose_policy (pcv);
+        DiscloseFlagPolicy contact_disclose_policy (pcv);
 
         if (Fred::object_has_state(cid, ::MojeID::VALIDATED_CONTACT) == true) {
             if (::MojeID::check_validated_contact_diff(data, ::MojeID::contact_info(cid)) == false) {
