@@ -84,7 +84,8 @@ public:
         //#6547 send only if there are some changes
         Fred::Mailer::Parameters::const_iterator params_changes_it
             = m_params.find("changes");
-        if((params_changes_it != m_params.end())
+        if( (_ntf.get_request_type().compare(CMD_CONTACT_UPDATE) == 0)
+            && (params_changes_it != m_params.end())
             && (params_changes_it->second.compare("0") == 0))
         {
             LOGGER(PACKAGE).info(boost::format(
