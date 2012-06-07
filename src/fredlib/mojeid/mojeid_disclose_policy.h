@@ -104,4 +104,17 @@ struct SetDiscloseAddrTrueIfOrganization
     }
 };
 
+struct SetDiscloseAddrTrueIfNotValidated
+{
+    void operator()(CznicDiscloseFlagPolicy& policy)
+    {
+        if (Fred::object_has_state(policy.get_contact().id
+                , ::MojeID::VALIDATED_CONTACT) == false)
+        {
+            policy.get_contact().discloseaddress=true;
+        }
+    }
+};
+
+
 #endif // MOJEID_DISCLOSE_POLICY_H_
