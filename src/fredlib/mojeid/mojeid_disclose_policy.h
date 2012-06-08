@@ -34,23 +34,23 @@
 #include "fredlib/mojeid/contact.h"
 #include "fredlib/mojeid/mojeid_contact_states.h"
 
-class CznicDiscloseFlagPolicy
+class DiscloseFlagPolicy
 : public boost::noncopyable
 {
 public:
-    typedef boost::function<void(CznicDiscloseFlagPolicy& policy)> PolicyCallback;
+    typedef boost::function<void(DiscloseFlagPolicy& policy)> PolicyCallback;
     typedef std::vector<PolicyCallback> PolicyCallbackVector;
 private:
     ::MojeID::Contact* contact_ptr_;
     PolicyCallbackVector policy_vect_;
 public:
 
-    CznicDiscloseFlagPolicy(PolicyCallbackVector policy_vect)
+    DiscloseFlagPolicy(PolicyCallbackVector policy_vect)
     :contact_ptr_(0)
     , policy_vect_(policy_vect)
     {}
 
-    virtual ~CznicDiscloseFlagPolicy(){}
+    virtual ~DiscloseFlagPolicy(){}
 
     void append_policy_callback(PolicyCallback pc)
     {
@@ -87,7 +87,7 @@ public:
 
 struct SetDiscloseAddrTrue
 {
-    void operator()(CznicDiscloseFlagPolicy& policy)
+    void operator()(DiscloseFlagPolicy& policy)
     {
         policy.get_contact().discloseaddress=true;
     }
@@ -95,7 +95,7 @@ struct SetDiscloseAddrTrue
 
 struct SetDiscloseAddrTrueIfOrganization
 {
-    void operator()(CznicDiscloseFlagPolicy& policy)
+    void operator()(DiscloseFlagPolicy& policy)
     {
         if(std::string(policy.get_contact().organization).compare("") != 0)
         {
@@ -103,5 +103,18 @@ struct SetDiscloseAddrTrueIfOrganization
         }
     }
 };
+
+struct SetDiscloseAddrTrueIfNotValidated
+{
+    void operator()(DiscloseFlagPolicy& policy)
+    {
+        if (Fred::object_has_state(policy.get_contact().id
+                , ::MojeID::VALIDATED_CONTACT) == false)
+        {
+            policy.get_contact().discloseaddress=true;
+        }
+    }
+};
+
 
 #endif // MOJEID_DISCLOSE_POLICY_H_

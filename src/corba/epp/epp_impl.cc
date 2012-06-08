@@ -209,24 +209,38 @@ public:
 
   ~EPPAction()
   {
-    db->QuitTransaction(code);
-    db->EndAction(code);
+    try
+    {
+        db->QuitTransaction(code);
+        db->EndAction(code);
 
-    if (notifier && (code == COMMAND_OK)) {
-        /* disable notifier for configured cltrid prefix */
-        if (boost::starts_with(cltrid, epp->get_disable_epp_notifier_cltrid_prefix())
-                && db->GetRegistrarSystem(getRegistrar()))
-        {
-            LOGGER(PACKAGE).debug(boost::format("disable command notification "
-                  "(registrator=%1% cltrid=%2%)") % getRegistrar() % cltrid);
+        if (notifier && (code == COMMAND_OK)) {
+            /* disable notifier for configured cltrid prefix */
+            if (boost::starts_with(cltrid, epp->get_disable_epp_notifier_cltrid_prefix())
+                    && db->GetRegistrarSystem(getRegistrar()))
+            {
+                LOGGER(PACKAGE).debug(boost::format("disable command notification "
+                      "(registrator=%1% cltrid=%2%)") % getRegistrar() % cltrid);
+            }
+            else {
+                notifier->Send();
+            }
         }
-        else {
-            notifier->Send();
-        }
+
+        Logging::Context::pop();
+        Logging::Context::pop();
     }
-
-    Logging::Context::pop();
-    Logging::Context::pop();
+    catch(...)
+    {
+        try
+        {
+            LOGGER(PACKAGE).error(
+                "~EPPAction() got exception, "
+                "db transaction or anything else failed");
+        }
+        catch(...)
+        {}
+    }
   }
   DBSharedPtr getDB()
   {
