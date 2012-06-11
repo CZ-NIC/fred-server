@@ -466,7 +466,18 @@ bool check_validated_contact_diff(
     }
     /* birthday and ico*/
     if (static_cast<std::string>(_c1.ssn) != static_cast<std::string>(_c2.ssn)) {
-        return false;
+
+        if(static_cast<std::string>(_c1.ssntype) == "BIRTHDAY") {
+
+            boost::gregorian::date before = boost::gregorian::from_string(static_cast<std::string>(_c1.ssn));
+            boost::gregorian::date after = boost::gregorian::from_string(static_cast<std::string>(_c2.ssn));
+            if(before != after) {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
     }
 
     return true;
