@@ -464,9 +464,23 @@ bool check_validated_contact_diff(
             || (static_cast<std::string>(_c1.postalcode) != static_cast<std::string>(_c2.postalcode))) {
         return false;
     }
-    /* birthday and ico*/
-    if (static_cast<std::string>(_c1.ssn) != static_cast<std::string>(_c2.ssn)) {
+    /* identification type */
+    if (static_cast<std::string>(_c1.ssntype) != static_cast<std::string>(_c2.ssntype)) {
         return false;
+    }
+    /* identification regardless of type*/
+    if (static_cast<std::string>(_c1.ssn) != static_cast<std::string>(_c2.ssn)) {
+
+        if(static_cast<std::string>(_c1.ssntype) == "BIRTHDAY") {
+            boost::gregorian::date before = boost::gregorian::from_string(static_cast<std::string>(_c1.ssn));
+            boost::gregorian::date after = boost::gregorian::from_string(static_cast<std::string>(_c2.ssn));
+            if(before != after) {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
     }
 
     return true;
