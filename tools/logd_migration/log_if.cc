@@ -39,12 +39,11 @@ char * wrap_str(const char *str)
  * 					case a new data structure is allocated and returned)
  * @param name		property name
  * @param value		property value
- * @param output	whether the property is related to output
  * @param child 	true if the property is child to the last property with child = false
  *
  * @returns			NULL in case of an allocation error, modified c_props otherwise
  */
-Fred::Logger::RequestProperties *epp_property_push(Fred::Logger::RequestProperties *c_props, const  char *name, const char *value, bool output, bool child)
+Fred::Logger::RequestProperties *epp_property_push(Fred::Logger::RequestProperties *c_props, const  char *name, const char *value, bool child)
 {
 	if(c_props == NULL) {
 		c_props = new Fred::Logger::RequestProperties();
@@ -55,7 +54,6 @@ Fred::Logger::RequestProperties *epp_property_push(Fred::Logger::RequestProperti
 
 		p.name =  name;
 		p.value = value;
-		p.output = output;
 		p.child = child;
 
 		c_props->push_back(p);
@@ -71,7 +69,6 @@ Fred::Logger::RequestProperties *epp_property_push(Fred::Logger::RequestProperti
  * 					case a new data structure is allocated and returned)
  * @param list		list of strings
  * @param list_name	base name for the inserted properties
- * @param output 	whether the properties are related to output
  * @param child		true if the items in the list are children of the last property
  * 					with child = false
  *
@@ -79,7 +76,7 @@ Fred::Logger::RequestProperties *epp_property_push(Fred::Logger::RequestProperti
  *
  */
 
-Fred::Logger::RequestProperties *epp_property_push_qhead(Fred::Logger::RequestProperties *c_props, qhead *list, const char *list_name, bool output, bool child)
+Fred::Logger::RequestProperties *epp_property_push_qhead(Fred::Logger::RequestProperties *c_props, qhead *list, const char *list_name, bool child)
 {
 	Fred::Logger::RequestProperties *ret;
 
@@ -88,7 +85,7 @@ Fred::Logger::RequestProperties *epp_property_push_qhead(Fred::Logger::RequestPr
 	}
 
 	q_foreach(list) {
-		if ((ret = epp_property_push(c_props, list_name, (char*)q_content(list), output, child)) == NULL) {
+		if ((ret = epp_property_push(c_props, list_name, (char*)q_content(list), child)) == NULL) {
 			return NULL;
 		}
 	}
@@ -104,12 +101,11 @@ Fred::Logger::RequestProperties *epp_property_push_qhead(Fred::Logger::RequestPr
  * 					case a new data structure is allocated and returned)
  * @param name		property name
  * @param value		property integer value
- * @param output	true if this property is related to output (response), false otherwise
  *
  * @returns			NULL in case of an allocation error, modified c_props otherwise
  */
 
-Fred::Logger::RequestProperties *epp_property_push_int(Fred::Logger::RequestProperties *c_props, const char *name, int value, bool output)
+Fred::Logger::RequestProperties *epp_property_push_int(Fred::Logger::RequestProperties *c_props, const char *name, int value)
 {
 	Fred::Logger::RequestProperty p;
 	char str[12];
@@ -122,7 +118,6 @@ Fred::Logger::RequestProperties *epp_property_push_int(Fred::Logger::RequestProp
 
 	p.name = wrap_str(name);
 	p.value = wrap_str(str);
-	p.output = output;
 	p.child = false;
 
 	c_props->push_back(p);
@@ -142,19 +137,19 @@ Fred::Logger::RequestProperties *epp_log_postal_info(Fred::Logger::RequestProper
 {
 	if(pi == NULL) return p;
 
-	p = epp_property_push(p, "pi.name", pi->name, false, false);
+	p = epp_property_push(p, "pi.name", pi->name, false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "pi.organization", pi->org, false, false);
+	p = epp_property_push(p, "pi.organization", pi->org, false);
 	if (p == NULL) return p;
-	p = epp_property_push_qhead(p, &pi->streets, "pi.street", false, false);
+	p = epp_property_push_qhead(p, &pi->streets, "pi.street", false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "pi.city", pi->city, false, false);
+	p = epp_property_push(p, "pi.city", pi->city, false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "pi.state", pi->sp, false, false);
+	p = epp_property_push(p, "pi.state", pi->sp, false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "pi.postalCode", pi->pc, false, false);
+	p = epp_property_push(p, "pi.postalCode", pi->pc, false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "pi.countryCode", pi->cc, false, false);
+	p = epp_property_push(p, "pi.countryCode", pi->cc, false);
 	if (p == NULL) return p;
 
 	return p;
@@ -171,32 +166,32 @@ Fred::Logger::RequestProperties *epp_log_postal_info(Fred::Logger::RequestProper
 Fred::Logger::RequestProperties *epp_log_disclose_info(Fred::Logger::RequestProperties *p, epp_discl *ed)
 {
 	if(ed->flag == 1) {
-		p = epp_property_push(p, "discl.policy", "private", false, false);
+		p = epp_property_push(p, "discl.policy", "private", false);
 	} else if(ed->flag == 0) {
-		p = epp_property_push(p, "discl.policy", "public", false, false);
+		p = epp_property_push(p, "discl.policy", "public", false);
 	} else {
-		p = epp_property_push(p, "discl.policy", "no exceptions", false, false);
+		p = epp_property_push(p, "discl.policy", "no exceptions", false);
 	}
 
 	if (p == NULL) return p;
 
-	p = epp_property_push(p, "discl.name", ed->name ? "true" : "false", false, false);
+	p = epp_property_push(p, "discl.name", ed->name ? "true" : "false", false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "discl.org", ed->org ? "true" : "false", false, false);
+	p = epp_property_push(p, "discl.org", ed->org ? "true" : "false", false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "discl.addr", ed->addr ? "true" : "false", false, false);
+	p = epp_property_push(p, "discl.addr", ed->addr ? "true" : "false", false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "discl.voice", ed->voice ? "true" : "false", false, false);
+	p = epp_property_push(p, "discl.voice", ed->voice ? "true" : "false", false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "discl.fax", ed->fax ? "true" : "false", false, false);
+	p = epp_property_push(p, "discl.fax", ed->fax ? "true" : "false", false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "discl.email", ed->email ? "true" : "false", false, false);
+	p = epp_property_push(p, "discl.email", ed->email ? "true" : "false", false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "discl.vat", ed->vat ? "true" : "false", false, false);
+	p = epp_property_push(p, "discl.vat", ed->vat ? "true" : "false", false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "discl.ident", ed->ident ? "true" : "false", false, false);
+	p = epp_property_push(p, "discl.ident", ed->ident ? "true" : "false", false);
 	if (p == NULL) return p;
-	p = epp_property_push(p, "discl.notifyEmail", ed->notifyEmail ? "true" : "false", false, false);
+	p = epp_property_push(p, "discl.notifyEmail", ed->notifyEmail ? "true" : "false", false);
 	if (p == NULL) return p;
 
 	return p;
@@ -227,31 +222,31 @@ Fred::Logger::RequestProperties *epp_property_push_ds(Fred::Logger::RequestPrope
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "keytag");
-			if ((c_props = epp_property_push_int(c_props, str, value->keytag, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->keytag)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "alg");
-			if ((c_props = epp_property_push_int(c_props, str, value->alg, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->alg)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "digestType");
-			if ((c_props = epp_property_push_int(c_props, str, value->digestType, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->digestType)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "digest");
-			if ((c_props = epp_property_push(c_props, str, value->digest, false, false)) == NULL) {
+			if ((c_props = epp_property_push(c_props, str, value->digest, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "maxSigLife");
-			if ((c_props = epp_property_push_int(c_props, str, value->maxSigLife, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->maxSigLife)) == NULL) {
 				return NULL;
 			}
 		}
@@ -285,13 +280,13 @@ Fred::Logger::RequestProperties *epp_property_push_valerr(Fred::Logger::RequestP
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "element");
-			if ((c_props = epp_property_push(c_props, str, value->value, true, false)) == NULL) {
+			if ((c_props = epp_property_push(c_props, str, value->value, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "reason");
-			if ((c_props = epp_property_push(c_props, str, value->reason, true, false)) == NULL) {
+			if ((c_props = epp_property_push(c_props, str, value->reason, false)) == NULL) {
 				return NULL;
 			}
 
@@ -325,13 +320,13 @@ Fred::Logger::RequestProperties *epp_property_push_nsset(Fred::Logger::RequestPr
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "name");
-			if ((c_props = epp_property_push(c_props, str, value->name, false, false)) == NULL) {
+			if ((c_props = epp_property_push(c_props, str, value->name, false)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "addr");
-			if ((c_props = epp_property_push_qhead(c_props, &value->addr, str, false, true)) == NULL) {
+			if ((c_props = epp_property_push_qhead(c_props, &value->addr, str, true)) == NULL) {
 				return NULL;
 			}
 		}
@@ -362,25 +357,25 @@ Fred::Logger::RequestProperties *epp_property_push_dnskey(Fred::Logger::RequestP
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "flags");
-			if ((c_props = epp_property_push_int(c_props, str, value->flags, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->flags)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "protocol");
-			if ((c_props = epp_property_push_int(c_props, str, value->protocol, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->protocol)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "alg");
-			if ((c_props = epp_property_push_int(c_props, str, value->alg, false)) == NULL) {
+			if ((c_props = epp_property_push_int(c_props, str, value->alg)) == NULL) {
 				return NULL;
 			}
 
 			str[0] = '\0';
 			snprintf(str, LOG_PROP_NAME_LENGTH, "%s.%s", list_name, "publicKey");
-			if ((c_props = epp_property_push(c_props, str, value->public_key, false, false)) == NULL) {
+			if ((c_props = epp_property_push(c_props, str, value->public_key, false)) == NULL) {
 				return NULL;
 			}
 
@@ -404,19 +399,19 @@ Fred::Logger::RequestProperties *epp_property_push_dnskey(Fred::Logger::RequestP
 auto_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id)
 {
 #define PUSH_PROPERTY(seq, name, value)								\
-	seq = epp_property_push(seq, name, value, false, false);	\
+	seq = epp_property_push(seq, name, value, false);	\
 	if(seq == NULL) {	\
 		throw bad_alloc();	\
 	}
 
 #define PUSH_PROPERTY_INT(seq, name, value)							\
-	seq = epp_property_push_int(seq, name, value, false);		\
+	seq = epp_property_push_int(seq, name, value);		\
 	if(seq == NULL) {	\
 		throw bad_alloc();	\
 	}
 
 #define PUSH_QHEAD(seq, list, name)									\
-	seq = epp_property_push_qhead(seq, list, name, false, false);	\
+	seq = epp_property_push_qhead(seq, list, name, false);	\
 	if(seq == NULL) {	\
 		throw bad_alloc();	\
 	}
