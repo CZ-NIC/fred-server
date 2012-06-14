@@ -27,28 +27,24 @@ typedef std::vector<ObjectReference> ObjectReferences;
 struct RequestProperty {
   std::string name;
   std::string value;
-  bool output;
   bool child;
 
-  RequestProperty() : name(), value(), output(), child() {
+  RequestProperty() : name(), value(), child() {
   }
 
-  RequestProperty(const RequestProperty &p) : name(p.name), value(p.value),
-				output(p.output), child(p.child) {
+  RequestProperty(const RequestProperty &p) : name(p.name), value(p.value), child(p.child) {
 
   }
 
   RequestProperty(const std::string &n, const std::string &v, bool out, bool ch) {
 	name = n;
 	value = v;
-	output = out;
 	child = ch;
   }
 
   const RequestProperty & operator = (RequestProperty &p) {
 	name = p.name;
 	value = p.value;
-	output = p.output;
 	child = p.child;
 
 	return *this;

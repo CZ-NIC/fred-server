@@ -502,7 +502,6 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_generic_prope
 		ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
 
 		ref[i].child = false;
-		ref[i].output = false;
 	}
 
 	return ret;
@@ -518,7 +517,6 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_re
         ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
 
         ref[i].child = false;
-        ref[i].output = false;
     }
 
     for(int i=num_handles;i< (num_others+num_handles);i++) {
@@ -526,7 +524,6 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_re
         ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
 
         ref[i].child = false;
-        ref[i].output = false;
     }
 
     return ret;

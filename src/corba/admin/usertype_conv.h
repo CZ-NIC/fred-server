@@ -28,7 +28,6 @@ inline std::auto_ptr<Fred::Logger::RequestProperties> convert_properties(const c
 		ret[i].name.assign(p[i].name);
 		ret[i].value.assign(p[i].value);
 		ret[i].child  = p[i].child;
-		ret[i].output = p[i].output;
 	}
 
 	return ret_ptr;
@@ -45,7 +44,6 @@ inline ccReg::RequestProperties convert_properties_d2c(boost::shared_ptr<Fred::L
 		res[i].name = CORBA::string_dup(props->at(i).name.c_str());
 		res[i].value = CORBA::string_dup(props->at(i).value.c_str());
 		res[i].child = props->at(i).child;
-		res[i].output = props->at(i).output;
 	}	
 
 	return res;
