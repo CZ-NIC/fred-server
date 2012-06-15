@@ -73,7 +73,7 @@ public:
     object_info_query.select() << "eprt.name, t_1.id, t_1.create_request_id, t_1.resolve_request_id, "
                                << "t_1.create_time, t_1.status, t_1.resolve_time, "
                                << "t_1.reason, t_1.email_to_answer, t_1.answer_email_id, "
-                               << "'t_4.id, t_4.handle, t_4.name, t_4.url, "
+                               << "t_4.id, t_4.handle, t_4.name, t_4.url, "
                                << "t_5.identification, t_5.password";
     object_info_query.from() << getTempTableName() << " tmp "
                              << "JOIN public_request t_1 ON (t_1.id = tmp.id) "

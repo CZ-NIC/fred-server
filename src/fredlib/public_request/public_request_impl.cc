@@ -313,7 +313,7 @@ void PublicRequestImpl::save()
                 " status, reason, email_to_answer, registrar_id)"
                 " VALUES"
                 " ((SELECT id FROM enum_public_request_type WHERE name = $1::varchar),"
-                " $2::bigint, $3::bigint, $4::integer, $5::varchar, $6::varchar, $7::integer)",
+                " $2::bigint, $3::bigint, $4::varchar, $5::varchar, $6::integer)",
                 Database::query_param_list
                     (type_)(create_request_id_)(status_)
                     (reason_)(email_to_answer_)(registrar_id_ == 0 ? Database::QPNull : registrar_id_));
