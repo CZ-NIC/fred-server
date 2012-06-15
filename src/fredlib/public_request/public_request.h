@@ -23,13 +23,13 @@
 
 #include "db_settings.h"
 #include "model/model_filters.h"
+#include "factory.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
 namespace Fred {
 namespace PublicRequest {
-
 
 struct NotApplicable : public std::runtime_error
 {
@@ -70,26 +70,9 @@ enum MemberType {
   MT_STATUS  ///< request status
 };
 
-/// Types of request
-enum Type {
-  PRT_AUTHINFO_AUTO_RIF,            ///< Request for authinfo was created by registrar through EPP
-  PRT_AUTHINFO_AUTO_PIF,            ///< Request for authinfo automatic answer created through PIF
-  PRT_AUTHINFO_EMAIL_PIF,           ///< Request for authinfo waiting for autorization by signed email
-  PRT_AUTHINFO_POST_PIF,            ///< Request for authinfo waiting for autorization by checked letter
-  PRT_BLOCK_CHANGES_EMAIL_PIF,      ///< Request for block update object waiting for autorization by signed email
-  PRT_BLOCK_CHANGES_POST_PIF,       ///< Request for block update object waiting for autorization by checked letter
-  PRT_BLOCK_TRANSFER_EMAIL_PIF,     ///< Request for block transfer object waiting for autorization by signed email
-  PRT_BLOCK_TRANSFER_POST_PIF,      ///< Request for block transfer object waiting for autorization by checked letter
-  PRT_UNBLOCK_CHANGES_EMAIL_PIF,    ///< Request for unblock update object waiting for autorization by signed email
-  PRT_UNBLOCK_CHANGES_POST_PIF,     ///< Request for unblock update object waiting for autorization by checked letter
-  PRT_UNBLOCK_TRANSFER_EMAIL_PIF,   ///< Request for unblock transfer object waiting for autorization by signed email
-  PRT_UNBLOCK_TRANSFER_POST_PIF,    ///< Request for unblock transfer object waiting for autorization by checked letter
-  PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
-  PRT_CONTACT_IDENTIFICATION,
-  PRT_CONTACT_VALIDATION
-};
 
-std::string Type2Str(Type _type); 
+typedef std::string Type;
+
 
 /// Request status
 enum Status {
@@ -162,11 +145,14 @@ public:
   virtual const std::string& getEmailToAnswer() const = 0;
   virtual void setEmailToAnswer(const std::string& _email) = 0;
   virtual const Database::ID getAnswerEmailId() const = 0;
+  virtual const Database::ID getEppActionId() const = 0;
+  virtual void setEppActionId(const Database::ID& _epp_action_id) = 0;
   virtual void setRegistrarId(const Database::ID& _registrar_id) = 0;
   virtual void setRequestId(const Database::ID& _request_id) = 0;
   virtual void addObject(const OID& _oid) = 0;
   virtual const OID& getObject(unsigned _idx) const = 0;
   virtual unsigned getObjectSize() const = 0;
+  virtual const std::string getSvTRID() const = 0;
   virtual const Database::ID getRegistrarId() const = 0;
   virtual const std::string getRegistrarHandle() const = 0;
   virtual const std::string getRegistrarName() const = 0;
@@ -182,7 +168,7 @@ public:
   /// return list of destination email addresses for answer email
   virtual std::string getEmails() const = 0;
   /// send email with answer 
-  virtual TID sendEmail() const = 0;
+  virtual TID sendEmail() const throw (Mailer::NOT_SEND) = 0;
   /// process request (or just close in case of invalid flag)
   virtual void process(bool invalid, bool check,
                        const unsigned long long &_request_id = 0) = 0;
@@ -249,7 +235,8 @@ public:
   virtual List* loadRequest(Database::ID id) const = 0;
   virtual void getPdf(Database::ID _id, 
                       const std::string& _lang, 
-                      std::ostream& _output) const = 0;
+                      std::ostream& _output) const 
+    throw (NOT_FOUND, SQL_ERROR, Document::Generator::ERROR) = 0;
   
   virtual PublicRequest* createRequest(Type _type) const = 0;
 
@@ -265,7 +252,7 @@ public:
 
   virtual std::string getPublicRequestAuthIdentification(
           unsigned long long &_contact_id,
-          std::vector<unsigned int> &_request_type_list) = 0;
+          std::vector<Type> &_request_type_list) = 0;
 
   /* config - this should be in contructor */
   virtual const std::string& getIdentificationMailAuthHostname() const = 0;
@@ -275,7 +262,9 @@ public:
 };
 
 
+typedef Util::Factory<PublicRequest, Util::ClassCreator<PublicRequest> > Factory;
 
+std::vector<std::string> get_enum_public_request_type();
 
 }
 }

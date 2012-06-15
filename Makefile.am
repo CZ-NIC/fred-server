@@ -159,8 +159,11 @@ noinst_HEADERS = \
 		util/types/optional.h \
 		util/types/optional_from_program_options.h \
 		util/types/money.h \
-		tests/exception-test.h
-
+		tests/exception-test.h \
+		util/factory.h \
+		util/factory_check.h \
+		util/map_get.h
+	
 
 noinst_LIBRARIES = \
 		util/libutil.a \
@@ -722,9 +725,12 @@ src_fredlib_public_request_libpublic_request_a_SOURCES = \
 		src/fredlib/public_request/public_request.h \
 		src/fredlib/public_request/public_request_impl.cc \
 		src/fredlib/public_request/public_request_impl.h \
+		src/fredlib/public_request/public_request_authinfo_impl.cc \
 		src/fredlib/public_request/public_request_authinfo_impl.h \
+		src/fredlib/public_request/public_request_block_impl.cc \
 		src/fredlib/public_request/public_request_block_impl.h \
-		src/fredlib/public_request/public_request_verification_impl.h
+		src/mojeid/public_request_verification_impl.cc \
+		src/mojeid/public_request_verification_impl.h
 #
 # src/fredlib/public_request/libpublic_request.a
 
@@ -797,12 +803,12 @@ src_fredlib_requests_librequests_a_SOURCES = \
 # src/fredlib/mojeid/libmojeid.a
 #
 src_fredlib_mojeid_libmojeid_a_SOURCES = \
-		src/fredlib/mojeid/contact.h \
-		src/fredlib/mojeid/contact.cc \
-		src/fredlib/mojeid/nullable.h \
+		src/fredlib/contact_verification/contact.h \
+		src/fredlib/contact_verification/contact.cc \
+		util/db/nullable.h \
 		src/fredlib/mojeid/request.h \
-		src/fredlib/mojeid/mojeid_data_validation.h \
-		src/fredlib/mojeid/mojeid_data_validation.cc \
+		src/fredlib/contact_verification/data_validation.h \
+		src/fredlib/contact_verification/data_validation.cc \
 		src/fredlib/mojeid/mojeid_contact_states.h \
 		src/fredlib/mojeid/mojeid_disclose_policy.h
 #
@@ -1097,8 +1103,8 @@ src_corba_fred_rifd_LDADD = \
 		src/corba/libcorba.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/mojeid/libmojeid.a \
-		src/fredlib/messages/libmessages.a \
 		src/fredlib/libfred.a \
+		src/fredlib/messages/libmessages.a \
 		src/model/libmodel.a \
 		util/db/libdb.a \
 		util/types/libtypes.a \
@@ -1122,6 +1128,8 @@ src_corba_fred_rifd_LDADD = \
 # src/corba/fred-adifd
 #
 src_corba_fred_adifd_SOURCES = \
+		src/fredlib/contact_verification/contact_verification.cc \
+		src/fredlib/contact_verification/contact_verification.h \
 		src/corba/fred-adifd.cc
 
 src_corba_fred_adifd_LDADD = \
@@ -1165,6 +1173,8 @@ src_corba_fred_adifd_LDADD = \
 # src/corba/fred-pifd
 #
 src_corba_fred_pifd_SOURCES = \
+		src/fredlib/contact_verification/contact_verification.cc \
+		src/fredlib/contact_verification/contact_verification.h \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \
@@ -1289,12 +1299,16 @@ src_corba_messages_fred_msgd_LDADD = \
 src_corba_mojeid_fred_mifd_SOURCES = \
 		src/corba/nameservice.cc \
 		src/corba/mailer_manager.cc \
-		src/corba/mojeid/mojeid_impl.h \
-		src/corba/mojeid/mojeid_impl.cc \
-		src/corba/mojeid/mojeid_identification.h \
-		src/corba/mojeid/mojeid_notifier.cc \
-		src/corba/mojeid/mojeid_notifier.h \
+		src/mojeid/mojeid_identification.h \
+		src/mojeid/mojeid_notifier.cc \
+		src/mojeid/mojeid_notifier.h \
 		src/corba/mojeid/corba_conversion.h \
+		src/corba/mojeid/server_i.cc \
+		src/corba/mojeid/server_i.h \
+		src/mojeid/mojeid.cc \
+		src/mojeid/mojeid.h \
+		src/fredlib/contact_verification/contact_verification.cc \
+		src/fredlib/contact_verification/contact_verification.h \
 		src/corba/mojeid/fred-mifd.cc
 
 nodist_src_corba_mojeid_fred_mifd_SOURCES = \

@@ -1,12 +1,10 @@
 #include "public_request_impl.h"
-
 #include "log/logger.h"
 #include "util.h"
 #include "db_settings.h"
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
 #include "random.h"
-
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
@@ -15,29 +13,6 @@
 namespace Fred {
 namespace PublicRequest {
 
-
-
-std::string Type2Str(Type _type) {
-  switch (_type) {
-    case PRT_AUTHINFO_AUTO_RIF:           return "AuthInfo (EPP/Auto)";
-    case PRT_AUTHINFO_AUTO_PIF:           return "AuthInfo (Web/Auto)";
-    case PRT_AUTHINFO_EMAIL_PIF:          return "AuthInfo (Web/Email)";
-    case PRT_AUTHINFO_POST_PIF:           return "AuthInfo (Web/Post)";
-    case PRT_BLOCK_CHANGES_EMAIL_PIF:     return "Block changes (Web/Email)";
-    case PRT_BLOCK_CHANGES_POST_PIF:      return "Block changes (Web/Post)";
-    case PRT_BLOCK_TRANSFER_EMAIL_PIF:    return "Block transfer (Web/Email)";
-    case PRT_BLOCK_TRANSFER_POST_PIF:     return "Block transfer (Web/Post)";
-    case PRT_UNBLOCK_CHANGES_EMAIL_PIF:   return "Unblock changes (Web/Email)";
-    case PRT_UNBLOCK_CHANGES_POST_PIF:    return "Unblock changes (Web/Post)";
-    case PRT_UNBLOCK_TRANSFER_EMAIL_PIF:  return "Unblock transfer (Web/Email)";
-    case PRT_UNBLOCK_TRANSFER_POST_PIF:   return "Unblock transfer (Web/Post)";
-    case PRT_CONDITIONAL_CONTACT_IDENTIFICATION:
-                                          return "Conditional identification";
-    case PRT_CONTACT_IDENTIFICATION:      return "Full identification";
-    case PRT_CONTACT_VALIDATION:          return "Validation";
-    default:                              return "TYPE UNKNOWN";
-  }
-}
 
 
 std::string Status2Str(Status _status)
@@ -174,9 +149,10 @@ unsigned long long check_public_request(
     Database::Result rcheck = conn.exec_params(
             "SELECT pr.id FROM public_request pr"
             " JOIN public_request_objects_map prom ON prom.request_id = pr.id"
+            " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type"
             " WHERE pr.resolve_time IS NULL"
             " AND prom.object_id = $1::integer"
-            " AND pr.request_type = $2::integer"
+            " AND eprt.name = $2::varchar"
             " ORDER BY pr.create_time",
             Database::query_param_list
                 (_object_id)
@@ -230,7 +206,7 @@ bool object_was_changed_since_request_create(const unsigned long long _request_i
 
 
 PublicRequestImpl::PublicRequestImpl()
-    : CommonObjectImpl(0), type_(), create_request_id_(0),
+    : CommonObjectImpl(0), type_(), epp_action_id_(0), create_request_id_(0),
       resolve_request_id_(0), status_(PRS_NEW), answer_email_id_(0),
       registrar_id_(0), man_()
 {
@@ -240,6 +216,7 @@ PublicRequestImpl::PublicRequestImpl()
 PublicRequestImpl::PublicRequestImpl(
         Database::ID _id,
         Fred::PublicRequest::Type _type,
+        Database::ID _epp_action_id,
         Database::ID _create_request_id,
         Database::DateTime _create_time,
         Fred::PublicRequest::Status _status,
@@ -247,16 +224,17 @@ PublicRequestImpl::PublicRequestImpl(
         std::string _reason,
         std::string _email_to_answer,
         Database::ID _answer_email_id,
+        std::string _svtrid,
         Database::ID _registrar_id,
         std::string _registrar_handle,
         std::string _registrar_name,
         std::string _registrar_url)
-    : CommonObjectImpl(_id), type_(_type),
+    : CommonObjectImpl(_id), type_(_type), epp_action_id_(_epp_action_id),
       create_request_id_(_create_request_id), resolve_request_id_(0),
       create_time_(_create_time), status_(_status),
       resolve_time_(_resolve_time), reason_(_reason),
       email_to_answer_(_email_to_answer), answer_email_id_(_answer_email_id),
-      registrar_id_(_registrar_id),
+      svtrid_(_svtrid), registrar_id_(_registrar_id),
       registrar_handle_(_registrar_handle),
       registrar_name_(_registrar_name), registrar_url_(_registrar_url),
       man_()
@@ -273,6 +251,7 @@ void PublicRequestImpl::setManager(Manager* _man)
 void PublicRequestImpl::init(Database::Row::Iterator& _it)
 {
     id_               = (unsigned long long)*_it;
+    epp_action_id_    = *(++_it);
     create_request_id_  = *(++_it);
     resolve_request_id_ = *(++_it);
     create_time_      = *(++_it);
@@ -281,6 +260,7 @@ void PublicRequestImpl::init(Database::Row::Iterator& _it)
     reason_           = (std::string)*(++_it);
     email_to_answer_  = (std::string)*(++_it);
     answer_email_id_  = *(++_it);
+    svtrid_           = (std::string)*(++_it);
     registrar_id_     = *(++_it);
     registrar_handle_ = (std::string)*(++_it);
     registrar_name_   = (std::string)*(++_it);
@@ -329,19 +309,18 @@ void PublicRequestImpl::save()
 
     }
     else {
-
-      Database::InsertQuery insert_request("public_request");
-
-      insert_request.add("request_type", type_);
-      insert_request.add("create_request_id", create_request_id_);
-      insert_request.add("status", status_);
-      insert_request.add("reason", reason_);
-      insert_request.add("email_to_answer", email_to_answer_);
-      insert_request.add("registrar_id", registrar_id_);
-
       try {
         Database::Transaction transaction(conn);
-        transaction.exec(insert_request);
+        conn.exec_params(
+                "INSERT INTO public_request"
+                " (request_type, epp_action_id, create_request_id,"
+                " status, reason, email_to_answer, registrar_id)"
+                " VALUES"
+                " ((SELECT id FROM enum_public_request_type WHERE name = $1::varchar),"
+                " $2::bigint, $3::bigint, $4::integer, $5::varchar, $6::varchar, $7::integer)",
+                Database::query_param_list
+                    (type_)(epp_action_id_)(create_request_id_)(status_)
+                    (reason_)(email_to_answer_)(registrar_id_ == 0 ? Database::QPNull : registrar_id_));
 
         std::string objects_str = "";
         std::vector<OID>::iterator it = objects_.begin();
@@ -454,6 +433,20 @@ const Database::ID PublicRequestImpl::getAnswerEmailId() const
     return answer_email_id_;
 }
 
+
+const Database::ID PublicRequestImpl::getEppActionId() const
+{
+    return epp_action_id_;
+}
+
+
+void PublicRequestImpl::setEppActionId(const Database::ID& _epp_action_id)
+{
+    epp_action_id_ = _epp_action_id;
+    modified_ = true;
+}
+
+
 const Database::ID PublicRequestImpl::getRequestId() const
 {
     return create_request_id_;
@@ -496,6 +489,13 @@ unsigned PublicRequestImpl::getObjectSize() const
 {
     return objects_.size();
 }
+
+
+const std::string PublicRequestImpl::getSvTRID() const
+{
+    return svtrid_;
+}
+
 
 const Database::ID PublicRequestImpl::getRegistrarId() const
 {
@@ -575,7 +575,7 @@ std::string PublicRequestImpl::getEmails() const
 
 
 /// send email with answer and return its id
-TID PublicRequestImpl::sendEmail() const
+TID PublicRequestImpl::sendEmail() const throw (Mailer::NOT_SEND)
 {
     Mailer::Parameters params;
     fillTemplateParams(params);

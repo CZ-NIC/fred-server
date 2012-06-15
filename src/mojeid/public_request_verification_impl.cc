@@ -1,25 +1,26 @@
-#ifndef PUBLIC_REQUEST_VERIFICATION_IMPL_H_
-#define PUBLIC_REQUEST_VERIFICATION_IMPL_H_
-
-#include "public_request_impl.h"
+#include "public_request/public_request_impl.h"
 #include "types/birthdate.h"
 #include "types/stringify.h"
 #include "object_states.h"
-#include "mojeid/contact.h"
+#include "contact_verification/contact.h"
+#include "contact_verification/contact_verification.h"
 #include "mojeid/request.h"
-#include "mojeid/mojeid_data_validation.h"
 #include "mojeid/mojeid_contact_states.h"
 #include "map_at.h"
-
+#include "factory.h"
+#include "public_request_verification_impl.h"
 
 namespace Fred {
 namespace PublicRequest {
 
+FACTORY_MODULE_INIT_DEFI(verification)
 
-class ContactVerification : public PublicRequestAuthImpl
+
+
+class ContactVerification : public Fred::PublicRequest::PublicRequestAuthImpl
 {
 protected:
-    ::MojeID::ContactValidator contact_validator_;
+    Fred::Contact::Verification::ContactValidator contact_validator_;
     static const size_t PASSWORD_CHUNK_LENGTH = 8;
 
 
@@ -97,9 +98,9 @@ public:
 
         MessageData data = this->collectMessageData();
 
-        Mailer::Attachments attach;
-        Mailer::Handles handles;
-        Mailer::Parameters params;
+        Fred::Mailer::Attachments attach;
+        Fred::Mailer::Handles handles;
+        Fred::Mailer::Parameters params;
 
         unsigned short type = ((_type == EMAIL_PIN2_SMS) ? 1
                                 : (_type == EMAIL_PIN2_LETTER) ? 2 : 0);
@@ -165,15 +166,15 @@ public:
         MessageData data = collectMessageData();
 
         std::stringstream xmldata, xml_part_code;
-        Document::GenerationType doc_type;
+        Fred::Document::GenerationType doc_type;
 
         if (_type == LETTER_PIN2) {
             xml_part_code << "<pin2>" << map_at(data, "pin2") << "</pin2>";
-            doc_type = Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN2;
+            doc_type = Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN2;
         }
         else if (_type == LETTER_PIN3) {
             xml_part_code << "<pin3>" << map_at(data, "pin3") << "</pin3>";
-            doc_type = Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3;
+            doc_type = Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3;
         }
         else {
             throw std::runtime_error("unknown letter type");
@@ -339,33 +340,28 @@ public:
 
 
 
-class ConditionalContactIdentificationImpl : public ContactVerification
+class ConditionalContactIdentificationImpl
+        : public ContactVerification,
+          public Util::FactoryAutoRegister<PublicRequest, ConditionalContactIdentificationImpl>
 {
 public:
     ConditionalContactIdentificationImpl() : ContactVerification()
     {
-        contact_validator_ = ::MojeID::create_conditional_identification_validator();
+        contact_validator_ = Fred::Contact::Verification::create_conditional_identification_validator();
     }
 
 
     std::string generatePasswords()
     {
-        if(this->getPublicRequestManager()->getDemoMode())
-        {
-            return std::string(PASSWORD_CHUNK_LENGTH,'1')//pin1:11111111
-                +std::string(PASSWORD_CHUNK_LENGTH,'2'); //pin2:22222222
-        }
-        else
-        {
-            return this->generateAuthInfoPassword();
-        }
+        return this->generateAuthInfoPassword();
     }
 
     void save()
     {
         /* insert */
         if (!this->getId()) {
-            ::MojeID::Contact cdata = ::MojeID::contact_info(this->getObject(0).id);
+            Fred::Contact::Verification::Contact cdata
+                = Fred::Contact::Verification::contact_info(this->getObject(0).id);
             contact_validator_.check(cdata);
 
             bool check_ok = true;
@@ -427,7 +423,8 @@ public:
             throw ObjectChanged();
         }
 
-        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
+        Fred::Contact::Verification::Contact cdata
+            = Fred::Contact::Verification::contact_info(getObject(0).id);
         contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
@@ -446,16 +443,17 @@ public:
         if (act_registrar != this->getRegistrarId()) {
             /* run transfer command */
             ::MojeID::Request request(205, this->getRegistrarId(), this->getResolveRequestId());
-            ::MojeID::contact_transfer(
+            Fred::Contact::Verification::contact_transfer(
                     request.get_request_id(),
                     request.get_registrar_id(),
                     this->getObject(0).id);
-            ::MojeID::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
+            Fred::Contact::Verification::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
             request.end_success();
         }
 
         /* set state */
         insertNewStateRequest(getId(), getObject(0).id, 21);
+        insertNewStateRequest(getId(), getObject(0).id, 24);
 
         /* prohibit operations on contact */
         if (checkState(this->getObject(0).id, 1) == false) {
@@ -480,6 +478,7 @@ public:
         if (new_request) {
             new_request->setRegistrarId(this->getRegistrarId());
             new_request->setRequestId(this->getResolveRequestId());
+            new_request->setEppActionId(this->getEppActionId());
             new_request->addObject(this->getObject(0));
             new_request->save();
             new_request->sendPasswords();
@@ -493,15 +492,24 @@ public:
         this->sendEmailPassword(EMAIL_PIN2_SMS);
         this->sendSmsPassword();
     }
+
+
+    static std::string registration_name()
+    {
+        return PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+    }
 };
 
 
-class ContactIdentificationImpl : public ContactVerification
+
+class ContactIdentificationImpl
+        : public ContactVerification,
+          public Util::FactoryAutoRegister<PublicRequest, ContactIdentificationImpl>
 {
 public:
     ContactIdentificationImpl() : ContactVerification()
     {
-        contact_validator_ = ::MojeID::create_identification_validator();
+        contact_validator_ = Fred::Contact::Verification::create_identification_validator();
     }
 
     /* XXX: change validator in case contact is already CI */
@@ -510,7 +518,7 @@ public:
         PublicRequestImpl::addObject(_oid);
 
         if (checkState(this->getObject(0).id, 21) == true) {
-            contact_validator_ = ::MojeID::create_finish_identification_validator();
+            contact_validator_ = Fred::Contact::Verification::create_finish_identification_validator();
         }
     }
 
@@ -518,33 +526,19 @@ public:
     {
         if (checkState(getObject(0).id, 21) == true) {
             /* generate pin3 */
-            if(this->getPublicRequestManager()->getDemoMode())
-            {
-                return std::string(PASSWORD_CHUNK_LENGTH,'3');//pin3:33333333
-            }
-            else
-            {
-                return this->generateRandomPassword();
-            }
+            return this->generateRandomPassword();
         }
         else {
             /* generate pin1 and pin2 */
-            if(this->getPublicRequestManager()->getDemoMode())
-            {
-                return std::string(PASSWORD_CHUNK_LENGTH,'1')//pin1:11111111
-                    +std::string(PASSWORD_CHUNK_LENGTH,'2'); //pin2:22222222
-            }
-            else
-            {
-                return this->generateAuthInfoPassword();
-            }
+            return this->generateAuthInfoPassword();
         }
     }
 
     void save()
     {
         if (!this->getId()) {
-            ::MojeID::Contact cdata = ::MojeID::contact_info(this->getObject(0).id);
+            Fred::Contact::Verification::Contact cdata
+                = Fred::Contact::Verification::contact_info(this->getObject(0).id);
             contact_validator_.check(cdata);
 
             bool check_ok = true;
@@ -616,7 +610,8 @@ public:
             throw ObjectChanged();
         }
 
-        ::MojeID::Contact cdata = ::MojeID::contact_info(getObject(0).id);
+        Fred::Contact::Verification::Contact cdata
+            = Fred::Contact::Verification::contact_info(getObject(0).id);
         contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
@@ -635,11 +630,11 @@ public:
         if (act_registrar != this->getRegistrarId()) {
             /* run transfer command */
             ::MojeID::Request request(205, this->getRegistrarId(), this->getResolveRequestId());
-            ::MojeID::contact_transfer(
+            Fred::Contact::Verification::contact_transfer(
                     request.get_request_id(),
                     request.get_registrar_id(),
                     this->getObject(0).id);
-            ::MojeID::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
+            Fred::Contact::Verification::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
             request.end_success();
         }
 
@@ -648,6 +643,10 @@ public:
 
         /* set new state */
         insertNewStateRequest(getId(), getObject(0).id, 22);
+
+        if (checkState(this->getObject(0).id, 24) == false) {
+            insertNewStateRequest(getId(), getObject(0).id, 24);
+        }
 
         /* prohibit operations on contact */
         if (checkState(this->getObject(0).id, 1) == false) {
@@ -685,11 +684,19 @@ public:
             this->sendEmailPassword(EMAIL_PIN2_LETTER);
         }
     }
+
+
+    static std::string registration_name()
+    {
+        return PRT_CONTACT_IDENTIFICATION;
+    }
 };
 
 
 
-class ValidationRequestImpl : public PublicRequestImpl
+class ValidationRequestImpl
+        : public PublicRequestImpl,
+          public Util::FactoryAutoRegister<PublicRequest, ValidationRequestImpl>
 {
 public:
     bool check() const
@@ -733,7 +740,7 @@ public:
     }
 
 
-    virtual void fillTemplateParams(Mailer::Parameters& params) const
+    virtual void fillTemplateParams(Fred::Mailer::Parameters& params) const
     {
         params["reqdate"] = stringify(getCreateTime().date());
         params["reqid"] = stringify(getId());
@@ -807,11 +814,15 @@ public:
         Fred::update_object_states(getObject(0).id);
         tx.commit();
     }
+
+
+    static std::string registration_name()
+    {
+        return PRT_CONTACT_VALIDATION;
+    }
 };
 
 
 }
 }
-
-#endif /* PUBLIC_REQUEST_VERIFICATION_IMPL_H_ */
 

@@ -54,6 +54,10 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_adifd_args.h"
 
+#include "util/factory_check.h"
+#include "fredlib/public_request/public_request.h"
+#include "fredlib/public_request/public_request_authinfo_impl.h"
+
 using namespace std;
 
 const string server_name = "fred-pifd";
@@ -80,6 +84,20 @@ int main(int argc, char *argv[])
 
         // setting up logger
         setup_logging(CfgArgs::instance());
+
+        //factory_check - required keys are in factory
+        FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
+        ::KeyVector required_keys = boost::assign::list_of
+         (Fred::PublicRequest::PRT_AUTHINFO_AUTO_PIF)
+         (Fred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF)
+         (Fred::PublicRequest::PRT_AUTHINFO_POST_PIF);
+
+        FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
+            (required_keys).check();
+
+        //factory_check - factory keys are in database
+        FactoryHaveSubsetOfKeysChecker<Fred::PublicRequest::Factory>
+            (Fred::PublicRequest::get_enum_public_request_type()).check();
 
         //CORBA init
         corba_init();

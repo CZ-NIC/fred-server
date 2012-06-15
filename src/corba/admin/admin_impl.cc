@@ -40,6 +40,9 @@
 #include "fredlib/object_states.h"
 #include "fredlib/poll.h"
 #include "bank_payment.h"
+#include "public_request/public_request_authinfo_impl.h"
+#include "public_request/public_request_block_impl.h"
+
 
 #include "log/logger.h"
 #include "log/context.h"
@@ -689,7 +692,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
     request_type = Fred::PublicRequest::type; break;
   
   Fred::PublicRequest::Type request_type;
-  switch (_type) {
+  switch (_type)  {
     REQUEST_TYPE_CORBA2DB_CASE(PRT_AUTHINFO_AUTO_RIF)
     REQUEST_TYPE_CORBA2DB_CASE(PRT_AUTHINFO_AUTO_PIF)
     REQUEST_TYPE_CORBA2DB_CASE(PRT_AUTHINFO_EMAIL_PIF)

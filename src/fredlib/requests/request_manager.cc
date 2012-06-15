@@ -988,7 +988,6 @@ void ManagerImpl::incrementRequestCounts(RequestCountInfo *inf_ptr, Result res)
         std::string user_handle = (std::string)res[i][0];
         unsigned long long count = (unsigned long long)res[i][1];
 
-        unsigned long long new_value = 0;
         RequestCountInfo::iterator it = inf.find(user_handle);
 
         if(it != inf.end()) {

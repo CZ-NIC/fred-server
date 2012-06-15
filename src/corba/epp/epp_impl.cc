@@ -61,6 +61,8 @@
 #include <memory>
 #include "tech_check.h"
 
+#include "public_request/public_request_authinfo_impl.h"
+
 // Notifier
 #include "notifier.h"
 
