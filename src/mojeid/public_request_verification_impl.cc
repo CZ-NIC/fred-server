@@ -478,7 +478,6 @@ public:
         if (new_request) {
             new_request->setRegistrarId(this->getRegistrarId());
             new_request->setRequestId(this->getResolveRequestId());
-            new_request->setEppActionId(this->getEppActionId());
             new_request->addObject(this->getObject(0));
             new_request->save();
             new_request->sendPasswords();

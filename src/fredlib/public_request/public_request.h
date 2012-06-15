@@ -145,14 +145,11 @@ public:
   virtual const std::string& getEmailToAnswer() const = 0;
   virtual void setEmailToAnswer(const std::string& _email) = 0;
   virtual const Database::ID getAnswerEmailId() const = 0;
-  virtual const Database::ID getEppActionId() const = 0;
-  virtual void setEppActionId(const Database::ID& _epp_action_id) = 0;
   virtual void setRegistrarId(const Database::ID& _registrar_id) = 0;
   virtual void setRequestId(const Database::ID& _request_id) = 0;
   virtual void addObject(const OID& _oid) = 0;
   virtual const OID& getObject(unsigned _idx) const = 0;
   virtual unsigned getObjectSize() const = 0;
-  virtual const std::string getSvTRID() const = 0;
   virtual const Database::ID getRegistrarId() const = 0;
   virtual const std::string getRegistrarHandle() const = 0;
   virtual const std::string getRegistrarName() const = 0;
@@ -168,7 +165,7 @@ public:
   /// return list of destination email addresses for answer email
   virtual std::string getEmails() const = 0;
   /// send email with answer 
-  virtual TID sendEmail() const throw (Mailer::NOT_SEND) = 0;
+  virtual TID sendEmail() const = 0;
   /// process request (or just close in case of invalid flag)
   virtual void process(bool invalid, bool check,
                        const unsigned long long &_request_id = 0) = 0;
@@ -235,8 +232,7 @@ public:
   virtual List* loadRequest(Database::ID id) const = 0;
   virtual void getPdf(Database::ID _id, 
                       const std::string& _lang, 
-                      std::ostream& _output) const 
-    throw (NOT_FOUND, SQL_ERROR, Document::Generator::ERROR) = 0;
+                      std::ostream& _output) const = 0;
   
   virtual PublicRequest* createRequest(Type _type) const = 0;
 
