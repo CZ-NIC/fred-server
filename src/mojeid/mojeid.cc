@@ -1286,7 +1286,7 @@ namespace Registry
                 ret.reserve(res.size());
                 for (Database::Result::size_type i=0; i<res.size(); ++i)
                 {
-                    ret[i]  = std::string(res[i][0]);
+                    ret.push_back(std::string(res[i][0]));
                 }
                 return ret;
             }//try
