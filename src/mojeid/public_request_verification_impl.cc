@@ -1,6 +1,5 @@
 #include "public_request/public_request_impl.h"
 #include "types/birthdate.h"
-#include "types/stringify.h"
 #include "object_states.h"
 #include "contact_verification/contact.h"
 #include "contact_verification/contact_verification.h"
@@ -353,7 +352,15 @@ public:
 
     std::string generatePasswords()
     {
-        return this->generateAuthInfoPassword();
+        if(this->getPublicRequestManager()->getDemoMode())
+        {
+            return std::string(PASSWORD_CHUNK_LENGTH,'1')//pin1:11111111
+                +std::string(PASSWORD_CHUNK_LENGTH,'2'); //pin2:22222222
+        }
+        else
+        {
+            return this->generateAuthInfoPassword();
+        }
     }
 
     void save()
@@ -525,11 +532,26 @@ public:
     {
         if (checkState(getObject(0).id, 21) == true) {
             /* generate pin3 */
-            return this->generateRandomPassword();
+            if(this->getPublicRequestManager()->getDemoMode())
+            {
+                return std::string(PASSWORD_CHUNK_LENGTH,'3');//pin3:33333333
+            }
+            else
+            {
+                return this->generateRandomPassword();
+            }
         }
         else {
             /* generate pin1 and pin2 */
-            return this->generateAuthInfoPassword();
+            if(this->getPublicRequestManager()->getDemoMode())
+            {
+                return std::string(PASSWORD_CHUNK_LENGTH,'1')//pin1:11111111
+                    +std::string(PASSWORD_CHUNK_LENGTH,'2'); //pin2:22222222
+            }
+            else
+            {
+                return this->generateAuthInfoPassword();
+            }
         }
     }
 
