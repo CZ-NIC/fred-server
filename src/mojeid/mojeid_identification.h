@@ -47,8 +47,9 @@ public:
                     rconf->docgen_template_path,
                     rconf->fileclient_path,
                     //doc_manager config dependence
-                    CfgArgs::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()->nameservice_host
-                    );
+                    CfgArgs::instance()->get_handler_ptr_by_type<
+                        HandleCorbaNameServiceArgs>()
+                            ->get_nameservice_host_port());
         request_manager_.reset(Fred::PublicRequest::Manager::create(
                     registry_manager_->getDomainManager(),
                     registry_manager_->getContactManager(),
