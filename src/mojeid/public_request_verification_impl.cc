@@ -14,31 +14,37 @@ namespace PublicRequest {
 
 FACTORY_MODULE_INIT_DEFI(verification)
 
-
-
-class ContactVerification : public Fred::PublicRequest::PublicRequestAuthImpl
+struct LetterType
 {
-protected:
-    Fred::Contact::Verification::ContactValidator contact_validator_;
-    static const size_t PASSWORD_CHUNK_LENGTH = 8;
-
-
-    typedef std::map<std::string, std::string> MessageData;
-
-    enum LetterType
+    enum Type
     {
         LETTER_PIN2,
         LETTER_PIN3
     };
+};
 
-    enum EmailType
+struct EmailType
+{
+    enum Type
     {
         EMAIL_PIN2_SMS,
         EMAIL_PIN2_LETTER
     };
 
+};
+
+class ContactVerificationPimpl
+{
+    PublicRequestAuthImpl* prai_ptr_;
+
+    Fred::Contact::Verification::ContactValidator contact_validator_;
+
+public:
+
+    typedef std::map<std::string, std::string> MessageData;
 
 private:
+
     const MessageData collectMessageData()
     {
         Database::Connection conn = Database::Manager::acquire();
@@ -50,7 +56,7 @@ private:
                 " JOIN object_registry oreg ON oreg.id = c.id"
                 " JOIN enum_country ec ON ec.id = c.country "
                 " WHERE c.id = $1::integer",
-                Database::query_param_list(this->getObject(0).id));
+                Database::query_param_list(prai_ptr_->getObject(0).id));
         if (result.size() != 1)
             throw std::runtime_error("unable to get data for"
                     " password messages");
@@ -68,16 +74,16 @@ private:
         data["postalcode"] = static_cast<std::string>(result[0][5]);
         data["country"] = static_cast<std::string>(result[0][6]);
         data["email"] = static_cast<std::string>(result[0][7]);
-        data["hostname"] = this->getPublicRequestManager()->getIdentificationMailAuthHostname();
-        data["identification"] = this->getIdentification();
-        data["handle"] = boost::algorithm::to_lower_copy(this->getObject(0).handle);
+        data["hostname"] = prai_ptr_->getPublicRequestManager()->getIdentificationMailAuthHostname();
+        data["identification"] = prai_ptr_->getIdentification();
+        data["handle"] = boost::algorithm::to_lower_copy(prai_ptr_->getObject(0).handle);
         /* password split */
-        const std::string password = this->getPassword();
-        data["pin1"] = password.substr(0, -PASSWORD_CHUNK_LENGTH + password.length());
-        data["pin2"] = password.substr(-PASSWORD_CHUNK_LENGTH + password.length());
+        const std::string password = prai_ptr_->getPassword();
+        data["pin1"] = password.substr(0, -get_password_chunk_length() + password.length());
+        data["pin2"] = password.substr(-get_password_chunk_length() + password.length());
         data["pin3"] = password;
-        data["reqdate"] = boost::gregorian::to_iso_extended_string(this->getCreateTime().date());
-        data["contact_id"] = boost::lexical_cast<std::string>(this->getObject(0).id);
+        data["reqdate"] = boost::gregorian::to_iso_extended_string(prai_ptr_->getCreateTime().date());
+        data["contact_id"] = boost::lexical_cast<std::string>(prai_ptr_->getObject(0).id);
         data["contact_hid"] = static_cast<std::string>(result[0][8]);
         data["phone"] = static_cast<std::string>(result[0][9]);
         data["country_name"] = static_cast<std::string>(result[0][10]);
@@ -86,12 +92,29 @@ private:
         return data;
     }
 
-
 public:
-    ContactVerification() : PublicRequestAuthImpl() { }
 
 
-    void sendEmailPassword(const EmailType &_type)
+
+
+
+    size_t get_password_chunk_length()
+    {
+        static const size_t PASSWORD_CHUNK_LENGTH = 8;
+        return PASSWORD_CHUNK_LENGTH;
+    }
+
+    Fred::Contact::Verification::ContactValidator& get_contact_validator()
+    {
+        return contact_validator_;
+    }
+
+    ContactVerificationPimpl(PublicRequestAuthImpl* _prai_ptr)
+    : prai_ptr_(_prai_ptr)
+    {}
+
+
+    void sendEmailPassword(const EmailType::Type &_type)
     {
         LOGGER(PACKAGE).debug("public request auth - send email password");
 
@@ -101,8 +124,8 @@ public:
         Fred::Mailer::Handles handles;
         Fred::Mailer::Parameters params;
 
-        unsigned short type = ((_type == EMAIL_PIN2_SMS) ? 1
-                                : (_type == EMAIL_PIN2_LETTER) ? 2 : 0);
+        unsigned short type = ((_type == EmailType::EMAIL_PIN2_SMS) ? 1
+                                : (_type == EmailType::EMAIL_PIN2_LETTER) ? 2 : 0);
         if (type == 0) {
             throw std::runtime_error("unknown mail type (pin2 - sms/letter)");
         }
@@ -118,7 +141,7 @@ public:
         Database::Connection conn = Database::Manager::acquire();
 
         /* for demo purpose we send second half of password as well */
-        if (this->getPublicRequestManager()->getDemoMode() == true) {
+        if (prai_ptr_->getPublicRequestManager()->getDemoMode() == true) {
             params["passwd2"] = map_at(data, "pin2");
             unsigned long long file_id = 0;
 
@@ -127,16 +150,16 @@ public:
                     " JOIN message_archive ma ON ma.id=la.id "
                     " JOIN public_request_messages_map prmm ON prmm.message_archive_id = ma.id "
                     " WHERE prmm.public_request_id = $1::integer AND prmm.message_archive_id is not null",
-                    Database::query_param_list(this->getId()));
+                    Database::query_param_list(prai_ptr_->getId()));
             if (result.size() == 1) {
                 file_id = result[0][0];
                 attach.push_back(file_id);
             }
         }
 
-        handles.push_back(this->getObject(0).handle);
+        handles.push_back(prai_ptr_->getObject(0).handle);
 
-        unsigned long long id = this->getPublicRequestManager()->getMailerManager()->sendEmail(
+        unsigned long long id = prai_ptr_->getPublicRequestManager()->getMailerManager()->sendEmail(
                 "",           /* default sender */
                 params["email"],
                 "",           /* default subject */
@@ -151,14 +174,14 @@ public:
                 " (public_request_id, message_archive_id, mail_archive_id) "
                 " VALUES ($1::integer, $2::integer, $3::integer)",
                 Database::query_param_list
-                    (this->getId())
+                    (prai_ptr_->getId())
                     (Database::QPNull)
                     (id));
         tx.commit();
     }
 
 
-    void sendLetterPassword(const LetterType &_type)
+    void sendLetterPassword(const LetterType::Type &_type)
     {
         LOGGER(PACKAGE).debug("public request auth - send letter password");
 
@@ -167,11 +190,11 @@ public:
         std::stringstream xmldata, xml_part_code;
         Fred::Document::GenerationType doc_type;
 
-        if (_type == LETTER_PIN2) {
+        if (_type == LetterType::LETTER_PIN2) {
             xml_part_code << "<pin2>" << map_at(data, "pin2") << "</pin2>";
             doc_type = Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN2;
         }
-        else if (_type == LETTER_PIN3) {
+        else if (_type == LetterType::LETTER_PIN3) {
             xml_part_code << "<pin3>" << map_at(data, "pin3") << "</pin3>";
             doc_type = Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3;
         }
@@ -210,10 +233,10 @@ public:
                  << "</user>"
                  << "</mojeid_auth>";
 
-            unsigned long long file_id = this->getPublicRequestManager()->getDocumentManager()->generateDocumentAndSave(
+            unsigned long long file_id = prai_ptr_->getPublicRequestManager()->getDocumentManager()->generateDocumentAndSave(
                 doc_type,
                 xmldata,
-                "identification_request-" + boost::lexical_cast<std::string>(this->getId()) + ".pdf",
+                "identification_request-" + boost::lexical_cast<std::string>(prai_ptr_->getId()) + ".pdf",
                 7,
                 "");
 
@@ -229,16 +252,16 @@ public:
             pa.country = map_at(data, "country_name");
 
             unsigned long long message_id =
-                this->getPublicRequestManager()->getMessagesManager()->save_letter_to_send(
+                    prai_ptr_->getPublicRequestManager()->getMessagesManager()->save_letter_to_send(
                     map_at(data, "handle").c_str()//contact handle
                     , pa
                     , file_id
-                    , ((_type == LETTER_PIN2) ? "mojeid_pin2"
-                            : ((_type == LETTER_PIN3) ? "mojeid_pin3" : "")) //message type
+                    , ((_type == LetterType::LETTER_PIN2) ? "mojeid_pin2"
+                            : ((_type == LetterType::LETTER_PIN3) ? "mojeid_pin3" : "")) //message type
                     , boost::lexical_cast<unsigned long >(map_at(data, "contact_id"))//contact object_registry.id
                     , boost::lexical_cast<unsigned long >(map_at(data, "contact_hid"))//contact_history.historyid
-                    , ((_type == LETTER_PIN2) ? "registered_letter"
-                            : ((_type == LETTER_PIN3) ? "letter" : ""))//comm_type letter or registered_letter
+                    , ((_type == LetterType::LETTER_PIN2) ? "registered_letter"
+                            : ((_type == LetterType::LETTER_PIN3) ? "letter" : ""))//comm_type letter or registered_letter
                     );
 
             Database::Connection conn = Database::Manager::acquire();
@@ -247,7 +270,7 @@ public:
                     " (public_request_id, message_archive_id, mail_archive_id) "
                     " VALUES ($1::integer, $2::integer, $3::integer)",
                     Database::query_param_list
-                        (this->getId())
+                        (prai_ptr_->getId())
                         (message_id)
                         (Database::QPNull));
             tx.commit();
@@ -261,7 +284,7 @@ public:
         MessageData data = collectMessageData();
 
         unsigned long long message_id =
-            this->getPublicRequestManager()->getMessagesManager()->save_sms_to_send(
+                prai_ptr_->getPublicRequestManager()->getMessagesManager()->save_sms_to_send(
                 map_at(data, "handle").c_str()
                 , map_at(data, "phone").c_str()
                 , (std::string("Potvrzujeme uspesne zalozeni uctu mojeID. "
@@ -280,7 +303,7 @@ public:
                 " (public_request_id, message_archive_id, mail_archive_id) "
                 " VALUES ($1::integer, $2::integer, $3::integer)",
                 Database::query_param_list
-                    (this->getId())
+                    (prai_ptr_->getId())
                     (message_id)
                     (Database::QPNull));
         tx.commit();
@@ -296,20 +319,20 @@ public:
 
     std::string generateRandomPassword()
     {
-        return generateRandomPassword(PASSWORD_CHUNK_LENGTH);
+        return generateRandomPassword(get_password_chunk_length());
     }
 
 
     std::string generateAuthInfoPassword()
     {
-        unsigned long long contact_id = this->getObject(0).id;
+        unsigned long long contact_id = prai_ptr_->getObject(0).id;
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Result rauthinfo = conn.exec_params(
                 "SELECT substr(replace(o.authinfopw, ' ', ''), 1, $1::integer) "
                 " FROM object o JOIN contact c ON c.id = o.id"
                 " WHERE c.id = $2::integer",
-                Database::query_param_list(PASSWORD_CHUNK_LENGTH)
+                Database::query_param_list(get_password_chunk_length())
                                           (contact_id));
         if (rauthinfo.size() != 1) {
             throw std::runtime_error(str(boost::format(
@@ -319,21 +342,71 @@ public:
         std::string passwd;
         /* pin1 */
         if (rauthinfo[0][0].isnull()) {
-            passwd = generateRandomPassword(PASSWORD_CHUNK_LENGTH);
+            passwd = generateRandomPassword(get_password_chunk_length());
         }
         else {
             passwd = static_cast<std::string>(rauthinfo[0][0]);
             LOGGER(PACKAGE).debug(boost::format("authinfo w/o spaces='%s'") % passwd);
             /* fill with random to PASSWORD_CHUNK_LENGTH size */
             size_t to_fill = 0;
-            if ((to_fill = (PASSWORD_CHUNK_LENGTH - passwd.length())) > 0) {
+            if ((to_fill = (get_password_chunk_length() - passwd.length())) > 0) {
                 passwd += generateRandomPassword(to_fill);
                 LOGGER(PACKAGE).debug(boost::format("authinfo filled='%s'") % passwd);
             }
         }
         /* append pin2 */
-        passwd += generateRandomPassword(PASSWORD_CHUNK_LENGTH);
+        passwd += generateRandomPassword(get_password_chunk_length());
         return passwd;
+    }
+};//class ContactVerificationPimpl
+
+class ContactVerification : public Fred::PublicRequest::PublicRequestAuthImpl
+{
+    ContactVerificationPimpl contact_verification_impl_;
+public:
+    size_t get_password_chunk_length()
+    {
+        return contact_verification_impl_.get_password_chunk_length();
+    }
+
+    Fred::Contact::Verification::ContactValidator& get_contact_validator()
+    {
+        return contact_verification_impl_.get_contact_validator();
+    }
+
+    ContactVerification()
+    : PublicRequestAuthImpl()
+    , contact_verification_impl_(this)
+    {}
+
+    void sendEmailPassword(const EmailType::Type &_type)
+    {
+        contact_verification_impl_.sendEmailPassword(_type);
+    }
+
+    void sendLetterPassword(const LetterType::Type &_type)
+    {
+        contact_verification_impl_.sendLetterPassword(_type);
+    }
+
+    void sendSmsPassword()
+    {
+        contact_verification_impl_.sendSmsPassword();
+    }
+
+    std::string generateRandomPassword(const size_t _length)
+    {
+        return contact_verification_impl_.generateRandomPassword(_length);
+    }
+
+    std::string generateRandomPassword()
+    {
+        return contact_verification_impl_.generateRandomPassword();
+    }
+
+    std::string generateAuthInfoPassword()
+    {
+        return contact_verification_impl_.generateAuthInfoPassword();
     }
 };
 
@@ -343,19 +416,21 @@ class ConditionalContactIdentificationImpl
         : public ContactVerification,
           public Util::FactoryAutoRegister<PublicRequest, ConditionalContactIdentificationImpl>
 {
+            Fred::Contact::Verification::ContactValidator& contact_validator_;
 public:
-    ConditionalContactIdentificationImpl() : ContactVerification()
+    ConditionalContactIdentificationImpl()
+    : ContactVerification()
+    , contact_validator_(get_contact_validator())
     {
         contact_validator_ = Fred::Contact::Verification::create_conditional_identification_validator();
     }
-
 
     std::string generatePasswords()
     {
         if(this->getPublicRequestManager()->getDemoMode())
         {
-            return std::string(PASSWORD_CHUNK_LENGTH,'1')//pin1:11111111
-                +std::string(PASSWORD_CHUNK_LENGTH,'2'); //pin2:22222222
+            return std::string(get_password_chunk_length(),'1')//pin1:11111111
+                +std::string(get_password_chunk_length(),'2'); //pin2:22222222
         }
         else
         {
@@ -495,7 +570,7 @@ public:
 
     void sendPasswords()
     {
-        this->sendEmailPassword(EMAIL_PIN2_SMS);
+        this->sendEmailPassword(EmailType::EMAIL_PIN2_SMS);
         this->sendSmsPassword();
     }
 
@@ -506,14 +581,15 @@ public:
     }
 };
 
-
-
 class ContactIdentificationImpl
         : public ContactVerification,
           public Util::FactoryAutoRegister<PublicRequest, ContactIdentificationImpl>
 {
+    Fred::Contact::Verification::ContactValidator& contact_validator_;
 public:
-    ContactIdentificationImpl() : ContactVerification()
+    ContactIdentificationImpl()
+    : ContactVerification()
+    , contact_validator_(get_contact_validator())
     {
         contact_validator_ = Fred::Contact::Verification::create_identification_validator();
     }
@@ -534,7 +610,7 @@ public:
             /* generate pin3 */
             if(this->getPublicRequestManager()->getDemoMode())
             {
-                return std::string(PASSWORD_CHUNK_LENGTH,'3');//pin3:33333333
+                return std::string(get_password_chunk_length(),'3');//pin3:33333333
             }
             else
             {
@@ -545,8 +621,8 @@ public:
             /* generate pin1 and pin2 */
             if(this->getPublicRequestManager()->getDemoMode())
             {
-                return std::string(PASSWORD_CHUNK_LENGTH,'1')//pin1:11111111
-                    +std::string(PASSWORD_CHUNK_LENGTH,'2'); //pin2:22222222
+                return std::string(get_password_chunk_length(),'1')//pin1:11111111
+                    +std::string(get_password_chunk_length(),'2'); //pin2:22222222
             }
             else
             {
@@ -692,17 +768,17 @@ public:
     {
         if (checkState(getObject(0).id, 21) == true) {
             /* contact is already conditionally identified - send pin3 */
-            this->sendLetterPassword(LETTER_PIN3);
+            this->sendLetterPassword(LetterType::LETTER_PIN3);
             /* in demo mode we send pin3 as email attachment */
             if (man_->getDemoMode()) {
-                this->sendEmailPassword(EMAIL_PIN2_LETTER);
+                this->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
             }
         }
         else {
             /* contact is fresh - send pin2 */
-            this->sendLetterPassword(LETTER_PIN2);
+            this->sendLetterPassword(LetterType::LETTER_PIN2);
             //email have letter in attachement in demo mode, so letter first
-            this->sendEmailPassword(EMAIL_PIN2_LETTER);
+            this->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
         }
     }
 
