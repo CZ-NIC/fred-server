@@ -136,7 +136,6 @@ public:
 	// TODO change this and test combination of session / request (session)
 	Database::ID createRequest(const char *ip_addr, const ServiceType serv, const char * content, const Fred::Logger::RequestProperties &props = TestImplLog::no_props, bool is_monitoring = false, const Fred::Logger::ObjectReferences &refs = TestImplLog::no_objs, Database::ID session_id=0, Database::ID request_type_id = UNKNOWN_ACTION);
 
-	bool addRequestProperties(const Database::ID id, const Fred::Logger::RequestProperties &props = TestImplLog::no_props);
 	bool closeRequest(const Database::ID id, const char * content, const Fred::Logger::RequestProperties &props = TestImplLog::no_props, const Fred::Logger::ObjectReferences &refs = TestImplLog::no_objs, long result_code = 1000, Database::ID session_id = 0);
 
 	// to encapsulate some methods which are not part of the interface
@@ -422,17 +421,6 @@ Database::ID TestImplLog::createRequest(const char *ip_addr, const ServiceType s
 	return ret;
 }
 
-        // to be removed 
-bool TestImplLog::addRequestProperties(const Database::ID id, const Fred::Logger::RequestProperties &props)
-{
-	bool result = logd->i_addRequestProperties(id, props);
-
-	if (!result) return result;
-
-	check_db_properties_subset(id, props, true);
-
-	return result;
-}
 
 bool TestImplLog::closeRequest(const Database::ID id, const char *content, const Fred::Logger::RequestProperties &props, const Fred::Logger::ObjectReferences &refs, long result_code, Database::ID session_id)
 {
@@ -978,7 +966,6 @@ BOOST_AUTO_TEST_CASE( without_properties )
 
 	id1 = test.createRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD");
 	BOOST_CHECK(id1 != 0);
-	BOOST_CHECK(test.addRequestProperties(id1));
 	BOOST_CHECK(test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ"));
 }
 
@@ -1058,7 +1045,6 @@ BOOST_AUTO_TEST_CASE( zero_length_strings )
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.addRequestProperties(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
 	BOOST_CHECK(test.closeRequest(id1, "", *props));
 
@@ -1078,7 +1064,6 @@ BOOST_AUTO_TEST_CASE( null_strings )
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.addRequestProperties(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
 	BOOST_CHECK(test.closeRequest(id1, NULL, *props));
 }
@@ -1106,8 +1091,6 @@ BOOST_AUTO_TEST_CASE( long_strings )
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.addRequestProperties(id1, *props));
-
 
 	props = test.create_generic_properties(1, global_call_count++);
 
@@ -1128,9 +1111,7 @@ BOOST_AUTO_TEST_CASE( normal_event )
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.addRequestProperties(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.addRequestProperties(id1, *props));
 
 	props = test.create_generic_properties(1, global_call_count++);
 
@@ -1148,11 +1129,6 @@ BOOST_AUTO_TEST_CASE( no_props )
 
 	id1 = test.createRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", no_props);
 	BOOST_CHECK(id1 != 0);
-
-	BOOST_CHECK(test.addRequestProperties(id1, no_props));
-
-	BOOST_CHECK(test.addRequestProperties(id1, no_props));
-
 
 	BOOST_CHECK(test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", no_props));
 }
@@ -1197,8 +1173,6 @@ BOOST_AUTO_TEST_CASE( already_closed )
 	// record closed here
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(!test.addRequestProperties(id1, *props));
-	BOOST_CHECK(!test.addRequestProperties(id1, *props));
 	BOOST_CHECK(!test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", *props));
 
 }

@@ -438,60 +438,6 @@ void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *u
 
 }
 
-// update existing log record with given ID
-// EXCEPTIONS MUST be handled in the caller
-bool ManagerImpl::i_addRequestProperties(ID id, const Fred::Logger::RequestProperties &props)
-{
-    logd_ctx_init ctx;
-#ifdef HAVE_LOGGER
-    boost::format request_fmt = boost::format("request-%1%") % id;
-    Logging::Context ctx_entry(request_fmt.str());
-#endif
-
-    TRACE("[CALL] Fred::Logger::ManagerImpl::i_addRequestProperties");
-
-    logd_auto_db db;
-
-
-#ifdef LOGD_VERIFY_INPUT
-    if (!record_check(id, db)) return false;
-#endif
-
-    DateTime request_time;
-    ServiceType service_id;
-    bool monitoring;
-
-    try {
-        const ModelRequest& mr = rcache.get(id);
-        request_time = mr.getTimeBegin();
-        service_id = mr.getServiceId();
-        monitoring = mr.getIsMonitoring();
-        // the record stays in cache for closeRequest
-    }
-    catch (RequestCache::NOT_EXISTS)
-    {
-        boost::format select = boost::format(
-                "SELECT time_begin, service_id, is_monitoring, "
-                "COALESCE(session_id,0) "
-                "FROM request where id = %1%") % id;
-        Result res = db.exec(select.str());
-        if (res.size() == 0) {
-            logger_error(boost::format(
-                    "Record with ID %1% not found in request table.") % id );
-            return false;
-        }
-        request_time = res[0][0].operator ptime();
-        service_id = (ServiceType)(int) res[0][1];
-        monitoring = (bool)res[0][2];
-    }
-
-    insert_props(request_time, service_id, monitoring, id, props, db, true);
-
-    db.commit();
-    return true;
-
-}
-
 // close the record with given ID (end time is filled thus no further
 // modification is possible after this call)
 // EXCEPTIONS MUST be handled in the caller

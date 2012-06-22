@@ -64,19 +64,6 @@ ccReg::TID ccReg_Log_i::createRequest(const char *sourceIP, ccReg::RequestServic
 
 }
 
-void ccReg_Log_i::addRequestProperties(ccReg::TID id, const ccReg::RequestProperties &props)
-{
-    try {
-        std::auto_ptr<Fred::Logger::RequestProperties> p = convert_properties(props);
-        if( back->i_addRequestProperties(id, *(p.get())) == false) {
-            throw ccReg::Logger::REQUEST_NOT_EXISTS();
-        }
-    } catch(...) {
-        Logger_common_exception_handler("addRequestProperties");
-        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
-    }
-}
-
 void ccReg_Log_i::closeRequest(ccReg::TID id, const char *content, const ccReg::RequestProperties &props, const ccReg::ObjectReferences &refs, const CORBA::Long result_code, ccReg::TID session_id)
 {
     try {
