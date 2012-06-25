@@ -640,15 +640,16 @@ public:
     }
 };
 
-class ContactIdentificationImpl
-        : public ContactVerification,
-          public Util::FactoryAutoRegister<PublicRequest, ContactIdentificationImpl>
+
+class ContactIdentificationPimpl
 {
+    ContactVerification* contact_verification_ptr_;
     Fred::Contact::Verification::ContactValidator& contact_validator_;
 public:
-    ContactIdentificationImpl()
-    : ContactVerification()
-    , contact_validator_(get_contact_validator())
+    ContactIdentificationPimpl(
+        ContactVerification* _contact_verification_ptr)
+    : contact_verification_ptr_(_contact_verification_ptr)
+    , contact_validator_(contact_verification_ptr_->get_contact_validator())
     {
         contact_validator_ = Fred::Contact::Verification::create_identification_validator();
     }
@@ -656,83 +657,98 @@ public:
     /* XXX: change validator in case contact is already CI */
     void addObject(const OID &_oid)
     {
-        PublicRequestImpl::addObject(_oid);
+        contact_verification_ptr_->PublicRequestImpl::addObject(_oid);
 
-        if (checkState(this->getObject(0).id, 21) == true) {
-            contact_validator_ = Fred::Contact::Verification::create_finish_identification_validator();
+        if (checkState(contact_verification_ptr_->getObject(0).id, 21) == true)
+        {
+            contact_validator_ = Fred::Contact::Verification
+                    ::create_finish_identification_validator();
         }
     }
 
     std::string generatePasswords()
     {
-        if (checkState(getObject(0).id, 21) == true) {
+        if (checkState(contact_verification_ptr_->getObject(0).id, 21) == true)
+        {
             /* generate pin3 */
-            if(this->getPublicRequestManager()->getDemoMode())
+            if(contact_verification_ptr_->getPublicRequestManager()
+                    ->getDemoMode())
             {
-                return std::string(get_password_chunk_length(),'3');//pin3:33333333
+                return std::string(contact_verification_ptr_
+                        ->get_password_chunk_length(),'3');//pin3:33333333
             }
             else
             {
-                return this->generateRandomPassword();
+                return contact_verification_ptr_->generateRandomPassword();
             }
         }
         else {
             /* generate pin1 and pin2 */
-            if(this->getPublicRequestManager()->getDemoMode())
+            if(contact_verification_ptr_->getPublicRequestManager()
+                    ->getDemoMode())
             {
-                return std::string(get_password_chunk_length(),'1')//pin1:11111111
-                    +std::string(get_password_chunk_length(),'2'); //pin2:22222222
+                return std::string(contact_verification_ptr_
+                        ->get_password_chunk_length(),'1')//pin1:11111111
+                    +std::string(contact_verification_ptr_
+                        ->get_password_chunk_length(),'2'); //pin2:22222222
             }
             else
             {
-                return this->generateAuthInfoPassword();
+                return contact_verification_ptr_->generateAuthInfoPassword();
             }
         }
     }
 
     void save()
     {
-        if (!this->getId()) {
+        if (!contact_verification_ptr_->getId()) {
             Fred::Contact::Verification::Contact cdata
-                = Fred::Contact::Verification::contact_info(this->getObject(0).id);
+                = Fred::Contact::Verification::contact_info(
+                        contact_verification_ptr_->getObject(0).id);
             contact_validator_.check(cdata);
 
             bool check_ok = true;
 
             /* don't check this when contact is already CI - we are creating
              * I request only for finishing identification - pin3 */
-            if (check_ok && (checkState(this->getObject(0).id, 21) == false)) {
+            if (check_ok && (checkState(contact_verification_ptr_
+                    ->getObject(0).id, 21) == false)) {
                 /* contact prohibits operations:
                  *   3 | serverTransferProhibited
                  *   4 | serverUpdateProhibited
                  */
-                if (check_ok && (checkState(this->getObject(0).id, 3) == true)) {
+                if (check_ok && (checkState(contact_verification_ptr_
+                        ->getObject(0).id, 3) == true)) {
                     check_ok = false;
                 }
-                if (check_ok && (checkState(this->getObject(0).id, 4) == true)) {
+                if (check_ok && (checkState(contact_verification_ptr_
+                        ->getObject(0).id, 4) == true)) {
                     check_ok = false;
                 }
             }
 
             /* already CI state and opened I reqeust (finishing identification
              * process with pin3 */
-            if (check_ok && ((checkState(this->getObject(0).id, 21) == true)
+            if (check_ok && ((checkState(contact_verification_ptr_
+                    ->getObject(0).id, 21) == true)
                         && (check_public_request(
-                                this->getObject(0).id,
+                                contact_verification_ptr_->getObject(0).id,
                                 PRT_CONTACT_IDENTIFICATION) > 0))) {
                 check_ok = false;
             }
             /* already I */
-            if (check_ok && (checkState(this->getObject(0).id, 22) == true)) {
+            if (check_ok && (checkState(contact_verification_ptr_
+                    ->getObject(0).id, 22) == true)) {
                 check_ok = false;
             }
             /* already V */
-            if (check_ok && (checkState(this->getObject(0).id, 23) == true)) {
+            if (check_ok && (checkState(contact_verification_ptr_
+                    ->getObject(0).id, 23) == true)) {
                 check_ok = false;
             }
             /* has V request */
             if (check_ok && (check_public_request(
-                        this->getObject(0).id,
+                    contact_verification_ptr_->getObject(0).id,
                         PRT_CONTACT_VALIDATION) > 0)) {
                 check_ok = false;
             }
@@ -741,33 +757,36 @@ public:
             }
             /* if there is another open CI close it */
             cancel_public_request(
-                    this->getObject(0).id,
+                    contact_verification_ptr_->getObject(0).id,
                     PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
-                    this->getRequestId());
+                    contact_verification_ptr_->getRequestId());
             /* if not state CI cancel I request */
-            if (checkState(this->getObject(0).id, 21) == false) {
+            if (checkState(contact_verification_ptr_
+                    ->getObject(0).id, 21) == false) {
                 cancel_public_request(
-                    this->getObject(0).id,
+                        contact_verification_ptr_->getObject(0).id,
                     PRT_CONTACT_IDENTIFICATION,
-                    this->getRequestId());
+                    contact_verification_ptr_->getRequestId());
             }
         }
-        PublicRequestAuthImpl::save();
+        contact_verification_ptr_->PublicRequestAuthImpl::save();
     }
 
     void processAction(bool _check)
     {
         LOGGER(PACKAGE).debug(boost::format(
-                "processing public request id=%1%") % getId());
+                "processing public request id=%1%")
+        % contact_verification_ptr_->getId());
 
         /* object should not change */
-        if (checkState(this->getObject(0).id, 21) == false
-                && object_was_changed_since_request_create(this->getId())) {
+        if (checkState(contact_verification_ptr_->getObject(0).id, 21) == false
+                && object_was_changed_since_request_create(contact_verification_ptr_->getId())) {
             throw ObjectChanged();
         }
 
         Fred::Contact::Verification::Contact cdata
-            = Fred::Contact::Verification::contact_info(getObject(0).id);
+            = Fred::Contact::Verification::contact_info(
+                    contact_verification_ptr_->getObject(0).id);
         contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
@@ -777,70 +796,116 @@ public:
         Database::Result clid_result = conn.exec_params(
                 "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
                 " WHERE c.id = $1::integer FOR UPDATE",
-                Database::query_param_list(getObject(0).id));
+                Database::query_param_list(
+                        contact_verification_ptr_->getObject(0).id));
         if (clid_result.size() != 1) {
             throw std::runtime_error("cannot find contact, object doesn't exist!?"
                     " (probably deleted?)");
         }
         unsigned long long act_registrar = static_cast<unsigned long long>(clid_result[0][0]);
-        if (act_registrar != this->getRegistrarId()) {
+        if (act_registrar != contact_verification_ptr_->getRegistrarId()) {
             /* run transfer command */
-            ::MojeID::Request request(205, this->getRegistrarId(), this->getResolveRequestId());
+            ::MojeID::Request request(205, contact_verification_ptr_->getRegistrarId()
+                    , contact_verification_ptr_->getResolveRequestId());
             Fred::Contact::Verification::contact_transfer(
                     request.get_request_id(),
                     request.get_registrar_id(),
-                    this->getObject(0).id);
-            Fred::Contact::Verification::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
+                    contact_verification_ptr_->getObject(0).id);
+            Fred::Contact::Verification::contact_transfer_poll_message(
+                    act_registrar, contact_verification_ptr_->getObject(0).id);
             request.end_success();
         }
 
         /* check if contact is already conditionally identified (21) and cancel state */
-        Fred::cancel_object_state(getObject(0).id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
+        Fred::cancel_object_state(contact_verification_ptr_->getObject(0).id
+                , ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
 
         /* set new state */
-        insertNewStateRequest(getId(), getObject(0).id, 22);
+        insertNewStateRequest(contact_verification_ptr_->getId()
+                , contact_verification_ptr_->getObject(0).id, 22);
 
-        if (checkState(this->getObject(0).id, 24) == false) {
-            insertNewStateRequest(getId(), getObject(0).id, 24);
+        if (checkState(contact_verification_ptr_->getObject(0).id, 24) == false) {
+            insertNewStateRequest(contact_verification_ptr_->getId()
+                    , contact_verification_ptr_->getObject(0).id, 24);
         }
 
         /* prohibit operations on contact */
-        if (checkState(this->getObject(0).id, 1) == false) {
+        if (checkState(contact_verification_ptr_->getObject(0).id, 1) == false) {
             /* set 1 | serverDeleteProhibited */
-            insertNewStateRequest(getId(), getObject(0).id, 1);
+            insertNewStateRequest(contact_verification_ptr_->getId()
+                    , contact_verification_ptr_->getObject(0).id, 1);
         }
-        if (checkState(this->getObject(0).id, 3) == false) {
+        if (checkState(contact_verification_ptr_->getObject(0).id, 3) == false) {
             /* set 3 | serverTransferProhibited */
-            insertNewStateRequest(getId(), getObject(0).id, 3);
+            insertNewStateRequest(contact_verification_ptr_->getId()
+                    , contact_verification_ptr_->getObject(0).id, 3);
         }
-        if (checkState(this->getObject(0).id, 4) == false) {
+        if (checkState(contact_verification_ptr_->getObject(0).id, 4) == false) {
             /* set 4 | serverUpdateProhibited */
-            insertNewStateRequest(getId(), getObject(0).id, 4);
+            insertNewStateRequest(contact_verification_ptr_->getId()
+                    , contact_verification_ptr_->getObject(0).id, 4);
         }
 
         /* update states */
-        Fred::update_object_states(getObject(0).id);
+        Fred::update_object_states(contact_verification_ptr_->getObject(0).id);
         tx.commit();
     }
 
     void sendPasswords()
     {
-        if (checkState(getObject(0).id, 21) == true) {
+        if (checkState(contact_verification_ptr_->getObject(0).id, 21) == true) {
             /* contact is already conditionally identified - send pin3 */
-            this->sendLetterPassword(LetterType::LETTER_PIN3);
+            contact_verification_ptr_->sendLetterPassword(LetterType::LETTER_PIN3);
             /* in demo mode we send pin3 as email attachment */
-            if (man_->getDemoMode()) {
-                this->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
+            if (contact_verification_ptr_->get_manager_ptr()->getDemoMode()) {
+                contact_verification_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
             }
         }
         else {
             /* contact is fresh - send pin2 */
-            this->sendLetterPassword(LetterType::LETTER_PIN2);
+            contact_verification_ptr_->sendLetterPassword(LetterType::LETTER_PIN2);
             //email have letter in attachement in demo mode, so letter first
-            this->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
+            contact_verification_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
         }
     }
+};
 
+class ContactIdentificationImpl
+        : public ContactVerification,
+          public Util::FactoryAutoRegister<PublicRequest, ContactIdentificationImpl>
+{
+            ContactIdentificationPimpl contact_identification_impl;
+public:
+    ContactIdentificationImpl()
+    : ContactVerification()
+    , contact_identification_impl(this)
+    {}
+
+    /* XXX: change validator in case contact is already CI */
+    void addObject(const OID &_oid)
+    {
+        contact_identification_impl.addObject(_oid);
+    }
+
+    std::string generatePasswords()
+    {
+        return contact_identification_impl.generatePasswords();
+    }
+
+    void save()
+    {
+        contact_identification_impl.save();
+    }
+
+    void processAction(bool _check)
+    {
+        contact_identification_impl.processAction(_check);
+    }
+
+    void sendPasswords()
+    {
+        contact_identification_impl.sendPasswords();
+    }
 
     static std::string registration_name()
     {
