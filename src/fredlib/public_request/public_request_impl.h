@@ -65,6 +65,7 @@ protected:
     Manager* man_;
 
 public:
+    Database::ID& get_answer_email_id(){return answer_email_id_;}
     Manager* get_manager_ptr(){return man_;}
     PublicRequestImpl();
 

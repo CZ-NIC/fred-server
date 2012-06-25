@@ -913,13 +913,14 @@ public:
     }
 };
 
-
-
-class ValidationRequestImpl
-        : public PublicRequestImpl,
-          public Util::FactoryAutoRegister<PublicRequest, ValidationRequestImpl>
+class ValidationRequestPimpl
 {
+    PublicRequestImpl* pri_ptr_;
 public:
+    ValidationRequestPimpl(PublicRequestImpl* _pri_ptr)
+    : pri_ptr_(_pri_ptr)
+    {}
+
     bool check() const
     {
         return true;
@@ -927,17 +928,17 @@ public:
 
     void save()
     {
-        if (!this->getId()) {
+        if (!pri_ptr_->getId()) {
             bool check_ok = true;
             /* already CI */
-            bool ci_state = (checkState(this->getObject(0).id, 21) == true);
+            bool ci_state = (checkState(pri_ptr_->getObject(0).id, 21) == true);
             /* already I */
-            bool i_state  = (checkState(this->getObject(0).id, 22) == true);
+            bool i_state  = (checkState(pri_ptr_->getObject(0).id, 22) == true);
             if (check_ok && (!ci_state && !i_state)) {
                 check_ok = false;
             }
             /* already V */
-            if (check_ok && (checkState(this->getObject(0).id, 23) == true)) {
+            if (check_ok && (checkState(pri_ptr_->getObject(0).id, 23) == true)) {
                 check_ok = false;
             }
             if (!check_ok) {
@@ -946,28 +947,21 @@ public:
 
             /* has V request */
             if (check_ok && (check_public_request(
-                        this->getObject(0).id,
+                    pri_ptr_->getObject(0).id,
                         PRT_CONTACT_VALIDATION) > 0)) {
-                throw RequestExists(PRT_CONTACT_VALIDATION, this->getObject(0).id);
+                throw RequestExists(PRT_CONTACT_VALIDATION, pri_ptr_->getObject(0).id);
             }
         }
-        PublicRequestImpl::save();
+        pri_ptr_->PublicRequestImpl::save();
     }
-
-
-    virtual std::string getTemplateName() const
-    {
-        return "mojeid_validation";
-    }
-
 
     virtual void fillTemplateParams(Fred::Mailer::Parameters& params) const
     {
-        params["reqdate"] = stringify(getCreateTime().date());
-        params["reqid"] = stringify(getId());
-        if (getObjectSize()) {
-            params["type"] = stringify(getObject(0).type);
-            params["handle"] = getObject(0).handle;
+        params["reqdate"] = stringify(pri_ptr_->getCreateTime().date());
+        params["reqid"] = stringify(pri_ptr_->getId());
+        if (pri_ptr_->getObjectSize()) {
+            params["type"] = stringify(pri_ptr_->getObject(0).type);
+            params["handle"] = pri_ptr_->getObject(0).handle;
         }
         Database::Connection conn = Database::Manager::acquire();
         Database::Result res = conn.exec_params(
@@ -980,7 +974,7 @@ public:
                 " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
                 " JOIN contact c ON (c.id = prom.object_id) "
                 " WHERE pr.id = $1::integer",
-                Database::query_param_list(getId()));
+                Database::query_param_list(pri_ptr_->getId()));
         if (res.size() == 1) {
             params["name"] = std::string(res[0][0]);
             params["org"] = std::string(res[0][1]);
@@ -989,7 +983,7 @@ public:
                     ? stringify(birthdate_from_string_to_date(res[0][2]))
                     : std::string(""));
             params["address"] = std::string(res[0][4]);
-            params["status"] = getStatus() == PRS_ANSWERED ? "1" : "2";
+            params["status"] = pri_ptr_->getStatus() == PRS_ANSWERED ? "1" : "2";
         }
     }
 
@@ -997,52 +991,96 @@ public:
     {
         LOGGER(PACKAGE).debug(boost::format(
                     "invalidation request id=%1%")
-                    % this->getId());
+                    % pri_ptr_->getId());
         /* just send email - note that difference between succesfully
          * processed email and invalidated email is done
          * by setting status_ = PRS_INVALID which is passed to email in
          * fillTemplateParams(...) method -
          * (params["status"] = getStatus() == PRS_ANSWERED ? "1" : "2";)
          */
-        answer_email_id_ = sendEmail();
+        pri_ptr_->get_answer_email_id() = pri_ptr_->sendEmail();
     }
 
     void processAction(bool _check)
     {
         LOGGER(PACKAGE).debug(boost::format(
                     "processing validation request id=%1%")
-                    % getId());
+                    % pri_ptr_->getId());
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        if ((checkState(this->getObject(0).id, 21) == false) && checkState(this->getObject(0).id, 22) == false) {
+        if ((checkState(pri_ptr_->getObject(0).id, 21) == false)
+                && checkState(pri_ptr_->getObject(0).id, 22) == false) {
             throw NotApplicable("cannot process contact validation: no identified state &&"
                     " no conditionally identified state");
         }
 
         /* check if contact is already conditionally identified (21) and cancel status */
-        Fred::cancel_object_state(getObject(0).id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
+        Fred::cancel_object_state(pri_ptr_->getObject(0).id, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT);
 
         /* check if contact is already identified (22) and cancel status */
-        if (Fred::cancel_object_state(getObject(0).id, ::MojeID::IDENTIFIED_CONTACT) == false) {
+        if (Fred::cancel_object_state(pri_ptr_->getObject(0).id, ::MojeID::IDENTIFIED_CONTACT) == false) {
             /* otherwise there could be identification request */
-            cancel_public_request(getObject(0).id, PRT_CONTACT_IDENTIFICATION, this->getResolveRequestId());
+            cancel_public_request(pri_ptr_->getObject(0).id
+                    , PRT_CONTACT_IDENTIFICATION, pri_ptr_->getResolveRequestId());
         }
 
         /* set new state */
-        insertNewStateRequest(getId(), getObject(0).id, 23);
-        Fred::update_object_states(getObject(0).id);
+        insertNewStateRequest(pri_ptr_->getId(), pri_ptr_->getObject(0).id, 23);
+        Fred::update_object_states(pri_ptr_->getObject(0).id);
         tx.commit();
     }
+};
 
+
+class ValidationRequestImpl
+    : public PublicRequestImpl,
+      public Util::FactoryAutoRegister<PublicRequest, ValidationRequestImpl>
+{
+    ValidationRequestPimpl validation_request_impl;
+public:
+
+    ValidationRequestImpl()
+    :PublicRequestImpl()
+    , validation_request_impl(this)
+    {}
+
+    bool check() const
+    {
+        return validation_request_impl.check();
+    }
+
+    void save()
+    {
+        validation_request_impl.save();
+    }
+
+    virtual std::string getTemplateName() const
+    {
+        return "mojeid_validation";
+    }
+
+    virtual void fillTemplateParams(Fred::Mailer::Parameters& params) const
+    {
+        validation_request_impl.fillTemplateParams(params);
+    }
+
+    void invalidateAction()
+    {
+        validation_request_impl.invalidateAction();
+    }
+
+    void processAction(bool _check)
+    {
+        validation_request_impl.processAction(_check);
+    }
 
     static std::string registration_name()
     {
         return PRT_CONTACT_VALIDATION;
     }
 };
-
 
 }
 }
