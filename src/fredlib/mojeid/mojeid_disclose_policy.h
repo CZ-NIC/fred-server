@@ -109,7 +109,7 @@ struct SetDiscloseAddrTrueIfNotValidated
     void operator()(DiscloseFlagPolicy& policy)
     {
         if (Fred::object_has_state(policy.get_contact().id
-                , ::MojeID::VALIDATED_CONTACT) == false)
+                , Fred::ObjectState::VALIDATED_CONTACT) == false)
         {
             policy.get_contact().discloseaddress=true;
         }

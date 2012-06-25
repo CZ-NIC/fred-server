@@ -267,11 +267,11 @@ namespace Registry
                  */
                 /* already CI || already I || already V */
                 if ((Fred::object_has_state(cinfo.id
-                    , ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
+                    , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
                     || (Fred::object_has_state(cinfo.id
-                            , ::MojeID::IDENTIFIED_CONTACT) == true)
+                            , Fred::ObjectState::IDENTIFIED_CONTACT) == true)
                     || (Fred::object_has_state(cinfo.id
-                            , ::MojeID::VALIDATED_CONTACT) == true)) {
+                            , Fred::ObjectState::VALIDATED_CONTACT) == true)) {
 
                     errors[Fred::Contact::Verification::field_status]
                            = Fred::Contact::Verification::NOT_AVAILABLE;
@@ -406,9 +406,9 @@ namespace Registry
                    % "serverDeleteProhibited"
                    % "serverTransferProhibited"
                    % "serverUpdateProhibited"
-                   % ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT
-                   % ::MojeID::IDENTIFIED_CONTACT
-                   % ::MojeID::VALIDATED_CONTACT
+                   % Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT
+                   % Fred::ObjectState::IDENTIFIED_CONTACT
+                   % Fred::ObjectState::VALIDATED_CONTACT
                    % ::MojeID::MOJEID_CONTACT;
 
                 boost::format lock_state_request = boost::format(
@@ -420,9 +420,9 @@ namespace Registry
                    % "serverDeleteProhibited"
                    % "serverTransferProhibited"
                    % "serverUpdateProhibited"
-                   % ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT
-                   % ::MojeID::IDENTIFIED_CONTACT
-                   % ::MojeID::VALIDATED_CONTACT
+                   % Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT
+                   % Fred::ObjectState::IDENTIFIED_CONTACT
+                   % Fred::ObjectState::VALIDATED_CONTACT
                    % ::MojeID::MOJEID_CONTACT;
 
                 // fetch the result and convert to strings
@@ -453,9 +453,9 @@ namespace Registry
                             = drop_states.begin();
                         it != drop_states.end();
                         it++) {
-                    if(::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT == *it
-                            || ::MojeID::IDENTIFIED_CONTACT == *it
-                            || ::MojeID::VALIDATED_CONTACT == *it) {
+                    if(Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT == *it
+                            || Fred::ObjectState::IDENTIFIED_CONTACT == *it
+                            || Fred::ObjectState::VALIDATED_CONTACT == *it) {
                         if(!mojeid_state.empty()) {
                             throw std::runtime_error(
                                 "Contact has invalid combination of states");
@@ -587,7 +587,7 @@ namespace Registry
                     = Fred::Contact::Verification::create_contact_update_validator();
                 validator.check(_contact);
 
-                if (Fred::object_has_state(cid, ::MojeID::CONDITIONALLY_IDENTIFIED_CONTACT) == true) {
+                if (Fred::object_has_state(cid, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true) {
 
                     if (Fred::Contact::Verification::check_conditionally_identified_contact_diff(
                             _contact, Fred::Contact::Verification::contact_info(cid)) == false) {
@@ -608,12 +608,12 @@ namespace Registry
 
                 DiscloseFlagPolicy contact_disclose_policy (pcv);
 
-                if (Fred::object_has_state(cid, ::MojeID::VALIDATED_CONTACT) == true) {
+                if (Fred::object_has_state(cid, Fred::ObjectState::VALIDATED_CONTACT) == true) {
                     if (Fred::Contact::Verification::check_validated_contact_diff(_contact
                             , Fred::Contact::Verification::contact_info(cid)) == false) {
                         /* change contact status to identified */
-                        if (Fred::cancel_object_state(cid, ::MojeID::VALIDATED_CONTACT)) {
-                            Fred::insert_object_state(cid, ::MojeID::IDENTIFIED_CONTACT);
+                        if (Fred::cancel_object_state(cid, Fred::ObjectState::VALIDATED_CONTACT)) {
+                            Fred::insert_object_state(cid, Fred::ObjectState::IDENTIFIED_CONTACT);
                             contact_disclose_policy.append_policy_callback(SetDiscloseAddrTrue());
                         }
                     }
