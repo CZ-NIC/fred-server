@@ -45,19 +45,6 @@ std::string ObjectType2Str(ObjectType type)
 }
 
 
-bool checkState(Database::ID objectId, unsigned state)
-{
-  Database::Query sql;
-  sql.buffer() << "SELECT COUNT(*) FROM object_state WHERE state_id="
-               << state << " AND object_id=" << objectId
-               << " AND valid_to ISNULL";
-  Database::Connection conn = Database::Manager::acquire();
-  Database::Result r_objects = conn.exec(sql);
-  int res = (r_objects.size() == 0 ? 0 : (int)r_objects[0][0]);
-  return res > 0;
-}
-
-
 void insertNewStateRequest(
         Database::ID blockRequestID,
         Database::ID objectId,

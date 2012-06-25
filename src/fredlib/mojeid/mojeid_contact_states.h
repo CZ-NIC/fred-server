@@ -3,7 +3,7 @@
 
 
 namespace MojeID {
-const std::string MOJEID_CONTACT = "mojeidContact";
+const std::string MOJEID_CONTACT = "mojeidContact";//id 24
 }
 
 

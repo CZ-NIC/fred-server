@@ -1,11 +1,9 @@
 #include "public_request_impl.h"
 #include "public_request_block_impl.h"
+#include "object_states.h"
 #include "factory.h"
 #include "types/stringify.h"
 
-
-#define SERVER_TRANSFER_PROHIBITED 3
-#define SERVER_UPDATE_PROHIBITED 4
 
 
 namespace Fred {
@@ -13,7 +11,8 @@ namespace PublicRequest {
 
 FACTORY_MODULE_INIT_DEFI(block)
 
-
+const unsigned SERVER_TRANSFER_PROHIBITED = 3;
+const unsigned SERVER_UPDATE_PROHIBITED = 4;
 
 class BlockUnblockRequestPIFImpl : public PublicRequestImpl {
 public:
@@ -42,7 +41,7 @@ public:
   virtual bool check() const {
     bool res = true;
     for (unsigned i=0; res && i<getObjectSize(); i++)
-     res = !checkState(getObject(i).id,SERVER_UPDATE_PROHIBITED) &&
+     res = !object_has_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED) &&
       queryBlockRequest(getObject(i).id,0,"3",false);
     return res;
   }
@@ -55,7 +54,7 @@ public:
     virtual void processAction(bool check) {
     Database::Connection conn = Database::Manager::acquire();
     for (unsigned i = 0; i < getObjectSize(); i++) {
-        if (!checkState(getObject(i).id, SERVER_UPDATE_PROHIBITED) &&
+        if (!object_has_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED) &&
               queryBlockRequest(getObject(i).id, getId(), "3", false)) {
             insertNewStateRequest(getId(),getObject(i).id, 3);
         } else throw REQUEST_BLOCKED();
@@ -80,7 +79,7 @@ public:
   virtual bool check() const {
     bool res = true;
     for (unsigned i = 0; res && i < getObjectSize(); i++)
-     res = !checkState(getObject(i).id, SERVER_UPDATE_PROHIBITED) &&
+     res = !object_has_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED) &&
       queryBlockRequest(getObject(i).id, 0, "3,4", false);
     return res;
   }
@@ -93,7 +92,7 @@ public:
     virtual void processAction(bool check) {
     Database::Connection conn = Database::Manager::acquire();
     for (unsigned i = 0; i < getObjectSize(); i++) {
-        if (!checkState(getObject(i).id, SERVER_UPDATE_PROHIBITED) &&
+        if (!object_has_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED) &&
               queryBlockRequest(getObject(i).id, getId(), "3,4", false)) {
             insertNewStateRequest(getId(),getObject(i).id, SERVER_TRANSFER_PROHIBITED);
             insertNewStateRequest(getId(),getObject(i).id, SERVER_UPDATE_PROHIBITED);

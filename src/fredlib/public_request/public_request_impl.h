@@ -13,8 +13,6 @@ std::string Status2Str(Status _status);
 
 std::string ObjectType2Str(ObjectType type);
 
-bool checkState(Database::ID objectid, unsigned state);
-
 void insertNewStateRequest(
         Database::ID blockRequestID,
         Database::ID objectId,

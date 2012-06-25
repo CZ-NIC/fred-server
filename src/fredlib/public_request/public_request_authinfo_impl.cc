@@ -1,11 +1,12 @@
 #include "public_request_impl.h"
 #include "public_request_authinfo_impl.h"
+#include "object_states.h"
 #include "types/stringify.h"
 #include "factory.h"
 
 
-#define SERVER_TRANSFER_PROHIBITED 3
-#define SERVER_UPDATE_PROHIBITED 4
+//#define SERVER_TRANSFER_PROHIBITED 3
+//#define SERVER_UPDATE_PROHIBITED 4
 
 namespace Fred {
 namespace PublicRequest {
@@ -20,7 +21,10 @@ public:
   virtual bool check() const {
     bool res = true;
     for (unsigned i=0; res && i<getObjectSize(); i++)
-     res = !checkState(getObject(i).id,SERVER_TRANSFER_PROHIBITED);
+    {
+        res = !object_has_state(getObject(i).id
+            , Fred::ObjectState::SERVER_TRANSFER_PROHIBITED);
+    }
     return res;
   }
   virtual void processAction(bool _check) {

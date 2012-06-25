@@ -488,28 +488,37 @@ public:
              *   3 | serverTransferProhibited
              *   4 | serverUpdateProhibited
              */
-            if (check_ok && (checkState(
-                    contact_verification_ptr_->getObject(0).id, 3) == true)) {
+            if (check_ok && (object_has_state(
+                contact_verification_ptr_->getObject(0).id
+                , ObjectState::SERVER_TRANSFER_PROHIBITED) == true))
+            {
                 check_ok = false;
             }
-            if (check_ok && (checkState(
-                    contact_verification_ptr_->getObject(0).id, 4) == true)) {
+            if (check_ok && (object_has_state(
+                contact_verification_ptr_->getObject(0).id
+                , ObjectState::SERVER_UPDATE_PROHIBITED) == true))
+            {
                 check_ok = false;
             }
 
             /* already CI */
-            if (check_ok && (checkState(
-                    contact_verification_ptr_->getObject(0).id, 21) == true)) {
+            if (check_ok && (object_has_state(
+                contact_verification_ptr_->getObject(0).id
+                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true))
+            {
                 check_ok = false;
             }
             /* already I */
-            if (check_ok && (checkState(
-                    contact_verification_ptr_->getObject(0).id, 22) == true)) {
+            if (check_ok && (object_has_state(
+                contact_verification_ptr_->getObject(0).id
+                , ObjectState::IDENTIFIED_CONTACT) == true)) {
                 check_ok = false;
             }
             /* already V */
-            if (check_ok && (checkState(
-                    contact_verification_ptr_->getObject(0).id, 23) == true)) {
+            if (check_ok && (object_has_state(
+                contact_verification_ptr_->getObject(0).id
+                , ObjectState::VALIDATED_CONTACT) == true))
+            {
                 check_ok = false;
             }
             /* has V request */
@@ -588,19 +597,22 @@ public:
                 , contact_verification_ptr_->getObject(0).id, 24);
 
         /* prohibit operations on contact */
-        if (checkState(contact_verification_ptr_->getObject(0).id, 1) == false)
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ObjectState::SERVER_DELETE_PROHIBITED) == false)
         {
             /* set 1 | serverDeleteProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
                     , contact_verification_ptr_->getObject(0).id, 1);
         }
-        if (checkState(contact_verification_ptr_->getObject(0).id, 3) == false)
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
         {
             /* set 3 | serverTransferProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
                     , contact_verification_ptr_->getObject(0).id, 3);
         }
-        if (checkState(contact_verification_ptr_->getObject(0).id, 4) == false)
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
         {
             /* set 4 | serverUpdateProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
@@ -695,7 +707,8 @@ public:
     {
         contact_verification_ptr_->PublicRequestImpl::addObject(_oid);
 
-        if (checkState(contact_verification_ptr_->getObject(0).id, 21) == true)
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
         {
             contact_validator_ = Fred::Contact::Verification
                     ::create_finish_identification_validator();
@@ -704,7 +717,8 @@ public:
 
     std::string generatePasswords()
     {
-        if (checkState(contact_verification_ptr_->getObject(0).id, 21) == true)
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
         {
             /* generate pin3 */
             if(contact_verification_ptr_->getPublicRequestManager()
@@ -747,39 +761,51 @@ public:
 
             /* don't check this when contact is already CI - we are creating
              * I request only for finishing identification - pin3 */
-            if (check_ok && (checkState(contact_verification_ptr_
-                    ->getObject(0).id, 21) == false)) {
+            if (check_ok && (object_has_state(
+                contact_verification_ptr_->getObject(0).id
+                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false))
+            {
                 /* contact prohibits operations:
                  *   3 | serverTransferProhibited
                  *   4 | serverUpdateProhibited
                  */
-                if (check_ok && (checkState(contact_verification_ptr_
-                        ->getObject(0).id, 3) == true)) {
+                if (check_ok && (object_has_state(
+                        contact_verification_ptr_->getObject(0).id
+                        , ObjectState::SERVER_TRANSFER_PROHIBITED) == true))
+                {
                     check_ok = false;
                 }
-                if (check_ok && (checkState(contact_verification_ptr_
-                        ->getObject(0).id, 4) == true)) {
+                if (check_ok && (object_has_state(
+                        contact_verification_ptr_->getObject(0).id
+                        , ObjectState::SERVER_UPDATE_PROHIBITED) == true))
+                {
                     check_ok = false;
                 }
             }
 
             /* already CI state and opened I reqeust (finishing identification
              * process with pin3 */
-            if (check_ok && ((checkState(contact_verification_ptr_
-                    ->getObject(0).id, 21) == true)
-                        && (check_public_request(
-                                contact_verification_ptr_->getObject(0).id,
-                                PRT_CONTACT_IDENTIFICATION) > 0))) {
+            if (check_ok && ((object_has_state(
+                    contact_verification_ptr_->getObject(0).id
+                    , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
+                    && (check_public_request(
+                            contact_verification_ptr_->getObject(0).id,
+                            PRT_CONTACT_IDENTIFICATION) > 0)))
+            {
                 check_ok = false;
             }
             /* already I */
-            if (check_ok && (checkState(contact_verification_ptr_
-                    ->getObject(0).id, 22) == true)) {
+            if (check_ok && (object_has_state(
+                    contact_verification_ptr_->getObject(0).id
+                    , ObjectState::IDENTIFIED_CONTACT) == true))
+            {
                 check_ok = false;
             }
             /* already V */
-            if (check_ok && (checkState(contact_verification_ptr_
-                    ->getObject(0).id, 23) == true)) {
+            if (check_ok && (object_has_state(
+                    contact_verification_ptr_->getObject(0).id
+                    , ObjectState::VALIDATED_CONTACT) == true))
+            {
                 check_ok = false;
             }
             /* has V request */
@@ -797,8 +823,10 @@ public:
                     PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
                     contact_verification_ptr_->getRequestId());
             /* if not state CI cancel I request */
-            if (checkState(contact_verification_ptr_
-                    ->getObject(0).id, 21) == false) {
+            if (object_has_state(
+                    contact_verification_ptr_->getObject(0).id
+                    , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
+            {
                 cancel_public_request(
                         contact_verification_ptr_->getObject(0).id,
                     PRT_CONTACT_IDENTIFICATION,
@@ -815,8 +843,10 @@ public:
         % contact_verification_ptr_->getId());
 
         /* object should not change */
-        if (checkState(contact_verification_ptr_->getObject(0).id, 21) == false
-                && object_was_changed_since_request_create(contact_verification_ptr_->getId())) {
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false
+                && object_was_changed_since_request_create(contact_verification_ptr_->getId()))
+        {
             throw ObjectChanged();
         }
 
@@ -860,23 +890,31 @@ public:
         insertNewStateRequest(contact_verification_ptr_->getId()
                 , contact_verification_ptr_->getObject(0).id, 22);
 
-        if (checkState(contact_verification_ptr_->getObject(0).id, 24) == false) {
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ::MojeID::MOJEID_CONTACT) == false)
+        {
             insertNewStateRequest(contact_verification_ptr_->getId()
                     , contact_verification_ptr_->getObject(0).id, 24);
         }
 
         /* prohibit operations on contact */
-        if (checkState(contact_verification_ptr_->getObject(0).id, 1) == false) {
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ObjectState::SERVER_DELETE_PROHIBITED) == false)
+        {
             /* set 1 | serverDeleteProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
                     , contact_verification_ptr_->getObject(0).id, 1);
         }
-        if (checkState(contact_verification_ptr_->getObject(0).id, 3) == false) {
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
+        {
             /* set 3 | serverTransferProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
                     , contact_verification_ptr_->getObject(0).id, 3);
         }
-        if (checkState(contact_verification_ptr_->getObject(0).id, 4) == false) {
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
+        {
             /* set 4 | serverUpdateProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
                     , contact_verification_ptr_->getObject(0).id, 4);
@@ -889,7 +927,9 @@ public:
 
     void sendPasswords()
     {
-        if (checkState(contact_verification_ptr_->getObject(0).id, 21) == true) {
+        if (object_has_state(contact_verification_ptr_->getObject(0).id
+                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
+        {
             /* contact is already conditionally identified - send pin3 */
             contact_verification_ptr_->sendLetterPassword(LetterType::LETTER_PIN3);
             /* in demo mode we send pin3 as email attachment */
@@ -967,14 +1007,17 @@ public:
         if (!pri_ptr_->getId()) {
             bool check_ok = true;
             /* already CI */
-            bool ci_state = (checkState(pri_ptr_->getObject(0).id, 21) == true);
+            bool ci_state = (object_has_state(pri_ptr_->getObject(0).id
+                    , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true);
             /* already I */
-            bool i_state  = (checkState(pri_ptr_->getObject(0).id, 22) == true);
+            bool i_state  = (object_has_state(pri_ptr_->getObject(0).id
+                    , ObjectState::IDENTIFIED_CONTACT) == true);
             if (check_ok && (!ci_state && !i_state)) {
                 check_ok = false;
             }
             /* already V */
-            if (check_ok && (checkState(pri_ptr_->getObject(0).id, 23) == true)) {
+            if (check_ok && (object_has_state(pri_ptr_->getObject(0).id
+                    , ObjectState::VALIDATED_CONTACT) == true)) {
                 check_ok = false;
             }
             if (!check_ok) {
@@ -1046,8 +1089,11 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        if ((checkState(pri_ptr_->getObject(0).id, 21) == false)
-                && checkState(pri_ptr_->getObject(0).id, 22) == false) {
+        if ((object_has_state(pri_ptr_->getObject(0).id
+                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
+            && object_has_state(pri_ptr_->getObject(0).id
+                , ObjectState::IDENTIFIED_CONTACT) == false)
+        {
             throw NotApplicable("cannot process contact validation: no identified state &&"
                     " no conditionally identified state");
         }
