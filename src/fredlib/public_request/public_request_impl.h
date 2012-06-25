@@ -65,6 +65,7 @@ protected:
     Manager* man_;
 
 public:
+    Manager* get_manager_ptr(){return man_;}
     PublicRequestImpl();
 
     PublicRequestImpl(Database::ID _id,

@@ -410,40 +410,40 @@ public:
     }
 };
 
-
-
-class ConditionalContactIdentificationImpl
-        : public ContactVerification,
-          public Util::FactoryAutoRegister<PublicRequest, ConditionalContactIdentificationImpl>
+class ConditionalContactIdentificationPimpl
 {
-            Fred::Contact::Verification::ContactValidator& contact_validator_;
+    ContactVerification* contact_verification_ptr_;
+    Fred::Contact::Verification::ContactValidator& contact_validator_;
 public:
-    ConditionalContactIdentificationImpl()
-    : ContactVerification()
-    , contact_validator_(get_contact_validator())
+    ConditionalContactIdentificationPimpl(
+            ContactVerification* _contact_verification_ptr)
+    : contact_verification_ptr_(_contact_verification_ptr)
+    , contact_validator_(contact_verification_ptr_->get_contact_validator())
     {
-        contact_validator_ = Fred::Contact::Verification::create_conditional_identification_validator();
+        contact_validator_ = Fred::Contact::Verification
+                ::create_conditional_identification_validator();
     }
 
     std::string generatePasswords()
     {
-        if(this->getPublicRequestManager()->getDemoMode())
+        if(contact_verification_ptr_->getPublicRequestManager()->getDemoMode())
         {
-            return std::string(get_password_chunk_length(),'1')//pin1:11111111
-                +std::string(get_password_chunk_length(),'2'); //pin2:22222222
+            return std::string(contact_verification_ptr_->get_password_chunk_length(),'1')//pin1:11111111
+                +std::string(contact_verification_ptr_->get_password_chunk_length(),'2'); //pin2:22222222
         }
         else
         {
-            return this->generateAuthInfoPassword();
+            return contact_verification_ptr_->generateAuthInfoPassword();
         }
     }
 
     void save()
     {
         /* insert */
-        if (!this->getId()) {
+        if (!contact_verification_ptr_->getId()) {
             Fred::Contact::Verification::Contact cdata
-                = Fred::Contact::Verification::contact_info(this->getObject(0).id);
+                = Fred::Contact::Verification::contact_info(
+                        contact_verification_ptr_->getObject(0).id);
             contact_validator_.check(cdata);
 
             bool check_ok = true;
@@ -452,29 +452,34 @@ public:
              *   3 | serverTransferProhibited
              *   4 | serverUpdateProhibited
              */
-            if (check_ok && (checkState(this->getObject(0).id, 3) == true)) {
+            if (check_ok && (checkState(
+                    contact_verification_ptr_->getObject(0).id, 3) == true)) {
                 check_ok = false;
             }
-            if (check_ok && (checkState(this->getObject(0).id, 4) == true)) {
+            if (check_ok && (checkState(
+                    contact_verification_ptr_->getObject(0).id, 4) == true)) {
                 check_ok = false;
             }
 
             /* already CI */
-            if (check_ok && (checkState(this->getObject(0).id, 21) == true)) {
+            if (check_ok && (checkState(
+                    contact_verification_ptr_->getObject(0).id, 21) == true)) {
                 check_ok = false;
             }
             /* already I */
-            if (check_ok && (checkState(this->getObject(0).id, 22) == true)) {
+            if (check_ok && (checkState(
+                    contact_verification_ptr_->getObject(0).id, 22) == true)) {
                 check_ok = false;
             }
             /* already V */
-            if (check_ok && (checkState(this->getObject(0).id, 23) == true)) {
+            if (check_ok && (checkState(
+                    contact_verification_ptr_->getObject(0).id, 23) == true)) {
                 check_ok = false;
             }
             /* has V request */
             if (check_ok && (check_public_request(
-                        this->getObject(0).id,
-                        PRT_CONTACT_VALIDATION) > 0)) {
+                    contact_verification_ptr_->getObject(0).id,
+                    PRT_CONTACT_VALIDATION) > 0)) {
                 check_ok = false;
             }
             if (!check_ok) {
@@ -482,31 +487,33 @@ public:
             }
             /* if there is another open CI close it */
             cancel_public_request(
-                    this->getObject(0).id,
+                    contact_verification_ptr_->getObject(0).id,
                     PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
-                    this->getRequestId());
+                    contact_verification_ptr_->getRequestId());
             /* if there is another open I close it */
             cancel_public_request(
-                    this->getObject(0).id,
+                    contact_verification_ptr_->getObject(0).id,
                     PRT_CONTACT_IDENTIFICATION,
-                    this->getRequestId());
+                    contact_verification_ptr_->getRequestId());
         }
-        PublicRequestAuthImpl::save();
+        contact_verification_ptr_->PublicRequestAuthImpl::save();
     }
 
     void processAction(bool _check)
     {
         LOGGER(PACKAGE).debug(boost::format(
                 "processing public request id=%1%")
-                % getId());
+                % contact_verification_ptr_->getId());
 
         /* object should not change */
-        if (object_was_changed_since_request_create(this->getId())) {
+        if (object_was_changed_since_request_create(
+                contact_verification_ptr_->getId())) {
             throw ObjectChanged();
         }
 
         Fred::Contact::Verification::Contact cdata
-            = Fred::Contact::Verification::contact_info(getObject(0).id);
+            = Fred::Contact::Verification::contact_info(
+                    contact_verification_ptr_->getObject(0).id);
         contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
@@ -516,51 +523,69 @@ public:
         Database::Result clid_result = conn.exec_params(
                 "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
                 " WHERE c.id = $1::integer FOR UPDATE",
-                Database::query_param_list(getObject(0).id));
+                Database::query_param_list(
+                    contact_verification_ptr_->getObject(0).id));
         if (clid_result.size() != 1) {
             throw std::runtime_error("cannot find contact, object doesn't exist!?"
                     " (probably deleted?)");
         }
-        unsigned long long act_registrar = static_cast<unsigned long long>(clid_result[0][0]);
-        if (act_registrar != this->getRegistrarId()) {
+        unsigned long long act_registrar = static_cast<unsigned long long>(
+            clid_result[0][0]);
+        if (act_registrar != contact_verification_ptr_->getRegistrarId()) {
             /* run transfer command */
-            ::MojeID::Request request(205, this->getRegistrarId(), this->getResolveRequestId());
+            ::MojeID::Request request(205
+                , contact_verification_ptr_->getRegistrarId()
+                , contact_verification_ptr_->getResolveRequestId());
             Fred::Contact::Verification::contact_transfer(
                     request.get_request_id(),
                     request.get_registrar_id(),
-                    this->getObject(0).id);
-            Fred::Contact::Verification::contact_transfer_poll_message(act_registrar, this->getObject(0).id);
+                    contact_verification_ptr_->getObject(0).id);
+            Fred::Contact::Verification::contact_transfer_poll_message(
+                    act_registrar, contact_verification_ptr_->getObject(0).id);
             request.end_success();
         }
 
         /* set state */
-        insertNewStateRequest(getId(), getObject(0).id, 21);
-        insertNewStateRequest(getId(), getObject(0).id, 24);
+        insertNewStateRequest(contact_verification_ptr_->getId()
+                , contact_verification_ptr_->getObject(0).id, 21);
+        insertNewStateRequest(contact_verification_ptr_->getId()
+                , contact_verification_ptr_->getObject(0).id, 24);
 
         /* prohibit operations on contact */
-        if (checkState(this->getObject(0).id, 1) == false) {
+        if (checkState(contact_verification_ptr_->getObject(0).id, 1) == false)
+        {
             /* set 1 | serverDeleteProhibited */
-            insertNewStateRequest(getId(), getObject(0).id, 1);
+            insertNewStateRequest(contact_verification_ptr_->getId()
+                    , contact_verification_ptr_->getObject(0).id, 1);
         }
-        if (checkState(this->getObject(0).id, 3) == false) {
+        if (checkState(contact_verification_ptr_->getObject(0).id, 3) == false)
+        {
             /* set 3 | serverTransferProhibited */
-            insertNewStateRequest(getId(), getObject(0).id, 3);
+            insertNewStateRequest(contact_verification_ptr_->getId()
+                    , contact_verification_ptr_->getObject(0).id, 3);
         }
-        if (checkState(this->getObject(0).id, 4) == false) {
+        if (checkState(contact_verification_ptr_->getObject(0).id, 4) == false)
+        {
             /* set 4 | serverUpdateProhibited */
-            insertNewStateRequest(getId(), getObject(0).id, 4);
+            insertNewStateRequest(contact_verification_ptr_->getId()
+                    , contact_verification_ptr_->getObject(0).id, 4);
         }
 
         /* update states */
-        Fred::update_object_states(getObject(0).id);
+        Fred::update_object_states(contact_verification_ptr_->getObject(0).id);
 
         /* make new request for finishing contact identification */
         PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
-                man_->createRequest(PRT_CONTACT_IDENTIFICATION)));
-        if (new_request) {
-            new_request->setRegistrarId(this->getRegistrarId());
-            new_request->setRequestId(this->getResolveRequestId());
-            new_request->addObject(this->getObject(0));
+                contact_verification_ptr_->get_manager_ptr()->createRequest(
+                        PRT_CONTACT_IDENTIFICATION)));
+        if (new_request)
+        {
+            new_request->setRegistrarId(
+                    contact_verification_ptr_->getRegistrarId());
+            new_request->setRequestId(
+                    contact_verification_ptr_->getResolveRequestId());
+            new_request->addObject(
+                    contact_verification_ptr_->getObject(0));
             new_request->save();
             new_request->sendPasswords();
         }
@@ -570,8 +595,42 @@ public:
 
     void sendPasswords()
     {
-        this->sendEmailPassword(EmailType::EMAIL_PIN2_SMS);
-        this->sendSmsPassword();
+        contact_verification_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_SMS);
+        contact_verification_ptr_->sendSmsPassword();
+    }
+};
+
+class ConditionalContactIdentificationImpl
+        : public ContactVerification,
+          public Util::FactoryAutoRegister<PublicRequest
+              , ConditionalContactIdentificationImpl>
+{
+            ConditionalContactIdentificationPimpl cond_contact_identification_impl;
+
+public:
+    ConditionalContactIdentificationImpl()
+    : ContactVerification()
+    , cond_contact_identification_impl(this)
+    {}
+
+    std::string generatePasswords()
+    {
+        return cond_contact_identification_impl.generatePasswords();
+    }
+
+    void save()
+    {
+        cond_contact_identification_impl.save();
+    }
+
+    void processAction(bool _check)
+    {
+        cond_contact_identification_impl.processAction(_check);
+    }
+
+    void sendPasswords()
+    {
+        cond_contact_identification_impl.sendPasswords();
     }
 
 
