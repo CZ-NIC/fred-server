@@ -70,11 +70,35 @@ void insertNewStateRequest(
 bool queryBlockRequest(
         Database::ID objectId,
         Database::ID blockRequestID,
-        const std::string& states,
+        const std::vector<std::string>& states_vect,
         bool unblock)
 {
-  // number of states in csv list of states
-  unsigned numStates = count(states.begin(),states.end(),',') + 1;
+    Database::Connection conn = Database::Manager::acquire();
+
+    std::string states;//comma separated state ids
+    // number of states in csv list of states
+    unsigned numStates = 0;
+
+    for (std::vector<std::string>::const_iterator it = states_vect.begin()
+            ; it != states_vect.end(); ++it)
+    {
+        Database::Result stid = conn.exec_params(
+            "SELECT id FROM enum_object_states WHERE name = $1::text"
+            , Database::query_param_list(*it));
+
+        if(stid.size() == 1)
+        {
+            //if not empty then separate values by comma
+            if (numStates > 0) states += std::string(",");
+            states += std::string(stid[0][0]);//append next state id
+            ++numStates;//update number of states
+        }
+        else
+        {
+            //error - bad input
+            throw std::runtime_error("queryBlockRequest: unable to find object state id");
+        }
+    }
 
   Database::Query sql;
   sql.buffer() << "SELECT " // ?? FOR UPDATE ??
@@ -87,7 +111,7 @@ bool queryBlockRequest(
                << "WHERE osr.object_id=" << objectId << " "
                << "ORDER BY st ASC ";
 
-  Database::Connection conn = Database::Manager::acquire();
+
   Database::Result result = conn.exec(sql);
   // in case of unblocking, it's error when no block request states are found
   if (!result.size() && unblock)

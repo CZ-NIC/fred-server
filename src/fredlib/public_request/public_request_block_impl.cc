@@ -2,6 +2,7 @@
 #include "public_request_block_impl.h"
 #include "object_states.h"
 #include "factory.h"
+#include "util.h"
 #include "types/stringify.h"
 
 
@@ -10,9 +11,6 @@ namespace Fred {
 namespace PublicRequest {
 
 FACTORY_MODULE_INIT_DEFI(block)
-
-const unsigned SERVER_TRANSFER_PROHIBITED = 3;
-const unsigned SERVER_UPDATE_PROHIBITED = 4;
 
 class BlockUnblockRequestPIFImpl : public PublicRequestImpl {
 public:
@@ -42,7 +40,9 @@ public:
     bool res = true;
     for (unsigned i=0; res && i<getObjectSize(); i++)
      res = !object_has_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED) &&
-      queryBlockRequest(getObject(i).id,0,"3",false);
+      queryBlockRequest(getObject(i).id,0
+          , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
+          ,false);
     return res;
   }
   virtual short blockType() const {
@@ -55,7 +55,10 @@ public:
     Database::Connection conn = Database::Manager::acquire();
     for (unsigned i = 0; i < getObjectSize(); i++) {
         if (!object_has_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED) &&
-              queryBlockRequest(getObject(i).id, getId(), "3", false)) {
+              queryBlockRequest(getObject(i).id, getId()
+                  , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
+                  , false))
+        {
             insertNewStateRequest(getId(),getObject(i).id
                 , ObjectState::SERVER_TRANSFER_PROHIBITED);
         } else throw REQUEST_BLOCKED();
@@ -81,7 +84,10 @@ public:
     bool res = true;
     for (unsigned i = 0; res && i < getObjectSize(); i++)
      res = !object_has_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED) &&
-      queryBlockRequest(getObject(i).id, 0, "3,4", false);
+      queryBlockRequest(getObject(i).id, 0
+          , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
+              (ObjectState::SERVER_UPDATE_PROHIBITED)
+          , false);
     return res;
   }
   virtual short blockType() const {
@@ -94,7 +100,11 @@ public:
     Database::Connection conn = Database::Manager::acquire();
     for (unsigned i = 0; i < getObjectSize(); i++) {
         if (!object_has_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED) &&
-              queryBlockRequest(getObject(i).id, getId(), "3,4", false)) {
+              queryBlockRequest(getObject(i).id, getId()
+                  , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
+                      (ObjectState::SERVER_UPDATE_PROHIBITED)
+                  , false))
+        {
             insertNewStateRequest(getId(),getObject(i).id
                     , ObjectState::SERVER_TRANSFER_PROHIBITED);
             insertNewStateRequest(getId(),getObject(i).id
@@ -120,7 +130,9 @@ public:
   virtual bool check() const {
     bool res = true;
     for (unsigned i=0; res && i<getObjectSize(); i++)
-     res = queryBlockRequest(getObject(i).id,0,"3",true);
+     res = queryBlockRequest(getObject(i).id,0
+         ,Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
+         ,true);
     return res;
   }
   virtual short blockType() const {
@@ -132,7 +144,9 @@ public:
     virtual void processAction(bool check) {
     Database::Connection conn = Database::Manager::acquire();
     for (unsigned i = 0; i < getObjectSize(); i++) {
-        if (!queryBlockRequest(getObject(i).id, getId(), "3", true))
+        if (!queryBlockRequest(getObject(i).id, getId()
+            , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
+            , true))
         throw REQUEST_BLOCKED();
       Database::Query q;
       q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";
@@ -154,7 +168,10 @@ public:
   virtual bool check() const {
     bool res = true;
     for (unsigned i = 0; res && i < getObjectSize(); i++)
-     res = queryBlockRequest(getObject(i).id, 0, "3,4", true);
+     res = queryBlockRequest(getObject(i).id, 0
+         , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
+             (ObjectState::SERVER_UPDATE_PROHIBITED)
+         , true);
     return res;
   }
   virtual short blockType() const {
@@ -166,7 +183,10 @@ public:
     virtual void processAction(bool check) {
     Database::Connection conn = Database::Manager::acquire();
     for (unsigned i = 0; i < getObjectSize(); i++) {
-        if (!queryBlockRequest(getObject(i).id, getId(), "3,4", true))
+        if (!queryBlockRequest(getObject(i).id, getId()
+            , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
+                (ObjectState::SERVER_UPDATE_PROHIBITED)
+            , true))
         throw REQUEST_BLOCKED();
       Database::Query q;
       q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";

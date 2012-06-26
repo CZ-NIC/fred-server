@@ -21,7 +21,7 @@ void insertNewStateRequest(
 bool queryBlockRequest(
         Database::ID objectId,
         Database::ID blockRequestID,
-        const std::string& states,
+        const std::vector<std::string>& states_vect,
         bool unblock);
 
 unsigned long long check_public_request(
