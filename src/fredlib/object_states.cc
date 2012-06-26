@@ -164,8 +164,6 @@ void createObjectStateRequestName(
         , std::vector< std::string > _object_state_name
         , const std::string& valid_from
         , const optional_string& valid_to
-        , DBSharedPtr _m_db
-        , bool _restricted_handles
         , bool update_object_state
         )
 {
@@ -307,12 +305,7 @@ void createObjectStateRequestName(
 
     if (update_object_state)
     {
-        std::auto_ptr<Fred::Manager> regMan(
-            Fred::Manager::create( _m_db, _restricted_handles ));
-
-         Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("regMan->updateObjectStates id: ")
-             +boost::lexical_cast<std::string>(object_id));
-         regMan->updateObjectStates(object_id);
+        update_object_states(object_id);
     }//if (update_object_state)
 
     return;

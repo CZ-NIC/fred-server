@@ -3,7 +3,7 @@
 
 #include "fredlib/db_settings.h"
 #include "util/types/optional.h"
-#include "fredlib/registry.h"
+
 
 
 #include <string>
@@ -67,8 +67,6 @@ void createObjectStateRequestName(
         , std::vector< std::string > object_state_name
         , const std::string& valid_from
         , const optional_string& valid_to
-        , DBSharedPtr _m_db
-        , bool _restricted_handles
         , bool update_object_state);
 
 

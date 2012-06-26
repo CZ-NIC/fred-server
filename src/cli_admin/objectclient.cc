@@ -126,8 +126,6 @@ ObjectClient::new_state_request_name()
             ? object_new_state_request_name_params.valid_from.get_value()
                 :  boost::posix_time::to_iso_extended_string(microsec_clock::universal_time())  //valid_from default now
         , object_new_state_request_name_params.valid_to//valid_to
-        , m_db
-        , restricted_handles
         , object_new_state_request_name_params.update_object_state
         );
 
