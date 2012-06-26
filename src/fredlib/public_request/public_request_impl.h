@@ -16,7 +16,7 @@ std::string ObjectType2Str(ObjectType type);
 void insertNewStateRequest(
         Database::ID blockRequestID,
         Database::ID objectId,
-        unsigned state);
+        const std::string & state_name);
 
 bool queryBlockRequest(
         Database::ID objectId,

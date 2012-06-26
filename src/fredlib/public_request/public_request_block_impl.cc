@@ -56,7 +56,8 @@ public:
     for (unsigned i = 0; i < getObjectSize(); i++) {
         if (!object_has_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED) &&
               queryBlockRequest(getObject(i).id, getId(), "3", false)) {
-            insertNewStateRequest(getId(),getObject(i).id, 3);
+            insertNewStateRequest(getId(),getObject(i).id
+                , ObjectState::SERVER_TRANSFER_PROHIBITED);
         } else throw REQUEST_BLOCKED();
 
       Database::Query q;
@@ -94,8 +95,10 @@ public:
     for (unsigned i = 0; i < getObjectSize(); i++) {
         if (!object_has_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED) &&
               queryBlockRequest(getObject(i).id, getId(), "3,4", false)) {
-            insertNewStateRequest(getId(),getObject(i).id, SERVER_TRANSFER_PROHIBITED);
-            insertNewStateRequest(getId(),getObject(i).id, SERVER_UPDATE_PROHIBITED);
+            insertNewStateRequest(getId(),getObject(i).id
+                    , ObjectState::SERVER_TRANSFER_PROHIBITED);
+            insertNewStateRequest(getId(),getObject(i).id
+                    , ObjectState::SERVER_UPDATE_PROHIBITED);
         } else throw REQUEST_BLOCKED();
       Database::Query q;
       q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";

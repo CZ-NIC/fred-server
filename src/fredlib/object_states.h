@@ -43,7 +43,7 @@ bool object_has_state(
         const unsigned long long &_object_id,
         const std::string &_state_name);
 
-void insert_object_state(
+unsigned long long insert_object_state(
         const unsigned long long &_object_id,
         const std::string &_state_name);
 

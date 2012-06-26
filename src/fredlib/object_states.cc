@@ -21,22 +21,22 @@ bool object_has_state(
 
 
 
-void insert_object_state(
+unsigned long long insert_object_state(
         const unsigned long long &_object_id,
         const std::string &_state_name)
 {
     Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-    conn.exec_params(
+    Database::Result reqid =conn.exec_params(
             "INSERT INTO object_state_request (object_id, state_id)"
             " VALUES ($1::integer, (SELECT id FROM enum_object_states"
-            " WHERE name = $2::text))",
+            " WHERE name = $2::text)) RETURNING id",
             Database::query_param_list
                 (_object_id)
                 (_state_name));
-    // conn.exec_params("SELECT update_object_states($1::integer)",
-    //         Database::query_param_list(_object_id));
-    tx.commit();
+    if(reqid.size() == 0)
+        return 0;
+
+    return static_cast<unsigned long long>(reqid[0][0]);
 }
 
 /**

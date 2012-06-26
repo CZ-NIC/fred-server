@@ -592,9 +592,11 @@ public:
 
         /* set state */
         insertNewStateRequest(contact_verification_ptr_->getId()
-                , contact_verification_ptr_->getObject(0).id, 21);
+                , contact_verification_ptr_->getObject(0).id
+                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
         insertNewStateRequest(contact_verification_ptr_->getId()
-                , contact_verification_ptr_->getObject(0).id, 24);
+                , contact_verification_ptr_->getObject(0).id
+                , ::MojeID::MOJEID_CONTACT);
 
         /* prohibit operations on contact */
         if (object_has_state(contact_verification_ptr_->getObject(0).id
@@ -602,21 +604,24 @@ public:
         {
             /* set 1 | serverDeleteProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id, 1);
+                    , contact_verification_ptr_->getObject(0).id
+                    , ObjectState::SERVER_DELETE_PROHIBITED);
         }
         if (object_has_state(contact_verification_ptr_->getObject(0).id
                 , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
         {
             /* set 3 | serverTransferProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id, 3);
+                    , contact_verification_ptr_->getObject(0).id
+                    , ObjectState::SERVER_TRANSFER_PROHIBITED);
         }
         if (object_has_state(contact_verification_ptr_->getObject(0).id
                 , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
         {
             /* set 4 | serverUpdateProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id, 4);
+                    , contact_verification_ptr_->getObject(0).id
+                    , ObjectState::SERVER_UPDATE_PROHIBITED);
         }
 
         /* update states */
@@ -888,13 +893,15 @@ public:
 
         /* set new state */
         insertNewStateRequest(contact_verification_ptr_->getId()
-                , contact_verification_ptr_->getObject(0).id, 22);
+                , contact_verification_ptr_->getObject(0).id
+                , ObjectState::IDENTIFIED_CONTACT);
 
         if (object_has_state(contact_verification_ptr_->getObject(0).id
                 , ::MojeID::MOJEID_CONTACT) == false)
         {
             insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id, 24);
+                    , contact_verification_ptr_->getObject(0).id
+                    , ::MojeID::MOJEID_CONTACT);
         }
 
         /* prohibit operations on contact */
@@ -903,21 +910,24 @@ public:
         {
             /* set 1 | serverDeleteProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id, 1);
+                    , contact_verification_ptr_->getObject(0).id
+                    , ObjectState::SERVER_DELETE_PROHIBITED);
         }
         if (object_has_state(contact_verification_ptr_->getObject(0).id
                 , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
         {
             /* set 3 | serverTransferProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id, 3);
+                    , contact_verification_ptr_->getObject(0).id
+                    , ObjectState::SERVER_TRANSFER_PROHIBITED);
         }
         if (object_has_state(contact_verification_ptr_->getObject(0).id
                 , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
         {
             /* set 4 | serverUpdateProhibited */
             insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id, 4);
+                    , contact_verification_ptr_->getObject(0).id
+                    , ObjectState::SERVER_UPDATE_PROHIBITED);
         }
 
         /* update states */
@@ -1112,7 +1122,8 @@ public:
         }
 
         /* set new state */
-        insertNewStateRequest(pri_ptr_->getId(), pri_ptr_->getObject(0).id, 23);
+        insertNewStateRequest(pri_ptr_->getId(), pri_ptr_->getObject(0).id
+                , ObjectState::VALIDATED_CONTACT);
         Fred::update_object_states(pri_ptr_->getObject(0).id);
         tx.commit();
     }

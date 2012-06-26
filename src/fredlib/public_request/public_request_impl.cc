@@ -5,6 +5,7 @@
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
 #include "random.h"
+#include "object_states.h"
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
@@ -48,20 +49,15 @@ std::string ObjectType2Str(ObjectType type)
 void insertNewStateRequest(
         Database::ID blockRequestID,
         Database::ID objectId,
-        unsigned state)
+        const std::string & state_name)
 {
-  Database::InsertQuery osr("object_state_request");
-  osr.add("object_id", objectId);
-  osr.add("state_id", state);
-  Database::Connection conn = Database::Manager::acquire();
-  conn.exec(osr);
-  Database::Query prsrm;
-  prsrm.buffer() << "INSERT INTO public_request_state_request_map ("
-                 << " state_request_id, block_request_id "
-                 << ") VALUES ( "
-                 << "CURRVAL('object_state_request_id_seq'),"
-                 << blockRequestID << ")";
-  conn.exec(prsrm);
+    unsigned long long req_id = insert_object_state(objectId, state_name);
+
+    Database::Connection conn = Database::Manager::acquire();
+    conn.exec_params("INSERT INTO public_request_state_request_map "
+        " ( state_request_id, block_request_id )"
+        " VALUES ( $1::integer, $2::integer)"
+        , Database::query_param_list(req_id)(blockRequestID));
 }
 
 
