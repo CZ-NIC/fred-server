@@ -19,6 +19,17 @@ bool object_has_state(
     return static_cast<int>(rcheck[0][0]);
 }
 
+bool object_has_one_of_states(
+        const unsigned long long &_object_id,
+        const std::vector<std::string> & _state_names)
+{
+    for (std::vector<std::string>::const_iterator it = _state_names.begin()
+            ; it != _state_names.end(); ++it)
+    {
+        if(object_has_state(_object_id, *it)) return true;
+    }
+    return false;
+}
 
 
 unsigned long long insert_object_state(

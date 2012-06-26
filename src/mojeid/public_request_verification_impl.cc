@@ -482,54 +482,22 @@ public:
                         contact_verification_ptr_->getObject(0).id);
             contact_validator_.check(cdata);
 
-            bool check_ok = true;
-
-            /* contact prohibits operations:
-             *   3 | serverTransferProhibited
-             *   4 | serverUpdateProhibited
-             */
-            if (check_ok && (object_has_state(
+            if (object_has_one_of_states(
                 contact_verification_ptr_->getObject(0).id
-                , ObjectState::SERVER_TRANSFER_PROHIBITED) == true))
+                , Util::vector_of<std::string>
+                (ObjectState::SERVER_TRANSFER_PROHIBITED)//3 | serverTransferProhibited
+                (ObjectState::SERVER_UPDATE_PROHIBITED)//4 | serverUpdateProhibited
+                (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)// already CI
+                (ObjectState::IDENTIFIED_CONTACT)// already I
+                (ObjectState::VALIDATED_CONTACT))// already V
+                || (check_public_request(
+                    contact_verification_ptr_->getObject(0).id
+                    , PRT_CONTACT_VALIDATION) > 0)
+            )
             {
-                check_ok = false;
-            }
-            if (check_ok && (object_has_state(
-                contact_verification_ptr_->getObject(0).id
-                , ObjectState::SERVER_UPDATE_PROHIBITED) == true))
-            {
-                check_ok = false;
-            }
-
-            /* already CI */
-            if (check_ok && (object_has_state(
-                contact_verification_ptr_->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true))
-            {
-                check_ok = false;
-            }
-            /* already I */
-            if (check_ok && (object_has_state(
-                contact_verification_ptr_->getObject(0).id
-                , ObjectState::IDENTIFIED_CONTACT) == true)) {
-                check_ok = false;
-            }
-            /* already V */
-            if (check_ok && (object_has_state(
-                contact_verification_ptr_->getObject(0).id
-                , ObjectState::VALIDATED_CONTACT) == true))
-            {
-                check_ok = false;
-            }
-            /* has V request */
-            if (check_ok && (check_public_request(
-                    contact_verification_ptr_->getObject(0).id,
-                    PRT_CONTACT_VALIDATION) > 0)) {
-                check_ok = false;
-            }
-            if (!check_ok) {
                 throw NotApplicable("pre_insert_checks: failed!");
             }
+
             /* if there is another open CI close it */
             cancel_public_request(
                     contact_verification_ptr_->getObject(0).id,
