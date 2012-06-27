@@ -397,14 +397,15 @@ public:
 class ConditionalContactIdentificationPimpl
 {
     Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
+    ContactVerificationPimpl contact_verification_impl;
     ContactVerificationPimpl* contact_verification_pimpl_ptr_;
     Fred::Contact::Verification::ContactValidator& contact_validator_;
 public:
     ConditionalContactIdentificationPimpl(
-            Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr
-            , ContactVerificationPimpl* _contact_verification_pimpl_ptr)
+            Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
     : pra_impl_ptr_(_pra_impl_ptr)
-    , contact_verification_pimpl_ptr_(_contact_verification_pimpl_ptr)
+    , contact_verification_impl(_pra_impl_ptr)
+    , contact_verification_pimpl_ptr_(&contact_verification_impl)
     , contact_validator_(contact_verification_pimpl_ptr_->get_contact_validator())
     {
         contact_validator_ = Fred::Contact::Verification
@@ -579,13 +580,11 @@ class ConditionalContactIdentificationImpl
         , public Util::FactoryAutoRegister<PublicRequest
               , ConditionalContactIdentificationImpl>
 {
-    ContactVerificationPimpl contact_verification_impl;
     ConditionalContactIdentificationPimpl cond_contact_identification_impl;
 
 public:
     ConditionalContactIdentificationImpl()
-    : contact_verification_impl(this)
-    , cond_contact_identification_impl(this, &contact_verification_impl)
+    : cond_contact_identification_impl(this)
     {}
 
     std::string generatePasswords()
@@ -619,14 +618,15 @@ public:
 class ContactIdentificationPimpl
 {
     Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
+    ContactVerificationPimpl contact_verification_impl;
     ContactVerificationPimpl* contact_verification_pimpl_ptr_;
     Fred::Contact::Verification::ContactValidator& contact_validator_;
 public:
     ContactIdentificationPimpl(
-        Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr
-        , ContactVerificationPimpl* _contact_verification_pimpl_ptr)
+        Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
     : pra_impl_ptr_(_pra_impl_ptr)
-    , contact_verification_pimpl_ptr_(_contact_verification_pimpl_ptr)
+    , contact_verification_impl(_pra_impl_ptr)
+    , contact_verification_pimpl_ptr_(&contact_verification_impl)
     , contact_validator_(contact_verification_pimpl_ptr_->get_contact_validator())
     {
         contact_validator_ = Fred::Contact::Verification::create_identification_validator();
@@ -856,12 +856,10 @@ class ContactIdentificationImpl
         : public Fred::PublicRequest::PublicRequestAuthImpl
         , public Util::FactoryAutoRegister<PublicRequest, ContactIdentificationImpl>
 {
-    ContactVerificationPimpl contact_verification_impl;
     ContactIdentificationPimpl contact_identification_impl;
 public:
     ContactIdentificationImpl()
-    : contact_verification_impl(this)
-    , contact_identification_impl(this, &contact_verification_impl)
+    : contact_identification_impl(this)
     {}
 
     /* XXX: change validator in case contact is already CI */
