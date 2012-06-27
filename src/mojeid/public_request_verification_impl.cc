@@ -954,30 +954,22 @@ public:
     void save()
     {
         if (!pri_ptr_->getId()) {
-            bool check_ok = true;
-            /* already CI */
-            bool ci_state = (object_has_state(pri_ptr_->getObject(0).id
-                    , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true);
-            /* already I */
-            bool i_state  = (object_has_state(pri_ptr_->getObject(0).id
-                    , ObjectState::IDENTIFIED_CONTACT) == true);
-            if (check_ok && (!ci_state && !i_state)) {
-                check_ok = false;
-            }
-            /* already V */
-            if (check_ok && (object_has_state(pri_ptr_->getObject(0).id
-                    , ObjectState::VALIDATED_CONTACT) == true)) {
-                check_ok = false;
-            }
-            if (!check_ok) {
+
+            if(!object_has_one_of_states(
+                pri_ptr_->getObject(0).id
+                , Util::vector_of<std::string>
+                (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)// already CI
+                (ObjectState::IDENTIFIED_CONTACT))) // already I
+            {
                 throw NotApplicable("pre_insert_checks: failed!");
             }
 
             /* has V request */
-            if (check_ok && (check_public_request(
-                    pri_ptr_->getObject(0).id,
-                        PRT_CONTACT_VALIDATION) > 0)) {
-                throw RequestExists(PRT_CONTACT_VALIDATION, pri_ptr_->getObject(0).id);
+            if (check_public_request(pri_ptr_->getObject(0).id
+                , PRT_CONTACT_VALIDATION) > 0)
+            {
+                throw RequestExists(PRT_CONTACT_VALIDATION
+                        , pri_ptr_->getObject(0).id);
             }
         }
         pri_ptr_->PublicRequestImpl::save();
