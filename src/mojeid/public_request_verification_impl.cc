@@ -394,65 +394,18 @@ public:
     }
 };//class ContactVerificationPimpl
 
-class ContactVerification : public Fred::PublicRequest::PublicRequestAuthImpl
-{
-    ContactVerificationPimpl contact_verification_impl_;
-public:
-    size_t get_password_chunk_length()
-    {
-        return contact_verification_impl_.get_password_chunk_length();
-    }
-
-    Fred::Contact::Verification::ContactValidator& get_contact_validator()
-    {
-        return contact_verification_impl_.get_contact_validator();
-    }
-
-    ContactVerification()
-    : PublicRequestAuthImpl()
-    , contact_verification_impl_(this)
-    {}
-
-    void sendEmailPassword(const EmailType::Type &_type)
-    {
-        contact_verification_impl_.sendEmailPassword(_type);
-    }
-
-    void sendLetterPassword(const LetterType::Type &_type)
-    {
-        contact_verification_impl_.sendLetterPassword(_type);
-    }
-
-    void sendSmsPassword()
-    {
-        contact_verification_impl_.sendSmsPassword();
-    }
-
-    std::string generateRandomPassword(const size_t _length)
-    {
-        return contact_verification_impl_.generateRandomPassword(_length);
-    }
-
-    std::string generateRandomPassword()
-    {
-        return contact_verification_impl_.generateRandomPassword();
-    }
-
-    std::string generateAuthInfoPassword()
-    {
-        return contact_verification_impl_.generateAuthInfoPassword();
-    }
-};
-
 class ConditionalContactIdentificationPimpl
 {
-    ContactVerification* contact_verification_ptr_;
+    Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
+    ContactVerificationPimpl* contact_verification_pimpl_ptr_;
     Fred::Contact::Verification::ContactValidator& contact_validator_;
 public:
     ConditionalContactIdentificationPimpl(
-            ContactVerification* _contact_verification_ptr)
-    : contact_verification_ptr_(_contact_verification_ptr)
-    , contact_validator_(contact_verification_ptr_->get_contact_validator())
+            Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr
+            , ContactVerificationPimpl* _contact_verification_pimpl_ptr)
+    : pra_impl_ptr_(_pra_impl_ptr)
+    , contact_verification_pimpl_ptr_(_contact_verification_pimpl_ptr)
+    , contact_validator_(contact_verification_pimpl_ptr_->get_contact_validator())
     {
         contact_validator_ = Fred::Contact::Verification
                 ::create_conditional_identification_validator();
@@ -460,30 +413,30 @@ public:
 
     std::string generatePasswords()
     {
-        if(contact_verification_ptr_->getPublicRequestManager()->getDemoMode())
+        if(pra_impl_ptr_->getPublicRequestManager()->getDemoMode())
         {
-            return std::string(contact_verification_ptr_
+            return std::string(contact_verification_pimpl_ptr_
                     ->get_password_chunk_length(),'1')//pin1:11111111
-                +std::string(contact_verification_ptr_
+                +std::string(contact_verification_pimpl_ptr_
                     ->get_password_chunk_length(),'2'); //pin2:22222222
         }
         else
         {
-            return contact_verification_ptr_->generateAuthInfoPassword();
+            return contact_verification_pimpl_ptr_->generateAuthInfoPassword();
         }
     }
 
     void save()
     {
         /* insert */
-        if (!contact_verification_ptr_->getId()) {
+        if (!pra_impl_ptr_->getId()) {
             Fred::Contact::Verification::Contact cdata
                 = Fred::Contact::Verification::contact_info(
-                        contact_verification_ptr_->getObject(0).id);
+                        pra_impl_ptr_->getObject(0).id);
             contact_validator_.check(cdata);
 
             if (object_has_one_of_states(
-                contact_verification_ptr_->getObject(0).id
+                pra_impl_ptr_->getObject(0).id
                 , Util::vector_of<std::string>
                 (ObjectState::SERVER_TRANSFER_PROHIBITED)//3 | serverTransferProhibited
                 (ObjectState::SERVER_UPDATE_PROHIBITED)//4 | serverUpdateProhibited
@@ -491,7 +444,7 @@ public:
                 (ObjectState::IDENTIFIED_CONTACT)// already I
                 (ObjectState::VALIDATED_CONTACT))// already V
                 || (check_public_request(
-                    contact_verification_ptr_->getObject(0).id
+                    pra_impl_ptr_->getObject(0).id
                     , PRT_CONTACT_VALIDATION) > 0)
             )
             {
@@ -500,33 +453,33 @@ public:
 
             /* if there is another open CI close it */
             cancel_public_request(
-                    contact_verification_ptr_->getObject(0).id,
+                    pra_impl_ptr_->getObject(0).id,
                     PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
-                    contact_verification_ptr_->getRequestId());
+                    pra_impl_ptr_->getRequestId());
             /* if there is another open I close it */
             cancel_public_request(
-                    contact_verification_ptr_->getObject(0).id,
+                    pra_impl_ptr_->getObject(0).id,
                     PRT_CONTACT_IDENTIFICATION,
-                    contact_verification_ptr_->getRequestId());
+                    pra_impl_ptr_->getRequestId());
         }
-        contact_verification_ptr_->PublicRequestAuthImpl::save();
+        pra_impl_ptr_->PublicRequestAuthImpl::save();
     }
 
     void processAction(bool _check)
     {
         LOGGER(PACKAGE).debug(boost::format(
                 "processing public request id=%1%")
-                % contact_verification_ptr_->getId());
+                % pra_impl_ptr_->getId());
 
         /* object should not change */
         if (object_was_changed_since_request_create(
-                contact_verification_ptr_->getId())) {
+                pra_impl_ptr_->getId())) {
             throw ObjectChanged();
         }
 
         Fred::Contact::Verification::Contact cdata
             = Fred::Contact::Verification::contact_info(
-                    contact_verification_ptr_->getObject(0).id);
+                    pra_impl_ptr_->getObject(0).id);
         contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
@@ -537,76 +490,76 @@ public:
                 "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
                 " WHERE c.id = $1::integer FOR UPDATE",
                 Database::query_param_list(
-                    contact_verification_ptr_->getObject(0).id));
+                    pra_impl_ptr_->getObject(0).id));
         if (clid_result.size() != 1) {
             throw std::runtime_error("cannot find contact, object doesn't exist!?"
                     " (probably deleted?)");
         }
         unsigned long long act_registrar = static_cast<unsigned long long>(
             clid_result[0][0]);
-        if (act_registrar != contact_verification_ptr_->getRegistrarId()) {
+        if (act_registrar != pra_impl_ptr_->getRegistrarId()) {
             /* run transfer command */
             ::MojeID::Request request(205
-                , contact_verification_ptr_->getRegistrarId()
-                , contact_verification_ptr_->getResolveRequestId());
+                , pra_impl_ptr_->getRegistrarId()
+                , pra_impl_ptr_->getResolveRequestId());
             Fred::Contact::Verification::contact_transfer(
                     request.get_request_id(),
                     request.get_registrar_id(),
-                    contact_verification_ptr_->getObject(0).id);
+                    pra_impl_ptr_->getObject(0).id);
             Fred::Contact::Verification::contact_transfer_poll_message(
-                    act_registrar, contact_verification_ptr_->getObject(0).id);
+                    act_registrar, pra_impl_ptr_->getObject(0).id);
             request.end_success();
         }
 
         /* set state */
-        insertNewStateRequest(contact_verification_ptr_->getId()
-                , contact_verification_ptr_->getObject(0).id
+        insertNewStateRequest(pra_impl_ptr_->getId()
+                , pra_impl_ptr_->getObject(0).id
                 , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
-        insertNewStateRequest(contact_verification_ptr_->getId()
-                , contact_verification_ptr_->getObject(0).id
+        insertNewStateRequest(pra_impl_ptr_->getId()
+                , pra_impl_ptr_->getObject(0).id
                 , ::MojeID::MOJEID_CONTACT);
 
         /* prohibit operations on contact */
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::SERVER_DELETE_PROHIBITED) == false)
         {
             /* set 1 | serverDeleteProhibited */
-            insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id
+            insertNewStateRequest(pra_impl_ptr_->getId()
+                    , pra_impl_ptr_->getObject(0).id
                     , ObjectState::SERVER_DELETE_PROHIBITED);
         }
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
         {
             /* set 3 | serverTransferProhibited */
-            insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id
+            insertNewStateRequest(pra_impl_ptr_->getId()
+                    , pra_impl_ptr_->getObject(0).id
                     , ObjectState::SERVER_TRANSFER_PROHIBITED);
         }
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
         {
             /* set 4 | serverUpdateProhibited */
-            insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id
+            insertNewStateRequest(pra_impl_ptr_->getId()
+                    , pra_impl_ptr_->getObject(0).id
                     , ObjectState::SERVER_UPDATE_PROHIBITED);
         }
 
         /* update states */
-        Fred::update_object_states(contact_verification_ptr_->getObject(0).id);
+        Fred::update_object_states(pra_impl_ptr_->getObject(0).id);
 
         /* make new request for finishing contact identification */
         PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
-                contact_verification_ptr_->get_manager_ptr()->createRequest(
+                pra_impl_ptr_->get_manager_ptr()->createRequest(
                         PRT_CONTACT_IDENTIFICATION)));
         if (new_request)
         {
             new_request->setRegistrarId(
-                    contact_verification_ptr_->getRegistrarId());
+                    pra_impl_ptr_->getRegistrarId());
             new_request->setRequestId(
-                    contact_verification_ptr_->getResolveRequestId());
+                    pra_impl_ptr_->getResolveRequestId());
             new_request->addObject(
-                    contact_verification_ptr_->getObject(0));
+                    pra_impl_ptr_->getObject(0));
             new_request->save();
             new_request->sendPasswords();
         }
@@ -616,22 +569,23 @@ public:
 
     void sendPasswords()
     {
-        contact_verification_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_SMS);
-        contact_verification_ptr_->sendSmsPassword();
+        contact_verification_pimpl_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_SMS);
+        contact_verification_pimpl_ptr_->sendSmsPassword();
     }
 };
 
 class ConditionalContactIdentificationImpl
-        : public ContactVerification,
-          public Util::FactoryAutoRegister<PublicRequest
+        : public Fred::PublicRequest::PublicRequestAuthImpl
+        , public Util::FactoryAutoRegister<PublicRequest
               , ConditionalContactIdentificationImpl>
 {
-            ConditionalContactIdentificationPimpl cond_contact_identification_impl;
+    ContactVerificationPimpl contact_verification_impl;
+    ConditionalContactIdentificationPimpl cond_contact_identification_impl;
 
 public:
     ConditionalContactIdentificationImpl()
-    : ContactVerification()
-    , cond_contact_identification_impl(this)
+    : contact_verification_impl(this)
+    , cond_contact_identification_impl(this, &contact_verification_impl)
     {}
 
     std::string generatePasswords()
@@ -664,13 +618,16 @@ public:
 
 class ContactIdentificationPimpl
 {
-    ContactVerification* contact_verification_ptr_;
+    Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
+    ContactVerificationPimpl* contact_verification_pimpl_ptr_;
     Fred::Contact::Verification::ContactValidator& contact_validator_;
 public:
     ContactIdentificationPimpl(
-        ContactVerification* _contact_verification_ptr)
-    : contact_verification_ptr_(_contact_verification_ptr)
-    , contact_validator_(contact_verification_ptr_->get_contact_validator())
+        Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr
+        , ContactVerificationPimpl* _contact_verification_pimpl_ptr)
+    : pra_impl_ptr_(_pra_impl_ptr)
+    , contact_verification_pimpl_ptr_(_contact_verification_pimpl_ptr)
+    , contact_validator_(contact_verification_pimpl_ptr_->get_contact_validator())
     {
         contact_validator_ = Fred::Contact::Verification::create_identification_validator();
     }
@@ -678,9 +635,9 @@ public:
     /* XXX: change validator in case contact is already CI */
     void addObject(const OID &_oid)
     {
-        contact_verification_ptr_->PublicRequestImpl::addObject(_oid);
+        pra_impl_ptr_->PublicRequestImpl::addObject(_oid);
 
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
         {
             contact_validator_ = Fred::Contact::Verification
@@ -690,52 +647,52 @@ public:
 
     std::string generatePasswords()
     {
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
         {
             /* generate pin3 */
-            if(contact_verification_ptr_->getPublicRequestManager()
+            if(pra_impl_ptr_->getPublicRequestManager()
                     ->getDemoMode())
             {
-                return std::string(contact_verification_ptr_
+                return std::string(contact_verification_pimpl_ptr_
                         ->get_password_chunk_length(),'3');//pin3:33333333
             }
             else
             {
-                return contact_verification_ptr_->generateRandomPassword();
+                return contact_verification_pimpl_ptr_->generateRandomPassword();
             }
         }
         else {
             /* generate pin1 and pin2 */
-            if(contact_verification_ptr_->getPublicRequestManager()
+            if(pra_impl_ptr_->getPublicRequestManager()
                     ->getDemoMode())
             {
-                return std::string(contact_verification_ptr_
+                return std::string(contact_verification_pimpl_ptr_
                         ->get_password_chunk_length(),'1')//pin1:11111111
-                    +std::string(contact_verification_ptr_
+                    +std::string(contact_verification_pimpl_ptr_
                         ->get_password_chunk_length(),'2'); //pin2:22222222
             }
             else
             {
-                return contact_verification_ptr_->generateAuthInfoPassword();
+                return contact_verification_pimpl_ptr_->generateAuthInfoPassword();
             }
         }
     }
 
     void save()
     {
-        if (!contact_verification_ptr_->getId()) {
+        if (!pra_impl_ptr_->getId()) {
             Fred::Contact::Verification::Contact cdata
                 = Fred::Contact::Verification::contact_info(
-                        contact_verification_ptr_->getObject(0).id);
+                        pra_impl_ptr_->getObject(0).id);
             contact_validator_.check(cdata);
 
             /* don't check this when contact is already CI - we are creating
              * I request only for finishing identification - pin3 */
-            if (((object_has_state(contact_verification_ptr_->getObject(0).id
+            if (((object_has_state(pra_impl_ptr_->getObject(0).id
                     , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
                     && object_has_one_of_states(
-                        contact_verification_ptr_->getObject(0).id
+                        pra_impl_ptr_->getObject(0).id
                         , Util::vector_of<std::string>
                         (ObjectState::SERVER_TRANSFER_PROHIBITED)
                         (ObjectState::SERVER_UPDATE_PROHIBITED))
@@ -743,19 +700,19 @@ public:
                 ||
             /* already CI state and opened I reqeust (finishing identification
              * process with pin3 */
-                ((object_has_state(contact_verification_ptr_->getObject(0).id
+                ((object_has_state(pra_impl_ptr_->getObject(0).id
                         , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
-                    && (check_public_request(contact_verification_ptr_->getObject(0).id
+                    && (check_public_request(pra_impl_ptr_->getObject(0).id
                         , PRT_CONTACT_IDENTIFICATION) > 0)
                 )
                 ||
                 object_has_one_of_states(
-                    contact_verification_ptr_->getObject(0).id
+                    pra_impl_ptr_->getObject(0).id
                     , Util::vector_of<std::string>
                     (ObjectState::IDENTIFIED_CONTACT) // already I
                     (ObjectState::VALIDATED_CONTACT))// already V
                 ||
-                (check_public_request(contact_verification_ptr_->getObject(0).id
+                (check_public_request(pra_impl_ptr_->getObject(0).id
                     , PRT_CONTACT_VALIDATION) > 0) //has V request
             )
             {
@@ -763,40 +720,40 @@ public:
             }
             /* if there is another open CI close it */
             cancel_public_request(
-                    contact_verification_ptr_->getObject(0).id,
+                    pra_impl_ptr_->getObject(0).id,
                     PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
-                    contact_verification_ptr_->getRequestId());
+                    pra_impl_ptr_->getRequestId());
             /* if not state CI cancel I request */
             if (object_has_state(
-                    contact_verification_ptr_->getObject(0).id
+                    pra_impl_ptr_->getObject(0).id
                     , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
             {
                 cancel_public_request(
-                        contact_verification_ptr_->getObject(0).id,
+                        pra_impl_ptr_->getObject(0).id,
                     PRT_CONTACT_IDENTIFICATION,
-                    contact_verification_ptr_->getRequestId());
+                    pra_impl_ptr_->getRequestId());
             }
         }
-        contact_verification_ptr_->PublicRequestAuthImpl::save();
+        pra_impl_ptr_->PublicRequestAuthImpl::save();
     }
 
     void processAction(bool _check)
     {
         LOGGER(PACKAGE).debug(boost::format(
                 "processing public request id=%1%")
-        % contact_verification_ptr_->getId());
+        % pra_impl_ptr_->getId());
 
         /* object should not change */
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false
-                && object_was_changed_since_request_create(contact_verification_ptr_->getId()))
+                && object_was_changed_since_request_create(pra_impl_ptr_->getId()))
         {
             throw ObjectChanged();
         }
 
         Fred::Contact::Verification::Contact cdata
             = Fred::Contact::Verification::contact_info(
-                    contact_verification_ptr_->getObject(0).id);
+                    pra_impl_ptr_->getObject(0).id);
         contact_validator_.check(cdata);
 
         Database::Connection conn = Database::Manager::acquire();
@@ -807,103 +764,104 @@ public:
                 "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
                 " WHERE c.id = $1::integer FOR UPDATE",
                 Database::query_param_list(
-                        contact_verification_ptr_->getObject(0).id));
+                        pra_impl_ptr_->getObject(0).id));
         if (clid_result.size() != 1) {
             throw std::runtime_error("cannot find contact, object doesn't exist!?"
                     " (probably deleted?)");
         }
         unsigned long long act_registrar = static_cast<unsigned long long>(clid_result[0][0]);
-        if (act_registrar != contact_verification_ptr_->getRegistrarId()) {
+        if (act_registrar != pra_impl_ptr_->getRegistrarId()) {
             /* run transfer command */
-            ::MojeID::Request request(205, contact_verification_ptr_->getRegistrarId()
-                    , contact_verification_ptr_->getResolveRequestId());
+            ::MojeID::Request request(205, pra_impl_ptr_->getRegistrarId()
+                    , pra_impl_ptr_->getResolveRequestId());
             Fred::Contact::Verification::contact_transfer(
                     request.get_request_id(),
                     request.get_registrar_id(),
-                    contact_verification_ptr_->getObject(0).id);
+                    pra_impl_ptr_->getObject(0).id);
             Fred::Contact::Verification::contact_transfer_poll_message(
-                    act_registrar, contact_verification_ptr_->getObject(0).id);
+                    act_registrar, pra_impl_ptr_->getObject(0).id);
             request.end_success();
         }
 
         /* check if contact is already conditionally identified (21) and cancel state */
-        Fred::cancel_object_state(contact_verification_ptr_->getObject(0).id
+        Fred::cancel_object_state(pra_impl_ptr_->getObject(0).id
                 , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
 
         /* set new state */
-        insertNewStateRequest(contact_verification_ptr_->getId()
-                , contact_verification_ptr_->getObject(0).id
+        insertNewStateRequest(pra_impl_ptr_->getId()
+                , pra_impl_ptr_->getObject(0).id
                 , ObjectState::IDENTIFIED_CONTACT);
 
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ::MojeID::MOJEID_CONTACT) == false)
         {
-            insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id
+            insertNewStateRequest(pra_impl_ptr_->getId()
+                    , pra_impl_ptr_->getObject(0).id
                     , ::MojeID::MOJEID_CONTACT);
         }
 
         /* prohibit operations on contact */
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::SERVER_DELETE_PROHIBITED) == false)
         {
             /* set 1 | serverDeleteProhibited */
-            insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id
+            insertNewStateRequest(pra_impl_ptr_->getId()
+                    , pra_impl_ptr_->getObject(0).id
                     , ObjectState::SERVER_DELETE_PROHIBITED);
         }
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
         {
             /* set 3 | serverTransferProhibited */
-            insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id
+            insertNewStateRequest(pra_impl_ptr_->getId()
+                    , pra_impl_ptr_->getObject(0).id
                     , ObjectState::SERVER_TRANSFER_PROHIBITED);
         }
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
         {
             /* set 4 | serverUpdateProhibited */
-            insertNewStateRequest(contact_verification_ptr_->getId()
-                    , contact_verification_ptr_->getObject(0).id
+            insertNewStateRequest(pra_impl_ptr_->getId()
+                    , pra_impl_ptr_->getObject(0).id
                     , ObjectState::SERVER_UPDATE_PROHIBITED);
         }
 
         /* update states */
-        Fred::update_object_states(contact_verification_ptr_->getObject(0).id);
+        Fred::update_object_states(pra_impl_ptr_->getObject(0).id);
         tx.commit();
     }
 
     void sendPasswords()
     {
-        if (object_has_state(contact_verification_ptr_->getObject(0).id
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
         {
             /* contact is already conditionally identified - send pin3 */
-            contact_verification_ptr_->sendLetterPassword(LetterType::LETTER_PIN3);
+            contact_verification_pimpl_ptr_->sendLetterPassword(LetterType::LETTER_PIN3);
             /* in demo mode we send pin3 as email attachment */
-            if (contact_verification_ptr_->get_manager_ptr()->getDemoMode()) {
-                contact_verification_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
+            if (pra_impl_ptr_->get_manager_ptr()->getDemoMode()) {
+                contact_verification_pimpl_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
             }
         }
         else {
             /* contact is fresh - send pin2 */
-            contact_verification_ptr_->sendLetterPassword(LetterType::LETTER_PIN2);
-            //email have letter in attachement in demo mode, so letter first
-            contact_verification_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
+            contact_verification_pimpl_ptr_->sendLetterPassword(LetterType::LETTER_PIN2);
+            //email have letter in attachment in demo mode, so letter first
+            contact_verification_pimpl_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
         }
     }
 };
 
 class ContactIdentificationImpl
-        : public ContactVerification,
-          public Util::FactoryAutoRegister<PublicRequest, ContactIdentificationImpl>
+        : public Fred::PublicRequest::PublicRequestAuthImpl
+        , public Util::FactoryAutoRegister<PublicRequest, ContactIdentificationImpl>
 {
-            ContactIdentificationPimpl contact_identification_impl;
+    ContactVerificationPimpl contact_verification_impl;
+    ContactIdentificationPimpl contact_identification_impl;
 public:
     ContactIdentificationImpl()
-    : ContactVerification()
-    , contact_identification_impl(this)
+    : contact_verification_impl(this)
+    , contact_identification_impl(this, &contact_verification_impl)
     {}
 
     /* XXX: change validator in case contact is already CI */
