@@ -108,7 +108,9 @@ public:
     : prai_ptr_(_prai_ptr)
     {}
 
-    void sendEmailPassword(const EmailType::Type &_type, const std::string& mailTemplate)
+    void sendEmailPassword(const EmailType::Type &_type
+            , const std::string& mailTemplate //db table mail_type.name
+            )
     {
         LOGGER(PACKAGE).debug("public request auth - send email password");
 
