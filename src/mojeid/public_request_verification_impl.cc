@@ -14,15 +14,6 @@ namespace PublicRequest {
 
 FACTORY_MODULE_INIT_DEFI(verification)
 
-struct LetterType
-{
-    enum Type
-    {
-        LETTER_PIN2,
-        LETTER_PIN3
-    };
-};
-
 struct EmailType
 {
     enum Type
@@ -184,29 +175,17 @@ public:
         tx.commit();
     }
 
-    void sendLetterPassword(const LetterType::Type &_type)
+    void sendLetterPassword( const std::string& custom_tag //tag in template xml params: "pin2",  "pin3"
+            , Fred::Document::GenerationType doc_type //type for document generator
+            , const std::string& message_type //for message_archive: "mojeid_pin2", "mojeid_pin3"
+            , const std::string& comm_type //for message_archive: pin2 "letter" or pin3 "registered_letter"
+            )
     {
         LOGGER(PACKAGE).debug("public request auth - send letter password");
 
         MessageData data = collectMessageData();
 
-        std::stringstream xmldata, xml_part_code;
-        Fred::Document::GenerationType doc_type;
-
-        if (_type == LetterType::LETTER_PIN2)
-        {
-            xml_part_code << "<pin2>" << map_at(data, "pin2") << "</pin2>";
-            doc_type = Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN2;
-        }
-        else if (_type == LetterType::LETTER_PIN3)
-        {
-            xml_part_code << "<pin3>" << map_at(data, "pin3") << "</pin3>";
-            doc_type = Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3;
-        }
-        else
-        {
-            throw std::runtime_error("unknown letter type");
-        }
+        std::stringstream xmldata;
 
         std::string addr_country = ((map_at(data, "country_cs_name")).empty()
                 ? map_at(data, "country_name")
@@ -237,7 +216,7 @@ public:
                  << "</account>"
                  << "<auth>"
                  << "<codes>"
-                 << xml_part_code.str()
+                 << std::string("<") + custom_tag + ">" + map_at(data, custom_tag) + ("</") + custom_tag + ">"
                  << "</codes>"
                  << "<link>" << map_at(data, "hostname") << "</link>"
                  << "</auth>"
@@ -272,17 +251,12 @@ public:
                         map_at(data, "handle").c_str()//contact handle
                         , pa
                         , file_id
-                        , ((_type == LetterType::LETTER_PIN2) ? "mojeid_pin2"
-                                : ((_type == LetterType::LETTER_PIN3)
-                                        ? "mojeid_pin3" : "")) //message type
+                        , message_type.c_str()
                         , boost::lexical_cast<unsigned long >(map_at(data
                                 , "contact_id"))//contact object_registry.id
                         , boost::lexical_cast<unsigned long >(map_at(data
                                 , "contact_hid"))//contact_history.historyid
-                        , ((_type == LetterType::LETTER_PIN2)
-                                ? "registered_letter"
-                                : ((_type == LetterType::LETTER_PIN3)
-                                        ? "letter" : ""))//comm_type letter or registered_letter
+                        , comm_type.c_str()//comm_type letter or registered_letter
                         );
 
             Database::Connection conn = Database::Manager::acquire();
@@ -298,7 +272,9 @@ public:
     }
 
 
-    void sendSmsPassword()
+    void sendSmsPassword(const std::string& sms_template
+            , const std::string& message_type //for message_archive: "mojeid_pin2"
+            )
     {
         LOGGER(PACKAGE).debug("public request auth - send sms password");
 
@@ -309,12 +285,8 @@ public:
                     ->save_sms_to_send(
                 map_at(data, "handle").c_str()
                 , map_at(data, "phone").c_str()
-                , (std::string("Potvrzujeme uspesne zalozeni uctu mojeID. "
-                        "Pro aktivaci Vaseho uctu je nutne vlozit kody "
-                        "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: ")
-                 + map_at(data, "pin2")
-                 ).c_str()
-                , "mojeid_pin2"
+                , (sms_template + map_at(data, "pin2")).c_str()
+                , message_type.c_str()//"mojeid_pin2"
                 , boost::lexical_cast<unsigned long >(map_at(data
                         , "contact_id"))
                 , boost::lexical_cast<unsigned long >(map_at(data
@@ -565,7 +537,11 @@ public:
     void sendPasswords()
     {
         contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_SMS, "mojeid_identification");
-        contact_verification_passwd_.sendSmsPassword();
+        contact_verification_passwd_.sendSmsPassword(
+                "Potvrzujeme uspesne zalozeni uctu mojeID. "
+                "Pro aktivaci Vaseho uctu je nutne vlozit kody "
+                "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: "
+                , "mojeid_pin2");
     }
 };
 
@@ -827,15 +803,24 @@ public:
                 , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
         {
             /* contact is already conditionally identified - send pin3 */
-            contact_verification_passwd_.sendLetterPassword(LetterType::LETTER_PIN3);
+            contact_verification_passwd_.sendLetterPassword("pin3"
+                    , Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3
+                    , "mojeid_pin3"
+                    , "registered_letter"
+                    );
             /* in demo mode we send pin3 as email attachment */
             if (pra_impl_ptr_->get_manager_ptr()->getDemoMode()) {
                 contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_LETTER, "mojeid_identification");
             }
         }
-        else {
+        else
+        {
             /* contact is fresh - send pin2 */
-            contact_verification_passwd_.sendLetterPassword(LetterType::LETTER_PIN2);
+            contact_verification_passwd_.sendLetterPassword("pin2"
+                    , Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN2
+                    , "mojeid_pin2"
+                    , "letter"
+                    );
             //email have letter in attachment in demo mode, so letter first
             contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_LETTER, "mojeid_identification");
         }
