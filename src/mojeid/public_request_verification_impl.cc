@@ -37,8 +37,6 @@ class ContactVerificationPimpl
 {
     PublicRequestAuthImpl* prai_ptr_;
 
-    Fred::Contact::Verification::ContactValidator contact_validator_;
-
 public:
 
     typedef std::map<std::string, std::string> MessageData;
@@ -104,11 +102,6 @@ public:
     {
         static const size_t PASSWORD_CHUNK_LENGTH = 8;
         return PASSWORD_CHUNK_LENGTH;
-    }
-
-    Fred::Contact::Verification::ContactValidator& get_contact_validator()
-    {
-        return contact_validator_;
     }
 
     ContactVerificationPimpl(PublicRequestAuthImpl* _prai_ptr)
@@ -399,18 +392,16 @@ class ConditionalContactIdentificationPimpl
     Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
     ContactVerificationPimpl contact_verification_impl;
     ContactVerificationPimpl* contact_verification_pimpl_ptr_;
-    Fred::Contact::Verification::ContactValidator& contact_validator_;
+    Fred::Contact::Verification::ContactValidator contact_validator_;
 public:
     ConditionalContactIdentificationPimpl(
             Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
     : pra_impl_ptr_(_pra_impl_ptr)
     , contact_verification_impl(_pra_impl_ptr)
     , contact_verification_pimpl_ptr_(&contact_verification_impl)
-    , contact_validator_(contact_verification_pimpl_ptr_->get_contact_validator())
-    {
-        contact_validator_ = Fred::Contact::Verification
-                ::create_conditional_identification_validator();
-    }
+    , contact_validator_(Fred::Contact::Verification
+            ::create_conditional_identification_validator())
+    {}
 
     std::string generatePasswords()
     {
@@ -620,17 +611,15 @@ class ContactIdentificationPimpl
     Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
     ContactVerificationPimpl contact_verification_impl;
     ContactVerificationPimpl* contact_verification_pimpl_ptr_;
-    Fred::Contact::Verification::ContactValidator& contact_validator_;
+    Fred::Contact::Verification::ContactValidator contact_validator_;
 public:
     ContactIdentificationPimpl(
         Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
     : pra_impl_ptr_(_pra_impl_ptr)
     , contact_verification_impl(_pra_impl_ptr)
     , contact_verification_pimpl_ptr_(&contact_verification_impl)
-    , contact_validator_(contact_verification_pimpl_ptr_->get_contact_validator())
-    {
-        contact_validator_ = Fred::Contact::Verification::create_identification_validator();
-    }
+    , contact_validator_(Fred::Contact::Verification::create_identification_validator())
+    {}
 
     /* XXX: change validator in case contact is already CI */
     void addObject(const OID &_oid)
