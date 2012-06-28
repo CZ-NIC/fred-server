@@ -27,8 +27,12 @@ struct EmailType
 {
     enum Type
     {
-        EMAIL_PIN2_SMS,
-        EMAIL_PIN2_LETTER
+        ENUM_MIN_VALUE //start of enum
+        //actual values
+        , EMAIL_PIN2_SMS
+        , EMAIL_PIN2_LETTER
+
+        , ENUM_MAX_VALUE//end of enum
     };
 
 };
@@ -120,13 +124,11 @@ public:
         Fred::Mailer::Handles handles;
         Fred::Mailer::Parameters params;
 
-        unsigned short type = ((_type == EmailType::EMAIL_PIN2_SMS) ? 1
-                                : (_type == EmailType::EMAIL_PIN2_LETTER) ? 2 : 0);
-        if (type == 0)
+        if ((_type <= EmailType::ENUM_MIN_VALUE) || (_type >= EmailType::ENUM_MAX_VALUE))
         {
             throw std::runtime_error("unknown mail type (pin2 - sms/letter)");
         }
-        params["rtype"]     = boost::lexical_cast<std::string>(type);
+        params["rtype"]     = boost::lexical_cast<std::string>(_type);
         params["firstname"] = map_at(data, "firstname");
         params["lastname"]  = map_at(data, "lastname");
         params["email"]     = map_at(data, "email");
