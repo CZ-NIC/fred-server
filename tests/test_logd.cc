@@ -541,7 +541,7 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Fred::Logger::Requ
 {
 	if (props.size() == 0) return;
 
-	boost::format query = boost::format("select name, value, parent_id, from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
+	boost::format query = boost::format("select name, value, parent_id from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 
 	Connection conn = Database::Manager::acquire();
 	Result res = conn.exec(query.str());
@@ -576,7 +576,7 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Fred::Logger::Requ
 // the properties in the database with request_id=rec_id must match props exactly
 void TestImplLog::check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props, bool output)
 {
-	boost::format query = boost::format("select name, value, parent_id, from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
+	boost::format query = boost::format("select name, value, parent_id from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 
 	Connection conn = Database::Manager::acquire();
 
