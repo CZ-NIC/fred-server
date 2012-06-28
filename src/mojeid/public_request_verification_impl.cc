@@ -108,7 +108,7 @@ public:
     : prai_ptr_(_prai_ptr)
     {}
 
-    void sendEmailPassword(const EmailType::Type &_type)
+    void sendEmailPassword(const EmailType::Type &_type, const std::string& mailTemplate)
     {
         LOGGER(PACKAGE).debug("public request auth - send email password");
 
@@ -163,7 +163,7 @@ public:
                 "",           /* default sender */
                 params["email"],
                 "",           /* default subject */
-                "mojeid_identification",
+                mailTemplate,
                 params,
                 handles,
                 attach
@@ -560,7 +560,7 @@ public:
 
     void sendPasswords()
     {
-        contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_SMS);
+        contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_SMS, "mojeid_identification");
         contact_verification_passwd_.sendSmsPassword();
     }
 };
@@ -826,14 +826,14 @@ public:
             contact_verification_passwd_.sendLetterPassword(LetterType::LETTER_PIN3);
             /* in demo mode we send pin3 as email attachment */
             if (pra_impl_ptr_->get_manager_ptr()->getDemoMode()) {
-                contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
+                contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_LETTER, "mojeid_identification");
             }
         }
         else {
             /* contact is fresh - send pin2 */
             contact_verification_passwd_.sendLetterPassword(LetterType::LETTER_PIN2);
             //email have letter in attachment in demo mode, so letter first
-            contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
+            contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_LETTER, "mojeid_identification");
         }
     }
 };
