@@ -33,7 +33,7 @@ struct EmailType
 
 };
 
-class ContactVerificationPimpl
+class ContactVerificationPassword
 {
     PublicRequestAuthImpl* prai_ptr_;
 
@@ -104,7 +104,7 @@ public:
         return PASSWORD_CHUNK_LENGTH;
     }
 
-    ContactVerificationPimpl(PublicRequestAuthImpl* _prai_ptr)
+    ContactVerificationPassword(PublicRequestAuthImpl* _prai_ptr)
     : prai_ptr_(_prai_ptr)
     {}
 
@@ -385,20 +385,19 @@ public:
         passwd += generateRandomPassword(get_password_chunk_length());
         return passwd;
     }
-};//class ContactVerificationPimpl
+};//class ContactVerificationPassword
 
 class ConditionalContactIdentificationPimpl
 {
     Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
-    ContactVerificationPimpl contact_verification_impl;
-    ContactVerificationPimpl* contact_verification_pimpl_ptr_;
+    ContactVerificationPassword contact_verification_passwd_;
     Fred::Contact::Verification::ContactValidator contact_validator_;
 public:
     ConditionalContactIdentificationPimpl(
             Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
     : pra_impl_ptr_(_pra_impl_ptr)
-    , contact_verification_impl(_pra_impl_ptr)
-    , contact_verification_pimpl_ptr_(&contact_verification_impl)
+    , contact_verification_passwd_(_pra_impl_ptr)
+
     , contact_validator_(Fred::Contact::Verification
             ::create_conditional_identification_validator())
     {}
@@ -407,14 +406,14 @@ public:
     {
         if(pra_impl_ptr_->getPublicRequestManager()->getDemoMode())
         {
-            return std::string(contact_verification_pimpl_ptr_
-                    ->get_password_chunk_length(),'1')//pin1:11111111
-                +std::string(contact_verification_pimpl_ptr_
-                    ->get_password_chunk_length(),'2'); //pin2:22222222
+            return std::string(contact_verification_passwd_
+                    .get_password_chunk_length(),'1')//pin1:11111111
+                +std::string(contact_verification_passwd_
+                    .get_password_chunk_length(),'2'); //pin2:22222222
         }
         else
         {
-            return contact_verification_pimpl_ptr_->generateAuthInfoPassword();
+            return contact_verification_passwd_.generateAuthInfoPassword();
         }
     }
 
@@ -561,8 +560,8 @@ public:
 
     void sendPasswords()
     {
-        contact_verification_pimpl_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_SMS);
-        contact_verification_pimpl_ptr_->sendSmsPassword();
+        contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_SMS);
+        contact_verification_passwd_.sendSmsPassword();
     }
 };
 
@@ -609,15 +608,13 @@ public:
 class ContactIdentificationPimpl
 {
     Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
-    ContactVerificationPimpl contact_verification_impl;
-    ContactVerificationPimpl* contact_verification_pimpl_ptr_;
+    ContactVerificationPassword contact_verification_passwd_;
     Fred::Contact::Verification::ContactValidator contact_validator_;
 public:
     ContactIdentificationPimpl(
         Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
     : pra_impl_ptr_(_pra_impl_ptr)
-    , contact_verification_impl(_pra_impl_ptr)
-    , contact_verification_pimpl_ptr_(&contact_verification_impl)
+    , contact_verification_passwd_(_pra_impl_ptr)
     , contact_validator_(Fred::Contact::Verification::create_identification_validator())
     {}
 
@@ -643,12 +640,12 @@ public:
             if(pra_impl_ptr_->getPublicRequestManager()
                     ->getDemoMode())
             {
-                return std::string(contact_verification_pimpl_ptr_
-                        ->get_password_chunk_length(),'3');//pin3:33333333
+                return std::string(contact_verification_passwd_
+                        .get_password_chunk_length(),'3');//pin3:33333333
             }
             else
             {
-                return contact_verification_pimpl_ptr_->generateRandomPassword();
+                return contact_verification_passwd_.generateRandomPassword();
             }
         }
         else {
@@ -656,14 +653,14 @@ public:
             if(pra_impl_ptr_->getPublicRequestManager()
                     ->getDemoMode())
             {
-                return std::string(contact_verification_pimpl_ptr_
-                        ->get_password_chunk_length(),'1')//pin1:11111111
-                    +std::string(contact_verification_pimpl_ptr_
-                        ->get_password_chunk_length(),'2'); //pin2:22222222
+                return std::string(contact_verification_passwd_
+                        .get_password_chunk_length(),'1')//pin1:11111111
+                    +std::string(contact_verification_passwd_
+                        .get_password_chunk_length(),'2'); //pin2:22222222
             }
             else
             {
-                return contact_verification_pimpl_ptr_->generateAuthInfoPassword();
+                return contact_verification_passwd_.generateAuthInfoPassword();
             }
         }
     }
@@ -826,17 +823,17 @@ public:
                 , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
         {
             /* contact is already conditionally identified - send pin3 */
-            contact_verification_pimpl_ptr_->sendLetterPassword(LetterType::LETTER_PIN3);
+            contact_verification_passwd_.sendLetterPassword(LetterType::LETTER_PIN3);
             /* in demo mode we send pin3 as email attachment */
             if (pra_impl_ptr_->get_manager_ptr()->getDemoMode()) {
-                contact_verification_pimpl_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
+                contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
             }
         }
         else {
             /* contact is fresh - send pin2 */
-            contact_verification_pimpl_ptr_->sendLetterPassword(LetterType::LETTER_PIN2);
+            contact_verification_passwd_.sendLetterPassword(LetterType::LETTER_PIN2);
             //email have letter in attachment in demo mode, so letter first
-            contact_verification_pimpl_ptr_->sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
+            contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_LETTER);
         }
     }
 };
