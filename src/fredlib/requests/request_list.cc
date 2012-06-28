@@ -625,7 +625,7 @@ public:
     std::auto_ptr<RequestProperties> ret(new RequestProperties());
     Database::SelectQuery query;
 
-    query.select() << "t_2.name, t_1.value, t_1.output, (t_1.parent_id is not null)";
+    query.select() << "t_2.name, t_1.value, (t_1.parent_id is not null)";
     query.from()   << "request_property_value t_1 join request_property_name t_2 on t_1.property_name_id=t_2.id";
     query.where()  << (boost::format("and t_1.request_id = '%1%' and t_1.request_time_begin = '%2%' and t_1.request_service_id = %3% and t_1.request_monitoring = %4%") % id % time_begin % sid % (mon ? "true" : "false")).str();
         query.order_by() << "t_1.id";
@@ -638,10 +638,9 @@ public:
 
         std::string         name   = *col;
         std::string         value  = *(++col);
-        bool            output = *(++col);
         bool            is_child = *(++col);
 
-        ret->push_back(RequestProperty(name, value, output, is_child));
+        ret->push_back(RequestProperty(name, value, is_child));
 
     }
     return ret;

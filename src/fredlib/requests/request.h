@@ -36,7 +36,7 @@ struct RequestProperty {
 
   }
 
-  RequestProperty(const std::string &n, const std::string &v, bool out, bool ch) {
+  RequestProperty(const std::string &n, const std::string &v, bool ch) {
 	name = n;
 	value = v;
 	child = ch;
