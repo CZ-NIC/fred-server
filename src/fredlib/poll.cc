@@ -224,8 +224,8 @@ public:
 
 class MessageLowCreditImpl : public MessageImpl, virtual public MessageLowCredit {
   std::string zone;
-  CreditType credit;
-  CreditType limit;
+  Decimal credit;
+  Decimal limit;
 public:
   MessageLowCreditImpl(unsigned _type,
                        TID _id,
@@ -233,8 +233,8 @@ public:
                        ptime _crTime,
                        ptime _expTime,
                        bool _seen) :
-    MessageImpl(_type, _id, _registrar, _crTime, _expTime, _seen), credit(0),
-        limit(0) {
+    MessageImpl(_type, _id, _registrar, _crTime, _expTime, _seen), credit("0"),
+        limit("0") {
   }
   MessageLowCreditImpl(const std::string& _zone,
                        CreditType _credit,
@@ -245,15 +245,15 @@ public:
     return zone;
   }
   CreditType getCredit() const {
-    return credit;
+    return credit.get_string();
   }
   CreditType getLimit() const {
-    return limit;
+    return limit.get_string();
   }
   void setData(const std::string& _zone, CreditType _credit, CreditType _limit) {
     zone = _zone;
-    credit = _credit;
-    limit = _limit;
+    credit.set_string(_credit);
+    limit.set_string(_limit);
   }
   void textDump(std::ostream& out) const {
     MessageImpl::textDump(out);
@@ -559,8 +559,8 @@ public:
         if (!m)
           throw SQL_ERROR();
         m->setData(db->GetFieldValue(i, 1),
-                   atol(db->GetFieldValue(i, 2)),
-                   atol(db->GetFieldValue(i, 3)) );
+                   db->GetFieldValue(i, 2),
+                   db->GetFieldValue(i, 3) );
       }
       db->FreeSelect();
     } // hasLowCredit
@@ -872,7 +872,7 @@ public:
     // into two tables joined by message id
     const char *create = "CREATE TEMPORARY TABLE tmp_poll_credit_insert ("
       " id INTEGER PRIMARY KEY, zoneid INTEGER, reg INTEGER, "
-      " credit INTEGER, credlimit INTEGER "
+      " credit NUMERIC(10,2), credlimit NUMERIC(10,2) "
       ") ON COMMIT DROP ";
     if (!db->ExecSQL(create))
       throw SQL_ERROR();
