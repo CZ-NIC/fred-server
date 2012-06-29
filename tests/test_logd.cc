@@ -167,12 +167,12 @@ public:
         void check_obj_references(ID rec_id, const Fred::Logger::ObjectReferences &refs);
         void check_obj_references_subset(ID rec_id, const Fred::Logger::ObjectReferences &refs);
 	void check_db_properties_subset(ID rec_id, const Fred::Logger::RequestProperties &props, bool output);
-	bool property_match(const Row r, const Fred::Logger::RequestProperty &p, bool output) ;
+	bool property_match(const Row r, const Fred::Logger::RequestProperty &p) ;
 
 	void insert_custom_request(ptime timestamp, const std::string &user);
 
 // different tests
-	void check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props, bool output);
+	void check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props);
 
 	static Fred::Logger::RequestProperties no_props;
         static Fred::Logger::ObjectReferences no_objs;
@@ -412,7 +412,7 @@ Database::ID TestImplLog::createRequest(const char *ip_addr, const ServiceType s
                 BOOST_CHECK(session_id                  == db_id);
 	}
 
-	check_db_properties(ret, props, false);
+	check_db_properties(ret, props);
         // TODO
         check_obj_references(ret, refs);
 
@@ -521,12 +521,11 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_re
 // boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 // p is single property
 // these two are compared :)
-bool TestImplLog::property_match(const Row r, const Fred::Logger::RequestProperty &p, bool output)
+bool TestImplLog::property_match(const Row r, const Fred::Logger::RequestProperty &p)
 {
 
 	if ( (std::string)r[0] != p.name)  return false;
 	if ( (std::string)r[1] != p.value) return false;
-        if ( (bool)r[3] != output) return false;
 
 	if ( p.child ) {
 		if (r[2].isnull()) return false;
@@ -550,7 +549,7 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Fred::Logger::Requ
 	unsigned pind = 0;
 	if(res.size() > props.size()) {
 		for(unsigned i=0; i<res.size(); i++) {
-			if(property_match(res[i], props[pind], output)) {
+			if(property_match(res[i], props[pind])) {
 				// property pind found in the sql result, proceed to another item in the list
 				pind++;
 			} else {
@@ -567,14 +566,14 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Fred::Logger::Requ
 		BOOST_ERROR(" Some properties were not stored... ");
 	} else if(res.size() == props.size()) {
 		// TODO something can be saved here - we have Result res already done
-		check_db_properties(rec_id, props, output);
+		check_db_properties(rec_id, props);
 	}
 }
 
 // this func relies that the order of properties in the database
 // (sorted by their ids) is the same as in the array
 // the properties in the database with request_id=rec_id must match props exactly
-void TestImplLog::check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props, bool output)
+void TestImplLog::check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props)
 {
 	boost::format query = boost::format("select name, value, parent_id from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 
@@ -587,7 +586,7 @@ void TestImplLog::check_db_properties(ID rec_id, const Fred::Logger::RequestProp
 	}
 
 	for(unsigned i=0; i<res.size(); i++) {
-		BOOST_CHECK( property_match(res[i], props[i], output));
+		BOOST_CHECK( property_match(res[i], props[i]));
 	}
 }
 
