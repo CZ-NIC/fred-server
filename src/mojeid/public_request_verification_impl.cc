@@ -14,20 +14,6 @@ namespace PublicRequest {
 
 FACTORY_MODULE_INIT_DEFI(verification)
 
-struct EmailType
-{
-    enum Type
-    {
-        ENUM_MIN_VALUE //start of enum
-        //actual values
-        , EMAIL_PIN2_SMS
-        , EMAIL_PIN2_LETTER
-
-        , ENUM_MAX_VALUE//end of enum
-    };
-
-};
-
 class ContactVerificationPassword
 {
     PublicRequestAuthImpl* prai_ptr_;
@@ -103,8 +89,7 @@ public:
     : prai_ptr_(_prai_ptr)
     {}
 
-    void sendEmailPassword(const EmailType::Type &_type
-            , const std::string& mailTemplate //db table mail_type.name
+    void sendEmailPassword(const std::string& mailTemplate //db table mail_type.name
             )
     {
         LOGGER(PACKAGE).debug("public request auth - send email password");
@@ -115,11 +100,6 @@ public:
         Fred::Mailer::Handles handles;
         Fred::Mailer::Parameters params;
 
-        if ((_type <= EmailType::ENUM_MIN_VALUE) || (_type >= EmailType::ENUM_MAX_VALUE))
-        {
-            throw std::runtime_error("unknown mail type (pin2 - sms/letter)");
-        }
-        params["rtype"]     = boost::lexical_cast<std::string>(_type);
         params["firstname"] = map_at(data, "firstname");
         params["lastname"]  = map_at(data, "lastname");
         params["email"]     = map_at(data, "email");
@@ -536,7 +516,7 @@ public:
 
     void sendPasswords()
     {
-        contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_SMS, "mojeid_identification");
+        contact_verification_passwd_.sendEmailPassword("mojeid_identification");
         contact_verification_passwd_.sendSmsPassword(
                 "Potvrzujeme uspesne zalozeni uctu mojeID. "
                 "Pro aktivaci Vaseho uctu je nutne vlozit kody "
@@ -595,53 +575,21 @@ public:
         Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
     : pra_impl_ptr_(_pra_impl_ptr)
     , contact_verification_passwd_(_pra_impl_ptr)
-    , contact_validator_(Fred::Contact::Verification::create_identification_validator())
+    , contact_validator_(Fred::Contact::Verification::create_finish_identification_validator())
     {}
-
-    /* XXX: change validator in case contact is already CI */
-    void addObject(const OID &_oid)
-    {
-        pra_impl_ptr_->PublicRequestImpl::addObject(_oid);
-
-        if (object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
-        {
-            contact_validator_ = Fred::Contact::Verification
-                    ::create_finish_identification_validator();
-        }
-    }
 
     std::string generatePasswords()
     {
-        if (object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
+        /* generate pin3 */
+        if(pra_impl_ptr_->getPublicRequestManager()
+                ->getDemoMode())
         {
-            /* generate pin3 */
-            if(pra_impl_ptr_->getPublicRequestManager()
-                    ->getDemoMode())
-            {
-                return std::string(contact_verification_passwd_
-                        .get_password_chunk_length(),'3');//pin3:33333333
-            }
-            else
-            {
-                return contact_verification_passwd_.generateRandomPassword();
-            }
+            return std::string(contact_verification_passwd_
+                    .get_password_chunk_length(),'3');//pin3:33333333
         }
-        else {
-            /* generate pin1 and pin2 */
-            if(pra_impl_ptr_->getPublicRequestManager()
-                    ->getDemoMode())
-            {
-                return std::string(contact_verification_passwd_
-                        .get_password_chunk_length(),'1')//pin1:11111111
-                    +std::string(contact_verification_passwd_
-                        .get_password_chunk_length(),'2'); //pin2:22222222
-            }
-            else
-            {
-                return contact_verification_passwd_.generateAuthInfoPassword();
-            }
+        else
+        {
+            return contact_verification_passwd_.generateRandomPassword();
         }
     }
 
@@ -799,30 +747,15 @@ public:
 
     void sendPasswords()
     {
-        if (object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
-        {
-            /* contact is already conditionally identified - send pin3 */
-            contact_verification_passwd_.sendLetterPassword("pin3"
-                    , Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3
-                    , "mojeid_pin3"
-                    , "registered_letter"
-                    );
-            /* in demo mode we send pin3 as email attachment */
-            if (pra_impl_ptr_->get_manager_ptr()->getDemoMode()) {
-                contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_LETTER, "mojeid_identification");
-            }
-        }
-        else
-        {
-            /* contact is fresh - send pin2 */
-            contact_verification_passwd_.sendLetterPassword("pin2"
-                    , Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN2
-                    , "mojeid_pin2"
-                    , "letter"
-                    );
-            //email have letter in attachment in demo mode, so letter first
-            contact_verification_passwd_.sendEmailPassword(EmailType::EMAIL_PIN2_LETTER, "mojeid_identification");
+        /* contact is already conditionally identified - send pin3 */
+        contact_verification_passwd_.sendLetterPassword("pin3"
+                , Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3
+                , "mojeid_pin3"
+                , "registered_letter"
+                );
+        /* in demo mode we send pin3 as email attachment */
+        if (pra_impl_ptr_->get_manager_ptr()->getDemoMode()) {
+            contact_verification_passwd_.sendEmailPassword("mojeid_identification");
         }
     }
 };
@@ -836,12 +769,6 @@ public:
     ContactIdentification()
     : contact_identification_impl(this)
     {}
-
-    /* XXX: change validator in case contact is already CI */
-    void addObject(const OID &_oid)
-    {
-        contact_identification_impl.addObject(_oid);
-    }
 
     std::string generatePasswords()
     {
