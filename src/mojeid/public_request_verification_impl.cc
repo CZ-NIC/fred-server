@@ -373,43 +373,32 @@ public:
         }
     }
 
-    void save()
+    void pre_save_check()
     {
         /* insert */
-        if (!pra_impl_ptr_->getId()) {
+        if (!pra_impl_ptr_->getId())
+        {
             Fred::Contact::Verification::Contact cdata
                 = Fred::Contact::Verification::contact_info(
                         pra_impl_ptr_->getObject(0).id);
             contact_validator_.check(cdata);
 
-            if (object_has_one_of_states(
-                pra_impl_ptr_->getObject(0).id
+            if((object_has_one_of_states(pra_impl_ptr_->getObject(0).id
                 , Util::vector_of<std::string>
                 (ObjectState::SERVER_TRANSFER_PROHIBITED)//3 | serverTransferProhibited
                 (ObjectState::SERVER_UPDATE_PROHIBITED)//4 | serverUpdateProhibited
+            )
+            ||
+            (object_has_one_of_states(pra_impl_ptr_->getObject(0).id
+                , Util::vector_of<std::string>
                 (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)// already CI
                 (ObjectState::IDENTIFIED_CONTACT)// already I
                 (ObjectState::VALIDATED_CONTACT))// already V
-                || (check_public_request(
-                    pra_impl_ptr_->getObject(0).id
-                    , PRT_CONTACT_VALIDATION) > 0)
-            )
+            )))
             {
-                throw NotApplicable("pre_insert_checks: failed!");
+                throw NotApplicable("pre_save_check: failed!");
             }
-
-            /* if there is another open CI close it */
-            cancel_public_request(
-                    pra_impl_ptr_->getObject(0).id,
-                    PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
-                    pra_impl_ptr_->getRequestId());
-            /* if there is another open I close it */
-            cancel_public_request(
-                    pra_impl_ptr_->getObject(0).id,
-                    PRT_CONTACT_IDENTIFICATION,
-                    pra_impl_ptr_->getRequestId());
         }
-        pra_impl_ptr_->PublicRequestAuthImpl::save();
     }
 
     void processAction(bool _check)
@@ -544,7 +533,13 @@ public:
 
     void save()
     {
-        cond_contact_identification_impl.save();
+        cond_contact_identification_impl.pre_save_check();
+        /* if there is another open CCI close it */
+        cancel_public_request(
+            this->getObject(0).id,
+            PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
+            this->getRequestId());
+        PublicRequestAuthImpl::save();
     }
 
     void processAction(bool _check)
@@ -593,9 +588,10 @@ public:
         }
     }
 
-    void save()
+    void pre_save_check()
     {
-        if (!pra_impl_ptr_->getId()) {
+        if (!pra_impl_ptr_->getId())
+        {
             Fred::Contact::Verification::Contact cdata
                 = Fred::Contact::Verification::contact_info(
                         pra_impl_ptr_->getObject(0).id);
@@ -605,50 +601,23 @@ public:
              * I request only for finishing identification - pin3 */
             if (((object_has_state(pra_impl_ptr_->getObject(0).id
                     , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
-                    && object_has_one_of_states(
-                        pra_impl_ptr_->getObject(0).id
-                        , Util::vector_of<std::string>
-                        (ObjectState::SERVER_TRANSFER_PROHIBITED)
-                        (ObjectState::SERVER_UPDATE_PROHIBITED))
-                )
                 ||
-            /* already CI state and opened I reqeust (finishing identification
-             * process with pin3 */
-                ((object_has_state(pra_impl_ptr_->getObject(0).id
-                        , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
-                    && (check_public_request(pra_impl_ptr_->getObject(0).id
-                        , PRT_CONTACT_IDENTIFICATION) > 0)
-                )
+                (object_has_one_of_states(
+                    pra_impl_ptr_->getObject(0).id
+                    , Util::vector_of<std::string>
+                    (ObjectState::SERVER_TRANSFER_PROHIBITED)
+                    (ObjectState::SERVER_UPDATE_PROHIBITED)) == false)
                 ||
                 object_has_one_of_states(
                     pra_impl_ptr_->getObject(0).id
                     , Util::vector_of<std::string>
                     (ObjectState::IDENTIFIED_CONTACT) // already I
                     (ObjectState::VALIDATED_CONTACT))// already V
-                ||
-                (check_public_request(pra_impl_ptr_->getObject(0).id
-                    , PRT_CONTACT_VALIDATION) > 0) //has V request
-            )
+            ))
             {
-                throw NotApplicable("pre_insert_checks: failed!");
-            }
-            /* if there is another open CI close it */
-            cancel_public_request(
-                    pra_impl_ptr_->getObject(0).id,
-                    PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
-                    pra_impl_ptr_->getRequestId());
-            /* if not state CI cancel I request */
-            if (object_has_state(
-                    pra_impl_ptr_->getObject(0).id
-                    , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
-            {
-                cancel_public_request(
-                        pra_impl_ptr_->getObject(0).id,
-                    PRT_CONTACT_IDENTIFICATION,
-                    pra_impl_ptr_->getRequestId());
+                throw NotApplicable("pre_save_check: failed!");
             }
         }
-        pra_impl_ptr_->PublicRequestAuthImpl::save();
     }
 
     void processAction(bool _check)
@@ -777,7 +746,13 @@ public:
 
     void save()
     {
-        contact_identification_impl.save();
+        contact_identification_impl.pre_save_check();
+        /* if there is another open CI close it */
+        cancel_public_request(
+                this->getObject(0).id,
+            PRT_CONTACT_IDENTIFICATION,
+            this->getRequestId());
+        PublicRequestAuthImpl::save();
     }
 
     void processAction(bool _check)
