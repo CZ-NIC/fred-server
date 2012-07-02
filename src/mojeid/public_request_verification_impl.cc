@@ -363,13 +363,13 @@ public:
     }
 };//class ContactVerificationPassword
 
-class ConditionalContactIdentificationPimpl
+class ConditionalContactIdentificationImpl
 {
     Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
     ContactVerificationPassword contact_verification_passwd_;
     Fred::Contact::Verification::ContactValidator contact_validator_;
 public:
-    ConditionalContactIdentificationPimpl(
+    ConditionalContactIdentificationImpl(
             Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
     : pra_impl_ptr_(_pra_impl_ptr)
     , contact_verification_passwd_(_pra_impl_ptr)
@@ -545,15 +545,15 @@ public:
     }
 };
 
-class ConditionalContactIdentificationImpl
+class ConditionalContactIdentification
         : public Fred::PublicRequest::PublicRequestAuthImpl
         , public Util::FactoryAutoRegister<PublicRequest
-              , ConditionalContactIdentificationImpl>
+              , ConditionalContactIdentification>
 {
-    ConditionalContactIdentificationPimpl cond_contact_identification_impl;
+    ConditionalContactIdentificationImpl cond_contact_identification_impl;
 
 public:
-    ConditionalContactIdentificationImpl()
+    ConditionalContactIdentification()
     : cond_contact_identification_impl(this)
     {}
 
@@ -585,13 +585,13 @@ public:
 };
 
 
-class ContactIdentificationPimpl
+class ContactIdentificationImpl
 {
     Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
     ContactVerificationPassword contact_verification_passwd_;
     Fred::Contact::Verification::ContactValidator contact_validator_;
 public:
-    ContactIdentificationPimpl(
+    ContactIdentificationImpl(
         Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
     : pra_impl_ptr_(_pra_impl_ptr)
     , contact_verification_passwd_(_pra_impl_ptr)
@@ -827,13 +827,13 @@ public:
     }
 };
 
-class ContactIdentificationImpl
+class ContactIdentification
         : public Fred::PublicRequest::PublicRequestAuthImpl
-        , public Util::FactoryAutoRegister<PublicRequest, ContactIdentificationImpl>
+        , public Util::FactoryAutoRegister<PublicRequest, ContactIdentification>
 {
-    ContactIdentificationPimpl contact_identification_impl;
+    ContactIdentificationImpl contact_identification_impl;
 public:
-    ContactIdentificationImpl()
+    ContactIdentification()
     : contact_identification_impl(this)
     {}
 
@@ -869,11 +869,11 @@ public:
     }
 };
 
-class ValidationRequestPimpl
+class ValidationRequestImpl
 {
     PublicRequestImpl* pri_ptr_;
 public:
-    ValidationRequestPimpl(PublicRequestImpl* _pri_ptr)
+    ValidationRequestImpl(PublicRequestImpl* _pri_ptr)
     : pri_ptr_(_pri_ptr)
     {}
 
@@ -992,14 +992,14 @@ public:
 };
 
 
-class ValidationRequestImpl
+class ValidationRequest
     : public PublicRequestImpl,
-      public Util::FactoryAutoRegister<PublicRequest, ValidationRequestImpl>
+      public Util::FactoryAutoRegister<PublicRequest, ValidationRequest>
 {
-    ValidationRequestPimpl validation_request_impl;
+    ValidationRequestImpl validation_request_impl;
 public:
 
-    ValidationRequestImpl()
+    ValidationRequest()
     :PublicRequestImpl()
     , validation_request_impl(this)
     {}
