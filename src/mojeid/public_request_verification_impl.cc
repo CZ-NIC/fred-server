@@ -343,6 +343,45 @@ public:
     }
 };//class ContactVerificationPassword
 
+
+
+unsigned long long lockContactGetRegistrarId(unsigned long long contact_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result clid_result = conn.exec_params(
+            "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
+            " WHERE c.id = $1::integer FOR UPDATE",
+            Database::query_param_list(contact_id));
+    if (clid_result.size() != 1) {
+        throw std::runtime_error("cannot find contact, object doesn't exist!?"
+                " (probably deleted?) - Don't Panic");
+    }
+    unsigned long long act_registrar = static_cast<unsigned long long>(
+        clid_result[0][0]);
+    return act_registrar;
+}
+
+void run_transfer_command(unsigned long long _registrar_id
+    , unsigned long long _old_registrar_id
+    , unsigned long long _request_id
+    , unsigned long long _contact_id)
+{
+    /* run transfer command */
+    ::MojeID::Request request(205
+        , _registrar_id, _request_id);
+
+    Fred::Contact::Verification::contact_transfer(
+            request.get_request_id(),
+            request.get_registrar_id(),
+            _contact_id);
+
+    Fred::Contact::Verification::contact_transfer_poll_message(
+            _old_registrar_id, _contact_id);
+    request.end_success();
+}
+
+
 class ConditionalContactIdentificationImpl
 {
     Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
@@ -401,12 +440,8 @@ public:
         }
     }
 
-    void processAction(bool _check)
+    void pre_process_check(bool _check)
     {
-        LOGGER(PACKAGE).debug(boost::format(
-                "processing public request id=%1%")
-                % pra_impl_ptr_->getId());
-
         /* object should not change */
         if (object_was_changed_since_request_create(
                 pra_impl_ptr_->getId())) {
@@ -418,89 +453,6 @@ public:
                     pra_impl_ptr_->getObject(0).id);
         contact_validator_.check(cdata);
 
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
-
-        /* check if need to transfer and do so (TODO: make function (two copies) */
-        Database::Result clid_result = conn.exec_params(
-                "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
-                " WHERE c.id = $1::integer FOR UPDATE",
-                Database::query_param_list(
-                    pra_impl_ptr_->getObject(0).id));
-        if (clid_result.size() != 1) {
-            throw std::runtime_error("cannot find contact, object doesn't exist!?"
-                    " (probably deleted?)");
-        }
-        unsigned long long act_registrar = static_cast<unsigned long long>(
-            clid_result[0][0]);
-        if (act_registrar != pra_impl_ptr_->getRegistrarId()) {
-            /* run transfer command */
-            ::MojeID::Request request(205
-                , pra_impl_ptr_->getRegistrarId()
-                , pra_impl_ptr_->getResolveRequestId());
-            Fred::Contact::Verification::contact_transfer(
-                    request.get_request_id(),
-                    request.get_registrar_id(),
-                    pra_impl_ptr_->getObject(0).id);
-            Fred::Contact::Verification::contact_transfer_poll_message(
-                    act_registrar, pra_impl_ptr_->getObject(0).id);
-            request.end_success();
-        }
-
-        /* set state */
-        insertNewStateRequest(pra_impl_ptr_->getId()
-                , pra_impl_ptr_->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
-        insertNewStateRequest(pra_impl_ptr_->getId()
-                , pra_impl_ptr_->getObject(0).id
-                , ::MojeID::MOJEID_CONTACT);
-
-        /* prohibit operations on contact */
-        if (object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::SERVER_DELETE_PROHIBITED) == false)
-        {
-            /* set 1 | serverDeleteProhibited */
-            insertNewStateRequest(pra_impl_ptr_->getId()
-                    , pra_impl_ptr_->getObject(0).id
-                    , ObjectState::SERVER_DELETE_PROHIBITED);
-        }
-        if (object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
-        {
-            /* set 3 | serverTransferProhibited */
-            insertNewStateRequest(pra_impl_ptr_->getId()
-                    , pra_impl_ptr_->getObject(0).id
-                    , ObjectState::SERVER_TRANSFER_PROHIBITED);
-        }
-        if (object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
-        {
-            /* set 4 | serverUpdateProhibited */
-            insertNewStateRequest(pra_impl_ptr_->getId()
-                    , pra_impl_ptr_->getObject(0).id
-                    , ObjectState::SERVER_UPDATE_PROHIBITED);
-        }
-
-        /* update states */
-        Fred::update_object_states(pra_impl_ptr_->getObject(0).id);
-
-        /* make new request for finishing contact identification */
-        PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
-                pra_impl_ptr_->get_manager_ptr()->createRequest(
-                        PRT_CONTACT_IDENTIFICATION)));
-        if (new_request)
-        {
-            new_request->setRegistrarId(
-                    pra_impl_ptr_->getRegistrarId());
-            new_request->setRequestId(
-                    pra_impl_ptr_->getResolveRequestId());
-            new_request->addObject(
-                    pra_impl_ptr_->getObject(0));
-            new_request->save();
-            new_request->sendPasswords();
-        }
-
-        tx.commit();
     }
 
     void sendPasswords()
@@ -544,7 +496,77 @@ public:
 
     void processAction(bool _check)
     {
-        cond_contact_identification_impl.processAction(_check);
+        LOGGER(PACKAGE).debug(boost::format(
+                "processing public request id=%1%")
+                % this->getId());
+
+        cond_contact_identification_impl.pre_process_check(_check);
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        unsigned long long act_registrar
+            = lockContactGetRegistrarId(this->getObject(0).id);
+        if (act_registrar != this->getRegistrarId()) {
+            run_transfer_command(this->getRegistrarId()
+                , act_registrar,  this->getResolveRequestId()
+                , this->getObject(0).id);
+        }
+
+        /* set state */
+        insertNewStateRequest(this->getId()
+                , this->getObject(0).id
+                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+
+        insertNewStateRequest(this->getId()
+                , this->getObject(0).id
+                , ::MojeID::MOJEID_CONTACT);
+
+        /* prohibit operations on contact */
+        if (object_has_state(this->getObject(0).id
+                , ObjectState::SERVER_DELETE_PROHIBITED) == false)
+        {
+            /* set 1 | serverDeleteProhibited */
+            insertNewStateRequest(this->getId()
+                    , this->getObject(0).id
+                    , ObjectState::SERVER_DELETE_PROHIBITED);
+        }
+        if (object_has_state(this->getObject(0).id
+                , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
+        {
+            /* set 3 | serverTransferProhibited */
+            insertNewStateRequest(this->getId()
+                    , this->getObject(0).id
+                    , ObjectState::SERVER_TRANSFER_PROHIBITED);
+        }
+        if (object_has_state(this->getObject(0).id
+                , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
+        {
+            /* set 4 | serverUpdateProhibited */
+            insertNewStateRequest(this->getId()
+                    , this->getObject(0).id
+                    , ObjectState::SERVER_UPDATE_PROHIBITED);
+        }
+
+        /* update states */
+        Fred::update_object_states(this->getObject(0).id);
+
+        /* make new request for finishing contact identification */
+        PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
+                this->get_manager_ptr()->createRequest(
+                        PRT_CONTACT_IDENTIFICATION)));
+        if (new_request)
+        {
+            new_request->setRegistrarId(
+                    this->getRegistrarId());
+            new_request->setRequestId(
+                    this->getResolveRequestId());
+            new_request->addObject(
+                    this->getObject(0));
+            new_request->save();
+            new_request->sendPasswords();
+        }
+
+        tx.commit();
     }
 
     void sendPasswords()
@@ -620,12 +642,8 @@ public:
         }
     }
 
-    void processAction(bool _check)
+    void pre_process_check(bool _check)
     {
-        LOGGER(PACKAGE).debug(boost::format(
-                "processing public request id=%1%")
-        % pra_impl_ptr_->getId());
-
         /* object should not change */
         if (object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false
@@ -639,79 +657,7 @@ public:
                     pra_impl_ptr_->getObject(0).id);
         contact_validator_.check(cdata);
 
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
 
-        /* check if need to transfer and do so (TODO: make function (two copies) */
-        Database::Result clid_result = conn.exec_params(
-                "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
-                " WHERE c.id = $1::integer FOR UPDATE",
-                Database::query_param_list(
-                        pra_impl_ptr_->getObject(0).id));
-        if (clid_result.size() != 1) {
-            throw std::runtime_error("cannot find contact, object doesn't exist!?"
-                    " (probably deleted?)");
-        }
-        unsigned long long act_registrar = static_cast<unsigned long long>(clid_result[0][0]);
-        if (act_registrar != pra_impl_ptr_->getRegistrarId()) {
-            /* run transfer command */
-            ::MojeID::Request request(205, pra_impl_ptr_->getRegistrarId()
-                    , pra_impl_ptr_->getResolveRequestId());
-            Fred::Contact::Verification::contact_transfer(
-                    request.get_request_id(),
-                    request.get_registrar_id(),
-                    pra_impl_ptr_->getObject(0).id);
-            Fred::Contact::Verification::contact_transfer_poll_message(
-                    act_registrar, pra_impl_ptr_->getObject(0).id);
-            request.end_success();
-        }
-
-        /* check if contact is already conditionally identified (21) and cancel state */
-        Fred::cancel_object_state(pra_impl_ptr_->getObject(0).id
-                , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
-
-        /* set new state */
-        insertNewStateRequest(pra_impl_ptr_->getId()
-                , pra_impl_ptr_->getObject(0).id
-                , ObjectState::IDENTIFIED_CONTACT);
-
-        if (object_has_state(pra_impl_ptr_->getObject(0).id
-                , ::MojeID::MOJEID_CONTACT) == false)
-        {
-            insertNewStateRequest(pra_impl_ptr_->getId()
-                    , pra_impl_ptr_->getObject(0).id
-                    , ::MojeID::MOJEID_CONTACT);
-        }
-
-        /* prohibit operations on contact */
-        if (object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::SERVER_DELETE_PROHIBITED) == false)
-        {
-            /* set 1 | serverDeleteProhibited */
-            insertNewStateRequest(pra_impl_ptr_->getId()
-                    , pra_impl_ptr_->getObject(0).id
-                    , ObjectState::SERVER_DELETE_PROHIBITED);
-        }
-        if (object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
-        {
-            /* set 3 | serverTransferProhibited */
-            insertNewStateRequest(pra_impl_ptr_->getId()
-                    , pra_impl_ptr_->getObject(0).id
-                    , ObjectState::SERVER_TRANSFER_PROHIBITED);
-        }
-        if (object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
-        {
-            /* set 4 | serverUpdateProhibited */
-            insertNewStateRequest(pra_impl_ptr_->getId()
-                    , pra_impl_ptr_->getObject(0).id
-                    , ObjectState::SERVER_UPDATE_PROHIBITED);
-        }
-
-        /* update states */
-        Fred::update_object_states(pra_impl_ptr_->getObject(0).id);
-        tx.commit();
     }
 
     void sendPasswords()
@@ -757,7 +703,68 @@ public:
 
     void processAction(bool _check)
     {
-        contact_identification_impl.processAction(_check);
+        LOGGER(PACKAGE).debug(boost::format(
+                "processing public request id=%1%")
+        % this->getId());
+
+        contact_identification_impl.pre_process_check(_check);
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        unsigned long long act_registrar
+                = lockContactGetRegistrarId(this->getObject(0).id);
+        if (act_registrar != this->getRegistrarId()) {
+            run_transfer_command(this->getRegistrarId()
+                , act_registrar,  this->getResolveRequestId()
+                , this->getObject(0).id);
+        }
+
+        /* check if contact is already conditionally identified (21) and cancel state */
+        Fred::cancel_object_state(this->getObject(0).id
+                , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+
+        /* set new state */
+        insertNewStateRequest(this->getId()
+                , this->getObject(0).id
+                , ObjectState::IDENTIFIED_CONTACT);
+
+        if (object_has_state(this->getObject(0).id
+                , ::MojeID::MOJEID_CONTACT) == false)
+        {
+            insertNewStateRequest(this->getId()
+                    , this->getObject(0).id
+                    , ::MojeID::MOJEID_CONTACT);
+        }
+
+        /* prohibit operations on contact */
+        if (object_has_state(this->getObject(0).id
+                , ObjectState::SERVER_DELETE_PROHIBITED) == false)
+        {
+            /* set 1 | serverDeleteProhibited */
+            insertNewStateRequest(this->getId()
+                    , this->getObject(0).id
+                    , ObjectState::SERVER_DELETE_PROHIBITED);
+        }
+        if (object_has_state(this->getObject(0).id
+                , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
+        {
+            /* set 3 | serverTransferProhibited */
+            insertNewStateRequest(this->getId()
+                    , this->getObject(0).id
+                    , ObjectState::SERVER_TRANSFER_PROHIBITED);
+        }
+        if (object_has_state(this->getObject(0).id
+                , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
+        {
+            /* set 4 | serverUpdateProhibited */
+            insertNewStateRequest(this->getId()
+                    , this->getObject(0).id
+                    , ObjectState::SERVER_UPDATE_PROHIBITED);
+        }
+
+        /* update states */
+        Fred::update_object_states(this->getObject(0).id);
+        tx.commit();
     }
 
     void sendPasswords()
