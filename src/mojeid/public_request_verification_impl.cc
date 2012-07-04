@@ -113,7 +113,14 @@ public:
         /* for demo purpose we send second half of password as well */
         if (prai_ptr_->getPublicRequestManager()->getDemoMode() == true)
         {
-            params["passwd2"] = map_at(data, "pin2");
+            if(map_at(data, "pin1").empty())
+            {
+                params["passwd3"] = map_at(data, "pin3");
+            }
+            else
+            {
+                params["passwd2"] = map_at(data, "pin2");
+            }
             unsigned long long file_id = 0;
 
             Database::Result result = conn.exec_params(
