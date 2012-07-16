@@ -1599,4 +1599,52 @@ void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) t
     }
 }
 
+Fred::Domain::DatePeriod makeBoostDateInterval(const ccReg::Admin::DatePeriod &date_interval)
+{
+    Fred::Domain::DatePeriod ret;
+
+    ret.from = makeBoostDate(date_interval.from);
+    ret.to   = makeBoostDate(date_interval.to);
+
+    return ret;
+}
+
+ccReg::Admin::ValueList* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::Admin::DatePeriodList &date_intervals)
+{
+    try {
+        Logging::Context(server_name_);
+        ConnectionReleaser release;
+        TRACE(boost::format("[CALL] ccReg_Admin_i::getSummaryOfExpiredDomains(%1%, date_intervals") % registrar_handle );
+
+        // convert 2nd parametre - the sequence
+        std::vector<Fred::Domain::DatePeriod> intervals;
+        intervals.reserve(date_intervals.length());
+
+        for(unsigned i=0; i<date_intervals.length(); i++) {
+            intervals.push_back(makeBoostDateInterval(date_intervals[i]));
+        }
+
+        // call implementation
+        Fred::Domain::DomainCounts counts = getExpiredDomainSummary("cz", registrar_handle, intervals);
+
+        // convert return value
+        ccReg::Admin::ValueList_var ret = new ccReg::Admin::ValueList();
+
+        ret->length(counts.size());
+        for (unsigned i=0; i<counts.size(); i++) {
+            ret[i] = counts[i];
+        }
+
+        return ret._retn();
+
+    } catch (Fred::NOT_FOUND &) {
+        throw ccReg::Admin::ObjectNotFound();
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(ex.what());
+        throw ccReg::Admin::InternalServerError();
+    } catch (...) {
+        LOGGER(PACKAGE).error("unknown exception in getSummaryOfExpiredDomains");
+        throw ccReg::Admin::InternalServerError();
+    }
+}
 

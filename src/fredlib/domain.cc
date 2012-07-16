@@ -29,6 +29,7 @@
 #include "old_utils/dbsql.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
+#include "registrar.h"
 
 namespace Fred {
 namespace Domain {
@@ -1444,6 +1445,42 @@ unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::greg
     return count;
 
 }
+
+DomainCounts getExpiredDomainSummary(const std::string &zone, const std::string &registrar, const std::vector<DatePeriod> &date_intervals)
+{
+    Fred::Registrar::Manager::AutoPtr regman(
+        Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+
+    if(!regman->checkHandle(registrar)) {
+        throw Fred::NOT_FOUND();
+    }
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    DomainCounts ret;
+    ret.reserve(date_intervals.size());
+
+    for (std::vector<DatePeriod>::const_iterator it = date_intervals.begin(); it != date_intervals.end(); it++) {
+
+        // becasue ::date type is used, we can include the boundary just by using <= operator
+        Database::Result result = conn.exec_params("SELECT count(*) FROM domain d "
+                                        "JOIN object_registry oreg ON oreg.id = d.id AND oreg.erdate IS NULL "
+                                        "JOIN object_history oh ON oh.historyid = oreg.historyid "
+                                        "JOIN registrar r ON r.id = oh.clid "
+                                        "JOIN zone z ON z.id = d.zone "
+                                    "WHERE z.fqdn = $1::text AND r.handle = $2::text AND d.exdate >= $3::date AND d.exdate <= $4::date ",
+                Database::query_param_list (zone)
+                                           (registrar)
+                                           (it->from)
+                                           (it->to)
+        );
+
+        ret.push_back(result[0][0]);
+    }
+
+    return ret;
+}
+
 
 }
 }
