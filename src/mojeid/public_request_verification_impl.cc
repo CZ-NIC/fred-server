@@ -404,7 +404,7 @@ public:
             ::create_conditional_identification_validator())
     {}
 
-    std::string generatePasswords()
+    std::string generate_passwords()
     {
         if(pra_impl_ptr_->getPublicRequestManager()->getDemoMode())
         {
@@ -479,7 +479,7 @@ public:
 
     std::string generatePasswords()
     {
-        return cond_contact_identification_impl.generatePasswords();
+        return cond_contact_identification_impl.generate_passwords();
     }
 
     void save()
@@ -598,7 +598,7 @@ public:
     , contact_validator_(Fred::Contact::Verification::create_finish_identification_validator())
     {}
 
-    std::string generatePasswords()
+    std::string generate_passwords()
     {
         /* generate pin3 */
         if(pra_impl_ptr_->getPublicRequestManager()
@@ -678,7 +678,7 @@ public:
 
     std::string generatePasswords()
     {
-        return contact_identification_impl.generatePasswords();
+        return contact_identification_impl.generate_passwords();
     }
 
     void save()
