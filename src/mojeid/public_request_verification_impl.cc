@@ -461,16 +461,6 @@ public:
         contact_validator_.check(cdata);
 
     }
-
-    void sendPasswords()
-    {
-        contact_verification_passwd_.sendEmailPassword("mojeid_identification");
-        contact_verification_passwd_.sendSmsPassword(
-                "Potvrzujeme uspesne zalozeni uctu mojeID. "
-                "Pro aktivaci Vaseho uctu je nutne vlozit kody "
-                "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: "
-                , "mojeid_pin2");
-    }
 };
 
 class ConditionalContactIdentification
@@ -479,10 +469,12 @@ class ConditionalContactIdentification
               , ConditionalContactIdentification>
 {
     ConditionalContactIdentificationImpl cond_contact_identification_impl;
+    ContactVerificationPassword contact_verification_passwd_;
 
 public:
     ConditionalContactIdentification()
     : cond_contact_identification_impl(this)
+    , contact_verification_passwd_(this)
     {}
 
     std::string generatePasswords()
@@ -578,9 +570,13 @@ public:
 
     void sendPasswords()
     {
-        cond_contact_identification_impl.sendPasswords();
+        contact_verification_passwd_.sendEmailPassword("mojeid_identification");
+        contact_verification_passwd_.sendSmsPassword(
+                "Potvrzujeme uspesne zalozeni uctu mojeID. "
+                "Pro aktivaci Vaseho uctu je nutne vlozit kody "
+                "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: "
+                , "mojeid_pin2");
     }
-
 
     static std::string registration_name()
     {
@@ -666,20 +662,6 @@ public:
 
 
     }
-
-    void sendPasswords()
-    {
-        /* contact is already conditionally identified - send pin3 */
-        contact_verification_passwd_.sendLetterPassword("pin3"
-                , Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3
-                , "mojeid_pin3"
-                , "registered_letter"
-                );
-        /* in demo mode we send pin3 as email attachment */
-        if (pra_impl_ptr_->get_manager_ptr()->getDemoMode()) {
-            contact_verification_passwd_.sendEmailPassword("mojeid_identification");
-        }
-    }
 };
 
 class ContactIdentification
@@ -687,9 +669,11 @@ class ContactIdentification
         , public Util::FactoryAutoRegister<PublicRequest, ContactIdentification>
 {
     ContactIdentificationImpl contact_identification_impl;
+    ContactVerificationPassword contact_verification_passwd_;
 public:
     ContactIdentification()
     : contact_identification_impl(this)
+    , contact_verification_passwd_(this)
     {}
 
     std::string generatePasswords()
@@ -776,7 +760,16 @@ public:
 
     void sendPasswords()
     {
-        contact_identification_impl.sendPasswords();
+        /* contact is already conditionally identified - send pin3 */
+        contact_verification_passwd_.sendLetterPassword("pin3"
+                , Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3
+                , "mojeid_pin3"
+                , "registered_letter"
+                );
+        /* in demo mode we send pin3 as email attachment */
+        if (this->get_manager_ptr()->getDemoMode()) {
+            contact_verification_passwd_.sendEmailPassword("mojeid_identification");
+        }
     }
 
     static std::string registration_name()
