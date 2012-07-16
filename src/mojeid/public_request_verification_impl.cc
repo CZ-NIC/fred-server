@@ -352,7 +352,7 @@ public:
 
 
 
-unsigned long long lockContactGetRegistrarId(unsigned long long contact_id)
+unsigned long long lock_contact_get_registrar_id(unsigned long long contact_id)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -504,7 +504,7 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
         unsigned long long act_registrar
-            = lockContactGetRegistrarId(this->getObject(0).id);
+            = lock_contact_get_registrar_id(this->getObject(0).id);
         if (act_registrar != this->getRegistrarId()) {
             run_transfer_command(this->getRegistrarId()
                 , act_registrar,  this->getResolveRequestId()
@@ -703,7 +703,7 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
         unsigned long long act_registrar
-                = lockContactGetRegistrarId(this->getObject(0).id);
+                = lock_contact_get_registrar_id(this->getObject(0).id);
         if (act_registrar != this->getRegistrarId()) {
             run_transfer_command(this->getRegistrarId()
                 , act_registrar,  this->getResolveRequestId()
