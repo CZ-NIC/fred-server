@@ -1625,7 +1625,7 @@ ccReg::Admin::ValueList* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *r
         }
 
         // call implementation
-        Fred::Domain::DomainCounts counts = getExpiredDomainSummary("cz", registrar_handle, intervals);
+        Fred::Domain::DomainCounts counts = getExpiredDomainSummary(registrar_handle, intervals);
 
         // convert return value
         ccReg::Admin::ValueList_var ret = new ccReg::Admin::ValueList();

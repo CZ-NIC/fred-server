@@ -1446,7 +1446,7 @@ unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::greg
 
 }
 
-DomainCounts getExpiredDomainSummary(const std::string &zone, const std::string &registrar, const std::vector<DatePeriod> &date_intervals)
+DomainCounts getExpiredDomainSummary(const std::string &registrar, const std::vector<DatePeriod> &date_intervals)
 {
     Fred::Registrar::Manager::AutoPtr regman(
         Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
@@ -1467,10 +1467,8 @@ DomainCounts getExpiredDomainSummary(const std::string &zone, const std::string 
                                         "JOIN object_registry oreg ON oreg.id = d.id AND oreg.erdate IS NULL "
                                         "JOIN object_history oh ON oh.historyid = oreg.historyid "
                                         "JOIN registrar r ON r.id = oh.clid "
-                                        "JOIN zone z ON z.id = d.zone "
-                                    "WHERE z.fqdn = $1::text AND r.handle = $2::text AND d.exdate >= $3::date AND d.exdate <= $4::date ",
-                Database::query_param_list (zone)
-                                           (registrar)
+                                    "WHERE r.handle = $1::text AND d.exdate >= $2::date AND d.exdate <= $3::date ",
+                Database::query_param_list (registrar)
                                            (it->from)
                                            (it->to)
         );
