@@ -729,8 +729,14 @@ src_fredlib_public_request_libpublic_request_a_SOURCES = \
 		src/fredlib/public_request/public_request_authinfo_impl.h \
 		src/fredlib/public_request/public_request_block_impl.cc \
 		src/fredlib/public_request/public_request_block_impl.h \
+		src/mojeid/contact_verification_password.cc \
+		src/mojeid/contact_verification_password.h \
 		src/mojeid/public_request_verification_impl.cc \
-		src/mojeid/public_request_verification_impl.h
+		src/mojeid/public_request_verification_impl.h \
+		src/fredlib/contact_verification/conditional_contact_identification_impl.cc \
+		src/fredlib/contact_verification/conditional_contact_identification_impl.h \
+		src/fredlib/contact_verification/contact_identification_impl.cc \
+		src/fredlib/contact_verification/contact_identification_impl.h
 #
 # src/fredlib/public_request/libpublic_request.a
 
