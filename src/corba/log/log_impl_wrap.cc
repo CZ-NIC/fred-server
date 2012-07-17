@@ -223,7 +223,10 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
 
     try {
         // this method doesn't call logger implementation, we have to init context here
+        // and also declare connection releaser
         logd_ctx_init ctx;
+        TRACE("[CALL] ccReg_Log_i::createPageTable");
+        ConnectionReleaser releaser;
 
         boost::mutex::scoped_lock slm (pagetables_mutex);
 
@@ -261,6 +264,7 @@ void ccReg_Log_i::deletePageTable(const char* session_id)
     try {
         // this method doesn't call logger implementation, we have to init context here
         logd_ctx_init ctx;
+        TRACE("[CALL] ccReg_Log_i::deletePageTable");
 
         boost::mutex::scoped_lock slm (pagetables_mutex);
 
@@ -291,7 +295,9 @@ ccReg::Logger::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
 {
     try {
         // this method doesn't call logger implementation, we have to init context here
+        // and also declare connection releaser
         logd_ctx_init ctx;
+        ConnectionReleaser releaser;
 
         LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 

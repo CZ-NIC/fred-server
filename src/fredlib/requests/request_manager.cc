@@ -30,6 +30,7 @@
 #include "model_request.h"
 #include "model_request_property_value.h"
 
+#include "connection_releaser.h"
 
 namespace Fred {
 namespace Logger {
@@ -93,11 +94,11 @@ private:
 
 Result ManagerImpl::i_getRequestTypesByService(ServiceType service) 
 {
-        logd_ctx_init ctx;
+    logd_ctx_init ctx;
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestTypesByService");
+    ConnectionReleaser releaser;
 
         Connection conn = Database::Manager::acquire();
-
-    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestTypesByService");
 
     boost::format query = boost::format("select id, name from request_type where service_id = %1%") % service;
 
@@ -109,6 +110,7 @@ Result ManagerImpl::i_getServices()
 {
     logd_ctx_init ctx;
     TRACE("[CALL] Fred::Logger::ManagerImpl::i_getServices()");
+    ConnectionReleaser releaser;
 
     Database::Connection conn = Database::Manager::acquire();
     std::string query = "SELECT id, name FROM service";
@@ -118,14 +120,20 @@ Result ManagerImpl::i_getServices()
 Result ManagerImpl::i_getResultCodesByService(ServiceType service)
 {
     logd_ctx_init ctx;
-    Connection conn = Database::Manager::acquire();
     TRACE("[CALL] Fred::Logger::ManagerImpl::i_getResultCodesByService");
+    ConnectionReleaser releaser;
+
+    Connection conn = Database::Manager::acquire();
     boost::format query = boost::format("select result_code, name from result_code where service_id = %1%") % service;
     return conn.exec(query.str());
 }
 
 Result ManagerImpl::i_getObjectTypes()
 {
+    logd_ctx_init ctx;
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestTypesByService");
+    ConnectionReleaser releaser;
+
     Database::Connection conn = Database::Manager::acquire();
     Result res = conn.exec("SELECT id, type FROM object_type");
 
@@ -697,6 +705,8 @@ ID ManagerImpl::i_createSession(ID user_id, const char *name)
 
         std::auto_ptr<Logging::Context> ctx_sess;
 
+    ConnectionReleaser releaser;
+
     ID session_id;
 
     logger_notice(boost::format("createSession: username-> [%1%] user_id-> [%2%]") % name %  user_id);
@@ -822,6 +832,7 @@ unsigned long long ManagerImpl::i_getRequestCount(
 {
     logd_ctx_init ctx;
     TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestCount()");
+    ConnectionReleaser releaser;
 
     Database::ID service_id = getServiceIdForName(service);
 
@@ -859,6 +870,7 @@ ManagerImpl::i_getRequestCountUsers(
 {
     logd_ctx_init ctx;
     TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestCountUsers()");
+    ConnectionReleaser releaser;
 
     Database::Connection conn = Database::Manager::acquire();
 
