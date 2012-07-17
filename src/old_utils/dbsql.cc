@@ -780,7 +780,7 @@ bool DB::CountExDate(
   snprintf(
       sqlString,
       256,
-      "SELECT  ExDate+interval\'%d month\' FROM DOMAIN WHERE id=%d AND ExDate+interval\'%d month\' < current_date+interval\'%d month\';",
+      "SELECT  ExDate+interval\'%d month\' FROM DOMAIN WHERE id=%d AND ExDate+interval\'%d month\' <= current_date+interval\'%d month\';",
       period, domainID, period, max_period);
 
   if (ExecSelect(sqlString) ) {
