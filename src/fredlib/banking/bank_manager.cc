@@ -155,16 +155,6 @@ private:
 
             unsigned long long zone_id = getZoneByAccountId(_payment->getAccountId());
 
-            /* zone access check */
-            if (!rmanager->hasRegistrarZoneAccess(_registrar_id, zone_id)) {
-                LOGGER(PACKAGE).warning(boost::format(
-                        "registrar (id=%1%) has not access to zone (id=%2%)"
-                        " => processing canceled (payment id=%3%)")
-                        % _registrar_id
-                        % zone_id
-                        % _payment->getId());
-                return;
-            }
 
             std::auto_ptr<Fred::Invoicing::Manager>
                     invoice_manager(Fred::Invoicing::Manager::create());
@@ -214,6 +204,32 @@ private:
                 }
 
             }
+
+            /* zone access check */
+            if (!rmanager->hasRegistrarZoneAccess(_registrar_id, zone_id)) {
+                // no acces to zone and no debt payed - invalid payment
+                if(uai_vect.size() == 0) {
+                    LOGGER(PACKAGE).warning(boost::format(
+                            "registrar (id=%1%) has not access to zone (id=%2%)"
+                            " => processing canceled (payment id=%3%)")
+                            % _registrar_id
+                            % zone_id
+                            % _payment->getId());
+                    return;
+                }
+
+                // amount larger than registrar debt
+                if(payment_price_rest > Money("0")) {
+                    LOGGER(PACKAGE).warning(boost::format(
+                            "Registrar (id=%1%) who has no longer acces to zone (id=%2%)"
+                            " sent amount larger than debt (payment id=%3%) It will have to be processed manually")
+                            % _registrar_id
+                            % zone_id
+                            % _payment->getId());
+
+                }
+            }
+
 
             // create advance invoice for rest amount after paying possible debt (account invoice)
             if (payment_price_rest > Money("0"))
