@@ -33,10 +33,12 @@
 #include "fredlib/object_states.h"
 #include "fredlib/contact_verification/contact.h"
 #include "fredlib/contact_verification/contact_verification.h"
+#include "fredlib/contact_verification/data_validation.h"
 #include "fredlib/mojeid/request.h"
 #include "fredlib/mojeid/mojeid_contact_states.h"
-#include "fredlib/contact_verification/data_validation.h"
 #include "fredlib/mojeid/mojeid_disclose_policy.h"
+#include "mojeid/public_request_verification_impl.h"
+#include "util/factory_check.h"
 
 #include "cfg/config_handler_decl.h"
 #include "log/logger.h"
@@ -89,6 +91,21 @@ namespace Registry
                     throw std::runtime_error(
                             "failed to find dedicated registrar in database");
                 }
+
+                // factory_check - required keys are in factory
+                FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
+                ::KeyVector required_keys = boost::assign::list_of
+                    (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
+                    (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION)
+                    (Fred::PublicRequest::PRT_CONTACT_VALIDATION);
+
+                FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
+                    (required_keys).check();
+
+                // factory_check - factory keys are in database
+                FactoryHaveSubsetOfKeysChecker<Fred::PublicRequest::Factory>
+                    (Fred::PublicRequest::get_enum_public_request_type()).check();
+
             }
             catch (std::exception &_ex) {
                 LOGGER(PACKAGE).alert(_ex.what());
