@@ -34,9 +34,9 @@
 #include "fredlib/contact_verification/contact.h"
 #include "fredlib/contact_verification/contact_verification.h"
 #include "fredlib/contact_verification/data_validation.h"
-#include "fredlib/mojeid/request.h"
-#include "fredlib/mojeid/mojeid_contact_states.h"
-#include "fredlib/mojeid/mojeid_disclose_policy.h"
+#include "mojeid/request.h"
+#include "mojeid/mojeid_contact_states.h"
+#include "mojeid/mojeid_disclose_policy.h"
 #include "mojeid/public_request_verification_impl.h"
 #include "util/factory_check.h"
 

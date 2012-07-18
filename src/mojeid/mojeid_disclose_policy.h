@@ -32,7 +32,7 @@
 
 #include "fredlib/object_states.h"
 #include "fredlib/contact_verification/contact.h"
-#include "fredlib/mojeid/mojeid_contact_states.h"
+#include "mojeid/mojeid_contact_states.h"
 
 class DiscloseFlagPolicy
 : public boost::noncopyable

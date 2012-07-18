@@ -15,7 +15,6 @@
 #include "fredlib/public_request/public_request_authinfo_impl.h"
 #include "fredlib/public_request/public_request_block_impl.h"
 #include "mojeid/public_request_verification_impl.h"
-
 #include "log/logger.h"
 #include "log/context.h"
 #include "util.h"

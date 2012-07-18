@@ -2,7 +2,7 @@
 #include "types/birthdate.h"
 #include "object_states.h"
 #include "contact_verification/contact.h"
-#include "contact_verification_password.h"
+#include "contact_verification/contact_verification_password.h"
 #include "contact_verification/contact_verification.h"
 #include "contact_verification/conditional_contact_identification_impl.h"
 #include "contact_verification/contact_identification_impl.h"

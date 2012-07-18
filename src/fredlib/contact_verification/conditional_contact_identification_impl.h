@@ -25,7 +25,7 @@
 #define CONDITIONAL_CONTACT_IDENTIFICATION_IMPL_H_
 
 #include "public_request/public_request_impl.h"
-#include "mojeid/contact_verification_password.h"
+#include "contact_verification_password.h"
 #include "contact_verification.h"
 
 
