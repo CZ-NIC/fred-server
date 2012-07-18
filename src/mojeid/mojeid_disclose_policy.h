@@ -31,8 +31,8 @@
 #include <boost/assign.hpp>
 
 #include "fredlib/object_states.h"
-#include "fredlib/mojeid/contact.h"
-#include "fredlib/mojeid/mojeid_contact_states.h"
+#include "fredlib/contact_verification/contact.h"
+#include "mojeid/mojeid_contact_states.h"
 
 class DiscloseFlagPolicy
 : public boost::noncopyable
@@ -41,7 +41,7 @@ public:
     typedef boost::function<void(DiscloseFlagPolicy& policy)> PolicyCallback;
     typedef std::vector<PolicyCallback> PolicyCallbackVector;
 private:
-    ::MojeID::Contact* contact_ptr_;
+    Fred::Contact::Verification::Contact* contact_ptr_;
     PolicyCallbackVector policy_vect_;
 public:
 
@@ -63,7 +63,7 @@ public:
     }
 
 
-    void apply(::MojeID::Contact& contact)
+    void apply(Fred::Contact::Verification::Contact& contact)
     {
         contact_ptr_ = &contact;
         for(PolicyCallbackVector::iterator it = policy_vect_.begin()
@@ -74,7 +74,7 @@ public:
 
     }
 
-    ::MojeID::Contact& get_contact()
+    Fred::Contact::Verification::Contact& get_contact()
     {
         if(contact_ptr_ == 0)
         {
@@ -109,7 +109,7 @@ struct SetDiscloseAddrTrueIfNotValidated
     void operator()(DiscloseFlagPolicy& policy)
     {
         if (Fred::object_has_state(policy.get_contact().id
-                , ::MojeID::VALIDATED_CONTACT) == false)
+                , Fred::ObjectState::VALIDATED_CONTACT) == false)
         {
             policy.get_contact().discloseaddress=true;
         }

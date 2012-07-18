@@ -159,7 +159,10 @@ noinst_HEADERS = \
 		util/types/optional.h \
 		util/types/optional_from_program_options.h \
 		util/types/money.h \
-		tests/exception-test.h
+		tests/exception-test.h \
+		util/factory.h \
+		util/factory_check.h \
+		util/map_get.h
 
 
 noinst_LIBRARIES = \
@@ -172,7 +175,6 @@ noinst_LIBRARIES = \
 		src/fredlib/libfred.a \
 		src/fredlib/messages/libmessages.a \
 		src/fredlib/requests/librequests.a \
-		src/fredlib/mojeid/libmojeid.a \
 		src/fredlib/banking/libbanking.a \
 		src/corba/libcorba.a \
 		src/corba/libcorbamessages.a \
@@ -196,7 +198,8 @@ noinst_LIBRARIES = \
 		src/corba/libcorbatechcheck.a \
 		src/corba/libcorbaepp.a \
 		src/corba/libcorbazonegenerator.a \
-		src/fredlib/public_request/libpublic_request.a
+		src/fredlib/public_request/libpublic_request.a \
+		src/fredlib/contact_verification/libcontact_verification.a
 
 
 noinst_PROGRAMS = \
@@ -722,9 +725,10 @@ src_fredlib_public_request_libpublic_request_a_SOURCES = \
 		src/fredlib/public_request/public_request.h \
 		src/fredlib/public_request/public_request_impl.cc \
 		src/fredlib/public_request/public_request_impl.h \
+		src/fredlib/public_request/public_request_authinfo_impl.cc \
 		src/fredlib/public_request/public_request_authinfo_impl.h \
-		src/fredlib/public_request/public_request_block_impl.h \
-		src/fredlib/public_request/public_request_verification_impl.h
+		src/fredlib/public_request/public_request_block_impl.cc \
+		src/fredlib/public_request/public_request_block_impl.h
 #
 # src/fredlib/public_request/libpublic_request.a
 
@@ -794,21 +798,6 @@ src_fredlib_requests_librequests_a_SOURCES = \
 # src/fredlib/requests/librequests.a
 
 
-# src/fredlib/mojeid/libmojeid.a
-#
-src_fredlib_mojeid_libmojeid_a_SOURCES = \
-		src/fredlib/mojeid/contact.h \
-		src/fredlib/mojeid/contact.cc \
-		src/fredlib/mojeid/nullable.h \
-		src/fredlib/mojeid/request.h \
-		src/fredlib/mojeid/mojeid_data_validation.h \
-		src/fredlib/mojeid/mojeid_data_validation.cc \
-		src/fredlib/mojeid/mojeid_contact_states.h \
-		src/fredlib/mojeid/mojeid_disclose_policy.h
-#
-# src/fredlib/mojeid/libmojeid.a
-
-
 # src/fredlib/notifier/libnotifier.a
 #
 src_fredlib_notifier_libnotifier_a_SOURCES = \
@@ -820,6 +809,26 @@ src_fredlib_notifier_libnotifier_a_SOURCES = \
 		src/fredlib/notifier/ntf_except.h
 #
 # src/fredlib/notifier/libnotifier.a
+
+
+# src/fredlib/contact_verification/libcontact_verification.a
+#
+src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
+		util/db/nullable.h \
+		src/fredlib/contact_verification/contact.h \
+		src/fredlib/contact_verification/contact.cc \
+		src/fredlib/contact_verification/data_validation.h \
+		src/fredlib/contact_verification/data_validation.cc \
+		src/fredlib/contact_verification/contact_verification.cc \
+		src/fredlib/contact_verification/contact_verification.h \
+		src/fredlib/contact_verification/conditional_contact_identification_impl.cc \
+		src/fredlib/contact_verification/conditional_contact_identification_impl.h \
+		src/fredlib/contact_verification/contact_identification_impl.cc \
+		src/fredlib/contact_verification/contact_identification_impl.h \
+		src/fredlib/contact_verification/contact_verification_password.cc \
+		src/fredlib/contact_verification/contact_verification_password.h
+#
+# src/fredlib/contact_verification/libcontact_verification.a
 
 
 BUILT_SOURCES = \
@@ -1096,9 +1105,8 @@ src_corba_fred_rifd_LDADD = \
 		src/corba/libcorbadatatypes.a \
 		src/corba/libcorba.a \
 		src/fredlib/public_request/libpublic_request.a \
-		src/fredlib/mojeid/libmojeid.a \
-		src/fredlib/messages/libmessages.a \
 		src/fredlib/libfred.a \
+		src/fredlib/messages/libmessages.a \
 		src/model/libmodel.a \
 		util/db/libdb.a \
 		util/types/libtypes.a \
@@ -1122,6 +1130,7 @@ src_corba_fred_rifd_LDADD = \
 # src/corba/fred-adifd
 #
 src_corba_fred_adifd_SOURCES = \
+		src/mojeid/public_request_verification_impl.cc \
 		src/corba/fred-adifd.cc
 
 src_corba_fred_adifd_LDADD = \
@@ -1137,8 +1146,8 @@ src_corba_fred_adifd_LDADD = \
 		src/corba/libcorbaepp.a \
 		src/corba/libfilemanager.a \
 		src/fredlib/requests/librequests.a \
+		src/fredlib/contact_verification/libcontact_verification.a \
 		src/fredlib/public_request/libpublic_request.a \
-		src/fredlib/mojeid/libmojeid.a \
 		src/fredlib/messages/libmessages.a \
 		src/fredlib/banking/libbanking.a \
 		src/fredlib/libfred.a \
@@ -1165,6 +1174,7 @@ src_corba_fred_adifd_LDADD = \
 # src/corba/fred-pifd
 #
 src_corba_fred_pifd_SOURCES = \
+		src/mojeid/public_request_verification_impl.cc \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \
@@ -1184,8 +1194,8 @@ src_corba_fred_pifd_LDADD = \
 		src/fredlib/requests/librequests.a \
 		src/fredlib/banking/libbanking.a \
 		src/fredlib/messages/libmessages.a \
+		src/fredlib/contact_verification/libcontact_verification.a \
 		src/fredlib/public_request/libpublic_request.a \
-		src/fredlib/mojeid/libmojeid.a \
 		src/fredlib/libfred.a \
 		src/model/libmodel.a \
 		util/db/libdb.a \
@@ -1287,14 +1297,21 @@ src_corba_messages_fred_msgd_LDADD = \
 # src/corba/mojeid/fred-mifd
 #
 src_corba_mojeid_fred_mifd_SOURCES = \
+		src/mojeid/request.h \
+		src/mojeid/public_request_verification_impl.cc \
+		src/mojeid/public_request_verification_impl.h \
+		src/mojeid/mojeid_notifier.cc \
+		src/mojeid/mojeid_notifier.h \
+		src/mojeid/mojeid_contact_states.h \
+		src/mojeid/mojeid_disclose_policy.h \
+		src/mojeid/mojeid_identification.h \
+		src/mojeid/mojeid.cc \
+		src/mojeid/mojeid.h \
 		src/corba/nameservice.cc \
 		src/corba/mailer_manager.cc \
-		src/corba/mojeid/mojeid_impl.h \
-		src/corba/mojeid/mojeid_impl.cc \
-		src/corba/mojeid/mojeid_identification.h \
-		src/corba/mojeid/mojeid_notifier.cc \
-		src/corba/mojeid/mojeid_notifier.h \
 		src/corba/mojeid/corba_conversion.h \
+		src/corba/mojeid/server_i.cc \
+		src/corba/mojeid/server_i.h \
 		src/corba/mojeid/fred-mifd.cc
 
 nodist_src_corba_mojeid_fred_mifd_SOURCES = \
@@ -1311,8 +1328,8 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		src/fredlib/notifier/libnotifier.a \
 		src/fredlib/libfred.a \
 		src/model/libmodel.a \
+		src/fredlib/contact_verification/libcontact_verification.a \
 		src/fredlib/public_request/libpublic_request.a \
-		src/fredlib/mojeid/libmojeid.a \
 		src/fredlib/messages/libmessages.a \
 		util/libutil.a \
 		util/log/liblog.a \
@@ -1535,7 +1552,6 @@ tests_test_server_LDADD = \
 		util/types/libtypes.a \
 		src/old_utils/liboldutils.a \
 		src/fredlib/requests/librequests.a \
-		src/fredlib/mojeid/libmojeid.a \
 		src/fredlib/banking/libbanking.a \
 		util/log/liblog.a \
 		util/libutil.a \

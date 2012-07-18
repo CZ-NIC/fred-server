@@ -19,24 +19,35 @@ bool object_has_state(
     return static_cast<int>(rcheck[0][0]);
 }
 
+bool object_has_one_of_states(
+        const unsigned long long &_object_id,
+        const std::vector<std::string> & _state_names)
+{
+    for (std::vector<std::string>::const_iterator it = _state_names.begin()
+            ; it != _state_names.end(); ++it)
+    {
+        if(object_has_state(_object_id, *it)) return true;
+    }
+    return false;
+}
 
 
-void insert_object_state(
+unsigned long long insert_object_state(
         const unsigned long long &_object_id,
         const std::string &_state_name)
 {
     Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-    conn.exec_params(
+    Database::Result reqid =conn.exec_params(
             "INSERT INTO object_state_request (object_id, state_id)"
             " VALUES ($1::integer, (SELECT id FROM enum_object_states"
-            " WHERE name = $2::text))",
+            " WHERE name = $2::text)) RETURNING id",
             Database::query_param_list
                 (_object_id)
                 (_state_name));
-    // conn.exec_params("SELECT update_object_states($1::integer)",
-    //         Database::query_param_list(_object_id));
-    tx.commit();
+    if(reqid.size() == 0)
+        return 0;
+
+    return static_cast<unsigned long long>(reqid[0][0]);
 }
 
 /**
@@ -164,8 +175,6 @@ void createObjectStateRequestName(
         , std::vector< std::string > _object_state_name
         , const std::string& valid_from
         , const optional_string& valid_to
-        , DBSharedPtr _m_db
-        , bool _restricted_handles
         , bool update_object_state
         )
 {
@@ -307,12 +316,7 @@ void createObjectStateRequestName(
 
     if (update_object_state)
     {
-        std::auto_ptr<Fred::Manager> regMan(
-            Fred::Manager::create( _m_db, _restricted_handles ));
-
-         Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("regMan->updateObjectStates id: ")
-             +boost::lexical_cast<std::string>(object_id));
-         regMan->updateObjectStates(object_id);
+        update_object_states(object_id);
     }//if (update_object_state)
 
     return;

@@ -45,6 +45,12 @@ public:
     unsigned nameservice_port;
     std::string nameservice_context;
 
+    std::string get_nameservice_host_port()
+        {
+            return nameservice_host
+                +":"+boost::lexical_cast<std::string>(nameservice_port);
+        }
+
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {

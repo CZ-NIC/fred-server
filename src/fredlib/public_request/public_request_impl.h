@@ -3,7 +3,6 @@
 
 #include "public_request.h"
 #include "common_impl.h"
-#include "mojeid/mojeid_data_validation.h"
 
 namespace Fred {
 namespace PublicRequest {
@@ -14,17 +13,15 @@ std::string Status2Str(Status _status);
 
 std::string ObjectType2Str(ObjectType type);
 
-bool checkState(Database::ID objectid, unsigned state);
-
 void insertNewStateRequest(
         Database::ID blockRequestID,
         Database::ID objectId,
-        unsigned state);
+        const std::string & state_name);
 
 bool queryBlockRequest(
         Database::ID objectId,
         Database::ID blockRequestID,
-        const std::string& states,
+        const std::vector<std::string>& states_vect,
         bool unblock);
 
 unsigned long long check_public_request(
@@ -66,6 +63,8 @@ protected:
     Manager* man_;
 
 public:
+    Database::ID& get_answer_email_id(){return answer_email_id_;}
+    Manager* get_manager_ptr(){return man_;}
     PublicRequestImpl();
 
     PublicRequestImpl(Database::ID _id,

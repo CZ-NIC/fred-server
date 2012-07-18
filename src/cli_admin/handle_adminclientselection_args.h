@@ -2062,6 +2062,7 @@ public:
                    "conditionallyIdentifiedContact "
                    "identifiedContact "
                    "validatedContact "
+                   "mojeidContact "
                    )
                    ("valid_from,f",boost::program_options
                        ::value<Checked::string>()->notifier(save_optional_string(params.valid_from))

@@ -705,7 +705,7 @@ public:
     return new ListImpl(db);
   }
   virtual CheckAvailType checkAvail(const std::string& handle,
-      NameIdPair& conflict, bool lock) const throw (SQL_ERROR) {
+      NameIdPair& conflict, bool lock) const {
     conflict.id = 0;
     conflict.name = "";
     if (!checkHandleFormat(handle))

@@ -23,13 +23,13 @@
 
 #include "db_settings.h"
 #include "model/model_filters.h"
+#include "factory.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
 namespace Fred {
 namespace PublicRequest {
-
 
 struct NotApplicable : public std::runtime_error
 {
@@ -70,26 +70,9 @@ enum MemberType {
   MT_STATUS  ///< request status
 };
 
-/// Types of request
-enum Type {
-  PRT_AUTHINFO_AUTO_RIF,            ///< Request for authinfo was created by registrar through EPP
-  PRT_AUTHINFO_AUTO_PIF,            ///< Request for authinfo automatic answer created through PIF
-  PRT_AUTHINFO_EMAIL_PIF,           ///< Request for authinfo waiting for autorization by signed email
-  PRT_AUTHINFO_POST_PIF,            ///< Request for authinfo waiting for autorization by checked letter
-  PRT_BLOCK_CHANGES_EMAIL_PIF,      ///< Request for block update object waiting for autorization by signed email
-  PRT_BLOCK_CHANGES_POST_PIF,       ///< Request for block update object waiting for autorization by checked letter
-  PRT_BLOCK_TRANSFER_EMAIL_PIF,     ///< Request for block transfer object waiting for autorization by signed email
-  PRT_BLOCK_TRANSFER_POST_PIF,      ///< Request for block transfer object waiting for autorization by checked letter
-  PRT_UNBLOCK_CHANGES_EMAIL_PIF,    ///< Request for unblock update object waiting for autorization by signed email
-  PRT_UNBLOCK_CHANGES_POST_PIF,     ///< Request for unblock update object waiting for autorization by checked letter
-  PRT_UNBLOCK_TRANSFER_EMAIL_PIF,   ///< Request for unblock transfer object waiting for autorization by signed email
-  PRT_UNBLOCK_TRANSFER_POST_PIF,    ///< Request for unblock transfer object waiting for autorization by checked letter
-  PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
-  PRT_CONTACT_IDENTIFICATION,
-  PRT_CONTACT_VALIDATION
-};
 
-std::string Type2Str(Type _type); 
+typedef std::string Type;
+
 
 /// Request status
 enum Status {
@@ -265,7 +248,7 @@ public:
 
   virtual std::string getPublicRequestAuthIdentification(
           unsigned long long &_contact_id,
-          std::vector<unsigned int> &_request_type_list) = 0;
+          std::vector<Type> &_request_type_list) = 0;
 
   /* config - this should be in contructor */
   virtual const std::string& getIdentificationMailAuthHostname() const = 0;
@@ -275,7 +258,9 @@ public:
 };
 
 
+typedef Util::Factory<PublicRequest, Util::ClassCreator<PublicRequest> > Factory;
 
+std::vector<std::string> get_enum_public_request_type();
 
 }
 }

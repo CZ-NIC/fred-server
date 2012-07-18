@@ -140,8 +140,7 @@ public:
   virtual CheckAvailType checkAvail(
           const std::string& handle,
           NameIdPair& conflict,
-          bool lock = false) const 
-      throw (SQL_ERROR) = 0;
+          bool lock = false) const = 0;
   /// check with id
   virtual CheckAvailType checkAvail(
           const unsigned long long &_id,

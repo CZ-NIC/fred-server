@@ -2,9 +2,26 @@
 #define UTIL_H_
 
 #include <string>
+#include <vector>
 #include "types/data_types.h"
 
 namespace Util {
+
+//template for initialization of vector
+template <typename ELEMENT_TYPE > struct vector_of
+    : public std::vector<ELEMENT_TYPE>
+{
+    vector_of(const ELEMENT_TYPE& t)
+    {
+        (*this)(t);
+    }
+    vector_of& operator()(const ELEMENT_TYPE& t)
+    {
+        this->push_back(t);
+        return *this;
+    }
+};
+
 
 template<class T>
 std::string container2comma_list(const T &_cont)

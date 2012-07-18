@@ -1,12 +1,11 @@
 #include "public_request_impl.h"
-
 #include "log/logger.h"
 #include "util.h"
 #include "db_settings.h"
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
 #include "random.h"
-
+#include "object_states.h"
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
@@ -15,29 +14,6 @@
 namespace Fred {
 namespace PublicRequest {
 
-
-
-std::string Type2Str(Type _type) {
-  switch (_type) {
-    case PRT_AUTHINFO_AUTO_RIF:           return "AuthInfo (EPP/Auto)";
-    case PRT_AUTHINFO_AUTO_PIF:           return "AuthInfo (Web/Auto)";
-    case PRT_AUTHINFO_EMAIL_PIF:          return "AuthInfo (Web/Email)";
-    case PRT_AUTHINFO_POST_PIF:           return "AuthInfo (Web/Post)";
-    case PRT_BLOCK_CHANGES_EMAIL_PIF:     return "Block changes (Web/Email)";
-    case PRT_BLOCK_CHANGES_POST_PIF:      return "Block changes (Web/Post)";
-    case PRT_BLOCK_TRANSFER_EMAIL_PIF:    return "Block transfer (Web/Email)";
-    case PRT_BLOCK_TRANSFER_POST_PIF:     return "Block transfer (Web/Post)";
-    case PRT_UNBLOCK_CHANGES_EMAIL_PIF:   return "Unblock changes (Web/Email)";
-    case PRT_UNBLOCK_CHANGES_POST_PIF:    return "Unblock changes (Web/Post)";
-    case PRT_UNBLOCK_TRANSFER_EMAIL_PIF:  return "Unblock transfer (Web/Email)";
-    case PRT_UNBLOCK_TRANSFER_POST_PIF:   return "Unblock transfer (Web/Post)";
-    case PRT_CONDITIONAL_CONTACT_IDENTIFICATION:
-                                          return "Conditional identification";
-    case PRT_CONTACT_IDENTIFICATION:      return "Full identification";
-    case PRT_CONTACT_VALIDATION:          return "Validation";
-    default:                              return "TYPE UNKNOWN";
-  }
-}
 
 
 std::string Status2Str(Status _status)
@@ -70,36 +46,18 @@ std::string ObjectType2Str(ObjectType type)
 }
 
 
-bool checkState(Database::ID objectId, unsigned state)
-{
-  Database::Query sql;
-  sql.buffer() << "SELECT COUNT(*) FROM object_state WHERE state_id="
-               << state << " AND object_id=" << objectId
-               << " AND valid_to ISNULL";
-  Database::Connection conn = Database::Manager::acquire();
-  Database::Result r_objects = conn.exec(sql);
-  int res = (r_objects.size() == 0 ? 0 : (int)r_objects[0][0]);
-  return res > 0;
-}
-
-
 void insertNewStateRequest(
         Database::ID blockRequestID,
         Database::ID objectId,
-        unsigned state)
+        const std::string & state_name)
 {
-  Database::InsertQuery osr("object_state_request");
-  osr.add("object_id", objectId);
-  osr.add("state_id", state);
-  Database::Connection conn = Database::Manager::acquire();
-  conn.exec(osr);
-  Database::Query prsrm;
-  prsrm.buffer() << "INSERT INTO public_request_state_request_map ("
-                 << " state_request_id, block_request_id "
-                 << ") VALUES ( "
-                 << "CURRVAL('object_state_request_id_seq'),"
-                 << blockRequestID << ")";
-  conn.exec(prsrm);
+    unsigned long long req_id = insert_object_state(objectId, state_name);
+
+    Database::Connection conn = Database::Manager::acquire();
+    conn.exec_params("INSERT INTO public_request_state_request_map "
+        " ( state_request_id, block_request_id )"
+        " VALUES ( $1::integer, $2::integer)"
+        , Database::query_param_list(req_id)(blockRequestID));
 }
 
 
@@ -112,11 +70,35 @@ void insertNewStateRequest(
 bool queryBlockRequest(
         Database::ID objectId,
         Database::ID blockRequestID,
-        const std::string& states,
+        const std::vector<std::string>& states_vect,
         bool unblock)
 {
-  // number of states in csv list of states
-  unsigned numStates = count(states.begin(),states.end(),',') + 1;
+    Database::Connection conn = Database::Manager::acquire();
+
+    std::string states;//comma separated state ids
+    // number of states in csv list of states
+    unsigned numStates = 0;
+
+    for (std::vector<std::string>::const_iterator it = states_vect.begin()
+            ; it != states_vect.end(); ++it)
+    {
+        Database::Result stid = conn.exec_params(
+            "SELECT id FROM enum_object_states WHERE name = $1::text"
+            , Database::query_param_list(*it));
+
+        if(stid.size() == 1)
+        {
+            //if not empty then separate values by comma
+            if (numStates > 0) states += std::string(",");
+            states += std::string(stid[0][0]);//append next state id
+            ++numStates;//update number of states
+        }
+        else
+        {
+            //error - bad input
+            throw std::runtime_error("queryBlockRequest: unable to find object state id");
+        }
+    }
 
   Database::Query sql;
   sql.buffer() << "SELECT " // ?? FOR UPDATE ??
@@ -129,7 +111,7 @@ bool queryBlockRequest(
                << "WHERE osr.object_id=" << objectId << " "
                << "ORDER BY st ASC ";
 
-  Database::Connection conn = Database::Manager::acquire();
+
   Database::Result result = conn.exec(sql);
   // in case of unblocking, it's error when no block request states are found
   if (!result.size() && unblock)
@@ -174,9 +156,10 @@ unsigned long long check_public_request(
     Database::Result rcheck = conn.exec_params(
             "SELECT pr.id FROM public_request pr"
             " JOIN public_request_objects_map prom ON prom.request_id = pr.id"
+            " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type"
             " WHERE pr.resolve_time IS NULL"
             " AND prom.object_id = $1::integer"
-            " AND pr.request_type = $2::integer"
+            " AND eprt.name = $2::varchar"
             " ORDER BY pr.create_time",
             Database::query_param_list
                 (_object_id)
@@ -329,19 +312,18 @@ void PublicRequestImpl::save()
 
     }
     else {
-
-      Database::InsertQuery insert_request("public_request");
-
-      insert_request.add("request_type", type_);
-      insert_request.add("create_request_id", create_request_id_);
-      insert_request.add("status", status_);
-      insert_request.add("reason", reason_);
-      insert_request.add("email_to_answer", email_to_answer_);
-      insert_request.add("registrar_id", registrar_id_);
-
       try {
         Database::Transaction transaction(conn);
-        transaction.exec(insert_request);
+        conn.exec_params(
+                "INSERT INTO public_request"
+                " (request_type, create_request_id,"
+                " status, reason, email_to_answer, registrar_id)"
+                " VALUES"
+                " ((SELECT id FROM enum_public_request_type WHERE name = $1::varchar),"
+                " $2::bigint, $3::bigint, $4::varchar, $5::varchar, $6::integer)",
+                Database::query_param_list
+                    (type_)(create_request_id_)(status_)
+                    (reason_)(email_to_answer_)(registrar_id_ == 0 ? Database::QPNull : registrar_id_));
 
         std::string objects_str = "";
         std::vector<OID>::iterator it = objects_.begin();

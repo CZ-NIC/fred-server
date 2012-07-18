@@ -61,6 +61,10 @@
 #include <memory>
 #include "tech_check.h"
 
+#include "util/factory_check.h"
+#include "fredlib/public_request/public_request.h"
+#include "fredlib/public_request/public_request_authinfo_impl.h"
+
 // Notifier
 #include "notifier.h"
 
@@ -488,6 +492,18 @@ ccReg_EPP_i::ccReg_EPP_i(
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
+
+  // factory_check - required keys are in factory
+  FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
+  ::KeyVector required_keys = boost::assign::list_of
+   (Fred::PublicRequest::PRT_AUTHINFO_AUTO_RIF);
+
+  FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
+      (required_keys).check();
+
+  // factory_check - factory keys are in database
+  FactoryHaveSubsetOfKeysChecker<Fred::PublicRequest::Factory>
+      (Fred::PublicRequest::get_enum_public_request_type()).check();
 
   // objects are shared between threads!!!
   // init at the beginning and do not change

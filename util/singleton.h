@@ -63,7 +63,7 @@ public:
 		}
 	}
 
-private:
+protected:
   /**
    * Constructors, destructors, assigment operator
    * keeping as private

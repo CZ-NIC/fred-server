@@ -1,4 +1,4 @@
-#include "mojeid_impl.h"
+#include "server_i.h"
 
 #include <iostream>
 #include <string>
@@ -62,9 +62,8 @@ int main(int argc, char *argv[])
 
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()
-            ->register_server(new Registry::MojeID::ServerImpl(server_name)
+            ->register_server(new Registry::MojeID::Server_i(server_name)
             , "MojeID");
-
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 
     }//try

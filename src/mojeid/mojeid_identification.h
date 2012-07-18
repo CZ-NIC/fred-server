@@ -4,12 +4,13 @@
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_mojeid_args.h"
-
-#include "corba_wrapper_decl.h"
 #include "fredlib/registry.h"
 #include "fredlib/public_request/public_request.h"
-#include "corba/mailer_manager.h"
-
+#include "mojeid/public_request_verification_impl.h"
+#include "fredlib/mailer.h"
+//config for docmanager
+#include "cfg/config_handler_decl.h"
+#include "cfg/handle_corbanameservice_args.h"
 
 namespace Registry {
 namespace MojeID {
@@ -21,14 +22,15 @@ namespace MojeID {
 class IdentificationRequestManagerPtr
 {
 private:
-    mutable std::auto_ptr<MailerManager> mailer_manager_;
+    mutable boost::shared_ptr<Fred::Mailer::Manager> mailer_manager_;
     mutable std::auto_ptr<Fred::Manager> registry_manager_;
     mutable std::auto_ptr<Fred::Document::Manager> doc_manager_;
     mutable std::auto_ptr<Fred::PublicRequest::Manager> request_manager_;
 
 
 public:
-    IdentificationRequestManagerPtr()
+    IdentificationRequestManagerPtr(boost::shared_ptr<Fred::Mailer::Manager> _mailer_manager)
+    : mailer_manager_(_mailer_manager)
     {
         /* get config temporary pointer */
         HandleRegistryArgs *rconf =
@@ -37,15 +39,17 @@ public:
             CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>();
 
         /* construct managers */
-        mailer_manager_.reset(new MailerManager(CorbaContainer::get_instance()->getNS())),
         registry_manager_.reset(Fred::Manager::create(
                     DBDisconnectPtr(0),
                     rconf->restricted_handles));
-        doc_manager_ = (Fred::Document::Manager::create(
+        doc_manager_ = Fred::Document::Manager::create(
                     rconf->docgen_path,
                     rconf->docgen_template_path,
                     rconf->fileclient_path,
-                    CorbaContainer::get_instance()->getNS()->getHostName()));
+                    //doc_manager config dependence
+                    CfgArgs::instance()->get_handler_ptr_by_type<
+                        HandleCorbaNameServiceArgs>()
+                            ->get_nameservice_host_port());
         request_manager_.reset(Fred::PublicRequest::Manager::create(
                     registry_manager_->getDomainManager(),
                     registry_manager_->getContactManager(),
@@ -93,8 +97,10 @@ private:
 
 
 public:
-    IdentificationRequestPtr(const Fred::PublicRequest::Type &_type)
-        : type_(_type)
+    IdentificationRequestPtr(boost::shared_ptr<Fred::Mailer::Manager> _mailer
+            , const Fred::PublicRequest::Type &_type)
+        : request_manager_(_mailer)
+        , type_(_type)
     {
         /* check valid type for mojeid identification */
         if ((type_ != Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)

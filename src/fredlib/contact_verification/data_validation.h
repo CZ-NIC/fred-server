@@ -1,14 +1,16 @@
-#ifndef MOJEID_DATA_VALIDATION_H_
-#define MOJEID_DATA_VALIDATION_H_
+#ifndef CONTACT_DATA_VALIDATION_H_
+#define CONTACT_DATA_VALIDATION_H_
 
-#include "contact.h"
+#include "contact_verification/contact.h"
 
 #include <boost/regex.hpp>
 #include <boost/function.hpp>
 #include <map>
 
 
-namespace MojeID {
+namespace Fred {
+namespace Contact {
+namespace Verification {
 
 const boost::regex USERNAME_PATTERN("^[a-z0-9](-?[a-z0-9])*$");
 const boost::regex PHONE_PATTERN("^\\+[0-9]{1,3}\\.[0-9]{1,14}$");
@@ -16,9 +18,7 @@ const boost::regex PHONE_CZ_SK_PATTERN("^\\+42(0\\.(60[1-9]|7[2-9]|91)|1\\.9(0[1
 const boost::regex EMAIL_PATTERN("^[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+)*"
                                  "@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,6}\\.?$");
 const boost::regex POSTALCODE_CZ_PATTERN("^[0-9]{3} ?[0-9]{2}$");
-
 const std::string EMAIL_PHONE_PROTECTION_PERIOD = "1 month";
-
 
 const std::string field_username     = "contact.username";
 const std::string field_phone        = "phone.number";
@@ -60,14 +60,14 @@ struct DataValidationError : public std::runtime_error
 class ContactValidator
 {
 public:
-    typedef boost::function<bool (const ::MojeID::Contact &_data, FieldErrorMap &_errors)> Checker;
+    typedef boost::function<bool (const Contact &_data, FieldErrorMap &_errors)> Checker;
 
     void add_checker(Checker _func)
     {
         checkers_.push_back(_func);
     }
 
-    void check(const ::MojeID::Contact &_data) const
+    void check(const Contact &_data) const
     {
         FieldErrorMap errors;
 
@@ -90,33 +90,27 @@ private:
 
 
 
-bool contact_checker_name(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_username(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_phone_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_fax_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_auth_info(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_phone_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_phone_unique(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_email_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_email_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_email_unique(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_notify_email_format(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_address_required(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_address_country(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_address_postalcode_format_cz(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
-bool contact_checker_birthday(const ::MojeID::Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_name(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_username(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_fax_format(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_auth_info(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_phone_required(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_phone_unique(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_email_format(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_email_required(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_email_unique(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_notify_email_format(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_address_required(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_address_country(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_address_postalcode_format_cz(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_birthday(const Contact &_data, FieldErrorMap &_errors);
 
-ContactValidator create_conditional_identification_validator();
-ContactValidator create_identification_validator();
-ContactValidator create_finish_identification_validator();
-ContactValidator create_contact_update_validator();
-
-bool check_conditionally_identified_contact_diff(const ::MojeID::Contact &_c1, const ::MojeID::Contact &_c2);
-bool check_validated_contact_diff(const ::MojeID::Contact &_c1, const ::MojeID::Contact &_c2);
 
 
 }
+}
+}
 
-
-#endif /*MOJEID_DATA_VALIDATION_H_*/
+#endif /*CONTACT_DATA_VALIDATION_H_*/
 

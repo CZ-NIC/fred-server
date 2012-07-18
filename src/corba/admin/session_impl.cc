@@ -12,7 +12,9 @@
 #include "fredlib/registrar.h"
 #include "usertype_conv.h"
 #include "common.h"
-
+#include "fredlib/public_request/public_request_authinfo_impl.h"
+#include "fredlib/public_request/public_request_block_impl.h"
+#include "mojeid/public_request_verification_impl.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "util.h"
@@ -1442,52 +1444,53 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Fred
       break;
   }
 
-  switch (_request->getType()) {
-    case Fred::PublicRequest::PRT_AUTHINFO_AUTO_RIF:
+  if (_request->getType() == Fred::PublicRequest::PRT_AUTHINFO_AUTO_RIF) {
       detail->type = Registry::PublicRequest::PRT_AUTHINFO_AUTO_RIF;
-      break;
-    case Fred::PublicRequest::PRT_AUTHINFO_AUTO_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_AUTHINFO_AUTO_PIF) {
       detail->type = Registry::PublicRequest::PRT_AUTHINFO_AUTO_PIF;
-      break;
-    case Fred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF) {
       detail->type = Registry::PublicRequest::PRT_AUTHINFO_EMAIL_PIF;
-      break;
-    case Fred::PublicRequest::PRT_AUTHINFO_POST_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_AUTHINFO_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_AUTHINFO_POST_PIF;
-      break;
-    case Fred::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF) {
       detail->type = Registry::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF;
-      break;
-    case Fred::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF;
-      break;
-    case Fred::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF) {
       detail->type = Registry::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF;
-      break;
-    case Fred::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF;
-      break;
-    case Fred::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF;
-      break;
-    case Fred::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF;
-      break;
-    case Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF;
-      break;
-    case Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
-      break;
-    case Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
-      break;
-    case Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_CONTACT_IDENTIFICATION;
-      break;
-    case Fred::PublicRequest::PRT_CONTACT_VALIDATION:
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_CONTACT_VALIDATION) {
       detail->type = Registry::PublicRequest::PRT_CONTACT_VALIDATION;
-      break;
+  }
+  else {
+      throw std::runtime_error("unknown public request type");
   }
 
   detail->createTime = DUPSTRDATE(_request->getCreateTime);

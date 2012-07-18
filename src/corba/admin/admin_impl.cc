@@ -40,14 +40,13 @@
 #include "fredlib/object_states.h"
 #include "fredlib/poll.h"
 #include "bank_payment.h"
-
+#include "fredlib/public_request/public_request_authinfo_impl.h"
+#include "fredlib/public_request/public_request_block_impl.h"
+#include "util/factory_check.h"
 #include "log/logger.h"
 #include "log/context.h"
-
 #include "random.h"
-
 #include "corba/connection_releaser.h"
-
 #include "epp_corba_client_impl.h"
 
 class Registry_RegistrarCertification_i;
@@ -76,7 +75,6 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database, NameService *_ns
 , session_garbage_active_ (false)
 , session_garbage_thread_ (0)
 {
-
   /* HACK: to recognize ADIFD and PIFD until separation of objects */
   if (_session_garbage) {
     server_name_ = ("adifd");
@@ -85,6 +83,27 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database, NameService *_ns
     server_name_ = ("pifd");
   }
 
+  //factory_check - required keys are in factory
+  FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
+  ::KeyVector required_keys = boost::assign::list_of
+   (Fred::PublicRequest::PRT_AUTHINFO_AUTO_PIF)
+   (Fred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF)
+   (Fred::PublicRequest::PRT_AUTHINFO_POST_PIF)
+   (Fred::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF)
+   (Fred::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF)
+   (Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF)
+   (Fred::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF)
+   (Fred::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF)
+   (Fred::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF)
+   (Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF)
+   (Fred::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF);
+
+  FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
+      (required_keys).check();
+
+  //factory_check - factory keys are in database
+  FactoryHaveSubsetOfKeysChecker<Fred::PublicRequest::Factory>
+      (Fred::PublicRequest::get_enum_public_request_type()).check();
 
 
   //instances held until deactivation
@@ -689,7 +708,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
     request_type = Fred::PublicRequest::type; break;
   
   Fred::PublicRequest::Type request_type;
-  switch (_type) {
+  switch (_type)  {
     REQUEST_TYPE_CORBA2DB_CASE(PRT_AUTHINFO_AUTO_RIF)
     REQUEST_TYPE_CORBA2DB_CASE(PRT_AUTHINFO_AUTO_PIF)
     REQUEST_TYPE_CORBA2DB_CASE(PRT_AUTHINFO_EMAIL_PIF)
