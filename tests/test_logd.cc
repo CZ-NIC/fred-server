@@ -513,7 +513,7 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_re
     std::auto_ptr<Fred::Logger::RequestProperties> ret(new Fred::Logger::RequestProperties(num_handles + num_others));
     Fred::Logger::RequestProperties &ref = *ret;
 
-    for(int i=0;i<num_handles;i++) {
+    for(unsigned int i=0;i<num_handles;i++) {
         ref[i].name = "handle";
         ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
 
@@ -521,7 +521,7 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_re
         ref[i].output = false;
     }
 
-    for(int i=num_handles;i< (num_others+num_handles);i++) {
+    for(unsigned int i=num_handles;i< (num_others+num_handles);i++) {
         ref[i].name = "not_handle";
         ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
 
