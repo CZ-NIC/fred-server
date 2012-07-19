@@ -101,7 +101,7 @@ namespace Fred
     {
      public:
       virtual ~MessageLowCredit() {}
-      typedef std::string CreditType;
+      typedef Money CreditType;
       virtual const std::string& getZone() const = 0;
       virtual CreditType getCredit() const = 0;
       virtual CreditType getLimit() const = 0;

@@ -224,8 +224,8 @@ public:
 
 class MessageLowCreditImpl : public MessageImpl, virtual public MessageLowCredit {
   std::string zone;
-  Decimal credit;
-  Decimal limit;
+  Money credit;
+  Money limit;
 public:
   MessageLowCreditImpl(unsigned _type,
                        TID _id,
@@ -245,15 +245,15 @@ public:
     return zone;
   }
   CreditType getCredit() const {
-    return credit.get_string();
+    return credit;
   }
   CreditType getLimit() const {
-    return limit.get_string();
+    return limit;
   }
   void setData(const std::string& _zone, CreditType _credit, CreditType _limit) {
     zone = _zone;
-    credit.set_string(_credit);
-    limit.set_string(_limit);
+    credit = _credit;
+    limit = _limit;
   }
   void textDump(std::ostream& out) const {
     MessageImpl::textDump(out);
@@ -559,8 +559,8 @@ public:
         if (!m)
           throw SQL_ERROR();
         m->setData(db->GetFieldValue(i, 1),
-                   db->GetFieldValue(i, 2),
-                   db->GetFieldValue(i, 3) );
+                   Money(db->GetFieldValue(i, 2)),
+                   Money(db->GetFieldValue(i, 3)) );
       }
       db->FreeSelect();
     } // hasLowCredit
