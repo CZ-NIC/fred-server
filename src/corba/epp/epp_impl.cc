@@ -1485,8 +1485,8 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     type = ccReg::polltype_lowcredit;
     ccReg::PollMsg_LowCredit *hdm = new ccReg::PollMsg_LowCredit;
     hdm->zone = CORBA::string_dup(mlc->getZone().c_str());
-    hdm->limit = mlc->getLimit();
-    hdm->credit = mlc->getCredit();
+    hdm->limit = CORBA::string_dup((mlc->getLimit()).get_string(".2f").c_str());
+    hdm->credit = CORBA::string_dup((mlc->getCredit()).get_string(".2f").c_str());
     *msg <<= hdm;
     return a.getRet()._retn();
   }
