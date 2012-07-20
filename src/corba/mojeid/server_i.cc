@@ -271,6 +271,9 @@ namespace Registry
                 return corba_wrap_string(pimpl_
                         ->getIdentificationInfo(contact_id).c_str());
             }
+            catch (Fred::NOT_FOUND &_ex) {
+                throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+            }
             catch (std::exception &_ex) {
                 throw Registry::MojeID::Server
                     ::INTERNAL_SERVER_ERROR(_ex.what());
