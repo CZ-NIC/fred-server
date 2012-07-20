@@ -99,6 +99,47 @@ Fred::Registrar::Registrar::AutoPtr createTestRegistrarClass()
     return registrar;
 }
 
+
+Fred::Registrar::Registrar::AutoPtr createTestRegistrarClassNoCz(const std::string& var_symb)
+{
+    std::string time_string(TimeStamp::microsec());
+    std::string registrar_handle = std::string("REG-FREDTEST") + time_string;
+    Fred::Registrar::Manager::AutoPtr regMan
+             = Fred::Registrar::Manager::create(DBSharedPtr());
+    Fred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+
+    registrar->setName(registrar_handle+"_Name");
+    registrar->setOrganization(registrar_handle+"_Organization");
+    registrar->setCity("Brno");
+    registrar->setStreet1("Street 1");
+    registrar->setStreet2("Street 2");
+    registrar->setStreet2("Street 3");
+    registrar->setDic("1234567889");
+    registrar->setEmail("info@nic.cz");
+    registrar->setFax("+420.123456");
+    registrar->setIco("92345678899");
+    registrar->setPostalCode("11150");
+    registrar->setProvince("noprovince");
+    registrar->setTelephone("+420.987654");
+    registrar->setVarSymb(var_symb);
+    registrar->setURL("http://ucho.cz");
+
+    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
+    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
+    registrar->setVat(true);
+    Fred::Registrar::ACL* registrar_acl = registrar->newACL();
+    registrar_acl->setCertificateMD5("");
+    registrar_acl->setPassword("");
+    registrar->save();
+
+    //add registrar into zone
+    Database::Date rzfromDate;
+    Database::Date rztoDate;
+    Fred::Registrar::addRegistrarZone(registrar_handle, "0.2.4.e164.arpa", rzfromDate, rztoDate);
+
+    return registrar;
+}
+
 Database::ID createTestRegistrar()
 {
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();

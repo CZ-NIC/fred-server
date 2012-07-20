@@ -67,6 +67,7 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
+#include "bank_payment_impl.h"
 
 
 BOOST_AUTO_TEST_SUITE(TestInvoice)
@@ -1688,6 +1689,195 @@ BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
 
     Money after = get_credit(reg_id, zone_cz_id);
     BOOST_REQUIRE_MESSAGE(before == after, "Credit before and after unsuccessful operation has to match");
+
+}
+
+
+BOOST_AUTO_TEST_CASE(registrar_outzone_no_debt)
+{
+    std::string varsym("1326438");
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClassNoCz(varsym);
+
+    Fred::Banking::PaymentImpl payment;
+    payment.setAccountNumber("617");
+    payment.setBankCode("5500");
+    payment.setVarSymb(varsym);
+    payment.setPrice(Money("1000.0"));
+
+    payment.setCode(1);
+    payment.setStatus(1);
+    payment.setAccountDate(Database::Date(2011, 2, 1));
+
+    payment.setAccountId(5);
+
+    payment.save();
+
+    unsigned long long pay_id = payment.getId();
+
+
+    Fred::Banking::ManagerPtr bmanager(Fred::Banking::Manager::create(0));
+    // process payment
+    bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec_params("SELECT type FROM bank_payment WHERE id = $1",
+            Database::query_param_list(pay_id));
+
+    // make sure payment was NOT processed
+    BOOST_CHECK((int)res[0][0] == 1);
+
+}
+
+BOOST_AUTO_TEST_CASE(registrar_outzone_exactly)
+{
+    std::string varsym(Random::string_from(8, "0123456789"));
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClassNoCz(varsym);
+
+    Database::ID zone_id = get_zone_cz_id();
+
+    Fred::Banking::PaymentImpl payment;
+    payment.setAccountNumber("617");
+    payment.setBankCode("5500");
+    payment.setVarSymb(varsym);
+    payment.setPrice(Money("1200.0"));
+
+    payment.setCode(1);
+    payment.setStatus(1);
+    payment.setAccountDate(Database::Date(2011, 2, 1));
+
+    // bank account depending on initialization in fred project
+    payment.setAccountId(5);
+
+    std::cout << payment.getAccountDate() << std::endl;
+
+    payment.save();
+
+    unsigned long long pay_id = payment.getId();
+
+    date today = day_clock::local_day();
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+           Fred::Invoicing::Manager::create());
+
+    Fred::Credit::init_new_registrar_credit(registrar->getId(), zone_id);
+
+    // debt for registrar
+    BOOST_CHECK(
+            invMan->charge_operation_auto_price(
+         "GeneralEppOperation"
+         , zone_id
+         , registrar->getId()
+         , 0 //object_id
+         , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+         , today - boost::gregorian::months(1)//date_from //local date
+         , today // date_to //local date
+         , Decimal("10000") )
+    );
+
+    // in order to represent debt in accounting invoices...
+    boost::gregorian::date todate( day_clock::local_day() );
+    boost::gregorian::date fromdate( todate - months(1) );
+    boost::gregorian::date taxdate(todate);
+
+    invMan->createAccountInvoice( registrar->getHandle(), std::string("cz")
+       , taxdate
+       , fromdate //from_date not set
+       , todate, boost::posix_time::ptime(todate));
+
+    Fred::Banking::ManagerPtr bmanager(Fred::Banking::Manager::create(0));
+    bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+
+    //check that the payment was processed and registrar has not debt left
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec_params("SELECT type FROM bank_payment WHERE id = $1",
+            Database::query_param_list(pay_id));
+    // make sure the payment was processed
+    BOOST_CHECK((int)res[0][0] == 2);
+
+    res = conn.exec_params("SELECT credit FROM registrar_credit WHERE registrar_id = $1 AND zone_id = $2",
+            Database::query_param_list(registrar->getId())
+                                      (zone_id)
+                                      );
+
+    Decimal credit(static_cast<std::string>(res[0][0]));
+    BOOST_CHECK(credit == Decimal("0"));
+}
+
+// TODO - configuration - price per request, VAT, ...
+BOOST_AUTO_TEST_CASE(registrar_outzone_too_much)
+{
+    std::string varsym("5556677");
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClassNoCz(varsym);
+
+    Database::ID zone_id = get_zone_cz_id();
+    Fred::Banking::PaymentImpl payment;
+    payment.setAccountNumber("617");
+    payment.setBankCode("5500");
+    payment.setVarSymb(varsym);
+    payment.setPrice(Money("5000.0"));
+
+    payment.setCode(1);
+    payment.setStatus(1);
+    payment.setAccountDate(Database::Date(2011, 2, 1));
+
+    payment.setAccountId(5);
+
+    payment.save();
+
+    unsigned long long pay_id = payment.getId();
+    date today = day_clock::local_day();
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+           Fred::Invoicing::Manager::create());
+
+    Fred::Credit::init_new_registrar_credit(registrar->getId(), zone_id);
+
+    try {
+        // debt for registrar
+        BOOST_CHECK(
+                invMan->charge_operation_auto_price(
+             "GeneralEppOperation"
+             , zone_id
+             , registrar->getId()
+             , 0 //object_id
+             , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+             , today - boost::gregorian::months(1)//date_from //local date
+             , today // date_to //local date
+             , Decimal("10000") )
+        );
+
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("Exception in ~ccReg_Log_i(): %1%") % ex.what() );
+    }
+
+    // in order to represent debt in accounting invoices...
+    boost::gregorian::date todate( day_clock::local_day() );
+    boost::gregorian::date fromdate( todate - months(1) );
+    boost::gregorian::date taxdate(todate);
+
+    invMan->createAccountInvoice( registrar->getHandle(), std::string("cz")
+        , taxdate
+        , fromdate //from_date not set
+        , todate, boost::posix_time::ptime(todate));
+
+    Fred::Banking::ManagerPtr bmanager(Fred::Banking::Manager::create(0));
+    bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+
+    // make sure that the payment was processed and registrar has some credit left (even when out of zone)
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec_params("SELECT type FROM bank_payment WHERE id = $1::integer",
+            Database::query_param_list(pay_id));
+
+    BOOST_CHECK(!res[0][0].isnull());
+
+    BOOST_CHECK((int)res[0][0] == 2);
+
+    res = conn.exec_params("SELECT credit FROM registrar_credit WHERE registrar_id = $1 AND zone_id = $2",
+            Database::query_param_list(registrar->getId())
+                                      (zone_id)
+                                      );
+
+    Decimal credit(static_cast<std::string>(res[0][0]));
+    BOOST_CHECK(credit == Decimal("3166.54"));
 
 }
 
