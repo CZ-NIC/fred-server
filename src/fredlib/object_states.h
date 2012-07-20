@@ -59,6 +59,10 @@ void cancel_multiple_object_states(
         const unsigned long long &_object_id,
         const std::vector<std::string> &_states_names);
 
+void lock_multiple_open_object_states(
+    const unsigned long long _object_id
+    , const std::vector<std::string> &_states_names);
+
 void update_object_states(
         const unsigned long long &_object_id);
 
