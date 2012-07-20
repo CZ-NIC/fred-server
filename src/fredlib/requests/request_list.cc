@@ -357,11 +357,10 @@ COMPARE_CLASS_IMPL(RequestImpl, RawResponse)
 class ListImpl : public Fred::CommonListImpl,
                  virtual public List {
 private:
-  Manager *manager_;
   bool partialLoad;
 
 public:
-  ListImpl(Manager *_manager) : CommonListImpl(), manager_(_manager), partialLoad(false) {
+  ListImpl() : CommonListImpl(), partialLoad(false) {
   }
 
   virtual Request* get(unsigned _idx) const {
@@ -783,7 +782,7 @@ public:
 
 // TODO where to place this?
 List *ManagerImpl::createList() const {
-    return new ListImpl((Manager *)this);
+    return new ListImpl();
 }
 
 }; // namespace Logger

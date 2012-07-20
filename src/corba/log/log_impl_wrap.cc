@@ -239,8 +239,7 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
         } else {
             std::auto_ptr<Fred::Logger::Manager> logger_manager;
 
-            logger_manager.reset(Fred::Logger::Manager::create());
-            Fred::Logger::List *list = logger_manager->createList();
+            Fred::Logger::List *list = back->createList();
             ccReg_Logger_i * ret_ptr = new ccReg_Logger_i(list);
             ret = ret_ptr->_this();
 
