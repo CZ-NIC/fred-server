@@ -1446,7 +1446,7 @@ unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::greg
 
 }
 
-DomainCounts getExpiredDomainSummary(const std::string &registrar, const std::vector<DatePeriod> &date_intervals)
+std::vector<unsigned long long> getExpiredDomainSummary(const std::string &registrar, const std::vector<DatePeriod> &date_intervals)
 {
     Fred::Registrar::Manager::AutoPtr regman(
         Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
@@ -1457,7 +1457,7 @@ DomainCounts getExpiredDomainSummary(const std::string &registrar, const std::ve
 
     Database::Connection conn = Database::Manager::acquire();
 
-    DomainCounts ret;
+    std::vector<unsigned long long> ret;
     ret.reserve(date_intervals.size());
 
     for (std::vector<DatePeriod>::const_iterator it = date_intervals.begin(); it != date_intervals.end(); it++) {

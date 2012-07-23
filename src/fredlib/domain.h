@@ -232,7 +232,7 @@ public:
 unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::gregorian::date &date, unsigned int zone_id);
 
 /// return expired domain counts for specified date periods
-DomainCounts getExpiredDomainSummary(const std::string &registrar, const std::vector<DatePeriod> &date_intervals);
+std::vector<unsigned long long> getExpiredDomainSummary(const std::string &registrar, const std::vector<DatePeriod> &date_intervals);
 
 } // namespace Domain
 } // namespace Fred
