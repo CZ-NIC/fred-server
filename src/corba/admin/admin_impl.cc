@@ -1630,6 +1630,8 @@ ccReg::Admin::ValueList* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *r
 
         return ret._retn();
 
+    } catch (Fred::INVALID_VALUE &ex) {
+        throw ccReg::Admin::InvalidValue(ex.what());
     } catch (Fred::NOT_FOUND &) {
         throw ccReg::Admin::ObjectNotFound();
     } catch (std::exception &ex) {

@@ -65,7 +65,13 @@ makeBoostDate(const ccReg::DateType& t) {
 date
 makeBoostDate_throw(const ccReg::DateType& t) {
   date d;
-  d = date(t.year,t.month,t.day);
+
+  try {
+      d = date(t.year,t.month,t.day);
+  } catch (std::exception &ex) {
+      throw Fred::INVALID_VALUE(ex.what());
+  }
+
   return d;
 }
 
