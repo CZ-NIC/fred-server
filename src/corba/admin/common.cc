@@ -62,6 +62,13 @@ makeBoostDate(const ccReg::DateType& t) {
   return d;
 }
 
+date
+makeBoostDate_throw(const ccReg::DateType& t) {
+  date d;
+  d = date(t.year,t.month,t.day);
+  return d;
+}
+
 ccReg::DateTimeType
 makeCorbaTime(ptime p, bool _to_local)
 {

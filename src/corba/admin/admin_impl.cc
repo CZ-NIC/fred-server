@@ -1079,8 +1079,8 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(
         ///create registrar certification
         return regman->createRegistrarCertification(
                 reg_id
-                , Database::Date(makeBoostDate(from))
-                , Database::Date(makeBoostDate(to))
+                , Database::Date(makeBoostDate_throw(from))
+                , Database::Date(makeBoostDate_throw(to))
                 , static_cast<Fred::Registrar::RegCertClass>(score)
                 , evaluation_file_id);
     }//try
@@ -1612,8 +1612,9 @@ ccReg::Admin::ValueList* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *r
 
         for(unsigned i=0; i<date_intervals.length(); i++) {
             intervals.push_back(date_period(
-                        makeBoostDate(date_intervals[i].from),
-                        makeBoostDate(date_intervals[i].to)));
+                        makeBoostDate_throw(date_intervals[i].from),
+                        makeBoostDate_throw(date_intervals[i].to))
+            );
         }
 
         // call implementation
