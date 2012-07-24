@@ -1807,6 +1807,7 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_exactly)
 BOOST_AUTO_TEST_CASE(registrar_outzone_too_much)
 {
     std::string varsym("5556677");
+    std::string pay_amount("5000.0");
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClassNoCz(varsym);
 
     Database::ID zone_id = get_zone_cz_id();
@@ -1814,7 +1815,7 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_too_much)
     payment.setAccountNumber("617");
     payment.setBankCode("5500");
     payment.setVarSymb(varsym);
-    payment.setPrice(Money("5000.0"));
+    payment.setPrice(Money(pay_amount));
 
     payment.setCode(1);
     payment.setStatus(1);
@@ -1877,7 +1878,17 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_too_much)
                                       );
 
     Decimal credit(static_cast<std::string>(res[0][0]));
-    BOOST_CHECK(credit == Decimal("3166.54"));
+
+    std::string request_price = getRequestUnitPrice(zone_id);
+
+    int dummy;
+    std::string koef;
+    get_vat(dummy, koef);
+
+    Decimal right_price = Decimal("-10000") * Decimal(request_price) + (Decimal(pay_amount) * (Decimal("1.0") - Decimal(koef)));
+    std::cout << "My Price: " << right_price << std::endl;
+
+    BOOST_CHECK( (right_price - credit).abs() < Decimal("0.6") );
 
 }
 
