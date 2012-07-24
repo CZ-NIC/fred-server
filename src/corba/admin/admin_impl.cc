@@ -1599,16 +1599,6 @@ void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) t
     }
 }
 
-Fred::Domain::DatePeriod makeBoostDateInterval(const ccReg::Admin::DatePeriod &date_interval)
-{
-    Fred::Domain::DatePeriod ret;
-
-    ret.from = makeBoostDate(date_interval.from);
-    ret.to   = makeBoostDate(date_interval.to);
-
-    return ret;
-}
-
 ccReg::Admin::ValueList* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::Admin::DatePeriodList &date_intervals)
 {
     try {
@@ -1617,15 +1607,17 @@ ccReg::Admin::ValueList* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *r
         TRACE(boost::format("[CALL] ccReg_Admin_i::getSummaryOfExpiredDomains(%1%, date_intervals") % registrar_handle );
 
         // convert 2nd parametre - the sequence
-        std::vector<Fred::Domain::DatePeriod> intervals;
+        std::vector<boost::gregorian::date_period> intervals;
         intervals.reserve(date_intervals.length());
 
         for(unsigned i=0; i<date_intervals.length(); i++) {
-            intervals.push_back(makeBoostDateInterval(date_intervals[i]));
+            intervals.push_back(date_period(
+                        makeBoostDate(date_intervals[i].from),
+                        makeBoostDate(date_intervals[i].to)));
         }
 
         // call implementation
-        std::vector<unsigned long long> counts = getExpiredDomainSummary(registrar_handle, intervals);
+        std::vector<unsigned long long> counts = Fred::Domain::getExpiredDomainSummary(registrar_handle, intervals);
 
         // convert return value
         ccReg::Admin::ValueList_var ret = new ccReg::Admin::ValueList();

@@ -1446,7 +1446,7 @@ unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::greg
 
 }
 
-std::vector<unsigned long long> getExpiredDomainSummary(const std::string &registrar, const std::vector<DatePeriod> &date_intervals)
+std::vector<unsigned long long> getExpiredDomainSummary(const std::string &registrar, const std::vector<date_period> &date_intervals)
 {
     Fred::Registrar::Manager::AutoPtr regman(
         Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
@@ -1460,17 +1460,17 @@ std::vector<unsigned long long> getExpiredDomainSummary(const std::string &regis
     std::vector<unsigned long long> ret;
     ret.reserve(date_intervals.size());
 
-    for (std::vector<DatePeriod>::const_iterator it = date_intervals.begin(); it != date_intervals.end(); it++) {
+    for (std::vector<date_period>::const_iterator it = date_intervals.begin(); it != date_intervals.end(); it++) {
 
-        // becasue ::date type is used, we can include the boundary just by using <= operator
+        // from included, to is behind the period
         Database::Result result = conn.exec_params("SELECT count(*) FROM domain d "
                                         "JOIN object_registry oreg ON oreg.id = d.id AND oreg.erdate IS NULL "
                                         "JOIN object_history oh ON oh.historyid = oreg.historyid "
                                         "JOIN registrar r ON r.id = oh.clid "
-                                    "WHERE r.handle = $1::text AND d.exdate >= $2::date AND d.exdate <= $3::date ",
+                                    "WHERE r.handle = $1::text AND d.exdate >= $2::date AND d.exdate < $3::date ",
                 Database::query_param_list (registrar)
-                                           (it->from)
-                                           (it->to)
+                                           (it->begin())
+                                           (it->end())
         );
 
         ret.push_back(result[0][0]);
