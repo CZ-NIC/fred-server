@@ -21,6 +21,7 @@
  *  common part of conditional contact identification implementation
  */
 
+#include <string>
 #include "conditional_contact_identification_impl.h"
 #include "object_states.h"
 

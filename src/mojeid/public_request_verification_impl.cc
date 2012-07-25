@@ -55,16 +55,16 @@ void run_transfer_command(unsigned long long _registrar_id
 
 
 
-class ConditionalContactIdentification
+class MojeIDConditionalContactIdentification
         : public Fred::PublicRequest::PublicRequestAuthImpl
         , public Util::FactoryAutoRegister<PublicRequest
-              , ConditionalContactIdentification>
+              , MojeIDConditionalContactIdentification>
 {
     Fred::Contact::Verification::ConditionalContactIdentificationImpl cond_contact_identification_impl;
     ContactVerificationPassword contact_verification_passwd_;
 
 public:
-    ConditionalContactIdentification()
+    MojeIDConditionalContactIdentification()
     : cond_contact_identification_impl(this)
     , contact_verification_passwd_(this)
     {}
@@ -172,20 +172,18 @@ public:
 
     static std::string registration_name()
     {
-        return PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION;
+        return Fred::PublicRequest::PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION;
     }
 };
 
-
-
-class ContactIdentification
+class MojeIDContactIdentification
         : public Fred::PublicRequest::PublicRequestAuthImpl
-        , public Util::FactoryAutoRegister<PublicRequest, ContactIdentification>
+        , public Util::FactoryAutoRegister<PublicRequest, MojeIDContactIdentification>
 {
     Fred::Contact::Verification::ContactIdentificationImpl contact_identification_impl;
     ContactVerificationPassword contact_verification_passwd_;
 public:
-    ContactIdentification()
+    MojeIDContactIdentification()
     : contact_identification_impl(this)
     , contact_verification_passwd_(this)
     {}
@@ -288,15 +286,15 @@ public:
 
     static std::string registration_name()
     {
-        return PRT_MOJEID_CONTACT_IDENTIFICATION;
+        return Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
     }
 };
 
-class ValidationRequestImpl
+class MojeIDValidationRequestImpl
 {
     PublicRequestImpl* pri_ptr_;
 public:
-    ValidationRequestImpl(PublicRequestImpl* _pri_ptr)
+    MojeIDValidationRequestImpl(PublicRequestImpl* _pri_ptr)
     : pri_ptr_(_pri_ptr)
     {}
 
@@ -415,14 +413,14 @@ public:
 };
 
 
-class ValidationRequest
+class MojeIDValidationRequest
     : public PublicRequestImpl,
-      public Util::FactoryAutoRegister<PublicRequest, ValidationRequest>
+      public Util::FactoryAutoRegister<PublicRequest, MojeIDValidationRequest>
 {
-    ValidationRequestImpl validation_request_impl;
+    MojeIDValidationRequestImpl validation_request_impl;
 public:
 
-    ValidationRequest()
+    MojeIDValidationRequest()
     :PublicRequestImpl()
     , validation_request_impl(this)
     {}
@@ -459,7 +457,7 @@ public:
 
     static std::string registration_name()
     {
-        return PRT_MOJEID_CONTACT_VALIDATION;
+        return Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION;
     }
 };
 
