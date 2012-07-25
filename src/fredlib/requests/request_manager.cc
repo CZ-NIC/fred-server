@@ -831,8 +831,18 @@ unsigned long long ManagerImpl::i_getRequestCount(
     date from_date = datetime_from.date();
     date to_date   = datetime_to.date();
 
-    // first day
-    unsigned long long total = getRequestCountWorker(datetime_from, ptime(from_date+days(1)), service_id, user);
+    unsigned long long total = 0;
+
+    // last day
+    if(to_date != from_date) {
+        // first day of 2 or more
+        total += getRequestCountWorker(datetime_from, ptime(from_date+days(1)), service_id, user);
+        // last day of 2 or more
+        total += getRequestCountWorker(ptime(to_date), datetime_to, service_id, user);
+    } else {
+        // from and to are within one day
+        total += getRequestCountWorker(datetime_from, datetime_to, service_id, user);
+    }
 
     // the rest
     for(date d = from_date+days(1);
@@ -840,11 +850,6 @@ unsigned long long ManagerImpl::i_getRequestCount(
         d += days(1)) {
 
             total += getRequestCountWorker(ptime(d), ptime(d+days(1)), service_id, user);
-    }
-
-    // last day
-    if(to_date != from_date) {
-        total += getRequestCountWorker(ptime(to_date), datetime_to, service_id, user);
     }
 
     return total;
@@ -871,14 +876,31 @@ ManagerImpl::i_getRequestCountUsers(
     date from_date = datetime_from.date();
     date to_date   = datetime_to.date();
 
-    // first day
-    incrementRequestCounts(info.get(),
-            getRequestCountUsersWorker(
-                        datetime_from, ptime(from_date+days(1)), service_id
-                    )
-    );
+    if(to_date != from_date) {
 
-    // the rest
+        // first day of 2 or more
+        incrementRequestCounts(info.get(),
+                getRequestCountUsersWorker(
+                            datetime_from, ptime(from_date+days(1)), service_id
+                        )
+        );
+
+        // last day of 2 or more
+        incrementRequestCounts(info.get(), getRequestCountUsersWorker(
+                ptime(to_date) , datetime_to, service_id
+            )
+        );
+    } else {
+        // within one day
+        incrementRequestCounts(info.get(),
+                getRequestCountUsersWorker(
+                            datetime_from, datetime_to, service_id
+                        )
+        );
+    }
+
+    // the rest - in case there are several days,
+    //   0 iterations if there are 1 or 2 days
     for(date d = from_date+days(1);
         d < to_date;
         d += days(1)) {
@@ -886,14 +908,6 @@ ManagerImpl::i_getRequestCountUsers(
                     ptime(d), ptime(d + days(1)), service_id
                 )
             );
-    }
-
-    // last day
-    if(to_date != from_date) {
-        incrementRequestCounts(info.get(), getRequestCountUsersWorker(
-                ptime(to_date) , datetime_to, service_id
-            )
-        );
     }
 
     return info;
