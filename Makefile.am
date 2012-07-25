@@ -814,6 +814,8 @@ src_fredlib_notifier_libnotifier_a_SOURCES = \
 # src/fredlib/contact_verification/libcontact_verification.a
 #
 src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
+		src/fredlib/contact_verification/public_request_impl.cc \
+		src/fredlib/contact_verification/public_request_impl.h \
 		util/db/nullable.h \
 		src/fredlib/contact_verification/contact.h \
 		src/fredlib/contact_verification/contact.cc \
