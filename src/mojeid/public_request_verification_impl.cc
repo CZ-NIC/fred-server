@@ -80,7 +80,7 @@ public:
         /* if there is another open CCI close it */
         cancel_public_request(
             this->getObject(0).id,
-            PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
+            PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION,
             this->getRequestId());
         PublicRequestAuthImpl::save();
     }
@@ -144,7 +144,7 @@ public:
         /* make new request for finishing contact identification */
         PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
                 this->get_manager_ptr()->createRequest(
-                        PRT_CONTACT_IDENTIFICATION)));
+                        PRT_MOJEID_CONTACT_IDENTIFICATION)));
         if (new_request)
         {
             new_request->setRegistrarId(
@@ -172,7 +172,7 @@ public:
 
     static std::string registration_name()
     {
-        return PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+        return PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION;
     }
 };
 
@@ -201,7 +201,7 @@ public:
         /* if there is another open CI close it */
         cancel_public_request(
                 this->getObject(0).id,
-            PRT_CONTACT_IDENTIFICATION,
+            PRT_MOJEID_CONTACT_IDENTIFICATION,
             this->getRequestId());
         PublicRequestAuthImpl::save();
     }
@@ -288,7 +288,7 @@ public:
 
     static std::string registration_name()
     {
-        return PRT_CONTACT_IDENTIFICATION;
+        return PRT_MOJEID_CONTACT_IDENTIFICATION;
     }
 };
 
@@ -320,9 +320,9 @@ public:
 
             /* has V request */
             if (check_public_request(pri_ptr_->getObject(0).id
-                , PRT_CONTACT_VALIDATION) > 0)
+                , PRT_MOJEID_CONTACT_VALIDATION) > 0)
             {
-                throw RequestExists(PRT_CONTACT_VALIDATION
+                throw RequestExists(PRT_MOJEID_CONTACT_VALIDATION
                         , pri_ptr_->getObject(0).id);
             }
         }
@@ -403,7 +403,7 @@ public:
         {
             /* otherwise there could be identification request */
             cancel_public_request(pri_ptr_->getObject(0).id
-                    , PRT_CONTACT_IDENTIFICATION, pri_ptr_->getResolveRequestId());
+                    , PRT_MOJEID_CONTACT_IDENTIFICATION, pri_ptr_->getResolveRequestId());
         }
 
         /* set new state */
@@ -459,7 +459,7 @@ public:
 
     static std::string registration_name()
     {
-        return PRT_CONTACT_VALIDATION;
+        return PRT_MOJEID_CONTACT_VALIDATION;
     }
 };
 

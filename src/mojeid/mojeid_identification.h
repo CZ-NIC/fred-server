@@ -103,8 +103,8 @@ public:
         , type_(_type)
     {
         /* check valid type for mojeid identification */
-        if ((type_ != Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
-            && (type_ != Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION)) {
+        if ((type_ != Fred::PublicRequest::PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION)
+            && (type_ != Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)) {
             throw std::runtime_error("not valid identification request type");
         }
 

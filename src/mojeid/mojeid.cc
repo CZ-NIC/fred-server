@@ -95,9 +95,9 @@ namespace Registry
                 // factory_check - required keys are in factory
                 FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
                 ::KeyVector required_keys = boost::assign::list_of
-                    (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
-                    (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION)
-                    (Fred::PublicRequest::PRT_CONTACT_VALIDATION);
+                    (Fred::PublicRequest::PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION)
+                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
+                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION);
 
                 FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
                     (required_keys).check();
@@ -153,11 +153,11 @@ namespace Registry
             if (_method == IDMethod::SMS)
             {
                 type = Fred::PublicRequest
-                        ::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+                        ::PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION;
             }
             else if (_method == IDMethod::LETTER)
             {
-                type = Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION;
+                type = Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
             }
             else if (_method == IDMethod::CERTIFICATE)
             {
@@ -209,8 +209,8 @@ namespace Registry
                 std::vector<Fred::PublicRequest::Type> request_type_list
                     = boost::assign::list_of
                     (Fred::PublicRequest
-                            ::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
-                    (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+                            ::PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION)
+                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION);
                 _identification = request_manager
                     ->getPublicRequestAuthIdentification(
                             cid, request_type_list);
@@ -310,11 +310,11 @@ namespace Registry
                 Fred::PublicRequest::Type type;
                 if (_method == IDMethod::SMS) {
                     type = Fred::PublicRequest
-                            ::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+                            ::PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION;
                 }
                 else if (_method == IDMethod::LETTER) {
                     type = Fred::PublicRequest
-                            ::PRT_CONTACT_IDENTIFICATION;
+                            ::PRT_MOJEID_CONTACT_IDENTIFICATION;
                 }
                 else if (_method == IDMethod::CERTIFICATE) {
                     throw std::runtime_error("not implemented");
@@ -337,8 +337,8 @@ namespace Registry
                 IdentificationRequestManagerPtr request_manager(mailer_);
                 std::vector<Fred::PublicRequest::Type> request_type_list
                     = boost::assign::list_of
-                    (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
-                    (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+                    (Fred::PublicRequest::PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION)
+                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION);
                 _identification = request_manager
                     ->getPublicRequestAuthIdentification(cinfo.id
                             , request_type_list);
@@ -780,8 +780,8 @@ namespace Registry
                 std::vector<Fred::PublicRequest::Type> request_type_list
                     = boost::assign::list_of
                         (Fred::PublicRequest
-                            ::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
-                        (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+                            ::PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION);
                 unsigned long long cid = static_cast<unsigned long long>(
                         _contact_id);
                 return request_manager->getPublicRequestAuthIdentification(
@@ -1066,7 +1066,7 @@ namespace Registry
                 IdentificationRequestManagerPtr req_man(mailer_);
                 std::auto_ptr<Fred::PublicRequest::PublicRequest> new_request(
                     req_man->createRequest(
-                        Fred::PublicRequest::PRT_CONTACT_VALIDATION
+                        Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION
                     )
                 );
                 new_request->setRegistrarId(mojeid_registrar_id_);
