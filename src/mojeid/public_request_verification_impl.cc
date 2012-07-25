@@ -110,7 +110,7 @@ public:
 
         insertNewStateRequest(this->getId()
                 , this->getObject(0).id
-                , ::MojeID::MOJEID_CONTACT);
+                , ::MojeID::ObjectState::MOJEID_CONTACT);
 
         /* prohibit operations on contact */
         if (object_has_state(this->getObject(0).id
@@ -234,11 +234,11 @@ public:
                 , ObjectState::IDENTIFIED_CONTACT);
 
         if (object_has_state(this->getObject(0).id
-                , ::MojeID::MOJEID_CONTACT) == false)
+                , ::MojeID::ObjectState::MOJEID_CONTACT) == false)
         {
             insertNewStateRequest(this->getId()
                     , this->getObject(0).id
-                    , ::MojeID::MOJEID_CONTACT);
+                    , ::MojeID::ObjectState::MOJEID_CONTACT);
         }
 
         /* prohibit operations on contact */
