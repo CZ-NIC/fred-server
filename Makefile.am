@@ -199,7 +199,8 @@ noinst_LIBRARIES = \
 		src/corba/libcorbaepp.a \
 		src/corba/libcorbazonegenerator.a \
 		src/fredlib/public_request/libpublic_request.a \
-		src/fredlib/contact_verification/libcontact_verification.a
+		src/fredlib/contact_verification/libcontact_verification.a \
+		src/corba/libcorbacontactverification.a
 
 
 noinst_PROGRAMS = \
@@ -814,8 +815,8 @@ src_fredlib_notifier_libnotifier_a_SOURCES = \
 # src/fredlib/contact_verification/libcontact_verification.a
 #
 src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
-		src/fredlib/contact_verification/public_request_impl.cc \
-		src/fredlib/contact_verification/public_request_impl.h \
+		src/contact_verification/public_request_impl.cc \
+		src/contact_verification/public_request_impl.h \
 		util/db/nullable.h \
 		src/fredlib/contact_verification/contact.h \
 		src/fredlib/contact_verification/contact.cc \
@@ -846,7 +847,8 @@ BUILT_SOURCES = \
 		src/corba/LoggerSK.cc \
 		src/corba/TechCheckSK.cc \
 		src/corba/EPPSK.cc \
-		src/corba/ZoneGeneratorSK.cc
+		src/corba/ZoneGeneratorSK.cc \
+		src/corba/ContactVerificationSK.cc
 
 
 # src/corba/libcorba.a
@@ -943,6 +945,12 @@ nodist_src_corba_libcorbazonegenerator_a_SOURCES = \
 		src/corba/ZoneGeneratorSK.cc \
 		src/corba/ZoneGeneratorDynSK.cc \
 		src/corba/ZoneGenerator.hh
+
+nodist_src_corba_libcorbacontactverification_a_SOURCES = \
+		src/corba/ContactVerificationSK.cc \
+		src/corba/ContactVerificationDynSK.cc \
+		src/corba/ContactVerification.hh
+
 #
 # nodist corba libs
 
@@ -990,6 +998,9 @@ src/corba/EPPSK.cc: $(IDLDIR)/EPP.idl $(IDLDIR)/_dataTypes.idl
 
 src/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.idl
 		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/ZoneGenerator.idl
+
+src/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
+		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/ContactVerification.idl
 #
 # idl build
 
@@ -1177,6 +1188,10 @@ src_corba_fred_adifd_LDADD = \
 #
 src_corba_fred_pifd_SOURCES = \
 		src/mojeid/public_request_verification_impl.cc \
+		src/corba/contact_verification/contact_verification_i.cc \
+		src/corba/contact_verification/contact_verification_i.h \
+		src/contact_verification/contact_verification_impl.cc \
+		src/contact_verification/contact_verification_impl.h \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \
@@ -1193,6 +1208,7 @@ src_corba_fred_pifd_LDADD = \
 		src/corba/libcorbaepp.a \
 		src/corba/libfilemanager.a \
 		src/corba/libcorbalogger.a \
+		src/corba/libcorbacontactverification.a \
 		src/fredlib/requests/librequests.a \
 		src/fredlib/banking/libbanking.a \
 		src/fredlib/messages/libmessages.a \
