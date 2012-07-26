@@ -345,7 +345,7 @@ ccReg::Logger::Detail *ccReg_Log_i::createRequestDetail(Fred::Logger::Request *r
         detail->result_name     = CORBA::string_dup(rc.second.c_str());
 
         // TODO refactor - this convert function could be moved here (or sw else)
-	detail->props		= convert_properties_d2c(req->getProperties());
+	detail->props		= convert_properties_detail_d2c(req->getProperties());
         detail->refs            = convert_obj_references_d2c(req->getReferences());
 
 	return detail;
