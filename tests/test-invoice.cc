@@ -108,6 +108,25 @@ void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Data
    Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, out_credit, invoiceid2);
 }
 
+unsigned getAccountNumber(unsigned zone_id, const std::string &bank_code, const std::string &account_number)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Result res = conn.exec_params("SELECT id FROM bank_account WHERE zone=$1::integer AND bank_code=$2::text AND account_number=$3::text ",
+            Database::query_param_list(zone_id)
+                                  (bank_code)
+                                  (account_number)
+    );
+
+    return res[0][0];
+}
+
+void setAccountIdToPayment(Fred::Banking::PaymentImpl &payment)
+{
+    unsigned account_id = getAccountNumber(get_zone_cz_id(), payment.getBankCode(), payment.getAccountNumber());
+    payment.setAccountId(account_id);
+}
+
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
 {
     //db
@@ -1708,7 +1727,7 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_no_debt)
     payment.setStatus(1);
     payment.setAccountDate(Database::Date(2011, 2, 1));
 
-    payment.setAccountId(5);
+    setAccountIdToPayment(payment);
 
     payment.save();
 
