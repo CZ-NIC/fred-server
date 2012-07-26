@@ -1764,8 +1764,7 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_exactly)
     payment.setStatus(1);
     payment.setAccountDate(Database::Date(2011, 2, 1));
 
-    // bank account depending on initialization in fred project
-    payment.setAccountId(5);
+    setAccountIdToPayment(payment);
 
     std::cout << payment.getAccountDate() << std::endl;
 
@@ -1840,7 +1839,7 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_too_much)
     payment.setStatus(1);
     payment.setAccountDate(Database::Date(2011, 2, 1));
 
-    payment.setAccountId(5);
+    setAccountIdToPayment(payment);
 
     payment.save();
 
