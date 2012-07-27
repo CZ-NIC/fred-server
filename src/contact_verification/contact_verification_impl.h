@@ -22,35 +22,18 @@ namespace Registry
         namespace Verification
         {
 
-            enum contact_verification_operation_type {
-                CONTACT_VERIFICATION_NOP = 0,
-                CONTACT_VERIFICATION_CONTACT_CREATE = 1,
-                CONTACT_VERIFICATION_CONTACT_UPDATE,
-                CONTACT_VERIFICATION_CONTACT_UNIDENTIFY,
-                CONTACT_VERIFICATION_CONTACT_TRANSFER,
-                CONTACT_VERIFICATION_CONTACT_CANCEL
+
+            struct OBJECT_NOT_EXISTS : public std::runtime_error
+            {
+                OBJECT_NOT_EXISTS() : std::runtime_error("object does not exist")
+                {}
             };
-
-            struct trans_data {
-            explicit trans_data(const contact_verification_operation_type &operation) : op(operation), cid(0), prid(0), eppaction_id(0), request_id(0)
-            { }
-
-            contact_verification_operation_type op;
-            unsigned long long cid;
-            unsigned long long prid;
-            unsigned long long eppaction_id;
-            unsigned long long request_id;
-        };
-
 
             class ContactVerificationImpl
             {
                 const HandleRegistryArgs *registry_conf_;
                 const std::string server_name_;
 
-                typedef std::map<std::string, trans_data> transaction_data_map_type;
-                transaction_data_map_type transaction_data;
-                boost::mutex td_mutex; /// for transaction data
                 boost::shared_ptr<Fred::Mailer::Manager> mailer_;
 
             public:
@@ -59,6 +42,12 @@ namespace Registry
                 virtual ~ContactVerificationImpl();
 
                 const std::string& get_server_name();
+
+                unsigned long long createConditionalIdentification(
+                        const std::string & contact_handle
+                        , const std::string & registrar_handle
+                        , const unsigned long long log_id
+                        , std::string & request_id);
 
             };//class ContactVerificationImpl
         }

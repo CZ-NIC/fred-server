@@ -61,7 +61,7 @@ namespace Registry
                     return 0;
 
                 }//try
-                catch (Registry::ContactVerification::OBJECT_NOT_EXISTS &)
+                catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
                 {
                     throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
                 }
@@ -72,8 +72,7 @@ namespace Registry
                 }
                 catch (std::exception &_ex)
                 {
-                    throw Registry::ContactVerification
-                        ::INTERNAL_SERVER_ERROR(_ex.what());
+                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
                 }
                 catch (...)
                 {

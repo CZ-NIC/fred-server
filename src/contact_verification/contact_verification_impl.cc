@@ -10,6 +10,7 @@
 #include "fredlib/contact_verification/contact_verification.h"
 #include "fredlib/contact_verification/data_validation.h"
 #include "util/factory_check.h"
+#include "util/util.h"
 
 #include "cfg/config_handler_decl.h"
 #include "log/logger.h"
@@ -26,6 +27,11 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/algorithm/string.hpp>
 
+
+static const std::string create_ctx_name(const std::string &_name)
+{
+    return str(boost::format("%1%-<%2%>")% _name % Random::integer(0, 10000));
+}
 
 namespace Registry
 {
@@ -71,6 +77,60 @@ namespace Registry
             {
                 return server_name_;
             }
+
+            unsigned long long ContactVerificationImpl::createConditionalIdentification(
+                    const std::string & contact_handle
+                    , const std::string & registrar_handle
+                    , const unsigned long long log_id
+                    , std::string & request_id)
+            {
+                Logging::Context ctx_server(create_ctx_name(get_server_name()));
+                Logging::Context ctx("create-conditional-identification");
+                ConnectionReleaser releaser;
+                try
+                {
+/* TODO
+                    IdentificationRequestManagerPtr request_manager(mailer_);
+*/
+                    Database::Connection conn = Database::Manager::acquire();
+
+                    Database::Result cid_result = conn.exec_params(
+                        "select c.id from contact c join object_registry obr on c.id = obr.id where obr.name = $1::text"
+                        , Database::query_param_list(contact_handle));
+
+                    unsigned long long cid =0;
+                    if (cid_result.size() == 1)
+                    {
+                        cid = cid_result[0][0];
+                    }
+                    else
+                    {
+                        throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
+                    }
+/*TODO
+                    request_id = request_manager->getPublicRequestAuthIdentification(
+                        cid, Util::vector_of<Fred::PublicRequest::Type>
+                            (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
+                        );
+                    */
+
+                    LOGGER(PACKAGE).info("request completed successfully");
+
+                    /* return new contact id */
+                    return cid;
+
+                }//try
+                catch (std::exception &_ex)
+                {
+                    LOGGER(PACKAGE).error(_ex.what());
+                    throw;
+                }
+                catch (...)
+                {
+                    LOGGER(PACKAGE).error("unknown exception");
+                    throw;
+                }
+            }//ContactVerificationImpl::createConditionalIdentification
 
 
         }
