@@ -162,7 +162,9 @@ noinst_HEADERS = \
 		tests/exception-test.h \
 		util/factory.h \
 		util/factory_check.h \
-		util/map_get.h
+		util/map_get.h \
+		src/corba/common_wrappers.h \
+		src/corba/contact_verification/corba_conversion.h
 
 
 noinst_LIBRARIES = \

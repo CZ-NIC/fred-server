@@ -28,6 +28,7 @@
 #include "mailer_manager.h"
 #include <ContactVerification.hh>
 #include <string>
+#include "contact_verification/corba_conversion.h"
 
 
 namespace Registry
@@ -55,7 +56,29 @@ namespace Registry
                     , ::CORBA::ULongLong log_id
                     , ::CORBA::String_out request_id)
             {
-                return 0;
+                try
+                {
+                    return 0;
+
+                }//try
+                catch (Registry::ContactVerification::OBJECT_NOT_EXISTS &)
+                {
+                    throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
+                }
+                catch (Fred::Contact::Verification::DataValidationError &_ex)
+                {
+                    throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
+                        corba_wrap_validation_error_list(_ex.errors));
+                }
+                catch (std::exception &_ex)
+                {
+                    throw Registry::ContactVerification
+                        ::INTERNAL_SERVER_ERROR(_ex.what());
+                }
+                catch (...)
+                {
+                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
+                }
             }
 
             ::CORBA::ULongLong ContactVerification_i::processConditionalIdentification(
