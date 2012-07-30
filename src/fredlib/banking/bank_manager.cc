@@ -221,8 +221,8 @@ private:
                 // amount larger than registrar debt
                 if(payment_price_rest > Money("0")) {
                     LOGGER(PACKAGE).warning(boost::format(
-                            "Registrar (id=%1%) who has no longer acces to zone (id=%2%)"
-                            " sent amount larger than debt (payment id=%3%) It will have to be processed manually")
+                            "registrar (id=%1%) who has no longer access to zone (id=%2%)"
+                            " sent amount larger than debt (payment id=%3%) it will have to be resolved manually")
                             % _registrar_id
                             % zone_id
                             % _payment->getId());
