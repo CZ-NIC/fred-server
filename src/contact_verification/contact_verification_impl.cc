@@ -146,7 +146,15 @@ namespace Registry
                 ConnectionReleaser releaser;
                 try
                 {
-                    return 0;
+                    LOGGER(PACKAGE).info(boost::format("request data --"
+                         " request_id: %1%  password: %2%  log_id: %3%")
+                         % request_id % password % log_id);
+
+                     ContactIdentificationRequestManagerPtr request_manager(mailer_);
+                     unsigned long long cid = request_manager->processAuthRequest(
+                             request_id, password, log_id);
+
+                     return cid;
                 }//try
                 catch (std::exception &_ex)
                 {
