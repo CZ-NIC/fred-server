@@ -67,8 +67,8 @@ public:
             mailer_manager_(src.mailer_manager_),
             registry_manager_(src.registry_manager_),
             doc_manager_(src.doc_manager_),
-            request_manager_(src.request_manager_) 
-    {  } 
+            request_manager_(src.request_manager_)
+    {  }
 
 
     Fred::PublicRequest::Manager* operator ->()
@@ -85,7 +85,7 @@ public:
 
 
 
-/* 
+/*
  * helper class - auth. public request auto pointer (mojeid identification process)
  */
 class ContactIdentificationRequestPtr
