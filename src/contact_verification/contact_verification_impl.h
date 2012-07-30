@@ -22,6 +22,29 @@ namespace Registry
         namespace Verification
         {
 
+            struct IDENTIFICATION_FAILED : public std::runtime_error
+            {
+                IDENTIFICATION_FAILED() : std::runtime_error("identification failed")
+                {}
+            };
+
+            struct IDENTIFICATION_PROCESSED : public std::runtime_error
+            {
+                IDENTIFICATION_PROCESSED() : std::runtime_error("identification procesed")
+                {}
+            };
+
+            struct IDENTIFICATION_INVALIDATED : public std::runtime_error
+            {
+                IDENTIFICATION_INVALIDATED() : std::runtime_error("identification invalidated")
+                {}
+            };
+
+            struct OBJECT_CHANGED : public std::runtime_error
+            {
+                OBJECT_CHANGED() : std::runtime_error("object changed")
+                {}
+            };
 
             struct OBJECT_NOT_EXISTS : public std::runtime_error
             {
@@ -48,6 +71,16 @@ namespace Registry
                         , const std::string & registrar_handle
                         , const unsigned long long log_id
                         , std::string & request_id);
+
+                unsigned long long processConditionalIdentification(
+                        const std::string & request_id
+                        , const std::string & password
+                        , const unsigned long long log_id);
+
+                unsigned long long processIdentification(
+                        const std::string & contact_handle
+                        , const std::string & password
+                        , const unsigned long long log_id);
 
             };//class ContactVerificationImpl
         }

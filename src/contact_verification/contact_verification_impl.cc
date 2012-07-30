@@ -111,7 +111,6 @@ namespace Registry
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
 
-
                     std::vector<Fred::PublicRequest::Type> request_type_list
                         = Util::vector_of<Fred::PublicRequest::Type>
                     (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
@@ -137,7 +136,53 @@ namespace Registry
                 }
             }//ContactVerificationImpl::createConditionalIdentification
 
+            unsigned long long ContactVerificationImpl::processConditionalIdentification(
+                    const std::string & request_id
+                    , const std::string & password
+                    , const unsigned long long  log_id)
+            {
+                Logging::Context ctx_server(create_ctx_name(get_server_name()));
+                Logging::Context ctx("process-conditional-identification");
+                ConnectionReleaser releaser;
+                try
+                {
+                    return 0;
+                }//try
+                catch (std::exception &_ex)
+                {
+                    LOGGER(PACKAGE).error(_ex.what());
+                    throw;
+                }
+                catch (...)
+                {
+                    LOGGER(PACKAGE).error("unknown exception");
+                    throw;
+                }
+            }//ContactVerificationImpl::processConditionalIdentification
 
+            unsigned long long ContactVerificationImpl::processIdentification(
+                    const std::string & contact_handle
+                    , const std::string & password
+                    , const unsigned long long log_id)
+            {
+                Logging::Context ctx_server(create_ctx_name(get_server_name()));
+                Logging::Context ctx("process-identification");
+                ConnectionReleaser releaser;
+                try
+                {
+                    return 0;
+                }//try
+                catch (std::exception &_ex)
+                {
+                    LOGGER(PACKAGE).error(_ex.what());
+                    throw;
+                }
+                catch (...)
+                {
+                    LOGGER(PACKAGE).error("unknown exception");
+                    throw;
+                }
+            }//ContactVerificationImpl::processIdentification
         }
     }
 }

@@ -92,7 +92,44 @@ namespace Registry
                     , const char* password
                     , ::CORBA::ULongLong log_id)
             {
-                return 0;
+                try
+                {
+                    unsigned long long cid =  pimpl_->processConditionalIdentification(
+                            request_id, password, log_id);
+                    return cid;
+                }//try
+
+                catch (Registry::Contact::Verification::IDENTIFICATION_FAILED&)
+                {
+                    throw Registry::ContactVerification::IDENTIFICATION_FAILED();
+                }
+
+                catch (Registry::Contact::Verification::IDENTIFICATION_PROCESSED&)
+                {
+                    throw Registry::ContactVerification::IDENTIFICATION_PROCESSED();
+                }
+                catch (Registry::Contact::Verification::IDENTIFICATION_INVALIDATED&)
+                {
+                    throw Registry::ContactVerification::IDENTIFICATION_INVALIDATED();
+                }
+                catch (Registry::Contact::Verification::OBJECT_CHANGED&)
+                {
+                    throw Registry::ContactVerification::OBJECT_CHANGED();
+                }
+
+                catch (Fred::Contact::Verification::DataValidationError &_ex)
+                {
+                    throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
+                        corba_wrap_validation_error_list(_ex.errors));
+                }
+                catch (std::exception &_ex)
+                {
+                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
+                }
+                catch (...)
+                {
+                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
+                }
             }
 
             ::CORBA::ULongLong ContactVerification_i::processIdentification(
@@ -100,7 +137,45 @@ namespace Registry
                     , const char* password
                     , ::CORBA::ULongLong log_id)
             {
-                return 0;
+                try
+                {
+                    unsigned long long cid =  pimpl_->processIdentification(
+                        contact_handle, password, log_id);
+                    return cid;
+                }//try
+                catch (Registry::Contact::Verification::IDENTIFICATION_FAILED&)
+                {
+                    throw Registry::ContactVerification::IDENTIFICATION_FAILED();
+                }
+                catch (Registry::Contact::Verification::IDENTIFICATION_PROCESSED&)
+                {
+                    throw Registry::ContactVerification::IDENTIFICATION_PROCESSED();
+                }
+                catch (Registry::Contact::Verification::IDENTIFICATION_INVALIDATED&)
+                {
+                    throw Registry::ContactVerification::IDENTIFICATION_INVALIDATED();
+                }
+                catch (Registry::Contact::Verification::OBJECT_CHANGED&)
+                {
+                    throw Registry::ContactVerification::OBJECT_CHANGED();
+                }
+                catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
+                {
+                    throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
+                }
+                catch (Fred::Contact::Verification::DataValidationError &_ex)
+                {
+                    throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
+                        corba_wrap_validation_error_list(_ex.errors));
+                }
+                catch (std::exception &_ex)
+                {
+                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
+                }
+                catch (...)
+                {
+                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
+                }
             }
 
             char* ContactVerification_i::getRegistrarName(
