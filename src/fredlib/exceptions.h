@@ -33,6 +33,13 @@ struct NOT_BLOCKED : public std::runtime_error
     NOT_BLOCKED() : std::runtime_error("object is not blocked") { };
 };
 
+struct INVALID_VALUE : public std::runtime_error
+{
+    INVALID_VALUE(const std::string &what) : std::runtime_error(what) { };
+
+    INVALID_VALUE() : std::runtime_error("invalid value specified") { };
+};
+
 };
 
 #endif

@@ -156,6 +156,9 @@ public:
   void unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) throw (
           ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound, ccReg::Admin::ObjectNotBlocked);
 
+  ccReg::ULLSeq* getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::DatePeriodList &date_intervals);
+
+
 private:
   std::string _createQueryForEnumDomainsByRegistrant(const std::string &select_part, const std::string &name, bool by_person, bool by_org);
 

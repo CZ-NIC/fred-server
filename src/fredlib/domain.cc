@@ -29,6 +29,7 @@
 #include "old_utils/dbsql.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
+#include "registrar.h"
 
 namespace Fred {
 namespace Domain {
@@ -1444,6 +1445,40 @@ unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::greg
     return count;
 
 }
+
+std::vector<unsigned long long> getExpiredDomainSummary(const std::string &registrar, const std::vector<date_period> &date_intervals)
+{
+    Fred::Registrar::Manager::AutoPtr regman(
+        Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+
+    if(!regman->checkHandle(registrar)) {
+        throw Fred::NOT_FOUND();
+    }
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    std::vector<unsigned long long> ret;
+    ret.reserve(date_intervals.size());
+
+    for (std::vector<date_period>::const_iterator it = date_intervals.begin(); it != date_intervals.end(); it++) {
+
+        // from included, to is behind the period
+        Database::Result result = conn.exec_params("SELECT count(*) FROM domain d "
+                                        "JOIN object_registry oreg ON oreg.id = d.id AND oreg.erdate IS NULL "
+                                        "JOIN object_history oh ON oh.historyid = oreg.historyid "
+                                        "JOIN registrar r ON r.id = oh.clid "
+                                    "WHERE r.handle = $1::text AND d.exdate >= $2::date AND d.exdate < $3::date ",
+                Database::query_param_list (registrar)
+                                           (it->begin())
+                                           (it->end())
+        );
+
+        ret.push_back(result[0][0]);
+    }
+
+    return ret;
+}
+
 
 }
 }

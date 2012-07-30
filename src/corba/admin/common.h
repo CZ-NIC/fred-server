@@ -21,6 +21,7 @@ std::string formatTime(ptime p, bool date, bool _to_local = false);
 std::string formatMoney(Money m);
 ptime makeBoostTime(const ccReg::DateTimeType& t);
 date makeBoostDate(const ccReg::DateType& t);
+date makeBoostDate_throw(const ccReg::DateType& t);
 ccReg::DateTimeType makeCorbaTime(ptime p, bool _to_local = false);
 ccReg::DateType makeCorbaDate(const date& p);
 time_period setPeriod(const ccReg::DateTimeInterval& _v);
