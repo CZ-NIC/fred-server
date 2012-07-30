@@ -1194,6 +1194,7 @@ src_corba_fred_pifd_SOURCES = \
 		src/corba/contact_verification/contact_verification_i.h \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
+		src/contact_verification/contact_identification.h \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \

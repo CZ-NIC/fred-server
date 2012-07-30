@@ -1,3 +1,6 @@
+
+#include "contact_verification/contact_identification.h"
+
 #include "contact_verification/contact_verification_impl.h"
 #include "contact_verification/public_request_impl.h"
 
@@ -89,9 +92,9 @@ namespace Registry
                 ConnectionReleaser releaser;
                 try
                 {
-/* TODO
-                    IdentificationRequestManagerPtr request_manager(mailer_);
-*/
+
+                    ContactIdentificationRequestManagerPtr request_manager(mailer_);
+
                     Database::Connection conn = Database::Manager::acquire();
 
                     Database::Result cid_result = conn.exec_params(
@@ -107,12 +110,14 @@ namespace Registry
                     {
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
-/*TODO
+
+
+                    std::vector<Fred::PublicRequest::Type> request_type_list
+                        = Util::vector_of<Fred::PublicRequest::Type>
+                    (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
+
                     request_id = request_manager->getPublicRequestAuthIdentification(
-                        cid, Util::vector_of<Fred::PublicRequest::Type>
-                            (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
-                        );
-                    */
+                        cid, request_type_list);
 
                     LOGGER(PACKAGE).info("request completed successfully");
 
