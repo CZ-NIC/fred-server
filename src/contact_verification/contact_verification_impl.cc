@@ -178,7 +178,39 @@ namespace Registry
                 ConnectionReleaser releaser;
                 try
                 {
-                    return 0;
+                    LOGGER(PACKAGE).info(boost::format("request data --"
+                         " contact_handle: %1%  password: %2%  log_id: %3%")
+                         % contact_handle % password % log_id);
+
+                    Database::Connection conn = Database::Manager::acquire();
+
+                    Database::Result cid_result = conn.exec_params(
+                        "select c.id from contact c join object_registry obr on c.id = obr.id where obr.name = $1::text"
+                        , Database::query_param_list(contact_handle));
+
+                    unsigned long long cid =0;
+                    if (cid_result.size() == 1)
+                    {
+                        cid = cid_result[0][0];
+                    }
+                    else
+                    {
+                        throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
+                    }
+
+                     ContactIdentificationRequestManagerPtr request_manager(mailer_);
+
+                     std::vector<Fred::PublicRequest::Type> request_type_list
+                                     = Util::vector_of<Fred::PublicRequest::Type>
+                                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+
+                     std::string request_id = request_manager->getPublicRequestAuthIdentification(
+                             cid, request_type_list);
+
+                     cid = request_manager->processAuthRequest(
+                             request_id, password, log_id);
+
+                     return cid;
                 }//try
                 catch (std::exception &_ex)
                 {
