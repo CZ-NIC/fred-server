@@ -1510,7 +1510,7 @@ BOOST_AUTO_TEST_CASE(test_request_count)
     ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
     test.closeRequest(r2, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
 
@@ -1542,7 +1542,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_props_handle)
     ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
     test.closeRequest(r2, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
 
@@ -1575,7 +1575,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_errors_simple)
     ID r3 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
     test.closeRequest(r3, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
     RequestCountInfo::iterator it = info->find(reg_handle);
@@ -1610,7 +1610,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_errors_props)
     ID r3 = test.createRequest("", LC_EPP, "", *props_in, false, TestImplLog::no_objs, session_id);
     test.closeRequest(r3, "", *props_out);
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
 
@@ -1650,7 +1650,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_poll_simple)
     ID r4 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, contact_check_id);
     test.closeRequest(r4, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP");
     RequestCountInfo::iterator it = info->find(reg_handle);
 
@@ -1690,7 +1690,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_poll_props)
     ID r4 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, contact_check_id);
     test.closeRequest(r4, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP");
 
@@ -1735,7 +1735,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_past)
     ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
     test.closeRequest(r2, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     test.insert_custom_request(current_tstamp - days(2), reg_handle);
 
@@ -1815,6 +1815,79 @@ BOOST_AUTO_TEST_CASE(test_request_count_irregular)
 
     test.insert_custom_request(boost::posix_time::ptime(p_to), reg_handle);
     test_registrar_request_count(test, p_from, p_to, reg_handle, 4);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_short_period)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    Database::ID contact_check_id = get_request_type_id("ContactCheck");
+
+    ID r = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, contact_check_id);
+    test.closeRequest(r, "");
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
+
+    ptime day_start( current_tstamp.date() );
+
+    if(current_tstamp - seconds(3) <= day_start) {
+        sleep(3);
+    }
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - seconds(3), current_tstamp - seconds(2), "EPP");
+
+    RequestCountInfo::iterator it = info->find(reg_handle);
+
+    BOOST_CHECK(it == info->end() || it->second == 0);
+
+    unsigned long long count = test.getRequestCount(current_tstamp - seconds(3), current_tstamp - seconds(2), "EPP", reg_handle);
+    BOOST_CHECK(count == 0);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_timezone)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    Database::ID contact_check_id = get_request_type_id("ContactCheck");
+
+    ID r = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, contact_check_id);
+    test.closeRequest(r, "");
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
+
+    ptime day_start( current_tstamp.date() );
+
+    ptime day_end = day_start + days(1) - seconds(1);
+
+    // try to avoid problems
+    if(current_tstamp == day_start) {
+        sleep(1);
+    }
+
+    if(current_tstamp + seconds(2) >= day_end) {
+        sleep (3);
+    }
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(day_start, current_tstamp - seconds(2), "EPP");
+    RequestCountInfo::iterator it = info->find(reg_handle);
+    BOOST_CHECK(it == info->end() || it->second == 0);
+
+    std::auto_ptr<RequestCountInfo> info2 = test.getRequestCountUsers(current_tstamp + seconds(2), day_end, "EPP");
+    RequestCountInfo::iterator it2 = info2->find(reg_handle);
+    BOOST_CHECK(it2 == info2->end() || it2->second == 0);
+
+    unsigned long long count = test.getRequestCount(day_start, current_tstamp - seconds(2), "EPP", reg_handle);
+    BOOST_CHECK(count == 0);
+    unsigned long long count2 = test.getRequestCount(current_tstamp + seconds(2), day_end, "EPP", reg_handle);
+    BOOST_CHECK(count2 == 0);
 }
 
 /*
