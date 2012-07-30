@@ -58,7 +58,14 @@ namespace Registry
             {
                 try
                 {
-                    return 0;
+                    std::string request_id_;
+
+                    unsigned long long cid =  pimpl_->createConditionalIdentification(
+                            contact_handle, registrar_handle, log_id, request_id_);
+
+                    request_id = corba_wrap_string(request_id_.c_str());
+
+                    return cid;
 
                 }//try
                 catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
