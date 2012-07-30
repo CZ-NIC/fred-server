@@ -1599,7 +1599,7 @@ void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) t
     }
 }
 
-ccReg::ValueList* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::DatePeriodList &date_intervals)
+ccReg::ULLSeq* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::DatePeriodList &date_intervals)
 {
     try {
         Logging::Context(server_name_);
@@ -1621,7 +1621,7 @@ ccReg::ValueList* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *registra
         std::vector<unsigned long long> counts = Fred::Domain::getExpiredDomainSummary(registrar_handle, intervals);
 
         // convert return value
-        ccReg::ValueList_var ret = new ccReg::ValueList();
+        ccReg::ULLSeq_var ret = new ccReg::ULLSeq();
 
         ret->length(counts.size());
         for (unsigned i=0; i<counts.size(); i++) {

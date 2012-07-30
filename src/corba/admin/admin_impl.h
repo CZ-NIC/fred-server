@@ -156,7 +156,7 @@ public:
   void unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) throw (
           ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound, ccReg::Admin::ObjectNotBlocked);
 
-  ccReg::ValueList* getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::DatePeriodList &date_intervals);
+  ccReg::ULLSeq* getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::DatePeriodList &date_intervals);
 
 
 private:
