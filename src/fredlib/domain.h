@@ -61,7 +61,6 @@ enum CheckAvailType {
   CA_AVAILABLE ///< domain is available
 };
 
-typedef std::vector<unsigned long long> DomainCounts;
 
 /// domain detail
 class Domain : virtual public Fred::Object {
