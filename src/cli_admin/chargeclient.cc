@@ -133,10 +133,25 @@ namespace Admin {
             }
 
             std::string id_array = "{" + Util::container2comma_list(reg_id_list) + "}";
-            result = conn.exec_params("SELECT id FROM registrar "
-                    "WHERE system = false "
-                    "AND id != ALL ($1::bigint[])",
-                    Database::query_param_list(id_array));
+
+            result = conn.exec_params("SELECT r.id "
+                    "FROM registrar r "
+                    "JOIN registrarinvoice ri "
+                        "ON ri.registrarid = r.id "
+                        "AND ( "
+                            "($1::date <= ri.fromdate AND $2::date > ri.fromdate) "
+                            "OR ($1::date >= ri.fromdate AND  ((ri.todate IS NULL) OR (ri.todate > $1::date))) "
+                        ") "
+                    "WHERE r.system  = false "
+                        "AND ri.zone = $3::integer "
+                        "AND r.id != ALL ($4::bigint[]) "
+                    "ORDER BY r.id",
+
+                    Database::query_param_list(poll_msg_period_from)
+                                            (poll_msg_period_to)
+                                            (zone_id)
+                                            (id_array)
+            );
         }
 
         Database::Transaction tx(conn);
