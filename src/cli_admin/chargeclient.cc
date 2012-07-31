@@ -117,18 +117,14 @@ namespace Admin {
                 );
         } else {
 
-            // TODO split string
-            std::cout << "Split string: " << std::endl;
             std::stringstream parse(except_handles);
             std::string element;
 
             std::vector<Database::ID> reg_id_list;
 
             while(std::getline(parse, element, ',')) {
-                std::cout << "Registrar handle: " << element << " " << std::endl;
 
                 Database::ID reg_id = getRegistrarID(element);
-
                 reg_id_list.push_back(reg_id);
             }
 
