@@ -82,6 +82,8 @@ namespace Registry
                         , const std::string & password
                         , const unsigned long long log_id);
 
+                std::string getRegistrarName(const std::string & registrar_handle);
+
             };//class ContactVerificationImpl
         }
     }

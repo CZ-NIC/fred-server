@@ -223,6 +223,33 @@ namespace Registry
                     throw;
                 }
             }//ContactVerificationImpl::processIdentification
+
+            std::string ContactVerificationImpl::getRegistrarName(const std::string & registrar_handle)
+            {
+                Logging::Context ctx_server(create_ctx_name(get_server_name()));
+                Logging::Context ctx("get-registrar-name");
+                ConnectionReleaser releaser;
+
+                LOGGER(PACKAGE).info(boost::format(
+                     " registrar_handle: %1%") % registrar_handle);
+
+                Database::Connection conn = Database::Manager::acquire();
+
+                Database::Result regname_result = conn.exec_params(
+                    "select name from registrar where handle=$1::text"
+                    , Database::query_param_list(registrar_handle));
+
+                std::string registrar_name;
+                if (regname_result.size() == 1)
+                {
+                    registrar_name = static_cast<std::string>(regname_result[0][0]);
+                }
+                else
+                {
+                    throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
+                }
+                return registrar_name;
+            }
         }
     }
 }

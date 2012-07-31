@@ -181,7 +181,23 @@ namespace Registry
             char* ContactVerification_i::getRegistrarName(
                     const char* registrar_handle)
             {
-                return CORBA::string_dup("registarr name");
+                try
+                {
+                    std::string registrar_name = pimpl_->getRegistrarName(registrar_handle);
+                    return corba_wrap_string(registrar_name.c_str());
+                }
+                catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
+                {
+                    throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
+                }
+                catch (std::exception &_ex)
+                {
+                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
+                }
+                catch (...)
+                {
+                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
+                }
             }
         }
     }
