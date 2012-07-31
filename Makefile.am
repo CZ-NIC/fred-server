@@ -88,7 +88,11 @@ CLEANFILES = \
 		src/corba/ZoneGeneratorSK.cc \
 		src/corba/ZoneGeneratorDynSK.cc \
 		src/corba/ZoneGeneratorSK.h \
-		src/corba/ZoneGenerator.hh
+		src/corba/ZoneGenerator.hh \
+		src/corba/ContactVerificationSK.cc \
+		src/corba/ContactVerificationDynSK.cc \
+		src/corba/ContactVerification.hh
+
 
 
 fredconfdir = $(sysconfdir)/fred
@@ -1211,11 +1215,11 @@ src_corba_fred_pifd_LDADD = \
 		src/corba/libcorbaepp.a \
 		src/corba/libfilemanager.a \
 		src/corba/libcorbalogger.a \
+		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
 		src/fredlib/requests/librequests.a \
 		src/fredlib/banking/libbanking.a \
 		src/fredlib/messages/libmessages.a \
-		src/fredlib/contact_verification/libcontact_verification.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/libfred.a \
 		src/model/libmodel.a \

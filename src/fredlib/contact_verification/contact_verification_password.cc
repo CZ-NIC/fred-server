@@ -84,7 +84,7 @@ const ContactVerificationPassword::MessageData ContactVerificationPassword::coll
     return data;
 }
 
-inline size_t ContactVerificationPassword::get_password_chunk_length()
+size_t ContactVerificationPassword::get_password_chunk_length()
 {
     static const size_t PASSWORD_CHUNK_LENGTH = 8;
     return PASSWORD_CHUNK_LENGTH;
