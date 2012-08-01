@@ -106,7 +106,7 @@ namespace Admin {
                         "ON ri.registrarid = r.id "
                         "AND ( "
                             "($1::date <= ri.fromdate AND $2::date > ri.fromdate) "
-                            "OR ($1::date >= ri.fromdate AND  ((ri.todate IS NULL) OR (ri.todate > $1::date))) "
+                            "OR ($1::date >= ri.fromdate AND  ((ri.todate IS NULL) OR (ri.todate >= $1::date))) "
                         ") "
                     "WHERE r.system  = false "
                         "AND ri.zone=$3::integer "
