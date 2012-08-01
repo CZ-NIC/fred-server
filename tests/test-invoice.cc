@@ -931,7 +931,7 @@ void testChargeEval(const ResultTestCharge &res)
 
     
     Database::Result res_ior = conn.exec_params(
-    "SELECT quantity, date_to, operation_id, crdate::date FROM invoice_operation WHERE object_id = $1::integer "
+    "SELECT quantity, date_to, operation_id, ((crdate AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague')::date FROM invoice_operation WHERE object_id = $1::integer "
                                                     "AND registrar_id = $2::integer "
                                                     "AND zone_id = $3::integer",
                Database::query_param_list ( object_id )
