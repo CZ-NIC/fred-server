@@ -57,7 +57,7 @@ namespace Registry
                     // factory_check - required keys are in factory
                     FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
                     ::KeyVector required_keys = boost::assign::list_of
-                        (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
+                        (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
                         (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
 
                     FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
@@ -125,7 +125,7 @@ namespace Registry
                     }
 
                     //create request
-                    Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+                    Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ;
                     ContactIdentificationRequestPtr new_request(mailer_,type);
                     new_request->setRegistrarId(registrar_id);
                     new_request->setRequestId(log_id);
@@ -136,7 +136,7 @@ namespace Registry
 
                     std::vector<Fred::PublicRequest::Type> request_type_list
                         = Util::vector_of<Fred::PublicRequest::Type>
-                    (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
+                    (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION );
 
                     ContactIdentificationRequestManagerPtr request_manager(mailer_);
                     request_id = request_manager->getPublicRequestAuthIdentification(
@@ -188,7 +188,7 @@ namespace Registry
 
                     std::string request_type = static_cast<std::string>(res_req[0][0]);
 
-                    if(request_type != Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
+                    if(request_type != Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
                     {
                         throw std::runtime_error("Wrong type of request");
                     }

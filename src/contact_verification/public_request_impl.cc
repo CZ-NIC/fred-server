@@ -42,7 +42,7 @@ public:
         /* if there is another open CCI close it */
         cancel_public_request(
             this->getObject(0).id,
-            PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
+            PRT_CONTACT_CONDITIONAL_IDENTIFICATION ,
             this->getRequestId());
         PublicRequestAuthImpl::save();
     }
@@ -96,7 +96,7 @@ public:
 
     static std::string registration_name()
     {
-        return Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+        return Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION;
     }
 };
 
