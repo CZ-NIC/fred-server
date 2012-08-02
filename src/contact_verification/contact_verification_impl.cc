@@ -92,7 +92,6 @@ namespace Registry
                 ConnectionReleaser releaser;
                 try
                 {
-
                     Database::Connection conn = Database::Manager::acquire();
                     Database::Transaction trans(conn);
 
@@ -143,6 +142,7 @@ namespace Registry
                     request_id = request_manager->getPublicRequestAuthIdentification(
                             cinfo.id, request_type_list);
 
+                    trans.commit();
                     LOGGER(PACKAGE).info("request completed successfully");
 
                     // return contact id
@@ -171,13 +171,38 @@ namespace Registry
                 ConnectionReleaser releaser;
                 try
                 {
+                    Database::Connection conn = Database::Manager::acquire();
+                    Database::Transaction trans(conn);
+
+                    //check request type
+                    Database::Result res_req = conn.exec_params(
+                            "SELECT eprt.name FROM public_request pr "
+                            " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type "
+                            " JOIN public_request_auth pra ON pra.id = pr.id "
+                            " WHERE pra.identification = $1::text "
+                            , Database::query_param_list(request_id));
+
+                    if(res_req.size() != 1) {
+                        throw std::runtime_error("Request does not exist");
+                    }
+
+                    std::string request_type = static_cast<std::string>(res_req[0][0]);
+
+                    if(request_type != Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION)
+                    {
+                        throw std::runtime_error("Wrong type of request");
+                    }
+
                     LOGGER(PACKAGE).info(boost::format("request data --"
                          " request_id: %1%  password: %2%  log_id: %3%")
                          % request_id % password % log_id);
 
                      ContactIdentificationRequestManagerPtr request_manager(mailer_);
+
                      unsigned long long cid = request_manager->processAuthRequest(
                              request_id, password, log_id);
+
+                     trans.commit();
 
                      return cid;
                 }//try
@@ -206,6 +231,9 @@ namespace Registry
                     LOGGER(PACKAGE).info(boost::format("request data --"
                          " contact_handle: %1%  password: %2%  log_id: %3%")
                          % contact_handle % password % log_id);
+
+                    Database::Connection conn = Database::Manager::acquire();
+                    Database::Transaction trans(conn);
 
                     //check contact availability
                     Fred::Contact::ManagerPtr contact_mgr(
@@ -237,6 +265,8 @@ namespace Registry
 
                      request_manager->processAuthRequest(
                              request_id, password, log_id);
+
+                     trans.commit();
 
                      return cinfo.id;
                 }//try
