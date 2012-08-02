@@ -93,7 +93,18 @@ namespace Registry
                 try
                 {
 
-                    ContactIdentificationRequestManagerPtr request_manager(mailer_);
+                    Database::Connection conn = Database::Manager::acquire();
+                    Database::Transaction trans(conn);
+
+                    //get registrar id
+                    Database::Result res_reg = conn.exec_params(
+                            "SELECT id FROM registrar WHERE handle=$1::text",
+                            Database::query_param_list(registrar_handle));
+                    if(res_reg.size() == 0) {
+                        throw std::runtime_error("Registrar does not exist");
+                    }
+
+                    unsigned long long registrar_id = res_reg[0][0];
 
                     //check contact availability and get id
                     Fred::Contact::ManagerPtr contact_mgr(
@@ -114,10 +125,21 @@ namespace Registry
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
 
+                    //create request
+                    Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+                    ContactIdentificationRequestPtr new_request(mailer_,type);
+                    new_request->setRegistrarId(registrar_id);
+                    new_request->setRequestId(log_id);
+                    new_request->addObject(
+                            Fred::PublicRequest::OID(
+                                cinfo.id, contact_handle, Fred::PublicRequest::OT_CONTACT));
+                    new_request->save();
+
                     std::vector<Fred::PublicRequest::Type> request_type_list
                         = Util::vector_of<Fred::PublicRequest::Type>
                     (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
 
+                    ContactIdentificationRequestManagerPtr request_manager(mailer_);
                     request_id = request_manager->getPublicRequestAuthIdentification(
                             cinfo.id, request_type_list);
 
