@@ -1766,8 +1766,6 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_exactly)
 
     setAccountIdToPayment(payment);
 
-    std::cout << payment.getAccountDate() << std::endl;
-
     payment.save();
 
     unsigned long long pay_id = payment.getId();
@@ -1904,7 +1902,6 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_too_much)
     get_vat(dummy, koef);
 
     Decimal right_price = Decimal("-10000") * Decimal(request_price) + (Decimal(pay_amount) * (Decimal("1.0") - Decimal(koef)));
-    std::cout << "My Price: " << right_price << std::endl;
 
     BOOST_CHECK( (right_price - credit).abs() < Decimal("0.6") );
 
