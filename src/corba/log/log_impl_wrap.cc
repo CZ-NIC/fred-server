@@ -96,6 +96,8 @@ void ccReg_Log_i::closeRequest(ccReg::TID id, const char *content, const ccReg::
 
 ccReg::TID ccReg_Log_i::createSession(ccReg::TID user_id, const char *name)
 {
+    ConnectionReleaser releaser;
+
     try {
         ccReg::TID ret = back->i_createSession(user_id, name);
 
@@ -127,6 +129,8 @@ void ccReg_Log_i::closeSession(ccReg::TID id)
 
 ccReg::RequestTypeList *ccReg_Log_i::getRequestTypesByService(ccReg::RequestServiceType service)
 {
+    ConnectionReleaser releaser;
+
     try {
         Database::Result res = back->i_getRequestTypesByService((Database::Filters::ServiceType)service);
 
@@ -150,6 +154,8 @@ ccReg::RequestTypeList *ccReg_Log_i::getRequestTypesByService(ccReg::RequestServ
 
 ccReg::RequestServiceList* ccReg_Log_i::getServices()
 {
+    ConnectionReleaser releaser;
+
     try {
         Database::Result data = back->i_getServices();
         unsigned int size = data.size();
@@ -171,6 +177,8 @@ ccReg::RequestServiceList* ccReg_Log_i::getServices()
 
 ccReg::ResultCodeList* ccReg_Log_i::getResultCodesByService(ccReg::RequestServiceType service)
 {
+    ConnectionReleaser releaser;
+
     try {
         Database::Result res = back->i_getResultCodesByService
                 (static_cast<Database::Filters::ServiceType>(service));
@@ -192,6 +200,8 @@ ccReg::ResultCodeList* ccReg_Log_i::getResultCodesByService(ccReg::RequestServic
 
 ccReg::Logger::ObjectTypeList* ccReg_Log_i::getObjectTypes()
 {
+    ConnectionReleaser releaser;
+
     try {
         Database::Result res = back->i_getObjectTypes();
 
@@ -372,6 +382,8 @@ ccReg::Logger::Detail *ccReg_Log_i::createRequestDetail(Fred::Logger::Request *r
 CORBA::ULongLong ccReg_Log_i::getRequestCount(const char *datetime_from, const char *datetime_to,
         const char *service, const char *user)
 {
+    ConnectionReleaser releaser;
+
     try {
 
         ptime from (from_iso_string(datetime_from));
@@ -389,6 +401,8 @@ CORBA::ULongLong ccReg_Log_i::getRequestCount(const char *datetime_from, const c
 ccReg::RequestCountInfo* ccReg_Log_i::getRequestCountUsers(const char *datetime_from, const char *datetime_to,
         const char *service)
 {
+    ConnectionReleaser releaser;
+
     try {
 
         ptime from (from_iso_string(datetime_from));
