@@ -95,18 +95,21 @@ namespace Registry
 
                     ContactIdentificationRequestManagerPtr request_manager(mailer_);
 
-                    Database::Connection conn = Database::Manager::acquire();
-
-                    Database::Result cid_result = conn.exec_params(
-                        "select c.id from contact c join object_registry obr on c.id = obr.id where obr.name = $1::text"
-                        , Database::query_param_list(contact_handle));
-
-                    unsigned long long cid =0;
-                    if (cid_result.size() == 1)
+                    //check contact availability and get id
+                    Fred::Contact::ManagerPtr contact_mgr(
+                        Fred::Contact::Manager::create(
+                            DBDisconnectPtr(0), registry_conf_->restricted_handles));
+                    Fred::NameIdPair cinfo;
+                    Fred::Contact::Manager::CheckAvailType check_result;
+                    check_result = contact_mgr->checkAvail(contact_handle, cinfo);
+                    if (check_result == Fred::Contact::Manager::CA_PROTECTED)
                     {
-                        cid = cid_result[0][0];
+                        Fred::Contact::Verification::FieldErrorMap errors;
+                        errors[Fred::Contact::Verification::field_username]
+                               = Fred::Contact::Verification::NOT_AVAILABLE;
+                        throw Fred::Contact::Verification::DataValidationError(errors);
                     }
-                    else
+                    if (check_result != Fred::Contact::Manager::CA_REGISTRED)
                     {
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
@@ -116,12 +119,12 @@ namespace Registry
                     (Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION);
 
                     request_id = request_manager->getPublicRequestAuthIdentification(
-                        cid, request_type_list);
+                            cinfo.id, request_type_list);
 
                     LOGGER(PACKAGE).info("request completed successfully");
 
-                    /* return new contact id */
-                    return cid;
+                    // return contact id
+                    return cinfo.id;
 
                 }//try
                 catch (std::exception &_ex)
@@ -182,18 +185,21 @@ namespace Registry
                          " contact_handle: %1%  password: %2%  log_id: %3%")
                          % contact_handle % password % log_id);
 
-                    Database::Connection conn = Database::Manager::acquire();
-
-                    Database::Result cid_result = conn.exec_params(
-                        "select c.id from contact c join object_registry obr on c.id = obr.id where obr.name = $1::text"
-                        , Database::query_param_list(contact_handle));
-
-                    unsigned long long cid =0;
-                    if (cid_result.size() == 1)
+                    //check contact availability
+                    Fred::Contact::ManagerPtr contact_mgr(
+                        Fred::Contact::Manager::create(
+                            DBDisconnectPtr(0), registry_conf_->restricted_handles));
+                    Fred::NameIdPair cinfo;
+                    Fred::Contact::Manager::CheckAvailType check_result;
+                    check_result = contact_mgr->checkAvail(contact_handle, cinfo);
+                    if (check_result == Fred::Contact::Manager::CA_PROTECTED)
                     {
-                        cid = cid_result[0][0];
+                        Fred::Contact::Verification::FieldErrorMap errors;
+                        errors[Fred::Contact::Verification::field_username]
+                               = Fred::Contact::Verification::NOT_AVAILABLE;
+                        throw Fred::Contact::Verification::DataValidationError(errors);
                     }
-                    else
+                    if (check_result != Fred::Contact::Manager::CA_REGISTRED)
                     {
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
@@ -205,12 +211,12 @@ namespace Registry
                                  (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
 
                      std::string request_id = request_manager->getPublicRequestAuthIdentification(
-                             cid, request_type_list);
+                             cinfo.id, request_type_list);
 
-                     cid = request_manager->processAuthRequest(
+                     request_manager->processAuthRequest(
                              request_id, password, log_id);
 
-                     return cid;
+                     return cinfo.id;
                 }//try
                 catch (std::exception &_ex)
                 {
