@@ -1481,8 +1481,8 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Fred
   else if (_request->getType() == Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
   }
-  else if (_request->getType() == Fred::PublicRequest::PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION) {
-      detail->type = Registry::PublicRequest::PRT_CONDITIONAL_MOJEID_CONTACT_IDENTIFICATION;
+  else if (_request->getType() == Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION) {
+      detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
   }
   else if (_request->getType() == Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
