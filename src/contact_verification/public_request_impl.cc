@@ -91,7 +91,7 @@ public:
         contact_verification_passwd_.sendSmsPassword(
                 "Pro aktivaci Vaseho kontaktu je nutne vlozit kody "
                 "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: "
-                , "mojeid_pin2");
+                , "contact_verification_pin2");
     }
 
     static std::string registration_name()
@@ -160,7 +160,7 @@ public:
         /* contact is already conditionally identified - send pin3 */
         contact_verification_passwd_.sendLetterPassword("pin3"
                 , Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3
-                , "mojeid_pin3"
+                , "contact_verification_pin3"
                 , "registered_letter"
                 );
         /* in demo mode we send pin3 as email attachment */
