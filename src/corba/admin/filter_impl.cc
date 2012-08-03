@@ -460,7 +460,6 @@ COMPOUND_CLASS(Invoice, Invoice, Compound,
 COMPOUND_CLASS(Mail, Mail, Compound,
     FILTER_ADD(Id, addId);
     FILTER_ADD(Int, addType);
-    FILTER_ADD(Str, addHandle);
     FILTER_ADD(DateTime, addCreateTime);
     FILTER_ADD(DateTime, addModifyTime);
     FILTER_ADD(Int, addStatus);

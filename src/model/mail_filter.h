@@ -15,7 +15,6 @@ public:
   virtual Table& joinMailTable() = 0;
   virtual Value<Database::ID>& addId() = 0;
   virtual Value<int>& addType() = 0;
-  virtual Value<std::string>& addHandle() = 0;
   virtual Interval<Database::DateTimeInterval>& addCreateTime() = 0;
   virtual Interval<Database::DateTimeInterval>& addModifyTime() = 0;
   virtual Value<int>& addStatus() = 0;
@@ -38,7 +37,6 @@ public:
   virtual Table& joinMailTable();
   virtual Value<Database::ID>& addId();
   virtual Value<int>& addType();
-  virtual Value<std::string>& addHandle();
   virtual Interval<Database::DateTimeInterval>& addCreateTime();
   virtual Interval<Database::DateTimeInterval>& addModifyTime();
   virtual Value<int>& addStatus();
