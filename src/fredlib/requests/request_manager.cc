@@ -30,7 +30,6 @@
 #include "model_request.h"
 #include "model_request_property_value.h"
 
-#include "connection_releaser.h"
 
 namespace Fred {
 namespace Logger {
