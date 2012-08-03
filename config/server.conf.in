@@ -109,3 +109,13 @@ notify_commands = false
 # demo mode true - send both passwords via email
 demo_mode = false
 
+
+##
+# contact verification PIFD settings
+##
+[contact_verification]
+hostname = demo.contactverification.cz
+# demo mode true - send both passwords via email
+demo_mode = false
+
+
