@@ -86,7 +86,7 @@ public:
 
 
 /*
- * helper class - auth. public request auto pointer (mojeid identification process)
+ * helper class - auth. public request auto pointer
  */
 class ContactIdentificationRequestPtr
 {
@@ -102,7 +102,7 @@ public:
         : request_manager_(_mailer)
         , type_(_type)
     {
-        /* check valid type for mojeid identification */
+        /* check valid type for contact identification */
         if ((type_ != Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
             && (type_ != Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION)) {
             throw std::runtime_error("not valid identification request type");
