@@ -142,6 +142,8 @@ namespace Registry
                     request_id = request_manager->getPublicRequestAuthIdentification(
                             cinfo.id, request_type_list);
 
+                    new_request->sendPasswords();
+
                     trans.commit();
                     LOGGER(PACKAGE).info("request completed successfully");
 
