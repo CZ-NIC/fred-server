@@ -114,6 +114,7 @@ namespace Registry
                     check_result = contact_mgr->checkAvail(contact_handle, cinfo);
                     if (check_result == Fred::Contact::Manager::CA_PROTECTED)
                     {
+                        LOGGER(PACKAGE).error("checkAvail CA_PROTECTED");
                         Fred::Contact::Verification::FieldErrorMap errors;
                         errors[Fred::Contact::Verification::field_username]
                                = Fred::Contact::Verification::NOT_AVAILABLE;
@@ -121,6 +122,7 @@ namespace Registry
                     }
                     if (check_result != Fred::Contact::Manager::CA_REGISTRED)
                     {
+                        LOGGER(PACKAGE).error("checkAvail CA_REGISTRED");
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
 
@@ -151,6 +153,14 @@ namespace Registry
                     return cinfo.id;
 
                 }//try
+                catch (Fred::PublicRequest::NotApplicable &_ex)
+                {
+                    LOGGER(PACKAGE).error(_ex.what());
+                    Fred::Contact::Verification::FieldErrorMap errors;
+                    errors[Fred::Contact::Verification::field_status]
+                           = Fred::Contact::Verification::NOT_AVAILABLE;
+                    throw Fred::Contact::Verification::DataValidationError((errors));
+                }
                 catch (std::exception &_ex)
                 {
                     LOGGER(PACKAGE).error(_ex.what());
@@ -208,6 +218,37 @@ namespace Registry
 
                      return cid;
                 }//try
+                catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
+                {
+                    LOGGER(PACKAGE).error("PublicRequestAuth::NotAuthenticated");
+                    throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
+                }
+                catch (Fred::PublicRequest::AlreadyProcessed &_ex)
+                {
+                    if(_ex.success)
+                    {
+                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed true");
+                        throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
+                    }
+                    else
+                    {
+                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed false");
+                        throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
+                    }
+                }
+                catch (Fred::PublicRequest::ObjectChanged &)
+                {
+                    LOGGER(PACKAGE).error("Object changed");
+                    throw Registry::Contact::Verification::OBJECT_CHANGED();
+                }
+                catch (Fred::PublicRequest::NotApplicable &_ex)
+                {
+                    LOGGER(PACKAGE).error(_ex.what());
+                    Fred::Contact::Verification::FieldErrorMap errors;
+                    errors[Fred::Contact::Verification::field_status]
+                           = Fred::Contact::Verification::NOT_AVAILABLE;
+                    throw Fred::Contact::Verification::DataValidationError((errors));
+                }
                 catch (std::exception &_ex)
                 {
                     LOGGER(PACKAGE).error(_ex.what());
@@ -246,6 +287,7 @@ namespace Registry
                     check_result = contact_mgr->checkAvail(contact_handle, cinfo);
                     if (check_result == Fred::Contact::Manager::CA_PROTECTED)
                     {
+                        LOGGER(PACKAGE).error("checkAvail CA_PROTECTED");
                         Fred::Contact::Verification::FieldErrorMap errors;
                         errors[Fred::Contact::Verification::field_username]
                                = Fred::Contact::Verification::NOT_AVAILABLE;
@@ -253,6 +295,7 @@ namespace Registry
                     }
                     if (check_result != Fred::Contact::Manager::CA_REGISTRED)
                     {
+                        LOGGER(PACKAGE).error("checkAvail CA_REGISTRED");
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
 
@@ -272,6 +315,42 @@ namespace Registry
 
                      return cinfo.id;
                 }//try
+                catch (Fred::NOT_FOUND& _ex)
+                {
+                    LOGGER(PACKAGE).error(_ex.what());
+                    throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
+                }
+                catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
+                {
+                    LOGGER(PACKAGE).error("PublicRequestAuth::NotAuthenticated");
+                    throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
+                }
+                catch (Fred::PublicRequest::AlreadyProcessed &_ex)
+                {
+                    if(_ex.success)
+                    {
+                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed true");
+                        throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
+                    }
+                    else
+                    {
+                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed false");
+                        throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
+                    }
+                }
+                catch (Fred::PublicRequest::ObjectChanged &)
+                {
+                    LOGGER(PACKAGE).error("Object changed");
+                    throw Registry::Contact::Verification::OBJECT_CHANGED();
+                }
+                catch (Fred::PublicRequest::NotApplicable &_ex)
+                {
+                    LOGGER(PACKAGE).error(_ex.what());
+                    Fred::Contact::Verification::FieldErrorMap errors;
+                    errors[Fred::Contact::Verification::field_status]
+                           = Fred::Contact::Verification::NOT_AVAILABLE;
+                    throw Fred::Contact::Verification::DataValidationError((errors));
+                }
                 catch (std::exception &_ex)
                 {
                     LOGGER(PACKAGE).error(_ex.what());
@@ -306,6 +385,7 @@ namespace Registry
                 }
                 else
                 {
+                    LOGGER(PACKAGE).error("registrar not found");
                     throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                 }
                 return registrar_name;

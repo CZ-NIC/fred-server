@@ -68,6 +68,7 @@ namespace Registry
                     return cid;
 
                 }//try
+
                 catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
                 {
                     throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
@@ -98,12 +99,10 @@ namespace Registry
                             request_id, password, log_id);
                     return cid;
                 }//try
-
                 catch (Registry::Contact::Verification::IDENTIFICATION_FAILED&)
                 {
                     throw Registry::ContactVerification::IDENTIFICATION_FAILED();
                 }
-
                 catch (Registry::Contact::Verification::IDENTIFICATION_PROCESSED&)
                 {
                     throw Registry::ContactVerification::IDENTIFICATION_PROCESSED();
