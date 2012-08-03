@@ -77,11 +77,18 @@ public:
     void save()
     {
         cond_contact_identification_impl.pre_save_check();
+
+        if (object_has_one_of_states(this->getObject(0).id, Util::vector_of<std::string>
+                    (ObjectState::SERVER_TRANSFER_PROHIBITED)
+                    (ObjectState::SERVER_UPDATE_PROHIBITED)))
+        {
+            throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
+        }
+
         /* if there is another open CCI close it */
-        cancel_public_request(
-            this->getObject(0).id,
-            PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
-            this->getRequestId());
+        cancel_public_request(this->getObject(0).id, PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
+                this->getRequestId());
+
         PublicRequestAuthImpl::save();
     }
 
@@ -196,11 +203,20 @@ public:
     void save()
     {
         contact_identification_impl.pre_save_check();
+
+        if (object_has_one_of_states(
+                this->getObject(0).id, Util::vector_of<std::string>
+                    (ObjectState::SERVER_DELETE_PROHIBITED)
+                    (ObjectState::SERVER_TRANSFER_PROHIBITED)
+                    (ObjectState::SERVER_UPDATE_PROHIBITED)) == false)
+        {
+            throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
+        }
+
         /* if there is another open CI close it */
-        cancel_public_request(
-                this->getObject(0).id,
-            PRT_MOJEID_CONTACT_IDENTIFICATION,
-            this->getRequestId());
+        cancel_public_request(this->getObject(0).id, PRT_MOJEID_CONTACT_IDENTIFICATION,
+                this->getRequestId());
+
         PublicRequestAuthImpl::save();
     }
 
