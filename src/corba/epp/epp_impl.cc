@@ -1718,7 +1718,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
                         ret->code = COMMAND_OK;
                     } catch (const NumberSessionLimit &ex) {
 
-                        LOGGER(PACKAGE).error(boost::format("ClientLogin: username %1%, regID %2% clTRID %3%, lang %4% login FAILED, reason %5% ")
+                        LOGGER(PACKAGE).warning(boost::format("ClientLogin: username %1%, regID %2% clTRID %3%, lang %4% login FAILED, reason %5% ")
                                                     % ClID % regID % static_cast<const char*>(clTRID) % language % ex.what());
                         out_clientID=0; //  not login
                         ret->code =COMMAND_MAX_SESSION_LIMIT; // maximal limit of connection sessions
