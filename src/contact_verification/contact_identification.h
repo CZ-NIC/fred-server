@@ -3,7 +3,7 @@
 
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_registry_args.h"
-#include "cfg/handle_mojeid_args.h"
+#include "cfg/handle_contactverification_args.h"
 #include "fredlib/registry.h"
 #include "fredlib/public_request/public_request.h"
 #include "public_request_impl.h"
@@ -35,8 +35,8 @@ public:
         /* get config temporary pointer */
         HandleRegistryArgs *rconf =
             CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
-        HandleMojeIDArgs *mconf =
-            CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>();
+        HandleContactVerificationArgs *cvconf =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleContactVerificationArgs>();
 
         /* construct managers */
         registry_manager_.reset(Fred::Manager::create(
@@ -59,8 +59,8 @@ public:
                     doc_manager_.get(),
                     registry_manager_->getMessageManager()));
 
-        request_manager_->setIdentificationMailAuthHostname(mconf->hostname);
-        request_manager_->setDemoMode(mconf->demo_mode);
+        request_manager_->setIdentificationMailAuthHostname(cvconf->hostname);
+        request_manager_->setDemoMode(cvconf->demo_mode);
     }
 
     ContactIdentificationRequestManagerPtr(const ContactIdentificationRequestManagerPtr &src) :

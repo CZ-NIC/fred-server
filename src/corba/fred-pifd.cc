@@ -54,6 +54,8 @@
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_adifd_args.h"
+#include "cfg/handle_contactverification_args.h"
+
 
 using namespace std;
 
@@ -70,6 +72,7 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleCorbaNameServiceArgs))
     (HandleArgsPtr(new HandleRegistryArgs))
     (HandleArgsPtr(new HandleAdifdArgs))
+    (HandleArgsPtr(new HandleContactVerificationArgs))
     ;
 
 int main(int argc, char *argv[])
