@@ -112,14 +112,6 @@ namespace Registry
                     Fred::NameIdPair cinfo;
                     Fred::Contact::Manager::CheckAvailType check_result;
                     check_result = contact_mgr->checkAvail(contact_handle, cinfo);
-                    if (check_result == Fred::Contact::Manager::CA_PROTECTED)
-                    {
-                        LOGGER(PACKAGE).error("checkAvail CA_PROTECTED");
-                        Fred::Contact::Verification::FieldErrorMap errors;
-                        errors[Fred::Contact::Verification::field_username]
-                               = Fred::Contact::Verification::NOT_AVAILABLE;
-                        throw Fred::Contact::Verification::DataValidationError(errors);
-                    }
                     if (check_result != Fred::Contact::Manager::CA_REGISTRED)
                     {
                         LOGGER(PACKAGE).error("checkAvail CA_REGISTRED");
@@ -285,14 +277,6 @@ namespace Registry
                     Fred::NameIdPair cinfo;
                     Fred::Contact::Manager::CheckAvailType check_result;
                     check_result = contact_mgr->checkAvail(contact_handle, cinfo);
-                    if (check_result == Fred::Contact::Manager::CA_PROTECTED)
-                    {
-                        LOGGER(PACKAGE).error("checkAvail CA_PROTECTED");
-                        Fred::Contact::Verification::FieldErrorMap errors;
-                        errors[Fred::Contact::Verification::field_username]
-                               = Fred::Contact::Verification::NOT_AVAILABLE;
-                        throw Fred::Contact::Verification::DataValidationError(errors);
-                    }
                     if (check_result != Fred::Contact::Manager::CA_REGISTRED)
                     {
                         LOGGER(PACKAGE).error("checkAvail CA_REGISTRED");
