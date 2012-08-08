@@ -1557,8 +1557,12 @@ tests_test_server_SOURCES = \
 		tests/test-invoice2.cc \
 		tests/test-decimal.cc \
 		tests/test-shellcmd.cc \
+		tests/test-contact-verification.cc \
 		src/corba/epp_corba_client_impl.cc \
-		src/corba/epp_corba_client_impl.h
+		src/corba/epp_corba_client_impl.h \
+		src/contact_verification/contact_verification_impl.cc \
+		src/contact_verification/contact_verification_impl.h
+
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -1566,6 +1570,7 @@ tests_test_server_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 tests_test_server_LDADD = \
+		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/epp/libepp_impl.a \
 		src/corba/libcorba.a \
