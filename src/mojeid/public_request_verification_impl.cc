@@ -76,18 +76,22 @@ public:
 
     void save()
     {
-        cond_contact_identification_impl.pre_save_check();
-
-        if (object_has_one_of_states(this->getObject(0).id, Util::vector_of<std::string>
-                    (ObjectState::SERVER_TRANSFER_PROHIBITED)
-                    (ObjectState::SERVER_UPDATE_PROHIBITED)))
+        if (!this->getId())
         {
-            throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
-        }
+            cond_contact_identification_impl.pre_save_check();
 
-        /* if there is another open CCI close it */
-        cancel_public_request(this->getObject(0).id, PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
-                this->getRequestId());
+            if (object_has_one_of_states(this->getObject(0).id, Util::vector_of<std::string>
+                        (ObjectState::SERVER_TRANSFER_PROHIBITED)
+                        (ObjectState::SERVER_UPDATE_PROHIBITED)
+                        (::MojeID::MOJEID_CONTACT)))
+            {
+                throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
+            }
+
+            /* if there is another open CCI close it */
+            cancel_public_request(this->getObject(0).id, PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
+                    this->getRequestId());
+        }
 
         PublicRequestAuthImpl::save();
     }
@@ -202,21 +206,23 @@ public:
 
     void save()
     {
-        contact_identification_impl.pre_save_check();
-
-        if (object_has_one_of_states(
-                this->getObject(0).id, Util::vector_of<std::string>
-                    (ObjectState::SERVER_DELETE_PROHIBITED)
-                    (ObjectState::SERVER_TRANSFER_PROHIBITED)
-                    (ObjectState::SERVER_UPDATE_PROHIBITED)) == false)
+        if (!this->getId())
         {
-            throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
+            contact_identification_impl.pre_save_check();
+
+            if (!object_has_all_of_states(this->getObject(0).id, Util::vector_of<std::string>
+                        (ObjectState::SERVER_DELETE_PROHIBITED)
+                        (ObjectState::SERVER_UPDATE_PROHIBITED)
+                        (ObjectState::SERVER_TRANSFER_PROHIBITED)
+                        (::MojeID::MOJEID_CONTACT)))
+            {
+                throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
+            }
+
+            /* if there is another open CI close it */
+            cancel_public_request(this->getObject(0).id, PRT_MOJEID_CONTACT_IDENTIFICATION,
+                    this->getRequestId());
         }
-
-        /* if there is another open CI close it */
-        cancel_public_request(this->getObject(0).id, PRT_MOJEID_CONTACT_IDENTIFICATION,
-                this->getRequestId());
-
         PublicRequestAuthImpl::save();
     }
 
@@ -226,19 +232,12 @@ public:
                 "processing public request id=%1%")
         % this->getId());
 
-        contact_identification_impl.pre_process_check(_check);
-
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
-        unsigned long long act_registrar
-                = lock_contact_get_registrar_id(this->getObject(0).id);
-        if (act_registrar != this->getRegistrarId()) {
-            run_transfer_command(this->getRegistrarId()
-                , act_registrar,  this->getResolveRequestId()
-                , this->getObject(0).id);
-        }
 
-        /* check if contact is already conditionally identified (21) and cancel state */
+        contact_identification_impl.pre_process_check(_check);
+
+        /* cancel previous state */
         Fred::cancel_object_state(this->getObject(0).id
                 , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
 
@@ -246,40 +245,6 @@ public:
         insertNewStateRequest(this->getId()
                 , this->getObject(0).id
                 , ObjectState::IDENTIFIED_CONTACT);
-
-        if (object_has_state(this->getObject(0).id
-                , ::MojeID::MOJEID_CONTACT) == false)
-        {
-            insertNewStateRequest(this->getId()
-                    , this->getObject(0).id
-                    , ::MojeID::MOJEID_CONTACT);
-        }
-
-        /* prohibit operations on contact */
-        if (object_has_state(this->getObject(0).id
-                , ObjectState::SERVER_DELETE_PROHIBITED) == false)
-        {
-            /* set 1 | serverDeleteProhibited */
-            insertNewStateRequest(this->getId()
-                    , this->getObject(0).id
-                    , ObjectState::SERVER_DELETE_PROHIBITED);
-        }
-        if (object_has_state(this->getObject(0).id
-                , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
-        {
-            /* set 3 | serverTransferProhibited */
-            insertNewStateRequest(this->getId()
-                    , this->getObject(0).id
-                    , ObjectState::SERVER_TRANSFER_PROHIBITED);
-        }
-        if (object_has_state(this->getObject(0).id
-                , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
-        {
-            /* set 4 | serverUpdateProhibited */
-            insertNewStateRequest(this->getId()
-                    , this->getObject(0).id
-                    , ObjectState::SERVER_UPDATE_PROHIBITED);
-        }
 
         /* update states */
         Fred::update_object_states(this->getObject(0).id);
@@ -324,10 +289,9 @@ public:
         if (!pri_ptr_->getId()) {
 
             if(!object_has_one_of_states(
-                pri_ptr_->getObject(0).id
-                , Util::vector_of<std::string>
-                (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)// already CI
-                (ObjectState::IDENTIFIED_CONTACT))) // already I
+                pri_ptr_->getObject(0).id, Util::vector_of<std::string>
+                    (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)
+                    (ObjectState::IDENTIFIED_CONTACT)))
             {
                 throw NotApplicable("pre_insert_checks: failed!");
             }

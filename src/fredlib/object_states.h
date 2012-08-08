@@ -47,6 +47,10 @@ bool object_has_one_of_states(
         const unsigned long long &_object_id,
         const std::vector<std::string> & _state_names);
 
+bool object_has_all_of_states(
+        const unsigned long long &_object_id,
+        const std::vector<std::string> & _state_names);
+
 unsigned long long insert_object_state(
         const unsigned long long &_object_id,
         const std::string &_state_name);

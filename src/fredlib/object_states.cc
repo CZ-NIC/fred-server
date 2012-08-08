@@ -32,6 +32,19 @@ bool object_has_one_of_states(
 }
 
 
+bool object_has_all_of_states(
+        const unsigned long long &_object_id,
+        const std::vector<std::string> & _state_names)
+{
+    for (std::vector<std::string>::const_iterator it = _state_names.begin()
+            ; it != _state_names.end(); ++it)
+    {
+        if(!object_has_state(_object_id, *it)) return false;
+    }
+    return true;
+}
+
+
 unsigned long long insert_object_state(
         const unsigned long long &_object_id,
         const std::string &_state_name)
