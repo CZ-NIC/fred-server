@@ -174,6 +174,29 @@ void cancel_multiple_object_states(
 
 }
 
+void lock_multiple_open_object_states(
+    const unsigned long long _object_id
+    , const std::vector<std::string> &_states_names)
+{
+    if(_states_names.empty()) return;
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    for (std::vector<std::string>::const_iterator state_name_it = _states_names.begin()
+            ; state_name_it != _states_names.end(); ++state_name_it)
+    {
+        //lock
+        conn.exec_params(
+            " SELECT os.state_id FROM object_state os "
+            " WHERE os.state_id = "
+            " ( SELECT id from enum_object_states where name = $1::text) "
+            " AND (os.valid_to IS NULL "
+            " OR os.valid_to > CURRENT_TIMESTAMP) "
+            " AND os.object_id = $2::integer FOR UPDATE"
+            , Database::query_param_list(*state_name_it)(_object_id));
+    }
+}
+
 void update_object_states(
         const unsigned long long &_object_id)
 {

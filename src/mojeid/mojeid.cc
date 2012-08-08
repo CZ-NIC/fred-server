@@ -25,6 +25,7 @@
 
 #include "mojeid/mojeid_identification.h"
 #include "mojeid/mojeid_notifier.h"
+#include "mojeid/mojeid_contact_states.h"
 
 #include "fredlib/db_settings.h"
 #include "fredlib/registry.h"
@@ -426,7 +427,7 @@ namespace Registry
                    % Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT
                    % Fred::ObjectState::IDENTIFIED_CONTACT
                    % Fred::ObjectState::VALIDATED_CONTACT
-                   % ::MojeID::MOJEID_CONTACT;
+                   % ::MojeID::ObjectState::MOJEID_CONTACT;
 
                 boost::format lock_state_request = boost::format(
                 " SELECT * FROM object_state os WHERE os.state_id = ANY "
@@ -440,7 +441,7 @@ namespace Registry
                    % Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT
                    % Fred::ObjectState::IDENTIFIED_CONTACT
                    % Fred::ObjectState::VALIDATED_CONTACT
-                   % ::MojeID::MOJEID_CONTACT;
+                   % ::MojeID::ObjectState::MOJEID_CONTACT;
 
                 // fetch the result and convert to strings
                 std::vector<int> drop_states_codes;
@@ -485,7 +486,7 @@ namespace Registry
                             haveTransferProhibited = true;
                         } else if(std::string("serverUpdateProhibited") == *it) {
                             haveUpdateProhibited = true;
-                        } else if (::MojeID::MOJEID_CONTACT == *it) {
+                        } else if (::MojeID::ObjectState::MOJEID_CONTACT == *it) {
                             haveMojeidContact = true;
                         } else {
                             throw std::runtime_error(
@@ -1351,8 +1352,6 @@ namespace Registry
             }
         }
 
-
-
         ///cancel mojeidContact state
         void MojeIDImpl::contactCancelAccountPrepare(
             unsigned long long _contact_id
@@ -1392,29 +1391,56 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 Database::Transaction tx(conn);
 
-                Database::Result res = conn.exec_params(
-                        " SELECT os.state_id FROM object_state os "
-                        " WHERE os.state_id = "
-                        " ( SELECT id from enum_object_states where name = "
-                            " 'mojeidContact') "
-                            " AND (os.valid_to IS NULL "
-                            " OR os.valid_to > CURRENT_TIMESTAMP) "
-                            " AND os.object_id = $1::integer FOR UPDATE"
-                        , Database::query_param_list(_contact_id));
+                //try lock object states
+                Fred::lock_multiple_open_object_states(_contact_id
+                    , Util::vector_of<std::string>
+                        (::MojeID::ObjectState::MOJEID_CONTACT)
+                        (Fred::ObjectState::SERVER_DELETE_PROHIBITED)
+                        (Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)
+                        (Fred::ObjectState::SERVER_UPDATE_PROHIBITED)
+                        (Fred::ObjectState::VALIDATED_CONTACT) );
 
-                if(res.size() == 1)
-                {
-                    if(!Fred::cancel_object_state(
-                            _contact_id, "mojeidContact"))
-                    {
-                        throw std::runtime_error(
-                            "Fred::cancel_object_state mojeidContact state failed");
-                    }
-                }
-                else
+                if(!Fred::cancel_object_state(
+                    _contact_id, ::MojeID::ObjectState::MOJEID_CONTACT))
                 {
                     throw std::runtime_error(
-                            "Contact have no mojeidContact state");
+                            "Fred::cancel_object_state mojeidContact failed");
+                }
+
+                if(!Fred::cancel_object_state(
+                    _contact_id, Fred::ObjectState::SERVER_DELETE_PROHIBITED))
+                {
+                    throw std::runtime_error(
+                        "Fred::cancel_object_state serverDeleteProhibited failed");
+                }
+
+                if(!Fred::cancel_object_state(
+                    _contact_id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED))
+                {
+                    throw std::runtime_error(
+                        "Fred::cancel_object_state serverTransferProhibited failed");
+                }
+
+                if(!Fred::cancel_object_state(
+                    _contact_id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED))
+                {
+                    throw std::runtime_error(
+                        "Fred::cancel_object_state serverUpdateProhibited failed");
+                }
+
+                if(Fred::object_has_state(_contact_id, Fred::ObjectState::VALIDATED_CONTACT))
+                {
+                    //cancel validated
+                    if(!Fred::cancel_object_state(_contact_id
+                            , Fred::ObjectState::VALIDATED_CONTACT))
+                    {
+                        throw std::runtime_error(
+                            "Fred::cancel_object_state validatedContact failed");
+                    }
+
+                    //set identified contact
+                    Fred::insert_object_state(
+                            _contact_id, Fred::ObjectState::IDENTIFIED_CONTACT);
                 }
 
                 conn.exec_params("UPDATE public_request pr SET status=2 "

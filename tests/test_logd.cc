@@ -136,7 +136,6 @@ public:
 	// TODO change this and test combination of session / request (session)
 	Database::ID createRequest(const char *ip_addr, const ServiceType serv, const char * content, const Fred::Logger::RequestProperties &props = TestImplLog::no_props, bool is_monitoring = false, const Fred::Logger::ObjectReferences &refs = TestImplLog::no_objs, Database::ID session_id=0, Database::ID request_type_id = UNKNOWN_ACTION);
 
-	bool addRequestProperties(const Database::ID id, const Fred::Logger::RequestProperties &props = TestImplLog::no_props);
 	bool closeRequest(const Database::ID id, const char * content, const Fred::Logger::RequestProperties &props = TestImplLog::no_props, const Fred::Logger::ObjectReferences &refs = TestImplLog::no_objs, long result_code = 1000, Database::ID session_id = 0);
 
 	// to encapsulate some methods which are not part of the interface
@@ -168,12 +167,12 @@ public:
         void check_obj_references(ID rec_id, const Fred::Logger::ObjectReferences &refs);
         void check_obj_references_subset(ID rec_id, const Fred::Logger::ObjectReferences &refs);
 	void check_db_properties_subset(ID rec_id, const Fred::Logger::RequestProperties &props, bool output);
-	bool property_match(const Row r, const Fred::Logger::RequestProperty &p, bool output) ;
+	bool property_match(const Row r, const Fred::Logger::RequestProperty &p) ;
 
 	void insert_custom_request(ptime timestamp, const std::string &user);
 
 // different tests
-	void check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props, bool output);
+	void check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props);
 
 	static Fred::Logger::RequestProperties no_props;
         static Fred::Logger::ObjectReferences no_objs;
@@ -413,7 +412,7 @@ Database::ID TestImplLog::createRequest(const char *ip_addr, const ServiceType s
                 BOOST_CHECK(session_id                  == db_id);
 	}
 
-	check_db_properties(ret, props, false);
+	check_db_properties(ret, props);
         // TODO
         check_obj_references(ret, refs);
 
@@ -422,17 +421,6 @@ Database::ID TestImplLog::createRequest(const char *ip_addr, const ServiceType s
 	return ret;
 }
 
-        // to be removed 
-bool TestImplLog::addRequestProperties(const Database::ID id, const Fred::Logger::RequestProperties &props)
-{
-	bool result = logd->i_addRequestProperties(id, props);
-
-	if (!result) return result;
-
-	check_db_properties_subset(id, props, true);
-
-	return result;
-}
 
 bool TestImplLog::closeRequest(const Database::ID id, const char *content, const Fred::Logger::RequestProperties &props, const Fred::Logger::ObjectReferences &refs, long result_code, Database::ID session_id)
 {
@@ -502,7 +490,6 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_generic_prope
 		ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
 
 		ref[i].child = false;
-		ref[i].output = false;
 	}
 
 	return ret;
@@ -518,7 +505,6 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_re
         ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
 
         ref[i].child = false;
-        ref[i].output = false;
     }
 
     for(unsigned int i=num_handles;i< (num_others+num_handles);i++) {
@@ -526,7 +512,6 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_re
         ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
 
         ref[i].child = false;
-        ref[i].output = false;
     }
 
     return ret;
@@ -536,12 +521,11 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_re
 // boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 // p is single property
 // these two are compared :)
-bool TestImplLog::property_match(const Row r, const Fred::Logger::RequestProperty &p, bool output)
+bool TestImplLog::property_match(const Row r, const Fred::Logger::RequestProperty &p)
 {
 
 	if ( (std::string)r[0] != p.name)  return false;
 	if ( (std::string)r[1] != p.value) return false;
-        if ( (bool)r[3] != output) return false;
 
 	if ( p.child ) {
 		if (r[2].isnull()) return false;
@@ -556,7 +540,7 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Fred::Logger::Requ
 {
 	if (props.size() == 0) return;
 
-	boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
+	boost::format query = boost::format("select name, value, parent_id from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 
 	Connection conn = Database::Manager::acquire();
 	Result res = conn.exec(query.str());
@@ -565,7 +549,7 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Fred::Logger::Requ
 	unsigned pind = 0;
 	if(res.size() > props.size()) {
 		for(unsigned i=0; i<res.size(); i++) {
-			if(property_match(res[i], props[pind], output)) {
+			if(property_match(res[i], props[pind])) {
 				// property pind found in the sql result, proceed to another item in the list
 				pind++;
 			} else {
@@ -582,16 +566,16 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Fred::Logger::Requ
 		BOOST_ERROR(" Some properties were not stored... ");
 	} else if(res.size() == props.size()) {
 		// TODO something can be saved here - we have Result res already done
-		check_db_properties(rec_id, props, output);
+		check_db_properties(rec_id, props);
 	}
 }
 
 // this func relies that the order of properties in the database
 // (sorted by their ids) is the same as in the array
 // the properties in the database with request_id=rec_id must match props exactly
-void TestImplLog::check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props, bool output)
+void TestImplLog::check_db_properties(ID rec_id, const Fred::Logger::RequestProperties & props)
 {
-	boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
+	boost::format query = boost::format("select name, value, parent_id from request_property_value pv join request_property_name pn on pn.id=pv.property_name_id where pv.request_id = %1% order by pv.id") % rec_id;
 
 	Connection conn = Database::Manager::acquire();
 
@@ -602,7 +586,7 @@ void TestImplLog::check_db_properties(ID rec_id, const Fred::Logger::RequestProp
 	}
 
 	for(unsigned i=0; i<res.size(); i++) {
-		BOOST_CHECK( property_match(res[i], props[i], output));
+		BOOST_CHECK( property_match(res[i], props[i]));
 	}
 }
 
@@ -981,7 +965,6 @@ BOOST_AUTO_TEST_CASE( without_properties )
 
 	id1 = test.createRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD");
 	BOOST_CHECK(id1 != 0);
-	BOOST_CHECK(test.addRequestProperties(id1));
 	BOOST_CHECK(test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ"));
 }
 
@@ -1061,7 +1044,6 @@ BOOST_AUTO_TEST_CASE( zero_length_strings )
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.addRequestProperties(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
 	BOOST_CHECK(test.closeRequest(id1, "", *props));
 
@@ -1081,7 +1063,6 @@ BOOST_AUTO_TEST_CASE( null_strings )
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.addRequestProperties(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
 	BOOST_CHECK(test.closeRequest(id1, NULL, *props));
 }
@@ -1109,8 +1090,6 @@ BOOST_AUTO_TEST_CASE( long_strings )
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.addRequestProperties(id1, *props));
-
 
 	props = test.create_generic_properties(1, global_call_count++);
 
@@ -1131,9 +1110,7 @@ BOOST_AUTO_TEST_CASE( normal_event )
 	BOOST_CHECK(id1 != 0);
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.addRequestProperties(id1, *props));
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(test.addRequestProperties(id1, *props));
 
 	props = test.create_generic_properties(1, global_call_count++);
 
@@ -1151,11 +1128,6 @@ BOOST_AUTO_TEST_CASE( no_props )
 
 	id1 = test.createRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", no_props);
 	BOOST_CHECK(id1 != 0);
-
-	BOOST_CHECK(test.addRequestProperties(id1, no_props));
-
-	BOOST_CHECK(test.addRequestProperties(id1, no_props));
-
 
 	BOOST_CHECK(test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", no_props));
 }
@@ -1200,8 +1172,6 @@ BOOST_AUTO_TEST_CASE( already_closed )
 	// record closed here
 
 	props = test.create_generic_properties(1, global_call_count++);
-	BOOST_CHECK(!test.addRequestProperties(id1, *props));
-	BOOST_CHECK(!test.addRequestProperties(id1, *props));
 	BOOST_CHECK(!test.closeRequest(id1, "ZZZZZZZZZZZZZZZZZZZZZ", *props));
 
 }
@@ -1510,7 +1480,7 @@ BOOST_AUTO_TEST_CASE(test_request_count)
     ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
     test.closeRequest(r2, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
 
@@ -1542,7 +1512,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_props_handle)
     ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
     test.closeRequest(r2, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
 
@@ -1575,7 +1545,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_errors_simple)
     ID r3 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
     test.closeRequest(r3, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
     RequestCountInfo::iterator it = info->find(reg_handle);
@@ -1610,7 +1580,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_errors_props)
     ID r3 = test.createRequest("", LC_EPP, "", *props_in, false, TestImplLog::no_objs, session_id);
     test.closeRequest(r3, "", *props_out);
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
 
@@ -1650,7 +1620,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_poll_simple)
     ID r4 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, contact_check_id);
     test.closeRequest(r4, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP");
     RequestCountInfo::iterator it = info->find(reg_handle);
 
@@ -1690,7 +1660,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_poll_props)
     ID r4 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, contact_check_id);
     test.closeRequest(r4, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP");
 
@@ -1735,7 +1705,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_past)
     ID r2 = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id);
     test.closeRequest(r2, "");
 
-    ptime current_tstamp = boost::posix_time::microsec_clock::universal_time();
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
     test.insert_custom_request(current_tstamp - days(2), reg_handle);
 
@@ -1815,6 +1785,79 @@ BOOST_AUTO_TEST_CASE(test_request_count_irregular)
 
     test.insert_custom_request(boost::posix_time::ptime(p_to), reg_handle);
     test_registrar_request_count(test, p_from, p_to, reg_handle, 4);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_short_period)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    Database::ID contact_check_id = get_request_type_id("ContactCheck");
+
+    ID r = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, contact_check_id);
+    test.closeRequest(r, "");
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
+
+    ptime day_start( current_tstamp.date() );
+
+    if(current_tstamp - seconds(3) <= day_start) {
+        sleep(3);
+    }
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - seconds(3), current_tstamp - seconds(2), "EPP");
+
+    RequestCountInfo::iterator it = info->find(reg_handle);
+
+    BOOST_CHECK(it == info->end() || it->second == 0);
+
+    unsigned long long count = test.getRequestCount(current_tstamp - seconds(3), current_tstamp - seconds(2), "EPP", reg_handle);
+    BOOST_CHECK(count == 0);
+}
+
+BOOST_AUTO_TEST_CASE(test_request_count_timezone)
+{
+    TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
+
+    std::string time_string(TimeStamp::microsec());
+    std::string reg_handle = "REG-"+ time_string;
+    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+
+    Database::ID contact_check_id = get_request_type_id("ContactCheck");
+
+    ID r = test.createRequest("", LC_EPP, "", TestImplLog::no_props, false, TestImplLog::no_objs, session_id, contact_check_id);
+    test.closeRequest(r, "");
+
+    ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
+
+    ptime day_start( current_tstamp.date() );
+
+    ptime day_end = day_start + days(1) - seconds(1);
+
+    // try to avoid problems
+    if(current_tstamp == day_start) {
+        sleep(1);
+    }
+
+    if(current_tstamp + seconds(2) >= day_end) {
+        sleep (3);
+    }
+
+    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(day_start, current_tstamp - seconds(2), "EPP");
+    RequestCountInfo::iterator it = info->find(reg_handle);
+    BOOST_CHECK(it == info->end() || it->second == 0);
+
+    std::auto_ptr<RequestCountInfo> info2 = test.getRequestCountUsers(current_tstamp + seconds(2), day_end, "EPP");
+    RequestCountInfo::iterator it2 = info2->find(reg_handle);
+    BOOST_CHECK(it2 == info2->end() || it2->second == 0);
+
+    unsigned long long count = test.getRequestCount(day_start, current_tstamp - seconds(2), "EPP", reg_handle);
+    BOOST_CHECK(count == 0);
+    unsigned long long count2 = test.getRequestCount(current_tstamp + seconds(2), day_end, "EPP", reg_handle);
+    BOOST_CHECK(count2 == 0);
 }
 
 /*

@@ -438,60 +438,6 @@ void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *u
 
 }
 
-// update existing log record with given ID
-// EXCEPTIONS MUST be handled in the caller
-bool ManagerImpl::i_addRequestProperties(ID id, const Fred::Logger::RequestProperties &props)
-{
-    logd_ctx_init ctx;
-#ifdef HAVE_LOGGER
-    boost::format request_fmt = boost::format("request-%1%") % id;
-    Logging::Context ctx_entry(request_fmt.str());
-#endif
-
-    TRACE("[CALL] Fred::Logger::ManagerImpl::i_addRequestProperties");
-
-    logd_auto_db db;
-
-
-#ifdef LOGD_VERIFY_INPUT
-    if (!record_check(id, db)) return false;
-#endif
-
-    DateTime request_time;
-    ServiceType service_id;
-    bool monitoring;
-
-    try {
-        const ModelRequest& mr = rcache.get(id);
-        request_time = mr.getTimeBegin();
-        service_id = mr.getServiceId();
-        monitoring = mr.getIsMonitoring();
-        // the record stays in cache for closeRequest
-    }
-    catch (RequestCache::NOT_EXISTS)
-    {
-        boost::format select = boost::format(
-                "SELECT time_begin, service_id, is_monitoring, "
-                "COALESCE(session_id,0) "
-                "FROM request where id = %1%") % id;
-        Result res = db.exec(select.str());
-        if (res.size() == 0) {
-            logger_error(boost::format(
-                    "Record with ID %1% not found in request table.") % id );
-            return false;
-        }
-        request_time = res[0][0].operator ptime();
-        service_id = (ServiceType)(int) res[0][1];
-        monitoring = (bool)res[0][2];
-    }
-
-    insert_props(request_time, service_id, monitoring, id, props, db, true);
-
-    db.commit();
-    return true;
-
-}
-
 // close the record with given ID (end time is filled thus no further
 // modification is possible after this call)
 // EXCEPTIONS MUST be handled in the caller
@@ -831,8 +777,18 @@ unsigned long long ManagerImpl::i_getRequestCount(
     date from_date = datetime_from.date();
     date to_date   = datetime_to.date();
 
-    // first day
-    unsigned long long total = getRequestCountWorker(datetime_from, ptime(from_date+days(1)), service_id, user);
+    unsigned long long total = 0;
+
+    // last day
+    if(to_date != from_date) {
+        // first day of 2 or more
+        total += getRequestCountWorker(datetime_from, ptime(from_date+days(1)), service_id, user);
+        // last day of 2 or more
+        total += getRequestCountWorker(ptime(to_date), datetime_to, service_id, user);
+    } else {
+        // from and to are within one day
+        total += getRequestCountWorker(datetime_from, datetime_to, service_id, user);
+    }
 
     // the rest
     for(date d = from_date+days(1);
@@ -840,11 +796,6 @@ unsigned long long ManagerImpl::i_getRequestCount(
         d += days(1)) {
 
             total += getRequestCountWorker(ptime(d), ptime(d+days(1)), service_id, user);
-    }
-
-    // last day
-    if(to_date != from_date) {
-        total += getRequestCountWorker(ptime(to_date), datetime_to, service_id, user);
     }
 
     return total;
@@ -871,14 +822,31 @@ ManagerImpl::i_getRequestCountUsers(
     date from_date = datetime_from.date();
     date to_date   = datetime_to.date();
 
-    // first day
-    incrementRequestCounts(info.get(),
-            getRequestCountUsersWorker(
-                        datetime_from, ptime(from_date+days(1)), service_id
-                    )
-    );
+    if(to_date != from_date) {
 
-    // the rest
+        // first day of 2 or more
+        incrementRequestCounts(info.get(),
+                getRequestCountUsersWorker(
+                            datetime_from, ptime(from_date+days(1)), service_id
+                        )
+        );
+
+        // last day of 2 or more
+        incrementRequestCounts(info.get(), getRequestCountUsersWorker(
+                ptime(to_date) , datetime_to, service_id
+            )
+        );
+    } else {
+        // within one day
+        incrementRequestCounts(info.get(),
+                getRequestCountUsersWorker(
+                            datetime_from, datetime_to, service_id
+                        )
+        );
+    }
+
+    // the rest - in case there are several days,
+    //   0 iterations if there are 1 or 2 days
     for(date d = from_date+days(1);
         d < to_date;
         d += days(1)) {
@@ -886,14 +854,6 @@ ManagerImpl::i_getRequestCountUsers(
                     ptime(d), ptime(d + days(1)), service_id
                 )
             );
-    }
-
-    // last day
-    if(to_date != from_date) {
-        incrementRequestCounts(info.get(), getRequestCountUsersWorker(
-                ptime(to_date) , datetime_to, service_id
-            )
-        );
     }
 
     return info;

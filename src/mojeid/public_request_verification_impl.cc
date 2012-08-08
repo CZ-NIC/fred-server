@@ -83,7 +83,7 @@ public:
             if (object_has_one_of_states(this->getObject(0).id, Util::vector_of<std::string>
                         (ObjectState::SERVER_TRANSFER_PROHIBITED)
                         (ObjectState::SERVER_UPDATE_PROHIBITED)
-                        (::MojeID::MOJEID_CONTACT)))
+                        (::MojeID::ObjectState::MOJEID_CONTACT)))
             {
                 throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
             }
@@ -121,7 +121,7 @@ public:
 
         insertNewStateRequest(this->getId()
                 , this->getObject(0).id
-                , ::MojeID::MOJEID_CONTACT);
+                , ::MojeID::ObjectState::MOJEID_CONTACT);
 
         /* prohibit operations on contact */
         if (object_has_state(this->getObject(0).id
@@ -214,7 +214,7 @@ public:
                         (ObjectState::SERVER_DELETE_PROHIBITED)
                         (ObjectState::SERVER_UPDATE_PROHIBITED)
                         (ObjectState::SERVER_TRANSFER_PROHIBITED)
-                        (::MojeID::MOJEID_CONTACT)))
+                        (::MojeID::ObjectState::MOJEID_CONTACT)))
             {
                 throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
             }

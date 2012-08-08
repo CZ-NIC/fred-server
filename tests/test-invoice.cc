@@ -67,6 +67,7 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
+#include "bank_payment_impl.h"
 
 
 BOOST_AUTO_TEST_SUITE(TestInvoice)
@@ -105,6 +106,25 @@ void create2Invoices(Fred::Invoicing::Manager *man, Database::Date taxdate, Data
                    , out_credit);//price
    BOOST_CHECK_EQUAL(invoiceid2 != 0,true);
    Fred::Credit::add_credit_to_invoice( reg_id,  zone_id, out_credit, invoiceid2);
+}
+
+unsigned getAccountNumber(unsigned zone_id, const std::string &bank_code, const std::string &account_number)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Result res = conn.exec_params("SELECT id FROM bank_account WHERE zone=$1::integer AND bank_code=$2::text AND account_number=$3::text ",
+            Database::query_param_list(zone_id)
+                                  (bank_code)
+                                  (account_number)
+    );
+
+    return res[0][0];
+}
+
+void setAccountIdToPayment(Fred::Banking::PaymentImpl &payment)
+{
+    unsigned account_id = getAccountNumber(get_zone_cz_id(), payment.getBankCode(), payment.getAccountNumber());
+    payment.setAccountId(account_id);
 }
 
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
@@ -911,7 +931,7 @@ void testChargeEval(const ResultTestCharge &res)
 
     
     Database::Result res_ior = conn.exec_params(
-    "SELECT quantity, date_to, operation_id, crdate::date FROM invoice_operation WHERE object_id = $1::integer "
+    "SELECT quantity, date_to, operation_id, ((crdate AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague')::date FROM invoice_operation WHERE object_id = $1::integer "
                                                     "AND registrar_id = $2::integer "
                                                     "AND zone_id = $3::integer",
                Database::query_param_list ( object_id )
@@ -1688,6 +1708,202 @@ BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
 
     Money after = get_credit(reg_id, zone_cz_id);
     BOOST_REQUIRE_MESSAGE(before == after, "Credit before and after unsuccessful operation has to match");
+
+}
+
+
+BOOST_AUTO_TEST_CASE(registrar_outzone_no_debt)
+{
+    std::string varsym("1326438");
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClassNoCz(varsym);
+
+    Fred::Banking::PaymentImpl payment;
+    payment.setAccountNumber("617");
+    payment.setBankCode("5500");
+    payment.setVarSymb(varsym);
+    payment.setPrice(Money("1000.0"));
+
+    payment.setCode(1);
+    payment.setStatus(1);
+    payment.setAccountDate(Database::Date(2011, 2, 1));
+
+    setAccountIdToPayment(payment);
+
+    payment.save();
+
+    unsigned long long pay_id = payment.getId();
+
+
+    Fred::Banking::ManagerPtr bmanager(Fred::Banking::Manager::create(0));
+    // process payment
+    bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec_params("SELECT type FROM bank_payment WHERE id = $1",
+            Database::query_param_list(pay_id));
+
+    // make sure payment was NOT processed
+    BOOST_CHECK((int)res[0][0] == 1);
+
+}
+
+BOOST_AUTO_TEST_CASE(registrar_outzone_exactly)
+{
+    std::string varsym(Random::string_from(8, "0123456789"));
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClassNoCz(varsym);
+
+    Database::ID zone_id = get_zone_cz_id();
+
+    Fred::Banking::PaymentImpl payment;
+    payment.setAccountNumber("617");
+    payment.setBankCode("5500");
+    payment.setVarSymb(varsym);
+    payment.setPrice(Money("1200.0"));
+
+    payment.setCode(1);
+    payment.setStatus(1);
+    payment.setAccountDate(Database::Date(2011, 2, 1));
+
+    setAccountIdToPayment(payment);
+
+    payment.save();
+
+    unsigned long long pay_id = payment.getId();
+
+    date today = day_clock::local_day();
+
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+           Fred::Invoicing::Manager::create());
+
+    Fred::Credit::init_new_registrar_credit(registrar->getId(), zone_id);
+
+    // debt for registrar
+    BOOST_CHECK(
+            invMan->charge_operation_auto_price(
+         "GeneralEppOperation"
+         , zone_id
+         , registrar->getId()
+         , 0 //object_id
+         , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+         , today - boost::gregorian::months(1)//date_from //local date
+         , today // date_to //local date
+         , Decimal("10000") )
+    );
+
+    // in order to represent debt in accounting invoices...
+    boost::gregorian::date todate( day_clock::local_day() );
+    boost::gregorian::date fromdate( todate - months(1) );
+    boost::gregorian::date taxdate(todate);
+
+    invMan->createAccountInvoice( registrar->getHandle(), std::string("cz")
+       , taxdate
+       , fromdate //from_date not set
+       , todate, boost::posix_time::ptime(todate));
+
+    Fred::Banking::ManagerPtr bmanager(Fred::Banking::Manager::create(0));
+    bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+
+    //check that the payment was processed and registrar has not debt left
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec_params("SELECT type FROM bank_payment WHERE id = $1",
+            Database::query_param_list(pay_id));
+    // make sure the payment was processed
+    BOOST_CHECK((int)res[0][0] == 2);
+
+    res = conn.exec_params("SELECT credit FROM registrar_credit WHERE registrar_id = $1 AND zone_id = $2",
+            Database::query_param_list(registrar->getId())
+                                      (zone_id)
+                                      );
+
+    Decimal credit(static_cast<std::string>(res[0][0]));
+    BOOST_CHECK(credit == Decimal("0"));
+}
+
+// TODO - configuration - price per request, VAT, ...
+BOOST_AUTO_TEST_CASE(registrar_outzone_too_much)
+{
+    std::string varsym("5556677");
+    std::string pay_amount("5000.0");
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClassNoCz(varsym);
+
+    Database::ID zone_id = get_zone_cz_id();
+    Fred::Banking::PaymentImpl payment;
+    payment.setAccountNumber("617");
+    payment.setBankCode("5500");
+    payment.setVarSymb(varsym);
+    payment.setPrice(Money(pay_amount));
+
+    payment.setCode(1);
+    payment.setStatus(1);
+    payment.setAccountDate(Database::Date(2011, 2, 1));
+
+    setAccountIdToPayment(payment);
+
+    payment.save();
+
+    unsigned long long pay_id = payment.getId();
+    date today = day_clock::local_day();
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+           Fred::Invoicing::Manager::create());
+
+    Fred::Credit::init_new_registrar_credit(registrar->getId(), zone_id);
+
+    try {
+        // debt for registrar
+        BOOST_CHECK(
+                invMan->charge_operation_auto_price(
+             "GeneralEppOperation"
+             , zone_id
+             , registrar->getId()
+             , 0 //object_id
+             , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+             , today - boost::gregorian::months(1)//date_from //local date
+             , today // date_to //local date
+             , Decimal("10000") )
+        );
+
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("Exception in ~ccReg_Log_i(): %1%") % ex.what() );
+    }
+
+    // in order to represent debt in accounting invoices...
+    boost::gregorian::date todate( day_clock::local_day() );
+    boost::gregorian::date fromdate( todate - months(1) );
+    boost::gregorian::date taxdate(todate);
+
+    invMan->createAccountInvoice( registrar->getHandle(), std::string("cz")
+        , taxdate
+        , fromdate //from_date not set
+        , todate, boost::posix_time::ptime(todate));
+
+    Fred::Banking::ManagerPtr bmanager(Fred::Banking::Manager::create(0));
+    bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+
+    // make sure that the payment was processed and registrar has some credit left (even when out of zone)
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec_params("SELECT type FROM bank_payment WHERE id = $1::integer",
+            Database::query_param_list(pay_id));
+
+    BOOST_CHECK(!res[0][0].isnull());
+
+    BOOST_CHECK((int)res[0][0] == 2);
+
+    res = conn.exec_params("SELECT credit FROM registrar_credit WHERE registrar_id = $1 AND zone_id = $2",
+            Database::query_param_list(registrar->getId())
+                                      (zone_id)
+                                      );
+
+    Decimal credit(static_cast<std::string>(res[0][0]));
+
+    std::string request_price = getRequestUnitPrice(zone_id);
+
+    int dummy;
+    std::string koef;
+    get_vat(dummy, koef);
+
+    Decimal right_price = Decimal("-10000") * Decimal(request_price) + (Decimal(pay_amount) * (Decimal("1.0") - Decimal(koef)));
+
+    BOOST_CHECK( (right_price - credit).abs() < Decimal("0.6") );
 
 }
 

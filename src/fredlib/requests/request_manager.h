@@ -85,7 +85,6 @@ public:
     it's meant to be used only in single-threaded environment
   */
 virtual  Database::ID i_createRequest(const char *sourceIP, ServiceType service, const  char *content, const Fred::Logger::RequestProperties& props, const Fred::Logger::ObjectReferences &refs, RequestType request_type_id, Database::ID session_id) = 0;
-virtual  bool i_addRequestProperties(Database::ID id, const Fred::Logger::RequestProperties &props) = 0;
 virtual  bool i_closeRequest(Database::ID id, const char *content, const Fred::Logger::RequestProperties &props, const Fred::Logger::ObjectReferences &refs, const long result_code, Database::ID session_id) = 0;
   virtual Database::ID i_createSession(Database::ID id, const char *name) = 0;
 virtual  bool i_closeSession(Database::ID id) = 0;
@@ -126,7 +125,6 @@ public:
   }
 
   Database::ID i_createRequest(const char *sourceIP, ServiceType service, const  char *content, const Fred::Logger::RequestProperties& props, const Fred::Logger::ObjectReferences &refs, RequestType request_type_id, Database::ID session_id);
-  bool i_addRequestProperties(Database::ID id, const Fred::Logger::RequestProperties &props);
   bool i_closeRequest(Database::ID id, const char *content, const Fred::Logger::RequestProperties &props, const Fred::Logger::ObjectReferences &refs, const long result_code, Database::ID session_id);
   Database::ID i_createSession(Database::ID id, const char *name);
   bool i_closeSession(Database::ID id);

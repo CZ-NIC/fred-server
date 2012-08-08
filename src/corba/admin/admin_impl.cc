@@ -1098,8 +1098,8 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(
         ///create registrar certification
         return regman->createRegistrarCertification(
                 reg_id
-                , Database::Date(makeBoostDate(from))
-                , Database::Date(makeBoostDate(to))
+                , Database::Date(makeBoostDate_throw(from))
+                , Database::Date(makeBoostDate_throw(to))
                 , static_cast<Fred::Registrar::RegCertClass>(score)
                 , evaluation_file_id);
     }//try
@@ -1618,4 +1618,47 @@ void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) t
     }
 }
 
+ccReg::ULLSeq* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::DatePeriodList &date_intervals)
+{
+    try {
+        Logging::Context(server_name_);
+        ConnectionReleaser release;
+        TRACE(boost::format("[CALL] ccReg_Admin_i::getSummaryOfExpiredDomains(%1%, date_intervals") % registrar_handle );
+
+        // convert 2nd parametre - the sequence
+        std::vector<boost::gregorian::date_period> intervals;
+        intervals.reserve(date_intervals.length());
+
+        for(unsigned i=0; i<date_intervals.length(); i++) {
+            intervals.push_back(date_period(
+                        makeBoostDate_throw(date_intervals[i].from),
+                        makeBoostDate_throw(date_intervals[i].to))
+            );
+        }
+
+        // call implementation
+        std::vector<unsigned long long> counts = Fred::Domain::getExpiredDomainSummary(registrar_handle, intervals);
+
+        // convert return value
+        ccReg::ULLSeq_var ret = new ccReg::ULLSeq();
+
+        ret->length(counts.size());
+        for (unsigned i=0; i<counts.size(); i++) {
+            ret[i] = counts[i];
+        }
+
+        return ret._retn();
+
+    } catch (Fred::INVALID_VALUE &ex) {
+        throw ccReg::Admin::InvalidValue(ex.what());
+    } catch (Fred::NOT_FOUND &) {
+        throw ccReg::Admin::ObjectNotFound();
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(ex.what());
+        throw ccReg::Admin::InternalServerError();
+    } catch (...) {
+        LOGGER(PACKAGE).error("unknown exception in getSummaryOfExpiredDomains");
+        throw ccReg::Admin::InternalServerError();
+    }
+}
 
