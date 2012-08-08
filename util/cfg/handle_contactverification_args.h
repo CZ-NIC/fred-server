@@ -54,10 +54,10 @@ public:
                         std::string("Contact verification server options")));
 
         cfg_opts->add_options()
-                ("contactverification.hostname",
+                ("contact_verification.hostname",
                  po::value<std::string>()->default_value("demo.contactverification.cz"),
                  "server hostname")
-                ("contactverification.demo_mode",
+                ("contact_verification.demo_mode",
                  po::value<bool>()->default_value(false),
                  "turn demo mode on/off");
 
@@ -68,8 +68,8 @@ public:
         boost::program_options::variables_map vm;
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
 
-        hostname = vm["contactverification.hostname"].as<std::string>();
-        demo_mode = vm["contactverification.demo_mode"].as<bool>();
+        hostname = vm["contact_verification.hostname"].as<std::string>();
+        demo_mode = vm["contact_verification.demo_mode"].as<bool>();
     }//handle
 };
 
