@@ -74,7 +74,7 @@ static bool check_std_exception(std::exception const & ex)
 }
 
 
-BOOST_AUTO_TEST_CASE( test_createConditionalIdentification_1 )
+BOOST_AUTO_TEST_CASE( test_contact_verification )
 {
 
     //corba config
@@ -87,11 +87,8 @@ BOOST_AUTO_TEST_CASE( test_createConditionalIdentification_1 )
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
 
-    const std::auto_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
-        new Registry::Contact::Verification::ContactVerificationImpl(server_name
-            , boost::shared_ptr<Fred::Mailer::Manager>(
-                new MailerManager(CorbaContainer::get_instance()
-                ->getNS()))));
+    boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
+    Registry::Contact::Verification::ContactVerificationImpl cvi(server_name, mm);
 
     unsigned long long request_id =0;
 
@@ -129,14 +126,14 @@ BOOST_AUTO_TEST_CASE( test_createConditionalIdentification_1 )
     Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
 
     std::string another_request_id;
-    cv->createConditionalIdentification(fcvc.handle, registrar_handle
+    cvi.createConditionalIdentification(fcvc.handle, registrar_handle
             , request_id, another_request_id);
-
+/*
     cv->processConditionalIdentification(another_request_id
             , fcvc.auth_info, request_id);
 
     cv->processIdentification(fcvc.handle, fcvc.auth_info, request_id);
-
+*/
     BOOST_CHECK(1==1);
 
 /*
