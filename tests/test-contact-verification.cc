@@ -78,6 +78,14 @@ static bool check_std_exception(std::exception const & ex)
 
 BOOST_AUTO_TEST_CASE( test_createConditionalIdentification_1 )
 {
+    //CORBA init
+    FakedArgs orb_fa = CfgArgs::instance()->fa;
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
+        , ns_args_ptr->nameservice_host
+        , ns_args_ptr->nameservice_port
+        , ns_args_ptr->nameservice_context);
 
     const std::auto_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
         new Registry::Contact::Verification::ContactVerificationImpl(server_name
