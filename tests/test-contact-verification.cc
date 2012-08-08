@@ -37,20 +37,18 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "setup_server_decl.h"
 #include "time_clock.h"
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
+#include "setup_server_decl.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_database_args.h"
-#include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-
-#include "test-common-threaded.h"
+#include "cfg/handle_registry_args.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -78,14 +76,16 @@ static bool check_std_exception(std::exception const & ex)
 
 BOOST_AUTO_TEST_CASE( test_createConditionalIdentification_1 )
 {
-    //CORBA init
-    FakedArgs orb_fa = CfgArgs::instance()->fa;
+
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+    //conf pointers
     HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-    CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
-        , ns_args_ptr->nameservice_host
-        , ns_args_ptr->nameservice_port
-        , ns_args_ptr->nameservice_context);
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
 
     const std::auto_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
         new Registry::Contact::Verification::ContactVerificationImpl(server_name
