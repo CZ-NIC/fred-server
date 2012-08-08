@@ -126,6 +126,17 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     fcvc.ssntype=std::string("BIRTHDAY");
     fcvc.auth_info=rdg.xnstring(8);
     //unsigned long long contact_hid =
+
+    fcvc.disclosename = true;
+    fcvc.discloseorganization = true;
+    fcvc.discloseaddress = true;
+    fcvc.disclosetelephone = true;
+    fcvc.disclosefax = true;
+    fcvc.discloseemail = true;
+    fcvc.disclosevat = true;
+    fcvc.discloseident = true;
+    fcvc.disclosenotifyemail = true;
+
     Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
     trans.commit();
 
