@@ -88,12 +88,15 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             , ns_args_ptr->nameservice_context);
 
     boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
-    Registry::Contact::Verification::ContactVerificationImpl cvi(server_name, mm);
+    const std::auto_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
+        new Registry::Contact::Verification::ContactVerificationImpl(server_name, mm));
 
     unsigned long long request_id =0;
 
     //get db connection
     Database::Connection conn = Database::Manager::acquire();
+
+    Database::Transaction trans(conn);
 
     //get registrar id
     std::string registrar_handle = "REG-FRED_A";
@@ -114,7 +117,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     fcvc.name=std::string("TESTCV-NAME")+xmark;
     fcvc.organization=std::string("TESTCV-ORG")+xmark;
     fcvc.street1=std::string("TESTCV-STR1")+xmark;
-    fcvc. city=std::string("Praha");
+    fcvc.city=std::string("Praha");
     fcvc.postalcode=std::string("11150");
     fcvc.country=std::string("CZ");
     fcvc.telephone=std::string("728")+xmark;
@@ -124,11 +127,13 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     fcvc.auth_info=rdg.xnstring(8);
     //unsigned long long contact_hid =
     Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
+    trans.commit();
 
-    std::string another_request_id;
-    cvi.createConditionalIdentification(fcvc.handle, registrar_handle
-            , request_id, another_request_id);
 /*
+    std::string another_request_id;
+    cv->createConditionalIdentification(fcvc.handle, registrar_handle
+            , request_id, another_request_id);
+
     cv->processConditionalIdentification(another_request_id
             , fcvc.auth_info, request_id);
 
