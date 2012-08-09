@@ -170,9 +170,9 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     cv->processConditionalIdentification(another_request_id
             , password, request_id);
-/*
-    cv->processIdentification(fcvc.handle, fcvc.auth_info, request_id);
-*/
+
+    cv->processIdentification(fcvc.handle, password, request_id);
+
     BOOST_CHECK(1==1);
 
 /*
