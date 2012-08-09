@@ -197,6 +197,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
           BOOST_TEST_MESSAGE( "test password not found");
         }
     }
+    BOOST_TEST_MESSAGE( "password: " << password );
 
     cv->processIdentification(fcvc.handle, password, request_id);
 
