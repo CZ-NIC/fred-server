@@ -41,6 +41,8 @@
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
+#include "contact_verification/public_request_impl.h"
+
 #include "setup_server_decl.h"
 
 #include "cfg/handle_general_args.h"
@@ -50,6 +52,8 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_contactverification_args.h"
+
+
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -77,7 +81,6 @@ static bool check_std_exception(std::exception const & ex)
 
 BOOST_AUTO_TEST_CASE( test_contact_verification )
 {
-
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
     //conf pointers
@@ -170,6 +173,30 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     cv->processConditionalIdentification(another_request_id
             , password, request_id);
+
+    {
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+
+        Database::Result res_pass = conn.exec_params(
+            "select pra.password from object_registry obr "
+            " join public_request_objects_map prom on obr.id = prom.object_id "
+            " join public_request_auth pra on prom.request_id = pra.id "
+            " join public_request pr on pr.id=pra.id "
+            " join enum_public_request_type eprt on pr.request_type = eprt.id "
+            " where obr.name = $1::text "//'TESTCV-HANDLE356681'
+            " and eprt.name = $2::text "//'contact_identification'
+            , Database::query_param_list(fcvc.handle)
+                (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+        if(res_pass.size() == 1)
+        {
+            password = std::string(res_pass[0][0]);
+        }
+        else
+        {
+          BOOST_TEST_MESSAGE( "test password not found");
+        }
+    }
 
     cv->processIdentification(fcvc.handle, password, request_id);
 
