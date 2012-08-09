@@ -145,10 +145,10 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     std::string another_request_id;
     cv->createConditionalIdentification(fcvc.handle, registrar_handle
             , request_id, another_request_id);
-/*
+
     cv->processConditionalIdentification(another_request_id
             , fcvc.auth_info, request_id);
-
+/*
     cv->processIdentification(fcvc.handle, fcvc.auth_info, request_id);
 */
     BOOST_CHECK(1==1);
