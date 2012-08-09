@@ -115,13 +115,13 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     //create test contact
     std::string xmark = rdg.xnumstring(6);
     fcvc.handle=std::string("TESTCV-HANDLE")+xmark;
-    fcvc.name=std::string("TESTCV-NAME")+xmark;
+    fcvc.name=std::string("TESTCV NAME")+xmark;
     fcvc.organization=std::string("TESTCV-ORG")+xmark;
     fcvc.street1=std::string("TESTCV-STR1")+xmark;
     fcvc.city=std::string("Praha");
     fcvc.postalcode=std::string("11150");
     fcvc.country=std::string("CZ");
-    fcvc.telephone=std::string("728")+xmark;
+    fcvc.telephone=std::string("+420.728")+xmark;
     fcvc.email=std::string("test")+xmark+"@nic.cz";
     fcvc.ssn=std::string("1980-01-01");
     fcvc.ssntype=std::string("BIRTHDAY");
