@@ -49,6 +49,7 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_registry_args.h"
+#include "cfg/handle_contactverification_args.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -140,11 +141,11 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
     trans.commit();
 
-/*
+
     std::string another_request_id;
     cv->createConditionalIdentification(fcvc.handle, registrar_handle
             , request_id, another_request_id);
-
+/*
     cv->processConditionalIdentification(another_request_id
             , fcvc.auth_info, request_id);
 
