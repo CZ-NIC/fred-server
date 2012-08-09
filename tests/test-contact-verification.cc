@@ -92,15 +92,17 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     const std::auto_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
         new Registry::Contact::Verification::ContactVerificationImpl(server_name, mm));
 
+    std::string registrar_handle = "REG-FRED_A";
+    Fred::Contact::Verification::Contact fcvc;
     unsigned long long request_id =0;
-
+    std::string another_request_id;
+    {
     //get db connection
     Database::Connection conn = Database::Manager::acquire();
 
-    Database::Transaction trans(conn);
+    //Database::Transaction trans(conn);
 
     //get registrar id
-    std::string registrar_handle = "REG-FRED_A";
     Database::Result res_reg = conn.exec_params(
             "SELECT id FROM registrar WHERE handle=$1::text",
             Database::query_param_list(registrar_handle));
@@ -109,7 +111,6 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     }
     unsigned long long registrar_id = res_reg[0][0];
 
-    Fred::Contact::Verification::Contact fcvc;
     RandomDataGenerator rdg;
 
     //create test contact
@@ -139,22 +140,43 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     fcvc.disclosenotifyemail = true;
 
     Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
-    trans.commit();
+    //trans.commit();
+    }
 
-
-    std::string another_request_id;
     cv->createConditionalIdentification(fcvc.handle, registrar_handle
             , request_id, another_request_id);
 
-    Database::Result rcheck = conn.exec_params(
-            "SELECT password FROM public_request_auth"
-            " WHERE identification = $1::text",
+    BOOST_TEST_MESSAGE( "identification: " << another_request_id );
+
+    std::string password("testtest");
+    {
+    //get db connection
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result res_pass = conn.exec_params(
+            "SELECT password FROM public_request_auth  WHERE identification=$1::text",
             Database::query_param_list(another_request_id));
-    std::string password;
+    if(res_pass.size() == 1)
+    {
+        password = std::string(res_pass[0][0]);
+    }
+    /*
+    Database::Result res_passwd = conn.exec_params(
+        "SELECT password FROM public_request_auth WHERE identification = $1::text"
+        , Database::query_param_list(another_request_id));
+*/
+    }
+/*
     if (rcheck.size() == 1)
     {
         password = static_cast<std::string>(rcheck[0][0]);
     }
+    else
+    {
+      BOOST_TEST_MESSAGE( "test password not found");
+    }
+*/
+    BOOST_TEST_MESSAGE( "password: " << password );
 
     cv->processConditionalIdentification(another_request_id
             , password, request_id);
