@@ -146,8 +146,18 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     cv->createConditionalIdentification(fcvc.handle, registrar_handle
             , request_id, another_request_id);
 
+    Database::Result rcheck = conn.exec_params(
+            "SELECT password FROM public_request_auth"
+            " WHERE identification = $1::text",
+            Database::query_param_list(another_request_id));
+    std::string password;
+    if (rcheck.size() == 1)
+    {
+        password = static_cast<std::string>(rcheck[0][0]);
+    }
+
     cv->processConditionalIdentification(another_request_id
-            , fcvc.auth_info, request_id);
+            , password, request_id);
 /*
     cv->processIdentification(fcvc.handle, fcvc.auth_info, request_id);
 */
