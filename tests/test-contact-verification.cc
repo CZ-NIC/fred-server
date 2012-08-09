@@ -201,29 +201,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     cv->processIdentification(fcvc.handle, password, request_id);
 
-    BOOST_CHECK(1==1);
-
-/*
-    const std::string& get_server_name();
-
-    unsigned long long createConditionalIdentification(
-            const std::string & contact_handle
-            , const std::string & registrar_handle
-            , const unsigned long long log_id
-            , std::string & request_id);
-
-    unsigned long long processConditionalIdentification(
-            const std::string & request_id
-            , const std::string & password
-            , const unsigned long long log_id);
-
-    unsigned long long processIdentification(
-            const std::string & contact_handle
-            , const std::string & password
-            , const unsigned long long log_id);
-
-    std::string getRegistrarName(const std::string & registrar_handle);
-*/
+    BOOST_CHECK(cv->getRegistrarName(fcvc.handle) == fcvc.name);
 }
 
 
