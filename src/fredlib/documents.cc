@@ -236,7 +236,7 @@ namespace Fred
           "mojeid_validate.xsl", true, "application/pdf"
         );
         templateMap[GT_CONTACT_VERIFICATION_LETTER_PIN3] = GenProcType(
-          "contact_verification_owner.xsl", true, "application/pdf"
+          "contact_verification_auth_owner.xsl", true, "application/pdf"
         );
 
 
