@@ -97,50 +97,50 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     unsigned long long request_id =0;
     std::string another_request_id;
     {
-    //get db connection
-    Database::Connection conn = Database::Manager::acquire();
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
 
-    //Database::Transaction trans(conn);
+        //Database::Transaction trans(conn);
 
-    //get registrar id
-    Database::Result res_reg = conn.exec_params(
-            "SELECT id FROM registrar WHERE handle=$1::text",
-            Database::query_param_list(registrar_handle));
-    if(res_reg.size() == 0) {
-        throw std::runtime_error("Registrar does not exist");
-    }
-    unsigned long long registrar_id = res_reg[0][0];
+        //get registrar id
+        Database::Result res_reg = conn.exec_params(
+                "SELECT id FROM registrar WHERE handle=$1::text",
+                Database::query_param_list(registrar_handle));
+        if(res_reg.size() == 0) {
+            throw std::runtime_error("Registrar does not exist");
+        }
+        unsigned long long registrar_id = res_reg[0][0];
 
-    RandomDataGenerator rdg;
+        RandomDataGenerator rdg;
 
-    //create test contact
-    std::string xmark = rdg.xnumstring(6);
-    fcvc.handle=std::string("TESTCV-HANDLE")+xmark;
-    fcvc.name=std::string("TESTCV NAME")+xmark;
-    fcvc.organization=std::string("TESTCV-ORG")+xmark;
-    fcvc.street1=std::string("TESTCV-STR1")+xmark;
-    fcvc.city=std::string("Praha");
-    fcvc.postalcode=std::string("11150");
-    fcvc.country=std::string("CZ");
-    fcvc.telephone=std::string("+420.728")+xmark;
-    fcvc.email=std::string("test")+xmark+"@nic.cz";
-    fcvc.ssn=std::string("1980-01-01");
-    fcvc.ssntype=std::string("BIRTHDAY");
-    fcvc.auth_info=rdg.xnstring(8);
-    //unsigned long long contact_hid =
+        //create test contact
+        std::string xmark = rdg.xnumstring(6);
+        fcvc.handle=std::string("TESTCV-HANDLE")+xmark;
+        fcvc.name=std::string("TESTCV NAME")+xmark;
+        fcvc.organization=std::string("TESTCV-ORG")+xmark;
+        fcvc.street1=std::string("TESTCV-STR1")+xmark;
+        fcvc.city=std::string("Praha");
+        fcvc.postalcode=std::string("11150");
+        fcvc.country=std::string("CZ");
+        fcvc.telephone=std::string("+420.728")+xmark;
+        fcvc.email=std::string("test")+xmark+"@nic.cz";
+        fcvc.ssn=std::string("1980-01-01");
+        fcvc.ssntype=std::string("BIRTHDAY");
+        fcvc.auth_info=rdg.xnstring(8);
+        //unsigned long long contact_hid =
 
-    fcvc.disclosename = true;
-    fcvc.discloseorganization = true;
-    fcvc.discloseaddress = true;
-    fcvc.disclosetelephone = true;
-    fcvc.disclosefax = true;
-    fcvc.discloseemail = true;
-    fcvc.disclosevat = true;
-    fcvc.discloseident = true;
-    fcvc.disclosenotifyemail = true;
+        fcvc.disclosename = true;
+        fcvc.discloseorganization = true;
+        fcvc.discloseaddress = true;
+        fcvc.disclosetelephone = true;
+        fcvc.disclosefax = true;
+        fcvc.discloseemail = true;
+        fcvc.disclosevat = true;
+        fcvc.discloseident = true;
+        fcvc.disclosenotifyemail = true;
 
-    Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
-    //trans.commit();
+        Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
+        //trans.commit();
     }
 
     cv->createConditionalIdentification(fcvc.handle, registrar_handle
@@ -150,32 +150,22 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     std::string password("testtest");
     {
-    //get db connection
-    Database::Connection conn = Database::Manager::acquire();
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
 
-    Database::Result res_pass = conn.exec_params(
-            "SELECT password FROM public_request_auth  WHERE identification=$1::text",
-            Database::query_param_list(another_request_id));
-    if(res_pass.size() == 1)
-    {
-        password = std::string(res_pass[0][0]);
+        Database::Result res_pass = conn.exec_params(
+                "SELECT password FROM public_request_auth  WHERE identification=$1::text",
+                Database::query_param_list(another_request_id));
+        if(res_pass.size() == 1)
+        {
+            password = std::string(res_pass[0][0]);
+        }
+        else
+        {
+          BOOST_TEST_MESSAGE( "test password not found");
+        }
     }
-    /*
-    Database::Result res_passwd = conn.exec_params(
-        "SELECT password FROM public_request_auth WHERE identification = $1::text"
-        , Database::query_param_list(another_request_id));
-*/
-    }
-/*
-    if (rcheck.size() == 1)
-    {
-        password = static_cast<std::string>(rcheck[0][0]);
-    }
-    else
-    {
-      BOOST_TEST_MESSAGE( "test password not found");
-    }
-*/
+
     BOOST_TEST_MESSAGE( "password: " << password );
 
     cv->processConditionalIdentification(another_request_id
