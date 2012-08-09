@@ -145,6 +145,17 @@ namespace Registry
                     return cinfo.id;
 
                 }//try
+                catch (Fred::Contact::Verification::DataValidationError& _ex)
+                {
+                    std::string msg("Fred::Contact::Verification::DataValidationError:");
+                    for (Fred::Contact::Verification::FieldErrorMap::const_iterator it = _ex.errors.begin()
+                            ; it != _ex.errors.end(); ++it) {
+                        msg+=std::string("  ")+(it->first);
+                        msg+=std::string(" ")+ boost::lexical_cast<std::string>(it->second);
+                    }
+                    LOGGER(PACKAGE).error(msg);
+                    throw;
+                }
                 catch (Fred::PublicRequest::NotApplicable &_ex)
                 {
                     LOGGER(PACKAGE).error(_ex.what());
