@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     cv->processIdentification(fcvc.handle, password, request_id);
 
-    BOOST_CHECK(cv->getRegistrarName(fcvc.handle) == fcvc.name);
+    BOOST_CHECK(cv->getRegistrarName(registrar_handle) == "Company A l.t.d");
 }
 
 
