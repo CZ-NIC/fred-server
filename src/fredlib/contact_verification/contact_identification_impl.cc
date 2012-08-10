@@ -23,6 +23,7 @@
 
 #include "contact_identification_impl.h"
 #include "object_states.h"
+#include "public_request/public_request_impl.h"
 
 namespace Fred {
 namespace Contact {
@@ -90,6 +91,17 @@ void ContactIdentificationImpl::pre_process_check(bool _check)
         = Fred::Contact::Verification::contact_info(
                 pra_impl_ptr_->getObject(0).id);
     contact_validator_.check(cdata);
+}
+
+void ContactIdentificationImpl::process_action(bool _check)
+{
+        Fred::cancel_object_state(pra_impl_ptr_->getObject(0).id,
+                Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+
+        Fred::PublicRequest::insertNewStateRequest(
+                pra_impl_ptr_->getId(),
+                pra_impl_ptr_->getObject(0).id,
+                ObjectState::IDENTIFIED_CONTACT);
 }
 
 }}}

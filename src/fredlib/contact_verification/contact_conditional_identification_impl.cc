@@ -89,5 +89,14 @@ void ConditionalContactIdentificationImpl::pre_process_check(bool _check)
     contact_validator_.check(cdata);
 }
 
+void ConditionalContactIdentificationImpl::process_action(bool _check)
+{
+    Fred::PublicRequest::insertNewStateRequest(
+            pra_impl_ptr_->getId(),
+            pra_impl_ptr_->getObject(0).id,
+            ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+}
+
+
 }}}
 

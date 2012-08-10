@@ -44,6 +44,7 @@ public:
     std::string generate_passwords();
     void pre_save_check();
     void pre_process_check(bool _check);
+    void process_action(bool _check);
 };
 
 }}}

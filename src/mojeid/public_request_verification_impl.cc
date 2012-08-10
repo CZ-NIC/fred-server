@@ -103,6 +103,7 @@ public:
                 % this->getId());
 
         cond_contact_identification_impl.pre_process_check(_check);
+        cond_contact_identification_impl.process_action(_check);
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
@@ -113,11 +114,6 @@ public:
                 , act_registrar,  this->getResolveRequestId()
                 , this->getObject(0).id);
         }
-
-        /* set state */
-        insertNewStateRequest(this->getId()
-                , this->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
 
         insertNewStateRequest(this->getId()
                 , this->getObject(0).id
@@ -236,15 +232,7 @@ public:
         Database::Transaction tx(conn);
 
         contact_identification_impl.pre_process_check(_check);
-
-        /* cancel previous state */
-        Fred::cancel_object_state(this->getObject(0).id
-                , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
-
-        /* set new state */
-        insertNewStateRequest(this->getId()
-                , this->getObject(0).id
-                , ObjectState::IDENTIFIED_CONTACT);
+        contact_identification_impl.process_action(_check);
 
         /* update states */
         Fred::update_object_states(this->getObject(0).id);

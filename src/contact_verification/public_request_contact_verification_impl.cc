@@ -54,14 +54,10 @@ public:
                 % this->getId());
 
         cond_contact_identification_impl.pre_process_check(_check);
+        cond_contact_identification_impl.process_action(_check);
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
-
-        /* set state */
-        insertNewStateRequest(this->getId()
-                , this->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
 
         /* update states */
         Fred::update_object_states(this->getObject(0).id);
@@ -136,19 +132,11 @@ public:
                 "processing public request id=%1%")
         % this->getId());
 
-        contact_identification_impl.pre_process_check(_check);
-
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        /* check if contact is already conditionally identified (21) and cancel state */
-        Fred::cancel_object_state(this->getObject(0).id
-                , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
-
-        /* set new state */
-        insertNewStateRequest(this->getId()
-                , this->getObject(0).id
-                , ObjectState::IDENTIFIED_CONTACT);
+        contact_identification_impl.pre_process_check(_check);
+        contact_identification_impl.process_action(_check);
 
         /* update states */
         Fred::update_object_states(this->getObject(0).id);
