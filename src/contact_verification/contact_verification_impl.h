@@ -52,6 +52,12 @@ namespace Registry
                 {}
             };
 
+            struct REGISTRAR_NOT_EXISTS : public std::runtime_error
+            {
+                REGISTRAR_NOT_EXISTS() : std::runtime_error("registrar does not exist")
+                {}
+            };
+
             class ContactVerificationImpl
             {
                 const HandleRegistryArgs *registry_conf_;

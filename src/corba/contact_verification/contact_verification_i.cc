@@ -73,6 +73,10 @@ namespace Registry
                 {
                     throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
                 }
+                catch (Registry::Contact::Verification::REGISTRAR_NOT_EXISTS&)
+                {
+                    throw Registry::ContactVerification::REGISTRAR_NOT_EXISTS();
+                }
                 catch (Fred::Contact::Verification::DataValidationError &_ex)
                 {
                     throw Registry::ContactVerification::DATA_VALIDATION_ERROR(

@@ -100,7 +100,7 @@ namespace Registry
                             "SELECT id FROM registrar WHERE handle=$1::text",
                             Database::query_param_list(registrar_handle));
                     if(res_reg.size() == 0) {
-                        throw std::runtime_error("Registrar does not exist");
+                        throw Registry::Contact::Verification::REGISTRAR_NOT_EXISTS();
                     }
 
                     unsigned long long registrar_id = res_reg[0][0];
