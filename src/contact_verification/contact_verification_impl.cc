@@ -219,9 +219,10 @@ namespace Registry
 
                      ContactIdentificationRequestManagerPtr request_manager(mailer_);
 
+                     unsigned long long cid = 0;
                      try
                      {
-                         unsigned long long cid = request_manager->processAuthRequest(
+                         cid = request_manager->processAuthRequest(
                              request_id, password, log_id);
                      }
                      catch (Fred::PublicRequest::AlreadyProcessed &_ex)
@@ -377,7 +378,7 @@ namespace Registry
                 catch (Fred::NOT_FOUND& _ex)
                 {
                     LOGGER(PACKAGE).error(_ex.what());
-                    throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
+                    throw Registry::Contact::Verification::IDENTIFICATION_FAILED();;
                 }
                 catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
                 {
