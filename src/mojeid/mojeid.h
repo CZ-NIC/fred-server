@@ -25,8 +25,7 @@
 #define MOJEID_H_
 
 #include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/contact_verification.h"
-
+#include "fredlib/contact_verification/contact_verification_validators.h"
 
 #include <string>
 #include <vector>

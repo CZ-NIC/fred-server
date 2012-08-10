@@ -1,16 +1,16 @@
-#include <stdexcept>
+#include "util/types/birthdate.h"
+#include "util/map_at.h"
+#include "util/factory.h"
+#include "fredlib/object_states.h"
+#include "fredlib/public_request/public_request_impl.h"
+#include "fredlib/contact_verification/contact.h"
+#include "fredlib/contact_verification/contact_verification_validators.h"
+#include "fredlib/contact_verification/contact_verification_password.h"
+#include "fredlib/contact_verification/contact_conditional_identification_impl.h"
+#include "fredlib/contact_verification/contact_identification_impl.h"
+#include "src/contact_verification/public_request_contact_verification_impl.h"
 
-#include "public_request/public_request_impl.h"
-#include "types/birthdate.h"
-#include "object_states.h"
-#include "contact_verification/contact.h"
-#include "contact_verification/contact_verification_password.h"
-#include "contact_verification/contact_verification.h"
-#include "contact_verification/conditional_contact_identification_impl.h"
-#include "contact_verification/contact_identification_impl.h"
-#include "map_at.h"
-#include "factory.h"
-#include "contact_verification/public_request_impl.h"
+#include <stdexcept>
 
 namespace Fred {
 namespace PublicRequest {

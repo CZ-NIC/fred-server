@@ -5,7 +5,7 @@
 #include "corba/common_wrappers.h"
 
 #include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/data_validation.h"
+#include "fredlib/contact_verification/contact_validator.h"
 
 #include <string>
 #include <boost/algorithm/string.hpp>

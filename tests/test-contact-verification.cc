@@ -41,7 +41,7 @@
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
-#include "contact_verification/public_request_impl.h"
+#include "contact_verification/public_request_contact_verification_impl.h"
 
 #include "setup_server_decl.h"
 
@@ -62,6 +62,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "mailer_manager.h"
+#include "fredlib/contact_verification/contact.h"
 #include "contact_verification/contact_verification_impl.h"
 
 //test-contact-verification.cc

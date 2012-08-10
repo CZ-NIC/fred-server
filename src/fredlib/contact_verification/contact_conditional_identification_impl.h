@@ -21,12 +21,12 @@
  *  header of conditional contact identification
  */
 
-#ifndef CONDITIONAL_CONTACT_IDENTIFICATION_IMPL_H_
-#define CONDITIONAL_CONTACT_IDENTIFICATION_IMPL_H_
+#ifndef CONTACT_CONDITIONAL_IDENTIFICATION_IMPL_H_
+#define CONTACT_CONDITIONAL_IDENTIFICATION_IMPL_H_
 
 #include "public_request/public_request_impl.h"
 #include "contact_verification_password.h"
-#include "contact_verification.h"
+#include "contact_verification_validators.h"
 
 
 namespace Fred {
@@ -48,4 +48,4 @@ public:
 
 }}}
 
-#endif // CONDITIONAL_CONTACT_IDENTIFICATION_IMPL_H_
+#endif /*CONTACT_CONDITIONAL_IDENTIFICATION_IMPL_H_*/

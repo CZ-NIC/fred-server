@@ -3,14 +3,11 @@
 
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_registry_args.h"
+#include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_contactverification_args.h"
 #include "fredlib/registry.h"
-#include "fredlib/public_request/public_request.h"
-#include "public_request_impl.h"
 #include "fredlib/mailer.h"
-//config for docmanager
-#include "cfg/config_handler_decl.h"
-#include "cfg/handle_corbanameservice_args.h"
+#include "fredlib/public_request/public_request.h"
 
 namespace Registry {
 namespace Contact {

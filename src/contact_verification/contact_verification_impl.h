@@ -2,17 +2,12 @@
 #define CONTACT_VERIFICATION_IMPL_H__
 
 
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/contact_verification.h"
+#include "cfg/handle_registry_args.h"
+#include "fredlib/mailer.h"
 
 #include <string>
 #include <vector>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/thread/mutex.hpp>
-
-#include "cfg/handle_registry_args.h"
-
-#include "fredlib/mailer.h"
+#include <boost/shared_ptr.hpp>
 
 
 namespace Registry

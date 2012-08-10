@@ -822,19 +822,19 @@ src_fredlib_notifier_libnotifier_a_SOURCES = \
 # src/fredlib/contact_verification/libcontact_verification.a
 #
 src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
-		src/contact_verification/public_request_impl.cc \
-		src/contact_verification/public_request_impl.h \
+		src/contact_verification/public_request_contact_verification_impl.cc \
+		src/contact_verification/public_request_contact_verification_impl.h \
 		util/db/nullable.h \
 		src/fredlib/contact_verification/contact.h \
 		src/fredlib/contact_verification/contact.cc \
-		src/fredlib/contact_verification/data_validation.h \
-		src/fredlib/contact_verification/data_validation.cc \
-		src/fredlib/contact_verification/contact_verification.cc \
-		src/fredlib/contact_verification/contact_verification.h \
-		src/fredlib/contact_verification/conditional_contact_identification_impl.cc \
-		src/fredlib/contact_verification/conditional_contact_identification_impl.h \
+		src/fredlib/contact_verification/contact_verification_checkers.h \
+		src/fredlib/contact_verification/contact_verification_checkers.cc \
+		src/fredlib/contact_verification/contact_conditional_identification_impl.cc \
+		src/fredlib/contact_verification/contact_conditional_identification_impl.h \
 		src/fredlib/contact_verification/contact_identification_impl.cc \
 		src/fredlib/contact_verification/contact_identification_impl.h \
+		src/fredlib/contact_verification/contact_verification_validators.cc \
+		src/fredlib/contact_verification/contact_verification_validators.h \
 		src/fredlib/contact_verification/contact_verification_password.cc \
 		src/fredlib/contact_verification/contact_verification_password.h
 #

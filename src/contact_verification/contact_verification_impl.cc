@@ -1,8 +1,6 @@
-
-#include "contact_verification/contact_identification.h"
-
 #include "contact_verification/contact_verification_impl.h"
-#include "contact_verification/public_request_impl.h"
+#include "contact_verification/public_request_contact_verification_impl.h"
+#include "contact_verification/contact_identification.h"
 
 #include "fredlib/db_settings.h"
 #include "fredlib/registry.h"
@@ -10,14 +8,13 @@
 #include "fredlib/public_request/public_request.h"
 #include "fredlib/object_states.h"
 #include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/contact_verification.h"
-#include "fredlib/contact_verification/data_validation.h"
+#include "fredlib/contact_verification/contact_verification_validators.h"
 #include "util/factory_check.h"
 #include "util/util.h"
 
 #include "cfg/config_handler_decl.h"
-#include "log/logger.h"
-#include "random.h"
+#include "util/log/logger.h"
+#include "util/random.h"
 #include "corba/connection_releaser.h"
 #include "types/stringify.h"
 #include "types/birthdate.h"
