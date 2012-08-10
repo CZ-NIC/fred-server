@@ -58,6 +58,30 @@ namespace Registry
                 {}
             };
 
+            struct VALIDATION_ERROR
+            {
+                enum Type
+                {
+                    NOT_AVAILABLE,
+                    INVALID,
+                    REQUIRED
+                };
+            };
+
+            typedef std::map<std::string, VALIDATION_ERROR::Type> FIELD_ERROR_MAP;
+
+            struct DATA_VALIDATION_ERROR : public std::runtime_error
+            {
+                DATA_VALIDATION_ERROR(const FIELD_ERROR_MAP &_e) :
+                    std::runtime_error("data validation error"),
+                    errors(_e)
+                {
+                }
+                ~DATA_VALIDATION_ERROR() throw () {}
+                FIELD_ERROR_MAP errors;
+            };
+
+
             class ContactVerificationImpl
             {
                 const HandleRegistryArgs *registry_conf_;

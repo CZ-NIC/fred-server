@@ -42,6 +42,53 @@ namespace Registry
     {
         namespace Verification
         {
+            static Registry::Contact::Verification::DATA_VALIDATION_ERROR
+            create_data_validation_error_not_available()
+            {
+                Registry::Contact::Verification::FIELD_ERROR_MAP errors;
+                errors[Fred::Contact::Verification::field_status]
+                       = Registry::Contact::Verification::VALIDATION_ERROR::NOT_AVAILABLE;
+                return Registry::Contact::Verification::DATA_VALIDATION_ERROR(errors);
+            }
+
+            static void log_data_validation_error(Fred::Contact::Verification::DataValidationError& _ex)
+            {
+                std::string msg("Fred::Contact::Verification::DataValidationError:");
+                for (Fred::Contact::Verification::FieldErrorMap::const_iterator it = _ex.errors.begin()
+                        ; it != _ex.errors.end(); ++it) {
+                    msg+=std::string("  ")+(it->first);
+                    msg+=std::string(" ")+ boost::lexical_cast<std::string>(it->second);
+                }
+                LOGGER(PACKAGE).error(msg);
+            }
+
+            static Registry::Contact::Verification::DATA_VALIDATION_ERROR
+            translate_data_validation_error(Fred::Contact::Verification::DataValidationError& _ex)
+            {
+                Registry::Contact::Verification::FIELD_ERROR_MAP fem;
+                for (Fred::Contact::Verification::FieldErrorMap::const_iterator it = _ex.errors.begin()
+                        ; it != _ex.errors.end(); ++it)
+                {
+                    switch (it->second)
+                    {
+                        case Fred::Contact::Verification::NOT_AVAILABLE:
+                            fem[it->first]= Registry::Contact::Verification::VALIDATION_ERROR::NOT_AVAILABLE;
+                            break;
+                        case Fred::Contact::Verification::INVALID:
+                            fem[it->first]= Registry::Contact::Verification::VALIDATION_ERROR::INVALID;
+                            break;
+                        case Fred::Contact::Verification::REQUIRED:
+                            fem[it->first]= Registry::Contact::Verification::VALIDATION_ERROR::REQUIRED;
+                            break;
+                        default:
+                            throw std::runtime_error("unknown validation error type");
+                            break;
+                    }//switch
+                }//for
+                return Registry::Contact::Verification::DATA_VALIDATION_ERROR(fem);
+            }
+
+
             ContactVerificationImpl::ContactVerificationImpl(const std::string &_server_name
                     , boost::shared_ptr<Fred::Mailer::Manager> _mailer)
                 : registry_conf_(CfgArgs::instance()
@@ -147,22 +194,13 @@ namespace Registry
                 }//try
                 catch (Fred::Contact::Verification::DataValidationError& _ex)
                 {
-                    std::string msg("Fred::Contact::Verification::DataValidationError:");
-                    for (Fred::Contact::Verification::FieldErrorMap::const_iterator it = _ex.errors.begin()
-                            ; it != _ex.errors.end(); ++it) {
-                        msg+=std::string("  ")+(it->first);
-                        msg+=std::string(" ")+ boost::lexical_cast<std::string>(it->second);
-                    }
-                    LOGGER(PACKAGE).error(msg);
-                    throw;
+                    log_data_validation_error(_ex);
+                    throw translate_data_validation_error(_ex);
                 }
                 catch (Fred::PublicRequest::NotApplicable &_ex)
                 {
                     LOGGER(PACKAGE).error(_ex.what());
-                    Fred::Contact::Verification::FieldErrorMap errors;
-                    errors[Fred::Contact::Verification::field_status]
-                           = Fred::Contact::Verification::NOT_AVAILABLE;
-                    throw Fred::Contact::Verification::DataValidationError((errors));
+                    throw create_data_validation_error_not_available();
                 }
                 catch (std::exception &_ex)
                 {
@@ -228,14 +266,8 @@ namespace Registry
                 }//try
                 catch (Fred::Contact::Verification::DataValidationError& _ex)
                 {
-                    std::string msg("Fred::Contact::Verification::DataValidationError:");
-                    for (Fred::Contact::Verification::FieldErrorMap::const_iterator it = _ex.errors.begin()
-                            ; it != _ex.errors.end(); ++it) {
-                        msg+=std::string("  ")+(it->first);
-                        msg+=std::string(" ")+ boost::lexical_cast<std::string>(it->second);
-                    }
-                    LOGGER(PACKAGE).error(msg);
-                    throw;
+                    log_data_validation_error(_ex);
+                    throw translate_data_validation_error(_ex);
                 }
                 catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
                 {
@@ -263,10 +295,7 @@ namespace Registry
                 catch (Fred::PublicRequest::NotApplicable &_ex)
                 {
                     LOGGER(PACKAGE).error(_ex.what());
-                    Fred::Contact::Verification::FieldErrorMap errors;
-                    errors[Fred::Contact::Verification::field_status]
-                           = Fred::Contact::Verification::NOT_AVAILABLE;
-                    throw Fred::Contact::Verification::DataValidationError((errors));
+                    throw create_data_validation_error_not_available();
                 }
                 catch (std::exception &_ex)
                 {
@@ -327,14 +356,8 @@ namespace Registry
                 }//try
                 catch (Fred::Contact::Verification::DataValidationError& _ex)
                 {
-                    std::string msg("Fred::Contact::Verification::DataValidationError:");
-                    for (Fred::Contact::Verification::FieldErrorMap::const_iterator it = _ex.errors.begin()
-                            ; it != _ex.errors.end(); ++it) {
-                        msg+=std::string("  ")+(it->first);
-                        msg+=std::string(" ")+ boost::lexical_cast<std::string>(it->second);
-                    }
-                    LOGGER(PACKAGE).error(msg);
-                    throw;
+                    log_data_validation_error(_ex);
+                    throw translate_data_validation_error(_ex);
                 }
                 catch (Fred::NOT_FOUND& _ex)
                 {
@@ -367,10 +390,7 @@ namespace Registry
                 catch (Fred::PublicRequest::NotApplicable &_ex)
                 {
                     LOGGER(PACKAGE).error(_ex.what());
-                    Fred::Contact::Verification::FieldErrorMap errors;
-                    errors[Fred::Contact::Verification::field_status]
-                           = Fred::Contact::Verification::NOT_AVAILABLE;
-                    throw Fred::Contact::Verification::DataValidationError((errors));
+                    throw create_data_validation_error_not_available();
                 }
                 catch (std::exception &_ex)
                 {
@@ -390,26 +410,40 @@ namespace Registry
                 Logging::Context ctx("get-registrar-name");
                 ConnectionReleaser releaser;
 
-                LOGGER(PACKAGE).info(boost::format(
-                     " registrar_handle: %1%") % registrar_handle);
-
-                Database::Connection conn = Database::Manager::acquire();
-
-                Database::Result regname_result = conn.exec_params(
-                    "select name from registrar where handle=$1::text"
-                    , Database::query_param_list(registrar_handle));
-
-                std::string registrar_name;
-                if (regname_result.size() == 1)
+                try
                 {
-                    registrar_name = static_cast<std::string>(regname_result[0][0]);
-                }
-                else
+
+                    LOGGER(PACKAGE).info(boost::format(
+                         " registrar_handle: %1%") % registrar_handle);
+
+                    Database::Connection conn = Database::Manager::acquire();
+
+                    Database::Result regname_result = conn.exec_params(
+                        "select name from registrar where handle=$1::text"
+                        , Database::query_param_list(registrar_handle));
+
+                    std::string registrar_name;
+                    if (regname_result.size() == 1)
+                    {
+                        registrar_name = static_cast<std::string>(regname_result[0][0]);
+                    }
+                    else
+                    {
+                        LOGGER(PACKAGE).error("registrar not found");
+                        throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
+                    }
+                    return registrar_name;
+                }//try
+                catch (std::exception &_ex)
                 {
-                    LOGGER(PACKAGE).error("registrar not found");
-                    throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
+                    LOGGER(PACKAGE).error(_ex.what());
+                    throw;
                 }
-                return registrar_name;
+                catch (...)
+                {
+                    LOGGER(PACKAGE).error("unknown exception");
+                    throw;
+                }
             }
         }
     }

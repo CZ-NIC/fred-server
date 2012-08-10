@@ -77,7 +77,7 @@ namespace Registry
                 {
                     throw Registry::ContactVerification::REGISTRAR_NOT_EXISTS();
                 }
-                catch (Fred::Contact::Verification::DataValidationError &_ex)
+                catch (Registry::Contact::Verification::DATA_VALIDATION_ERROR &_ex)
                 {
                     throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
                         corba_wrap_validation_error_list(_ex.errors));
@@ -120,7 +120,7 @@ namespace Registry
                     throw Registry::ContactVerification::OBJECT_CHANGED();
                 }
 
-                catch (Fred::Contact::Verification::DataValidationError &_ex)
+                catch (Registry::Contact::Verification::DATA_VALIDATION_ERROR &_ex)
                 {
                     throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
                         corba_wrap_validation_error_list(_ex.errors));
@@ -166,7 +166,7 @@ namespace Registry
                 {
                     throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
                 }
-                catch (Fred::Contact::Verification::DataValidationError &_ex)
+                catch (Registry::Contact::Verification::DATA_VALIDATION_ERROR &_ex)
                 {
                     throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
                         corba_wrap_validation_error_list(_ex.errors));
