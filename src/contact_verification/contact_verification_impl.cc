@@ -219,28 +219,8 @@ namespace Registry
 
                      ContactIdentificationRequestManagerPtr request_manager(mailer_);
 
-                     unsigned long long cid = 0;
-                     try
-                     {
-                         cid = request_manager->processAuthRequest(
-                             request_id, password, log_id);
-                     }
-                     catch (Fred::PublicRequest::AlreadyProcessed &_ex)
-                     {
-                         if(_ex.success)
-                         {
-                             LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed true");
-                         }
-                         else
-                         {
-                             LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed false");
-                         }
-                         throw;
-                     }
-                     catch(...)
-                     {
-                         throw;
-                     }
+                     unsigned long long cid = request_manager->processAuthRequest(
+                         request_id, password, log_id);
 
                      trans.commit();
 
@@ -266,10 +246,12 @@ namespace Registry
                 {
                     if(_ex.success)
                     {
+                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed true");
                         throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
                     }
                     else
                     {
+                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed false");
                         throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
                     }
                 }
@@ -337,28 +319,7 @@ namespace Registry
                      std::string request_id = request_manager->getPublicRequestAuthIdentification(
                              cinfo.id, request_type_list);
 
-                     try
-                     {
-                     request_manager->processAuthRequest(
-                             request_id, password, log_id);
-                     }
-                     catch (Fred::PublicRequest::AlreadyProcessed &_ex)
-                     {
-                         if(_ex.success)
-                         {
-                             LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed true");
-                         }
-                         else
-                         {
-                             LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed false");
-                         }
-                         throw;
-                     }
-                     catch(...)
-                     {
-                         throw;
-                     }
-
+                     request_manager->processAuthRequest(request_id, password, log_id);
 
                      trans.commit();
 
@@ -378,7 +339,7 @@ namespace Registry
                 catch (Fred::NOT_FOUND& _ex)
                 {
                     LOGGER(PACKAGE).error(_ex.what());
-                    throw Registry::Contact::Verification::IDENTIFICATION_FAILED();;
+                    throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
                 }
                 catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
                 {
@@ -389,10 +350,12 @@ namespace Registry
                 {
                     if(_ex.success)
                     {
+                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed true");
                         throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
                     }
                     else
                     {
+                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed false");
                         throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
                     }
                 }
