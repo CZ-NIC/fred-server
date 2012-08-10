@@ -197,15 +197,20 @@ namespace Registry
                             " WHERE pra.identification = $1::text "
                             , Database::query_param_list(request_id));
 
-                    if(res_req.size() != 1) {
-                        throw std::runtime_error("Request does not exist");
+                    if(res_req.size() != 1)
+                    {
+                        LOGGER(PACKAGE).error(std::string("unable to find request with identification: ")
+                            + request_id);
+                        throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
                     }
 
                     std::string request_type = static_cast<std::string>(res_req[0][0]);
 
                     if(request_type != Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
                     {
-                        throw std::runtime_error("Wrong type of request");
+                        LOGGER(PACKAGE).error(std::string("wrong type of request: ")
+                            + request_type);
+                        throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
                     }
 
                     LOGGER(PACKAGE).info(boost::format("request data --"
@@ -214,8 +219,32 @@ namespace Registry
 
                      ContactIdentificationRequestManagerPtr request_manager(mailer_);
 
-                     unsigned long long cid = request_manager->processAuthRequest(
+                     try
+                     {
+                         unsigned long long cid = request_manager->processAuthRequest(
                              request_id, password, log_id);
+                     }
+                     catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
+                     {
+                         LOGGER(PACKAGE).error("PublicRequestAuth::NotAuthenticated");
+                         throw;
+                     }
+                     catch (Fred::PublicRequest::AlreadyProcessed &_ex)
+                     {
+                         if(_ex.success)
+                         {
+                             LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed true");
+                         }
+                         else
+                         {
+                             LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed false");
+                         }
+                         throw;
+                     }
+                     catch(...)
+                     {
+                         throw;
+                     }
 
                      trans.commit();
 
@@ -234,19 +263,17 @@ namespace Registry
                 }
                 catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
                 {
-                    LOGGER(PACKAGE).error("PublicRequestAuth::NotAuthenticated");
+                    LOGGER(PACKAGE).error("identification failed");
                     throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
                 }
                 catch (Fred::PublicRequest::AlreadyProcessed &_ex)
                 {
                     if(_ex.success)
                     {
-                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed true");
                         throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
                     }
                     else
                     {
-                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed false");
                         throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
                     }
                 }
