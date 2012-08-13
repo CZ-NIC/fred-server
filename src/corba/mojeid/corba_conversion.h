@@ -2,8 +2,10 @@
 #define CORBA_CONVERT_H_
 
 #include "corba/MojeID.hh"
+#include "corba/common_wrappers.h"
+
 #include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/data_validation.h"
+#include "fredlib/contact_verification/contact_validator.h"
 
 #include <string>
 #include <boost/algorithm/string.hpp>
@@ -11,19 +13,6 @@
 
 
 using namespace Registry::MojeID;
-
-
-char* corba_wrap_string(const char* _s)
-{
-    return CORBA::string_dup(_s);
-}
-
-
-char* corba_wrap_string(const std::string &_s)
-{
-    return corba_wrap_string(_s.c_str());
-}
-
 
 Date corba_wrap_date(const boost::gregorian::date &_v)
 {
@@ -40,7 +29,6 @@ Date corba_wrap_date(const boost::gregorian::date &_v)
     }
     return d;
 }
-
 
 NullableString* corba_wrap_nullable_string(const Nullable<std::string> &_v)
 {
@@ -98,12 +86,6 @@ NullableDate* corba_wrap_nullable_date(const Nullable<std::string> &_v)
             return new NullableDate(d);
         }
     }
-}
-
-
-std::string corba_unwrap_string(const CORBA::String_member &_s)
-{
-    return static_cast<std::string>(_s);
 }
 
 

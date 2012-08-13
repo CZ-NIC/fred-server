@@ -1,11 +1,11 @@
-#include "public_request/public_request_impl.h"
 #include "types/birthdate.h"
-#include "object_states.h"
-#include "contact_verification/contact.h"
-#include "contact_verification/contact_verification_password.h"
-#include "contact_verification/contact_verification.h"
-#include "contact_verification/conditional_contact_identification_impl.h"
-#include "contact_verification/contact_identification_impl.h"
+#include "fredlib/object_states.h"
+#include "fredlib/public_request/public_request_impl.h"
+#include "fredlib/contact_verification/contact.h"
+#include "fredlib/contact_verification/contact_verification_password.h"
+#include "fredlib/contact_verification/contact_verification_validators.h"
+#include "fredlib/contact_verification/contact_conditional_identification_impl.h"
+#include "fredlib/contact_verification/contact_identification_impl.h"
 #include "mojeid/request.h"
 #include "mojeid/mojeid_contact_states.h"
 #include "map_at.h"
@@ -55,16 +55,16 @@ void run_transfer_command(unsigned long long _registrar_id
 
 
 
-class ConditionalContactIdentification
+class MojeIDConditionalContactIdentification
         : public Fred::PublicRequest::PublicRequestAuthImpl
         , public Util::FactoryAutoRegister<PublicRequest
-              , ConditionalContactIdentification>
+              , MojeIDConditionalContactIdentification>
 {
     Fred::Contact::Verification::ConditionalContactIdentificationImpl cond_contact_identification_impl;
     ContactVerificationPassword contact_verification_passwd_;
 
 public:
-    ConditionalContactIdentification()
+    MojeIDConditionalContactIdentification()
     : cond_contact_identification_impl(this)
     , contact_verification_passwd_(this)
     {}
@@ -76,12 +76,23 @@ public:
 
     void save()
     {
-        cond_contact_identification_impl.pre_save_check();
-        /* if there is another open CCI close it */
-        cancel_public_request(
-            this->getObject(0).id,
-            PRT_CONDITIONAL_CONTACT_IDENTIFICATION,
-            this->getRequestId());
+        if (!this->getId())
+        {
+            cond_contact_identification_impl.pre_save_check();
+
+            if (object_has_one_of_states(this->getObject(0).id, Util::vector_of<std::string>
+                        (ObjectState::SERVER_TRANSFER_PROHIBITED)
+                        (ObjectState::SERVER_UPDATE_PROHIBITED)
+                        (::MojeID::ObjectState::MOJEID_CONTACT)))
+            {
+                throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
+            }
+
+            /* if there is another open CCI close it */
+            cancel_public_request(this->getObject(0).id, PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
+                    this->getRequestId());
+        }
+
         PublicRequestAuthImpl::save();
     }
 
@@ -92,6 +103,7 @@ public:
                 % this->getId());
 
         cond_contact_identification_impl.pre_process_check(_check);
+        cond_contact_identification_impl.process_action(_check);
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
@@ -102,11 +114,6 @@ public:
                 , act_registrar,  this->getResolveRequestId()
                 , this->getObject(0).id);
         }
-
-        /* set state */
-        insertNewStateRequest(this->getId()
-                , this->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
 
         insertNewStateRequest(this->getId()
                 , this->getObject(0).id
@@ -144,7 +151,7 @@ public:
         /* make new request for finishing contact identification */
         PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
                 this->get_manager_ptr()->createRequest(
-                        PRT_CONTACT_IDENTIFICATION)));
+                        PRT_MOJEID_CONTACT_IDENTIFICATION)));
         if (new_request)
         {
             new_request->setRegistrarId(
@@ -172,20 +179,18 @@ public:
 
     static std::string registration_name()
     {
-        return PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+        return Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
     }
 };
 
-
-
-class ContactIdentification
+class MojeIDContactIdentification
         : public Fred::PublicRequest::PublicRequestAuthImpl
-        , public Util::FactoryAutoRegister<PublicRequest, ContactIdentification>
+        , public Util::FactoryAutoRegister<PublicRequest, MojeIDContactIdentification>
 {
     Fred::Contact::Verification::ContactIdentificationImpl contact_identification_impl;
     ContactVerificationPassword contact_verification_passwd_;
 public:
-    ContactIdentification()
+    MojeIDContactIdentification()
     : contact_identification_impl(this)
     , contact_verification_passwd_(this)
     {}
@@ -197,12 +202,23 @@ public:
 
     void save()
     {
-        contact_identification_impl.pre_save_check();
-        /* if there is another open CI close it */
-        cancel_public_request(
-                this->getObject(0).id,
-            PRT_CONTACT_IDENTIFICATION,
-            this->getRequestId());
+        if (!this->getId())
+        {
+            contact_identification_impl.pre_save_check();
+
+            if (!object_has_all_of_states(this->getObject(0).id, Util::vector_of<std::string>
+                        (ObjectState::SERVER_DELETE_PROHIBITED)
+                        (ObjectState::SERVER_UPDATE_PROHIBITED)
+                        (ObjectState::SERVER_TRANSFER_PROHIBITED)
+                        (::MojeID::ObjectState::MOJEID_CONTACT)))
+            {
+                throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
+            }
+
+            /* if there is another open CI close it */
+            cancel_public_request(this->getObject(0).id, PRT_MOJEID_CONTACT_IDENTIFICATION,
+                    this->getRequestId());
+        }
         PublicRequestAuthImpl::save();
     }
 
@@ -212,60 +228,11 @@ public:
                 "processing public request id=%1%")
         % this->getId());
 
-        contact_identification_impl.pre_process_check(_check);
-
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
-        unsigned long long act_registrar
-                = lock_contact_get_registrar_id(this->getObject(0).id);
-        if (act_registrar != this->getRegistrarId()) {
-            run_transfer_command(this->getRegistrarId()
-                , act_registrar,  this->getResolveRequestId()
-                , this->getObject(0).id);
-        }
 
-        /* check if contact is already conditionally identified (21) and cancel state */
-        Fred::cancel_object_state(this->getObject(0).id
-                , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
-
-        /* set new state */
-        insertNewStateRequest(this->getId()
-                , this->getObject(0).id
-                , ObjectState::IDENTIFIED_CONTACT);
-
-        if (object_has_state(this->getObject(0).id
-                , ::MojeID::ObjectState::MOJEID_CONTACT) == false)
-        {
-            insertNewStateRequest(this->getId()
-                    , this->getObject(0).id
-                    , ::MojeID::ObjectState::MOJEID_CONTACT);
-        }
-
-        /* prohibit operations on contact */
-        if (object_has_state(this->getObject(0).id
-                , ObjectState::SERVER_DELETE_PROHIBITED) == false)
-        {
-            /* set 1 | serverDeleteProhibited */
-            insertNewStateRequest(this->getId()
-                    , this->getObject(0).id
-                    , ObjectState::SERVER_DELETE_PROHIBITED);
-        }
-        if (object_has_state(this->getObject(0).id
-                , ObjectState::SERVER_TRANSFER_PROHIBITED) == false)
-        {
-            /* set 3 | serverTransferProhibited */
-            insertNewStateRequest(this->getId()
-                    , this->getObject(0).id
-                    , ObjectState::SERVER_TRANSFER_PROHIBITED);
-        }
-        if (object_has_state(this->getObject(0).id
-                , ObjectState::SERVER_UPDATE_PROHIBITED) == false)
-        {
-            /* set 4 | serverUpdateProhibited */
-            insertNewStateRequest(this->getId()
-                    , this->getObject(0).id
-                    , ObjectState::SERVER_UPDATE_PROHIBITED);
-        }
+        contact_identification_impl.pre_process_check(_check);
+        contact_identification_impl.process_action(_check);
 
         /* update states */
         Fred::update_object_states(this->getObject(0).id);
@@ -288,15 +255,15 @@ public:
 
     static std::string registration_name()
     {
-        return PRT_CONTACT_IDENTIFICATION;
+        return Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
     }
 };
 
-class ValidationRequestImpl
+class MojeIDValidationRequestImpl
 {
     PublicRequestImpl* pri_ptr_;
 public:
-    ValidationRequestImpl(PublicRequestImpl* _pri_ptr)
+    MojeIDValidationRequestImpl(PublicRequestImpl* _pri_ptr)
     : pri_ptr_(_pri_ptr)
     {}
 
@@ -310,19 +277,18 @@ public:
         if (!pri_ptr_->getId()) {
 
             if(!object_has_one_of_states(
-                pri_ptr_->getObject(0).id
-                , Util::vector_of<std::string>
-                (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)// already CI
-                (ObjectState::IDENTIFIED_CONTACT))) // already I
+                pri_ptr_->getObject(0).id, Util::vector_of<std::string>
+                    (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)
+                    (ObjectState::IDENTIFIED_CONTACT)))
             {
                 throw NotApplicable("pre_insert_checks: failed!");
             }
 
             /* has V request */
             if (check_public_request(pri_ptr_->getObject(0).id
-                , PRT_CONTACT_VALIDATION) > 0)
+                , PRT_MOJEID_CONTACT_VALIDATION) > 0)
             {
-                throw RequestExists(PRT_CONTACT_VALIDATION
+                throw RequestExists(PRT_MOJEID_CONTACT_VALIDATION
                         , pri_ptr_->getObject(0).id);
             }
         }
@@ -403,7 +369,7 @@ public:
         {
             /* otherwise there could be identification request */
             cancel_public_request(pri_ptr_->getObject(0).id
-                    , PRT_CONTACT_IDENTIFICATION, pri_ptr_->getResolveRequestId());
+                    , PRT_MOJEID_CONTACT_IDENTIFICATION, pri_ptr_->getResolveRequestId());
         }
 
         /* set new state */
@@ -415,14 +381,14 @@ public:
 };
 
 
-class ValidationRequest
+class MojeIDValidationRequest
     : public PublicRequestImpl,
-      public Util::FactoryAutoRegister<PublicRequest, ValidationRequest>
+      public Util::FactoryAutoRegister<PublicRequest, MojeIDValidationRequest>
 {
-    ValidationRequestImpl validation_request_impl;
+    MojeIDValidationRequestImpl validation_request_impl;
 public:
 
-    ValidationRequest()
+    MojeIDValidationRequest()
     :PublicRequestImpl()
     , validation_request_impl(this)
     {}
@@ -459,7 +425,7 @@ public:
 
     static std::string registration_name()
     {
-        return PRT_CONTACT_VALIDATION;
+        return Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION;
     }
 };
 

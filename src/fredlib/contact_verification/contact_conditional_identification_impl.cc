@@ -21,7 +21,8 @@
  *  common part of conditional contact identification implementation
  */
 
-#include "conditional_contact_identification_impl.h"
+#include <string>
+#include "contact_conditional_identification_impl.h"
 #include "object_states.h"
 
 namespace Fred {
@@ -62,18 +63,12 @@ void ConditionalContactIdentificationImpl::pre_save_check()
                     pra_impl_ptr_->getObject(0).id);
         contact_validator_.check(cdata);
 
-        if((object_has_one_of_states(pra_impl_ptr_->getObject(0).id
-            , Util::vector_of<std::string>
-            (ObjectState::SERVER_TRANSFER_PROHIBITED)//3 | serverTransferProhibited
-            (ObjectState::SERVER_UPDATE_PROHIBITED)//4 | serverUpdateProhibited
-        )
-        ||
-        (object_has_one_of_states(pra_impl_ptr_->getObject(0).id
+        if (object_has_one_of_states(pra_impl_ptr_->getObject(0).id
             , Util::vector_of<std::string>
             (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)// already CI
             (ObjectState::IDENTIFIED_CONTACT)// already I
             (ObjectState::VALIDATED_CONTACT))// already V
-        )))
+        )
         {
             throw Fred::PublicRequest::NotApplicable("pre_save_check: failed!");
         }
@@ -93,6 +88,15 @@ void ConditionalContactIdentificationImpl::pre_process_check(bool _check)
                 pra_impl_ptr_->getObject(0).id);
     contact_validator_.check(cdata);
 }
+
+void ConditionalContactIdentificationImpl::process_action(bool _check)
+{
+    Fred::PublicRequest::insertNewStateRequest(
+            pra_impl_ptr_->getId(),
+            pra_impl_ptr_->getObject(0).id,
+            ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+}
+
 
 }}}
 

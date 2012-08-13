@@ -1,6 +1,6 @@
 #include "log/logger.h"
 #include "fredlib/db_settings.h"
-#include "data_validation.h"
+#include "contact_verification_checkers.h"
 
 #include <boost/algorithm/string.hpp>
 

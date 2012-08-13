@@ -1,7 +1,9 @@
-#ifndef CONTACT_VERIFICATION_H__
-#define CONTACT_VERIFICATION_H__
+#ifndef CONTACT_VERIFICATION_VALIDATORS_H__
+#define CONTACT_VERIFICATION_VALIDATORS_H__
 
-#include "data_validation.h"
+#include "contact_validator.h"
+#include "contact_verification_checkers.h"
+#include "contact.h"
 
 
 namespace Fred {
@@ -24,5 +26,5 @@ bool check_validated_contact_diff(const Contact &_c1, const Contact &_c2);
 }
 
 
-#endif /*CONTACT_VERIFICATION_H__*/
+#endif /*CONTACT_VERIFICATION_VALIDATORS_H__*/
 

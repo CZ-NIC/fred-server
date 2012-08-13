@@ -15,6 +15,7 @@
 #include "fredlib/public_request/public_request_authinfo_impl.h"
 #include "fredlib/public_request/public_request_block_impl.h"
 #include "mojeid/public_request_verification_impl.h"
+#include "src/contact_verification/public_request_contact_verification_impl.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "util.h"
@@ -1480,14 +1481,20 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Fred
   else if (_request->getType() == Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
   }
-  else if (_request->getType() == Fred::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION) {
-      detail->type = Registry::PublicRequest::PRT_CONDITIONAL_CONTACT_IDENTIFICATION;
+  else if (_request->getType() == Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION) {
+      detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION) {
+      detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
+  }
+  else if (_request->getType() == Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ) {
+      detail->type = Registry::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ;
   }
   else if (_request->getType() == Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_CONTACT_IDENTIFICATION;
   }
-  else if (_request->getType() == Fred::PublicRequest::PRT_CONTACT_VALIDATION) {
-      detail->type = Registry::PublicRequest::PRT_CONTACT_VALIDATION;
+  else if (_request->getType() == Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION) {
+      detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION;
   }
   else {
       throw std::runtime_error("unknown public request type");

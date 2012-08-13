@@ -84,7 +84,7 @@ const ContactVerificationPassword::MessageData ContactVerificationPassword::coll
     return data;
 }
 
-inline size_t ContactVerificationPassword::get_password_chunk_length()
+size_t ContactVerificationPassword::get_password_chunk_length()
 {
     static const size_t PASSWORD_CHUNK_LENGTH = 8;
     return PASSWORD_CHUNK_LENGTH;
@@ -169,7 +169,7 @@ void ContactVerificationPassword::sendEmailPassword(const std::string& mailTempl
 
 void ContactVerificationPassword::sendLetterPassword( const std::string& custom_tag //tag in template xml params: "pin2",  "pin3"
         , Fred::Document::GenerationType doc_type //type for document generator
-        , const std::string& message_type //for message_archive: "mojeid_pin2", "mojeid_pin3"
+        , const std::string& message_type //for message_archive: "contact_verification_pin2", "contact_verification_pin3"
         , const std::string& comm_type //for message_archive: pin2 "letter" or pin3 "registered_letter"
         )
 {
@@ -184,7 +184,7 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
             : map_at(data, "country_cs_name"));
 
     xmldata << "<?xml version='1.0' encoding='utf-8'?>"
-             << "<mojeid_auth>"
+             << "<contact_auth>"
              << "<user>"
              << "<actual_date>" << map_at(data, "reqdate")
                  << "</actual_date>"
@@ -213,7 +213,7 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
              << "<link>" << map_at(data, "hostname") << "</link>"
              << "</auth>"
              << "</user>"
-             << "</mojeid_auth>";
+             << "</contact_auth>";
 
         unsigned long long file_id = prai_ptr_->getPublicRequestManager()
             ->getDocumentManager()->generateDocumentAndSave(
@@ -265,7 +265,7 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
 
 
 void ContactVerificationPassword::sendSmsPassword(const std::string& sms_template
-        , const std::string& message_type //for message_archive: "mojeid_pin2"
+        , const std::string& message_type //for message_archive: "contact_verification_pin2"
         )
 {
     LOGGER(PACKAGE).debug("public request auth - send sms password");
@@ -278,7 +278,7 @@ void ContactVerificationPassword::sendSmsPassword(const std::string& sms_templat
             map_at(data, "handle").c_str()
             , map_at(data, "phone").c_str()
             , (sms_template + map_at(data, "pin2")).c_str()
-            , message_type.c_str()//"mojeid_pin2"
+            , message_type.c_str()//"contact_verification_pin2"
             , boost::lexical_cast<unsigned long >(map_at(data
                     , "contact_id"))
             , boost::lexical_cast<unsigned long >(map_at(data

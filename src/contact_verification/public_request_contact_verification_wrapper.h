@@ -1,25 +1,22 @@
-#ifndef MOJEID_IDENTIFICATION_H_
-#define MOJEID_IDENTIFICATION_H_
+#ifndef CONTACT_IDENTIFICATION_H_
+#define CONTACT_IDENTIFICATION_H_
 
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_registry_args.h"
-#include "cfg/handle_mojeid_args.h"
-#include "fredlib/registry.h"
-#include "fredlib/public_request/public_request.h"
-#include "mojeid/public_request_verification_impl.h"
-#include "fredlib/mailer.h"
-//config for docmanager
-#include "cfg/config_handler_decl.h"
 #include "cfg/handle_corbanameservice_args.h"
+#include "cfg/handle_contactverification_args.h"
+#include "fredlib/registry.h"
+#include "fredlib/mailer.h"
+#include "fredlib/public_request/public_request.h"
 
 namespace Registry {
-namespace MojeID {
+namespace Contact {
 
 
 /*
  * helper class - public request manager auto pointer
  */
-class IdentificationRequestManagerPtr
+class ContactIdentificationRequestManagerPtr
 {
 private:
     mutable boost::shared_ptr<Fred::Mailer::Manager> mailer_manager_;
@@ -29,14 +26,14 @@ private:
 
 
 public:
-    IdentificationRequestManagerPtr(boost::shared_ptr<Fred::Mailer::Manager> _mailer_manager)
+    ContactIdentificationRequestManagerPtr(boost::shared_ptr<Fred::Mailer::Manager> _mailer_manager)
     : mailer_manager_(_mailer_manager)
     {
         /* get config temporary pointer */
         HandleRegistryArgs *rconf =
             CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
-        HandleMojeIDArgs *mconf =
-            CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>();
+        HandleContactVerificationArgs *cvconf =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleContactVerificationArgs>();
 
         /* construct managers */
         registry_manager_.reset(Fred::Manager::create(
@@ -59,16 +56,16 @@ public:
                     doc_manager_.get(),
                     registry_manager_->getMessageManager()));
 
-        request_manager_->setIdentificationMailAuthHostname(mconf->hostname);
-        request_manager_->setDemoMode(mconf->demo_mode);
+        request_manager_->setIdentificationMailAuthHostname(cvconf->hostname);
+        request_manager_->setDemoMode(cvconf->demo_mode);
     }
 
-    IdentificationRequestManagerPtr(const IdentificationRequestManagerPtr &src) :
+    ContactIdentificationRequestManagerPtr(const ContactIdentificationRequestManagerPtr &src) :
             mailer_manager_(src.mailer_manager_),
             registry_manager_(src.registry_manager_),
             doc_manager_(src.doc_manager_),
-            request_manager_(src.request_manager_) 
-    {  } 
+            request_manager_(src.request_manager_)
+    {  }
 
 
     Fred::PublicRequest::Manager* operator ->()
@@ -85,26 +82,26 @@ public:
 
 
 
-/* 
- * helper class - auth. public request auto pointer (mojeid identification process)
+/*
+ * helper class - auth. public request auto pointer
  */
-class IdentificationRequestPtr
+class ContactIdentificationRequestPtr
 {
 private:
-    IdentificationRequestManagerPtr request_manager_;
+    ContactIdentificationRequestManagerPtr request_manager_;
     Fred::PublicRequest::Type type_;
     mutable std::auto_ptr<Fred::PublicRequest::PublicRequestAuth> request_;
 
 
 public:
-    IdentificationRequestPtr(boost::shared_ptr<Fred::Mailer::Manager> _mailer
+    ContactIdentificationRequestPtr(boost::shared_ptr<Fred::Mailer::Manager> _mailer
             , const Fred::PublicRequest::Type &_type)
         : request_manager_(_mailer)
         , type_(_type)
     {
-        /* check valid type for mojeid identification */
-        if ((type_ != Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
-            && (type_ != Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)) {
+        /* check valid type for contact identification */
+        if ((type_ != Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
+            && (type_ != Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION)) {
             throw std::runtime_error("not valid identification request type");
         }
 
@@ -118,7 +115,7 @@ public:
     }
 
 
-    IdentificationRequestPtr(const IdentificationRequestPtr &src) :
+    ContactIdentificationRequestPtr(const ContactIdentificationRequestPtr &src) :
         request_manager_(src.request_manager_),
         type_(src.type_),
         request_(src.request_)
@@ -136,5 +133,5 @@ public:
 
 
 
-#endif /*MOJEID_IDENTIFICATION*/
+#endif //CONTACT_IDENTIFICATION_H_
 

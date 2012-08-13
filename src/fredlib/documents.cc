@@ -235,6 +235,10 @@ namespace Fred
         templateMap[GT_CONTACT_VALIDATION_REQUEST_PIN3] = GenProcType(
           "mojeid_validate.xsl", true, "application/pdf"
         );
+        templateMap[GT_CONTACT_VERIFICATION_LETTER_PIN3] = GenProcType(
+          "contact_verification_auth_owner.xsl", true, "application/pdf"
+        );
+
 
       }      
       std::auto_ptr<Fred::Document::Generator> createOutputGenerator(

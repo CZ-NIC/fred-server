@@ -23,6 +23,7 @@
 
 #include "contact_identification_impl.h"
 #include "object_states.h"
+#include "public_request/public_request_impl.h"
 
 namespace Fred {
 namespace Contact {
@@ -60,22 +61,14 @@ void ContactIdentificationImpl::pre_save_check()
                     pra_impl_ptr_->getObject(0).id);
         contact_validator_.check(cdata);
 
-        /* don't check this when contact is already CI - we are creating
-         * I request only for finishing identification - pin3 */
         if (((object_has_state(pra_impl_ptr_->getObject(0).id
                 , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
-            ||
-            (object_has_one_of_states(
-                pra_impl_ptr_->getObject(0).id
-                , Util::vector_of<std::string>
-                (ObjectState::SERVER_TRANSFER_PROHIBITED)
-                (ObjectState::SERVER_UPDATE_PROHIBITED)) == false)
             ||
             object_has_one_of_states(
                 pra_impl_ptr_->getObject(0).id
                 , Util::vector_of<std::string>
                 (ObjectState::IDENTIFIED_CONTACT) // already I
-                (ObjectState::VALIDATED_CONTACT))// already V
+                (ObjectState::VALIDATED_CONTACT)) // already V
         ))
         {
             throw Fred::PublicRequest::NotApplicable("pre_save_check: failed!");
@@ -98,6 +91,17 @@ void ContactIdentificationImpl::pre_process_check(bool _check)
         = Fred::Contact::Verification::contact_info(
                 pra_impl_ptr_->getObject(0).id);
     contact_validator_.check(cdata);
+}
+
+void ContactIdentificationImpl::process_action(bool _check)
+{
+        Fred::cancel_object_state(pra_impl_ptr_->getObject(0).id,
+                Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+
+        Fred::PublicRequest::insertNewStateRequest(
+                pra_impl_ptr_->getId(),
+                pra_impl_ptr_->getObject(0).id,
+                ObjectState::IDENTIFIED_CONTACT);
 }
 
 }}}

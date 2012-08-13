@@ -22,7 +22,8 @@ namespace Fred
       GT_WARNING_LETTER, ///< generate PDF with expiration warning letters
       GT_CONTACT_IDENTIFICATION_LETTER_PIN2, ///< mojeid identificaton letter with pin2 code
       GT_CONTACT_IDENTIFICATION_LETTER_PIN3,  ///< mojeid identificaton letter with pin3 code
-      GT_CONTACT_VALIDATION_REQUEST_PIN3  ///< PDF with validation request
+      GT_CONTACT_VALIDATION_REQUEST_PIN3,  ///< PDF with validation request
+      GT_CONTACT_VERIFICATION_LETTER_PIN3  ///< contact verification letter with pin3 code
     };
     /// generator that has to be filled with stream of data
     class Generator {

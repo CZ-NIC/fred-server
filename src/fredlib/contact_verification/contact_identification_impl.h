@@ -26,7 +26,7 @@
 
 #include "public_request/public_request_impl.h"
 #include "contact_verification_password.h"
-#include "contact_verification.h"
+#include "contact_verification_validators.h"
 
 namespace Fred {
 namespace Contact {
@@ -43,6 +43,7 @@ public:
     std::string generate_passwords();
     void pre_save_check();
     void pre_process_check(bool _check);
+    void process_action(bool _check);
 };
 
 }}}

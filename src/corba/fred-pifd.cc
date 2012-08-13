@@ -25,6 +25,7 @@
 #include "Admin.hh"
 #include "admin/admin_impl.h"
 #include "whois/whois_impl.h"
+#include "contact_verification/contact_verification_i.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -53,6 +54,8 @@
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_adifd_args.h"
+#include "cfg/handle_contactverification_args.h"
+
 
 using namespace std;
 
@@ -69,6 +72,7 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleCorbaNameServiceArgs))
     (HandleArgsPtr(new HandleRegistryArgs))
     (HandleArgsPtr(new HandleAdifdArgs))
+    (HandleArgsPtr(new HandleContactVerificationArgs))
     ;
 
 int main(int argc, char *argv[])
@@ -111,6 +115,10 @@ int main(int argc, char *argv[])
                 , server_name
                     , registry_args_ptr->restricted_handles));
 
+
+        std::auto_ptr<Registry::Contact::Verification::ContactVerification_i> contact_vrf_iface(
+                new Registry::Contact::Verification::ContactVerification_i("fred-pifd-cv"));
+
             // create session use values from config
             LOGGER(PACKAGE).info(boost::format(
                     "sessions max: %1%; timeout: %2%")
@@ -123,6 +131,9 @@ int main(int argc, char *argv[])
 
         CorbaContainer::get_instance()
             ->register_server(myccReg_Whois_i.release(), "Whois");
+
+        CorbaContainer::get_instance()
+            ->register_server(contact_vrf_iface.release(), "ContactVerification");
 
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());

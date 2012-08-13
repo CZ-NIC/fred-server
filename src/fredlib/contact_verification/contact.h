@@ -14,6 +14,15 @@ class Contact
 {
 public:
     Contact() : id(0)
+    , disclosename()
+    , discloseorganization()
+    , discloseaddress()
+    , disclosetelephone()
+    , disclosefax()
+    , discloseemail()
+    , disclosevat()
+    , discloseident()
+    , disclosenotifyemail()
     {
     }
 
