@@ -1,6 +1,6 @@
 #include "contact_verification/contact_verification_impl.h"
 #include "contact_verification/public_request_contact_verification_impl.h"
-#include "contact_verification/contact_identification.h"
+#include "contact_verification/public_request_contact_verification_wrapper.h"
 
 #include "fredlib/db_settings.h"
 #include "fredlib/registry.h"
