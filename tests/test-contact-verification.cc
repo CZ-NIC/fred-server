@@ -191,6 +191,39 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     cv->processConditionalIdentification(another_request_id
             , password, request_id);
 
+    //check cci request 1
+    {
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result res_cci_request = conn.exec_params(
+            "select pr.status from object_registry obr "
+            " join public_request_objects_map prom on obr.id = prom.object_id "
+            " join public_request_auth pra on prom.request_id = pra.id "
+            " join public_request pr on pr.id=pra.id "
+            " join enum_public_request_type eprt on pr.request_type = eprt.id "
+            " where obr.name = $1::text and eprt.name = $2::text "
+            , Database::query_param_list(fcvc.handle)
+                (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
+        BOOST_CHECK((res_cci_request.size() == 1) && (static_cast<int>(res_cci_request[0][0]) == 1));
+    }
+    //check ci request 0
+    {
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result res_cci_request = conn.exec_params(
+            "select pr.status from object_registry obr "
+            " join public_request_objects_map prom on obr.id = prom.object_id "
+            " join public_request_auth pra on prom.request_id = pra.id "
+            " join public_request pr on pr.id=pra.id "
+            " join enum_public_request_type eprt on pr.request_type = eprt.id "
+            " where obr.name = $1::text and eprt.name = $2::text "
+            , Database::query_param_list(fcvc.handle)
+                (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+        BOOST_CHECK((res_cci_request.size() == 1) && (static_cast<int>(res_cci_request[0][0]) == 0));
+    }
+
+
+
     {
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
@@ -218,6 +251,23 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     BOOST_TEST_MESSAGE( "password: " << password );
 
     cv->processIdentification(fcvc.handle, password, request_id);
+
+    //check ci request 1
+    {
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result res_cci_request = conn.exec_params(
+            "select pr.status from object_registry obr "
+            " join public_request_objects_map prom on obr.id = prom.object_id "
+            " join public_request_auth pra on prom.request_id = pra.id "
+            " join public_request pr on pr.id=pra.id "
+            " join enum_public_request_type eprt on pr.request_type = eprt.id "
+            " where obr.name = $1::text and eprt.name = $2::text "
+            , Database::query_param_list(fcvc.handle)
+                (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+        BOOST_CHECK((res_cci_request.size() == 1) && (static_cast<int>(res_cci_request[0][0]) == 1));
+    }
+
 
     BOOST_CHECK(cv->getRegistrarName(registrar_handle) == "Company A l.t.d");
 }
