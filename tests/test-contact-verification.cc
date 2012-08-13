@@ -163,7 +163,8 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             " where obr.name = $1::text and eprt.name = $2::text "
             , Database::query_param_list(fcvc.handle)
                 (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
-        BOOST_CHECK((res_cci_request.size() == 1) && (static_cast<int>(res_cci_request[0][0]) == 0));
+        BOOST_CHECK((res_cci_request.size() == 1)
+                && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
     }
 
     BOOST_TEST_MESSAGE( "identification: " << another_request_id );
@@ -204,7 +205,8 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             " where obr.name = $1::text and eprt.name = $2::text "
             , Database::query_param_list(fcvc.handle)
                 (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
-        BOOST_CHECK((res_cci_request.size() == 1) && (static_cast<int>(res_cci_request[0][0]) == 1));
+        BOOST_CHECK((res_cci_request.size() == 1)
+                && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
     }
     //check ci request 0
     {
@@ -219,7 +221,8 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             " where obr.name = $1::text and eprt.name = $2::text "
             , Database::query_param_list(fcvc.handle)
                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
-        BOOST_CHECK((res_cci_request.size() == 1) && (static_cast<int>(res_cci_request[0][0]) == 0));
+        BOOST_CHECK((res_cci_request.size() == 1)
+                && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
     }
 
 
@@ -265,7 +268,8 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             " where obr.name = $1::text and eprt.name = $2::text "
             , Database::query_param_list(fcvc.handle)
                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
-        BOOST_CHECK((res_cci_request.size() == 1) && (static_cast<int>(res_cci_request[0][0]) == 1));
+        BOOST_CHECK((res_cci_request.size() == 1)
+                && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
     }
 
 
