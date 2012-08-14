@@ -85,8 +85,8 @@ public:
     {
         contact_verification_passwd_.sendEmailPassword("conditional_contact_identification");
         contact_verification_passwd_.sendSmsPassword(
-                "Pro aktivaci Vaseho kontaktu je nutne vlozit kody "
-                "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: "
+                "Potvrzujeme zahajeni procesu verifikace kontaktu v registru domen. "
+                "Prvni krok spociva v zadani PIN1 a PIN2. PIN1 vam byl zaslan e-mailem, PIN2 je: "
                 , "contact_verification_pin2");
     }
 
