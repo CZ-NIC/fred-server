@@ -72,6 +72,8 @@
 #include "log/logger.h"
 #include "log/context.h"
 
+//cancel contact verification
+#include "fredlib/contact_verification/cancel_contact_verification.h"
 
 #define FLAG_serverDeleteProhibited 1
 #define FLAG_serverRenewProhibited 2
@@ -2484,7 +2486,16 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
             // make update and save to history
             if (action.getDB()->EXEC() )
                 if (action.getDB()->SaveContactHistory(id, params.requestID) )
+                {
                     code = COMMAND_OK;
+
+
+                    //conditional cancel verification
+                    if(Fred::Contact::Verification::check_contact_change_for_cancel_verification(handle))
+                    {
+                        Fred::Contact::Verification::contactCancelVerification(handle);
+                    }
+                }
 
         }
     }

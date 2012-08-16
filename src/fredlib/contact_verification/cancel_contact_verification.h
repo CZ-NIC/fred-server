@@ -18,7 +18,7 @@
 
 #include <string>
 
-namespace Registry
+namespace Fred
 {
     namespace Contact
     {

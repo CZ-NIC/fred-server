@@ -1081,6 +1081,8 @@ src_corba_whois_libwhois_impl_a_SOURCES = \
 # src/corba/epp/libepp_impl.a
 #
 src_corba_epp_libepp_impl_a_SOURCES = \
+		src/fredlib/contact_verification/cancel_contact_verification.cc \
+		src/fredlib/contact_verification/cancel_contact_verification.h \
 		src/corba/epp/epp_session.h \
 		src/corba/epp/epp_session.cc \
 		src/corba/epp/epp_impl.cc \
@@ -1115,8 +1117,6 @@ src_corba_log_liblog_impl_a_SOURCES = \
 # src/corba/fred-rifd
 #
 src_corba_fred_rifd_SOURCES = \
-		src/fredlib/contact_verification/cancel_contact_verification.cc \
-		src/fredlib/contact_verification/cancel_contact_verification.h \
 		src/corba/fred-rifd.cc
 
 src_corba_fred_rifd_LDADD = \
@@ -1563,7 +1563,9 @@ tests_test_server_SOURCES = \
 		src/corba/epp_corba_client_impl.cc \
 		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
-		src/contact_verification/contact_verification_impl.h
+		src/contact_verification/contact_verification_impl.h \
+		src/fredlib/contact_verification/cancel_contact_verification.cc \
+		src/fredlib/contact_verification/cancel_contact_verification.h
 
 
 tests_test_server_LDFLAGS = \
