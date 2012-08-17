@@ -277,19 +277,9 @@ namespace Registry
                 }
 
                 Fred::Contact::Verification::FieldErrorMap errors;
-                /* contact is blocked or prohibits operations:
-                 *   7 | serverBlocked
-                 *   3 | serverTransferProhibited
-                 *   4 | serverUpdateProhibited
-                 */
-                /* already CI || already I || already V */
-                if ((Fred::object_has_state(cinfo.id
-                    , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true)
-                    || (Fred::object_has_state(cinfo.id
-                            , Fred::ObjectState::IDENTIFIED_CONTACT) == true)
-                    || (Fred::object_has_state(cinfo.id
-                            , Fred::ObjectState::VALIDATED_CONTACT) == true)) {
 
+                if (Fred::object_has_state(cinfo.id, Fred::ObjectState::VALIDATED_CONTACT) == true)
+                {
                     errors[Fred::Contact::Verification::field_status]
                            = Fred::Contact::Verification::NOT_AVAILABLE;
                 }
@@ -308,7 +298,11 @@ namespace Registry
 
                 /* create public request */
                 Fred::PublicRequest::Type type;
-                if (_method == IDMethod::SMS) {
+                if (Fred::object_has_state(cinfo.id, Fred::ObjectState::IDENTIFIED_CONTACT))
+                {
+                    type = Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
+                }
+                else if (_method == IDMethod::SMS) {
                     type = Fred::PublicRequest
                             ::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
                 }
@@ -338,7 +332,8 @@ namespace Registry
                 std::vector<Fred::PublicRequest::Type> request_type_list
                     = boost::assign::list_of
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
-                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION);
+                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
+                    (Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER);
                 _identification = request_manager
                     ->getPublicRequestAuthIdentification(cinfo.id
                             , request_type_list);
