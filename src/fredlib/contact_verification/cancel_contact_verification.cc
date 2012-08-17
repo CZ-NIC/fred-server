@@ -127,6 +127,7 @@ namespace Fred
                     {
                         Fred::cancel_object_state(contact_id
                             , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+                        update_object_states(contact_id);
                     }
 
                     if (Fred::object_has_state(contact_id, Fred::ObjectState::IDENTIFIED_CONTACT)
@@ -134,6 +135,7 @@ namespace Fred
                     {
                         Fred::cancel_object_state(contact_id
                             , Fred::ObjectState::IDENTIFIED_CONTACT);
+                        update_object_states(contact_id);
                     }
                 }//try
                 catch (std::exception &_ex)
