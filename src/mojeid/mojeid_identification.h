@@ -105,6 +105,7 @@ public:
         /* check valid type for mojeid identification */
         if ((type_ != Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
             && (type_ != Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
+            && (type_ != Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER)
             && (type_ != Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER)) {
             throw std::runtime_error("not valid identification request type");
         }

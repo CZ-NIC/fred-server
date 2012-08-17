@@ -6,6 +6,7 @@
 #include "fredlib/contact_verification/contact_verification_validators.h"
 #include "fredlib/contact_verification/contact_conditional_identification_impl.h"
 #include "fredlib/contact_verification/contact_identification_impl.h"
+#include "contact_verification/public_request_contact_verification_impl.h"
 #include "mojeid/request.h"
 #include "mojeid/mojeid_contact_states.h"
 #include "mojeid/mojeid_contact_transfer_request_impl.h"
@@ -17,6 +18,82 @@ namespace Fred {
 namespace PublicRequest {
 
 FACTORY_MODULE_INIT_DEFI(verification)
+
+
+class MojeIDConditionallyIdentifiedContactTransfer
+        : public Fred::PublicRequest::PublicRequestAuthImpl,
+          public Util::FactoryAutoRegister<PublicRequest, MojeIDConditionallyIdentifiedContactTransfer>
+{
+private:
+    Registry::MojeID::MojeIDContactTransferRequestImpl mojeid_transfer_impl_;
+    ContactVerificationPassword contact_verification_passwd_;
+
+public:
+    MojeIDConditionallyIdentifiedContactTransfer()
+        : mojeid_transfer_impl_(this),
+          contact_verification_passwd_(this)
+    {
+    }
+
+
+    std::string generatePasswords()
+    {
+        return contact_verification_passwd_.generateAuthInfoPassword();
+    }
+
+
+    void save()
+    {
+        mojeid_transfer_impl_.pre_save_check();
+        if (!this->getId())
+        {
+            if (!object_has_state(this->getObject(0).id, ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))
+            {
+                throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
+            }
+        }
+        PublicRequestAuthImpl::save();
+    }
+
+
+    void processAction(bool _check)
+    {
+        mojeid_transfer_impl_.pre_process_check(_check);
+        mojeid_transfer_impl_.process_action(_check);
+
+        cancel_public_request(this->getObject(0).id, PRT_CONTACT_IDENTIFICATION,
+                this->getRequestId());
+
+        /* make new request for finishing contact identification */
+        PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
+                this->get_manager_ptr()->createRequest(
+                        PRT_MOJEID_CONTACT_IDENTIFICATION)));
+        if (new_request)
+        {
+            new_request->setRegistrarId(
+                    this->getRegistrarId());
+            new_request->setRequestId(
+                    this->getResolveRequestId());
+            new_request->addObject(
+                    this->getObject(0));
+            new_request->save();
+            new_request->sendPasswords();
+        }
+    }
+
+
+    void sendPasswords()
+    {
+    }
+
+
+    static std::string registration_name()
+    {
+        return PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
+    }
+
+};
+
 
 
 class MojeIDIdentifiedContactTransfer

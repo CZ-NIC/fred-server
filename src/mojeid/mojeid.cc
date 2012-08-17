@@ -298,7 +298,12 @@ namespace Registry
 
                 /* create public request */
                 Fred::PublicRequest::Type type;
-                if (Fred::object_has_state(cinfo.id, Fred::ObjectState::IDENTIFIED_CONTACT))
+
+                if (Fred::object_has_state(cinfo.id, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))
+                {
+                    type = Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
+                }
+                else if (Fred::object_has_state(cinfo.id, Fred::ObjectState::IDENTIFIED_CONTACT))
                 {
                     type = Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
                 }
@@ -333,6 +338,7 @@ namespace Registry
                     = boost::assign::list_of
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
+                    (Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER)
                     (Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER);
                 _identification = request_manager
                     ->getPublicRequestAuthIdentification(cinfo.id
