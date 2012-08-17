@@ -836,7 +836,8 @@ src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
 		src/fredlib/contact_verification/contact_verification_validators.cc \
 		src/fredlib/contact_verification/contact_verification_validators.h \
 		src/fredlib/contact_verification/contact_verification_password.cc \
-		src/fredlib/contact_verification/contact_verification_password.h
+		src/fredlib/contact_verification/contact_verification_password.h \
+		src/fredlib/contact_verification/contact_validator.h
 #
 # src/fredlib/contact_verification/libcontact_verification.a
 
