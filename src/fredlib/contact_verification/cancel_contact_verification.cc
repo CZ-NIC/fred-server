@@ -110,7 +110,7 @@ void contact_cancel_verification(
         Database::Result result = conn.exec_params(
                 "SELECT c.id FROM contact c "
                 " JOIN object_registry oreg ON oreg.id = c.id "
-                " WHERE oreg.name = $1::text",
+                " WHERE oreg.name = upper($1::text)",
                 Database::query_param_list(contact_handle));
         if (result.size() != 1)
             throw std::runtime_error("unable to get contact id");
