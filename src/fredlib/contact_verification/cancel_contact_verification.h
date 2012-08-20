@@ -30,6 +30,6 @@ bool check_contact_change_for_cancel_verification(
 //conditionaly_identified if state conditionaly_identified is set
 //and state identified if state identified is set
 //throw if error
-void contactCancelVerification(
+void contact_cancel_verification(
         const std::string & contact_handle);
 }}}

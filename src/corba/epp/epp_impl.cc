@@ -2493,7 +2493,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                     //conditional cancel verification
                     if(Fred::Contact::Verification::check_contact_change_for_cancel_verification(handle))
                     {
-                        Fred::Contact::Verification::contactCancelVerification(handle);
+                        Fred::Contact::Verification::contact_cancel_verification(handle);
                     }
                 }
 
