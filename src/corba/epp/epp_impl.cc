@@ -2489,11 +2489,17 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                 {
                     code = COMMAND_OK;
 
-
-                    //conditional cancel verification
-                    if(Fred::Contact::Verification::check_contact_change_for_cancel_verification(handle))
+                    try
                     {
-                        Fred::Contact::Verification::contact_cancel_verification(handle);
+                        //conditional cancel verification
+                        if(Fred::Contact::Verification::check_contact_change_for_cancel_verification(handle))
+                        {
+                            Fred::Contact::Verification::contact_cancel_verification(handle);
+                        }
+                    }
+                    catch(...)
+                    {
+                        code =2400;
                     }
                 }
 
