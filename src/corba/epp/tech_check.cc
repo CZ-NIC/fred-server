@@ -45,7 +45,7 @@ TechCheckManager::checkFromRegistrar(
     CORBA::String_var reg = registrar.c_str();
     CORBA::String_var nss = nsset.c_str();
     _resolveInit();
-    tc->checkNssetAsynch(reg,nss,level,false,true,ccReg::CHKR_EPP,cfqdns,cltrid);
+    tc->checkNssetAsynch(reg,nss,level,true,true,ccReg::CHKR_EPP,cfqdns,cltrid);
   }
   catch (ccReg::TechCheck::NssetNotFound&) {
     throw NSSET_NOT_FOUND();
