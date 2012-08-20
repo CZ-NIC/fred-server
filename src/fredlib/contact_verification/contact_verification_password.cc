@@ -349,8 +349,6 @@ std::string ContactVerificationPassword::generateAuthInfoPassword()
                 % passwd);
         }
     }
-    /* append pin2 */
-    passwd += generateRandomPassword(get_password_chunk_length());
     return passwd;
 }
 
