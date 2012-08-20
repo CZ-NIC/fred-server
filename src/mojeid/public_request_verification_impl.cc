@@ -84,6 +84,7 @@ public:
 
     void sendPasswords()
     {
+        contact_verification_passwd_.sendEmailPassword("mojeid_verified_contact_transfer");
     }
 
 
@@ -141,6 +142,7 @@ public:
 
     void sendPasswords()
     {
+        contact_verification_passwd_.sendEmailPassword("mojeid_verified_contact_transfer");
     }
 
 
