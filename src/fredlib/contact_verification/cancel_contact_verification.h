@@ -18,23 +18,18 @@
 
 #include <string>
 
-namespace Fred
-{
-    namespace Contact
-    {
-        namespace Verification
-        {
+namespace Fred {
+namespace Contact {
+namespace Verification {
 
-            //check conditions for cancel verification
-            bool check_contact_change_for_cancel_verification(
-                                const std::string & contact_handle);
-
-            //cancel contact state
-            //conditionaly_identified if state conditionaly_identified is set
-            //and state identified if state identified is set
-            //throw if error
-            void contactCancelVerification(
+//check conditions for cancel verification
+bool check_contact_change_for_cancel_verification(
                     const std::string & contact_handle);
-        }
-    }
-}
+
+//cancel contact state
+//conditionaly_identified if state conditionaly_identified is set
+//and state identified if state identified is set
+//throw if error
+void contactCancelVerification(
+        const std::string & contact_handle);
+}}}
