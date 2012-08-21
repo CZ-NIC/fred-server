@@ -115,34 +115,6 @@ void ContactVerificationPassword::sendEmailPassword(const std::string& mailTempl
 
     Database::Connection conn = Database::Manager::acquire();
 
-    /* for demo purpose we send second half of password as well */
-    if (prai_ptr_->getPublicRequestManager()->getDemoMode() == true)
-    {
-        if(map_at(data, "pin1").empty())
-        {
-            params["passwd3"] = map_at(data, "pin3");
-        }
-        else
-        {
-            params["passwd2"] = map_at(data, "pin2");
-        }
-        unsigned long long file_id = 0;
-
-        Database::Result result = conn.exec_params(
-                "SELECT la.file_id FROM letter_archive la "
-                " JOIN message_archive ma ON ma.id=la.id "
-                " JOIN public_request_messages_map prmm "
-                " ON prmm.message_archive_id = ma.id "
-                " WHERE prmm.public_request_id = $1::integer "
-                " AND prmm.message_archive_id is not null",
-                Database::query_param_list(prai_ptr_->getId()));
-        if (result.size() == 1)
-        {
-            file_id = result[0][0];
-            attach.push_back(file_id);
-        }
-    }
-
     handles.push_back(prai_ptr_->getObject(0).handle);
 
     unsigned long long id = prai_ptr_->getPublicRequestManager()
