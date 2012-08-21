@@ -341,7 +341,7 @@ public:
 
   virtual std::string getPublicRequestAuthIdentification(
           unsigned long long &_contact_id,
-          std::vector<Type> &_request_type_list)
+          const std::vector<Type> &_request_type_list)
   {
       Database::Connection conn = Database::Manager::acquire();
       Database::Result rid = conn.exec_params(

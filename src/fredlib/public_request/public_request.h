@@ -248,7 +248,7 @@ public:
 
   virtual std::string getPublicRequestAuthIdentification(
           unsigned long long &_contact_id,
-          std::vector<Type> &_request_type_list) = 0;
+          const std::vector<Type> &_request_type_list) = 0;
 
   /* config - this should be in contructor */
   virtual const std::string& getIdentificationMailAuthHostname() const = 0;

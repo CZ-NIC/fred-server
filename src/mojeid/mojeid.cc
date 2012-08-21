@@ -334,15 +334,7 @@ namespace Registry
                 new_request->save();
 
                 IdentificationRequestManagerPtr request_manager(mailer_);
-                std::vector<Fred::PublicRequest::Type> request_type_list
-                    = boost::assign::list_of
-                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
-                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
-                    (Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER)
-                    (Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER);
-                _identification = request_manager
-                    ->getPublicRequestAuthIdentification(cinfo.id
-                            , request_type_list);
+                _identification = request_manager->getPublicRequestAuthIdentification(cinfo.id, boost::assign::list_of(type));
 
                 tx.prepare(_trans_id);
 
