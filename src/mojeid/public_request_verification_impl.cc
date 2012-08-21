@@ -296,10 +296,6 @@ public:
                 , "mojeid_pin3"
                 , "registered_letter"
                 );
-        /* in demo mode we send pin3 as email attachment */
-        if (this->get_manager_ptr()->getDemoMode()) {
-            contact_verification_passwd_.sendEmailPassword("mojeid_identification");
-        }
     }
 
     static std::string registration_name()
