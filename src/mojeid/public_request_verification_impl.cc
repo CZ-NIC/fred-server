@@ -51,6 +51,11 @@ public:
             {
                 throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
             }
+            /* if there is another open CICT close it */
+            cancel_public_request(this->getObject(0).id,
+                    PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER,
+                    this->getRequestId());
+
         }
         PublicRequestAuthImpl::save();
     }
@@ -128,6 +133,17 @@ public:
             {
                 throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
             }
+
+            /* if there is another open CICT close it */
+            cancel_public_request(this->getObject(0).id,
+                    PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER,
+                    this->getRequestId());
+
+            /* if there is another open ICT close it */
+            cancel_public_request(this->getObject(0).id,
+                    PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER,
+                    this->getRequestId());
+
         }
         PublicRequestAuthImpl::save();
     }
