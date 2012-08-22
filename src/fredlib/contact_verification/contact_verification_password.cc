@@ -111,7 +111,18 @@ void ContactVerificationPassword::sendEmailPassword(const std::string& mailTempl
     params["hostname"]  = map_at(data, "hostname");
     params["handle"]    = map_at(data, "handle");
     params["identification"] = map_at(data, "identification");
-    params["passwd"]    = map_at(data, "pin1");
+
+    /*
+     * If public request password is one chunk long then
+     * pin1 is empty because of substr in collectMessageData() method.
+     * In this case password is stored in pin3.
+     */
+    if (!map_at(data, "pin1").empty()) {
+        params["passwd"]    = map_at(data, "pin1");
+    }
+    else {
+        params["passwd"]    = map_at(data, "pin3");
+    }
 
     Database::Connection conn = Database::Manager::acquire();
 
@@ -321,8 +332,6 @@ std::string ContactVerificationPassword::generateAuthInfoPassword()
                 % passwd);
         }
     }
-    /* append pin2 */
-    passwd += generateRandomPassword(get_password_chunk_length());
     return passwd;
 }
 
