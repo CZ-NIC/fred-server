@@ -97,7 +97,10 @@ namespace Registry
                 ::KeyVector required_keys = boost::assign::list_of
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
-                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION);
+                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION)
+                    (Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER)
+                    (Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER);
+
 
                 FactoryHaveSupersetOfKeysChecker<Fred::PublicRequest::Factory>
                     (required_keys).check();
