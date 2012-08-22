@@ -744,6 +744,11 @@ namespace Registry
 
                  return cid;
             }
+            catch (Fred::PublicRequest::NotApplicable &_ex) {
+                Fred::Contact::Verification::FieldErrorMap errors;
+                errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::INVALID;
+                throw Fred::Contact::Verification::DataValidationError(errors);
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
