@@ -356,7 +356,7 @@ public:
             if ((!object_has_one_of_states(pri_ptr_->getObject(0).id, Util::vector_of<std::string>
                         (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)
                         (ObjectState::IDENTIFIED_CONTACT)))
-                    || (!object_has_state(pri_ptr_->getId(), ::MojeID::ObjectState::MOJEID_CONTACT)))
+                    || (!object_has_state(pri_ptr_->getObject(0).id, ::MojeID::ObjectState::MOJEID_CONTACT)))
             {
                 throw NotApplicable("pre_insert_checks: failed!");
             }
