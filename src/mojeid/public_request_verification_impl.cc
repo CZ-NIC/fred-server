@@ -38,7 +38,12 @@ public:
 
     std::string generatePasswords()
     {
-        return contact_verification_passwd_.generateAuthInfoPassword();
+        if (this->getPublicRequestManager()->getDemoMode()) {
+            return std::string(contact_verification_passwd_.get_password_chunk_length(), '4');
+        }
+        else {
+            return contact_verification_passwd_.generateAuthInfoPassword();
+        }
     }
 
 
@@ -126,7 +131,12 @@ public:
 
     std::string generatePasswords()
     {
-        return contact_verification_passwd_.generateAuthInfoPassword();
+        if (this->getPublicRequestManager()->getDemoMode()) {
+            return std::string(contact_verification_passwd_.get_password_chunk_length(), '4');
+        }
+        else {
+            return contact_verification_passwd_.generateAuthInfoPassword();
+        }
     }
 
 
