@@ -56,6 +56,10 @@ public:
                     PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER,
                     this->getRequestId());
 
+            /* if there is open CIC request close it */
+            cancel_public_request(this->getObject(0).id,
+                    PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
+                    this->getRequestId());
         }
         PublicRequestAuthImpl::save();
     }
@@ -66,7 +70,9 @@ public:
         mojeid_transfer_impl_.pre_process_check(_check);
         mojeid_transfer_impl_.process_action(_check);
 
-        cancel_public_request(this->getObject(0).id, PRT_CONTACT_IDENTIFICATION,
+        /* close CIC request */
+        cancel_public_request(this->getObject(0).id,
+                PRT_CONTACT_IDENTIFICATION,
                 this->getRequestId());
 
         /* make new request for finishing contact identification */
@@ -144,6 +150,11 @@ public:
                     PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER,
                     this->getRequestId());
 
+            /* if there is open CIC request close it */
+            cancel_public_request(this->getObject(0).id,
+                    PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
+                    this->getRequestId());
+
         }
         PublicRequestAuthImpl::save();
     }
@@ -197,8 +208,9 @@ public:
         mojeid_transfer_impl_.pre_save_check();
         if (!this->getId())
         {
-            /* if there is another open CCI close it */
-            cancel_public_request(this->getObject(0).id, PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
+            /* if there is another open CIC close it */
+            cancel_public_request(this->getObject(0).id,
+                    PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
                     this->getRequestId());
         }
 
@@ -215,6 +227,10 @@ public:
         mojeid_transfer_impl_.pre_process_check(_check);
         cond_contact_identification_impl.process_action(_check);
         mojeid_transfer_impl_.process_action(_check);
+
+        cancel_public_request(this->getObject(0).id,
+                PRT_CONTACT_CONDITIONAL_IDENTIFICATION,
+                this->getRequestId());
 
         /* make new request for finishing contact identification */
         PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
