@@ -49,7 +49,7 @@ std::string ConditionalContactIdentificationImpl::generate_passwords()
     }
     else
     {
-        return std::string(contact_verification_passwd_.generateAuthInfoPassword())
+        return std::string(contact_verification_passwd_.generateRandomPassword())
             + std::string(contact_verification_passwd_.generateRandomPassword());
     }
 }

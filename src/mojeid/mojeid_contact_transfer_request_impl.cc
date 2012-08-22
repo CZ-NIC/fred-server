@@ -49,7 +49,8 @@ void run_transfer_command(unsigned long long _registrar_id
 
 MojeIDContactTransferRequestImpl::MojeIDContactTransferRequestImpl(
         Fred::PublicRequest::PublicRequestAuthImpl * _pra_impl_ptr)
-    : pra_impl_ptr_(_pra_impl_ptr)
+    : pra_impl_ptr_(_pra_impl_ptr),
+      contact_verification_passwd_(_pra_impl_ptr)
 {
 }
 
@@ -130,6 +131,16 @@ void MojeIDContactTransferRequestImpl::process_action(bool _check)
 
 }
 
+
+std::string MojeIDContactTransferRequestImpl::generate_passwords()
+{
+    if (pra_impl_ptr_->getPublicRequestManager()->getDemoMode()) {
+        return std::string(contact_verification_passwd_.get_password_chunk_length(), '1');
+    }
+    else {
+        return contact_verification_passwd_.generateAuthInfoPassword();
+    }
+}
 
 }
 }

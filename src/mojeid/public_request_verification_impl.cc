@@ -38,12 +38,7 @@ public:
 
     std::string generatePasswords()
     {
-        if (this->getPublicRequestManager()->getDemoMode()) {
-            return std::string(contact_verification_passwd_.get_password_chunk_length(), '4');
-        }
-        else {
-            return contact_verification_passwd_.generateAuthInfoPassword();
-        }
+        return mojeid_transfer_impl_.generate_passwords();
     }
 
 
@@ -131,12 +126,7 @@ public:
 
     std::string generatePasswords()
     {
-        if (this->getPublicRequestManager()->getDemoMode()) {
-            return std::string(contact_verification_passwd_.get_password_chunk_length(), '4');
-        }
-        else {
-            return contact_verification_passwd_.generateAuthInfoPassword();
-        }
+        return mojeid_transfer_impl_.generate_passwords();
     }
 
 
@@ -209,7 +199,10 @@ public:
 
     std::string generatePasswords()
     {
-        return cond_contact_identification_impl.generate_passwords();
+        std::string cci_pass = cond_contact_identification_impl.generate_passwords();
+        std::string mtr_pass = mojeid_transfer_impl_.generate_passwords();
+        /* merge transfer pin with cond. contact identification */
+        return std::string(mtr_pass + cci_pass.substr(mtr_pass.length()));
     }
 
     void save()

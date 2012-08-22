@@ -3,6 +3,7 @@
 
 
 #include "public_request/public_request_impl.h"
+#include "fredlib/contact_verification/contact_verification_password.h"
 
 namespace Registry {
 namespace MojeID {
@@ -12,7 +13,7 @@ class MojeIDContactTransferRequestImpl
 {
 private:
     Fred::PublicRequest::PublicRequestAuthImpl* pra_impl_ptr_;
-
+    Fred::PublicRequest::ContactVerificationPassword contact_verification_passwd_;
 
 public:
     MojeIDContactTransferRequestImpl(
@@ -25,6 +26,8 @@ public:
     void pre_process_check(bool _check);
 
     void process_action(bool _check);
+
+    std::string generate_passwords();
 };
 
 
