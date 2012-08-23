@@ -153,6 +153,12 @@ unsigned long long check_public_request(
         const Type &_type)
 {
     Database::Connection conn = Database::Manager::acquire();
+
+    //get lock to the end of transaction for given object and request type
+    conn.exec_params("SELECT lock_public_request_lock("
+        "(SELECT id FROM enum_public_request_type WHERE name=$1::text),$2::bigint)"
+        , Database::query_param_list(_type)(_object_id));
+
     Database::Result rcheck = conn.exec_params(
             "SELECT pr.id FROM public_request pr"
             " JOIN public_request_objects_map prom ON prom.request_id = pr.id"
@@ -179,28 +185,6 @@ void cancel_public_request(
         const unsigned long long &_request_id)
 {
     Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-    //lock
-    Database::Result res_lock_ins = conn.exec_params(
-        "INSERT INTO public_request_lock (id, request_type, object_id) "
-        " VALUES (DEFAULT, (SELECT id FROM enum_public_request_type WHERE name=$1::text) "
-        " , $2::bigint ) RETURNING id", Database::query_param_list(_type)(_object_id));
-    if(res_lock_ins.size() == 1)
-    {
-        Database::Result res_lock_sel = conn.exec_params(
-            "SELECT * FROM public_request_lock WHERE request_type "
-            " = (SELECT id FROM enum_public_request_type WHERE name=$1::text) "
-            " AND object_id = $2::bigint FOR UPDATE "
-                , Database::query_param_list(_type)(_object_id));
-        if(res_lock_sel.size() == 0)
-        {
-            throw std::runtime_error("select public_request_lock failed");
-        }
-    }
-    else
-    {
-        throw std::runtime_error("insert public_request_lock failed");
-    }
 
     unsigned long long prid = 0;
     if ((prid = check_public_request(_object_id, _type)) != 0) {
@@ -213,7 +197,6 @@ void cancel_public_request(
                     (_request_id != 0 ? _request_id : Database::QPNull)
                     (prid));
     }
-    tx.commit();
 }
 
 
