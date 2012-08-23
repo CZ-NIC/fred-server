@@ -256,9 +256,11 @@ public:
     {
         contact_verification_passwd_.sendEmailPassword("mojeid_identification");
         contact_verification_passwd_.sendSmsPassword(
+                boost::format(
                 "Potvrzujeme uspesne zalozeni uctu mojeID. "
                 "Pro aktivaci Vaseho uctu je nutne vlozit kody "
-                "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: "
+                "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: %1%. "
+                )
                 , "mojeid_pin2");
     }
 

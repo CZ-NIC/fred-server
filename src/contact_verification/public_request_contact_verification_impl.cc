@@ -85,8 +85,13 @@ public:
     {
         contact_verification_passwd_.sendEmailPassword("conditional_contact_identification");
         contact_verification_passwd_.sendSmsPassword(
-                "Pro aktivaci Vaseho kontaktu je nutne vlozit kody "
-                "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: "
+                 boost::format(
+                 "Potvrzujeme zahajeni procesu verifikace kontaktu v registru domen. "
+                 "Prvni krok spociva v zadani PIN1 a PIN2. PIN1 vam byl zaslan e-mailem, PIN2 je: %1%. "
+                 "Contact verification for the domain registry has started. "
+                 "In the first step, your PIN1 and PIN2 must be entered. "
+                 "PIN1 has been e-mailed to you; PIN2 is: %1%. "
+                 )
                 , "contact_verification_pin2");
     }
 
