@@ -287,9 +287,9 @@ namespace Registry
                            = Fred::Contact::Verification::NOT_AVAILABLE;
                 }
                 else if ((Fred::object_has_state(cinfo.id
-                            , "serverTransferProhibited") == true)
+                            , Fred::ObjectState::SERVER_TRANSFER_PROHIBITED) == true)
                         || (Fred::object_has_state(cinfo.id
-                            , "serverUpdateProhibited") == true)) {
+                            , Fred::ObjectState::SERVER_UPDATE_PROHIBITED) == true)) {
 
                     errors[Fred::Contact::Verification::field_status]
                            = Fred::Contact::Verification::INVALID;
@@ -416,9 +416,9 @@ namespace Registry
                     " ANY( '{ %1%, %2%, %3%, %4%, %5%, %6%, %7% }') ) "
                     " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
                     " AND os.object_id = $1::integer FOR UPDATE")
-                   % "serverDeleteProhibited"
-                   % "serverTransferProhibited"
-                   % "serverUpdateProhibited"
+                   % Fred::ObjectState::SERVER_DELETE_PROHIBITED
+                   % Fred::ObjectState::SERVER_TRANSFER_PROHIBITED
+                   % Fred::ObjectState::SERVER_UPDATE_PROHIBITED
                    % Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT
                    % Fred::ObjectState::IDENTIFIED_CONTACT
                    % Fred::ObjectState::VALIDATED_CONTACT
@@ -430,9 +430,9 @@ namespace Registry
                 " ANY( '{ %1%, %2%, %3%, %4%, %5%, %6%, %7% }') ) "
                 " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
                 " AND os.object_id = $1::integer FOR UPDATE")
-                   % "serverDeleteProhibited"
-                   % "serverTransferProhibited"
-                   % "serverUpdateProhibited"
+                   % Fred::ObjectState::SERVER_DELETE_PROHIBITED
+                   % Fred::ObjectState::SERVER_TRANSFER_PROHIBITED
+                   % Fred::ObjectState::SERVER_UPDATE_PROHIBITED
                    % Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT
                    % Fred::ObjectState::IDENTIFIED_CONTACT
                    % Fred::ObjectState::VALIDATED_CONTACT
@@ -475,11 +475,11 @@ namespace Registry
                         }
                         mojeid_state = *it;
                     } else {
-                        if(std::string("serverDeleteProhibited") == *it) {
+                        if(Fred::ObjectState::SERVER_DELETE_PROHIBITED == *it) {
                             haveDeleteProhibited = true;
-                        } else if(std::string("serverTransferProhibited") == *it) {
+                        } else if(Fred::ObjectState::SERVER_TRANSFER_PROHIBITED == *it) {
                             haveTransferProhibited = true;
-                        } else if(std::string("serverUpdateProhibited") == *it) {
+                        } else if(Fred::ObjectState::SERVER_UPDATE_PROHIBITED == *it) {
                             haveUpdateProhibited = true;
                         } else if (::MojeID::ObjectState::MOJEID_CONTACT == *it) {
                             haveMojeidContact = true;
