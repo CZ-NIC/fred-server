@@ -155,12 +155,11 @@ namespace Registry
             Fred::PublicRequest::Type type;
             if (_method == IDMethod::SMS)
             {
-                type = Fred::PublicRequest
-                        ::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
+                type = Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
             }
             else if (_method == IDMethod::LETTER)
             {
-                type = Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
+                throw std::runtime_error("not implemented");
             }
             else if (_method == IDMethod::CERTIFICATE)
             {
@@ -311,12 +310,10 @@ namespace Registry
                     type = Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
                 }
                 else if (_method == IDMethod::SMS) {
-                    type = Fred::PublicRequest
-                            ::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
+                    type = Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
                 }
                 else if (_method == IDMethod::LETTER) {
-                    type = Fred::PublicRequest
-                            ::PRT_MOJEID_CONTACT_IDENTIFICATION;
+                    throw std::runtime_error("not implemented");
                 }
                 else if (_method == IDMethod::CERTIFICATE) {
                     throw std::runtime_error("not implemented");
