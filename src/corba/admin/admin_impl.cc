@@ -632,6 +632,9 @@ ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
         << "AND (valid_to ISNULL OR valid_to > CURRENT_TIMESTAMP)";
     // Database::Connection *conn = m_db_manager.acquire();
     Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+    conn.exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)"
+            , Database::query_param_list(6)(domainId));
     try {
         Database::Result res = conn.exec(query);
         if (res.size() != 0) {
@@ -664,6 +667,7 @@ ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
         LOGGER(PACKAGE).error("setInZoneStatus: failed to update object states");
         return false;
     }
+    tx.commit();
     return true;
 }
 
