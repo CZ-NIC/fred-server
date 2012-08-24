@@ -115,6 +115,9 @@ bool cancel_object_state(
     /* check if state is active on object */
     if (object_has_state(_object_id, _state_name) == true) {
         Database::Transaction tx(conn);
+        conn.exec_params("SELECT lock_object_state_request_lock((SELECT id FROM enum_object_states "
+            " WHERE name=$1::text) , $2::bigint)", Database::query_param_list
+                (_state_name)(_object_id));
         Database::Result rid_result = conn.exec_params(
                 "SELECT osr.id FROM object_state_request osr"
                 " JOIN enum_object_states eos ON eos.id = osr.state_id"
