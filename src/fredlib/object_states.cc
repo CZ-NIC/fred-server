@@ -266,6 +266,9 @@ void createObjectStateRequestName(
 
     unsigned long long object_state_id = obj_state_res[0][0];
 
+    conn.exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)"
+        , Database::query_param_list(object_state_id)(object_id));
+
     //get existing state requests for object and state
     //assuming requests for different states of the same object may overlay
     Database::Result requests_result = conn.exec_params(
