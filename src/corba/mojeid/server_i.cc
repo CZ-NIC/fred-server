@@ -66,7 +66,6 @@ namespace Registry
                 unsigned long long cid = pimpl_->contactCreatePrepare(
                     handle
                     , verification_contact
-                    , static_cast<Registry::MojeID::IDMethod::Type>(_method)
                     , _trans_id
                     , _request_id
                     , identification);
@@ -104,7 +103,6 @@ namespace Registry
 
                 unsigned long long cid = pimpl_->contactTransferPrepare(
                     _handle
-                    , static_cast<Registry::MojeID::IDMethod::Type>(_method)
                     , _trans_id
                     , _request_id
                     , identification);

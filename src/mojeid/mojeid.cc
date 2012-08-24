@@ -123,68 +123,10 @@ namespace Registry
             return server_name_;
         }
 
-        IdentificationRequestPtr MojeIDImpl::contactCreateWorker(
-                unsigned long long &cid, unsigned long long &hid
-                , const std::string & _contact_username
-                , Fred::Contact::Verification::Contact &_contact
-                , IDMethod::Type _method, ::MojeID::Request &_request)
-        {
-            Fred::Contact::ManagerPtr contact_mgr(
-                Fred::Contact::Manager::create(
-                    DBDisconnectPtr(0), registry_conf_->restricted_handles));
-
-            Fred::NameIdPair cinfo;
-            Fred::Contact::Manager::CheckAvailType check_result;
-            check_result = contact_mgr->checkAvail(_contact_username, cinfo);
-
-            if (check_result != Fred::Contact::Manager::CA_FREE)
-            {
-                Fred::Contact::Verification::FieldErrorMap errors;
-                errors[Fred::Contact::Verification::field_username]
-                       = Fred::Contact::Verification::NOT_AVAILABLE;
-                throw Fred::Contact::Verification::DataValidationError(errors);
-            }
-
-            hid = Fred::Contact::Verification::contact_create(
-                    _request.get_request_id()
-                    , _request.get_registrar_id()
-                    , _contact);
-            cid = _contact.id;
-
-            /* create public request */
-            Fred::PublicRequest::Type type;
-            if (_method == IDMethod::SMS)
-            {
-                type = Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
-            }
-            else if (_method == IDMethod::LETTER)
-            {
-                throw std::runtime_error("not implemented");
-            }
-            else if (_method == IDMethod::CERTIFICATE)
-            {
-                throw std::runtime_error("not implemented");
-            }
-            else
-            {
-                throw std::runtime_error("unknown identification method");
-            }
-
-            IdentificationRequestPtr new_request(mailer_,type);
-            new_request->setRegistrarId(_request.get_registrar_id());
-            new_request->setRequestId(_request.get_request_id());
-            new_request->addObject(Fred::PublicRequest::OID(
-                    cid, _contact_username
-                    , Fred::PublicRequest::OT_CONTACT));
-            new_request->save();
-
-            return new_request;
-        }//MojeIDImpl::contactCreateWorker
 
         unsigned long long MojeIDImpl::contactCreatePrepare(
                 const std::string & _contact_username
                 , Fred::Contact::Verification::Contact &_contact
-                , IDMethod::Type _method
                 , const char* _trans_id
                 , const unsigned long long _request_id
                 , std::string & _identification)
@@ -203,19 +145,40 @@ namespace Registry
                 unsigned long long cid;
                 unsigned long long hid;
 
-                IdentificationRequestPtr new_request
-                    = contactCreateWorker (cid, hid
-                            ,_contact_username, _contact, _method, request);
+                Fred::Contact::ManagerPtr contact_mgr(
+                    Fred::Contact::Manager::create(
+                        DBDisconnectPtr(0), registry_conf_->restricted_handles));
+
+                Fred::NameIdPair cinfo;
+                Fred::Contact::Manager::CheckAvailType check_result;
+                check_result = contact_mgr->checkAvail(_contact_username, cinfo);
+
+                if (check_result != Fred::Contact::Manager::CA_FREE)
+                {
+                    Fred::Contact::Verification::FieldErrorMap errors;
+                    errors[Fred::Contact::Verification::field_username]
+                           = Fred::Contact::Verification::NOT_AVAILABLE;
+                    throw Fred::Contact::Verification::DataValidationError(errors);
+                }
+
+                hid = Fred::Contact::Verification::contact_create(
+                        request.get_request_id()
+                        , request.get_registrar_id()
+                        , _contact);
+                cid = _contact.id;
+
+                /* create public request */
+                Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
+                IdentificationRequestPtr new_request(mailer_, type);
+                new_request->setRegistrarId(request.get_registrar_id());
+                new_request->setRequestId(request.get_request_id());
+                new_request->addObject(Fred::PublicRequest::OID(
+                            cid, _contact_username, Fred::PublicRequest::OT_CONTACT));
+                new_request->save();
 
                 IdentificationRequestManagerPtr request_manager(mailer_);
-                std::vector<Fred::PublicRequest::Type> request_type_list
-                    = boost::assign::list_of
-                    (Fred::PublicRequest
-                            ::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
-                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION);
                 _identification = request_manager
-                    ->getPublicRequestAuthIdentification(
-                            cid, request_type_list);
+                    ->getPublicRequestAuthIdentification(cid, boost::assign::list_of(type));
 
                 /* save contact and request (one transaction) */
                 request.end_prepare(_trans_id);
@@ -225,7 +188,7 @@ namespace Registry
                 trans_data d(MOJEID_CONTACT_CREATE);
                 d.cid = cid;
                 d.prid = new_request->getId();
-                d.request_id =   request.get_request_id();
+                d.request_id = request.get_request_id();
                 transaction_data.insert(std::make_pair(_trans_id, d));
 
                 td_lock.unlock();
@@ -253,7 +216,6 @@ namespace Registry
 
         unsigned long long MojeIDImpl::contactTransferPrepare(
                 const char* _handle
-                , IDMethod::Type _method
                 , const char* _trans_id
                 , unsigned long long _request_id
                 , std::string& _identification)
@@ -309,27 +271,17 @@ namespace Registry
                 {
                     type = Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
                 }
-                else if (_method == IDMethod::SMS) {
-                    type = Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
-                }
-                else if (_method == IDMethod::LETTER) {
-                    throw std::runtime_error("not implemented");
-                }
-                else if (_method == IDMethod::CERTIFICATE) {
-                    throw std::runtime_error("not implemented");
-                }
                 else {
-                    throw std::runtime_error("unknown identification method");
+                    type = Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
                 }
 
                 Database::Connection conn = Database::Manager::acquire();
                 Database::Transaction tx(conn);
 
-                IdentificationRequestPtr new_request(mailer_,type);
+                IdentificationRequestPtr new_request(mailer_, type);
                 new_request->setRegistrarId(mojeid_registrar_id_);
                 new_request->setRequestId(_request_id);
-                new_request->addObject(
-                        Fred::PublicRequest::OID(
+                new_request->addObject(Fred::PublicRequest::OID(
                             cinfo.id, handle, Fred::PublicRequest::OT_CONTACT));
                 new_request->save();
 
