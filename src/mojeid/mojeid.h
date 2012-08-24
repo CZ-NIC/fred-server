@@ -65,8 +65,6 @@ namespace Registry
             unsigned long long request_id;
         };
 
-        struct IDMethod{enum Type { LETTER, SMS, CERTIFICATE};};
-
         struct OBJECT_NOT_EXISTS : public std::runtime_error
         {
             OBJECT_NOT_EXISTS() : std::runtime_error("object does not exist")
@@ -96,13 +94,6 @@ namespace Registry
             boost::mutex td_mutex; /// for transaction data
             boost::shared_ptr<Fred::Mailer::Manager> mailer_;
 
-            IdentificationRequestPtr contactCreateWorker(
-                    unsigned long long &cid
-                    , unsigned long long &hid
-                    , const std::string & _contact_username
-                    , Fred::Contact::Verification::Contact &_contact
-                    , IDMethod::Type _method
-                    , ::MojeID::Request &_request);
 
         public:
             MojeIDImpl(const std::string &_server_name
@@ -114,14 +105,12 @@ namespace Registry
             unsigned long long contactCreatePrepare(
                 const std::string & _contact_username
                 , Fred::Contact::Verification::Contact &_contact
-                , IDMethod::Type _method
                 , const char* _trans_id
                 , const unsigned long long _request_id
                 , std::string & _identification);
 
             unsigned long long contactTransferPrepare(
                 const char* _handle
-                , IDMethod::Type _method
                 , const char* _trans_id
                 , unsigned long long _request_id
                 , std::string& _identification);

@@ -50,14 +50,12 @@ namespace Registry
           // methods corresponding to defined IDL attributes and operations
           ::CORBA::ULongLong contactCreatePrepare(
                   const Registry::MojeID::Contact& c
-                  , Registry::MojeID::IdentificationMethod m
                   , const char* trans_id
                   , ::CORBA::ULongLong request_id
                   , ::CORBA::String_out ident);
 
           ::CORBA::ULongLong contactTransferPrepare(
                   const char* handle
-                  , Registry::MojeID::IdentificationMethod m
                   , const char* trans_id
                   , ::CORBA::ULongLong request_id
                   , ::CORBA::String_out ident);
