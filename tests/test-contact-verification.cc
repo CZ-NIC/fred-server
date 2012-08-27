@@ -169,24 +169,26 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
         Database::Result res_cci_sms = conn.exec_params(
                 "select pr.id ,  eprt.*, prmm.*, ma.*, mt.* from public_request pr "
                 " join enum_public_request_type eprt on pr.request_type = eprt.id "
+                " join public_request_auth pra on pr.id = pra.id "
                 " join public_request_messages_map prmm on prmm.public_request_id = pr.id "
                 " join message_archive ma on ma.id = prmm.message_archive_id "
                 " join message_type mt on mt.id = ma.message_type_id "
-                " where pr.id = $1::bigint and eprt.name = $2::text "
+                " where pra.identification = $1::text and eprt.name = $2::text "
                 " and mt.type='contact_verification_pin2' "
-            , Database::query_param_list(request_id)
+            , Database::query_param_list(another_request_id)
                 (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
         BOOST_CHECK((res_cci_sms.size() == 1));
 
         Database::Result res_cci_email = conn.exec_params(
                 "select pr.id ,  eprt.*, prmm.*, ma.*, mt.* from public_request pr "
                 " join enum_public_request_type eprt on pr.request_type = eprt.id "
+                " join public_request_auth pra on pr.id = pra.id "
                 " join public_request_messages_map prmm on prmm.public_request_id = pr.id "
                 " join mail_archive ma on ma.id = prmm.mail_archive_id "
                 " join mail_type mt on mt.id = ma.mailtype "
-                " where pr.id = $1::bigint and eprt.name = $2::text "
+                " where pra.identification = $1::text and eprt.name = $2::text "
                 " and mt.name = 'conditional_contact_identification' "
-            , Database::query_param_list(request_id)
+            , Database::query_param_list(another_request_id)
                 (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
         BOOST_CHECK((res_cci_email.size() == 1));
     }
