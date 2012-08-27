@@ -249,7 +249,25 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
         BOOST_CHECK((res_cci_request.size() == 1)
                 && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
+
+        Database::Result res_cci_letter = conn.exec_params(
+
+                "select obr.name,pr.id ,  eprt.*, prmm.*, ma.*, mt.* from object_registry obr "
+                " join public_request_objects_map prom on obr.id = prom.object_id "
+                " join public_request_auth pra on prom.request_id = pra.id "
+                " join public_request pr on pr.id=pra.id "
+                " join enum_public_request_type eprt on pr.request_type = eprt.id "
+                " join public_request_messages_map prmm on prmm.public_request_id = pr.id "
+                " join message_archive ma on ma.id = prmm.message_archive_id "
+                " join message_type mt on mt.id = ma.message_type_id "
+                " where obr.name = $1::text and eprt.name = $2::text and "
+                " mt.type='contact_verification_pin3' "
+            , Database::query_param_list(another_request_id)
+                (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+        BOOST_CHECK((res_cci_letter.size() == 1));
     }
+
+
 
 
 
