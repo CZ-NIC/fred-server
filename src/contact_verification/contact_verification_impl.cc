@@ -224,6 +224,9 @@ namespace Registry
                     Database::Connection conn = Database::Manager::acquire();
                     Database::Transaction trans(conn);
 
+                    //lock public request lock by identification
+                    Fred::PublicRequest::lock_public_request_lock(request_id);
+
                     //check request type
                     Database::Result res_req = conn.exec_params(
                             "SELECT eprt.name FROM public_request pr "

@@ -443,8 +443,25 @@ void lock_public_request_lock(const std::string& public_request_type_name, unsig
         , Database::query_param_list(public_request_type_name));
     if(res_prt_id.size() == 1)
     {
-        unsigned long long public_request_type_id = static_cast<unsigned long long>(res_prt_id[0][0]);
-        lock_public_request_lock(public_request_type_id, object_id);
+        lock_public_request_lock(static_cast<unsigned long long>(res_prt_id[0][0]), object_id);
+    }
+}
+
+//lock public_request by public_request_auth.identification
+void lock_public_request_lock(const std::string& identification)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res_req = conn.exec_params(
+    "SELECT eprt.id, prom.object_id FROM public_request pr "
+    " JOIN public_request_objects_map prom ON prom.request_id = pr.id "
+    " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type "
+    " JOIN public_request_auth pra ON pra.id = pr.id "
+    " WHERE pra.identification = $1::text "
+    , Database::query_param_list(identification));
+    if(res_req.size() == 1)
+    {
+        lock_public_request_lock(static_cast<unsigned long long>(res_req[0][0])
+                , static_cast<unsigned long long>(res_req[0][1]));
     }
 }
 
