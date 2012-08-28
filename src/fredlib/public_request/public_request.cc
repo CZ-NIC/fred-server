@@ -317,12 +317,12 @@ public:
   {
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction tx(conn);
+      lock_public_request_lock(_identification);
       Database::Result rid = conn.exec_params(
               "SELECT pr.id FROM public_request_auth pra"
               " JOIN public_request pr ON pr.id = pra.id"
               " WHERE pra.identification = $1::text"
-              " FOR UPDATE",
-              Database::query_param_list(_identification));
+              , Database::query_param_list(_identification));
       if (rid.size() != 1)
           throw NOT_FOUND();
 
