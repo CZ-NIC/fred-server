@@ -304,6 +304,7 @@ public:
     TRACE(boost::format("[CALL] Fred::Request::Manager::processRequest(%1%, %2%)") %
           _id % _invalidate);
     try {
+        lock_public_request_lock(_id);
       std::auto_ptr<List> l(loadRequest(_id));
       l->get(0)->process(_invalidate, check, _request_id);
     }
