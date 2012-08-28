@@ -344,6 +344,11 @@ public:
           const std::vector<Type> &_request_type_list)
   {
       Database::Connection conn = Database::Manager::acquire();
+      for(std::vector<Type>::const_iterator cit = _request_type_list.begin(); cit != _request_type_list.end(); ++cit )
+      {
+          lock_public_request_lock(*cit, _contact_id);
+      }
+
       Database::Result rid = conn.exec_params(
               "SELECT identification FROM public_request_auth pra"
               " JOIN public_request pr ON (pra.id=pr.id)"
