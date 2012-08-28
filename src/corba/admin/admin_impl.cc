@@ -633,8 +633,10 @@ ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
     // Database::Connection *conn = m_db_manager.acquire();
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction tx(conn);
-    conn.exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)"
-            , Database::query_param_list(6)(domainId));
+
+    Fred::lock_object_state_request_lock(
+            Fred::ObjectState::SERVER_INZONE_MANUAL, domainId);
+
     try {
         Database::Result res = conn.exec(query);
         if (res.size() != 0) {
