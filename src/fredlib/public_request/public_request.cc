@@ -465,6 +465,23 @@ void lock_public_request_lock(const std::string& identification)
     }
 }
 
+//lock public_request by public_request.id
+void lock_public_request_lock(unsigned long long public_request_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res_req = conn.exec_params(
+    "SELECT eprt.id, prom.object_id FROM public_request pr "
+    " JOIN public_request_objects_map prom ON prom.request_id = pr.id "
+    " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type "
+    " WHERE pr.id = $1::bigint "
+    , Database::query_param_list(public_request_id));
+    if(res_req.size() == 1)
+    {
+        lock_public_request_lock(static_cast<unsigned long long>(res_req[0][0])
+                , static_cast<unsigned long long>(res_req[0][1]));
+    }
+}
+
 
 }//namespace PublicRequest
 }//namespace Fred
