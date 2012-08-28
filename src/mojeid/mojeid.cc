@@ -918,7 +918,10 @@ namespace Registry
                 // this should be eventually done by filter query with combination of
                 // loading contact data
                 Database::Connection conn = Database::Manager::acquire();
-                // TODO: hardcoded ID=14! should be replaced
+
+                Fred::PublicRequest::lock_public_request_lock(
+                        Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION,_contact_id);
+
                 Database::Result res = conn.exec_params(
                     "SELECT "
                     " (pr.create_time::timestamptz AT TIME ZONE 'Europe/Prague')::date,"
@@ -932,9 +935,12 @@ namespace Registry
                     " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
                     " JOIN contact c ON (c.id = prom.object_id) "
                     " JOIN object_registry oreg ON oreg.id = c.id "
+                    " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type "
                     " WHERE pr.resolve_time IS NULL AND pr.status = 0 "
-                    " AND pr.request_type=14 AND object_id = $1::integer",
-                    Database::query_param_list(_contact_id));
+                    " AND eprt.name = $1::text AND object_id = $2::integer",
+                    Database::query_param_list
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION)
+                        (_contact_id));
                 if (res.size() != 1)
                     throw Registry::MojeID::OBJECT_NOT_EXISTS();
                 IdentificationRequestManagerPtr req_man(mailer_);
