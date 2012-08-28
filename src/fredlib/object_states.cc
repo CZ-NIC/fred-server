@@ -115,9 +115,9 @@ bool cancel_object_state(
     /* check if state is active on object */
     if (object_has_state(_object_id, _state_name) == true) {
         Database::Transaction tx(conn);
-        conn.exec_params("SELECT lock_object_state_request_lock((SELECT id FROM enum_object_states "
-            " WHERE name=$1::text) , $2::bigint)", Database::query_param_list
-                (_state_name)(_object_id));
+
+        lock_object_state_request_lock(_state_name,_object_id);
+
         Database::Result rid_result = conn.exec_params(
                 "SELECT osr.id FROM object_state_request osr"
                 " JOIN enum_object_states eos ON eos.id = osr.state_id"
@@ -266,8 +266,7 @@ void createObjectStateRequestName(
 
     unsigned long long object_state_id = obj_state_res[0][0];
 
-    conn.exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)"
-        , Database::query_param_list(object_state_id)(object_id));
+    lock_object_state_request_lock(object_state_id, object_id);
 
     //get existing state requests for object and state
     //assuming requests for different states of the same object may overlay
@@ -364,5 +363,27 @@ void createObjectStateRequestName(
     return;
 }//createObjectStateRequest
 
+//select for update by state_id from enum_object_states.id and object_id from object_registry.id
+void lock_object_state_request_lock(unsigned long long state_id, unsigned long long object_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    conn.exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)"
+        , Database::query_param_list(state_id)(object_id));
+
+}
+
+//select for update by state_name from enum_object_states.name and object_id from object_registry.id
+void lock_object_state_request_lock(const std::string& state_name, unsigned long long object_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res_state_id = conn.exec_params("SELECT id FROM enum_object_states "
+        " WHERE name=$1::text ", Database::query_param_list (state_name));
+
+    if(res_state_id.size() == 1)
+    {
+        lock_object_state_request_lock(static_cast<unsigned long long>(res_state_id[0][0])
+                , object_id);
+    }
+}
 
 };

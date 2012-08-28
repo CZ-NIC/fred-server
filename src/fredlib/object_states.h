@@ -81,7 +81,13 @@ void createObjectStateRequestName(
         , const optional_string& valid_to
         , bool update_object_state);
 
+void lock_object_state_request_lock(
+        unsigned long long state_id
+        , unsigned long long object_id);
 
+void lock_object_state_request_lock(
+        const std::string& state_name
+        , unsigned long long object_id);
 };
 
 #endif /*OBJECT_STATES_H_*/
