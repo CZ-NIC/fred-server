@@ -155,9 +155,7 @@ unsigned long long check_public_request(
     Database::Connection conn = Database::Manager::acquire();
 
     //get lock to the end of transaction for given object and request type
-    conn.exec_params("SELECT lock_public_request_lock("
-        "(SELECT id FROM enum_public_request_type WHERE name=$1::text),$2::bigint)"
-        , Database::query_param_list(_type)(_object_id));
+    lock_public_request_lock(_type,_object_id);
 
     Database::Result rcheck = conn.exec_params(
             "SELECT pr.id FROM public_request pr"
@@ -787,8 +785,6 @@ bool PublicRequestAuthImpl::check() const
 {
     return true;
 }
-
-
 
 }
 }

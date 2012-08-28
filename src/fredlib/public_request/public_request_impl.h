@@ -197,8 +197,6 @@ COMPARE_CLASS_IMPL(PublicRequestImpl, ResolveTime)
 COMPARE_CLASS_IMPL(PublicRequestImpl, Type)
 COMPARE_CLASS_IMPL(PublicRequestImpl, Status)
 
-
-
 }
 }
 

@@ -262,6 +262,10 @@ typedef Util::Factory<PublicRequest, Util::ClassCreator<PublicRequest> > Factory
 
 std::vector<std::string> get_enum_public_request_type();
 
+void lock_public_request_lock(unsigned long long public_request_type_id, unsigned long long object_id);
+void lock_public_request_lock(const std::string& public_request_type_name, unsigned long long object_id);
+
+
 }
 }
 

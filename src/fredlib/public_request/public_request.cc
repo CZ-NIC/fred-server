@@ -423,5 +423,31 @@ std::vector<std::string> get_enum_public_request_type()
     return public_request_types;
 }//enum_public_request_type
 
+//lock public_request for public_request_type_id from enum_public_request_type.id and object_id from object_registry.id
+void lock_public_request_lock(unsigned long long public_request_type_id, unsigned long long object_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    //get lock to the end of transaction for given object and request type
+    conn.exec_params("SELECT lock_public_request_lock($1::bigint,$2::bigint)"
+        , Database::query_param_list(public_request_type_id)(object_id));
+
+}
+
+//lock public_request for public_request_type_name from enum_public_request_type.name and object_id from object_registry.id
+void lock_public_request_lock(const std::string& public_request_type_name, unsigned long long object_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    //get lock to the end of transaction for given object and request type
+    Database::Result res_prt_id = conn.exec_params(
+            "SELECT id FROM enum_public_request_type WHERE name=$1::text"
+        , Database::query_param_list(public_request_type_name));
+    if(res_prt_id.size() == 1)
+    {
+        unsigned long long public_request_type_id = static_cast<unsigned long long>(res_prt_id[0][0]);
+        lock_public_request_lock(public_request_type_id, object_id);
+    }
+}
+
+
 }//namespace PublicRequest
 }//namespace Fred
