@@ -1544,6 +1544,9 @@ namespace Registry
         {
             try
             {
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
                 IdentificationRequestManagerPtr mgr(mailer_);
                 std::auto_ptr<Fred::PublicRequest::List> list(mgr->loadRequest(
                         prid));
@@ -1562,6 +1565,7 @@ namespace Registry
                 {
                     new_auth_req->sendPasswords();
                 }
+                tx.commit();
             }
             catch (std::exception &ex)
             {

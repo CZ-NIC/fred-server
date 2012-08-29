@@ -287,6 +287,7 @@ public:
   }
 
   List *loadRequest(Database::ID id) const {
+    lock_public_request_lock(id);
     Database::Filters::PublicRequest *prf = new Database::Filters::PublicRequestImpl();
     prf->addId().setValue(id);
     Database::Filters::Union uf;
