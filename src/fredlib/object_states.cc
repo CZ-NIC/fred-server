@@ -8,6 +8,7 @@ bool object_has_state(
         const std::string &_state_name)
 {
     Database::Connection conn = Database::Manager::acquire();
+    lock_object_state_request_lock(_state_name, _object_id);
     Database::Result rcheck = conn.exec_params(
             "SELECT count(*) FROM object_state os"
             " JOIN enum_object_states eos ON eos.id = os.state_id"

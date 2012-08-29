@@ -226,6 +226,9 @@ namespace Registry
 
             try
             {
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
                 std::string handle(_handle);
 
                 Fred::NameIdPair cinfo;
@@ -275,8 +278,7 @@ namespace Registry
                     type = Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
                 }
 
-                Database::Connection conn = Database::Manager::acquire();
-                Database::Transaction tx(conn);
+
 
                 IdentificationRequestPtr new_request(mailer_, type);
                 new_request->setRegistrarId(mojeid_registrar_id_);
