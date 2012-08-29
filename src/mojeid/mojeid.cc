@@ -1337,6 +1337,9 @@ namespace Registry
                         % _contact_id % _request_id);
 
             try {
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
                 // check if the contact with ID _contact_id exists
                 Fred::NameIdPair cinfo;
                 Fred::Contact::ManagerPtr contact_mgr(
@@ -1358,11 +1361,8 @@ namespace Registry
                             "Contact is not registered with MojeID");
                 }
 
-                Database::Connection conn = Database::Manager::acquire();
-                Database::Transaction tx(conn);
-
                 //try lock object states
-                Fred::lock_multiple_open_object_states(_contact_id
+                Fred::lock_multiple_object_states(_contact_id
                     , Util::vector_of<std::string>
                         (::MojeID::ObjectState::MOJEID_CONTACT)
                         (Fred::ObjectState::SERVER_DELETE_PROHIBITED)
