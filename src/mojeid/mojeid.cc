@@ -924,6 +924,7 @@ namespace Registry
                 // this should be eventually done by filter query with combination of
                 // loading contact data
                 Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
 
                 Fred::PublicRequest::lock_public_request_lock(
                         Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION,_contact_id);
@@ -979,6 +980,7 @@ namespace Registry
                     << "<address>" << std::string(res[0][6]) << "</address>"
                     << "</mojeid_valid>";
                 g->closeInput();
+                tx.commit();
             }//try
             catch (Registry::MojeID::OBJECT_NOT_EXISTS&)
             {
