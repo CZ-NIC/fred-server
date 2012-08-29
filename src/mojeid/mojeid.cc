@@ -670,7 +670,10 @@ namespace Registry
                      " identification_id: %1%  password: %2%  request_id: %3%")
                      % _ident_request_id % _password % _request_id);
 
-                 IdentificationRequestManagerPtr request_manager(mailer_);
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction trans(conn);
+
+                 IdentificationRequestManagerPtr request_manager(mailer_ );
                  unsigned long long cid = request_manager->processAuthRequest(
                                      _ident_request_id, _password, _request_id);
 
@@ -689,6 +692,8 @@ namespace Registry
                  catch (...) {
                      LOGGER(PACKAGE).error("request notification failed");
                  }
+
+                 trans.commit();
 
                  return cid;
             }
@@ -725,7 +730,7 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 Database::Transaction trans(conn);
 
-                IdentificationRequestManagerPtr request_manager(mailer_);
+                IdentificationRequestManagerPtr request_manager(mailer_  );
                 std::vector<Fred::PublicRequest::Type> request_type_list
                     = boost::assign::list_of
                         (Fred::PublicRequest
