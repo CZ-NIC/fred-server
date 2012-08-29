@@ -739,9 +739,11 @@ namespace Registry
                         (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION);
                 unsigned long long cid = static_cast<unsigned long long>(
                         _contact_id);
-                return request_manager->getPublicRequestAuthIdentification(
+
+                std::string ret = request_manager->getPublicRequestAuthIdentification(
                         cid, request_type_list);
                 trans.commit();
+                return ret;
             }
             catch (std::exception &_ex) {
                 LOGGER(PACKAGE).error(boost::format("request failed (%1%)")
