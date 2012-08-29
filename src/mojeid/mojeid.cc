@@ -337,6 +337,9 @@ namespace Registry
                         % _contact_id % _request_id);
 
             try {
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
                 // check if the contact with ID _contact_id exists
                 Fred::NameIdPair cinfo;
                 Fred::Contact::ManagerPtr contact_mgr(
@@ -357,9 +360,6 @@ namespace Registry
                     throw std::runtime_error(
                             "Contact is not registered with MojeID");
                 }
-
-                Database::Connection conn = Database::Manager::acquire();
-                Database::Transaction tx(conn);
 
                 boost::format lock_state = boost::format(
                 " SELECT os.state_id FROM object_state os WHERE os.state_id = ANY "
