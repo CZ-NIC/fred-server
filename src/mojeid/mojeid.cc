@@ -728,6 +728,9 @@ namespace Registry
                             "  _contact_id: %1% ")
                         % _contact_id);
 
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction trans(conn);
+
                 IdentificationRequestManagerPtr request_manager(mailer_);
                 std::vector<Fred::PublicRequest::Type> request_type_list
                     = boost::assign::list_of
@@ -738,6 +741,7 @@ namespace Registry
                         _contact_id);
                 return request_manager->getPublicRequestAuthIdentification(
                         cid, request_type_list);
+                trans.commit();
             }
             catch (std::exception &_ex) {
                 LOGGER(PACKAGE).error(boost::format("request failed (%1%)")
