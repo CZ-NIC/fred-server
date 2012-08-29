@@ -1014,6 +1014,9 @@ namespace Registry
                             "  contact_id: %1%  request_id: %2%")
                         % _contact_id % _request_id);
 
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
                 Fred::NameIdPair cinfo;
                 Fred::Contact::ManagerPtr contact_mgr(
                         Fred::Contact::Manager::create(
@@ -1045,6 +1048,8 @@ namespace Registry
                      )
                 );
                 new_request->save();
+
+                tx.commit();
 
                 LOGGER(PACKAGE).info(boost::format(
                         "validation request created"
