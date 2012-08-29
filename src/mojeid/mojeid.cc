@@ -366,7 +366,7 @@ namespace Registry
                 " ( SELECT id from enum_object_states where name = "
                     " ANY( '{ %1%, %2%, %3%, %4%, %5%, %6%, %7% }') ) "
                     " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
-                    " AND os.object_id = $1::integer FOR UPDATE")
+                    " AND os.object_id = $1::integer")
                    % Fred::ObjectState::SERVER_DELETE_PROHIBITED
                    % Fred::ObjectState::SERVER_TRANSFER_PROHIBITED
                    % Fred::ObjectState::SERVER_UPDATE_PROHIBITED
@@ -375,27 +375,21 @@ namespace Registry
                    % Fred::ObjectState::VALIDATED_CONTACT
                    % ::MojeID::ObjectState::MOJEID_CONTACT;
 
-                boost::format lock_state_request = boost::format(
-                " SELECT * FROM object_state os WHERE os.state_id = ANY "
-                " ( SELECT id from enum_object_states where name = "
-                " ANY( '{ %1%, %2%, %3%, %4%, %5%, %6%, %7% }') ) "
-                " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
-                " AND os.object_id = $1::integer FOR UPDATE")
-                   % Fred::ObjectState::SERVER_DELETE_PROHIBITED
-                   % Fred::ObjectState::SERVER_TRANSFER_PROHIBITED
-                   % Fred::ObjectState::SERVER_UPDATE_PROHIBITED
-                   % Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT
-                   % Fred::ObjectState::IDENTIFIED_CONTACT
-                   % Fred::ObjectState::VALIDATED_CONTACT
-                   % ::MojeID::ObjectState::MOJEID_CONTACT;
+                //try lock object states
+                Fred::lock_multiple_object_states(_contact_id
+                    , Util::vector_of<std::string>
+                        (::MojeID::ObjectState::MOJEID_CONTACT)
+                        (Fred::ObjectState::SERVER_DELETE_PROHIBITED)
+                        (Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)
+                        (Fred::ObjectState::SERVER_UPDATE_PROHIBITED)
+                        (Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)
+                        (Fred::ObjectState::IDENTIFIED_CONTACT)
+                        (Fred::ObjectState::VALIDATED_CONTACT) );
 
                 // fetch the result and convert to strings
                 std::vector<int> drop_states_codes;
 
                 Database::Result res = conn.exec_params(lock_state.str(),
-                        Database::query_param_list(_contact_id));
-
-                conn.exec_params(lock_state_request.str(),
                         Database::query_param_list(_contact_id));
 
                 drop_states_codes.reserve(res.size());
