@@ -57,7 +57,7 @@ private:
     std::string disable_epp_notifier_cltrid_prefix;
 
 
-    int createObjectStateRequest(Fred::TID object, unsigned state);
+
     int deleteObjects(const std::string &typeList, CorbaClient &cc);
 
     static const struct options m_opts[];

@@ -354,7 +354,7 @@ void createObjectStateRequestName(
     }//if (update_object_state)
 
     return;
-}//createObjectStateRequest
+}//createObjectStateRequestName
 
 //select for update by state_id from enum_object_states.id and object_id from object_registry.id
 void lock_object_state_request_lock(unsigned long long state_id, unsigned long long object_id)
