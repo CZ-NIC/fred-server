@@ -26,28 +26,6 @@
 
 #include "util/types/optional.h"
 
-/**
- * \class ObjectNewStateRequestArgs
- * \brief admin client object_new_state_request params
- */
-struct ObjectNewStateRequestArgs
-{
-    unsigned long long object_id;//OBJECT_ID_NAME
-    unsigned long object_new_state_request;//OBJECT_NEW_STATE_REQUEST_NAME
-
-    ObjectNewStateRequestArgs()
-    : object_id(0)
-    , object_new_state_request(0)
-    {}//ctor
-    ObjectNewStateRequestArgs(
-            const unsigned long long _object_id
-             , const unsigned long _object_new_state_request
-            )
-    : object_id(_object_id)
-    , object_new_state_request(_object_new_state_request)
-    {}//init ctor
-};//struct ObjectNewStateRequestArgs
-
 
 /**
  * \class ObjectNewStateRequestNameArgs

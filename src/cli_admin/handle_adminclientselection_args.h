@@ -1972,43 +1972,6 @@ public:
     }//handle
 };//class HandleAdminClientEnumParameterChangeArgsGrp
 
-/**
- * \class HandleAdminClientObjectNewStateRequestArgsGrp
- * \brief admin client object_new_state_request options handler
- */
-class HandleAdminClientObjectNewStateRequestArgsGrp : public HandleCommandGrpArgs
-{
-public:
-    ObjectNewStateRequestArgs params;
-    CommandDescription get_command_option()
-    {
-        return CommandDescription("object_new_state_request",true);
-    }
-    boost::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("object_new_state_request options")));
-        cfg_opts->add_options()
-            ("object_new_state_request",boost::program_options
-                    ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_new_state_request))
-                    ,"set request for object state with specified state id")
-            ("object_id",boost::program_options
-                    ::value<Checked::id>()->notifier(save_arg<unsigned long long>(params.object_id))
-                     ,"object id")
-                ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientObjectNewStateRequestArgsGrp
-
 
 /**
  * \class HandleAdminClientObjectNewStateRequestNameArgsGrp

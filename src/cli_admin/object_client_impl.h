@@ -30,40 +30,6 @@
 #include "log/context.h"
 #include "cli_admin/objectclient.h"
 
-/**
- * \class object_new_state_request_impl
- * \brief admin client implementation of object_new_state_request
- */
-
-struct object_new_state_request_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("object_new_state_request_impl");
-      Admin::ObjectClient pom(
-              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-              , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_path())
-              , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_template_path())
-              , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_restricted_handles()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_domain_count_limit()
-              , true//const bool _object_new_state_request
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientObjectNewStateRequestArgsGrp>()->params//ObjectNewStateRequestArgs()//const ObjectNewStateRequestArgs& _object_new_state_request_params
-              , false//const bool _object_new_state_request_name
-              , ObjectNewStateRequestNameArgs()//const ObjectNewStateRequestNameArgs& _object_new_state_request_name_params
-              , false//const bool _object_update_states
-              , ObjectUpdateStatesArgs()//const ObjectUpdateStatesArgs& _object_update_states_params
-              , false//const bool _object_regular_procedure
-              , ObjectRegularProcedureArgs()//const ObjectRegularProcedureArgs& _object_regular_procedure_params
-              , false//const bool _object_delete_candidates
-              , DeleteObjectsArgs()//const DeleteObjectsArgs& _delete_objects_params
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_disable_epp_notifier_cltrid_prefix()
-              );
-       pom.runMethod();
-  }
-};
 
 
 /**
@@ -85,8 +51,6 @@ struct object_new_state_request_name_impl
               , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_restricted_handles()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_domain_count_limit()
-              , false//const bool _object_new_state_request
-              , ObjectNewStateRequestArgs()//const ObjectNewStateRequestArgs& _object_new_state_request_params
               , true//const bool _object_new_state_request_name
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientObjectNewStateRequestNameArgsGrp>()->params//ObjectNewStateRequestNameArgs()//const ObjectNewStateRequestNameArgs& _object_new_state_request_name_params
               , false//const bool _object_update_states
@@ -120,8 +84,6 @@ struct object_update_states_impl
               , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_restricted_handles()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_domain_count_limit()
-              , false//const bool _object_new_state_request
-              , ObjectNewStateRequestArgs()//const ObjectNewStateRequestArgs& _object_new_state_request_params
               , false//const bool _object_new_state_request_name
               , ObjectNewStateRequestNameArgs()//const ObjectNewStateRequestNameArgs& _object_new_state_request_name_params
               , true//const bool _object_update_states
@@ -155,8 +117,6 @@ struct object_regular_procedure_impl
               , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_restricted_handles()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_domain_count_limit()
-              , false//const bool _object_new_state_request
-              , ObjectNewStateRequestArgs()//const ObjectNewStateRequestArgs& _object_new_state_request_params
               , false//const bool _object_new_state_request_name
               , ObjectNewStateRequestNameArgs()//const ObjectNewStateRequestNameArgs& _object_new_state_request_name_params
               , false//const bool _object_update_states
@@ -190,8 +150,6 @@ struct object_delete_candidates_impl
               , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_restricted_handles()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_domain_count_limit()
-              , false//const bool _object_new_state_request
-              , ObjectNewStateRequestArgs()//const ObjectNewStateRequestArgs& _object_new_state_request_params
               , false//const bool _object_new_state_request_name
               , ObjectNewStateRequestNameArgs()//const ObjectNewStateRequestNameArgs& _object_new_state_request_name_params
               , false//const bool _object_update_states
