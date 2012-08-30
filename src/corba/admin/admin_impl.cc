@@ -616,42 +616,60 @@ void ccReg_Admin_i::generateLetters() {
   }
 }
 
-bool ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
+bool
+ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
 {
     Logging::Context ctx(server_name_);
     ConnectionReleaser releaser;
 
     TRACE(boost::format("[CALL] ccReg_Admin_i::setInZoneStatus(%1%)")
             % domainId);
+    Database::Query query;
+    query.buffer()
+        << "SELECT id FROM object_state_request WHERE object_id="
+        << Database::Value(domainId) << " AND state_id=6 "
+        << "AND (canceled ISNULL OR canceled > CURRENT_TIMESTAMP) "
+        << "AND (valid_to ISNULL OR valid_to > CURRENT_TIMESTAMP)";
+    // Database::Connection *conn = m_db_manager.acquire();
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+
+    Fred::lock_object_state_request_lock(
+            Fred::ObjectState::SERVER_INZONE_MANUAL, domainId);
+
     try {
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
-
-        Fred::lock_object_state_request_lock(
-                Fred::ObjectState::SERVER_INZONE_MANUAL, domainId);
-        Fred::update_object_states(domainId);
-
-        if (Fred::object_has_state(domainId
-                , Fred::ObjectState::SERVER_INZONE_MANUAL))
-        {
-            LOGGER(PACKAGE).error("Already in zone");
+        Database::Result res = conn.exec(query);
+        if (res.size() != 0) {
+            LOGGER(PACKAGE).error("Already in ``object_state_request''");
             return false;
         }
-        else
-        {
-            unsigned long long srid = Fred::insert_object_state(domainId
-                , Fred::ObjectState::SERVER_INZONE_MANUAL);
-            conn.exec_params("UPDATE object_state_request "
-                " SET valid_to = valid_from + interval '7 days' "
-                " WHERE id=$1::bigint", Database::query_param_list(srid));
-            Fred::update_object_states(domainId);
-        }
-        tx.commit();
     } catch (...) {
         LOGGER(PACKAGE).error("setInZoneStatus: an error has occured");
         return false;
     }
-
+    Database::InsertQuery insert("object_state_request");
+    Database::DateTime now = Database::NOW_UTC;
+    insert.add("object_id", Database::Value(domainId));
+    insert.add("state_id", 6);
+    insert.add("valid_from", Database::Value(now));
+    insert.add("valid_to", Database::Value(now + Database::Days(7)));
+    insert.add("crdate", Database::Value(now));
+    try {
+        conn.exec(insert);
+    } catch (...) {
+        LOGGER(PACKAGE).error("setInZoneStatus: failed to insert");
+        return false;
+    }
+    query.clear();
+    query.buffer()
+        << "SELECT update_object_states(" << domainId << ");";
+    try {
+        conn.exec(query);
+    } catch (...) {
+        LOGGER(PACKAGE).error("setInZoneStatus: failed to update object states");
+        return false;
+    }
+    tx.commit();
     return true;
 }
 
