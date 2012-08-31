@@ -652,6 +652,10 @@ bool ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
             , true //bool update_object_state
             );
         tx.commit();
+    } catch (std::exception& ex) {
+        LOGGER(PACKAGE).error("setInZoneStatus: an error has occured");
+        LOGGER(PACKAGE).error(ex.what());
+        return false;
     } catch (...) {
         LOGGER(PACKAGE).error("setInZoneStatus: an error has occured");
         return false;
