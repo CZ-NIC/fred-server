@@ -616,60 +616,46 @@ void ccReg_Admin_i::generateLetters() {
   }
 }
 
-bool
-ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
+bool ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
 {
     Logging::Context ctx(server_name_);
     ConnectionReleaser releaser;
-
-    TRACE(boost::format("[CALL] ccReg_Admin_i::setInZoneStatus(%1%)")
-            % domainId);
-    Database::Query query;
-    query.buffer()
-        << "SELECT id FROM object_state_request WHERE object_id="
-        << Database::Value(domainId) << " AND state_id=6 "
-        << "AND (canceled ISNULL OR canceled > CURRENT_TIMESTAMP) "
-        << "AND (valid_to ISNULL OR valid_to > CURRENT_TIMESTAMP)";
-    // Database::Connection *conn = m_db_manager.acquire();
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-
-    Fred::lock_object_state_request_lock(
-            Fred::ObjectState::SERVER_INZONE_MANUAL, domainId);
-
     try {
-        Database::Result res = conn.exec(query);
-        if (res.size() != 0) {
-            LOGGER(PACKAGE).error("Already in ``object_state_request''");
-            return false;
+
+        TRACE(boost::format("[CALL] ccReg_Admin_i::setInZoneStatus(%1%)")
+                % domainId);
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
+        Fred::lock_object_state_request_lock(
+                Fred::ObjectState::SERVER_INZONE_MANUAL, domainId);
+
+        Database::Result dname_res = conn.exec_params("SELECT obr.name "
+            " FROM object_registry obr JOIN domain d ON d.id = obr.id "
+            " WHERE d.id = $1::bigint", Database::query_param_list(domainId));
+        if(dname_res.size() != 1)
+        {
+            throw std::runtime_error("domain not found");
         }
+
+        std::string  object_name (dname_res[0][0]);
+
+        boost::posix_time::ptime whatisthetime = microsec_clock::universal_time();
+        boost::gregorian::date_duration dd7 (7);
+
+        Fred::createObjectStateRequestName(
+            object_name, 3 //object_type domain
+            , Util::vector_of<std::string>(Fred::ObjectState::SERVER_INZONE_MANUAL)
+            , boost::posix_time::to_iso_extended_string(whatisthetime) //valid_from now
+            , boost::posix_time::to_iso_extended_string(whatisthetime + dd7) //const optional_string& valid_to
+            , true //bool update_object_state
+            );
+        tx.commit();
     } catch (...) {
         LOGGER(PACKAGE).error("setInZoneStatus: an error has occured");
         return false;
     }
-    Database::InsertQuery insert("object_state_request");
-    Database::DateTime now = Database::NOW_UTC;
-    insert.add("object_id", Database::Value(domainId));
-    insert.add("state_id", 6);
-    insert.add("valid_from", Database::Value(now));
-    insert.add("valid_to", Database::Value(now + Database::Days(7)));
-    insert.add("crdate", Database::Value(now));
-    try {
-        conn.exec(insert);
-    } catch (...) {
-        LOGGER(PACKAGE).error("setInZoneStatus: failed to insert");
-        return false;
-    }
-    query.clear();
-    query.buffer()
-        << "SELECT update_object_states(" << domainId << ");";
-    try {
-        conn.exec(query);
-    } catch (...) {
-        LOGGER(PACKAGE).error("setInZoneStatus: failed to update object states");
-        return false;
-    }
-    tx.commit();
     return true;
 }
 
