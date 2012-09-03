@@ -217,7 +217,7 @@ public:
             //BOOST_TEST_MESSAGE( "contact id: " << fixture_ptr_->fcvc.id );
             Fred::lock_object_state_request_lock(Fred::ObjectState::SERVER_UPDATE_PROHIBITED
                 ,fixture_ptr_->fcvc.id);
-            if(sb_ptr_) sb_ptr_->barrier2.wait();//wait for other synced threads
+            //if(sb_ptr_) sb_ptr_->barrier2.wait();//wait for other synced threads
             if(!Fred::object_has_state(fixture_ptr_->fcvc.id,
                 Fred::ObjectState::SERVER_UPDATE_PROHIBITED))
             {
