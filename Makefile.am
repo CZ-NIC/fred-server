@@ -1565,6 +1565,7 @@ tests_test_server_SOURCES = \
 		tests/test-decimal.cc \
 		tests/test-shellcmd.cc \
 		tests/test-contact-verification.cc \
+		tests/test-locking-trigger.cc \
 		src/corba/epp_corba_client_impl.cc \
 		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
