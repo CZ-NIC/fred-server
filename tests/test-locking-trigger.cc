@@ -205,23 +205,29 @@ public:
 
         try
         {
+            //db connection with transaction
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Transaction tx(conn);
+
             //std::cout << "waiting: " << number_ << std::endl;
             if(sb_ptr_) sb_ptr_->barrier1.wait();//wait for other synced threads
             //std::cout << "start: " << number_ << std::endl;
 
             //call some impl
+            //BOOST_TEST_MESSAGE( "contact id: " << fixture_ptr_->fcvc.id );
             Fred::lock_object_state_request_lock(Fred::ObjectState::SERVER_UPDATE_PROHIBITED
                 ,fixture_ptr_->fcvc.id);
             if(sb_ptr_) sb_ptr_->barrier2.wait();//wait for other synced threads
-            if(Fred::object_has_state(fixture_ptr_->fcvc.id,
+            if(!Fred::object_has_state(fixture_ptr_->fcvc.id,
                 Fred::ObjectState::SERVER_UPDATE_PROHIBITED))
             {
                 Fred::insert_object_state(fixture_ptr_->fcvc.id
                     , Fred::ObjectState::SERVER_UPDATE_PROHIBITED );
+                Fred::update_object_states(fixture_ptr_->fcvc.id);
                 res.ret = 1;
             }
 
-
+            tx.commit();
         }
         catch(const std::exception& ex)
         {
@@ -290,6 +296,8 @@ BOOST_FIXTURE_TEST_CASE( test_locking_trigger_threaded, Case_locking_trigger_thr
         if(!result_queue.try_pop(thread_result)) {
             continue;
         }
+
+        BOOST_TEST_MESSAGE( "result.ret: " << thread_result.ret );
 
         if(thread_result.ret != 0)
         {
