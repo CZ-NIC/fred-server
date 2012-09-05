@@ -360,6 +360,7 @@ void createObjectStateRequestName(
 void lock_object_state_request_lock(unsigned long long state_id, unsigned long long object_id)
 {
     Database::Connection conn = Database::Manager::acquire();
+
     conn.exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)"
         , Database::query_param_list(state_id)(object_id));
 

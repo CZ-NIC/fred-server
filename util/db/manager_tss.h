@@ -25,6 +25,7 @@
 #define DATABASE_MANAGER_TSS_H_
 
 #include <string>
+#include <memory>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/tss.hpp>
 
@@ -87,7 +88,11 @@ public:
   static const std::string& getConnectionString() {
     return conn_factory_->getConnectionString();
   }   
-  
+  //create standalone connection
+  static connection_type acquire_standalone() {
+      return connection_type(conn_factory_->getConnectionString());
+  }
+
   /**
    * Explicit release database connection for actual thread
    * back to pool
