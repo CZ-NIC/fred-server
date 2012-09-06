@@ -88,10 +88,6 @@ public:
   static const std::string& getConnectionString() {
     return conn_factory_->getConnectionString();
   }   
-  //create standalone connection
-  static connection_type acquire_standalone() {
-      return connection_type(conn_factory_->getConnectionString());
-  }
 
   /**
    * Explicit release database connection for actual thread

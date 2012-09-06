@@ -1,4 +1,5 @@
 #include "object_states.h"
+#include <memory>
 
 
 namespace Fred {
@@ -359,8 +360,20 @@ void createObjectStateRequestName(
 //select for update by state_id from enum_object_states.id and object_id from object_registry.id
 void lock_object_state_request_lock(unsigned long long state_id, unsigned long long object_id)
 {
-    Database::Connection conn = Database::Manager::acquire();
 
+    {//insert separately
+        typedef std::auto_ptr<Database::StandaloneConnection> StandaloneConnectionPtr;
+        Database::StandaloneManager sm = Database::StandaloneManager(
+                new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
+        StandaloneConnectionPtr conn_standalone(sm.acquire());
+        conn_standalone->exec_params(
+            "INSERT INTO object_state_request_lock (id, state_id, object_id) "
+            " VALUES (DEFAULT, $1::bigint, $2::bigint)"
+            , Database::query_param_list(state_id)(object_id));
+    }
+
+
+    Database::Connection conn = Database::Manager::acquire();
     conn.exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)"
         , Database::query_param_list(state_id)(object_id));
 

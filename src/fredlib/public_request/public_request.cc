@@ -437,6 +437,18 @@ std::vector<std::string> get_enum_public_request_type()
 //lock public_request for public_request_type_id from enum_public_request_type.id and object_id from object_registry.id
 void lock_public_request_lock(unsigned long long public_request_type_id, unsigned long long object_id)
 {
+
+    {//insert separately
+        typedef std::auto_ptr<Database::StandaloneConnection> StandaloneConnectionPtr;
+        Database::StandaloneManager sm = Database::StandaloneManager(
+                new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
+        StandaloneConnectionPtr conn_standalone(sm.acquire());
+        conn_standalone->exec_params(
+            "INSERT INTO public_request_lock (id, request_type, object_id) "
+            " VALUES (DEFAULT, $1::bigint, $2::bigint)"
+            , Database::query_param_list(public_request_type_id)(object_id));
+    }
+
     Database::Connection conn = Database::Manager::acquire();
     //get lock to the end of transaction for given object and request type
     conn.exec_params("SELECT lock_public_request_lock($1::bigint,$2::bigint)"
