@@ -628,9 +628,6 @@ bool ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        Fred::lock_object_state_request_lock(
-                Fred::ObjectState::SERVER_INZONE_MANUAL, domainId);
-
         Database::Result dname_res = conn.exec_params("SELECT obr.name "
             " FROM object_registry obr JOIN domain d ON d.id = obr.id "
             " WHERE d.id = $1::bigint", Database::query_param_list(domainId));
