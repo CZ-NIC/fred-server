@@ -25,7 +25,6 @@
 #define DATABASE_MANAGER_TSS_H_
 
 #include <string>
-#include <memory>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/tss.hpp>
 
