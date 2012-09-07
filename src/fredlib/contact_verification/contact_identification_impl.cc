@@ -30,11 +30,10 @@ namespace Contact {
 namespace Verification {
 
 ContactIdentificationImpl::ContactIdentificationImpl(
-    Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
+    Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr, ContactValidator cv)
 : pra_impl_ptr_(_pra_impl_ptr)
 , contact_verification_passwd_(_pra_impl_ptr)
-, contact_validator_(Fred::Contact::Verification
-        ::create_finish_identification_validator())
+, contact_validator_(cv)
 {}
 
 std::string ContactIdentificationImpl::generate_passwords()

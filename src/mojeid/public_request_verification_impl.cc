@@ -3,7 +3,6 @@
 #include "fredlib/public_request/public_request_impl.h"
 #include "fredlib/contact_verification/contact.h"
 #include "fredlib/contact_verification/contact_verification_password.h"
-#include "fredlib/contact_verification/contact_verification_validators.h"
 #include "fredlib/contact_verification/contact_conditional_identification_impl.h"
 #include "fredlib/contact_verification/contact_identification_impl.h"
 #include "contact_verification/public_request_contact_verification_impl.h"
@@ -13,6 +12,7 @@
 #include "map_at.h"
 #include "factory.h"
 #include "public_request_verification_impl.h"
+#include "mojeid_validators.h"
 
 namespace Fred {
 namespace PublicRequest {
@@ -180,7 +180,6 @@ public:
 
 };
 
-
 class MojeIDConditionalContactIdentification
         : public Fred::PublicRequest::PublicRequestAuthImpl
         , public Util::FactoryAutoRegister<PublicRequest
@@ -192,7 +191,8 @@ class MojeIDConditionalContactIdentification
 
 public:
     MojeIDConditionalContactIdentification()
-    : cond_contact_identification_impl(this),
+    : cond_contact_identification_impl(this
+            , Fred::Contact::Verification::create_conditional_identification_validator_mojeid()),
       mojeid_transfer_impl_(this),
       contact_verification_passwd_(this)
     {}
@@ -278,7 +278,8 @@ class MojeIDContactIdentification
     ContactVerificationPassword contact_verification_passwd_;
 public:
     MojeIDContactIdentification()
-    : contact_identification_impl(this)
+    : contact_identification_impl(this
+        , Fred::Contact::Verification::create_finish_identification_validator_mojeid())
     , contact_verification_passwd_(this)
     {}
 
