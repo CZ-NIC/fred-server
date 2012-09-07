@@ -856,7 +856,7 @@ ManagerImpl::checkHandleRegistration(
         << "UPPER(name)=UPPER('"
         << handle << "')";
     if (lock)
-        sql << " FOR UPDATE ";
+        sql << " FOR SHARE ";
     if (!m_db->ExecSelect(sql.str().c_str()))
         throw SQL_ERROR();
     bool result = m_db->GetSelectRows() >= 1;

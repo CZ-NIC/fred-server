@@ -641,7 +641,7 @@ class ManagerImpl : public virtual Manager {
               << "WHERE type=1 AND erDate ISNULL AND " << "UPPER(name)=UPPER('"
               << handle << "')";
           if (lock)
-            sql << " FOR UPDATE ";
+            sql << " FOR SHARE ";
 
           /* we really don't want to break epp because of different transaction */
           if (db.get()) {
