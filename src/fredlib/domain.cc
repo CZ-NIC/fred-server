@@ -1293,7 +1293,7 @@ public:
           << "WHERE o.type=3 AND o.erdate ISNULL AND " << "o.name='" << fqdn
           << "' " << "LIMIT 1";
     if (lock)
-      sql << " FOR SHARE ";
+      sql << " FOR UPDATE ";
     if (!db->ExecSelect(sql.str().c_str())) {
       db->FreeSelect();
       throw SQL_ERROR();

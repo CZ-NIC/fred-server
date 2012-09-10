@@ -14,7 +14,7 @@ unsigned long long lock_contact_get_registrar_id(unsigned long long contact_id)
 
     Database::Result clid_result = conn.exec_params(
             "SELECT o.clid FROM object o JOIN contact c ON c.id = o.id"
-            " WHERE c.id = $1::integer FOR SHARE",
+            " WHERE c.id = $1::integer FOR UPDATE",
             Database::query_param_list(contact_id));
     if (clid_result.size() != 1) {
         throw std::runtime_error("cannot find contact, object doesn't exist!?"

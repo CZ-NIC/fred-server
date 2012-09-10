@@ -626,7 +626,7 @@ class ManagerImpl : public virtual Manager {
         << "WHERE type=2 AND erDate ISNULL AND " << "UPPER(name)=UPPER('"
         << handle << "')";
     if (lock)
-      sql << " FOR SHARE ";
+      sql << " FOR UPDATE ";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     bool result = db->GetSelectRows() >= 1;
