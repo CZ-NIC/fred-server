@@ -2506,8 +2506,14 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                             Fred::Contact::Verification::contact_cancel_verification(handle);
                         }
                     }
+                    catch(std::exception & ex)
+                    {
+                        LOGGER(PACKAGE).error(boost::format("ContactUpdate: contact_cancel_verification [%1%] ") % ex.what());
+                        code =2400;
+                    }
                     catch(...)
                     {
+                        LOGGER(PACKAGE).error("ContactUpdate: contact_cancel_verification unknown exception");
                         code =2400;
                     }
                 }
