@@ -52,6 +52,7 @@ unsigned long long insert_object_state(
         const std::string &_state_name)
 {
     Database::Connection conn = Database::Manager::acquire();
+    lock_object_state_request_lock(_state_name, _object_id);
     Database::Result reqid =conn.exec_params(
             "INSERT INTO object_state_request (object_id, state_id)"
             " VALUES ($1::integer, (SELECT id FROM enum_object_states"
