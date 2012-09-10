@@ -1,3 +1,35 @@
+2012-09-06 Jiri Sadek, Juraj Vicenik, Jan Zima (2.12.0)
+
+  * contact verification implementation
+      - mojeid, public request appropriate changes
+      - epp - identification states handling in contact update
+
+  * mojeid
+      - implementation separated from corba layer
+      - mostly separated from registry code
+      - add method for canceling mojeid account (preserve identification state)
+      - fix conditional contact update
+      - removed identification method from create/transfer contact interface
+
+  * logger
+      - removed output flag from properties interface
+      - fix usage of connection releaser
+
+  * epp
+      - fix low credit poll message
+      - fix domain renew for maximum period
+      - fix technical_test command to load default domain set
+
+  * banking - fix payment processing for registrar with no access to zone to pay debt
+
+  * request fee
+      - fix request count within one day + tests
+      - fix registrar zone access check in request charging
+
+  * adifd
+      - method for getting summary of expiring domains (performance issues fix)
+      - fix method for object detail
+
 2012-06-11 Juraj Vicenik (2.11.2)
 
   * mojeid - fixed validated contact update checks (birthday change bug)

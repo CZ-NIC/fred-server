@@ -40,7 +40,7 @@ class ConditionalContactIdentificationImpl
     Fred::Contact::Verification::ContactValidator contact_validator_;
 public:
     ConditionalContactIdentificationImpl(
-            Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr);
+            Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr, ContactValidator cv);
     std::string generate_passwords();
     void pre_save_check();
     void pre_process_check(bool _check);

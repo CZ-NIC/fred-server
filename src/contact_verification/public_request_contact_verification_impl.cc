@@ -27,7 +27,8 @@ class ConditionalContactIdentification
 
 public:
     ConditionalContactIdentification()
-    : cond_contact_identification_impl(this)
+    : cond_contact_identification_impl(this
+            , Fred::Contact::Verification::create_conditional_identification_validator())
     , contact_verification_passwd_(this)
     {}
 
@@ -111,7 +112,8 @@ class ContactIdentification
     ContactVerificationPassword contact_verification_passwd_;
 public:
     ContactIdentification()
-    : contact_identification_impl(this)
+    : contact_identification_impl(this
+        , Fred::Contact::Verification::create_finish_identification_validator())
     , contact_verification_passwd_(this)
     {}
 

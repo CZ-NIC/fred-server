@@ -9,7 +9,6 @@ ContactValidator create_default_contact_validator()
 {
     ContactValidator tmp;
     tmp.add_checker(contact_checker_name);
-    tmp.add_checker(contact_checker_username);
     tmp.add_checker(contact_checker_address_required);
     tmp.add_checker(contact_checker_email_format);
     tmp.add_checker(contact_checker_email_required);
