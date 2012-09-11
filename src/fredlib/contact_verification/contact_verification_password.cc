@@ -111,37 +111,20 @@ void ContactVerificationPassword::sendEmailPassword(const std::string& mailTempl
     params["hostname"]  = map_at(data, "hostname");
     params["handle"]    = map_at(data, "handle");
     params["identification"] = map_at(data, "identification");
-    params["passwd"]    = map_at(data, "pin1");
+
+    /*
+     * If public request password is one chunk long then
+     * pin1 is empty because of substr in collectMessageData() method.
+     * In this case password is stored in pin3.
+     */
+    if (!map_at(data, "pin1").empty()) {
+        params["passwd"]    = map_at(data, "pin1");
+    }
+    else {
+        params["passwd"]    = map_at(data, "pin3");
+    }
 
     Database::Connection conn = Database::Manager::acquire();
-
-    /* for demo purpose we send second half of password as well */
-    if (prai_ptr_->getPublicRequestManager()->getDemoMode() == true)
-    {
-        if(map_at(data, "pin1").empty())
-        {
-            params["passwd3"] = map_at(data, "pin3");
-        }
-        else
-        {
-            params["passwd2"] = map_at(data, "pin2");
-        }
-        unsigned long long file_id = 0;
-
-        Database::Result result = conn.exec_params(
-                "SELECT la.file_id FROM letter_archive la "
-                " JOIN message_archive ma ON ma.id=la.id "
-                " JOIN public_request_messages_map prmm "
-                " ON prmm.message_archive_id = ma.id "
-                " WHERE prmm.public_request_id = $1::integer "
-                " AND prmm.message_archive_id is not null",
-                Database::query_param_list(prai_ptr_->getId()));
-        if (result.size() == 1)
-        {
-            file_id = result[0][0];
-            attach.push_back(file_id);
-        }
-    }
 
     handles.push_back(prai_ptr_->getObject(0).handle);
 
@@ -264,7 +247,7 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
 }
 
 
-void ContactVerificationPassword::sendSmsPassword(const std::string& sms_template
+void ContactVerificationPassword::sendSmsPassword(const boost::format& sms_template
         , const std::string& message_type //for message_archive: "contact_verification_pin2"
         )
 {
@@ -272,12 +255,15 @@ void ContactVerificationPassword::sendSmsPassword(const std::string& sms_templat
 
     MessageData data = collectMessageData();
 
+    boost::format sms_content = sms_template;
+    sms_content % map_at(data, "pin2");
+
     unsigned long long message_id =
             prai_ptr_->getPublicRequestManager()->getMessagesManager()
                 ->save_sms_to_send(
             map_at(data, "handle").c_str()
             , map_at(data, "phone").c_str()
-            , (sms_template + map_at(data, "pin2")).c_str()
+            , sms_content.str().c_str()
             , message_type.c_str()//"contact_verification_pin2"
             , boost::lexical_cast<unsigned long >(map_at(data
                     , "contact_id"))
@@ -349,8 +335,6 @@ std::string ContactVerificationPassword::generateAuthInfoPassword()
                 % passwd);
         }
     }
-    /* append pin2 */
-    passwd += generateRandomPassword(get_password_chunk_length());
     return passwd;
 }
 

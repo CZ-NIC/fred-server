@@ -297,14 +297,26 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
       break;
 
 
-    case ccReg::FT_FILTER:
-    case ccReg::FT_OBJ:
+    case ccReg::FT_SESSION:
+      LOGGER(PACKAGE).error("Unimplemented filter type used in getDetail(): FT_SESSION");
+      break;
+    case ccReg::FT_ZONE:
+      LOGGER(PACKAGE).error("Unimplemented filter type used in getDetail(): FT_ZONE");
+      break;
     case ccReg::FT_FILE:
-      LOGGER(PACKAGE).error("Calling method with not implemented parameter!");
-      throw ccReg::Admin::OBJECT_NOT_FOUND();
+      LOGGER(PACKAGE).error("Unimplemented filter type used in getDetail(): FT_FILE");
+      break;
+    case ccReg::FT_FILTER:
+      LOGGER(PACKAGE).error("Unimplemented filter type used in getDetail(): FT_FILTER");
+      break;
+    case ccReg::FT_OBJ:
+      LOGGER(PACKAGE).error("Unimplemented filter type used in getDetail(): FT_OBJ");
+      break;
+    case ccReg::FT_STATEMENTHEAD:
+      LOGGER(PACKAGE).error("Unimplemented filter type used in getDetail(): FT_STATEMENTHEAD");
       break;
     default:
-      throw ccReg::Admin::OBJECT_NOT_FOUND();
+      LOGGER(PACKAGE).error("Invalid filter type used in getDetail()");
       break;
   }
 
@@ -322,7 +334,7 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
     }
     catch(ccReg::Admin::ObjectNotFound& ex)
     {
-        LOGGER(PACKAGE).error("ccReg_Session_i::getDetail ex: ccReg::Admin::ObjectNotFound");
+        LOGGER(PACKAGE).warning("ccReg_Session_i::getDetail ex: ccReg::Admin::ObjectNotFound");
         throw;
     }
     catch (ccReg::Logger::OBJECT_NOT_FOUND) {

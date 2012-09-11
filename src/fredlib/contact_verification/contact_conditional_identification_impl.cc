@@ -30,12 +30,11 @@ namespace Contact {
 namespace Verification {
 
 ConditionalContactIdentificationImpl::ConditionalContactIdentificationImpl(
-        Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr)
+        Fred::PublicRequest::PublicRequestAuthImpl* _pra_impl_ptr, ContactValidator cv)
 : pra_impl_ptr_(_pra_impl_ptr)
 , contact_verification_passwd_(_pra_impl_ptr)
 
-, contact_validator_(Fred::Contact::Verification
-        ::create_conditional_identification_validator())
+, contact_validator_(cv)
 {}
 
 std::string ConditionalContactIdentificationImpl::generate_passwords()
@@ -49,7 +48,8 @@ std::string ConditionalContactIdentificationImpl::generate_passwords()
     }
     else
     {
-        return contact_verification_passwd_.generateAuthInfoPassword();
+        return std::string(contact_verification_passwd_.generateRandomPassword())
+            + std::string(contact_verification_passwd_.generateRandomPassword());
     }
 }
 

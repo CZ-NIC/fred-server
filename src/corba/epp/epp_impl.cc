@@ -72,6 +72,8 @@
 #include "log/logger.h"
 #include "log/context.h"
 
+//cancel contact verification
+#include "fredlib/contact_verification/cancel_contact_verification.h"
 
 #define FLAG_serverDeleteProhibited 1
 #define FLAG_serverRenewProhibited 2
@@ -2137,6 +2139,15 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
     const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
     if (!sd || !sd->getExternal())
       continue;
+    /* Ticket #7169 - HACK: temporarily hide states until we fix epp schemas */
+    if (!sd || sd->getName() == "conditionallyIdentifiedContact"
+            || sd->getName() == "identifiedContact"
+            || sd->getName() == "validatedContact"
+            || sd->getName() == "mojeidContact")
+    {
+        continue;
+    }
+    /* Ticket #7169 - END OF HACK*/
     c->stat.length(c->stat.length()+1);
     c->stat[c->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
     c->stat[c->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
@@ -2349,7 +2360,8 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     char streetStr[10];
     short int code = 0;
 
-    EPPAction action(this, params.loginID, EPP_ContactUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+    Database::Connection conn = wrapped_acquire(this);
+    EPPAction action(this, params.loginID, EPP_ContactUpdate, static_cast<const char*>(params.clTRID), params.XML, conn, params.requestID);
 
     LOGGER(PACKAGE).notice(boost::format("ContactUpdate: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
     LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag % c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail );
@@ -2483,7 +2495,22 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
             // make update and save to history
             if (action.getDB()->EXEC() )
                 if (action.getDB()->SaveContactHistory(id, params.requestID) )
+                {
                     code = COMMAND_OK;
+
+                    try
+                    {
+                        //conditional cancel verification
+                        if(Fred::Contact::Verification::check_contact_change_for_cancel_verification(handle))
+                        {
+                            Fred::Contact::Verification::contact_cancel_verification(handle);
+                        }
+                    }
+                    catch(...)
+                    {
+                        code =2400;
+                    }
+                }
 
         }
     }

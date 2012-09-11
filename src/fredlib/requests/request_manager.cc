@@ -93,11 +93,10 @@ private:
 
 Result ManagerImpl::i_getRequestTypesByService(ServiceType service) 
 {
-        logd_ctx_init ctx;
+    logd_ctx_init ctx;
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestTypesByService");
 
         Connection conn = Database::Manager::acquire();
-
-    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestTypesByService");
 
     boost::format query = boost::format("select id, name from request_type where service_id = %1%") % service;
 
@@ -118,14 +117,18 @@ Result ManagerImpl::i_getServices()
 Result ManagerImpl::i_getResultCodesByService(ServiceType service)
 {
     logd_ctx_init ctx;
-    Connection conn = Database::Manager::acquire();
     TRACE("[CALL] Fred::Logger::ManagerImpl::i_getResultCodesByService");
+
+    Connection conn = Database::Manager::acquire();
     boost::format query = boost::format("select result_code, name from result_code where service_id = %1%") % service;
     return conn.exec(query.str());
 }
 
 Result ManagerImpl::i_getObjectTypes()
 {
+    logd_ctx_init ctx;
+    TRACE("[CALL] Fred::Logger::ManagerImpl::i_getRequestTypesByService");
+
     Database::Connection conn = Database::Manager::acquire();
     Result res = conn.exec("SELECT id, type FROM object_type");
 

@@ -83,6 +83,8 @@ void ccReg_Log_i::closeRequest(ccReg::TID id, const char *content, const ccReg::
 
 ccReg::TID ccReg_Log_i::createSession(ccReg::TID user_id, const char *name)
 {
+    ConnectionReleaser releaser;
+
     try {
         ccReg::TID ret = back->i_createSession(user_id, name);
 
@@ -114,6 +116,8 @@ void ccReg_Log_i::closeSession(ccReg::TID id)
 
 ccReg::RequestTypeList *ccReg_Log_i::getRequestTypesByService(ccReg::RequestServiceType service)
 {
+    ConnectionReleaser releaser;
+
     try {
         Database::Result res = back->i_getRequestTypesByService((Database::Filters::ServiceType)service);
 
@@ -137,6 +141,8 @@ ccReg::RequestTypeList *ccReg_Log_i::getRequestTypesByService(ccReg::RequestServ
 
 ccReg::RequestServiceList* ccReg_Log_i::getServices()
 {
+    ConnectionReleaser releaser;
+
     try {
         Database::Result data = back->i_getServices();
         unsigned int size = data.size();
@@ -158,6 +164,8 @@ ccReg::RequestServiceList* ccReg_Log_i::getServices()
 
 ccReg::ResultCodeList* ccReg_Log_i::getResultCodesByService(ccReg::RequestServiceType service)
 {
+    ConnectionReleaser releaser;
+
     try {
         Database::Result res = back->i_getResultCodesByService
                 (static_cast<Database::Filters::ServiceType>(service));
@@ -179,6 +187,8 @@ ccReg::ResultCodeList* ccReg_Log_i::getResultCodesByService(ccReg::RequestServic
 
 ccReg::Logger::ObjectTypeList* ccReg_Log_i::getObjectTypes()
 {
+    ConnectionReleaser releaser;
+
     try {
         Database::Result res = back->i_getObjectTypes();
 
@@ -210,7 +220,10 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
 
     try {
         // this method doesn't call logger implementation, we have to init context here
+        // and also declare connection releaser
         logd_ctx_init ctx;
+        TRACE("[CALL] ccReg_Log_i::createPageTable");
+        ConnectionReleaser releaser;
 
         boost::mutex::scoped_lock slm (pagetables_mutex);
 
@@ -223,8 +236,7 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
         } else {
             std::auto_ptr<Fred::Logger::Manager> logger_manager;
 
-            logger_manager.reset(Fred::Logger::Manager::create());
-            Fred::Logger::List *list = logger_manager->createList();
+            Fred::Logger::List *list = back->createList();
             ccReg_Logger_i * ret_ptr = new ccReg_Logger_i(list);
             ret = ret_ptr->_this();
 
@@ -248,6 +260,7 @@ void ccReg_Log_i::deletePageTable(const char* session_id)
     try {
         // this method doesn't call logger implementation, we have to init context here
         logd_ctx_init ctx;
+        TRACE("[CALL] ccReg_Log_i::deletePageTable");
 
         boost::mutex::scoped_lock slm (pagetables_mutex);
 
@@ -278,7 +291,9 @@ ccReg::Logger::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
 {
     try {
         // this method doesn't call logger implementation, we have to init context here
+        // and also declare connection releaser
         logd_ctx_init ctx;
+        ConnectionReleaser releaser;
 
         LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
@@ -354,6 +369,8 @@ ccReg::Logger::Detail *ccReg_Log_i::createRequestDetail(Fred::Logger::Request *r
 CORBA::ULongLong ccReg_Log_i::getRequestCount(const char *datetime_from, const char *datetime_to,
         const char *service, const char *user)
 {
+    ConnectionReleaser releaser;
+
     try {
 
         ptime from (from_iso_string(datetime_from));
@@ -371,6 +388,8 @@ CORBA::ULongLong ccReg_Log_i::getRequestCount(const char *datetime_from, const c
 ccReg::RequestCountInfo* ccReg_Log_i::getRequestCountUsers(const char *datetime_from, const char *datetime_to,
         const char *service)
 {
+    ConnectionReleaser releaser;
+
     try {
 
         ptime from (from_iso_string(datetime_from));

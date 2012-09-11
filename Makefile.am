@@ -836,7 +836,8 @@ src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
 		src/fredlib/contact_verification/contact_verification_validators.cc \
 		src/fredlib/contact_verification/contact_verification_validators.h \
 		src/fredlib/contact_verification/contact_verification_password.cc \
-		src/fredlib/contact_verification/contact_verification_password.h
+		src/fredlib/contact_verification/contact_verification_password.h \
+		src/fredlib/contact_verification/contact_validator.h
 #
 # src/fredlib/contact_verification/libcontact_verification.a
 
@@ -1081,6 +1082,8 @@ src_corba_whois_libwhois_impl_a_SOURCES = \
 # src/corba/epp/libepp_impl.a
 #
 src_corba_epp_libepp_impl_a_SOURCES = \
+		src/fredlib/contact_verification/cancel_contact_verification.cc \
+		src/fredlib/contact_verification/cancel_contact_verification.h \
 		src/corba/epp/epp_session.h \
 		src/corba/epp/epp_session.cc \
 		src/corba/epp/epp_impl.cc \
@@ -1150,6 +1153,9 @@ src_corba_fred_rifd_LDADD = \
 # src/corba/fred-adifd
 #
 src_corba_fred_adifd_SOURCES = \
+		src/mojeid/mojeid_validators.cc \
+		src/mojeid/mojeid_validators.h \
+		src/mojeid/mojeid_contact_transfer_request_impl.cc \
 		src/mojeid/public_request_verification_impl.cc \
 		src/corba/fred-adifd.cc
 
@@ -1194,6 +1200,9 @@ src_corba_fred_adifd_LDADD = \
 # src/corba/fred-pifd
 #
 src_corba_fred_pifd_SOURCES = \
+		src/mojeid/mojeid_validators.cc \
+		src/mojeid/mojeid_validators.h \
+		src/mojeid/mojeid_contact_transfer_request_impl.cc \
 		src/mojeid/public_request_verification_impl.cc \
 		src/corba/contact_verification/contact_verification_i.cc \
 		src/corba/contact_verification/contact_verification_i.h \
@@ -1323,7 +1332,11 @@ src_corba_messages_fred_msgd_LDADD = \
 # src/corba/mojeid/fred-mifd
 #
 src_corba_mojeid_fred_mifd_SOURCES = \
+		src/mojeid/mojeid_validators.cc \
+		src/mojeid/mojeid_validators.h \
 		src/mojeid/request.h \
+		src/mojeid/mojeid_contact_transfer_request_impl.h \
+		src/mojeid/mojeid_contact_transfer_request_impl.cc \
 		src/mojeid/public_request_verification_impl.cc \
 		src/mojeid/public_request_verification_impl.h \
 		src/mojeid/mojeid_notifier.cc \
@@ -1561,7 +1574,9 @@ tests_test_server_SOURCES = \
 		src/corba/epp_corba_client_impl.cc \
 		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
-		src/contact_verification/contact_verification_impl.h
+		src/contact_verification/contact_verification_impl.h \
+		src/fredlib/contact_verification/cancel_contact_verification.cc \
+		src/fredlib/contact_verification/cancel_contact_verification.h
 
 
 tests_test_server_LDFLAGS = \

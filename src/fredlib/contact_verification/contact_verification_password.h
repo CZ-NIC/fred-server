@@ -49,7 +49,7 @@ public:
             , const std::string& message_type //for message_archive: "contact_verification_pin2", "contact_verification_pin3"
             , const std::string& comm_type //for message_archive: pin2 "letter" or pin3 "registered_letter"
             );
-    void sendSmsPassword(const std::string& sms_template
+    void sendSmsPassword(const boost::format& sms_template
             , const std::string& message_type //for message_archive: "contact_verification_pin2"
             );
     std::string generateRandomPassword(const size_t _length);

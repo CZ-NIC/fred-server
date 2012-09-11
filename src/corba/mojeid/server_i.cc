@@ -50,7 +50,6 @@ namespace Registry
         //   Methods corresponding to IDL attributes and operations
         ::CORBA::ULongLong Server_i::contactCreatePrepare(
             const Registry::MojeID::Contact& _contact
-            , Registry::MojeID::IdentificationMethod _method
             , const char* _trans_id
             , ::CORBA::ULongLong _request_id
             , ::CORBA::String_out _identification)
@@ -66,7 +65,6 @@ namespace Registry
                 unsigned long long cid = pimpl_->contactCreatePrepare(
                     handle
                     , verification_contact
-                    , static_cast<Registry::MojeID::IDMethod::Type>(_method)
                     , _trans_id
                     , _request_id
                     , identification);
@@ -93,7 +91,6 @@ namespace Registry
 
         ::CORBA::ULongLong Server_i::contactTransferPrepare(
                 const char* _handle
-                , Registry::MojeID::IdentificationMethod _method
                 , const char* _trans_id
                 , ::CORBA::ULongLong _request_id
                 , ::CORBA::String_out _identification)
@@ -104,7 +101,6 @@ namespace Registry
 
                 unsigned long long cid = pimpl_->contactTransferPrepare(
                     _handle
-                    , static_cast<Registry::MojeID::IDMethod::Type>(_method)
                     , _trans_id
                     , _request_id
                     , identification);
