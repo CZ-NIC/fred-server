@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
                 " join public_request_messages_map prmm on prmm.public_request_id = pr.id "
                 " join message_archive ma on ma.id = prmm.message_archive_id "
                 " join message_type mt on mt.id = ma.message_type_id "
-                " where obr.name = $1::text and eprt.name = $2::text and "
+                " where pra.identification = $1::text and eprt.name = $2::text and "
                 " mt.type='contact_verification_pin3' "
             , Database::query_param_list(another_request_id)
                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
