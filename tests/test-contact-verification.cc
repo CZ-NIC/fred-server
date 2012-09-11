@@ -214,9 +214,14 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     }
 
     BOOST_TEST_MESSAGE( "password: " << password );
+    BOOST_TEST_MESSAGE( "identification: " << another_request_id );
+
 
     cv->processConditionalIdentification(another_request_id
             , password, request_id);
+
+    BOOST_TEST_MESSAGE( "password: " << password );
+    BOOST_TEST_MESSAGE( "identification: " << another_request_id );
 
     //check cci request 1
     {
