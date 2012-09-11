@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
         Database::Connection conn = Database::Manager::acquire();
 
         //check ci request new (0)
-        Database::Result res_cci_request = conn.exec_params(
+        Database::Result res_ci_request = conn.exec_params(
             "select pr.status from object_registry obr "
             " join public_request_objects_map prom on obr.id = prom.object_id "
             " join public_request_auth pra on prom.request_id = pra.id "
@@ -254,11 +254,11 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             " where obr.name = $1::text and eprt.name = $2::text "
             , Database::query_param_list(fcvc.handle)
                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
-        BOOST_CHECK((res_cci_request.size() == 1)
-                && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
+        BOOST_CHECK((res_ci_request.size() == 1)
+                && (static_cast<int>(res_ci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
 
         //check pin3 letter
-        Database::Result res_cci_letter = conn.exec_params(
+        Database::Result res_ci_letter = conn.exec_params(
                 "select obr.name,pr.id ,  eprt.*, prmm.*, ma.*, mt.* from object_registry obr "
                 " join public_request_objects_map prom on obr.id = prom.object_id "
                 " join public_request_auth pra on prom.request_id = pra.id "
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
                 " mt.type='contact_verification_pin3' "
             , Database::query_param_list(fcvc.handle)
                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
-        BOOST_CHECK((res_cci_letter.size() == 1));
+        BOOST_CHECK((res_ci_letter.size() == 1));
     }
 
     {
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
         Database::Connection conn = Database::Manager::acquire();
 
         //check ci request answered (1)
-        Database::Result res_cci_request = conn.exec_params(
+        Database::Result res_ci_request = conn.exec_params(
             "select pr.status from object_registry obr "
             " join public_request_objects_map prom on obr.id = prom.object_id "
             " join public_request_auth pra on prom.request_id = pra.id "
@@ -317,8 +317,8 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             " where obr.name = $1::text and eprt.name = $2::text "
             , Database::query_param_list(fcvc.handle)
                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
-        BOOST_CHECK((res_cci_request.size() == 1)
-                && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
+        BOOST_CHECK((res_ci_request.size() == 1)
+                && (static_cast<int>(res_ci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
     }
 
     //check registrar name
