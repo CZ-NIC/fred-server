@@ -150,10 +150,12 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     cv->createConditionalIdentification(fcvc.handle, registrar_handle
             , request_id, another_request_id);
 
-    //check cci request
+
     {
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
+
+        //check new cci request
         Database::Result res_cci_request = conn.exec_params(
             "select pr.status from object_registry obr "
             " join public_request_objects_map prom on obr.id = prom.object_id "
@@ -166,6 +168,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
         BOOST_CHECK((res_cci_request.size() == 1)
                 && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
 
+        //check pin2 sms
         Database::Result res_cci_sms = conn.exec_params(
                 "select pr.id ,  eprt.*, prmm.*, ma.*, mt.* from public_request pr "
                 " join enum_public_request_type eprt on pr.request_type = eprt.id "
@@ -179,6 +182,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
                 (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
         BOOST_CHECK((res_cci_sms.size() == 1));
 
+        //check pin1 email
         Database::Result res_cci_email = conn.exec_params(
                 "select pr.id ,  eprt.*, prmm.*, ma.*, mt.* from public_request pr "
                 " join enum_public_request_type eprt on pr.request_type = eprt.id "
@@ -214,19 +218,15 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     }
 
     BOOST_TEST_MESSAGE( "password: " << password );
-    BOOST_TEST_MESSAGE( "identification: " << another_request_id );
-
 
     cv->processConditionalIdentification(another_request_id
             , password, request_id);
 
-    BOOST_TEST_MESSAGE( "password: " << password );
-    BOOST_TEST_MESSAGE( "identification: " << another_request_id );
-
-    //check cci request 1
     {
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
+
+        //check cci request answered (1)
         Database::Result res_cci_request = conn.exec_params(
             "select pr.status from object_registry obr "
             " join public_request_objects_map prom on obr.id = prom.object_id "
@@ -239,10 +239,12 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
         BOOST_CHECK((res_cci_request.size() == 1)
                 && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
     }
-    //check ci request 0
+
     {
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
+
+        //check ci request new (0)
         Database::Result res_cci_request = conn.exec_params(
             "select pr.status from object_registry obr "
             " join public_request_objects_map prom on obr.id = prom.object_id "
@@ -255,8 +257,8 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
         BOOST_CHECK((res_cci_request.size() == 1)
                 && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
 
+        //check pin3 letter
         Database::Result res_cci_letter = conn.exec_params(
-
                 "select obr.name,pr.id ,  eprt.*, prmm.*, ma.*, mt.* from object_registry obr "
                 " join public_request_objects_map prom on obr.id = prom.object_id "
                 " join public_request_auth pra on prom.request_id = pra.id "
@@ -272,14 +274,11 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
         BOOST_CHECK((res_cci_letter.size() == 1));
     }
 
-
-
-
-
     {
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
 
+        //get ci request password
         Database::Result res_pass = conn.exec_params(
             "select pra.password from object_registry obr "
             " join public_request_objects_map prom on obr.id = prom.object_id "
@@ -304,10 +303,11 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     cv->processIdentification(fcvc.handle, password, request_id);
 
-    //check ci request 1
     {
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
+
+        //check ci request answered (1)
         Database::Result res_cci_request = conn.exec_params(
             "select pr.status from object_registry obr "
             " join public_request_objects_map prom on obr.id = prom.object_id "
@@ -321,7 +321,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
                 && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
     }
 
-
+    //check registrar name
     BOOST_CHECK(cv->getRegistrarName(registrar_handle) == "Company A l.t.d");
 }
 
