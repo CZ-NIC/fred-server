@@ -38,37 +38,6 @@ public:
       loginID = 0;
   }
 
-  // transaction function
-  bool BeginTransaction()
-  {
-    return ExecSQL("START TRANSACTION  ISOLATION LEVEL READ COMMITTED");
-  }
-  ;
-  bool EndTransaction()
-  {
-    return ExecSQL("END TRANSACTION");
-  }
-  ;
-  bool RollbackTransaction()
-  {
-    return ExecSQL("ROLLBACK TRANSACTION");
-  }
-  ;
-  bool CommitTransaction()
-  {
-    return ExecSQL("COMMIT TRANSACTION");
-  }
-  ;
-  bool QuitTransaction(
-    int code)
-  {
-    if (CMD_FAILED(code))
-      return CommitTransaction();
-    else
-      return RollbackTransaction();
-  }
-  ;
-
   ///------------------------
   //   BILLING
 

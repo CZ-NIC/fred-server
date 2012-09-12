@@ -678,20 +678,18 @@ public:
 
 
 // Local transction needed for proper on commit handling of TEMP table
-struct LocalTransaction {
-  DBSharedPtr db;
-  bool closed;
-  LocalTransaction(DBSharedPtr _db) :
-    db(_db), closed(false) {
-    (void)db->BeginTransaction();
-  }
-  ~LocalTransaction() {
-    if (!closed)
-      db->RollbackTransaction();
-  }
+class LocalTransaction {
+  Database::Connection conn;
+  Database::Transaction tx;
+public:
+  LocalTransaction()
+  : conn(Database::Manager::acquire())
+  , tx(conn)
+  {}
+  ~LocalTransaction()
+  {}
   void commit() {
-    db->CommitTransaction();
-    closed = true;
+    tx.commit();
   }
 };
 
@@ -784,7 +782,7 @@ public:
                                    std::ostream* debug) {
     TRACE("[CALL] Fred::Poll::createStateMessages()");
     // transaction is needed for 'ON COMMIT DROP' functionality
-    LocalTransaction trans(db);
+    LocalTransaction trans;
     // for each new state appearance of state type (expirationWarning,
     // expiration, validationWarning1, outzoneUnguarded and
     // deleteCandidate for all object type that has not associated
@@ -867,7 +865,7 @@ public:
   }
   virtual void createLowCreditMessages() {
     // transaction is needed for 'ON COMMIT DROP' functionality
-    LocalTransaction trans(db);
+    LocalTransaction trans;
     // create temporary table because poll message need to be inserted
     // into two tables joined by message id
     const char *create = "CREATE TEMPORARY TABLE tmp_poll_credit_insert ("

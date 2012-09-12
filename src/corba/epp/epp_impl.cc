@@ -1649,7 +1649,13 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             // test password and certificate fingerprint in the table RegistrarACL
             LOG( NOTICE_LOG, "password [%s]  or certID [%s]  not accept", passwd , certID );
             ret->code = COMMAND_AUTH_ERROR;
-        } else if (DBsql->BeginTransaction() ) {
+        }
+        else
+        {
+            //get db connection and start transaction
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Transaction tx(conn);
+
 
                 // change language
                 if (lang == ccReg::CS) {
@@ -1688,7 +1694,8 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
                 }
 
             // end of transaction
-            DBsql->QuitTransaction(ret->code);
+            if (CMD_FAILED((ret->code))) tx.commit();
+            //else rollback
         }
 
     } catch(std::exception &ex) {
