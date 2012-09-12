@@ -112,19 +112,6 @@ static bool testObjectHasState(
 }
 
 
-Database::Connection wrapped_acquire(ccReg_EPP_i *epp)
-{
-
-    try {
-        return Database::Manager::acquire();
-    } catch(...) {
-        epp->ServerInternalError("Cannot connect to DB");
-    }
-
-    /* unreachable code - only for suppress gcc warning */
-    return Database::Manager::acquire();
-}
-
 
 class EPPAction
 {
@@ -137,6 +124,9 @@ class EPPAction
   int code; ///< needed for destructor where Response is invalidated
   EPPNotifier *notifier;
   std::string cltrid;
+  std::auto_ptr<Database::Transaction> tx_;
+  Database::Connection conn_;
+
 public:
   struct ACTION_START_ERROR
   {
@@ -147,16 +137,18 @@ public:
   ) :
     ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
     regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
-    notifier(0), cltrid(clTRID)
+    notifier(0), cltrid(clTRID), tx_(0), conn_(Database::Manager::acquire())
   {
     Logging::Context::push(str(boost::format("action-%1%") % action));
-
-    DBAutoPtr _db( new DB);
-    if (!_db->OpenDatabase(epp->getDatabaseString())) {
-        epp->ServerInternalError("Cannot connect to DB");
+    try {
+        tx_.reset(new Database::Transaction(conn_));
     }
-    db = DBDisconnectPtr(_db.release());
+    catch (...) {
+        db->EndAction(COMMAND_FAILED);
+        epp->ServerInternalError("Cannot start transaction");
+    }
 
+    db.reset(new DB(conn_));
     if (!db->BeginAction(clientID, action, clTRID, xml, requestId)) {
       epp->ServerInternalError("Cannot beginAction");
     }
@@ -166,58 +158,26 @@ public:
       db->EndAction(r->code);
       epp->EppError(r->code, r->msg, r->svTRID, errors);
     }
-    if (!db->BeginTransaction()) {
-      db->EndAction(COMMAND_FAILED);
-      epp->ServerInternalError("Cannot start transaction",
-          CORBA::string_dup(db->GetsvTRID()) );
-    }
+
     code = ret->code = COMMAND_OK;
 
     Logging::Context::push(str(boost::format("%1%") % db->GetsvTRID()));
   }
 
-  ///// TODO hack for new invoicing
-  EPPAction(
-      ccReg_EPP_i *_epp, unsigned long long _clientID, int action, const char *clTRID,
-      const char *xml, Database::Connection conn, unsigned long long requestId
-    ) :
-      ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
-      regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
-      notifier(0), cltrid(clTRID)
-    {
-      Logging::Context::push(str(boost::format("action-inv-%1%") % action));
-
-      /*
-      DBAutoPtr _db( new DB(conn));
-      db = DBDisconnectPtr(_db.release());
-      */
-      // ConnectionReleaser will take care of disconnect
-      db.reset(new DB(conn));
-
-      if (!db->BeginAction(clientID, action, clTRID, xml, requestId)) {
-        epp->ServerInternalError("Cannot beginAction");
-      }
-      if (!regID) {
-        ret->code = COMMAND_MAX_SESSION_LIMIT;
-        ccReg::Response_var& r(getRet());
-        db->EndAction(r->code);
-        epp->EppError(r->code, r->msg, r->svTRID, errors);
-      }
-      if (!db->BeginTransaction()) {
-        db->EndAction(COMMAND_FAILED);
-        epp->ServerInternalError("Cannot start transaction",
-            CORBA::string_dup(db->GetsvTRID()) );
-      }
-      code = ret->code = COMMAND_OK;
-
-      Logging::Context::push(str(boost::format("%1%") % db->GetsvTRID()));
-    }
 
   ~EPPAction()
   {
     try
     {
-        db->QuitTransaction(code);
+        if (tx_.get()) {
+            /* OMG: insane macro naming condition style */
+            if (CMD_FAILED(code)) {
+                tx_->commit();
+            }
+            else {
+                tx_->rollback();
+            }
+        }
         db->EndAction(code);
 
         if (notifier && (code == COMMAND_OK)) {
@@ -2360,8 +2320,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     char streetStr[10];
     short int code = 0;
 
-    Database::Connection conn = wrapped_acquire(this);
-    EPPAction action(this, params.loginID, EPP_ContactUpdate, static_cast<const char*>(params.clTRID), params.XML, conn, params.requestID);
+    EPPAction action(this, params.loginID, EPP_ContactUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     LOGGER(PACKAGE).notice(boost::format("ContactUpdate: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
     LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag % c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail );
@@ -4764,8 +4723,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     crDate = CORBA::string_dup("");
     exDate = CORBA::string_dup("");
 
-    Database::Connection conn = wrapped_acquire(this);
-    EPPAction action(this, params.loginID, EPP_DomainCreate, static_cast<const char*>(params.clTRID), params.XML, conn, params.requestID);
+    EPPAction action(this, params.loginID, EPP_DomainCreate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     ad.resize(admin.length());
 
@@ -5165,8 +5123,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     short int code = 0;
 
 
-    Database::Connection conn = wrapped_acquire(this);
-    EPPAction action(this, params.loginID, EPP_DomainRenew, static_cast<const char*>(params.clTRID), params.XML, conn, params.requestID);
+    EPPAction action(this, params.loginID, EPP_DomainRenew, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     // default
     exDate = CORBA::string_dup("");
