@@ -206,7 +206,7 @@ bool contact_checker_email_unique(const Contact &_data, FieldErrorMap &_errors)
                 " FROM contact_history ch"
                 " JOIN object_state os ON os.ohid_from = ch.historyid"
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
-                " WHERE eos.name =ANY ('{conditionallyIdentifiedContact, identifiedContact}'::text[])"
+                " WHERE eos.name = 'conditionallyIdentifiedContact'"
                 " AND os.valid_from > now() - $1::interval"
                 " AND trim(both ' ' from LOWER(ch.email)) = trim(both ' ' from LOWER($2::text))"
                 " ORDER BY os.valid_from ASC"
