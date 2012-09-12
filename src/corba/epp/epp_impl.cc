@@ -124,8 +124,8 @@ class EPPAction
   int code; ///< needed for destructor where Response is invalidated
   EPPNotifier *notifier;
   std::string cltrid;
-  std::auto_ptr<Database::Transaction> tx_;
   Database::Connection conn_;
+  std::auto_ptr<Database::Transaction> tx_;
 
 public:
   struct ACTION_START_ERROR
@@ -137,7 +137,7 @@ public:
   ) :
     ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
     regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
-    notifier(0), cltrid(clTRID), tx_(0), conn_(Database::Manager::acquire())
+    notifier(0), cltrid(clTRID), conn_(Database::Manager::acquire()), tx_()
   {
     Logging::Context::push(str(boost::format("action-%1%") % action));
     try {
