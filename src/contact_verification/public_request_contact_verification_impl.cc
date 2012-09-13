@@ -88,12 +88,8 @@ public:
         contact_verification_passwd_.sendSmsPassword(
                  boost::format(
                  "Potvrzujeme zahajeni procesu verifikace kontaktu v registru domen. "
-                 "Prvni krok spociva v zadani PIN1 a PIN2. PIN1 vam byl zaslan e-mailem, PIN2 je: %1%. "
-                 "Contact verification for the domain registry has started. "
-                 "In the first step, your PIN1 and PIN2 must be entered. "
-                 "PIN1 has been e-mailed to you; PIN2 is: %1%. "
-                 )
-                , "contact_verification_pin2");
+                 "Prvni krok spociva v zadani PIN1 a PIN2. PIN1 vam byl zaslan e-mailem, PIN2 je: %1%. "),
+                 "contact_verification_pin2");
     }
 
     static std::string registration_name()
