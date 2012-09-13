@@ -676,24 +676,6 @@ public:
   }
 };
 
-
-// Local transction needed for proper on commit handling of TEMP table
-class LocalTransaction {
-  Database::Connection conn;
-  Database::Transaction tx;
-public:
-  LocalTransaction()
-  : conn(Database::Manager::acquire())
-  , tx(conn)
-  {}
-  ~LocalTransaction()
-  {}
-  void commit() {
-    tx.commit();
-  }
-};
-
-
 class ManagerImpl : public Manager {
   DBSharedPtr db;
   void createMessage(TID registrar, unsigned type) {
