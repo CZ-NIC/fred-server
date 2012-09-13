@@ -823,16 +823,7 @@ public:
     if (limit)
       insertSelect << "LIMIT " << limit;
     if (debug) {
-      //if (!db->ExecSelect(insertSelect.str().c_str()))throw SQL_ERROR();
       Database::Result debug_res= conn.exec(insertSelect.str().c_str());
-      /*
-      *debug << "<messages>\n";
-      for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-        *debug << "<message " << "reg_id='" << db->GetFieldValue(i, 0)
-            << "' msg_type='" << db->GetFieldValue(i, 1) << "' state_id='"
-            << db->GetFieldValue(i, 2) << "' name='" << db->GetFieldValue(i, 3)
-            << "'/>\n";
-       */
 
       *debug << "<messages>\n";
       for (unsigned i=0; i < (unsigned)debug_res.size(); i++) {
@@ -842,7 +833,6 @@ public:
             << "'/>\n";
       }
       *debug << "</messages>\n";
-      //db->FreeSelect();
       return; // rollback (never mind in debug mode)
     }
     // create temporary table because poll message need to be inserted
@@ -850,7 +840,6 @@ public:
     const char *create = "CREATE TEMPORARY TABLE tmp_poll_state_insert ("
       " id INTEGER PRIMARY KEY, reg INTEGER, "
       " msgtype INTEGER, stateid INTEGER ) ON COMMIT DROP ";
-    //if (!db->ExecSQL(create)) throw SQL_ERROR();
     conn.exec(create);
 
     std::stringstream insertTemp;
@@ -858,7 +847,6 @@ public:
       "SELECT "
       " nextval('message_id_seq'), t.reg, t.msgtype, t.stateid "
       " FROM (" << insertSelect.str() << ") t ";
-    //if (!db->ExecSQL(insertTemp.str().c_str())) throw SQL_ERROR();
     conn.exec(insertTemp.str().c_str());
 
     // insert into table message appropriate part from temp table
@@ -866,15 +854,12 @@ public:
       "SELECT id,reg,CURRENT_TIMESTAMP,"
       "CURRENT_TIMESTAMP + INTERVAL '7days','f',msgtype "
       "FROM tmp_poll_state_insert ORDER BY stateid ";
-    //if (!db->ExecSQL(insertMessage)) throw SQL_ERROR();
     conn.exec(insertMessage);
 
     // insert into table poll_statechange appropriate part from temp table
     const char *insertPollStateChange = "INSERT INTO poll_statechange "
       "SELECT id, stateid FROM tmp_poll_state_insert ORDER BY stateid ";
-    //if (!db->ExecSQL(insertPollStateChange)) throw SQL_ERROR();
     conn.exec(insertPollStateChange);
-    //conn.exec("drop table tmp_poll_state_insert");
     trans.commit();
   }
 
