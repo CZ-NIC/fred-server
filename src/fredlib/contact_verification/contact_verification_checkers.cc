@@ -130,7 +130,6 @@ bool contact_checker_phone_unique(const Contact &_data, FieldErrorMap &_errors)
                 " WHERE eos.name = 'conditionallyIdentifiedContact'"
                 " AND os.valid_from > now() - $1::interval"
                 " AND trim(both ' ' from ch.telephone) = trim(both ' ' from $2::text)"
-                " ORDER BY os.valid_from ASC"
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
@@ -209,7 +208,6 @@ bool contact_checker_email_unique(const Contact &_data, FieldErrorMap &_errors)
                 " WHERE eos.name = 'conditionallyIdentifiedContact'"
                 " AND os.valid_from > now() - $1::interval"
                 " AND trim(both ' ' from LOWER(ch.email)) = trim(both ' ' from LOWER($2::text))"
-                " ORDER BY os.valid_from ASC"
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
