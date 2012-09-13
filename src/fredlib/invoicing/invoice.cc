@@ -426,8 +426,7 @@ public:
       unsigned charge_zone_id;
       getRequestFeeParams(&charge_zone_id);
 
-      DBSharedPtr ldb_dc_guard = connect_DB(Database::Manager::getConnectionString(),
-              std::runtime_error("Faild to connect to database: class DB"));
+      DBSharedPtr ldb_dc_guard(new DB(Database::Manager::acquire()));
       std::auto_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
 
       date poll_msg_period_from;

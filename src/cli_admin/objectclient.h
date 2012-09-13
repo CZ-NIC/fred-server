@@ -106,8 +106,7 @@ public:
     , delete_objects_params(_delete_objects_params)
     , disable_epp_notifier_cltrid_prefix(disable_epp_notifier_cltrid_prefix)
     {
-        m_db = connect_DB(connstring
-                , std::runtime_error("ObjectClient db connection failed"));
+        m_db.reset(new DB(Database::Manager::acquire()));
     }
     ~ObjectClient()
     { }
