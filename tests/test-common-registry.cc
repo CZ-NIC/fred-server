@@ -295,7 +295,9 @@ void insert_poll_request_fee(Database::ID reg_id,
 {
     Database::ID zone_cz_id = get_zone_cz_id();
 
-    DBSharedPtr ldb_dc_guard(new DB(Database::Manager::acquire()));
+    Database::Connection conn = Database::Manager::acquire();
+    DBSharedPtr ldb_dc_guard (new DB(conn));
+
     std::auto_ptr<Fred::Poll::Manager> pollMan(
         Fred::Poll::Manager::create(ldb_dc_guard)
     );

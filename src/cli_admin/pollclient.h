@@ -69,7 +69,8 @@ public:
     , poll_create_request_fee_messages(_poll_create_request_fee_messages)
     , poll_create_request_fee_messages_params(_poll_create_request_fee_messages_params)
     {
-        m_db.reset(new DB(Database::Manager::acquire()));
+        Database::Connection conn = Database::Manager::acquire();
+        m_db.reset(new DB(conn));
     }
     ~PollClient()
     { }

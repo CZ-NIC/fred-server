@@ -1507,7 +1507,8 @@ ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const 
         Logging::Context ctx(server_name_);
         ConnectionReleaser releaser;
 
-        DBSharedPtr ldb_dc_guard (new DB(Database::Manager::acquire()));
+        Database::Connection conn = Database::Manager::acquire();
+        DBSharedPtr ldb_dc_guard (new DB(conn));
         std::auto_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
         std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi(poll_mgr->getLastRequestFeeInfoMessage(_registrar));
 

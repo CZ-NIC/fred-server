@@ -106,7 +106,8 @@ public:
     , delete_objects_params(_delete_objects_params)
     , disable_epp_notifier_cltrid_prefix(disable_epp_notifier_cltrid_prefix)
     {
-        m_db.reset(new DB(Database::Manager::acquire()));
+        Database::Connection conn = Database::Manager::acquire();
+        m_db.reset(new DB(conn));
     }
     ~ObjectClient()
     { }
