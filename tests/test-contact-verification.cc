@@ -63,6 +63,7 @@
 
 #include "mailer_manager.h"
 #include "fredlib/contact_verification/contact.h"
+#include "fredlib/object_states.h"
 #include "contact_verification/contact_verification_impl.h"
 
 //test-contact-verification.cc
@@ -272,6 +273,14 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             , Database::query_param_list(fcvc.handle)
                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
         BOOST_CHECK((res_ci_letter.size() == 1));
+
+        //check conditionally identified contact state
+        BOOST_CHECK(Fred::object_has_state(conn.exec_params(
+                "select c.id from contact c "
+                " join object_registry obr on c.id = obr.id "
+                " where obr.name = $1::text "
+            ,Database::query_param_list(fcvc.handle))[0][0]
+         ,Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT));
     }
 
     {
@@ -319,6 +328,15 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
         BOOST_CHECK((res_ci_request.size() == 1)
                 && (static_cast<int>(res_ci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
+
+        //check identified contact state
+        BOOST_CHECK(Fred::object_has_state(
+                conn.exec_params(
+                "select c.id from contact c "
+                " join object_registry obr on c.id = obr.id "
+                " where obr.name = $1::text "
+            ,Database::query_param_list(fcvc.handle))[0][0]
+         ,Fred::ObjectState::IDENTIFIED_CONTACT));
     }
 
     //check registrar name
