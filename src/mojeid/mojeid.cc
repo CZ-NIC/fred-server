@@ -677,6 +677,8 @@ namespace Registry
                  unsigned long long cid = request_manager->processAuthRequest(
                                      _ident_request_id, _password, _request_id);
 
+                 trans.commit();
+
                  try {
                      if (server_conf_->notify_commands) {
                          Fred::MojeID::notify_contact_transfer(
@@ -692,8 +694,6 @@ namespace Registry
                  catch (...) {
                      LOGGER(PACKAGE).error("request notification failed");
                  }
-
-                 trans.commit();
 
                  return cid;
             }
