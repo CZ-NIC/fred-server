@@ -1188,7 +1188,9 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
   Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
   ConnectionReleaser releaser;
 
-  DB DBsql;
+  Database::Connection conn = Database::Manager::acquire();
+  DBSharedPtr DBsql (new DB(conn));
+
   ccReg::Response_var ret;
   ret = new ccReg::Response;
   int i, len;
@@ -1230,21 +1232,19 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
     LOG( NOTICE_LOG, "return reason msg: errors[%d] code %d  message %s\n" , i , errorCodes[i] , ( char * ) (*errStrings)[i] );
   }
 
-  if (DBsql.OpenDatabase(database) ) {
+  {
     if (errCode > 0) {
-      if (DBsql.BeginAction(clientID, EPP_UnknowAction, clTRID, "", requestId)) {
+      if (DBsql->BeginAction(clientID, EPP_UnknowAction, clTRID, "", requestId)) {
           // error code
           ret->code = errCode;
           // write to the  action table
-          ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
+          ret->svTRID = CORBA::string_dup(DBsql->EndAction(ret->code) );
           ret->msg = CORBA::string_dup(GetErrorMessage(ret->code,
               GetRegistrarLang(clientID) ) );
 
           LOG( NOTICE_LOG, "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->code, ( char * ) ret->msg );
       }
     }
-
-    DBsql.Disconnect();
   }
 
   if (ret->code == 0)

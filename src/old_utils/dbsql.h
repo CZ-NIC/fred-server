@@ -24,9 +24,10 @@ class DB;
 
 class DB : public PQ
 {
+    // constructor
+    DB();
 public:
-  // constructor and destructor
-  DB();
+  //destructor
   ~DB();
 
   /* HACK! HACK! HACK! */
