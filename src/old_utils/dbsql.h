@@ -448,33 +448,4 @@ struct DBFreeSelect
 ///DBSharedPtr factory
 typedef DBPtrT<DBFreeSelect> DBFreeSelectPtr;
 
-///deleter functor for DB calling Disconnect only
-struct DBDisconnect
-{
-    void operator()(DB* db)
-    {
-        try
-        {
-            if(db) db->Disconnect();
-            delete db;
-            db = 0;
-        }
-        catch(...){}
-    }
-};
-///DBSharedPtr factory
-typedef DBPtrT<DBDisconnect> DBDisconnectPtr;
-///DB auto_ptr
-typedef std::auto_ptr<DB> DBAutoPtr;
-
-///DBDisconnectPtr factory with custom exception
-template <class ExceptionInCaseOfConnectionFailure>
-DBSharedPtr connect_DB(const std::string& connection_string
-        ,ExceptionInCaseOfConnectionFailure ex)
-{
-    DBAutoPtr db( new DB);
-    if (!db->OpenDatabase(connection_string.c_str())) throw ex;
-    return DBDisconnectPtr(db.release());
-}//connect_DB
-
 #endif

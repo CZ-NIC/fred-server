@@ -1662,9 +1662,8 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
                 // change language
                 if (lang == ccReg::CS) {
                     LOG( NOTICE_LOG, "SET LANG to CS" );
-
-          language=1;
-        }
+                    language=1;
+                    }
 
                 // change password if set new
                 if (strlen(newpass) ) {
