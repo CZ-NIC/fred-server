@@ -117,8 +117,10 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database, NameService *_ns
   reg_grp_mgr_i->_remove_ref();
 
   Logging::Context ctx(server_name_);
-  db_disconnect_guard_ = connect_DB(m_connection_string
-                          , DB_CONNECT_FAILED());
+
+  Database::Connection conn = Database::Manager::acquire();
+  db_disconnect_guard_.reset(new DB(conn));
+
 
   registry_manager_.reset(Fred::Manager::create(db_disconnect_guard_
           , restricted_handles_));
@@ -159,10 +161,11 @@ void ccReg_Admin_i::checkHandle(const char* handle,
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                  , DB_CONNECT_FAILED());
+  DBSharedPtr  db;
+  Database::Connection conn = Database::Manager::acquire();
+  db.reset(new DB(conn));
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
           , restricted_handles_));
   ccReg::CheckHandleTypeSeq* chs = new ccReg::CheckHandleTypeSeq;
   Fred::CheckHandleList chl;
@@ -368,11 +371,12 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     ConnectionReleaser releaser;
   try {
 
-    DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                            , ccReg::Admin::SQL_ERROR());
+    DBSharedPtr  db;
+    Database::Connection conn = Database::Manager::acquire();
+    db.reset(new DB(conn));
 
     std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(ldb_disconnect_guard
+        Fred::Manager::create(db
                 , restricted_handles_)
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
@@ -403,10 +407,13 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
   if (!id) throw ccReg::Admin::ObjectNotFound();
 
   try {
-    DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                        , ccReg::Admin::SQL_ERROR());
+
+    DBSharedPtr  db;
+    Database::Connection conn = Database::Manager::acquire();
+    db.reset(new DB(conn));
+
     std::auto_ptr<Fred::Manager> regm(
-        Fred::Manager::create(ldb_disconnect_guard,restricted_handles_)
+        Fred::Manager::create(db,restricted_handles_)
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
@@ -433,10 +440,12 @@ CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                , ccReg::Admin::SQL_ERROR());
+  DBSharedPtr  db;
+  Database::Connection conn = Database::Manager::acquire();
+  db.reset(new DB(conn));
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
           , restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getDomainCount(zone);
@@ -447,10 +456,11 @@ CORBA::Long ccReg_Admin_i::getSignedDomainCount(const char *_fqdn)
 {
   Logging::Context ctx(server_name_);
 
-  DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                , ccReg::Admin::SQL_ERROR());
+  DBSharedPtr  db;
+  Database::Connection conn = Database::Manager::acquire();
+  db.reset(new DB(conn));
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
           ,restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getSignedDomainCount(_fqdn);
@@ -461,10 +471,11 @@ CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                , ccReg::Admin::SQL_ERROR());
+  DBSharedPtr  db;
+  Database::Connection conn = Database::Manager::acquire();
+  db.reset(new DB(conn));
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
           , restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getEnumNumberCount();
@@ -476,10 +487,12 @@ Registry::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                , ccReg::Admin::SQL_ERROR());
+  DBSharedPtr  db;
+  Database::Connection conn = Database::Manager::acquire();
+  db.reset(new DB(conn));
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+
+  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
           , restricted_handles_));
   /* 
    * TEMP: this is for loading country codes from database - until new database 
@@ -566,9 +579,10 @@ void ccReg_Admin_i::generateLetters() {
 
 
   try {
+    DBSharedPtr db;
+    Database::Connection conn = Database::Manager::acquire();
+    db.reset(new DB(conn));
 
-    DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                  , ccReg::Admin::SQL_ERROR());
 
     MailerManager mm(ns);
     std::auto_ptr<Fred::Document::Manager> docman(
@@ -584,23 +598,23 @@ void ccReg_Admin_i::generateLetters() {
 
 
     std::auto_ptr<Fred::Domain::Manager> domMan(
-        Fred::Domain::Manager::create(ldb_disconnect_guard,
+        Fred::Domain::Manager::create(db,
                                           zoneMan.get()));
     std::auto_ptr<Fred::Contact::Manager> conMan(
-        Fred::Contact::Manager::create(ldb_disconnect_guard,
+        Fred::Contact::Manager::create(db,
                                            restricted_handles_));
     std::auto_ptr<Fred::NSSet::Manager> nssMan(
-        Fred::NSSet::Manager::create(ldb_disconnect_guard,
+        Fred::NSSet::Manager::create(db,
                                          zoneMan.get(),
                                          restricted_handles_));
     std::auto_ptr<Fred::KeySet::Manager> keyMan(
             Fred::KeySet::Manager::create(
-                    ldb_disconnect_guard,
+                    db,
                 restricted_handles_));
     std::auto_ptr<Fred::Registrar::Manager> rMan(
-        Fred::Registrar::Manager::create(ldb_disconnect_guard));
+        Fred::Registrar::Manager::create(db));
     std::auto_ptr<Fred::Notify::Manager> notifyMan(
-        Fred::Notify::Manager::create(ldb_disconnect_guard,
+        Fred::Notify::Manager::create(db,
                                           &mm,
                                           conMan.get(),
                                           nssMan.get(),

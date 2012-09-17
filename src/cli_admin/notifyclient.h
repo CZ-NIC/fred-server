@@ -93,8 +93,9 @@ public:
     , cmdline_sms_command(_cmdline_sms_command)
     , configfile_sms_command(_configfile_sms_command)
     {
-        m_db = connect_DB(connstring
-                , std::runtime_error("NotifyClient db connection failed"));
+        Database::Connection conn = Database::Manager::acquire();
+        m_db.reset(new DB(conn));
+
     }
     ~NotifyClient()
     { }

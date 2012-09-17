@@ -470,7 +470,9 @@ ccReg_EPP_i::ccReg_EPP_i(
   // objects are shared between threads!!!
   // init at the beginning and do not change
 
-  db_disconnect_guard_ = connect_DB(database , DB_CONNECT_FAILED());
+  Database::Connection conn = Database::Manager::acquire();
+  db_disconnect_guard_.reset(new DB(conn));
+
 
   LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
   regMan.reset(Fred::Manager::create(db_disconnect_guard_, false)); //TODO: replace 'false'

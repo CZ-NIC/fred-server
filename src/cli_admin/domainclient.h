@@ -118,8 +118,8 @@ public:
     , cancel_date_(domain_list_args.cancel_date)
     , limit_(domain_list_args.limit)
     {
-        m_db = connect_DB(connstring
-                , std::runtime_error("DomainClient db connection failed"));
+        Database::Connection conn = Database::Manager::acquire();
+        m_db.reset(new DB(conn));
     }
 
     static const struct options *getOpts();

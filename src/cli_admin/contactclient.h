@@ -25,6 +25,7 @@
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
 #include "baseclient.h"
+#include "db_settings.h"
 
 #include "contact_params.h"
 
@@ -55,8 +56,8 @@ public:
     , contact_list(_contact_list)
     , params(_params)
     {
-        m_db = connect_DB(connstring
-                , std::runtime_error("ContactClient db connection failed"));
+        Database::Connection conn = Database::Manager::acquire();
+        m_db.reset(new DB(conn));
     }
 
     static const struct options *getOpts();

@@ -49,9 +49,10 @@ BOOST_AUTO_TEST_SUITE(TestRegistrarBlocking)
 
 BOOST_AUTO_TEST_CASE( test_block_registrar )
 {
-     DBSharedPtr m_db = connect_DB(
-             CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info()
-             , std::runtime_error("NotifyClient db connection failed"));
+     DBSharedPtr m_db;
+     Database::Connection conn = Database::Manager::acquire();
+     m_db.reset(new DB(conn));
+
 
     std::auto_ptr<Fred::Registrar::Manager> regMan(
             Fred::Registrar::Manager::create(m_db));
