@@ -150,9 +150,10 @@ namespace Registry
                     unsigned long long registrar_id = res_reg[0][0];
 
                     //check contact availability and get id
+                    DBSharedPtr nodb;
                     Fred::Contact::ManagerPtr contact_mgr(
                         Fred::Contact::Manager::create(
-                            DBDisconnectPtr(0), registry_conf_->restricted_handles));
+                            nodb, registry_conf_->restricted_handles));
                     Fred::NameIdPair cinfo;
                     Fred::Contact::Manager::CheckAvailType check_result;
                     check_result = contact_mgr->checkAvail(contact_handle, cinfo);
@@ -327,9 +328,10 @@ namespace Registry
                     Database::Transaction trans(conn);
 
                     //check contact availability
+                    DBSharedPtr nodb;
                     Fred::Contact::ManagerPtr contact_mgr(
                         Fred::Contact::Manager::create(
-                            DBDisconnectPtr(0), registry_conf_->restricted_handles));
+                            nodb, registry_conf_->restricted_handles));
                     Fred::NameIdPair cinfo;
                     Fred::Contact::Manager::CheckAvailType check_result;
                     check_result = contact_mgr->checkAvail(contact_handle, cinfo);

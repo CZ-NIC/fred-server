@@ -1448,8 +1448,9 @@ unsigned long long getRegistrarDomainCount(Database::ID regid, const boost::greg
 
 std::vector<unsigned long long> getExpiredDomainSummary(const std::string &registrar, const std::vector<date_period> &date_intervals)
 {
+    DBSharedPtr nodb;
     Fred::Registrar::Manager::AutoPtr regman(
-        Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+        Fred::Registrar::Manager::create(nodb));
 
     if(!regman->checkHandle(registrar)) {
         throw Fred::NOT_FOUND();

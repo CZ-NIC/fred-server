@@ -224,9 +224,9 @@ public:
                     "and classification = 3 ");
             Database::Result res1 = conn.exec( query1 );
 
-
+            DBSharedPtr nodb;
             Fred::Registrar::Manager::AutoPtr regman(
-                    Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                    Fred::Registrar::Manager::create(nodb));
 
             cert_id = regman->createRegistrarCertification(
                     1
@@ -267,8 +267,9 @@ public:
         try
         {
 
+            DBSharedPtr nodb;
             Fred::Registrar::Manager::AutoPtr regman(
-                    Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                    Fred::Registrar::Manager::create(nodb));
 
             regman->shortenRegistrarCertification(cert_id
                     , Database::Date(

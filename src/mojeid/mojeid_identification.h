@@ -22,6 +22,7 @@ namespace MojeID {
 class IdentificationRequestManagerPtr
 {
 private:
+    DBSharedPtr nodb;
     mutable boost::shared_ptr<Fred::Mailer::Manager> mailer_manager_;
     mutable std::auto_ptr<Fred::Manager> registry_manager_;
     mutable std::auto_ptr<Fred::Document::Manager> doc_manager_;
@@ -40,7 +41,7 @@ public:
 
         /* construct managers */
         registry_manager_.reset(Fred::Manager::create(
-                    DBDisconnectPtr(0),
+                    nodb,
                     rconf->restricted_handles));
         doc_manager_ = Fred::Document::Manager::create(
                     rconf->docgen_path,

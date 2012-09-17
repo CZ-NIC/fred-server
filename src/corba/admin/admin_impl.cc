@@ -1100,8 +1100,9 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(
             throw std::runtime_error("Invalid value of score");
         if(evaluation_file_id < 1)
             throw std::runtime_error("Invalid value of evaluation_file_id");
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///create registrar certification
         return regman->createRegistrarCertification(
                 reg_id
@@ -1131,8 +1132,9 @@ void Registry_Registrar_Certification_Manager_i::shortenCertification(
 
     try
     {
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///shorten registrar certification
         return regman->shortenRegistrarCertification(
                 cert_id
@@ -1165,8 +1167,9 @@ void Registry_Registrar_Certification_Manager_i::updateCertification(
         if(evaluation_file_id < 1)
             throw std::runtime_error("Invalid value of evaluation_file_id");
 
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///update registrar certification
         return regman->updateRegistrarCertification(
                 cert_id
@@ -1194,8 +1197,9 @@ Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(
 
     try
     {
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///get registrar certification
         Fred::Registrar::CertificationSeq cs
         = regman->getRegistrarCertifications(registrar_id);
@@ -1239,8 +1243,9 @@ ccReg::TID Registry_Registrar_Group_Manager_i::createGroup(const char* name)
 
     try
     {
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///create group
         return regman->createRegistrarGroup(std::string(name));
     }//try
@@ -1263,8 +1268,9 @@ void Registry_Registrar_Group_Manager_i::deleteGroup(ccReg::TID group_id)
 
     try
     {
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///delete group
         regman->cancelRegistrarGroup(group_id);
     }//try
@@ -1289,8 +1295,9 @@ void Registry_Registrar_Group_Manager_i::updateGroup(
 
     try
     {
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///update group
         regman->updateRegistrarGroup(group_id, std::string(name));
     }//try
@@ -1315,8 +1322,9 @@ ccReg::TID Registry_Registrar_Group_Manager_i::addRegistrarToGroup(
 
     try
     {
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///create membership of registrar in group
         return regman->createRegistrarGroupMembership(
                 reg_id
@@ -1345,8 +1353,9 @@ void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(
 
     try
     {
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///end membership of registrar in group
         regman->endRegistrarGroupMembership(
                 reg_id
@@ -1372,8 +1381,9 @@ Registry_Registrar_Group_Manager_i::getGroups()
 
     try
     {
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///get registrar certification
         Fred::Registrar::GroupSeq gs
         = regman->getRegistrarGroups();
@@ -1413,8 +1423,9 @@ Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(
 
     try
     {
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///get registrar certification
         Fred::Registrar::MembershipByRegistrarSeq mbrs
         = regman->getMembershipByRegistrar(registrar_id);
@@ -1453,8 +1464,9 @@ Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)
 
     try
     {
+        DBSharedPtr nodb;
         Fred::Registrar::Manager::AutoPtr regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
         ///get registrar certification
         Fred::Registrar::MembershipByGroupSeq mbgs
         = regman->getMembershipByGroup(group_id);
@@ -1556,8 +1568,9 @@ bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id) throw (
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::isRegistrarBlocked(%1%)") % reg_id);
 
+        DBSharedPtr nodb;
         std::auto_ptr<Fred::Registrar::Manager> regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
 
         regman->checkRegistrarExists(reg_id);
         return regman->isRegistrarBlocked(reg_id);
@@ -1581,8 +1594,9 @@ bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id) throw (
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::blockRegistrar(%1%)") % reg_id);
 
+        DBSharedPtr nodb;
         std::auto_ptr<Fred::Registrar::Manager> regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                Fred::Registrar::Manager::create(nodb));
 
         regman->checkRegistrarExists(reg_id);
 
@@ -1608,8 +1622,9 @@ void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) t
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::unblockRegistrar(%1%, %2%)") % reg_id % request_id);
 
+        DBSharedPtr nodb;
         std::auto_ptr<Fred::Registrar::Manager> regman(
-                Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+                Fred::Registrar::Manager::create(nodb));
 
         regman->checkRegistrarExists(reg_id);
         regman->unblockRegistrar(reg_id, request_id);

@@ -74,8 +74,9 @@ BOOST_AUTO_TEST_CASE( test_block_registrar )
 BOOST_AUTO_TEST_CASE( test_is_registrar_blocked )
 {
     init_corba_container();
+    DBSharedPtr nodb;
     std::auto_ptr<Fred::Registrar::Manager> regman(
-                   Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+                   Fred::Registrar::Manager::create(nodb));
 
     Database::ID reg_id = block_reg_and_test(regman.get());
 }
@@ -83,8 +84,9 @@ BOOST_AUTO_TEST_CASE( test_is_registrar_blocked )
 BOOST_AUTO_TEST_CASE(test_unblock_registrar)
 {
     init_corba_container();
+    DBSharedPtr nodb;
     std::auto_ptr<Fred::Registrar::Manager> regman(
-                   Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+                   Fred::Registrar::Manager::create(nodb));
 
     Database::ID reg_id = block_reg_and_test(regman.get());
 
@@ -97,8 +99,9 @@ BOOST_AUTO_TEST_CASE(test_unblock_registrar)
 BOOST_AUTO_TEST_CASE( test_double_unlock_registrar)
 {
     init_corba_container();
+    DBSharedPtr nodb;
     std::auto_ptr<Fred::Registrar::Manager> regman(
-                       Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+                       Fred::Registrar::Manager::create(nodb));
 
     Database::ID reg_id = block_reg_and_test(regman.get());
 
@@ -111,8 +114,9 @@ BOOST_AUTO_TEST_CASE( test_double_unlock_registrar)
 BOOST_AUTO_TEST_CASE( test_block_again)
 {
     init_corba_container();
+    DBSharedPtr nodb;
     std::auto_ptr<Fred::Registrar::Manager> regman(
-                       Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+                       Fred::Registrar::Manager::create(nodb));
     std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
 
     Database::ID reg_id = block_reg_and_test(regman.get());
@@ -126,8 +130,9 @@ BOOST_AUTO_TEST_CASE( test_block_again)
 BOOST_AUTO_TEST_CASE( test_block_again_no_special_values_used_in_interval_definition )
 {
     init_corba_container();
+    DBSharedPtr nodb;
     std::auto_ptr<Fred::Registrar::Manager> regman(
-                         Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+                         Fred::Registrar::Manager::create(nodb));
     std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
 
     Database::Connection conn = Database::Manager::acquire();
@@ -147,8 +152,9 @@ BOOST_AUTO_TEST_CASE( test_block_again_no_special_values_used_in_interval_defini
 BOOST_AUTO_TEST_CASE( test_block_last_year_interference )
 {
     init_corba_container();
+    DBSharedPtr nodb;
     std::auto_ptr<Fred::Registrar::Manager> regman(
-                         Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+                         Fred::Registrar::Manager::create(nodb));
     std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
 
     Database::Connection conn = Database::Manager::acquire();

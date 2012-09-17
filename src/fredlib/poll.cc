@@ -984,8 +984,9 @@ public:
       LOGGER(PACKAGE).debug(boost::format("creating request fee messages"
                   " for interval <%1%; %2%)") % p_from % period_to);
 
+      DBSharedPtr nodb;
       std::auto_ptr<Fred::Registrar::Manager> regman(
-               Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+               Fred::Registrar::Manager::create(nodb));
       std::auto_ptr<RequestFeeDataMap> request_fee
           = regman->getRequestFeeDataMap(
                   logger_client,

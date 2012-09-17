@@ -145,9 +145,10 @@ namespace Registry
                 unsigned long long cid;
                 unsigned long long hid;
 
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
                     Fred::Contact::Manager::create(
-                        DBDisconnectPtr(0), registry_conf_->restricted_handles));
+                        nodb, registry_conf_->restricted_handles));
 
                 Fred::NameIdPair cinfo;
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -232,8 +233,9 @@ namespace Registry
                 std::string handle(_handle);
 
                 Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
-                        Fred::Contact::Manager::create(DBDisconnectPtr(0)
+                        Fred::Contact::Manager::create(nodb
                                 , registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -341,10 +343,11 @@ namespace Registry
                 Database::Transaction tx(conn);
 
                 // check if the contact with ID _contact_id exists
+                DBSharedPtr nodb;
                 Fred::NameIdPair cinfo;
                 Fred::Contact::ManagerPtr contact_mgr(
                     Fred::Contact::Manager::create(
-                        DBDisconnectPtr(0)
+                        nodb
                         , registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -523,8 +526,9 @@ namespace Registry
                 std::string handle = boost::to_upper_copy(_contact_username);
 
                 Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
-                        Fred::Contact::Manager::create(DBDisconnectPtr(0)
+                        Fred::Contact::Manager::create(nodb
                                 , registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -626,8 +630,9 @@ namespace Registry
                     % _contact_id);
 
                  Fred::NameIdPair cinfo;
+                 DBSharedPtr nodb;
                  Fred::Contact::ManagerPtr contact_mgr(
-                         Fred::Contact::Manager::create(DBDisconnectPtr(0)
+                         Fred::Contact::Manager::create(nodb
                                  , registry_conf_->restricted_handles));
 
                  Fred::Contact::Manager::CheckAvailType check_result;
@@ -1017,9 +1022,10 @@ namespace Registry
                 Database::Transaction tx(conn);
 
                 Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
                         Fred::Contact::Manager::create(
-                            DBDisconnectPtr(0)
+                            nodb
                             , registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -1225,9 +1231,10 @@ namespace Registry
             try
             {
                 Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
                         Fred::Contact::Manager::create(
-                                DBDisconnectPtr(0), registry_conf_->restricted_handles));
+                                nodb, registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
                 check_result = contact_mgr->checkAvail(_handle, cinfo);
@@ -1341,9 +1348,10 @@ namespace Registry
 
                 // check if the contact with ID _contact_id exists
                 Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
                     Fred::Contact::Manager::create(
-                        DBDisconnectPtr(0)
+                        nodb
                         , registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;

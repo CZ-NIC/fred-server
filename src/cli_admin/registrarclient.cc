@@ -341,8 +341,9 @@ RegistrarClient::registrar_create_certification()
     if(evaluation_file_id < 1)
         throw std::runtime_error("Invalid value of evaluation_file_id");
 
+    DBSharedPtr nodb;
     Fred::Registrar::Manager::AutoPtr regman(
-             Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+             Fred::Registrar::Manager::create(nodb));
      ///create registrar certification
      regman->createRegistrarCertification( registrar_handle
              , fromDate//Database::Date(makeBoostDate(from))
@@ -362,8 +363,9 @@ RegistrarClient::registrar_create_group()
     if(group_name.empty())
         throw std::runtime_error("RegistrarClient::registrar_create_group "
                 "error: group name is empty");
+    DBSharedPtr nodb;
     Fred::Registrar::Manager::AutoPtr regman(
-             Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+             Fred::Registrar::Manager::create(nodb));
      ///create registrar certification
      regman->createRegistrarGroup(group_name);
     return;
@@ -408,8 +410,9 @@ RegistrarClient::registrar_into_group()
         throw std::runtime_error("RegistrarClient::registrar_into_group "
                 "error: group name is empty");
 
+    DBSharedPtr nodb;
     Fred::Registrar::Manager::AutoPtr regman(
-             Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+             Fred::Registrar::Manager::create(nodb));
      ///create registrar group membership
      regman->createRegistrarGroupMembership(
              registrar_handle,group_name,fromDate,toDate);

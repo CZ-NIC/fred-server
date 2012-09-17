@@ -444,7 +444,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     , rifd_session_registrar_max_(rifd_session_registrar_max)
     , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear) ,
 
-    db_disconnect_guard_(DBDisconnectPtr(0)),
+    db_disconnect_guard_(),
     regMan(),
     epp_sessions(rifd_session_max, rifd_session_registrar_max, rifd_session_timeout),
     ErrorMsg(),
@@ -542,23 +542,22 @@ int ccReg_EPP_i::LoadReasonMessages()
   Logging::Context::clear();
   Logging::Context ctx("rifd");
 
-  DB DBsql;
+  Database::Connection conn = Database::Manager::acquire();
+  DBSharedPtr DBsql (new DB(conn));
+
   int i, rows;
 
-  if (DBsql.OpenDatabase(database) ) {
+  {
     rows=0;
-    if (DBsql.ExecSelect("SELECT id , reason , reason_cs FROM enum_reason order by id;") ) {
-      rows = DBsql.GetSelectRows();
+    if (DBsql->ExecSelect("SELECT id , reason , reason_cs FROM enum_reason order by id;") ) {
+      rows = DBsql->GetSelectRows();
       ReasonMsg = new Mesg();
       for (i = 0; i < rows; i ++)
-        ReasonMsg->AddMesg(atoi(DBsql.GetFieldValue(i, 0) ),
-            DBsql.GetFieldValue(i, 1) , DBsql.GetFieldValue(i, 2) );
-      DBsql.FreeSelect();
+        ReasonMsg->AddMesg(atoi(DBsql->GetFieldValue(i, 0) ),
+            DBsql->GetFieldValue(i, 1) , DBsql->GetFieldValue(i, 2) );
+      DBsql->FreeSelect();
     }
-
-    DBsql.Disconnect();
-  } else
-    return -1;
+  }
 
   return rows;
 }
@@ -568,23 +567,22 @@ int ccReg_EPP_i::LoadErrorMessages()
   Logging::Context::clear();
   Logging::Context ctx("rifd");
 
-  DB DBsql;
+  Database::Connection conn = Database::Manager::acquire();
+  DBSharedPtr DBsql (new DB(conn));
+
   int i, rows;
 
-  if (DBsql.OpenDatabase(database) ) {
+  {
     rows=0;
-    if (DBsql.ExecSelect("SELECT id , status , status_cs FROM enum_error order by id;") ) {
-      rows = DBsql.GetSelectRows();
+    if (DBsql->ExecSelect("SELECT id , status , status_cs FROM enum_error order by id;") ) {
+      rows = DBsql->GetSelectRows();
       ErrorMsg = new Mesg();
       for (i = 0; i < rows; i ++)
-        ErrorMsg->AddMesg(atoi(DBsql.GetFieldValue(i, 0) ) ,
-            DBsql.GetFieldValue(i, 1) , DBsql.GetFieldValue(i, 2));
-      DBsql.FreeSelect();
+        ErrorMsg->AddMesg(atoi(DBsql->GetFieldValue(i, 0) ) ,
+            DBsql->GetFieldValue(i, 1) , DBsql->GetFieldValue(i, 2));
+      DBsql->FreeSelect();
     }
-
-    DBsql.Disconnect();
-  } else
-    return -1;
+  }
 
   return rows;
 }
@@ -1618,7 +1616,6 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
   Logging::Context ctx("rifd");
   ConnectionReleaser releaser;
 
-  DBAutoPtr db_connect(new DB());
   int regID=0;
   int language=0;
   ccReg::Response_var ret;
@@ -1631,11 +1628,14 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
   LOG( NOTICE_LOG, "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] ", ClID, static_cast<const char*>(clTRID), passwd, newpass );
   LOG( NOTICE_LOG, "ClientLogin:  certID  [%s] language  [%d] ", certID, lang );
 
-  if (db_connect->OpenDatabase(database)) {
-    DBSharedPtr DBsql = DBDisconnectPtr(db_connect.release());
+  Database::Connection conn = Database::Manager::acquire();
+
+   {
+    DBSharedPtr nodb;
+    DBSharedPtr DBsql (new DB(conn));
 
     std::auto_ptr<Fred::Registrar::Manager> regman(
-         Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+         Fred::Registrar::Manager::create(nodb));
     try {
         // get ID of registrar by handle
         if ((regID = DBsql->GetNumericFromTable("REGISTRAR", "id", "handle",
@@ -6915,12 +6915,11 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
 
   LOG( NOTICE_LOG , "nssetTest nsset %s  clientID -> %llu clTRID [%s] \n" , handle, params.loginID, static_cast<const char*>(params.clTRID) );
 
-  DBAutoPtr _db( new DB);
-  bool db_connected_ = _db->OpenDatabase(database);
-  DBSharedPtr DBsql = DBDisconnectPtr(_db.release());
+  Database::Connection conn = Database::Manager::acquire();
+  DBSharedPtr DBsql (new DB(conn));
 
   if ( (regID = GetRegistrarID(params.loginID) ))
-    if (db_connected_) {
+    {
 
       if ( (DBsql->BeginAction(params.loginID, EPP_NSsetTest, static_cast<const char*>(params.clTRID), params.XML, params.requestID) )) {
 
