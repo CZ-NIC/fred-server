@@ -128,9 +128,8 @@ bool contact_checker_phone_unique(const Contact &_data, FieldErrorMap &_errors)
                 " JOIN object_state os ON os.ohid_from = ch.historyid"
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
                 " WHERE eos.name = 'conditionallyIdentifiedContact'"
-                " AND os.valid_from + $1::interval > now()"
+                " AND os.valid_from > now() - $1::interval"
                 " AND trim(both ' ' from ch.telephone) = trim(both ' ' from $2::text)"
-                " ORDER BY os.valid_from ASC"
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
@@ -206,10 +205,9 @@ bool contact_checker_email_unique(const Contact &_data, FieldErrorMap &_errors)
                 " FROM contact_history ch"
                 " JOIN object_state os ON os.ohid_from = ch.historyid"
                 " JOIN enum_object_states eos ON eos.id = os.state_id"
-                " WHERE eos.name =ANY ('{conditionallyIdentifiedContact, identifiedContact}'::text[])"
-                " AND os.valid_from + $1::interval > now()"
+                " WHERE eos.name = 'conditionallyIdentifiedContact'"
+                " AND os.valid_from > now() - $1::interval"
                 " AND trim(both ' ' from LOWER(ch.email)) = trim(both ' ' from LOWER($2::text))"
-                " ORDER BY os.valid_from ASC"
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)

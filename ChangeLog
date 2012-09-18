@@ -10,6 +10,7 @@
       - add method for canceling mojeid account (preserve identification state)
       - fix conditional contact update
       - removed identification method from create/transfer contact interface
+      - contact checks speedup
 
   * logger
       - removed output flag from properties interface
