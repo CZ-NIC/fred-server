@@ -764,7 +764,6 @@ public:
                                    std::ostream* debug) {
     TRACE("[CALL] Fred::Poll::createStateMessages()");
     // transaction is needed for 'ON COMMIT DROP' functionality
-    //LocalTransaction trans;
     /* NOTE: that member 'db' instance which is used in following code
      * is the same connection as 'conn' acquired here */
     Database::Connection conn = Database::Manager::acquire();
@@ -852,7 +851,6 @@ public:
   }
   virtual void createLowCreditMessages() {
     // transaction is needed for 'ON COMMIT DROP' functionality
-    //LocalTransaction trans;
     /* NOTE: that member 'db' instance which is used in following code
      * is the same connection as 'conn' acquired here */
       Database::Connection conn = Database::Manager::acquire();
