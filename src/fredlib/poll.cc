@@ -765,7 +765,8 @@ public:
     TRACE("[CALL] Fred::Poll::createStateMessages()");
     // transaction is needed for 'ON COMMIT DROP' functionality
     //LocalTransaction trans;
-    //get db connection
+    /* NOTE: that member 'db' instance which is used in following code
+     * is the same connection as 'conn' acquired here */
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction trans(conn);
 
@@ -852,7 +853,8 @@ public:
   virtual void createLowCreditMessages() {
     // transaction is needed for 'ON COMMIT DROP' functionality
     //LocalTransaction trans;
-      //get db connection
+    /* NOTE: that member 'db' instance which is used in following code
+     * is the same connection as 'conn' acquired here */
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction trans(conn);
     // create temporary table because poll message need to be inserted
