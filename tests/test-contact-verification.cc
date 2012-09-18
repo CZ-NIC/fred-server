@@ -61,6 +61,7 @@
 
 #include "mailer_manager.h"
 #include "fredlib/contact_verification/contact.h"
+#include "fredlib/object_states.h"
 #include "contact_verification/contact_verification_impl.h"
 
 //test-contact-verification.cc
@@ -148,10 +149,12 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     cv->createConditionalIdentification(fcvc.handle, registrar_handle
             , request_id, another_request_id);
 
-    //check cci request
+
     {
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
+
+        //check new cci request
         Database::Result res_cci_request = conn.exec_params(
             "select pr.status from object_registry obr "
             " join public_request_objects_map prom on obr.id = prom.object_id "
@@ -161,7 +164,36 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             " where obr.name = $1::text and eprt.name = $2::text "
             , Database::query_param_list(fcvc.handle)
                 (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
-        BOOST_CHECK((res_cci_request.size() == 1) && (static_cast<int>(res_cci_request[0][0]) == 0));
+        BOOST_CHECK((res_cci_request.size() == 1)
+                && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
+
+        //check pin2 sms
+        Database::Result res_cci_sms = conn.exec_params(
+                "select pr.id ,  eprt.*, prmm.*, ma.*, mt.* from public_request pr "
+                " join enum_public_request_type eprt on pr.request_type = eprt.id "
+                " join public_request_auth pra on pr.id = pra.id "
+                " join public_request_messages_map prmm on prmm.public_request_id = pr.id "
+                " join message_archive ma on ma.id = prmm.message_archive_id "
+                " join message_type mt on mt.id = ma.message_type_id "
+                " where pra.identification = $1::text and eprt.name = $2::text "
+                " and mt.type='contact_verification_pin2' "
+            , Database::query_param_list(another_request_id)
+                (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
+        BOOST_CHECK((res_cci_sms.size() == 1));
+
+        //check pin1 email
+        Database::Result res_cci_email = conn.exec_params(
+                "select pr.id ,  eprt.*, prmm.*, ma.*, mt.* from public_request pr "
+                " join enum_public_request_type eprt on pr.request_type = eprt.id "
+                " join public_request_auth pra on pr.id = pra.id "
+                " join public_request_messages_map prmm on prmm.public_request_id = pr.id "
+                " join mail_archive ma on ma.id = prmm.mail_archive_id "
+                " join mail_type mt on mt.id = ma.mailtype "
+                " where pra.identification = $1::text and eprt.name = $2::text "
+                " and mt.name = 'conditional_contact_identification' "
+            , Database::query_param_list(another_request_id)
+                (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
+        BOOST_CHECK((res_cci_email.size() == 1));
     }
 
     BOOST_TEST_MESSAGE( "identification: " << another_request_id );
@@ -193,6 +225,67 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
 
+        //check cci request answered (1)
+        Database::Result res_cci_request = conn.exec_params(
+            "select pr.status from object_registry obr "
+            " join public_request_objects_map prom on obr.id = prom.object_id "
+            " join public_request_auth pra on prom.request_id = pra.id "
+            " join public_request pr on pr.id=pra.id "
+            " join enum_public_request_type eprt on pr.request_type = eprt.id "
+            " where obr.name = $1::text and eprt.name = $2::text "
+            , Database::query_param_list(fcvc.handle)
+                (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
+        BOOST_CHECK((res_cci_request.size() == 1)
+                && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
+    }
+
+    {
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+
+        //check ci request new (0)
+        Database::Result res_ci_request = conn.exec_params(
+            "select pr.status from object_registry obr "
+            " join public_request_objects_map prom on obr.id = prom.object_id "
+            " join public_request_auth pra on prom.request_id = pra.id "
+            " join public_request pr on pr.id=pra.id "
+            " join enum_public_request_type eprt on pr.request_type = eprt.id "
+            " where obr.name = $1::text and eprt.name = $2::text "
+            , Database::query_param_list(fcvc.handle)
+                (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+        BOOST_CHECK((res_ci_request.size() == 1)
+                && (static_cast<int>(res_ci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
+
+        //check pin3 letter
+        Database::Result res_ci_letter = conn.exec_params(
+                "select obr.name,pr.id ,  eprt.*, prmm.*, ma.*, mt.* from object_registry obr "
+                " join public_request_objects_map prom on obr.id = prom.object_id "
+                " join public_request_auth pra on prom.request_id = pra.id "
+                " join public_request pr on pr.id=pra.id "
+                " join enum_public_request_type eprt on pr.request_type = eprt.id "
+                " join public_request_messages_map prmm on prmm.public_request_id = pr.id "
+                " join message_archive ma on ma.id = prmm.message_archive_id "
+                " join message_type mt on mt.id = ma.message_type_id "
+                " where obr.name = $1::text and eprt.name = $2::text and "
+                " mt.type='contact_verification_pin3' "
+            , Database::query_param_list(fcvc.handle)
+                (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+        BOOST_CHECK((res_ci_letter.size() == 1));
+
+        //check conditionally identified contact state
+        BOOST_CHECK(Fred::object_has_state(conn.exec_params(
+                "select c.id from contact c "
+                " join object_registry obr on c.id = obr.id "
+                " where obr.name = $1::text "
+            ,Database::query_param_list(fcvc.handle))[0][0]
+         ,Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT));
+    }
+
+    {
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+
+        //get ci request password
         Database::Result res_pass = conn.exec_params(
             "select pra.password from object_registry obr "
             " join public_request_objects_map prom on obr.id = prom.object_id "
@@ -217,6 +310,34 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     cv->processIdentification(fcvc.handle, password, request_id);
 
+    {
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+
+        //check ci request answered (1)
+        Database::Result res_ci_request = conn.exec_params(
+            "select pr.status from object_registry obr "
+            " join public_request_objects_map prom on obr.id = prom.object_id "
+            " join public_request_auth pra on prom.request_id = pra.id "
+            " join public_request pr on pr.id=pra.id "
+            " join enum_public_request_type eprt on pr.request_type = eprt.id "
+            " where obr.name = $1::text and eprt.name = $2::text "
+            , Database::query_param_list(fcvc.handle)
+                (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+        BOOST_CHECK((res_ci_request.size() == 1)
+                && (static_cast<int>(res_ci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
+
+        //check identified contact state
+        BOOST_CHECK(Fred::object_has_state(
+                conn.exec_params(
+                "select c.id from contact c "
+                " join object_registry obr on c.id = obr.id "
+                " where obr.name = $1::text "
+            ,Database::query_param_list(fcvc.handle))[0][0]
+         ,Fred::ObjectState::IDENTIFIED_CONTACT));
+    }
+
+    //check registrar name
     BOOST_CHECK(cv->getRegistrarName(registrar_handle) == "Company A l.t.d");
 }
 
