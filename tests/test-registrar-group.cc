@@ -264,8 +264,9 @@ public:
             }
             //std::cout << "start: " << number_ << std::endl;
 
+            DBSharedPtr nodb;
             Fred::Registrar::Manager::AutoPtr regman(
-                    Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                    Fred::Registrar::Manager::create(nodb));
             ///create membership of registrar in group
             Fred::TID m_id = regman->createRegistrarGroupMembership(
                     1
@@ -300,8 +301,9 @@ public:
 
         try
         {
+            DBSharedPtr nodb;
             Fred::Registrar::Manager::AutoPtr regman(
-                    Fred::Registrar::Manager::create(DBDisconnectPtr(0)));
+                    Fred::Registrar::Manager::create(nodb));
             //delete group
             regman->cancelRegistrarGroup(gid3);
         }

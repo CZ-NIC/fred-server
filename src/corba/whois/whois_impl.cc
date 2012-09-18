@@ -40,15 +40,18 @@ ccReg_Whois_i::ccReg_Whois_i(const std::string& _database
 : m_connection_string(_database)
 , server_name_(_server_name)
 , registry_restricted_handles_(_registry_restricted_handles)
-, db_disconnect_guard_ ( connect_DB(m_connection_string
-    , std::runtime_error(
-        std::string("ccReg_Whois_i::ccReg_Whois_i cannot connect to DATABASE ")
-        + m_connection_string)))
-, registry_manager_(Fred::Manager::create(db_disconnect_guard_
-    , registry_restricted_handles_))
+, db_disconnect_guard_ ()
+, registry_manager_()
 {
-  Logging::Context ctx(server_name_);
-  registry_manager_->initStates();
+    Logging::Context ctx(server_name_);
+
+    Database::Connection conn = Database::Manager::acquire();
+    db_disconnect_guard_.reset(new DB(conn));
+
+    registry_manager_.reset(Fred::Manager::create(db_disconnect_guard_
+        , registry_restricted_handles_));
+
+    registry_manager_->initStates();
 }
 
 ccReg_Whois_i::~ccReg_Whois_i()
@@ -279,8 +282,9 @@ ccReg::WhoisRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
 
         if (!handle || !*handle) throw ccReg::Whois::ObjectNotFound();
 
-        DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                , ccReg::Whois::InternalServerError());
+        DBSharedPtr ldb_disconnect_guard;
+        Database::Connection conn = Database::Manager::acquire();
+        ldb_disconnect_guard.reset(new DB(conn));
 
         try {
         std::auto_ptr<Fred::Manager> regm(
@@ -349,8 +353,11 @@ ccReg::WhoisRegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
 
   try
   {
-    DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                                  , ccReg::Admin::SQL_ERROR());
+
+    DBSharedPtr ldb_disconnect_guard;
+    Database::Connection conn = Database::Manager::acquire();
+    ldb_disconnect_guard.reset(new DB(conn));
+
     std::auto_ptr<Fred::Manager> regm(
         Fred::Manager::create(ldb_disconnect_guard,registry_restricted_handles_)
     );
@@ -421,8 +428,9 @@ ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
         .trace(boost::format(
                 "[CALL] ccReg_Whois_i::getContactByHandle('%1%')") % handle);
 
-        DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                        , ccReg::Whois::InternalServerError());
+        DBSharedPtr ldb_disconnect_guard;
+        Database::Connection conn = Database::Manager::acquire();
+        ldb_disconnect_guard.reset(new DB(conn));
 
         if (!handle || !*handle)
             throw ccReg::Whois::ObjectNotFound();
@@ -491,8 +499,9 @@ ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
         if (!handle || !*handle)
         throw ccReg::Whois::ObjectNotFound();
 
-        DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::InternalServerError());
+        DBSharedPtr ldb_disconnect_guard;
+        Database::Connection conn = Database::Manager::acquire();
+        ldb_disconnect_guard.reset(new DB(conn));
 
         std::auto_ptr<Fred::Manager>
             r(Fred::Manager::create(ldb_disconnect_guard, registry_restricted_handles_));
@@ -557,8 +566,9 @@ ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
         if (!handle || !*handle)
             throw ccReg::Whois::ObjectNotFound();
 
-        DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::InternalServerError());
+        DBSharedPtr ldb_disconnect_guard;
+        Database::Connection conn = Database::Manager::acquire();
+        ldb_disconnect_guard.reset(new DB(conn));
 
         std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
             ,registry_restricted_handles_));
@@ -627,8 +637,10 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
                 .trace(boost::format("[CALL] ccReg_Whois_i::getDomainsByInverseKey('%1%', %2%, %3%)")
           % key % type % limit);
 
-        DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::InternalServerError());
+        DBSharedPtr ldb_disconnect_guard;
+        Database::Connection conn = Database::Manager::acquire();
+        ldb_disconnect_guard.reset(new DB(conn));
+
 
         std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
                 , registry_restricted_handles_));
@@ -713,8 +725,9 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
 
     try
     {
-        DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::InternalServerError());
+        DBSharedPtr ldb_disconnect_guard;
+        Database::Connection conn = Database::Manager::acquire();
+        ldb_disconnect_guard.reset(new DB(conn));
 
         std::auto_ptr<Fred::Manager> r(
                 Fred::Manager::create(ldb_disconnect_guard
@@ -770,8 +783,9 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
 
     try
     {
-        DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::InternalServerError());
+        DBSharedPtr ldb_disconnect_guard;
+        Database::Connection conn = Database::Manager::acquire();
+        ldb_disconnect_guard.reset(new DB(conn));
 
         std::auto_ptr<Fred::Manager> r(
                 Fred::Manager::create(ldb_disconnect_guard
@@ -832,8 +846,9 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
         if (!fqdn || !*fqdn)
         throw ccReg::Whois::ObjectNotFound();
 
-        DBSharedPtr ldb_disconnect_guard = connect_DB(m_connection_string
-                                , ccReg::Whois::InternalServerError());
+        DBSharedPtr ldb_disconnect_guard;
+        Database::Connection conn = Database::Manager::acquire();
+        ldb_disconnect_guard.reset(new DB(conn));
 
         std::auto_ptr<Fred::Manager>
             r(Fred::Manager::create(ldb_disconnect_guard

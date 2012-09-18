@@ -426,8 +426,9 @@ public:
       unsigned charge_zone_id;
       getRequestFeeParams(&charge_zone_id);
 
-      DBSharedPtr ldb_dc_guard = connect_DB(Database::Manager::getConnectionString(),
-              std::runtime_error("Faild to connect to database: class DB"));
+      Database::Connection conn = Database::Manager::acquire();
+      DBSharedPtr ldb_dc_guard (new DB(conn));
+
       std::auto_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
 
       date poll_msg_period_from;
@@ -452,7 +453,7 @@ public:
       }
 
       // check if requests were already charged to this registrar and month combination
-      Database::Connection conn = Database::Manager::acquire();
+
       Database::Result res = conn.exec_params(
         "SELECT io.id "
           "FROM invoice_operation io "

@@ -55,8 +55,9 @@ public:
     , keyset_list(_keyset_list)
     , m_list_args(_list_args)
     {
-        m_db = connect_DB(connstring
-                , std::runtime_error("KeysetClient db connection failed"));
+        Database::Connection conn = Database::Manager::acquire();
+        m_db.reset(new DB(conn));
+
     }
 
     static const struct options *getOpts();

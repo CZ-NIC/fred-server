@@ -330,6 +330,24 @@ public:
     return super::exec(_stmt);
   }
 
+  virtual inline result_type exec_params(const std::string& _stmt,//one command query
+            const std::vector<std::string>& params //parameters data
+            ) {
+    if (!this->conn_) {
+      open(conn_info_);
+    }
+    return super::exec_params(_stmt, params);
+  }
+
+  virtual inline result_type exec_params(const std::string& _stmt,//one command query
+            const QueryParams& params //parameters data
+            ) {
+      if (!this->conn_) {
+        open(conn_info_);
+      }
+      return super::exec_params(_stmt, params);
+    }
+
   virtual inline std::string escape(const std::string &_in) {
     if (!this->conn_) {
       open(conn_info_);

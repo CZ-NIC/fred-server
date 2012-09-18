@@ -125,8 +125,8 @@ public:
     , price_add_(_price_add)
     , price_add_params_(_price_add_params)
     {
-        m_db = connect_DB(connstring
-                , std::runtime_error("RegistrarClient db connection failed"));
+        Database::Connection conn = Database::Manager::acquire();
+        m_db.reset(new DB(conn));
     }
     ~RegistrarClient()
     { }

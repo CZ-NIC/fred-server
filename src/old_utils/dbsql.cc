@@ -122,12 +122,8 @@ bool DB::BeginAction(
   unsigned long long requestID
 )
 {
-
-  if (!BeginTransaction())
-      return false;
-  
   loginID = clientID; // id of corba client
-  historyID = 0; // history ID 
+  historyID = 0; // history ID
 
   if (svrTRID==NULL) {
       svrTRID= new char[MAX_SVTID];
@@ -139,10 +135,7 @@ bool DB::BeginAction(
       LOG( SQL_LOG , "Make svrTRID: %s" , svrTRID );
   }
 
-  QuitTransaction(CMD_OK);
-
   enum_action = action;
-
   return true;
 }
 

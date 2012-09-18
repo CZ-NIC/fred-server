@@ -145,9 +145,10 @@ namespace Registry
                 unsigned long long cid;
                 unsigned long long hid;
 
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
                     Fred::Contact::Manager::create(
-                        DBDisconnectPtr(0), registry_conf_->restricted_handles));
+                        nodb, registry_conf_->restricted_handles));
 
                 Fred::NameIdPair cinfo;
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -226,11 +227,15 @@ namespace Registry
 
             try
             {
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
                 std::string handle(_handle);
 
                 Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
-                        Fred::Contact::Manager::create(DBDisconnectPtr(0)
+                        Fred::Contact::Manager::create(nodb
                                 , registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -275,8 +280,7 @@ namespace Registry
                     type = Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
                 }
 
-                Database::Connection conn = Database::Manager::acquire();
-                Database::Transaction tx(conn);
+
 
                 IdentificationRequestPtr new_request(mailer_, type);
                 new_request->setRegistrarId(mojeid_registrar_id_);
@@ -335,11 +339,15 @@ namespace Registry
                         % _contact_id % _request_id);
 
             try {
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
                 // check if the contact with ID _contact_id exists
+                DBSharedPtr nodb;
                 Fred::NameIdPair cinfo;
                 Fred::Contact::ManagerPtr contact_mgr(
                     Fred::Contact::Manager::create(
-                        DBDisconnectPtr(0)
+                        nodb
                         , registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -356,15 +364,12 @@ namespace Registry
                             "Contact is not registered with MojeID");
                 }
 
-                Database::Connection conn = Database::Manager::acquire();
-                Database::Transaction tx(conn);
-
                 boost::format lock_state = boost::format(
                 " SELECT os.state_id FROM object_state os WHERE os.state_id = ANY "
                 " ( SELECT id from enum_object_states where name = "
                     " ANY( '{ %1%, %2%, %3%, %4%, %5%, %6%, %7% }') ) "
                     " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
-                    " AND os.object_id = $1::integer FOR UPDATE")
+                    " AND os.object_id = $1::integer")
                    % Fred::ObjectState::SERVER_DELETE_PROHIBITED
                    % Fred::ObjectState::SERVER_TRANSFER_PROHIBITED
                    % Fred::ObjectState::SERVER_UPDATE_PROHIBITED
@@ -373,27 +378,21 @@ namespace Registry
                    % Fred::ObjectState::VALIDATED_CONTACT
                    % ::MojeID::ObjectState::MOJEID_CONTACT;
 
-                boost::format lock_state_request = boost::format(
-                " SELECT * FROM object_state os WHERE os.state_id = ANY "
-                " ( SELECT id from enum_object_states where name = "
-                " ANY( '{ %1%, %2%, %3%, %4%, %5%, %6%, %7% }') ) "
-                " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
-                " AND os.object_id = $1::integer FOR UPDATE")
-                   % Fred::ObjectState::SERVER_DELETE_PROHIBITED
-                   % Fred::ObjectState::SERVER_TRANSFER_PROHIBITED
-                   % Fred::ObjectState::SERVER_UPDATE_PROHIBITED
-                   % Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT
-                   % Fred::ObjectState::IDENTIFIED_CONTACT
-                   % Fred::ObjectState::VALIDATED_CONTACT
-                   % ::MojeID::ObjectState::MOJEID_CONTACT;
+                //try lock object states
+                Fred::lock_multiple_object_states(_contact_id
+                    , Util::vector_of<std::string>
+                        (::MojeID::ObjectState::MOJEID_CONTACT)
+                        (Fred::ObjectState::SERVER_DELETE_PROHIBITED)
+                        (Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)
+                        (Fred::ObjectState::SERVER_UPDATE_PROHIBITED)
+                        (Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)
+                        (Fred::ObjectState::IDENTIFIED_CONTACT)
+                        (Fred::ObjectState::VALIDATED_CONTACT) );
 
                 // fetch the result and convert to strings
                 std::vector<int> drop_states_codes;
 
                 Database::Result res = conn.exec_params(lock_state.str(),
-                        Database::query_param_list(_contact_id));
-
-                conn.exec_params(lock_state_request.str(),
                         Database::query_param_list(_contact_id));
 
                 drop_states_codes.reserve(res.size());
@@ -527,8 +526,9 @@ namespace Registry
                 std::string handle = boost::to_upper_copy(_contact_username);
 
                 Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
-                        Fred::Contact::Manager::create(DBDisconnectPtr(0)
+                        Fred::Contact::Manager::create(nodb
                                 , registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -630,8 +630,9 @@ namespace Registry
                     % _contact_id);
 
                  Fred::NameIdPair cinfo;
+                 DBSharedPtr nodb;
                  Fred::Contact::ManagerPtr contact_mgr(
-                         Fred::Contact::Manager::create(DBDisconnectPtr(0)
+                         Fred::Contact::Manager::create(nodb
                                  , registry_conf_->restricted_handles));
 
                  Fred::Contact::Manager::CheckAvailType check_result;
@@ -674,9 +675,14 @@ namespace Registry
                      " identification_id: %1%  password: %2%  request_id: %3%")
                      % _ident_request_id % _password % _request_id);
 
-                 IdentificationRequestManagerPtr request_manager(mailer_);
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction trans(conn);
+
+                 IdentificationRequestManagerPtr request_manager(mailer_ );
                  unsigned long long cid = request_manager->processAuthRequest(
                                      _ident_request_id, _password, _request_id);
+
+                 trans.commit();
 
                  try {
                      if (server_conf_->notify_commands) {
@@ -726,7 +732,10 @@ namespace Registry
                             "  _contact_id: %1% ")
                         % _contact_id);
 
-                IdentificationRequestManagerPtr request_manager(mailer_);
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction trans(conn);
+
+                IdentificationRequestManagerPtr request_manager(mailer_  );
                 std::vector<Fred::PublicRequest::Type> request_type_list
                     = boost::assign::list_of
                         (Fred::PublicRequest
@@ -734,8 +743,11 @@ namespace Registry
                         (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION);
                 unsigned long long cid = static_cast<unsigned long long>(
                         _contact_id);
-                return request_manager->getPublicRequestAuthIdentification(
+
+                std::string ret = request_manager->getPublicRequestAuthIdentification(
                         cid, request_type_list);
+                trans.commit();
+                return ret;
             }
             catch (std::exception &_ex) {
                 LOGGER(PACKAGE).error(boost::format("request failed (%1%)")
@@ -918,7 +930,11 @@ namespace Registry
                 // this should be eventually done by filter query with combination of
                 // loading contact data
                 Database::Connection conn = Database::Manager::acquire();
-                // TODO: hardcoded ID=14! should be replaced
+                Database::Transaction tx(conn);
+
+                Fred::PublicRequest::lock_public_request_lock(
+                        Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION,_contact_id);
+
                 Database::Result res = conn.exec_params(
                     "SELECT "
                     " (pr.create_time::timestamptz AT TIME ZONE 'Europe/Prague')::date,"
@@ -932,9 +948,12 @@ namespace Registry
                     " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
                     " JOIN contact c ON (c.id = prom.object_id) "
                     " JOIN object_registry oreg ON oreg.id = c.id "
+                    " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type "
                     " WHERE pr.resolve_time IS NULL AND pr.status = 0 "
-                    " AND pr.request_type=14 AND object_id = $1::integer",
-                    Database::query_param_list(_contact_id));
+                    " AND eprt.name = $1::text AND object_id = $2::integer",
+                    Database::query_param_list
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION)
+                        (_contact_id));
                 if (res.size() != 1)
                     throw Registry::MojeID::OBJECT_NOT_EXISTS();
                 IdentificationRequestManagerPtr req_man(mailer_);
@@ -967,6 +986,7 @@ namespace Registry
                     << "<address>" << std::string(res[0][6]) << "</address>"
                     << "</mojeid_valid>";
                 g->closeInput();
+                tx.commit();
             }//try
             catch (Registry::MojeID::OBJECT_NOT_EXISTS&)
             {
@@ -998,10 +1018,14 @@ namespace Registry
                             "  contact_id: %1%  request_id: %2%")
                         % _contact_id % _request_id);
 
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
                 Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
                         Fred::Contact::Manager::create(
-                            DBDisconnectPtr(0)
+                            nodb
                             , registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -1029,6 +1053,8 @@ namespace Registry
                      )
                 );
                 new_request->save();
+
+                tx.commit();
 
                 LOGGER(PACKAGE).info(boost::format(
                         "validation request created"
@@ -1205,9 +1231,10 @@ namespace Registry
             try
             {
                 Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
                         Fred::Contact::Manager::create(
-                                DBDisconnectPtr(0), registry_conf_->restricted_handles));
+                                nodb, registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
                 check_result = contact_mgr->checkAvail(_handle, cinfo);
@@ -1316,11 +1343,15 @@ namespace Registry
                         % _contact_id % _request_id);
 
             try {
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
                 // check if the contact with ID _contact_id exists
                 Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
                 Fred::Contact::ManagerPtr contact_mgr(
                     Fred::Contact::Manager::create(
-                        DBDisconnectPtr(0)
+                        nodb
                         , registry_conf_->restricted_handles));
 
                 Fred::Contact::Manager::CheckAvailType check_result;
@@ -1337,11 +1368,8 @@ namespace Registry
                             "Contact is not registered with MojeID");
                 }
 
-                Database::Connection conn = Database::Manager::acquire();
-                Database::Transaction tx(conn);
-
                 //try lock object states
-                Fred::lock_multiple_open_object_states(_contact_id
+                Fred::lock_multiple_object_states(_contact_id
                     , Util::vector_of<std::string>
                         (::MojeID::ObjectState::MOJEID_CONTACT)
                         (Fred::ObjectState::SERVER_DELETE_PROHIBITED)
@@ -1523,6 +1551,9 @@ namespace Registry
         {
             try
             {
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
                 IdentificationRequestManagerPtr mgr(mailer_);
                 std::auto_ptr<Fred::PublicRequest::List> list(mgr->loadRequest(
                         prid));
@@ -1541,6 +1572,7 @@ namespace Registry
                 {
                     new_auth_req->sendPasswords();
                 }
+                tx.commit();
             }
             catch (std::exception &ex)
             {

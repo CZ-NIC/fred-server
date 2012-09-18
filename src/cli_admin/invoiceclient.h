@@ -115,8 +115,9 @@ public:
     , prefix_params(_prefix_params)
     , create_params(_create_params)
     {
-        m_db = connect_DB(connstring
-                , std::runtime_error("InvoiceClient db connection failed"));
+        Database::Connection conn = Database::Manager::acquire();
+        m_db.reset(new DB(conn));
+
     }
 
     static const struct options *getOpts();

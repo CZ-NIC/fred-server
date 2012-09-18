@@ -112,19 +112,6 @@ static bool testObjectHasState(
 }
 
 
-Database::Connection wrapped_acquire(ccReg_EPP_i *epp)
-{
-
-    try {
-        return Database::Manager::acquire();
-    } catch(...) {
-        epp->ServerInternalError("Cannot connect to DB");
-    }
-
-    /* unreachable code - only for suppress gcc warning */
-    return Database::Manager::acquire();
-}
-
 
 class EPPAction
 {
@@ -137,6 +124,9 @@ class EPPAction
   int code; ///< needed for destructor where Response is invalidated
   EPPNotifier *notifier;
   std::string cltrid;
+  Database::Connection conn_;
+  std::auto_ptr<Database::Transaction> tx_;
+
 public:
   struct ACTION_START_ERROR
   {
@@ -147,16 +137,18 @@ public:
   ) :
     ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
     regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
-    notifier(0), cltrid(clTRID)
+    notifier(0), cltrid(clTRID), conn_(Database::Manager::acquire()), tx_()
   {
     Logging::Context::push(str(boost::format("action-%1%") % action));
-
-    DBAutoPtr _db( new DB);
-    if (!_db->OpenDatabase(epp->getDatabaseString())) {
-        epp->ServerInternalError("Cannot connect to DB");
+    try {
+        tx_.reset(new Database::Transaction(conn_));
     }
-    db = DBDisconnectPtr(_db.release());
+    catch (...) {
+        db->EndAction(COMMAND_FAILED);
+        epp->ServerInternalError("Cannot start transaction");
+    }
 
+    db.reset(new DB(conn_));
     if (!db->BeginAction(clientID, action, clTRID, xml, requestId)) {
       epp->ServerInternalError("Cannot beginAction");
     }
@@ -166,58 +158,26 @@ public:
       db->EndAction(r->code);
       epp->EppError(r->code, r->msg, r->svTRID, errors);
     }
-    if (!db->BeginTransaction()) {
-      db->EndAction(COMMAND_FAILED);
-      epp->ServerInternalError("Cannot start transaction",
-          CORBA::string_dup(db->GetsvTRID()) );
-    }
+
     code = ret->code = COMMAND_OK;
 
     Logging::Context::push(str(boost::format("%1%") % db->GetsvTRID()));
   }
 
-  ///// TODO hack for new invoicing
-  EPPAction(
-      ccReg_EPP_i *_epp, unsigned long long _clientID, int action, const char *clTRID,
-      const char *xml, Database::Connection conn, unsigned long long requestId
-    ) :
-      ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
-      regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
-      notifier(0), cltrid(clTRID)
-    {
-      Logging::Context::push(str(boost::format("action-inv-%1%") % action));
-
-      /*
-      DBAutoPtr _db( new DB(conn));
-      db = DBDisconnectPtr(_db.release());
-      */
-      // ConnectionReleaser will take care of disconnect
-      db.reset(new DB(conn));
-
-      if (!db->BeginAction(clientID, action, clTRID, xml, requestId)) {
-        epp->ServerInternalError("Cannot beginAction");
-      }
-      if (!regID) {
-        ret->code = COMMAND_MAX_SESSION_LIMIT;
-        ccReg::Response_var& r(getRet());
-        db->EndAction(r->code);
-        epp->EppError(r->code, r->msg, r->svTRID, errors);
-      }
-      if (!db->BeginTransaction()) {
-        db->EndAction(COMMAND_FAILED);
-        epp->ServerInternalError("Cannot start transaction",
-            CORBA::string_dup(db->GetsvTRID()) );
-      }
-      code = ret->code = COMMAND_OK;
-
-      Logging::Context::push(str(boost::format("%1%") % db->GetsvTRID()));
-    }
 
   ~EPPAction()
   {
     try
     {
-        db->QuitTransaction(code);
+        if (tx_.get()) {
+            /* OMG: insane macro naming condition style */
+            if (CMD_FAILED(code)) {
+                tx_->commit();
+            }
+            else {
+                tx_->rollback();
+            }
+        }
         db->EndAction(code);
 
         if (notifier && (code == COMMAND_OK)) {
@@ -484,7 +444,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     , rifd_session_registrar_max_(rifd_session_registrar_max)
     , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear) ,
 
-    db_disconnect_guard_(DBDisconnectPtr(0)),
+    db_disconnect_guard_(),
     regMan(),
     epp_sessions(rifd_session_max, rifd_session_registrar_max, rifd_session_timeout),
     ErrorMsg(),
@@ -510,7 +470,9 @@ ccReg_EPP_i::ccReg_EPP_i(
   // objects are shared between threads!!!
   // init at the beginning and do not change
 
-  db_disconnect_guard_ = connect_DB(database , DB_CONNECT_FAILED());
+  Database::Connection conn = Database::Manager::acquire();
+  db_disconnect_guard_.reset(new DB(conn));
+
 
   LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
   regMan.reset(Fred::Manager::create(db_disconnect_guard_, false)); //TODO: replace 'false'
@@ -580,23 +542,22 @@ int ccReg_EPP_i::LoadReasonMessages()
   Logging::Context::clear();
   Logging::Context ctx("rifd");
 
-  DB DBsql;
+  Database::Connection conn = Database::Manager::acquire();
+  DBSharedPtr DBsql (new DB(conn));
+
   int i, rows;
 
-  if (DBsql.OpenDatabase(database) ) {
+  {
     rows=0;
-    if (DBsql.ExecSelect("SELECT id , reason , reason_cs FROM enum_reason order by id;") ) {
-      rows = DBsql.GetSelectRows();
+    if (DBsql->ExecSelect("SELECT id , reason , reason_cs FROM enum_reason order by id;") ) {
+      rows = DBsql->GetSelectRows();
       ReasonMsg = new Mesg();
       for (i = 0; i < rows; i ++)
-        ReasonMsg->AddMesg(atoi(DBsql.GetFieldValue(i, 0) ),
-            DBsql.GetFieldValue(i, 1) , DBsql.GetFieldValue(i, 2) );
-      DBsql.FreeSelect();
+        ReasonMsg->AddMesg(atoi(DBsql->GetFieldValue(i, 0) ),
+            DBsql->GetFieldValue(i, 1) , DBsql->GetFieldValue(i, 2) );
+      DBsql->FreeSelect();
     }
-
-    DBsql.Disconnect();
-  } else
-    return -1;
+  }
 
   return rows;
 }
@@ -606,23 +567,22 @@ int ccReg_EPP_i::LoadErrorMessages()
   Logging::Context::clear();
   Logging::Context ctx("rifd");
 
-  DB DBsql;
+  Database::Connection conn = Database::Manager::acquire();
+  DBSharedPtr DBsql (new DB(conn));
+
   int i, rows;
 
-  if (DBsql.OpenDatabase(database) ) {
+  {
     rows=0;
-    if (DBsql.ExecSelect("SELECT id , status , status_cs FROM enum_error order by id;") ) {
-      rows = DBsql.GetSelectRows();
+    if (DBsql->ExecSelect("SELECT id , status , status_cs FROM enum_error order by id;") ) {
+      rows = DBsql->GetSelectRows();
       ErrorMsg = new Mesg();
       for (i = 0; i < rows; i ++)
-        ErrorMsg->AddMesg(atoi(DBsql.GetFieldValue(i, 0) ) ,
-            DBsql.GetFieldValue(i, 1) , DBsql.GetFieldValue(i, 2));
-      DBsql.FreeSelect();
+        ErrorMsg->AddMesg(atoi(DBsql->GetFieldValue(i, 0) ) ,
+            DBsql->GetFieldValue(i, 1) , DBsql->GetFieldValue(i, 2));
+      DBsql->FreeSelect();
     }
-
-    DBsql.Disconnect();
-  } else
-    return -1;
+  }
 
   return rows;
 }
@@ -1228,7 +1188,9 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
   Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
   ConnectionReleaser releaser;
 
-  DB DBsql;
+  Database::Connection conn = Database::Manager::acquire();
+  DBSharedPtr DBsql (new DB(conn));
+
   ccReg::Response_var ret;
   ret = new ccReg::Response;
   int i, len;
@@ -1270,21 +1232,19 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
     LOG( NOTICE_LOG, "return reason msg: errors[%d] code %d  message %s\n" , i , errorCodes[i] , ( char * ) (*errStrings)[i] );
   }
 
-  if (DBsql.OpenDatabase(database) ) {
+  {
     if (errCode > 0) {
-      if (DBsql.BeginAction(clientID, EPP_UnknowAction, clTRID, "", requestId)) {
+      if (DBsql->BeginAction(clientID, EPP_UnknowAction, clTRID, "", requestId)) {
           // error code
           ret->code = errCode;
           // write to the  action table
-          ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
+          ret->svTRID = CORBA::string_dup(DBsql->EndAction(ret->code) );
           ret->msg = CORBA::string_dup(GetErrorMessage(ret->code,
               GetRegistrarLang(clientID) ) );
 
           LOG( NOTICE_LOG, "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->code, ( char * ) ret->msg );
       }
     }
-
-    DBsql.Disconnect();
   }
 
   if (ret->code == 0)
@@ -1656,7 +1616,6 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
   Logging::Context ctx("rifd");
   ConnectionReleaser releaser;
 
-  DBAutoPtr db_connect(new DB());
   int regID=0;
   int language=0;
   ccReg::Response_var ret;
@@ -1669,11 +1628,14 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
   LOG( NOTICE_LOG, "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] ", ClID, static_cast<const char*>(clTRID), passwd, newpass );
   LOG( NOTICE_LOG, "ClientLogin:  certID  [%s] language  [%d] ", certID, lang );
 
-  if (db_connect->OpenDatabase(database)) {
-    DBSharedPtr DBsql = DBDisconnectPtr(db_connect.release());
+  Database::Connection conn = Database::Manager::acquire();
+
+   {
+    DBSharedPtr nodb;
+    DBSharedPtr DBsql (new DB(conn));
 
     std::auto_ptr<Fred::Registrar::Manager> regman(
-         Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+         Fred::Registrar::Manager::create(nodb));
     try {
         // get ID of registrar by handle
         if ((regID = DBsql->GetNumericFromTable("REGISTRAR", "id", "handle",
@@ -1689,14 +1651,19 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             // test password and certificate fingerprint in the table RegistrarACL
             LOG( NOTICE_LOG, "password [%s]  or certID [%s]  not accept", passwd , certID );
             ret->code = COMMAND_AUTH_ERROR;
-        } else if (DBsql->BeginTransaction() ) {
+        }
+        else
+        {
+            //get db connection and start transaction
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Transaction tx(conn);
+
 
                 // change language
                 if (lang == ccReg::CS) {
                     LOG( NOTICE_LOG, "SET LANG to CS" );
-
-          language=1;
-        }
+                    language=1;
+                    }
 
                 // change password if set new
                 if (strlen(newpass) ) {
@@ -1728,7 +1695,8 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
                 }
 
             // end of transaction
-            DBsql->QuitTransaction(ret->code);
+            if (CMD_FAILED((ret->code))) tx.commit();
+            //else rollback
         }
 
     } catch(std::exception &ex) {
@@ -2360,8 +2328,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     char streetStr[10];
     short int code = 0;
 
-    Database::Connection conn = wrapped_acquire(this);
-    EPPAction action(this, params.loginID, EPP_ContactUpdate, static_cast<const char*>(params.clTRID), params.XML, conn, params.requestID);
+    EPPAction action(this, params.loginID, EPP_ContactUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     LOGGER(PACKAGE).notice(boost::format("ContactUpdate: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
     LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag % c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail );
@@ -2506,8 +2473,14 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                             Fred::Contact::Verification::contact_cancel_verification(handle);
                         }
                     }
+                    catch(std::exception & ex)
+                    {
+                        LOGGER(PACKAGE).error(boost::format("ContactUpdate: contact_cancel_verification [%1%] ") % ex.what());
+                        code =2400;
+                    }
                     catch(...)
                     {
+                        LOGGER(PACKAGE).error("ContactUpdate: contact_cancel_verification unknown exception");
                         code =2400;
                     }
                 }
@@ -4758,8 +4731,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     crDate = CORBA::string_dup("");
     exDate = CORBA::string_dup("");
 
-    Database::Connection conn = wrapped_acquire(this);
-    EPPAction action(this, params.loginID, EPP_DomainCreate, static_cast<const char*>(params.clTRID), params.XML, conn, params.requestID);
+    EPPAction action(this, params.loginID, EPP_DomainCreate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     ad.resize(admin.length());
 
@@ -5159,8 +5131,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     short int code = 0;
 
 
-    Database::Connection conn = wrapped_acquire(this);
-    EPPAction action(this, params.loginID, EPP_DomainRenew, static_cast<const char*>(params.clTRID), params.XML, conn, params.requestID);
+    EPPAction action(this, params.loginID, EPP_DomainRenew, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     // default
     exDate = CORBA::string_dup("");
@@ -6944,12 +6915,11 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
 
   LOG( NOTICE_LOG , "nssetTest nsset %s  clientID -> %llu clTRID [%s] \n" , handle, params.loginID, static_cast<const char*>(params.clTRID) );
 
-  DBAutoPtr _db( new DB);
-  bool db_connected_ = _db->OpenDatabase(database);
-  DBSharedPtr DBsql = DBDisconnectPtr(_db.release());
+  Database::Connection conn = Database::Manager::acquire();
+  DBSharedPtr DBsql (new DB(conn));
 
   if ( (regID = GetRegistrarID(params.loginID) ))
-    if (db_connected_) {
+    {
 
       if ( (DBsql->BeginAction(params.loginID, EPP_NSsetTest, static_cast<const char*>(params.clTRID), params.XML, params.requestID) )) {
 

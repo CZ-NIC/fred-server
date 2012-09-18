@@ -24,9 +24,10 @@ class DB;
 
 class DB : public PQ
 {
+    // constructor
+    DB();
 public:
-  // constructor and destructor
-  DB();
+  //destructor
   ~DB();
 
   /* HACK! HACK! HACK! */
@@ -37,37 +38,6 @@ public:
       enum_action=0;
       loginID = 0;
   }
-
-  // transaction function
-  bool BeginTransaction()
-  {
-    return ExecSQL("START TRANSACTION  ISOLATION LEVEL READ COMMITTED");
-  }
-  ;
-  bool EndTransaction()
-  {
-    return ExecSQL("END TRANSACTION");
-  }
-  ;
-  bool RollbackTransaction()
-  {
-    return ExecSQL("ROLLBACK TRANSACTION");
-  }
-  ;
-  bool CommitTransaction()
-  {
-    return ExecSQL("COMMIT TRANSACTION");
-  }
-  ;
-  bool QuitTransaction(
-    int code)
-  {
-    if (CMD_FAILED(code))
-      return CommitTransaction();
-    else
-      return RollbackTransaction();
-  }
-  ;
 
   ///------------------------
   //   BILLING
@@ -478,34 +448,5 @@ struct DBFreeSelect
 };
 ///DBSharedPtr factory
 typedef DBPtrT<DBFreeSelect> DBFreeSelectPtr;
-
-///deleter functor for DB calling Disconnect only
-struct DBDisconnect
-{
-    void operator()(DB* db)
-    {
-        try
-        {
-            if(db) db->Disconnect();
-            delete db;
-            db = 0;
-        }
-        catch(...){}
-    }
-};
-///DBSharedPtr factory
-typedef DBPtrT<DBDisconnect> DBDisconnectPtr;
-///DB auto_ptr
-typedef std::auto_ptr<DB> DBAutoPtr;
-
-///DBDisconnectPtr factory with custom exception
-template <class ExceptionInCaseOfConnectionFailure>
-DBSharedPtr connect_DB(const std::string& connection_string
-        ,ExceptionInCaseOfConnectionFailure ex)
-{
-    DBAutoPtr db( new DB);
-    if (!db->OpenDatabase(connection_string.c_str())) throw ex;
-    return DBDisconnectPtr(db.release());
-}//connect_DB
 
 #endif

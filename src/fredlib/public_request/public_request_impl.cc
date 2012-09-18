@@ -153,6 +153,10 @@ unsigned long long check_public_request(
         const Type &_type)
 {
     Database::Connection conn = Database::Manager::acquire();
+
+    //get lock to the end of transaction for given object and request type
+    lock_public_request_lock(_type,_object_id);
+
     Database::Result rcheck = conn.exec_params(
             "SELECT pr.id FROM public_request pr"
             " JOIN public_request_objects_map prom ON prom.request_id = pr.id"
@@ -178,9 +182,11 @@ void cancel_public_request(
         const Type &_type,
         const unsigned long long &_request_id)
 {
+    Database::Connection conn = Database::Manager::acquire();
+
     unsigned long long prid = 0;
     if ((prid = check_public_request(_object_id, _type)) != 0) {
-        Database::Connection conn = Database::Manager::acquire();
+
         conn.exec_params("UPDATE public_request SET resolve_time = now(),"
                 " status = $1::integer, resolve_request_id = $2::bigint"
                 " WHERE id = $3::integer",
@@ -195,6 +201,7 @@ void cancel_public_request(
 bool object_was_changed_since_request_create(const unsigned long long _request_id)
 {
     Database::Connection conn = Database::Manager::acquire();
+    lock_public_request_lock(_request_id);
     Database::Result rnot_changed = conn.exec_params(
             "SELECT ((o.update IS NULL OR o.update <= pr.create_time)"
              " AND (o.trdate IS NULL OR o.trdate <= pr.create_time))"
@@ -779,8 +786,6 @@ bool PublicRequestAuthImpl::check() const
 {
     return true;
 }
-
-
 
 }
 }

@@ -47,9 +47,10 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  m_mailer_manager(ns),
                                  m_fm_client(ns),
                                  m_last_activity(second_clock::local_time()),
-                                 db_disconnect_guard_ ( connect_DB(database
-                                   , std::runtime_error(std::string("db connection failed: ")+ database)))
+                                 db_disconnect_guard_ ()
 {
+    Database::Connection conn = Database::Manager::acquire();
+    db_disconnect_guard_.reset(new DB(conn));
 
   base_context_ = Logging::Context::get() + "/" + session_id_;
   Logging::Context ctx(session_id_);

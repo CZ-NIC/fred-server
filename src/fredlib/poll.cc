@@ -676,26 +676,6 @@ public:
   }
 };
 
-
-// Local transction needed for proper on commit handling of TEMP table
-struct LocalTransaction {
-  DBSharedPtr db;
-  bool closed;
-  LocalTransaction(DBSharedPtr _db) :
-    db(_db), closed(false) {
-    (void)db->BeginTransaction();
-  }
-  ~LocalTransaction() {
-    if (!closed)
-      db->RollbackTransaction();
-  }
-  void commit() {
-    db->CommitTransaction();
-    closed = true;
-  }
-};
-
-
 class ManagerImpl : public Manager {
   DBSharedPtr db;
   void createMessage(TID registrar, unsigned type) {
@@ -784,7 +764,11 @@ public:
                                    std::ostream* debug) {
     TRACE("[CALL] Fred::Poll::createStateMessages()");
     // transaction is needed for 'ON COMMIT DROP' functionality
-    LocalTransaction trans(db);
+    /* NOTE: that member 'db' instance which is used in following code
+     * is the same connection as 'conn' acquired here */
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction trans(conn);
+
     // for each new state appearance of state type (expirationWarning,
     // expiration, validationWarning1, outzoneUnguarded and
     // deleteCandidate for all object type that has not associated
@@ -867,7 +851,10 @@ public:
   }
   virtual void createLowCreditMessages() {
     // transaction is needed for 'ON COMMIT DROP' functionality
-    LocalTransaction trans(db);
+    /* NOTE: that member 'db' instance which is used in following code
+     * is the same connection as 'conn' acquired here */
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Transaction trans(conn);
     // create temporary table because poll message need to be inserted
     // into two tables joined by message id
     const char *create = "CREATE TEMPORARY TABLE tmp_poll_credit_insert ("
@@ -997,8 +984,9 @@ public:
       LOGGER(PACKAGE).debug(boost::format("creating request fee messages"
                   " for interval <%1%; %2%)") % p_from % period_to);
 
+      DBSharedPtr nodb;
       std::auto_ptr<Fred::Registrar::Manager> regman(
-               Fred::Registrar::Manager::create(DBDisconnectPtr(NULL)));
+               Fred::Registrar::Manager::create(nodb));
       std::auto_ptr<RequestFeeDataMap> request_fee
           = regman->getRequestFeeDataMap(
                   logger_client,

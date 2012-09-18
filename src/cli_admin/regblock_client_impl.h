@@ -28,6 +28,7 @@ namespace Admin {
 
 class RegBlockClient {
 private:
+    DBSharedPtr nodb;
     RegBlockArgs params;
     Fred::Registrar::Manager::AutoPtr regMan;
 
@@ -35,7 +36,7 @@ public:
     RegBlockClient(
             const RegBlockArgs &p) :
                params(p),
-               regMan(Fred::Registrar::Manager::create(DBDisconnectPtr(0)))
+               regMan(Fred::Registrar::Manager::create(nodb))
     { }
 
     void runMethod() {

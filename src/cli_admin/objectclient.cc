@@ -37,10 +37,7 @@ namespace Admin {
 void
 ObjectClient::runMethod()
 {
-    if (object_new_state_request//m_conf.hasOpt(OBJECT_NEW_STATE_REQUEST_NAME)
-            ) {
-        new_state_request();
-    }   else if (object_new_state_request_name
+    if (object_new_state_request_name
             ) {
         new_state_request_name();
     }   else if (object_update_states//m_conf.hasOpt(OBJECT_UPDATE_STATES_NAME)
@@ -54,66 +51,6 @@ ObjectClient::runMethod()
         delete_candidates();
     }
 }
-
-int
-ObjectClient::createObjectStateRequest(
-        Fred::TID object,
-        unsigned state)
-{
-    Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ObjectClient::createObjectStateRequest Fred::TID object: ")
-     + boost::lexical_cast<std::string>(object) + " unsigned state: " + boost::lexical_cast<std::string>(state));
-      std::stringstream sql;
-      sql << "SELECT COUNT(*) FROM object_state_request "
-          << "WHERE object_id=" << object << " AND state_id=" << state
-          << " AND (canceled ISNULL OR canceled > CURRENT_TIMESTAMP) "
-          << " AND (valid_to ISNULL OR valid_to > CURRENT_TIMESTAMP) ";
-      Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ObjectClient::createObjectStateRequest sql: ") +sql.str());
-      if (!m_db->ExecSelect(sql.str().c_str()))
-          return -1;
-      if (atoi(m_db->GetFieldValue(0,0)))
-          return -2;
-      m_db->FreeSelect();
-      sql.str("");
-      sql << "INSERT INTO object_state_request "
-          << "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
-          << "(" << object << "," << state
-          << ",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "
-          << "CURRENT_TIMESTAMP + INTERVAL '7 days');";
-      Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("ObjectClient::createObjectStateRequest sql: ") +sql.str());
-      if (!m_db->ExecSQL(sql.str().c_str()))
-          return -1;
-      return 0;
-}
-
-void
-ObjectClient::new_state_request()
-{
-    //callHelp(m_conf, no_help);
-    Fred::TID id = object_new_state_request_params.object_id;// m_conf.get<unsigned long long>(OBJECT_ID_NAME);
-    unsigned int state = object_new_state_request_params.object_new_state_request;//m_conf.get<unsigned int>(OBJECT_NEW_STATE_REQUEST_NAME);
-    int res = createObjectStateRequest(
-            id, state
-            );
-    switch (res) {
-        case -1:
-            Logging::Manager::instance_ref().get(PACKAGE).error("SQL_ERROR" );
-            std::cerr << "SQL_ERROR" << std::endl;
-            break;
-        case -2:
-            Logging::Manager::instance_ref().get(PACKAGE).error("Already exists" );
-            std::cerr << "Already exists" << std::endl;
-            break;
-        case 0:
-            break;
-        default:
-            Logging::Manager::instance_ref().get(PACKAGE).error("Unknown error");
-            std::cerr << "Unknown error" << std::endl;
-            break;
-    }
-    return;
-}
-
-
 
 void
 ObjectClient::new_state_request_name()

@@ -69,8 +69,8 @@ public:
     , poll_create_request_fee_messages(_poll_create_request_fee_messages)
     , poll_create_request_fee_messages_params(_poll_create_request_fee_messages_params)
     {
-        m_db = connect_DB(connstring
-                , std::runtime_error("PollClient db connection failed"));
+        Database::Connection conn = Database::Manager::acquire();
+        m_db.reset(new DB(conn));
     }
     ~PollClient()
     { }
