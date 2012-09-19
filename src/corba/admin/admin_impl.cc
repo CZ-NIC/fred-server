@@ -455,6 +455,7 @@ CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
 CORBA::Long ccReg_Admin_i::getSignedDomainCount(const char *_fqdn)
 {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DBSharedPtr  db;
   Database::Connection conn = Database::Manager::acquire();
