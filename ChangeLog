@@ -12,6 +12,8 @@
       - removed identification method from create/transfer contact interface
       - contact checks speedup
 
+  * public request / manual object state locking feature to serialize requests
+
   * logger
       - removed output flag from properties interface
       - fix usage of connection releaser
