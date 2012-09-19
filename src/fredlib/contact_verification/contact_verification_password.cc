@@ -193,7 +193,12 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
              << "<codes>"
              << std::string("<") + custom_tag + ">" + map_at(data, custom_tag) + ("</") + custom_tag + ">"
              << "</codes>"
-             << "<link>" << map_at(data, "hostname") << "</link>"
+             << "<link>" <<
+                ((message_type == "contact_verification_pin3") ?
+                    std::string("https://") + map_at(data, "hostname")
+                        + std::string("/verification/identify/letter/?handle=") + map_at(data, "handle")
+                    : map_at(data, "hostname"))
+             << "</link>"
              << "</auth>"
              << "</user>"
              << "</contact_auth>";
