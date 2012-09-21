@@ -1572,12 +1572,25 @@ tests_test_server_SOURCES = \
 		tests/test-shellcmd.cc \
 		tests/test-contact-verification.cc \
 		tests/test-locking-trigger.cc \
+		tests/test-mojeid.cc \
 		src/corba/epp_corba_client_impl.cc \
 		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
-		src/fredlib/contact_verification/cancel_contact_verification.h
+		src/fredlib/contact_verification/cancel_contact_verification.h \
+		src/mojeid/mojeid_validators.cc \
+		src/mojeid/mojeid_validators.h \
+		src/mojeid/request.h \
+		src/mojeid/mojeid_contact_transfer_request_impl.h \
+		src/mojeid/mojeid_contact_transfer_request_impl.cc \
+		src/mojeid/public_request_verification_impl.cc \
+		src/mojeid/public_request_verification_impl.h \
+		src/mojeid/mojeid.cc \
+		src/mojeid/mojeid.h \
+		src/mojeid/mojeid_notifier.cc \
+		src/mojeid/mojeid_notifier.h \
+		tests/checks.h
 
 
 tests_test_server_LDFLAGS = \
@@ -1586,6 +1599,7 @@ tests_test_server_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 tests_test_server_LDADD = \
+		src/fredlib/notifier/libnotifier.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/epp/libepp_impl.a \

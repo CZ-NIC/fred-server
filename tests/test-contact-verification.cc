@@ -64,6 +64,7 @@
 #include "fredlib/contact_verification/contact.h"
 #include "fredlib/object_states.h"
 #include "contact_verification/contact_verification_impl.h"
+#include "checks.h"
 
 //test-contact-verification.cc
 
@@ -151,22 +152,14 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             , request_id, another_request_id);
 
 
+    //check new cci request
+    check_public_request_on_contact(fcvc
+            , Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
+            , Fred::PublicRequest::PRS_NEW);
+
     {
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
-
-        //check new cci request
-        Database::Result res_cci_request = conn.exec_params(
-            "select pr.status from object_registry obr "
-            " join public_request_objects_map prom on obr.id = prom.object_id "
-            " join public_request_auth pra on prom.request_id = pra.id "
-            " join public_request pr on pr.id=pra.id "
-            " join enum_public_request_type eprt on pr.request_type = eprt.id "
-            " where obr.name = $1::text and eprt.name = $2::text "
-            , Database::query_param_list(fcvc.handle)
-                (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
-        BOOST_CHECK((res_cci_request.size() == 1)
-                && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
 
         //check pin2 sms
         Database::Result res_cci_sms = conn.exec_params(
@@ -222,40 +215,19 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     cv->processConditionalIdentification(another_request_id
             , password, request_id);
 
-    {
-        //get db connection
-        Database::Connection conn = Database::Manager::acquire();
+    //check answered cci request
+    check_public_request_on_contact(fcvc
+            , Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
+            , Fred::PublicRequest::PRS_ANSWERED);
 
-        //check cci request answered (1)
-        Database::Result res_cci_request = conn.exec_params(
-            "select pr.status from object_registry obr "
-            " join public_request_objects_map prom on obr.id = prom.object_id "
-            " join public_request_auth pra on prom.request_id = pra.id "
-            " join public_request pr on pr.id=pra.id "
-            " join enum_public_request_type eprt on pr.request_type = eprt.id "
-            " where obr.name = $1::text and eprt.name = $2::text "
-            , Database::query_param_list(fcvc.handle)
-                (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
-        BOOST_CHECK((res_cci_request.size() == 1)
-                && (static_cast<int>(res_cci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
-    }
+    //check new ci request
+    check_public_request_on_contact(fcvc
+            , Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION
+            , Fred::PublicRequest::PRS_NEW);
 
     {
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
-
-        //check ci request new (0)
-        Database::Result res_ci_request = conn.exec_params(
-            "select pr.status from object_registry obr "
-            " join public_request_objects_map prom on obr.id = prom.object_id "
-            " join public_request_auth pra on prom.request_id = pra.id "
-            " join public_request pr on pr.id=pra.id "
-            " join enum_public_request_type eprt on pr.request_type = eprt.id "
-            " where obr.name = $1::text and eprt.name = $2::text "
-            , Database::query_param_list(fcvc.handle)
-                (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
-        BOOST_CHECK((res_ci_request.size() == 1)
-                && (static_cast<int>(res_ci_request[0][0]) == Fred::PublicRequest::PRS_NEW));
 
         //check pin3 letter
         Database::Result res_ci_letter = conn.exec_params(
@@ -311,22 +283,14 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     cv->processIdentification(fcvc.handle, password, request_id);
 
+    //check answered ci request
+    check_public_request_on_contact(fcvc
+            , Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION
+            , Fred::PublicRequest::PRS_ANSWERED);
+
     {
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
-
-        //check ci request answered (1)
-        Database::Result res_ci_request = conn.exec_params(
-            "select pr.status from object_registry obr "
-            " join public_request_objects_map prom on obr.id = prom.object_id "
-            " join public_request_auth pra on prom.request_id = pra.id "
-            " join public_request pr on pr.id=pra.id "
-            " join enum_public_request_type eprt on pr.request_type = eprt.id "
-            " where obr.name = $1::text and eprt.name = $2::text "
-            , Database::query_param_list(fcvc.handle)
-                (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
-        BOOST_CHECK((res_ci_request.size() == 1)
-                && (static_cast<int>(res_ci_request[0][0]) == Fred::PublicRequest::PRS_ANSWERED));
 
         //check identified contact state
         BOOST_CHECK(Fred::object_has_state(
@@ -372,8 +336,6 @@ struct Case_contact_verification_in_threads_Fixture
             //get db connection
             Database::Connection conn = Database::Manager::acquire();
 
-            //Database::Transaction trans(conn);
-
             //get registrar id
             Database::Result res_reg = conn.exec_params(
                     "SELECT id FROM registrar WHERE handle=$1::text",
@@ -413,7 +375,6 @@ struct Case_contact_verification_in_threads_Fixture
             fcvc.disclosenotifyemail = true;
 
             Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
-            //trans.commit();
         }
     }
 
@@ -483,10 +444,6 @@ public:
             unsigned long long request_id =0;
             std::string another_request_id;
 
-            //db connection with transaction
-            //Database::Connection conn = Database::Manager::acquire();
-            //Database::Transaction tx(conn);
-
             assert(sb_ptr_ != 0);
 
             //std::cout << "waiting: " << number_ << std::endl;
@@ -508,17 +465,9 @@ public:
                 Database::Connection conn = Database::Manager::acquire();
 
                 //check new cci request
-                Database::Result res_new_cci_request = conn.exec_params(
-                    "select pr.status from object_registry obr "
-                    " join public_request_objects_map prom on obr.id = prom.object_id "
-                    " join public_request_auth pra on prom.request_id = pra.id "
-                    " join public_request pr on pr.id=pra.id "
-                    " join enum_public_request_status eprs on eprs.id = pr.status "
-                    " join enum_public_request_type eprt on pr.request_type = eprt.id "
-                    " where obr.name = $1::text and eprt.name = $2::text and eprs.name = 'new'"
-                    , Database::query_param_list(fixture_ptr_->fcvc.handle)
-                        (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
-                BOOST_CHECK(res_new_cci_request.size() == 1);
+                check_public_request_on_contact(fixture_ptr_->fcvc
+                        , Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
+                        , Fred::PublicRequest::PRS_NEW);
 
                 //check invalidated cci request
                 Database::Result res_invalid_cci_request = conn.exec_params(
@@ -631,30 +580,14 @@ public:
                 Database::Connection conn = Database::Manager::acquire();
 
                 //check cci request answered (1)
-                Database::Result res_cci_request = conn.exec_params(
-                    "select pr.status from object_registry obr "
-                    " join public_request_objects_map prom on obr.id = prom.object_id "
-                    " join public_request_auth pra on prom.request_id = pra.id "
-                    " join public_request pr on pr.id=pra.id "
-                    " join enum_public_request_status eprs on eprs.id = pr.status "
-                    " join enum_public_request_type eprt on pr.request_type = eprt.id "
-                    " where obr.name = $1::text and eprt.name = $2::text and eprs.name='answered' "
-                    , Database::query_param_list(fixture_ptr_->fcvc.handle)
-                        (Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
-                BOOST_CHECK(res_cci_request.size() == 1);
+                check_public_request_on_contact(fixture_ptr_->fcvc
+                        , Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
+                        , Fred::PublicRequest::PRS_ANSWERED);
 
-                //check ci request new (0)
-                Database::Result res_ci_request = conn.exec_params(
-                    "select pr.status from object_registry obr "
-                    " join public_request_objects_map prom on obr.id = prom.object_id "
-                    " join public_request_auth pra on prom.request_id = pra.id "
-                    " join public_request pr on pr.id=pra.id "
-                    " join enum_public_request_status eprs on eprs.id = pr.status "
-                    " join enum_public_request_type eprt on pr.request_type = eprt.id "
-                    " where obr.name = $1::text and eprt.name = $2::text and eprs.name='new' "
-                    , Database::query_param_list(fixture_ptr_->fcvc.handle)
-                        (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
-                BOOST_CHECK(res_ci_request.size() == 1);
+                //check ci request new 0
+                check_public_request_on_contact(fixture_ptr_->fcvc
+                        , Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION
+                        , Fred::PublicRequest::PRS_NEW);
 
                 //check pin3 letter
                 Database::Result res_ci_letter = conn.exec_params(
@@ -725,17 +658,9 @@ public:
                 Database::Connection conn = Database::Manager::acquire();
 
                 //check ci request answered (1)
-                Database::Result res_ci_request = conn.exec_params(
-                    "select pr.status from object_registry obr "
-                    " join public_request_objects_map prom on obr.id = prom.object_id "
-                    " join public_request_auth pra on prom.request_id = pra.id "
-                    " join public_request pr on pr.id=pra.id "
-                    " join enum_public_request_status eprs on eprs.id = pr.status "
-                    " join enum_public_request_type eprt on pr.request_type = eprt.id "
-                    " where obr.name = $1::text and eprt.name = $2::text and eprs.name='answered' "
-                    , Database::query_param_list(fixture_ptr_->fcvc.handle)
-                        (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
-                BOOST_CHECK(res_ci_request.size() == 1);
+                check_public_request_on_contact(fixture_ptr_->fcvc
+                        , Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION
+                        , Fred::PublicRequest::PRS_ANSWERED);
 
                 //check identified contact state
                 BOOST_CHECK(Fred::object_has_state(
@@ -746,8 +671,6 @@ public:
                     ,Database::query_param_list(fixture_ptr_->fcvc.handle))[0][0]
                  ,Fred::ObjectState::IDENTIFIED_CONTACT));
             }
-
-            //tx.commit();
         }
         catch(const std::exception& ex)
         {

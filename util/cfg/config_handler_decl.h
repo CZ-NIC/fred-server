@@ -24,7 +24,7 @@
 
 #ifndef CONFIG_HANDLER_DECL_H_
 #define CONFIG_HANDLER_DECL_H_
-
+#include <cstdio>
 #include <iostream>
 #include <exception>
 #include <string>
@@ -68,7 +68,9 @@ public:
         if(it != hpm_.end())//if found
             return dynamic_cast<T*>(it->second.get());
         //not found
-        throw std::runtime_error("error: handler not found");
+        char errmsg[256]={'\0'};
+        snprintf(errmsg, 255, "error: handler %s not found", typeid(T).name());
+        throw std::runtime_error(errmsg);
     }
     friend class std::auto_ptr<CfgArgs>;
 protected:
@@ -156,7 +158,9 @@ public:
         if(it != hpm_.end())//if found
             return dynamic_cast<T*>(it->second.get());
         //not found
-        throw std::runtime_error("error: handler not found");
+        char errmsg[256]={'\0'};
+        snprintf(errmsg, 255, "error: handler %s not found", typeid(T).name());
+        throw std::runtime_error(errmsg);
     }
     friend class std::auto_ptr<CfgArgGroups>;
 protected:
