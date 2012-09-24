@@ -40,11 +40,14 @@ public:
     void save()
     {
         cond_contact_identification_impl.pre_save_check();
-        /* if there is another open CCI close it */
-        cancel_public_request(
-            this->getObject(0).id,
-            PRT_CONTACT_CONDITIONAL_IDENTIFICATION ,
-            this->getRequestId());
+        if (!this->getId())
+        {
+            /* if there is another open CCI close it */
+            cancel_public_request(
+                this->getObject(0).id,
+                PRT_CONTACT_CONDITIONAL_IDENTIFICATION ,
+                this->getRequestId());
+        }
         PublicRequestAuthImpl::save();
     }
 
@@ -121,11 +124,14 @@ public:
     void save()
     {
         contact_identification_impl.pre_save_check();
-        /* if there is another open CI close it */
-        cancel_public_request(
-                this->getObject(0).id,
-                Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION,
-            this->getRequestId());
+        if (!this->getId())
+        {
+            /* if there is another open CI close it */
+            cancel_public_request(
+                    this->getObject(0).id,
+                    Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION,
+                this->getRequestId());
+        }
         PublicRequestAuthImpl::save();
     }
 
