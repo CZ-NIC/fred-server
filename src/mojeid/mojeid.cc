@@ -1132,11 +1132,11 @@ namespace Registry
                     ContactStateData csd;
                     csd.contact_id = static_cast<unsigned long long>(
                             rstates[i][0]);
-                    csd.valid_from = rstates[0][1].isnull()
+                    csd.valid_from = rstates[i][1].isnull()
                             ? boost::gregorian::date()
                             : boost::gregorian::from_string(
-                                static_cast<std::string>(rstates[0][1]));
-                    csd.state_name = static_cast<std::string>(rstates[0][2]);
+                                static_cast<std::string>(rstates[i][1]));
+                    csd.state_name = static_cast<std::string>(rstates[i][2]);
 
                     csdv.push_back(csd);
                 }//for
