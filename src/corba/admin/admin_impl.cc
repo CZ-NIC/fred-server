@@ -640,6 +640,10 @@ bool ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
         TRACE(boost::format("[CALL] ccReg_Admin_i::setInZoneStatus(%1%)")
                 % domainId);
 
+        /* get actual time before transaction otherwise it would be in the future for the transaction */
+        boost::posix_time::ptime whatisthetime = microsec_clock::universal_time();
+        boost::gregorian::date_duration dd7 (7);
+
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
@@ -652,9 +656,6 @@ bool ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
         }
 
         std::string  object_name (dname_res[0][0]);
-
-        boost::posix_time::ptime whatisthetime = microsec_clock::universal_time();
-        boost::gregorian::date_duration dd7 (7);
 
         Fred::createObjectStateRequestName(
             object_name, 3 //object_type domain
