@@ -1420,6 +1420,14 @@ namespace Registry
                             _contact_id, Fred::ObjectState::IDENTIFIED_CONTACT);
                 }
 
+                //lock public requests
+                Fred::PublicRequest::lock_public_request_lock(
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,_contact_id);
+                Fred::PublicRequest::lock_public_request_lock(
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION,_contact_id);
+                Fred::PublicRequest::lock_public_request_lock(
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION,_contact_id);
+
                 conn.exec_params("UPDATE public_request pr SET status=2 "
                     " , resolve_time = CURRENT_TIMESTAMP "
                     " FROM public_request_objects_map prom WHERE (prom.request_id = pr.id) "
