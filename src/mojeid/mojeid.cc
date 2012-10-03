@@ -203,6 +203,12 @@ namespace Registry
                 return cid;
 
             }//try
+            catch (Fred::Contact::Verification::DataValidationError &dvex)
+            {
+                std::exception &_ex = dvex;
+                LOGGER(PACKAGE).notice(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
