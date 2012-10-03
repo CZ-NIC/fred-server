@@ -761,6 +761,11 @@ namespace Registry
                 trans.commit();
                 return ret;
             }
+            catch (Fred::NOT_FOUND &)
+            {
+                LOGGER(PACKAGE).notice("request failed - object not found");
+                throw;
+            }
             catch (std::exception &_ex) {
                 LOGGER(PACKAGE).error(boost::format("request failed (%1%)")
                     % _ex.what());
