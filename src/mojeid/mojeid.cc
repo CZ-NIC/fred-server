@@ -319,6 +319,12 @@ namespace Registry
                 return cinfo.id;
 
             }//try
+            catch(Registry::MojeID::OBJECT_NOT_EXISTS& one_ex)
+            {
+                std::exception & _ex = one_ex;
+                LOGGER(PACKAGE).notice(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
