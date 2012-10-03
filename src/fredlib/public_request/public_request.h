@@ -181,7 +181,7 @@ typedef boost::shared_ptr<PublicRequest> PublicRequestPtr;
 class PublicRequestAuth : virtual public PublicRequest
 {
 public:
-    struct NotAuthenticated : private std::exception { };
+    struct NotAuthenticated : std::exception { };
 
     virtual ~PublicRequestAuth() { }
 
