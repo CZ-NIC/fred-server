@@ -74,6 +74,10 @@ bool queryBlockRequest(
         bool unblock)
 {
     Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+
+    //lock public_request
+    if (blockRequestID) lock_public_request_lock(blockRequestID);
 
     std::string states;//comma separated state ids
     // number of states in csv list of states
@@ -85,6 +89,9 @@ bool queryBlockRequest(
         Database::Result stid = conn.exec_params(
             "SELECT id FROM enum_object_states WHERE name = $1::text"
             , Database::query_param_list(*it));
+
+        //lock state
+        lock_object_state_request_lock( *it, objectId);
 
         if(stid.size() == 1)
         {
@@ -119,7 +126,7 @@ bool queryBlockRequest(
 
   for (Database::Result::Iterator it = result.begin(); it != result.end(); ++it) {
     Database::Row::Iterator col = (*it).begin();
-
+    Database::Transaction tx_for_state(conn);
     if (!(bool)*col)
       return false;
 
@@ -142,7 +149,9 @@ bool queryBlockRequest(
                   << "SET canceled=CURRENT_TIMESTAMP "
                   << "WHERE id= " << stateRequestID;
     conn.exec(sql2);
+    tx_for_state.commit();
   }
+  tx.commit();
   return true;
 }
 
