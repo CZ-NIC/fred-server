@@ -72,7 +72,7 @@ public:
              */
             exec("set constraint_exclusion=on");
         } catch (Database::Exception &ex) {
-            logger_error(boost::format("couldn't set constraint exclusion : %2%") % ex.what());
+            logger_error(boost::format("couldn't set constraint exclusion : %1%") % ex.what());
         }
         tx = new Database::Transaction(*this);
     }
