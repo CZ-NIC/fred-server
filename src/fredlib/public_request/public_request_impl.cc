@@ -126,7 +126,6 @@ bool queryBlockRequest(
 
   for (Database::Result::Iterator it = result.begin(); it != result.end(); ++it) {
     Database::Row::Iterator col = (*it).begin();
-    Database::Transaction tx_for_state(conn);
     if (!(bool)*col)
       return false;
 
@@ -149,7 +148,6 @@ bool queryBlockRequest(
                   << "SET canceled=CURRENT_TIMESTAMP "
                   << "WHERE id= " << stateRequestID;
     conn.exec(sql2);
-    tx_for_state.commit();
   }
   tx.commit();
   return true;
