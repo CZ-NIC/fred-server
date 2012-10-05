@@ -705,9 +705,6 @@ namespace Registry
                  catch (Fred::RequestNotFound &_ex) {
                      LOGGER(PACKAGE).info(_ex.what());
                  }
-                 catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&_ex){
-                     LOGGER(PACKAGE).notice(_ex.what());
-                 }
                  catch (std::exception &_ex) {
                      LOGGER(PACKAGE).error(_ex.what());
                  }
@@ -722,6 +719,13 @@ namespace Registry
                 errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::INVALID;
                 throw Fred::Contact::Verification::DataValidationError(errors);
             }
+            catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&_ex){
+                LOGGER(PACKAGE).notice(_ex.what());
+            }
+            catch (Fred::PublicRequest::AlreadyProcessed&_ex){
+                LOGGER(PACKAGE).notice(_ex.what());
+            }
+
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
