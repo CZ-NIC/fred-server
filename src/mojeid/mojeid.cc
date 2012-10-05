@@ -705,6 +705,9 @@ namespace Registry
                  catch (Fred::RequestNotFound &_ex) {
                      LOGGER(PACKAGE).info(_ex.what());
                  }
+                 catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&_ex){
+                     LOGGER(PACKAGE).notice(_ex.what());
+                 }
                  catch (std::exception &_ex) {
                      LOGGER(PACKAGE).error(_ex.what());
                  }
