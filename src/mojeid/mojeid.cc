@@ -203,10 +203,9 @@ namespace Registry
                 return cid;
 
             }//try
-            catch (Fred::Contact::Verification::DataValidationError &dvex)
+            catch (Fred::Contact::Verification::DataValidationError &_ex)
             {
-                std::exception &_ex = dvex;
-                LOGGER(PACKAGE).notice(_ex.what());
+                LOGGER(PACKAGE).info(_ex.what());
                 throw;
             }
             catch (std::exception &_ex)
@@ -319,10 +318,9 @@ namespace Registry
                 return cinfo.id;
 
             }//try
-            catch(Registry::MojeID::OBJECT_NOT_EXISTS& one_ex)
+            catch(Registry::MojeID::OBJECT_NOT_EXISTS& _ex)
             {
-                std::exception & _ex = one_ex;
-                LOGGER(PACKAGE).notice(_ex.what());
+                LOGGER(PACKAGE).info(_ex.what());
                 throw;
             }
             catch (std::exception &_ex)
@@ -720,12 +718,13 @@ namespace Registry
                 throw Fred::Contact::Verification::DataValidationError(errors);
             }
             catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&_ex){
-                LOGGER(PACKAGE).notice(_ex.what());
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
             }
             catch (Fred::PublicRequest::AlreadyProcessed&_ex){
-                LOGGER(PACKAGE).notice(_ex.what());
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
             }
-
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
@@ -770,7 +769,7 @@ namespace Registry
             }
             catch (Fred::NOT_FOUND &)
             {
-                LOGGER(PACKAGE).notice("request failed - object not found");
+                LOGGER(PACKAGE).info("request failed - object not found");
                 throw;
             }
             catch (std::exception &_ex) {
