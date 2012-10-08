@@ -203,6 +203,11 @@ namespace Registry
                 return cid;
 
             }//try
+            catch (Fred::Contact::Verification::DataValidationError &_ex)
+            {
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
@@ -313,6 +318,11 @@ namespace Registry
                 return cinfo.id;
 
             }//try
+            catch(Registry::MojeID::OBJECT_NOT_EXISTS& _ex)
+            {
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
@@ -707,6 +717,14 @@ namespace Registry
                 errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::INVALID;
                 throw Fred::Contact::Verification::DataValidationError(errors);
             }
+            catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&_ex){
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
+            }
+            catch (Fred::PublicRequest::AlreadyProcessed&_ex){
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
@@ -748,6 +766,11 @@ namespace Registry
                         cid, request_type_list);
                 trans.commit();
                 return ret;
+            }
+            catch (Fred::NOT_FOUND &)
+            {
+                LOGGER(PACKAGE).info("request failed - object not found");
+                throw;
             }
             catch (std::exception &_ex) {
                 LOGGER(PACKAGE).error(boost::format("request failed (%1%)")
