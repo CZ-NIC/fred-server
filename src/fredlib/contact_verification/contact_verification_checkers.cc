@@ -48,13 +48,7 @@ bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
-    if (boost::algorithm::trim_copy(
-                static_cast<std::string>(_data.telephone)).length() > 0
-                && boost::algorithm::trim_copy(
-                        static_cast<std::string>(_data.telephone)).length() != 14) {
-        result = false;
-    }
-    else if (generic_checker_phone_format(
+    if (generic_checker_phone_format(
                 static_cast<std::string>(_data.telephone),
                 PHONE_CZ_SK_PATTERN) == false) {
         result = false;
