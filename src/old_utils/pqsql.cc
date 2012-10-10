@@ -153,10 +153,10 @@ const char * PQ::GetFieldValue(
   if (row < nRows && col < nCols) {
 
     if (PQgetisnull(result, row, col) ) {
-      LOG( SQL_LOG , "RETURN [%d,%d] NULL" , row, col );
+      //LOG( SQL_LOG , "RETURN [%d,%d] NULL" , row, col );
       return "";
     } else {
-      LOG( SQL_LOG , "RETURN [%d,%d] , %s" , row , col , PQgetvalue(result, row, col ) );
+      //LOG( SQL_LOG , "RETURN [%d,%d] , %s" , row , col , PQgetvalue(result, row, col ) );
       return PQgetvalue(result, row, col);
     }
   } else {

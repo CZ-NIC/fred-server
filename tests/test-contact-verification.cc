@@ -65,6 +65,7 @@
 #include "fredlib/object_states.h"
 #include "contact_verification/contact_verification_impl.h"
 #include "checks.h"
+#include "contact_verification/contact_verification_checkers.h"
 
 //test-contact-verification.cc
 
@@ -78,6 +79,171 @@ static bool check_std_exception(std::exception const & ex)
 {
     std::string ex_msg(ex.what());
     return (ex_msg.length() != 0);
+}
+
+
+BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
+{
+    const std::string CZ_CODE = "+420.";
+    const std::string SK_CODE = "+421.";
+
+    /* allowed prefixes */
+    {
+        std::vector<std::string> allowed_cz = boost::assign::list_of
+            ("601")("602")("603")("604")("605")("606")("607")("608")("609")
+            ("910")("911")("912")("913")("914")("915")("916")("917")("918")("919");
+        /* generate 7xx prefixes */
+        for (unsigned int i = 0; i < 10; ++i) {
+            for (unsigned int j = 0; j < 10; ++j) {
+                allowed_cz.push_back(str(boost::format("7%1%%2%") % i % j));
+            }
+        }
+        for (std::vector<std::string>::iterator it = allowed_cz.begin();
+                it != allowed_cz.end(); ++it)
+        {
+            *it = std::string(CZ_CODE) + (*it);
+        }
+
+        std::vector<std::string> allowed_sk = boost::assign::list_of
+            ("901")("902")("903")("904")("905")("906")("907")("908")("909")
+            ("910")("911")("912")("913")("914")("915")("916")("917")("918")("919")
+            ("940")("941")("942")("943")("944")("945")("946")("947")("948")("949")
+            ("950")("951")("952")("953")("954")("955")("956")("957")("958")("959");
+        for (std::vector<std::string>::iterator it = allowed_sk.begin();
+                it != allowed_sk.end(); ++it)
+        {
+            *it = std::string(SK_CODE) + (*it);
+        }
+
+        std::vector<std::string> allowed;
+        allowed.insert(allowed.end(), allowed_cz.begin(), allowed_cz.end());
+        allowed.insert(allowed.end(), allowed_sk.begin(), allowed_sk.end());
+
+        Fred::Contact::Verification::Contact c;
+        for (std::vector<std::string>::const_iterator it = allowed.begin();
+                it != allowed.end(); ++it)
+        {
+            Fred::Contact::Verification::FieldErrorMap errors;
+            c.telephone = (*it) + std::string("000000");
+            BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+            bool check_result = contact_checker_phone_format(c, errors);
+            BOOST_CHECK(check_result == true && errors.empty());
+        }
+    }
+
+    /* some not allowed */
+    {
+        std::vector<std::string> not_allowed_cz = boost::assign::list_of
+            ("450")("599")("600")("620")("699")("800")("801")
+            ("900")("901")("902")("909")("920")("955");
+        for (std::vector<std::string>::iterator it = not_allowed_cz.begin();
+                it != not_allowed_cz.end(); ++it)
+        {
+            *it = std::string(CZ_CODE) + (*it);
+        }
+
+        std::vector<std::string> not_allowed_sk = boost::assign::list_of
+            ("601")("720")("900")("920")("925")("930")("939")("960")("990");
+        for (std::vector<std::string>::iterator it = not_allowed_sk.begin();
+                it != not_allowed_sk.end(); ++it)
+        {
+            *it = std::string(SK_CODE) + (*it);
+        }
+
+        std::vector<std::string> not_allowed;
+        not_allowed.insert(not_allowed.end(), not_allowed_cz.begin(), not_allowed_cz.end());
+        not_allowed.insert(not_allowed.end(), not_allowed_sk.begin(), not_allowed_sk.end());
+
+
+        Fred::Contact::Verification::Contact c;
+        for (std::vector<std::string>::const_iterator it = not_allowed.begin();
+                it != not_allowed.end(); ++it)
+        {
+            Fred::Contact::Verification::FieldErrorMap errors;
+            c.telephone = (*it) + std::string("000000");
+            BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+            bool check_result = contact_checker_phone_format(c, errors);
+            BOOST_CHECK(check_result == false
+                && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
+        }
+
+    }
+
+    /* too long */
+    {
+        Fred::Contact::Verification::Contact c;
+        Fred::Contact::Verification::FieldErrorMap errors;
+
+        /* CZ_CODE + 6010000000 */
+        c.telephone = CZ_CODE + "6010000000";
+        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        bool check_result = contact_checker_phone_format(c, errors);
+        BOOST_CHECK(check_result == false
+                && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
+    }
+
+    /* too short */
+    {
+        Fred::Contact::Verification::Contact c;
+        Fred::Contact::Verification::FieldErrorMap errors;
+
+        /* CZ_CODE + 60100000 */
+
+        c.telephone = CZ_CODE + "60100000";
+        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        bool check_result = contact_checker_phone_format(c, errors);
+        BOOST_CHECK(check_result == false
+                && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
+    }
+
+    /* invalid character */
+    {
+        Fred::Contact::Verification::Contact c;
+        Fred::Contact::Verification::FieldErrorMap errors;
+
+        /* CZ_CODE + 60100000a */
+        c.telephone = CZ_CODE + "60100000a";
+        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        bool check_result = contact_checker_phone_format(c, errors);
+        BOOST_CHECK(check_result == false
+                && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
+    }
+
+    /* missing + sign */
+    {
+        Fred::Contact::Verification::Contact c;
+        Fred::Contact::Verification::FieldErrorMap errors;
+
+        std::string phone(CZ_CODE + "601000000");
+        c.telephone = phone.substr(1, phone.length());
+        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        bool check_result = contact_checker_phone_format(c, errors);
+        BOOST_CHECK(check_result == false
+                && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
+    }
+
+    /* not allowed country code */
+    {
+        Fred::Contact::Verification::Contact c;
+        Fred::Contact::Verification::FieldErrorMap errors;
+
+        c.telephone = std::string("+423.601000000");
+        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        bool check_result = contact_checker_phone_format(c, errors);
+        BOOST_CHECK(check_result == false
+                && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
+    }
+
+    /* empty telephone should pass - there is different check when phone is required */
+    {
+        Fred::Contact::Verification::Contact c;
+        Fred::Contact::Verification::FieldErrorMap errors;
+
+        c.telephone = std::string("");
+        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        bool check_result = contact_checker_phone_format(c, errors);
+        BOOST_CHECK(check_result == true && errors.empty());
+    }
 }
 
 
