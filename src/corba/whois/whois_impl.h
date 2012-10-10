@@ -14,7 +14,7 @@ class ccReg_Whois_i : public POA_ccReg::Whois,
 {
 private:
   std::string m_connection_string;
-  std::string server_name_;
+  const std::string server_name_;
   bool registry_restricted_handles_;
   DBSharedPtr  db_disconnect_guard_;
   std::auto_ptr<Fred::Manager> registry_manager_;
@@ -31,6 +31,8 @@ public:
   ccReg_Whois_i(const std::string& database, const std::string& _server_name
           , bool _registry_restricted_handles);
   virtual ~ccReg_Whois_i();
+
+  const std::string& get_server_name() const;
 
   ccReg::WhoisRegistrar* getRegistrarByHandle(const char* handle);
   ccReg::WhoisRegistrarList* getRegistrarsByZone(const char *zone);

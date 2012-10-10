@@ -29,8 +29,15 @@
 
 #include "log/logger.h"
 #include "log/context.h"
+#include "util/random.h"
 
 #include "corba/connection_releaser.h"
+
+
+static const std::string create_ctx_name(const std::string &_name)
+{
+    return str(boost::format("%1%-<%2%>")% _name % Random::integer(0, 10000));
+}
 
 
 ccReg_Whois_i::ccReg_Whois_i(const std::string& _database
@@ -57,6 +64,12 @@ ccReg_Whois_i::ccReg_Whois_i(const std::string& _database
 ccReg_Whois_i::~ccReg_Whois_i()
 {
   TRACE("[CALL] ccReg_Whois_i::~ccReg_Whois_i()");
+}
+
+
+const std::string& ccReg_Whois_i::get_server_name() const
+{
+    return server_name_;
 }
 
 void ccReg_Whois_i::fillRegistrar(ccReg::WhoisRegistrar& creg
@@ -271,14 +284,15 @@ void ccReg_Whois_i::fillDomain(ccReg::DomainDetail* cd,
 
 ccReg::WhoisRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
 {
-    Logging::Context ctx(server_name_);
+    Logging::Context ctx_server(create_ctx_name(get_server_name()));
+    Logging::Context ctx("get-registrar-by-handle");
     ConnectionReleaser releaser;
 
     try
     {
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
-            .message( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
+            .info(boost::format("handle='%1%'") % handle);
 
         if (!handle || !*handle) throw ccReg::Whois::ObjectNotFound();
 
@@ -348,7 +362,8 @@ ccReg::WhoisRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
 
 ccReg::WhoisRegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
 {
-  Logging::Context ctx(server_name_);
+  Logging::Context ctx_server(create_ctx_name(get_server_name()));
+  Logging::Context ctx("get-registrar-by-zone");
   ConnectionReleaser releaser;
 
   try
@@ -418,15 +433,15 @@ ccReg::WhoisRegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
 
 ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
 {
-    Logging::Context ctx(server_name_);
+    Logging::Context ctx_server(create_ctx_name(get_server_name()));
+    Logging::Context ctx("get-contact-by-handle");
     ConnectionReleaser releaser;
 
     try
     {
         Logging::Manager::instance_ref()
-        .get(server_name_.c_str())
-        .trace(boost::format(
-                "[CALL] ccReg_Whois_i::getContactByHandle('%1%')") % handle);
+            .get(server_name_.c_str())
+            .info(boost::format("handle='%1%')") % handle);
 
         DBSharedPtr ldb_disconnect_guard;
         Database::Connection conn = Database::Manager::acquire();
@@ -486,15 +501,15 @@ ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
 
 ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
 {
-    Logging::Context ctx(server_name_);
+    Logging::Context ctx_server(create_ctx_name(get_server_name()));
+    Logging::Context ctx("get-nsset-by-handle");
     ConnectionReleaser releaser;
 
     try
     {
         Logging::Manager::instance_ref()
                 .get(server_name_.c_str())
-                .trace(boost::format(
-                "[CALL] ccReg_Whois_i::getNSSetByHandle('%1%')") % handle);
+                .info(boost::format("handle='%1%'") % handle);
 
         if (!handle || !*handle)
         throw ccReg::Whois::ObjectNotFound();
@@ -553,15 +568,15 @@ ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
 
 ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
 {
-    Logging::Context ctx(server_name_);
+    Logging::Context ctx_server(create_ctx_name(get_server_name()));
+    Logging::Context ctx("get-keyset-by-handle");
     ConnectionReleaser releaser;
 
     try
     {
         Logging::Manager::instance_ref()
                 .get(server_name_.c_str())
-                .trace(boost::format(
-                "[CALL] ccReg_Whois_i::getKeySetByHandle('%1%')") % handle);
+                .info(boost::format("handle='%1%'") % handle);
 
         if (!handle || !*handle)
             throw ccReg::Whois::ObjectNotFound();
@@ -627,15 +642,15 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
                                                             ccReg::DomainInvKeyType type,
                                                             CORBA::Long limit)
 {
-    Logging::Context ctx(server_name_);
+    Logging::Context ctx_server(create_ctx_name(get_server_name()));
+    Logging::Context ctx("get-domains-by-inverse-key");
     ConnectionReleaser releaser;
 
     try
     {
         Logging::Manager::instance_ref()
                 .get(server_name_.c_str())
-                .trace(boost::format("[CALL] ccReg_Whois_i::getDomainsByInverseKey('%1%', %2%, %3%)")
-          % key % type % limit);
+                .info(boost::format("key='%1%' type=%2% limit=%3%") % key % type % limit);
 
         DBSharedPtr ldb_disconnect_guard;
         Database::Connection conn = Database::Manager::acquire();
@@ -720,11 +735,16 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
                                                           ccReg::NSSetInvKeyType type,
                                                           CORBA::Long limit)
 {
-    Logging::Context ctx(server_name_);
+    Logging::Context ctx_server(create_ctx_name(get_server_name()));
+    Logging::Context ctx("get-nsset-by-inverse-key");
     ConnectionReleaser releaser;
 
     try
     {
+        Logging::Manager::instance_ref()
+                .get(server_name_.c_str())
+                .info(boost::format("key='%1%' type=%2% limit=%3%") % key % type % limit);
+
         DBSharedPtr ldb_disconnect_guard;
         Database::Connection conn = Database::Manager::acquire();
         ldb_disconnect_guard.reset(new DB(conn));
@@ -778,11 +798,16 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
         ccReg::KeySetInvKeyType type,
         CORBA::Long limit)
 {
-    Logging::Context ctx(server_name_);
+    Logging::Context ctx_server(create_ctx_name(get_server_name()));
+    Logging::Context ctx("get-keyset-by-inverse-key");
     ConnectionReleaser releaser;
 
     try
     {
+        Logging::Manager::instance_ref()
+                .get(server_name_.c_str())
+                .info(boost::format("key='%1%' type=%2% limit=%3%") % key % type % limit);
+
         DBSharedPtr ldb_disconnect_guard;
         Database::Connection conn = Database::Manager::acquire();
         ldb_disconnect_guard.reset(new DB(conn));
@@ -833,15 +858,15 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
 
 ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
 {
-    Logging::Context ctx(server_name_);
+    Logging::Context ctx_server(create_ctx_name(get_server_name()));
+    Logging::Context ctx("get-domain-by-fqdn");
     ConnectionReleaser releaser;
 
     try
     {
         Logging::Manager::instance_ref()
                 .get(server_name_.c_str())
-                .trace(boost::format(
-                "[CALL] ccReg_Whois_i::getDomainByFQDN('%1%')") % fqdn);
+                .info(boost::format("fqdn='%1%'") % fqdn);
 
         if (!fqdn || !*fqdn)
         throw ccReg::Whois::ObjectNotFound();
@@ -923,7 +948,8 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
 
 Registry::ObjectStatusDescSeq* ccReg_Whois_i::getDomainStatusDescList(const char *lang)
 {
-    Logging::Context ctx(server_name_);
+    Logging::Context ctx_server(create_ctx_name(get_server_name()));
+    Logging::Context ctx("get-domain-status-desc-list");
     ConnectionReleaser releaser;
 
     try
@@ -974,7 +1000,8 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getDomainStatusDescList(const char
 
 Registry::ObjectStatusDescSeq* ccReg_Whois_i::getContactStatusDescList(const char *lang)
 {
-  Logging::Context ctx(server_name_);
+  Logging::Context ctx_server(create_ctx_name(get_server_name()));
+  Logging::Context ctx("get-contact-status-desc-list");
   ConnectionReleaser releaser;
     try
     {
@@ -1023,7 +1050,8 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getContactStatusDescList(const cha
 
 Registry::ObjectStatusDescSeq* ccReg_Whois_i::getNSSetStatusDescList(const char *lang)
 {
-  Logging::Context ctx(server_name_);
+  Logging::Context ctx_server(create_ctx_name(get_server_name()));
+  Logging::Context ctx("get-nsset-status-desc-list");
   ConnectionReleaser releaser;
   try
   {
@@ -1072,7 +1100,8 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getNSSetStatusDescList(const char 
 
 Registry::ObjectStatusDescSeq* ccReg_Whois_i::getKeySetStatusDescList(const char *lang)
 {
-  Logging::Context ctx(server_name_);
+  Logging::Context ctx_server(create_ctx_name(get_server_name()));
+  Logging::Context ctx("get-keyset-status-desc-list");
   ConnectionReleaser releaser;
     try
     {
