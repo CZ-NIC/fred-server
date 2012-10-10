@@ -13,7 +13,7 @@ namespace Verification {
 
 const boost::regex USERNAME_PATTERN("^[a-z0-9](-?[a-z0-9])*$");
 const boost::regex PHONE_PATTERN("^\\+[0-9]{1,3}\\.[0-9]{1,14}$");
-const boost::regex PHONE_CZ_SK_PATTERN("^\\+42(0\\.(60[1-9]|7[2-9]|91)|1\\.9(0[1-9]|[145]))[0-9]+$");
+const boost::regex PHONE_CZ_SK_PATTERN("^\\+42(0\\.(60[1-9]|7\\d\\d|91\\d)|1\\.9(0[1-9]|[145]\\d))[0-9]{6}$");
 const boost::regex EMAIL_PATTERN("^[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Za-z]+)*"
                                  "@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,6}\\.?$");
 const boost::regex POSTALCODE_CZ_PATTERN("^[0-9]{3} ?[0-9]{2}$");
