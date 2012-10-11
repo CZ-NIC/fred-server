@@ -122,31 +122,34 @@ bool cancel_object_state(
         lock_object_state_request_lock(_state_name,_object_id);
 
         Database::Result rid_result = conn.exec_params(
-                "SELECT osr.id FROM object_state_request osr"
+                "UPDATE object_state_request SET canceled = CURRENT_TIMESTAMP WHERE id IN ("
+                " SELECT osr.id FROM object_state_request osr"
                 " JOIN enum_object_states eos ON eos.id = osr.state_id"
                 " WHERE eos.name = $1::text AND (osr.valid_to is NULL OR osr.valid_to > CURRENT_TIMESTAMP)"
-                " AND osr.canceled is NULL AND osr.object_id = $2::integer",
+                " AND osr.valid_from <= CURRENT_TIMESTAMP "
+                " AND osr.canceled is NULL AND osr.object_id = $2::integer ) RETURNING id",
                 Database::query_param_list
                     (_state_name)
                     (_object_id));
-        /* cancel this status TODO: or cancel all and dont throw??? */
-        if (rid_result.size() == 1) {
-            conn.exec_params("UPDATE object_state_request"
-                    " SET canceled = CURRENT_TIMESTAMP WHERE id = $1::integer",
-                    Database::query_param_list(
-                            static_cast<unsigned long long>(rid_result[0][0])));
-            // conn.exec_params("SELECT update_object_states($1::integer)",
-            //         Database::query_param_list(_object_id));
-            tx.commit();
-            return true;
+
+        std::string rid;
+        if (rid_result.size() == 0) {
+            throw std::runtime_error("cancel_object_state: object state request not found for object state");
         }
-        throw std::runtime_error(str(boost::format(
-                        "too many opened states (object_id=%1%, state=%2%")
-                        % _object_id % _state_name));
+        else {
+            rid = "cancel_object_state: canceled request id:";
+            for (unsigned i = 0; i < rid_result.size(); ++i) {
+                rid += " " +std::string(rid_result[i][0]);
+            }
+        }
+
+        tx.commit();
+
+        Logging::Manager::instance_ref().get(PACKAGE).debug(rid);
+        return true;
     }
-    else {
-        return false;
-    }
+
+    return false;
 }
 
 void cancel_multiple_object_states(
