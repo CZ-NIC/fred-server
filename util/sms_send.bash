@@ -18,6 +18,16 @@ if [ -z "$LOGFILE" ]; then
     LOGFILE=/tmp/fred_sms_tomato.log
 fi
 
+BLACKLIST=/etc/fred/sms_send_blacklist.conf
+if [ -r $BLACKLIST ]; then
+    if [ "$(grep $PHONE_NUMBER $BLACKLIST)"x == "$PHONE_NUMBER"x ]; then
+        echo "-=-=-=-=-=-=-=-= $(date) =-=-=-=-=-=-=-=-" >> $LOGFILE
+        echo "$PHONE_NUMBER found in blacklist - not sending" >> $LOGFILE
+        echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" >> $LOGFILE
+        exit 2;
+    fi
+fi
+
 echo "-=-=-=-=-=-=-=-= $(date) =-=-=-=-=-=-=-=-" >> $LOGFILE
 # prepare request data
 TEXTMESSAGEAUTHSUBSTR=${TEXTMESSAGE:0:31}
