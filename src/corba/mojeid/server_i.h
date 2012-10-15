@@ -60,11 +60,6 @@ namespace Registry
                   , ::CORBA::ULongLong request_id
                   , ::CORBA::String_out ident);
 
-          void contactUnidentifyPrepare(
-                  ::CORBA::ULongLong contact_id
-                   , const char* trans_id
-                   , ::CORBA::ULongLong request_id);
-
           void contactUpdatePrepare(
                   const Registry::MojeID::Contact& c
                   , const char* trans_id
