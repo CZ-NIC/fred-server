@@ -137,33 +137,6 @@ namespace Registry
             }
         }//contactTransferPrepare
 
-        void Server_i::contactUnidentifyPrepare(
-                ::CORBA::ULongLong _contact_id
-                 , const char* _trans_id
-                 , ::CORBA::ULongLong _request_id)
-        {
-            try
-            {
-                pimpl_->contactUnidentifyPrepare(_contact_id
-                        , _trans_id, _request_id);
-
-            }
-            catch (Registry::MojeID::OBJECT_NOT_EXISTS&)
-            {
-                throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
-            }
-            catch (std::exception &_ex)
-            {
-                throw Registry::MojeID::Server
-                    ::INTERNAL_SERVER_ERROR(_ex.what());
-            }
-            catch (...)
-            {
-                throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
-            }
-        }//contactUnidentifyPrepare
-
-
         void Server_i::contactUpdatePrepare(
                 const Registry::MojeID::Contact& _contact
                 , const char* _trans_id
