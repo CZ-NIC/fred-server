@@ -115,11 +115,6 @@ namespace Registry
                 , unsigned long long _request_id
                 , std::string& _identification);
 
-            void contactUnidentifyPrepare(
-                unsigned long long _contact_id
-                , const char* _trans_id
-                , unsigned long long _request_id);
-
             void contactUpdatePrepare(
                 const std::string & _contact_username
                 , Fred::Contact::Verification::Contact& _contact
