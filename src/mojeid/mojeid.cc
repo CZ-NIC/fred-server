@@ -725,6 +725,11 @@ namespace Registry
                 LOGGER(PACKAGE).info(_ex.what());
                 throw;
             }
+            catch (Fred::NOT_FOUND &) {
+                LOGGER(PACKAGE).info("identification not found");
+                throw;
+            }
+
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
