@@ -680,7 +680,7 @@ public:
       Zone::DomainName name;
       zm->parseDomainName(hostname,name,allowIDN);
       // if glue is specified, hostname must be under one of managed zones 
-      if (glue && !zm->findApplicableZone(hostname)) return 1;
+      if (glue && !zm->findApplicableZone(hostname)) return 2;
       // if glue is not specified, hostname must be under any valid zone
       if (!glue && !zm->checkTLD(name)) return 1;
       return 0;
