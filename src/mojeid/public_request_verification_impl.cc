@@ -332,7 +332,7 @@ public:
         contact_verification_passwd_.sendLetterPassword("pin3"
                 , Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3
                 , "mojeid_pin3"
-                , "registered_letter"
+                , "letter"
                 );
     }
 

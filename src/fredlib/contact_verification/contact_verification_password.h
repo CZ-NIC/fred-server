@@ -47,7 +47,7 @@ public:
     void sendLetterPassword( const std::string& custom_tag //tag in template xml params: "pin2",  "pin3"
             , Fred::Document::GenerationType doc_type //type for document generator
             , const std::string& message_type //for message_archive: "contact_verification_pin2", "contact_verification_pin3"
-            , const std::string& comm_type //for message_archive: pin2 "letter" or pin3 "registered_letter"
+            , const std::string& comm_type //for message_archive: "letter"
             );
     void sendSmsPassword(const boost::format& sms_template
             , const std::string& message_type //for message_archive: "contact_verification_pin2"

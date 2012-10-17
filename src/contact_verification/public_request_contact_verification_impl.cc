@@ -158,7 +158,7 @@ public:
         contact_verification_passwd_.sendLetterPassword("pin3"
                 , Fred::Document::GT_CONTACT_VERIFICATION_LETTER_PIN3
                 , "contact_verification_pin3"
-                , "registered_letter"
+                , "letter"
                 );
         //send email with url in contact identification
         contact_verification_passwd_.sendEmailPassword("contact_identification");
