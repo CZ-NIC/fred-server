@@ -75,6 +75,9 @@
 //cancel contact verification
 #include "fredlib/contact_verification/cancel_contact_verification.h"
 
+//object states
+#include "object_states.h"
+
 #define FLAG_serverDeleteProhibited 1
 #define FLAG_serverRenewProhibited 2
 #define FLAG_serverTransferProhibited 3
@@ -2323,7 +2326,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
 
     LOGGER(PACKAGE).notice(boost::format("ContactUpdate: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
     LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag % c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail );
-            
+
 
     id = getIdOfContact(action.getDB(), handle, restricted_handles_
             , lock_epp_commands_, true);
@@ -2358,6 +2361,33 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     } catch (...) {
         code = COMMAND_FAILED;
     }
+
+    //discloseaddress conditions #7493
+    bool hidden_address_allowed_by_contact_state
+        = Fred::object_has_state(id, Fred::ObjectState::IDENTIFIED_CONTACT)
+            || Fred::object_has_state(id, Fred::ObjectState::VALIDATED_CONTACT);
+
+    bool hidden_address_allowed_by_organization = false;
+    if(c.Organization.in()[0] =='\b')//mod_eppd hack when organization n/a for update
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result result = conn.exec_params(
+            "SELECT c.organization FROM contact c WHERE c.id = $1::bigint "
+            , Database::query_param_list(id));
+        if (result.size() == 1) hidden_address_allowed_by_organization = std::string(result[0][0]).empty();
+    }
+    else
+    {
+        hidden_address_allowed_by_organization = std::string(c.Organization.in()).empty();
+    }
+
+    //if not allowed to hide but set to hide address return epp error
+    if(!(hidden_address_allowed_by_contact_state && hidden_address_allowed_by_organization)
+        && ((c.DiscloseAddress == false) && (c.DiscloseFlag == ccReg::DISCL_HIDE)))
+    {
+        code = COMMAND_STATUS_PROHIBITS_OPERATION;
+    }
+
     if (!code) {
         if ( !TestCountryCode(c.CC) ) {
             LOG(WARNING_LOG, "Reason: unknown country code: %s", (const char *)c.CC);
@@ -2366,7 +2396,6 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                     REASON_MSG_COUNTRY_NOTEXIST);
         } else if (action.getDB()->ObjectUpdate(id, action.getRegistrar(), c.AuthInfoPw) ) // update OBJECT table
         {
-
             // begin update
             action.getDB()->UPDATE("Contact");
 
@@ -2432,8 +2461,18 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                         c.DiscloseFlag) );
             action.getDB()->SETBOOL("DiscloseOrganization", update_DISCLOSE(
                         c.DiscloseOrganization, c.DiscloseFlag) );
-            action.getDB()->SETBOOL("DiscloseAddress", update_DISCLOSE(
+
+            //if hidden address not allowed then disclose address
+            if(!(hidden_address_allowed_by_contact_state && hidden_address_allowed_by_organization))
+            {
+                action.getDB()->SETBOOL("DiscloseAddress", 't');
+            }
+            else //ok
+            {
+                action.getDB()->SETBOOL("DiscloseAddress", update_DISCLOSE(
                         c.DiscloseAddress, c.DiscloseFlag) );
+            }
+
             action.getDB()->SETBOOL("DiscloseTelephone", update_DISCLOSE(
                         c.DiscloseTelephone, c.DiscloseFlag) );
             action.getDB()->SETBOOL("DiscloseFax", update_DISCLOSE(c.DiscloseFax,
