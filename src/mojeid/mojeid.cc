@@ -406,7 +406,7 @@ namespace Registry
                 DiscloseFlagPolicy::PolicyCallbackVector pcv
                     = boost::assign::list_of
                         (DiscloseFlagPolicy::PolicyCallback(SetDiscloseAddrTrueIfOrganization()))
-                        (DiscloseFlagPolicy::PolicyCallback(SetDiscloseAddrTrueIfNotValidated()));
+                        (DiscloseFlagPolicy::PolicyCallback(SetDiscloseAddrTrueIfNotIdentified()));
 
                 DiscloseFlagPolicy contact_disclose_policy (pcv);
 

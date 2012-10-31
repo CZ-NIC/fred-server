@@ -104,12 +104,14 @@ struct SetDiscloseAddrTrueIfOrganization
     }
 };
 
-struct SetDiscloseAddrTrueIfNotValidated
+struct SetDiscloseAddrTrueIfNotIdentified
 {
     void operator()(DiscloseFlagPolicy& policy)
     {
-        if (Fred::object_has_state(policy.get_contact().id
-                , Fred::ObjectState::VALIDATED_CONTACT) == false)
+        if (!(Fred::object_has_state(policy.get_contact().id
+                , Fred::ObjectState::IDENTIFIED_CONTACT)
+            || Fred::object_has_state(policy.get_contact().id
+                , Fred::ObjectState::VALIDATED_CONTACT)))
         {
             policy.get_contact().discloseaddress=true;
         }
