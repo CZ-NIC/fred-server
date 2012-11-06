@@ -2383,7 +2383,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
 
     //if not allowed to hide but set to hide address return epp error
     if(!(hidden_address_allowed_by_contact_state && hidden_address_allowed_by_organization)
-        && ((c.DiscloseAddress == false) && (c.DiscloseFlag == ccReg::DISCL_HIDE)))
+        && ((c.DiscloseAddress == true) && (c.DiscloseFlag == ccReg::DISCL_HIDE)))
     {
         code = COMMAND_STATUS_PROHIBITS_OPERATION;
     }
