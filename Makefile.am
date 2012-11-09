@@ -169,7 +169,8 @@ noinst_HEADERS = \
 		util/factory_check.h \
 		util/map_get.h \
 		src/corba/common_wrappers.h \
-		src/corba/contact_verification/corba_conversion.h
+		src/corba/contact_verification/corba_conversion.h \
+		util/optional_value.h
 
 
 noinst_LIBRARIES = \
@@ -721,7 +722,20 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/common_diff.cc \
 		src/fredlib/common_diff.h \
 		src/fredlib/reminder.cc \
-		src/fredlib/reminder.h
+		src/fredlib/reminder.h \
+		src/fredlib/opcontext.h \
+		src/fredlib/opcontext.cc \
+		src/fredlib/domain/update_domain.h \
+		src/fredlib/domain/update_domain.cc \
+		src/fredlib/nsset/update_nsset.h \
+		src/fredlib/nsset/update_nsset.cc \
+		src/fredlib/keyset/update_keyset.h \
+		src/fredlib/keyset/update_keyset.cc \
+		src/fredlib/contact/delete_contact.h \
+		src/fredlib/contact/delete_contact.cc \
+		src/fredlib/object/object.h \
+		src/fredlib/object/object.cc
+
 #
 # src/fredlib/libfred.a
 
@@ -1590,7 +1604,8 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid.h \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
-		tests/checks.h
+		tests/checks.h \
+		tests/test-eppops.cc
 
 
 tests_test_server_LDFLAGS = \
