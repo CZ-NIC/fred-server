@@ -24,6 +24,7 @@
 #include "old_utils/dbsql.h"
 #include "domain.h"
 #include "registrar.h"
+#include "util/util.h"
 
 namespace Fred {
 namespace Poll {
@@ -328,6 +329,36 @@ private:
 };
 
 
+class MessageUpdateObjectImpl : public MessageImpl, virtual public MessageUpdateObject
+{
+public:
+     MessageUpdateObjectImpl(
+             unsigned _type,
+             TID _id,
+             TID _registrar,
+             ptime _crTime,
+             ptime _expTime,
+             bool _seen)
+         : MessageImpl(_type, _id, _registrar, _crTime, _expTime, _seen),
+           optrid_()
+    {
+    }
+
+    const std::string& getOpTRID() const
+    {
+        return optrid_;
+    }
+
+    void setData(const std::string &_optrid)
+    {
+        optrid_ = _optrid;
+    }
+
+private:
+    std::string optrid_;
+};
+
+
 class ListImpl : public CommonListImpl, virtual public List {
   TID registrarFilter;
   std::string registrarHandleFilter;
@@ -412,6 +443,7 @@ public:
     bool hasAction= false;
     bool hasStateChange= false;
     bool hasRequestFeeInfo = false;
+    bool hasUpdateObject = false;
     std::ostringstream sql;
     clear();
     fillTempTable(true);
@@ -474,6 +506,16 @@ public:
               MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
           );
           hasRequestFeeInfo = true;
+          break;
+        case MT_UPDATE_DOMAIN:
+        case MT_UPDATE_NSSET:
+        case MT_UPDATE_KEYSET:
+          o = new MessageUpdateObjectImpl(
+              type,STR_TO_ID(db->GetFieldValue(i,1)),
+              STR_TO_ID(db->GetFieldValue(i,2)),
+              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
+          );
+          hasUpdateObject = true;
           break;
         default:
           o = new MessageImpl(
@@ -662,6 +704,33 @@ public:
                    db->GetFieldValue(i, 5));
       }
     } // hasRequestFeeInfo
+    if (hasUpdateObject)
+    {
+        sql.str("");
+        sql << "SELECT tmp.id, "
+            << "h1.id as old_hid, "
+            << "h1.next as new_hid, "
+            << "h2.request_id "
+            << "FROM " << getTempTableName() << " tmp "
+            << "JOIN poll_eppaction pea ON pea.msgid = tmp.id "
+            << "JOIN history h1 ON h1.next = pea.objid "
+            << "JOIN history h2 ON h2.id = h1.next "
+            << "ORDER BY tmp.id";
+        if (!db->ExecSelect(sql.str().c_str()))
+            throw SQL_ERROR();
+      resetIDSequence();
+      for (unsigned i = 0; i < (unsigned)db->GetSelectRows(); i++)
+      {
+        MessageUpdateObjectImpl *m = dynamic_cast<MessageUpdateObjectImpl *>(
+                findIDSequence(STR_TO_ID(db->GetFieldValue(i, 0))));
+        if (!m) {
+          throw SQL_ERROR();
+        }
+        unsigned long long req_id = boost::lexical_cast<unsigned long long>(db->GetFieldValue(i, 3));
+
+        m->setData(Util::make_svtrid(req_id));
+      }
+    }
   }
   virtual const char *getTempTableName() const {
     return "tmp_poll_filter_result";
