@@ -210,7 +210,11 @@ void ccReg_Admin_i::garbageSession() {
     LOGGER(PACKAGE).debug("procedure sleeped");
     
     boost::xtime sleep_time;
+#if BOOST_VERSION >= 105000
+    boost::xtime_get(&sleep_time, boost::TIME_UTC_);
+#else
     boost::xtime_get(&sleep_time, boost::TIME_UTC);
+#endif
     sleep_time.sec += adifd_session_garbage_;
     cond_.timed_wait(scoped_lock, sleep_time);
     
