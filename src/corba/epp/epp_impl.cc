@@ -51,6 +51,7 @@
 #include "old_utils/log.h"
 
 // MailerManager is connected in constructor
+#include "fredlib/common_diff.h"
 #include "fredlib/domain.h"
 #include "fredlib/contact.h"
 #include "fredlib/nsset.h"
@@ -409,6 +410,94 @@ DBSharedPtr db, const char *handle, bool lock_epp_commands
   } catch (...) {}
   return ret;
 }
+
+
+/*
+ * common function to copy domain data to corba structure
+ *
+ * \param a        action data (transaction and registrar info - authinfo fill check)
+ * \param regMan   registry manager - to get object states description
+ * \param d        destination corba domain structure to fill data into
+ * \param dom      source domain data
+ */
+void corba_domain_data_copy(
+        EPPAction &a,
+        const Fred::Manager * const regMan,
+        ccReg::Domain *d,
+        const Fred::Domain::Domain * const dom)
+{
+  std::auto_ptr<Fred::Zone::Manager>
+      zman(Fred::Zone::Manager::create() );
+  std::auto_ptr<Fred::Domain::Manager>
+      dman(Fred::Domain::Manager::create(a.getDB(), zman.get()) );
+
+  // fill common object data
+  d->ROID = CORBA::string_dup(dom->getROID().c_str());
+  d->name = CORBA::string_dup(dom->getFQDN().c_str());
+  d->CrDate = CORBA::string_dup(formatTime(dom->getCreateDate()).c_str());
+  d->UpDate = CORBA::string_dup(formatTime(dom->getUpdateDate()).c_str());
+  d->TrDate = CORBA::string_dup(formatTime(dom->getTransferDate()).c_str());
+  d->ClID = CORBA::string_dup(dom->getRegistrarHandle().c_str());
+  d->CrID = CORBA::string_dup(dom->getCreateRegistrarHandle().c_str());
+  d->UpID = CORBA::string_dup(dom->getUpdateRegistrarHandle().c_str());
+  // authinfo is filled only if session registar is ownering registrar
+  d->AuthInfoPw = CORBA::string_dup(
+    a.getRegistrar() == (int)dom->getRegistrarId() ? dom->getAuthPw().c_str()
+          : ""
+  );
+  // states
+  for (unsigned i=0; i<dom->getStatusCount(); i++) {
+    Fred::TID stateId = dom->getStatusByIdx(i)->getStatusId();
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
+    if (!sd || !sd->getExternal())
+      continue;
+    d->stat.length(d->stat.length()+1);
+    d->stat[d->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
+    d->stat[d->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
+        a.getLang() == LANG_CS ? "CS" : "EN"
+    ).c_str());
+  }
+  if (!d->stat.length()) {
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
+    if (sd) {
+      d->stat.length(1);
+      d->stat[0].value = CORBA::string_dup(sd->getName().c_str());
+      d->stat[0].text = CORBA::string_dup(sd->getDesc(
+          a.getLang() == LANG_CS ? "CS" : "EN"
+      ).c_str());
+    }
+  }
+  // fill domain specific data
+  d->nsset = CORBA::string_dup(dom->getNSSetHandle().c_str());
+  d->keyset = CORBA::string_dup(dom->getKeySetHandle().c_str());
+  d->ExDate = CORBA::string_dup(to_iso_extended_string(dom->getExpirationDate()).c_str() );
+  // registrant and contacts are disabled for other registrars
+  // in case of enum domain
+  bool disabled = a.getRegistrar() != (int)dom->getRegistrarId()
+      && zman->findApplicableZone(dom->getFQDN())->isEnumZone();
+  // registrant
+  d->Registrant = CORBA::string_dup(disabled ? "" : dom->getRegistrantHandle().c_str() );
+  // admin
+  unsigned adminCount = disabled ? 0 : dom->getAdminCount(1);
+  d->admin.length(adminCount);
+  for (unsigned i=0; i<adminCount; i++)
+    d->admin[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,1).c_str());
+  // temps
+  unsigned tempCount = disabled ? 0 : dom->getAdminCount(2);
+  d->tmpcontact.length(tempCount);
+  for (unsigned i=0; i<tempCount; i++)
+    d->tmpcontact[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,2).c_str());
+  // validation
+  if (!dom->getValExDate().is_special()) {
+    ccReg::ENUMValidationExtension *enumVal =
+        new ccReg::ENUMValidationExtension();
+    enumVal->valExDate = CORBA::string_dup(to_iso_extended_string(dom->getValExDate()).c_str() );
+    enumVal->publish = dom->getPublish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
+    d->ext.length(1);
+    d->ext[0] <<= enumVal;
+  }
+}
+
 
 //
 // Example implementational code for IDL interface ccReg::EPP
@@ -1516,6 +1605,76 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
   // previous command throw exception in any case so this code
   // will never be called
   return NULL;
+}
+
+
+/*
+ * idl method for retrieving old and new data of updated domain
+ *
+ * \param _poll_id        database id of poll message where is stored
+ *                        historyid of object we want details about
+ * \param _old_data       output parameter - data of object before update
+ * \param _new_data       output parameter - data of object after update
+ * \param params          common epp parameters
+ *
+ */
+void
+ccReg_EPP_i::PollRequestGetUpdateDomainDetails(
+        CORBA::ULongLong _poll_id,
+        ccReg::Domain_out _old_data,
+        ccReg::Domain_out _new_data,
+        const ccReg::EppParams &params)
+{
+    try {
+        Logging::Context::clear();
+        Logging::Context ctx("rifd");
+        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
+        Logging::Context ctx3("poll-req-update-domain-details");
+        ConnectionReleaser releaser;
+
+        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+
+        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+
+        _old_data = new ccReg::Domain;
+        _new_data = new ccReg::Domain;
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result hids = conn.exec_params(
+                "SELECT h1.id as old_hid, h1.next as new_hid"
+                " FROM poll_eppaction pea"
+                " JOIN domain_history dh ON dh.historyid = pea.objid"
+                " JOIN history h1 ON h1.next = pea.objid"
+                " WHERE pea.msgid = $1::bigint",
+                Database::query_param_list(_poll_id));
+
+        if (hids.size() != 1) {
+            throw std::runtime_error("unable to get poll message data");
+        }
+
+        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
+        rmgr->initStates();
+        std::auto_ptr<const Fred::Domain::Domain> old_data = Fred::get_object_by_hid<
+            Fred::Domain::Domain, Fred::Domain::Manager, Fred::Domain::List, Database::Filters::DomainHistoryImpl>(
+                    rmgr->getDomainManager(), static_cast<unsigned long long>(hids[0][0]));
+        std::auto_ptr<const Fred::Domain::Domain> new_data = Fred::get_object_by_hid<
+            Fred::Domain::Domain, Fred::Domain::Manager, Fred::Domain::List, Database::Filters::DomainHistoryImpl>(
+                    rmgr->getDomainManager(), static_cast<unsigned long long>(hids[0][1]));
+
+        corba_domain_data_copy(a, rmgr.get(), _old_data, old_data.get());
+        corba_domain_data_copy(a, rmgr.get(), _new_data, new_data.get());
+
+        return;
+    }
+    catch (std::exception &ex)
+    {
+        LOGGER(PACKAGE).error(ex.what());
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("unknown error");
+    }
+    this->ServerInternalError(">> PollRequestGetUpdateDomainDetails - failed internal");
 }
 
 /***********************************************************************
@@ -4110,71 +4269,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   // start filling output domain structure
   Fred::Domain::Domain *dom = dlist->getDomain(0);
   d = new ccReg::Domain;
-  // fill common object data
-  d->ROID = CORBA::string_dup(dom->getROID().c_str());
-  d->name = CORBA::string_dup(dom->getFQDN().c_str());
-  d->CrDate = CORBA::string_dup(formatTime(dom->getCreateDate()).c_str());
-  d->UpDate = CORBA::string_dup(formatTime(dom->getUpdateDate()).c_str());
-  d->TrDate = CORBA::string_dup(formatTime(dom->getTransferDate()).c_str());
-  d->ClID = CORBA::string_dup(dom->getRegistrarHandle().c_str());
-  d->CrID = CORBA::string_dup(dom->getCreateRegistrarHandle().c_str());
-  d->UpID = CORBA::string_dup(dom->getUpdateRegistrarHandle().c_str());
-  // authinfo is filled only if session registar is ownering registrar
-  d->AuthInfoPw = CORBA::string_dup(
-    a.getRegistrar() == (int)dom->getRegistrarId() ? dom->getAuthPw().c_str()
-          : ""
-  );
-  // states
-  for (unsigned i=0; i<dom->getStatusCount(); i++) {
-    Fred::TID stateId = dom->getStatusByIdx(i)->getStatusId();
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
-    if (!sd || !sd->getExternal())
-      continue;
-    d->stat.length(d->stat.length()+1);
-    d->stat[d->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
-    d->stat[d->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
-        a.getLang() == LANG_CS ? "CS" : "EN"
-    ).c_str());
-  }
-  if (!d->stat.length()) {
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
-    if (sd) {
-      d->stat.length(1);
-      d->stat[0].value = CORBA::string_dup(sd->getName().c_str());
-      d->stat[0].text = CORBA::string_dup(sd->getDesc(
-          a.getLang() == LANG_CS ? "CS" : "EN"
-      ).c_str());
-    }
-  }
-  // fill domain specific data
-  d->nsset = CORBA::string_dup(dom->getNSSetHandle().c_str());
-  d->keyset = CORBA::string_dup(dom->getKeySetHandle().c_str());
-  d->ExDate = CORBA::string_dup(to_iso_extended_string(dom->getExpirationDate()).c_str() );
-  // registrant and contacts are disabled for other registrars
-  // in case of enum domain
-  bool disabled = a.getRegistrar() != (int)dom->getRegistrarId()
-      && zman->findApplicableZone(fqdn)->isEnumZone();
-  // registrant
-  d->Registrant = CORBA::string_dup(disabled ? "" : dom->getRegistrantHandle().c_str() );
-  // admin
-  unsigned adminCount = disabled ? 0 : dom->getAdminCount(1);
-  d->admin.length(adminCount);
-  for (unsigned i=0; i<adminCount; i++)
-    d->admin[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,1).c_str());
-  // temps
-  unsigned tempCount = disabled ? 0 : dom->getAdminCount(2);
-  d->tmpcontact.length(tempCount);
-  for (unsigned i=0; i<tempCount; i++)
-    d->tmpcontact[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,2).c_str());
-  // validation
-  if (!dom->getValExDate().is_special()) {
-    ccReg::ENUMValidationExtension *enumVal =
-        new ccReg::ENUMValidationExtension();
-    enumVal->valExDate = CORBA::string_dup(to_iso_extended_string(dom->getValExDate()).c_str() );
-    enumVal->publish = dom->getPublish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
-    d->ext.length(1);
-    d->ext[0] <<= enumVal;
-  }
+  corba_domain_data_copy(a, regMan.get(), d, dom);
   return a.getRet()._retn();
 }
 
