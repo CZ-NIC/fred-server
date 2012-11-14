@@ -1489,6 +1489,29 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
       LOGGER(PACKAGE).debug("poll message request_fee_info packed");
       return a.getRet()._retn();
   }
+  Fred::Poll::MessageUpdateObject *muo =
+      dynamic_cast<Fred::Poll::MessageUpdateObject*>(m.get());
+  if (muo)
+  {
+      switch (muo->getType())
+      {
+          case Fred::Poll::MT_UPDATE_DOMAIN:
+              type = ccReg::polltype_update_domain;
+              break;
+          case Fred::Poll::MT_UPDATE_NSSET:
+              type = ccReg::polltype_update_nsset;
+              break;
+          case Fred::Poll::MT_UPDATE_KEYSET:
+              type = ccReg::polltype_update_keyset;
+              break;
+      }
+      ccReg::PollMsg_Update *hdm = new ccReg::PollMsg_Update;
+      hdm->opTRID = CORBA::string_dup(muo->getOpTRID().c_str());
+      hdm->pollID = muo->getId();
+      *msg <<= hdm;
+      LOGGER(PACKAGE).debug("poll message update_domain packed");
+      return a.getRet()._retn();
+  }
   a.failedInternal("Invalid message structure");
   // previous command throw exception in any case so this code
   // will never be called
