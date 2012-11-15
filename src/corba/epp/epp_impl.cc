@@ -565,6 +565,89 @@ void corba_nsset_data_copy(
 }
 
 
+/*
+ * common function to copy keyset data to corba structure
+ *
+ * \param a        action data (transaction and registrar info - authinfo fill check)
+ * \param regMan   registry manager - to get object states description
+ * \param n        destination corba keyset structure to fill data into
+ * \param nss      source keyset data
+ */
+void corba_keyset_data_copy(
+        EPPAction &a,
+        const Fred::Manager * const regMan,
+        ccReg::KeySet *k,
+        const Fred::KeySet::KeySet * const kss)
+{
+    //fill common object data
+    k->ROID = CORBA::string_dup(kss->getROID().c_str());
+    k->CrDate = CORBA::string_dup(formatTime(kss->getCreateDate()).c_str());
+    k->UpDate = CORBA::string_dup(formatTime(kss->getUpdateDate()).c_str());
+    k->TrDate = CORBA::string_dup(formatTime(kss->getTransferDate()).c_str());
+    k->ClID = CORBA::string_dup(kss->getRegistrarHandle().c_str());
+    k->CrID = CORBA::string_dup(kss->getCreateRegistrarHandle().c_str());
+    k->UpID = CORBA::string_dup(kss->getUpdateRegistrarHandle().c_str());
+    //authinfo is filled only if session registrar is also owner
+    k->AuthInfoPw = CORBA::string_dup(
+            a.getRegistrar() == (int)kss->getRegistrarId() ?
+            kss->getAuthPw().c_str() : "");
+
+
+    // states
+    for (unsigned int i = 0; i < kss->getStatusCount(); i++) {
+        Fred::TID stateId = kss->getStatusByIdx(i)->getStatusId();
+        const Fred::StatusDesc *sd = regMan->getStatusDesc(stateId);
+        if (!sd || !sd->getExternal())
+            continue;
+        k->stat.length(k->stat.length() + 1);
+        k->stat[k->stat.length()-1].value =
+            CORBA::string_dup(sd->getName().c_str());
+        k->stat[k->stat.length()-1].text =
+            CORBA::string_dup(sd->getDesc(
+                        a.getLang() == LANG_CS ? "CS" : "EN").c_str()
+                    );
+    }
+
+    if (!k->stat.length()) {
+        const Fred::StatusDesc *sd = regMan->getStatusDesc(0);
+        if (sd) {
+            k->stat.length(1);
+            k->stat[0].value = CORBA::string_dup(sd->getName().c_str());
+            k->stat[0].text = CORBA::string_dup(
+                    sd->getDesc(a.getLang() == LANG_CS ? "CS" : "EN").c_str());
+        }
+    }
+
+    // keyset specific data
+    k->handle = CORBA::string_dup(kss->getHandle().c_str());
+    k->tech.length(kss->getAdminCount());
+    for (unsigned int i = 0; i < kss->getAdminCount(); i++)
+        k->tech[i] = CORBA::string_dup(kss->getAdminByIdx(i).c_str());
+
+
+    // dsrecord
+    k->dsrec.length(kss->getDSRecordCount());
+    for (unsigned int i = 0; i < kss->getDSRecordCount(); i++) {
+        const Fred::KeySet::DSRecord *dsr = kss->getDSRecordByIdx(i);
+        k->dsrec[i].keyTag = dsr->getKeyTag();
+        k->dsrec[i].alg = dsr->getAlg();
+        k->dsrec[i].digestType = dsr->getDigestType();
+        k->dsrec[i].digest = CORBA::string_dup(dsr->getDigest().c_str());
+        k->dsrec[i].maxSigLife = dsr->getMaxSigLife();
+    }
+
+    // dnskey record
+    k->dnsk.length(kss->getDNSKeyCount());
+    for (unsigned int i = 0; i < kss->getDNSKeyCount(); i++) {
+        const Fred::KeySet::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
+        k->dnsk[i].flags = dnsk->getFlags();
+        k->dnsk[i].protocol = dnsk->getProtocol();
+        k->dnsk[i].alg = dnsk->getAlg();
+        k->dnsk[i].key = CORBA::string_dup(dnsk->getKey().c_str());
+    }
+}
+
+
 
 //
 // Example implementational code for IDL interface ccReg::EPP
@@ -1813,6 +1896,77 @@ ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
     }
     this->ServerInternalError(">> PollRequestGetUpdateNSSetDetails - failed internal");
 }
+
+
+/*
+ * idl method for retrieving old and new data of updated keyset
+ *
+ * \param _poll_id        database id of poll message where is stored
+ *                        historyid of object we want details about
+ * \param _old_data       output parameter - data of object before update
+ * \param _new_data       output parameter - data of object after update
+ * \param params          common epp parameters
+ *
+ */
+void
+ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
+        CORBA::ULongLong _poll_id,
+        ccReg::KeySet_out _old_data,
+        ccReg::KeySet_out _new_data,
+        const ccReg::EppParams &params)
+{
+    try {
+        Logging::Context::clear();
+        Logging::Context ctx("rifd");
+        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
+        Logging::Context ctx3("poll-req-update-keyset-details");
+        ConnectionReleaser releaser;
+
+        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+
+        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+
+        _old_data = new ccReg::KeySet;
+        _new_data = new ccReg::KeySet;
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result hids = conn.exec_params(
+                "SELECT h1.id as old_hid, h1.next as new_hid"
+                " FROM poll_eppaction pea"
+                " JOIN keyset_history dh ON dh.historyid = pea.objid"
+                " JOIN history h1 ON h1.next = pea.objid"
+                " WHERE pea.msgid = $1::bigint",
+                Database::query_param_list(_poll_id));
+
+        if (hids.size() != 1) {
+            throw std::runtime_error("unable to get poll message data");
+        }
+
+        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
+        rmgr->initStates();
+        std::auto_ptr<const Fred::KeySet::KeySet> old_data = Fred::get_object_by_hid<
+            Fred::KeySet::KeySet, Fred::KeySet::Manager, Fred::KeySet::List, Database::Filters::KeySetHistoryImpl>(
+                    rmgr->getKeySetManager(), static_cast<unsigned long long>(hids[0][0]));
+        std::auto_ptr<const Fred::KeySet::KeySet> new_data = Fred::get_object_by_hid<
+            Fred::KeySet::KeySet, Fred::KeySet::Manager, Fred::KeySet::List, Database::Filters::KeySetHistoryImpl>(
+                    rmgr->getKeySetManager(), static_cast<unsigned long long>(hids[0][1]));
+
+        corba_keyset_data_copy(a, rmgr.get(), _old_data, old_data.get());
+        corba_keyset_data_copy(a, rmgr.get(), _new_data, new_data.get());
+
+        return;
+    }
+    catch (std::exception &ex)
+    {
+        LOGGER(PACKAGE).error(ex.what());
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("unknown error");
+    }
+    this->ServerInternalError(">> PollRequestGetUpdateKeySetDetails - failed internal");
+}
+
 
 /***********************************************************************
  *
@@ -5612,74 +5766,7 @@ ccReg_EPP_i::KeySetInfo(
 
     Fred::KeySet::KeySet *kss = klist->getKeySet(0);
     k = new ccReg::KeySet;
-
-    //fill common object data
-    k->ROID = CORBA::string_dup(kss->getROID().c_str());
-    k->CrDate = CORBA::string_dup(formatTime(kss->getCreateDate()).c_str());
-    k->UpDate = CORBA::string_dup(formatTime(kss->getUpdateDate()).c_str());
-    k->TrDate = CORBA::string_dup(formatTime(kss->getTransferDate()).c_str());
-    k->ClID = CORBA::string_dup(kss->getRegistrarHandle().c_str());
-    k->CrID = CORBA::string_dup(kss->getCreateRegistrarHandle().c_str());
-    k->UpID = CORBA::string_dup(kss->getUpdateRegistrarHandle().c_str());
-    //authinfo is filled only if session registrar is also owner
-    k->AuthInfoPw = CORBA::string_dup(
-            a.getRegistrar() == (int)kss->getRegistrarId() ?
-            kss->getAuthPw().c_str() : "");
-
-
-    // states
-    for (unsigned int i = 0; i < kss->getStatusCount(); i++) {
-        Fred::TID stateId = kss->getStatusByIdx(i)->getStatusId();
-        const Fred::StatusDesc *sd = regMan->getStatusDesc(stateId);
-        if (!sd || !sd->getExternal())
-            continue;
-        k->stat.length(k->stat.length() + 1);
-        k->stat[k->stat.length()-1].value =
-            CORBA::string_dup(sd->getName().c_str());
-        k->stat[k->stat.length()-1].text =
-            CORBA::string_dup(sd->getDesc(
-                        a.getLang() == LANG_CS ? "CS" : "EN").c_str()
-                    );
-    }
-
-    if (!k->stat.length()) {
-        const Fred::StatusDesc *sd = regMan->getStatusDesc(0);
-        if (sd) {
-            k->stat.length(1);
-            k->stat[0].value = CORBA::string_dup(sd->getName().c_str());
-            k->stat[0].text = CORBA::string_dup(
-                    sd->getDesc(a.getLang() == LANG_CS ? "CS" : "EN").c_str());
-        }
-    }
-
-    // keyset specific data
-    k->handle = CORBA::string_dup(kss->getHandle().c_str());
-    k->tech.length(kss->getAdminCount());
-    for (unsigned int i = 0; i < kss->getAdminCount(); i++)
-        k->tech[i] = CORBA::string_dup(kss->getAdminByIdx(i).c_str());
-
-
-    // dsrecord
-    k->dsrec.length(kss->getDSRecordCount());
-    for (unsigned int i = 0; i < kss->getDSRecordCount(); i++) {
-        const Fred::KeySet::DSRecord *dsr = kss->getDSRecordByIdx(i);
-        k->dsrec[i].keyTag = dsr->getKeyTag();
-        k->dsrec[i].alg = dsr->getAlg();
-        k->dsrec[i].digestType = dsr->getDigestType();
-        k->dsrec[i].digest = CORBA::string_dup(dsr->getDigest().c_str());
-        k->dsrec[i].maxSigLife = dsr->getMaxSigLife();
-    }
-
-    // dnskey record
-    k->dnsk.length(kss->getDNSKeyCount());
-    for (unsigned int i = 0; i < kss->getDNSKeyCount(); i++) {
-        const Fred::KeySet::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
-        k->dnsk[i].flags = dnsk->getFlags();
-        k->dnsk[i].protocol = dnsk->getProtocol();
-        k->dnsk[i].alg = dnsk->getAlg();
-        k->dnsk[i].key = CORBA::string_dup(dnsk->getKey().c_str());
-    }
-
+    corba_keyset_data_copy(a, regMan.get(), k, kss);
     return a.getRet()._retn();
 }
 
