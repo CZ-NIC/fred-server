@@ -416,7 +416,6 @@ namespace Registry
                         /* change contact status to identified */
                         if (Fred::cancel_object_state(cid, Fred::ObjectState::VALIDATED_CONTACT)) {
                             Fred::insert_object_state(cid, Fred::ObjectState::IDENTIFIED_CONTACT);
-                            contact_disclose_policy.append_policy_callback(SetDiscloseAddrTrue());
                         }
                     }
                 }
