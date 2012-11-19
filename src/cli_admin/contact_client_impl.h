@@ -90,4 +90,22 @@ struct contact_reminder_impl
 };
 
 
+/**
+ * \class contact_merge_duplicate_auto_impl
+ * \brief functor to run automatic contact duplicates merge procedure
+ */
+struct contact_merge_duplicate_auto_impl
+{
+    void operator()() const
+    {
+        Logging::Context ctx("contact_merge_duplicate_auto_impl");
+
+        ContactMergeDuplicateAutoArgs params = CfgArgGroups::instance()->
+            get_handler_ptr_by_type<HandleAdminClientContactMergeDuplicateAutoArgsGrp>()->params;
+
+        return;
+    }
+};
+
+
 #endif // CONTACT_CLIENT_IMPL_H_

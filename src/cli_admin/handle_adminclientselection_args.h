@@ -337,6 +337,47 @@ public:
     }//handle
 };//class HandleAdminClientContactReminderArgsGrp
 
+
+/**
+ * \class HandleAdminClientContactMergeDuplicateAutoArgsGrp
+ * \brief admin client contact_reminder options handler
+ */
+class HandleAdminClientContactMergeDuplicateAutoArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ContactMergeDuplicateAutoArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("contact_merge_duplicate_auto");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("contact_merge_duplicate_auto options")));
+        cfg_opts->add_options()
+            ("contact_merge_duplicate_auto",
+                "command for run contact merge duplicate automatic procedure")
+            ("registrar", boost::program_options::value<Checked::string>()
+                ->notifier(save_optional_string(params.registrar)),
+                "registrar handle to run merge for")
+            ("limit", boost::program_options::value<Checked::ulonglong>()
+                ->notifier(save_optional_ulonglong(params.limit)),
+                "limit");
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientContactMergeDuplicateAutoArgsGrp
+
 /**
  * \class HandleAdminClientContactListArgsGrp
  * \brief admin client contact_list options handler

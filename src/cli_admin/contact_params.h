@@ -99,4 +99,28 @@ struct ContactListArgs
 
 };//struct ContactListArgs
 
+
+/**
+ * \class ContactMergeDuplicateAutoArgs
+ * \brief contact merge automatic procedure args
+ */
+struct ContactMergeDuplicateAutoArgs
+{
+    optional_string registrar;
+    optional_ulonglong limit;
+
+    ContactMergeDuplicateAutoArgs()
+    {
+    }
+
+    ContactMergeDuplicateAutoArgs(
+            const optional_string &_registrar,
+            const optional_ulonglong &_limit)
+        : registrar(_registrar),
+          limit(_limit)
+    {
+    }
+};
+
+
 #endif // CONTACT_PARAMS_H_
