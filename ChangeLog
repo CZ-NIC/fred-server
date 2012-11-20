@@ -1,3 +1,23 @@
+2012-11-20 Jiri Sadek, Jan Zima, Juraj Vicenik (2.13.0)
+
+  * fix compilation issues with boost >=1.50
+
+  * more detailed error logging for document generator external command
+
+  * epp
+      - allow to set discloseaddress flag in update contact command
+      - fix check for glue ip in create/update nsset commands
+      - fix display of contact states (schemas corrected)
+
+  * mojeid
+      - contact status condition changed for setting discloseaddress flag
+        (validatedContact -> identifiedContact)
+      - contactUnidentifyPrepare(..) method removed
+      - fix sms message
+      - fix logging messages severity
+
+  * logger - fix logging boost format string
+
 2012-10-17 Jan Zima (2.12.4)
 
   * mojeid/contact verification - fix pin3 message type (registered_letter -> letter)
