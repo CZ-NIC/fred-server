@@ -1,5 +1,7 @@
 2012-11-20 Jiri Sadek, Jan Zima, Juraj Vicenik (2.13.0)
 
+  * fix/improvement in cancel state function
+
   * fix compilation issues with boost >=1.50
 
   * more detailed error logging for document generator external command
