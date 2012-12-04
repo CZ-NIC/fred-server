@@ -68,7 +68,7 @@ namespace Fred
         }
 
         params.push_back(handle_);
-        sql <<" WHERE id = (SELECT oreg.id FROM domain d JOIN object_registry oreg ON d.id = oreg.id WHERE UPPER(oreg.name) = UPPER($"
+        sql <<" WHERE id = (SELECT id FROM object_registry WHERE UPPER(name) = UPPER($"
                 << params.size() << "::text)); ";//update object_id by handle
 
         ctx.get_conn().exec_params(sql.str(), params);
@@ -92,13 +92,5 @@ namespace Fred
         unsigned long long history_id = history_id_res[0][0];
         return history_id;
     }
-/*
- *  *
-UPDATE object
-SET update = now()
-SET upid = $registrar_id --registrar_id from epp-session container by client_id from epp-params
-SET authinfopw = $authInfo_chg --authInfo_chg  - change of password
-WHERE id = (SELECT oreg.id FROM domain d JOIN object_registry oreg ON d.id = oreg.id WHERE UPPER(oreg.name) = UPPER('fred.cz')); --update domain_id by fqdn
- * */
 
 }//namespace Fred
