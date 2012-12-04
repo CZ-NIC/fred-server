@@ -36,6 +36,18 @@ namespace Fred
 
     void DeleteContact::exec(OperationContext& ctx)
     {
+        //lock object_registry row for update
+        {
+            Database::Result lock_res = ctx.get_conn().exec_params(
+                "SELECT id FROM object_registry WHERE UPPER(name) = UPPER($1::text) AND type = 1 FOR UPDATE"
+                , Database::query_param_list(handle_));
+
+            if (lock_res.size() != 1)
+            {
+                throw std::runtime_error("DeleteContact::exec unable to lock");
+            }
+        }
+
         ctx.get_conn().exec_params(
             "UPDATE object_registry SET erdate = now() "
             " WHERE id = (SELECT oreg.id FROM contact c "

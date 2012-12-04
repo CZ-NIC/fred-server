@@ -101,6 +101,18 @@ namespace Fred
 
     void UpdateKeyset::exec(OperationContext& ctx)
     {
+        //lock object_registry row for update
+        {
+            Database::Result lock_res = ctx.get_conn().exec_params(
+                "SELECT id FROM object_registry WHERE UPPER(name) = UPPER($1::text) AND type = 4 FOR UPDATE"
+                , Database::query_param_list(handle_));
+
+            if (lock_res.size() != 1)
+            {
+                throw std::runtime_error("UpdateKeyset::exec unable to lock");
+            }
+        }
+
         Fred::UpdateObject(handle_, registrar_, authinfo_).exec(ctx);
 
         //add tech contacts
