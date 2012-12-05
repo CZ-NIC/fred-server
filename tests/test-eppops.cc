@@ -318,6 +318,7 @@ BOOST_AUTO_TEST_CASE(update_domain)
     .set_registrant(test_registrant_contact.handle)
     .add_admin_contact(test_admin_contact.handle)
     .rem_admin_contact(test_registrant_contact.handle)
+    .rem_admin_contact(test_admin_contact1.handle)
     .exec(ctx);
 
     //call update using small ctor and set one custom param
