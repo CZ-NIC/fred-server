@@ -149,6 +149,7 @@ namespace Fred
         Fred::UpdateObject(fqdn_, registrar_, authinfo_).exec(ctx);
 
         //update domain
+        if(nsset_.isset() || keyset_.isset() || registrant_.isset())
         {
             Database::QueryParams params;//query params
             std::stringstream sql;
@@ -207,7 +208,7 @@ namespace Fred
                     " JOIN object_registry oreg ON d.id = oreg.id "
                     " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)) ";//update object_id by handle
             ctx.get_conn().exec_params(sql.str(), params);
-        }//update domain
+        }//if update domain
 
         //add admin contacts
         if(!add_admin_contact_.empty())
