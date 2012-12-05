@@ -128,7 +128,7 @@ namespace Fred
             Database::QueryParams params;//query params
             std::stringstream sql;
             Util::HeadSeparator set_separator(" SET "," , ");
-            params.push_back(registrar_);
+
             sql <<"UPDATE domain ";
 
             if(nsset_.isset())//change nsset
