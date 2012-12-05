@@ -145,16 +145,35 @@ BOOST_AUTO_TEST_CASE(delete_contact)
         fcvc.disclosenotifyemail = true;
 
         Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
-
-        Fred::OperationContext ctx;
-        Fred::DeleteContact(fcvc.handle).exec(ctx);
-        ctx.commit_transaction();
-
-        BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
-            "select erdate is not null from object_registry where name = $1::text"
-            ,Database::query_param_list(fcvc.handle))[0][0]));
     }
 
+    Fred::OperationContext ctx;
+    Fred::DeleteContact(fcvc.handle).exec(ctx);
+    ctx.commit_transaction();
+
+    BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
+        "select erdate is not null from object_registry where name = $1::text"
+        ,Database::query_param_list(fcvc.handle))[0][0]));
+}
+
+BOOST_AUTO_TEST_CASE(update_domain)
+{
+    Fred::OperationContext ctx;
+    Fred::UpdateDomain("fred.cz", "REG-FRED_A")
+    .set_authinfo("testauthinfo")
+    .set_registrant("KONTAKT")
+    .add_admin_contact("KONTAKT")
+    .rem_admin_contact("KONTAKT")
+    .exec(ctx);
+    ctx.commit_transaction();
+
+    BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
+        "SELECT o.authinfopw = $1::text "
+        //" AND "
+        " FROM object_registry oreg "
+        " JOIN object o ON o.id = oreg.id "
+        " WHERE oreg.name = $2::text"
+        ,Database::query_param_list("testauthinfo")("fred.cz"))[0][0]));
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestEPPops
