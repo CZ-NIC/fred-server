@@ -210,6 +210,55 @@ BOOST_AUTO_TEST_CASE(update_domain)
         Fred::Contact::Verification::contact_create(request_id, registrar_id, test_admin_contact);
     }
 
+    Fred::Contact::Verification::Contact test_admin_contact1;
+    {
+        //might get replaced by CreateContact when we have one
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+
+        //Database::Transaction trans(conn);
+
+        //get registrar id
+        Database::Result res_reg = conn.exec_params(
+                "SELECT id FROM registrar WHERE handle=$1::text",
+                Database::query_param_list(registrar_handle));
+        if(res_reg.size() == 0) {
+            throw std::runtime_error("Registrar does not exist");
+        }
+        unsigned long long registrar_id = res_reg[0][0];
+
+        RandomDataGenerator rdg;
+
+        //create test contact
+        std::string xmark = rdg.xnumstring(6);
+        test_admin_contact1.handle=std::string("TEST-ADMIN-CONTACT1-HANDLE")+xmark;
+        test_admin_contact1.name=std::string("TEST-ADMIN-CONTACT1 NAME")+xmark;
+        test_admin_contact1.organization=std::string("TEST-ADMIN-CONTACT1-ORG")+xmark;
+        test_admin_contact1.street1=std::string("TEST-ADMIN-CONTACT1-STR1")+xmark;
+        test_admin_contact1.city=std::string("Praha");
+        test_admin_contact1.postalcode=std::string("11150");
+        test_admin_contact1.country=std::string("CZ");
+        test_admin_contact1.telephone=std::string("+420.728")+xmark;
+        test_admin_contact1.email=std::string("test")+xmark+"@nic.cz";
+        test_admin_contact1.ssn=std::string("1980-01-01");
+        test_admin_contact1.ssntype=std::string("BIRTHDAY");
+        test_admin_contact1.auth_info=rdg.xnstring(8);
+        //unsigned long long contact_hid =
+
+        test_admin_contact1.disclosename = true;
+        test_admin_contact1.discloseorganization = true;
+        test_admin_contact1.discloseaddress = true;
+        test_admin_contact1.disclosetelephone = true;
+        test_admin_contact1.disclosefax = true;
+        test_admin_contact1.discloseemail = true;
+        test_admin_contact1.disclosevat = true;
+        test_admin_contact1.discloseident = true;
+        test_admin_contact1.disclosenotifyemail = true;
+
+        Fred::Contact::Verification::contact_create(request_id, registrar_id, test_admin_contact1);
+    }
+
+
     Fred::Contact::Verification::Contact test_registrant_contact;
     {
         //might get replaced by CreateContact when we have one
@@ -231,10 +280,10 @@ BOOST_AUTO_TEST_CASE(update_domain)
 
         //create test contact
         std::string xmark = rdg.xnumstring(6);
-        test_registrant_contact.handle=std::string("TEST-ADMIN-CONTACT-HANDLE")+xmark;
-        test_registrant_contact.name=std::string("TEST-ADMIN-CONTACT NAME")+xmark;
-        test_registrant_contact.organization=std::string("TEST-ADMIN-CONTACT-ORG")+xmark;
-        test_registrant_contact.street1=std::string("TEST-ADMIN-CONTACT-STR1")+xmark;
+        test_registrant_contact.handle=std::string("TEST-REGISTRANT-CONTACT-HANDLE")+xmark;
+        test_registrant_contact.name=std::string("TEST-REGISTRANT-CONTACT NAME")+xmark;
+        test_registrant_contact.organization=std::string("TEST-REGISTRANT-CONTACT-ORG")+xmark;
+        test_registrant_contact.street1=std::string("TEST-REGISTRANT-CONTACT-STR1")+xmark;
         test_registrant_contact.city=std::string("Praha");
         test_registrant_contact.postalcode=std::string("11150");
         test_registrant_contact.country=std::string("CZ");
@@ -267,6 +316,10 @@ BOOST_AUTO_TEST_CASE(update_domain)
     .rem_admin_contact("KONTAKT")
     .exec(ctx);
 
+    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_authinfo("testauthinfo").exec(ctx);
+    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_registrant(test_registrant_contact.handle).exec(ctx);
+    Fred::UpdateDomain("fred.cz", "REG-FRED_A").add_admin_contact(test_admin_contact1.handle).exec(ctx);
+    Fred::UpdateDomain("fred.cz", "REG-FRED_A").rem_admin_contact(test_admin_contact.handle).exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset(Nullable<std::string>()).exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").unset_nsset().exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset(Nullable<std::string>("NSSET-1")).exec(ctx);
