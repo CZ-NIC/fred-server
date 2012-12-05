@@ -168,8 +168,6 @@ BOOST_AUTO_TEST_CASE(update_domain)
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
 
-        //Database::Transaction trans(conn);
-
         //get registrar id
         Database::Result res_reg = conn.exec_params(
                 "SELECT id FROM registrar WHERE handle=$1::text",
@@ -195,7 +193,6 @@ BOOST_AUTO_TEST_CASE(update_domain)
         test_admin_contact.ssn=std::string("1980-01-01");
         test_admin_contact.ssntype=std::string("BIRTHDAY");
         test_admin_contact.auth_info=rdg.xnstring(8);
-        //unsigned long long contact_hid =
 
         test_admin_contact.disclosename = true;
         test_admin_contact.discloseorganization = true;
@@ -215,8 +212,6 @@ BOOST_AUTO_TEST_CASE(update_domain)
         //might get replaced by CreateContact when we have one
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
-
-        //Database::Transaction trans(conn);
 
         //get registrar id
         Database::Result res_reg = conn.exec_params(
@@ -243,7 +238,6 @@ BOOST_AUTO_TEST_CASE(update_domain)
         test_admin_contact1.ssn=std::string("1980-01-01");
         test_admin_contact1.ssntype=std::string("BIRTHDAY");
         test_admin_contact1.auth_info=rdg.xnstring(8);
-        //unsigned long long contact_hid =
 
         test_admin_contact1.disclosename = true;
         test_admin_contact1.discloseorganization = true;
@@ -264,8 +258,6 @@ BOOST_AUTO_TEST_CASE(update_domain)
         //might get replaced by CreateContact when we have one
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
-
-        //Database::Transaction trans(conn);
 
         //get registrar id
         Database::Result res_reg = conn.exec_params(
@@ -292,7 +284,6 @@ BOOST_AUTO_TEST_CASE(update_domain)
         test_registrant_contact.ssn=std::string("1980-01-01");
         test_registrant_contact.ssntype=std::string("BIRTHDAY");
         test_registrant_contact.auth_info=rdg.xnstring(8);
-        //unsigned long long contact_hid =
 
         test_registrant_contact.disclosename = true;
         test_registrant_contact.discloseorganization = true;
@@ -307,15 +298,29 @@ BOOST_AUTO_TEST_CASE(update_domain)
         Fred::Contact::Verification::contact_create(request_id, registrar_id, test_registrant_contact);
     }
 
-
     Fred::OperationContext ctx;
+
+    //call update using big ctor
+    Fred::UpdateDomain("fred.cz"//fqdn
+            , "REG-FRED_A"//registrar
+            , test_registrant_contact.handle //registrant - owner
+            , std::string("testauthinfo1") //authinfo
+            , Nullable<std::string>()//unset nsset - set to null
+            , Optional<Nullable<std::string> >()//dont change keyset
+            , Util::vector_of<std::string> (test_admin_contact1.handle)(test_registrant_contact.handle) //add admin contacts
+            , Util::vector_of<std::string> ("KONTAKT") //remove admin contacts
+            , Optional<unsigned long long>() //request_id not set
+            ).exec(ctx);
+
+    //call update using small ctor and set custom params
     Fred::UpdateDomain("fred.cz", "REG-FRED_A")
     .set_authinfo("testauthinfo")
     .set_registrant(test_registrant_contact.handle)
     .add_admin_contact(test_admin_contact.handle)
-    .rem_admin_contact("KONTAKT")
+    .rem_admin_contact(test_registrant_contact.handle)
     .exec(ctx);
 
+    //call update using small ctor and set one custom param
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_authinfo("testauthinfo").exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_registrant(test_registrant_contact.handle).exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").add_admin_contact(test_admin_contact1.handle).exec(ctx);
@@ -324,16 +329,16 @@ BOOST_AUTO_TEST_CASE(update_domain)
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").unset_nsset().exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset(Nullable<std::string>("NSSET-1")).exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset("NSSET-1").exec(ctx);
-
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_keyset(Nullable<std::string>()).exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").unset_keyset().exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_keyset(Nullable<std::string>("KEYSID-1")).exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_keyset("KEYSID-1").exec(ctx);
-
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_logd_request_id(0u).exec(ctx);
 
+    //commit db transaction
     ctx.commit_transaction();
 
+    //TODO check result of updates
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "SELECT o.authinfopw = $1::text "
         //" AND "
