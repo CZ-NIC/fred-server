@@ -180,7 +180,7 @@ namespace Fred
             params.push_back(fqdn_);
             sql << " WHERE id = (SELECT oreg.id FROM domain d "
                     " JOIN object_registry oreg ON d.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)); ";//update object_id by handle
+                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)) ";//update object_id by handle
             ctx.get_conn().exec_params(sql.str(), params);
         }//update domain
 
@@ -199,7 +199,8 @@ namespace Fred
             for(std::vector<std::string>::iterator i = add_admin_contact_.begin(); i != add_admin_contact_.end(); ++i)
             {
                 Database::QueryParams params_i = params;//query params
-                std::stringstream sql_i(sql.str());
+                std::stringstream sql_i;
+                sql_i << sql.str();
 
                 params_i.push_back(*i);
                 sql_i << " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
@@ -223,7 +224,8 @@ namespace Fred
             for(std::vector<std::string>::iterator i = rem_admin_contact_.begin(); i != rem_admin_contact_.end(); ++i)
             {
                 Database::QueryParams params_i = params;//query params
-                std::stringstream sql_i(sql.str());
+                std::stringstream sql_i;
+                sql_i << sql.str();
 
                 params_i.push_back(*i);
                 sql_i << "contactid = (SELECT oreg.id FROM object_registry oreg "
