@@ -101,6 +101,7 @@ BOOST_AUTO_TEST_CASE(delete_contact)
     unsigned long long request_id =0;
     std::string another_request_id;
     {
+        //might get replaced by CreateContact when we have one
         //get db connection
         Database::Connection conn = Database::Manager::acquire();
 
@@ -119,10 +120,10 @@ BOOST_AUTO_TEST_CASE(delete_contact)
 
         //create test contact
         std::string xmark = rdg.xnumstring(6);
-        fcvc.handle=std::string("TESTOP1-HANDLE")+xmark;
-        fcvc.name=std::string("TESTOP1 NAME")+xmark;
-        fcvc.organization=std::string("TESTOP1-ORG")+xmark;
-        fcvc.street1=std::string("TESTOP1-STR1")+xmark;
+        fcvc.handle=std::string("TEST-DEL-CONTACT-HANDLE")+xmark;
+        fcvc.name=std::string("TEST-DEL-CONTACT NAME")+xmark;
+        fcvc.organization=std::string("TEST-DEL-CONTACT-ORG")+xmark;
+        fcvc.street1=std::string("TEST-DEL-CONTACT-STR1")+xmark;
         fcvc.city=std::string("Praha");
         fcvc.postalcode=std::string("11150");
         fcvc.country=std::string("CZ");
@@ -145,6 +146,13 @@ BOOST_AUTO_TEST_CASE(delete_contact)
 
         Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
 
+        Fred::OperationContext ctx;
+        Fred::DeleteContact(fcvc.handle).exec(ctx);
+        ctx.commit_transaction();
+
+        BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
+            "select erdate is not null from object_registry where name = $1::text"
+            ,Database::query_param_list(fcvc.handle))[0][0]));
     }
 
 }
