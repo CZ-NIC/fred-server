@@ -58,13 +58,14 @@ namespace Fred
         Database::QueryParams params;//query params
         std::stringstream sql;
         params.push_back(registrar_);
-        sql <<"UPDATE object SET update = now() SET upid = (SELECT id FROM registrar WHERE UPPER(handle) = UPPER($"
-                ""<< params.size() << "::text)) " ; //registrar from epp-session container by client_id from epp-params
+        sql <<"UPDATE object SET update = now() "
+            ", upid = (SELECT id FROM registrar WHERE UPPER(handle) = UPPER($"
+            << params.size() << "::text)) " ; //registrar from epp-session container by client_id from epp-params
 
         if(authinfo_.isset())
         {
             params.push_back(authinfo_);
-            sql << " SET authinfopw = $" << params.size() << "::text ";//set authinfo
+            sql << " , authinfopw = $" << params.size() << "::text ";//set authinfo
         }
 
         params.push_back(handle_);
