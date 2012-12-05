@@ -158,11 +158,63 @@ BOOST_AUTO_TEST_CASE(delete_contact)
 
 BOOST_AUTO_TEST_CASE(update_domain)
 {
+    std::string registrar_handle = "REG-FRED_A";
+    Fred::Contact::Verification::Contact fcvc;
+    unsigned long long request_id =0;
+    std::string another_request_id;
+    {
+        //might get replaced by CreateContact when we have one
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+
+        //Database::Transaction trans(conn);
+
+        //get registrar id
+        Database::Result res_reg = conn.exec_params(
+                "SELECT id FROM registrar WHERE handle=$1::text",
+                Database::query_param_list(registrar_handle));
+        if(res_reg.size() == 0) {
+            throw std::runtime_error("Registrar does not exist");
+        }
+        unsigned long long registrar_id = res_reg[0][0];
+
+        RandomDataGenerator rdg;
+
+        //create test contact
+        std::string xmark = rdg.xnumstring(6);
+        fcvc.handle=std::string("TEST-ADMIN-CONTACT-HANDLE")+xmark;
+        fcvc.name=std::string("TEST-ADMIN-CONTACT NAME")+xmark;
+        fcvc.organization=std::string("TEST-ADMIN-CONTACT-ORG")+xmark;
+        fcvc.street1=std::string("TEST-ADMIN-CONTACT-STR1")+xmark;
+        fcvc.city=std::string("Praha");
+        fcvc.postalcode=std::string("11150");
+        fcvc.country=std::string("CZ");
+        fcvc.telephone=std::string("+420.728")+xmark;
+        fcvc.email=std::string("test")+xmark+"@nic.cz";
+        fcvc.ssn=std::string("1980-01-01");
+        fcvc.ssntype=std::string("BIRTHDAY");
+        fcvc.auth_info=rdg.xnstring(8);
+        //unsigned long long contact_hid =
+
+        fcvc.disclosename = true;
+        fcvc.discloseorganization = true;
+        fcvc.discloseaddress = true;
+        fcvc.disclosetelephone = true;
+        fcvc.disclosefax = true;
+        fcvc.discloseemail = true;
+        fcvc.disclosevat = true;
+        fcvc.discloseident = true;
+        fcvc.disclosenotifyemail = true;
+
+        Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
+    }
+
+
     Fred::OperationContext ctx;
     Fred::UpdateDomain("fred.cz", "REG-FRED_A")
     .set_authinfo("testauthinfo")
     .set_registrant("KONTAKT")
-    .add_admin_contact("KONTAKT")
+    .add_admin_contact(fcvc.handle)
     .rem_admin_contact("KONTAKT")
     .exec(ctx);
     ctx.commit_transaction();
