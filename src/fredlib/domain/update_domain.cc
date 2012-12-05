@@ -82,9 +82,34 @@ namespace Fred
         return *this;
     }
 
+    UpdateDomain& UpdateDomain::set_nsset(const std::string& nsset)
+    {
+        nsset_ = Nullable<std::string>(nsset);
+        return *this;
+    }
+
+    UpdateDomain& UpdateDomain::unset_nsset()
+    {
+        nsset_ = Nullable<std::string>();
+        return *this;
+    }
+
+
     UpdateDomain& UpdateDomain::set_keyset(const Nullable<std::string>& keyset)
     {
         keyset_ = keyset;
+        return *this;
+    }
+
+    UpdateDomain& UpdateDomain::set_keyset(const std::string& keyset)
+    {
+        keyset_ = Nullable<std::string>(keyset);
+        return *this;
+    }
+
+    UpdateDomain& UpdateDomain::unset_keyset()
+    {
+        keyset_ = Nullable<std::string>();
         return *this;
     }
 

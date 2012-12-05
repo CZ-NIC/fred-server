@@ -62,7 +62,11 @@ namespace Fred
         UpdateDomain& set_registrant(const std::string& registrant);
         UpdateDomain& set_authinfo(const std::string& authinfo);
         UpdateDomain& set_nsset(const Nullable<std::string>& nsset);
+        UpdateDomain& set_nsset(const std::string& nsset);
+        UpdateDomain& unset_nsset();
         UpdateDomain& set_keyset(const Nullable<std::string>& keyset);
+        UpdateDomain& set_keyset(const std::string& keyset);
+        UpdateDomain& unset_keyset();
         UpdateDomain& add_admin_contact(const std::string& admin_contact);
         UpdateDomain& rem_admin_contact(const std::string& admin_contact);
         UpdateDomain& set_logd_request_id(unsigned long long logd_request_id);
