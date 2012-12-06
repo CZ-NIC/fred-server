@@ -1,3 +1,8 @@
+2012-12-06 Jan Zima (2.13.1)
+
+  * reverted logging for document generator (Bad file descriptor error when
+    using ShellCmd)
+
 2012-11-20 Jiri Sadek, Jan Zima, Juraj Vicenik (2.13.0)
 
   * fix/improvement in cancel state function
