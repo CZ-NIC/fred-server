@@ -475,7 +475,7 @@ BOOST_AUTO_TEST_CASE(update_nsset)
 
     Fred::UpdateNsset("NSSET-1", "REG-FRED_A")
         .add_dns(Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
-        .rem_dns("host2")
+        .rem_dns("host")
         .add_tech_contact(test_admin_contact3.handle)
         .rem_tech_contact(test_admin_contact3.handle)
         .set_authinfo("passw")
