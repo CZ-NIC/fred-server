@@ -18,8 +18,6 @@
 
 #include "log/logger.h"
 #include "documents.h"
-#include "util/subprocess.h"
-
 #include <stdio.h>
 #include <string.h>
 #include <cstdlib>
@@ -172,15 +170,8 @@ namespace Fred
         }     
         cmd << " > "
             << outputFile.getName();
-
         LOGGER(PACKAGE).debug(boost::format("running shell command: %1%") % cmd.str());
-        SubProcessOutput output = ShellCmd(cmd.str(), 60).execute();
-        if (!output.stderr.empty())
-        {
-            LOGGER(PACKAGE).error(output.stderr);
-            throw Generator::ERROR();
-        }
-
+        if (system(cmd.str().c_str())) throw Generator::ERROR();
         outputFile.open(std::ios::in);
         // TODO: filemanager_client has to annouce id better
         *out << outputFile.rdbuf();
