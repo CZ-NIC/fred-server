@@ -466,7 +466,7 @@ BOOST_AUTO_TEST_CASE(update_nsset)
                 , Util::vector_of<Fred::DnsHost>
                     (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //add_dns
                     (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //add_dns
-                , Util::vector_of<std::string>("a.ns.nic.cz ") //rem_dns
+                , Util::vector_of<std::string>("a.ns.nic.cz") //rem_dns
                 , Util::vector_of<std::string>(test_admin_contact3.handle) //std::vector<std::string>() //add_tech_contact
                 , Util::vector_of<std::string>(test_admin_contact3.handle) //std::vector<std::string>() //rem_tech_contact
                 , Optional<short>(0) //tech_check_level
