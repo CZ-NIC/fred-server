@@ -349,4 +349,21 @@ BOOST_AUTO_TEST_CASE(update_domain)
         ,Database::query_param_list("testauthinfo")("fred.cz"))[0][0]));
 }
 
+BOOST_AUTO_TEST_CASE(update_nsset)
+{
+    Fred::OperationContext ctx;
+    Fred::UpdateNsset("NSSET-1", "REG-FRED_A").exec(ctx);
+
+    Fred::UpdateNsset("NSSET-1", "REG-FRED_A"
+                , Optional<std::string>()//authinfo
+                , std::vector<Fred::DnsHost>() //add_dns
+                , std::vector<Fred::DnsHost>() //rem_dns
+                , std::vector<std::string>() //add_tech_contact
+                , std::vector<std::string>() //rem_tech_contact
+                , Optional<short>() //tech_check_level
+                , Optional<unsigned long long>() //logd_request_id
+                ).exec(ctx);
+
+}
+
 BOOST_AUTO_TEST_SUITE_END();//TestEPPops
