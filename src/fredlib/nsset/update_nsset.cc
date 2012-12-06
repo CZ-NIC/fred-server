@@ -225,7 +225,9 @@ namespace Fred
 
                 unsigned long long add_host_id = add_host_id_res[0][0];
 
-                for(std::vector<std::string>::iterator j = i->get_inet_addr().begin(); j != i->get_inet_addr().end(); ++j)
+                std::vector<std::string> dns_host_ip = i->get_inet_addr();
+
+                for(std::vector<std::string>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
                 {
                     ctx.get_conn().exec_params(
                         "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) VALUES($1::integer, "
