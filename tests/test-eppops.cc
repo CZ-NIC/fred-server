@@ -426,8 +426,8 @@ BOOST_AUTO_TEST_CASE(update_nsset)
                     (Fred::DnsHost("host", Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //rem_dns
                 , Util::vector_of<std::string>(test_admin_contact2.handle) //std::vector<std::string>() //add_tech_contact
                 , Util::vector_of<std::string>(test_admin_contact2.handle) //std::vector<std::string>() //rem_tech_contact
-                , Optional<short>() //tech_check_level
-                , Optional<unsigned long long>() //logd_request_id
+                , Optional<short>(0) //tech_check_level
+                , Optional<unsigned long long>(0) //logd_request_id
                 ).exec(ctx);
 
 
