@@ -491,6 +491,7 @@ BOOST_AUTO_TEST_CASE(update_nsset)
     Fred::UpdateNsset("NSSET-1", "REG-FRED_A").set_logd_request_id(0).exec(ctx);
     Fred::UpdateNsset("NSSET-1", "REG-FRED_A").set_tech_check_level(0).exec(ctx);
 
+    ctx.commit_transaction();
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestEPPops
