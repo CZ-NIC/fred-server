@@ -45,7 +45,7 @@ namespace Fred
             , const std::string& registrar
             , const Optional<std::string>& authinfo
             , const std::vector<DnsHost>& add_dns
-            , const std::vector<DnsHost>& rem_dns
+            , const std::vector<std::string>& rem_dns
             , const std::vector<std::string>& add_tech_contact
             , const std::vector<std::string>& rem_tech_contact
             , const Optional<short>& tech_check_level
@@ -76,9 +76,9 @@ namespace Fred
         return *this;
     }
 
-    UpdateNsset& UpdateNsset::rem_dns(const DnsHost& dns)
+    UpdateNsset& UpdateNsset::rem_dns(const std::string& fqdn)
     {
-        rem_dns_.push_back(dns);
+        rem_dns_.push_back(fqdn);
         return *this;
     }
 
@@ -97,6 +97,12 @@ namespace Fred
     UpdateNsset& UpdateNsset::set_logd_request_id(unsigned long long logd_request_id)
     {
         logd_request_id_ = logd_request_id;
+        return *this;
+    }
+
+    UpdateNsset& UpdateNsset::set_tech_check_level(short tech_check_level)
+    {
+        tech_check_level_ = tech_check_level;
         return *this;
     }
 
@@ -180,13 +186,13 @@ namespace Fred
         //delete dns hosts - before adding new ones
         if(!rem_dns_.empty())
         {
-            for(std::vector<DnsHost>::iterator i = rem_dns_.begin(); i != rem_dns_.end(); ++i)
+            for(std::vector<std::string>::iterator i = rem_dns_.begin(); i != rem_dns_.end(); ++i)
             {
                 Database::Result rem_host_id_res = ctx.get_conn().exec_params(
                     "DELETE FROM host WHERE LOWER(fqdn)=LOWER($1::text) AND"
                     " nssetid = (SELECT oreg.id FROM nsset n JOIN object_registry oreg ON n.id = oreg.id "
                     " WHERE UPPER(oreg.name) = UPPER($2::text)) RETURNING id "
-                    , Database::query_param_list(i->get_fqdn())(handle_));
+                    , Database::query_param_list(*i)(handle_));
 
                 if (rem_host_id_res.size() != 1)
                 {

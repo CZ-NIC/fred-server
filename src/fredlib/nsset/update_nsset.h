@@ -63,7 +63,7 @@ namespace Fred
         const std::string registrar_;//registrar identifier
         Optional<std::string> authinfo_;//set authinfo
         std::vector<DnsHost> add_dns_;//dns hosts to add
-        std::vector<DnsHost> rem_dns_;//dns hosts to remove
+        std::vector<std::string> rem_dns_;//dns hosts to remove
         std::vector<std::string> add_tech_contact_; //tech contacts to be added
         std::vector<std::string> rem_tech_contact_; //tech contacts to be removed
         Optional<short> tech_check_level_; //nsset tech check level
@@ -76,7 +76,7 @@ namespace Fred
                 , const std::string& registrar
                 , const Optional<std::string>& authinfo
                 , const std::vector<DnsHost>& add_dns
-                , const std::vector<DnsHost>& rem_dns
+                , const std::vector<std::string>& rem_dns
                 , const std::vector<std::string>& add_tech_contact
                 , const std::vector<std::string>& rem_tech_contact
                 , const Optional<short>& tech_check_level
@@ -84,7 +84,7 @@ namespace Fred
                 );
         UpdateNsset& set_authinfo(const std::string& authinfo);
         UpdateNsset& add_dns(const DnsHost& dns);
-        UpdateNsset& rem_dns(const DnsHost& dns);
+        UpdateNsset& rem_dns(const std::string& fqdn);
         UpdateNsset& add_tech_contact(const std::string& tech_contact);
         UpdateNsset& rem_tech_contact(const std::string& tech_contact);
         UpdateNsset& set_tech_check_level(short tech_check_level);

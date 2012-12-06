@@ -355,7 +355,6 @@ BOOST_AUTO_TEST_CASE(update_nsset)
     unsigned long long request_id =0;
     std::string another_request_id;
 
-
     Fred::Contact::Verification::Contact test_admin_contact2;
     {
         //might get replaced by CreateContact when we have one
@@ -401,6 +400,51 @@ BOOST_AUTO_TEST_CASE(update_nsset)
         Fred::Contact::Verification::contact_create(request_id, registrar_id, test_admin_contact2);
     }
 
+    Fred::Contact::Verification::Contact test_admin_contact3;
+    {
+        //might get replaced by CreateContact when we have one
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+
+        //get registrar id
+        Database::Result res_reg = conn.exec_params(
+                "SELECT id FROM registrar WHERE handle=$1::text",
+                Database::query_param_list(registrar_handle));
+        if(res_reg.size() == 0) {
+            throw std::runtime_error("Registrar does not exist");
+        }
+        unsigned long long registrar_id = res_reg[0][0];
+
+        RandomDataGenerator rdg;
+
+        //create test contact
+        std::string xmark = rdg.xnumstring(6);
+        test_admin_contact3.handle=std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark;
+        test_admin_contact3.name=std::string("TEST-ADMIN-CONTACT3 NAME")+xmark;
+        test_admin_contact3.organization=std::string("TEST-ADMIN-CONTACT3-ORG")+xmark;
+        test_admin_contact3.street1=std::string("TEST-ADMIN-CONTACT3-STR1")+xmark;
+        test_admin_contact3.city=std::string("Praha");
+        test_admin_contact3.postalcode=std::string("11150");
+        test_admin_contact3.country=std::string("CZ");
+        test_admin_contact3.telephone=std::string("+420.728")+xmark;
+        test_admin_contact3.email=std::string("test")+xmark+"@nic.cz";
+        test_admin_contact3.ssn=std::string("1980-01-01");
+        test_admin_contact3.ssntype=std::string("BIRTHDAY");
+        test_admin_contact3.auth_info=rdg.xnstring(8);
+
+        test_admin_contact3.disclosename = true;
+        test_admin_contact3.discloseorganization = true;
+        test_admin_contact3.discloseaddress = true;
+        test_admin_contact3.disclosetelephone = true;
+        test_admin_contact3.disclosefax = true;
+        test_admin_contact3.discloseemail = true;
+        test_admin_contact3.disclosevat = true;
+        test_admin_contact3.discloseident = true;
+        test_admin_contact3.disclosenotifyemail = true;
+
+        Fred::Contact::Verification::contact_create(request_id, registrar_id, test_admin_contact3);
+    }
+
 
     Fred::OperationContext ctx;
     Fred::UpdateNsset("NSSET-1", "REG-FRED_A").exec(ctx);
@@ -409,7 +453,7 @@ BOOST_AUTO_TEST_CASE(update_nsset)
             , "REG-FRED_A"//registrar
                 , Optional<std::string>()//authinfo
                 , std::vector<Fred::DnsHost>() //add_dns
-                , std::vector<Fred::DnsHost>() //rem_dns
+                , std::vector<std::string>() //rem_dns
                 , std::vector<std::string>() //add_tech_contact
                 , std::vector<std::string>() //rem_tech_contact
                 , Optional<short>() //tech_check_level
@@ -422,14 +466,30 @@ BOOST_AUTO_TEST_CASE(update_nsset)
                 , Util::vector_of<Fred::DnsHost>
                     (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //add_dns
                     (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //add_dns
-                , Util::vector_of<Fred::DnsHost>
-                    (Fred::DnsHost("host", Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //rem_dns
-                , Util::vector_of<std::string>(test_admin_contact2.handle) //std::vector<std::string>() //add_tech_contact
-                , Util::vector_of<std::string>(test_admin_contact2.handle) //std::vector<std::string>() //rem_tech_contact
+                , Util::vector_of<std::string>("host") //rem_dns
+                , Util::vector_of<std::string>(test_admin_contact3.handle) //std::vector<std::string>() //add_tech_contact
+                , Util::vector_of<std::string>(test_admin_contact3.handle) //std::vector<std::string>() //rem_tech_contact
                 , Optional<short>(0) //tech_check_level
                 , Optional<unsigned long long>(0) //logd_request_id
                 ).exec(ctx);
 
+    Fred::UpdateNsset("NSSET-1", "REG-FRED_A")
+        .add_dns(Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
+        .rem_dns("host2")
+        .add_tech_contact(test_admin_contact3.handle)
+        .rem_tech_contact(test_admin_contact3.handle)
+        .set_authinfo("passw")
+        .set_logd_request_id(0)
+        .set_tech_check_level(0)
+    .exec(ctx);
+
+    Fred::UpdateNsset("NSSET-1", "REG-FRED_A").add_dns(Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))).exec(ctx);
+    Fred::UpdateNsset("NSSET-1", "REG-FRED_A").rem_dns("host2").exec(ctx);
+    Fred::UpdateNsset("NSSET-1", "REG-FRED_A").add_tech_contact(test_admin_contact3.handle).exec(ctx);
+    Fred::UpdateNsset("NSSET-1", "REG-FRED_A").rem_tech_contact(test_admin_contact3.handle).exec(ctx);
+    Fred::UpdateNsset("NSSET-1", "REG-FRED_A").set_authinfo("passw").exec(ctx);
+    Fred::UpdateNsset("NSSET-1", "REG-FRED_A").set_logd_request_id(0).exec(ctx);
+    Fred::UpdateNsset("NSSET-1", "REG-FRED_A").set_tech_check_level(0).exec(ctx);
 
 }
 
