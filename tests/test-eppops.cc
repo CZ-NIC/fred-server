@@ -451,14 +451,14 @@ BOOST_AUTO_TEST_CASE(update_nsset)
 
     Fred::UpdateNsset("NSSET-1"//handle
             , "REG-FRED_A"//registrar
-                , Optional<std::string>()//authinfo
-                , std::vector<Fred::DnsHost>() //add_dns
-                , std::vector<std::string>() //rem_dns
-                , std::vector<std::string>() //add_tech_contact
-                , std::vector<std::string>() //rem_tech_contact
-                , Optional<short>() //tech_check_level
-                , Optional<unsigned long long>() //logd_request_id
-                ).exec(ctx);
+            , Optional<std::string>()//authinfo
+            , std::vector<Fred::DnsHost>() //add_dns
+            , std::vector<std::string>() //rem_dns
+            , std::vector<std::string>() //add_tech_contact
+            , std::vector<std::string>() //rem_tech_contact
+            , Optional<short>() //tech_check_level
+            , Optional<unsigned long long>() //logd_request_id
+            ).exec(ctx);
 
     Fred::UpdateNsset("NSSET-1"//handle
             , "REG-FRED_A"//registrar
@@ -475,7 +475,7 @@ BOOST_AUTO_TEST_CASE(update_nsset)
 
     Fred::UpdateNsset("NSSET-1", "REG-FRED_A")
         .add_dns(Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))
-        .rem_dns("host")
+        .rem_dns("b.ns.nic.cz")
         .add_tech_contact(test_admin_contact3.handle)
         .rem_tech_contact(test_admin_contact3.handle)
         .set_authinfo("passw")
