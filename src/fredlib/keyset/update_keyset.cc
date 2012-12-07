@@ -130,7 +130,8 @@ namespace Fred
             for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
             {
                 Database::QueryParams params_i = params;//query params
-                std::stringstream sql_i(sql.str());
+                std::stringstream sql_i;
+                sql_i << sql.str();
 
                 params_i.push_back(*i);
                 sql_i << " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
@@ -154,7 +155,8 @@ namespace Fred
             for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
             {
                 Database::QueryParams params_i = params;//query params
-                std::stringstream sql_i(sql.str());
+                std::stringstream sql_i;
+                sql_i << sql.str();
 
                 params_i.push_back(*i);
                 sql_i << "contactid = (SELECT oreg.id FROM object_registry oreg "

@@ -73,27 +73,6 @@ BOOST_AUTO_TEST_SUITE(TestEPPops)
 
 const std::string server_name = "test-eppops";
 
-/*
-BOOST_AUTO_TEST_CASE( test_eppops )
-{
-    //db
-    Database::Connection conn = Database::Manager::acquire();
-    boost::shared_ptr<Database::Transaction> txp ( new Database::Transaction(conn));
-    //Database::Transaction tx(conn);
-    Database::Result res = conn.exec("select 1");
-    txp->commit();
-    BOOST_CHECK_EQUAL(std::string("1").compare(std::string(res[0][0])),0);
-
-    //opctx
-    Fred::OperationContext opctx;
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_authinfo("testauth").exec(opctx);
-    Fred::UpdateNsset("fred.cz", "REG-FRED_A").set_authinfo("testauth").add_dns(Fred::DnsHost("host", Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))).exec(opctx);
-    Fred::UpdateKeyset("fred.cz", "REG-FRED_A").set_authinfo("testauth").add_dns_key(Fred::DnsKey(0,1,2,"key")).exec(opctx);
-    Fred::DeleteContact("KONTAKT").exec(opctx);
-    opctx.commit_transaction();
-}
-*/
-
 BOOST_AUTO_TEST_CASE(delete_contact)
 {
     std::string registrar_handle = "REG-FRED_A";
@@ -154,7 +133,7 @@ BOOST_AUTO_TEST_CASE(delete_contact)
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "select erdate is not null from object_registry where name = $1::text"
         ,Database::query_param_list(fcvc.handle))[0][0]));
-}
+}//delete_contact
 
 BOOST_AUTO_TEST_CASE(update_domain)
 {
@@ -347,7 +326,7 @@ BOOST_AUTO_TEST_CASE(update_domain)
         " JOIN object o ON o.id = oreg.id "
         " WHERE oreg.name = $2::text"
         ,Database::query_param_list("testauthinfo")("fred.cz"))[0][0]));
-}
+}//update_domain
 
 BOOST_AUTO_TEST_CASE(update_nsset)
 {
@@ -492,6 +471,118 @@ BOOST_AUTO_TEST_CASE(update_nsset)
     Fred::UpdateNsset("NSSET-1", "REG-FRED_A").set_tech_check_level(0).exec(ctx);
 
     //ctx.commit_transaction();
-}
+}//update_nsset
+
+BOOST_AUTO_TEST_CASE(update_keyset)
+{
+    std::string registrar_handle = "REG-FRED_A";
+    unsigned long long request_id =0;
+    std::string another_request_id;
+
+    Fred::Contact::Verification::Contact test_admin_contact4;
+    {
+        //might get replaced by CreateContact when we have one
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+
+        //get registrar id
+        Database::Result res_reg = conn.exec_params(
+                "SELECT id FROM registrar WHERE handle=$1::text",
+                Database::query_param_list(registrar_handle));
+        if(res_reg.size() == 0) {
+            throw std::runtime_error("Registrar does not exist");
+        }
+        unsigned long long registrar_id = res_reg[0][0];
+
+        RandomDataGenerator rdg;
+
+        //create test contact
+        std::string xmark = rdg.xnumstring(6);
+        test_admin_contact4.handle=std::string("TEST-ADMIN-CONTACT4-HANDLE")+xmark;
+        test_admin_contact4.name=std::string("TEST-ADMIN-CONTACT4 NAME")+xmark;
+        test_admin_contact4.organization=std::string("TEST-ADMIN-CONTACT4-ORG")+xmark;
+        test_admin_contact4.street1=std::string("TEST-ADMIN-CONTACT4-STR1")+xmark;
+        test_admin_contact4.city=std::string("Praha");
+        test_admin_contact4.postalcode=std::string("11150");
+        test_admin_contact4.country=std::string("CZ");
+        test_admin_contact4.telephone=std::string("+420.728")+xmark;
+        test_admin_contact4.email=std::string("test")+xmark+"@nic.cz";
+        test_admin_contact4.ssn=std::string("1980-01-01");
+        test_admin_contact4.ssntype=std::string("BIRTHDAY");
+        test_admin_contact4.auth_info=rdg.xnstring(8);
+
+        test_admin_contact4.disclosename = true;
+        test_admin_contact4.discloseorganization = true;
+        test_admin_contact4.discloseaddress = true;
+        test_admin_contact4.disclosetelephone = true;
+        test_admin_contact4.disclosefax = true;
+        test_admin_contact4.discloseemail = true;
+        test_admin_contact4.disclosevat = true;
+        test_admin_contact4.discloseident = true;
+        test_admin_contact4.disclosenotifyemail = true;
+
+        Fred::Contact::Verification::contact_create(request_id, registrar_id, test_admin_contact4);
+    }
+
+    Fred::Contact::Verification::Contact test_admin_contact5;
+    {
+        //might get replaced by CreateContact when we have one
+        //get db connection
+        Database::Connection conn = Database::Manager::acquire();
+
+        //get registrar id
+        Database::Result res_reg = conn.exec_params(
+                "SELECT id FROM registrar WHERE handle=$1::text",
+                Database::query_param_list(registrar_handle));
+        if(res_reg.size() == 0) {
+            throw std::runtime_error("Registrar does not exist");
+        }
+        unsigned long long registrar_id = res_reg[0][0];
+
+        RandomDataGenerator rdg;
+
+        //create test contact
+        std::string xmark = rdg.xnumstring(6);
+        test_admin_contact5.handle=std::string("TEST-ADMIN-CONTACT5-HANDLE")+xmark;
+        test_admin_contact5.name=std::string("TEST-ADMIN-CONTACT5 NAME")+xmark;
+        test_admin_contact5.organization=std::string("TEST-ADMIN-CONTACT5-ORG")+xmark;
+        test_admin_contact5.street1=std::string("TEST-ADMIN-CONTACT5-STR1")+xmark;
+        test_admin_contact5.city=std::string("Praha");
+        test_admin_contact5.postalcode=std::string("11150");
+        test_admin_contact5.country=std::string("CZ");
+        test_admin_contact5.telephone=std::string("+420.728")+xmark;
+        test_admin_contact5.email=std::string("test")+xmark+"@nic.cz";
+        test_admin_contact5.ssn=std::string("1980-01-01");
+        test_admin_contact5.ssntype=std::string("BIRTHDAY");
+        test_admin_contact5.auth_info=rdg.xnstring(8);
+
+        test_admin_contact5.disclosename = true;
+        test_admin_contact5.discloseorganization = true;
+        test_admin_contact5.discloseaddress = true;
+        test_admin_contact5.disclosetelephone = true;
+        test_admin_contact5.disclosefax = true;
+        test_admin_contact5.discloseemail = true;
+        test_admin_contact5.disclosevat = true;
+        test_admin_contact5.discloseident = true;
+        test_admin_contact5.disclosenotifyemail = true;
+
+        Fred::Contact::Verification::contact_create(request_id, registrar_id, test_admin_contact5);
+    }
+
+
+    Fred::OperationContext ctx;
+
+    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").exec(ctx);
+
+    Fred::UpdateKeyset("KEYSID-1"//const std::string& handle
+                , "REG-FRED_A"//const std::string& registrar
+                , Optional<std::string>("testauthinfo")//const Optional<std::string>& authinfo
+                , Util::vector_of<std::string>(test_admin_contact5.handle) //const std::vector<std::string>& add_tech_contact
+                , Util::vector_of<std::string>("KONTAKT")//const std::vector<std::string>& rem_tech_contact
+                , Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "key"))//const std::vector<DnsKey>& add_dns_key
+                , Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"))//const std::vector<DnsKey>& rem_dns_key
+                , Optional<unsigned long long>(0)//const Optional<unsigned long long> logd_request_id
+                ).exec(ctx);
+}//update_keyset
 
 BOOST_AUTO_TEST_SUITE_END();//TestEPPops

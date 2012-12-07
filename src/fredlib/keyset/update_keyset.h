@@ -41,7 +41,7 @@ namespace Fred
         unsigned short flags_;
         unsigned short protocol_;
         unsigned short alg_;
-        std::string key_;
+        std::string key_;//base64 encoding
     public:
         virtual ~DnsKey(){}
         DnsKey(unsigned short _flags
