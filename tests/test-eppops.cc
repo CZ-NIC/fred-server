@@ -593,6 +593,15 @@ BOOST_AUTO_TEST_CASE(update_keyset)
                 , std::vector<Fred::DnsKey>()//const std::vector<DnsKey>& rem_dns_key
                 , Optional<unsigned long long>()//const Optional<unsigned long long> logd_request_id
                 ).exec(ctx);
+
+    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").set_authinfo("kukauthinfo").exec(ctx);
+    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").add_tech_contact(test_admin_contact4.handle).exec(ctx);
+    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").rem_tech_contact(test_admin_contact5.handle).exec(ctx);
+    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").add_dns_key(Fred::DnsKey(257, 3, 5, "key2")).add_dns_key(Fred::DnsKey(257, 3, 5, "key3")).exec(ctx);
+    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").rem_dns_key(Fred::DnsKey(257, 3, 5, "key")).exec(ctx);
+    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").set_logd_request_id(0).exec(ctx);
+
+
 }//update_keyset
 
 BOOST_AUTO_TEST_SUITE_END();//TestEPPops
