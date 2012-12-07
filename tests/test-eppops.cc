@@ -583,6 +583,16 @@ BOOST_AUTO_TEST_CASE(update_keyset)
                 , Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"))//const std::vector<DnsKey>& rem_dns_key
                 , Optional<unsigned long long>(0)//const Optional<unsigned long long> logd_request_id
                 ).exec(ctx);
+
+    Fred::UpdateKeyset("KEYSID-1"//const std::string& handle
+                , "REG-FRED_A"//const std::string& registrar
+                , Optional<std::string>()//const Optional<std::string>& authinfo
+                , std::vector<std::string>() //const std::vector<std::string>& add_tech_contact
+                , std::vector<std::string>()//const std::vector<std::string>& rem_tech_contact
+                , std::vector<Fred::DnsKey>()//const std::vector<DnsKey>& add_dns_key
+                , std::vector<Fred::DnsKey>()//const std::vector<DnsKey>& rem_dns_key
+                , Optional<unsigned long long>()//const Optional<unsigned long long> logd_request_id
+                ).exec(ctx);
 }//update_keyset
 
 BOOST_AUTO_TEST_SUITE_END();//TestEPPops
