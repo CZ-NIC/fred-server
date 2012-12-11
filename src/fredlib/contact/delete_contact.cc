@@ -48,26 +48,37 @@ namespace Fred
             }
         }
 
+        //get contact_id
+        unsigned long long contact_id =0;
+        {
+            Database::Result contact_id_res = ctx.get_conn().exec_params(
+                "SELECT oreg.id FROM contact c "
+                " JOIN object_registry oreg ON c.id = oreg.id "
+                " WHERE UPPER(oreg.name) = UPPER($1::text)"
+                , Database::query_param_list(handle_));
+
+            if (contact_id_res.size() != 1)
+            {
+                throw std::runtime_error("DeleteContact::exec contact not found");
+            }
+
+            contact_id = contact_id_res[0][0];
+        }
+
         ctx.get_conn().exec_params(
             "UPDATE object_registry SET erdate = now() "
-            " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM contact c "
-                " JOIN object_registry oreg ON c.id = oreg.id "
-                " WHERE UPPER(oreg.name) = UPPER($1::text)),'contact '||$1::text||' not found')"
-            , Database::query_param_list(handle_));
+            " WHERE id = $1::integer"
+            , Database::query_param_list(contact_id));
 
         ctx.get_conn().exec_params(
             "DELETE FROM contact "
-            " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM contact c "
-                " JOIN object_registry oreg ON c.id = oreg.id "
-                " WHERE UPPER(oreg.name) = UPPER($1::text)),'contact '||$1::text||' not found')"
-            , Database::query_param_list(handle_));
+                " WHERE id = $1::integer"
+                , Database::query_param_list(contact_id));
 
         ctx.get_conn().exec_params(
             "DELETE FROM object "
-            " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM contact c "
-                " JOIN object_registry oreg ON c.id = oreg.id "
-                " WHERE UPPER(oreg.name) = UPPER($1::text)),'contact '||$1::text||' not found')"
-            , Database::query_param_list(handle_));
+                " WHERE id = $1::integer"
+                , Database::query_param_list(contact_id));
     }//DeleteContact::exec
 
 }//namespace Fred

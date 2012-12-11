@@ -145,8 +145,26 @@ namespace Fred
             }
         }
 
+        //get domain_id
+        unsigned long long domain_id =0;
+        {
+            Database::Result domain_id_res = ctx.get_conn().exec_params(
+                "SELECT oreg.id FROM domain c "
+                " JOIN object_registry oreg ON d.id = oreg.id "
+                " WHERE UPPER(oreg.name) = UPPER($1::text)"
+                , Database::query_param_list(fqdn_));
+
+            if (domain_id_res.size() != 1)
+            {
+                throw std::runtime_error("UpdateDomain::exec domain not found");
+            }
+
+            domain_id = domain_id_res[0][0];
+        }
+
         //update object
         Fred::UpdateObject(fqdn_, registrar_, authinfo_).exec(ctx);
+
 
         //update domain
         if(nsset_.isset() || keyset_.isset() || registrant_.isset())
@@ -203,10 +221,8 @@ namespace Fred
                     " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'registrant '||$"<< params.size() << "::text||' not found') "; //registrant update
             }//if change registrant
 
-            params.push_back(fqdn_);
-            sql << " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM domain d "
-                    " JOIN object_registry oreg ON d.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'domain '||$"<< params.size() << "::text||' not found') ";//update object_id by handle
+            params.push_back(domain_id);
+            sql << " WHERE id = $" << params.size() << "::integer ";
             ctx.get_conn().exec_params(sql.str(), params);
         }//if update domain
 
@@ -216,11 +232,9 @@ namespace Fred
             Database::QueryParams params;//query params
             std::stringstream sql;
 
-            params.push_back(fqdn_);
+            params.push_back(domain_id);
             sql << "INSERT INTO domain_contact_map(domainid, contactid) "
-                    " VALUES (raise_exception_ifnull((SELECT oreg.id FROM domain d "
-                    " JOIN object_registry oreg ON d.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'domain '||$"<< params.size() << "::text||' not found'), ";
+                    " VALUES ($" << params.size() << "::integer, ";
 
             for(std::vector<std::string>::iterator i = add_admin_contact_.begin(); i != add_admin_contact_.end(); ++i)
             {
@@ -241,11 +255,8 @@ namespace Fred
             Database::QueryParams params;//query params
             std::stringstream sql;
 
-            params.push_back(fqdn_);
-            sql << "DELETE FROM domain_contact_map WHERE domainid = "
-                    " raise_exception_ifnull((SELECT oreg.id FROM domain d "
-                    " JOIN object_registry oreg ON d.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'domain '||$"<< params.size() << "::text||' not found') AND ";
+            params.push_back(domain_id);
+            sql << "DELETE FROM domain_contact_map WHERE domainid = $" << params.size() << "::integer AND ";
 
             for(std::vector<std::string>::iterator i = rem_admin_contact_.begin(); i != rem_admin_contact_.end(); ++i)
             {
@@ -269,45 +280,35 @@ namespace Fred
             ctx.get_conn().exec_params(
                 "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
                 " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM domain d "
-                    " JOIN object_registry oreg ON d.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'domain '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(fqdn_));
+                " WHERE id = $2::integer"
+                , Database::query_param_list(history_id)(domain_id));
 
             //object_registry historyid
             ctx.get_conn().exec_params(
                 "UPDATE object_registry SET historyid = $1::bigint "
-                " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM domain d "
-                    " JOIN object_registry oreg ON d.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'domain '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(fqdn_));
+                    " WHERE id = $2::integer"
+                    , Database::query_param_list(history_id)(domain_id));
 
             //domain_history
             ctx.get_conn().exec_params(
                 "INSERT INTO domain_history(historyid,id,zone, registrant, nsset, exdate, keyset) "
                 " SELECT $1::bigint, id, zone, registrant, nsset, exdate, keyset FROM domain "
-                " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM domain d "
-                    " JOIN object_registry oreg ON d.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'domain '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(fqdn_));
+                    " WHERE id = $2::integer"
+                    , Database::query_param_list(history_id)(domain_id));
 
             //domain_contact_map_history
             ctx.get_conn().exec_params(
                 "INSERT INTO domain_contact_map_history(historyid,domainid,contactid, role) "
                 " SELECT $1::bigint, domainid,contactid, role FROM domain_contact_map "
-                " WHERE domainid = raise_exception_ifnull((SELECT oreg.id FROM domain d "
-                    " JOIN object_registry oreg ON d.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'domain '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(fqdn_));
+                    " WHERE domainid = $2::integer"
+                    , Database::query_param_list(history_id)(domain_id));
 
             //enumval_history
             ctx.get_conn().exec_params(
                 "INSERT INTO enumval_history(historyid,domainid,exdate, publish) "
                 " SELECT $1::bigint, domainid,exdate, publish FROM enumval "
-                " WHERE domainid = raise_exception_ifnull((SELECT oreg.id FROM domain d "
-                    " JOIN object_registry oreg ON d.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'domain '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(fqdn_));
+                    " WHERE domainid = $2::integer"
+                    , Database::query_param_list(history_id)(domain_id));
         }//save history
     }//UpdateDomain::exec
 

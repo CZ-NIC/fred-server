@@ -113,6 +113,23 @@ namespace Fred
             }
         }
 
+        //get keyset_id
+        unsigned long long keyset_id =0;
+        {
+            Database::Result keyset_id_res = ctx.get_conn().exec_params(
+                "SELECT oreg.id FROM keyset k "
+                " JOIN object_registry oreg ON k.id = oreg.id "
+                " WHERE UPPER(oreg.name) = UPPER($1::text)"
+                , Database::query_param_list(handle_));
+
+            if (keyset_id_res.size() != 1)
+            {
+                throw std::runtime_error("UpdateKeyset::exec keyset not found");
+            }
+
+            keyset_id = keyset_id_res[0][0];
+        }
+
         Fred::UpdateObject(handle_, registrar_, authinfo_).exec(ctx);
 
         //add tech contacts
@@ -121,11 +138,9 @@ namespace Fred
             Database::QueryParams params;//query params
             std::stringstream sql;
 
-            params.push_back(handle_);
+            params.push_back(keyset_id);
             sql << "INSERT INTO keyset_contact_map(keysetid, contactid) "
-                    " VALUES (raise_exception_ifnull((SELECT oreg.id FROM keyset k "
-                    " JOIN object_registry oreg ON k.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'keyset '||$"<< params.size() << "::text||' not found'), ";
+                    " VALUES ($" << params.size() << "::integer, ";
 
             for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
             {
@@ -146,11 +161,9 @@ namespace Fred
             Database::QueryParams params;//query params
             std::stringstream sql;
 
-            params.push_back(handle_);
+            params.push_back(keyset_id);
             sql << "DELETE FROM keyset_contact_map WHERE keysetid = "
-                    " raise_exception_ifnull((SELECT oreg.id FROM keyset k "
-                    " JOIN object_registry oreg ON k.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'keyset '||$" << params.size() << "::text||' not found') AND ";
+                    " $" << params.size() << "::integer AND ";
 
             for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
             {
@@ -177,10 +190,9 @@ namespace Fred
                 nwkey.erase(std::remove_if(nwkey.begin(), nwkey.end(), isspace), nwkey.end());
 
                 ctx.get_conn().exec_params(
-                    "DELETE FROM dnskey WHERE keysetid = raise_exception_ifnull((SELECT oreg.id "
-                    " FROM keyset k JOIN object_registry oreg ON k.id = oreg.id WHERE UPPER(oreg.name) = UPPER($1::text)),'keyset '||$1::text||' not found') "
+                    "DELETE FROM dnskey WHERE keysetid = $1::integer "
                     " AND flags = $2::integer AND protocol = $3::integer AND alg = $4::integer AND key = $5::text"
-                    , Database::query_param_list(handle_)(i->get_flags())(i->get_protocol())(i->get_alg())(nwkey));
+                    , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(nwkey));
             }//for i
         }//if delete dns keys
 
@@ -195,10 +207,9 @@ namespace Fred
                 nwkey.erase(std::remove_if(nwkey.begin(), nwkey.end(), isspace), nwkey.end());
 
                 ctx.get_conn().exec_params(
-                    "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES(raise_exception_ifnull( "
-                    " (SELECT oreg.id FROM keyset k JOIN object_registry oreg ON k.id = oreg.id WHERE UPPER(oreg.name) = UPPER($1::text)),'keyset '||$1::text||' not found') "
+                    "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
                     ", $2::integer, $3::integer, $4::integer, $5::text)"
-                    , Database::query_param_list(handle_)(i->get_flags())(i->get_protocol())(i->get_alg())(nwkey));
+                    , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(nwkey));
             }//for i
         }//if add dns keys
 
@@ -210,54 +221,42 @@ namespace Fred
             ctx.get_conn().exec_params(
                 "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
                 " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM keyset k "
-                    " JOIN object_registry oreg ON k.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'keyset '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(handle_));
+                " WHERE id = $2::integer"
+                , Database::query_param_list(history_id)(keyset_id));
 
             //object_registry historyid
             ctx.get_conn().exec_params(
                 "UPDATE object_registry SET historyid = $1::bigint "
-                " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM keyset k "
-                    " JOIN object_registry oreg ON k.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'keyset '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(handle_));
+                    " WHERE id = $2::integer"
+                    , Database::query_param_list(history_id)(keyset_id));
 
             //keyset_history
             ctx.get_conn().exec_params(
                 "INSERT INTO keyset_history(historyid,id) "
                 " SELECT $1::bigint, id FROM keyset "
-                " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM keyset k "
-                    " JOIN object_registry oreg ON k.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'keyset '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(handle_));
+                " WHERE id = $2::integer"
+                , Database::query_param_list(history_id)(keyset_id));
 
             //dsrecord_history
             ctx.get_conn().exec_params(
                 "INSERT INTO dsrecord_history(historyid, id, keysetid, keytag, alg, digesttype, digest, maxsiglife) "
                 " SELECT $1::bigint, id, keysetid, keytag, alg, digesttype, digest, maxsiglife FROM dsrecord "
-                " WHERE keysetid = raise_exception_ifnull((SELECT oreg.id FROM keyset k "
-                    " JOIN object_registry oreg ON k.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'keyset '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(handle_));
+                " WHERE keysetid = $2::integer"
+                , Database::query_param_list(history_id)(keyset_id));
 
             //dnskey_history
             ctx.get_conn().exec_params(
                 "INSERT INTO dnskey_history(historyid, id, keysetid, flags, protocol, alg, key) "
                 " SELECT $1::bigint, id, keysetid, flags, protocol, alg, key FROM dnskey "
-                " WHERE keysetid = raise_exception_ifnull((SELECT oreg.id FROM keyset k "
-                    " JOIN object_registry oreg ON k.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'keyset '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(handle_));
+                " WHERE keysetid = $2::integer"
+                , Database::query_param_list(history_id)(keyset_id));
 
             //keyset_contact_map_history
             ctx.get_conn().exec_params(
                 "INSERT INTO keyset_contact_map_history(historyid,keysetid, contactid) "
                 " SELECT $1::bigint, keysetid, contactid FROM keyset_contact_map "
-                " WHERE keysetid = raise_exception_ifnull((SELECT oreg.id FROM keyset k "
-                    " JOIN object_registry oreg ON k.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'keyset '||$2::text||' not found')"
-                , Database::query_param_list(history_id)(handle_));
+                    " WHERE keysetid = $2::integer"
+                    , Database::query_param_list(history_id)(keyset_id));
         }//save history
     }//UpdateKeyset::exec
 
