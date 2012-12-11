@@ -149,7 +149,7 @@ namespace Fred
         unsigned long long domain_id =0;
         {
             Database::Result domain_id_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM domain c "
+                "SELECT oreg.id FROM domain d "
                 " JOIN object_registry oreg ON d.id = oreg.id "
                 " WHERE UPPER(oreg.name) = UPPER($1::text)"
                 , Database::query_param_list(fqdn_));
