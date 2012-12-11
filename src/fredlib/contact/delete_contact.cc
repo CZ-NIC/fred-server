@@ -50,23 +50,23 @@ namespace Fred
 
         ctx.get_conn().exec_params(
             "UPDATE object_registry SET erdate = now() "
-            " WHERE id = (SELECT oreg.id FROM contact c "
+            " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM contact c "
                 " JOIN object_registry oreg ON c.id = oreg.id "
-                " WHERE UPPER(oreg.name) = UPPER($1::text))"
+                " WHERE UPPER(oreg.name) = UPPER($1::text)),'contact '||$1::text||' not found')"
             , Database::query_param_list(handle_));
 
         ctx.get_conn().exec_params(
             "DELETE FROM contact "
-            " WHERE id = (SELECT oreg.id FROM contact c "
+            " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM contact c "
                 " JOIN object_registry oreg ON c.id = oreg.id "
-                " WHERE UPPER(oreg.name) = UPPER($1::text))"
+                " WHERE UPPER(oreg.name) = UPPER($1::text)),'contact '||$1::text||' not found')"
             , Database::query_param_list(handle_));
 
         ctx.get_conn().exec_params(
             "DELETE FROM object "
-            " WHERE id = (SELECT oreg.id FROM contact c "
+            " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM contact c "
                 " JOIN object_registry oreg ON c.id = oreg.id "
-                " WHERE UPPER(oreg.name) = UPPER($1::text))"
+                " WHERE UPPER(oreg.name) = UPPER($1::text)),'contact '||$1::text||' not found')"
             , Database::query_param_list(handle_));
     }//DeleteContact::exec
 

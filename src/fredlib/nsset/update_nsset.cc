@@ -128,9 +128,9 @@ namespace Fred
         {
             ctx.get_conn().exec_params(
                 "UPDATE nsset SET checklevel = $1::smallint "
-                " WHERE id = (SELECT oreg.id FROM nsset n "
+                " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM nsset n "
                     " JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text))"
+                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'nsset '||$2::text||' not found')"
                 , Database::query_param_list(tech_check_level_.get_value())(handle_));
         }//update nsset tech check level
 
@@ -142,9 +142,9 @@ namespace Fred
 
             params.push_back(handle_);
             sql << "INSERT INTO nsset_contact_map(nssetid, contactid) "
-                    " VALUES ((SELECT oreg.id FROM nsset n "
+                    " VALUES (raise_exception_ifnull((SELECT oreg.id FROM nsset n "
                     " JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)), ";
+                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'nsset '||$" << params.size() << "::text||' not found'), ";
 
             for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
             {
@@ -153,8 +153,8 @@ namespace Fred
                 sql_i << sql.str();
 
                 params_i.push_back(*i);
-                sql_i << " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)));";
+                sql_i << " raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
+                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)),'tech contact '||$" << params.size() << "::text||' not found'));";
                 ctx.get_conn().exec_params(sql_i.str(), params_i);
             }//for i
         }//if add tech contacts
@@ -167,9 +167,9 @@ namespace Fred
 
             params.push_back(handle_);
             sql << "DELETE FROM nsset_contact_map WHERE nssetid = "
-                    " (SELECT oreg.id FROM nsset n "
+                    " raise_exception_ifnull((SELECT oreg.id FROM nsset n "
                     " JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)) AND ";
+                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'nsset '||$" << params.size() << "::text||' not found') AND ";
 
             for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
             {
@@ -178,9 +178,9 @@ namespace Fred
                 sql_i << sql.str();
 
                 params_i.push_back(*i);
-                sql_i << "contactid = (SELECT oreg.id FROM object_registry oreg "
+                sql_i << "contactid = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
                         " JOIN contact c ON oreg.id = c.id WHERE UPPER(oreg.name) = UPPER($"
-                    << params_i.size() << "::text));";
+                    << params_i.size() << "::text)),'tech contact '||$" << params.size() << "::text||' not found');";
                 ctx.get_conn().exec_params(sql_i.str(), params_i);
             }//for i
         }//if delete tech contacts
@@ -192,8 +192,8 @@ namespace Fred
             {
                 Database::Result rem_host_id_res = ctx.get_conn().exec_params(
                     "DELETE FROM host WHERE LOWER(fqdn)=LOWER($1::text) AND"
-                    " nssetid = (SELECT oreg.id FROM nsset n JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text)) RETURNING id "
+                    " nssetid = raise_exception_ifnull((SELECT oreg.id FROM nsset n JOIN object_registry oreg ON n.id = oreg.id "
+                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'nsset '||$2::text||' not found') RETURNING id "
                     , Database::query_param_list(*i)(handle_));
 
                 if (rem_host_id_res.size() != 1)
@@ -215,8 +215,8 @@ namespace Fred
             {
                 Database::Result add_host_id_res = ctx.get_conn().exec_params(
                     "INSERT INTO host (nssetid, fqdn) VALUES( "
-                    " (SELECT oreg.id FROM nsset n JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($1::text)), LOWER($2::text)) RETURNING id"
+                    " raise_exception_ifnull((SELECT oreg.id FROM nsset n JOIN object_registry oreg ON n.id = oreg.id "
+                    " WHERE UPPER(oreg.name) = UPPER($1::text)),'nsset '||$2::text||' not found'), LOWER($2::text)) RETURNING id"
                     , Database::query_param_list(handle_)(i->get_fqdn()));
                 if(add_host_id_res.size() != 1)
                 {
@@ -231,8 +231,8 @@ namespace Fred
                 {
                     ctx.get_conn().exec_params(
                         "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) VALUES($1::integer, "
-                        " (SELECT oreg.id FROM nsset n JOIN object_registry oreg ON n.id = oreg.id "
-                        " WHERE UPPER(oreg.name) = UPPER($2::text)), $3::inet)"
+                        " raise_exception_ifnull((SELECT oreg.id FROM nsset n JOIN object_registry oreg ON n.id = oreg.id "
+                        " WHERE UPPER(oreg.name) = UPPER($2::text)),'nsset '||$2::text||' not found'), $3::inet)"
                         , Database::query_param_list(add_host_id)(handle_)(*j));
                 }//for j
             }//for i
@@ -246,53 +246,53 @@ namespace Fred
             ctx.get_conn().exec_params(
                 "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
                 " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                " WHERE id = (SELECT oreg.id FROM nsset n "
+                " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM nsset n "
                     " JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text))"
+                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'nsset '||$2::text||' not found')"
                 , Database::query_param_list(history_id)(handle_));
 
             //object_registry historyid
             ctx.get_conn().exec_params(
                 "UPDATE object_registry SET historyid = $1::bigint "
-                " WHERE id = (SELECT oreg.id FROM nsset n "
+                " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM nsset n "
                     " JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text))"
+                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'nsset '||$2::text||' not found')"
                 , Database::query_param_list(history_id)(handle_));
 
             //nsset_history
             ctx.get_conn().exec_params(
                 "INSERT INTO nsset_history(historyid,id,checklevel) "
                 " SELECT $1::bigint, id, checklevel FROM nsset "
-                    " WHERE id = (SELECT oreg.id FROM nsset n "
+                    " WHERE id = raise_exception_ifnull((SELECT oreg.id FROM nsset n "
                     " JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text))"
+                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'nsset '||$2::text||' not found')"
                 , Database::query_param_list(history_id)(handle_));
 
             //host_history
             ctx.get_conn().exec_params(
                 "INSERT INTO host_history(historyid, id, nssetid, fqdn) "
                 " SELECT $1::bigint, id, nssetid, fqdn FROM host "
-                    " WHERE nssetid = (SELECT oreg.id FROM nsset n "
+                    " WHERE nssetid = raise_exception_ifnull((SELECT oreg.id FROM nsset n "
                     " JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text))"
+                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'nsset '||$2::text||' not found')"
                 , Database::query_param_list(history_id)(handle_));
 
             //host_ipaddr_map_history
             ctx.get_conn().exec_params(
                 "INSERT INTO host_ipaddr_map_history(historyid, id, hostid, nssetid, ipaddr) "
                 " SELECT $1::bigint, id, hostid, nssetid, ipaddr FROM host_ipaddr_map "
-                    " WHERE nssetid = (SELECT oreg.id FROM nsset n "
+                    " WHERE nssetid = raise_exception_ifnull((SELECT oreg.id FROM nsset n "
                     " JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text))"
+                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'nsset '||$2::text||' not found')"
                 , Database::query_param_list(history_id)(handle_));
 
             //nsset_contact_map_history
             ctx.get_conn().exec_params(
                 "INSERT INTO nsset_contact_map_history(historyid, nssetid, contactid) "
                 " SELECT $1::bigint, nssetid, contactid FROM nsset_contact_map "
-                    " WHERE nssetid = (SELECT oreg.id FROM nsset n "
+                    " WHERE nssetid = raise_exception_ifnull((SELECT oreg.id FROM nsset n "
                     " JOIN object_registry oreg ON n.id = oreg.id "
-                    " WHERE UPPER(oreg.name) = UPPER($2::text))"
+                    " WHERE UPPER(oreg.name) = UPPER($2::text)),'nsset '||$2::text||' not found')"
                 , Database::query_param_list(history_id)(handle_));
 
         }//save history

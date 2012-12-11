@@ -59,8 +59,8 @@ namespace Fred
         std::stringstream sql;
         params.push_back(registrar_);
         sql <<"UPDATE object SET update = now() "
-            ", upid = (SELECT id FROM registrar WHERE UPPER(handle) = UPPER($"
-            << params.size() << "::text)) " ; //registrar from epp-session container by client_id from epp-params
+            ", upid = raise_exception_ifnull((SELECT id FROM registrar WHERE UPPER(handle) = UPPER($"
+            << params.size() << "::text)),'registrar '||$"<< params.size() <<"::text||' not found') " ; //registrar from epp-session container by client_id from epp-params
 
         if(authinfo_.isset())
         {
@@ -69,8 +69,8 @@ namespace Fred
         }
 
         params.push_back(handle_);
-        sql <<" WHERE id = (SELECT id FROM object_registry WHERE UPPER(name) = UPPER($"
-                << params.size() << "::text)); ";//update object_id by handle
+        sql <<" WHERE id = raise_exception_ifnull((SELECT id FROM object_registry WHERE UPPER(name) = UPPER($"
+                << params.size() << "::text)),'object '||$"<< params.size() <<"::text||' not found'); ";//update object_id by handle
 
         ctx.get_conn().exec_params(sql.str(), params);
     }
