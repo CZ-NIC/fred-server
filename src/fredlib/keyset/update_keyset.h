@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"

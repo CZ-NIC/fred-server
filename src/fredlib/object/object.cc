@@ -25,6 +25,7 @@
 
 #include "fredlib/object/object.h"
 
+#include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"

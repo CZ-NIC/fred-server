@@ -45,6 +45,7 @@
 #include "fredlib/nsset/update_nsset.h"
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/contact/delete_contact.h"
+#include "fredlib/opexception.h"
 #include "util/util.h"
 
 #include "fredlib/contact_verification/contact.h"
@@ -72,6 +73,13 @@
 BOOST_AUTO_TEST_SUITE(TestEPPops)
 
 const std::string server_name = "test-eppops";
+
+BOOST_AUTO_TEST_CASE(operation_exception)
+{
+    //BOOST_MESSAGE(OPEX("ok").what());
+    BOOST_MESSAGE(OPEXS(256,"ok").what());
+
+}
 
 BOOST_AUTO_TEST_CASE(delete_contact)
 {
