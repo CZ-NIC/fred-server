@@ -57,7 +57,7 @@ public:
         {
             //look for FACTORY keys in required_keys
             if(std::find(required_keys_.begin(), required_keys_.end(), *i)
-                == key_vector.end())
+                == required_keys_.end())
             {
                 throw_not_found_keys = true;
                 not_found_keys_vector.push_back(*i);
