@@ -45,7 +45,7 @@ struct OperationExceptionBase
 };
 
 ///operation exception template, able of copying
-template <int DATASIZE=512> class OperationException
+template <int DATASIZE=2048> class OperationException
 : virtual public OperationExceptionBase
 {
     /**
@@ -80,12 +80,12 @@ template <int DATASIZE=512> class OperationException
             to[space_left_in_to+len_of_to] = '\0';//end by zero
         }
     }
-
+public:
     /**
      * look for value of key separated by '|'
-     * output: start of value and value length
+     * return: value, may throw
      */
-    void look_for(const char* key, char *& val_ptr, int val_len)
+    std::string look_for(const char* key)
     {
         int len_of_key = strlen(key);
         int len_of_data = strlen(databuffer_);
@@ -94,23 +94,28 @@ template <int DATASIZE=512> class OperationException
         {
             if(databuffer_[i] == '|')//if separator found
             {
+                //printf("\nlook_for found | at: %d\n", i);
                 int chars_to_search = len_of_data - (i + 1);
                 if (chars_to_search >= len_of_key)
                 {
-                    if(strncmp(databuffer_+i+1, key,len_of_key) == 0)
-                    {//found key at i+1
-                        val_ptr = databuffer_+i+1+len_of_key+1;
-                        val_len = val_ptr - last_separator_index - 1;
-                        return;
+                    //printf("\nlook_for key: %s at: %d: %s\n", key,i, databuffer_+i+2);
+                    if(strncmp(databuffer_+i+2, key,len_of_key) == 0)
+                    {//found key at i+2
+                        char* val_ptr = databuffer_+i+2+len_of_key+2;
+                        int val_len = (databuffer_+last_separator_index) - val_ptr - 1;
+                        //printf("\nlook_for found key: %s val_len: %d at: %d\n", key,val_len, i+1);
+                        return std::string(val_ptr,val_ptr+val_len);
                     }//if key found
                 }//if search for key
+                //printf("\nlook_for last_separator_index: %d\n", last_separator_index);
                 last_separator_index = i;
             }//if |
 
         }//for i
+        return std::string();
     }//look_for
 
-public:
+
 
     /**
      * dump data
@@ -137,7 +142,7 @@ public:
 };
 
 ///default exception data size
-#define OPEX(DATA) OperationException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define OPEX(DATA) OperationException<2048>(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 ///custom exception data size
 #define OPEXS(SIZE,DATA) OperationException<(SIZE)>(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 

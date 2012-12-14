@@ -76,9 +76,29 @@ const std::string server_name = "test-eppops";
 
 BOOST_AUTO_TEST_CASE(operation_exception)
 {
-    //BOOST_MESSAGE(OPEX("ok").what());
-    BOOST_MESSAGE(OPEXS(256,"ok").what());
-
+    //test op
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction trans(conn);
+        Database::Result res = conn.exec_params(
+            "SELECT $1::text, raise_exception_ifnull((select null::text) "
+            " ,'operation_exception test | param1: value1 | param2: value2 | param3: value3 |')"
+            , Database::query_param_list("test"));
+        if(res.size() == 0)
+        {
+            throw std::runtime_error("failed");
+        }
+    }
+    catch(std::exception& ex)
+    {
+        OperationException<> testexp = OPEX(ex.what()) ;
+        BOOST_MESSAGE(ex.what());
+        BOOST_MESSAGE(testexp.what());
+        BOOST_MESSAGE(testexp.look_for("param1"));
+        BOOST_MESSAGE(testexp.look_for("param2"));
+        BOOST_MESSAGE(testexp.look_for("param3"));
+    }
 }
 
 BOOST_AUTO_TEST_CASE(delete_contact)
