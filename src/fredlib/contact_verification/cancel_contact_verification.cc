@@ -72,6 +72,7 @@ bool check_contact_change_for_cancel_verification(
                 " JOIN contact_history ch1 ON ch1.historyid = oreg.historyid "
                 " JOIN history h ON h.next = ch1.historyid "
                 " JOIN contact_history ch2 ON ch2.historyid = h.id "
+                " JOIN contact c ON c.id = oreg.id "
                 " WHERE oreg.name = upper($1::text) "
                   , Database::query_param_list(contact_handle));
             if (result.size() != 1)
