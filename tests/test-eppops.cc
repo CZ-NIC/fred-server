@@ -38,6 +38,8 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
+//#include <omniORB4/fixed.h>
+
 #include "setup_server_decl.h"
 #include "time_clock.h"
 #include "fredlib/registrar.h"
@@ -74,6 +76,45 @@ BOOST_AUTO_TEST_SUITE(TestEPPops)
 
 const std::string server_name = "test-eppops";
 
+
+
+struct TestFailParam
+{
+    ConstArr get_fail_param()
+    {
+        static const char* list[]={"param1", "param2", "param3", "param4", "param5"};
+        ConstArr ca;
+        ca.arr = list;
+        ca.size = 5;//number of elements in the list
+        return ca;
+    }
+};
+
+struct TestFailReason
+{
+    ConstArr get_fail_reason()
+    {
+        static const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
+        ConstArr ca;
+        ca.arr = list;
+        ca.size = 5;//number of elements in the list
+        return ca;
+    }
+};
+
+///test operation exception interface
+struct TestOperationException
+: virtual public std::exception  //common base
+{
+    virtual const char* what() const throw() = 0;
+    virtual ~TestOperationException() throw() {};
+};
+
+
+typedef OperationException<2048,TestOperationException,TestFailParam,TestFailReason> TestOpEx;
+
+#define OPEX(DATA) TestOpEx(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+
 BOOST_AUTO_TEST_CASE(operation_exception)
 {
     //test op
@@ -92,12 +133,15 @@ BOOST_AUTO_TEST_CASE(operation_exception)
     }
     catch(std::exception& ex)
     {
-        OperationException<> testexp = OPEX(ex.what()) ;
+        TestOpEx testexp = OPEX(ex.what()) ;
         BOOST_MESSAGE(ex.what());
         BOOST_MESSAGE(testexp.what());
         BOOST_MESSAGE(testexp.look_for("param1"));
         BOOST_MESSAGE(testexp.look_for("param2"));
         BOOST_MESSAGE(testexp.look_for("param3"));
+
+        BOOST_CHECK(testexp.get_fail_param().size == 5);
+        BOOST_CHECK(strlen(testexp.get_fail_param().arr[0]) == 6);
     }
 }
 

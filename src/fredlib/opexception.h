@@ -44,9 +44,23 @@ struct OperationExceptionBase
     virtual ~OperationExceptionBase() throw() {};
 };
 
+/// const array wrapper
+struct ConstArr
+{
+    const char** arr;
+    int size;
+};
+
 ///operation exception template, able of copying
-template <int DATASIZE=2048, class FAIL_PARAM_ARRAY, class FAIL_REASON_ARRAY> class OperationException
-: public OperationExceptionBase
+template <
+    int DATASIZE ///size of internal buffer for detail of failure
+    , class EXCEPTION_BASE ///additional exception types / interfaces
+    , class FAIL_PARAM_ARRAY ///array of parameters names which may fail
+    , class FAIL_REASON_ARRAY///array of reasons why may parameter fail
+    >
+class OperationException
+: virtual public OperationExceptionBase
+, virtual public EXCEPTION_BASE
 , public FAIL_PARAM_ARRAY
 , public FAIL_REASON_ARRAY
 {

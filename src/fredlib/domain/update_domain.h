@@ -74,6 +74,42 @@ namespace Fred
         void exec(OperationContext& ctx);
     };//class UpdateDomain
 
+    struct UpdateDomainFailParam
+    {
+        ConstArr get_fail_param()
+        {
+            static const char* list[]={"param1", "param2", "param3", "param4", "param5"};
+            ConstArr ca;
+            ca.arr = list;
+            ca.size = 5;//number of elements in the list
+            return ca;
+        }
+    };
+
+    struct UpdateDomainFailReason
+    {
+        ConstArr get_fail_reason()
+        {
+            static const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
+            ConstArr ca;
+            ca.arr = list;
+            ca.size = 5;//number of elements in the list
+            return ca;
+        }
+    };
+
+    ///operation exception base class
+    struct UpdateDomainOperationException
+    : virtual public std::exception  //common base
+    {
+        virtual const char* what() const throw() = 0;
+        virtual ~UpdateDomainOperationException() throw() {};
+    };
+
+    typedef OperationException<2048,UpdateDomainOperationException
+        ,UpdateDomainFailParam,UpdateDomainFailReason> UpdateDomainException;
+    #define UDEX(DATA) UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+
 }//namespace Fred
 
 #endif//UPDATE_DOMAIN_H_
