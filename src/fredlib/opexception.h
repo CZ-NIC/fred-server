@@ -45,8 +45,10 @@ struct OperationExceptionBase
 };
 
 ///operation exception template, able of copying
-template <int DATASIZE=2048> class OperationException
-: virtual public OperationExceptionBase
+template <int DATASIZE=2048, class FAIL_PARAM_ARRAY, class FAIL_REASON_ARRAY> class OperationException
+: public OperationExceptionBase
+, public FAIL_PARAM_ARRAY
+, public FAIL_REASON_ARRAY
 {
     /**
      * data shall be stored from end to begin
@@ -142,8 +144,8 @@ public:
 };
 
 ///default exception data size
-#define OPEX(DATA) OperationException<2048>(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+//#define OPEX(DATA) OperationException<2048>(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 ///custom exception data size
-#define OPEXS(SIZE,DATA) OperationException<(SIZE)>(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+//#define OPEXS(SIZE,DATA) OperationException<(SIZE)>(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 #endif // OPEXCEPTION_H_
