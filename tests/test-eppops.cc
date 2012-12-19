@@ -149,6 +149,7 @@ BOOST_AUTO_TEST_CASE(operation_exception)
 
         //TestFailReason* bad_ptr = dynamic_cast<TestFailReason*>(&testexp);
         //delete(bad_ptr);//prohibited by protected dtor
+        //TestFailReason tfr;//prohibited by protected dtor
     }
 }
 
