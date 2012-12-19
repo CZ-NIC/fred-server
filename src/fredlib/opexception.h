@@ -80,8 +80,8 @@ class OperationException
     /**
      * data shall be stored from end to begin
      * data shall look like this:
-     * optional text with some details followed by failed params of the operation \
-     *  | operation_name: 'name' | param1: 'name' | val1: 'data' | reason1: 'text' ... | param#: 'name' | val#: 'data' | reason#: 'text' |
+     * optional text with some details followed by fail params and reasons of the operation \
+     * | reason1:param1: val1 | reason2:param2: val2 ... | reason#:param#: val# |
      */
     char databuffer_[DATASIZE+1];///+1 for ending by \0
 
@@ -116,6 +116,7 @@ public:
      */
     FixedString<DATASIZE> look_for(const char* key) throw()
     {
+        FixedString<DATASIZE> ret;
         int len_of_key = strlen(key);
         int len_of_data = strlen(databuffer_);
         int last_separator_index = len_of_data;
@@ -133,8 +134,7 @@ public:
                         char* val_ptr = databuffer_+i+2+len_of_key+2;
                         int val_len = (databuffer_+last_separator_index) - val_ptr - 1;
                         //printf("\nlook_for found key: %s val_len: %d at: %d\n", key,val_len, i+1);
-                        FixedString<DATASIZE> ret;
-                        memmove(ret.data,val_ptr,val_len);
+                        memmove(ret.data,val_ptr,val_len);//ok if ret have DATASIZE same as databuffer_ or bigger
                         return ret;
                     }//if key found
                 }//if search for key
@@ -143,7 +143,7 @@ public:
             }//if |
 
         }//for i
-        return FixedString<DATASIZE>();
+        return ret;
     }//look_for
 
 
