@@ -119,6 +119,12 @@ typedef OperationException<2048,TestOperationException,TestFailParam,TestFailRea
 
 #define OPEX(DATA) TestOpEx(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
+///test callback
+void print_str(TestOpEx::FixedStringType str)
+{
+    printf("\nstr: %s\n",str.data);
+}
+
 BOOST_AUTO_TEST_CASE(operation_exception)
 {
     //test op
@@ -128,7 +134,7 @@ BOOST_AUTO_TEST_CASE(operation_exception)
         Database::Transaction trans(conn);
         Database::Result res = conn.exec_params(
             "SELECT $1::text, raise_exception_ifnull((select null::text) "
-            " ,'operation_exception test || param1: value1 | param2: value2 | param3: value3 |')"
+            " ,'operation_exception test || reason1:param1: value1 | reason2:param2: value2 | reason3:param3: value3 |')"
             , Database::query_param_list("test"));
         if(res.size() == 0)
         {
@@ -137,15 +143,19 @@ BOOST_AUTO_TEST_CASE(operation_exception)
     }
     catch(std::exception& ex)
     {
+        TestOpEx::FixedStringFunc func = print_str;
         TestOpEx testexp = OPEX(ex.what()) ;
         BOOST_MESSAGE(ex.what());
         BOOST_MESSAGE(testexp.what());
-        BOOST_MESSAGE(std::string(testexp.look_for("param1").data));
-        BOOST_MESSAGE(std::string(testexp.look_for("param2").data));
-        BOOST_MESSAGE(std::string(testexp.look_for("param3").data));
 
-        BOOST_CHECK(testexp.get_fail_param().size == 5);
-        BOOST_CHECK(strlen(testexp.get_fail_param().arr[0]) == 6);
+        BOOST_CHECK(std::string(testexp.look_for("reason1:param1:").data).compare("value1") == 0);
+        BOOST_CHECK(std::string(testexp.look_for("reason2:param2:").data).compare("value2") == 0);
+        BOOST_CHECK(std::string(testexp.look_for("reason3:param3:").data).compare("value3") == 0);
+
+        //BOOST_CHECK(testexp.get_fail_param().size == 5);
+        //BOOST_CHECK(strlen(testexp.get_fail_param().arr[0]) == 6);
+        BOOST_CHECK(testexp.get_value_count() == 3);
+        testexp.for_params(func);
 
         //TestFailReason* bad_ptr = dynamic_cast<TestFailReason*>(&testexp);
         //delete(bad_ptr);//prohibited by protected dtor
