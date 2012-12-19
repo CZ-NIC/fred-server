@@ -140,9 +140,9 @@ BOOST_AUTO_TEST_CASE(operation_exception)
         TestOpEx testexp = OPEX(ex.what()) ;
         BOOST_MESSAGE(ex.what());
         BOOST_MESSAGE(testexp.what());
-        BOOST_MESSAGE(testexp.look_for("param1"));
-        BOOST_MESSAGE(testexp.look_for("param2"));
-        BOOST_MESSAGE(testexp.look_for("param3"));
+        BOOST_MESSAGE(std::string(testexp.look_for("param1").data));
+        BOOST_MESSAGE(std::string(testexp.look_for("param2").data));
+        BOOST_MESSAGE(std::string(testexp.look_for("param3").data));
 
         BOOST_CHECK(testexp.get_fail_param().size == 5);
         BOOST_CHECK(strlen(testexp.get_fail_param().arr[0]) == 6);

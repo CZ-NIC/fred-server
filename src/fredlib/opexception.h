@@ -51,6 +51,19 @@ struct ConstArr
     int size;
 };
 
+///fixed string wapper
+template <int DATASIZE///size of string
+> struct FixedString
+{
+    char data[DATASIZE+1];///+1 for ending by \0
+    //dtor
+    ~FixedString() throw(){}
+    //ctor
+    FixedString() throw()
+    :data()
+    {}
+};
+
 ///operation exception template, able of copying
 template <
     int DATASIZE ///size of internal buffer for detail of failure
@@ -99,9 +112,9 @@ class OperationException
 public:
     /**
      * look for value of key separated by '|'
-     * return: value, may throw
+     * return: value
      */
-    std::string look_for(const char* key)
+    FixedString<DATASIZE> look_for(const char* key) throw()
     {
         int len_of_key = strlen(key);
         int len_of_data = strlen(databuffer_);
@@ -120,7 +133,9 @@ public:
                         char* val_ptr = databuffer_+i+2+len_of_key+2;
                         int val_len = (databuffer_+last_separator_index) - val_ptr - 1;
                         //printf("\nlook_for found key: %s val_len: %d at: %d\n", key,val_len, i+1);
-                        return std::string(val_ptr,val_ptr+val_len);
+                        FixedString<DATASIZE> ret;
+                        memmove(ret.data,val_ptr,val_len);
+                        return ret;
                     }//if key found
                 }//if search for key
                 //printf("\nlook_for last_separator_index: %d\n", last_separator_index);
@@ -128,7 +143,7 @@ public:
             }//if |
 
         }//for i
-        return std::string();
+        return FixedString<DATASIZE>();
     }//look_for
 
 
