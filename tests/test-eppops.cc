@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(operation_exception)
         Database::Transaction trans(conn);
         Database::Result res = conn.exec_params(
             "SELECT $1::text, raise_exception_ifnull((select null::text) "
-            " ,'operation_exception test | param1: value1 | param2: value2 | param3: value3 |')"
+            " ,'operation_exception test || param1: value1 | param2: value2 | param3: value3 |')"
             , Database::query_param_list("test"));
         if(res.size() == 0)
         {

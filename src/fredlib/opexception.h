@@ -81,7 +81,7 @@ class OperationException
      * data shall be stored from end to begin
      * data shall look like this:
      * optional text with some details followed by fail params and reasons of the operation \
-     * | reason1:param1: val1 | reason2:param2: val2 ... | reason#:param#: val# |
+     * || reason1:param1: val1 | reason2:param2: val2 ... | reason#:param#: val# |
      */
     char databuffer_[DATASIZE+1];///+1 for ending by \0
 
@@ -124,6 +124,8 @@ public:
         {
             if(databuffer_[i] == '|')//if separator found
             {
+                //check border ||
+                if ((i > 0) && (databuffer_[--i] == '|')) return ret;//key not found
                 //printf("\nlook_for found | at: %d\n", i);
                 int chars_to_search = len_of_data - (i + 1);
                 if (chars_to_search >= len_of_key)
@@ -141,9 +143,8 @@ public:
                 //printf("\nlook_for last_separator_index: %d\n", last_separator_index);
                 last_separator_index = i;
             }//if |
-
         }//for i
-        return ret;
+        return ret;//key not found
     }//look_for
 
 
