@@ -84,6 +84,8 @@ namespace Fred
             ca.size = 5;//number of elements in the list
             return ca;
         }
+    protected:
+        ~UpdateDomainFailParam()throw(){}
     };
 
     struct UpdateDomainFailReason
@@ -96,6 +98,8 @@ namespace Fred
             ca.size = 5;//number of elements in the list
             return ca;
         }
+    protected:
+        ~UpdateDomainFailReason()throw(){}
     };
 
     ///operation exception base class

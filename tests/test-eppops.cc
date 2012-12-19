@@ -88,6 +88,8 @@ struct TestFailParam
         ca.size = 5;//number of elements in the list
         return ca;
     }
+protected:
+    ~TestFailParam() throw(){}
 };
 
 struct TestFailReason
@@ -100,6 +102,8 @@ struct TestFailReason
         ca.size = 5;//number of elements in the list
         return ca;
     }
+protected:
+    ~TestFailReason()throw(){}
 };
 
 ///test operation exception interface
@@ -142,6 +146,9 @@ BOOST_AUTO_TEST_CASE(operation_exception)
 
         BOOST_CHECK(testexp.get_fail_param().size == 5);
         BOOST_CHECK(strlen(testexp.get_fail_param().arr[0]) == 6);
+
+        //TestFailReason* bad_ptr = dynamic_cast<TestFailReason*>(&testexp);
+        //delete(bad_ptr);//prohibited by protected dtor
     }
 }
 
