@@ -56,7 +56,6 @@ struct ConstArr
         :arr(list)
         , size(_size)
     {}
-    ConstArr(){}
 };
 
 ///fixed string wapper
