@@ -108,6 +108,7 @@ class OperationExceptionError
 : virtual public OperationExceptionBase
 , private CopyEndImpl
 {
+    ///any data of failure
     char databuffer_[DATASIZE+1];///+1 for ending by \0
 
 public:
@@ -148,7 +149,7 @@ class OperationException
      * data shall look like this:
      * optional text with some details followed by fail reasons, params and values of the operation
      * || reason1:param1: val1 | reason2:param2: val2 ... | reason#:param#: val# |
-     * separating character '|' in data (reason, param or value) shell be replaced by description <pipe>
+     * separating character '|' in data (reason, param or value) shell be replaced by description like <pipe>
      */
     char databuffer_[DATASIZE+1];///+1 for ending by \0
 
