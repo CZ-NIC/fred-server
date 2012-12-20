@@ -80,7 +80,7 @@ const std::string server_name = "test-eppops";
 
 struct TestFailParam
 {
-    ConstArr get_fail_param()
+    ConstArr get_fail_param() throw()
     {
         static const char* list[]={"param1", "param2", "param3", "param4", "param5"};
         ConstArr ca;
@@ -94,7 +94,7 @@ protected:
 
 struct TestFailReason
 {
-    ConstArr get_fail_reason()
+    ConstArr get_fail_reason() throw()
     {
         static const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
         ConstArr ca;
