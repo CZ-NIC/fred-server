@@ -79,10 +79,7 @@ namespace Fred
         ConstArr get_fail_param() throw()
         {
             static const char* list[]={"param1", "param2", "param3", "param4", "param5"};
-            ConstArr ca;
-            ca.arr = list;
-            ca.size = sizeof(list)/sizeof(char*);//number of elements in the list
-            return ca;
+            return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     protected:
         ~UpdateDomainFailParam()throw(){}
@@ -93,10 +90,7 @@ namespace Fred
         ConstArr get_fail_reason() throw()
         {
             static const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
-            ConstArr ca;
-            ca.arr = list;
-            ca.size = sizeof(list)/sizeof(char*);//number of elements in the list
-            return ca;
+            return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     protected:
         ~UpdateDomainFailReason()throw(){}

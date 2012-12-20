@@ -83,10 +83,7 @@ struct TestFailParam
     ConstArr get_fail_param() throw()
     {
         static const char* list[]={"param1", "param2", "param3", "param4", "param5"};
-        ConstArr ca;
-        ca.arr = list;
-        ca.size = sizeof(list)/sizeof(char*);//number of elements in the list
-        return ca;
+        return ConstArr(list,sizeof(list)/sizeof(char*));
     }
 protected:
     ~TestFailParam() throw(){}
@@ -97,10 +94,7 @@ struct TestFailReason
     ConstArr get_fail_reason() throw()
     {
         static const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
-        ConstArr ca;
-        ca.arr = list;
-        ca.size = sizeof(list)/sizeof(char*);//number of elements in the list
-        return ca;
+        return ConstArr(list,sizeof(list)/sizeof(char*));
     }
 protected:
     ~TestFailReason()throw(){}
@@ -163,6 +157,9 @@ BOOST_AUTO_TEST_CASE(operation_exception)
     {//length of the list check
         const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
         BOOST_CHECK(sizeof(list)/sizeof(char*) == 5);
+
+        //printf("ConstArr(list).size: %d",ConstArr(list, sizeof(list)/sizeof(char*)).size);
+        BOOST_CHECK(ConstArr(list, sizeof(list)/sizeof(char*)).size == 5);
     }
 }
 

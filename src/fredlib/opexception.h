@@ -51,6 +51,12 @@ struct ConstArr
 {
     const char** arr;
     int size;
+    ConstArr(const char** list /// static const char* [] instance like {"string1","string2","string3"}
+            , int _size)/// sizeof(list)/sizeof(char*) - number of elements in the list , cannot be wrapped
+        :arr(list)
+        , size(_size)
+    {}
+    ConstArr(){}
 };
 
 ///fixed string wapper
