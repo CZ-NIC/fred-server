@@ -71,28 +71,8 @@ template <int DATASIZE///size of string
     {}
 };
 
-///operation exception template, able of copying
-template <
-    int DATASIZE ///size of internal buffer for detail of failure
-    , class EXCEPTION_BASE ///additional exception types / interfaces
-    , class FAIL_PARAM_ARRAY ///array of parameters names which may fail
-    , class FAIL_REASON_ARRAY///array of reasons why may parameter fail
-    >
-class OperationException
-: virtual public OperationExceptionBase
-, virtual public EXCEPTION_BASE
-, private FAIL_PARAM_ARRAY
-, private FAIL_REASON_ARRAY
+struct CopyEndImpl
 {
-    /**
-     * data shall be stored from end to begin
-     * data shall look like this:
-     * optional text with some details followed by fail reasons, params and values of the operation
-     * || reason1:param1: val1 | reason2:param2: val2 ... | reason#:param#: val# |
-     * separating character '|' in data (reason, param or value) shell be replaced by description <pipe>
-     */
-    char databuffer_[DATASIZE+1];///+1 for ending by \0
-
     /**
      * copy end of the asciiz string first from "from" to "to" with regard to "size_of_to"
      */
@@ -115,10 +95,69 @@ class OperationException
             to[space_left_in_to+len_of_to] = '\0';//end by zero
         }
     }
+
+protected:
+    ~CopyEndImpl() throw() {}
+};
+
+///operation exception error template, able of copying
+template <
+    int DATASIZE ///size of internal buffer for detail of failure
+    >
+class OperationExceptionError
+: virtual public OperationExceptionBase
+, private CopyEndImpl
+{
+    char databuffer_[DATASIZE+1];///+1 for ending by \0
+
+public:
+    /**
+     * dump data
+     */
+    const char* what() const throw()
+    {
+        return databuffer_;
+    }
+
+    ///ctor
+    OperationExceptionError(const char* data) throw()
+        : databuffer_()
+    {
+        //fill databuffer
+        copy_end(databuffer_, data, sizeof(databuffer_));//databuffer
+        copy_end(databuffer_, "OperationExceptionError: ", sizeof(databuffer_));//space
+    }
+};
+
+///operation exception template, able of copying
+template <
+    int DATASIZE ///size of internal buffer for detail of failure
+    , class EXCEPTION_BASE ///additional exception types / interfaces
+    , class FAIL_PARAM_ARRAY ///array of parameters names which may fail
+    , class FAIL_REASON_ARRAY///array of reasons why may parameter fail
+    >
+class OperationException
+: virtual public OperationExceptionBase
+, virtual public EXCEPTION_BASE
+, private FAIL_PARAM_ARRAY
+, private FAIL_REASON_ARRAY
+, private CopyEndImpl
+{
+    /**
+     * data shall be stored from end to begin
+     * data shall look like this:
+     * optional text with some details followed by fail reasons, params and values of the operation
+     * || reason1:param1: val1 | reason2:param2: val2 ... | reason#:param#: val# |
+     * separating character '|' in data (reason, param or value) shell be replaced by description <pipe>
+     */
+    char databuffer_[DATASIZE+1];///+1 for ending by \0
+
+
 public:
     typedef OperationException<DATASIZE, EXCEPTION_BASE, FAIL_PARAM_ARRAY, FAIL_REASON_ARRAY> OperationExceptionType;
     typedef FixedString<DATASIZE> FixedStringType;
     typedef boost::function<void (FixedStringType str)> FixedStringFunc;
+    typedef OperationExceptionError<DATASIZE> OperationExceptionErrorType;
 
     /**
      * check str against expected reasons and parameters
@@ -156,7 +195,7 @@ public:
             copy_end(databuffer_, " ", sizeof(databuffer_));//space
             copy_end(databuffer_, key.data, sizeof(databuffer_));//err
             copy_end(databuffer_, "check_key failed, invalid key: ", sizeof(databuffer_));//err
-            throw std::runtime_error(databuffer_);
+            throw OperationExceptionErrorType(databuffer_);
         }
     }
 
