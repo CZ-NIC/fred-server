@@ -58,18 +58,6 @@ struct ConstArr
     {}
 };
 
-///fixed string wapper
-template <int DATASIZE///size of string
-> struct FixedString
-{
-    char data[DATASIZE+1];///+1 for ending by \0
-    //dtor
-    ~FixedString() throw(){}
-    //ctor
-    FixedString() throw()
-    :data()
-    {}
-};
 
 struct CopyEndImpl
 {
@@ -99,6 +87,26 @@ struct CopyEndImpl
 protected:
     ~CopyEndImpl() throw() {}
 };
+
+///fixed string wapper
+template <int DATASIZE///size of string
+> struct FixedString
+: private CopyEndImpl
+{
+    char data[DATASIZE+1];///+1 for ending by \0
+    //dtor
+    ~FixedString() throw(){}
+    //ctor
+    FixedString() throw()
+    :data()
+    {}
+    FixedString(const char* str) throw()
+    :data()
+    {
+        copy_end(data, str, sizeof(data));
+    }
+};
+
 
 ///operation exception error template, able of copying
 template <
@@ -140,8 +148,8 @@ template <
 class OperationException
 : virtual public OperationExceptionBase
 , virtual public EXCEPTION_BASE
-, private FAIL_PARAM_ARRAY
-, private FAIL_REASON_ARRAY
+, public FAIL_PARAM_ARRAY
+, public FAIL_REASON_ARRAY
 , private CopyEndImpl
 {
     /**
@@ -199,7 +207,6 @@ public:
             throw OperationExceptionErrorType(databuffer_);
         }
     }
-
 
     /**
      * look for value of key separated by '|'

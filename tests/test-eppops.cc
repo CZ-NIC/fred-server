@@ -119,6 +119,75 @@ void print_str(TestOpEx::FixedStringType str)
     printf("\nstr: %s\n",str.data);
 }
 
+///test callback
+void print_3str(TestOpEx::FixedStringType str1, TestOpEx::FixedStringType str2, TestOpEx::FixedStringType str3)
+{
+    printf("\nstr: %s - %s - %s\n", str1.data, str2.data, str3.data);
+}
+
+
+
+template <class EXCEPTION> struct SearchCallback
+: private CopyEndImpl
+{
+    typedef SearchCallback<EXCEPTION> SearchCallbackType;
+    typedef typename EXCEPTION::FixedStringType FixedStringType;
+
+
+    typedef boost::function<void (FixedStringType reason, FixedStringType param, FixedStringType value)> CallbackType;
+    FixedStringType key;
+    CallbackType callback;
+    EXCEPTION ex;
+
+    SearchCallback(FixedStringType _key
+            , CallbackType _callback
+            , EXCEPTION _ex)
+    : key(_key)
+    , callback(_callback)
+    , ex(_ex)
+    {}
+
+    void exception_callback(FixedStringType str)
+    {
+        //printf("\ncheck_param: %s",str.data);
+        ConstArr expected_reasons = ex.get_fail_reason();
+        ConstArr expected_params = ex.get_fail_param();
+
+        FixedStringType expected_key;
+        for(int i = 0; i < expected_reasons.size ; ++i)
+        {
+            for(int j = 0; j < expected_params.size; ++j)
+            {
+                expected_key = FixedStringType();//init
+                copy_end(expected_key.data,":",sizeof(expected_key.data));
+                copy_end(expected_key.data,expected_params.arr[j],sizeof(expected_key.data));
+                copy_end(expected_key.data,":",sizeof(expected_key.data));
+                copy_end(expected_key.data,expected_reasons.arr[i],sizeof(expected_key.data));
+
+                if(strncmp(expected_key.data, str.data,strlen(expected_key.data)) == 0)
+                {//ok is valid expected_key
+
+                    printf("\nreason: %s param: %s value: %s\n"
+                            ,expected_reasons.arr[i]
+                            , expected_params.arr[j]
+                            , str.data + strlen(expected_key.data)
+                            );
+
+                    callback(expected_reasons.arr[i],expected_params.arr[j],str.data + strlen(expected_key.data));
+
+                }
+            }//for expected params
+        }//for expected reasons
+    }
+
+    void run()
+    {
+        //run callback for data in exception
+        typename EXCEPTION::FixedStringFunc cbfun = std::bind1st(std::mem_fun(&SearchCallbackType::exception_callback), this);
+        ex.for_params(cbfun);
+    }
+};
+
 BOOST_AUTO_TEST_CASE(operation_exception)
 {
     //test op
@@ -150,6 +219,14 @@ BOOST_AUTO_TEST_CASE(operation_exception)
         //BOOST_CHECK(strlen(testexp.get_fail_param().arr[0]) == 6);
         BOOST_CHECK(testexp.get_value_count() == 3);
         testexp.for_params(func);
+
+        TestOpEx::FixedStringType search_key("testkey");
+
+        //SearchCallback<TestOpEx>::CallbackType cb3 =  print_3str;
+
+        SearchCallback<TestOpEx> exception_search(search_key,print_3str,testexp);
+        exception_search.run();
+
         //TestFailReason* bad_ptr = dynamic_cast<TestFailReason*>(&testexp);
         //delete(bad_ptr);//prohibited by protected dtor
         //TestFailReason tfr;//prohibited by protected dtor
