@@ -27,6 +27,7 @@
 #include <queue>
 #include <sys/time.h>
 #include <time.h>
+#include <string.h>
 
 #include <boost/function.hpp>
 #include <boost/format.hpp>
@@ -135,14 +136,16 @@ template <class EXCEPTION> struct SearchCallback
 
 
     typedef boost::function<void (FixedStringType reason, FixedStringType param, FixedStringType value)> CallbackType;
-    FixedStringType key;
+    FixedStringType key_substring;
+    bool is_key_set;
     CallbackType callback;
     EXCEPTION ex;
 
-    SearchCallback(FixedStringType _key
+    SearchCallback(FixedStringType _key_substring
             , CallbackType _callback
             , EXCEPTION _ex)
-    : key(_key)
+    : key_substring(_key_substring)
+    , is_key_set(strlen(_key_substring.data) == 0 ? false : true )
     , callback(_callback)
     , ex(_ex)
     {}
@@ -166,14 +169,15 @@ template <class EXCEPTION> struct SearchCallback
 
                 if(strncmp(expected_key.data, str.data,strlen(expected_key.data)) == 0)
                 {//ok is valid expected_key
-
+                    /*
                     printf("\nreason: %s param: %s value: %s\n"
                             ,expected_reasons.arr[i]
                             , expected_params.arr[j]
                             , str.data + strlen(expected_key.data)
                             );
-
-                    callback(expected_reasons.arr[i],expected_params.arr[j],str.data + strlen(expected_key.data));
+                    */
+                    if(!is_key_set || strstr(expected_key.data,key_substring.data))
+                        callback(expected_reasons.arr[i],expected_params.arr[j],str.data + strlen(expected_key.data));
 
                 }
             }//for expected params
@@ -220,12 +224,11 @@ BOOST_AUTO_TEST_CASE(operation_exception)
         BOOST_CHECK(testexp.get_value_count() == 3);
         testexp.for_params(func);
 
-        TestOpEx::FixedStringType search_key("testkey");
-
-        //SearchCallback<TestOpEx>::CallbackType cb3 =  print_3str;
-
-        SearchCallback<TestOpEx> exception_search(search_key,print_3str,testexp);
-        exception_search.run();
+        SearchCallback<TestOpEx> ("",print_3str,testexp).run();//exec for all
+        SearchCallback<TestOpEx> ("param2",print_3str,testexp).run();//exec for param2
+        SearchCallback<TestOpEx> ("param2",print_3str,testexp).run();//exec for param2
+        SearchCallback<TestOpEx> ("reason3",print_3str,testexp).run();//exec for reason3
+        SearchCallback<TestOpEx> ("param3",print_3str,testexp).run();//exec for param3
 
         //TestFailReason* bad_ptr = dynamic_cast<TestFailReason*>(&testexp);
         //delete(bad_ptr);//prohibited by protected dtor
