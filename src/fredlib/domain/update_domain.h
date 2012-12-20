@@ -81,7 +81,7 @@ namespace Fred
             static const char* list[]={"param1", "param2", "param3", "param4", "param5"};
             ConstArr ca;
             ca.arr = list;
-            ca.size = 5;//number of elements in the list
+            ca.size = sizeof(list)/sizeof(char*);//number of elements in the list
             return ca;
         }
     protected:
@@ -95,7 +95,7 @@ namespace Fred
             static const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
             ConstArr ca;
             ca.arr = list;
-            ca.size = 5;//number of elements in the list
+            ca.size = sizeof(list)/sizeof(char*);//number of elements in the list
             return ca;
         }
     protected:
