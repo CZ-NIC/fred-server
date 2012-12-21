@@ -215,13 +215,9 @@ BOOST_AUTO_TEST_CASE(operation_exception)
         BOOST_MESSAGE(ex.what());
         BOOST_MESSAGE(testexp.what());
 
-        BOOST_CHECK(std::string(testexp.look_for("reason1:param1:").data).compare("value1") == 0);
-        BOOST_CHECK(std::string(testexp.look_for("reason2:param2:").data).compare("value2") == 0);
-        BOOST_CHECK(std::string(testexp.look_for("reason3:param3:").data).compare("value3") == 0);
+        BOOST_CHECK(testexp.get_fail_param().size == 5);
+        BOOST_CHECK(strlen(testexp.get_fail_param().arr[0]) == 6);
 
-        //BOOST_CHECK(testexp.get_fail_param().size == 5);
-        //BOOST_CHECK(strlen(testexp.get_fail_param().arr[0]) == 6);
-        BOOST_CHECK(testexp.get_value_count() == 3);
         testexp.for_params(func);
 
         SearchCallback<TestOpEx> ("",print_3str,testexp).run();//exec for all
