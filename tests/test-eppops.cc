@@ -128,69 +128,6 @@ void print_3str(TestOpEx::FixedStringType str1, TestOpEx::FixedStringType str2, 
 
 
 
-template <class EXCEPTION> struct SearchCallback
-: private CopyEndImpl
-{
-    typedef SearchCallback<EXCEPTION> SearchCallbackType;
-    typedef typename EXCEPTION::FixedStringType FixedStringType;
-
-
-    typedef boost::function<void (FixedStringType reason, FixedStringType param, FixedStringType value)> CallbackType;
-    FixedStringType key_substring;
-    bool is_key_set;
-    CallbackType callback;
-    EXCEPTION ex;
-
-    SearchCallback(FixedStringType _key_substring
-            , CallbackType _callback
-            , EXCEPTION _ex)
-    : key_substring(_key_substring)
-    , is_key_set(strlen(_key_substring.data) == 0 ? false : true )
-    , callback(_callback)
-    , ex(_ex)
-    {}
-
-    void exception_callback(FixedStringType str)
-    {
-        //printf("\ncheck_param: %s",str.data);
-        ConstArr expected_reasons = ex.get_fail_reason();
-        ConstArr expected_params = ex.get_fail_param();
-
-        FixedStringType expected_key;
-        for(int i = 0; i < expected_reasons.size ; ++i)
-        {
-            for(int j = 0; j < expected_params.size; ++j)
-            {
-                expected_key = FixedStringType();//init
-                copy_end(expected_key.data,":",sizeof(expected_key.data));
-                copy_end(expected_key.data,expected_params.arr[j],sizeof(expected_key.data));
-                copy_end(expected_key.data,":",sizeof(expected_key.data));
-                copy_end(expected_key.data,expected_reasons.arr[i],sizeof(expected_key.data));
-
-                if(strncmp(expected_key.data, str.data,strlen(expected_key.data)) == 0)
-                {//ok is valid expected_key
-                    /*
-                    printf("\nreason: %s param: %s value: %s\n"
-                            ,expected_reasons.arr[i]
-                            , expected_params.arr[j]
-                            , str.data + strlen(expected_key.data)
-                            );
-                    */
-                    if(!is_key_set || strstr(expected_key.data,key_substring.data))
-                        callback(expected_reasons.arr[i],expected_params.arr[j],str.data + strlen(expected_key.data));
-
-                }
-            }//for expected params
-        }//for expected reasons
-    }
-
-    void run()
-    {
-        //run callback for data in exception
-        typename EXCEPTION::FixedStringFunc cbfun = std::bind1st(std::mem_fun(&SearchCallbackType::exception_callback), this);
-        ex.for_params(cbfun);
-    }
-};
 
 BOOST_AUTO_TEST_CASE(operation_exception)
 {
