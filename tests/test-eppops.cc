@@ -163,6 +163,8 @@ BOOST_AUTO_TEST_CASE(operation_exception)
         SearchCallback<TestOpEx> ("reason3",print_3str,testexp).run();//exec for reason3
         SearchCallback<TestOpEx> ("param3",print_3str,testexp).run();//exec for param3
 
+        //testexp.callback_exception_params(print_3str,"");
+
         //TestFailReason* bad_ptr = dynamic_cast<TestFailReason*>(&testexp);
         //delete(bad_ptr);//prohibited by protected dtor
         //TestFailReason tfr;//prohibited by protected dtor
