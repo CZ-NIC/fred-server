@@ -411,7 +411,6 @@ public:
     void callback_exception_params(boost::function<void (FixedStringType reason, FixedStringType param, FixedStringType value)> func_void3fixedstr
             , const char key_substring[] = "")
     {
-        //SearchCallback<OperationExceptionType> (key_substring,static_cast<typename SearchCallback<OperationExceptionType>::CallbackType>(func_void3fixedstr),*this).run();//exec
         SearchCallback<OperationExceptionType> (key_substring,func_void3fixedstr,*this).run();//exec
     }
 
