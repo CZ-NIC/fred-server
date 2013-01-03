@@ -37,6 +37,8 @@
 #include <functional>
 #include <boost/function.hpp>
 
+namespace Fred
+{
 
 ///operation exception base class
 struct OperationExceptionBase
@@ -91,7 +93,6 @@ protected:
 ///fixed string wapper
 template <int DATASIZE///size of string
 > struct FixedString
-: private CopyEndImpl
 {
     char data[DATASIZE+1];///+1 for ending by \0
     //dtor
@@ -103,8 +104,34 @@ template <int DATASIZE///size of string
     FixedString(const char* str) throw()
     :data()
     {
-        copy_end(data, str, sizeof(data));
+        push_front(str);
     }
+
+    /**
+     * push the asciiz string from "from" in front of member data with regard to size of data member
+     */
+    void push_front(const char * from) throw()
+    {
+        char *to = data;
+        int size_of_to = sizeof(data);
+
+        int len_of_to = strlen(to);
+        int len_of_from = strlen(from);
+        int space_left_in_to = size_of_to - len_of_to;
+
+        if (space_left_in_to >= len_of_from)
+        {//all data fits in
+            memmove(to+len_of_from, to, len_of_to);//make space
+            memmove(to, from, len_of_from);//copy data
+            to[len_of_from+len_of_to] = '\0';//end by zero
+        }
+        else
+        {//store only end of the data
+            memmove(to + space_left_in_to, to, len_of_to);//make space
+            memmove(to, from+ (len_of_from - space_left_in_to), space_left_in_to);//copy data
+            to[space_left_in_to+len_of_to] = '\0';//end by zero
+        }
+    }//push_front
 };
 
 /**
@@ -190,10 +217,9 @@ template <
 class OperationError
     : virtual public OperationExceptionBase
     , virtual public EXCEPTION_BASE
-    , private CopyEndImpl
 {
     ///any data of failure
-    char databuffer_[DATASIZE+1];///+1 for ending by \0
+    FixedString<DATASIZE> fs;
 
 public:
     /**
@@ -201,7 +227,7 @@ public:
      */
     const char* what() const throw()
     {
-        return databuffer_;
+        return fs.data;
     }
 
     /**
@@ -210,11 +236,10 @@ public:
      * like failure of OperationException instance
      */
     OperationError(const char* data) throw()
-        : databuffer_()
     {
-        //fill databuffer
-        copy_end(databuffer_, data, sizeof(databuffer_));//databuffer
-        copy_end(databuffer_, "OperationError: ", sizeof(databuffer_));
+        //fill exception data
+        fs.push_front(data);
+        fs.push_front("OperationError: ");
     }
     /**
      * ctor
@@ -225,18 +250,17 @@ public:
             , const int line
             , const char* function
             , const char* data) throw()
-    : databuffer_()
     {
         //fill databuffer
-        copy_end(databuffer_, data, sizeof(databuffer_));//databuffer
-        copy_end(databuffer_, " ", sizeof(databuffer_));//space
-        copy_end(databuffer_, function, sizeof(databuffer_));//function
-        copy_end(databuffer_, " ", sizeof(databuffer_));//space
+        fs.push_front(data);//exception data
+        fs.push_front(" ");//space
+        fs.push_front(function);//function
+        fs.push_front(" ");//space
         char line_str[20]={'\0'};
         snprintf(line_str,sizeof(line_str), ":%d", line);
-        copy_end(databuffer_, line_str, sizeof(databuffer_));//line
-        copy_end(databuffer_, file, sizeof(databuffer_));//file
-        copy_end(databuffer_, "OperationError: ", sizeof(databuffer_));
+        fs.push_front(line_str);//line
+        fs.push_front(file);//file
+        fs.push_front("OperationError: ");
     }
 };
 
@@ -259,23 +283,23 @@ class OperationException
     , virtual public EXCEPTION_BASE
     , public FAIL_PARAM_ARRAY
     , public FAIL_REASON_ARRAY
-    , private CopyEndImpl
 {
-    /**
-     * data shall be stored from end to begin
-     * data shall look like this:
-     * optional text with some details followed by fail reasons, params and args of the operation
-     * any details || reason1:param1: val1 | reason2:param2: val2 ... | reason#:param#: val# |
-     * separating character '|' in data (reason, param or value) shell be replaced by description like <pipe>
-     */
-    char databuffer_[DATASIZE+1];///+1 for ending by \0
-
 public:
     typedef OperationException<DATASIZE, EXCEPTION_BASE, FAIL_PARAM_ARRAY, FAIL_REASON_ARRAY> OperationExceptionType;
     typedef FixedString<DATASIZE> FixedStringType;
     typedef boost::function<void (FixedStringType str)> FixedStringFunc;
     typedef OperationError<DATASIZE,EXCEPTION_BASE> OperationErrorType;
+private:
+    /**
+     * data shall be stored from end to begin
+     * data shall look like this:
+     * optional text with some details followed by fail reasons, params and args of the operation
+     * any details || reason1:param1: val1 | reason2:param2: val2 ... | reason#:param#: val# |
+     * separating character '|' in data (reason, param or value) shell be replaced by description like [pipe]
+     */
+    FixedStringType fs;
 
+public:
     /**
      * check str against expected reasons and parameters
      * throw if invalid
@@ -293,10 +317,10 @@ public:
             for(int j = 0; j < expected_params.size; ++j)
             {
                 key = FixedStringType();//init
-                copy_end(key.data,":",sizeof(key.data));
-                copy_end(key.data,expected_params.arr[j],sizeof(key.data));
-                copy_end(key.data,":",sizeof(key.data));
-                copy_end(key.data,expected_reasons.arr[i],sizeof(key.data));
+                key.push_front(":");
+                key.push_front(expected_params.arr[j]);
+                key.push_front(":");
+                key.push_front(expected_reasons.arr[i]);
 
                 if(strncmp(key.data, str.data,strlen(key.data)) == 0)
                 {//ok is valid key
@@ -309,10 +333,10 @@ public:
         }//for expected reasons
         if(!key_is_valid)//if parsable exception content is not valid then throw error
         {
-            copy_end(databuffer_, " ", sizeof(databuffer_));//space
-            copy_end(databuffer_, key.data, sizeof(databuffer_));//err
-            copy_end(databuffer_, "check_key failed, invalid key: ", sizeof(databuffer_));//err
-            throw OperationErrorType(databuffer_);
+            fs.push_front(" ");//space
+            fs.push_front(key.data);//err
+            fs.push_front("check_key failed, invalid key: ");//err
+            throw OperationErrorType(fs.data);
         }
     }
 
@@ -322,12 +346,12 @@ public:
      */
     void for_params(FixedStringFunc func)
     {
-        int len_of_data = strlen(databuffer_);
+        int len_of_data = strlen(fs.data);
         int last_separator_index = 0;
         for(int i = len_of_data - 1; i > -1; --i)//search data backward
         {
             //printf("\nfor i: %d\n", i);
-            if(databuffer_[i] == '|')//if separator found
+            if(fs.data[i] == '|')//if separator found
             {
                 if(last_separator_index  == 0)
                 {
@@ -336,8 +360,8 @@ public:
                 else
                 {
                     FixedStringType str;
-                    char* data_ptr = databuffer_+i+2;
-                    int data_len = databuffer_ + last_separator_index - 1 - data_ptr;
+                    char* data_ptr = fs.data+i+2;
+                    int data_len = fs.data + last_separator_index - 1 - data_ptr;
                     memmove(str.data,data_ptr,data_len);//ok if str have DATASIZE same as databuffer_ or bigger
                     //printf("\n found %s at: %d\n", str.data, i);
                     if (func)
@@ -346,14 +370,14 @@ public:
                     }
                     else
                     {
-                        copy_end(databuffer_, "for_params failed, invalid func ", sizeof(databuffer_));//err
-                        throw std::runtime_error(databuffer_);
+                        fs.push_front("invalid func ");//err
+                        throw OperationErrorType(fs.data);
                     }
                     //printf("\nlook_for last_separator_index: %d\n", last_separator_index);
                     last_separator_index = i;
                 }
                 //check border ||
-                if ((i > 0) && (databuffer_[i-1] == '|'))
+                if ((i > 0) && (fs.data[i-1] == '|'))
                 {
                     //printf("\nborder found | at: %d\n", i);
                     break;
@@ -368,7 +392,7 @@ public:
      */
     const char* what() const throw()
     {
-        return databuffer_;
+        return fs.data;
     }
 
     /**
@@ -387,17 +411,16 @@ public:
             , const int line
             , const char* function
             , const char* data)
-    : databuffer_()
     {
         //fill databuffer
-        copy_end(databuffer_, data, sizeof(databuffer_));//databuffer
-        copy_end(databuffer_, " ", sizeof(databuffer_));//space
-        copy_end(databuffer_, function, sizeof(databuffer_));//function
-        copy_end(databuffer_, " ", sizeof(databuffer_));//space
+        fs.push_front(data);//databuffer
+        fs.push_front(" ");//space
+        fs.push_front(function);//function
+        fs.push_front(" ");//space
         char line_str[20]={'\0'};
         snprintf(line_str,sizeof(line_str), ":%d", line);
-        copy_end(databuffer_, line_str, sizeof(databuffer_));//line
-        copy_end(databuffer_, file, sizeof(databuffer_));//file
+        fs.push_front(line_str);//line
+        fs.push_front(file);//file
 
         //run check for reason-param data in buffer
         FixedStringFunc check_data = std::bind1st(std::mem_fun(&OperationExceptionType::check_key), this);
@@ -416,4 +439,5 @@ public:
 
 };
 
+}//namespace Fred
 #endif // OPEXCEPTION_H_

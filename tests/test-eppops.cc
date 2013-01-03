@@ -81,10 +81,10 @@ const std::string server_name = "test-eppops";
 
 struct TestFailParam
 {
-    ConstArr get_fail_param() throw()
+    Fred::ConstArr get_fail_param() throw()
     {
         static const char* list[]={"param1", "param2", "param3", "param4", "param5"};
-        return ConstArr(list,sizeof(list)/sizeof(char*));
+        return Fred::ConstArr(list,sizeof(list)/sizeof(char*));
     }
 protected:
     ~TestFailParam() throw(){}
@@ -92,10 +92,10 @@ protected:
 
 struct TestFailReason
 {
-    ConstArr get_fail_reason() throw()
+    Fred::ConstArr get_fail_reason() throw()
     {
         static const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
-        return ConstArr(list,sizeof(list)/sizeof(char*));
+        return Fred::ConstArr(list,sizeof(list)/sizeof(char*));
     }
 protected:
     ~TestFailReason()throw(){}
@@ -110,7 +110,7 @@ struct TestOperationException
 };
 
 
-typedef OperationException<2048,TestOperationException,TestFailParam,TestFailReason> TestOpEx;
+typedef Fred::OperationException<2048,TestOperationException,TestFailParam,TestFailReason> TestOpEx;
 
 #define OPEX(DATA) TestOpEx(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
@@ -159,11 +159,11 @@ BOOST_AUTO_TEST_CASE(operation_exception)
 
         testexp.for_params(func);
 
-        SearchCallback<TestOpEx> ("",print_3str,testexp).run();//exec for all
-        SearchCallback<TestOpEx> ("param2",print_3str,testexp).run();//exec for param2
-        SearchCallback<TestOpEx> ("param2",print_3str,testexp).run();//exec for param2
-        SearchCallback<TestOpEx> ("reason3",print_3str,testexp).run();//exec for reason3
-        SearchCallback<TestOpEx> ("param3",print_3str,testexp).run();//exec for param3
+        Fred::SearchCallback<TestOpEx> ("",print_3str,testexp).run();//exec for all
+        Fred::SearchCallback<TestOpEx> ("param2",print_3str,testexp).run();//exec for param2
+        Fred::SearchCallback<TestOpEx> ("param2",print_3str,testexp).run();//exec for param2
+        Fred::SearchCallback<TestOpEx> ("reason3",print_3str,testexp).run();//exec for reason3
+        Fred::SearchCallback<TestOpEx> ("param3",print_3str,testexp).run();//exec for param3
 
         testexp.callback_exception_params(print_3str,"");
         testexp.callback_exception_params(print_3str,"param1");
@@ -177,8 +177,8 @@ BOOST_AUTO_TEST_CASE(operation_exception)
         const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
         BOOST_CHECK(sizeof(list)/sizeof(char*) == 5);
 
-        //printf("ConstArr(list).size: %d",ConstArr(list, sizeof(list)/sizeof(char*)).size);
-        BOOST_CHECK(ConstArr(list, sizeof(list)/sizeof(char*)).size == 5);
+        //printf("Fred::ConstArr(list).size: %d",Fred::ConstArr(list, sizeof(list)/sizeof(char*)).size);
+        BOOST_CHECK(Fred::ConstArr(list, sizeof(list)/sizeof(char*)).size == 5);
     }
 }
 
