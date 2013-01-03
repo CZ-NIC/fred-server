@@ -61,35 +61,6 @@ struct ConstArr
     {}
 };
 
-
-struct CopyEndImpl
-{
-    /**
-     * copy end of the asciiz string first from "from" to "to" with regard to "size_of_to"
-     */
-    void copy_end(char * to, const char * from , int size_of_to ) throw()
-    {
-        int len_of_to = strlen(to);
-        int len_of_from = strlen(from);
-        int space_left_in_to = size_of_to - len_of_to;
-
-        if (space_left_in_to >= len_of_from)
-        {//all data fits in
-            memmove(to+len_of_from, to, len_of_to);//make space
-            memmove(to, from, len_of_from);//copy data
-            to[len_of_from+len_of_to] = '\0';//end by zero
-        }
-        else
-        {//store only end of the data
-            memmove(to + space_left_in_to, to, len_of_to);//make space
-            memmove(to, from+ (len_of_from - space_left_in_to), space_left_in_to);//copy data
-            to[space_left_in_to+len_of_to] = '\0';//end by zero
-        }
-    }
-protected:
-    ~CopyEndImpl() throw() {}
-};
-
 ///fixed string wapper
 template <int DATASIZE///size of string
 > struct FixedString
@@ -140,7 +111,6 @@ template <int DATASIZE///size of string
  */
 
 template <class EXCEPTION> struct SearchCallback
-: private CopyEndImpl
 {
     typedef SearchCallback<EXCEPTION> SearchCallbackType;
     typedef typename EXCEPTION::FixedStringType FixedStringType;
@@ -172,10 +142,10 @@ template <class EXCEPTION> struct SearchCallback
             for(int j = 0; j < expected_params.size; ++j)
             {
                 expected_key = FixedStringType();//init
-                copy_end(expected_key.data,":",sizeof(expected_key.data));
-                copy_end(expected_key.data,expected_params.arr[j],sizeof(expected_key.data));
-                copy_end(expected_key.data,":",sizeof(expected_key.data));
-                copy_end(expected_key.data,expected_reasons.arr[i],sizeof(expected_key.data));
+                expected_key.push_front(":");
+                expected_key.push_front(expected_params.arr[j]);
+                expected_key.push_front(":");
+                expected_key.push_front(expected_reasons.arr[i]);
 
                 if(strncmp(expected_key.data, str.data,strlen(expected_key.data)) == 0)
                 {//ok is valid expected_key
