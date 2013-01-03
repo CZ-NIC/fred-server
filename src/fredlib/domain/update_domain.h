@@ -78,7 +78,7 @@ namespace Fred
     {
         ConstArr get_fail_param() throw()
         {
-            static const char* list[]={"param1", "param2", "param3", "param4", "param5"};
+            static const char* list[]={"fqdn", "nsset", "keyset", "registrant", "admin contact"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     protected:
@@ -89,7 +89,7 @@ namespace Fred
     {
         ConstArr get_fail_reason() throw()
         {
-            static const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
+            static const char* list[]={"not found"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     protected:
@@ -106,7 +106,9 @@ namespace Fred
 
     typedef OperationException<2048,UpdateDomainOperationException
         ,UpdateDomainFailParam,UpdateDomainFailReason> UpdateDomainException;
+    typedef UpdateDomainException::OperationErrorType UpdateDomainError;
     #define UDEX(DATA) UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+    #define UDERR(DATA) UpdateDomainError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 
