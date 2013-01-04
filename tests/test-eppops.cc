@@ -144,6 +144,22 @@ BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
         //ex.callback_exception_params(print_3str);
     }
 
+    //using namespace Fred;
+    try
+    {
+        std::string fqdn_("|fred.cz|");
+        std::string errmsg("test exception || not found:fqdn: ");
+        errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
+        errmsg += " |";
+        throw Fred::UpdateDomainException_(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        BOOST_MESSAGE(ex.what());
+        //ex.callback_exception_params(print_3str);
+    }
+
+
     try
     {
         std::string fqdn_("|fred.cz|");

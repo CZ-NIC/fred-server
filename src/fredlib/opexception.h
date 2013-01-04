@@ -63,6 +63,14 @@ struct OperationExceptionBase
     virtual ~OperationExceptionBase() throw() {};
 };
 
+///operation error exception base class
+struct OperationErrorBase
+: virtual public std::exception  //common base
+{
+    virtual const char* what() const throw() = 0;
+    virtual ~OperationErrorBase() throw() {};
+};
+
 
 ///fixed string wapper
 template <int DATASIZE///size of string
@@ -481,13 +489,31 @@ public:
                 , int DATASIZE ///size of internal buffer for detail of failure
         >
     class OperationExceptionImpl
-    : public std::exception
+    : public OperationExceptionBase
     {
     public:
         typedef FixedString<DATASIZE> FixedStringType;
         typedef OperationExceptionImpl<EXCEPTION_CHILD, DATASIZE> OperationExceptionImplType;
         typedef boost::function<void (FixedStringType str)> FixedStringFunc;
         typedef OperationError<DATASIZE> OperationErrorType;
+
+        /**
+         * get valid exception params from child
+         */
+
+        ConstArr get_fail_param() throw()
+        {
+            return static_cast<EXCEPTION_CHILD*>(this)->get_fail_param_impl();
+        }
+
+        /**
+         * get valid exception reasons from child
+         */
+
+        ConstArr get_fail_reason() throw()
+        {
+            return static_cast<EXCEPTION_CHILD*>(this)->get_fail_reason_impl();
+        }
 
         /**
          * dump exception data
@@ -507,8 +533,8 @@ public:
         {
             bool key_is_valid = false;
             //printf("\ncheck_param: %s",str.data);
-            ConstArr expected_reasons = static_cast<EXCEPTION_CHILD*>(this)->get_fail_reason();
-            ConstArr expected_params =static_cast<EXCEPTION_CHILD*>(this)->get_fail_param();
+            ConstArr expected_reasons = get_fail_reason();
+            ConstArr expected_params = get_fail_param();
 
             FixedStringType key;
             for(int i = 0; i < expected_reasons.size ; ++i)

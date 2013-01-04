@@ -123,17 +123,19 @@ namespace Fred
         : OperationExceptionImpl<UpdateDomainException_, 2048>(file, line, function, data)
         {}
 
-        ConstArr get_fail_param() throw()
+        ConstArr get_fail_param_impl() throw()
         {
             static const char* list[]={"fqdn", "nsset", "keyset", "registrant", "admin contact"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
 
-        ConstArr get_fail_reason() throw()
+        ConstArr get_fail_reason_impl() throw()
         {
             static const char* list[]={"not found"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
+
+        //const char* what() const throw();
 
     };//class UpdateDomainException
 //crtp test
