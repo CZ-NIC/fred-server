@@ -40,14 +40,6 @@
 namespace Fred
 {
 
-///operation exception base class
-struct OperationExceptionBase
-: virtual public std::exception  //common base
-{
-    virtual const char* what() const throw() = 0;
-    virtual ~OperationExceptionBase() throw() {};
-};
-
 /// const array wrapper
 struct ConstArr
 {
@@ -60,6 +52,17 @@ struct ConstArr
         , size(_size)
     {}
 };
+
+///operation exception base class
+struct OperationExceptionBase
+: virtual public std::exception  //common base
+{
+    virtual ConstArr get_fail_reason() throw() = 0;
+    virtual ConstArr get_fail_param() throw() = 0;
+    virtual const char* what() const throw() = 0;
+    virtual ~OperationExceptionBase() throw() {};
+};
+
 
 ///fixed string wapper
 template <int DATASIZE///size of string
@@ -185,8 +188,7 @@ template <
     , class EXCEPTION_BASE ///additional exception types
     >
 class OperationError
-    : virtual public OperationExceptionBase
-    , virtual public EXCEPTION_BASE
+    : virtual public EXCEPTION_BASE
 {
     ///any data of failure
     FixedString<DATASIZE> fs;
@@ -249,8 +251,7 @@ template <
     , class FAIL_REASON_ARRAY///array of reasons why may parameter fail
     >
 class OperationException
-    : virtual public OperationExceptionBase
-    , virtual public EXCEPTION_BASE
+    : virtual public EXCEPTION_BASE
     , public FAIL_PARAM_ARRAY
     , public FAIL_REASON_ARRAY
 {
@@ -304,7 +305,7 @@ public:
         if(!key_is_valid)//if parsable exception content is not valid then throw error
         {
             fs.push_front(" ");//space
-            fs.push_front(key.data);//err
+            fs.push_front(str.data);//err
             fs.push_front("check_key failed, invalid key: ");//err
             throw OperationErrorType(fs.data);
         }
@@ -355,7 +356,7 @@ public:
             }//if |
         }//for i
 
-    }//check_params
+    }//for_params
 
     /**
      * dump data
@@ -408,6 +409,213 @@ public:
     }
 
 };
+
+    /**
+     * operation error crtp template
+     * throwing child of this template shall be considered part of bad path
+     * intended meaning is abort operation because of unexpected reasons
+     * like something is broken and need to be fixed
+     * implementation shall be nothrow and using stack memory only
+     */
+
+    template < int DATASIZE ///size of internal buffer for detail of failure
+        >
+    class OperationErrorImpl
+    : public std::exception
+    {
+    protected:
+        ///any data of failure
+        FixedString<DATASIZE> fs;
+
+    public:
+        /**
+         * dump data
+         */
+        const char* what() const throw()
+        {
+            return fs.data;
+        }
+
+        /**
+         * ctor
+         * intended for situations where data already contains enough details of failure
+         * like failure of OperationExceptionImpl instance
+         */
+        OperationErrorImpl(const char* data) throw()
+        {
+            //fill exception data
+            fs.push_front(data);
+        }
+        /**
+         * ctor
+         * file, line and function describe origin in source and shall have values from __FILE__, __LINE__ and __ASSERT_FUNCTION macros
+         * data shall contain any details of failure
+         */
+        OperationErrorImpl(const char* file
+                , const int line
+                , const char* function
+                , const char* data) throw()
+        {
+            //fill databuffer
+            fs.push_front(data);//exception data
+            fs.push_front(" ");//space
+            fs.push_front(function);//function
+            fs.push_front(" ");//space
+            char line_str[20]={'\0'};
+            snprintf(line_str,sizeof(line_str), ":%d", line);
+            fs.push_front(line_str);//line
+            fs.push_front(file);//file
+        }
+    };
+
+
+
+    /**
+     * crtp parent template
+     * throwing child of this template shall be considered part of good path
+     * intended meaning is abort operation or part of operation because of anticipated reasons
+     * like invalid input arguments, that shall be enumerated in parsable section of exception data viz ctor
+     */
+
+    template < class EXCEPTION_CHILD ///child exception type
+                , int DATASIZE ///size of internal buffer for detail of failure
+                , class ERROR_EXCEPTION
+        >
+    class OperationExceptionImpl
+    : public std::exception
+    {
+    public:
+        typedef FixedString<DATASIZE> FixedStringType;
+        typedef OperationExceptionImpl<EXCEPTION_CHILD, DATASIZE,ERROR_EXCEPTION> OperationExceptionImplType;
+        typedef boost::function<void (FixedStringType str)> FixedStringFunc;
+        typedef ERROR_EXCEPTION OperationErrorType;
+
+        /**
+         * dump exception data
+         */
+
+        const char* what() const throw()
+        {
+            return fs.data;
+        }
+
+        /**
+         * check str against expected reasons and parameters
+         * throw if invalid
+         */
+
+        void check_key(FixedStringType str)
+        {
+            bool key_is_valid = false;
+            //printf("\ncheck_param: %s",str.data);
+            ConstArr expected_reasons = static_cast<EXCEPTION_CHILD*>(this)->get_fail_reason();
+            ConstArr expected_params =static_cast<EXCEPTION_CHILD*>(this)->get_fail_param();
+
+            FixedStringType key;
+            for(int i = 0; i < expected_reasons.size ; ++i)
+            {
+                for(int j = 0; j < expected_params.size; ++j)
+                {
+                    key = FixedStringType();//init
+                    key.push_front(":");
+                    key.push_front(expected_params.arr[j]);
+                    key.push_front(":");
+                    key.push_front(expected_reasons.arr[i]);
+
+                    if(strncmp(key.data, str.data,strlen(key.data)) == 0)
+                    {//ok is valid key
+                        key_is_valid = true;
+                        //printf("\ncheck_param valid key: %s",key.data);
+                        break;
+                    }
+                }//for expected params
+                if(key_is_valid) break;
+            }//for expected reasons
+            if(!key_is_valid)//if parsable exception content is not valid then throw error
+            {
+                fs.push_front(" ");//space
+                fs.push_front(str.data);//err
+                fs.push_front("check_key failed, invalid key: ");//err
+                throw OperationErrorType(fs.data);
+            }
+        }
+
+        /**
+         * for exception params separated by '| ' from end to begin marked by '|| 'call func callback
+         * callback may throw
+         */
+        void for_params(FixedStringFunc func)
+        {
+            int len_of_data = strlen(fs.data);
+            int last_separator_index = 0;
+            for(int i = len_of_data - 1; i > -1; --i)//search data backward
+            {
+                //printf("\nfor i: %d\n", i);
+                if(fs.data[i] == '|')//if separator found
+                {
+                    if(last_separator_index  == 0)
+                    {
+                        last_separator_index = i;
+                    }
+                    else
+                    {
+                        FixedStringType str;
+                        char* data_ptr = fs.data+i+2;
+                        int data_len = fs.data + last_separator_index - 1 - data_ptr;
+                        memmove(str.data,data_ptr,data_len);//ok if str have DATASIZE same as databuffer_ or bigger
+                        //printf("\n found %s at: %d\n", str.data, i);
+                        if (func)
+                        {
+                            func(str);
+                        }
+                        else
+                        {
+                            fs.push_front("invalid func ");//err
+                            throw OperationErrorType(fs.data);
+                        }
+                        //printf("\nlook_for last_separator_index: %d\n", last_separator_index);
+                        last_separator_index = i;
+                    }
+                    //check border ||
+                    if ((i > 0) && (fs.data[i-1] == '|'))
+                    {
+                        //printf("\nborder found | at: %d\n", i);
+                        break;
+                    }
+                }//if |
+            }//for i
+
+        }//for_params
+
+
+    protected:
+        FixedStringType fs;
+
+        OperationExceptionImpl(const char* file
+                , const int line
+                , const char* function
+                , const char* data)
+        {
+            //fill databuffer
+            fs.push_front(data);//databuffer
+            fs.push_front(" ");//space
+            fs.push_front(function);//function
+            fs.push_front(" ");//space
+            char line_str[20]={'\0'};
+            snprintf(line_str,sizeof(line_str), ":%d", line);
+            fs.push_front(line_str);//line
+            fs.push_front(file);//file
+
+            //run check for reason-param data in buffer
+            FixedStringFunc check_data = std::bind1st(std::mem_fun(&OperationExceptionImplType::check_key), this);
+            for_params(check_data);
+        }
+
+
+        ~OperationExceptionImpl() throw() {};
+
+    };
+
 
 }//namespace Fred
 #endif // OPEXCEPTION_H_

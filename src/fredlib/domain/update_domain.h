@@ -104,11 +104,63 @@ namespace Fred
         virtual ~UpdateDomainOperationException() throw() {};
     };
 
+
     typedef OperationException<2048,UpdateDomainOperationException
         ,UpdateDomainFailParam,UpdateDomainFailReason> UpdateDomainException;
+
     typedef UpdateDomainException::OperationErrorType UpdateDomainError;
-    #define UDEX(DATA) UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-    #define UDERR(DATA) UpdateDomainError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+
+//crtp test
+
+    class UpdateDomainError_
+    : public OperationErrorImpl<2048>
+    {
+    public:
+        UpdateDomainError_(const char* file
+                , const int line
+                , const char* function
+                , const char* data) throw()
+        : OperationErrorImpl<2048>(file, line, function, data)
+        {
+            fs.push_front("UpdateDomainError: ");
+        }
+
+        UpdateDomainError_(const char* data) throw()
+        : OperationErrorImpl<2048>(data)
+        {
+            fs.push_front("UpdateDomainError: ");
+        }
+    };
+
+
+    class UpdateDomainException_
+    : public OperationExceptionImpl<UpdateDomainException_, 2048, UpdateDomainError_>
+    {
+    public:
+        UpdateDomainException_(const char* file
+                , const int line
+                , const char* function
+                , const char* data)
+        : OperationExceptionImpl<UpdateDomainException_, 2048, UpdateDomainError_>(file, line, function, data)
+        {}
+
+        ConstArr get_fail_param() throw()
+        {
+            static const char* list[]={"fqdn", "nsset", "keyset", "registrant", "admin contact"};
+            return ConstArr(list,sizeof(list)/sizeof(char*));
+        }
+
+        ConstArr get_fail_reason() throw()
+        {
+            static const char* list[]={"not found"};
+            return ConstArr(list,sizeof(list)/sizeof(char*));
+        }
+
+    };//class UpdateDomainException
+//crtp test
+
+#define UDEX(DATA) UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define UDERR(DATA) UpdateDomainError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 

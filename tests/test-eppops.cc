@@ -127,7 +127,7 @@ void print_3str(TestOpEx::FixedStringType str1, TestOpEx::FixedStringType str2, 
     printf("\nstr: %s - %s - %s\n", str1.data, str2.data, str3.data);
 }
 
-BOOST_AUTO_TEST_CASE(update_domain_operation_exception)
+BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
 {
     //using namespace Fred;
     try
@@ -136,12 +136,37 @@ BOOST_AUTO_TEST_CASE(update_domain_operation_exception)
         std::string errmsg("test exception || not found:fqdn: ");
         errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
         errmsg += " |";
-        throw Fred::UDEX(errmsg.c_str());
+        throw Fred::UpdateDomainException_(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
     }
-    catch(Fred::UpdateDomainException& ex)
+    catch(Fred::UpdateDomainException_& ex)
     {
         BOOST_MESSAGE(ex.what());
-        ex.callback_exception_params(print_3str);
+        //ex.callback_exception_params(print_3str);
+    }
+
+    try
+    {
+        std::string fqdn_("|fred.cz|");
+        std::string errmsg("test error in exception params || found:fqdn: ");
+        errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
+        errmsg += " |";
+        throw Fred::UpdateDomainException_(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
+    }
+    catch(Fred::UpdateDomainError_& ex)
+    {
+        BOOST_MESSAGE(ex.what());
+        //ex.callback_exception_params(print_3str);
+    }
+
+
+    try
+    {
+        std::string errmsg("test error");
+        throw Fred::UpdateDomainError_(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
+    }
+    catch(Fred::UpdateDomainError_& ex)
+    {
+        BOOST_MESSAGE(ex.what());
     }
 }
 
