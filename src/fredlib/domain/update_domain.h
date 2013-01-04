@@ -112,36 +112,15 @@ namespace Fred
 
 //crtp test
 
-    class UpdateDomainError_
-    : public OperationErrorImpl<2048>
-    {
-    public:
-        UpdateDomainError_(const char* file
-                , const int line
-                , const char* function
-                , const char* data) throw()
-        : OperationErrorImpl<2048>(file, line, function, data)
-        {
-            fs.push_front("UpdateDomainError: ");
-        }
-
-        UpdateDomainError_(const char* data) throw()
-        : OperationErrorImpl<2048>(data)
-        {
-            fs.push_front("UpdateDomainError: ");
-        }
-    };
-
-
     class UpdateDomainException_
-    : public OperationExceptionImpl<UpdateDomainException_, 2048, UpdateDomainError_>
+    : public OperationExceptionImpl<UpdateDomainException_, 2048>
     {
     public:
         UpdateDomainException_(const char* file
                 , const int line
                 , const char* function
                 , const char* data)
-        : OperationExceptionImpl<UpdateDomainException_, 2048, UpdateDomainError_>(file, line, function, data)
+        : OperationExceptionImpl<UpdateDomainException_, 2048>(file, line, function, data)
         {}
 
         ConstArr get_fail_param() throw()

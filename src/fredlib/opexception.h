@@ -187,7 +187,7 @@ template <
     int DATASIZE ///size of internal buffer for detail of failure
     , class EXCEPTION_BASE ///additional exception types
     >
-class OperationError
+class OperationError_
     : virtual public EXCEPTION_BASE
 {
     ///any data of failure
@@ -207,7 +207,7 @@ public:
      * intended for situations where data already contains enough details of failure
      * like failure of OperationException instance
      */
-    OperationError(const char* data) throw()
+    OperationError_(const char* data) throw()
     {
         //fill exception data
         fs.push_front(data);
@@ -218,7 +218,7 @@ public:
      * file, line and function describe origin in source and shall have values from __FILE__, __LINE__ and __ASSERT_FUNCTION macros
      * data shall contain any details of failure
      */
-    OperationError(const char* file
+    OperationError_(const char* file
             , const int line
             , const char* function
             , const char* data) throw()
@@ -259,7 +259,7 @@ public:
     typedef OperationException<DATASIZE, EXCEPTION_BASE, FAIL_PARAM_ARRAY, FAIL_REASON_ARRAY> OperationExceptionType;
     typedef FixedString<DATASIZE> FixedStringType;
     typedef boost::function<void (FixedStringType str)> FixedStringFunc;
-    typedef OperationError<DATASIZE,EXCEPTION_BASE> OperationErrorType;
+    typedef OperationError_<DATASIZE,EXCEPTION_BASE> OperationErrorType;
 private:
     /**
      * data shall be stored from end to begin
@@ -375,7 +375,7 @@ public:
      * reasons params and values shall not contain character '|' used for separation
      * if there shall be no parsable params, data shall end by '||'
      *
-     * ctor of OperationException may fail and failure shall throw OperationError instance
+     * ctor of OperationException may fail and failure shall throw OperationError_ instance
      */
 
     OperationException(const char* file
@@ -411,7 +411,7 @@ public:
 };
 
     /**
-     * operation error crtp template
+     * operation error crtp parent template
      * throwing child of this template shall be considered part of bad path
      * intended meaning is abort operation because of unexpected reasons
      * like something is broken and need to be fixed
@@ -420,7 +420,7 @@ public:
 
     template < int DATASIZE ///size of internal buffer for detail of failure
         >
-    class OperationErrorImpl
+    class OperationError
     : public std::exception
     {
     protected:
@@ -441,17 +441,18 @@ public:
          * intended for situations where data already contains enough details of failure
          * like failure of OperationExceptionImpl instance
          */
-        OperationErrorImpl(const char* data) throw()
+        OperationError(const char* data) throw()
         {
             //fill exception data
             fs.push_front(data);
+            fs.push_front("OperationError: ");
         }
         /**
          * ctor
          * file, line and function describe origin in source and shall have values from __FILE__, __LINE__ and __ASSERT_FUNCTION macros
          * data shall contain any details of failure
          */
-        OperationErrorImpl(const char* file
+        OperationError(const char* file
                 , const int line
                 , const char* function
                 , const char* data) throw()
@@ -465,10 +466,9 @@ public:
             snprintf(line_str,sizeof(line_str), ":%d", line);
             fs.push_front(line_str);//line
             fs.push_front(file);//file
+            fs.push_front("OperationError: ");
         }
     };
-
-
 
     /**
      * crtp parent template
@@ -479,16 +479,15 @@ public:
 
     template < class EXCEPTION_CHILD ///child exception type
                 , int DATASIZE ///size of internal buffer for detail of failure
-                , class ERROR_EXCEPTION
         >
     class OperationExceptionImpl
     : public std::exception
     {
     public:
         typedef FixedString<DATASIZE> FixedStringType;
-        typedef OperationExceptionImpl<EXCEPTION_CHILD, DATASIZE,ERROR_EXCEPTION> OperationExceptionImplType;
+        typedef OperationExceptionImpl<EXCEPTION_CHILD, DATASIZE> OperationExceptionImplType;
         typedef boost::function<void (FixedStringType str)> FixedStringFunc;
-        typedef ERROR_EXCEPTION OperationErrorType;
+        typedef OperationError<DATASIZE> OperationErrorType;
 
         /**
          * dump exception data
@@ -538,6 +537,16 @@ public:
                 fs.push_front("check_key failed, invalid key: ");//err
                 throw OperationErrorType(fs.data);
             }
+        }
+
+        /**
+         * call supplied function with exception params optionally filtered by by substring search in reason and param
+         */
+
+        void callback_exception_params(boost::function<void (FixedStringType reason, FixedStringType param, FixedStringType value)> func_void3fixedstr
+                , const char key_substring[] = "")
+        {
+            SearchCallback<OperationExceptionImplType> (key_substring,func_void3fixedstr,*this).run();//exec
         }
 
         /**
