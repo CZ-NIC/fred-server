@@ -429,7 +429,7 @@ public:
     template < int DATASIZE ///size of internal buffer for detail of failure
         >
     class OperationError
-    : public std::exception
+    : public OperationErrorBase
     {
     protected:
         ///any data of failure

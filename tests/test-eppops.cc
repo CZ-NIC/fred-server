@@ -183,6 +183,17 @@ BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
     {
         BOOST_MESSAGE(ex.what());
     }
+
+    try
+    {
+        std::string errmsg("test error");
+        throw Fred::UpdateDomainException_::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
+    }
+    catch(Fred::OperationErrorBase& ex)
+    {
+        BOOST_MESSAGE(ex.what());
+    }
+
 }
 
 
