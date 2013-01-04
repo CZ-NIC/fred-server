@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
     catch(Fred::UpdateDomainException_& ex)
     {
         BOOST_MESSAGE(ex.what());
-        //ex.callback_exception_params(print_3str);
+        ex.callback_exception_params(print_3str);
     }
 
     //using namespace Fred;

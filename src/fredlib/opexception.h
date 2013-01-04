@@ -418,6 +418,79 @@ public:
 
 };
 
+
+    /**
+     * separation of reason, param and value
+     * with optional filtering by _key_substring search in reason and param
+     */
+    template <int DATASIZE> struct SearchCallbackImpl
+    {
+        typedef SearchCallbackImpl<DATASIZE> SearchCallbackType;
+        typedef FixedString<DATASIZE> FixedStringType;
+        //typedef boost::function<void (FixedStringType str)> FixedStringFunc;
+
+        typedef boost::function<void (FixedStringType reason, FixedStringType param, FixedStringType value)> CallbackType;
+        FixedStringType key_substring;
+        bool is_key_set;
+        CallbackType callback;
+        ConstArr expected_reasons;
+        ConstArr expected_params;
+
+        SearchCallbackImpl(FixedStringType _key_substring
+                , CallbackType _callback
+                , ConstArr _expected_reasons
+                , ConstArr _expected_params
+                )
+        : key_substring(_key_substring)
+        , is_key_set(strlen(_key_substring.data) == 0 ? false : true )
+        , callback(_callback)
+        , expected_reasons(_expected_reasons)
+        , expected_params(_expected_params)
+        {}
+
+        void exception_callback(FixedStringType str)
+        {
+            //printf("\ncheck_param: %s",str.data);
+
+            FixedStringType expected_key;
+            for(int i = 0; i < expected_reasons.size ; ++i)
+            {
+                for(int j = 0; j < expected_params.size; ++j)
+                {
+                    expected_key = FixedStringType();//init
+                    expected_key.push_front(":");
+                    expected_key.push_front(expected_params.arr[j]);
+                    expected_key.push_front(":");
+                    expected_key.push_front(expected_reasons.arr[i]);
+
+                    if(strncmp(expected_key.data, str.data,strlen(expected_key.data)) == 0)
+                    {//ok is valid expected_key
+                        /*
+                        printf("\nreason: %s param: %s value: %s\n"
+                                ,expected_reasons.arr[i]
+                                , expected_params.arr[j]
+                                , str.data + strlen(expected_key.data)
+                                );
+                        */
+                        if(!is_key_set || strstr(expected_key.data,key_substring.data))
+                            callback(expected_reasons.arr[i],expected_params.arr[j],str.data + strlen(expected_key.data));
+
+                    }
+                }//for expected params
+            }//for expected reasons
+        }
+
+        /*
+        void run()
+        {
+            //run callback for data in exception
+            //FixedStringFunc cbfun = std::bind1st(std::mem_fun(&SearchCallbackType::exception_callback), this);
+            //for_params(cbfun);
+        }
+        */
+    };
+
+
     /**
      * operation error crtp parent template
      * throwing child of this template shall be considered part of bad path
@@ -572,7 +645,10 @@ public:
         void callback_exception_params(boost::function<void (FixedStringType reason, FixedStringType param, FixedStringType value)> func_void3fixedstr
                 , const char key_substring[] = "")
         {
-            SearchCallback<OperationExceptionImplType> (key_substring,func_void3fixedstr,*this).run();//exec
+            SearchCallbackImpl<DATASIZE> cb (key_substring,func_void3fixedstr,get_fail_reason(),get_fail_param());//callback instance
+            //run callback for data in exception
+            FixedStringFunc cbfun = std::bind1st(std::mem_fun(&SearchCallbackImpl<DATASIZE>::exception_callback), &cb);
+            for_params(cbfun);
         }
 
         /**
