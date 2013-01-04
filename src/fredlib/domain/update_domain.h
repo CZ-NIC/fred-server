@@ -140,8 +140,8 @@ namespace Fred
     };//class UpdateDomainException
 //crtp test
 
-#define UDEX(DATA) UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define UDERR(DATA) UpdateDomainError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define UDEX(DATA) UpdateDomainException_(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define UDERR(DATA) UpdateDomainException_::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 
