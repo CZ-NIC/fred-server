@@ -326,13 +326,13 @@ namespace Fred
         {
             throw UDEX(ex.what());
         }
-        catch(UpdateDomainException& ex)
+        catch(UpdateDomainException&)
         {
-            throw ex;
+            throw;
         }
-        catch(UpdateDomainError& ex)
+        catch(OperationErrorBase& ex)
         {
-            throw ex;
+            throw;
         }
         catch(std::exception& ex)
         {

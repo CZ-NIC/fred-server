@@ -74,53 +74,16 @@ namespace Fred
         void exec(OperationContext& ctx);
     };//class UpdateDomain
 
-    struct UpdateDomainFailParam
-    {
-        ConstArr get_fail_param() throw()
-        {
-            static const char* list[]={"fqdn", "nsset", "keyset", "registrant", "admin contact"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    protected:
-        ~UpdateDomainFailParam()throw(){}
-    };
-
-    struct UpdateDomainFailReason
-    {
-        ConstArr get_fail_reason() throw()
-        {
-            static const char* list[]={"not found"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    protected:
-        ~UpdateDomainFailReason()throw(){}
-    };
-
-    ///operation exception base class
-    struct UpdateDomainOperationException
-    : virtual public std::exception  //common base
-    {
-        virtual const char* what() const throw() = 0;
-        virtual ~UpdateDomainOperationException() throw() {};
-    };
-
-
-    typedef OperationException<2048,UpdateDomainOperationException
-        ,UpdateDomainFailParam,UpdateDomainFailReason> UpdateDomainException;
-
-    typedef UpdateDomainException::OperationErrorType UpdateDomainError;
-
-//crtp test
-
-    class UpdateDomainException_
-    : public OperationExceptionImpl<UpdateDomainException_, 2048>
+//crtp child impl
+    class UpdateDomainException
+    : public OperationExceptionImpl<UpdateDomainException, 2048>
     {
     public:
-        UpdateDomainException_(const char* file
+        UpdateDomainException(const char* file
                 , const int line
                 , const char* function
                 , const char* data)
-        : OperationExceptionImpl<UpdateDomainException_, 2048>(file, line, function, data)
+        : OperationExceptionImpl<UpdateDomainException, 2048>(file, line, function, data)
         {}
 
         ConstArr get_fail_param_impl() throw()
@@ -135,13 +98,10 @@ namespace Fred
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
 
-        //const char* what() const throw();
-
     };//class UpdateDomainException
-//crtp test
 
-#define UDEX(DATA) UpdateDomainException_(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define UDERR(DATA) UpdateDomainException_::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define UDEX(DATA) UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define UDERR(DATA) UpdateDomainException::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 

@@ -111,20 +111,27 @@ struct TestOperationException
 };
 
 
-typedef Fred::OperationException<2048,TestOperationException,TestFailParam,TestFailReason> TestOpEx;
+typedef Fred::UpdateDomainException TestOpEx;
 
 #define OPEX(DATA) TestOpEx(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 ///test callback
-void print_str(TestOpEx::FixedStringType str)
+void print_str(const char* str)
 {
-    printf("\nstr: %s\n",str.data);
+    printf("\nstr: %s\n",str);
 }
 
 ///test callback
-void print_3str(TestOpEx::FixedStringType str1, TestOpEx::FixedStringType str2, TestOpEx::FixedStringType str3)
+void print_3str(const char* str1, const char* str2, const char* str3)
 {
-    printf("\nstr: %s - %s - %s\n", str1.data, str2.data, str3.data);
+    printf("\nstr: %s - %s - %s\n", str1, str2, str3);
+}
+
+BOOST_AUTO_TEST_CASE(fixed_string)
+{
+    Fred::FixedString<3> fs10;
+
+    fs10.push_back("0123456");
 }
 
 BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
@@ -136,9 +143,9 @@ BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
         std::string errmsg("test exception || not found:fqdn: ");
         errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
         errmsg += " |";
-        throw Fred::UpdateDomainException_(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
+        throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
     }
-    catch(Fred::UpdateDomainException_& ex)
+    catch(Fred::UpdateDomainException& ex)
     {
         BOOST_MESSAGE(ex.what());
         ex.callback_exception_params(print_3str);
@@ -151,7 +158,7 @@ BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
         std::string errmsg("test exception || not found:fqdn: ");
         errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
         errmsg += " |";
-        throw Fred::UpdateDomainException_(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
+        throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
     }
     catch(Fred::OperationExceptionBase& ex)
     {
@@ -166,9 +173,9 @@ BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
         std::string errmsg("test error in exception params || found:fqdn: ");
         errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
         errmsg += " |";
-        throw Fred::UpdateDomainException_(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
+        throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
     }
-    catch(Fred::UpdateDomainException_::OperationErrorType& ex)
+    catch(Fred::UpdateDomainException::OperationErrorType& ex)
     {
         BOOST_MESSAGE(ex.what());
     }
@@ -177,9 +184,9 @@ BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
     try
     {
         std::string errmsg("test error");
-        throw Fred::UpdateDomainException_::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
+        throw Fred::UpdateDomainException::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
     }
-    catch(Fred::UpdateDomainException_::OperationErrorType& ex)
+    catch(Fred::UpdateDomainException::OperationErrorType& ex)
     {
         BOOST_MESSAGE(ex.what());
     }
@@ -187,67 +194,13 @@ BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
     try
     {
         std::string errmsg("test error");
-        throw Fred::UpdateDomainException_::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
+        throw Fred::UpdateDomainException::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
     }
     catch(Fred::OperationErrorBase& ex)
     {
         BOOST_MESSAGE(ex.what());
     }
 
-}
-
-
-BOOST_AUTO_TEST_CASE(operation_exception)
-{
-    //test op
-    try
-    {
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction trans(conn);
-        Database::Result res = conn.exec_params(
-            "SELECT $1::text, raise_exception_ifnull((select null::text) "
-            " ,'operation_exception test || reason1:param1: '||ex_data('value1')"
-            " ||' | reason2:param2: '||ex_data('value2|value2')"
-            " ||' | reason3:param3: '||ex_data(null::text)||' |')"
-            , Database::query_param_list("test"));
-        if(res.size() == 0)
-        {
-            throw std::runtime_error("failed");
-        }
-    }
-    catch(std::exception& ex)
-    {
-        TestOpEx::FixedStringFunc func = print_str;
-        TestOpEx testexp = OPEX(ex.what()) ;
-        BOOST_MESSAGE(ex.what());
-        BOOST_MESSAGE(testexp.what());
-
-        BOOST_CHECK(testexp.get_fail_param().size == 5);
-        BOOST_CHECK(strlen(testexp.get_fail_param().arr[0]) == 6);
-
-        testexp.for_params(func);
-
-        Fred::SearchCallback<TestOpEx> ("",print_3str,testexp).run();//exec for all
-        Fred::SearchCallback<TestOpEx> ("param2",print_3str,testexp).run();//exec for param2
-        Fred::SearchCallback<TestOpEx> ("param2",print_3str,testexp).run();//exec for param2
-        Fred::SearchCallback<TestOpEx> ("reason3",print_3str,testexp).run();//exec for reason3
-        Fred::SearchCallback<TestOpEx> ("param3",print_3str,testexp).run();//exec for param3
-
-        testexp.callback_exception_params(print_3str,"");
-        testexp.callback_exception_params(print_3str,"param1");
-        testexp.callback_exception_params(print_3str);
-
-        //TestFailReason* bad_ptr = dynamic_cast<TestFailReason*>(&testexp);
-        //delete(bad_ptr);//prohibited by protected dtor
-        //TestFailReason tfr;//prohibited by protected dtor
-    }
-    {//length of the list check
-        const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
-        BOOST_CHECK(sizeof(list)/sizeof(char*) == 5);
-
-        //printf("Fred::ConstArr(list).size: %d",Fred::ConstArr(list, sizeof(list)/sizeof(char*)).size);
-        BOOST_CHECK(Fred::ConstArr(list, sizeof(list)/sizeof(char*)).size == 5);
-    }
 }
 
 BOOST_AUTO_TEST_CASE(delete_contact)
