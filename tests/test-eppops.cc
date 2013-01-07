@@ -78,43 +78,6 @@ BOOST_AUTO_TEST_SUITE(TestEPPops)
 
 const std::string server_name = "test-eppops";
 
-
-
-struct TestFailParam
-{
-    Fred::ConstArr get_fail_param() throw()
-    {
-        static const char* list[]={"param1", "param2", "param3", "param4", "param5"};
-        return Fred::ConstArr(list,sizeof(list)/sizeof(char*));
-    }
-protected:
-    ~TestFailParam() throw(){}
-};
-
-struct TestFailReason
-{
-    Fred::ConstArr get_fail_reason() throw()
-    {
-        static const char* list[]={"reason1", "reason2", "reason3", "reason4", "reason5"};
-        return Fred::ConstArr(list,sizeof(list)/sizeof(char*));
-    }
-protected:
-    ~TestFailReason()throw(){}
-};
-
-///test operation exception interface
-struct TestOperationException
-: virtual public std::exception  //common base
-{
-    virtual const char* what() const throw() = 0;
-    virtual ~TestOperationException() throw() {};
-};
-
-
-typedef Fred::UpdateDomainException TestOpEx;
-
-#define OPEX(DATA) TestOpEx(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 ///test callback
 void print_str(const char* str)
 {
@@ -126,6 +89,55 @@ void print_3str(const char* str1, const char* str2, const char* str3)
 {
     printf("\nstr: %s - %s - %s\n", str1, str2, str3);
 }
+
+//check callback input data
+class CheckCallback
+{
+    Fred::ConstArr valid_reasons_;
+    Fred::ConstArr valid_params_;
+    bool reason_ok_;
+    bool param_ok_;
+
+public:
+    CheckCallback(const Fred::ConstArr& valid_reasons, const Fred::ConstArr& valid_params)
+    : valid_reasons_(valid_reasons)
+    , valid_params_(valid_params)
+    , reason_ok_(true)
+    , param_ok_(true)
+    {}
+
+    //checking callback called for all params
+    void operator()(const char* reason, const char* param, const char* value)
+    {
+        bool reason_ok = false;
+        bool param_ok = false;
+
+        for(int i =0; i < valid_reasons_.size;++i)
+        {
+            if(std::string(reason).compare(std::string(valid_reasons_.arr[i])) ==0) reason_ok = true;
+        }
+
+        for(int i =0; i < valid_params_.size;++i)
+        {
+            if(std::string(param).compare(std::string(valid_params_.arr[i])) ==0) param_ok = true;
+        }
+
+        //save
+        reason_ok_ = reason_ok;
+        param_ok_ = param_ok;
+    }
+
+    bool reasons_ok()
+    {
+        return reason_ok_;
+    }
+
+    bool params_ok()
+    {
+        return param_ok_;
+    }
+};
+
 
 BOOST_AUTO_TEST_CASE(fixed_string)
 {
@@ -144,24 +156,37 @@ BOOST_AUTO_TEST_CASE(fixed_string)
     }
 }
 
-BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
+BOOST_AUTO_TEST_CASE(test_quote_pipe_in_exception)
 {
-    //using namespace Fred;
     try
     {
         std::string fqdn_("|fred.cz|");
         std::string errmsg("test exception || not found:fqdn: ");
         errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
+        errmsg += " | not found:registrant: test ";
         errmsg += " |";
         throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
     }
     catch(Fred::UpdateDomainException& ex)
     {
-        BOOST_MESSAGE(ex.what());
-        ex.callback_exception_params(print_3str);
+        CheckCallback check(ex.get_fail_reason(), ex.get_fail_param());
+        ex.callback_exception_params(check);
+        BOOST_CHECK(check.reasons_ok());
+        BOOST_CHECK(check.params_ok());
+
+        //BOOST_MESSAGE(ex.what());
+        //ex.callback_exception_params(print_3str);
     }
 
-    //using namespace Fred;
+    {//check Fred::OperationExceptionBase exception
+        std::string fqdn_("|fred.cz|");
+        std::string errmsg("test exception || not found:fqdn: ");
+        errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
+        errmsg += " |";
+        BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str())
+        , Fred::OperationExceptionBase);
+    }
+
     try
     {
         std::string fqdn_("|fred.cz|");
@@ -172,44 +197,44 @@ BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
     }
     catch(Fred::OperationExceptionBase& ex)
     {
-        BOOST_MESSAGE(ex.what());
+        CheckCallback check(ex.get_fail_reason(), ex.get_fail_param());
+        ex.callback_exception_params(check);
+        BOOST_CHECK(check.reasons_ok());
+        BOOST_CHECK(check.params_ok());
+
         //ex.callback_exception_params(print_3str);
     }
 
-
-    try
-    {
+    {//invalid exception data
         std::string fqdn_("|fred.cz|");
-        std::string errmsg("test error in exception params || found:fqdn: ");
+        std::string errmsg("test error in exception params || not found:fqdn1: ");
         errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
         errmsg += " |";
-        throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
-    }
-    catch(Fred::UpdateDomainException::OperationErrorType& ex)
-    {
-        BOOST_MESSAGE(ex.what());
-    }
-
-
-    try
-    {
-        std::string errmsg("test error");
-        throw Fred::UpdateDomainException::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
-    }
-    catch(Fred::UpdateDomainException::OperationErrorType& ex)
-    {
-        BOOST_MESSAGE(ex.what());
+        BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str())
+        , Fred::UpdateDomainException::OperationErrorType);
+        BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str())
+        , Fred::OperationErrorBase);
     }
 
-    try
-    {
-        std::string errmsg("test error");
-        throw Fred::UpdateDomainException::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
-    }
-    catch(Fred::OperationErrorBase& ex)
-    {
-        BOOST_MESSAGE(ex.what());
-    }
+}
+
+BOOST_AUTO_TEST_CASE(update_domain_exception)
+{
+    //no parsable data - ok
+    BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, "test")
+    , Fred::OperationExceptionBase);
+
+    //no data - error
+    BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, "test ||  |")
+    , Fred::OperationErrorBase);
+
+    //error exception - ok
+    BOOST_CHECK_THROW (throw Fred::UpdateDomainException::OperationErrorType("test")
+    , Fred::OperationErrorBase);
+
+    //not ended by | - no parsable data - ok
+    BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, "test exception || not found:1111: errtest")
+        , Fred::OperationExceptionBase);
 
 }
 

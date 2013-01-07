@@ -88,6 +88,7 @@ struct OperationExceptionBase
      */
     virtual ConstArr get_fail_param() throw() = 0;
 
+    virtual const char* what() const throw() = 0;
     virtual ~OperationExceptionBase() throw() {};
 };
 
@@ -95,6 +96,7 @@ struct OperationExceptionBase
 struct OperationErrorBase
 : virtual public std::exception  //common base
 {
+    virtual const char* what() const throw() = 0;
     virtual ~OperationErrorBase() throw() {};
 };
 
@@ -251,7 +253,7 @@ public:
     /**
      * dump data
      */
-    const char* what() const throw()
+    virtual const char* what() const throw()
     {
         return fs.data;
     }
@@ -360,10 +362,11 @@ public:
                 key.push_front(":");
                 key.push_front(expected_reasons.arr[i]);
 
-                if(strncmp(key.data, str.data,strlen(key.data)) == 0)
+                //printf("\ncheck_key compare key: %s\n",key.data);
+                if((strlen(str.data) >= strlen(key.data))&&(strncmp(key.data, str.data,strlen(key.data)) == 0))
                 {//ok is valid key
                     key_is_valid = true;
-                    //printf("\ncheck_param valid key: %s",key.data);
+                    //printf("\ncheck_key valid key: %s str: %s\n",key.data, str.data);
                     break;
                 }
             }//for expected params
