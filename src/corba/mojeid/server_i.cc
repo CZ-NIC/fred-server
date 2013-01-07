@@ -434,6 +434,10 @@ namespace Registry
             {
                 return pimpl_->getContactId(_handle);
             }
+            catch (Registry::MojeID::OBJECT_NOT_EXISTS &_ex)
+            {
+                throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+            }
             catch (std::exception &_ex)
             {
                 throw Registry::MojeID::Server
