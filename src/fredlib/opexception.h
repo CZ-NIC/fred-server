@@ -57,9 +57,37 @@ struct ConstArr
 struct OperationExceptionBase
 : virtual public std::exception  //common base
 {
+    typedef boost::function<void (const char* str)> Func1Str;
+    typedef boost::function<void (const char* reason, const char* param, const char* value)> FuncReasonParamValue;
+
+    /**
+     * call func callback for all parsable params
+     * callback may throw
+     */
+    virtual void for_params(Func1Str func) = 0;
+
+    /**
+     * call supplied function with exception params
+     * callback may throw
+     */
+    virtual void callback_exception_params(FuncReasonParamValue func) =0;
+
+    /**
+     * call supplied function with exception params filtered by substring search in reason and param
+     * callback may throw
+     */
+    virtual void callback_exception_params(FuncReasonParamValue func, const char* key_substring) =0;
+
+    /**
+     * reasons of failure enumerated
+     */
     virtual ConstArr get_fail_reason() throw() = 0;
+
+    /**
+     * parameters of failure enumerated
+     */
     virtual ConstArr get_fail_param() throw() = 0;
-    virtual const char* what() const throw() = 0;
+
     virtual ~OperationExceptionBase() throw() {};
 };
 
@@ -67,7 +95,6 @@ struct OperationExceptionBase
 struct OperationErrorBase
 : virtual public std::exception  //common base
 {
-    virtual const char* what() const throw() = 0;
     virtual ~OperationErrorBase() throw() {};
 };
 
@@ -150,7 +177,6 @@ template <int DATASIZE> struct SearchCallbackImpl
 {
     typedef SearchCallbackImpl<DATASIZE> SearchCallbackType;
     typedef FixedString<DATASIZE> FixedStringType;
-    //typedef boost::function<void (FixedStringType str)> FixedStringFunc;
 
     typedef boost::function<void (const char * reason, const char * param, const char * value)> CallbackType;
     FixedStringType key_substring;
@@ -171,7 +197,7 @@ template <int DATASIZE> struct SearchCallbackImpl
     , expected_params(_expected_params)
     {}
 
-    void exception_callback(FixedStringType str)
+    void exception_callback(const char* str)
     {
         //printf("\ncheck_param: %s",str.data);
 
@@ -186,17 +212,17 @@ template <int DATASIZE> struct SearchCallbackImpl
                 expected_key.push_front(":");
                 expected_key.push_front(expected_reasons.arr[i]);
 
-                if(strncmp(expected_key.data, str.data,strlen(expected_key.data)) == 0)
+                if(strncmp(expected_key.data, str,strlen(expected_key.data)) == 0)
                 {//ok is valid expected_key
                     /*
                     printf("\nreason: %s param: %s value: %s\n"
                             ,expected_reasons.arr[i]
                             , expected_params.arr[j]
-                            , str.data + strlen(expected_key.data)
+                            , str + strlen(expected_key.data)
                             );
                     */
                     if(!is_key_set || strstr(expected_key.data,key_substring.data))
-                        callback(expected_reasons.arr[i],expected_params.arr[j],str.data + strlen(expected_key.data));
+                        callback(expected_reasons.arr[i],expected_params.arr[j],str + strlen(expected_key.data));
 
                 }
             }//for expected params
@@ -280,7 +306,8 @@ class OperationExceptionImpl
 public:
     typedef FixedString<DATASIZE> FixedStringType;
     typedef OperationExceptionImpl<EXCEPTION_CHILD, DATASIZE> OperationExceptionImplType;
-    typedef boost::function<void (const char* str)> FixedStringFunc;
+    typedef OperationExceptionBase::Func1Str Func1Str;
+    typedef OperationExceptionBase::FuncReasonParamValue FuncReasonParamValue;
     typedef OperationError<DATASIZE> OperationErrorType;
 
     /**
@@ -352,15 +379,29 @@ public:
     }
 
     /**
-     * call supplied function with exception params optionally filtered by by substring search in reason and param
+     * call supplied function with exception params
+     * callback may throw
      */
 
-    void callback_exception_params(boost::function<void (const char* reason, const char* param, const char* value)> func_void3fixedstr
-            , const char key_substring[] = "")
+    void callback_exception_params(FuncReasonParamValue func_void3str)
     {
-        SearchCallbackImpl<DATASIZE> cb (key_substring,func_void3fixedstr,get_fail_reason(),get_fail_param());//callback instance
+        SearchCallbackImpl<DATASIZE> cb ("",func_void3str,get_fail_reason(),get_fail_param());//callback instance
         //run callback for data in exception
-        FixedStringFunc cbfun = std::bind1st(std::mem_fun(&SearchCallbackImpl<DATASIZE>::exception_callback), &cb);
+        Func1Str cbfun = std::bind1st(std::mem_fun(&SearchCallbackImpl<DATASIZE>::exception_callback), &cb);
+        for_params(cbfun);
+    }
+
+    /**
+     * call supplied function with exception params filtered by substring search in reason and param
+     * callback may throw
+     */
+
+    void callback_exception_params(FuncReasonParamValue func_void3str
+            , const char* key_substring)
+    {
+        SearchCallbackImpl<DATASIZE> cb (key_substring,func_void3str,get_fail_reason(),get_fail_param());//callback instance
+        //run callback for data in exception
+        Func1Str cbfun = std::bind1st(std::mem_fun(&SearchCallbackImpl<DATASIZE>::exception_callback), &cb);
         for_params(cbfun);
     }
 
@@ -368,7 +409,7 @@ public:
      * for exception params separated by '| ' from end to begin marked by '|| 'call func callback
      * callback may throw
      */
-    void for_params(FixedStringFunc func)
+    void for_params(Func1Str func)
     {
         int len_of_data = strlen(fs.data);
         int last_separator_index = 0;
@@ -431,7 +472,7 @@ protected:
         fs.push_front(file);//file
 
         //run check for reason-param data in buffer
-        FixedStringFunc check_data = std::bind1st(std::mem_fun(&OperationExceptionImplType::check_key), this);
+        Func1Str check_data = std::bind1st(std::mem_fun(&OperationExceptionImplType::check_key), this);
         for_params(check_data);
     }
 

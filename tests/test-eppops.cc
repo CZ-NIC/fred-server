@@ -129,9 +129,19 @@ void print_3str(const char* str1, const char* str2, const char* str3)
 
 BOOST_AUTO_TEST_CASE(fixed_string)
 {
-    Fred::FixedString<3> fs10;
+    {
+        Fred::FixedString<3> fs3;
+        fs3.push_front("11");
+        fs3.push_front("22");
+        BOOST_CHECK(std::string(fs3.data) == "211");
+    }
 
-    fs10.push_back("0123456");
+    {
+        Fred::FixedString<3> fs3;
+        fs3.push_back("11");
+        fs3.push_back("22");
+        BOOST_CHECK(std::string(fs3.data) == "112");
+    }
 }
 
 BOOST_AUTO_TEST_CASE(update_domain_operation_crtp_exception)
