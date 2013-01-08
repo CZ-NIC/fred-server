@@ -37,6 +37,8 @@
 #include <functional>
 #include <boost/function.hpp>
 
+#include "fredlib/db_settings.h"
+
 namespace Fred
 {
 
@@ -483,6 +485,61 @@ protected:
     ~OperationExceptionImpl() throw() {};
 
 };//OperationExceptionImpl
+
+/**
+ * common exception handler for operation exec
+ * ment to be called from inside of the catch(...) block
+ */
+
+
+template <class OPERATION_EXCEPTION>
+void handleOperationExceptions(const char* file
+        , const int line
+        , const char* function)
+{
+    typedef typename OPERATION_EXCEPTION::OperationErrorType OperationError;
+
+    try
+    {
+        throw;//rethrow
+    }
+    //translate specific exceptions to operation specific exceptions
+    catch(Database::ResultFailed& ex)
+    {
+        throw OPERATION_EXCEPTION(file, line, function, ex.what());
+    }
+    //rethrow already operation specific exceptions
+    catch(OPERATION_EXCEPTION&)
+    {
+        throw;
+    }
+    //translate other operation exceptions to operation specific exceptions
+    catch(OperationExceptionBase& ex)
+    {
+        throw OPERATION_EXCEPTION(file, line, function, ex.what());
+    }
+    //rethrow already operation specific error exceptions
+    catch(OperationError&)
+    {
+        throw;
+    }
+    //translate other operation error exceptions to operation specific error exceptions
+    catch(OperationErrorBase& ex)
+    {
+        throw OperationError(file, line, function, ex.what());
+    }
+    //translate other std exceptions to operation specific error exceptions
+    catch(std::exception& ex)
+    {
+        throw OperationError(file, line, function, ex.what());
+    }
+    //propagate anything else
+    catch(...)
+    {
+        throw;
+    }
+}//handleOperationExceptions
+
 
 
 }//namespace Fred

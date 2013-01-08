@@ -322,37 +322,10 @@ namespace Fred
         }//save history
 
         }//try
-        //translate specific exceptions to operation specific exceptions
-        catch(Database::ResultFailed& ex)
+        catch(...)//common exception processing
         {
-            throw UDEX(ex.what());
+            handleOperationExceptions<UpdateDomainException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
         }
-        //rethrow already operation specific exceptions
-        catch(UpdateDomainException&)
-        {
-            throw;
-        }
-        //translate other operation exceptions to operation specific exceptions
-        catch(OperationExceptionBase& ex)
-        {
-            throw UDEX(ex.what());
-        }
-        //rethrow already operation specific error exceptions
-        catch(UpdateDomainError&)
-        {
-            throw;
-        }
-        //translate other operation error exceptions to operation specific error exceptions
-        catch(OperationErrorBase& ex)
-        {
-            throw UDERR(ex.what());
-        }
-        //translate other std exceptions to operation specific error exceptions
-        catch(std::exception& ex)
-        {
-            throw UDERR(ex.what());
-        }
-
     }//UpdateDomain::exec
 
 }//namespace Fred

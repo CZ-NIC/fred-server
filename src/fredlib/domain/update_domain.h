@@ -74,7 +74,7 @@ namespace Fred
         void exec(OperationContext& ctx);
     };//class UpdateDomain
 
-//crtp child impl
+//exception impl
     class UpdateDomainException
     : public OperationExceptionImpl<UpdateDomainException, 2048>
     {

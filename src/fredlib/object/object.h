@@ -26,9 +26,11 @@
 
 #include <string>
 
+#include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+
 
 
 namespace Fred
@@ -48,6 +50,37 @@ namespace Fred
         void exec(OperationContext& ctx);
     };
 
+    //exception impl
+        class UpdateObjectException
+        : public OperationExceptionImpl<UpdateObjectException, 2048>
+        {
+        public:
+            UpdateObjectException(const char* file
+                    , const int line
+                    , const char* function
+                    , const char* data)
+            : OperationExceptionImpl<UpdateObjectException, 2048>(file, line, function, data)
+            {}
+
+            ConstArr get_fail_param_impl() throw()
+            {
+                static const char* list[]={"handle", "registrar"};
+                return ConstArr(list,sizeof(list)/sizeof(char*));
+            }
+
+            ConstArr get_fail_reason_impl() throw()
+            {
+                static const char* list[]={"not found"};
+                return ConstArr(list,sizeof(list)/sizeof(char*));
+            }
+
+        };//class UpdateObjectException
+
+    typedef UpdateObjectException::OperationErrorType UpdateObjectError;
+#define UOEX(DATA) UpdateObjectException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define UOERR(DATA) UpdateObjectError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+
+
     class InsertHistory
     {
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
@@ -55,6 +88,36 @@ namespace Fred
         InsertHistory(const Nullable<unsigned long long>& logd_request_id);
         unsigned long long exec(OperationContext& ctx);
     };
+
+    //exception impl
+        class InsertHistoryException
+        : public OperationExceptionImpl<InsertHistoryException, 2048>
+        {
+        public:
+            InsertHistoryException(const char* file
+                    , const int line
+                    , const char* function
+                    , const char* data)
+            : OperationExceptionImpl<InsertHistoryException, 2048>(file, line, function, data)
+            {}
+
+            ConstArr get_fail_param_impl() throw()
+            {
+                static const char* list[]={"logd_request_id"};
+                return ConstArr(list,sizeof(list)/sizeof(char*));
+            }
+
+            ConstArr get_fail_reason_impl() throw()
+            {
+                static const char* list[]={"invalid"};
+                return ConstArr(list,sizeof(list)/sizeof(char*));
+            }
+
+        };//class InsertHistoryException
+
+    typedef InsertHistoryException::OperationErrorType InsertHistoryError;
+#define IHEX(DATA) InsertHistoryException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define IHERR(DATA) InsertHistoryError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 #endif //OBJECT_H_
