@@ -200,7 +200,7 @@ namespace Fred
                     sql << set_separator.get()
                         << " nsset = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
                         " JOIN nsset n ON oreg.id = n.id WHERE UPPER(oreg.name) = UPPER($"
-                        << params.size() << "::text)),'|| not found:nsset: '||$"<< params.size() << "::text||' |') "; //nsset update
+                        << params.size() << "::text)),'|| not found:nsset: '||ex_data($"<< params.size() << "::text)||' |') "; //nsset update
                 }
             }//if change nsset
 
@@ -219,7 +219,7 @@ namespace Fred
                     sql << set_separator.get()
                         << " keyset = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
                         " JOIN keyset k ON oreg.id = k.id WHERE UPPER(oreg.name) = UPPER($"
-                        << params.size() << "::text)),'|| not found:keyset: '||$"<< params.size() << "::text||' |') "; //keyset update
+                        << params.size() << "::text)),'|| not found:keyset: '||ex_data($"<< params.size() << "::text)||' |') "; //keyset update
                 }
             }//if change keyset
 
@@ -228,7 +228,7 @@ namespace Fred
                 params.push_back(registrant_);
                 sql << set_separator.get() << " registrant = raise_exception_ifnull((SELECT oreg.id "
                     " FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'|| not found:registrant: '||$"<< params.size() << "::text||' |') "; //registrant update
+                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'|| not found:registrant: '||ex_data($"<< params.size() << "::text)||' |') "; //registrant update
             }//if change registrant
 
             params.push_back(domain_id);
@@ -254,7 +254,7 @@ namespace Fred
 
                 params_i.push_back(*i);
                 sql_i << " raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)),'|| not found:admin contact: '||$"<< params.size() << "::text||' |'));";
+                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)),'|| not found:admin contact: '||ex_data($"<< params.size() << "::text)||' |'));";
                 ctx.get_conn().exec_params(sql_i.str(), params_i);
             }//for i
         }//if add admin contacts
@@ -277,7 +277,7 @@ namespace Fred
                 params_i.push_back(*i);
                 sql_i << "contactid = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
                         " JOIN contact c ON oreg.id = c.id WHERE UPPER(oreg.name) = UPPER($"
-                    << params_i.size() << "::text)),'|| not found:admin contact: '||$"<< params.size() << "::text||' |');";
+                    << params_i.size() << "::text)),'|| not found:admin contact: '||ex_data($"<< params.size() << "::text)||' |');";
                 ctx.get_conn().exec_params(sql_i.str(), params_i);
             }//for i
         }//if delete admin contacts
