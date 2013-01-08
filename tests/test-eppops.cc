@@ -156,6 +156,31 @@ BOOST_AUTO_TEST_CASE(fixed_string)
     }
 }
 
+BOOST_AUTO_TEST_CASE(exception_params_callback)
+{
+    try
+    {
+        std::string fqdn_("fred.cz");
+        std::string registrar_("REG-FRED_A");
+        std::string errmsg("test exception ||");
+        errmsg += std::string(" not found:fqdn: ")+boost::replace_all_copy(fqdn_,"|", "[pipe]")+" |";
+        errmsg += std::string(" not found:registrar: ")+boost::replace_all_copy(registrar_,"|", "[pipe]")+" |";
+
+        throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, errmsg.c_str());
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        CheckCallback check(ex.get_fail_reason(), ex.get_fail_param());
+        ex.callback_exception_params(check);
+        BOOST_CHECK(check.reasons_ok());
+        BOOST_CHECK(check.params_ok());
+
+        //ex.callback_exception_params(print_3str);
+    }
+
+}
+
+
 BOOST_AUTO_TEST_CASE(test_quote_pipe_in_exception)
 {
     try

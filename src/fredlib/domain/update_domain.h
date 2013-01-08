@@ -88,13 +88,13 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[]={"fqdn", "nsset", "keyset", "registrant", "admin contact"};
+            static const char* list[]={"fqdn", "registrar", "handle", "nsset", "keyset", "registrant", "admin contact", "logd_request"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
 
         ConstArr get_fail_reason_impl() throw()
         {
-            static const char* list[]={"not found"};
+            static const char* list[]={"not found", "invalid"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
 
