@@ -139,6 +139,28 @@ public:
 };
 
 
+//get callback - store input data
+class GetCallback
+{
+std::vector<std::string> data_;
+
+public:
+
+    //callback
+    void operator()(const char* reason, const char* param, const char* value)
+    {
+        //BOOST_MESSAGE(std::string("get_cbk: ")+reason + " : " + param + " : " + value);
+        data_.push_back(std::string(reason) + " : " + param + " : " + value);
+        //BOOST_MESSAGE(data_.size());
+    }
+
+    std::vector<std::string> get()
+    {
+        return data_;
+    }
+};
+
+
 BOOST_AUTO_TEST_CASE(fixed_string)
 {
     {
@@ -170,12 +192,9 @@ BOOST_AUTO_TEST_CASE(exception_params_callback)
     }
     catch(Fred::OperationExceptionBase& ex)
     {
-        CheckCallback check(ex.get_fail_reason(), ex.get_fail_param());
-        ex.callback_exception_params(check);
-        BOOST_CHECK(check.reasons_ok());
-        BOOST_CHECK(check.params_ok());
-
-        //ex.callback_exception_params(print_3str);
+        GetCallback a;
+        ex.callback_exception_params(a);
+        BOOST_CHECK((a.get().size()) == 2);
     }
 
 }
