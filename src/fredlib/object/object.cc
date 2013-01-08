@@ -64,7 +64,7 @@ namespace Fred
         params.push_back(registrar_);
         sql <<"UPDATE object SET update = now() "
             ", upid = raise_exception_ifnull((SELECT id FROM registrar WHERE UPPER(handle) = UPPER($"
-            << params.size() << "::text)),'|| not found:registrar: '||ex_date($"<< params.size() <<"::text)||' |') " ; //registrar from epp-session container by client_id from epp-params
+            << params.size() << "::text)),'|| not found:registrar: '||ex_data($"<< params.size() <<"::text)||' |') " ; //registrar from epp-session container by client_id from epp-params
 
         if(authinfo_.isset())
         {
@@ -74,7 +74,7 @@ namespace Fred
 
         params.push_back(handle_);
         sql <<" WHERE id = raise_exception_ifnull((SELECT id FROM object_registry WHERE UPPER(name) = UPPER($"
-                << params.size() << "::text)),'|| not found:handle: '||ex_date($"<< params.size() <<"::text)||' |'); ";//update object_id by handle
+                << params.size() << "::text)),'|| not found:handle: '||ex_data($"<< params.size() <<"::text)||' |'); ";//update object_id by handle
 
         ctx.get_conn().exec_params(sql.str(), params);
 
