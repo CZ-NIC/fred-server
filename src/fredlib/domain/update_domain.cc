@@ -337,6 +337,11 @@ namespace Fred
         {
             throw UDEX(ex.what());
         }
+        //rethrow already operation specific error exceptions
+        catch(UpdateDomainError&)
+        {
+            throw;
+        }
         //translate other operation error exceptions to operation specific error exceptions
         catch(OperationErrorBase& ex)
         {

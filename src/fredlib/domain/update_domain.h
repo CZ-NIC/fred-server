@@ -100,8 +100,9 @@ namespace Fred
 
     };//class UpdateDomainException
 
+typedef UpdateDomainException::OperationErrorType UpdateDomainError;
 #define UDEX(DATA) UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define UDERR(DATA) UpdateDomainException::OperationErrorType(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define UDERR(DATA) UpdateDomainError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 
