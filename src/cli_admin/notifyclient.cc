@@ -264,29 +264,26 @@ void NotifyClient::sms_send()
             Fred::Messages::LetterProcInfo domestic_letters_;
     };
 
-  /** This method sends letters from table letter_archive
+
+  /*
+   * This method sends letters from table letter_archive
    * it sets current processed row to status=6 (under processing)
    * and cancels execution at the beginning if any row in this table
    * is already being processed.
-   *
    */
-
-  void NotifyClient::sendLetters(
-          std::auto_ptr<Fred::File::Transferer> fileman
-          , const std::string &conf_file)
+  void NotifyClient::sendLetters(std::auto_ptr<Fred::File::Transferer> fileman, const std::string &conf_file)
   {
      Logging::Context ctx("send letters");
      TRACE("[CALL] Fred::Notify::sendLetters()");
 
-     Fred::Messages::ManagerPtr messages_manager
-         = Fred::Messages::create_manager();
+     Fred::Messages::ManagerPtr messages_manager = Fred::Messages::create_manager();
 
      HPCfgMap hpmail_config = readHPConfig(conf_file);
 
      std::string domestic_country_name = "Czech Republic";
      const std::size_t max_attempts_limit = 3;
 
-     //letters
+     /* regular letters handling */
      {
         std::string batch_id = std::string("");
         std::string comm_type = "letter";
@@ -312,7 +309,7 @@ void NotifyClient::sms_send()
                 comm_type, max_attempts_limit);
      }
 
-     //registered letters
+     /* registered letters handling */
      {
         if(hpmail_config["hp_login_registered_letter_batch_id"].empty())
         {
@@ -326,10 +323,9 @@ void NotifyClient::sms_send()
 
         LOGGER(PACKAGE).debug(std::string(
                 "NotifyClient::sendLetters: hp_login_registered_letter_batch_id ")
-            +hpmail_config["hp_login_registered_letter_batch_id"]);
+                + hpmail_config["hp_login_registered_letter_batch_id"]);
 
-        hpmail_config["hp_login_batch_id"]
-            = hpmail_config["hp_login_registered_letter_batch_id"];
+        hpmail_config["hp_login_batch_id"] = hpmail_config["hp_login_registered_letter_batch_id"];
 
         Fred::Messages::LetterProcInfo proc_reg_letters
             = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
