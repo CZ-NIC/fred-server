@@ -74,8 +74,16 @@ static bool check_std_exception(std::exception const & ex)
 BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
 {
 
+    {
+        SubProcessOutput sub_output1 = ShellCmd(
+            "cat | tr u -","/bin/bash",10).execute("a u a u");
+        BOOST_CHECK(sub_output1.stderr.empty());
+        BOOST_CHECK(sub_output1.stdout.compare("a - a -") == 0);
+        //BOOST_MESSAGE(sub_output1.stdout);
+    }
+
     SubProcessOutput sub_output1 = ShellCmd(
-        "echo kuk",10).execute();
+        "echo kuk","/bin/bash",10).execute();
 /*
     std::cout << "test_shellcmd_wrapper sub_output1.stdout: " << sub_output1.stdout
         << " sub_output1.stderr: " << sub_output1.stderr << std::endl;
@@ -91,7 +99,7 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
         << " sub_output2.stderr: " << sub_output2.stderr << std::endl;
 */
     BOOST_CHECK(sub_output2.stderr.empty());
-    BOOST_CHECK(sub_output2.stdout.compare("kuk\n") == 0);
+    BOOST_CHECK(sub_output2.stdout.compare("kuk") == 0);
 
     {
         SubProcessOutput sub_output;
@@ -109,7 +117,7 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
             << " sub_output.stderr: " << sub_output.stderr << std::endl;
 */
         BOOST_CHECK(sub_output.stderr.empty());
-        BOOST_CHECK(sub_output.stdout.compare("kuk\n") == 0);
+        BOOST_CHECK(sub_output.stdout.compare("kuk") == 0);
     }
 
     //checks from notify_registered_letters_manual_send_impl
