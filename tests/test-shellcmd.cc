@@ -73,6 +73,18 @@ static bool check_std_exception(std::exception const & ex)
 
 BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
 {
+    for(int i = 0; i < 100; ++i)
+    {
+        SubProcessOutput sub_output1 = ShellCmd(
+            "cat | tr u -","/bin/bash",10).execute("a u a u");
+        BOOST_CHECK(sub_output1.stderr.empty());
+        BOOST_CHECK(sub_output1.stdout.compare("a - a -") == 0);
+        //BOOST_MESSAGE(sub_output1.stdout);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper1 )
+{
 
     {
         SubProcessOutput sub_output1 = ShellCmd(

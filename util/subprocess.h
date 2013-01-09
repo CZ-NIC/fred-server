@@ -394,28 +394,6 @@ public:
 
             //child input
 
-            /*
-            //cmd_ +="\n";
-            //into writable end of stdin
-            if(write(p[STDIN_FILENO][1],cmd_.c_str(),cmd_.size()) != static_cast<int>(cmd_.size()))
-            {
-                std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() cmd pipe write error: ");
-                Logging::Manager::instance_ref()
-                    .get(PACKAGE).error(msg+err_msg);
-                throw std::runtime_error(msg+err_msg);
-            }
-
-            const char newline[] = "\n";
-            if(write(p[STDIN_FILENO][1],newline,strlen(newline)) != static_cast<int>(cmd_.size()))
-            {
-                std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() newline pipe write error: ");
-                Logging::Manager::instance_ref()
-                    .get(PACKAGE).error(msg+err_msg);
-                throw std::runtime_error(msg+err_msg);
-            }
-            */
             if(!stdin_str.empty())
             {
                 if(write(p[STDIN_FILENO][1],stdin_str.c_str(),stdin_str.size()) != static_cast<int>(stdin_str.size()))
@@ -438,7 +416,6 @@ public:
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
             p[STDIN_FILENO][1] = -1;
-
 
             //waitpid need default SIGCHLD handler to work
             sighandler_t sig_chld_h = signal(SIGCHLD, SIG_DFL);
@@ -475,7 +452,6 @@ public:
                 }
             }
             while (!WIFEXITED(status) && !WIFSIGNALED(status));
-
 
             //child output
             while(true)
@@ -525,9 +501,9 @@ public:
             }//while(true) stdout
 
             //close readable end of stdout
-            close(p[STDOUT_FILENO][1]);
-            /*
-            if(close(p[STDOUT_FILENO][1]) != 0)
+            //close(p[STDOUT_FILENO][0]);
+
+            if(close(p[STDOUT_FILENO][0]) != 0)
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in parent closing pipe 1 1: ");
@@ -535,13 +511,12 @@ public:
                     .get(PACKAGE).error(msg+err_msg);
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
-            */
-            p[STDOUT_FILENO][1] = -1;
+            p[STDOUT_FILENO][0] = -1;
 
             //close readable end of stderr
-            close(p[STDERR_FILENO][1]);
-            /*
-            if(close(p[STDERR_FILENO][1]) != 0)
+            //close(p[STDERR_FILENO][0]);
+
+            if(close(p[STDERR_FILENO][0]) != 0)
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in parent closing pipe 2 1: ");
@@ -549,13 +524,15 @@ public:
                     .get(PACKAGE).error(msg+err_msg);
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
-            */
-            p[STDERR_FILENO][1] = -1;
-
+            p[STDERR_FILENO][0] = -1;
 
             signal(SIGCHLD, sig_chld_h);//restore saved SIGCHLD handler
-
-
+/*
+            printf("\nbefore close\n");
+            printf("\npipe: %d fd0: %d fd1: %d\n", 0, p[0][0], p[0][1]);
+            printf("\npipe: %d fd0: %d fd1: %d\n", 1, p[1][0], p[1][1]);
+            printf("\npipe: %d fd0: %d fd1: %d\n", 2, p[2][0], p[2][1]);
+*/
 
         }//if in parent
 
