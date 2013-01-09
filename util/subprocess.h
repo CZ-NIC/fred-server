@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <string>
+#include <vector>
 #include <iostream>
 #include <stdexcept>
 
@@ -55,43 +56,45 @@
 #include "log/logger.h"
 
 
-///FILE* close shared pointer
-typedef boost::shared_ptr<FILE> FileSharedPtr;
-template < typename DELETER >
-class FilePtrT
+///fd reference close guard
+class FdCloseGuard
 {
-protected:
-    FileSharedPtr m_ptr;
+    int fd_;
 public:
-    FilePtrT(FILE* f) : m_ptr(f,DELETER()) {}
-    FilePtrT() : m_ptr(0,DELETER()) {}
-
-    operator FileSharedPtr() const
+    FdCloseGuard()
+        : fd_(-1)
+        {}
+    explicit FdCloseGuard(int fd_ref)
+    : fd_(fd_ref)
+    {}
+    ~FdCloseGuard()
     {
-        return m_ptr;
+        closefd();
     }
-};
-///deleter functor for file calling fclose
-struct FileClose
-{
-    void operator()(FILE* f)
+
+    int closefd()
     {
-        try
+        int ret = -2;
+        if(fd_ > -1)
         {
-            if(f)
-            {
-                fclose(f);
-            }
+            ret = close(fd_);
+            fd_ = -1;
         }
-        catch(...){}
+        return ret;
+    }
+
+    int get() const
+    {
+        return fd_;
+    }
+
+    void set(int fd)
+    {
+        fd_=fd;
     }
 };
-///FileSharedPtr factory
-typedef FilePtrT<FileClose> FileClosePtr;
-///usage FileSharedPtr  file_close_guard = FileClosePtr((FILE*)0);
 
-
-//SIGALARM handler user in ShellCmd for waitpid timeout
+///SIGALARM handler user in ShellCmd for waitpid timeout
 static void handleSIGALARM (int sig)
 {
      signal(SIGALRM, SIG_IGN);//uninstall handler
@@ -123,61 +126,12 @@ class ShellCmd
     std::string shell_;
     unsigned long timeout_;
 
-    int p[num_of_pipes][num_of_pipe_ends];//pipes fds
-
-    void close_pipes()
-    {
-        for(int i = 0; i < num_of_pipes; ++i)
-            for(int j = 0; j < num_of_pipe_ends; ++j)
-            {
-                if(p[i][j] != -1)
-                {
-                    if(close(p[i][j]) != 0)
-                    {
-		    /* this may fail
-                        std::string err_msg(strerror(errno));
-                        Logging::Manager::instance_ref()
-                            .get(PACKAGE).error(
-                                    std::string("ShellCmd::close_pipes() error closing pipe: ")
-                                    + boost::lexical_cast<std::string>(i)
-                                    + (" msg: ")+err_msg );
-		     */
-                    }//check pipe fds close
-
-                    p[i][j] = -1;//set pipe fds invalid
-                }//if fds is valid
-            }//for i j
-    }//close_pipes
-
-    void create_pipes()
-    {
-        // create the pipes
-        for(int i = 0; i < num_of_pipes; ++i)
-        {//if the pipe is created succesfully, then readable end is p[0], and p[1] is the writable end
-            if(pipe(p[i]) != 0)
-            {
-                std::string pipe_error (strerror(errno));
-                Logging::Manager::instance_ref()
-                    .get(PACKAGE).error(
-                            std::string("ShellCmd::create_pipes() error creating pipe: ")
-                            + boost::lexical_cast<std::string>(i)
-                            + (" msg: ")+pipe_error );
-                throw std::runtime_error(std::string("create pipe error: ")+pipe_error);
-            }
-        }//for i is num_of_pipes
-    }//create_pipes
-
 public:
     ShellCmd(const std::string& cmd)
     :cmd_(cmd)
     , shell_("/bin/sh")
     , timeout_(10)
-    {
-        //init pipe fds
-        for(int i = 0; i < num_of_pipes; ++i)
-            for(int j = 0; j < num_of_pipe_ends; ++j)
-                p[i][j] = -1;
-    }
+    {}
 
     ShellCmd(const std::string& cmd
             , const unsigned long timeout
@@ -185,12 +139,7 @@ public:
     :cmd_(cmd)
     , shell_("/bin/sh")
     , timeout_(timeout)
-    {
-        //init pipe fds
-        for(int i = 0; i < num_of_pipes; ++i)
-            for(int j = 0; j < num_of_pipe_ends; ++j)
-                p[i][j] = -1;
-    }
+    {}
 
 
     ShellCmd(const std::string& cmd
@@ -200,56 +149,42 @@ public:
     :cmd_(cmd)
     , shell_(shell)
     , timeout_(timeout)
-    {
-        //init pipe fds
-        for(int i = 0; i < num_of_pipes; ++i)
-            for(int j = 0; j < num_of_pipe_ends; ++j)
-                p[i][j] = -1;
-    }
+    {}
 
 
-    ~ShellCmd()
-    {
-        try
-        {
-            close_pipes();
-        }//try
-        catch(const std::exception& ex)
-        {
-            Logging::Manager::instance_ref()
-                .get(PACKAGE).error(std::string("~ShellCmd exception: ") + ex.what());
-        }
-        catch(...)
-        {
-            Logging::Manager::instance_ref()
-                .get(PACKAGE).error("~ShellCmd unknown exception");
-        }
-    }
+    ~ShellCmd(){}
 
     SubProcessOutput execute(std::string stdin_str = std::string())
     {
-        int p[num_of_pipes][num_of_pipe_ends];//pipes fds
         SubProcessOutput ret;
+        FdCloseGuard pfd[num_of_pipes][num_of_pipe_ends];//pipes fds
 
-        //init pipe fds
-        for(int i = 0; i < num_of_pipes; ++i)
-            for(int j = 0; j < num_of_pipe_ends; ++j)
-                p[i][j] = -1;
+        {//init pfd
+            int p[num_of_pipes][num_of_pipe_ends];//pipes fds
 
-        // create the pipes
-        for(int i = 0; i < num_of_pipes; ++i)
-        {//if the pipe is created succesfully, then readable end is p[0], and p[1] is the writable end
-            if(pipe(p[i]) < 0)
-            {
-                std::string pipe_error (strerror(errno));
-                Logging::Manager::instance_ref()
-                    .get(PACKAGE).error(
-                            std::string("ShellCmd::create_pipes() error creating pipe: ")
-                            + boost::lexical_cast<std::string>(i)
-                            + (" msg: ")+pipe_error );
-                throw std::runtime_error(std::string("create pipe error: ")+pipe_error);
-            }
-        }//for i is num_of_pipes
+            //init pipe fds
+            for(int i = 0; i < num_of_pipes; ++i)
+                for(int j = 0; j < num_of_pipe_ends; ++j)
+                    p[i][j] = -1;
+
+            // create the pipes
+            for(int i = 0; i < num_of_pipes; ++i)
+            {//if the pipe is created succesfully, then readable end is p[0], and p[1] is the writable end
+                if(pipe(p[i]) < 0)
+                {
+                    std::string pipe_error (strerror(errno));
+                    Logging::Manager::instance_ref()
+                        .get(PACKAGE).error(
+                                std::string("ShellCmd::create_pipes() error creating pipe: ")
+                                + boost::lexical_cast<std::string>(i)
+                                + (" msg: ")+pipe_error );
+                    throw std::runtime_error(std::string("create pipe error: ")+pipe_error);
+                }
+                //set fds
+                pfd[i][0].set(p[i][0]);
+                pfd[i][1].set(p[i][1]);
+            }//for i is num_of_pipes
+        }
 
         pid_t pid;//child pid
         pid = fork();
@@ -268,7 +203,7 @@ public:
         {
             //in child
             //close writable end of stdin
-            if(close(p[STDIN_FILENO][1]) != 0)
+            if(pfd[STDIN_FILENO][1].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in child closing stdin pipe 0 1: ");
@@ -277,7 +212,7 @@ public:
                 throw std::runtime_error(msg+err_msg);
             }
             //close readable end of stdout
-            if(close(p[STDOUT_FILENO][0]) != 0)
+            if(pfd[STDOUT_FILENO][0].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in child closing stdout pipe 1 0: ");
@@ -286,7 +221,7 @@ public:
                 throw std::runtime_error(msg+err_msg);
             }
             //close readable end of stderr
-            if(close(p[STDERR_FILENO][0]) != 0)
+            if(pfd[STDERR_FILENO][0].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in child closing stderr pipe 2 0: ");
@@ -296,9 +231,9 @@ public:
             }
 
             //duplicate readable end of pipe 0 into stdin
-            if(p[STDIN_FILENO][0] != STDIN_FILENO)
+            if(pfd[STDIN_FILENO][0].get() != STDIN_FILENO)
             {
-                if(dup2(p[STDIN_FILENO][0],STDIN_FILENO) != STDIN_FILENO)
+                if(dup2(pfd[STDIN_FILENO][0].get(),STDIN_FILENO) != STDIN_FILENO)
                 {
                     std::string err_msg(strerror(errno));
                     std::string msg("ShellCmd::operator() error in child duplicating stdin pipe 0 0: ");
@@ -306,12 +241,12 @@ public:
                         .get(PACKAGE).error(msg+err_msg);
                     throw std::runtime_error(msg+err_msg);
                 }
-                close(p[STDIN_FILENO][0]);
+                pfd[STDIN_FILENO][0].closefd();
             }
             //duplicate writable end of pipe 1 into stdout
-            if(p[STDOUT_FILENO][1] != STDOUT_FILENO)
+            if(pfd[STDOUT_FILENO][1].get() != STDOUT_FILENO)
             {
-                if(dup2(p[STDOUT_FILENO][1],STDOUT_FILENO) != STDOUT_FILENO)
+                if(dup2(pfd[STDOUT_FILENO][1].get(),STDOUT_FILENO) != STDOUT_FILENO)
                 {
                     std::string err_msg(strerror(errno));
                     std::string msg("ShellCmd::operator() error in child duplicating stdout pipe 1 1: ");
@@ -319,12 +254,12 @@ public:
                         .get(PACKAGE).error(msg+err_msg);
                     throw std::runtime_error(msg+err_msg);
                 }
-                close(p[STDOUT_FILENO][1]);
+                pfd[STDOUT_FILENO][1].closefd();
             }
             //duplicate writable end of pipe 2 into stderr
-            if(p[STDERR_FILENO][1] != STDERR_FILENO)
+            if(pfd[STDERR_FILENO][1].get() != STDERR_FILENO)
             {
-                if(dup2(p[STDERR_FILENO][1],STDERR_FILENO) != STDERR_FILENO)
+                if(dup2(pfd[STDERR_FILENO][1].get(),STDERR_FILENO) != STDERR_FILENO)
                 {
                     std::string err_msg(strerror(errno));
                     std::string msg("ShellCmd::operator() error in child duplicating stdout pipe 2 1: ");
@@ -332,7 +267,7 @@ public:
                         .get(PACKAGE).error(msg+err_msg);
                     throw std::runtime_error(msg+err_msg);
                 }
-                close(p[STDERR_FILENO][1]);
+                pfd[STDERR_FILENO][1].closefd();
             }
 
             char *shell_argv[4];
@@ -360,7 +295,7 @@ public:
         {
             //in parent
             //close readable end of stdin
-            if(close(p[STDIN_FILENO][0]) != 0)
+            if(pfd[STDIN_FILENO][0].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in parent closing pipe 0 0: ");
@@ -368,10 +303,9 @@ public:
                     .get(PACKAGE).error(msg+err_msg);
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
-            p[STDIN_FILENO][0] = -1;
 
             //close writable end of stdout
-            if(close(p[STDOUT_FILENO][1]) != 0 )
+            if(pfd[STDOUT_FILENO][1].closefd() == -1 )
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in parent closing pipe 1 1: ");
@@ -379,10 +313,9 @@ public:
                     .get(PACKAGE).error(msg+err_msg);
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
-            p[STDOUT_FILENO][1] = -1;
 
             //close writable end of stderr
-            if(close(p[STDERR_FILENO][1]) != 0)
+            if(pfd[STDERR_FILENO][1].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in parent closing pipe 2 1: ");
@@ -390,13 +323,11 @@ public:
                     .get(PACKAGE).error(msg+err_msg);
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
-            p[STDERR_FILENO][1] = -1;
 
             //child input
-
             if(!stdin_str.empty())
             {
-                if(write(p[STDIN_FILENO][1],stdin_str.c_str(),stdin_str.size()) != static_cast<int>(stdin_str.size()))
+                if(write(pfd[STDIN_FILENO][1].get(),stdin_str.c_str(),stdin_str.size()) != static_cast<int>(stdin_str.size()))
                 {
                     std::string err_msg(strerror(errno));
                     std::string msg("ShellCmd::operator() stdin pipe write error: ");
@@ -407,7 +338,7 @@ public:
             }
 
             //close writable end of stdin for reader
-            if(close(p[STDIN_FILENO][1]) != 0)
+            if(pfd[STDIN_FILENO][1].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in parent closing pipe 0 1: ");
@@ -415,7 +346,6 @@ public:
                     .get(PACKAGE).error(msg+err_msg);
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
-            p[STDIN_FILENO][1] = -1;
 
             //waitpid need default SIGCHLD handler to work
             sighandler_t sig_chld_h = signal(SIGCHLD, SIG_DFL);
@@ -457,7 +387,7 @@ public:
             while(true)
             {
                 char buf[1024]={0};//init buffer
-                int read_result = read(p[STDOUT_FILENO][0],buf,sizeof(buf)-1);
+                int read_result = read(pfd[STDOUT_FILENO][0].get(),buf,sizeof(buf)-1);
                 if (read_result < 0)
                 {//error
                     std::string err_msg(strerror(errno));
@@ -481,7 +411,7 @@ public:
             while(true)
             {
                 char buf[1024]={0};//init buffer
-                int read_result = read(p[STDERR_FILENO][0],buf,sizeof(buf)-1);
+                int read_result = read(pfd[STDERR_FILENO][0].get(),buf,sizeof(buf)-1);
                 if (read_result < 0)
                 {//error
                     std::string err_msg(strerror(errno));
@@ -501,9 +431,7 @@ public:
             }//while(true) stdout
 
             //close readable end of stdout
-            //close(p[STDOUT_FILENO][0]);
-
-            if(close(p[STDOUT_FILENO][0]) != 0)
+            if(pfd[STDOUT_FILENO][0].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in parent closing pipe 1 1: ");
@@ -511,12 +439,9 @@ public:
                     .get(PACKAGE).error(msg+err_msg);
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
-            p[STDOUT_FILENO][0] = -1;
 
             //close readable end of stderr
-            //close(p[STDERR_FILENO][0]);
-
-            if(close(p[STDERR_FILENO][0]) != 0)
+            if(pfd[STDERR_FILENO][0].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
                 std::string msg("ShellCmd::operator() error in parent closing pipe 2 1: ");
@@ -524,14 +449,13 @@ public:
                     .get(PACKAGE).error(msg+err_msg);
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
-            p[STDERR_FILENO][0] = -1;
 
             signal(SIGCHLD, sig_chld_h);//restore saved SIGCHLD handler
 /*
             printf("\nbefore close\n");
-            printf("\npipe: %d fd0: %d fd1: %d\n", 0, p[0][0], p[0][1]);
-            printf("\npipe: %d fd0: %d fd1: %d\n", 1, p[1][0], p[1][1]);
-            printf("\npipe: %d fd0: %d fd1: %d\n", 2, p[2][0], p[2][1]);
+            printf("\npipe: %d fd0: %d fd1: %d\n", 0, pfd[0][0].get(), pfd[0][1].get());
+            printf("\npipe: %d fd0: %d fd1: %d\n", 1, pfd[1][0].get(), pfd[1][1].get());
+            printf("\npipe: %d fd0: %d fd1: %d\n", 2, pfd[2][0].get(), pfd[2][1].get());
 */
 
         }//if in parent
