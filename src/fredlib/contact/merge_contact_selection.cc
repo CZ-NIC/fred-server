@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <stdexcept>
 
 #include <boost/function.hpp>
 
@@ -54,7 +55,15 @@ namespace Fred
             if(current_filter_result.size() > 1) contact_handle_ = current_filter_result;
             if(current_filter_result.size() == 1) return current_filter_result[0];
         }
-        throw std::logic_error("to many contact handles left");
+
+        if(contact_handle_.empty())
+        {
+            throw std::logic_error("no contact handles left");
+        }
+        else
+        {
+            throw std::logic_error("to many contact handles left");
+        }
     }
 
     FilterIdentifiedContact::FilterIdentifiedContact(){}
