@@ -723,7 +723,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/reminder.cc \
 		src/fredlib/reminder.h \
 		src/fredlib/opcontext.h \
-		src/fredlib/opcontext.cc
+		src/fredlib/opcontext.cc \
+		src/fredlib/contact/merge_contact_selection.cc \
+		src/fredlib/contact/merge_contact_selection.h
 #
 # src/fredlib/libfred.a
 
@@ -1592,7 +1594,8 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid.h \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
-		tests/checks.h
+		tests/checks.h \
+		tests/test-merge-contact.cc
 
 
 tests_test_server_LDFLAGS = \
