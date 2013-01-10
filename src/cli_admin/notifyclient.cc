@@ -25,6 +25,7 @@
 #include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "corba/file_manager_client.h"
 
@@ -234,13 +235,13 @@ void NotifyClient::sms_send()
     {
         public:
             DomesticForeignLetterBatcher(const std::string &_country)
-                : domestic_country_name_(_country)
+                : domestic_country_name_(boost::algorithm::trim_copy(_country))
             {
             }
 
             void operator()(Fred::Messages::letter_proc &_letter_info)
             {
-                if (_letter_info.postal_address.country == domestic_country_name_) {
+                if (boost::algorithm::trim_copy(_letter_info.postal_address.country) == domestic_country_name_) {
                     domestic_letters_.push_back(_letter_info);
                 }
                 else {
