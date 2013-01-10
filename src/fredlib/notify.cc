@@ -717,18 +717,18 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
                     if (k>0) {
                         gen->endFile(msgm
-                                , res[k][17] //const std::string& contact_handle
-                                , res[k][4] //const std::string& contact_name
-                                , res[k][5] //const std::string& contact_org
-                                , res[k][14] //const std::string& contact_street1
-                                , res[k][15] //const std::string& contact_street2
-                                , res[k][16] //const std::string& contact_street3
-                                , res[k][7] //const std::string& contact_city
-                                , res[k][13] //const std::string& contact_state
-                                , res[k][8] //const std::string& contact_code
-                                , res[k][9] //const std::string& contact_country
-                                , res[k][18] //unsigned long long contact_object_registry_id
-                                , res[k][19] //unsigned long long contact_history_historyid
+                                , res[k-1][17] //const std::string& contact_handle
+                                , res[k-1][4] //const std::string& contact_name
+                                , res[k-1][5] //const std::string& contact_org
+                                , res[k-1][14] //const std::string& contact_street1
+                                , res[k-1][15] //const std::string& contact_street2
+                                , res[k-1][16] //const std::string& contact_street3
+                                , res[k-1][7] //const std::string& contact_city
+                                , res[k-1][13] //const std::string& contact_state
+                                , res[k-1][8] //const std::string& contact_code
+                                , res[k-1][9] //const std::string& contact_country
+                                , res[k-1][18] //unsigned long long contact_object_registry_id
+                                , res[k-1][19] //unsigned long long contact_history_historyid
                         );
                     }
                     gen->initFile(exDates[j], res[k][12], docm, &trans);
