@@ -721,7 +721,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/common_diff.cc \
 		src/fredlib/common_diff.h \
 		src/fredlib/reminder.cc \
-		src/fredlib/reminder.h
+		src/fredlib/reminder.h \
+		src/fredlib/opcontext.h \
+		src/fredlib/opcontext.cc
 #
 # src/fredlib/libfred.a
 
