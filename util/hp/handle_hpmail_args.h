@@ -76,10 +76,15 @@ public:
                 ((CONFIG_PREFIX+"hp_login_registered_letter_batch_id").c_str(), boost::program_options
                             ::value<std::string>()
                         , "registered letter batch identificator")
+                ((CONFIG_PREFIX+"hp_login_batch_id_suffix_domestic_letters").c_str(), boost::program_options
+                            ::value<std::string>()->default_value(std::string(""))
+                        , "batch suffix for domestic letters")
+                ((CONFIG_PREFIX+"hp_login_batch_id_suffix_foreign_letters").c_str(), boost::program_options
+                            ::value<std::string>()->default_value(std::string(""))
+                        , "batch suffix for foreign letters")
 				((CONFIG_PREFIX+"hp_login_note,n").c_str(), boost::program_options
 							::value<std::string>()->default_value(std::string(""))
 						, "note for processing of the batch")
-
                 ((CONFIG_PREFIX+"hp_upload_retry,r").c_str(), boost::program_options
 							::value<std::string>()->default_value("10")
 							 , "archive volume upload retries number")
@@ -194,10 +199,15 @@ public:
                 ((CONFIG_PREFIX+"hp_login_registered_letter_batch_id").c_str(), boost::program_options
                             ::value<std::string>()
                         , "registered letter batch identificator")
+                ((CONFIG_PREFIX+"hp_login_batch_id_suffix_domestic_letters").c_str(), boost::program_options
+                            ::value<std::string>()->default_value(std::string(""))
+                        , "batch suffix for domestic letters")
+                ((CONFIG_PREFIX+"hp_login_batch_id_suffix_foreign_letters").c_str(), boost::program_options
+                            ::value<std::string>()->default_value(std::string(""))
+                        , "batch suffix for foreign letters")
                 ((CONFIG_PREFIX+"hp_login_note,n").c_str(), boost::program_options
                             ::value<std::string>()->default_value(std::string(""))
                         , "note for processing of the batch")
-
                 ((CONFIG_PREFIX+"hp_upload_retry,r").c_str(), boost::program_options
                             ::value<std::string>()->default_value("10")
                              , "archive volume upload retries number")
