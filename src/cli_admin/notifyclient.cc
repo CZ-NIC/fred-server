@@ -26,6 +26,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include "corba/file_manager_client.h"
 
@@ -168,6 +169,12 @@ void NotifyClient::sms_send()
            );
 }
 
+
+    bool string_not_empty(const std::string &_s)
+    {
+        return !_s.empty();
+    }
+
     void NotifyClient::send_letters_impl(
             Fred::File::Transferer* fileman
             , const HPCfgMap& hpmail_config
@@ -203,9 +210,12 @@ void NotifyClient::sms_send()
                 smail.name = mp.fname;
                 fileman->download(mp.file_id, smail.data);
 
-                LOGGER(PACKAGE).debug(boost::format(
-                    "NotifyClient::send_letters_impl: adding file (id=%1%) to batch")
-                    % mp.file_id);
+                const Fred::Messages::PostalAddress &mp_a = mp.postal_address;
+                LOGGER(PACKAGE).debug(boost::format("NotifyClient::send_letters_impl: adding file (id=%1%) to batch, recipient is %2%")
+                        % mp.file_id % boost::algorithm::join_if(boost::assign::list_of(mp_a.name)(mp_a.org)(mp_a.street1)(mp_a.street2)
+                            (mp_a.street3)(mp_a.city)(mp_a.state)(mp_a.country), ", ", string_not_empty));
+                /* [](const std::string &i){ return !i.empty(); } */
+
                 HPMail::get()->save_file_for_upload(smail);
             }
             batch_id = HPMail::get()->upload();
