@@ -25,6 +25,8 @@
 #include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include "corba/file_manager_client.h"
 
@@ -167,6 +169,12 @@ void NotifyClient::sms_send()
            );
 }
 
+
+    bool string_not_empty(const std::string &_s)
+    {
+        return !_s.empty();
+    }
+
     void NotifyClient::send_letters_impl(
             Fred::File::Transferer* fileman
             , const HPCfgMap& hpmail_config
@@ -192,6 +200,8 @@ void NotifyClient::sms_send()
                 "NotifyClient::send_letters_impl: init postservice upload");
             HPMail::set(hpmail_config);
 
+            LOGGER(PACKAGE).debug(boost::format("using login batch id: %1%") % std::string(hpmail_config.at("hp_login_batch_id")));
+
             for(unsigned i=0;i<proc_letters.size();i++)
             {
                 Fred::Messages::letter_proc mp = proc_letters.at(i);
@@ -200,9 +210,12 @@ void NotifyClient::sms_send()
                 smail.name = mp.fname;
                 fileman->download(mp.file_id, smail.data);
 
-                LOGGER(PACKAGE).debug(boost::format(
-                    "NotifyClient::send_letters_impl: adding file (id=%1%) to batch")
-                    % mp.file_id);
+                const Fred::Messages::PostalAddress &mp_a = mp.postal_address;
+                LOGGER(PACKAGE).debug(boost::format("NotifyClient::send_letters_impl: adding file (id=%1%) to batch, recipient is %2%")
+                        % mp.file_id % boost::algorithm::join_if(boost::assign::list_of(mp_a.name)(mp_a.org)(mp_a.street1)(mp_a.street2)
+                            (mp_a.street3)(mp_a.city)(mp_a.state)(mp_a.country), ", ", string_not_empty));
+                /* [](const std::string &i){ return !i.empty(); } */
+
                 HPMail::get()->save_file_for_upload(smail);
             }
             batch_id = HPMail::get()->upload();
@@ -226,64 +239,137 @@ void NotifyClient::sms_send()
     }//NotifyClient::send_letters_impl
 
 
-  /** This method sends letters from table letter_archive
+    /*
+     * Split letter send queue to two batches - domestic and foreign - based on
+     * provided domestic country name
+     */
+    class DomesticForeignLetterBatcher
+    {
+        public:
+            DomesticForeignLetterBatcher(const std::string &_country)
+                : domestic_country_name_(boost::algorithm::trim_copy(_country))
+            {
+            }
+
+            void operator()(Fred::Messages::letter_proc &_letter_info)
+            {
+                if (boost::algorithm::trim_copy(_letter_info.postal_address.country) == domestic_country_name_) {
+                    domestic_letters_.push_back(_letter_info);
+                }
+                else {
+                    foreign_letters_.push_back(_letter_info);
+                }
+            }
+
+            Fred::Messages::LetterProcInfo& get_foreign_letters()
+            {
+                return foreign_letters_;
+            }
+
+            Fred::Messages::LetterProcInfo& get_domestic_letters()
+            {
+                return domestic_letters_;
+            }
+
+        private:
+            std::string domestic_country_name_;
+            Fred::Messages::LetterProcInfo foreign_letters_;
+            Fred::Messages::LetterProcInfo domestic_letters_;
+    };
+
+
+  /*
+   * This method sends letters from table letter_archive
    * it sets current processed row to status=6 (under processing)
    * and cancels execution at the beginning if any row in this table
    * is already being processed.
-   *
    */
-
-  void NotifyClient::sendLetters(
-          std::auto_ptr<Fred::File::Transferer> fileman
-          , const std::string &conf_file)
+  void NotifyClient::sendLetters(std::auto_ptr<Fred::File::Transferer> fileman, const std::string &conf_file)
   {
      Logging::Context ctx("send letters");
      TRACE("[CALL] Fred::Notify::sendLetters()");
 
-     Fred::Messages::ManagerPtr messages_manager
-         = Fred::Messages::create_manager();
+     Fred::Messages::ManagerPtr messages_manager = Fred::Messages::create_manager();
 
      HPCfgMap hpmail_config = readHPConfig(conf_file);
 
-     //letters
-     std::string new_status = "sent";
-     std::string batch_id;
-     std::string comm_type = "letter";
-
+     std::string domestic_country_name = "Czech Republic";
      const std::size_t max_attempts_limit = 3;
 
-     Fred::Messages::LetterProcInfo proc_letters
-         = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
-     send_letters_impl(fileman.get()
-             ,hpmail_config,proc_letters,new_status,batch_id);
-     messages_manager->set_letter_status(
-         proc_letters,new_status,batch_id, comm_type, max_attempts_limit);
-
-     //registered letters
-     if(hpmail_config["hp_login_registered_letter_batch_id"].empty())
+     /* regular letters handling */
      {
-         LOGGER(PACKAGE).info(
-                 "NotifyClient::sendLetters: not sending registered letters");
-         return;
+        std::string batch_id = std::string("");
+        std::string comm_type = "letter";
+        std::string default_batch_id = hpmail_config["hp_login_batch_id"];
+
+        Fred::Messages::LetterProcInfo proc_letters
+            = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
+
+        /* split letters to domestic and foreign */
+        DomesticForeignLetterBatcher batcher = std::for_each(proc_letters.begin(), proc_letters.end(),
+                DomesticForeignLetterBatcher(domestic_country_name));
+
+        LOGGER(PACKAGE).debug(boost::format("destination country letter distribution: domestic=%1% foreign=%2%")
+                % batcher.get_domestic_letters().size() % batcher.get_foreign_letters().size());
+
+        LOGGER(PACKAGE).debug("sending domestic letters");
+        hpmail_config["hp_login_batch_id"] = default_batch_id + hpmail_config["hp_login_batch_id_suffix_domestic_letters"];
+        std::string new_status = "sent";
+        send_letters_impl(fileman.get(), hpmail_config, batcher.get_domestic_letters(), new_status, batch_id);
+        messages_manager->set_letter_status(batcher.get_domestic_letters(), new_status, batch_id,
+                comm_type, max_attempts_limit);
+
+        LOGGER(PACKAGE).debug("sending foreign letters");
+        hpmail_config["hp_login_batch_id"] = default_batch_id + hpmail_config["hp_login_batch_id_suffix_foreign_letters"];
+        new_status = "sent";
+        send_letters_impl(fileman.get(), hpmail_config, batcher.get_foreign_letters(), new_status, batch_id);
+        messages_manager->set_letter_status(batcher.get_foreign_letters(), new_status, batch_id,
+                comm_type, max_attempts_limit);
      }
 
-     new_status = "sent";
-     batch_id=std::string("");
-     comm_type = "registered_letter";
+     /* registered letters handling */
+     {
+        if(hpmail_config["hp_login_registered_letter_batch_id"].empty())
+        {
+            LOGGER(PACKAGE).info(
+                    "NotifyClient::sendLetters: not sending registered letters");
+            return;
+        }
 
-     LOGGER(PACKAGE).debug(std::string(
-             "NotifyClient::sendLetters: hp_login_registered_letter_batch_id ")
-         +hpmail_config["hp_login_registered_letter_batch_id"]);
+        std::string batch_id = std::string("");
+        std::string comm_type = "registered_letter";
 
-     hpmail_config["hp_login_batch_id"]
-         = hpmail_config["hp_login_registered_letter_batch_id"];
+        LOGGER(PACKAGE).debug(std::string(
+                "NotifyClient::sendLetters: hp_login_registered_letter_batch_id ")
+                + hpmail_config["hp_login_registered_letter_batch_id"]);
 
-     Fred::Messages::LetterProcInfo proc_reg_letters
-         = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
-     send_letters_impl(fileman.get()
-             ,hpmail_config,proc_reg_letters,new_status,batch_id);
-     messages_manager->set_letter_status(
-             proc_reg_letters,new_status,batch_id, comm_type, max_attempts_limit);
+        hpmail_config["hp_login_batch_id"] = hpmail_config["hp_login_registered_letter_batch_id"];
+        std::string default_batch_id = hpmail_config["hp_login_batch_id"];
+
+        Fred::Messages::LetterProcInfo proc_reg_letters
+            = messages_manager->load_letters_to_send(0, comm_type, max_attempts_limit);
+
+        /* split letters to domestic and foreign */
+        DomesticForeignLetterBatcher batcher = std::for_each(proc_reg_letters.begin(), proc_reg_letters.end(),
+                DomesticForeignLetterBatcher(domestic_country_name));
+
+        LOGGER(PACKAGE).debug(boost::format("destination country registered letter distribution: domestic=%1% foreign=%2%")
+                % batcher.get_domestic_letters().size() % batcher.get_foreign_letters().size());
+
+        LOGGER(PACKAGE).debug("sending domestic registered letters");
+        hpmail_config["hp_login_batch_id"] = default_batch_id + hpmail_config["hp_login_batch_id_suffix_domestic_letters"];
+        std::string new_status = "sent";
+        send_letters_impl(fileman.get(), hpmail_config, batcher.get_domestic_letters(), new_status, batch_id);
+        messages_manager->set_letter_status(batcher.get_domestic_letters(), new_status, batch_id,
+                comm_type, max_attempts_limit);
+
+        LOGGER(PACKAGE).debug("sending foreign registered letters");
+        hpmail_config["hp_login_batch_id"] = default_batch_id + hpmail_config["hp_login_batch_id_suffix_foreign_letters"];
+        new_status = "sent";
+        send_letters_impl(fileman.get(), hpmail_config, batcher.get_foreign_letters(), new_status, batch_id);
+        messages_manager->set_letter_status(batcher.get_foreign_letters(), new_status, batch_id,
+                comm_type, max_attempts_limit);
+     }
   }//sendLetters
 
   void NotifyClient::sendSMS(const std::string& command , const std::string& param_quote_by )
