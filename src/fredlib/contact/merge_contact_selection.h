@@ -27,40 +27,40 @@
 #include <string>
 #include <vector>
 
-#include <boost/function.hpp>
-
 #include "fredlib/opcontext.h"
 #include "util/log/log.h"
+#include "util/factory.h"
+#include "util/factory_check.h"
 
 namespace Fred
 {
-    class MergeContactSelection
+    FACTORY_MODULE_INIT_DECL(merge_contact_selection)
+
+    typedef std::string ContactSelectionFilterType;
+
+    const ContactSelectionFilterType MCS_FILTER_IDENTIFIED_CONTACT = "mcs_filter_identified_contact";
+    const ContactSelectionFilterType MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT = "mcs_filter_conditionally_identified_contact";
+
+    class ContactSelectionFilterBase
     {
     public:
-        typedef boost::function<std::vector<std::string> (OperationContext& ctx
-                , const std::vector<std::string>& contact_handle)> FilterFunctor;
-    private:
+      virtual ~ContactSelectionFilterBase(){}
+      virtual std::vector<std::string> operator()(OperationContext& ctx, const std::vector<std::string>& contact_handle) = 0;
+    };
+
+
+    class MergeContactSelection
+    {
         std::vector<std::string> contact_handle_;//contact handle vector
-        std::vector<FilterFunctor> ff_;//filter functor vector
+        std::vector<boost::shared_ptr<ContactSelectionFilterBase> > ff_;//filter functor ptr vector
     public:
         MergeContactSelection(const std::vector<std::string>& contact_handle
-                , const std::vector<FilterFunctor>& ff);
+                , const std::vector<ContactSelectionFilterType>& filter);
         std::string exec(OperationContext& ctx);
     };//class MergeContactSelection
 
-    class FilterIdentifiedContact
-    {
-    public:
-        FilterIdentifiedContact();
-        std::vector<std::string> operator()(OperationContext& ctx, const std::vector<std::string>& contact_handle);
-    };//class FilterIdentifiedContact
 
-    class FilterConditionallyIdentifiedContact
-    {
-    public:
-        FilterConditionallyIdentifiedContact();
-        std::vector<std::string> operator()(OperationContext& ctx, const std::vector<std::string>& contact_handle);
-    };//class FilterConditionallyIdentifiedContact
+    typedef Util::Factory<ContactSelectionFilterBase, Util::ClassCreator<ContactSelectionFilterBase> > ContactSelectionFilterFactory;
 
 }//namespace Fred
 #endif //MERGE_CONTACT_SELECTION_H_

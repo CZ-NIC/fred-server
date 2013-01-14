@@ -75,14 +75,22 @@ const std::string server_name = "test-merge-contact";
 
 BOOST_AUTO_TEST_CASE(test_merge_contact_selection)
 {
-    Fred::OperationContext ctx;
+    // factory_check - required keys are in factory
+    FactoryHaveSupersetOfKeysChecker<Fred::ContactSelectionFilterFactory>
+    ::KeyVector required_keys = boost::assign::list_of
+        (Fred::MCS_FILTER_IDENTIFIED_CONTACT)
+    ;
 
+    FactoryHaveSupersetOfKeysChecker<Fred::ContactSelectionFilterFactory>
+        (required_keys).check();
+
+    Fred::OperationContext ctx;
     std::vector<std::string> contact_handles;
     Fred::MergeContactSelection(
             contact_handles
-            , Util::vector_of<Fred::MergeContactSelection::FilterFunctor>
-                (Fred::FilterIdentifiedContact())
-                (Fred::FilterConditionallyIdentifiedContact())
+            , Util::vector_of<Fred::ContactSelectionFilterType>
+                (Fred::MCS_FILTER_IDENTIFIED_CONTACT)
+                (Fred::MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
     ).exec(ctx);
 }
 
