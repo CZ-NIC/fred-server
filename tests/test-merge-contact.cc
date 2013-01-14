@@ -40,6 +40,7 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
+
 //#include <omniORB4/fixed.h>
 
 #include "setup_server_decl.h"
@@ -81,7 +82,6 @@ class FilterTest1
 , public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterTest1>
 {
 public:
-    FilterTest1(){};
     std::vector<std::string> operator()(OperationContext& ctx
             , const std::vector<std::string>& contact_handle)
     {
@@ -111,7 +111,6 @@ class FilterTest2
 , public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterTest2>
 {
 public:
-    FilterTest2(){};
     std::vector<std::string> operator()(OperationContext& ctx
             , const std::vector<std::string>& contact_handle)
     {

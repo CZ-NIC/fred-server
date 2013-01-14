@@ -29,6 +29,7 @@
 
 
 #include <boost/shared_ptr.hpp>
+#include <boost/regex.hpp>
 
 #include "fredlib/contact/merge_contact_selection.h"
 #include "fredlib/opcontext.h"
@@ -84,7 +85,6 @@ namespace Fred
     , public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterIdentifiedContact>
     {
     public:
-        FilterIdentifiedContact(){};
         std::vector<std::string> operator()(OperationContext& ctx
                 , const std::vector<std::string>& contact_handle)
         {
@@ -118,8 +118,6 @@ namespace Fred
     , public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterConditionallyIdentifiedContact>
     {
     public:
-        FilterConditionallyIdentifiedContact(){};
-
         std::vector<std::string> operator()(OperationContext& ctx
                 , const std::vector<std::string>& contact_handle)
         {
@@ -145,6 +143,43 @@ namespace Fred
 
     };//class FilterConditionallyIdentifiedContact
 
+
+    class FilterHandleMojeIDSyntax
+    : public ContactSelectionFilterBase
+    , public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterHandleMojeIDSyntax>
+    {
+    public:
+        std::vector<std::string> operator()(OperationContext& ctx
+                , const std::vector<std::string>& contact_handle)
+        {
+            boost::regex mojeid_handle_syntax("[a-zA-Z0-9_:.-]{1,63}");//unable to use private constant in contact.cc
+            std::vector<std::string> filtered;
+            for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
+            {
+                try
+                {
+                    if(boost::regex_match(*i,mojeid_handle_syntax))
+                    {
+                        filtered.push_back(*i);
+                    }
+                }
+                catch(std::exception& ex)
+                {
+                    //report regex_match failure
+                    std::string errmsg("FilterHandleMojeIDSyntax: ");
+                    errmsg += ex.what();
+                    ctx.get_log().error(errmsg);
+                }
+            }
+            return filtered;
+        }
+
+        static ContactSelectionFilterType registration_name()
+        {
+            return MCS_FILTER_HANDLE_MOJEID_SYNTAX;
+        }
+
+    };//class FilterHandleMojeIDSyntax
 
 
 
