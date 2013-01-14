@@ -78,20 +78,25 @@ BOOST_AUTO_TEST_CASE(test_merge_contact_selection)
     // factory_check - required keys are in factory
     FactoryHaveSupersetOfKeysChecker<Fred::ContactSelectionFilterFactory>
     ::KeyVector required_keys = boost::assign::list_of
-        (Fred::MCS_FILTER_IDENTIFIED_CONTACT)
+     (Fred::MCS_FILTER_TEST1)
+     (Fred::MCS_FILTER_TEST2)
     ;
 
     FactoryHaveSupersetOfKeysChecker<Fred::ContactSelectionFilterFactory>
         (required_keys).check();
 
     Fred::OperationContext ctx;
-    std::vector<std::string> contact_handles;
-    Fred::MergeContactSelection(
+    std::vector<std::string> contact_handles = Util::vector_of<std::string>
+        ("test1")("test2")("test3")("test1")("test2");
+    std::string result = Fred::MergeContactSelection(
             contact_handles
             , Util::vector_of<Fred::ContactSelectionFilterType>
-                (Fred::MCS_FILTER_IDENTIFIED_CONTACT)
-                (Fred::MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
+                (Fred::MCS_FILTER_TEST1)
+                (Fred::MCS_FILTER_TEST2)
+                //(Fred::MCS_FILTER_IDENTIFIED_CONTACT)
+                //(Fred::MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
     ).exec(ctx);
+    BOOST_CHECK(result.compare("test3") == 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestMergeContact
