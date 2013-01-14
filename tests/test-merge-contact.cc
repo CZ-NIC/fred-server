@@ -69,6 +69,76 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
+namespace Fred
+{
+
+const ContactSelectionFilterType MCS_FILTER_TEST1 = "mcs_filter_test1";
+const ContactSelectionFilterType MCS_FILTER_TEST2 = "mcs_filter_test2";
+
+
+class FilterTest1
+: public ContactSelectionFilterBase
+, public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterTest1>
+{
+public:
+    FilterTest1(){};
+    std::vector<std::string> operator()(OperationContext& ctx
+            , const std::vector<std::string>& contact_handle)
+    {
+
+        std::vector<std::string> filtered;
+        for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
+        {
+            Database::Result contact_check = ctx.get_conn().exec_params(
+            "SELECT  $1::text", Database::query_param_list(*i));
+            if((contact_check.size() == 1) && (std::string(contact_check[0][0]).compare("test1") != 0))
+            {
+                filtered.push_back(*i);
+            }
+        }
+        return filtered;
+    }
+
+    static ContactSelectionFilterType registration_name()
+    {
+        return MCS_FILTER_TEST1;
+    }
+
+};//class FilterTest1
+
+class FilterTest2
+: public ContactSelectionFilterBase
+, public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterTest2>
+{
+public:
+    FilterTest2(){};
+    std::vector<std::string> operator()(OperationContext& ctx
+            , const std::vector<std::string>& contact_handle)
+    {
+
+        std::vector<std::string> filtered;
+        for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
+        {
+            Database::Result contact_check = ctx.get_conn().exec_params(
+            "SELECT  $1::text", Database::query_param_list(*i));
+            if((contact_check.size() == 1) && (std::string(contact_check[0][0]).compare("test2") != 0))
+            {
+                filtered.push_back(*i);
+            }
+        }
+        return filtered;
+    }
+
+    static ContactSelectionFilterType registration_name()
+    {
+        return MCS_FILTER_TEST2;
+    }
+
+};//class FilterTest2
+
+}//namespace Fred
+
+
 BOOST_AUTO_TEST_SUITE(TestMergeContact)
 
 const std::string server_name = "test-merge-contact";

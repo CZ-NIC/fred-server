@@ -38,9 +38,6 @@ namespace Fred
 
     typedef std::string ContactSelectionFilterType;
 
-    const ContactSelectionFilterType MCS_FILTER_TEST1 = "mcs_filter_test1";
-    const ContactSelectionFilterType MCS_FILTER_TEST2 = "mcs_filter_test2";
-
     const ContactSelectionFilterType MCS_FILTER_IDENTIFIED_CONTACT = "mcs_filter_identified_contact";
     const ContactSelectionFilterType MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT = "mcs_filter_conditionally_identified_contact";
 
