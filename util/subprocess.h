@@ -47,6 +47,7 @@
 #include <iterator>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include "config.h"
@@ -58,6 +59,7 @@
 
 ///fd reference close guard
 class FdCloseGuard
+: public boost::noncopyable
 {
     int fd_;
 public:
