@@ -249,6 +249,76 @@ namespace Fred
 
     };//class FilterMaxDomainsBound
 
+    class FilterMaxObjectsBound
+    : public ContactSelectionFilterBase
+    , public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterMaxObjectsBound>
+    {
+    public:
+        std::vector<std::string> operator()(OperationContext& ctx
+                , const std::vector<std::string>& contact_handle)
+        {
+            std::vector<std::string> filtered;
+
+            std::string query_begin("SELECT cc.handle, (cc.domain_registrant_count + cc.domain_admin_count + cc.nsset_tech_count + cc.keyset_tech_count) AS all_domains_count FROM ( "
+            " SELECT current_contact.handle "
+            " , (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id WHERE d.registrant = current_contact.id) AS domain_registrant_count "
+            " , (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id JOIN domain_contact_map dcm ON dcm.domainid = d.id and dcm.role = 1 "
+            "    WHERE dcm.contactid  = current_contact.id) AS domain_admin_count "
+            //"--, (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id JOIN domain_contact_map dcm ON dcm.domainid = d.id and dcm.role = 2 WHERE dcm.contactid  = current_contact.id) AS domain_tempc_count --this should be 0 now "
+            " , (SELECT count(*) FROM object_registry oreg JOIN nsset n ON oreg.id = n.id JOIN nsset_contact_map ncm ON ncm.nssetid = n.id "
+            "    WHERE ncm.contactid  = current_contact.id) AS nsset_tech_count "
+            " , (SELECT count(*) FROM object_registry oreg JOIN keyset k ON oreg.id = k.id JOIN keyset_contact_map kcm ON kcm.keysetid = k.id "
+            "    WHERE kcm.contactid  = current_contact.id) AS keyset_tech_count "
+            " FROM (SELECT oreg.name AS handle, c.id AS id FROM contact c JOIN object_registry oreg ON c.id = oreg.id ");
+
+            Util::HeadSeparator where_or(" WHERE "," OR ");
+
+            /* -- generated --
+                    WHERE UPPER(oreg.name) = UPPER('contact1')
+                    OR    UPPER(oreg.name) = UPPER('contact2')
+                    OR    UPPER(oreg.name) = UPPER('contact3')
+               -- generated --
+            */
+
+            std::string query_end("     ) AS current_contact "
+            " ) cc "
+            " ORDER BY all_domains_count DESC ");
+
+            Database::QueryParams params;//query params
+            std::stringstream sql;
+            sql << query_begin;
+            for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
+            {
+                params.push_back(*i);
+                sql << where_or.get() << "UPPER(oreg.name) = UPPER($" << params.size() << "::text) ";
+            }
+            sql << query_end;
+
+            Database::Result contact_objects = ctx.get_conn().exec_params(sql.str(), params);
+
+            for(Database::Result::size_type i = 0 ; i < contact_objects.size(); ++i)
+            {
+                //if it is first contact with maximum of objects bound or another contact with the same maximum number of objects bound
+                if((i == 0) || (std::string(contact_objects[0][1]).compare(std::string(contact_objects[i][1])) == 0 ))
+                {
+                    filtered.push_back(std::string(contact_objects[i][0]));
+                }
+                else
+                {//ignore others
+                    break;
+                }
+            }
+
+            return filtered;
+        }
+
+        static ContactSelectionFilterType registration_name()
+        {
+            return MCS_FILTER_MAX_OBJECTS_BOUND;
+        }
+
+    };//class FilterMaxObjectsBound
+
 
 }//namespace Fred
 
