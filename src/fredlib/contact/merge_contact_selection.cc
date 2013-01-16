@@ -385,6 +385,59 @@ namespace Fred
 
     };//class FilterRecentlyUpdated
 
+    class FilterNotRegCzNic
+    : public ContactSelectionFilterBase
+    , public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterNotRegCzNic>
+    {
+    public:
+        std::vector<std::string> operator()(OperationContext& ctx
+                , const std::vector<std::string>& contact_handle)
+        {
+            std::vector<std::string> filtered;
+
+            std::string query(
+                "SELECT oreg.name FROM object_registry oreg "
+                " JOIN object o ON oreg.id = o.id "
+                " JOIN registrar r ON r.id = o.clid AND UPPER(r.handle) != UPPER('REG-CZNIC') "
+                " JOIN contact c ON c.id = oreg.id ");
+
+            Util::HeadSeparator where_or(" WHERE "," OR ");
+
+            /* -- generated --
+                    WHERE UPPER(oreg.name) = UPPER('contact1')
+                    OR    UPPER(oreg.name) = UPPER('contact2')
+                    OR    UPPER(oreg.name) = UPPER('contact3')
+               -- generated --
+            */
+
+            Database::QueryParams params;//query params
+            std::stringstream sql;
+            sql << query;
+            for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
+            {
+                params.push_back(*i);
+                sql << where_or.get() << "UPPER(oreg.name) = UPPER($" << params.size() << "::text) ";
+            }
+
+
+            Database::Result contact_not_regcznic = ctx.get_conn().exec_params(sql.str(), params);
+
+            for(Database::Result::size_type i = 0 ; i < contact_not_regcznic.size(); ++i)
+            {
+                    filtered.push_back(std::string(contact_not_regcznic[i][0]));
+            }
+
+            return filtered;
+        }
+
+        static ContactSelectionFilterType registration_name()
+        {
+            return MCS_FILTER_NOT_REGCZNIC;
+        }
+
+    };//class FilterNotRegCzNic
+
+
 
     class FilterRecentlyCreated
     : public ContactSelectionFilterBase

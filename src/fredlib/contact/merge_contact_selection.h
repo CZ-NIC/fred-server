@@ -44,6 +44,7 @@ namespace Fred
     const ContactSelectionFilterType MCS_FILTER_MAX_DOMAINS_BOUND = "mcs_filter_max_domains_bound";
     const ContactSelectionFilterType MCS_FILTER_MAX_OBJECTS_BOUND = "mcs_filter_max_objects_bound";
     const ContactSelectionFilterType MCS_FILTER_RECENTLY_UPDATED = "mcs_filter_recently_updated";
+    const ContactSelectionFilterType MCS_FILTER_NOT_REGCZNIC  = "mcs_filter_not_regcznic";
     const ContactSelectionFilterType MCS_FILTER_RECENTLY_CREATED = "mcs_filter_recently_created";
 
     class ContactSelectionFilterBase
