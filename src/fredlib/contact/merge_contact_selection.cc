@@ -386,6 +386,69 @@ namespace Fred
     };//class FilterRecentlyUpdated
 
 
+    class FilterRecentlyCreated
+    : public ContactSelectionFilterBase
+    , public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterRecentlyCreated>
+    {
+    public:
+        std::vector<std::string> operator()(OperationContext& ctx
+                , const std::vector<std::string>& contact_handle)
+        {
+            std::vector<std::string> filtered;
+
+            if(contact_handle.empty()) return filtered;
+
+            std::string query_begin("SELECT oreg.name, oreg.crdate "
+                    " FROM object_registry oreg "
+                    " JOIN contact c ON c.id = oreg.id ");
+
+            Util::HeadSeparator where_or(" WHERE "," OR ");
+
+            /* -- generated --
+                    WHERE UPPER(oreg.name) = UPPER('contact1')
+                    OR    UPPER(oreg.name) = UPPER('contact2')
+                    OR    UPPER(oreg.name) = UPPER('contact3')
+               -- generated --
+            */
+
+            std::string query_end(" ORDER BY oreg.crdate DESC ");
+
+            Database::QueryParams params;//query params
+            std::stringstream sql;
+            sql << query_begin;
+            for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
+            {
+                params.push_back(*i);
+                sql << where_or.get() << "UPPER(oreg.name) = UPPER($" << params.size() << "::text) ";
+            }
+            sql << query_end;
+
+            Database::Result contact_created = ctx.get_conn().exec_params(sql.str(), params);
+
+            for(Database::Result::size_type i = 0 ; i < contact_created.size(); ++i)
+            {
+                //if it is first contact with most recent update timestamp or another contact with the same update timestamp
+                if((i == 0) || (std::string(contact_created[0][1]).compare(std::string(contact_created[i][1])) == 0 ))
+                {
+                    filtered.push_back(std::string(contact_created[i][0]));
+                }
+                else
+                {//ignore others
+                    break;
+                }
+            }
+
+            return filtered;
+        }
+
+        static ContactSelectionFilterType registration_name()
+        {
+            return MCS_FILTER_RECENTLY_CREATED;
+        }
+
+    };//class FilterRecentlyCreated
+
+
 }//namespace Fred
 
 
