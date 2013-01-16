@@ -110,10 +110,7 @@ namespace Fred
         {
             return MCS_FILTER_IDENTIFIED_CONTACT;
         }
-
     };//class FilterIdentifiedContact
-
-
 
     class FilterConditionallyIdentifiedContact
     : public ContactSelectionFilterBase
@@ -142,9 +139,7 @@ namespace Fred
         {
             return MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT;
         }
-
     };//class FilterConditionallyIdentifiedContact
-
 
     class FilterHandleMojeIDSyntax
     : public ContactSelectionFilterBase
@@ -180,7 +175,6 @@ namespace Fred
         {
             return MCS_FILTER_HANDLE_MOJEID_SYNTAX;
         }
-
     };//class FilterHandleMojeIDSyntax
 
     class FilterMaxDomainsBound
@@ -200,17 +194,9 @@ namespace Fred
             " , (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id WHERE d.registrant = current_contact.id) AS domain_registrant_count "
             " , (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id JOIN domain_contact_map dcm ON dcm.domainid = d.id and dcm.role = 1 "
             "    WHERE dcm.contactid  = current_contact.id) AS domain_admin_count "
-            //"--, (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id JOIN domain_contact_map dcm ON dcm.domainid = d.id and dcm.role = 2 WHERE dcm.contactid  = current_contact.id) AS domain_tempc_count --this should be 0 now "
             " FROM (SELECT oreg.name AS handle, c.id AS id FROM contact c JOIN object_registry oreg ON c.id = oreg.id ");
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
-
-            /* -- generated --
-                    WHERE UPPER(oreg.name) = UPPER('contact1')
-                    OR    UPPER(oreg.name) = UPPER('contact2')
-                    OR    UPPER(oreg.name) = UPPER('contact3')
-               -- generated --
-            */
 
             std::string query_end("     ) AS current_contact "
             " ) cc "
@@ -248,7 +234,6 @@ namespace Fred
         {
             return MCS_FILTER_MAX_DOMAINS_BOUND;
         }
-
     };//class FilterMaxDomainsBound
 
     class FilterMaxObjectsBound
@@ -268,7 +253,6 @@ namespace Fred
             " , (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id WHERE d.registrant = current_contact.id) AS domain_registrant_count "
             " , (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id JOIN domain_contact_map dcm ON dcm.domainid = d.id and dcm.role = 1 "
             "    WHERE dcm.contactid  = current_contact.id) AS domain_admin_count "
-         //"--, (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id JOIN domain_contact_map dcm ON dcm.domainid = d.id and dcm.role = 2 WHERE dcm.contactid  = current_contact.id) AS domain_tempc_count --this should be 0 now "
             " , (SELECT count(*) FROM object_registry oreg JOIN nsset n ON oreg.id = n.id JOIN nsset_contact_map ncm ON ncm.nssetid = n.id "
             "    WHERE ncm.contactid  = current_contact.id) AS nsset_tech_count "
             " , (SELECT count(*) FROM object_registry oreg JOIN keyset k ON oreg.id = k.id JOIN keyset_contact_map kcm ON kcm.keysetid = k.id "
@@ -276,13 +260,6 @@ namespace Fred
             " FROM (SELECT oreg.name AS handle, c.id AS id FROM contact c JOIN object_registry oreg ON c.id = oreg.id ");
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
-
-            /* -- generated --
-                    WHERE UPPER(oreg.name) = UPPER('contact1')
-                    OR    UPPER(oreg.name) = UPPER('contact2')
-                    OR    UPPER(oreg.name) = UPPER('contact3')
-               -- generated --
-            */
 
             std::string query_end("     ) AS current_contact "
             " ) cc "
@@ -320,7 +297,6 @@ namespace Fred
         {
             return MCS_FILTER_MAX_OBJECTS_BOUND;
         }
-
     };//class FilterMaxObjectsBound
 
     class FilterRecentlyUpdated
@@ -340,13 +316,6 @@ namespace Fred
                     " JOIN contact c ON c.id = oreg.id ");
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
-
-            /* -- generated --
-                    WHERE UPPER(oreg.name) = UPPER('contact1')
-                    OR    UPPER(oreg.name) = UPPER('contact2')
-                    OR    UPPER(oreg.name) = UPPER('contact3')
-               -- generated --
-            */
 
             std::string query_end(" ORDER BY o.update DESC ");
 
@@ -382,7 +351,6 @@ namespace Fred
         {
             return MCS_FILTER_RECENTLY_UPDATED;
         }
-
     };//class FilterRecentlyUpdated
 
     class FilterNotRegCzNic
@@ -403,13 +371,6 @@ namespace Fred
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
 
-            /* -- generated --
-                    WHERE UPPER(oreg.name) = UPPER('contact1')
-                    OR    UPPER(oreg.name) = UPPER('contact2')
-                    OR    UPPER(oreg.name) = UPPER('contact3')
-               -- generated --
-            */
-
             Database::QueryParams params;//query params
             std::stringstream sql;
             sql << query;
@@ -418,7 +379,6 @@ namespace Fred
                 params.push_back(*i);
                 sql << where_or.get() << "UPPER(oreg.name) = UPPER($" << params.size() << "::text) ";
             }
-
 
             Database::Result contact_not_regcznic = ctx.get_conn().exec_params(sql.str(), params);
 
@@ -434,10 +394,7 @@ namespace Fred
         {
             return MCS_FILTER_NOT_REGCZNIC;
         }
-
     };//class FilterNotRegCzNic
-
-
 
     class FilterRecentlyCreated
     : public ContactSelectionFilterBase
@@ -457,13 +414,6 @@ namespace Fred
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
 
-            /* -- generated --
-                    WHERE UPPER(oreg.name) = UPPER('contact1')
-                    OR    UPPER(oreg.name) = UPPER('contact2')
-                    OR    UPPER(oreg.name) = UPPER('contact3')
-               -- generated --
-            */
-
             std::string query_end(" ORDER BY oreg.crdate DESC ");
 
             Database::QueryParams params;//query params
@@ -480,7 +430,7 @@ namespace Fred
 
             for(Database::Result::size_type i = 0 ; i < contact_created.size(); ++i)
             {
-                //if it is first contact with most recent update timestamp or another contact with the same update timestamp
+                //if it is first contact with most recent create timestamp or another contact with the same create timestamp
                 if((i == 0) || (std::string(contact_created[0][1]).compare(std::string(contact_created[i][1])) == 0 ))
                 {
                     filtered.push_back(std::string(contact_created[i][0]));
@@ -498,7 +448,6 @@ namespace Fred
         {
             return MCS_FILTER_RECENTLY_CREATED;
         }
-
     };//class FilterRecentlyCreated
 
 
