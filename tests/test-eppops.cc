@@ -112,14 +112,14 @@ public:
         bool reason_ok = false;
         bool param_ok = false;
 
-        for(int i =0; i < valid_reasons_.size;++i)
+        for(int i =0; i < valid_reasons_.size();++i)
         {
-            if(std::string(reason).compare(std::string(valid_reasons_.arr[i])) ==0) reason_ok = true;
+            if(std::string(reason).compare(std::string(valid_reasons_[i])) ==0) reason_ok = true;
         }
 
-        for(int i =0; i < valid_params_.size;++i)
+        for(int i =0; i < valid_params_.size();++i)
         {
-            if(std::string(param).compare(std::string(valid_params_.arr[i])) ==0) param_ok = true;
+            if(std::string(param).compare(std::string(valid_params_[i])) ==0) param_ok = true;
         }
 
         //save

@@ -43,16 +43,27 @@ namespace Fred
 {
 
 /// const array wrapper
-struct ConstArr
+class ConstArr
 {
-    const char** arr;
-    int size;
+    const char** arr_;
+    int size_;
+public:
     ConstArr(const char** list /// static const char* [] instance like {"string1","string2","string3"}
             , int _size)/// sizeof(list)/sizeof(char*) - number of elements in the list , cannot be wrapped
             throw()
-        :arr(list)
-        , size(_size)
+        :arr_(list)
+        , size_(_size)
     {}
+
+    const char* operator[](const int index) const
+    {
+        return arr_[index];
+    }
+
+    int size() const
+    {
+        return size_;
+    }
 };
 
 ///operation exception base class
@@ -206,15 +217,15 @@ template <int DATASIZE> struct SearchCallbackImpl
         //printf("\ncheck_param: %s",str.data);
 
         FixedStringType expected_key;
-        for(int i = 0; i < expected_reasons.size ; ++i)
+        for(int i = 0; i < expected_reasons.size() ; ++i)
         {
-            for(int j = 0; j < expected_params.size; ++j)
+            for(int j = 0; j < expected_params.size(); ++j)
             {
                 expected_key = FixedStringType();//init
                 expected_key.push_front(":");
-                expected_key.push_front(expected_params.arr[j]);
+                expected_key.push_front(expected_params[j]);
                 expected_key.push_front(":");
-                expected_key.push_front(expected_reasons.arr[i]);
+                expected_key.push_front(expected_reasons[i]);
 
                 if(strncmp(expected_key.data, str,strlen(expected_key.data)) == 0)
                 {//ok is valid expected_key
@@ -226,7 +237,7 @@ template <int DATASIZE> struct SearchCallbackImpl
                             );
                     */
                     if(!is_key_set || strstr(expected_key.data,key_substring.data))
-                        callback(expected_reasons.arr[i],expected_params.arr[j],str + strlen(expected_key.data));
+                        callback(expected_reasons[i],expected_params[j],str + strlen(expected_key.data));
 
                 }
             }//for expected params
@@ -354,15 +365,15 @@ public:
         ConstArr expected_params = get_fail_param();
 
         FixedStringType key;
-        for(int i = 0; i < expected_reasons.size ; ++i)
+        for(int i = 0; i < expected_reasons.size() ; ++i)
         {
-            for(int j = 0; j < expected_params.size; ++j)
+            for(int j = 0; j < expected_params.size(); ++j)
             {
                 key = FixedStringType();//init
                 key.push_front(":");
-                key.push_front(expected_params.arr[j]);
+                key.push_front(expected_params[j]);
                 key.push_front(":");
-                key.push_front(expected_reasons.arr[i]);
+                key.push_front(expected_reasons[i]);
 
                 //printf("\ncheck_key compare key: %s\n",key.data);
                 if((strlen(str.data) >= strlen(key.data))&&(strncmp(key.data, str.data,strlen(key.data)) == 0))
