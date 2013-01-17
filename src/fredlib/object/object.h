@@ -26,6 +26,7 @@
 
 #include <string>
 
+
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
@@ -64,7 +65,17 @@ namespace Fred
 
             ConstArr get_fail_param_impl() throw()
             {
+<<<<<<< HEAD
                 static const char* list[]={"not found:handle", "not found:registrar"};
+=======
+                static const char* list[]={"handle", "registrar"};
+                return ConstArr(list,sizeof(list)/sizeof(char*));
+            }
+
+            ConstArr get_fail_reason_impl() throw()
+            {
+                static const char* list[]={"not found"};
+>>>>>>> Ticket #8058 - broken, need exceptions
                 return ConstArr(list,sizeof(list)/sizeof(char*));
             }
 
@@ -97,7 +108,17 @@ namespace Fred
 
             ConstArr get_fail_param_impl() throw()
             {
+<<<<<<< HEAD
                 static const char* list[]={"invalid:logd_request_id"};
+=======
+                static const char* list[]={"logd_request_id"};
+                return ConstArr(list,sizeof(list)/sizeof(char*));
+            }
+
+            ConstArr get_fail_reason_impl() throw()
+            {
+                static const char* list[]={"invalid"};
+>>>>>>> Ticket #8058 - broken, need exceptions
                 return ConstArr(list,sizeof(list)/sizeof(char*));
             }
 
