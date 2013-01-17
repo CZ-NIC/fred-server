@@ -71,7 +71,7 @@ struct OperationExceptionBase
 : virtual public std::exception  //common base
 {
     typedef boost::function<void (const char* str)> Func1Str;
-    typedef boost::function<void (const char* reason, const char* param, const char* value)> FuncReasonParamValue;
+    typedef boost::function<void (const char* param, const char* value)> FuncParamValue;
 
     /**
      * call func callback for all parsable params
@@ -83,18 +83,13 @@ struct OperationExceptionBase
      * call supplied function with exception params
      * callback may throw
      */
-    virtual void callback_exception_params(FuncReasonParamValue func) =0;
+    virtual void callback_exception_params(FuncParamValue func) =0;
 
     /**
-     * call supplied function with exception params filtered by substring search in reason and param
+     * call supplied function with exception params filtered by substring search
      * callback may throw
      */
-    virtual void callback_exception_params(FuncReasonParamValue func, const char* key_substring) =0;
-
-    /**
-     * reasons of failure enumerated
-     */
-    virtual ConstArr get_fail_reason() throw() = 0;
+    virtual void callback_exception_params(FuncParamValue func, const char* key_substring) =0;
 
     /**
      * parameters of failure enumerated
@@ -185,30 +180,27 @@ template <int DATASIZE///size of string
 
 
 /**
- * separation of reason, param and value
- * with optional filtering by _key_substring search in reason and param
+ * separation of param and value
+ * with optional filtering by _key_substring search in param name
  */
 template <int DATASIZE> struct SearchCallbackImpl
 {
     typedef SearchCallbackImpl<DATASIZE> SearchCallbackType;
     typedef FixedString<DATASIZE> FixedStringType;
 
-    typedef boost::function<void (const char * reason, const char * param, const char * value)> CallbackType;
+    typedef boost::function<void (const char * param, const char * value)> CallbackType;
     FixedStringType key_substring;
     bool is_key_set;
     CallbackType callback;
-    ConstArr expected_reasons;
     ConstArr expected_params;
 
     SearchCallbackImpl(FixedStringType _key_substring
             , CallbackType _callback
-            , ConstArr _expected_reasons
             , ConstArr _expected_params
             )
     : key_substring(_key_substring)
     , is_key_set(strlen(_key_substring.data) == 0 ? false : true )
     , callback(_callback)
-    , expected_reasons(_expected_reasons)
     , expected_params(_expected_params)
     {}
 
@@ -217,31 +209,26 @@ template <int DATASIZE> struct SearchCallbackImpl
         //printf("\ncheck_param: %s",str.data);
 
         FixedStringType expected_key;
-        for(int i = 0; i < expected_reasons.size() ; ++i)
+
+        for(int i = 0; i < expected_params.size(); ++i)
         {
-            for(int j = 0; j < expected_params.size(); ++j)
-            {
-                expected_key = FixedStringType();//init
-                expected_key.push_front(":");
-                expected_key.push_front(expected_params[j]);
-                expected_key.push_front(":");
-                expected_key.push_front(expected_reasons[i]);
+            expected_key = FixedStringType();//init
+            expected_key.push_front(":");
+            expected_key.push_front(expected_params[i]);
 
-                if(strncmp(expected_key.data, str,strlen(expected_key.data)) == 0)
-                {//ok is valid expected_key
-                    /*
-                    printf("\nreason: %s param: %s value: %s\n"
-                            ,expected_reasons.arr[i]
-                            , expected_params.arr[j]
-                            , str + strlen(expected_key.data)
-                            );
-                    */
-                    if(!is_key_set || strstr(expected_key.data,key_substring.data))
-                        callback(expected_reasons[i],expected_params[j],str + strlen(expected_key.data));
+            if(strncmp(expected_key.data, str,strlen(expected_key.data)) == 0)
+            {//ok is valid expected_key
+                /*
+                printf("\nparam: %s value: %s\n"
+                        , expected_params.arr[i]
+                        , str + strlen(expected_key.data)
+                        );
+                */
+                if(!is_key_set || strstr(expected_key.data,key_substring.data))
+                    callback(expected_params[i],str + strlen(expected_key.data));
 
-                }
-            }//for expected params
-        }//for expected reasons
+            }
+        }//for expected params
     }
 };//SearchCallbackImpl
 
@@ -322,7 +309,7 @@ public:
     typedef FixedString<DATASIZE> FixedStringType;
     typedef OperationExceptionImpl<EXCEPTION_CHILD, DATASIZE> OperationExceptionImplType;
     typedef OperationExceptionBase::Func1Str Func1Str;
-    typedef OperationExceptionBase::FuncReasonParamValue FuncReasonParamValue;
+    typedef OperationExceptionBase::FuncParamValue FuncParamValue;
     typedef OperationError<DATASIZE> OperationErrorType;
 
     /**
@@ -335,15 +322,6 @@ public:
     }
 
     /**
-     * get valid exception reasons from child
-     */
-
-    ConstArr get_fail_reason() throw()
-    {
-        return static_cast<EXCEPTION_CHILD*>(this)->get_fail_reason_impl();
-    }
-
-    /**
      * dump exception data
      */
 
@@ -353,7 +331,7 @@ public:
     }
 
     /**
-     * check str against expected reasons and parameters
+     * check str against expected parameters
      * throw if invalid
      */
 
@@ -361,30 +339,24 @@ public:
     {
         bool key_is_valid = false;
         //printf("\ncheck_param: %s",str.data);
-        ConstArr expected_reasons = get_fail_reason();
         ConstArr expected_params = get_fail_param();
 
         FixedStringType key;
-        for(int i = 0; i < expected_reasons.size() ; ++i)
+        for(int i = 0; i < expected_params.size(); ++i)
         {
-            for(int j = 0; j < expected_params.size(); ++j)
-            {
-                key = FixedStringType();//init
-                key.push_front(":");
-                key.push_front(expected_params[j]);
-                key.push_front(":");
-                key.push_front(expected_reasons[i]);
+            key = FixedStringType();//init
+            key.push_front(":");
+            key.push_front(expected_params[i]);
 
-                //printf("\ncheck_key compare key: %s\n",key.data);
-                if((strlen(str.data) >= strlen(key.data))&&(strncmp(key.data, str.data,strlen(key.data)) == 0))
-                {//ok is valid key
-                    key_is_valid = true;
-                    //printf("\ncheck_key valid key: %s str: %s\n",key.data, str.data);
-                    break;
-                }
-            }//for expected params
-            if(key_is_valid) break;
-        }//for expected reasons
+            //printf("\ncheck_key compare key: %s\n",key.data);
+            if((strlen(str.data) >= strlen(key.data))&&(strncmp(key.data, str.data,strlen(key.data)) == 0))
+            {//ok is valid key
+                key_is_valid = true;
+                //printf("\ncheck_key valid key: %s str: %s\n",key.data, str.data);
+                break;
+            }
+        }//for expected params
+
         if(!key_is_valid)//if parsable exception content is not valid then throw error
         {
             fs.push_front(" ");//space
@@ -399,9 +371,9 @@ public:
      * callback may throw
      */
 
-    void callback_exception_params(FuncReasonParamValue func_void3str)
+    void callback_exception_params(FuncParamValue func_void2str)
     {
-        SearchCallbackImpl<DATASIZE> cb ("",func_void3str,get_fail_reason(),get_fail_param());//callback instance
+        SearchCallbackImpl<DATASIZE> cb ("",func_void2str,get_fail_param());//callback instance
         //run callback for data in exception
         Func1Str cbfun = std::bind1st(std::mem_fun(&SearchCallbackImpl<DATASIZE>::exception_callback), &cb);
         for_params(cbfun);
@@ -412,10 +384,10 @@ public:
      * callback may throw
      */
 
-    void callback_exception_params(FuncReasonParamValue func_void3str
+    void callback_exception_params(FuncParamValue func_void2str
             , const char* key_substring)
     {
-        SearchCallbackImpl<DATASIZE> cb (key_substring,func_void3str,get_fail_reason(),get_fail_param());//callback instance
+        SearchCallbackImpl<DATASIZE> cb (key_substring,func_void2str,get_fail_param());//callback instance
         //run callback for data in exception
         Func1Str cbfun = std::bind1st(std::mem_fun(&SearchCallbackImpl<DATASIZE>::exception_callback), &cb);
         for_params(cbfun);

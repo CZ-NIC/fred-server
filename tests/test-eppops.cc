@@ -93,29 +93,19 @@ void print_3str(const char* str1, const char* str2, const char* str3)
 //check callback input data
 class CheckCallback
 {
-    Fred::ConstArr valid_reasons_;
     Fred::ConstArr valid_params_;
-    bool reason_ok_;
     bool param_ok_;
 
 public:
-    CheckCallback(const Fred::ConstArr& valid_reasons, const Fred::ConstArr& valid_params)
-    : valid_reasons_(valid_reasons)
-    , valid_params_(valid_params)
-    , reason_ok_(true)
+    CheckCallback(const Fred::ConstArr& valid_params)
+    : valid_params_(valid_params)
     , param_ok_(true)
     {}
 
     //checking callback called for all params
-    void operator()(const char* reason, const char* param, const char* value)
+    void operator()(const char* param, const char* value)
     {
-        bool reason_ok = false;
         bool param_ok = false;
-
-        for(int i =0; i < valid_reasons_.size();++i)
-        {
-            if(std::string(reason).compare(std::string(valid_reasons_[i])) ==0) reason_ok = true;
-        }
 
         for(int i =0; i < valid_params_.size();++i)
         {
@@ -123,13 +113,7 @@ public:
         }
 
         //save
-        reason_ok_ = reason_ok;
         param_ok_ = param_ok;
-    }
-
-    bool reasons_ok()
-    {
-        return reason_ok_;
     }
 
     bool params_ok()
@@ -147,10 +131,10 @@ std::vector<std::string> data_;
 public:
 
     //callback
-    void operator()(const char* reason, const char* param, const char* value)
+    void operator()(const char* param, const char* value)
     {
-        //BOOST_MESSAGE(std::string("get_cbk: ")+reason + " : " + param + " : " + value);
-        data_.push_back(std::string(reason) + " : " + param + " : " + value);
+        //BOOST_MESSAGE(std::string("get_cbk: ")+ " : " + param + " : " + value);
+        data_.push_back(std::string(param) + " : " + value);
         //BOOST_MESSAGE(data_.size());
     }
 
@@ -193,7 +177,7 @@ BOOST_AUTO_TEST_CASE(exception_params_callback)
     catch(Fred::OperationExceptionBase& ex)
     {
         GetCallback a;
-        ex.callback_exception_params(a);
+        ex.callback_exception_params(boost::ref(a));
         BOOST_CHECK((a.get().size()) == 2);
     }
 
@@ -213,9 +197,8 @@ BOOST_AUTO_TEST_CASE(test_quote_pipe_in_exception)
     }
     catch(Fred::UpdateDomainException& ex)
     {
-        CheckCallback check(ex.get_fail_reason(), ex.get_fail_param());
+        CheckCallback check(ex.get_fail_param());
         ex.callback_exception_params(check);
-        BOOST_CHECK(check.reasons_ok());
         BOOST_CHECK(check.params_ok());
 
         //BOOST_MESSAGE(ex.what());
@@ -241,9 +224,8 @@ BOOST_AUTO_TEST_CASE(test_quote_pipe_in_exception)
     }
     catch(Fred::OperationExceptionBase& ex)
     {
-        CheckCallback check(ex.get_fail_reason(), ex.get_fail_param());
+        CheckCallback check(ex.get_fail_param());
         ex.callback_exception_params(check);
-        BOOST_CHECK(check.reasons_ok());
         BOOST_CHECK(check.params_ok());
 
         //ex.callback_exception_params(print_3str);

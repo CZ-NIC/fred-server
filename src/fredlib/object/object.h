@@ -64,13 +64,7 @@ namespace Fred
 
             ConstArr get_fail_param_impl() throw()
             {
-                static const char* list[]={"handle", "registrar"};
-                return ConstArr(list,sizeof(list)/sizeof(char*));
-            }
-
-            ConstArr get_fail_reason_impl() throw()
-            {
-                static const char* list[]={"not found"};
+                static const char* list[]={"not found:handle", "not found:registrar"};
                 return ConstArr(list,sizeof(list)/sizeof(char*));
             }
 
@@ -103,13 +97,7 @@ namespace Fred
 
             ConstArr get_fail_param_impl() throw()
             {
-                static const char* list[]={"logd_request_id"};
-                return ConstArr(list,sizeof(list)/sizeof(char*));
-            }
-
-            ConstArr get_fail_reason_impl() throw()
-            {
-                static const char* list[]={"invalid"};
+                static const char* list[]={"invalid:logd_request_id"};
                 return ConstArr(list,sizeof(list)/sizeof(char*));
             }
 
