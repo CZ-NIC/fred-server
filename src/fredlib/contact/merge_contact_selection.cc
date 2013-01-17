@@ -50,10 +50,8 @@ namespace Fred
         for(std::vector<ContactSelectionFilterType>::const_iterator ci = filter.begin()
                 ; ci !=  filter.end(); ++ci)
         {
-            ContactSelectionFilterBase* filter = dynamic_cast<ContactSelectionFilterBase*>(
-                                ContactSelectionFilterFactory::instance_ref().create(*ci));
-            ff_.push_back(boost::shared_ptr<ContactSelectionFilterBase> (
-                    filter));
+            boost::shared_ptr<ContactSelectionFilterBase> filter = ContactSelectionFilterFactory::instance_ref().create_sh_ptr(*ci);
+            ff_.push_back(filter);
         }
     }
 
