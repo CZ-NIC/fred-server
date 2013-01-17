@@ -88,7 +88,7 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[]={"not found:fqdn", "not found:registrar", "not found:handle", "not found:nsset", "not found:keyset", "not found:registrant", "not found:admin contact", "invalid:logd_request"};
+            static const char* list[]={"not found:fqdn", "not found:registrar", "not found:handle", "not found:nsset", "not found:keyset", "not found:registrant", "not found:admin contact"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     };//class UpdateDomainException

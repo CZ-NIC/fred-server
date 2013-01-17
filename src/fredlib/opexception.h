@@ -496,20 +496,20 @@ void handleOperationExceptions(const char* file
     {
         throw;
     }
-    //translate other operation exceptions to operation specific exceptions
+    //rethrow other operation exceptions
     catch(OperationExceptionBase& ex)
     {
-        throw OPERATION_EXCEPTION(file, line, function, ex.what());
+        throw;
     }
     //rethrow already operation specific error exceptions
     catch(OperationError&)
     {
         throw;
     }
-    //translate other operation error exceptions to operation specific error exceptions
+    //rethrow other operation error exceptions
     catch(OperationErrorBase& ex)
     {
-        throw OperationError(file, line, function, ex.what());
+        throw;
     }
     //translate other std exceptions to operation specific error exceptions
     catch(std::exception& ex)
