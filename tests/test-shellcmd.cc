@@ -290,25 +290,39 @@ public:
 
             //some tests
 
-            SubProcessOutput sub_output3;// = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
+            for(int i = 0; i < 10 ; ++i)
+            {
+                SubProcessOutput sub_output3;// = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
 
-            sub_output3 = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
-            //sub_output3.stdout = "kuk\n";
-            /*
-                std::cout << "test_shellcmd_wrapper sub_output3.stdout: " << sub_output3.stdout
-                    << " sub_output3.stderr: " << sub_output3.stderr << std::endl;
-            */
+                sub_output3 = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
+
                 if(!sub_output3.stderr.empty())
                 {
                     res.ret = 1;
                     res.desc = std::string("stderr: ") + sub_output3.stderr;
+                    break;
                 }
 
                 if(sub_output3.stdout.compare("kuk\n") != 0)
                 {
                     res.ret = 2;
                     res.desc = std::string("expected kuk in stdout and got : ") + sub_output3.stdout;
+                    break;
                 }
+
+                //db
+                Database::Connection conn = Database::Manager::acquire();
+
+                unsigned long long number = conn.exec("select 1")[0][0];
+
+                if(number != 1)
+                {
+                    res.ret = 3;
+                    res.desc = std::string("select 1 failed");
+                    break;
+                }
+
+            }//for i
 
         }
         catch(const std::exception& ex)
