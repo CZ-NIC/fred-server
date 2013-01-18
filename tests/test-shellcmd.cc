@@ -28,6 +28,7 @@
 #include <queue>
 #include <sys/time.h>
 #include <time.h>
+#include <signal.h>
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
@@ -75,11 +76,22 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
 {
     for(int i = 0; i < 100; ++i)
     {
+
         SubProcessOutput sub_output1 = ShellCmd(
             "cat | tr u -","/bin/bash",10).execute("a u a u");
         BOOST_CHECK(sub_output1.stderr.empty());
         BOOST_CHECK(sub_output1.stdout.compare("a - a -") == 0);
         //BOOST_MESSAGE(sub_output1.stdout);
+
+        SubProcessOutput sub_output3 = ShellCmd(
+            " echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
+    /*
+        std::cout << "test_shellcmd_wrapper sub_output3.stdout: " << sub_output3.stdout
+            << " sub_output3.stderr: " << sub_output3.stderr << std::endl;
+    */
+        BOOST_CHECK(sub_output3.stderr.empty());
+        BOOST_CHECK(sub_output3.stdout.compare("kuk\n") == 0);
+
     }
 }
 
@@ -157,7 +169,7 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper1 )
 }
 
 //TODO: test with threads
-#if 0
+//#if 0
 //shell cmd threaded test
 struct TestParams
 {
@@ -220,6 +232,7 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_threads )
 }
 
 
+
 //simple shell wrapper threaded test
 
 //synchronization using barriers
@@ -275,8 +288,27 @@ public:
                 sb_ptr_->barrier.wait();//wait for other synced threads
             //std::cout << "start: " << number_ << std::endl;
 
-
             //some tests
+
+            SubProcessOutput sub_output3;// = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
+
+            sub_output3 = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
+            //sub_output3.stdout = "kuk\n";
+            /*
+                std::cout << "test_shellcmd_wrapper sub_output3.stdout: " << sub_output3.stdout
+                    << " sub_output3.stderr: " << sub_output3.stderr << std::endl;
+            */
+                if(!sub_output3.stderr.empty())
+                {
+                    res.ret = 1;
+                    res.desc = std::string("stderr: ") + sub_output3.stderr;
+                }
+
+                if(sub_output3.stdout.compare("kuk\n") != 0)
+                {
+                    res.ret = 2;
+                    res.desc = std::string("expected kuk in stdout and got : ") + sub_output3.stdout;
+                }
 
         }
         catch(const std::exception& ex)
@@ -309,8 +341,12 @@ private:
 };//class SimpleTestThreadWorker
 
 
-BOOST_AUTO_TEST_CASE( simple_test_shellcmd_threaded )
+BOOST_AUTO_TEST_CASE( test_shellcmd_threaded )
 {
+    //waitpid need default SIGCHLD handler to work
+    sighandler_t sig_chld_h = signal(SIGCHLD, SIG_DFL);
+    signal(SIGALRM, handleSIGALARM);     //install the handler
+
     HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
                    get_handler_ptr_by_type<HandleThreadGroupArgs>();
 
@@ -351,8 +387,10 @@ BOOST_AUTO_TEST_CASE( simple_test_shellcmd_threaded )
                     << " description: " << thread_result.desc);
         }
     }//for i
+
+    signal(SIGCHLD, sig_chld_h);//restore saved SIGCHLD handler
 }
 
-#endif
+//#endif
 
 BOOST_AUTO_TEST_SUITE_END();//TestShellCmd
