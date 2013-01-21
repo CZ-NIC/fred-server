@@ -53,5 +53,30 @@ namespace Fred
         std::string exec(OperationContext& ctx);
 
     };//CreateContact
+
+    //exception impl
+    class CreateContactException
+    : public OperationExceptionImpl<CreateContactException, 2048>
+    {
+    public:
+        CreateContactException(const char* file
+                , const int line
+                , const char* function
+                , const char* data)
+        : OperationExceptionImpl<CreateContactException, 2048>(file, line, function, data)
+        {}
+
+        ConstArr get_fail_param_impl() throw()
+        {
+            static const char* list[]={"not found:object type", "invalid:handle", "not found:registrar"};
+            return ConstArr(list,sizeof(list)/sizeof(char*));
+        }
+
+    };//class CreateContactException
+
+    typedef CreateContactException::OperationErrorType CreteaContactError;
+#define CCEX(DATA) CreateContactException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define CCERR(DATA) CreteaContactError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+
 }
 #endif // CREATE_CONTACT_H_

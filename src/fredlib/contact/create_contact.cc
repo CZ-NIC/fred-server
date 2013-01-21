@@ -60,9 +60,37 @@ namespace Fred
         return *this;
     }
 
-    std::string exec(OperationContext& ctx)
+    std::string CreateContact::exec(OperationContext& ctx)
     {
         std::string timestamp;
+
+        try
+        {
+            unsigned long long object_id = CreateObject("contact", handle_, registrar_, authinfo_).exec(ctx);
+            //create contact
+            {
+                Database::QueryParams params;//query params
+                std::stringstream col_sql, val_sql;
+                Util::HeadSeparator col_separator("",", "), val_separator("",", ");
+
+                col_sql <<"INSERT INTO contact (";
+                val_sql << " VALUES ("
+
+                //id
+                params.push_back(object_id);
+                col_sql << col_separator.get() << "id";
+                val_sql << val_separator.get() << "$" << params.size() <<"::integer";
+
+                col_sql <<")";
+                val_sql << ")";
+
+            }
+
+        }//try
+        catch(...)//common exception processing
+        {
+            handleOperationExceptions<CreateContactException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+        }
 
         return timestamp;
     }
