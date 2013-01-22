@@ -28,6 +28,7 @@
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
+#include "util/optional_value.h"
 
 namespace Fred
 {
@@ -38,7 +39,7 @@ namespace Fred
         const std::string dst_contact_handle_;//destination contact identifier
     public:
         MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle);
-        void exec(OperationContext& ctx);
+        void exec(OperationContext& ctx, std::string* dry_run = 0);
     };//class MergeContact
 
 }//namespace Fred
