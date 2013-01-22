@@ -74,7 +74,7 @@ namespace Fred
                 Util::HeadSeparator col_separator("",", "), val_separator("",", ");
 
                 col_sql <<"INSERT INTO contact (";
-                val_sql << " VALUES ("
+                val_sql << " VALUES (";
 
                 //id
                 params.push_back(object_id);
