@@ -35,9 +35,10 @@
 
 namespace Fred
 {
-    MergeContact::MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle)
+    MergeContact::MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle, const std::string& registrar)
     : src_contact_handle_(from_contact_handle)
     , dst_contact_handle_(to_contact_handle)
+    , registrar_(registrar)
     {}
 
     void MergeContact::exec(OperationContext& ctx, std::string* dry_run)
@@ -46,6 +47,7 @@ namespace Fred
         {
             *dry_run += std::string("dry-run MergeContact from contact_handle: ") + src_contact_handle_
                 + " to contact_handle: " + dst_contact_handle_
+                + " registrar: " + registrar_
                 + "\n";
         }
         //lock object_registry row for update
@@ -113,8 +115,8 @@ namespace Fred
         //domain_registrant lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
-                " JOIN domain d ON d.registrant = src_c.id JOIN object_registry oreg  ON oreg.id = d.id JOIN object o ON oreg.id = o.id JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
+                std::string("SELECT oreg.name FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " JOIN domain d ON d.registrant = src_c.id JOIN object_registry oreg  ON oreg.id = d.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
@@ -122,14 +124,14 @@ namespace Fred
                 if(dry_run)
                 {
                     *dry_run += std::string("UpdateDomain fqdn: ") + std::string(result[i][0])
-                            + " registrar: " + std::string(result[i][1])
+                            + " registrar: " + registrar_
                             + " set_registrant: " + dst_contact_handle_
                             + "\n";
                 }
                 else
                 {
                     UpdateDomain(std::string(result[i][0]) //fqdn
-                                , std::string(result[i][1]) //registrar
+                                , registrar_ //registrar
                     ).set_registrant(dst_contact_handle_).exec(ctx);
                 }
             }//for
@@ -138,8 +140,8 @@ namespace Fred
         //domain_admin lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
-                " JOIN domain_contact_map dcm ON dcm.role = 1 AND dcm.contactid  = src_c.id JOIN domain d ON dcm.domainid = d.id JOIN object_registry oreg ON oreg.id = d.id JOIN object o ON oreg.id = o.id JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
+                std::string("SELECT oreg.name FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " JOIN domain_contact_map dcm ON dcm.role = 1 AND dcm.contactid  = src_c.id JOIN domain d ON dcm.domainid = d.id JOIN object_registry oreg ON oreg.id = d.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
@@ -147,7 +149,7 @@ namespace Fred
                 if(dry_run)
                 {
                     *dry_run += std::string("UpdateDomain fqdn: ") + std::string(result[i][0])
-                            + " registrar: " + std::string(result[i][1])
+                            + " registrar: " + registrar_
                             + " rem_admin_contact: " + src_contact_handle_
                             + " add_admin_contact: " + dst_contact_handle_
                             + "\n";
@@ -155,7 +157,7 @@ namespace Fred
                 else
                 {
                     UpdateDomain(std::string(result[i][0]) //fqdn
-                                , std::string(result[i][1]) //registrar
+                                , registrar_ //registrar
                     ).rem_admin_contact(src_contact_handle_)
                     .add_admin_contact(dst_contact_handle_).exec(ctx);
                 }
@@ -165,8 +167,8 @@ namespace Fred
         //nsset_tech lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
-                " JOIN nsset_contact_map ncm ON ncm.contactid  = src_c.id JOIN nsset n ON ncm.nssetid = n.id JOIN object_registry oreg  ON oreg.id = n.id JOIN object o ON oreg.id = o.id JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
+                std::string("SELECT oreg.name FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " JOIN nsset_contact_map ncm ON ncm.contactid  = src_c.id JOIN nsset n ON ncm.nssetid = n.id JOIN object_registry oreg  ON oreg.id = n.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
@@ -174,7 +176,7 @@ namespace Fred
                 if(dry_run)
                 {
                     *dry_run += std::string("UpdateNsset handle: ") + std::string(result[i][0])
-                            + " registrar: " + std::string(result[i][1])
+                            + " registrar: " + registrar_
                             + " rem_tech_contact: " + src_contact_handle_
                             + " add_tech_contact: " + dst_contact_handle_
                             + "\n";
@@ -182,7 +184,7 @@ namespace Fred
                 else
                 {
                     UpdateNsset(std::string(result[i][0]) //handle
-                                , std::string(result[i][1]) //registrar
+                                , registrar_ //registrar
                     ).rem_tech_contact(src_contact_handle_)
                     .add_tech_contact(dst_contact_handle_).exec(ctx);
                 }
@@ -192,8 +194,8 @@ namespace Fred
         //keyset_tech lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
-                " JOIN keyset_contact_map kcm ON kcm.contactid  = src_c.id JOIN keyset k ON kcm.keysetid = k.id JOIN object_registry oreg  ON oreg.id = k.id JOIN object o ON oreg.id = o.id JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
+                std::string("SELECT oreg.name FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " JOIN keyset_contact_map kcm ON kcm.contactid  = src_c.id JOIN keyset k ON kcm.keysetid = k.id JOIN object_registry oreg  ON oreg.id = k.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
@@ -201,7 +203,7 @@ namespace Fred
                 if(dry_run)
                 {
                     *dry_run += std::string("UpdateKeyset handle: ") + std::string(result[i][0])
-                            + " registrar: " + std::string(result[i][1])
+                            + " registrar: " + registrar_
                             + " rem_tech_contact: " + src_contact_handle_
                             + " add_tech_contact: " + dst_contact_handle_
                             + "\n";
@@ -209,7 +211,7 @@ namespace Fred
                 else
                 {
                     UpdateKeyset(std::string(result[i][0]) //handle
-                                , std::string(result[i][1]) //registrar
+                                , registrar_ //registrar
                     ).rem_tech_contact(src_contact_handle_)
                     .add_tech_contact(dst_contact_handle_).exec(ctx);
                 }
