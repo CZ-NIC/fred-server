@@ -127,7 +127,7 @@ namespace Fred
         CreateContact& set_discloseident(const bool discloseident);
         CreateContact& set_disclosenotifyemail(const bool disclosenotifyemail);
 
-        std::string exec(OperationContext& ctx);
+        std::string exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
     };//CreateContact
 
@@ -145,7 +145,7 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[]={"not found:ssntype"};
+            static const char* list[]={"not found:ssntype", "not found crdate:handle"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
 

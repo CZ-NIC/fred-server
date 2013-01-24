@@ -260,7 +260,7 @@ namespace Fred
         return *this;
     }
 
-    std::string CreateContact::exec(OperationContext& ctx)
+    std::string CreateContact::exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name)
     {
         std::string timestamp;
 
@@ -463,6 +463,25 @@ namespace Fred
                 val_sql << ")";
                 //insert into contact
                 ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
+
+                //get crdate from object_registry
+                {
+                    Database::Result crdate_res = ctx.get_conn().exec_params(
+                            "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
+                            "  FROM object_registry "
+                            " WHERE id = $2::bigint"
+                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(object_id));
+
+                    if (crdate_res.size() != 1)
+                    {
+                        std::string errmsg("|| not found crdate:handle: ");
+                        errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw CCEX(errmsg.c_str());
+                    }
+
+                    timestamp = std::string(crdate_res[0][0]);
+                }
             }
 
         }//try
