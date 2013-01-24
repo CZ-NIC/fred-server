@@ -108,7 +108,6 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-
             static const char* list[]={"not found:handle", "not found:registrar"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
