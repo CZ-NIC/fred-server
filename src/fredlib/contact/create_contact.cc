@@ -281,9 +281,188 @@ namespace Fred
                 col_sql << col_separator.get() << "id";
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
+                if(name_.isset())
+                {
+                    params.push_back(name_.get_value());
+                    col_sql << col_separator.get() << "name";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(organization_.isset())
+                {
+                    params.push_back(organization_.get_value());
+                    col_sql << col_separator.get() << "organization";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(street1_.isset())
+                {
+                    params.push_back(street1_.get_value());
+                    col_sql << col_separator.get() << "street1";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(street2_.isset())
+                {
+                    params.push_back(street2_.get_value());
+                    col_sql << col_separator.get() << "street2";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(street3_.isset())
+                {
+                    params.push_back(street3_.get_value());
+                    col_sql << col_separator.get() << "street3";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(city_.isset())
+                {
+                    params.push_back(city_.get_value());
+                    col_sql << col_separator.get() << "city";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(stateorprovince_.isset())
+                {
+                    params.push_back(stateorprovince_.get_value());
+                    col_sql << col_separator.get() << "stateorprovince";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(postalcode_.isset())
+                {
+                    params.push_back(postalcode_.get_value());
+                    col_sql << col_separator.get() << "postalcode";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(country_.isset())
+                {
+                    params.push_back(country_.get_value());
+                    col_sql << col_separator.get() << "country";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(telephone_.isset())
+                {
+                    params.push_back(telephone_.get_value());
+                    col_sql << col_separator.get() << "telephone";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(fax_.isset())
+                {
+                    params.push_back(fax_.get_value());
+                    col_sql << col_separator.get() << "fax";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(email_.isset())
+                {
+                    params.push_back(email_.get_value());
+                    col_sql << col_separator.get() << "email";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(notifyemail_.isset())
+                {
+                    params.push_back(notifyemail_.get_value());
+                    col_sql << col_separator.get() << "notifyemail";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(vat_.isset())
+                {
+                    params.push_back(vat_.get_value());
+                    col_sql << col_separator.get() << "vat";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(ssntype_.isset())
+                {
+                    params.push_back(ssntype_.get_value());
+                    col_sql << col_separator.get() << "ssntype";
+                    val_sql << val_separator.get() << "raise_exception_ifnull( "
+                    " (SELECT id FROM enum_ssntype WHERE UPPER(type) = UPPER($" << params.size() <<"::text)) "
+                    " ,'|| not found:ssntype: '||ex_data($1::text)||' |') ";
+                }
+
+                if(ssn_.isset())
+                {
+                    params.push_back(ssn_.get_value());
+                    col_sql << col_separator.get() << "ssn";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(disclosename_.isset())
+                {
+                    params.push_back(disclosename_.get_value());
+                    col_sql << col_separator.get() << "disclosename";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(discloseorganization_.isset())
+                {
+                    params.push_back(discloseorganization_.get_value());
+                    col_sql << col_separator.get() << "discloseorganization";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(discloseaddress_.isset())
+                {
+                    params.push_back(discloseaddress_.get_value());
+                    col_sql << col_separator.get() << "discloseaddress";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+
+                if(disclosetelephone_.isset())
+                {
+                    params.push_back(disclosetelephone_.get_value());
+                    col_sql << col_separator.get() << "disclosetelephone";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(disclosefax_.isset())
+                {
+                    params.push_back(disclosefax_.get_value());
+                    col_sql << col_separator.get() << "disclosefax";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(discloseemail_.isset())
+                {
+                    params.push_back(discloseemail_.get_value());
+                    col_sql << col_separator.get() << "discloseemail";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(disclosevat_.isset())
+                {
+                    params.push_back(disclosevat_.get_value());
+                    col_sql << col_separator.get() << "disclosevat";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(discloseident_.isset())
+                {
+                    params.push_back(discloseident_.get_value());
+                    col_sql << col_separator.get() << "discloseident";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
+                if(disclosenotifyemail_.isset())
+                {
+                    params.push_back(disclosenotifyemail_.get_value());
+                    col_sql << col_separator.get() << "disclosenotifyemail";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                }
+
                 col_sql <<")";
                 val_sql << ")";
-
+                //insert into contact
+                ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
             }
 
         }//try
