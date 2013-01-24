@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#include "boost/date_time/posix_time/posix_time.hpp"
+
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
@@ -127,7 +129,7 @@ namespace Fred
         CreateContact& set_discloseident(const bool discloseident);
         CreateContact& set_disclosenotifyemail(const bool disclosenotifyemail);
 
-        std::string exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
+        boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
     };//CreateContact
 

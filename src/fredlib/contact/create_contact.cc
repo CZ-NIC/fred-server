@@ -260,9 +260,9 @@ namespace Fred
         return *this;
     }
 
-    std::string CreateContact::exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name)
+    boost::posix_time::ptime CreateContact::exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name)
     {
-        std::string timestamp;
+        boost::posix_time::ptime timestamp;
 
         try
         {
@@ -480,7 +480,7 @@ namespace Fred
                         throw CCEX(errmsg.c_str());
                     }
 
-                    timestamp = std::string(crdate_res[0][0]);
+                    timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
                 }
             }
 
