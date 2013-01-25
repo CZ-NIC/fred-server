@@ -738,6 +738,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/merge_contact.h \
 		src/fredlib/contact/merge_contact.cc \
+		src/fredlib/contact/merge_contact_selection.cc \
+		src/fredlib/contact/merge_contact_selection.h \
 		src/fredlib/contact/merge_contact_auto_procedure.cc \
 		src/fredlib/contact/merge_contact_auto_procedure.h
 #
@@ -1610,6 +1612,7 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid_notifier.h \
 		tests/checks.h \
 		tests/test-eppops.cc
+		tests/test-merge-contact.cc
 
 
 tests_test_server_LDFLAGS = \
