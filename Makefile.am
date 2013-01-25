@@ -723,7 +723,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/reminder.cc \
 		src/fredlib/reminder.h \
 		src/fredlib/opcontext.cc \
-		src/fredlib/opcontext.h
+		src/fredlib/opcontext.h \
+		src/fredlib/contact/merge_contact_auto_procedure.cc \
+		src/fredlib/contact/merge_contact_auto_procedure.h
 
 #
 # src/fredlib/libfred.a
