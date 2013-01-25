@@ -73,6 +73,7 @@ namespace Fred
             , const Optional<bool>& disclosevat
             , const Optional<bool>& discloseident
             , const Optional<bool>& disclosenotifyemail
+            , const Optional<unsigned long long> logd_request_id
             )
     : handle_(handle)
     , registrar_(registrar)
@@ -102,6 +103,9 @@ namespace Fred
     , disclosevat_(disclosevat)
     , discloseident_(discloseident)
     , disclosenotifyemail_(disclosenotifyemail)
+    , logd_request_id_(logd_request_id.isset()
+            ? Nullable<unsigned long long>(logd_request_id.get_value())
+            : Nullable<unsigned long long>())//is NULL if not set
     {}
 
     CreateContact& CreateContact::set_authinfo(const std::string& authinfo)
@@ -257,6 +261,12 @@ namespace Fred
     CreateContact& CreateContact::set_disclosenotifyemail(const bool disclosenotifyemail)
     {
         disclosenotifyemail_ = disclosenotifyemail;
+        return *this;
+    }
+
+    CreateContact& CreateContact::set_logd_request_id(unsigned long long logd_request_id)
+    {
+        logd_request_id_ = logd_request_id;
         return *this;
     }
 
@@ -483,6 +493,43 @@ namespace Fred
                     timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
                 }
             }
+
+            //save history
+            {
+                unsigned long long history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
+
+                //object_history
+                ctx.get_conn().exec_params(
+                    "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
+                    " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
+                    " WHERE id = $2::integer"
+                    , Database::query_param_list(history_id)(object_id));
+
+                //object_registry historyid
+                ctx.get_conn().exec_params(
+                    "UPDATE object_registry SET historyid = $1::bigint "
+                        " WHERE id = $2::integer"
+                        , Database::query_param_list(history_id)(object_id));
+
+                //contact_history
+                ctx.get_conn().exec_params(
+                    "INSERT INTO contact_history(historyid,id "
+                    " , name, organization, street1, street2, street3, city, stateorprovince, postalcode "
+                    " , country, telephone, fax, email, notifyemail, vat, ssntype, ssn "
+                    " , disclosename, discloseorganization, discloseaddress, disclosetelephone "
+                    " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
+                    " ) "
+                    " SELECT $1::bigint, id "
+                    " , name, organization, street1, street2, street3, city, stateorprovince, postalcode "
+                    " , country, telephone, fax, email, notifyemail, vat, ssntype, ssn "
+                    " , disclosename, discloseorganization, discloseaddress, disclosetelephone "
+                    " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
+                    " FROM contact "
+                    " WHERE id = $2::integer"
+                    , Database::query_param_list(history_id)(object_id));
+
+            }//save history
+
 
         }//try
         catch(...)//common exception processing

@@ -68,6 +68,8 @@ namespace Fred
         Optional<bool> disclosevat_;//whether reveal VAT number
         Optional<bool> discloseident_;//whether reveal SSN number
         Optional<bool> disclosenotifyemail_;//whether reveal notify email
+        Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
+
 
     public:
         CreateContact(const std::string& handle
@@ -100,6 +102,7 @@ namespace Fred
                 , const Optional<bool>& disclosevat
                 , const Optional<bool>& discloseident
                 , const Optional<bool>& disclosenotifyemail
+                , const Optional<unsigned long long> logd_request_id
                 );
 
         CreateContact& set_authinfo(const std::string& authinfo);
@@ -128,7 +131,7 @@ namespace Fred
         CreateContact& set_disclosevat(const bool disclosevat);
         CreateContact& set_discloseident(const bool discloseident);
         CreateContact& set_disclosenotifyemail(const bool disclosenotifyemail);
-
+        CreateContact& set_logd_request_id(unsigned long long logd_request_id);
         boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
     };//CreateContact
