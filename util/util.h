@@ -7,6 +7,41 @@
 
 namespace Util {
 
+//for given instance first call of get() (or first call of get() after reset() ) returns head , all other calls returns separator
+//
+class HeadSeparator
+{
+    bool got_head_;
+    std::string head_;
+    std::string separator_;
+public:
+
+    HeadSeparator(const std::string& head, const std::string& separator)
+    : got_head_(false)
+    , head_(head)
+    , separator_(separator)
+    {}
+
+    std::string get()
+    {
+        if(got_head_)
+        {
+            return separator_;
+        }
+        else
+        {
+            got_head_ = true;
+            return head_;
+        }
+    }
+
+    void reset()
+    {
+        got_head_ = false;
+    }
+};
+
+
 //template for initialization of vector
 template <typename ELEMENT_TYPE > struct vector_of
     : public std::vector<ELEMENT_TYPE>
