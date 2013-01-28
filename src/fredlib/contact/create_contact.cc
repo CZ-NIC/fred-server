@@ -409,21 +409,21 @@ namespace Fred
                 {
                     params.push_back(disclosename_.get_value());
                     col_sql << col_separator.get() << "disclosename";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
 
                 if(discloseorganization_.isset())
                 {
                     params.push_back(discloseorganization_.get_value());
                     col_sql << col_separator.get() << "discloseorganization";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
 
                 if(discloseaddress_.isset())
                 {
                     params.push_back(discloseaddress_.get_value());
                     col_sql << col_separator.get() << "discloseaddress";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
 
 
@@ -431,42 +431,42 @@ namespace Fred
                 {
                     params.push_back(disclosetelephone_.get_value());
                     col_sql << col_separator.get() << "disclosetelephone";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
 
                 if(disclosefax_.isset())
                 {
                     params.push_back(disclosefax_.get_value());
                     col_sql << col_separator.get() << "disclosefax";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
 
                 if(discloseemail_.isset())
                 {
                     params.push_back(discloseemail_.get_value());
                     col_sql << col_separator.get() << "discloseemail";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
 
                 if(disclosevat_.isset())
                 {
                     params.push_back(disclosevat_.get_value());
                     col_sql << col_separator.get() << "disclosevat";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
 
                 if(discloseident_.isset())
                 {
                     params.push_back(discloseident_.get_value());
                     col_sql << col_separator.get() << "discloseident";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
 
                 if(disclosenotifyemail_.isset())
                 {
                     params.push_back(disclosenotifyemail_.get_value());
                     col_sql << col_separator.get() << "disclosenotifyemail";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
 
                 col_sql <<")";

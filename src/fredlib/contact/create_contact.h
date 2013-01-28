@@ -138,14 +138,14 @@ namespace Fred
 
     //exception impl
     class CreateContactException
-    : public OperationExceptionImpl<CreateContactException, 2048>
+    : public OperationExceptionImpl<CreateContactException, 4096>
     {
     public:
         CreateContactException(const char* file
                 , const int line
                 , const char* function
                 , const char* data)
-        : OperationExceptionImpl<CreateContactException, 2048>(file, line, function, data)
+        : OperationExceptionImpl<CreateContactException, 4096>(file, line, function, data)
         {}
 
         ConstArr get_fail_param_impl() throw()
