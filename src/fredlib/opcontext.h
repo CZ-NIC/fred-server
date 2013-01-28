@@ -35,14 +35,14 @@ namespace Fred
     class OperationContext
     : boost::noncopyable
     {
-        Database::Connection conn_;
-        Database::Transaction tx_;
+        const std::auto_ptr<Database::StandaloneConnection> conn_;
+        Database::StandaloneTransaction tx_;
         Logging::Log& log_;
 
     public:
         virtual ~OperationContext();
         OperationContext();
-        Database::Connection& get_conn();
+        Database::StandaloneConnection& get_conn();
         Logging::Log& get_log();
         void commit_transaction();
     };//class OperationContext

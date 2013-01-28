@@ -33,14 +33,14 @@ namespace Fred
     OperationContext::~OperationContext(){}
 
     OperationContext::OperationContext()
-    : conn_(Database::Manager::acquire())
-    , tx_(conn_)
+    : conn_(Database::StandaloneManager(new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString())).acquire())
+    , tx_(*conn_.get())
     , log_(LOGGER(PACKAGE))
     {}
 
-    Database::Connection& OperationContext::get_conn()
+    Database::StandaloneConnection& OperationContext::get_conn()
     {
-        return conn_;
+        return *conn_.get();
     }
 
     Logging::Log& OperationContext::get_log()
