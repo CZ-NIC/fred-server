@@ -264,7 +264,10 @@ BOOST_AUTO_TEST_CASE(delete_contact)
     std::string xmark = RandomDataGenerator().xnumstring(6);
     std::string handle = std::string("TEST-DEL-CONTACT-HANDLE")+xmark;
 
-    Fred::CreateContact(handle,registrar_handle).set_name(std::string("TEST-DEL-CONTACT NAME")+xmark).exec(ctx);
+    Fred::CreateContact(handle,registrar_handle).set_name(std::string("TEST-DEL-CONTACT NAME")+xmark)
+        .set_name(std::string("TEST-DEL-CONTACT NAME")+xmark)
+        .set_disclosename(true)
+        .exec(ctx);
     Fred::DeleteContact(handle).exec(ctx);
     ctx.commit_transaction();
 
@@ -280,10 +283,14 @@ BOOST_AUTO_TEST_CASE(update_domain)
     std::string xmark = RandomDataGenerator().xnumstring(6);
 
     std::string admin_contact_handle = std::string("TEST-ADMIN-CONTACT-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact_handle,registrar_handle).set_name(std::string("TEST-ADMIN-CONTACT NAME")+xmark).exec(ctx);
+    Fred::CreateContact(admin_contact_handle,registrar_handle)
+        .set_name(std::string("TEST-ADMIN-CONTACT NAME")+xmark)
+        .set_disclosename(true).exec(ctx);
 
     std::string admin_contact1_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact1_handle,registrar_handle).set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark).exec(ctx);
+    Fred::CreateContact(admin_contact1_handle,registrar_handle)
+        .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
+        .set_disclosename(true).exec(ctx);
 
     std::string registrant_contact_handle = std::string("TEST-REGISTRANT-CONTACT-HANDLE")+xmark;
     Fred::CreateContact(registrant_contact_handle,registrar_handle)
@@ -349,10 +356,14 @@ BOOST_AUTO_TEST_CASE(update_nsset)
     std::string xmark = RandomDataGenerator().xnumstring(6);
 
     std::string admin_contact2_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact2_handle,registrar_handle).set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark).exec(ctx);
+    Fred::CreateContact(admin_contact2_handle,registrar_handle)
+        .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
+        .set_disclosename(true).exec(ctx);
 
     std::string admin_contact3_handle = std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact3_handle,registrar_handle).set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark).exec(ctx);
+    Fred::CreateContact(admin_contact3_handle,registrar_handle)
+        .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
+        .set_disclosename(true).exec(ctx);
 
     Fred::UpdateNsset("NSSET-1", "REG-FRED_A").exec(ctx);
 
@@ -408,10 +419,14 @@ BOOST_AUTO_TEST_CASE(update_keyset)
     std::string xmark = RandomDataGenerator().xnumstring(6);
 
     std::string admin_contact4_handle = std::string("TEST-ADMIN-CONTACT4-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact4_handle,registrar_handle).set_name(std::string("TEST-ADMIN-CONTACT4 NAME")+xmark).exec(ctx);
+    Fred::CreateContact(admin_contact4_handle,registrar_handle)
+        .set_name(std::string("TEST-ADMIN-CONTACT4 NAME")+xmark)
+        .set_disclosename(true).exec(ctx);
 
     std::string admin_contact5_handle = std::string("TEST-ADMIN-CONTACT5-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact5_handle,registrar_handle).set_name(std::string("TEST-ADMIN-CONTACT5 NAME")+xmark).exec(ctx);
+    Fred::CreateContact(admin_contact5_handle,registrar_handle)
+        .set_name(std::string("TEST-ADMIN-CONTACT5 NAME")+xmark)
+        .set_disclosename(true).exec(ctx);
 
     Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").exec(ctx);
 
