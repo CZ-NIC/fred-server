@@ -267,6 +267,9 @@ BOOST_AUTO_TEST_CASE(delete_contact)
     Fred::CreateContact(handle,registrar_handle).set_name(std::string("TEST-DEL-CONTACT NAME")+xmark)
         .set_name(std::string("TEST-DEL-CONTACT NAME")+xmark)
         .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
         .exec(ctx);
     Fred::DeleteContact(handle).exec(ctx);
     ctx.commit_transaction();
@@ -285,18 +288,26 @@ BOOST_AUTO_TEST_CASE(update_domain)
     std::string admin_contact_handle = std::string("TEST-ADMIN-CONTACT-HANDLE")+xmark;
     Fred::CreateContact(admin_contact_handle,registrar_handle)
         .set_name(std::string("TEST-ADMIN-CONTACT NAME")+xmark)
-        .set_disclosename(true).exec(ctx);
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .exec(ctx);
 
     std::string admin_contact1_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
     Fred::CreateContact(admin_contact1_handle,registrar_handle)
         .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
-        .set_disclosename(true).exec(ctx);
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .exec(ctx);
 
     std::string registrant_contact_handle = std::string("TEST-REGISTRANT-CONTACT-HANDLE")+xmark;
     Fred::CreateContact(registrant_contact_handle,registrar_handle)
             .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("TEST-REGISTRANT-CONTACT-STR1")+xmark)
+            .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
             .exec(ctx);
@@ -359,12 +370,20 @@ BOOST_AUTO_TEST_CASE(update_nsset)
     std::string admin_contact2_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
     Fred::CreateContact(admin_contact2_handle,registrar_handle)
         .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
-        .set_disclosename(true).exec(ctx);
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .exec(ctx);
 
     std::string admin_contact3_handle = std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark;
     Fred::CreateContact(admin_contact3_handle,registrar_handle)
         .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
-        .set_disclosename(true).exec(ctx);
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .exec(ctx);
 
     Fred::UpdateNsset("NSSET-1", "REG-FRED_A").exec(ctx);
 
@@ -422,12 +441,20 @@ BOOST_AUTO_TEST_CASE(update_keyset)
     std::string admin_contact4_handle = std::string("TEST-ADMIN-CONTACT4-HANDLE")+xmark;
     Fred::CreateContact(admin_contact4_handle,registrar_handle)
         .set_name(std::string("TEST-ADMIN-CONTACT4 NAME")+xmark)
-        .set_disclosename(true).exec(ctx);
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .exec(ctx);
 
     std::string admin_contact5_handle = std::string("TEST-ADMIN-CONTACT5-HANDLE")+xmark;
     Fred::CreateContact(admin_contact5_handle,registrar_handle)
         .set_name(std::string("TEST-ADMIN-CONTACT5 NAME")+xmark)
-        .set_disclosename(true).exec(ctx);
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .exec(ctx);
 
     Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").exec(ctx);
 
