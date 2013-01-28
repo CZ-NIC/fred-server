@@ -41,6 +41,12 @@ namespace Fred
     , registrar_(registrar)
     {}
 
+    MergeContact& MergeContact::set_logd_request_id(unsigned long long logd_request_id)
+    {
+        logd_request_id_ = logd_request_id;
+        return *this;
+    }
+
     void MergeContact::exec(OperationContext& ctx, std::string* dry_run)
     {
         if(dry_run)
@@ -130,9 +136,11 @@ namespace Fred
                 }
                 else
                 {
-                    UpdateDomain(std::string(result[i][0]) //fqdn
-                                , registrar_ //registrar
-                    ).set_registrant(dst_contact_handle_).exec(ctx);
+                    std::string fqdn = std::string(result[i][0]);
+                    UpdateDomain ud (fqdn, registrar_ );
+                    ud.set_registrant(dst_contact_handle_);
+                    if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
+                    ud.exec(ctx);
                 }
             }//for
         }
@@ -156,10 +164,12 @@ namespace Fred
                 }
                 else
                 {
-                    UpdateDomain(std::string(result[i][0]) //fqdn
-                                , registrar_ //registrar
-                    ).rem_admin_contact(src_contact_handle_)
-                    .add_admin_contact(dst_contact_handle_).exec(ctx);
+                    std::string fqdn = std::string(result[i][0]);
+                    UpdateDomain ud (fqdn, registrar_ );
+                    ud.rem_admin_contact(src_contact_handle_)
+                    .add_admin_contact(dst_contact_handle_);
+                    if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
+                    ud.exec(ctx);
                 }
             }//for
         }
@@ -183,10 +193,12 @@ namespace Fred
                 }
                 else
                 {
-                    UpdateNsset(std::string(result[i][0]) //handle
-                                , registrar_ //registrar
-                    ).rem_tech_contact(src_contact_handle_)
-                    .add_tech_contact(dst_contact_handle_).exec(ctx);
+                    std::string handle = std::string(result[i][0]);
+                    UpdateNsset un(handle, registrar_ );
+                    un.rem_tech_contact(src_contact_handle_)
+                    .add_tech_contact(dst_contact_handle_);
+                    if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
+                    un.exec(ctx);
                 }
             }//for
         }
@@ -210,10 +222,12 @@ namespace Fred
                 }
                 else
                 {
-                    UpdateKeyset(std::string(result[i][0]) //handle
-                                , registrar_ //registrar
-                    ).rem_tech_contact(src_contact_handle_)
-                    .add_tech_contact(dst_contact_handle_).exec(ctx);
+                    std::string handle = std::string(result[i][0]);
+                    UpdateKeyset uk(handle, registrar_);
+                    uk.rem_tech_contact(src_contact_handle_)
+                    .add_tech_contact(dst_contact_handle_);
+                    if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
+                    uk.exec(ctx);
                 }
             }//for
         }
