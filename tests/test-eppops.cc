@@ -286,7 +286,9 @@ BOOST_AUTO_TEST_CASE(update_domain)
     Fred::CreateContact(admin_contact1_handle,registrar_handle).set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark).exec(ctx);
 
     std::string registrant_contact_handle = std::string("TEST-REGISTRANT-CONTACT-HANDLE")+xmark;
-    Fred::CreateContact(registrant_contact_handle,registrar_handle).set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
+    Fred::CreateContact(registrant_contact_handle,registrar_handle)
+            .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
+            .set_disclosename(true)
             .set_street1(std::string("TEST-REGISTRANT-CONTACT-STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .exec(ctx);
