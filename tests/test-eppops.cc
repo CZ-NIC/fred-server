@@ -298,6 +298,7 @@ BOOST_AUTO_TEST_CASE(update_domain)
             .set_disclosename(true)
             .set_street1(std::string("TEST-REGISTRANT-CONTACT-STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
             .exec(ctx);
 
     //call update using big ctor
