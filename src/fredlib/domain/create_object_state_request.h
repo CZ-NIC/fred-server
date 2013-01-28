@@ -18,7 +18,7 @@
 
 /**
  *  @file create_object_state_request.h
- *  domain update
+ *  create object state request
  */
 
 /*
@@ -82,23 +82,24 @@ namespace Fred
     : public OperationExceptionImpl<CreateObjectStateRequestException, 2048>
     {
     public:
-        CreateObjectStateRequestException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<CreateObjectStateRequestException, 2048>(file, line, function, data)
+        CreateObjectStateRequestException(const char* file,
+            const int line,
+            const char* function,
+            const char* data)
+        :   OperationExceptionImpl< CreateObjectStateRequestException, 2048 >(file, line, function, data)
         {}
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[]={"not found:fqdn", "not found:registrar", "not found:nsset", "not found:keyset", "not found:registrant", "not found:admin contact"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
+            static const char* list[] = {"not found:handle", "not found:state", "out of turn:valid_from-to",
+                                         "overlayed validity time intervals:object"};
+            return ConstArr(list, sizeof(list) / sizeof(char*));
         }
     };//class CreateObjectStateRequestException
 
 typedef CreateObjectStateRequestException::OperationErrorType CreateObjectStateRequestError;
-#define UDEX(DATA) CreateObjectStateRequestException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define UDERR(DATA) CreateObjectStateRequestError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define COSREX(DATA) CreateObjectStateRequestException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define COSRERR(DATA) CreateObjectStateRequestError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 
