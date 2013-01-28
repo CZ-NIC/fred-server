@@ -33,6 +33,7 @@
 #include "cli_admin/contactclient.h"
 #include "commonclient.h"
 #include "fredlib/reminder.h"
+#include "fredlib/contact/merge_contact_auto_procedure.h"
 
 
 /**
@@ -102,6 +103,10 @@ struct contact_merge_duplicate_auto_impl
 
         ContactMergeDuplicateAutoArgs params = CfgArgGroups::instance()->
             get_handler_ptr_by_type<HandleAdminClientContactMergeDuplicateAutoArgsGrp>()->params;
+
+        Fred::OperationContext octx;
+        Fred::Contact::MergeContactAutoProcedure(params.registrar, params.limit).exec(octx);
+        octx.commit_transaction();
 
         return;
     }
