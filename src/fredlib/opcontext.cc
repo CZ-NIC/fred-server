@@ -30,13 +30,24 @@
 
 namespace Fred
 {
-    OperationContext::~OperationContext(){}
+    OperationContext::~OperationContext()
+    {
+        try
+        {
+            conn_->exec("ROLLBACK TRANSACTION");
+        }
+        catch(...)
+        {
+            log_.error("OperationContext::~OperationContext: rollback failed");
+        }
+    }
 
     OperationContext::OperationContext()
     : conn_(Database::StandaloneManager(new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString())).acquire())
-    , tx_(*conn_.get())
     , log_(LOGGER(PACKAGE))
-    {}
+    {
+        conn_->exec("START TRANSACTION  ISOLATION LEVEL READ COMMITTED");
+    }
 
     Database::StandaloneConnection& OperationContext::get_conn()
     {
@@ -50,6 +61,6 @@ namespace Fred
 
     void OperationContext::commit_transaction()
     {
-        tx_.commit();
+        conn_->exec("COMMIT TRANSACTION");
     }
 }

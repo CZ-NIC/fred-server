@@ -36,7 +36,6 @@ namespace Fred
     : boost::noncopyable
     {
         const std::auto_ptr<Database::StandaloneConnection> conn_;
-        Database::StandaloneTransaction tx_;
         Logging::Log& log_;
 
     public:
