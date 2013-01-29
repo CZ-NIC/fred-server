@@ -102,22 +102,7 @@ namespace Fred
         }
 
         //get object
-        Database::Result obj_id_res = _ctx.get_conn().exec_params(
-                "SELECT id FROM object_registry "
-                " WHERE type=$1::integer AND name=$2::text AND erdate IS NULL"
-                , Database::query_param_list
-                    (object_type_)(object_handle_));
-
-        if (obj_id_res.size() != 1) {
-            std::string errmsg("|| not found:handle: ");
-            errmsg += boost::replace_all_copy(object_handle_,"|", "[pipe]");//quote pipes
-            errmsg += " of type " + boost::lexical_cast< std::string >(object_type_);
-            errmsg += " |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
-        }
-
-        const ObjectId object_id = obj_id_res[0][0];
-
+        const ObjectId object_id = get_object_id(_ctx, object_handle_, object_type_);
 
         for (StatusList::const_iterator pState = status_list_.begin();
              pState != status_list_.end(); ++pState) {
@@ -212,24 +197,45 @@ namespace Fred
         }//for object_state
     }//CreateObjectStateRequest::exec
 
-void CreateObjectStateRequest::lock_object_state_request_lock(OperationContext &_ctx,
-    ObjectStateId _state_id,
-    ObjectId _object_id)
-{
-    {//insert separately
-        typedef std::auto_ptr< Database::StandaloneConnection > StandaloneConnectionPtr;
-        Database::StandaloneManager sm = Database::StandaloneManager(
-                new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
-        StandaloneConnectionPtr conn_standalone(sm.acquire());
-        conn_standalone->exec_params(
-            "INSERT INTO object_state_request_lock (id,state_id,object_id) "
-            "VALUES (DEFAULT, $1::bigint, $2::bigint)"
-            , Database::query_param_list(_state_id)(_object_id));
+    void lock_object_state_request_lock(OperationContext &_ctx,
+        ObjectStateId _state_id,
+        ObjectId _object_id)
+    {
+        {//insert separately
+            typedef std::auto_ptr< Database::StandaloneConnection > StandaloneConnectionPtr;
+            Database::StandaloneManager sm = Database::StandaloneManager(
+                    new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
+            StandaloneConnectionPtr conn_standalone(sm.acquire());
+            conn_standalone->exec_params(
+                "INSERT INTO object_state_request_lock (id,state_id,object_id) "
+                "VALUES (DEFAULT, $1::bigint, $2::bigint)"
+                , Database::query_param_list(_state_id)(_object_id));
+        }
+
+        _ctx.get_conn().exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)",
+            Database::query_param_list(_state_id)(_object_id));
+
     }
 
-    _ctx.get_conn().exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)",
-        Database::query_param_list(_state_id)(_object_id));
+    ObjectId get_object_id(OperationContext &_ctx,
+        const std::string &_object_handle,
+        ObjectType _object_type)
+    {
+        Database::Result obj_id_res = _ctx.get_conn().exec_params(
+                "SELECT id FROM object_registry "
+                " WHERE type=$1::integer AND name=$2::text AND erdate IS NULL"
+                , Database::query_param_list
+                    (_object_type)(_object_handle));
 
-}
+        if (obj_id_res.size() != 1) {
+            std::string errmsg("|| not found:handle: ");
+            errmsg += boost::replace_all_copy(_object_handle,"|", "[pipe]");//quote pipes
+            errmsg += " of type " + boost::lexical_cast< std::string >(_object_type);
+            errmsg += " |";
+            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+        }
+
+        return obj_id_res[0][0];
+    }
 
 }//namespace Fred

@@ -35,6 +35,7 @@ nastaveni stavu objektu, (insert do object_state_request) CreateObjectStateReque
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
+#include "fredlib/types.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 
@@ -45,12 +46,23 @@ nastaveni stavu objektu, (insert do object_state_request) CreateObjectStateReque
 namespace Fred
 {
 
+    typedef TID ObjectId;
+    typedef TID ObjectStateId;
+    typedef short int ObjectType;
+
+    void lock_object_state_request_lock(OperationContext &_ctx,
+        ObjectStateId _state_id,
+        ObjectId _object_id);
+
+    ObjectId get_object_id(OperationContext &_ctx,
+        const std::string &_object_handle,
+        ObjectType _object_type);
+
     class CreateObjectStateRequest
     {
     public:
         typedef std::vector< std::string > StatusList;
         typedef boost::posix_time::ptime Time;
-        typedef short int ObjectType;
         CreateObjectStateRequest(const std::string &_object_handle,
             ObjectType _object_type,
             const StatusList &_status_list);
@@ -64,11 +76,6 @@ namespace Fred
         CreateObjectStateRequest& set_valid_to(const Time &_valid_to);
         void exec(OperationContext &_ctx);
 
-        typedef unsigned long long ObjectId;
-        typedef unsigned long long ObjectStateId;
-        static void lock_object_state_request_lock(OperationContext &_ctx,
-            ObjectStateId _state_id,
-            ObjectId _object_id);
     private:
         const std::string object_handle_;
         const ObjectType object_type_;

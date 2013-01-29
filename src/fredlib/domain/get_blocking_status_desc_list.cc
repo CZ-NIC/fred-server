@@ -49,9 +49,9 @@ namespace Fred
         return *this;
     }
 
-    GetBlockingStatusDescList::StatusDescList GetBlockingStatusDescList::exec(OperationContext &_ctx)
+    GetBlockingStatusDescList::StatusDescList& GetBlockingStatusDescList::exec(OperationContext &_ctx)
     {
-        StatusDescList statusDescList;
+        status_desc_list_.clear();
         static const std::string defaultLang = "EN";
         const std::string lang = lang_.isset() ? lang_.get_value() : defaultLang;
         enum ResultColumnIndex
@@ -74,12 +74,13 @@ namespace Fred
             errmsg += " |";
             throw MY_EXCEPTION_CLASS(errmsg.c_str());
         }
+        status_desc_list_.reserve(nameDescResult.size());
         for (::size_t rowIdx = 0; rowIdx < nameDescResult.size(); ++rowIdx) {
             const StatusDesc statusDesc(nameDescResult[rowIdx][NAME_IDX],
                                         nameDescResult[rowIdx][DESC_IDX]);
-            statusDescList.push_back(statusDesc);
+            status_desc_list_.push_back(statusDesc);
         }
-        return statusDescList;
+        return status_desc_list_;
     }//GetBlockingStatusDescList::exec
 
 }//namespace Fred

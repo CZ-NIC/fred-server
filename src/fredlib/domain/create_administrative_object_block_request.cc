@@ -22,6 +22,7 @@
  */
 
 #include "fredlib/domain/create_administrative_object_block_request.h"
+#include "fredlib/domain/get_blocking_status_desc_list.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -81,6 +82,15 @@ namespace Fred
     void CreateAdministrativeObjectBlockRequest::exec(OperationContext &_ctx)
     {
         this->check_administrative_block_status_only(_ctx);
+        this->check_server_blocked_status_absent(_ctx);
+        StatusList status_list = status_list_;
+        status_list.push_back("serverBlocked");
+        CreateObjectStateRequest createObjectStateRequest(object_handle_,
+            object_type_,
+            status_list_,
+            valid_from_,
+            valid_to_);
+        createObjectStateRequest.exec(_ctx);
     }//CreateAdministrativeObjectBlockRequest::exec
 
     void CreateAdministrativeObjectBlockRequest::check_administrative_block_status_only(OperationContext &_ctx) const
@@ -90,17 +100,13 @@ namespace Fred
             throw MY_EXCEPTION_CLASS(errmsg.c_str());
         }
         typedef std::set< std::string > StatusSet;
+        typedef GetBlockingStatusDescList::StatusDescList StatusDescList;
         static StatusSet administrativeBlockStatusSet; // set of administrative block status
         if (administrativeBlockStatusSet.empty()) {
-            Database::Result statusResult = _ctx.get_conn().exec(
-              "SELECT name "
-              "FROM enum_object_states "
-              "WHERE manual AND "
-                    "name LIKE 'server%' AND "
-                    "name!='serverBlocked'");
-            for (::size_t rowIdx = 0; rowIdx < statusResult.size(); ++rowIdx) {
-                const std::string state = statusResult[rowIdx][0];
-                administrativeBlockStatusSet.insert(state);
+            GetBlockingStatusDescList getBlockingStatusDescList;
+            const StatusDescList &statusDescList = getBlockingStatusDescList.exec(_ctx);
+            for (StatusDescList::const_iterator pItem = statusDescList.begin(); pItem != statusDescList.end(); ++pItem) {
+                administrativeBlockStatusSet.insert(pItem->status);
             }
         }
         std::string invalidStatus;
@@ -113,6 +119,43 @@ namespace Fred
             std::string errmsg("|| invalid argument:state: unable set" + invalidStatus + " status |");
             throw MY_EXCEPTION_CLASS(errmsg.c_str());
         }
+    }
+
+    void CreateAdministrativeObjectBlockRequest::check_server_blocked_status_absent(OperationContext &_ctx) const
+    {
+        const ObjectId object_id = get_object_id(_ctx, object_handle_, object_type_);
+        static TID serverBlockedId = 0;
+        if (serverBlockedId == 0) {
+            Database::Result obj_state_res = _ctx.get_conn().exec(
+                        "SELECT id "
+                        "FROM enum_object_states "
+                        "WHERE name='serverBlocked'");
+
+            if (obj_state_res.size() != 1) {
+                throw MY_EXCEPTION_CLASS("|| not found:state: serverBlocked |");
+            }
+        }
+        lock_object_state_request_lock(_ctx, serverBlockedId, object_id);
+        Database::Result rcheck = _ctx.get_conn().exec_params(
+                "SELECT 1 "
+                "FROM object_state "
+                "WHERE object_id=$1::integer AND "
+                      "state_id=$2::integer AND "
+                      "valid_from<=CURRENT_TIMESTAMP AND "
+                      "(valid_to IS NULL OR "
+                       "CURRENT_TIMESTAMP<valid_to) "
+                      "LIMIT 1",
+                Database::query_param_list
+                    (object_id)
+                    (serverBlockedId));
+        if (rcheck.size() <= 0) {
+            return;
+        }
+        std::string errmsg("|| serverBlocked:present: handle ");
+        errmsg += boost::replace_all_copy(object_handle_,"|", "[pipe]");//quote pipes
+        errmsg += " of type " + boost::lexical_cast< std::string >(object_type_);
+        errmsg += " |";
+        throw MY_EXCEPTION_CLASS(errmsg.c_str());
     }
 
 }//namespace Fred

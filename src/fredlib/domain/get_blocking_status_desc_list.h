@@ -23,7 +23,7 @@
 
 /*
 ziska seznam vsech stavu blokovani objektu GetBlockingStatusDescList
-  M lang
+  lang
 */
 
 #ifndef GET_BLOCKING_STATUS_DESC_LIST_H_
@@ -45,7 +45,7 @@ namespace Fred
     public:
         GetBlockingStatusDescList();
         GetBlockingStatusDescList(const Optional< std::string > &_lang);
-        GetBlockingStatusDescList& set_lang(const std::string &_lang);
+        GetBlockingStatusDescList& set_lang(const std::string &_lang);//language EN/CS
 
         typedef struct _StatusDesc
         {
@@ -63,10 +63,11 @@ namespace Fred
         } StatusDesc;
         typedef std::vector< StatusDesc > StatusDescList;
 
-        StatusDescList exec(OperationContext &_ctx);
+        StatusDescList& exec(OperationContext &_ctx);
 
     private:
         Optional< std::string > lang_;
+        StatusDescList status_desc_list_;
     };//class GetBlockingStatusDescList
 
 //exception impl

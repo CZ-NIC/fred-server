@@ -22,12 +22,13 @@
  */
 
 /*
-nastaveni stavu objektu, (insert do object_state_request) CreateAdministrativeObjectBlockRequest
+administrativni nastaveni stavu blokovani objektu, (insert do object_state_request) CreateAdministrativeObjectBlockRequest
   M handle objektu,
   M typ objektu,
   M seznam stavu (jmena)
   od
   do
+  poznamka
 */
 
 #ifndef CREATE_ADMINISTRATIVE_OBJECT_BLOCK_REQUEST_H_
@@ -43,7 +44,6 @@ namespace Fred
     public:
         typedef CreateObjectStateRequest::StatusList StatusList;
         typedef CreateObjectStateRequest::Time Time;
-        typedef CreateObjectStateRequest::ObjectType ObjectType;
         CreateAdministrativeObjectBlockRequest(const std::string &_object_handle,
             ObjectType _object_type,
             const StatusList &_status_list);
@@ -84,7 +84,7 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[] = {"invalid argument:state"};
+            static const char* list[] = {"invalid argument:state", "not found:state", "serverBlocked:present"};
             return ConstArr(list, sizeof(list) / sizeof(char*));
         }
     };//class CreateAdministrativeObjectBlockRequestException
