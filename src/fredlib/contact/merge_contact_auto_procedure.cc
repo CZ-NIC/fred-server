@@ -85,7 +85,13 @@ void MergeContactAutoProcedure::exec(Fred::OperationContext &_ctx)
         dup_set.erase(winner_handle);
         /* merge first one */
         std::string pick_one = *(dup_set.begin());
-        MergeContact(pick_one, winner_handle, system_registrar).exec(_ctx);
+
+        Fred::OperationContext merge_octx;
+        MergeContact(pick_one, winner_handle, system_registrar).exec(merge_octx);
+
+        /* merge operation notification handling */
+
+        merge_octx.commit_transaction();
 
         /* find contact duplicates for winner contact - if nothing changed in registry data this
          * would be the same list as in previous step but without the merged one */
