@@ -31,6 +31,9 @@
 
 #include <boost/algorithm/string.hpp>
 
+#define MY_EXCEPTION_CLASS(DATA) CreateObjectStateRequestException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define MY_ERROR_CLASS(DATA) CreateObjectStateRequestError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+
 namespace Fred
 {
     CreateObjectStateRequest::CreateObjectStateRequest(const std::string &_object_handle,
@@ -95,7 +98,7 @@ namespace Fred
             errmsg += boost::posix_time::to_iso_string(new_valid_from) + " - " +
                       boost::posix_time::to_iso_string(new_valid_to);
             errmsg += " |";
-            throw COSREX(errmsg.c_str());
+            throw MY_EXCEPTION_CLASS(errmsg.c_str());
         }
 
         //get object
@@ -110,7 +113,7 @@ namespace Fred
             errmsg += boost::replace_all_copy(object_handle_,"|", "[pipe]");//quote pipes
             errmsg += " of type " + boost::lexical_cast< std::string >(object_type_);
             errmsg += " |";
-            throw COSREX(errmsg.c_str());
+            throw MY_EXCEPTION_CLASS(errmsg.c_str());
         }
 
         const ObjectId object_id = obj_id_res[0][0];
@@ -131,7 +134,7 @@ namespace Fred
             if (obj_state_res.size() != 1) {
                 std::string errmsg("|| not found:state: " + object_state_name);
                 errmsg += " |";
-                throw COSREX(errmsg.c_str());
+                throw MY_EXCEPTION_CLASS(errmsg.c_str());
             }
 
             const ObjectStateId object_state_id = obj_state_res[0][0];
@@ -165,7 +168,7 @@ namespace Fred
                     errmsg += boost::posix_time::to_iso_string(obj_valid_from) + " - " +
                               boost::posix_time::to_iso_string(obj_valid_to);
                     errmsg += " |";
-                    throw COSREX(errmsg.c_str());
+                    throw MY_EXCEPTION_CLASS(errmsg.c_str());
                 }
 
                 if (obj_valid_to.is_special()) {
@@ -189,7 +192,7 @@ namespace Fred
                               "<" + boost::posix_time::to_iso_string(new_valid_from) + ", " +
                               boost::posix_time::to_iso_string(new_valid_to) + ")";
                     errmsg += " |";
-                    throw COSREX(errmsg.c_str());
+                    throw MY_EXCEPTION_CLASS(errmsg.c_str());
                 }
             }//for check with existing object state requests
 

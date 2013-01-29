@@ -64,12 +64,12 @@ namespace Fred
         CreateObjectStateRequest& set_valid_to(const Time &_valid_to);
         void exec(OperationContext &_ctx);
 
-    private:
         typedef unsigned long long ObjectId;
         typedef unsigned long long ObjectStateId;
         static void lock_object_state_request_lock(OperationContext &_ctx,
             ObjectStateId _state_id,
             ObjectId _object_id);
+    private:
         const std::string object_handle_;
         const ObjectType object_type_;
         const StatusList status_list_; //list of status names to be set
@@ -98,8 +98,6 @@ namespace Fred
     };//class CreateObjectStateRequestException
 
 typedef CreateObjectStateRequestException::OperationErrorType CreateObjectStateRequestError;
-#define COSREX(DATA) CreateObjectStateRequestException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define COSRERR(DATA) CreateObjectStateRequestError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 
