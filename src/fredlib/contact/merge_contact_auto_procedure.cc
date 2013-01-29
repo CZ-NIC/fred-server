@@ -53,7 +53,7 @@ void MergeContactAutoProcedure::exec(Fred::OperationContext &_ctx)
     std::string system_registrar = static_cast<std::string>(system_registrar_result[0][0]);
 
     /* find any contact duplicates set (optionally for specific registrar only) */
-    std::set<std::string> dup_set = FindAnyContactDuplicates(registrar_).exec(_ctx);
+    std::set<std::string> dup_set = FindAnyContactDuplicates().set_registrar(registrar_).exec(_ctx);
 
     if (dup_set.empty()) {
         _ctx.get_log().info("no contact duplicity");
@@ -92,7 +92,7 @@ void MergeContactAutoProcedure::exec(Fred::OperationContext &_ctx)
         dup_set = FindSpecificContactDuplicates(winner_handle).exec(_ctx);
         /* if none go for another contact which has duplicates */
         if (dup_set.empty()) {
-            dup_set = FindAnyContactDuplicates(registrar_).exec(_ctx);
+            dup_set = FindAnyContactDuplicates().set_registrar(registrar_).exec(_ctx);
         }
     }
 }

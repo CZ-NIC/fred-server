@@ -5,22 +5,36 @@ namespace Fred {
 namespace Contact {
 
 
-FindAnyContactDuplicates::FindAnyContactDuplicates(const optional_string &_registrar_handle)
-    : registrar_handle_(_registrar_handle)
+FindAnyContactDuplicates::FindAnyContactDuplicates()
 {
+}
+
+
+FindAnyContactDuplicates& FindAnyContactDuplicates::set_registrar(
+        const optional_string &_registrar_handle)
+{
+    registrar_handle_ = _registrar_handle;
+    return *this;
 }
 
 
 std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ctx)
 {
     Database::QueryParams dup_params;
-    std::string dup_sql = "SELECT unnest(dup_set)"
+    std::stringstream dup_sql;
+    dup_sql << "SELECT unnest(dup_set)"
         " FROM (SELECT array_accum(oreg.name) as dup_set"
         " FROM object_registry oreg"
         " JOIN contact c ON c.id = oreg.id"
         " JOIN object o ON o.id = c.id"
-        " JOIN registrar r ON r.id = o.clid"
-        " GROUP BY"
+        " JOIN registrar r ON r.id = o.clid";
+
+    if (registrar_handle_.is_value_set()) {
+        dup_params.push_back(registrar_handle_.get_value());
+        dup_sql << " WHERE r.handle = $" << dup_params.size() << "::varchar";
+    }
+
+    dup_sql << " GROUP BY"
         " trim(both ' ' from c.name),"
         " c.ssntype,"
         " trim(both ' ' from c.ssn),"
@@ -36,15 +50,11 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
         " trim(both ' ' from c.stateorprovince),"
         " trim(both ' ' from c.postalcode),"
         " trim(both ' ' from c.country),"
-        " o.clid";
-    if (registrar_handle_.is_value_set()) {
-        dup_sql += " WHERE r.handle = $1::varchar";
-        dup_params.push_back(registrar_handle_.get_value());
-    }
-    dup_sql += " HAVING array_upper(array_accum(oreg.name), 1) > 1"
-               " LIMIT 1) as dup_q";
+        " o.clid"
+        " HAVING array_upper(array_accum(oreg.name), 1) > 1"
+        " LIMIT 1) as dup_q";
 
-    Database::Result dup_result = _ctx.get_conn().exec_params(dup_sql, dup_params);
+    Database::Result dup_result = _ctx.get_conn().exec_params(dup_sql.str(), dup_params);
 
     std::set<std::string> result;
     for (Database::Result::size_type i = 0; i < dup_result.size(); i++) {

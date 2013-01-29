@@ -15,7 +15,9 @@ namespace Contact {
 class FindAnyContactDuplicates
 {
 public:
-    FindAnyContactDuplicates(const optional_string &_registrar_handle);
+    FindAnyContactDuplicates();
+
+    FindAnyContactDuplicates& set_registrar(const optional_string &_registrar_handle);
 
     std::set<std::string> exec(Fred::OperationContext &_ctx);
 
