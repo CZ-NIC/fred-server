@@ -38,7 +38,11 @@ namespace Fred
         }
         catch(...)
         {
-            log_.error("OperationContext::~OperationContext: rollback failed");
+            try
+            {
+                log_.error("OperationContext::~OperationContext: rollback failed");
+            }
+            catch(...){}
         }
     }
 
