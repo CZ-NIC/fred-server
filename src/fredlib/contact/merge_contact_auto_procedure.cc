@@ -46,10 +46,11 @@ MergeContactAutoProcedure& MergeContactAutoProcedure::set_limit(
 }
 
 
-void MergeContactAutoProcedure::exec(Fred::OperationContext &_ctx)
+void MergeContactAutoProcedure::exec()
 {
+    Fred::OperationContext octx;
     /* get system registrar - XXX: should be a parameter?? */
-    Database::Result system_registrar_result = _ctx.get_conn().exec(
+    Database::Result system_registrar_result = octx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system is True");
     if (system_registrar_result.size() != 1) {
         throw std::runtime_error("no system registrar found");
@@ -57,16 +58,16 @@ void MergeContactAutoProcedure::exec(Fred::OperationContext &_ctx)
     std::string system_registrar = static_cast<std::string>(system_registrar_result[0][0]);
 
     /* find any contact duplicates set (optionally for specific registrar only) */
-    std::set<std::string> dup_set = FindAnyContactDuplicates().set_registrar(registrar_).exec(_ctx);
+    std::set<std::string> dup_set = FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
 
     if (dup_set.empty()) {
-        _ctx.get_log().info("no contact duplicity");
+        octx.get_log().info("no contact duplicity");
         return;
     }
 
     while (dup_set.size() >= 2)
     {
-        _ctx.get_log().debug(boost::format("contact duplicates set: { %1% }")
+        octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
                 % boost::algorithm::join(dup_set, ", "));
 
         /* filter for best contact selection */
@@ -82,8 +83,8 @@ void MergeContactAutoProcedure::exec(Fred::OperationContext &_ctx)
 
         /* compute best handle to merge all others onto */
         std::string winner_handle = MergeContactSelection(
-                std::vector<std::string>(dup_set.begin(), dup_set.end()), selection_filter).exec(_ctx);
-        _ctx.get_log().debug(boost::format("winner handle: %1%") % winner_handle);
+                std::vector<std::string>(dup_set.begin(), dup_set.end()), selection_filter).exec(octx);
+        octx.get_log().debug(boost::format("winner handle: %1%") % winner_handle);
 
         /* remove winner contact from set */
         dup_set.erase(winner_handle);
@@ -126,12 +127,13 @@ void MergeContactAutoProcedure::exec(Fred::OperationContext &_ctx)
 
         /* find contact duplicates for winner contact - if nothing changed in registry data this
          * would be the same list as in previous step but without the merged one */
-        dup_set = FindSpecificContactDuplicates(winner_handle).exec(_ctx);
+        dup_set = FindSpecificContactDuplicates(winner_handle).exec(octx);
         /* if none go for another contact which has duplicates */
         if (dup_set.empty()) {
-            dup_set = FindAnyContactDuplicates().set_registrar(registrar_).exec(_ctx);
+            dup_set = FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
         }
     }
+    octx.commit_transaction();
 }
 
 

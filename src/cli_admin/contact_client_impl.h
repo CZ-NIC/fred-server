@@ -124,9 +124,7 @@ struct contact_merge_duplicate_auto_impl
         ContactMergeDuplicateAutoArgs params = CfgArgGroups::instance()->
             get_handler_ptr_by_type<HandleAdminClientContactMergeDuplicateAutoArgsGrp>()->params;
 
-        Fred::OperationContext octx;
-        Fred::Contact::MergeContactAutoProcedure(*(logger_client.get()), params.registrar, params.limit).exec(octx);
-        octx.commit_transaction();
+        Fred::Contact::MergeContactAutoProcedure(*(logger_client.get()), params.registrar, params.limit).exec();
 
         return;
     }

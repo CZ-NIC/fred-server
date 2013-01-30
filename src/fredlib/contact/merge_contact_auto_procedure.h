@@ -24,7 +24,7 @@ public:
 
     MergeContactAutoProcedure& set_limit(const optional_ulonglong &_limit);
 
-    void exec(Fred::OperationContext &_ctx);
+    void exec();
 
 
 private:
