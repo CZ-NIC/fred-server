@@ -90,8 +90,32 @@ namespace Fred
         UpdateNsset& rem_tech_contact(const std::string& tech_contact);
         UpdateNsset& set_tech_check_level(short tech_check_level);
         UpdateNsset& set_logd_request_id(unsigned long long logd_request_id);
-        void exec(OperationContext& ctx);
+        unsigned long long exec(OperationContext& ctx);//return new history_id
     };//class UpdateNsset
+
+    //exception impl
+    class UpdateNssetException
+    : public OperationExceptionImpl<UpdateNssetException, 8192>
+    {
+    public:
+        UpdateNssetException(const char* file
+                , const int line
+                , const char* function
+                , const char* data)
+        : OperationExceptionImpl<UpdateNssetException, 8192>(file, line, function, data)
+        {}
+
+        ConstArr get_fail_param_impl() throw()
+        {
+            static const char* list[]={"not found:handle", "not found:registrar"
+                    , "not found:tech contact", "not found:dns fqdn", "invalid:dns fqdn"};
+            return ConstArr(list,sizeof(list)/sizeof(char*));
+        }
+    };//class UpdateNssetException
+
+    typedef UpdateNssetException::OperationErrorType UpdateNssetError;
+#define UNEX(DATA) UpdateNssetException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define UNERR(DATA) UpdateNssetError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 

@@ -105,8 +105,32 @@ namespace Fred
         UpdateKeyset& add_dns_key(const DnsKey& dns_key);
         UpdateKeyset& rem_dns_key(const DnsKey& dns_key);
         UpdateKeyset& set_logd_request_id(unsigned long long logd_request_id);
-        void exec(OperationContext& ctx);
+        unsigned long long exec(OperationContext& ctx);//return new history_id
     };//class UpdateKeyset
+
+    //exception impl
+    class UpdateKeysetException
+    : public OperationExceptionImpl<UpdateKeysetException, 8192>
+    {
+    public:
+        UpdateKeysetException(const char* file
+                , const int line
+                , const char* function
+                , const char* data)
+        : OperationExceptionImpl<UpdateKeysetException, 8192>(file, line, function, data)
+        {}
+
+        ConstArr get_fail_param_impl() throw()
+        {
+            static const char* list[]={"not found:handle", "not found:registrar", "not found:tech contact"};
+            return ConstArr(list,sizeof(list)/sizeof(char*));
+        }
+    };//class UpdateKeysetException
+
+    typedef UpdateKeysetException::OperationErrorType UpdateKeysetError;
+#define UKEX(DATA) UpdateKeysetException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define UKERR(DATA) UpdateKeysetError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+
 
 }//namespace Fred
 

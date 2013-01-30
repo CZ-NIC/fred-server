@@ -99,8 +99,13 @@ namespace Fred
         return *this;
     }
 
-    void UpdateKeyset::exec(OperationContext& ctx)
+    unsigned long long UpdateKeyset::exec(OperationContext& ctx)
     {
+        unsigned long long history_id = 0;
+
+        try
+        {
+
         //lock object_registry row for update
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
@@ -109,7 +114,10 @@ namespace Fred
 
             if (lock_res.size() != 1)
             {
-                throw std::runtime_error("UpdateKeyset::exec unable to lock");
+                std::string errmsg("unable to lock || not found:handle: ");
+                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                errmsg += " |";
+                throw UKEX(errmsg.c_str());
             }
         }
 
@@ -124,7 +132,10 @@ namespace Fred
 
             if (keyset_id_res.size() != 1)
             {
-                throw std::runtime_error("UpdateKeyset::exec keyset not found");
+                std::string errmsg("|| not found:handle: ");
+                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                errmsg += " |";
+                throw UKEX(errmsg.c_str());
             }
 
             keyset_id = keyset_id_res[0][0];
@@ -150,7 +161,7 @@ namespace Fred
 
                 params_i.push_back(*i);
                 sql_i << " raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)),'tech contact '||$"<< params.size() << "::text||' not found'));";
+                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)),'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |'));";
                 ctx.get_conn().exec_params(sql_i.str(), params_i);
             }//for i
         }//if add tech contacts
@@ -174,7 +185,7 @@ namespace Fred
                 params_i.push_back(*i);
                 sql_i << "contactid = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
                         " JOIN contact c ON oreg.id = c.id WHERE UPPER(oreg.name) = UPPER($"
-                    << params_i.size() << "::text)),'tech contact '||$"<< params.size() << "::text||' not found');";
+                    << params_i.size() << "::text)),'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |');";
                 ctx.get_conn().exec_params(sql_i.str(), params_i);
             }//for i
         }//if delete tech contacts
@@ -215,7 +226,7 @@ namespace Fred
 
         //save history
         {
-            unsigned long long history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
+            history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
 
             //object_history
             ctx.get_conn().exec_params(
@@ -258,6 +269,13 @@ namespace Fred
                     " WHERE keysetid = $2::integer"
                     , Database::query_param_list(history_id)(keyset_id));
         }//save history
+
+        }//try
+        catch(...)//common exception processing
+        {
+            handleOperationExceptions<UpdateKeysetException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+        }
+        return history_id;
     }//UpdateKeyset::exec
 
 }//namespace Fred
