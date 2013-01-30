@@ -3,6 +3,7 @@
 
 #include "util/types/optional.h"
 #include "fredlib/opcontext.h"
+#include "fredlib/logger_client.h"
 
 
 namespace Fred {
@@ -12,9 +13,10 @@ namespace Contact {
 class MergeContactAutoProcedure
 {
 public:
-    MergeContactAutoProcedure();
+    MergeContactAutoProcedure(Fred::Logger::LoggerClient &_logger_client);
 
     MergeContactAutoProcedure(
+            Fred::Logger::LoggerClient &_logger_client,
             const optional_string &_registrar,
             const optional_ulonglong &_limit);
 
@@ -26,6 +28,8 @@ public:
 
 
 private:
+    Fred::Logger::LoggerClient &logger_client_;
+
     optional_string registrar_;
     optional_ulonglong limit_;
 };

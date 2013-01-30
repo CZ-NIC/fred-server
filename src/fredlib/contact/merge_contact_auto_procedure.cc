@@ -12,15 +12,19 @@ namespace Fred {
 namespace Contact {
 
 
-MergeContactAutoProcedure::MergeContactAutoProcedure()
+MergeContactAutoProcedure::MergeContactAutoProcedure(
+        Fred::Logger::LoggerClient &_logger_client)
+    : logger_client_(_logger_client)
 {
 }
 
 
 MergeContactAutoProcedure::MergeContactAutoProcedure(
+        Fred::Logger::LoggerClient &_logger_client,
         const optional_string &_registrar,
         const optional_ulonglong &_limit)
-    : registrar_(_registrar),
+    : logger_client_(_logger_client),
+      registrar_(_registrar),
       limit_(_limit)
 {
 }
@@ -86,12 +90,39 @@ void MergeContactAutoProcedure::exec(Fred::OperationContext &_ctx)
         /* merge first one */
         std::string pick_one = *(dup_set.begin());
 
-        Fred::OperationContext merge_octx;
-        MergeContact(pick_one, winner_handle, system_registrar).exec(merge_octx);
+        unsigned long long req_id = 0;
+        try {
+            req_id = logger_client_.createRequest("", "Admin", "",
+                    //Fred::Logger::RequestProperties(),
+                    boost::assign::list_of
+                        (Fred::Logger::RequestProperty("src_contact", pick_one, false))
+                        (Fred::Logger::RequestProperty("dst_contact", winner_handle, false)),
+                    Fred::Logger::ObjectReferences(),
+                    "ContactMerge", 0);
+            if (req_id == 0) {
+                throw std::runtime_error("unable to log merge contact request");
+            }
+            Fred::OperationContext merge_octx;
+            MergeContact(pick_one, winner_handle, system_registrar).set_logd_request_id(req_id).exec(merge_octx);
 
-        /* merge operation notification handling */
+            /* merge operation notification handling */
 
-        merge_octx.commit_transaction();
+            merge_octx.commit_transaction();
+            logger_client_.closeRequest(req_id, "Admin", "",
+                    Fred::Logger::RequestProperties(),
+                    Fred::Logger::ObjectReferences(),
+                    "Success", 0);
+        }
+        catch (...) {
+            if (req_id != 0) {
+                logger_client_.closeRequest(req_id, "Admin", "",
+                        Fred::Logger::RequestProperties(),
+                        Fred::Logger::ObjectReferences(),
+                        "Fail", 0);
+            }
+            /* stop at first error */
+            throw;
+        }
 
         /* find contact duplicates for winner contact - if nothing changed in registry data this
          * would be the same list as in previous step but without the merged one */
