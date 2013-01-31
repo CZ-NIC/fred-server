@@ -12,6 +12,108 @@ namespace Fred {
 namespace Contact {
 
 
+Fred::Logger::RequestProperties logger_merge_contact_transform_output_data(
+        const MergeContactOutput &_merge_data)
+{
+    Fred::Logger::RequestProperties properties;
+    for (std::vector<MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
+            i != _merge_data.update_domain_registrant.end(); ++i)
+    {
+        properties.push_back(Fred::Logger::RequestProperty("command", "update_domain", false));
+        properties.push_back(Fred::Logger::RequestProperty("handle", i->fqdn, true));
+        properties.push_back(Fred::Logger::RequestProperty("registrant", i->set_registrant, true));
+    }
+    for (std::vector<MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
+            i != _merge_data.update_domain_admin_contact.end(); ++i)
+    {
+        properties.push_back(Fred::Logger::RequestProperty("command", "update_domain", false));
+        properties.push_back(Fred::Logger::RequestProperty("handle", i->fqdn, true));
+        properties.push_back(Fred::Logger::RequestProperty("remAdmin", i->rem_admin_contact, true));
+        properties.push_back(Fred::Logger::RequestProperty("addAdmin", i->add_admin_contact, true));
+    }
+    for (std::vector<MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
+            i != _merge_data.update_nsset_tech_contact.end(); ++i)
+    {
+        properties.push_back(Fred::Logger::RequestProperty("command", "update_nsset", false));
+        properties.push_back(Fred::Logger::RequestProperty("handle", i->handle, true));
+        properties.push_back(Fred::Logger::RequestProperty("remTech", i->rem_tech_contact, true));
+        properties.push_back(Fred::Logger::RequestProperty("addTech", i->add_tech_contact, true));
+    }
+    for (std::vector<MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
+            i != _merge_data.update_keyset_tech_contact.end(); ++i)
+    {
+        properties.push_back(Fred::Logger::RequestProperty("command", "update_keyset", false));
+        properties.push_back(Fred::Logger::RequestProperty("handle", i->handle, true));
+        properties.push_back(Fred::Logger::RequestProperty("remTech", i->rem_tech_contact, true));
+        properties.push_back(Fred::Logger::RequestProperty("addTech", i->add_tech_contact, true));
+    }
+    return properties;
+}
+
+
+unsigned long long logger_merge_contact_create_request(
+        Fred::Logger::LoggerClient &_logger_client,
+        const std::string &_src_contact,
+        const std::string &_dst_contact)
+{
+    unsigned long long req_id = _logger_client.createRequest("", "Admin", "",
+            boost::assign::list_of
+                (Fred::Logger::RequestProperty("src_contact", _src_contact, false))
+                (Fred::Logger::RequestProperty("dst_contact", _dst_contact, false)),
+            Fred::Logger::ObjectReferences(),
+            "ContactMerge", 0);
+    if (req_id == 0) {
+        throw std::runtime_error("unable to log merge contact request");
+    }
+    return req_id;
+}
+
+
+void logger_merge_contact_close(
+        Fred::Logger::LoggerClient &_logger_client,
+        const unsigned long long _req_id,
+        const Fred::Logger::RequestProperties &_properties,
+        const std::string &_result)
+{
+    if (_req_id) {
+        _logger_client.closeRequest(_req_id, "Admin", "",
+                _properties,
+                Fred::Logger::ObjectReferences(),
+                _result, 0);
+    }
+}
+
+
+void logger_merge_contact_close_request_success(
+        Fred::Logger::LoggerClient &_logger_client,
+        const unsigned long long _req_id,
+        const MergeContactOutput &_merge_data)
+{
+    logger_merge_contact_close(
+            _logger_client,
+            _req_id,
+            logger_merge_contact_transform_output_data(_merge_data),
+            "Success");
+}
+
+
+void logger_merge_contact_close_request_fail(
+        Fred::Logger::LoggerClient &_logger_client,
+        const unsigned long long _req_id)
+{
+    logger_merge_contact_close(
+            _logger_client,
+            _req_id,
+            Fred::Logger::RequestProperties(),
+            "Fail");
+}
+
+
+
+
+
+
+
 MergeContactAutoProcedure::MergeContactAutoProcedure(
         Fred::Logger::LoggerClient &_logger_client)
     : logger_client_(_logger_client)
@@ -93,34 +195,19 @@ void MergeContactAutoProcedure::exec()
 
         unsigned long long req_id = 0;
         try {
-            req_id = logger_client_.createRequest("", "Admin", "",
-                    //Fred::Logger::RequestProperties(),
-                    boost::assign::list_of
-                        (Fred::Logger::RequestProperty("src_contact", pick_one, false))
-                        (Fred::Logger::RequestProperty("dst_contact", winner_handle, false)),
-                    Fred::Logger::ObjectReferences(),
-                    "ContactMerge", 0);
-            if (req_id == 0) {
-                throw std::runtime_error("unable to log merge contact request");
-            }
+            req_id = logger_merge_contact_create_request(logger_client_, pick_one, winner_handle);
+
             Fred::OperationContext merge_octx;
-            MergeContact(pick_one, winner_handle, system_registrar).set_logd_request_id(req_id).exec(merge_octx);
+            MergeContactOutput merge_data = MergeContact(
+                    pick_one, winner_handle, system_registrar).set_logd_request_id(req_id).exec(merge_octx);
 
             /* merge operation notification handling */
-
             merge_octx.commit_transaction();
-            logger_client_.closeRequest(req_id, "Admin", "",
-                    Fred::Logger::RequestProperties(),
-                    Fred::Logger::ObjectReferences(),
-                    "Success", 0);
+
+            logger_merge_contact_close_request_success(logger_client_, req_id, merge_data);
         }
         catch (...) {
-            if (req_id != 0) {
-                logger_client_.closeRequest(req_id, "Admin", "",
-                        Fred::Logger::RequestProperties(),
-                        Fred::Logger::ObjectReferences(),
-                        "Fail", 0);
-            }
+            logger_merge_contact_close_request_fail(logger_client_, req_id);
             /* stop at first error */
             throw;
         }
