@@ -79,7 +79,7 @@ namespace Fred
         return *this;
     }
 
-    void CreateAdministrativeObjectBlockRequest::exec(OperationContext &_ctx)
+    ObjectId CreateAdministrativeObjectBlockRequest::exec(OperationContext &_ctx)
     {
         this->check_administrative_block_status_only(_ctx);
         this->check_server_blocked_status_absent(_ctx);
@@ -87,10 +87,10 @@ namespace Fred
         status_list.push_back("serverBlocked");
         CreateObjectStateRequest createObjectStateRequest(object_handle_,
             object_type_,
-            status_list_,
+            status_list,
             valid_from_,
             valid_to_);
-        createObjectStateRequest.exec(_ctx);
+        return createObjectStateRequest.exec(_ctx);
     }//CreateAdministrativeObjectBlockRequest::exec
 
     void CreateAdministrativeObjectBlockRequest::check_administrative_block_status_only(OperationContext &_ctx) const
@@ -111,19 +111,19 @@ namespace Fred
         }
         std::string invalidStatus;
         for (StatusList::const_iterator pState = status_list_.begin(); pState != status_list_.end(); ++pState) {
-            if (0 < administrativeBlockStatusSet.count(*pState)) {
+            if (administrativeBlockStatusSet.count(*pState) <= 0) {
                 invalidStatus += " " + *pState;
             }
         }
         if (!invalidStatus.empty()) {
-            std::string errmsg("|| invalid argument:state: unable set" + invalidStatus + " status |");
+            std::string errmsg("|| invalid argument:state: unable to set" + invalidStatus + " status |");
             throw MY_EXCEPTION_CLASS(errmsg.c_str());
         }
     }
 
     void CreateAdministrativeObjectBlockRequest::check_server_blocked_status_absent(OperationContext &_ctx) const
     {
-        const ObjectId object_id = get_object_id(_ctx, object_handle_, object_type_);
+        const ObjectId object_id = GetObjectId(object_handle_, object_type_).exec(_ctx);
         static TID serverBlockedId = 0;
         if (serverBlockedId == 0) {
             Database::Result obj_state_res = _ctx.get_conn().exec(
@@ -134,8 +134,12 @@ namespace Fred
             if (obj_state_res.size() != 1) {
                 throw MY_EXCEPTION_CLASS("|| not found:state: serverBlocked |");
             }
+            serverBlockedId = obj_state_res[0][0];
+            _ctx.get_log().debug("serverBlockedId = " + boost::lexical_cast< std::string >(serverBlockedId));
         }
-        lock_object_state_request_lock(_ctx, serverBlockedId, object_id);
+        _ctx.get_log().debug("LockObjectStateRequestLock call");
+        LockObjectStateRequestLock(serverBlockedId, object_id).exec(_ctx);
+        _ctx.get_log().debug("LockObjectStateRequestLock success");
         Database::Result rcheck = _ctx.get_conn().exec_params(
                 "SELECT 1 "
                 "FROM object_state "

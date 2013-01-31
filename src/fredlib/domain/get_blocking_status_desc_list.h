@@ -29,6 +29,7 @@ ziska seznam vsech stavu blokovani objektu GetBlockingStatusDescList
 #ifndef GET_BLOCKING_STATUS_DESC_LIST_H_
 #define GET_BLOCKING_STATUS_DESC_LIST_H_
 
+#include "fredlib/domain/create_object_state_request.h"
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
@@ -36,9 +37,24 @@ ziska seznam vsech stavu blokovani objektu GetBlockingStatusDescList
 
 #include <string>
 #include <vector>
+#include <map>
 
 namespace Fred
 {
+
+    class GetObjectStateIdMap
+    {
+    public:
+        GetObjectStateIdMap(const StatusList &_status_list, ObjectType _object_type);
+
+        typedef std::map< std::string, ObjectStateId > StateIdMap;
+        StateIdMap& exec(OperationContext &_ctx);
+    private:
+        const StatusList status_list_;
+        const ObjectType object_type_;
+        StateIdMap state_id_map_;
+    };//class GetBlockingStatusDescList
+
 
     class GetBlockingStatusDescList
     {

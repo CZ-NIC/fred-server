@@ -42,7 +42,6 @@ namespace Fred
     class CreateAdministrativeObjectBlockRequest
     {
     public:
-        typedef CreateObjectStateRequest::StatusList StatusList;
         typedef CreateObjectStateRequest::Time Time;
         CreateAdministrativeObjectBlockRequest(const std::string &_object_handle,
             ObjectType _object_type,
@@ -57,7 +56,7 @@ namespace Fred
         CreateAdministrativeObjectBlockRequest& set_valid_from(const Time &_valid_from);
         CreateAdministrativeObjectBlockRequest& set_valid_to(const Time &_valid_to);
         CreateAdministrativeObjectBlockRequest& set_notice(const std::string &_notice);
-        void exec(OperationContext &_ctx);
+        ObjectId exec(OperationContext &_ctx);
 
     private:
         void check_administrative_block_status_only(OperationContext &_ctx) const;

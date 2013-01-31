@@ -21,15 +21,6 @@
  *  create object state request
  */
 
-/*
-nastaveni stavu objektu, (insert do object_state_request) CreateObjectStateRequest
-  M handle objektu,
-  M typ objektu,
-  M seznam stavu (jmena)
-  od
-  do
-*/
-
 #ifndef CREATE_OBJECT_STATE_REQUEST_H_
 #define CREATE_OBJECT_STATE_REQUEST_H_
 
@@ -48,20 +39,21 @@ namespace Fred
 
     typedef TID ObjectId;
     typedef TID ObjectStateId;
+    typedef std::vector< ObjectStateId > MultipleObjectStateId;
     typedef short int ObjectType;
+    typedef std::vector< std::string > StatusList;
 
-    void lock_object_state_request_lock(OperationContext &_ctx,
-        ObjectStateId _state_id,
-        ObjectId _object_id);
-
-    ObjectId get_object_id(OperationContext &_ctx,
-        const std::string &_object_handle,
-        ObjectType _object_type);
-
+/*
+pozadavek na nastaveni stavu objektu (insert do object_state_request)
+  M handle objektu,
+  M typ objektu,
+  M seznam stavu (jmena)
+  od
+  do
+*/
     class CreateObjectStateRequest
     {
     public:
-        typedef std::vector< std::string > StatusList;
         typedef boost::posix_time::ptime Time;
         CreateObjectStateRequest(const std::string &_object_handle,
             ObjectType _object_type,
@@ -74,7 +66,7 @@ namespace Fred
             );
         CreateObjectStateRequest& set_valid_from(const Time &_valid_from);
         CreateObjectStateRequest& set_valid_to(const Time &_valid_to);
-        void exec(OperationContext &_ctx);
+        ObjectId exec(OperationContext &_ctx);
 
     private:
         const std::string object_handle_;
@@ -83,6 +75,55 @@ namespace Fred
         Optional< Time > valid_from_;
         Optional< Time > valid_to_;
     };//class CreateObjectStateRequest
+
+
+/*
+vykonani pozadavku na nastaveni stavu objektu (vola update_object_states)
+  id objektu
+*/
+    class PerformObjectStateRequest
+    {
+    public:
+        PerformObjectStateRequest();
+        PerformObjectStateRequest(const Optional< ObjectId > &_object_id);
+        PerformObjectStateRequest& set_object_id(ObjectId _object_id);
+        void exec(OperationContext &_ctx);
+
+    private:
+        Optional< ObjectId > object_id_;
+    };//class PerformObjectStateRequest
+
+
+    class GetObjectId
+    {
+    public:
+        GetObjectId(const std::string &_object_handle, ObjectType _object_type);
+        ObjectId exec(OperationContext &_ctx);
+    private:
+        const std::string object_handle_;
+        const ObjectType object_type_;
+    };
+
+
+    class LockObjectStateRequestLock
+    {
+    public:
+        LockObjectStateRequestLock(ObjectStateId _state_id, ObjectId _object_id);
+        void exec(OperationContext &_ctx);
+    private:
+        const ObjectStateId state_id_;
+        const ObjectId object_id_;
+    };
+
+    class LockMultipleObjectStateRequestLock
+    {
+    public:
+        LockMultipleObjectStateRequestLock(const MultipleObjectStateId &_state_id, ObjectId _object_id);
+        void exec(OperationContext &_ctx);
+    private:
+        const MultipleObjectStateId state_id_;
+        const ObjectId object_id_;
+    };
 
 //exception impl
     class CreateObjectStateRequestException
