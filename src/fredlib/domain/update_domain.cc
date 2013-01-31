@@ -132,8 +132,9 @@ namespace Fred
         return *this;
     }
 
-    void UpdateDomain::exec(OperationContext& ctx)
+    unsigned long long UpdateDomain::exec(OperationContext& ctx)
     {
+        unsigned long long history_id=0;//return
         try
         {
 
@@ -284,7 +285,7 @@ namespace Fred
 
         //save history
         {
-            unsigned long long history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
+            history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
 
             //object_history
             ctx.get_conn().exec_params(
@@ -326,6 +327,7 @@ namespace Fred
         {
             handleOperationExceptions<UpdateDomainException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
         }
+        return history_id;
     }//UpdateDomain::exec
 
 }//namespace Fred

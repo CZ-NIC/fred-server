@@ -34,7 +34,6 @@
 
 namespace Fred
 {
-
     class UpdateDomain
     {
         const std::string fqdn_;//domain identifier
@@ -71,19 +70,19 @@ namespace Fred
         UpdateDomain& add_admin_contact(const std::string& admin_contact);
         UpdateDomain& rem_admin_contact(const std::string& admin_contact);
         UpdateDomain& set_logd_request_id(unsigned long long logd_request_id);
-        void exec(OperationContext& ctx);
+        unsigned long long exec(OperationContext& ctx);//return new history_id
     };//class UpdateDomain
 
 //exception impl
     class UpdateDomainException
-    : public OperationExceptionImpl<UpdateDomainException, 2048>
+    : public OperationExceptionImpl<UpdateDomainException, 8192>
     {
     public:
         UpdateDomainException(const char* file
                 , const int line
                 , const char* function
                 , const char* data)
-        : OperationExceptionImpl<UpdateDomainException, 2048>(file, line, function, data)
+        : OperationExceptionImpl<UpdateDomainException, 8192>(file, line, function, data)
         {}
 
         ConstArr get_fail_param_impl() throw()
@@ -93,7 +92,7 @@ namespace Fred
         }
     };//class UpdateDomainException
 
-typedef UpdateDomainException::OperationErrorType UpdateDomainError;
+    typedef UpdateDomainException::OperationErrorType UpdateDomainError;
 #define UDEX(DATA) UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 #define UDERR(DATA) UpdateDomainError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
