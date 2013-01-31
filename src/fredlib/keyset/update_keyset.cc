@@ -160,6 +160,29 @@ namespace Fred
                 sql_i << sql.str();
 
                 params_i.push_back(*i);
+
+                {//precheck uniqueness
+                    Database::Result keyset_res = ctx.get_conn().exec_params(
+                    "SELECT keysetid, contactid FROM keyset_contact_map "
+                    " WHERE keysetid = $1::bigint "
+                    "  AND contactid = raise_exception_ifnull("
+                    "    (SELECT oreg.id FROM object_registry oreg "
+                    "       JOIN contact c ON oreg.id = c.id "
+                    "     WHERE UPPER(oreg.name) = UPPER($2::text)) "
+                    "     ,'|| not found:tech contact: '||ex_data($2::text)||' |')"
+                    , params_i);
+
+                    if (keyset_res.size() == 1)
+                    {
+                        std::string errmsg("tech contact already set || invalid:handle: ");
+                        errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                        errmsg += " | invalid:tech contact: ";
+                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UKEX(errmsg.c_str());
+                    }
+                }
+
                 sql_i << " raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
                     " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)),'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |'));";
                 ctx.get_conn().exec_params(sql_i.str(), params_i);
