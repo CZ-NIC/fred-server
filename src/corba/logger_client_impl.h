@@ -49,10 +49,14 @@ public:
 
 private:
     ccReg::Logger_var logger_ref;
-
     boost::mutex ref_mutex;
 
-
+    /* { service name => service id } */
+    std::map<std::string, unsigned long long> service_map;
+    /* { service name => { request name => request_id } } */
+    std::map<std::string, std::map<std::string, unsigned long long> > service_request_map;
+    /* { service name => { result status name => result code } } */
+    std::map<std::string, std::map<std::string, unsigned long long> > service_result_code_map;
 };
 
 }

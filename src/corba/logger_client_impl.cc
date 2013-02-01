@@ -38,8 +38,32 @@ ccReg::ObjectReferences_var corba_wrap_object_references(
 LoggerCorbaClientImpl::LoggerCorbaClientImpl()
 {
     boost::mutex::scoped_lock lock (ref_mutex);
-
     logger_ref = ccReg::Logger::_narrow(CorbaContainer::get_instance()->nsresolve("Logger"));
+
+    try {
+        ccReg::RequestServiceList_var service_list = logger_ref->getServices();
+        for (unsigned long long i = 0; i < service_list->length(); ++i) {
+            std::string s_name = std::string(service_list[i].name);
+            unsigned long long s_id = service_list[i].id;
+
+            service_map.insert(std::make_pair(s_name, s_id));
+
+            ccReg::RequestTypeList_var request_type_list = logger_ref->getRequestTypesByService(s_id);
+            for (unsigned long long j = 0; j < request_type_list->length(); ++j) {
+                service_request_map[s_name][std::string(request_type_list[j].name)] = request_type_list[j].id;
+            }
+
+            ccReg::ResultCodeList_var result_code_list = logger_ref->getResultCodesByService(s_id);
+            for (unsigned long long j = 0; j < result_code_list->length(); ++j) {
+                service_result_code_map[s_name][std::string(result_code_list[j].name)] = result_code_list[j].result_code;
+            }
+        }
+    }
+    catch (...) {
+        throw std::runtime_error("unable to initialize logger client");
+    }
+
+
 }
 
 unsigned long long LoggerCorbaClientImpl::getRequestCount(
@@ -91,36 +115,30 @@ unsigned long long LoggerCorbaClientImpl::createRequest(
         ccReg::RequestProperties_var props = corba_wrap_request_properties(_properties);
         ccReg::ObjectReferences_var refs = corba_wrap_object_references(_references);
 
-        ccReg::RequestServiceList_var service_list = logger_ref->getServices();
-        unsigned long long service_id = 0;
-        for (unsigned long long i = 0; i < service_list->length(); ++i) {
-            if (std::string(service_list[i].name) == _service) {
-                service_id = service_list[i].id;
-                break;
-            }
+        std::map<std::string, unsigned long long>::const_iterator s_it = service_map.find(_service);
+        if (s_it == service_map.end())
+        {
+            throw std::runtime_error("unknown service type");
         }
-        if (service_id == 0) {
-            throw std::runtime_error("unknown service");
+        std::map<std::string, std::map<std::string, unsigned long long> >::const_iterator r_map_it
+            = service_request_map.find(_service);
+        if (r_map_it == service_request_map.end())
+        {
+            throw std::runtime_error("no request type for given service");
         }
-        ccReg::RequestTypeList_var request_type_list = logger_ref->getRequestTypesByService(service_id);
-        unsigned long long request_type_id = 0;
-        for (unsigned long long i = 0; i < request_type_list->length(); ++i) {
-            if (std::string(request_type_list[i].name) == _type) {
-                request_type_id = request_type_list[i].id;
-                break;
-            }
-        }
-        if (request_type_id == 0) {
+        std::map<std::string, unsigned long long>::const_iterator r_it = (r_map_it->second).find(_type);
+        if (r_it == (r_map_it->second).end())
+        {
             throw std::runtime_error("unknown request type");
         }
 
         CORBA::ULongLong rid = logger_ref->createRequest(
                 _src_ip.c_str(),
-                service_id,
+                s_it->second,
                 _content.c_str(),
                 props,
                 refs,
-                request_type_id,
+                r_it->second,
                 _session_id);
 
         return static_cast<unsigned long long>(rid);
@@ -146,28 +164,22 @@ void LoggerCorbaClientImpl::closeRequest(
         ccReg::RequestProperties_var props = corba_wrap_request_properties(_properties);
         ccReg::ObjectReferences_var refs = corba_wrap_object_references(_references);
 
-        ccReg::RequestServiceList_var service_list = logger_ref->getServices();
-        unsigned long long service_id = 0;
-        for (unsigned long long i = 0; i < service_list->length(); ++i) {
-            if (std::string(service_list[i].name) == _service) {
-                service_id = service_list[i].id;
-                break;
-            }
-        }
-        if (service_id == 0) {
+
+        std::map<std::string, unsigned long long>::const_iterator s_it = service_map.find(_service);
+        if (s_it == service_map.end())
+        {
             throw std::runtime_error("unknown service");
         }
-
-        ccReg::ResultCodeList_var result_code_list = logger_ref->getResultCodesByService(service_id);
-        unsigned long long result_code_id = 0;
-        for (unsigned long long i = 0; i < result_code_list->length(); ++i) {
-            if (std::string(result_code_list[i].name) == _result) {
-                result_code_id = result_code_list[i].result_code;
-                break;
-            }
+        std::map<std::string, std::map<std::string, unsigned long long> >::const_iterator r_map_it
+            = service_result_code_map.find(_service);
+        if (r_map_it == service_request_map.end())
+        {
+            throw std::runtime_error("no result code for given service");
         }
-        if (result_code_id == 0) {
-            throw std::runtime_error("unknown result code");
+        std::map<std::string, unsigned long long>::const_iterator r_it = (r_map_it->second).find(_result);
+        if (r_it == (r_map_it->second).end())
+        {
+            throw std::runtime_error("unknown request type");
         }
 
         logger_ref->closeRequest(
@@ -175,10 +187,8 @@ void LoggerCorbaClientImpl::closeRequest(
                 _content.c_str(),
                 props,
                 refs,
-                result_code_id,
+                r_it->second,
                 _session_id);
-
-
     }
     catch (...)
     {
