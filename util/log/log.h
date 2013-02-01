@@ -66,7 +66,9 @@ public:
    * support for old style formatting log
    */
   void message(int _prio, const char *_format, ...);
-	
+
+  void simple_message(int _prio, const char *_msg) throw();
+
 protected:	
 	std::deque<BaseLogType* > handlers;
 	Log::Level level;

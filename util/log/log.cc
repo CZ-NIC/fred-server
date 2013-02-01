@@ -177,4 +177,18 @@ void Log::message(int _prio, const char *_format, ...) {
   va_end(args);
 }
 
+void Log::simple_message(int _prio, const char *_msg) throw()
+{
+    if (level < _prio) return;
+
+    try
+    {
+        for (std::deque<BaseLogType*>::iterator it = handlers.begin(); it != handlers.end(); ++it)
+        {
+            (*it)->smsg(static_cast<Logging::Log::Level>(_prio), _msg);
+        }
+    }
+    catch(...){}
+}
+
 }
