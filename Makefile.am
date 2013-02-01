@@ -1613,7 +1613,7 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
 		tests/checks.h \
-		tests/test-eppops.cc
+		tests/test-eppops.cc \
 		tests/test-merge-contact.cc
 
 
