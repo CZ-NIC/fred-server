@@ -122,7 +122,14 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[]={"not found:handle", "not found:registrar", "not found:tech contact", "invalid:handle", "invalid:tech contact"};
+            static const char* list[]={"not found:handle"
+                    , "not found:registrar"
+                    , "not found:tech contact"
+                    , "invalid:handle"
+                    , "invalid:tech contact"
+                    , "not found:dns key"
+                    , "invalid:dns key"
+                };
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     };//class UpdateKeysetException
