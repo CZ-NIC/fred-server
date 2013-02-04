@@ -23,6 +23,7 @@
 
 #include "fredlib/domain/cancel_object_state_request.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
+#include "fredlib/domain/get_object_state_id_map.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
