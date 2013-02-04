@@ -42,26 +42,13 @@ ziska seznam vsech stavu blokovani objektu GetBlockingStatusDescList
 namespace Fred
 {
 
-    class GetObjectStateIdMap
-    {
-    public:
-        GetObjectStateIdMap(const StatusList &_status_list, ObjectType _object_type);
-
-        typedef std::map< std::string, ObjectStateId > StateIdMap;
-        StateIdMap& exec(OperationContext &_ctx);
-    private:
-        const StatusList status_list_;
-        const ObjectType object_type_;
-        StateIdMap state_id_map_;
-    };//class GetBlockingStatusDescList
-
-
     class GetBlockingStatusDescList
     {
     public:
         GetBlockingStatusDescList();
-        GetBlockingStatusDescList(const Optional< std::string > &_lang);
+        GetBlockingStatusDescList(const Optional< std::string > &_lang, const Optional< ObjectType > &_object_type);
         GetBlockingStatusDescList& set_lang(const std::string &_lang);//language EN/CS
+        GetBlockingStatusDescList& set_object_type(ObjectType _object_type);
 
         typedef struct _StatusDesc
         {
@@ -83,6 +70,7 @@ namespace Fred
 
     private:
         Optional< std::string > lang_;
+        Optional< ObjectType > object_type_;
         StatusDescList status_desc_list_;
     };//class GetBlockingStatusDescList
 
@@ -100,7 +88,7 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[] = {"not found:lang", "not found:state"};
+            static const char* list[] = {"not found:lang"};
             return ConstArr(list, sizeof(list) / sizeof(char*));
         }
     };//class GetBlockingStatusDescListException

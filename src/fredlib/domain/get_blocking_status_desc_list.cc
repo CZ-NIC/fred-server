@@ -22,6 +22,7 @@
  */
 
 #include "fredlib/domain/get_blocking_status_desc_list.h"
+#include "fredlib/domain/get_object_state_id_map.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -41,68 +42,24 @@
 namespace Fred
 {
 
-    GetObjectStateIdMap::GetObjectStateIdMap(const StatusList &_status_list, ObjectType _object_type)
-    :   status_list_(_status_list),
-        object_type_(_object_type)
-    {}
-
-    GetObjectStateIdMap::StateIdMap& GetObjectStateIdMap::exec(OperationContext &_ctx)
-    {
-        state_id_map_.clear();
-        if (status_list_.empty()) {
-            return state_id_map_;
-        }
-        StatusList::const_iterator pState = status_list_.begin();
-        Database::query_param_list param(*pState);
-        ++pState;
-        std::ostringstream query;
-        enum ResultColumnIdx
-        {
-            ID_IDX   = 0,
-            NAME_IDX = 1,
-        };
-        query << "SELECT id,name "
-                 "FROM enum_object_states "
-                 "WHERE " << object_type_ << "=ANY(types) AND "
-                     "name IN ($" << param.size() << "::text";
-        while (pState != status_list_.end()) {
-            param(*pState);
-            query << ",$" << param.size() << "::text";
-            ++pState;
-        }
-        query << ")";
-        Database::Result id_name_result = _ctx.get_conn().exec_params(query.str(), param);
-        for (::size_t rowIdx = 0; rowIdx < id_name_result.size(); ++rowIdx) {
-            const Database::Row &row = id_name_result[rowIdx];
-            state_id_map_[row[NAME_IDX]] = row[ID_IDX];
-        }
-        if (state_id_map_.size() < status_list_.size()) {
-            std::string not_found;
-            for (StatusList::const_iterator pState = status_list_.begin(); pState != status_list_.end(); ++pState) {
-                if (state_id_map_.count(*pState) == 0) {
-                    not_found += " " + *pState;
-                }
-            }
-            if (!not_found.empty()) {
-                std::string errmsg("|| not found:state:" + not_found);
-                errmsg += " of type " + boost::lexical_cast< std::string >(object_type_);
-                errmsg += " |";
-                throw MY_EXCEPTION_CLASS(errmsg.c_str());
-            }
-        }
-        return state_id_map_;
-    }
-
     GetBlockingStatusDescList::GetBlockingStatusDescList()
     {}
 
-    GetBlockingStatusDescList::GetBlockingStatusDescList(const Optional< std::string > &_lang)
-    :   lang_(_lang)
+    GetBlockingStatusDescList::GetBlockingStatusDescList(const Optional< std::string > &_lang,
+        const Optional< ObjectType > &_object_type)
+    :   lang_(_lang),
+        object_type_(_object_type)
     {}
 
     GetBlockingStatusDescList& GetBlockingStatusDescList::set_lang(const std::string &_lang)
     {
         lang_ = _lang;
+        return *this;
+    }
+
+    GetBlockingStatusDescList& GetBlockingStatusDescList::set_object_type(ObjectType _object_type)
+    {
+        object_type_ = _object_type;
         return *this;
     }
 
@@ -116,15 +73,20 @@ namespace Fred
             NAME_IDX = 0,
             DESC_IDX = 1,
         };
-        Database::Result nameDescResult = _ctx.get_conn().exec_params(
-          "SELECT eos.name,eosd.description "
-          "FROM enum_object_states eos "
-          "JOIN enum_object_states_desc eosd ON eosd.state_id=eos.id "
-          "WHERE eos.manual AND "
-                "eos.name LIKE 'server%' AND "
-                "eos.name!='serverBlocked' AND "
-                "eosd.lang=$1",
-          Database::query_param_list(lang));
+        std::string query =
+            "SELECT eos.name,eosd.description "
+            "FROM enum_object_states eos "
+            "JOIN enum_object_states_desc eosd ON eosd.state_id=eos.id "
+            "WHERE eos.manual AND "
+                  "eos.name LIKE 'server%' AND "
+                  "eos.name!='serverBlocked' AND "
+                  "eosd.lang=$1";
+        Database::query_param_list param(lang);
+        if (object_type_.isset()) {
+            query += " AND $2=ANY(eos.types)";
+            param(object_type_.get_value());
+        }
+        Database::Result nameDescResult = _ctx.get_conn().exec_params(query.c_str(), param);
         if (nameDescResult.size() <= 0) {
             std::string errmsg("|| not found:lang: ");
             errmsg += boost::replace_all_copy(lang,"|", "[pipe]");//quote pipes
