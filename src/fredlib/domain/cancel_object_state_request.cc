@@ -68,7 +68,7 @@ namespace Fred
 
         GetObjectStateIdMap get_object_state_id_map(status_list_, object_type_);
         typedef GetObjectStateIdMap::StateIdMap StateIdMap;
-        const StateIdMap &state_id_map = get_object_state_id_map.exec(_ctx);
+        StateIdMap &state_id_map = get_object_state_id_map.exec(_ctx);
         {
             MultipleObjectStateId state_id;
             for (StateIdMap::const_iterator pStateId = state_id_map.begin();
@@ -99,17 +99,39 @@ namespace Fred
             param(object_state_id);
             cmd << "$" << param.size() << "::integer";
         }//for object_state
-        cmd << ") RETURNING id";
+        cmd << ") RETURNING id,state_id";
+        enum
+        {
+            REQUEST_ID_IDX = 0,
+            STATE_ID_IDX   = 1,
+        };
         Database::Result cmd_result = _ctx.get_conn().exec_params(cmd.str(), param);
         if (cmd_result.size() == state_id_map.size()) {
             std::string rid = "CancelObjectStateRequest::exec canceled request id:";
             for (Database::Result::Iterator pRow = cmd_result.begin(); pRow != cmd_result.end(); ++pRow) {
-                rid += " " + std::string((*pRow)[0]);
+                rid += " " + std::string((*pRow)[REQUEST_ID_IDX]);
             }
             _ctx.get_log().debug(rid);
             return object_id;
         }
-        throw MY_EXCEPTION_CLASS("xxx");
+        for (Database::Result::Iterator pRow = cmd_result.begin(); pRow != cmd_result.end(); ++pRow) {
+            const ObjectStateId state_id = (*pRow)[STATE_ID_IDX];
+            for (StateIdMap::iterator pStateId = state_id_map.begin();
+                 pStateId != state_id_map.end(); ++pStateId) {
+                if (pStateId->second == state_id) {
+                    state_id_map.erase(pStateId);
+                    break;
+                }
+            }
+        }
+        std::string errmsg("|| not found:state:");
+        for (StateIdMap::const_iterator pStateId = state_id_map.begin();
+             pStateId != state_id_map.end(); ++pStateId) {
+            errmsg += " " + pStateId->first;
+        }
+        errmsg += " for object " + object_handle_ +
+                  " of type " + boost::lexical_cast< std::string >(object_type_) + " |";
+        throw MY_EXCEPTION_CLASS(errmsg.c_str());
     }//CancelObjectStateRequest::exec
 
 }//namespace Fred

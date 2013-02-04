@@ -47,7 +47,7 @@ pozadavek na zruseni stavu objektu (update object_state_request)
     private:
         const std::string object_handle_;
         const ObjectType object_type_;
-        const StatusList status_list_; //list of status names to be set
+        const StatusList status_list_; //list of status names to be canceled
     };//class CancelObjectStateRequest
 
 
