@@ -47,7 +47,10 @@ namespace Fred
 
             if (lock_res.size() != 1)
             {
-                throw std::runtime_error("DeleteContact::exec unable to lock");
+                std::string errmsg("unable to lock || not found:handle: ");
+                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                errmsg += " |";
+                throw DCEX(errmsg.c_str());
             }
         }
 
@@ -62,7 +65,10 @@ namespace Fred
 
             if (contact_id_res.size() != 1)
             {
-                throw std::runtime_error("DeleteContact::exec contact not found");
+                std::string errmsg("|| not found:handle: ");
+                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                errmsg += " |";
+                throw DCEX(errmsg.c_str());
             }
 
             contact_id = contact_id_res[0][0];

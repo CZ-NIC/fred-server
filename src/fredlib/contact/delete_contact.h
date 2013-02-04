@@ -40,6 +40,30 @@ namespace Fred
         void exec(OperationContext& ctx);
     };//class DeleteContact
 
+    //exception impl
+    class DeleteContactException
+    : public OperationExceptionImpl<DeleteContactException, 8192>
+    {
+    public:
+        DeleteContactException(const char* file
+                , const int line
+                , const char* function
+                , const char* data)
+        : OperationExceptionImpl<DeleteContactException, 8192>(file, line, function, data)
+        {}
+
+        ConstArr get_fail_param_impl() throw()
+        {
+            static const char* list[]={"not found:handle"
+                };
+            return ConstArr(list,sizeof(list)/sizeof(char*));
+        }
+    };//class DeleteContactException
+
+    typedef DeleteContactException::OperationErrorType DeleteContactError;
+#define DCEX(DATA) DeleteContactException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define DCERR(DATA) DeleteContactError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+
 }//namespace Fred
 
 #endif//DELETE_CONTACT_H
