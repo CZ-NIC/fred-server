@@ -303,7 +303,7 @@ namespace Fred
                 {
                     Database::Result add_host_ipaddr_res = ctx.get_conn().exec_params(
                         "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
-                        " VALUES($1::integer, $2::integer, $3::inet)"
+                        " VALUES($1::integer, $2::integer, $3::inet) RETURNING hostid"
                         , Database::query_param_list(add_host_id)(nsset_id)(*j));
                     if(add_host_ipaddr_res.size() != 1)
                     {
