@@ -178,9 +178,44 @@ namespace Fred
                 sql_i << sql.str();
 
                 params_i.push_back(*i);
-                sql_i << " raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)),'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |'));";
-                ctx.get_conn().exec_params(sql_i.str(), params_i);
+
+                {//precheck uniqueness
+                    Database::Result nsset_res = ctx.get_conn().exec_params(
+                    "SELECT nssetid, contactid FROM nsset_contact_map "
+                    " WHERE nssetid = $1::bigint "
+                    "  AND contactid = raise_exception_ifnull("
+                    "    (SELECT oreg.id FROM object_registry oreg "
+                    "       JOIN contact c ON oreg.id = c.id "
+                    "     WHERE UPPER(oreg.name) = UPPER($2::text)) "
+                    "     ,'|| not found:tech contact: '||ex_data($2::text)||' |')"
+                    , params_i);
+
+                    if (nsset_res.size() == 1)
+                    {
+                        std::string errmsg("add tech contact precheck uniqueness failed || invalid:handle: ");
+                        errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                        errmsg += " | invalid:tech contact: ";
+                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UNEX(errmsg.c_str());
+                    }
+                }
+
+                sql_i << " raise_exception_ifnull("
+                    " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
+                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)) "
+                    " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |')) "
+                    " RETURNING nssetid";
+                Database::Result nsset_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
+                if (nsset_add_check_res.size() != 1)
+                {
+                    std::string errmsg("add tech contact failed || invalid:handle: ");
+                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                    errmsg += " | invalid:tech contact: ";
+                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw UNEX(errmsg.c_str());
+                }
             }//for i
         }//if add tech contacts
 
@@ -200,10 +235,21 @@ namespace Fred
                 sql_i << sql.str();
 
                 params_i.push_back(*i);
-                sql_i << "contactid = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
-                        " JOIN contact c ON oreg.id = c.id WHERE UPPER(oreg.name) = UPPER($"
-                    << params_i.size() << "::text)),'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |');";
-                ctx.get_conn().exec_params(sql_i.str(), params_i);
+                sql_i << "contactid = raise_exception_ifnull( "
+                    " (SELECT oreg.id FROM object_registry oreg "
+                    " JOIN contact c ON oreg.id = c.id WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)) "
+                    " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |') "
+                    " RETURNING nssetid";
+                Database::Result nsset_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
+                if (nsset_del_res.size() != 1)
+                {
+                    std::string errmsg("delete tech contact failed || invalid:handle: ");
+                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                    errmsg += " | invalid:tech contact: ";
+                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw UNEX(errmsg.c_str());
+                }
             }//for i
         }//if delete tech contacts
 
@@ -255,9 +301,18 @@ namespace Fred
 
                 for(std::vector<std::string>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
                 {
-                    ctx.get_conn().exec_params(
-                        "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) VALUES($1::integer, $2::integer, $3::inet)"
+                    Database::Result add_host_ipaddr_res = ctx.get_conn().exec_params(
+                        "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
+                        " VALUES($1::integer, $2::integer, $3::inet)"
                         , Database::query_param_list(add_host_id)(nsset_id)(*j));
+                    if(add_host_ipaddr_res.size() != 1)
+                    {
+                        std::string errmsg("add dns hosts || invalid:ipaddr: ");
+                        errmsg += boost::replace_all_copy(*j,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UNEX(errmsg.c_str());
+                    }
+
                 }//for j
             }//for i
         }//if add dns hosts

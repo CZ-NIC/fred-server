@@ -280,7 +280,8 @@ namespace Fred
                     }
                 }
 
-                sql_i << " raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
+                sql_i << " raise_exception_ifnull("
+                    " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
                     " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text))"
                     " , '|| not found:admin contact: '||ex_data($"<< params.size() << "::text)||' |')) "
                     " RETURNING domainid";
