@@ -145,7 +145,7 @@ vykonani pozadavku na nastaveni stavu objektu (vola update_object_states)
         }
     };//class CreateObjectStateRequestException
 
-typedef CreateObjectStateRequestException::OperationErrorType CreateObjectStateRequestError;
+    typedef CreateObjectStateRequestException::OperationErrorType CreateObjectStateRequestError;
 
 }//namespace Fred
 

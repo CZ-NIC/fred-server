@@ -33,6 +33,10 @@
 #include <boost/algorithm/string.hpp>
 #include <set>
 
+#ifndef __ASSERT_FUNCTION
+#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
+#endif
+
 #define MY_EXCEPTION_CLASS(DATA) CreateAdministrativeObjectBlockRequestException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 #define MY_ERROR_CLASS(DATA) CreateAdministrativeObjectBlockRequestError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
@@ -73,6 +77,11 @@ namespace Fred
         return *this;
     }
 
+//  CREATE TABLE object_state_request_notice
+//  (
+//    object_state_request_id INTEGER NOT NULL PRIMARY KEY REFERENCES object_state_request (id),
+//    notice VARCHAR(300) NOT NULL
+//  )
     CreateAdministrativeObjectBlockRequest& CreateAdministrativeObjectBlockRequest::set_notice(const std::string &_notice)
     {
         notice_ = _notice;
@@ -90,7 +99,24 @@ namespace Fred
             status_list,
             valid_from_,
             valid_to_);
-        return createObjectStateRequest.exec(_ctx);
+        const ObjectId object_id = createObjectStateRequest.exec(_ctx);
+        if (notice_.isset()) {
+            Database::Result request_id_res = _ctx.get_conn().exec_params(
+                "INSERT INTO object_state_request_notice (object_state_request_id,notice) "
+                    "SELECT osr.id,$1 "
+                    "FROM object_state_request osr "
+                    "JOIN enum_object_states eos ON eos.id=osr.state_id "
+                    "WHERE osr.valid_from<=CURRENT_TIMESTAMP AND "
+                          "(osr.valid_to IS NULL OR "
+                           "CURRENT_TIMESTAMP<=osr.valid_to) AND "
+                          "osr.canceled IS NULL AND "
+                          "osr.object_id=$2::integer AND "
+                          "eos.name='serverBlocked' "
+                    "ORDER BY osr.id DESC LIMIT 1",
+                Database::query_param_list(notice_.get_value())
+                                          (object_id));
+        }
+        return object_id;
     }//CreateAdministrativeObjectBlockRequest::exec
 
     void CreateAdministrativeObjectBlockRequest::check_administrative_block_status_only(OperationContext &_ctx) const

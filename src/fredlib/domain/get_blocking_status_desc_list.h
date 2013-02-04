@@ -100,7 +100,7 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[] = {"not found:lang"};
+            static const char* list[] = {"not found:lang", "not found:state"};
             return ConstArr(list, sizeof(list) / sizeof(char*));
         }
     };//class GetBlockingStatusDescListException

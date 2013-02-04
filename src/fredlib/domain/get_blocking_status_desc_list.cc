@@ -31,6 +31,10 @@
 
 #include <boost/algorithm/string.hpp>
 
+#ifndef __ASSERT_FUNCTION
+#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
+#endif
+
 #define MY_EXCEPTION_CLASS(DATA) GetBlockingStatusDescListException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 #define MY_ERROR_CLASS(DATA) GetBlockingStatusDescListError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
