@@ -91,20 +91,27 @@ namespace Fred
             + " valid to: " + boost::posix_time::to_iso_string(valid_to_));
 
         //check time
-        const boost::posix_time::ptime new_valid_from
-            = valid_from_.isset() ? valid_from_.get_value()
-                : boost::posix_time::second_clock::universal_time();
-
-        const boost::posix_time::ptime new_valid_to
-            = valid_to_.isset() ? valid_to_.get_value()
-                : boost::posix_time::pos_infin;
-
-        if (new_valid_to < new_valid_from) {
-            std::string errmsg("|| out of turn:valid_from-to: ");
-            errmsg += boost::posix_time::to_iso_string(new_valid_from) + " - " +
-                      boost::posix_time::to_iso_string(new_valid_to);
-            errmsg += " |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+        if (valid_to_.isset()) {
+            if (valid_from_.isset()) { // <from,to)
+                if (valid_to_.get_value() < valid_from_.get_value()) {
+                    std::string errmsg("|| out of turn:valid_from-to: ");
+                    errmsg += boost::posix_time::to_iso_string(valid_from_.get_value()) + " - " +
+                              boost::posix_time::to_iso_string(valid_to_.get_value());
+                    errmsg += " |";
+                    throw MY_EXCEPTION_CLASS(errmsg.c_str());
+                }
+            }
+            else { // <now,to)
+                Database::Result out_of_turn_result = _ctx.get_conn().exec_params(
+                        "SELECT $1<CURRENT_TIMESTAMP",
+                        Database::query_param_list(valid_to_.get_value()));
+                if (bool(out_of_turn_result[0][0])) {
+                    std::string errmsg("|| out of turn:valid_from-to: CURRENT_TIMESTAMP - ");
+                    errmsg += boost::posix_time::to_iso_string(valid_to_.get_value());
+                    errmsg += " |";
+                    throw MY_EXCEPTION_CLASS(errmsg.c_str());
+                }
+            }
         }
 
         //get object
@@ -123,81 +130,121 @@ namespace Fred
             LockMultipleObjectStateRequestLock(state_id, object_id).exec(_ctx);
         }
 
+        std::string object_state_id_set;
         for (StateIdMap::const_iterator pStateId = state_id_map.begin();
              pStateId != state_id_map.end(); ++pStateId) {
-
             const ObjectStateId object_state_id = pStateId->second;
+            if (object_state_id_set.empty()) {
+                object_state_id_set = "(";
+            }
+            else {
+                object_state_id_set += ",";
+            }
+            object_state_id_set += boost::lexical_cast< std::string >(object_state_id);
+        }
+        object_state_id_set += ")";
 
-            //get existing state requests for object and state
-            //assuming requests for different states of the same object may overlay
-            Database::Result requests_result = _ctx.get_conn().exec_params(
-                "SELECT valid_from,valid_to,canceled "
-                "FROM object_state_request "
-                "WHERE object_id=$1::bigint AND state_id=$2::bigint",
-                Database::query_param_list(object_id)(object_state_id));
+        std::string new_valid_column;
+        Database::query_param_list param(object_id);
+        if (valid_from_.isset()) {
+            if (valid_to_.isset()) { // <from,to)
+                new_valid_column = "$2::timestamp AS new_valid_from,$3::timestamp AS new_valid_to";
+                param(valid_from_.get_value())(valid_to_.get_value());
+            }
+            else { // <from,oo)
+                new_valid_column = "$2::timestamp AS new_valid_from,NULL::timestamp AS new_valid_to";
+                param(valid_from_.get_value());
+            }
+        }
+        else if (valid_to_.isset()) { // <now,to)
+            new_valid_column = "CURRENT_TIMESTAMP::timestamp AS new_valid_from,$2::timestamp AS new_valid_to";
+            param(valid_to_.get_value());
+        }
+        else { // <now,oo)
+            new_valid_column = "CURRENT_TIMESTAMP::timestamp AS new_valid_from,NULL::timestamp AS new_valid_to";
+        }
+        std::string sub_query = "SELECT valid_from AS obj_valid_from,"
+                                       "LEAST(canceled,valid_to) AS obj_valid_to," +
+                                       new_valid_column + " "
+                                "FROM object_state_request "
+                                "WHERE object_id=$1::bigint AND state_id IN " + object_state_id_set;
+        Database::Result invalid_state_result = _ctx.get_conn().exec_params(
+            "SELECT obj_valid_from,obj_valid_to,new_valid_from,new_valid_to "
+            "FROM (" + sub_query + ") AS obj_state "
+            "WHERE obj_valid_to<obj_valid_from OR "
+                  "(obj_valid_from<=new_valid_from AND (new_valid_from<obj_valid_to OR obj_valid_to IS NULL)) OR "
+                  "((obj_valid_from<new_valid_to OR new_valid_to IS NULL) AND (new_valid_to<=obj_valid_to OR obj_valid_to IS NULL)) "
+            "LIMIT 1", param);
 
-            for (std::size_t idx = 0; idx < requests_result.size(); ++idx) {
-                const boost::posix_time::ptime obj_valid_from = requests_result[idx][0];
+        if (0 < invalid_state_result.size()) {
+            const Database::Row &row = invalid_state_result[0];
+            const boost::posix_time::ptime obj_valid_from = static_cast< const boost::posix_time::ptime& >(row[0]);
+            const boost::posix_time::ptime obj_valid_to = row[1].isnull()
+                                                              ? boost::posix_time::ptime(boost::posix_time::pos_infin)
+                                                              : static_cast< const boost::posix_time::ptime& >(row[1]);
+            if (obj_valid_to < obj_valid_from ) {
+                std::string errmsg("|| out of turn:valid_from-to: ");
+                errmsg += boost::posix_time::to_iso_string(obj_valid_from) + " - " +
+                          boost::posix_time::to_iso_string(obj_valid_to);
+                errmsg += " |";
+                throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            }
+            const boost::posix_time::ptime new_valid_from = static_cast< const boost::posix_time::ptime& >(row[2]);
+            const boost::posix_time::ptime new_valid_to = row[3].isnull()
+                                                            ? boost::posix_time::ptime(boost::posix_time::pos_infin)
+                                                            : static_cast< const boost::posix_time::ptime& >(row[3]);
+            std::string errmsg("|| overlayed validity time intervals:object: ");
+            errmsg += "<" + boost::posix_time::to_iso_string(obj_valid_from) + ", " +
+                      boost::posix_time::to_iso_string(obj_valid_to) + ") - "
+                      "<" + boost::posix_time::to_iso_string(new_valid_from) + ", " +
+                      boost::posix_time::to_iso_string(new_valid_to) + ")";
+            errmsg += " |";
+            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+        }
 
-                boost::posix_time::ptime obj_valid_to = requests_result[idx][1];
-
-                //if obj_canceled is not null
-                if (!requests_result[idx][2].isnull())
-                {
-                    boost::posix_time::ptime obj_canceled = requests_result[idx][2];
-
-                    if (obj_canceled < obj_valid_to) {
-                        obj_valid_to = obj_canceled;
-                    }
-                }//if obj_canceled is not null
-
-                if (obj_valid_to < obj_valid_from ) {
-                    std::string errmsg("|| out of turn:valid_from-to: ");
-                    errmsg += boost::posix_time::to_iso_string(obj_valid_from) + " - " +
-                              boost::posix_time::to_iso_string(obj_valid_to);
-                    errmsg += " |";
-                    throw MY_EXCEPTION_CLASS(errmsg.c_str());
+        param.clear();
+        param(object_id) // $1
+             (valid_to_.isset() // $2
+                             ? Database::QueryParam(valid_to_.get_value())
+                             : Database::QPNull);
+        std::ostringstream cmd;
+        cmd << "INSERT INTO object_state_request "
+                       "(object_id,"
+                        "state_id,"
+                        "crdate,"
+                        "valid_from,"
+                        "valid_to) VALUES ";
+        if (valid_from_.isset()) {
+            param(valid_from_.get_value()); // $3
+            for (StateIdMap::const_iterator pStateId = state_id_map.begin();
+                 pStateId != state_id_map.end(); ++pStateId) {
+                if (pStateId != state_id_map.begin()) {
+                    cmd << ",";
                 }
-
-                if (obj_valid_to.is_special()) {
-                    obj_valid_to = boost::posix_time::pos_infin;
+                param(pStateId->second);
+                cmd << "($1::bigint,"
+                        "$" << param.size() << "::bigint,"
+                        "CURRENT_TIMESTAMP,"
+                        "$3::timestamp,"
+                        "$2::timestamp)";
+            }
+        }
+        else {
+            for (StateIdMap::const_iterator pStateId = state_id_map.begin();
+                 pStateId != state_id_map.end(); ++pStateId) {
+                if (pStateId != state_id_map.begin()) {
+                    cmd << ",";
                 }
+                param(pStateId->second);
+                cmd << "($1::bigint," <<
+                        "$" << param.size() << "::bigint,"
+                        "CURRENT_TIMESTAMP,"
+                        "CURRENT_TIMESTAMP,"
+                        "$2::timestamp)";
+            }
+        }
 
-                _ctx.get_log().debug(std::string(
-                    "CreateObjectStateRequest::exec new_valid_from: ")
-                    + boost::posix_time::to_iso_extended_string(new_valid_from)
-                    + " new_valid_to: " + boost::posix_time::to_iso_extended_string(new_valid_to)
-                    + " obj_valid_from: " + boost::posix_time::to_iso_extended_string(obj_valid_from)
-                    + " obj_valid_to: " + boost::posix_time::to_iso_extended_string(obj_valid_to)
-                );
-
-                //check overlay
-                if (((obj_valid_from <= new_valid_from) && (new_valid_from < obj_valid_to))
-                  || ((obj_valid_from < new_valid_to) && (new_valid_to <= obj_valid_to))) {
-                    std::string errmsg("|| overlayed validity time intervals:object: ");
-                    errmsg += "<" + boost::posix_time::to_iso_string(obj_valid_from) + ", " +
-                              boost::posix_time::to_iso_string(obj_valid_to) + ") - "
-                              "<" + boost::posix_time::to_iso_string(new_valid_from) + ", " +
-                              boost::posix_time::to_iso_string(new_valid_to) + ")";
-                    errmsg += " |";
-                    throw MY_EXCEPTION_CLASS(errmsg.c_str());
-                }
-            }//for check with existing object state requests
-
-            _ctx.get_conn().exec_params(
-                "INSERT INTO object_state_request "
-                "(object_id,state_id,crdate,valid_from,valid_to) VALUES "
-                "($1::bigint,$2::bigint,"
-                 "CURRENT_TIMESTAMP,$3::timestamp,"
-                 "$4::timestamp)",
-                Database::query_param_list
-                    (object_id)(object_state_id)
-                    (new_valid_from)(new_valid_to.is_special()
-                            ? Database::QPNull
-                            : Database::QueryParam(new_valid_to))
-            );
-
-        }//for object_state
+        _ctx.get_conn().exec_params(cmd.str(), param);
         return object_id;
     }//CreateObjectStateRequest::exec
 
