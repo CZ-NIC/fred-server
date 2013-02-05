@@ -56,14 +56,14 @@ namespace Fred
     };
     //exception impl
     class CreateObjectException
-    : public OperationExceptionImpl<CreateObjectException, 2048>
+    : public OperationExceptionImpl<CreateObjectException, 8192>
     {
     public:
         CreateObjectException(const char* file
                 , const int line
                 , const char* function
                 , const char* data)
-        : OperationExceptionImpl<CreateObjectException, 2048>(file, line, function, data)
+        : OperationExceptionImpl<CreateObjectException, 8192>(file, line, function, data)
         {}
 
         ConstArr get_fail_param_impl() throw()
@@ -96,14 +96,14 @@ namespace Fred
 
     //exception impl
     class UpdateObjectException
-    : public OperationExceptionImpl<UpdateObjectException, 2048>
+    : public OperationExceptionImpl<UpdateObjectException, 8192>
     {
     public:
         UpdateObjectException(const char* file
                 , const int line
                 , const char* function
                 , const char* data)
-        : OperationExceptionImpl<UpdateObjectException, 2048>(file, line, function, data)
+        : OperationExceptionImpl<UpdateObjectException, 8192>(file, line, function, data)
         {}
 
         ConstArr get_fail_param_impl() throw()
@@ -129,14 +129,14 @@ namespace Fred
 
     //exception impl
         class InsertHistoryException
-        : public OperationExceptionImpl<InsertHistoryException, 2048>
+        : public OperationExceptionImpl<InsertHistoryException, 8192>
         {
         public:
             InsertHistoryException(const char* file
                     , const int line
                     , const char* function
                     , const char* data)
-            : OperationExceptionImpl<InsertHistoryException, 2048>(file, line, function, data)
+            : OperationExceptionImpl<InsertHistoryException, 8192>(file, line, function, data)
             {}
 
             ConstArr get_fail_param_impl() throw()
