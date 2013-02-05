@@ -745,7 +745,10 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/merge_contact_auto_procedure.cc \
 		src/fredlib/contact/merge_contact_auto_procedure.h \
 		src/fredlib/contact/find_contact_duplicates.cc \
-		src/fredlib/contact/find_contact_duplicates.h
+		src/fredlib/contact/find_contact_duplicates.h \
+		src/fredlib/contact/merge_contact_email_notification_data.cc \
+		src/fredlib/contact/merge_contact_email_notification_data.h
+
 #
 # src/fredlib/libfred.a
 
