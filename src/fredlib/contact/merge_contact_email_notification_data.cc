@@ -86,12 +86,26 @@ namespace Fred
         for( std::vector<MergeContactEmailNotificationInput>::iterator i = merge_contact_data_.begin()
                 ; i != merge_contact_data_.end(); ++i )
         {
-            //look for notification email by dst contact handle
+            //look for notification email by contact handle
             EmailMap::iterator email_by_dst_contact_it = email_by_dst_contact.find(i->dst_contact_handle);
+            EmailMap::iterator email_by_src_contact_it = email_by_dst_contact.find(i->src_contact_handle);
             if(email_by_dst_contact_it == email_by_dst_contact.end())
             {//email not found -> create new
                 SortedContactNotificationEmail email;
                 update_email(i,email);
+
+                //add and erase previous merge record
+                if(email_by_src_contact_it != email_by_dst_contact.end())
+                {
+                    SortedContactNotificationEmail src_email(email_by_src_contact_it->second);
+                    email.domain_registrant_list.insert(src_email.domain_registrant_list.begin(), src_email.domain_registrant_list.end());
+                    email.domain_admin_list.insert(src_email.domain_admin_list.begin(), src_email.domain_admin_list.end());
+                    email.nsset_tech_list.insert(src_email.nsset_tech_list.begin(), src_email.nsset_tech_list.end());
+                    email.keyset_tech_list.insert(src_email.keyset_tech_list.begin(), src_email.keyset_tech_list.end());
+                    email.removed_list.insert(src_email.removed_list.begin(), src_email.removed_list.end());
+                    email_by_dst_contact.erase(email_by_src_contact_it);
+                }
+
                 //insert new email
                 email_by_dst_contact.insert(EmailMap::value_type(i->dst_contact_handle, email));
             }
@@ -99,6 +113,19 @@ namespace Fred
             {//email found -> update
                 SortedContactNotificationEmail email(email_by_dst_contact_it->second);
                 update_email(i,email);
+
+                //add and erase previous merge record
+                if(email_by_src_contact_it != email_by_dst_contact.end())
+                {
+                    SortedContactNotificationEmail src_email(email_by_src_contact_it->second);
+                    email.domain_registrant_list.insert(src_email.domain_registrant_list.begin(), src_email.domain_registrant_list.end());
+                    email.domain_admin_list.insert(src_email.domain_admin_list.begin(), src_email.domain_admin_list.end());
+                    email.nsset_tech_list.insert(src_email.nsset_tech_list.begin(), src_email.nsset_tech_list.end());
+                    email.keyset_tech_list.insert(src_email.keyset_tech_list.begin(), src_email.keyset_tech_list.end());
+                    email.removed_list.insert(src_email.removed_list.begin(), src_email.removed_list.end());
+                    email_by_dst_contact.erase(email_by_src_contact_it);
+                }
+
                 //update email
                 email_by_dst_contact_it->second = email;
             }
