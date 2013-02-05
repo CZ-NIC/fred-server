@@ -738,6 +738,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/merge_contact.h \
 		src/fredlib/contact/merge_contact.cc \
+		src/fredlib/contact/create_contact.cc \
+		src/fredlib/contact/create_contact.h \
 		src/fredlib/contact/merge_contact_selection.cc \
 		src/fredlib/contact/merge_contact_selection.h \
 		src/fredlib/contact/merge_contact_auto_procedure.cc \
