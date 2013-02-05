@@ -53,7 +53,9 @@ namespace Fred
     {
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                std::string("SELECT id FROM object_registry WHERE UPPER(name) = UPPER($1::text) AND type = 1") + (dry_run ? " " : " FOR UPDATE")
+                std::string("SELECT id FROM object_registry "
+                " WHERE UPPER(name) = UPPER($1::text) "
+                " AND type = 1") + (dry_run ? " " : " FOR UPDATE")
                 , Database::query_param_list(src_contact_handle_));
 
             if (lock_res.size() != 1)
@@ -67,7 +69,9 @@ namespace Fred
 
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                std::string("SELECT id FROM object_registry WHERE UPPER(name) = UPPER($1::text) AND type = 1") + (dry_run ? " " : " FOR UPDATE")
+                std::string("SELECT id FROM object_registry "
+                " WHERE UPPER(name) = UPPER($1::text) "
+                " AND type = 1") + (dry_run ? " " : " FOR UPDATE")
                 , Database::query_param_list(dst_contact_handle_));
 
             if (lock_res.size() != 1)
@@ -111,8 +115,13 @@ namespace Fred
         " (c1.disclosenotifyemail != c2.disclosenotifyemail) OR "
         " o1.clid != o2.clid "// current registrar
         "  as differ "
-        " FROM (object_registry oreg1 JOIN object o1 ON oreg1.id=o1.id JOIN contact c1 ON c1.id = oreg1.id AND UPPER(oreg1.name) = UPPER($1::text) ) "
-        " JOIN (object_registry oreg2 JOIN object o2 ON oreg2.id=o2.id JOIN contact c2 ON c2.id = oreg2.id AND UPPER(oreg2.name) = UPPER($2::text)) ON TRUE "
+        " FROM (object_registry oreg1 "
+        " JOIN object o1 ON oreg1.id=o1.id "
+        " JOIN contact c1 ON c1.id = oreg1.id AND UPPER(oreg1.name) = UPPER($1::text) ) "
+        " JOIN (object_registry oreg2 "
+        " JOIN object o2 ON oreg2.id=o2.id "
+        " JOIN contact c2 ON c2.id = oreg2.id AND UPPER(oreg2.name) = UPPER($2::text)"
+        ") ON TRUE "
           , Database::query_param_list(src_contact_handle_)(dst_contact_handle_));
         if (diff_result.size() != 1)
         {
@@ -142,8 +151,14 @@ namespace Fred
         //domain_registrant lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
-                " JOIN domain d ON d.registrant = src_c.id JOIN object_registry oreg  ON oreg.id = d.id JOIN object o ON oreg.id = o.id JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
+                std::string("SELECT oreg.name, r.handle "
+                " FROM contact src_c "
+                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                " AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " JOIN domain d ON d.registrant = src_c.id "
+                " JOIN object_registry oreg  ON oreg.id = d.id "
+                " JOIN object o ON oreg.id = o.id "
+                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
@@ -168,8 +183,16 @@ namespace Fred
         //domain_admin lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
-                " JOIN domain_contact_map dcm ON dcm.role = 1 AND dcm.contactid  = src_c.id JOIN domain d ON dcm.domainid = d.id JOIN object_registry oreg ON oreg.id = d.id JOIN object o ON oreg.id = o.id JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
+                std::string("SELECT oreg.name, r.handle "
+                " FROM contact src_c "
+                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                " AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " JOIN domain_contact_map dcm ON dcm.role = 1 "
+                " AND dcm.contactid  = src_c.id "
+                " JOIN domain d ON dcm.domainid = d.id "
+                " JOIN object_registry oreg ON oreg.id = d.id "
+                " JOIN object o ON oreg.id = o.id "
+                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
@@ -196,8 +219,15 @@ namespace Fred
         //nsset_tech lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
-                " JOIN nsset_contact_map ncm ON ncm.contactid  = src_c.id JOIN nsset n ON ncm.nssetid = n.id JOIN object_registry oreg  ON oreg.id = n.id JOIN object o ON oreg.id = o.id JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
+                std::string("SELECT oreg.name, r.handle "
+                " FROM contact src_c "
+                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                " AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " JOIN nsset_contact_map ncm ON ncm.contactid  = src_c.id "
+                " JOIN nsset n ON ncm.nssetid = n.id "
+                " JOIN object_registry oreg  ON oreg.id = n.id "
+                " JOIN object o ON oreg.id = o.id "
+                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
@@ -224,8 +254,15 @@ namespace Fred
         //keyset_tech lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle FROM contact src_c JOIN object_registry src_oreg ON src_c.id = src_oreg.id AND UPPER(src_oreg.name) = UPPER($1::text) "
-                " JOIN keyset_contact_map kcm ON kcm.contactid  = src_c.id JOIN keyset k ON kcm.keysetid = k.id JOIN object_registry oreg  ON oreg.id = k.id JOIN object o ON oreg.id = o.id JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
+                std::string("SELECT oreg.name, r.handle "
+                " FROM contact src_c "
+                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                " AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " JOIN keyset_contact_map kcm ON kcm.contactid  = src_c.id "
+                " JOIN keyset k ON kcm.keysetid = k.id "
+                " JOIN object_registry oreg  ON oreg.id = k.id "
+                " JOIN object o ON oreg.id = o.id "
+                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
