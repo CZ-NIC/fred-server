@@ -116,10 +116,10 @@ namespace Fred
         //lock object_registry row for update
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                "SELECT id FROM object_registry WHERE UPPER(name) = UPPER($1::text) "
-                " AND type = raise_exception_ifnull( "
-                " (SELECT id FROM enum_object_type WHERE name = 'nsset')"
-                " ,'object type not found ||') FOR UPDATE"
+                "SELECT oreg.id FROM enum_object_type eot"
+                " JOIN object_registry oreg ON oreg.type = eot.id "
+                " AND UPPER(oreg.name) = UPPER($1::text) "
+                " WHERE eot.name = 'nsset' FOR UPDATE OF oreg"
                 , Database::query_param_list(handle_));
 
             if (lock_res.size() != 1)
