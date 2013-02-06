@@ -301,6 +301,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
     BOOST_CHECK(notif_emails.at(0).domain_admin_list.size() == 1);
     BOOST_CHECK(notif_emails.at(0).domain_admin_list.at(0) == "domain.cz");
 
+    BOOST_CHECK(notif_emails.at(0).nsset_tech_list.size() == 1);
+    BOOST_CHECK(notif_emails.at(0).nsset_tech_list.at(0) == "NSSET_HANDLE");
+
+    BOOST_CHECK(notif_emails.at(0).keyset_tech_list.size() == 1);
+    BOOST_CHECK(notif_emails.at(0).keyset_tech_list.at(0) == "KEYSET_HANDLE");
 
 
     BOOST_CHECK( notif_emails.at(0).removed_list.size() == 4);
