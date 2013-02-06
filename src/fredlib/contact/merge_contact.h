@@ -40,6 +40,18 @@ namespace Fred
         std::string sponsoring_registrar;
         std::string set_registrant;
         Optional<unsigned long long> history_id;
+        MergeContactUpdateDomainRegistrant(){}
+        MergeContactUpdateDomainRegistrant(
+            const std::string& _fqdn
+            , const std::string& _sponsoring_registrar
+            , const std::string& _set_registrant
+            , const Optional<unsigned long long>& _history_id
+        )
+            : fqdn(_fqdn)
+            , sponsoring_registrar(_sponsoring_registrar)
+            , set_registrant(_set_registrant)
+            , history_id(_history_id)
+        {}
     };
 
     struct MergeContactUpdateDomainAdminContact
@@ -49,6 +61,20 @@ namespace Fred
         std::string rem_admin_contact;
         std::string add_admin_contact;
         Optional<unsigned long long> history_id;
+        MergeContactUpdateDomainAdminContact(){}
+        MergeContactUpdateDomainAdminContact(
+            const std::string& _fqdn
+            , const std::string& _sponsoring_registrar
+            , const std::string& _rem_admin_contact
+            , const std::string& _add_admin_contact
+            , const Optional<unsigned long long>& _history_id
+        )
+            : fqdn(_fqdn)
+            , sponsoring_registrar(_sponsoring_registrar)
+            , rem_admin_contact(_rem_admin_contact)
+            , add_admin_contact(_add_admin_contact)
+            , history_id(_history_id)
+        {}
     };
 
     struct MergeContactUpdateNssetTechContact
@@ -58,6 +84,20 @@ namespace Fred
         std::string rem_tech_contact;
         std::string add_tech_contact;
         Optional<unsigned long long> history_id;
+        MergeContactUpdateNssetTechContact(){}
+        MergeContactUpdateNssetTechContact(
+            const std::string& _handle
+            , const std::string& _sponsoring_registrar
+            , const std::string& _rem_tech_contact
+            , const std::string& _add_tech_contact
+            , const Optional<unsigned long long>& _history_id
+        )
+            : handle(_handle)
+            , sponsoring_registrar(_sponsoring_registrar)
+            , rem_tech_contact(_rem_tech_contact)
+            , add_tech_contact(_add_tech_contact)
+            , history_id(_history_id)
+            {}
     };
 
     struct MergeContactUpdateKeysetTechContact
@@ -67,6 +107,21 @@ namespace Fred
         std::string rem_tech_contact;
         std::string add_tech_contact;
         Optional<unsigned long long> history_id;
+        MergeContactUpdateKeysetTechContact(){}
+        MergeContactUpdateKeysetTechContact(
+            const std::string& _handle
+            , const std::string& _sponsoring_registrar
+            , const std::string& _rem_tech_contact
+            , const std::string& _add_tech_contact
+            , const Optional<unsigned long long>& _history_id
+        )
+            : handle(_handle)
+            , sponsoring_registrar(_sponsoring_registrar)
+            , rem_tech_contact(_rem_tech_contact)
+            , add_tech_contact(_add_tech_contact)
+            , history_id(_history_id)
+
+        {}
     };
 
     struct MergeContactOutput
@@ -75,6 +130,18 @@ namespace Fred
         std::vector<MergeContactUpdateDomainAdminContact> update_domain_admin_contact;
         std::vector<MergeContactUpdateNssetTechContact> update_nsset_tech_contact;
         std::vector<MergeContactUpdateKeysetTechContact> update_keyset_tech_contact;
+        MergeContactOutput(){}
+        MergeContactOutput(
+                const std::vector<MergeContactUpdateDomainRegistrant>& _update_domain_registrant
+                , const std::vector<MergeContactUpdateDomainAdminContact>& _update_domain_admin_contact
+                , const std::vector<MergeContactUpdateNssetTechContact>& _update_nsset_tech_contact
+                , const std::vector<MergeContactUpdateKeysetTechContact>& _update_keyset_tech_contact
+                )
+        : update_domain_registrant(_update_domain_registrant)
+        , update_domain_admin_contact(_update_domain_admin_contact)
+        , update_nsset_tech_contact(_update_nsset_tech_contact)
+        , update_keyset_tech_contact(_update_keyset_tech_contact)
+        {}
     };
 
 

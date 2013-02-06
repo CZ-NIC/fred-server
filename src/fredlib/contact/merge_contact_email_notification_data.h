@@ -40,6 +40,14 @@ namespace Fred
         std::string src_contact_handle;//source contact identifier
         std::string dst_contact_handle;//destination contact identifier
         MergeContactOutput merge_output;//result of merge operation
+        MergeContactEmailNotificationInput(){}
+        MergeContactEmailNotificationInput(const std::string& _src_contact_handle
+                , const std::string& _dst_contact_handle
+                , const MergeContactOutput& _merge_output)
+        : src_contact_handle(_src_contact_handle)
+        , dst_contact_handle(_dst_contact_handle)
+        , merge_output(_merge_output)
+        {}
     };
 
     struct MergeContactNotificationEmail
