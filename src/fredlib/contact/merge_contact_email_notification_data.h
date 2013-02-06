@@ -95,7 +95,7 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[]={"invalid"};
+            static const char* list[]={"invalid:contact handle"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     };//class MergeContactEmailNotificationDataException

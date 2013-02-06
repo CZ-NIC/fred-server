@@ -71,6 +71,12 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
+static bool check_std_exception(std::exception const & ex)
+{
+    std::string ex_msg(ex.what());
+    return (ex_msg.length() != 0);
+}
+
 namespace Fred
 {
 
@@ -168,6 +174,7 @@ BOOST_AUTO_TEST_CASE(test_merge_contact_selection)
     ).exec(ctx);
     BOOST_CHECK(result.compare("test3") == 0);
 }
+
 BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
 {
     Fred::OperationContext ctx;
@@ -282,31 +289,42 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
         )//MergeContactEmailNotificationInput
       )//vector_of
 
-
-      (Fred::MergeContactEmailNotificationInput("TEST_CONTACT4", "TEST_CONTACT4", Fred::MergeContactOutput
-          (
-              Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                  (Fred::MergeContactUpdateDomainRegistrant("fqdn.cz", "REG-SPONSORING"
-                      , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
-
-              , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                  (Fred::MergeContactUpdateDomainAdminContact("fqdn.cz", "REG-SPONSORING"
-                      , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
-
-              , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
-                  (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", "REG-SPONSORING"
-                      , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
-
-              , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
-                  (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", "REG-SPONSORING"
-                      , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
-
-          )//MergeContactOutput
-        )//MergeContactEmailNotificationInput
-      )//vector_of
-
     )//MergeContactEmailNotificationData
     .exec(ctx);
+
+    BOOST_CHECK(notif_emails.size() == 1);
+    BOOST_CHECK(notif_emails.at(0).dst_contact_handle == "TEST_CONTACT4");
+    BOOST_CHECK( notif_emails.at(0).removed_list.size() == 4);
+
+    BOOST_CHECK_EXCEPTION(
+        Fred::MergeContactEmailNotificationData(Util::vector_of<Fred::MergeContactEmailNotificationInput>
+            (Fred::MergeContactEmailNotificationInput("TEST_CONTACT4", "TEST_CONTACT4", Fred::MergeContactOutput
+                (
+                    Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
+                        (Fred::MergeContactUpdateDomainRegistrant("fqdn.cz", "REG-SPONSORING"
+                            , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
+
+                    , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
+                        (Fred::MergeContactUpdateDomainAdminContact("fqdn.cz", "REG-SPONSORING"
+                            , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
+
+                    , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
+                        (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", "REG-SPONSORING"
+                            , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                    , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
+                        (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", "REG-SPONSORING"
+                            , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                )//MergeContactOutput
+              )//MergeContactEmailNotificationInput
+            )//vector_of
+
+          )//MergeContactEmailNotificationData
+          .exec(ctx)
+                , std::exception
+                , check_std_exception);
+
 }
 BOOST_AUTO_TEST_SUITE_END();//TestMergeContact
 

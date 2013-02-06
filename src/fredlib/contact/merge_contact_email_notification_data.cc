@@ -86,12 +86,24 @@ namespace Fred
         for( std::vector<MergeContactEmailNotificationInput>::iterator i = merge_contact_data_.begin()
                 ; i != merge_contact_data_.end(); ++i )
         {
+            //check contact handles are different
+            if(i->dst_contact_handle.compare(i->src_contact_handle) == 0)
+            {//error if equal
+                std::string errmsg("src_contact_handle equals dst_contact_handle || invalid:contact handle: ");
+                errmsg += boost::replace_all_copy(i->dst_contact_handle,"|", "[pipe]");//quote pipes
+                errmsg += " |";
+                throw MCENDEX(errmsg.c_str());
+            }
+
             //look for notification email by contact handle
             EmailMap::iterator email_by_dst_contact_it = email_by_dst_contact.find(i->dst_contact_handle);
             EmailMap::iterator email_by_src_contact_it = email_by_dst_contact.find(i->src_contact_handle);
             if(email_by_dst_contact_it == email_by_dst_contact.end())
             {//email not found -> create new
                 SortedContactNotificationEmail email;
+
+                email.removed_list.insert(i->src_contact_handle);
+
                 update_email(i,email);
 
                 //add and erase previous merge record
@@ -112,6 +124,9 @@ namespace Fred
             else
             {//email found -> update
                 SortedContactNotificationEmail email(email_by_dst_contact_it->second);
+
+                email.removed_list.insert(i->src_contact_handle);
+
                 update_email(i,email);
 
                 //add and erase previous merge record
@@ -127,7 +142,8 @@ namespace Fred
                 }
 
                 //update email
-                email_by_dst_contact[i->dst_contact_handle] = email;
+                email_by_dst_contact_it->second = email;
+                //email_by_dst_contact[i->dst_contact_handle] = email;
             }
         }//for i
 
