@@ -127,7 +127,7 @@ namespace Fred
                 }
 
                 //update email
-                email_by_dst_contact_it->second = email;
+                email_by_dst_contact[i->dst_contact_handle] = email;
             }
         }//for i
 
