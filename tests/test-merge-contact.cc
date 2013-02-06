@@ -183,11 +183,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
         (Fred::MergeContactEmailNotificationInput("TEST_CONTACT1", "TEST_CONTACT2", Fred::MergeContactOutput
             (
                 Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                    (Fred::MergeContactUpdateDomainRegistrant("fqdn.cz", "REG-SPONSORING"
+                    (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
                         , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
                 , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                    (Fred::MergeContactUpdateDomainAdminContact("fqdn.cz", "REG-SPONSORING"
+                    (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
                         , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
                 , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
@@ -204,11 +204,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
       (Fred::MergeContactEmailNotificationInput("TEST_CONTACT3", "TEST_CONTACT2", Fred::MergeContactOutput
           (
               Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                  (Fred::MergeContactUpdateDomainRegistrant("fqdn.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
                       , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                  (Fred::MergeContactUpdateDomainAdminContact("fqdn.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
                       , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
@@ -225,11 +225,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
       (Fred::MergeContactEmailNotificationInput("TEST_CONTACT2", "TEST_CONTACT4", Fred::MergeContactOutput
           (
             Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                (Fred::MergeContactUpdateDomainRegistrant("fqdn.cz", "REG-SPONSORING"
+                (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
                     , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
             , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                (Fred::MergeContactUpdateDomainAdminContact("fqdn.cz", "REG-SPONSORING"
+                (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
                     , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
             , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
@@ -248,11 +248,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
       (Fred::MergeContactEmailNotificationInput("TEST_CONTACT1", "TEST_CONTACT5", Fred::MergeContactOutput
           (
               Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                  (Fred::MergeContactUpdateDomainRegistrant("fqdn.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
                       , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                  (Fred::MergeContactUpdateDomainAdminContact("fqdn.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
                       , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
@@ -270,11 +270,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
       (Fred::MergeContactEmailNotificationInput("TEST_CONTACT5", "TEST_CONTACT4", Fred::MergeContactOutput
           (
               Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                  (Fred::MergeContactUpdateDomainRegistrant("fqdn.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
                       , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                  (Fred::MergeContactUpdateDomainAdminContact("fqdn.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
                       , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
@@ -294,6 +294,15 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
 
     BOOST_CHECK(notif_emails.size() == 1);
     BOOST_CHECK(notif_emails.at(0).dst_contact_handle == "TEST_CONTACT4");
+
+    BOOST_CHECK(notif_emails.at(0).domain_registrant_list.size() == 1);
+    BOOST_CHECK(notif_emails.at(0).domain_registrant_list.at(0) == "domain.cz");
+
+    BOOST_CHECK(notif_emails.at(0).domain_admin_list.size() == 1);
+    BOOST_CHECK(notif_emails.at(0).domain_admin_list.at(0) == "domain.cz");
+
+
+
     BOOST_CHECK( notif_emails.at(0).removed_list.size() == 4);
 
     BOOST_CHECK_EXCEPTION(
@@ -301,11 +310,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
             (Fred::MergeContactEmailNotificationInput("TEST_CONTACT4", "TEST_CONTACT4", Fred::MergeContactOutput
                 (
                     Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                        (Fred::MergeContactUpdateDomainRegistrant("fqdn.cz", "REG-SPONSORING"
+                        (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
                             , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
                     , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                        (Fred::MergeContactUpdateDomainAdminContact("fqdn.cz", "REG-SPONSORING"
+                        (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
                             , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
                     , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
