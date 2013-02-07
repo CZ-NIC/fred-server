@@ -147,6 +147,7 @@ namespace Fred
             }
         }//for i
 
+        result.reserve(email_by_dst_contact.size());
         for(EmailMap::iterator it = email_by_dst_contact.begin(); it != email_by_dst_contact.end(); ++it)
         {
             MergeContactNotificationEmail notifemail;
@@ -193,5 +194,50 @@ namespace Fred
 
         return result;
     }
+
+    MergeContactNotificationEmailAddr::MergeContactNotificationEmailAddr(
+            const std::vector<MergeContactNotificationEmail>& email_data)
+    : email_data_(email_data)
+    {}
+
+    std::vector<MergeContactNotificationEmailWithAddr> MergeContactNotificationEmailAddr::exec(OperationContext& ctx)
+    {
+        std::vector<MergeContactNotificationEmailWithAddr> result;
+        try
+        {
+            result.reserve(email_data_.size());
+            for(std::vector<MergeContactNotificationEmail>::const_iterator ci = email_data_.begin()
+                ; ci != email_data_.end(); ++ci)
+            {
+                Database::Result  email_result = ctx.get_conn().exec_params(
+                        "SELECT c.notifyemail, oreg.name "
+                        " FROM object_registry oreg "
+                        " JOIN contact c ON  oreg.id = c.id "
+                        " WHERE UPPER(oreg.name) = UPPER($1::text)"
+                , Database::query_param_list(ci->dst_contact_handle));
+
+                if(email_result.size() != 1)
+                {
+                    std::string errmsg("unable to get notification email address || invalid:contact handle: ");
+                    errmsg += boost::replace_all_copy(ci->dst_contact_handle,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw MCNEAEX(errmsg.c_str());
+                }
+
+                MergeContactNotificationEmailWithAddr email_with_addr;
+                email_with_addr.notification_email_addr = static_cast<std::string>(email_result[0][0]);
+                email_with_addr.email_data = *ci;
+                result.push_back(email_with_addr);
+            }//for ci
+
+        }//try
+        catch(...)//common exception processing
+        {
+            handleOperationExceptions<MergeContactNotificationEmailAddrException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+        }
+
+        return result;
+    }
+
 }//namespace Fred
 

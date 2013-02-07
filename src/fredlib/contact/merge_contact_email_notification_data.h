@@ -104,6 +104,44 @@ namespace Fred
 #define MCENDEX(DATA) MergeContactEmailNotificationDataException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 #define MCENDERR(DATA) MergeContactEmailNotificationDataError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
+    struct MergeContactNotificationEmailWithAddr
+    {
+        std::string notification_email_addr;
+        MergeContactNotificationEmail email_data;
+    };
+
+    class MergeContactNotificationEmailAddr
+    {
+        std::vector<MergeContactNotificationEmail> email_data_;
+    public:
+        MergeContactNotificationEmailAddr(const std::vector<MergeContactNotificationEmail>& email_data);
+        std::vector<MergeContactNotificationEmailWithAddr> exec(OperationContext& ctx);
+    };
+
+    //exception impl
+    class MergeContactNotificationEmailAddrException
+    : public OperationExceptionImpl<MergeContactNotificationEmailAddrException, 8192>
+    {
+    public:
+        MergeContactNotificationEmailAddrException(const char* file
+                , const int line
+                , const char* function
+                , const char* data)
+        : OperationExceptionImpl<MergeContactNotificationEmailAddrException, 8192>(file, line, function, data)
+        {}
+
+        ConstArr get_fail_param_impl() throw()
+        {
+            static const char* list[]={"invalid:contact handle"};
+            return ConstArr(list,sizeof(list)/sizeof(char*));
+        }
+    };//class MergeContactNotificationEmailAddrException
+
+    typedef MergeContactNotificationEmailAddrException::OperationErrorType MergeContactNotificationEmailAddrError;
+#define MCNEAEX(DATA) MergeContactNotificationEmailAddrException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define MCNEAERR(DATA) MergeContactNotificationEmailAddrError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+
+
 }//namespace Fred
 
 #endif//MERGE_CONTACT_EMAIL_NOTIFICATION_DATA_H
