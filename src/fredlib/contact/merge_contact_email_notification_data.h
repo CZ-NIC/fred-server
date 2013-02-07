@@ -112,7 +112,7 @@ namespace Fred
 
     class MergeContactNotificationEmailAddr
     {
-        std::vector<MergeContactNotificationEmail> email_data_;
+        const std::vector<MergeContactNotificationEmail> email_data_;
     public:
         MergeContactNotificationEmailAddr(const std::vector<MergeContactNotificationEmail>& email_data);
         std::vector<MergeContactNotificationEmailWithAddr> exec(OperationContext& ctx);

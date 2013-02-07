@@ -48,6 +48,7 @@
 #include "fredlib/registrar.h"
 #include "fredlib/contact/merge_contact_selection.h"
 #include "fredlib/contact/merge_contact_email_notification_data.h"
+#include "fredlib/contact/create_contact.h"
 #include "util/util.h"
 
 #include "fredlib/contact_verification/contact.h"
@@ -338,6 +339,56 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
           .exec(ctx)
                 , std::exception
                 , check_std_exception);
+
+}
+
+BOOST_AUTO_TEST_CASE(merge_contact_notification_email_addr)
+{
+    std::string registrar_handle = "REG-FRED_A";
+    Fred::OperationContext ctx;
+    std::string xmark = RandomDataGenerator().xnumstring(6);
+
+    std::string dst_contact_handle = std::string("TEST-MNTF-CONTACT-HANDLE")+xmark;
+    Fred::CreateContact(dst_contact_handle,registrar_handle)
+        .set_name(std::string("TEST-MNTF-CONTACT NAME")+xmark)
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .set_notifyemail("mntf@nic.cz")
+        .exec(ctx);
+
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> notif_emails
+      = Fred::MergeContactNotificationEmailAddr(
+        Fred::MergeContactEmailNotificationData(Util::vector_of<Fred::MergeContactEmailNotificationInput>
+        (Fred::MergeContactEmailNotificationInput("TEST_CONTACT1", dst_contact_handle, Fred::MergeContactOutput
+            (
+                Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
+                    (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
+                        , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
+
+                , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
+                    (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
+                        , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
+
+                , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
+                    (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", "REG-SPONSORING"
+                        , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
+                    (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", "REG-SPONSORING"
+                        , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+            )//MergeContactOutput
+        )//MergeContactEmailNotificationInput
+      )//vector_of
+    )//MergeContactEmailNotificationData
+    .exec(ctx)
+    )//MergeContactNotificationEmailAddr
+    .exec(ctx);
+
+    BOOST_CHECK(notif_emails.size() == 1);
+    BOOST_CHECK(notif_emails.at(0).notification_email_addr == "mntf@nic.cz");
 
 }
 BOOST_AUTO_TEST_SUITE_END();//TestMergeContact
