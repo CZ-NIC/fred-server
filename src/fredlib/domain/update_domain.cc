@@ -274,9 +274,7 @@ namespace Fred
 
                     if (domain_add_check_res.size() == 1)
                     {
-                        std::string errmsg("add admin contact precheck uniqueness failed || invalid:fqdn: ");
-                        errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
-                        errmsg += " | invalid:admin contact: ";
+                        std::string errmsg("add admin contact precheck uniqueness failed || already set:admin contact: ");
                         errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
                         errmsg += " |";
                         throw UDEX(errmsg.c_str());
@@ -291,9 +289,7 @@ namespace Fred
                 Database::Result domain_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
                 if (domain_add_check_res.size() != 1)
                 {
-                    std::string errmsg("add admin contact failed || invalid:fqdn: ");
-                    errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
-                    errmsg += " | invalid:admin contact: ";
+                    std::string errmsg("add admin contact failed || already set:admin contact: ");
                     errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
                     errmsg += " |";
                     throw UDEX(errmsg.c_str());
@@ -325,9 +321,7 @@ namespace Fred
                 Database::Result domain_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
                 if (domain_del_res.size() != 1)
                 {
-                    std::string errmsg("delete admin contact failed || invalid:fqdn: ");
-                    errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
-                    errmsg += " | invalid:admin contact: ";
+                    std::string errmsg("delete admin contact failed || invalid:admin contact: ");
                     errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
                     errmsg += " |";
                     throw UDEX(errmsg.c_str());

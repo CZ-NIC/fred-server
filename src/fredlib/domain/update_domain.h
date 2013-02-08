@@ -94,6 +94,7 @@ namespace Fred
                     , "not found:registrant"
                     , "not found:admin contact"
                     , "invalid:fqdn"
+                    , "already set:admin contact"
                     , "invalid:admin contact"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
