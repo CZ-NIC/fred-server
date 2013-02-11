@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <assert.h>
 #include <string>
+#include <map>
 
 #include <algorithm>
 #include <functional>
@@ -99,6 +100,72 @@ struct OperationExceptionBase
     virtual const char* what() const throw() = 0;
     virtual ~OperationExceptionBase() throw() {};
 };
+
+
+
+///get params data into multimap callback, throwing
+///use instance by boost::ref to keep state
+class GetOperationExceptionParamsDataToMmapCallback
+{
+public:
+    typedef std::multimap<std::string, std::string> Mmap;
+private:
+    Mmap data_;
+
+public:
+
+    /**
+     * callback accumulating data
+     */
+
+    void operator()(const char* param, const char* value)
+    {
+        data_.insert(Mmap::value_type(param, value));
+    }
+
+    /**
+     * get acumulated data
+     */
+
+    Mmap get()
+    {
+        return data_;
+    }
+};
+
+///get params data into bool callback, non throwing
+///use instance by boost::ref to keep state
+class GetOperationExceptionParamsDataToBoolCallback
+{
+    bool data_;
+
+public:
+
+    GetOperationExceptionParamsDataToBoolCallback() throw()
+    : data_(false)
+    {}
+
+    /**
+     * callback ignoring actual data, but registering presence
+     */
+
+    void operator()(const char* //param
+            , const char* //value
+            ) throw()
+    {
+        data_= true;
+    }
+
+    /**
+     * get acumulated data
+     */
+
+    bool get() throw()
+    {
+        return data_;
+    }
+};
+
 
 ///operation error exception base class
 struct OperationErrorBase

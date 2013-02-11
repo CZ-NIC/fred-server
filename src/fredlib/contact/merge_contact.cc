@@ -205,12 +205,30 @@ namespace Fred
 
                 if(!dry_run)
                 {
-                    std::string fqdn = std::string(result[i][0]);
-                    UpdateDomain ud (fqdn, registrar_ );
-                    ud.rem_admin_contact(src_contact_handle_)
-                    .add_admin_contact(dst_contact_handle_);
-                    if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
-                    tmp.history_id = ud.exec(ctx);
+                    try
+                    {
+                        std::string fqdn = std::string(result[i][0]);
+                        UpdateDomain ud (fqdn, registrar_ );
+                        ud.rem_admin_contact(src_contact_handle_)
+                        .add_admin_contact(dst_contact_handle_);
+                        if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
+                        tmp.history_id = ud.exec(ctx);
+                    }
+                    catch(UpdateDomainException& ex)
+                    {
+                        GetOperationExceptionParamsDataToBoolCallback cb;
+                        //look for already set: admin contact
+                        ex.callback_exception_params(boost::ref(cb),"already set:admin contact");
+                        //if found ignore exception, if not found rethrow exception
+                        if(cb.get())
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                 }
                 output.update_domain_admin_contact.push_back(tmp);
             }//for
@@ -240,12 +258,30 @@ namespace Fred
 
                 if(!dry_run)
                 {
-                    std::string handle = std::string(result[i][0]);
-                    UpdateNsset un(handle, registrar_ );
-                    un.rem_tech_contact(src_contact_handle_)
-                    .add_tech_contact(dst_contact_handle_);
-                    if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
-                    tmp.history_id = un.exec(ctx);
+                    try
+                    {
+                        std::string handle = std::string(result[i][0]);
+                        UpdateNsset un(handle, registrar_ );
+                        un.rem_tech_contact(src_contact_handle_)
+                        .add_tech_contact(dst_contact_handle_);
+                        if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
+                        tmp.history_id = un.exec(ctx);
+                    }
+                    catch(UpdateNssetException& ex)
+                    {
+                        GetOperationExceptionParamsDataToBoolCallback cb;
+                        //look for already set: tech contact
+                        ex.callback_exception_params(boost::ref(cb),"already set:tech contact");
+                        //if found ignore exception, if not found rethrow exception
+                        if(cb.get())
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                 }
                 output.update_nsset_tech_contact.push_back(tmp);
             }//for
@@ -275,12 +311,30 @@ namespace Fred
 
                 if(!dry_run)
                 {
-                    std::string handle = std::string(result[i][0]);
-                    UpdateKeyset uk(handle, registrar_);
-                    uk.rem_tech_contact(src_contact_handle_)
-                    .add_tech_contact(dst_contact_handle_);
-                    if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
-                    tmp.history_id = uk.exec(ctx);
+                    try
+                    {
+                        std::string handle = std::string(result[i][0]);
+                        UpdateKeyset uk(handle, registrar_);
+                        uk.rem_tech_contact(src_contact_handle_)
+                        .add_tech_contact(dst_contact_handle_);
+                        if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
+                        tmp.history_id = uk.exec(ctx);
+                    }
+                    catch(UpdateKeysetException& ex)
+                    {
+                        GetOperationExceptionParamsDataToBoolCallback cb;
+                        //look for already set: tech contact
+                        ex.callback_exception_params(boost::ref(cb),"already set:tech contact");
+                        //if found ignore exception, if not found rethrow exception
+                        if(cb.get())
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                 }
                 output.update_keyset_tech_contact.push_back(tmp);
             }//for
