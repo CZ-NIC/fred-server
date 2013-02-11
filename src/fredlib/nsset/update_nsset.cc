@@ -195,9 +195,7 @@ namespace Fred
 
                     if (nsset_res.size() == 1)
                     {
-                        std::string errmsg("add tech contact precheck uniqueness failed || invalid:handle: ");
-                        errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                        errmsg += " | invalid:tech contact: ";
+                        std::string errmsg("add tech contact precheck uniqueness failed || already set:tech contact: ");
                         errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
                         errmsg += " |";
                         throw UNEX(errmsg.c_str());

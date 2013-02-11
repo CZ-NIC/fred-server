@@ -113,6 +113,7 @@ namespace Fred
                     , "not found:dns fqdn"
                     , "invalid:dns fqdn"
                     , "invalid:handle"
+                    , "already set:tech contact"
                     , "invalid:tech contact"
                     , "invalid:ipaddr"};
             return ConstArr(list,sizeof(list)/sizeof(char*));

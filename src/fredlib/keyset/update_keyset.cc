@@ -177,9 +177,7 @@ namespace Fred
 
                     if (keyset_res.size() == 1)
                     {
-                        std::string errmsg("tech contact already set || invalid:handle: ");
-                        errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                        errmsg += " | invalid:tech contact: ";
+                        std::string errmsg("tech contact already set || already set:tech contact: ");
                         errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
                         errmsg += " |";
                         throw UKEX(errmsg.c_str());

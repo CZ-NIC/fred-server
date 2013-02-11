@@ -126,6 +126,7 @@ namespace Fred
                     , "not found:registrar"
                     , "not found:tech contact"
                     , "invalid:handle"
+                    , "already set:tech contact"
                     , "invalid:tech contact"
                     , "not found:dns key"
                     , "invalid:dns key"
