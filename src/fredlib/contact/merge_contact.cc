@@ -49,13 +49,16 @@ namespace Fred
         return *this;
     }
 
-    void MergeContact::lock_object_registry_row_for_update(OperationContext& ctx, bool dry_run)
+    MergeContactLockedContactId MergeContact::lock_object_registry_row_for_update(OperationContext& ctx, bool dry_run)
     {
+        MergeContactLockedContactId ret;
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                std::string("SELECT id FROM object_registry "
-                " WHERE UPPER(name) = UPPER($1::text) "
-                " AND type = 1") + (dry_run ? " " : " FOR UPDATE")
+                std::string("SELECT oreg.id, oreg.historyid, oreg.roid "
+                " FROM enum_object_type eot "
+                " JOIN object_registry oreg ON oreg.type = eot.id "
+                " AND UPPER(oreg.name) = UPPER($1::text) "
+                " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(src_contact_handle_));
 
             if (lock_res.size() != 1)
@@ -65,13 +68,19 @@ namespace Fred
                 errmsg += " |";
                 throw MCEX(errmsg.c_str());
             }
+
+            ret.src_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
+            ret.src_contact_historyid = static_cast<unsigned long long>(lock_res[0][1]);
+            ret.src_contact_roid = static_cast<std::string>(lock_res[0][2]);
         }
 
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                std::string("SELECT id FROM object_registry "
-                " WHERE UPPER(name) = UPPER($1::text) "
-                " AND type = 1") + (dry_run ? " " : " FOR UPDATE")
+                std::string("SELECT oreg.id, oreg.historyid, oreg.roid "
+                        " FROM enum_object_type eot "
+                        " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(dst_contact_handle_));
 
             if (lock_res.size() != 1)
@@ -81,7 +90,13 @@ namespace Fred
                 errmsg += " |";
                 throw MCEX(errmsg.c_str());
             }
+
+            ret.dst_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
+            ret.dst_contact_historyid = static_cast<unsigned long long>(lock_res[0][1]);
+            ret.dst_contact_roid = static_cast<std::string>(lock_res[0][2]);
         }
+
+        return ret;
     }//lock_object_registry_row_for_update
 
     void MergeContact::diff_contacts(OperationContext& ctx)
@@ -355,12 +370,14 @@ namespace Fred
         try
         {
             //lock object_registry row for update
-            lock_object_registry_row_for_update(ctx,dry_run);
+            MergeContactLockedContactId locked_contact = lock_object_registry_row_for_update(ctx,dry_run);
 
             //diff contacts
             diff_contacts(ctx);
 
-            return merge_contact_impl(ctx, dry_run);
+            MergeContactOutput out = merge_contact_impl(ctx, dry_run);
+            out.contactid = locked_contact;
+            return out;
         }//try
         catch(...)//common exception processing
         {
@@ -376,12 +393,14 @@ namespace Fred
             const bool dry_run = false;
 
             //lock object_registry row for update
-            lock_object_registry_row_for_update(ctx,dry_run);
+            MergeContactLockedContactId locked_contact = lock_object_registry_row_for_update(ctx,dry_run);
 
             //diff contacts
             diff_contacts(ctx);
 
-            return merge_contact_impl(ctx, dry_run);
+            MergeContactOutput out = merge_contact_impl(ctx, dry_run);
+            out.contactid = locked_contact;
+            return out;
         }//try
         catch(...)//common exception processing
         {
