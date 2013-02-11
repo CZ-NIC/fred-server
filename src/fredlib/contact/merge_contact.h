@@ -37,17 +37,22 @@ namespace Fred
     struct MergeContactUpdateDomainRegistrant
     {
         std::string fqdn;
+        unsigned long long domain_id;
         std::string sponsoring_registrar;
         std::string set_registrant;
         Optional<unsigned long long> history_id;
-        MergeContactUpdateDomainRegistrant(){}
+        MergeContactUpdateDomainRegistrant()
+        : domain_id(0)
+        {}
         MergeContactUpdateDomainRegistrant(
             const std::string& _fqdn
+            , unsigned long long _domain_id
             , const std::string& _sponsoring_registrar
             , const std::string& _set_registrant
             , const Optional<unsigned long long>& _history_id
         )
             : fqdn(_fqdn)
+            , domain_id(_domain_id)
             , sponsoring_registrar(_sponsoring_registrar)
             , set_registrant(_set_registrant)
             , history_id(_history_id)
@@ -57,19 +62,24 @@ namespace Fred
     struct MergeContactUpdateDomainAdminContact
     {
         std::string fqdn;
+        unsigned long long domain_id;
         std::string sponsoring_registrar;
         std::string rem_admin_contact;
         std::string add_admin_contact;
         Optional<unsigned long long> history_id;
-        MergeContactUpdateDomainAdminContact(){}
+        MergeContactUpdateDomainAdminContact()
+        : domain_id(0)
+        {}
         MergeContactUpdateDomainAdminContact(
             const std::string& _fqdn
+            , unsigned long long _domain_id
             , const std::string& _sponsoring_registrar
             , const std::string& _rem_admin_contact
             , const std::string& _add_admin_contact
             , const Optional<unsigned long long>& _history_id
         )
             : fqdn(_fqdn)
+            , domain_id(_domain_id)
             , sponsoring_registrar(_sponsoring_registrar)
             , rem_admin_contact(_rem_admin_contact)
             , add_admin_contact(_add_admin_contact)
@@ -80,19 +90,24 @@ namespace Fred
     struct MergeContactUpdateNssetTechContact
     {
         std::string handle;
+        unsigned long long nsset_id;
         std::string sponsoring_registrar;
         std::string rem_tech_contact;
         std::string add_tech_contact;
         Optional<unsigned long long> history_id;
-        MergeContactUpdateNssetTechContact(){}
+        MergeContactUpdateNssetTechContact()
+        : nsset_id(0)
+        {}
         MergeContactUpdateNssetTechContact(
             const std::string& _handle
+            , unsigned long long _nsset_id
             , const std::string& _sponsoring_registrar
             , const std::string& _rem_tech_contact
             , const std::string& _add_tech_contact
             , const Optional<unsigned long long>& _history_id
         )
             : handle(_handle)
+            , nsset_id(_nsset_id)
             , sponsoring_registrar(_sponsoring_registrar)
             , rem_tech_contact(_rem_tech_contact)
             , add_tech_contact(_add_tech_contact)
@@ -103,24 +118,28 @@ namespace Fred
     struct MergeContactUpdateKeysetTechContact
     {
         std::string handle;
+        unsigned long long keyset_id;
         std::string sponsoring_registrar;
         std::string rem_tech_contact;
         std::string add_tech_contact;
         Optional<unsigned long long> history_id;
-        MergeContactUpdateKeysetTechContact(){}
+        MergeContactUpdateKeysetTechContact()
+        : keyset_id(0)
+        {}
         MergeContactUpdateKeysetTechContact(
             const std::string& _handle
+            , unsigned long long _keyset_id
             , const std::string& _sponsoring_registrar
             , const std::string& _rem_tech_contact
             , const std::string& _add_tech_contact
             , const Optional<unsigned long long>& _history_id
         )
             : handle(_handle)
+            , keyset_id(_keyset_id)
             , sponsoring_registrar(_sponsoring_registrar)
             , rem_tech_contact(_rem_tech_contact)
             , add_tech_contact(_add_tech_contact)
             , history_id(_history_id)
-
         {}
     };
 

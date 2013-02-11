@@ -166,7 +166,7 @@ namespace Fred
         //domain_registrant lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle "
+                std::string("SELECT oreg.name, r.handle, d.id "
                 " FROM contact src_c "
                 " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
                 " AND UPPER(src_oreg.name) = UPPER($1::text) "
@@ -180,6 +180,7 @@ namespace Fred
             {
                 MergeContactUpdateDomainRegistrant tmp;
                 tmp.fqdn = std::string(result[i][0]);
+                tmp.domain_id = static_cast<unsigned long long>(result[i][2]);
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.set_registrant = dst_contact_handle_;
 
@@ -198,7 +199,7 @@ namespace Fred
         //domain_admin lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle "
+                std::string("SELECT oreg.name, r.handle, d.id "
                 " FROM contact src_c "
                 " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
                 " AND UPPER(src_oreg.name) = UPPER($1::text) "
@@ -214,6 +215,7 @@ namespace Fred
             {
                 MergeContactUpdateDomainAdminContact tmp;
                 tmp.fqdn = std::string(result[i][0]);
+                tmp.domain_id = static_cast<unsigned long long>(result[i][2]);
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.rem_admin_contact = src_contact_handle_;
                 tmp.add_admin_contact = dst_contact_handle_;
@@ -252,7 +254,7 @@ namespace Fred
         //nsset_tech lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle "
+                std::string("SELECT oreg.name, r.handle, n.id "
                 " FROM contact src_c "
                 " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
                 " AND UPPER(src_oreg.name) = UPPER($1::text) "
@@ -267,6 +269,7 @@ namespace Fred
             {
                 MergeContactUpdateNssetTechContact tmp;
                 tmp.handle = std::string(result[i][0]);
+                tmp.nsset_id = static_cast<unsigned long long>(result[i][2]);
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.rem_tech_contact = src_contact_handle_;
                 tmp.add_tech_contact = dst_contact_handle_;
@@ -305,7 +308,7 @@ namespace Fred
         //keyset_tech lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle "
+                std::string("SELECT oreg.name, r.handle, k.id "
                 " FROM contact src_c "
                 " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
                 " AND UPPER(src_oreg.name) = UPPER($1::text) "
@@ -320,6 +323,7 @@ namespace Fred
             {
                 MergeContactUpdateKeysetTechContact tmp;
                 tmp.handle = std::string(result[i][0]);
+                tmp.keyset_id = static_cast<unsigned long long>(result[i][2]);
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.rem_tech_contact = src_contact_handle_;
                 tmp.add_tech_contact = dst_contact_handle_;

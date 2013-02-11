@@ -185,19 +185,19 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
             (
                 Fred::MergeContactLockedContactId()
                 , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                    (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
+                    (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
                         , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
                 , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                    (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
+                    (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
                         , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
                 , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
-                    (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", "REG-SPONSORING"
+                    (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
                         , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
                 , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
-                    (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", "REG-SPONSORING"
+                    (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                         , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
             )//MergeContactOutput
@@ -207,19 +207,19 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
           (
               Fred::MergeContactLockedContactId()
               , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
                       , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
                       , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
-                  (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
-                  (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
           )//MergeContactOutput
@@ -229,19 +229,19 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
           (
               Fred::MergeContactLockedContactId()
               , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
                     , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
                     , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
-                  (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
-                  (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
             )//MergeContactOutput
@@ -253,19 +253,19 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
           (
               Fred::MergeContactLockedContactId()
               , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
                       , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
                       , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
-                  (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
-                  (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
           )//MergeContactOutput
@@ -276,19 +276,19 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
           (
               Fred::MergeContactLockedContactId()
               , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
                       , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
                       , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
-                  (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
               , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
-                  (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", "REG-SPONSORING"
+                  (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
           )//MergeContactOutput
@@ -322,19 +322,19 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                 (
                     Fred::MergeContactLockedContactId()
                     , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                        (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
+                        (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
                             , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
                     , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                        (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
+                        (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
                             , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
                     , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
-                        (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", "REG-SPONSORING"
+                        (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
                             , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
                     , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
-                        (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", "REG-SPONSORING"
+                        (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                             , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
                 )//MergeContactOutput
@@ -371,19 +371,19 @@ BOOST_AUTO_TEST_CASE(merge_contact_notification_email_addr)
             (
                 Fred::MergeContactLockedContactId()
                 , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
-                    (Fred::MergeContactUpdateDomainRegistrant("domain.cz", "REG-SPONSORING"
+                    (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
                         , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
 
                 , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
-                    (Fred::MergeContactUpdateDomainAdminContact("domain.cz", "REG-SPONSORING"
+                    (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
                         , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
 
                 , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
-                    (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", "REG-SPONSORING"
+                    (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
                         , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
                 , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
-                    (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", "REG-SPONSORING"
+                    (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                         , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
             )//MergeContactOutput
