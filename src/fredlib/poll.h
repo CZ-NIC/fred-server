@@ -35,7 +35,10 @@ namespace Fred
       MT_OUTZONE = 13,
       MT_TRANSFER_KEYSET = 14,
       MT_DELETE_KEYSET = 15,
-      MT_REQUEST_FEE_INFO = 16
+      MT_REQUEST_FEE_INFO = 16,
+      MT_UPDATE_DOMAIN = 17,
+      MT_UPDATE_NSSET = 18,
+      MT_UPDATE_KEYSET = 19
     };
 
 
@@ -116,6 +119,13 @@ namespace Fred
          virtual const unsigned long long& getTotalFreeCount() const = 0;
          virtual const unsigned long long& getUsedCount() const = 0;
          virtual const std::string& getPrice() const = 0;
+    };
+
+    class MessageUpdateObject : virtual public Message
+    {
+     public:
+      virtual ~MessageUpdateObject() {}
+      virtual const std::string& getOpTRID() const = 0;
     };
 
     class List : virtual public CommonList
