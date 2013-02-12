@@ -2,6 +2,7 @@
 #include "merge_contact_selection.h"
 #include "merge_contact.h"
 #include "find_contact_duplicates.h"
+#include "poll/create_update_object_poll_message.h"
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>
@@ -109,7 +110,29 @@ void logger_merge_contact_close_request_fail(
 }
 
 
-
+void create_poll_messages(const MergeContactOutput &_merge_data, Fred::OperationContext &_ctx)
+{
+    for (std::vector<MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
+            i != _merge_data.update_domain_registrant.end(); ++i)
+    {
+        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
+    }
+    for (std::vector<MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
+            i != _merge_data.update_domain_admin_contact.end(); ++i)
+    {
+        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
+    }
+    for (std::vector<MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
+            i != _merge_data.update_nsset_tech_contact.end(); ++i)
+    {
+        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
+    }
+    for (std::vector<MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
+            i != _merge_data.update_keyset_tech_contact.end(); ++i)
+    {
+        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
+    }
+}
 
 
 
@@ -202,6 +225,7 @@ void MergeContactAutoProcedure::exec()
                     pick_one, winner_handle, system_registrar).set_logd_request_id(req_id).exec(merge_octx);
 
             /* merge operation notification handling */
+            create_poll_messages(merge_data, merge_octx);
             merge_octx.commit_transaction();
 
             logger_merge_contact_close_request_success(logger_client_, req_id, merge_data);

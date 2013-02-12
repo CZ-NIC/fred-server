@@ -735,6 +735,10 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/delete_contact.cc \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
+		src/fredlib/poll/create_poll_message.h \
+		src/fredlib/poll/create_poll_message.cc \
+		src/fredlib/poll/create_update_object_poll_message.h \
+		src/fredlib/poll/create_update_object_poll_message.cc \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/merge_contact.h \
 		src/fredlib/contact/merge_contact.cc \
