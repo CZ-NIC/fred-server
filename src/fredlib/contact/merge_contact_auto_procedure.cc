@@ -13,42 +13,46 @@ namespace Fred {
 namespace Contact {
 
 
-Fred::Logger::RequestProperties logger_merge_contact_transform_output_data(
-        const MergeContactOutput &_merge_data)
+void logger_merge_contact_transform_output_data(
+        const MergeContactOutput &_merge_data,
+        Fred::Logger::RequestProperties &_properties,
+        Fred::Logger::ObjectReferences &_references)
 {
-    Fred::Logger::RequestProperties properties;
     for (std::vector<MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
             i != _merge_data.update_domain_registrant.end(); ++i)
     {
-        properties.push_back(Fred::Logger::RequestProperty("command", "update_domain", false));
-        properties.push_back(Fred::Logger::RequestProperty("handle", i->fqdn, true));
-        properties.push_back(Fred::Logger::RequestProperty("registrant", i->set_registrant, true));
+        _properties.push_back(Fred::Logger::RequestProperty("command", "update_domain", false));
+        _properties.push_back(Fred::Logger::RequestProperty("handle", i->fqdn, true));
+        _properties.push_back(Fred::Logger::RequestProperty("registrant", i->set_registrant, true));
+        _references.push_back(Fred::Logger::ObjectReference("domain", i->domain_id));
     }
     for (std::vector<MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
             i != _merge_data.update_domain_admin_contact.end(); ++i)
     {
-        properties.push_back(Fred::Logger::RequestProperty("command", "update_domain", false));
-        properties.push_back(Fred::Logger::RequestProperty("handle", i->fqdn, true));
-        properties.push_back(Fred::Logger::RequestProperty("remAdmin", i->rem_admin_contact, true));
-        properties.push_back(Fred::Logger::RequestProperty("addAdmin", i->add_admin_contact, true));
+        _properties.push_back(Fred::Logger::RequestProperty("command", "update_domain", false));
+        _properties.push_back(Fred::Logger::RequestProperty("handle", i->fqdn, true));
+        _properties.push_back(Fred::Logger::RequestProperty("remAdmin", i->rem_admin_contact, true));
+        _properties.push_back(Fred::Logger::RequestProperty("addAdmin", i->add_admin_contact, true));
+        _references.push_back(Fred::Logger::ObjectReference("domain", i->domain_id));
     }
     for (std::vector<MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
             i != _merge_data.update_nsset_tech_contact.end(); ++i)
     {
-        properties.push_back(Fred::Logger::RequestProperty("command", "update_nsset", false));
-        properties.push_back(Fred::Logger::RequestProperty("handle", i->handle, true));
-        properties.push_back(Fred::Logger::RequestProperty("remTech", i->rem_tech_contact, true));
-        properties.push_back(Fred::Logger::RequestProperty("addTech", i->add_tech_contact, true));
+        _properties.push_back(Fred::Logger::RequestProperty("command", "update_nsset", false));
+        _properties.push_back(Fred::Logger::RequestProperty("handle", i->handle, true));
+        _properties.push_back(Fred::Logger::RequestProperty("remTech", i->rem_tech_contact, true));
+        _properties.push_back(Fred::Logger::RequestProperty("addTech", i->add_tech_contact, true));
+        _references.push_back(Fred::Logger::ObjectReference("nsset", i->nsset_id));
     }
     for (std::vector<MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
             i != _merge_data.update_keyset_tech_contact.end(); ++i)
     {
-        properties.push_back(Fred::Logger::RequestProperty("command", "update_keyset", false));
-        properties.push_back(Fred::Logger::RequestProperty("handle", i->handle, true));
-        properties.push_back(Fred::Logger::RequestProperty("remTech", i->rem_tech_contact, true));
-        properties.push_back(Fred::Logger::RequestProperty("addTech", i->add_tech_contact, true));
+        _properties.push_back(Fred::Logger::RequestProperty("command", "update_keyset", false));
+        _properties.push_back(Fred::Logger::RequestProperty("handle", i->handle, true));
+        _properties.push_back(Fred::Logger::RequestProperty("remTech", i->rem_tech_contact, true));
+        _properties.push_back(Fred::Logger::RequestProperty("addTech", i->add_tech_contact, true));
+        _references.push_back(Fred::Logger::ObjectReference("keyset", i->keyset_id));
     }
-    return properties;
 }
 
 
@@ -74,12 +78,13 @@ void logger_merge_contact_close(
         Fred::Logger::LoggerClient &_logger_client,
         const unsigned long long _req_id,
         const Fred::Logger::RequestProperties &_properties,
+        const Fred::Logger::ObjectReferences &_references,
         const std::string &_result)
 {
     if (_req_id) {
         _logger_client.closeRequest(_req_id, "Admin", "",
                 _properties,
-                Fred::Logger::ObjectReferences(),
+                _references,
                 _result, 0);
     }
 }
@@ -90,10 +95,14 @@ void logger_merge_contact_close_request_success(
         const unsigned long long _req_id,
         const MergeContactOutput &_merge_data)
 {
+    Fred::Logger::RequestProperties props;
+    Fred::Logger::ObjectReferences refs;
+    logger_merge_contact_transform_output_data(_merge_data, props, refs),
     logger_merge_contact_close(
             _logger_client,
             _req_id,
-            logger_merge_contact_transform_output_data(_merge_data),
+            props,
+            refs,
             "Success");
 }
 
@@ -106,6 +115,7 @@ void logger_merge_contact_close_request_fail(
             _logger_client,
             _req_id,
             Fred::Logger::RequestProperties(),
+            Fred::Logger::ObjectReferences(),
             "Fail");
 }
 
