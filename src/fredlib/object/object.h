@@ -26,6 +26,7 @@
 
 #include <string>
 
+
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
@@ -35,6 +36,49 @@
 
 namespace Fred
 {
+
+    class CreateObject
+    {
+        const std::string object_type_;//object type name
+        const std::string handle_;//object identifier
+        const std::string registrar_;//set registrar
+        Optional<std::string> authinfo_;//set authinfo
+    public:
+        CreateObject(const std::string& object_type
+                , const std::string& handle
+                , const std::string& registrar);
+        CreateObject(const std::string& object_type
+                , const std::string& handle
+            , const std::string& registrar
+            , const Optional<std::string>& authinfo);
+        CreateObject& set_authinfo(const std::string& authinfo);
+        unsigned long long exec(OperationContext& ctx);
+    };
+    //exception impl
+    class CreateObjectException
+    : public OperationExceptionImpl<CreateObjectException, 8192>
+    {
+    public:
+        CreateObjectException(const char* file
+                , const int line
+                , const char* function
+                , const char* data)
+        : OperationExceptionImpl<CreateObjectException, 8192>(file, line, function, data)
+        {}
+
+        ConstArr get_fail_param_impl() throw()
+        {
+            static const char* list[]={"not found:object type", "invalid:handle", "not found:registrar"};
+            return ConstArr(list,sizeof(list)/sizeof(char*));
+        }
+
+    };//class CreateObjectException
+
+    typedef CreateObjectException::OperationErrorType CreteaObjectError;
+#define COEX(DATA) CreateObjectException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define COERR(DATA) CreteaObjectError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+
+
     class UpdateObject
     {
         const std::string handle_;//object identifier
@@ -51,24 +95,24 @@ namespace Fred
     };
 
     //exception impl
-        class UpdateObjectException
-        : public OperationExceptionImpl<UpdateObjectException, 2048>
+    class UpdateObjectException
+    : public OperationExceptionImpl<UpdateObjectException, 8192>
+    {
+    public:
+        UpdateObjectException(const char* file
+                , const int line
+                , const char* function
+                , const char* data)
+        : OperationExceptionImpl<UpdateObjectException, 8192>(file, line, function, data)
+        {}
+
+        ConstArr get_fail_param_impl() throw()
         {
-        public:
-            UpdateObjectException(const char* file
-                    , const int line
-                    , const char* function
-                    , const char* data)
-            : OperationExceptionImpl<UpdateObjectException, 2048>(file, line, function, data)
-            {}
+            static const char* list[]={"not found:handle", "not found:registrar"};
+            return ConstArr(list,sizeof(list)/sizeof(char*));
+        }
 
-            ConstArr get_fail_param_impl() throw()
-            {
-                static const char* list[]={"not found:handle", "not found:registrar"};
-                return ConstArr(list,sizeof(list)/sizeof(char*));
-            }
-
-        };//class UpdateObjectException
+    };//class UpdateObjectException
 
     typedef UpdateObjectException::OperationErrorType UpdateObjectError;
 #define UOEX(DATA) UpdateObjectException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
@@ -85,14 +129,14 @@ namespace Fred
 
     //exception impl
         class InsertHistoryException
-        : public OperationExceptionImpl<InsertHistoryException, 2048>
+        : public OperationExceptionImpl<InsertHistoryException, 8192>
         {
         public:
             InsertHistoryException(const char* file
                     , const int line
                     , const char* function
                     , const char* data)
-            : OperationExceptionImpl<InsertHistoryException, 2048>(file, line, function, data)
+            : OperationExceptionImpl<InsertHistoryException, 8192>(file, line, function, data)
             {}
 
             ConstArr get_fail_param_impl() throw()

@@ -32,8 +32,90 @@
 
 #include "util/log/log.h"
 
+#include "util/random_data_generator.h"
+
+
 namespace Fred
 {
+
+    CreateObject::CreateObject(const std::string& object_type
+        , const std::string& handle
+        , const std::string& registrar)
+    : object_type_(object_type)
+    , handle_(handle)
+    , registrar_(registrar)
+    {}
+
+    CreateObject::CreateObject(const std::string& object_type
+        , const std::string& handle
+        , const std::string& registrar
+        , const Optional<std::string>& authinfo)
+    : object_type_(object_type)
+    , handle_(handle)
+    , registrar_(registrar)
+    , authinfo_(authinfo)
+    {}
+
+    CreateObject& CreateObject::set_authinfo(const std::string& authinfo)
+    {
+        authinfo_ = authinfo;
+        return *this;
+    }
+
+    unsigned long long  CreateObject::exec(OperationContext& ctx)
+    {
+        unsigned long long object_id = 0;
+
+        try
+        {
+
+            Database::Result id_res = ctx.get_conn().exec_params(
+                "SELECT create_object(raise_exception_ifnull( "
+                    " (SELECT id FROM registrar WHERE UPPER(handle) = UPPER($1::text)) "
+                    " ,'|| not found:registrar: '||ex_data($1::text)||' |') "//registrar handle
+                    " , $2::text "//object handle
+                    " , raise_exception_ifnull( "
+                    " (SELECT id FROM enum_object_type WHERE name = $3::text) "
+                    " ,'|| not found:object type: '||ex_data($3::text)||' |') )"//object type
+                        , Database::query_param_list(registrar_)(handle_)(object_type_));
+
+            if (id_res.size() != 1)
+            {
+                throw COERR("unable to call create_object");
+            }
+
+            object_id = id_res[0][0];
+
+            if (object_id == 0)
+            {
+                std::string errmsg("unable to create object || invalid:handle: ");
+                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                errmsg += " |";
+                throw COEX(errmsg.c_str());
+            }
+
+            if(authinfo_.get_value().empty())
+            {
+                authinfo_ = RandomDataGenerator().xnstring(8);//former PASS_LEN
+            }
+
+            ctx.get_conn().exec_params("INSERT INTO object(id, clid, authinfopw) VALUES ($1::bigint "//object id from create_object
+                    " , raise_exception_ifnull( "
+                    " (SELECT id FROM registrar WHERE UPPER(handle) = UPPER($2::text)) "
+                    " ,'|| not found:registrar: '||ex_data($2::text)||' |') "//registrar handle
+                    " , $3::text)"
+                    , Database::query_param_list(object_id)(registrar_)(authinfo_));
+
+        }//try
+        catch(...)//common exception processing
+        {
+            handleOperationExceptions<CreateObjectException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+        }
+
+        return object_id;
+    }
+
+
     UpdateObject::UpdateObject(const std::string& handle
         , const std::string& registrar)
     : handle_(handle)

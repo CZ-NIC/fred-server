@@ -141,7 +141,10 @@ namespace Fred
         //lock object_registry row for update
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                "SELECT id FROM object_registry WHERE UPPER(name) = UPPER($1::text) AND type = 3 FOR UPDATE"
+                "SELECT oreg.id FROM enum_object_type eot"
+                " JOIN object_registry oreg ON oreg.type = eot.id "
+                " AND UPPER(oreg.name) = UPPER($1::text) "
+                " WHERE eot.name = 'domain' FOR UPDATE OF oreg"
                 , Database::query_param_list(fqdn_));
 
             if (lock_res.size() != 1)
@@ -200,8 +203,9 @@ namespace Fred
                 {//value case query
                     sql << set_separator.get()
                         << " nsset = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
-                        " JOIN nsset n ON oreg.id = n.id WHERE UPPER(oreg.name) = UPPER($"
-                        << params.size() << "::text)),'|| not found:nsset: '||ex_data($"<< params.size() << "::text)||' |') "; //nsset update
+                        " JOIN nsset n ON oreg.id = n.id "
+                        " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)) "
+                        " ,'|| not found:nsset: '||ex_data($"<< params.size() << "::text)||' |') "; //nsset update
                 }
             }//if change nsset
 
@@ -218,18 +222,20 @@ namespace Fred
                 else
                 {//value case query
                     sql << set_separator.get()
-                        << " keyset = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
-                        " JOIN keyset k ON oreg.id = k.id WHERE UPPER(oreg.name) = UPPER($"
-                        << params.size() << "::text)),'|| not found:keyset: '||ex_data($"<< params.size() << "::text)||' |') "; //keyset update
+                        << " keyset = raise_exception_ifnull("
+                        " (SELECT oreg.id FROM object_registry oreg JOIN keyset k ON oreg.id = k.id "
+                        " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),"
+                        " '|| not found:keyset: '||ex_data($"<< params.size() << "::text)||' |') "; //keyset update
                 }
             }//if change keyset
 
             if(registrant_.isset())//change registrant
             {
                 params.push_back(registrant_);
-                sql << set_separator.get() << " registrant = raise_exception_ifnull((SELECT oreg.id "
-                    " FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)),'|| not found:registrant: '||ex_data($"<< params.size() << "::text)||' |') "; //registrant update
+                sql << set_separator.get() << " registrant = raise_exception_ifnull( "
+                    " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
+                    " WHERE UPPER(oreg.name) = UPPER($" << params.size() << "::text)) "
+                    " ,'|| not found:registrant: '||ex_data($"<< params.size() << "::text)||' |') "; //registrant update
             }//if change registrant
 
             params.push_back(domain_id);
@@ -254,9 +260,40 @@ namespace Fred
                 sql_i << sql.str();
 
                 params_i.push_back(*i);
-                sql_i << " raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)),'|| not found:admin contact: '||ex_data($"<< params.size() << "::text)||' |'));";
-                ctx.get_conn().exec_params(sql_i.str(), params_i);
+
+                {//precheck uniqueness
+                    Database::Result domain_add_check_res = ctx.get_conn().exec_params(
+                    "SELECT domainid, contactid FROM domain_contact_map "
+                    " WHERE domainid = $1::bigint "
+                    "  AND contactid = raise_exception_ifnull("
+                    "    (SELECT oreg.id FROM object_registry oreg "
+                    "       JOIN contact c ON oreg.id = c.id "
+                    "     WHERE UPPER(oreg.name) = UPPER($2::text)) "
+                    "     ,'|| not found:admin contact: '||ex_data($2::text)||' |')"
+                    , params_i);
+
+                    if (domain_add_check_res.size() == 1)
+                    {
+                        std::string errmsg("add admin contact precheck uniqueness failed || already set:admin contact: ");
+                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UDEX(errmsg.c_str());
+                    }
+                }
+
+                sql_i << " raise_exception_ifnull("
+                    " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
+                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text))"
+                    " , '|| not found:admin contact: '||ex_data($"<< params.size() << "::text)||' |')) "
+                    " RETURNING domainid";
+                Database::Result domain_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
+                if (domain_add_check_res.size() != 1)
+                {
+                    std::string errmsg("add admin contact failed || already set:admin contact: ");
+                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw UDEX(errmsg.c_str());
+                }
             }//for i
         }//if add admin contacts
 
@@ -276,10 +313,19 @@ namespace Fred
                 sql_i << sql.str();
 
                 params_i.push_back(*i);
-                sql_i << "contactid = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
-                        " JOIN contact c ON oreg.id = c.id WHERE UPPER(oreg.name) = UPPER($"
-                    << params_i.size() << "::text)),'|| not found:admin contact: '||ex_data($"<< params.size() << "::text)||' |');";
-                ctx.get_conn().exec_params(sql_i.str(), params_i);
+                sql_i << "contactid = raise_exception_ifnull("
+                        " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
+                        " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)) "
+                        " ,'|| not found:admin contact: '||ex_data($"<< params.size() << "::text)||' |') "
+                        " RETURNING domainid";
+                Database::Result domain_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
+                if (domain_del_res.size() != 1)
+                {
+                    std::string errmsg("delete admin contact failed || invalid:admin contact: ");
+                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw UDEX(errmsg.c_str());
+                }
             }//for i
         }//if delete admin contacts
 

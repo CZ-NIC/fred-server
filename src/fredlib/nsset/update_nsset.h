@@ -107,8 +107,15 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[]={"not found:handle", "not found:registrar"
-                    , "not found:tech contact", "not found:dns fqdn", "invalid:dns fqdn"};
+            static const char* list[]={"not found:handle"
+                    , "not found:registrar"
+                    , "not found:tech contact"
+                    , "not found:dns fqdn"
+                    , "invalid:dns fqdn"
+                    , "invalid:handle"
+                    , "already set:tech contact"
+                    , "invalid:tech contact"
+                    , "invalid:ipaddr"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     };//class UpdateNssetException

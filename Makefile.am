@@ -742,12 +742,17 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/merge_contact.h \
 		src/fredlib/contact/merge_contact.cc \
+		src/fredlib/contact/create_contact.cc \
+		src/fredlib/contact/create_contact.h \
 		src/fredlib/contact/merge_contact_selection.cc \
 		src/fredlib/contact/merge_contact_selection.h \
 		src/fredlib/contact/merge_contact_auto_procedure.cc \
 		src/fredlib/contact/merge_contact_auto_procedure.h \
 		src/fredlib/contact/find_contact_duplicates.cc \
-		src/fredlib/contact/find_contact_duplicates.h
+		src/fredlib/contact/find_contact_duplicates.h \
+		src/fredlib/contact/merge_contact_email_notification_data.cc \
+		src/fredlib/contact/merge_contact_email_notification_data.h
+
 #
 # src/fredlib/libfred.a
 

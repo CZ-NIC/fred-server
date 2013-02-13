@@ -109,7 +109,10 @@ namespace Fred
         //lock object_registry row for update
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                "SELECT id FROM object_registry WHERE UPPER(name) = UPPER($1::text) AND type = 4 FOR UPDATE"
+                "SELECT oreg.id FROM enum_object_type eot"
+                " JOIN object_registry oreg ON oreg.type = eot.id "
+                " AND UPPER(oreg.name) = UPPER($1::text) "
+                " WHERE eot.name = 'keyset' FOR UPDATE OF oreg"
                 , Database::query_param_list(handle_));
 
             if (lock_res.size() != 1)
@@ -160,9 +163,43 @@ namespace Fred
                 sql_i << sql.str();
 
                 params_i.push_back(*i);
-                sql_i << " raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)),'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |'));";
-                ctx.get_conn().exec_params(sql_i.str(), params_i);
+
+                {//precheck uniqueness
+                    Database::Result keyset_res = ctx.get_conn().exec_params(
+                    "SELECT keysetid, contactid FROM keyset_contact_map "
+                    " WHERE keysetid = $1::bigint "
+                    "  AND contactid = raise_exception_ifnull("
+                    "    (SELECT oreg.id FROM object_registry oreg "
+                    "       JOIN contact c ON oreg.id = c.id "
+                    "     WHERE UPPER(oreg.name) = UPPER($2::text)) "
+                    "     ,'|| not found:tech contact: '||ex_data($2::text)||' |')"
+                    , params_i);
+
+                    if (keyset_res.size() == 1)
+                    {
+                        std::string errmsg("tech contact already set || already set:tech contact: ");
+                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UKEX(errmsg.c_str());
+                    }
+                }
+
+                sql_i << " raise_exception_ifnull("
+                    " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
+                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)) "
+                    " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |')) "
+                    " RETURNING keysetid";
+
+                Database::Result keyset_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
+                if (keyset_add_check_res.size() != 1)
+                {
+                    std::string errmsg("add tech contact failed || invalid:handle: ");
+                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                    errmsg += " | invalid:tech contact: ";
+                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw UKEX(errmsg.c_str());
+                }
             }//for i
         }//if add tech contacts
 
@@ -183,10 +220,21 @@ namespace Fred
                 sql_i << sql.str();
 
                 params_i.push_back(*i);
-                sql_i << "contactid = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
-                        " JOIN contact c ON oreg.id = c.id WHERE UPPER(oreg.name) = UPPER($"
-                    << params_i.size() << "::text)),'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |');";
-                ctx.get_conn().exec_params(sql_i.str(), params_i);
+                sql_i << "contactid = raise_exception_ifnull( "
+                    " (SELECT oreg.id FROM object_registry oreg "
+                    " JOIN contact c ON oreg.id = c.id WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)) "
+                    " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |') "
+                    " RETURNING keysetid";
+                Database::Result keyset_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
+                if (keyset_del_res.size() != 1)
+                {
+                    std::string errmsg("delete tech contact failed || invalid:handle: ");
+                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                    errmsg += " | invalid:tech contact: ";
+                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw UKEX(errmsg.c_str());
+                }
             }//for i
         }//if delete tech contacts
 
@@ -200,10 +248,18 @@ namespace Fred
                 //erase spaces in key
                 nwkey.erase(std::remove_if(nwkey.begin(), nwkey.end(), isspace), nwkey.end());
 
-                ctx.get_conn().exec_params(
+                Database::Result rem_dns_key_res = ctx.get_conn().exec_params(
                     "DELETE FROM dnskey WHERE keysetid = $1::integer "
-                    " AND flags = $2::integer AND protocol = $3::integer AND alg = $4::integer AND key = $5::text"
+                    " AND flags = $2::integer AND protocol = $3::integer AND alg = $4::integer AND key = $5::text "
+                    " RETURNING id"
                     , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(nwkey));
+                if (rem_dns_key_res.size() != 1)
+                {
+                    std::string errmsg("delete dns keys || not found:dns key: ");
+                    errmsg += boost::replace_all_copy(nwkey,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw UKEX(errmsg.c_str());
+                }
             }//for i
         }//if delete dns keys
 
@@ -217,10 +273,17 @@ namespace Fred
                 //erase spaces in key
                 nwkey.erase(std::remove_if(nwkey.begin(), nwkey.end(), isspace), nwkey.end());
 
-                ctx.get_conn().exec_params(
+                Database::Result add_dns_key_res = ctx.get_conn().exec_params(
                     "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
-                    ", $2::integer, $3::integer, $4::integer, $5::text)"
+                    ", $2::integer, $3::integer, $4::integer, $5::text) RETURNING id"
                     , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(nwkey));
+                if (add_dns_key_res.size() != 1)
+                {
+                    std::string errmsg("add dns keys || invalid:dns key: ");
+                    errmsg += boost::replace_all_copy(nwkey,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw UKEX(errmsg.c_str());
+                }
             }//for i
         }//if add dns keys
 

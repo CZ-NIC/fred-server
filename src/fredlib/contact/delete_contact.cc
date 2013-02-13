@@ -39,12 +39,18 @@ namespace Fred
         //lock object_registry row for update
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                "SELECT id FROM object_registry WHERE UPPER(name) = UPPER($1::text) AND type = 1 FOR UPDATE"
+                "SELECT oreg.id FROM enum_object_type eot"
+                " JOIN object_registry oreg ON oreg.type = eot.id "
+                " AND UPPER(oreg.name) = UPPER($1::text) "
+                " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                 , Database::query_param_list(handle_));
 
             if (lock_res.size() != 1)
             {
-                throw std::runtime_error("DeleteContact::exec unable to lock");
+                std::string errmsg("unable to lock || not found:handle: ");
+                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                errmsg += " |";
+                throw DCEX(errmsg.c_str());
             }
         }
 
@@ -59,7 +65,10 @@ namespace Fred
 
             if (contact_id_res.size() != 1)
             {
-                throw std::runtime_error("DeleteContact::exec contact not found");
+                std::string errmsg("|| not found:handle: ");
+                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                errmsg += " |";
+                throw DCEX(errmsg.c_str());
             }
 
             contact_id = contact_id_res[0][0];

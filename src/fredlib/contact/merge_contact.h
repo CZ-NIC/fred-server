@@ -37,46 +37,165 @@ namespace Fred
     struct MergeContactUpdateDomainRegistrant
     {
         std::string fqdn;
+        unsigned long long domain_id;
         std::string sponsoring_registrar;
         std::string set_registrant;
         Optional<unsigned long long> history_id;
+        MergeContactUpdateDomainRegistrant()
+        : domain_id(0)
+        {}
+        MergeContactUpdateDomainRegistrant(
+            const std::string& _fqdn
+            , unsigned long long _domain_id
+            , const std::string& _sponsoring_registrar
+            , const std::string& _set_registrant
+            , const Optional<unsigned long long>& _history_id
+        )
+            : fqdn(_fqdn)
+            , domain_id(_domain_id)
+            , sponsoring_registrar(_sponsoring_registrar)
+            , set_registrant(_set_registrant)
+            , history_id(_history_id)
+        {}
     };
 
     struct MergeContactUpdateDomainAdminContact
     {
         std::string fqdn;
+        unsigned long long domain_id;
         std::string sponsoring_registrar;
         std::string rem_admin_contact;
         std::string add_admin_contact;
         Optional<unsigned long long> history_id;
+        MergeContactUpdateDomainAdminContact()
+        : domain_id(0)
+        {}
+        MergeContactUpdateDomainAdminContact(
+            const std::string& _fqdn
+            , unsigned long long _domain_id
+            , const std::string& _sponsoring_registrar
+            , const std::string& _rem_admin_contact
+            , const std::string& _add_admin_contact
+            , const Optional<unsigned long long>& _history_id
+        )
+            : fqdn(_fqdn)
+            , domain_id(_domain_id)
+            , sponsoring_registrar(_sponsoring_registrar)
+            , rem_admin_contact(_rem_admin_contact)
+            , add_admin_contact(_add_admin_contact)
+            , history_id(_history_id)
+        {}
     };
 
     struct MergeContactUpdateNssetTechContact
     {
         std::string handle;
+        unsigned long long nsset_id;
         std::string sponsoring_registrar;
         std::string rem_tech_contact;
         std::string add_tech_contact;
         Optional<unsigned long long> history_id;
+        MergeContactUpdateNssetTechContact()
+        : nsset_id(0)
+        {}
+        MergeContactUpdateNssetTechContact(
+            const std::string& _handle
+            , unsigned long long _nsset_id
+            , const std::string& _sponsoring_registrar
+            , const std::string& _rem_tech_contact
+            , const std::string& _add_tech_contact
+            , const Optional<unsigned long long>& _history_id
+        )
+            : handle(_handle)
+            , nsset_id(_nsset_id)
+            , sponsoring_registrar(_sponsoring_registrar)
+            , rem_tech_contact(_rem_tech_contact)
+            , add_tech_contact(_add_tech_contact)
+            , history_id(_history_id)
+            {}
     };
 
     struct MergeContactUpdateKeysetTechContact
     {
         std::string handle;
+        unsigned long long keyset_id;
         std::string sponsoring_registrar;
         std::string rem_tech_contact;
         std::string add_tech_contact;
         Optional<unsigned long long> history_id;
+        MergeContactUpdateKeysetTechContact()
+        : keyset_id(0)
+        {}
+        MergeContactUpdateKeysetTechContact(
+            const std::string& _handle
+            , unsigned long long _keyset_id
+            , const std::string& _sponsoring_registrar
+            , const std::string& _rem_tech_contact
+            , const std::string& _add_tech_contact
+            , const Optional<unsigned long long>& _history_id
+        )
+            : handle(_handle)
+            , keyset_id(_keyset_id)
+            , sponsoring_registrar(_sponsoring_registrar)
+            , rem_tech_contact(_rem_tech_contact)
+            , add_tech_contact(_add_tech_contact)
+            , history_id(_history_id)
+        {}
+    };
+
+    struct MergeContactLockedContactId
+    {
+        unsigned long long src_contact_id;
+        unsigned long long src_contact_historyid;
+        std::string src_contact_roid;
+        unsigned long long dst_contact_id;
+        unsigned long long dst_contact_historyid;
+        std::string dst_contact_roid;
+        MergeContactLockedContactId()
+        : src_contact_id(0)
+        , src_contact_historyid(0)
+        , dst_contact_id(0)
+        , dst_contact_historyid(0)
+        {}
+        MergeContactLockedContactId(
+                unsigned long long _src_contact_id
+                , unsigned long long _src_contact_historyid
+                , const std::string& _src_contact_roid
+                , unsigned long long _dst_contact_id
+                , unsigned long long _dst_contact_historyid
+                , const std::string& _dst_contact_roid
+                )
+        : src_contact_id(_src_contact_id)
+        , src_contact_historyid(_src_contact_historyid)
+        , src_contact_roid(_src_contact_roid)
+        , dst_contact_id(_dst_contact_id)
+        , dst_contact_historyid(_dst_contact_historyid)
+        , dst_contact_roid(_dst_contact_roid)
+        {}
     };
 
     struct MergeContactOutput
     {
+        MergeContactLockedContactId contactid;
         std::vector<MergeContactUpdateDomainRegistrant> update_domain_registrant;
         std::vector<MergeContactUpdateDomainAdminContact> update_domain_admin_contact;
         std::vector<MergeContactUpdateNssetTechContact> update_nsset_tech_contact;
         std::vector<MergeContactUpdateKeysetTechContact> update_keyset_tech_contact;
+        MergeContactOutput(){}
+        MergeContactOutput(
+                const MergeContactLockedContactId& _contactid
+                , const std::vector<MergeContactUpdateDomainRegistrant>& _update_domain_registrant
+                , const std::vector<MergeContactUpdateDomainAdminContact>& _update_domain_admin_contact
+                , const std::vector<MergeContactUpdateNssetTechContact>& _update_nsset_tech_contact
+                , const std::vector<MergeContactUpdateKeysetTechContact>& _update_keyset_tech_contact
+                )
+        : contactid(_contactid)
+        , update_domain_registrant(_update_domain_registrant)
+        , update_domain_admin_contact(_update_domain_admin_contact)
+        , update_nsset_tech_contact(_update_nsset_tech_contact)
+        , update_keyset_tech_contact(_update_keyset_tech_contact)
+        {}
     };
-
 
     class MergeContact
     {
@@ -85,7 +204,7 @@ namespace Fred
         const std::string registrar_;//registrar used for object updates
         Optional<unsigned long long> logd_request_id_; //id of the new entry in log_entry
 
-        void lock_object_registry_row_for_update(OperationContext& ctx, bool dry_run);
+        MergeContactLockedContactId lock_object_registry_row_for_update(OperationContext& ctx, bool dry_run);
         void diff_contacts(OperationContext& ctx);
         MergeContactOutput merge_contact_impl(OperationContext& ctx, bool dry_run);
 
