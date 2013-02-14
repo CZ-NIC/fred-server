@@ -27,6 +27,7 @@
 
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
+#include "fredlib/object_states.h"
 
 namespace Fred
 {
@@ -72,6 +73,15 @@ namespace Fred
             }
 
             contact_id = contact_id_res[0][0];
+        }
+
+        //check if object is linked
+        if (Fred::object_has_state(contact_id, Fred::ObjectState::LINKED) == true)
+        {
+            std::string errmsg("|| is linked:handle: ");
+            errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+            errmsg += " |";
+            throw DCEX(errmsg.c_str());
         }
 
         ctx.get_conn().exec_params(

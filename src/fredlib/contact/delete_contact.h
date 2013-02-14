@@ -55,6 +55,7 @@ namespace Fred
         ConstArr get_fail_param_impl() throw()
         {
             static const char* list[]={"not found:handle"
+                    , "is linked:handle"
                 };
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
