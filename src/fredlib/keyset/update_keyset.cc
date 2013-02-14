@@ -158,6 +158,24 @@ namespace Fred
 
             for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
             {
+                //lock object_registry row for update
+                {
+                    Database::Result lock_res = ctx.get_conn().exec_params(
+                        "SELECT oreg.id FROM enum_object_type eot"
+                        " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
+                        , Database::query_param_list(*i));
+
+                    if (lock_res.size() != 1)
+                    {
+                        std::string errmsg("unable to lock || not found:tech contact: ");
+                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UKEX(errmsg.c_str());
+                    }
+                }
+
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
                 sql_i << sql.str();
@@ -215,6 +233,24 @@ namespace Fred
 
             for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
             {
+                //lock object_registry row for update
+                {
+                    Database::Result lock_res = ctx.get_conn().exec_params(
+                        "SELECT oreg.id FROM enum_object_type eot"
+                        " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
+                        , Database::query_param_list(*i));
+
+                    if (lock_res.size() != 1)
+                    {
+                        std::string errmsg("unable to lock || not found:tech contact: ");
+                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UKEX(errmsg.c_str());
+                    }
+                }
+
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
                 sql_i << sql.str();

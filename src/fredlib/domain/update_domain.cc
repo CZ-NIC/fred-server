@@ -191,6 +191,24 @@ namespace Fred
 
             if(nsset_.isset())//change nsset
             {
+                //lock object_registry row for update
+                {
+                    Database::Result lock_res = ctx.get_conn().exec_params(
+                        "SELECT oreg.id FROM enum_object_type eot"
+                        " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " WHERE eot.name = 'nsset' FOR UPDATE OF oreg"
+                        , Database::query_param_list(nsset_.get_value()));
+
+                    if (lock_res.size() != 1)
+                    {
+                        std::string errmsg("unable to lock || not found:nsset: ");
+                        errmsg += boost::replace_all_copy(std::string(nsset_.get_value()),"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UDEX(errmsg.c_str());
+                    }
+                }
+
                 Nullable<std::string> new_nsset_value = nsset_;
                 params.push_back(new_nsset_value);//NULL or value via Nullable operator Database::QueryParam()
 
@@ -211,6 +229,24 @@ namespace Fred
 
             if(keyset_.isset())//change keyset
             {
+                //lock object_registry row for update
+                {
+                    Database::Result lock_res = ctx.get_conn().exec_params(
+                        "SELECT oreg.id FROM enum_object_type eot"
+                        " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " WHERE eot.name = 'keyset' FOR UPDATE OF oreg"
+                        , Database::query_param_list(keyset_.get_value()));
+
+                    if (lock_res.size() != 1)
+                    {
+                        std::string errmsg("unable to lock || not found:keyset: ");
+                        errmsg += boost::replace_all_copy(std::string(keyset_.get_value()),"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UDEX(errmsg.c_str());
+                    }
+                }
+
                 Nullable<std::string> new_keyset_value = keyset_;
                 params.push_back(new_keyset_value);//NULL or value via Nullable operator Database::QueryParam()
 
@@ -231,6 +267,24 @@ namespace Fred
 
             if(registrant_.isset())//change registrant
             {
+                //lock object_registry row for update
+                {
+                    Database::Result lock_res = ctx.get_conn().exec_params(
+                        "SELECT oreg.id FROM enum_object_type eot"
+                        " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
+                        , Database::query_param_list(registrant_.get_value()));
+
+                    if (lock_res.size() != 1)
+                    {
+                        std::string errmsg("unable to lock || not found:registrant: ");
+                        errmsg += boost::replace_all_copy(std::string(registrant_.get_value()),"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UDEX(errmsg.c_str());
+                    }
+                }
+
                 params.push_back(registrant_);
                 sql << set_separator.get() << " registrant = raise_exception_ifnull( "
                     " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
@@ -255,6 +309,24 @@ namespace Fred
 
             for(std::vector<std::string>::iterator i = add_admin_contact_.begin(); i != add_admin_contact_.end(); ++i)
             {
+                //lock object_registry row for update
+                {
+                    Database::Result lock_res = ctx.get_conn().exec_params(
+                        "SELECT oreg.id FROM enum_object_type eot"
+                        " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
+                        , Database::query_param_list(*i));
+
+                    if (lock_res.size() != 1)
+                    {
+                        std::string errmsg("unable to lock || not found:admin contact: ");
+                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UDEX(errmsg.c_str());
+                    }
+                }
+
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
                 sql_i << sql.str();
@@ -308,6 +380,24 @@ namespace Fred
 
             for(std::vector<std::string>::iterator i = rem_admin_contact_.begin(); i != rem_admin_contact_.end(); ++i)
             {
+                //lock object_registry row for update
+                {
+                    Database::Result lock_res = ctx.get_conn().exec_params(
+                        "SELECT oreg.id FROM enum_object_type eot"
+                        " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
+                        , Database::query_param_list(*i));
+
+                    if (lock_res.size() != 1)
+                    {
+                        std::string errmsg("unable to lock || not found:admin contact: ");
+                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UDEX(errmsg.c_str());
+                    }
+                }
+
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
                 sql_i << sql.str();
