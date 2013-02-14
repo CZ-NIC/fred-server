@@ -108,6 +108,7 @@ struct ContactMergeDuplicateAutoArgs
 {
     optional_string registrar;
     optional_ulonglong limit;
+    bool dry_run;
 
     ContactMergeDuplicateAutoArgs()
     {
@@ -115,9 +116,11 @@ struct ContactMergeDuplicateAutoArgs
 
     ContactMergeDuplicateAutoArgs(
             const optional_string &_registrar,
-            const optional_ulonglong &_limit)
+            const optional_ulonglong &_limit,
+            bool _dry_run)
         : registrar(_registrar),
-          limit(_limit)
+          limit(_limit),
+          dry_run(_dry_run)
     {
     }
 };
