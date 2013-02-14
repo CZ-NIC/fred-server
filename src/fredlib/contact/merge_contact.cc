@@ -224,8 +224,7 @@ namespace Fred
                 {
                     try
                     {
-                        std::string fqdn = std::string(result[i][0]);
-                        UpdateDomain ud (fqdn, registrar_ );
+                        UpdateDomain ud (tmp.fqdn, registrar_ );
                         ud.rem_admin_contact(src_contact_handle_)
                         .add_admin_contact(dst_contact_handle_);
                         if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
@@ -239,7 +238,11 @@ namespace Fred
                         //if found ignore exception, if not found rethrow exception
                         if(cb.get())
                         {
-                            continue;
+                            //only remove source admin contact, dest admin contact is already there
+                            UpdateDomain ud (tmp.fqdn, registrar_ );
+                            ud.rem_admin_contact(src_contact_handle_);
+                            if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
+                            tmp.history_id = ud.exec(ctx);
                         }
                         else
                         {
@@ -278,8 +281,7 @@ namespace Fred
                 {
                     try
                     {
-                        std::string handle = std::string(result[i][0]);
-                        UpdateNsset un(handle, registrar_ );
+                        UpdateNsset un(tmp.handle, registrar_ );
                         un.rem_tech_contact(src_contact_handle_)
                         .add_tech_contact(dst_contact_handle_);
                         if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
@@ -293,7 +295,11 @@ namespace Fred
                         //if found ignore exception, if not found rethrow exception
                         if(cb.get())
                         {
-                            continue;
+                            //only remove source tech contact, dest tech contact is already there
+                            UpdateNsset un(tmp.handle, registrar_ );
+                            un.rem_tech_contact(src_contact_handle_);
+                            if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
+                            tmp.history_id = un.exec(ctx);
                         }
                         else
                         {
@@ -332,8 +338,7 @@ namespace Fred
                 {
                     try
                     {
-                        std::string handle = std::string(result[i][0]);
-                        UpdateKeyset uk(handle, registrar_);
+                        UpdateKeyset uk(tmp.handle, registrar_);
                         uk.rem_tech_contact(src_contact_handle_)
                         .add_tech_contact(dst_contact_handle_);
                         if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
@@ -347,7 +352,11 @@ namespace Fred
                         //if found ignore exception, if not found rethrow exception
                         if(cb.get())
                         {
-                            continue;
+                            //only remove source tech contact, dest tech contact is already there
+                            UpdateKeyset uk(tmp.handle, registrar_);
+                            uk.rem_tech_contact(src_contact_handle_);
+                            if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
+                            tmp.history_id = uk.exec(ctx);
                         }
                         else
                         {
