@@ -19,11 +19,14 @@ public:
 
     FindAnyContactDuplicates& set_registrar(const optional_string &_registrar_handle);
 
+    FindAnyContactDuplicates& set_exclude_contacts(const std::set<std::string> &_exclude_contacts);
+
     std::set<std::string> exec(Fred::OperationContext &_ctx);
 
 
 private:
     optional_string registrar_handle_;
+    std::set<std::string> exclude_contacts_;
 };
 
 

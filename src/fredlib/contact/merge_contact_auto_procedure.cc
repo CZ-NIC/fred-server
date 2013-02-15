@@ -263,6 +263,7 @@ void MergeContactAutoProcedure::exec()
 
     unsigned long long merge_counter = 0;
     std::set<std::string> fake_deleted;
+    std::set<std::string> global_excluded;
     while (dup_set.size() >= 2)
     {
         merge_counter += 1;
@@ -287,6 +288,7 @@ void MergeContactAutoProcedure::exec()
 
         /* remove winner contact from set */
         dup_set.erase(winner_handle);
+        global_excluded.insert(global_excluded.end(), winner_handle);
         /* merge first one */
         std::string pick_one = *(dup_set.begin());
 
@@ -339,15 +341,15 @@ void MergeContactAutoProcedure::exec()
         }
         /* if none go for another contact which has duplicates */
         if (dup_set.empty()) {
-            if (this->is_set_dry_run())
-            {
-                /* XXX: need to add except list to FindAnyContactDuplicates() */
-                return;
-            }
-            dup_set = FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
+               dup_set = FindAnyContactDuplicates()
+                        .set_registrar(registrar_)
+                        .set_exclude_contacts(global_excluded)
+                        .exec(octx);
         }
     }
-    octx.commit_transaction();
+    if (!this->is_set_dry_run()) {
+        octx.commit_transaction();
+    }
 }
 
 
