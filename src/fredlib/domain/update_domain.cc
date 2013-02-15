@@ -258,7 +258,7 @@ namespace Fred
                 {
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT koreg.id FROM keyset k "
-                        " JOIN object_registry koreg ON koreg.id = n.id AND koreg.erdate IS NULL "
+                        " JOIN object_registry koreg ON koreg.id = k.id AND koreg.erdate IS NULL "
                         " JOIN domain d ON d.keyset = k.id "
                         " JOIN object_registry doreg ON doreg.id = d.id AND doreg.erdate IS NULL "
                         " AND LOWER(doreg.name) = LOWER($1::text) "
