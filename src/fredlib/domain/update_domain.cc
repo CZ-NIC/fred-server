@@ -179,7 +179,6 @@ namespace Fred
         //update object
         Fred::UpdateObject(fqdn_, registrar_, authinfo_).exec(ctx);
 
-
         //update domain
         if(nsset_.isset() || keyset_.isset() || registrant_.isset())
         {
@@ -191,7 +190,29 @@ namespace Fred
 
             if(nsset_.isset())//change nsset
             {
+                Nullable<std::string> new_nsset_value = nsset_;
+
                 //lock object_registry row for update
+                if(new_nsset_value.isnull())
+                {
+                    Database::Result lock_res = ctx.get_conn().exec_params(
+                            "SELECT noreg.id FROM nsset n "
+                            " JOIN object_registry noreg ON noreg.id = n.id AND noreg.erdate IS NULL "
+                            " JOIN domain d ON d.nsset = n.id "
+                            " JOIN object_registry doreg ON doreg.id = d.id AND doreg.erdate IS NULL "
+                            " AND LOWER(doreg.name) = LOWER($1::text) "
+                            " FOR UPDATE OF noreg "
+                        , Database::query_param_list(fqdn_));
+
+                    if (lock_res.size() != 1)
+                    {
+                        std::string errmsg("unable to lock current nsset|| not found:fqdn: ");
+                        errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UDEX(errmsg.c_str());
+                    }
+                }
+                else
                 {
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
@@ -209,7 +230,8 @@ namespace Fred
                     }
                 }
 
-                Nullable<std::string> new_nsset_value = nsset_;
+
+
                 params.push_back(new_nsset_value);//NULL or value via Nullable operator Database::QueryParam()
 
                 if(new_nsset_value.isnull())
@@ -229,7 +251,29 @@ namespace Fred
 
             if(keyset_.isset())//change keyset
             {
+                Nullable<std::string> new_keyset_value = keyset_;
+
                 //lock object_registry row for update
+                if(new_keyset_value.isnull())
+                {
+                    Database::Result lock_res = ctx.get_conn().exec_params(
+                        "SELECT koreg.id FROM keyset k "
+                        " JOIN object_registry koreg ON koreg.id = n.id AND koreg.erdate IS NULL "
+                        " JOIN domain d ON d.keyset = k.id "
+                        " JOIN object_registry doreg ON doreg.id = d.id AND doreg.erdate IS NULL "
+                        " AND LOWER(doreg.name) = LOWER($1::text) "
+                        " FOR UPDATE OF koreg "
+                        , Database::query_param_list(fqdn_));
+
+                    if (lock_res.size() != 1)
+                    {
+                        std::string errmsg("unable to lock current keyset|| not found:fqdn: ");
+                        errmsg += boost::replace_all_copy(fqdn_, "|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UDEX(errmsg.c_str());
+                    }
+                }
+                else
                 {
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
@@ -247,7 +291,6 @@ namespace Fred
                     }
                 }
 
-                Nullable<std::string> new_keyset_value = keyset_;
                 params.push_back(new_keyset_value);//NULL or value via Nullable operator Database::QueryParam()
 
                 if(new_keyset_value.isnull())
