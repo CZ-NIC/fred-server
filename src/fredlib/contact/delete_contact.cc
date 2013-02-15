@@ -76,7 +76,16 @@ namespace Fred
         }
 
         //check if object is linked
-        if (Fred::object_has_state(contact_id, Fred::ObjectState::LINKED) == true)
+        Database::Result linked_result = ctx.get_conn().exec_params(
+            "SELECT * FROM object_state os "
+            " JOIN enum_object_states eos ON eos.id = os.state_id "
+            " WHERE os.object_id = $1::integer AND eos.name = $2::text "
+            " AND valid_to IS NULL",
+            Database::query_param_list
+            (contact_id)
+            (Fred::ObjectState::LINKED));
+
+        if (linked_result.size() != 1)
         {
             std::string errmsg("|| is linked:handle: ");
             errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
