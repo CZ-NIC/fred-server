@@ -294,6 +294,17 @@ void MergeContactAutoProcedure::exec()
         return;
     }
 
+    /* filter for best contact selection */
+    std::vector<ContactSelectionFilterType> selection_filter = boost::assign::list_of
+        (MCS_FILTER_IDENTIFIED_CONTACT)
+        (MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
+        (MCS_FILTER_HANDLE_MOJEID_SYNTAX)
+        (MCS_FILTER_MAX_DOMAINS_BOUND)
+        (MCS_FILTER_MAX_OBJECTS_BOUND)
+        (MCS_FILTER_RECENTLY_UPDATED)
+        (MCS_FILTER_NOT_REGCZNIC)
+        (MCS_FILTER_RECENTLY_CREATED);
+
     MergeContactDryRunInfo dry_run_info;
     while (dup_set.size() >= 2)
     {
@@ -301,17 +312,6 @@ void MergeContactAutoProcedure::exec()
 
         octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
                 % boost::algorithm::join(dup_set, ", "));
-
-        /* filter for best contact selection */
-        std::vector<ContactSelectionFilterType> selection_filter = boost::assign::list_of
-            (MCS_FILTER_IDENTIFIED_CONTACT)
-            (MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
-            (MCS_FILTER_HANDLE_MOJEID_SYNTAX)
-            (MCS_FILTER_MAX_DOMAINS_BOUND)
-            (MCS_FILTER_MAX_OBJECTS_BOUND)
-            (MCS_FILTER_RECENTLY_UPDATED)
-            (MCS_FILTER_NOT_REGCZNIC)
-            (MCS_FILTER_RECENTLY_CREATED);
 
         /* compute best handle to merge all others onto */
         std::string winner_handle = MergeContactSelection(
