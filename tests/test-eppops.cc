@@ -345,9 +345,9 @@ BOOST_AUTO_TEST_CASE(update_domain)
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset(Nullable<std::string>("NSSET-1")).exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset("NSSET-1").exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_keyset(Nullable<std::string>()).exec(ctx);
+    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_keyset("KEYSID-1").exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").unset_keyset().exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_keyset(Nullable<std::string>("KEYSID-1")).exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_keyset("KEYSID-1").exec(ctx);
     Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_logd_request_id(0u).exec(ctx);
 
     //commit db transaction
