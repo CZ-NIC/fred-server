@@ -51,6 +51,7 @@
 #include "regblock_params.h"
 #include "charge_params.h"
 
+
 /**
  * \class HandleAdminClientDomainListArgsGrp
  * \brief admin client domain_list options handler
@@ -370,7 +371,20 @@ public:
             ("dry_run", boost::program_options::value<bool>()
                 ->default_value(false)->zero_tokens()
                 ->notifier(save_arg<bool>(params.dry_run)),
-                "just write what could be done; don't actually touch data");
+                "just write what could be done; don't actually touch data")
+            ("selection_filter_order",
+                boost::program_options::value<std::vector<std::string> >()->multitoken()
+                    ->notifier(save_arg<std::vector<std::string> >(params.selection_filter_order)),
+                "specify custom order of filters for best contact selection; available values are:\n"
+                "\tmcs_filter_identified_contact\n"
+                "\tmcs_filter_conditionally_identified_contact\n"
+                "\tmcs_filter_handle_mojeid_syntax\n"
+                "\tmcs_filter_max_domains_bound\n"
+                "\tmcs_filter_max_objects_bound\n"
+                "\tmcs_filter_recently_updated\n"
+                "\tmcs_filter_not_regcznic\n"
+                "\tmcs_filter_recently_created");
+        /* list of contact selection filters could be done by listing keys of ContactSelectionFilterFactory */
         return cfg_opts;
     }//get_options_description
     std::size_t handle( int argc, char* argv[],  FakedArgs &fa

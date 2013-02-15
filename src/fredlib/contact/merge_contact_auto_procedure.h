@@ -4,6 +4,7 @@
 #include "util/types/optional.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/logger_client.h"
+#include "merge_contact_selection.h"
 
 
 namespace Fred {
@@ -27,17 +28,23 @@ public:
 
     MergeContactAutoProcedure& set_dry_run(const optional_bool &_dry_run);
 
+    MergeContactAutoProcedure& set_selection_filter_order(
+            const std::vector<ContactSelectionFilterType> &_selection_filter_order);
+
     void exec();
 
 
 private:
     bool is_set_dry_run() const;
 
+    std::vector<ContactSelectionFilterType> get_default_selection_filter_order() const;
+
     Fred::Logger::LoggerClient &logger_client_;
 
     optional_string registrar_;
     optional_ulonglong limit_;
     optional_bool dry_run_;
+    std::vector<ContactSelectionFilterType> selection_filter_order_;
 };
 
 

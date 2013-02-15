@@ -1,5 +1,4 @@
 #include "merge_contact_auto_procedure.h"
-#include "merge_contact_selection.h"
 #include "merge_contact.h"
 #include "find_contact_duplicates.h"
 #include "poll/create_update_object_poll_message.h"
@@ -269,9 +268,34 @@ MergeContactAutoProcedure& MergeContactAutoProcedure::set_dry_run(
 }
 
 
+MergeContactAutoProcedure& MergeContactAutoProcedure::set_selection_filter_order(
+        const std::vector<ContactSelectionFilterType> &_selection_filter_order)
+{
+    /* XXX: this throws - should do better error reporting */
+    FactoryHaveSupersetOfKeysChecker<ContactSelectionFilterFactory>(_selection_filter_order).check();
+    selection_filter_order_ = _selection_filter_order;
+    return *this;
+}
+
+
 bool MergeContactAutoProcedure::is_set_dry_run() const
 {
     return (dry_run_.is_value_set() && dry_run_.get_value() == true);
+}
+
+
+std::vector<ContactSelectionFilterType> MergeContactAutoProcedure::get_default_selection_filter_order() const
+{
+    std::vector<ContactSelectionFilterType> tmp = boost::assign::list_of
+        (MCS_FILTER_IDENTIFIED_CONTACT)
+        (MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
+        (MCS_FILTER_HANDLE_MOJEID_SYNTAX)
+        (MCS_FILTER_MAX_DOMAINS_BOUND)
+        (MCS_FILTER_MAX_OBJECTS_BOUND)
+        (MCS_FILTER_RECENTLY_UPDATED)
+        (MCS_FILTER_NOT_REGCZNIC)
+        (MCS_FILTER_RECENTLY_CREATED);
+    return tmp;
 }
 
 
@@ -295,15 +319,10 @@ void MergeContactAutoProcedure::exec()
     }
 
     /* filter for best contact selection */
-    std::vector<ContactSelectionFilterType> selection_filter = boost::assign::list_of
-        (MCS_FILTER_IDENTIFIED_CONTACT)
-        (MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
-        (MCS_FILTER_HANDLE_MOJEID_SYNTAX)
-        (MCS_FILTER_MAX_DOMAINS_BOUND)
-        (MCS_FILTER_MAX_OBJECTS_BOUND)
-        (MCS_FILTER_RECENTLY_UPDATED)
-        (MCS_FILTER_NOT_REGCZNIC)
-        (MCS_FILTER_RECENTLY_CREATED);
+    std::vector<ContactSelectionFilterType> selection_filter = selection_filter_order_;
+    if (selection_filter_order_.empty()) {
+        selection_filter = this->get_default_selection_filter_order(); 
+    }
 
     MergeContactDryRunInfo dry_run_info;
     while (dup_set.size() >= 2)

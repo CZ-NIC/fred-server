@@ -126,7 +126,7 @@ struct contact_merge_duplicate_auto_impl
 
         Fred::Contact::MergeContactAutoProcedure(
                 *(logger_client.get()), params.registrar,
-                params.limit, params.dry_run).exec();
+                params.limit, params.dry_run).set_selection_filter_order(params.selection_filter_order).exec();
 
         return;
     }
