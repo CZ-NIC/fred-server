@@ -143,7 +143,7 @@ namespace Fred
             Database::Result lock_res = ctx.get_conn().exec_params(
                 "SELECT oreg.id FROM enum_object_type eot"
                 " JOIN object_registry oreg ON oreg.type = eot.id "
-                " AND UPPER(oreg.name) = UPPER($1::text) "
+                " AND UPPER(oreg.name) = UPPER($1::text) AND oreg.erdate IS NULL "
                 " WHERE eot.name = 'domain' FOR UPDATE OF oreg"
                 , Database::query_param_list(fqdn_));
 
@@ -196,7 +196,7 @@ namespace Fred
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " AND UPPER(oreg.name) = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'nsset' FOR UPDATE OF oreg"
                         , Database::query_param_list(nsset_.get_value()));
 
@@ -234,7 +234,7 @@ namespace Fred
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " AND UPPER(oreg.name) = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'keyset' FOR UPDATE OF oreg"
                         , Database::query_param_list(keyset_.get_value()));
 
@@ -272,7 +272,7 @@ namespace Fred
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " AND UPPER(oreg.name) = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                         , Database::query_param_list(registrant_.get_value()));
 
@@ -314,7 +314,7 @@ namespace Fred
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " AND UPPER(oreg.name) = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                         , Database::query_param_list(*i));
 
@@ -385,7 +385,7 @@ namespace Fred
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " AND UPPER(oreg.name) = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                         , Database::query_param_list(*i));
 

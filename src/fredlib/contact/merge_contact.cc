@@ -56,9 +56,9 @@ namespace Fred
             Database::Result lock_res = ctx.get_conn().exec_params(
                 std::string("SELECT oreg.id, oreg.historyid, oreg.roid "
                 " FROM enum_object_type eot "
-                " JOIN object_registry oreg ON oreg.type = eot.id "
+                " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
                 " AND UPPER(oreg.name) = UPPER($1::text) "
-                " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
+                " WHERE eot.name = 'contact' AND ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(src_contact_handle_));
 
             if (lock_res.size() != 1)
@@ -78,7 +78,7 @@ namespace Fred
             Database::Result lock_res = ctx.get_conn().exec_params(
                 std::string("SELECT oreg.id, oreg.historyid, oreg.roid "
                         " FROM enum_object_type eot "
-                        " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
                         " AND UPPER(oreg.name) = UPPER($1::text) "
                         " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(dst_contact_handle_));
@@ -171,7 +171,7 @@ namespace Fred
                 " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
                 " AND UPPER(src_oreg.name) = UPPER($1::text) "
                 " JOIN domain d ON d.registrant = src_c.id "
-                " JOIN object_registry oreg  ON oreg.id = d.id "
+                " JOIN object_registry oreg  ON oreg.id = d.id AND oreg.erdate IS NULL "
                 " JOIN object o ON oreg.id = o.id "
                 " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
@@ -206,7 +206,7 @@ namespace Fred
                 " JOIN domain_contact_map dcm ON dcm.role = 1 "
                 " AND dcm.contactid  = src_c.id "
                 " JOIN domain d ON dcm.domainid = d.id "
-                " JOIN object_registry oreg ON oreg.id = d.id "
+                " JOIN object_registry oreg ON oreg.id = d.id AND oreg.erdate IS NULL "
                 " JOIN object o ON oreg.id = o.id "
                 " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
@@ -263,7 +263,7 @@ namespace Fred
                 " AND UPPER(src_oreg.name) = UPPER($1::text) "
                 " JOIN nsset_contact_map ncm ON ncm.contactid  = src_c.id "
                 " JOIN nsset n ON ncm.nssetid = n.id "
-                " JOIN object_registry oreg  ON oreg.id = n.id "
+                " JOIN object_registry oreg  ON oreg.id = n.id AND oreg.erdate IS NULL "
                 " JOIN object o ON oreg.id = o.id "
                 " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
@@ -320,7 +320,7 @@ namespace Fred
                 " AND UPPER(src_oreg.name) = UPPER($1::text) "
                 " JOIN keyset_contact_map kcm ON kcm.contactid  = src_c.id "
                 " JOIN keyset k ON kcm.keysetid = k.id "
-                " JOIN object_registry oreg  ON oreg.id = k.id "
+                " JOIN object_registry oreg  ON oreg.id = k.id AND oreg.erdate IS NULL"
                 " JOIN object o ON oreg.id = o.id "
                 " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
             , Database::query_param_list(src_contact_handle_));
