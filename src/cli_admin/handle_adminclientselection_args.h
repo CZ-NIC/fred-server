@@ -366,7 +366,11 @@ public:
                 "registrar handle to run merge for")
             ("limit", boost::program_options::value<Checked::ulonglong>()
                 ->notifier(save_optional_ulonglong(params.limit)),
-                "limit");
+                "limit")
+            ("dry_run", boost::program_options::value<bool>()
+                ->default_value(false)->zero_tokens()
+                ->notifier(save_arg<bool>(params.dry_run)),
+                "don't send mails with invoices during archivation");
         return cfg_opts;
     }//get_options_description
     std::size_t handle( int argc, char* argv[],  FakedArgs &fa

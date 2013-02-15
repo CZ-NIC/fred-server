@@ -1,8 +1,10 @@
 #include "find_contact_duplicates.h"
+#include <boost/algorithm/string/join.hpp>
 
 
 namespace Fred {
 namespace Contact {
+
 
 
 FindAnyContactDuplicates::FindAnyContactDuplicates()
@@ -14,6 +16,14 @@ FindAnyContactDuplicates& FindAnyContactDuplicates::set_registrar(
         const optional_string &_registrar_handle)
 {
     registrar_handle_ = _registrar_handle;
+    return *this;
+}
+
+
+FindAnyContactDuplicates& FindAnyContactDuplicates::set_exclude_contacts(
+        const std::set<std::string> &_exclude_contacts)
+{
+    exclude_contacts_ = _exclude_contacts;
     return *this;
 }
 
@@ -51,8 +61,21 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
         " trim(both ' ' from c.postalcode),"
         " trim(both ' ' from c.country),"
         " o.clid"
-        " HAVING array_upper(array_accum(oreg.name), 1) > 1"
-        " LIMIT 1) as dup_q";
+        " HAVING array_upper(array_accum(oreg.name), 1) > 1";
+    if (!exclude_contacts_.empty()) {
+        std::vector<std::string> array_params;
+        for (std::set<std::string>::const_iterator i = exclude_contacts_.begin();
+                i != exclude_contacts_.end(); ++i)
+        {
+            dup_params.push_back(*i);
+            array_params.push_back("$" + boost::lexical_cast<std::string>(dup_params.size()));
+        }
+
+        dup_sql << " AND NOT (array_accum(oreg.name)"
+                << " && array[" << boost::algorithm::join(array_params, ", ") << "]::varchar[])";
+    }
+
+    dup_sql << " LIMIT 1) as dup_q";
 
     Database::Result dup_result = _ctx.get_conn().exec_params(dup_sql.str(), dup_params);
 
