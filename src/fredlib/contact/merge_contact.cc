@@ -58,7 +58,7 @@ namespace Fred
                 " FROM enum_object_type eot "
                 " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
                 " AND UPPER(oreg.name) = UPPER($1::text) "
-                " WHERE eot.name = 'contact' AND ") + (dry_run ? " " : " FOR UPDATE OF oreg")
+                " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(src_contact_handle_));
 
             if (lock_res.size() != 1)

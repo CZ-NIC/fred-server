@@ -196,12 +196,12 @@ namespace Fred
                 if(new_nsset_value.isnull())
                 {
                     Database::Result lock_res = ctx.get_conn().exec_params(
-                            "SELECT noreg.id FROM nsset n "
-                            " JOIN object_registry noreg ON noreg.id = n.id AND noreg.erdate IS NULL "
-                            " JOIN domain d ON d.nsset = n.id "
-                            " JOIN object_registry doreg ON doreg.id = d.id AND doreg.erdate IS NULL "
-                            " AND LOWER(doreg.name) = LOWER($1::text) "
-                            " FOR UPDATE OF noreg "
+                        "SELECT noreg.id FROM nsset n "
+                        " JOIN object_registry noreg ON noreg.id = n.id AND noreg.erdate IS NULL "
+                        " JOIN domain d ON d.nsset = n.id "
+                        " JOIN object_registry doreg ON doreg.id = d.id AND doreg.erdate IS NULL "
+                        " AND LOWER(doreg.name) = LOWER($1::text) "
+                        " FOR UPDATE OF noreg "
                         , Database::query_param_list(fqdn_));
 
                     if (lock_res.size() != 1)
