@@ -85,7 +85,7 @@ namespace Fred
             (contact_id)
             (Fred::ObjectState::LINKED));
 
-        if (linked_result.size() != 1)
+        if (linked_result.size() > 0)
         {
             std::string errmsg("|| is linked:handle: ");
             errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
