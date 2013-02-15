@@ -191,6 +191,39 @@ std::ostream& print_merge_contact_output(
 }
 
 
+struct MergeContactDryRunInfo
+{
+    unsigned long long merge_counter;
+    std::set<std::string> fake_deleted;
+    std::set<std::string> any_search_excluded;
+
+    MergeContactDryRunInfo()
+        : merge_counter(0),
+          fake_deleted(),
+          any_search_excluded()
+    {
+    }
+
+    void add_fake_deleted(const std::string &_handle)
+    {
+        fake_deleted.insert(fake_deleted.end(), _handle);
+    }
+
+    void add_search_excluded(const std::string &_handle)
+    {
+        any_search_excluded.insert(any_search_excluded.end(), _handle);
+    }
+
+    std::set<std::string> remove_fake_deleted_from_set(const std::set<std::string> &_set)
+    {
+        std::set<std::string> result;
+        std::set_difference(_set.begin(), _set.end(), fake_deleted.begin(), fake_deleted.end(),
+                std::insert_iterator<std::set<std::string> >(result, result.begin()));
+        return result;
+    }
+};
+
+
 
 MergeContactAutoProcedure::MergeContactAutoProcedure(
         Fred::Logger::LoggerClient &_logger_client)
@@ -261,12 +294,11 @@ void MergeContactAutoProcedure::exec()
         return;
     }
 
-    unsigned long long merge_counter = 0;
-    std::set<std::string> fake_deleted;
-    std::set<std::string> global_excluded;
+    MergeContactDryRunInfo dry_run_info;
     while (dup_set.size() >= 2)
     {
-        merge_counter += 1;
+        dry_run_info.merge_counter += 1;
+
         octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
                 % boost::algorithm::join(dup_set, ", "));
 
@@ -288,7 +320,6 @@ void MergeContactAutoProcedure::exec()
 
         /* remove winner contact from set */
         dup_set.erase(winner_handle);
-        global_excluded.insert(global_excluded.end(), winner_handle);
         /* merge first one */
         std::string pick_one = *(dup_set.begin());
 
@@ -300,9 +331,10 @@ void MergeContactAutoProcedure::exec()
             merge_data = MergeContact(pick_one, winner_handle, system_registrar)
                             .set_logd_request_id(req_id).exec_dry_run(merge_octx);
 
-            fake_deleted.insert(fake_deleted.end(), pick_one);
+            dry_run_info.add_fake_deleted(pick_one);
+            dry_run_info.add_search_excluded(winner_handle);
             /* do not commit */
-            print_merge_contact_output(merge_data, pick_one, winner_handle, merge_counter, std::cout);
+            print_merge_contact_output(merge_data, pick_one, winner_handle, dry_run_info.merge_counter, std::cout);
         }
         else
         {
@@ -331,10 +363,7 @@ void MergeContactAutoProcedure::exec()
         dup_set = FindSpecificContactDuplicates(winner_handle).exec(octx);
         if (this->is_set_dry_run())
         {
-            std::set<std::string> result;
-            std::set_difference(dup_set.begin(), dup_set.end(), fake_deleted.begin(), fake_deleted.end(),
-                    std::insert_iterator<std::set<std::string> >(result, result.begin()));
-            dup_set = result;
+            dup_set = dry_run_info.remove_fake_deleted_from_set(dup_set);
             if (dup_set.size() == 1 && *(dup_set.begin()) == winner_handle) {
                 dup_set.clear();
             }
@@ -343,7 +372,7 @@ void MergeContactAutoProcedure::exec()
         if (dup_set.empty()) {
                dup_set = FindAnyContactDuplicates()
                         .set_registrar(registrar_)
-                        .set_exclude_contacts(global_excluded)
+                        .set_exclude_contacts(dry_run_info.any_search_excluded)
                         .exec(octx);
         }
     }
