@@ -128,7 +128,7 @@ namespace Fred
             {//email found -> update
                 SortedContactNotificationEmail email(email_by_dst_contact_it->second);
 
-                if(email.dst_contact_handle.compare(i->dst_contact_handle) == 0)
+                if(email.dst_contact_handle.compare(i->dst_contact_handle) != 0)
                 {//error if equal
                     std::string errmsg("dst_contact_handle changed || invalid:contact handle: ");
                     errmsg += boost::replace_all_copy(i->dst_contact_handle,"|", "[pipe]");//quote pipes
