@@ -46,6 +46,7 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
 
     dup_sql << " GROUP BY"
         " trim(both ' ' from c.name),"
+        " trim(both ' ' from c.organization),"
         " c.ssntype,"
         " trim(both ' ' from c.ssn),"
         " trim(both ' ' from c.vat),"
@@ -105,6 +106,7 @@ std::set<std::string> FindSpecificContactDuplicates::exec(Fred::OperationContext
         " JOIN registrar r ON r.id = o.clid"
         " GROUP BY"
         " trim(both ' ' from c.name),"
+        " trim(both ' ' from c.organization),"
         " c.ssntype,"
         " trim(both ' ' from c.ssn),"
         " trim(both ' ' from c.vat),"
