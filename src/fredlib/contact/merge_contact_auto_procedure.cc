@@ -2,6 +2,7 @@
 #include "merge_contact.h"
 #include "find_contact_duplicates.h"
 #include "poll/create_update_object_poll_message.h"
+#include "merge_contact_email_notification_data.h"
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>
@@ -321,8 +322,10 @@ void MergeContactAutoProcedure::exec()
     /* filter for best contact selection */
     std::vector<ContactSelectionFilterType> selection_filter = selection_filter_order_;
     if (selection_filter_order_.empty()) {
-        selection_filter = this->get_default_selection_filter_order(); 
+        selection_filter = this->get_default_selection_filter_order();
     }
+
+    std::vector<Fred::MergeContactEmailNotificationInput> email_notification_input_vector;
 
     MergeContactDryRunInfo dry_run_info;
     while (dup_set.size() >= 2)
@@ -376,6 +379,9 @@ void MergeContactAutoProcedure::exec()
                 throw;
             }
         }
+        //save merge output for email notification
+        email_notification_input_vector.push_back(Fred::MergeContactEmailNotificationInput(
+                pick_one, winner_handle, merge_data));
 
         /* find contact duplicates for winner contact - if nothing changed in registry data this
          * would be the same list as in previous step but without the merged one */
@@ -401,6 +407,12 @@ void MergeContactAutoProcedure::exec()
     if (!this->is_set_dry_run()) {
         octx.commit_transaction();
     }
+
+    Fred::OperationContext enctx;
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> notif_emails
+          = Fred::MergeContactNotificationEmailAddr(Fred::MergeContactEmailNotificationData(email_notification_input_vector)
+        .exec(enctx)).exec(enctx);
+
 }
 
 
