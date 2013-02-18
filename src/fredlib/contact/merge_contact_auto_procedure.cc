@@ -305,7 +305,7 @@ void MergeContactAutoProcedure::exec()
     /* get system registrar - XXX: should be a parameter?? */
     Database::Result system_registrar_result = octx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system is True");
-    if (system_registrar_result.size() != 1) {
+    if (system_registrar_result.size() == 0) {
         throw std::runtime_error("no system registrar found");
     }
     std::string system_registrar = static_cast<std::string>(system_registrar_result[0][0]);
