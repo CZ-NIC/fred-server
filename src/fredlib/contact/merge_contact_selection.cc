@@ -406,13 +406,13 @@ namespace Fred
 
             if(contact_handle.empty()) return filtered;
 
-            std::string query_begin("SELECT oreg.name, oreg.crdate "
+            std::string query_begin("SELECT oreg.name "
                     " FROM object_registry oreg "
                     " JOIN contact c ON c.id = oreg.id ");
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
 
-            std::string query_end(" ORDER BY oreg.crdate DESC ");
+            std::string query_end(" ORDER BY oreg.crdate DESC, oreg.id DESC LIMIT 1 ");
 
             Database::QueryParams params;//query params
             std::stringstream sql;
@@ -426,17 +426,9 @@ namespace Fred
 
             Database::Result contact_created = ctx.get_conn().exec_params(sql.str(), params);
 
-            for(Database::Result::size_type i = 0 ; i < contact_created.size(); ++i)
+            if(contact_created.size() == 1)
             {
-                //if it is first contact with most recent create timestamp or another contact with the same create timestamp
-                if((i == 0) || (std::string(contact_created[0][1]).compare(std::string(contact_created[i][1])) == 0 ))
-                {
-                    filtered.push_back(std::string(contact_created[i][0]));
-                }
-                else
-                {//ignore others
-                    break;
-                }
+                filtered.push_back(std::string(contact_created[0][0]));
             }
 
             return filtered;
