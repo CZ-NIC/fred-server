@@ -53,20 +53,24 @@ namespace Fred
     struct MergeContactNotificationEmail
     {
         std::string dst_contact_handle;
+        std::string dst_contact_roid;
         std::vector<std::string> domain_registrant_list;
         std::vector<std::string> domain_admin_list;
         std::vector<std::string> nsset_tech_list;
         std::vector<std::string> keyset_tech_list;
         std::vector<std::string> removed_list;
+        std::vector<std::string> removed_roid_list;
     };
 
     struct SortedContactNotificationEmail
     {
+        std::string dst_contact_handle;
         std::set<std::string> domain_registrant_list;
         std::set<std::string> domain_admin_list;
         std::set<std::string> nsset_tech_list;
         std::set<std::string> keyset_tech_list;
         std::set<std::string> removed_list;
+        std::set<std::string> removed_roid_list;
     };
 
     class MergeContactEmailNotificationData
@@ -95,7 +99,7 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[]={"invalid:contact handle"};
+            static const char* list[]={"invalid:contact handle", "invalid:contact roid"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     };//class MergeContactEmailNotificationDataException
@@ -132,7 +136,7 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[]={"invalid:contact handle"};
+            static const char* list[]={"invalid:contact handle", "invalid:contact roid"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     };//class MergeContactNotificationEmailAddrException

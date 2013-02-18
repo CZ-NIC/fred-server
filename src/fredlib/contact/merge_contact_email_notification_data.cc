@@ -80,29 +80,31 @@ namespace Fred
         try
         {
 
-        typedef std::map<std::string , SortedContactNotificationEmail> EmailMap;//key is dst_contact_handle
+        typedef std::map<std::string , SortedContactNotificationEmail> EmailMap;//key is dst_contact_roid
         EmailMap email_by_dst_contact;
 
         for( std::vector<MergeContactEmailNotificationInput>::iterator i = merge_contact_data_.begin()
                 ; i != merge_contact_data_.end(); ++i )
         {
-            //check contact handles are different
-            if(i->dst_contact_handle.compare(i->src_contact_handle) == 0)
+            //check contacts are different
+            if(i->merge_output.contactid.dst_contact_roid.compare(i->merge_output.contactid.src_contact_roid) == 0)
             {//error if equal
-                std::string errmsg("src_contact_handle equals dst_contact_handle || invalid:contact handle: ");
-                errmsg += boost::replace_all_copy(i->dst_contact_handle,"|", "[pipe]");//quote pipes
+                std::string errmsg("src_contact_roid equals dst_contact_roid || invalid:contact roid: ");
+                errmsg += boost::replace_all_copy(i->merge_output.contactid.dst_contact_roid,"|", "[pipe]");//quote pipes
                 errmsg += " |";
                 throw MCENDEX(errmsg.c_str());
             }
 
-            //look for notification email by contact handle
-            EmailMap::iterator email_by_dst_contact_it = email_by_dst_contact.find(i->dst_contact_handle);
-            EmailMap::iterator email_by_src_contact_it = email_by_dst_contact.find(i->src_contact_handle);
+            //look for notification email by contact roid
+            EmailMap::iterator email_by_dst_contact_it = email_by_dst_contact.find(i->merge_output.contactid.dst_contact_roid);
+            EmailMap::iterator email_by_src_contact_it = email_by_dst_contact.find(i->merge_output.contactid.src_contact_roid);
             if(email_by_dst_contact_it == email_by_dst_contact.end())
             {//email not found -> create new
                 SortedContactNotificationEmail email;
 
+                email.dst_contact_handle = i->dst_contact_handle;
                 email.removed_list.insert(i->src_contact_handle);
+                email.removed_roid_list.insert(i->merge_output.contactid.src_contact_roid);
 
                 update_email(i,email);
 
@@ -115,17 +117,27 @@ namespace Fred
                     email.nsset_tech_list.insert(src_email.nsset_tech_list.begin(), src_email.nsset_tech_list.end());
                     email.keyset_tech_list.insert(src_email.keyset_tech_list.begin(), src_email.keyset_tech_list.end());
                     email.removed_list.insert(src_email.removed_list.begin(), src_email.removed_list.end());
+                    email.removed_roid_list.insert(src_email.removed_roid_list.begin(), src_email.removed_roid_list.end());
                     email_by_dst_contact.erase(email_by_src_contact_it);
                 }
 
                 //insert new email
-                email_by_dst_contact.insert(EmailMap::value_type(i->dst_contact_handle, email));
+                email_by_dst_contact.insert(EmailMap::value_type(i->merge_output.contactid.dst_contact_roid, email));
             }
             else
             {//email found -> update
                 SortedContactNotificationEmail email(email_by_dst_contact_it->second);
 
+                if(email.dst_contact_handle.compare(i->dst_contact_handle) == 0)
+                {//error if equal
+                    std::string errmsg("dst_contact_handle changed || invalid:contact handle: ");
+                    errmsg += boost::replace_all_copy(i->dst_contact_handle,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw MCENDEX(errmsg.c_str());
+                }
+
                 email.removed_list.insert(i->src_contact_handle);
+                email.removed_roid_list.insert(i->merge_output.contactid.src_contact_roid);
 
                 update_email(i,email);
 
@@ -138,6 +150,7 @@ namespace Fred
                     email.nsset_tech_list.insert(src_email.nsset_tech_list.begin(), src_email.nsset_tech_list.end());
                     email.keyset_tech_list.insert(src_email.keyset_tech_list.begin(), src_email.keyset_tech_list.end());
                     email.removed_list.insert(src_email.removed_list.begin(), src_email.removed_list.end());
+                    email.removed_roid_list.insert(src_email.removed_roid_list.begin(), src_email.removed_roid_list.end());
                     email_by_dst_contact.erase(email_by_src_contact_it);
                 }
 
@@ -151,7 +164,8 @@ namespace Fred
         for(EmailMap::iterator it = email_by_dst_contact.begin(); it != email_by_dst_contact.end(); ++it)
         {
             MergeContactNotificationEmail notifemail;
-            notifemail.dst_contact_handle = it->first;
+            notifemail.dst_contact_handle = it->second.dst_contact_handle;
+            notifemail.dst_contact_roid = it->first;
 
             for(std::set<std::string>::iterator si = it->second.domain_registrant_list.begin()
                     ; si != it->second.domain_registrant_list.end(); ++si)
@@ -181,6 +195,12 @@ namespace Fred
                     ; si != it->second.removed_list.end(); ++si)
             {
                 notifemail.removed_list.push_back(*si);
+            }
+
+            for(std::set<std::string>::iterator si = it->second.removed_roid_list.begin()
+                    ; si != it->second.removed_roid_list.end(); ++si)
+            {
+                notifemail.removed_roid_list.push_back(*si);
             }
 
             result.push_back(notifemail);
@@ -213,13 +233,13 @@ namespace Fred
                         "SELECT c.notifyemail, oreg.name "
                         " FROM object_registry oreg "
                         " JOIN contact c ON  oreg.id = c.id "
-                        " WHERE UPPER(oreg.name) = UPPER($1::text)"
-                , Database::query_param_list(ci->dst_contact_handle));
+                        " WHERE oreg.roid = $1::text"
+                , Database::query_param_list(ci->dst_contact_roid));
 
                 if(email_result.size() != 1)
                 {
-                    std::string errmsg("unable to get notification email address || invalid:contact handle: ");
-                    errmsg += boost::replace_all_copy(ci->dst_contact_handle,"|", "[pipe]");//quote pipes
+                    std::string errmsg("unable to get notification email address || invalid:contact roid: ");
+                    errmsg += boost::replace_all_copy(ci->dst_contact_roid,"|", "[pipe]");//quote pipes
                     errmsg += " |";
                     throw MCNEAEX(errmsg.c_str());
                 }
