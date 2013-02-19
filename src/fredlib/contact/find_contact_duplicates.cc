@@ -149,10 +149,14 @@ std::set<std::string> FindSpecificContactDuplicates::exec(Fred::OperationContext
             dup_sql, Database::query_param_list(contact_handle_));
 
     std::set<std::string> result;
+
+    if (dup_result.size() == 1 && static_cast<std::string>(dup_result[0][0]) == contact_handle_) {
+        return result;
+    }
+
     for (Database::Result::size_type i = 0; i < dup_result.size(); i++) {
         result.insert(static_cast<std::string>(dup_result[i][0]));
     }
-
     return result;
 }
 

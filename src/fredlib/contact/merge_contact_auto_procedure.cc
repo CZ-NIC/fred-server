@@ -389,10 +389,13 @@ void MergeContactAutoProcedure::exec()
         }
         /* if none go for another contact which has duplicates */
         if (dup_set.empty()) {
-               dup_set = FindAnyContactDuplicates()
-                        .set_registrar(registrar_)
-                        .set_exclude_contacts(dry_run_info.any_search_excluded)
-                        .exec(octx);
+            FindAnyContactDuplicates new_dup_search = FindAnyContactDuplicates().set_registrar(registrar_);
+            if (this->is_set_dry_run()) {
+                dup_set = new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded).exec(octx);
+            }
+            else {
+                dup_set = new_dup_search.exec(octx);
+            }
         }
     }
     if (!this->is_set_dry_run()) {
