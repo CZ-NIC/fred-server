@@ -93,7 +93,7 @@ namespace Fred
             for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
             {
                 Database::Result contact_check = ctx.get_conn().exec_params(
-                "SELECT oreg.name FROM contact c JOIN object_registry oreg ON c.id = oreg.id "
+                "SELECT oreg.name FROM contact c JOIN object_registry oreg ON c.id = oreg.id AND oreg.erdate IS NULL "
                 " JOIN object_state os ON os.object_id = oreg.id AND os.valid_to IS NULL "
                 " JOIN enum_object_states eos ON eos.id = os.state_id "
                 " WHERE eos.name = $1::text AND oreg.name = $2::text"
@@ -122,7 +122,7 @@ namespace Fred
             for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
             {
                 Database::Result contact_check = ctx.get_conn().exec_params(
-                "SELECT oreg.name FROM contact c JOIN object_registry oreg ON c.id = oreg.id "
+                "SELECT oreg.name FROM contact c JOIN object_registry oreg ON c.id = oreg.id AND oreg.erdate IS NULL "
                 " JOIN object_state os ON os.object_id = oreg.id AND os.valid_to IS NULL "
                 " JOIN enum_object_states eos ON eos.id = os.state_id "
                 " WHERE eos.name = $1::text AND oreg.name = $2::text"
@@ -192,11 +192,11 @@ namespace Fred
             " , (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id WHERE d.registrant = current_contact.id) AS domain_registrant_count "
             " , (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id JOIN domain_contact_map dcm ON dcm.domainid = d.id and dcm.role = 1 "
             "    WHERE dcm.contactid  = current_contact.id) AS domain_admin_count "
-            " FROM (SELECT oreg.name AS handle, c.id AS id FROM contact c JOIN object_registry oreg ON c.id = oreg.id ");
+            " FROM (SELECT oreg.name AS handle, c.id AS id FROM contact c JOIN object_registry oreg ON c.id = oreg.id AND oreg.erdate IS NULL");
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
 
-            std::string query_end("     ) AS current_contact "
+            std::string query_end(") AS current_contact"
             " ) cc "
             " ORDER BY all_domains_count DESC ");
 
@@ -206,7 +206,7 @@ namespace Fred
             for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
             {
                 params.push_back(*i);
-                sql << where_or.get() << "UPPER(oreg.name) = UPPER($" << params.size() << "::text) ";
+                sql << where_or.get() << "oreg.name = UPPER($" << params.size() << "::text) ";
             }
             sql << query_end;
 
@@ -246,6 +246,7 @@ namespace Fred
 
             if(contact_handle.empty()) return filtered;
 
+
             std::string query_begin("SELECT cc.handle, (cc.domain_registrant_count + cc.domain_admin_count + cc.nsset_tech_count + cc.keyset_tech_count) AS all_domains_count FROM ( "
             " SELECT current_contact.handle "
             " , (SELECT count(*) FROM object_registry oreg JOIN domain d ON oreg.id = d.id WHERE d.registrant = current_contact.id) AS domain_registrant_count "
@@ -255,11 +256,11 @@ namespace Fred
             "    WHERE ncm.contactid  = current_contact.id) AS nsset_tech_count "
             " , (SELECT count(*) FROM object_registry oreg JOIN keyset k ON oreg.id = k.id JOIN keyset_contact_map kcm ON kcm.keysetid = k.id "
             "    WHERE kcm.contactid  = current_contact.id) AS keyset_tech_count "
-            " FROM (SELECT oreg.name AS handle, c.id AS id FROM contact c JOIN object_registry oreg ON c.id = oreg.id ");
+            " FROM (SELECT oreg.name AS handle, c.id AS id FROM contact c JOIN object_registry oreg ON c.id = oreg.id AND oreg.erdate IS NULL");
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
 
-            std::string query_end("     ) AS current_contact "
+            std::string query_end(") AS current_contact"
             " ) cc "
             " ORDER BY all_domains_count DESC ");
 
@@ -269,7 +270,7 @@ namespace Fred
             for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
             {
                 params.push_back(*i);
-                sql << where_or.get() << "UPPER(oreg.name) = UPPER($" << params.size() << "::text) ";
+                sql << where_or.get() << "oreg.name = UPPER($" << params.size() << "::text) ";
             }
             sql << query_end;
 
@@ -310,7 +311,7 @@ namespace Fred
             if(contact_handle.empty()) return filtered;
 
             std::string query_begin("SELECT oreg.name, o.update FROM object o "
-                    " JOIN object_registry oreg ON o.id = oreg.id AND o.update IS NOT NULL "
+                    " JOIN object_registry oreg ON o.id = oreg.id AND o.update IS NOT NULL AND oreg.erdate IS NULL"
                     " JOIN contact c ON c.id = oreg.id ");
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
@@ -323,7 +324,7 @@ namespace Fred
             for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
             {
                 params.push_back(*i);
-                sql << where_or.get() << "UPPER(oreg.name) = UPPER($" << params.size() << "::text) ";
+                sql << where_or.get() << "oreg.name = UPPER($" << params.size() << "::text) ";
             }
             sql << query_end;
 
@@ -363,8 +364,8 @@ namespace Fred
 
             std::string query(
                 "SELECT oreg.name FROM object_registry oreg "
-                " JOIN object o ON oreg.id = o.id "
-                " JOIN registrar r ON r.id = o.clid AND UPPER(r.handle) != UPPER('REG-CZNIC') "
+                " JOIN object o ON oreg.id = o.id AND oreg.erdate IS NULL"
+                " JOIN registrar r ON r.id = o.clid AND r.handle != UPPER('REG-CZNIC') "
                 " JOIN contact c ON c.id = oreg.id ");
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
@@ -375,7 +376,7 @@ namespace Fred
             for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
             {
                 params.push_back(*i);
-                sql << where_or.get() << "UPPER(oreg.name) = UPPER($" << params.size() << "::text) ";
+                sql << where_or.get() << "oreg.name = UPPER($" << params.size() << "::text) ";
             }
 
             Database::Result contact_not_regcznic = ctx.get_conn().exec_params(sql.str(), params);
@@ -408,7 +409,7 @@ namespace Fred
 
             std::string query_begin("SELECT oreg.name "
                     " FROM object_registry oreg "
-                    " JOIN contact c ON c.id = oreg.id ");
+                    " JOIN contact c ON c.id = oreg.id AND oreg.erdate IS NULL");
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
 
@@ -420,7 +421,7 @@ namespace Fred
             for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
             {
                 params.push_back(*i);
-                sql << where_or.get() << "UPPER(oreg.name) = UPPER($" << params.size() << "::text) ";
+                sql << where_or.get() << "oreg.name = UPPER($" << params.size() << "::text) ";
             }
             sql << query_end;
 
