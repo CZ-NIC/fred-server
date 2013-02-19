@@ -5,6 +5,8 @@
 #include "fredlib/opcontext.h"
 #include "fredlib/logger_client.h"
 #include "merge_contact_selection.h"
+#include "mailer.h"
+
 
 
 namespace Fred {
@@ -14,9 +16,10 @@ namespace Contact {
 class MergeContactAutoProcedure
 {
 public:
-    MergeContactAutoProcedure(Fred::Logger::LoggerClient &_logger_client);
+    MergeContactAutoProcedure(Fred::Mailer::Manager& mm, Fred::Logger::LoggerClient &_logger_client);
 
     MergeContactAutoProcedure(
+            Fred::Mailer::Manager& mm,
             Fred::Logger::LoggerClient &_logger_client,
             const optional_string &_registrar,
             const optional_ulonglong &_limit,
@@ -39,6 +42,7 @@ private:
 
     std::vector<ContactSelectionFilterType> get_default_selection_filter_order() const;
 
+    Fred::Mailer::Manager& mm_;
     Fred::Logger::LoggerClient &logger_client_;
 
     optional_string registrar_;
