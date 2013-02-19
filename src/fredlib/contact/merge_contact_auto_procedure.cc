@@ -442,8 +442,9 @@ void MergeContactAutoProcedure::exec()
                     % boost::algorithm::join(dup_set, ", "));
 
             /* compute best handle to merge all others onto */
-            std::string winner_handle = MergeContactSelection(
+            MergeContactSelectionOutput contact_select = MergeContactSelection(
                     std::vector<std::string>(dup_set.begin(), dup_set.end()), selection_filter).exec(octx);
+            std::string winner_handle = contact_select.handle;
             octx.get_log().debug(boost::format("winner handle: %1%") % winner_handle);
 
             /* remove winner contact from set */

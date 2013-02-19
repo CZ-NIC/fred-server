@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(test_merge_contact_selection)
     Fred::OperationContext ctx;
     std::vector<std::string> contact_handles = Util::vector_of<std::string>
         ("test1")("test2")("test3")("test1")("test2");
-    std::string result = Fred::MergeContactSelection(
+    Fred::MergeContactSelectionOutput result = Fred::MergeContactSelection(
             contact_handles
             , Util::vector_of<Fred::ContactSelectionFilterType>
                 (Fred::MCS_FILTER_TEST1)
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(test_merge_contact_selection)
                 //(Fred::MCS_FILTER_IDENTIFIED_CONTACT)
                 //(Fred::MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
     ).exec(ctx);
-    BOOST_CHECK(result.compare("test3") == 0);
+    BOOST_CHECK(result.handle.compare("test3") == 0);
 }
 
 BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
