@@ -3,10 +3,14 @@
 #include "find_contact_duplicates.h"
 #include "poll/create_update_object_poll_message.h"
 #include "merge_contact_email_notification_data.h"
+#include "mailer_manager.h"
+#include "mailer.h"
+#include "util/corba_wrapper_decl.h"
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>
 #include <algorithm>
+#include <sstream>
 
 
 namespace Fred {
@@ -408,10 +412,83 @@ void MergeContactAutoProcedure::exec()
         octx.commit_transaction();
     }
 
+    //email notification
     Fred::OperationContext enctx;
     std::vector<Fred::MergeContactNotificationEmailWithAddr> notif_emails
           = Fred::MergeContactNotificationEmailAddr(Fred::MergeContactEmailNotificationData(email_notification_input_vector)
         .exec(enctx)).exec(enctx);
+
+    boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
+
+    for(std::vector<Fred::MergeContactNotificationEmailWithAddr>::const_iterator ci = notif_emails.begin()
+            ;ci != notif_emails.end() ; ++ci)
+    {
+        Fred::Mailer::Attachments attach;
+        Fred::Mailer::Handles handles;
+        Fred::Mailer::Parameters params;
+        int counter=0;
+
+        params["email"] = ci->notification_email_addr;
+
+        params["dst_contact_handle"] = ci->email_data.dst_contact_handle;
+
+        counter = 0;//reset counter
+        for (std::vector<std::string>::const_iterator listci = ci->email_data.domain_registrant_list.begin()
+                ; listci != ci->email_data.domain_registrant_list.end() ; ++listci)
+        {
+            std::stringstream list_key;
+            list_key << "domain_registrant_list." << counter; ++counter;
+            params[list_key.str()] = *listci;
+        }
+
+        counter = 0;//reset counter
+        for (std::vector<std::string>::const_iterator listci = ci->email_data.domain_admin_list.begin()
+                ; listci != ci->email_data.domain_admin_list.end() ; ++listci)
+        {
+            std::stringstream list_key;
+            list_key << "domain_admin_list." << counter; ++counter;
+            params[list_key.str()] = *listci;
+        }
+
+        counter = 0;//reset counter
+        for (std::vector<std::string>::const_iterator listci = ci->email_data.nsset_tech_list.begin()
+                ; listci != ci->email_data.nsset_tech_list.end() ; ++listci)
+        {
+            std::stringstream list_key;
+            list_key << "nsset_tech_list." << counter; ++counter;
+            params[list_key.str()] = *listci;
+        }
+
+        counter = 0;//reset counter
+        for (std::vector<std::string>::const_iterator listci = ci->email_data.keyset_tech_list.begin()
+                ; listci != ci->email_data.keyset_tech_list.end() ; ++listci)
+        {
+            std::stringstream list_key;
+            list_key << "keyset_tech_list." << counter; ++counter;
+            params[list_key.str()] = *listci;
+        }
+
+        counter = 0;//reset counter
+        for (std::vector<std::string>::const_iterator listci = ci->email_data.removed_list.begin()
+                ; listci != ci->email_data.removed_list.end() ; ++listci)
+        {
+            std::stringstream list_key;
+            list_key << "removed_list." << counter; ++counter;
+            params[list_key.str()] = *listci;
+        }
+
+
+        mm->sendEmail(
+                    "",           /* default sender */
+                    params["email"],
+                    "",           /* default subject */
+                    "merge_contacts_auto",
+                    params,
+                    handles,
+                    attach
+                    );
+
+    }
 
 }
 
