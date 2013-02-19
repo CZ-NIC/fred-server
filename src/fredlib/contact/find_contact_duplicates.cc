@@ -61,7 +61,16 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
         " trim(both ' ' from c.stateorprovince),"
         " trim(both ' ' from c.postalcode),"
         " trim(both ' ' from c.country),"
-        " o.clid"
+        " o.clid,"
+        " c.disclosename,"
+        " c.discloseorganization,"
+        " c.discloseaddress,"
+        " c.disclosetelephone,"
+        " c.disclosefax,"
+        " c.discloseemail,"
+        " c.disclosevat,"
+        " c.discloseident,"
+        " c.disclosenotifyemail"
         " HAVING array_upper(array_accum(oreg.name), 1) > 1";
     if (!exclude_contacts_.empty()) {
         std::vector<std::string> array_params;
