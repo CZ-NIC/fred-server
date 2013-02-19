@@ -57,7 +57,7 @@ namespace Fred
                 std::string("SELECT oreg.id, oreg.historyid, oreg.roid "
                 " FROM enum_object_type eot "
                 " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
-                " AND UPPER(oreg.name) = UPPER($1::text) "
+                " AND oreg.name = UPPER($1::text) "
                 " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(src_contact_handle_));
 
@@ -79,7 +79,7 @@ namespace Fred
                 std::string("SELECT oreg.id, oreg.historyid, oreg.roid "
                         " FROM enum_object_type eot "
                         " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
-                        " AND UPPER(oreg.name) = UPPER($1::text) "
+                        " AND oreg.name = UPPER($1::text) "
                         " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(dst_contact_handle_));
 
@@ -132,10 +132,10 @@ namespace Fred
         "  as differ "
         " FROM (object_registry oreg1 "
         " JOIN object o1 ON oreg1.id=o1.id "
-        " JOIN contact c1 ON c1.id = oreg1.id AND UPPER(oreg1.name) = UPPER($1::text) ) "
+        " JOIN contact c1 ON c1.id = oreg1.id AND oreg1.name = UPPER($1::text) AND oreg1.erdate IS NULL) "
         " JOIN (object_registry oreg2 "
         " JOIN object o2 ON oreg2.id=o2.id "
-        " JOIN contact c2 ON c2.id = oreg2.id AND UPPER(oreg2.name) = UPPER($2::text)"
+        " JOIN contact c2 ON c2.id = oreg2.id AND oreg2.name = UPPER($2::text) AND oreg2.erdate IS NULL"
         ") ON TRUE "
           , Database::query_param_list(src_contact_handle_)(dst_contact_handle_));
         if (diff_result.size() != 1)
@@ -169,7 +169,7 @@ namespace Fred
                 std::string("SELECT oreg.name, r.handle, d.id "
                 " FROM contact src_c "
                 " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL"
                 " JOIN domain d ON d.registrant = src_c.id "
                 " JOIN object_registry oreg  ON oreg.id = d.id AND oreg.erdate IS NULL "
                 " JOIN object o ON oreg.id = o.id "
@@ -202,7 +202,7 @@ namespace Fred
                 std::string("SELECT oreg.name, r.handle, d.id "
                 " FROM contact src_c "
                 " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL"
                 " JOIN domain_contact_map dcm ON dcm.role = 1 "
                 " AND dcm.contactid  = src_c.id "
                 " JOIN domain d ON dcm.domainid = d.id "
@@ -260,7 +260,7 @@ namespace Fred
                 std::string("SELECT oreg.name, r.handle, n.id "
                 " FROM contact src_c "
                 " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL "
                 " JOIN nsset_contact_map ncm ON ncm.contactid  = src_c.id "
                 " JOIN nsset n ON ncm.nssetid = n.id "
                 " JOIN object_registry oreg  ON oreg.id = n.id AND oreg.erdate IS NULL "
@@ -317,7 +317,7 @@ namespace Fred
                 std::string("SELECT oreg.name, r.handle, k.id "
                 " FROM contact src_c "
                 " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND UPPER(src_oreg.name) = UPPER($1::text) "
+                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL"
                 " JOIN keyset_contact_map kcm ON kcm.contactid  = src_c.id "
                 " JOIN keyset k ON kcm.keysetid = k.id "
                 " JOIN object_registry oreg  ON oreg.id = k.id AND oreg.erdate IS NULL"
