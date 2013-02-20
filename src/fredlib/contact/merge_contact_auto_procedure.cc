@@ -489,6 +489,9 @@ void MergeContactAutoProcedure::exec()
                 dup_set = new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded).exec(octx);
             }
             else {
+                email_notification(mm_, email_notification_input_vector);
+                email_notification_input_vector.clear();
+
                 dup_set = new_dup_search.exec(octx);
             }
         }
@@ -497,7 +500,7 @@ void MergeContactAutoProcedure::exec()
         octx.commit_transaction();
     }
 
-    email_notification(mm_, email_notification_input_vector);
+
 
 
 
