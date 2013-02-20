@@ -230,14 +230,29 @@ void create_poll_messages(const MergeContactOutput &_merge_data, Fred::Operation
 }
 
 
+struct MergeContactSummaryInfo
+{
+    unsigned long long merge_set_counter;
+    unsigned long long merge_counter;
+
+    MergeContactSummaryInfo()
+        : merge_set_counter(0),
+          merge_counter(0)
+    {
+    }
+};
+
+
 std::ostream& print_merge_contact_output(
         const MergeContactOutput &_merge_data,
         const std::string &_src_handle,
         const std::string &_dst_handle,
-        const unsigned long long &_merge_counter,
+        const MergeContactSummaryInfo &_msi,
         std::ostream &_ostream)
 {
-    std::string header = str(boost::format("[%1%] MERGE %2% => %3%") % _merge_counter % _src_handle % _dst_handle);
+    std::string header = str(boost::format("[%1%/%2%] MERGE %3% => %4%")
+            % _msi.merge_set_counter % _msi.merge_counter % _src_handle % _dst_handle);
+
     _ostream << std::string(header.length(), '-') << std::endl;
     _ostream << header << std::endl;
     _ostream << std::string(header.length(), '-') << std::endl;
@@ -278,13 +293,11 @@ std::ostream& print_merge_contact_output(
 
 struct MergeContactDryRunInfo
 {
-    unsigned long long merge_counter;
     std::set<std::string> fake_deleted;
     std::set<std::string> any_search_excluded;
 
     MergeContactDryRunInfo()
-        : merge_counter(0),
-          fake_deleted(),
+        : fake_deleted(),
           any_search_excluded()
     {
     }
@@ -401,12 +414,7 @@ void MergeContactAutoProcedure::exec()
     std::string system_registrar = static_cast<std::string>(system_registrar_result[0][0]);
 
     /* find any contact duplicates set (optionally for specific registrar only) */
-    std::set<std::string> dup_set = FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
 
-    if (dup_set.empty()) {
-        octx.get_log().info("no contact duplicity");
-        return;
-    }
 
     /* filter for best contact selection */
     std::vector<ContactSelectionFilterType> selection_filter = selection_filter_order_;
@@ -414,96 +422,97 @@ void MergeContactAutoProcedure::exec()
         selection_filter = this->get_default_selection_filter_order();
     }
 
-    std::vector<Fred::MergeContactEmailNotificationInput> email_notification_input_vector;
-
     MergeContactDryRunInfo dry_run_info;
-    while (dup_set.size() >= 2)
+    MergeContactSummaryInfo summary_info;
+
+    std::set<std::string> any_dup_set = FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
+    while (any_dup_set.size() >= 2)
     {
-        dry_run_info.merge_counter += 1;
+        /* one specific contact set merges scope */
+        summary_info.merge_set_counter += 1;
 
-        octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
-                % boost::algorithm::join(dup_set, ", "));
-
-        /* compute best handle to merge all others onto */
-        std::string winner_handle = MergeContactSelection(
-                std::vector<std::string>(dup_set.begin(), dup_set.end()), selection_filter).exec(octx);
-        octx.get_log().debug(boost::format("winner handle: %1%") % winner_handle);
-
-        /* remove winner contact from set */
-        dup_set.erase(winner_handle);
-        /* merge first one */
-        std::string pick_one = *(dup_set.begin());
-
-        unsigned long long req_id = 0;
-        MergeContactOutput merge_data;
-        if (this->is_set_dry_run())
+        std::vector<Fred::MergeContactEmailNotificationInput> email_notification_input_vector;
+        std::set<std::string> dup_set = any_dup_set;
+        do
         {
-            Fred::OperationContext merge_octx;
-            merge_data = MergeContact(pick_one, winner_handle, system_registrar)
-                            .set_logd_request_id(req_id).exec_dry_run(merge_octx);
+            /* one contact merge scope */
+            summary_info.merge_counter += 1;
 
-            dry_run_info.add_fake_deleted(pick_one);
-            dry_run_info.add_search_excluded(winner_handle);
-            /* do not commit */
-            print_merge_contact_output(merge_data, pick_one, winner_handle, dry_run_info.merge_counter, std::cout);
-        }
-        else
-        {
-            try {
-                req_id = logger_merge_contact_create_request(logger_client_, pick_one, winner_handle);
+            octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
+                    % boost::algorithm::join(dup_set, ", "));
 
+            /* compute best handle to merge all others onto */
+            std::string winner_handle = MergeContactSelection(
+                    std::vector<std::string>(dup_set.begin(), dup_set.end()), selection_filter).exec(octx);
+            octx.get_log().debug(boost::format("winner handle: %1%") % winner_handle);
+
+            /* remove winner contact from set */
+            dup_set.erase(winner_handle);
+            /* merge first one */
+            std::string pick_one = *(dup_set.begin());
+
+            MergeContactOutput merge_data;
+            MergeContact merge_op = MergeContact(pick_one, winner_handle, system_registrar);
+            if (this->is_set_dry_run())
+            {
                 Fred::OperationContext merge_octx;
-                merge_data = MergeContact(pick_one, winner_handle, system_registrar)
-                                .set_logd_request_id(req_id).exec(merge_octx);
+                merge_data = merge_op.exec_dry_run(merge_octx);
 
-                /* merge operation notification handling */
-                create_poll_messages(merge_data, merge_octx);
-                merge_octx.commit_transaction();
-
-                logger_merge_contact_close_request_success(logger_client_, req_id, merge_data);
+                dry_run_info.add_fake_deleted(pick_one);
+                dry_run_info.add_search_excluded(winner_handle);
+                print_merge_contact_output(merge_data, pick_one, winner_handle, summary_info, std::cout);
+                /* do not commit */
             }
-            catch (...) {
-                logger_merge_contact_close_request_fail(logger_client_, req_id);
-                /* stop at first error */
-                throw;
+            else
+            {
+                /* MERGE ONE CONTACT */
+                unsigned long long req_id = 0;
+                try {
+                    req_id = logger_merge_contact_create_request(logger_client_, pick_one, winner_handle);
+
+                    Fred::OperationContext merge_octx;
+                    merge_data = merge_op.set_logd_request_id(req_id).exec(merge_octx);
+
+                    /* merge operation notification handling */
+                    create_poll_messages(merge_data, merge_octx);
+                    merge_octx.commit_transaction();
+                    /* save merge output for email notification */
+                    email_notification_input_vector.push_back(
+                            MergeContactEmailNotificationInput(pick_one, winner_handle, merge_data));
+
+                    logger_merge_contact_close_request_success(logger_client_, req_id, merge_data);
+                }
+                catch (...) {
+                    logger_merge_contact_close_request_fail(logger_client_, req_id);
+                    /* stop at first error */
+                    throw;
+                }
+            }
+
+            /* find contact duplicates for winner contact - if nothing changed in registry data this
+             * would be the same list as in previous step but without the merged one */
+            dup_set = FindSpecificContactDuplicates(winner_handle).exec(octx);
+            if (this->is_set_dry_run())
+            {
+                dup_set = dry_run_info.remove_fake_deleted_from_set(dup_set);
             }
         }
-        //save merge output for email notification
-        email_notification_input_vector.push_back(Fred::MergeContactEmailNotificationInput(
-                pick_one, winner_handle, merge_data));
+        while (dup_set.size() >= 2);
 
-        /* find contact duplicates for winner contact - if nothing changed in registry data this
-         * would be the same list as in previous step but without the merged one */
-        dup_set = FindSpecificContactDuplicates(winner_handle).exec(octx);
-        if (this->is_set_dry_run())
-        {
-            dup_set = dry_run_info.remove_fake_deleted_from_set(dup_set);
-            if (dup_set.size() == 1 && *(dup_set.begin()) == winner_handle) {
-                dup_set.clear();
-            }
+        FindAnyContactDuplicates new_dup_search = FindAnyContactDuplicates().set_registrar(registrar_);
+        if (this->is_set_dry_run()) {
+            new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded);
         }
-        /* if none go for another contact which has duplicates */
-        if (dup_set.empty()) {
-            FindAnyContactDuplicates new_dup_search = FindAnyContactDuplicates().set_registrar(registrar_);
-            if (this->is_set_dry_run()) {
-                dup_set = new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded).exec(octx);
-            }
-            else {
-                email_notification(mm_, email_notification_input_vector);
-                email_notification_input_vector.clear();
-
-                dup_set = new_dup_search.exec(octx);
-            }
+        else {
+            /* send email notifications */
+            email_notification(mm_, email_notification_input_vector);
         }
+        any_dup_set = new_dup_search.exec(octx);
     }
+
     if (!this->is_set_dry_run()) {
         octx.commit_transaction();
     }
-
-
-
-
-
 }
 
 
