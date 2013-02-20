@@ -394,7 +394,7 @@ namespace Fred
                     params.push_back(ssntype_.get_value());
                     col_sql << col_separator.get() << "ssntype";
                     val_sql << val_separator.get() << "raise_exception_ifnull( "
-                    " (SELECT id FROM enum_ssntype WHERE UPPER(type) = UPPER($" << params.size() <<"::text)) "
+                    " (SELECT id FROM enum_ssntype WHERE type = UPPER($" << params.size() <<"::text)) "
                     " ,'|| not found:ssntype: '||ex_data($1::text)||' |') ";
                 }
 

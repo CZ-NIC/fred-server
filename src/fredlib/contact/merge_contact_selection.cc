@@ -366,7 +366,7 @@ namespace Fred
             std::string query(
                 "SELECT oreg.name FROM object_registry oreg "
                 " JOIN object o ON oreg.id = o.id AND oreg.erdate IS NULL"
-                " JOIN registrar r ON r.id = o.clid AND r.handle != UPPER('REG-CZNIC') "
+                " JOIN registrar r ON r.id = o.clid AND r.handle != 'REG-CZNIC' "
                 " JOIN contact c ON c.id = oreg.id ");
 
             Util::HeadSeparator where_or(" WHERE "," OR ");
