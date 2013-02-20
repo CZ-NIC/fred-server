@@ -117,6 +117,9 @@ struct contact_merge_duplicate_auto_impl
         std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
                 new Fred::Logger::LoggerCorbaClientImpl());
 
+        std::auto_ptr<Fred::Mailer::Manager> mm(
+                new MailerManager(CorbaContainer::get_instance()->getNS()));
+
         if (!logger_client.get()) {
             throw std::runtime_error("unable to get request logger reference");
         }
@@ -125,6 +128,7 @@ struct contact_merge_duplicate_auto_impl
             get_handler_ptr_by_type<HandleAdminClientContactMergeDuplicateAutoArgsGrp>()->params;
 
         Fred::Contact::MergeContactAutoProcedure(
+                *(mm.get()),
                 *(logger_client.get()), params.registrar,
                 params.limit, params.dry_run).set_selection_filter_order(params.selection_filter_order).exec();
 

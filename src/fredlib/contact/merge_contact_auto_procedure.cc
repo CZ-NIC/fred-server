@@ -2,15 +2,101 @@
 #include "merge_contact.h"
 #include "find_contact_duplicates.h"
 #include "poll/create_update_object_poll_message.h"
+#include "merge_contact_email_notification_data.h"
+#include "mailer_manager.h"
+#include "mailer.h"
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>
 #include <algorithm>
+#include <sstream>
 
 
 namespace Fred {
 namespace Contact {
 
+void email_notification(Fred::Mailer::Manager& mm
+        , const std::vector<Fred::MergeContactEmailNotificationInput>& email_notification_input_vector)
+{
+    Fred::OperationContext enctx;
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> notif_emails
+          = Fred::MergeContactNotificationEmailAddr(Fred::MergeContactEmailNotificationData(email_notification_input_vector)
+        .exec(enctx)).exec(enctx);
+
+    for(std::vector<Fred::MergeContactNotificationEmailWithAddr>::const_iterator ci = notif_emails.begin()
+            ;ci != notif_emails.end() ; ++ci)
+    {
+        Fred::Mailer::Attachments attach;
+        Fred::Mailer::Handles handles;
+        Fred::Mailer::Parameters params;
+        int counter=0;
+
+        params["email"] = ci->notification_email_addr;
+
+        params["dst_contact_handle"] = ci->email_data.dst_contact_handle;
+
+        counter = 0;//reset counter
+        for (std::vector<std::string>::const_iterator listci = ci->email_data.domain_registrant_list.begin()
+                ; listci != ci->email_data.domain_registrant_list.end() ; ++listci)
+        {
+            std::stringstream list_key;
+            list_key << "domain_registrant_list." << counter; ++counter;
+            params[list_key.str()] = *listci;
+        }
+
+        counter = 0;//reset counter
+        for (std::vector<std::string>::const_iterator listci = ci->email_data.domain_admin_list.begin()
+                ; listci != ci->email_data.domain_admin_list.end() ; ++listci)
+        {
+            std::stringstream list_key;
+            list_key << "domain_admin_list." << counter; ++counter;
+            params[list_key.str()] = *listci;
+        }
+
+        counter = 0;//reset counter
+        for (std::vector<std::string>::const_iterator listci = ci->email_data.nsset_tech_list.begin()
+                ; listci != ci->email_data.nsset_tech_list.end() ; ++listci)
+        {
+            std::stringstream list_key;
+            list_key << "nsset_tech_list." << counter; ++counter;
+            params[list_key.str()] = *listci;
+        }
+
+        counter = 0;//reset counter
+        for (std::vector<std::string>::const_iterator listci = ci->email_data.keyset_tech_list.begin()
+                ; listci != ci->email_data.keyset_tech_list.end() ; ++listci)
+        {
+            std::stringstream list_key;
+            list_key << "keyset_tech_list." << counter; ++counter;
+            params[list_key.str()] = *listci;
+        }
+
+        counter = 0;//reset counter
+        for (std::vector<std::string>::const_iterator listci = ci->email_data.removed_list.begin()
+                ; listci != ci->email_data.removed_list.end() ; ++listci)
+        {
+            std::stringstream list_key;
+            list_key << "removed_list." << counter; ++counter;
+            params[list_key.str()] = *listci;
+        }
+
+        try
+        {
+            mm.sendEmail(
+                "",// default sender
+                params["email"],
+                "",// default subject
+                "merge_contacts_auto",//mail template
+                params,handles,attach);
+        }
+        catch(std::exception& ex)
+        {
+            std::stringstream errmsg;
+            errmsg << "merge_contacts_auto sendEmail failed - email: " << params["email"] << " what: " << ex.what();
+            enctx.get_log().error(errmsg.str());
+        }
+    }//for emails
+}
 
 void logger_merge_contact_transform_output_data(
         const MergeContactOutput &_merge_data,
@@ -225,18 +311,22 @@ struct MergeContactDryRunInfo
 
 
 MergeContactAutoProcedure::MergeContactAutoProcedure(
+        Fred::Mailer::Manager& mm,
         Fred::Logger::LoggerClient &_logger_client)
-    : logger_client_(_logger_client)
+    : mm_(mm)
+    , logger_client_(_logger_client)
 {
 }
 
 
 MergeContactAutoProcedure::MergeContactAutoProcedure(
+        Fred::Mailer::Manager& mm,
         Fred::Logger::LoggerClient &_logger_client,
         const optional_string &_registrar,
         const optional_ulonglong &_limit,
         const optional_bool &_dry_run)
-    : logger_client_(_logger_client),
+    : mm_(mm),
+      logger_client_(_logger_client),
       registrar_(_registrar),
       limit_(_limit),
       dry_run_(_dry_run)
@@ -321,8 +411,10 @@ void MergeContactAutoProcedure::exec()
     /* filter for best contact selection */
     std::vector<ContactSelectionFilterType> selection_filter = selection_filter_order_;
     if (selection_filter_order_.empty()) {
-        selection_filter = this->get_default_selection_filter_order(); 
+        selection_filter = this->get_default_selection_filter_order();
     }
+
+    std::vector<Fred::MergeContactEmailNotificationInput> email_notification_input_vector;
 
     MergeContactDryRunInfo dry_run_info;
     while (dup_set.size() >= 2)
@@ -376,6 +468,9 @@ void MergeContactAutoProcedure::exec()
                 throw;
             }
         }
+        //save merge output for email notification
+        email_notification_input_vector.push_back(Fred::MergeContactEmailNotificationInput(
+                pick_one, winner_handle, merge_data));
 
         /* find contact duplicates for winner contact - if nothing changed in registry data this
          * would be the same list as in previous step but without the merged one */
@@ -394,6 +489,9 @@ void MergeContactAutoProcedure::exec()
                 dup_set = new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded).exec(octx);
             }
             else {
+                email_notification(mm_, email_notification_input_vector);
+                email_notification_input_vector.clear();
+
                 dup_set = new_dup_search.exec(octx);
             }
         }
@@ -401,6 +499,11 @@ void MergeContactAutoProcedure::exec()
     if (!this->is_set_dry_run()) {
         octx.commit_transaction();
     }
+
+
+
+
+
 }
 
 
