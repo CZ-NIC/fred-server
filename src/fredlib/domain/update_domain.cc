@@ -143,7 +143,7 @@ namespace Fred
             Database::Result lock_res = ctx.get_conn().exec_params(
                 "SELECT oreg.id FROM enum_object_type eot"
                 " JOIN object_registry oreg ON oreg.type = eot.id "
-                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                " AND oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
                 " WHERE eot.name = 'domain' FOR UPDATE OF oreg"
                 , Database::query_param_list(fqdn_));
 
@@ -162,7 +162,7 @@ namespace Fred
             Database::Result domain_id_res = ctx.get_conn().exec_params(
                 "SELECT oreg.id FROM domain d "
                 " JOIN object_registry oreg ON d.id = oreg.id "
-                " WHERE oreg.name = UPPER($1::text) AND oreg.erdate IS NULL"
+                " WHERE oreg.name = LOWER($1::text) AND oreg.erdate IS NULL"
                 , Database::query_param_list(fqdn_));
 
             if (domain_id_res.size() != 1)
