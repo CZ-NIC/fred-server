@@ -118,7 +118,7 @@ namespace Fred
             Database::Result lock_res = ctx.get_conn().exec_params(
                 "SELECT oreg.id FROM enum_object_type eot"
                 " JOIN object_registry oreg ON oreg.type = eot.id "
-                " AND UPPER(oreg.name) = UPPER($1::text) AND oreg.erdate IS NULL "
+                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
                 " WHERE eot.name = 'nsset' FOR UPDATE OF oreg"
                 , Database::query_param_list(handle_));
 
@@ -137,7 +137,7 @@ namespace Fred
             Database::Result nsset_id_res = ctx.get_conn().exec_params(
                 "SELECT oreg.id FROM nsset n "
                 " JOIN object_registry oreg ON n.id = oreg.id "
-                " WHERE UPPER(oreg.name) = UPPER($1::text)"
+                " WHERE oreg.name = UPPER($1::text) AND oreg.erdate IS NULL"
                 , Database::query_param_list(handle_));
 
             if (nsset_id_res.size() != 1)
@@ -181,7 +181,7 @@ namespace Fred
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND UPPER(oreg.name) = UPPER($1::text) AND oreg.erdate IS NULL "
+                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                         , Database::query_param_list(*i));
 
@@ -207,7 +207,7 @@ namespace Fred
                     "  AND contactid = raise_exception_ifnull("
                     "    (SELECT oreg.id FROM object_registry oreg "
                     "       JOIN contact c ON oreg.id = c.id "
-                    "     WHERE UPPER(oreg.name) = UPPER($2::text)) "
+                    "     WHERE oreg.name = UPPER($2::text) AND oreg.erdate IS NULL) "
                     "     ,'|| not found:tech contact: '||ex_data($2::text)||' |')"
                     , params_i);
 
@@ -222,7 +222,7 @@ namespace Fred
 
                 sql_i << " raise_exception_ifnull("
                     " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)) "
+                    " WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL) "
                     " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |')) "
                     " RETURNING nssetid";
                 Database::Result nsset_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
@@ -254,7 +254,7 @@ namespace Fred
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND UPPER(oreg.name) = UPPER($1::text) AND oreg.erdate IS NULL "
+                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                         , Database::query_param_list(*i));
 
@@ -274,7 +274,7 @@ namespace Fred
                 params_i.push_back(*i);
                 sql_i << "contactid = raise_exception_ifnull( "
                     " (SELECT oreg.id FROM object_registry oreg "
-                    " JOIN contact c ON oreg.id = c.id WHERE UPPER(oreg.name) = UPPER($"<< params_i.size() << "::text)) "
+                    " JOIN contact c ON oreg.id = c.id WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL) "
                     " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |') "
                     " RETURNING nssetid";
                 Database::Result nsset_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);

@@ -42,7 +42,7 @@ namespace Fred
             Database::Result lock_res = ctx.get_conn().exec_params(
                 "SELECT oreg.id FROM enum_object_type eot"
                 " JOIN object_registry oreg ON oreg.type = eot.id "
-                " AND UPPER(oreg.name) = UPPER($1::text) AND oreg.erdate IS NULL "
+                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
                 " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                 , Database::query_param_list(handle_));
 
@@ -61,7 +61,7 @@ namespace Fred
             Database::Result contact_id_res = ctx.get_conn().exec_params(
                 "SELECT oreg.id FROM contact c "
                 " JOIN object_registry oreg ON c.id = oreg.id "
-                " WHERE UPPER(oreg.name) = UPPER($1::text)"
+                " WHERE oreg.name = UPPER($1::text) AND oreg.erdate IS NULL"
                 , Database::query_param_list(handle_));
 
             if (contact_id_res.size() != 1)
