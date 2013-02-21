@@ -55,14 +55,28 @@ namespace Fred
     };
 
 
+    struct MergeContactSelectionOutput
+    {
+        std::string handle;
+        ContactSelectionFilterType filter;
+
+        MergeContactSelectionOutput(
+                const std::string &_handle,
+                const ContactSelectionFilterType &_filter)
+            : handle(_handle),
+              filter(_filter)
+        {
+        }
+    };
+
     class MergeContactSelection
     {
         std::vector<std::string> contact_handle_;//contact handle vector
-        std::vector<boost::shared_ptr<ContactSelectionFilterBase> > ff_;//filter functor ptr vector
+        std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > > ff_;//filter functor ptr vector
     public:
         MergeContactSelection(const std::vector<std::string>& contact_handle
                 , const std::vector<ContactSelectionFilterType>& filter);
-        std::string exec(OperationContext& ctx);
+        MergeContactSelectionOutput exec(OperationContext& ctx);
     };//class MergeContactSelection
 
 
