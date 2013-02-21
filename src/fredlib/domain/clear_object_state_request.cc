@@ -56,7 +56,7 @@ namespace Fred
         Database::Result status_result = _ctx.get_conn().exec_params(
             "SELECT id "
             "FROM enum_object_states "
-            "WHERE $1=ANY(types)",
+            "WHERE $1::integer=ANY(types)",
             Database::query_param_list(object_type_));
         MultipleObjectStateId status_all;
         status_all.reserve(status_result.size());

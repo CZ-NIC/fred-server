@@ -28,7 +28,7 @@ administrativni nastaveni stavu blokovani objektu, (insert do object_state_reque
   M seznam stavu (jmena)
   od
   do
-  poznamka
+  duvod blokace
 */
 
 #ifndef CREATE_ADMINISTRATIVE_OBJECT_BLOCK_REQUEST_H_
@@ -51,13 +51,34 @@ namespace Fred
             const StatusList &_status_list,
             const Optional< Time > &_valid_from,
             const Optional< Time > &_valid_to,
-            const std::string &_notice
+            const std::string &_reason
             );
         CreateAdministrativeObjectBlockRequest& set_valid_from(const Time &_valid_from);
         CreateAdministrativeObjectBlockRequest& set_valid_to(const Time &_valid_to);
-        CreateAdministrativeObjectBlockRequest& set_notice(const std::string &_notice);
+        CreateAdministrativeObjectBlockRequest& set_reason(const std::string &_reason);
         ObjectId exec(OperationContext &_ctx);
 
+    //exception impl
+        enum { EXCEPTION_DATASIZE = 2048 };
+        class Exception
+        : public OperationExceptionImpl< Exception, EXCEPTION_DATASIZE >
+        {
+        public:
+            Exception(const char* file,
+                const int line,
+                const char* function,
+                const char* data)
+            :   OperationExceptionImpl< Exception, EXCEPTION_DATASIZE >(file, line, function, data)
+            {}
+
+            ConstArr get_fail_param_impl() throw()
+            {
+                static const char* list[] = {"invalid argument:state", "not found:state", "serverBlocked:present"};
+                return ConstArr(list, sizeof(list) / sizeof(char*));
+            }
+        };//class CreateAdministrativeObjectBlockRequest::Exception
+
+        typedef Exception::OperationErrorType Error;
     private:
         void check_administrative_block_status_only(OperationContext &_ctx) const;
         void check_server_blocked_status_absent(OperationContext &_ctx) const;
@@ -66,29 +87,9 @@ namespace Fred
         const StatusList status_list_; //list of status names to be set
         Optional< Time > valid_from_;
         Optional< Time > valid_to_;
-        Optional< std::string > notice_;
+        Optional< std::string > reason_;
     };//class CreateAdministrativeObjectBlockRequest
 
-//exception impl
-    class CreateAdministrativeObjectBlockRequestException
-    : public OperationExceptionImpl<CreateAdministrativeObjectBlockRequestException, 2048>
-    {
-    public:
-        CreateAdministrativeObjectBlockRequestException(const char* file,
-            const int line,
-            const char* function,
-            const char* data)
-        :   OperationExceptionImpl< CreateAdministrativeObjectBlockRequestException, 2048 >(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[] = {"invalid argument:state", "not found:state", "serverBlocked:present"};
-            return ConstArr(list, sizeof(list) / sizeof(char*));
-        }
-    };//class CreateAdministrativeObjectBlockRequestException
-
-typedef CreateAdministrativeObjectBlockRequestException::OperationErrorType CreateAdministrativeObjectBlockRequestError;
 
 }//namespace Fred
 

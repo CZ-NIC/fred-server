@@ -299,27 +299,16 @@ namespace Fred
 
     void LockMultipleObjectStateRequestLock::exec(OperationContext &_ctx)
     {
-        {//insert separately
-            typedef std::auto_ptr< Database::StandaloneConnection > StandaloneConnectionPtr;
-            Database::StandaloneManager sm = Database::StandaloneManager(
-                new Database::StandaloneConnectionFactory(/*Database::Manager::getConnectionString()*/"host=/data/fred/fred/scripts/root/nofred/pg_sockets port=22345 dbname=fred user=fred connect_timeout=2"));
-            StandaloneConnectionPtr conn_standalone(sm.acquire());
-            Database::query_param_list param(object_id_);
-            std::ostringstream cmd;
-            cmd << "INSERT INTO object_state_request_lock (object_id,state_id) VALUES ";
-            for (MultipleObjectStateId::const_iterator pId = state_id_.begin(); pId != state_id_.end(); ++pId) {
-                if (1 < param.size()) {
-                    cmd << ",";
-                }
-                param(*pId);
-                cmd << "($1::bigint,$" << param.size() << "::bigint)";
-            }
-            conn_standalone->exec_params(cmd.str(), param);
-        }
-
+        typedef std::auto_ptr< Database::StandaloneConnection > StandaloneConnectionPtr;
+        Database::StandaloneManager sm = Database::StandaloneManager(
+            new Database::StandaloneConnectionFactory(/*Database::Manager::getConnectionString()*/"host=/data/fred/fred/scripts/root/nofred/pg_sockets port=22345 dbname=fred user=fred connect_timeout=2"));
+        StandaloneConnectionPtr conn_standalone(sm.acquire());
         for (MultipleObjectStateId::const_iterator pStateId = state_id_.begin(); pStateId != state_id_.end(); ++pStateId) {
-            _ctx.get_conn().exec_params("SELECT lock_object_state_request_lock($1::bigint,$2::bigint)",
-                Database::query_param_list(*pStateId)(object_id_));
+            Database::query_param_list param(*pStateId);
+            param(object_id_);
+            conn_standalone->exec_params("INSERT INTO object_state_request_lock (state_id,object_id) "
+                                         "VALUES ($1::bigint,$2::bigint)", param);
+            _ctx.get_conn().exec_params("SELECT lock_object_state_request_lock($1::bigint,$2::bigint)", param);
         }
     }
 

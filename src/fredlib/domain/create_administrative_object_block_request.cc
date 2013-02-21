@@ -37,8 +37,8 @@
 #define __ASSERT_FUNCTION __PRETTY_FUNCTION__
 #endif
 
-#define MY_EXCEPTION_CLASS(DATA) CreateAdministrativeObjectBlockRequestException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) CreateAdministrativeObjectBlockRequestError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define MY_EXCEPTION_CLASS(DATA) CreateAdministrativeObjectBlockRequest::Exception(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define MY_ERROR_CLASS(DATA) CreateAdministrativeObjectBlockRequest::Error(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 namespace Fred
 {
@@ -56,13 +56,13 @@ namespace Fred
         const StatusList &_status_list,
         const Optional< Time > &_valid_from,
         const Optional< Time > &_valid_to,
-        const std::string &_notice)
+        const std::string &_reason)
     :   object_handle_(_object_handle),
         object_type_(_object_type),
         status_list_(_status_list),
         valid_from_(_valid_from),
         valid_to_(_valid_to),
-        notice_(_notice)
+        reason_(_reason)
     {}
 
     CreateAdministrativeObjectBlockRequest& CreateAdministrativeObjectBlockRequest::set_valid_from(const Time &_valid_from)
@@ -77,14 +77,16 @@ namespace Fred
         return *this;
     }
 
-//  CREATE TABLE object_state_request_notice
+//  CREATE TABLE object_blocked
 //  (
-//    object_state_request_id INTEGER NOT NULL PRIMARY KEY REFERENCES object_state_request (id),
-//    notice VARCHAR(300) NOT NULL
+//    object_state_request_id INTEGER NOT NULL REFERENCES object_state_request (id),
+//    state_on BOOL NOT NULL,
+//    reason VARCHAR(300) NOT NULL,
+//    PRIMARY KEY (object_state_request_id,state_on)
 //  )
-    CreateAdministrativeObjectBlockRequest& CreateAdministrativeObjectBlockRequest::set_notice(const std::string &_notice)
+    CreateAdministrativeObjectBlockRequest& CreateAdministrativeObjectBlockRequest::set_reason(const std::string &_reason)
     {
-        notice_ = _notice;
+        reason_ = _reason;
         return *this;
     }
 
@@ -100,10 +102,10 @@ namespace Fred
             valid_from_,
             valid_to_);
         const ObjectId object_id = createObjectStateRequest.exec(_ctx);
-        if (notice_.isset()) {
+        if (reason_.isset()) {
             Database::Result request_id_res = _ctx.get_conn().exec_params(
-                "INSERT INTO object_state_request_notice (object_state_request_id,notice) "
-                    "SELECT osr.id,$1 "
+                "INSERT INTO object_blocked (object_state_request_id,state_on,reason) "
+                    "SELECT osr.id,true,$1 "
                     "FROM object_state_request osr "
                     "JOIN enum_object_states eos ON eos.id=osr.state_id "
                     "WHERE osr.valid_from<=CURRENT_TIMESTAMP AND "
@@ -113,7 +115,7 @@ namespace Fred
                           "osr.object_id=$2::integer AND "
                           "eos.name='serverBlocked' "
                     "ORDER BY osr.id DESC LIMIT 1",
-                Database::query_param_list(notice_.get_value())
+                Database::query_param_list(reason_.get_value())
                                           (object_id));
         }
         return object_id;
@@ -153,9 +155,9 @@ namespace Fred
         static TID serverBlockedId = 0;
         if (serverBlockedId == 0) {
             Database::Result obj_state_res = _ctx.get_conn().exec(
-                        "SELECT id "
-                        "FROM enum_object_states "
-                        "WHERE name='serverBlocked'");
+                "SELECT id "
+                "FROM enum_object_states "
+                "WHERE name='serverBlocked'");
 
             if (obj_state_res.size() != 1) {
                 throw MY_EXCEPTION_CLASS("|| not found:state: serverBlocked |");
@@ -167,17 +169,17 @@ namespace Fred
         LockObjectStateRequestLock(serverBlockedId, object_id).exec(_ctx);
         _ctx.get_log().debug("LockObjectStateRequestLock success");
         Database::Result rcheck = _ctx.get_conn().exec_params(
-                "SELECT 1 "
-                "FROM object_state "
-                "WHERE object_id=$1::integer AND "
-                      "state_id=$2::integer AND "
-                      "valid_from<=CURRENT_TIMESTAMP AND "
-                      "(valid_to IS NULL OR "
-                       "CURRENT_TIMESTAMP<valid_to) "
-                      "LIMIT 1",
-                Database::query_param_list
-                    (object_id)
-                    (serverBlockedId));
+            "SELECT 1 "
+            "FROM object_state "
+            "WHERE object_id=$1::integer AND "
+                  "state_id=$2::integer AND "
+                  "valid_from<=CURRENT_TIMESTAMP AND "
+                  "(valid_to IS NULL OR "
+                   "CURRENT_TIMESTAMP<valid_to) "
+                  "LIMIT 1",
+            Database::query_param_list
+                (object_id)
+                (serverBlockedId));
         if (rcheck.size() <= 0) {
             return;
         }
