@@ -388,6 +388,9 @@ BOOST_AUTO_TEST_CASE(update_nsset)
         .set_discloseaddress(true)
         .exec(ctx);
 
+    std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
+    Fred::CreateNsset(test_nsset_handle, registrar_handle).exec(ctx);
+
     Fred::UpdateNsset("NSSET-1", "REG-FRED_A").exec(ctx);
 
     Fred::UpdateNsset("NSSET-1"//handle
