@@ -20,6 +20,7 @@ CreatePollMessage::CreatePollMessage(
 
 unsigned long long CreatePollMessage::exec(Fred::OperationContext &_ctx)
 {
+    unsigned long long mid = 0;
     try
     {
         Database::Result r = _ctx.get_conn().exec_params(
@@ -33,7 +34,7 @@ unsigned long long CreatePollMessage::exec(Fred::OperationContext &_ctx)
                 Database::query_param_list(registrar_handle_)(msg_type_));
 
         if (r.size() == 1) {
-            return static_cast<unsigned long long>(r[0][0]);
+            mid = static_cast<unsigned long long>(r[0][0]);
         }
         else {
             throw MY_ERROR_CLASS("insert new poll messge failed");
@@ -43,6 +44,7 @@ unsigned long long CreatePollMessage::exec(Fred::OperationContext &_ctx)
     {
         handleOperationExceptions<CreatePollMessageException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
     }
+    return mid;
 }
 
 
