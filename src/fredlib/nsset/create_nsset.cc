@@ -279,9 +279,9 @@ namespace Fred
                         " WHERE id = $2::integer"
                         , Database::query_param_list(history_id)(object_id));
 
-                //contact_history
+                //nsset_history
                 ctx.get_conn().exec_params(
-                    "INSERT INTO contact_history(historyid,id, checklevel ) "
+                    "INSERT INTO nsset_history(historyid,id, checklevel ) "
                     " SELECT $1::bigint, id, checklevel "
                     " FROM nsset "
                     " WHERE id = $2::integer"
