@@ -329,13 +329,36 @@ struct MergeContactSummaryInfo
 {
     unsigned long long merge_set_counter;
     unsigned long long merge_counter;
+    unsigned long long merge_per_merge_set_counter;
 
     MergeContactSummaryInfo()
         : merge_set_counter(0),
-          merge_counter(0)
+          merge_counter(0),
+          merge_per_merge_set_counter(0)
     {
     }
+
+    void inc_merge_set()
+    {
+        merge_set_counter += 1;
+        merge_per_merge_set_counter = 0;
+    }
+
+    void inc_merge_operation()
+    {
+        merge_counter += 1;
+        merge_per_merge_set_counter += 1;
+    }
 };
+
+
+std::ostream& print_header(const std::string &_text, std::ostream &_ostream, OutputIndenter _indenter)
+{
+    _ostream << _indenter << std::string(_text.length(), '-') << std::endl;
+    _ostream << _indenter << _text << std::endl;
+    _ostream << _indenter << std::string(_text.length(), '-') << std::endl;
+    return _ostream;
+}
 
 
 std::ostream& print_merge_contact_output(
@@ -343,14 +366,14 @@ std::ostream& print_merge_contact_output(
         const std::string &_src_handle,
         const std::string &_dst_handle,
         const MergeContactSummaryInfo &_msi,
-        std::ostream &_ostream)
+        std::ostream &_ostream,
+        OutputIndenter _indenter)
 {
-    std::string header = str(boost::format("[%1%/%2%] MERGE %3% => %4%")
-            % _msi.merge_set_counter % _msi.merge_counter % _src_handle % _dst_handle);
+    std::string header = str(boost::format("[%1%/%2%/%3%] MERGE %4% => %5%")
+            % _msi.merge_counter % _msi.merge_set_counter % _msi.merge_per_merge_set_counter
+            % _src_handle % _dst_handle);
 
-    _ostream << std::string(header.length(), '-') << std::endl;
-    _ostream << header << std::endl;
-    _ostream << std::string(header.length(), '-') << std::endl;
+    print_header(header, _ostream, _indenter);
 
     for (std::vector<MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
             i != _merge_data.update_domain_registrant.end(); ++i)
@@ -432,12 +455,14 @@ MergeContactAutoProcedure::MergeContactAutoProcedure(
         Fred::Logger::LoggerClient &_logger_client,
         const optional_string &_registrar,
         const optional_ulonglong &_limit,
-        const optional_bool &_dry_run)
+        const optional_bool &_dry_run,
+        const optional_ushort &_verbose)
     : mm_(mm),
       logger_client_(_logger_client),
       registrar_(_registrar),
       limit_(_limit),
-      dry_run_(_dry_run)
+      dry_run_(_dry_run),
+      verbose_(_verbose)
 {
 }
 
@@ -476,6 +501,14 @@ MergeContactAutoProcedure& MergeContactAutoProcedure::set_selection_filter_order
 }
 
 
+MergeContactAutoProcedure& MergeContactAutoProcedure::set_verbose(
+        const optional_ushort &_verbose)
+{
+    verbose_ = _verbose;
+    return *this;
+}
+
+
 bool MergeContactAutoProcedure::is_set_dry_run() const
 {
     return (dry_run_.is_value_set() && dry_run_.get_value() == true);
@@ -494,6 +527,18 @@ std::vector<ContactSelectionFilterType> MergeContactAutoProcedure::get_default_s
         (MCS_FILTER_NOT_REGCZNIC)
         (MCS_FILTER_RECENTLY_CREATED);
     return tmp;
+}
+
+
+unsigned short MergeContactAutoProcedure::get_verbose_level() const
+{
+    if (verbose_.is_value_set()) {
+        return verbose_.get_value();
+    }
+    if (this->is_set_dry_run()) {
+        return 3;
+    }
+    return 0;
 }
 
 
@@ -526,7 +571,7 @@ void MergeContactAutoProcedure::exec()
     while (any_dup_set.size() >= 2)
     {
         /* one specific contact set merges scope */
-        summary_info.merge_set_counter += 1;
+        summary_info.inc_merge_set();
         MergeContactOperationSummary merge_set_operation_info;
 
         std::vector<Fred::MergeContactEmailNotificationInput> email_notification_input_vector;
@@ -534,7 +579,7 @@ void MergeContactAutoProcedure::exec()
         do
         {
             /* one contact merge scope */
-            summary_info.merge_counter += 1;
+            summary_info.inc_merge_operation();
             MergeContactOperationSummary merge_operation_info;
 
             octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
@@ -560,14 +605,6 @@ void MergeContactAutoProcedure::exec()
 
                 dry_run_info.add_fake_deleted(pick_one);
                 dry_run_info.add_search_excluded(winner_handle);
-
-                print_merge_contact_output(merge_data, pick_one, winner_handle, summary_info, std::cout);
-
-                merge_operation_info.add_merge_output(merge_data);
-                merge_set_operation_info.add_merge_output(merge_data);
-                all_merge_operation_info.add_merge_output(merge_data);
-
-                merge_operation_info.print(std::cout, indenter.dive());
                 /* do not commit */
             }
             else
@@ -596,6 +633,17 @@ void MergeContactAutoProcedure::exec()
                 }
             }
 
+            if (this->get_verbose_level() > 0) {
+                merge_operation_info.add_merge_output(merge_data);
+                merge_set_operation_info.add_merge_output(merge_data);
+                all_merge_operation_info.add_merge_output(merge_data);
+            }
+
+            if (this->get_verbose_level() > 2) {
+                print_merge_contact_output(merge_data, pick_one, winner_handle, summary_info, std::cout, indenter);
+                merge_operation_info.print(std::cout, indenter.dive());
+            }
+
             /* find contact duplicates for winner contact - if nothing changed in registry data this
              * would be the same list as in previous step but without the merged one */
             dup_set = FindSpecificContactDuplicates(winner_handle).exec(octx);
@@ -606,10 +654,14 @@ void MergeContactAutoProcedure::exec()
         }
         while (dup_set.size() >= 2);
 
+        if (this->get_verbose_level() > 1) {
+            print_header(str(boost::format("[%1%] MERGE SET SUMMARY") % summary_info.merge_set_counter), std::cout, indenter);
+            merge_set_operation_info.print(std::cout, indenter);
+        }
+
         FindAnyContactDuplicates new_dup_search = FindAnyContactDuplicates().set_registrar(registrar_);
         if (this->is_set_dry_run()) {
             new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded);
-            merge_set_operation_info.print(std::cout, indenter);
         }
         else {
             /* send email notifications */
@@ -618,10 +670,11 @@ void MergeContactAutoProcedure::exec()
         any_dup_set = new_dup_search.exec(octx);
     }
 
-    if (this->is_set_dry_run()) {
+    if (this->get_verbose_level() > 0) {
+        print_header("PROCEDURE RUN SUMMARY", std::cout, indenter);
         all_merge_operation_info.print(std::cout, indenter);
     }
-    else {
+    if (!this->is_set_dry_run()) {
         octx.commit_transaction();
     }
 }
