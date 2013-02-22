@@ -71,7 +71,7 @@ namespace Fred
 
             Database::Result id_res = ctx.get_conn().exec_params(
                 "SELECT create_object(raise_exception_ifnull( "
-                    " (SELECT id FROM registrar WHERE UPPER(handle) = UPPER($1::text)) "
+                    " (SELECT id FROM registrar WHERE handle = UPPER($1::text)) "
                     " ,'|| not found:registrar: '||ex_data($1::text)||' |') "//registrar handle
                     " , $2::text "//object handle
                     " , raise_exception_ifnull( "
@@ -101,7 +101,7 @@ namespace Fred
 
             ctx.get_conn().exec_params("INSERT INTO object(id, clid, authinfopw) VALUES ($1::bigint "//object id from create_object
                     " , raise_exception_ifnull( "
-                    " (SELECT id FROM registrar WHERE UPPER(handle) = UPPER($2::text)) "
+                    " (SELECT id FROM registrar WHERE handle = UPPER($2::text)) "
                     " ,'|| not found:registrar: '||ex_data($2::text)||' |') "//registrar handle
                     " , $3::text)"
                     , Database::query_param_list(object_id)(registrar_)(authinfo_));
@@ -145,7 +145,7 @@ namespace Fred
         std::stringstream sql;
         params.push_back(registrar_);
         sql <<"UPDATE object SET update = now() "
-            ", upid = raise_exception_ifnull((SELECT id FROM registrar WHERE UPPER(handle) = UPPER($"
+            ", upid = raise_exception_ifnull((SELECT id FROM registrar WHERE handle = UPPER($"
             << params.size() << "::text)),'|| not found:registrar: '||ex_data($"<< params.size() <<"::text)||' |') " ; //registrar from epp-session container by client_id from epp-params
 
         if(authinfo_.isset())
