@@ -153,7 +153,7 @@ namespace Fred
 
 
         //update object
-        Fred::UpdateObject(handle_, registrar_, authinfo_).exec(ctx);
+        Fred::UpdateObject(handle_,"nsset", registrar_, authinfo_).exec(ctx);
 
         //update nsset tech check level
         if(tech_check_level_.isset() && tech_check_level_.get_value() >= 0)

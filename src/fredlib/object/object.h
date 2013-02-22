@@ -82,12 +82,15 @@ namespace Fred
     class UpdateObject
     {
         const std::string handle_;//object identifier
+        const std::string obj_type_;//object type name
         const std::string registrar_;//set registrar
         Optional<std::string> authinfo_;//set authinfo
     public:
         UpdateObject(const std::string& handle
+                , const std::string& obj_type
                 , const std::string& registrar);
         UpdateObject(const std::string& handle
+            , const std::string& obj_type
             , const std::string& registrar
             , const Optional<std::string>& authinfo);
         UpdateObject& set_authinfo(const std::string& authinfo);

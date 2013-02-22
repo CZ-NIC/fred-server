@@ -117,15 +117,19 @@ namespace Fred
 
 
     UpdateObject::UpdateObject(const std::string& handle
+        , const std::string& obj_type
         , const std::string& registrar)
     : handle_(handle)
+    , obj_type_(obj_type)
     , registrar_(registrar)
     {}
 
     UpdateObject::UpdateObject(const std::string& handle
+        , const std::string& obj_type
         , const std::string& registrar
         , const Optional<std::string>& authinfo)
     : handle_(handle)
+    , obj_type_(obj_type)
     , registrar_(registrar)
     , authinfo_(authinfo)
     {}
@@ -155,8 +159,12 @@ namespace Fred
         }
 
         params.push_back(handle_);
-        sql <<" WHERE id = raise_exception_ifnull((SELECT id FROM object_registry WHERE UPPER(name) = UPPER($"
-                << params.size() << "::text) AND erdate IS NULL ),'|| not found:handle: '||ex_data($"<< params.size() <<"::text)||' |'); ";//update object_id by handle
+        params.push_back(obj_type_);
+        sql <<" WHERE id = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
+              " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $"<< params.size() <<"::text "
+              " WHERE oreg.name = CASE WHEN $"<< params.size() <<"::text = 'domain'::text THEN LOWER($"<< (params.size() - 1) << "::text) "
+              " ELSE UPPER($"<< (params.size() - 1) << "::text) END AND oreg.erdate IS NULL ) "
+              " ,'|| not found:handle: '||ex_data($"<< (params.size() - 1) <<"::text)||' |'); ";//update object_id by handle
 
         ctx.get_conn().exec_params(sql.str(), params);
 

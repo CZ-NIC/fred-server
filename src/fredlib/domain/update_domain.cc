@@ -177,7 +177,7 @@ namespace Fred
         }
 
         //update object
-        Fred::UpdateObject(fqdn_, registrar_, authinfo_).exec(ctx);
+        Fred::UpdateObject(fqdn_,"domain", registrar_, authinfo_).exec(ctx);
 
         //update domain
         if(nsset_.isset() || keyset_.isset() || registrant_.isset())

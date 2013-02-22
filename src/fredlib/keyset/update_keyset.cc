@@ -144,7 +144,7 @@ namespace Fred
             keyset_id = keyset_id_res[0][0];
         }
 
-        Fred::UpdateObject(handle_, registrar_, authinfo_).exec(ctx);
+        Fred::UpdateObject(handle_,"keyset", registrar_, authinfo_).exec(ctx);
 
         //add tech contacts
         if(!add_tech_contact_.empty())
