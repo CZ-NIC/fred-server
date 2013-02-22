@@ -1,17 +1,17 @@
-/*  
+/*
  * Copyright (C) 2010  CZ.NIC, z.s.p.o.
- * 
+ *
  * This file is part of FRED.
- * 
+ *
  * FRED is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 2 of the License.
- * 
+ *
  * FRED is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -383,7 +383,10 @@ public:
                 "\tmcs_filter_max_objects_bound\n"
                 "\tmcs_filter_recently_updated\n"
                 "\tmcs_filter_not_regcznic\n"
-                "\tmcs_filter_recently_created");
+                "\tmcs_filter_recently_created")
+            ("verbose", boost::program_options::value<Checked::ushort>()
+                ->notifier(save_optional_ushort(params.verbose)),
+                "specify output verbosity level");
         /* list of contact selection filters could be done by listing keys of ContactSelectionFilterFactory */
         return cfg_opts;
     }//get_options_description
