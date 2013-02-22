@@ -155,7 +155,7 @@ namespace Fred
         }
 
         params.push_back(handle_);
-        sql <<" WHERE id = raise_exception_ifnull((SELECT id FROM object_registry WHERE name = UPPER($"
+        sql <<" WHERE id = raise_exception_ifnull((SELECT id FROM object_registry WHERE UPPER(name) = UPPER($"
                 << params.size() << "::text) AND erdate IS NULL ),'|| not found:handle: '||ex_data($"<< params.size() <<"::text)||' |'); ";//update object_id by handle
 
         ctx.get_conn().exec_params(sql.str(), params);
