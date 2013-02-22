@@ -732,6 +732,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/update_keyset.h \
 		src/fredlib/keyset/keyset_dns_key.h \
 		src/fredlib/keyset/update_keyset.cc \
+		src/fredlib/keyset/create_keyset.cc \
+		src/fredlib/keyset/create_keyset.h \
 		src/fredlib/contact/delete_contact.h \
 		src/fredlib/contact/delete_contact.cc \
 		src/fredlib/object/object.h \
