@@ -145,6 +145,29 @@ namespace Fred
         try
         {
 
+            unsigned long long object_id = 0;
+
+            {
+                Database::Result object_id_res = ctx.get_conn().exec_params(
+                "SELECT oreg.id FROM object_registry oreg "
+                " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
+                " WHERE oreg.name = CASE WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
+                " ELSE UPPER($1::text) END AND oreg.erdate IS NULL"
+                , Database::query_param_list(handle_)(obj_type_));
+
+                if (object_id_res.size() != 1)
+                {
+                    std::string errmsg("object id || not found:handle: ");
+                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
+                    errmsg += " | not found:object type: ";
+                    errmsg += boost::replace_all_copy(obj_type_,"|", "[pipe]");//quote pipes
+                    errmsg += " |";
+                    throw UOEX(errmsg.c_str());
+                }
+
+                object_id = static_cast<unsigned long long> (object_id_res[0][0]);
+            }
+
         Database::QueryParams params;//query params
         std::stringstream sql;
         params.push_back(registrar_);
@@ -158,13 +181,8 @@ namespace Fred
             sql << " , authinfopw = $" << params.size() << "::text ";//set authinfo
         }
 
-        params.push_back(handle_);
-        params.push_back(obj_type_);
-        sql <<" WHERE id = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
-              " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $"<< params.size() <<"::text "
-              " WHERE oreg.name = CASE WHEN $"<< params.size() <<"::text = 'domain'::text THEN LOWER($"<< (params.size() - 1) << "::text) "
-              " ELSE UPPER($"<< (params.size() - 1) << "::text) END AND oreg.erdate IS NULL ) "
-              " ,'|| not found:handle: '||ex_data($"<< (params.size() - 1) <<"::text)||' |'); ";//update object_id by handle
+        params.push_back(object_id);
+        sql <<" WHERE id = $" << params.size() << "::integer ";
 
         ctx.get_conn().exec_params(sql.str(), params);
 
