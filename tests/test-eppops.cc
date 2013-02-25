@@ -468,19 +468,31 @@ BOOST_AUTO_TEST_CASE(update_keyset)
         .set_discloseaddress(true)
         .exec(ctx);
 
+    std::string admin_contact6_handle = std::string("TEST-ADMIN-CONTACT6-HANDLE")+xmark;
+    Fred::CreateContact(admin_contact6_handle,registrar_handle)
+        .set_name(std::string("TEST-ADMIN-CONTACT6 NAME")+xmark)
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .exec(ctx);
+
     std::string test_keyset_handle = std::string("TEST-KEYSET-HANDLE")+xmark;
     Fred::CreateKeyset(test_keyset_handle, registrar_handle)
-            .set_tech_contacts(Util::vector_of<std::string>("KONTAKT"))
+            .set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
             .exec(ctx);
 
-
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
+        .add_dns_key(Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"))
+        .exec(ctx);
 
     Fred::UpdateKeyset(test_keyset_handle//const std::string& handle
                 , registrar_handle//const std::string& registrar
                 , Optional<std::string>("testauthinfo")//const Optional<std::string>& authinfo
                 , Util::vector_of<std::string>(admin_contact5_handle) //const std::vector<std::string>& add_tech_contact
-                , Util::vector_of<std::string>("KONTAKT")//const std::vector<std::string>& rem_tech_contact
+                , Util::vector_of<std::string>(admin_contact6_handle)//const std::vector<std::string>& rem_tech_contact
                 , Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "key"))//const std::vector<DnsKey>& add_dns_key
                 , Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"))//const std::vector<DnsKey>& rem_dns_key
                 , Optional<unsigned long long>(0)//const Optional<unsigned long long> logd_request_id
