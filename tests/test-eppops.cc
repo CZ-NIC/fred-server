@@ -51,6 +51,7 @@
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/nsset/create_nsset.h"
+#include "fredlib/keyset/create_keyset.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -467,10 +468,16 @@ BOOST_AUTO_TEST_CASE(update_keyset)
         .set_discloseaddress(true)
         .exec(ctx);
 
-    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").exec(ctx);
+    std::string test_keyset_handle = std::string("TEST-KEYSET-HANDLE")+xmark;
+    Fred::CreateKeyset(test_keyset_handle, registrar_handle)
+            .set_tech_contacts(Util::vector_of<std::string>("KONTAKT"))
+            .exec(ctx);
 
-    Fred::UpdateKeyset("KEYSID-1"//const std::string& handle
-                , "REG-FRED_A"//const std::string& registrar
+
+    Fred::UpdateKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    Fred::UpdateKeyset(test_keyset_handle//const std::string& handle
+                , registrar_handle//const std::string& registrar
                 , Optional<std::string>("testauthinfo")//const Optional<std::string>& authinfo
                 , Util::vector_of<std::string>(admin_contact5_handle) //const std::vector<std::string>& add_tech_contact
                 , Util::vector_of<std::string>("KONTAKT")//const std::vector<std::string>& rem_tech_contact
@@ -479,8 +486,8 @@ BOOST_AUTO_TEST_CASE(update_keyset)
                 , Optional<unsigned long long>(0)//const Optional<unsigned long long> logd_request_id
                 ).exec(ctx);
 
-    Fred::UpdateKeyset("KEYSID-1"//const std::string& handle
-                , "REG-FRED_A"//const std::string& registrar
+    Fred::UpdateKeyset(test_keyset_handle//const std::string& handle
+                , registrar_handle//const std::string& registrar
                 , Optional<std::string>()//const Optional<std::string>& authinfo
                 , std::vector<std::string>() //const std::vector<std::string>& add_tech_contact
                 , std::vector<std::string>()//const std::vector<std::string>& rem_tech_contact
@@ -489,12 +496,12 @@ BOOST_AUTO_TEST_CASE(update_keyset)
                 , Optional<unsigned long long>()//const Optional<unsigned long long> logd_request_id
                 ).exec(ctx);
 
-    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").set_authinfo("kukauthinfo").exec(ctx);
-    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").add_tech_contact(admin_contact4_handle).exec(ctx);
-    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").rem_tech_contact(admin_contact5_handle).exec(ctx);
-    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").add_dns_key(Fred::DnsKey(257, 3, 5, "key2")).add_dns_key(Fred::DnsKey(257, 3, 5, "key3")).exec(ctx);
-    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").rem_dns_key(Fred::DnsKey(257, 3, 5, "key")).exec(ctx);
-    Fred::UpdateKeyset("KEYSID-1", "REG-FRED_A").set_logd_request_id(0).exec(ctx);
+    Fred::UpdateKeyset(test_keyset_handle, registrar_handle).set_authinfo("kukauthinfo").exec(ctx);
+    Fred::UpdateKeyset(test_keyset_handle, registrar_handle).add_tech_contact(admin_contact4_handle).exec(ctx);
+    Fred::UpdateKeyset(test_keyset_handle, registrar_handle).rem_tech_contact(admin_contact5_handle).exec(ctx);
+    Fred::UpdateKeyset(test_keyset_handle, registrar_handle).add_dns_key(Fred::DnsKey(257, 3, 5, "key2")).add_dns_key(Fred::DnsKey(257, 3, 5, "key3")).exec(ctx);
+    Fred::UpdateKeyset(test_keyset_handle, registrar_handle).rem_dns_key(Fred::DnsKey(257, 3, 5, "key")).exec(ctx);
+    Fred::UpdateKeyset(test_keyset_handle, registrar_handle).set_logd_request_id(0).exec(ctx);
 
 }//update_keyset
 
