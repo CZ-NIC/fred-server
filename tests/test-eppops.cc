@@ -396,7 +396,7 @@ BOOST_AUTO_TEST_CASE(update_nsset)
             )
             .exec(ctx);
 
-    Fred::UpdateNsset("NSSET-1", "REG-FRED_A").exec(ctx);
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).exec(ctx);
 
     Fred::UpdateNsset(test_nsset_handle//handle
             , registrar_handle//registrar
