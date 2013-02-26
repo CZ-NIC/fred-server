@@ -52,9 +52,18 @@ namespace Fred
 
     ObjectId CopyContact::exec(OperationContext &_ctx)
     {
+        enum ColumnIdx
+        {
+            COL_OBJ_REG_ID = 0,
+            COL_OBJ_REG_CRID = 1,
+        };
         Database::Result src_obj_info_res = _ctx.get_conn().exec_params(
-            "SELECT id FROM object_registry "
-            "WHERE type=$1::integer AND name=UPPER($2::text) AND erdate IS NULL",
+            "SELECT id,crid "
+            "FROM object_registry "
+            "WHERE type=$1::integer AND "
+                  "name=UPPER($2::text) AND "
+                  "erdate IS NULL "
+            "FOR UPDATE",
             Database::query_param_list
                 (OBJECT_TYPE_ID_CONTACT)(src_contact_handle_));
 
@@ -64,11 +73,12 @@ namespace Fred
             errmsg += " |";
             throw MY_EXCEPTION_CLASS(errmsg.c_str());
         }
-        const ObjectId src_object_id = src_obj_info_res[0][0];
+        const ObjectId src_object_id   = src_obj_info_res[0][COL_OBJ_REG_ID];
+        const ObjectId src_object_crid = src_obj_info_res[0][COL_OBJ_REG_CRID];
 
         Database::Result roreg = _ctx.get_conn().exec_params(
-            "SELECT create_object((SELECT crid FROM object_registry WHERE id=$1::integer),$2::text, $3::integer)",
-            Database::query_param_list(src_object_id)(dst_contact_handle_)(OBJECT_TYPE_ID_CONTACT));
+            "SELECT create_object($1::integer,$2::text, $3::integer)",
+            Database::query_param_list(src_object_crid)(dst_contact_handle_)(OBJECT_TYPE_ID_CONTACT));
         if (roreg.size() != 1) {
             std::string errmsg("|| create failed:dst_contact_handle: ");
             errmsg += boost::replace_all_copy(dst_contact_handle_, "|", "[pipe]");//quote pipes
@@ -83,7 +93,7 @@ namespace Fred
             throw MY_EXCEPTION_CLASS(errmsg.c_str());
         }
         /* object record */
-        Database::Result robject = _ctx.get_conn().exec_params(
+        _ctx.get_conn().exec_params(
             "INSERT INTO object (id,clid,authinfopw) VALUES ("
                 "$1::integer,"
                 "(SELECT clid FROM object WHERE id=$2::integer),"
