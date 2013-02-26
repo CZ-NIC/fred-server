@@ -52,6 +52,7 @@
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
+#include "fredlib/domain/create_domain.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 

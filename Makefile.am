@@ -750,6 +750,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/create_nsset.cc \
 		src/fredlib/nsset/create_nsset.h \
 		src/fredlib/nsset/nsset_dns_host.h \
+		src/fredlib/domain/create_domain.cc \
+		src/fredlib/domain/create_domain.h \
 		src/fredlib/contact/merge_contact_selection.cc \
 		src/fredlib/contact/merge_contact_selection.h \
 		src/fredlib/contact/merge_contact_auto_procedure.cc \
