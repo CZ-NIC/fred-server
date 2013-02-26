@@ -78,7 +78,60 @@ namespace Fred
         creator_ = _creator;
         return *this;
     }
-    
+
+    namespace
+    {
+
+        bool is_blacklisted(Database::StandaloneConnection &_conn, const std::string &_domain,
+                            const Optional< CreateDomainNameBlacklist::Time > &_valid_from,
+                            const Optional< CreateDomainNameBlacklist::Time > &_valid_to)
+        {
+            Database::Result blacklisted_result;
+            if (_valid_from.isset()) {
+                if (_valid_to.isset()) {
+                    blacklisted_result = _conn.exec_params(
+                        "SELECT 1 " // <from, to)
+                        "FROM domain_blacklist "
+                        "WHERE LOWER(regexp)=LOWER($1::text) AND "
+                              "($2::timestamp<valid_to OR valid_to IS NULL) AND "
+                              "valid_from<$3::timestamp",
+                        Database::query_param_list(_domain)
+                            (_valid_from.get_value())(_valid_to.get_value()));
+                }
+                else {
+                    blacklisted_result = _conn.exec_params(
+                        "SELECT 1 " // <from, oo)
+                        "FROM domain_blacklist "
+                        "WHERE LOWER(regexp)=LOWER($1::text) AND "
+                              "($2::timestamp<valid_to OR valid_to IS NULL)",
+                        Database::query_param_list(_domain)
+                            (_valid_from.get_value()));
+                }
+            }
+            else {
+                if (_valid_to.isset()) {
+                    blacklisted_result = _conn.exec_params(
+                        "SELECT 1 " // <now, to)
+                        "FROM domain_blacklist "
+                        "WHERE LOWER(regexp)=LOWER($1::text) AND "
+                              "(CURRENT_TIMESTAMP<valid_to OR valid_to IS NULL) AND "
+                              "valid_from<$2::timestamp",
+                        Database::query_param_list(_domain)
+                            (_valid_to.get_value()));
+                }
+                else {
+                    blacklisted_result = _conn.exec_params(
+                        "SELECT 1 " // <now, oo)
+                        "FROM domain_blacklist "
+                        "WHERE LOWER(regexp)=LOWER($1::text) AND "
+                              "(CURRENT_TIMESTAMP<valid_to OR valid_to IS NULL)",
+                        Database::query_param_list(_domain));
+                }
+            }
+            return 0 < blacklisted_result.size();
+        }
+    }
+
     void CreateDomainNameBlacklist::exec(OperationContext &_ctx)
     {
         //check time
@@ -105,45 +158,7 @@ namespace Fred
             }
         }
 
-        Database::Result blacklisted_result = valid_from_.isset() ?
-                                            valid_to_.isset() ?
-
-                                                _ctx.get_conn().exec_params(
-            "SELECT 1 " // <from, to)
-            "FROM domain_blacklist "
-            "WHERE LOWER(regexp)=LOWER($1::text) AND "
-                  "($2::timestamp<valid_to OR valid_to IS NULL) AND "
-                  "valid_from<$3::timestamp",
-            Database::query_param_list(domain_)
-                (valid_from_.get_value())(valid_to_.get_value())) :
-
-                                                _ctx.get_conn().exec_params(
-            "SELECT 1 " // <from, oo)
-            "FROM domain_blacklist "
-            "WHERE LOWER(regexp)=LOWER($1::text) AND "
-                  "($2::timestamp<valid_to OR valid_to IS NULL)",
-            Database::query_param_list(domain_)
-                (valid_from_.get_value())) :
-
-                                            valid_to_.isset() ?
-
-                                                _ctx.get_conn().exec_params(
-            "SELECT 1 " // <now, to)
-            "FROM domain_blacklist "
-            "WHERE LOWER(regexp)=LOWER($1::text) AND "
-                  "(CURRENT_TIMESTAMP<valid_to OR valid_to IS NULL) AND "
-                  "valid_from<$2::timestamp",
-            Database::query_param_list(domain_)
-                (valid_to_.get_value())) :
-
-                                                _ctx.get_conn().exec_params(
-            "SELECT 1 " // <now, oo)
-            "FROM domain_blacklist "
-            "WHERE LOWER(regexp)=LOWER($1::text) AND "
-                  "(CURRENT_TIMESTAMP<valid_to OR valid_to IS NULL)",
-            Database::query_param_list(domain_));
-
-        if (0 < blacklisted_result.size()) {
+        if (is_blacklisted(_ctx.get_conn(), domain_, valid_from_, valid_to_)) {
             std::string errmsg("|| domain:already blacklisted: ");
             errmsg += boost::replace_all_copy(domain_,"|", "[pipe]");//quote pipes;
             errmsg += " |";
