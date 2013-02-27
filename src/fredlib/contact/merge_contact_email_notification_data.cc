@@ -230,10 +230,10 @@ namespace Fred
                 ; ci != email_data_.end(); ++ci)
             {
                 Database::Result  email_result = ctx.get_conn().exec_params(
-                        "SELECT c.notifyemail, oreg.name "
-                        " FROM object_registry oreg "
-                        " JOIN contact c ON  oreg.id = c.id "
-                        " WHERE oreg.roid = $1::text"
+                    "SELECT trim(both ' ' from  COALESCE(c.notifyemail,'')), trim(both ' ' from COALESCE(c.email, '')), oreg.name "
+                    " FROM object_registry oreg "
+                    " JOIN contact c ON  oreg.id = c.id "
+                    " WHERE oreg.roid = $1::text"
                 , Database::query_param_list(ci->dst_contact_roid));
 
                 if(email_result.size() != 1)
@@ -245,7 +245,9 @@ namespace Fred
                 }
 
                 MergeContactNotificationEmailWithAddr email_with_addr;
-                email_with_addr.notification_email_addr = static_cast<std::string>(email_result[0][0]);
+                std::string tmp_not_email = static_cast<std::string>(email_result[0][0]);
+                std::string tmp_email = static_cast<std::string>(email_result[0][1]);
+                email_with_addr.notification_email_addr = tmp_not_email.empty() ? tmp_email : tmp_not_email;
                 email_with_addr.email_data = *ci;
                 result.push_back(email_with_addr);
             }//for ci
