@@ -96,7 +96,10 @@ namespace Fred
                 , "not found zone:fqdn"
                 , "not found:registrant"
                 , "not found:nsset"
-                , "not found:keyset"};
+                , "not found:keyset"
+                , "not found:admin contact"
+                , "already set:admin contact"
+            };
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
 

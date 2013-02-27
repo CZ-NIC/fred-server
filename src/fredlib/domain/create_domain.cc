@@ -222,7 +222,7 @@ namespace Fred
                 col_sql << col_separator.get() << "exdate";
                 val_sql << val_separator.get() <<
                     " raise_exception_ifnull( "
-                    "(SELECT (crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $"<< (params.size() - 3) << "::text "
+                    " (SELECT (crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $"<< (params.size() - 3) << "::text "
                     " + ( $"<< (params.size() - 2) << "::integer * interval '1 month'))::date "
                     " FROM object_registry WHERE id = $"<< (params.size() -1) << "::integer) "
                     " ,'|| not found crdate:fqdn: '||ex_data($"<< params.size() << "::text)||' |') ";
@@ -341,15 +341,83 @@ namespace Fred
                     }
                 }//if keyset
 
-
-                //set exdate
-                //set admin contacts
-
-
                 col_sql <<")";
                 val_sql << ")";
                 //insert into contact
                 ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
+
+                //set admin contacts
+                if(!admin_contacts_.empty())
+                {
+                    Database::QueryParams params;//query params
+                    std::stringstream sql;
+
+                    params.push_back(object_id);
+                    sql << "INSERT INTO domain_contact_map(domainid, contactid) "
+                            " VALUES ($" << params.size() << "::integer, ";
+
+                    for(std::vector<std::string>::iterator i = admin_contacts_.begin(); i != admin_contacts_.end(); ++i)
+                    {
+                        //lock object_registry row for update
+                        {
+                            Database::Result lock_res = ctx.get_conn().exec_params(
+                                "SELECT oreg.id FROM enum_object_type eot"
+                                " JOIN object_registry oreg ON oreg.type = eot.id "
+                                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                                " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
+                                , Database::query_param_list(*i));
+
+                            if (lock_res.size() != 1)
+                            {
+                                std::string errmsg("unable to lock || not found:admin contact: ");
+                                errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                                errmsg += " |";
+                                throw CDEX(errmsg.c_str());
+                            }
+                        }
+
+                        Database::QueryParams params_i = params;//query params
+                        std::stringstream sql_i;
+                        sql_i << sql.str();
+
+                        params_i.push_back(*i);
+
+                        {//precheck uniqueness
+                            Database::Result domain_add_check_res = ctx.get_conn().exec_params(
+                            "SELECT domainid, contactid FROM domain_contact_map "
+                            " WHERE domainid = $1::bigint "
+                            "  AND contactid = raise_exception_ifnull("
+                            "    (SELECT oreg.id FROM object_registry oreg "
+                            "       JOIN contact c ON oreg.id = c.id "
+                            "     WHERE oreg.name = UPPER($2::text) AND oreg.erdate IS NULL) "
+                            "     ,'|| not found:admin contact: '||ex_data($2::text)||' |')"
+                            , params_i);
+
+                            if (domain_add_check_res.size() == 1)
+                            {
+                                std::string errmsg("add admin contact precheck uniqueness failed || already set:admin contact: ");
+                                errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                                errmsg += " |";
+                                throw CDEX(errmsg.c_str());
+                            }
+                        }
+
+                        sql_i << " raise_exception_ifnull("
+                            " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
+                            " WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL)"
+                            " , '|| not found:admin contact: '||ex_data($"<< params.size() << "::text)||' |')) "
+                            " RETURNING domainid";
+                        Database::Result domain_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
+                        if (domain_add_check_res.size() != 1)
+                        {
+                            std::string errmsg("add admin contact failed || already set:admin contact: ");
+                            errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
+                            errmsg += " |";
+                            throw CDEX(errmsg.c_str());
+                        }
+                    }//for i
+                }//if admin contacts
+
 
                 //get crdate from object_registry
                 {
