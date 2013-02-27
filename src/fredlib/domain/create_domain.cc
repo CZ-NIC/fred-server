@@ -52,6 +52,7 @@ namespace Fred
             , const Optional<Nullable<std::string> >& nsset
             , const Optional<Nullable<std::string> >& keyset
             , const std::vector<std::string>& admin_contacts
+            , const Optional<unsigned>& expiration_period
             , const Optional<unsigned long long> logd_request_id
             )
     : fqdn_(fqdn)
@@ -61,6 +62,7 @@ namespace Fred
     , nsset_(nsset)
     , keyset_(keyset)
     , admin_contacts_(admin_contacts)
+    , expiration_period_(expiration_period)
     , logd_request_id_(logd_request_id.isset()
             ? Nullable<unsigned long long>(logd_request_id.get_value())
             : Nullable<unsigned long long>())//is NULL if not set
@@ -105,6 +107,12 @@ namespace Fred
     CreateDomain& CreateDomain::set_admin_contacts(const std::vector<std::string>& admin_contacts)
     {
         admin_contacts_ = admin_contacts;
+        return *this;
+    }
+
+    CreateDomain& CreateDomain::set_expiration_period(unsigned expiration_period)
+    {
+        expiration_period_ = expiration_period;
         return *this;
     }
 
@@ -163,6 +171,29 @@ namespace Fred
                 }
             }//zone
 
+            //expiration_period
+            unsigned expiration_period = 0;//in months
+            {
+                if(expiration_period_.isset())
+                {
+                    expiration_period = expiration_period_;
+                }
+                else
+                {
+                    //get default
+                    Database::Result ex_period_min_res = ctx.get_conn().exec_params(
+                        "SELECT ex_period_min FROM zone WHERE id=$1::bigint"
+                        , Database::query_param_list(zone_id));
+
+                    if (ex_period_min_res.size() == 0)
+                    {
+                        throw CDERR("ex_period_min for zone not found");
+                    }
+
+                    expiration_period = static_cast<unsigned>(ex_period_min_res[0][0]);
+                }
+            }//expiration_period
+
             unsigned long long object_id = CreateObject("domain", fqdn_, registrar_, authinfo_).exec(ctx);
             //create domain
             {
@@ -182,6 +213,19 @@ namespace Fred
                 params.push_back(zone_id);
                 col_sql << col_separator.get() << "zone";
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
+
+                //expiration_period
+                params.push_back(returned_timestamp_pg_time_zone_name);
+                params.push_back(expiration_period);
+                params.push_back(object_id);
+                params.push_back(fqdn_);
+                col_sql << col_separator.get() << "exdate";
+                val_sql << val_separator.get() <<
+                    " raise_exception_ifnull( "
+                    "(SELECT (crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $"<< (params.size() - 3) << "::text "
+                    " + ( $"<< (params.size() - 2) << "::integer * interval '1 month'))::date "
+                    " FROM object_registry WHERE id = $"<< (params.size() -1) << "::integer) "
+                    " ,'|| not found crdate:fqdn: '||ex_data($"<< params.size() << "::text)||' |') ";
 
                 if(registrant_.isset())//set registrant
                 {

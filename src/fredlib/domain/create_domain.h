@@ -47,6 +47,7 @@ namespace Fred
         Optional<Nullable<std::string> > nsset_;//set nsset to NULL or value
         Optional<Nullable<std::string> > keyset_;//set keyset
         std::vector<std::string> admin_contacts_; //set admin contacts
+        Optional<unsigned> expiration_period_;//for exdate in months
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
 
     public:
@@ -59,6 +60,7 @@ namespace Fred
                 , const Optional<Nullable<std::string> >& nsset
                 , const Optional<Nullable<std::string> >& keyset
                 , const std::vector<std::string>& admin_contacts
+                , const Optional<unsigned>& expiration_period
                 , const Optional<unsigned long long> logd_request_id
                 );
 
@@ -69,6 +71,7 @@ namespace Fred
         CreateDomain& set_keyset(const Nullable<std::string>& keyset);
         CreateDomain& set_keyset(const std::string& keyset);
         CreateDomain& set_admin_contacts(const std::vector<std::string>& admin_contacts);
+        CreateDomain& set_expiration_period(unsigned expiration_period);
         CreateDomain& set_logd_request_id(unsigned long long logd_request_id);
         boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
