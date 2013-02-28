@@ -306,6 +306,16 @@ BOOST_AUTO_TEST_CASE(update_domain)
         .set_discloseaddress(true)
         .exec(ctx);
 
+    std::string admin_contact2_handle = std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark;
+    Fred::CreateContact(admin_contact2_handle,registrar_handle)
+        .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .exec(ctx);
+
+
     std::string registrant_contact_handle = std::string("TEST-REGISTRANT-CONTACT-HANDLE")+xmark;
     Fred::CreateContact(registrant_contact_handle,registrar_handle)
             .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
@@ -320,22 +330,24 @@ BOOST_AUTO_TEST_CASE(update_domain)
             test_domain_handle //const std::string& fqdn
             , registrar_handle //const std::string& registrar
             , registrant_contact_handle //registrant
-            ).exec(ctx);
+            )
+    .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+    .exec(ctx);
 
     //call update using big ctor
-    Fred::UpdateDomain("fred.cz"//fqdn
-            , "REG-FRED_A"//registrar
+    Fred::UpdateDomain(test_domain_handle//fqdn
+            , registrar_handle//registrar
             , registrant_contact_handle //registrant - owner
             , std::string("testauthinfo1") //authinfo
             , Nullable<std::string>()//unset nsset - set to null
             , Optional<Nullable<std::string> >()//dont change keyset
             , Util::vector_of<std::string> (admin_contact1_handle)(registrant_contact_handle) //add admin contacts
-            , Util::vector_of<std::string> ("KONTAKT") //remove admin contacts
+            , Util::vector_of<std::string> (admin_contact2_handle) //remove admin contacts
             , Optional<unsigned long long>() //request_id not set
             ).exec(ctx);
 
     //call update using small ctor and set custom params
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A")
+    Fred::UpdateDomain(test_domain_handle, registrar_handle)
     .set_authinfo("testauthinfo")
     .set_registrant(registrant_contact_handle)
     .add_admin_contact(admin_contact_handle)
@@ -343,22 +355,38 @@ BOOST_AUTO_TEST_CASE(update_domain)
     .rem_admin_contact(admin_contact1_handle)
     .exec(ctx);
 
+
+    std::string test_nsset_handle = std::string("TEST-D-NSSET-HANDLE")+xmark;
+    Fred::CreateNsset(test_nsset_handle, registrar_handle)
+        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+            )
+            .exec(ctx);
+
+    std::string test_keyset_handle = std::string("TEST-D-KEYSET-HANDLE")+xmark;
+    Fred::CreateKeyset(test_keyset_handle, registrar_handle)
+            //.set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
+            .exec(ctx);
+
+
+
     //call update using small ctor and set one custom param
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_authinfo("testauthinfo").exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_registrant(registrant_contact_handle).exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").add_admin_contact(admin_contact1_handle).exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").rem_admin_contact(admin_contact_handle).exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset("NSSET-1").exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset(Nullable<std::string>()).exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset("NSSET-1").exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").unset_nsset().exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset(Nullable<std::string>("NSSET-1")).exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_nsset("NSSET-1").exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_keyset(Nullable<std::string>()).exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_keyset("KEYSID-1").exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").unset_keyset().exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_keyset(Nullable<std::string>("KEYSID-1")).exec(ctx);
-    Fred::UpdateDomain("fred.cz", "REG-FRED_A").set_logd_request_id(0u).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_authinfo("testauthinfo").exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_registrant(registrant_contact_handle).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).add_admin_contact(admin_contact1_handle).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).rem_admin_contact(admin_contact_handle).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(test_nsset_handle).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(Nullable<std::string>()).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(test_nsset_handle).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).unset_nsset().exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(Nullable<std::string>(test_nsset_handle)).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(test_nsset_handle).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_keyset(Nullable<std::string>()).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_keyset(test_keyset_handle).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).unset_keyset().exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_keyset(Nullable<std::string>(test_keyset_handle)).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_logd_request_id(0u).exec(ctx);
 
     //commit db transaction
     ctx.commit_transaction();
