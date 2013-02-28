@@ -315,6 +315,12 @@ BOOST_AUTO_TEST_CASE(update_domain)
             .set_discloseaddress(true)
             .exec(ctx);
 
+    std::string test_domain_handle = std::string("fred")+xmark+".cz";
+    Fred::CreateDomain(
+            test_domain_handle //const std::string& fqdn
+            , registrar_handle //const std::string& registrar
+            ).exec(ctx);
+
     //call update using big ctor
     Fred::UpdateDomain("fred.cz"//fqdn
             , "REG-FRED_A"//registrar
