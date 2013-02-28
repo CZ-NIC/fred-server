@@ -43,7 +43,7 @@ namespace Fred
         const std::string fqdn_;//domain identifier
         const std::string registrar_;//registrar identifier
         Optional<std::string> authinfo_;//set authinfo
-        Optional<std::string> registrant_;//set registrant
+        const std::string registrant_;//set registrant
         Optional<Nullable<std::string> > nsset_;//set nsset to NULL or value
         Optional<Nullable<std::string> > keyset_;//set keyset
         std::vector<std::string> admin_contacts_; //set admin contacts
@@ -52,20 +52,19 @@ namespace Fred
 
     public:
         CreateDomain(const std::string& fqdn
-                , const std::string& registrar);
+                , const std::string& registrar
+                , const std::string& registrant);
         CreateDomain(const std::string& fqdn
                 , const std::string& registrar
-                , const Optional<std::string>& registrant
+                , const std::string& registrant
                 , const Optional<std::string>& authinfo
                 , const Optional<Nullable<std::string> >& nsset
                 , const Optional<Nullable<std::string> >& keyset
                 , const std::vector<std::string>& admin_contacts
                 , const Optional<unsigned>& expiration_period
-                , const Optional<unsigned long long> logd_request_id
-                );
+                , const Optional<unsigned long long> logd_request_id);
 
         CreateDomain& set_authinfo(const std::string& authinfo);
-        CreateDomain& set_registrant(const std::string& registrant);
         CreateDomain& set_nsset(const Nullable<std::string>& nsset);
         CreateDomain& set_nsset(const std::string& nsset);
         CreateDomain& set_keyset(const Nullable<std::string>& keyset);

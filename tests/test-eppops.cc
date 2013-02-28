@@ -319,6 +319,7 @@ BOOST_AUTO_TEST_CASE(update_domain)
     Fred::CreateDomain(
             test_domain_handle //const std::string& fqdn
             , registrar_handle //const std::string& registrar
+            , registrant_contact_handle //registrant
             ).exec(ctx);
 
     //call update using big ctor

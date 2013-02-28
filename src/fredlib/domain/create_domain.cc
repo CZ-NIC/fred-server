@@ -40,15 +40,17 @@ namespace Fred
 {
 
     CreateDomain::CreateDomain(const std::string& fqdn
-                , const std::string& registrar)
+                , const std::string& registrar
+                , const std::string& registrant)
     : fqdn_(fqdn)
     , registrar_(registrar)
+    , registrant_(registrant)
     {}
 
     CreateDomain::CreateDomain(const std::string& fqdn
             , const std::string& registrar
+            , const std::string& registrant
             , const Optional<std::string>& authinfo
-            , const Optional<std::string>& registrant
             , const Optional<Nullable<std::string> >& nsset
             , const Optional<Nullable<std::string> >& keyset
             , const std::vector<std::string>& admin_contacts
@@ -71,12 +73,6 @@ namespace Fred
     CreateDomain& CreateDomain::set_authinfo(const std::string& authinfo)
     {
         authinfo_ = authinfo;
-        return *this;
-    }
-
-    CreateDomain& CreateDomain::set_registrant(const std::string& registrant)
-    {
-        registrant_ = registrant;
         return *this;
     }
 
@@ -227,7 +223,7 @@ namespace Fred
                     " FROM object_registry WHERE id = $"<< (params.size() -1) << "::integer) "
                     " ,'|| not found crdate:fqdn: '||ex_data($"<< params.size() << "::text)||' |') ";
 
-                if(registrant_.isset())//set registrant
+                //set registrant
                 {
                     //lock object_registry row for update
                     {
@@ -236,12 +232,12 @@ namespace Fred
                             " JOIN object_registry oreg ON oreg.type = eot.id "
                             " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
                             " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                            , Database::query_param_list(registrant_.get_value()));
+                            , Database::query_param_list(registrant_));
 
                         if (lock_res.size() != 1)
                         {
                             std::string errmsg("unable to lock || not found:registrant: ");
-                            errmsg += boost::replace_all_copy(std::string(registrant_.get_value()),"|", "[pipe]");//quote pipes
+                            errmsg += boost::replace_all_copy(std::string(registrant_),"|", "[pipe]");//quote pipes
                             errmsg += " |";
                             throw CDEX(errmsg.c_str());
                         }
