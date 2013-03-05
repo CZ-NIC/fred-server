@@ -362,6 +362,7 @@ BOOST_AUTO_TEST_CASE(update_domain)
             (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
             (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
             )
+            .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle))
             .exec(ctx);
 
     std::string test_keyset_handle = std::string("TEST-D-KEYSET-HANDLE")+xmark;
