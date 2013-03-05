@@ -78,10 +78,16 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestUtils)
+BOOST_AUTO_TEST_SUITE(TestUpdateNsset)
 
 const std::string server_name = "test-update-nsset";
 
+
+/**
+ * test UpdateNsset
+ * test UpdateNsset construction and methods calls with precreated data
+ * calls in test shouldn't throw
+ */
 BOOST_AUTO_TEST_CASE(update_nsset)
 {
     std::string registrar_handle = "REG-FRED_A";

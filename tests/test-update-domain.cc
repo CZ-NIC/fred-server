@@ -82,6 +82,10 @@ BOOST_AUTO_TEST_SUITE(TestUpdateDomain)
 
 const std::string server_name = "test-update-domain";
 
+/**
+ * test UpdateDomainException
+ * test create and throw exception with special data
+ */
 BOOST_AUTO_TEST_CASE(update_domain_exception)
 {
     //no parsable data - ok
@@ -101,6 +105,11 @@ BOOST_AUTO_TEST_CASE(update_domain_exception)
         , Fred::OperationExceptionBase);
 }
 
+/**
+ * test UpdateDomain
+ * test UpdateDomain construction and methods calls with precreated data
+ * calls in test shouldn't throw
+ */
 BOOST_AUTO_TEST_CASE(update_domain)
 {
     std::string registrar_handle = "REG-FRED_A";

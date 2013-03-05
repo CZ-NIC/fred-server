@@ -142,6 +142,11 @@ public:
     }
 };
 
+/**
+ * test FixedString
+ * test FixedString construction and methods calls with precreated data
+ * calls in test shouldn't throw
+ */
 BOOST_AUTO_TEST_CASE(fixed_string)
 {
     {
@@ -159,6 +164,10 @@ BOOST_AUTO_TEST_CASE(fixed_string)
     }
 }
 
+/**
+ * test exception callback
+ * create and throw exception, catch exception get parameters and check number of parameters
+ */
 BOOST_AUTO_TEST_CASE(exception_params_callback)
 {
     try
@@ -180,6 +189,10 @@ BOOST_AUTO_TEST_CASE(exception_params_callback)
 
 }
 
+/**
+ * test exception with quoted data
+ * create and throw exception with quoted data, check params with callback
+ */
 BOOST_AUTO_TEST_CASE(test_quote_pipe_in_exception)
 {
     try
@@ -233,25 +246,6 @@ BOOST_AUTO_TEST_CASE(test_quote_pipe_in_exception)
         , Fred::OperationErrorBase);
     }
 
-}
-
-BOOST_AUTO_TEST_CASE(update_domain_exception)
-{
-    //no parsable data - ok
-    BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, "test")
-    , Fred::OperationExceptionBase);
-
-    //no data - error
-    BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, "test ||  |")
-    , Fred::OperationErrorBase);
-
-    //error exception - ok
-    BOOST_CHECK_THROW (throw Fred::UpdateDomainException::OperationErrorType("test")
-    , Fred::OperationErrorBase);
-
-    //not ended by | - no parsable data - ok
-    BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, "test exception || not found:1111: errtest")
-        , Fred::OperationExceptionBase);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestUtils

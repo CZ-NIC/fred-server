@@ -83,6 +83,11 @@ BOOST_AUTO_TEST_SUITE(TestDeleteContact)
 const std::string server_name = "test-delete-contact";
 
 
+/**
+ * test DeleteContact
+ * create test contact, delete test contact, check erdate of test contact is null
+ * calls in test shouldn't throw
+ */
 BOOST_AUTO_TEST_CASE(delete_contact)
 {
     std::string registrar_handle = "REG-FRED_A";
@@ -97,6 +102,7 @@ BOOST_AUTO_TEST_CASE(delete_contact)
         .set_city("Praha").set_postalcode("11150").set_country("CZ")
         .set_discloseaddress(true)
         .exec(ctx);
+
     Fred::DeleteContact(handle).exec(ctx);
     ctx.commit_transaction();
 

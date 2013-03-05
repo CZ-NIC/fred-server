@@ -82,6 +82,11 @@ BOOST_AUTO_TEST_SUITE(TestUpdateKeyset)
 
 const std::string server_name = "test-update-keyset";
 
+/**
+ * test UpdateKeyset
+ * test UpdateKeyset construction and methods calls with precreated data
+ * calls in test shouldn't throw
+ */
 BOOST_AUTO_TEST_CASE(update_keyset)
 {
     std::string registrar_handle = "REG-FRED_A";
