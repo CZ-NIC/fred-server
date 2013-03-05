@@ -5,6 +5,7 @@
 #include "merge_contact_email_notification_data.h"
 #include "mailer_manager.h"
 #include "mailer.h"
+#include "util/util.h"
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>
@@ -162,11 +163,12 @@ unsigned long long logger_merge_contact_create_request(
 void logger_merge_contact_close(
         Fred::Logger::LoggerClient &_logger_client,
         const unsigned long long _req_id,
-        const Fred::Logger::RequestProperties &_properties,
-        const Fred::Logger::ObjectReferences &_references,
+        Fred::Logger::RequestProperties &_properties,
+        Fred::Logger::ObjectReferences &_references,
         const std::string &_result)
 {
     if (_req_id) {
+        _properties.push_back(Fred::Logger::RequestProperty("opTRID", Util::make_svtrid(_req_id), false));
         _logger_client.closeRequest(_req_id, "Admin", "",
                 _properties,
                 _references,
@@ -196,11 +198,13 @@ void logger_merge_contact_close_request_fail(
         Fred::Logger::LoggerClient &_logger_client,
         const unsigned long long _req_id)
 {
+    Fred::Logger::RequestProperties props;
+    Fred::Logger::ObjectReferences refs;
     logger_merge_contact_close(
             _logger_client,
             _req_id,
-            Fred::Logger::RequestProperties(),
-            Fred::Logger::ObjectReferences(),
+            props,
+            refs,
             "Fail");
 }
 
