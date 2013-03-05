@@ -369,8 +369,6 @@ BOOST_AUTO_TEST_CASE(update_domain)
             //.set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
             .exec(ctx);
 
-
-
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_authinfo("testauthinfo").exec(ctx);
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_registrant(registrant_contact_handle).exec(ctx);
