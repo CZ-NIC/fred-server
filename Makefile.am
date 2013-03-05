@@ -1630,7 +1630,11 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
 		tests/checks.h \
-		tests/test-eppops.cc \
+		tests/test-utils.cc \
+		tests/test-update-nsset.cc \
+		tests/test-update-keyset.cc \
+		tests/test-update-domain.cc \
+		tests/test-delete-contact.cc \
 		tests/test-merge-contact.cc
 
 
