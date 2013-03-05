@@ -396,7 +396,7 @@ BOOST_AUTO_TEST_CASE(update_domain)
         " FROM object_registry oreg "
         " JOIN object o ON o.id = oreg.id "
         " WHERE oreg.name = $2::text"
-        ,Database::query_param_list("testauthinfo")("fred.cz"))[0][0]));
+        ,Database::query_param_list("testauthinfo")(test_domain_handle))[0][0]));
 }//update_domain
 
 BOOST_AUTO_TEST_CASE(update_nsset)
