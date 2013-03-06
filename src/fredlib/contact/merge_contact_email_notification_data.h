@@ -54,6 +54,7 @@ namespace Fred
     {
         std::string dst_contact_handle;
         std::string dst_contact_roid;
+        std::string request_id;
         std::vector<std::string> domain_registrant_list;
         std::vector<std::string> domain_admin_list;
         std::vector<std::string> nsset_tech_list;
@@ -65,6 +66,7 @@ namespace Fred
     struct SortedContactNotificationEmail
     {
         std::string dst_contact_handle;
+        std::string request_id;
         std::set<std::string> domain_registrant_list;
         std::set<std::string> domain_admin_list;
         std::set<std::string> nsset_tech_list;
@@ -99,7 +101,7 @@ namespace Fred
 
         ConstArr get_fail_param_impl() throw()
         {
-            static const char* list[]={"invalid:contact handle", "invalid:contact roid"};
+            static const char* list[]={"invalid:contact handle", "invalid:contact roid", "invalid:request_id"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     };//class MergeContactEmailNotificationDataException

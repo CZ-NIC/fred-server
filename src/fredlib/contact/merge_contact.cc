@@ -163,6 +163,8 @@ namespace Fred
     {
         MergeContactOutput output;
 
+        output.logd_request_id = logd_request_id_;
+
         //domain_registrant lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(

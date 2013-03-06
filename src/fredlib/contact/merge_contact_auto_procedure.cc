@@ -36,6 +36,8 @@ void email_notification(Fred::Mailer::Manager& mm
 
         params["dst_contact_handle"] = ci->email_data.dst_contact_handle;
 
+        params["request_id"] = ci->email_data.request_id;
+
         counter = 0;//reset counter
         for (std::vector<std::string>::const_iterator listci = ci->email_data.domain_registrant_list.begin()
                 ; listci != ci->email_data.domain_registrant_list.end() ; ++listci)

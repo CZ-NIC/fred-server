@@ -207,6 +207,7 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                     (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                         , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
+                , 0
             )//MergeContactOutput
         )//MergeContactEmailNotificationInput
       )//vector_of
@@ -236,6 +237,7 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                   (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
+              , 0
           )//MergeContactOutput
         )//MergeContactEmailNotificationInput
       )//vector_of
@@ -265,6 +267,7 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                   (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
+              , 0
             )//MergeContactOutput
         )//MergeContactEmailNotificationInput
       )//vector_of
@@ -296,6 +299,7 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                   (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
+              , 0
           )//MergeContactOutput
         )//MergeContactEmailNotificationInput
       )//vector_of
@@ -326,6 +330,7 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                   (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                       , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
+              , 0
           )//MergeContactOutput
         )//MergeContactEmailNotificationInput
       )//vector_of
@@ -379,6 +384,7 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                         (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                             , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
+                    , 0
                 )//MergeContactOutput
               )//MergeContactEmailNotificationInput
             )//vector_of
@@ -441,6 +447,7 @@ BOOST_AUTO_TEST_CASE(merge_contact_notification_email_addr)
                     (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
                         , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
 
+                , 0
             )//MergeContactOutput
         )//MergeContactEmailNotificationInput
       )//vector_of
