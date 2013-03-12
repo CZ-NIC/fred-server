@@ -86,9 +86,6 @@ namespace Fred
         for( std::vector<MergeContactEmailNotificationInput>::iterator i = merge_contact_data_.begin()
                 ; i != merge_contact_data_.end(); ++i )
         {
-            std::string megre_contact_request_id = i->merge_output.logd_request_id.isset()
-                            ? Util::make_svtrid(i->merge_output.logd_request_id.get_value())
-                            : std::string("n/a");
             //check contacts are different
             if(i->merge_output.contactid.dst_contact_roid.compare(i->merge_output.contactid.src_contact_roid) == 0)
             {//error if equal
@@ -106,7 +103,6 @@ namespace Fred
                 SortedContactNotificationEmail email;
 
                 email.dst_contact_handle = i->dst_contact_handle;
-                email.request_id = megre_contact_request_id;
                 email.removed_list.insert(i->src_contact_handle);
                 email.removed_roid_list.insert(i->merge_output.contactid.src_contact_roid);
 
@@ -136,14 +132,6 @@ namespace Fred
                 {//error if equal
                     std::string errmsg("dst_contact_handle changed || invalid:contact handle: ");
                     errmsg += boost::replace_all_copy(i->dst_contact_handle,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw MCENDEX(errmsg.c_str());
-                }
-
-                if(email.request_id.compare(megre_contact_request_id) != 0)
-                {//error if equal
-                    std::string errmsg("request_id changed || invalid:request_id: ");
-                    errmsg += boost::replace_all_copy(megre_contact_request_id,"|", "[pipe]");//quote pipes
                     errmsg += " |";
                     throw MCENDEX(errmsg.c_str());
                 }
@@ -178,7 +166,6 @@ namespace Fred
             MergeContactNotificationEmail notifemail;
             notifemail.dst_contact_handle = it->second.dst_contact_handle;
             notifemail.dst_contact_roid = it->first;
-            notifemail.request_id = it->second.request_id;
 
             for(std::set<std::string>::iterator si = it->second.domain_registrant_list.begin()
                     ; si != it->second.domain_registrant_list.end(); ++si)

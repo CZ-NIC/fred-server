@@ -181,7 +181,6 @@ namespace Fred
         std::vector<MergeContactUpdateDomainAdminContact> update_domain_admin_contact;
         std::vector<MergeContactUpdateNssetTechContact> update_nsset_tech_contact;
         std::vector<MergeContactUpdateKeysetTechContact> update_keyset_tech_contact;
-        Optional<unsigned long long> logd_request_id; //id of the new entry in log_entry
         MergeContactOutput(){}
         MergeContactOutput(
                 const MergeContactLockedContactId& _contactid
@@ -189,14 +188,12 @@ namespace Fred
                 , const std::vector<MergeContactUpdateDomainAdminContact>& _update_domain_admin_contact
                 , const std::vector<MergeContactUpdateNssetTechContact>& _update_nsset_tech_contact
                 , const std::vector<MergeContactUpdateKeysetTechContact>& _update_keyset_tech_contact
-                , const Optional<unsigned long long>& _logd_request_id
                 )
         : contactid(_contactid)
         , update_domain_registrant(_update_domain_registrant)
         , update_domain_admin_contact(_update_domain_admin_contact)
         , update_nsset_tech_contact(_update_nsset_tech_contact)
         , update_keyset_tech_contact(_update_keyset_tech_contact)
-        , logd_request_id(_logd_request_id)
         {}
     };
 
