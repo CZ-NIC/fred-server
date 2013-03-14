@@ -277,7 +277,7 @@ struct update_domain_errors_fixture
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .exec(ctx);
 
-
+        ctx.commit_transaction();//commit fixture
     }
     ~update_domain_errors_fixture()
     {}
@@ -291,10 +291,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_errors_fixture )
 {
 
     std::string bad_test_domain_handle = std::string("bad")+xmark+".cz";
-
     try
     {
+        Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateDomain(bad_test_domain_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
     }
     catch(Fred::OperationExceptionBase& ex)
     {
@@ -313,9 +314,13 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_errors_fixt
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
 
+    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+
     try
     {
+        Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, bad_registrar_handle).exec(ctx);
+        ctx.commit_transaction();
     }
     catch(Fred::OperationExceptionBase& ex)
     {
@@ -324,6 +329,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_errors_fixt
         BOOST_CHECK((cb.get().size()) == 1);
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:registrar")->second).compare(bad_registrar_handle) == 0);
     }
+
+    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+
 }
 
 /**
@@ -333,11 +342,15 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_errors_fix
 {
     std::string bad_registrant_handle = registrant_contact_handle+xmark;
 
+    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+
     try
     {
+        Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .set_registrant(bad_registrant_handle)
         .exec(ctx);
+        ctx.commit_transaction();
     }
     catch(Fred::OperationExceptionBase& ex)
     {
@@ -346,6 +359,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_errors_fix
         BOOST_CHECK((cb.get().size()) == 1);
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:registrant")->second).compare(bad_registrant_handle) == 0);
     }
+
+    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+
 }
 
 /**
@@ -355,11 +372,15 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_errors_fixt
 {
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
+    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+
     try
     {
+        Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .add_admin_contact(bad_admin_contact_handle)
         .exec(ctx);
+        ctx.commit_transaction();
     }
     catch(Fred::OperationExceptionBase& ex)
     {
@@ -368,6 +389,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_errors_fixt
         BOOST_CHECK((cb.get().size()) == 1);
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:admin contact")->second).compare(bad_admin_contact_handle) == 0);
     }
+
+    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+
 }
 
 /**
@@ -375,12 +400,16 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_errors_fixt
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_errors_fixture)
 {
+    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+
     try
     {
+        Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .add_admin_contact(admin_contact2_handle)
         .add_admin_contact(admin_contact2_handle)
         .exec(ctx);
+        ctx.commit_transaction();
     }
     catch(Fred::OperationExceptionBase& ex)
     {
@@ -389,6 +418,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_err
         BOOST_CHECK((cb.get().size()) == 1);
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("already set:admin contact")->second).compare(admin_contact2_handle) == 0);
     }
+
+    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+
 }
 
 /**
@@ -398,11 +431,15 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_errors_fixt
 {
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
+    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+
     try
     {
+        Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .rem_admin_contact(bad_admin_contact_handle)
         .exec(ctx);
+        ctx.commit_transaction();
     }
     catch(Fred::OperationExceptionBase& ex)
     {
@@ -411,6 +448,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_errors_fixt
         BOOST_CHECK((cb.get().size()) == 1);
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:admin contact")->second).compare(bad_admin_contact_handle) == 0);
     }
+
+    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+
 }
 
 /**
@@ -420,11 +461,15 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_errors
 {
     std::string bad_admin_contact_handle = registrant_contact_handle;
 
+    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+
     try
     {
+        Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .rem_admin_contact(bad_admin_contact_handle)
         .exec(ctx);
+        ctx.commit_transaction();
     }
     catch(Fred::OperationExceptionBase& ex)
     {
@@ -433,8 +478,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_errors
         BOOST_CHECK((cb.get().size()) == 1);
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:admin contact")->second).compare(bad_admin_contact_handle) == 0);
     }
+
+    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+
 }
-
-
 
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateDomain
