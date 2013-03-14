@@ -53,6 +53,7 @@
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
+#include "fredlib/domain/info_domain.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -112,8 +113,13 @@ BOOST_AUTO_TEST_CASE(update_domain_exception)
  */
 BOOST_AUTO_TEST_CASE(update_domain)
 {
-    std::string registrar_handle = "REG-FRED_A";
     Fred::OperationContext ctx;
+
+    std::string registrar_handle = static_cast<std::string>(
+            ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
+    BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
+
+
     std::string xmark = RandomDataGenerator().xnumstring(6);
 
     std::string admin_contact_handle = std::string("TEST-ADMIN-CONTACT-HANDLE")+xmark;
@@ -227,5 +233,208 @@ BOOST_AUTO_TEST_CASE(update_domain)
         " WHERE oreg.name = $2::text"
         ,Database::query_param_list("testauthinfo")(test_domain_handle))[0][0]));
 }//update_domain
+
+
+struct update_domain_errors_fixture
+{
+    Fred::OperationContext ctx;
+    std::string registrar_handle;
+    std::string xmark;
+    std::string admin_contact2_handle;
+    std::string registrant_contact_handle;
+    std::string test_domain_handle;
+
+    update_domain_errors_fixture()
+    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
+    , xmark(RandomDataGenerator().xnumstring(6))
+    , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
+    , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
+    , test_domain_handle ( std::string("fred")+xmark+".cz")
+    {
+        BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
+
+        Fred::CreateContact(admin_contact2_handle,registrar_handle)
+            .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        Fred::CreateContact(registrant_contact_handle,registrar_handle)
+                .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
+                .set_disclosename(true)
+                .set_street1(std::string("STR1")+xmark)
+                .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                .set_discloseaddress(true)
+                .exec(ctx);
+
+        Fred::CreateDomain(
+                test_domain_handle //const std::string& fqdn
+                , registrar_handle //const std::string& registrar
+                , registrant_contact_handle //registrant
+                )
+        .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+        .exec(ctx);
+
+
+    }
+    ~update_domain_errors_fixture()
+    {}
+};
+
+/**
+ * test UpdateDomain with wrong fqdn
+ */
+
+BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_errors_fixture )
+{
+
+    std::string bad_test_domain_handle = std::string("bad")+xmark+".cz";
+
+    try
+    {
+        Fred::UpdateDomain(bad_test_domain_handle, registrar_handle).exec(ctx);
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:fqdn")->second).compare(bad_test_domain_handle) == 0);
+    }
+}
+
+
+/**
+ * test UpdateDomain with wrong registrar
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_errors_fixture)
+{
+    std::string bad_registrar_handle = registrar_handle+xmark;
+
+    try
+    {
+        Fred::UpdateDomain(test_domain_handle, bad_registrar_handle).exec(ctx);
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:registrar")->second).compare(bad_registrar_handle) == 0);
+    }
+}
+
+/**
+ * test UpdateDomain with wrong registrant
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_errors_fixture)
+{
+    std::string bad_registrant_handle = registrant_contact_handle+xmark;
+
+    try
+    {
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .set_registrant(bad_registrant_handle)
+        .exec(ctx);
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:registrant")->second).compare(bad_registrant_handle) == 0);
+    }
+}
+
+/**
+ * test UpdateDomain add non-existing admin
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_errors_fixture)
+{
+    std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
+
+    try
+    {
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .add_admin_contact(bad_admin_contact_handle)
+        .exec(ctx);
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:admin contact")->second).compare(bad_admin_contact_handle) == 0);
+    }
+}
+
+/**
+ * test UpdateDomain add already added admin
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_errors_fixture)
+{
+    try
+    {
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .add_admin_contact(admin_contact2_handle)
+        .add_admin_contact(admin_contact2_handle)
+        .exec(ctx);
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("already set:admin contact")->second).compare(admin_contact2_handle) == 0);
+    }
+}
+
+/**
+ * test UpdateDomain remove non-existing admin
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_errors_fixture)
+{
+    std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
+
+    try
+    {
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .rem_admin_contact(bad_admin_contact_handle)
+        .exec(ctx);
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:admin contact")->second).compare(bad_admin_contact_handle) == 0);
+    }
+}
+
+/**
+ * test UpdateDomain remove existing unassigned admin
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_errors_fixture)
+{
+    std::string bad_admin_contact_handle = registrant_contact_handle;
+
+    try
+    {
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .rem_admin_contact(bad_admin_contact_handle)
+        .exec(ctx);
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:admin contact")->second).compare(bad_admin_contact_handle) == 0);
+    }
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateDomain
