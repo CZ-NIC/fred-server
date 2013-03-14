@@ -31,32 +31,10 @@
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "fredlib/nsset/nsset_dns_host.h"
 
 namespace Fred
 {
-
-
-    class DnsHost
-    {
-        std::string fqdn_;
-        std::vector<std::string> inet_addr_;
-    public:
-        virtual ~DnsHost(){}
-        DnsHost(const std::string& _fqdn, const std::vector<std::string> _inet_addr)
-        : fqdn_(_fqdn)
-        , inet_addr_(_inet_addr)
-        {}
-
-        std::string get_fqdn()
-        {
-            return fqdn_;
-        }
-
-        std::vector<std::string> get_inet_addr()
-        {
-            return inet_addr_;
-        }
-    };
 
     class UpdateNsset
     {

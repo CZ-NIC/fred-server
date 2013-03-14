@@ -195,7 +195,8 @@ namespace Fred
                 //lock object_registry row for update
                 if(new_nsset_value.isnull())
                 {
-                    Database::Result lock_res = ctx.get_conn().exec_params(
+                    //Database::Result lock_res =
+                        ctx.get_conn().exec_params(
                         "SELECT noreg.id FROM nsset n "
                         " JOIN object_registry noreg ON noreg.id = n.id AND noreg.erdate IS NULL "
                         " JOIN domain d ON d.nsset = n.id "
@@ -203,7 +204,8 @@ namespace Fred
                         " AND LOWER(doreg.name) = LOWER($1::text) "
                         " FOR UPDATE OF noreg "
                         , Database::query_param_list(fqdn_));
-
+                    //result may be empty if there is no nsset
+                    /*
                     if (lock_res.size() != 1)
                     {
                         std::string errmsg("unable to lock current nsset|| not found:fqdn: ");
@@ -211,6 +213,7 @@ namespace Fred
                         errmsg += " |";
                         throw UDEX(errmsg.c_str());
                     }
+                    */
                 }
                 else
                 {
@@ -264,7 +267,8 @@ namespace Fred
                         " AND doreg.name = LOWER($1::text) "
                         " FOR UPDATE OF koreg "
                         , Database::query_param_list(fqdn_));
-
+                    //result may be empty if there is no keyset
+                    /*
                     if (lock_res.size() != 1)
                     {
                         std::string errmsg("unable to lock current keyset|| not found:fqdn: ");
@@ -272,6 +276,7 @@ namespace Fred
                         errmsg += " |";
                         throw UDEX(errmsg.c_str());
                     }
+                    */
                 }
                 else
                 {
