@@ -332,6 +332,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_errors_fixt
 
     Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.delete_time.isnull());
 
 }
 
@@ -362,6 +363,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_errors_fix
 
     Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.delete_time.isnull());
 
 }
 
@@ -392,6 +394,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_errors_fixt
 
     Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.delete_time.isnull());
 
 }
 
@@ -421,6 +424,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_err
 
     Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.delete_time.isnull());
 
 }
 
@@ -451,6 +455,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_errors_fixt
 
     Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.delete_time.isnull());
 
 }
 
@@ -481,6 +486,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_errors
 
     Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.delete_time.isnull());
 
 }
 
