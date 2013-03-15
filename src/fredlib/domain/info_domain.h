@@ -41,7 +41,7 @@ namespace Fred
     ///enum domain validation extension
     struct ENUMValidationExtension
     {
-        boost::gregorian::date validation_expiration;//expiration_time date of validation
+        boost::gregorian::date validation_expiration;//expiration date of validation
         bool publish;//publish in ENUM dictionary
         ENUMValidationExtension()
         : validation_expiration()//not a date time
@@ -67,7 +67,7 @@ namespace Fred
         boost::posix_time::ptime creation_time;//time of domain creation
         boost::posix_time::ptime update_time; //last update time
         boost::posix_time::ptime transfer_time; //last transfer time
-        boost::posix_time::ptime expiration_time; //domain expiration time
+        boost::gregorian::date expiration_date; //domain expiration date
         std::string authinfopw;//password for domain transfer
         std::vector<std::string> admin_contacts;//list of administrative contacts
         Nullable<ENUMValidationExtension > enum_domain_validation;//enum domain validation info
@@ -85,7 +85,7 @@ namespace Fred
             && (creation_time == rhs.creation_time)
             && (update_time == rhs.update_time)
             && (transfer_time == rhs.transfer_time)
-            && (expiration_time == rhs.expiration_time)
+            && (expiration_date == rhs.expiration_date)
             && (authinfopw.compare(rhs.authinfopw) == 0)
             && (outzone_time == rhs.outzone_time)
             && (cancel_time == rhs.cancel_time);
