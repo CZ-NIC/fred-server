@@ -114,6 +114,7 @@ namespace Fred
                 " AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate "
                 " , d.keyset, kobr.name "// keyset id and keyset handle 23-24
                 " , ev.exdate, ev.publish "//enumval 25-26
+                ", dobr.erdate "// domain delete time 27
                 " FROM object_registry dobr "
                 " JOIN domain d ON dobr.id=d.id "
                 " JOIN object o ON d.id=o.id "

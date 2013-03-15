@@ -73,6 +73,7 @@ namespace Fred
         Nullable<ENUMValidationExtension > enum_domain_validation;//enum domain validation info
         boost::posix_time::ptime outzone_time; //domain outzone time
         boost::posix_time::ptime cancel_time; //domain cancel time
+        Nullable<boost::posix_time::ptime> delete_time; //domain delete time
 
         bool operator==(const InfoDomainData& rhs) const
         {
@@ -131,6 +132,13 @@ namespace Fred
                     if (!result_admin_contacts) break;
                 }
             }
+
+            bool result_delete_time = (delete_time.isnull() == rhs.delete_time.isnull());
+            if(!delete_time.isnull() && !rhs.delete_time.isnull())
+            {
+                result_delete_time = (boost::posix_time::ptime(delete_time) == boost::posix_time::ptime(rhs.delete_time));
+            }
+
 
             return result_simple && result_update_registrar_handle && result_nsset_handle && result_keyset_handle
                     && result_enum_domain_validation && result_admin_contacts;
