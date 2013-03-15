@@ -114,6 +114,7 @@ namespace Fred
                 " AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate "
                 " , d.keyset, kobr.name "// keyset id and keyset handle 23-24
                 " , ev.exdate, ev.publish "//enumval 25-26
+                ", dobr.erdate "// domain delete time 27
                 " FROM object_registry dobr "
                 " JOIN domain d ON dobr.id=d.id "
                 " JOIN object o ON d.id=o.id "
@@ -155,8 +156,8 @@ namespace Fred
                 domain_info_data.update_time = res[0][18].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
                 : boost::posix_time::time_from_string(static_cast<std::string>(res[0][18]));//o.update
                 domain_info_data.authinfopw = static_cast<std::string>(res[0][19]);//o.authinfopw
-                domain_info_data.expiration_time = res[0][20].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][20]));//d.exdate
+                domain_info_data.expiration_date = res[0][20].isnull() ? boost::gregorian::date()
+                : boost::gregorian::from_string(static_cast<std::string>(res[0][20]));//d.exdate
                 domain_info_data.outzone_time = res[0][21].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
                                 : boost::posix_time::time_from_string(static_cast<std::string>(res[0][21]));//outzonedate
                 domain_info_data.cancel_time = res[0][22].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
