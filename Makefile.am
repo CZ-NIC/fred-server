@@ -727,10 +727,15 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/opcontext.h \
 		src/fredlib/domain/update_domain.h \
 		src/fredlib/domain/update_domain.cc \
+		src/fredlib/domain/info_domain.h \
+		src/fredlib/domain/info_domain.cc \
 		src/fredlib/nsset/update_nsset.h \
 		src/fredlib/nsset/update_nsset.cc \
 		src/fredlib/keyset/update_keyset.h \
+		src/fredlib/keyset/keyset_dns_key.h \
 		src/fredlib/keyset/update_keyset.cc \
+		src/fredlib/keyset/create_keyset.cc \
+		src/fredlib/keyset/create_keyset.h \
 		src/fredlib/contact/delete_contact.h \
 		src/fredlib/contact/delete_contact.cc \
 		src/fredlib/object/object.h \
@@ -744,6 +749,11 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/merge_contact.cc \
 		src/fredlib/contact/create_contact.cc \
 		src/fredlib/contact/create_contact.h \
+		src/fredlib/nsset/create_nsset.cc \
+		src/fredlib/nsset/create_nsset.h \
+		src/fredlib/nsset/nsset_dns_host.h \
+		src/fredlib/domain/create_domain.cc \
+		src/fredlib/domain/create_domain.h \
 		src/fredlib/contact/merge_contact_selection.cc \
 		src/fredlib/contact/merge_contact_selection.h \
 		src/fredlib/contact/merge_contact_auto_procedure.cc \
@@ -1622,7 +1632,12 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
 		tests/checks.h \
-		tests/test-eppops.cc \
+		tests/test-utils.cc \
+		tests/test-update-nsset.cc \
+		tests/test-update-keyset.cc \
+		tests/test-update-domain.cc \
+		tests/test-delete-contact.cc \
+		tests/test-info-domain.cc \
 		tests/test-merge-contact.cc
 
 

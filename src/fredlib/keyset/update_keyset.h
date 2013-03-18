@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#include "fredlib/keyset/keyset_dns_key.h"
+
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
@@ -36,45 +38,6 @@
 namespace Fred
 {
 
-
-    class DnsKey
-    {
-        unsigned short flags_;
-        unsigned short protocol_;
-        unsigned short alg_;
-        std::string key_;//base64 encoding
-    public:
-        virtual ~DnsKey(){}
-        DnsKey(unsigned short _flags
-                , unsigned short _protocol
-                , unsigned short _alg
-                , const std::string& _key)
-        : flags_(_flags)
-        , protocol_(_protocol)
-        , alg_(_alg)
-        , key_(_key)
-        {}
-
-        unsigned short get_flags()
-        {
-            return flags_;
-        }
-
-        unsigned short get_protocol()
-        {
-            return protocol_;
-        }
-
-        unsigned short get_alg()
-        {
-            return alg_;
-        }
-
-        std::string get_key()
-        {
-            return key_;
-        }
-    };
 
     class UpdateKeyset
     {

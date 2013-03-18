@@ -138,14 +138,14 @@ namespace Fred
 
     //exception impl
     class CreateContactException
-    : public OperationExceptionImpl<CreateContactException, 4096>
+    : public OperationExceptionImpl<CreateContactException, 8192>
     {
     public:
         CreateContactException(const char* file
                 , const int line
                 , const char* function
                 , const char* data)
-        : OperationExceptionImpl<CreateContactException, 4096>(file, line, function, data)
+        : OperationExceptionImpl<CreateContactException, 8192>(file, line, function, data)
         {}
 
         ConstArr get_fail_param_impl() throw()
@@ -156,9 +156,9 @@ namespace Fred
 
     };//class CreateContactException
 
-    typedef CreateContactException::OperationErrorType CreteaContactError;
+    typedef CreateContactException::OperationErrorType CreateContactError;
 #define CCEX(DATA) CreateContactException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define CCERR(DATA) CreteaContactError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+#define CCERR(DATA) CreateContactError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }
 #endif // CREATE_CONTACT_H_
