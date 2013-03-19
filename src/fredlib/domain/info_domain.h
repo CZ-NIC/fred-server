@@ -65,8 +65,8 @@ namespace Fred
         std::string create_registrar_handle;//registrar which created domain
         Nullable<std::string> update_registrar_handle;//registrar which last time changed domain
         boost::posix_time::ptime creation_time;//time of domain creation
-        boost::posix_time::ptime update_time; //last update time
-        boost::posix_time::ptime transfer_time; //last transfer time
+        Nullable<boost::posix_time::ptime> update_time; //last update time
+        Nullable<boost::posix_time::ptime> transfer_time; //last transfer time
         boost::gregorian::date expiration_date; //domain expiration date
         std::string authinfopw;//password for domain transfer
         std::vector<std::string> admin_contacts;//list of administrative contacts
@@ -74,6 +74,13 @@ namespace Fred
         boost::posix_time::ptime outzone_time; //domain outzone time
         boost::posix_time::ptime cancel_time; //domain cancel time
         Nullable<boost::posix_time::ptime> delete_time; //domain delete time
+        unsigned long long historyid;//last historyid
+        boost::posix_time::ptime utc_timestamp;// utc timestamp
+        boost::posix_time::ptime local_timestamp;//local zone timestamp
+
+        InfoDomainData()
+        : historyid(0)
+        {}
 
         bool operator==(const InfoDomainData& rhs) const
         {
@@ -84,12 +91,14 @@ namespace Fred
             && (boost::algorithm::to_upper_copy(sponsoring_registrar_handle).compare(boost::algorithm::to_upper_copy(rhs.sponsoring_registrar_handle)) == 0)
             && (boost::algorithm::to_upper_copy(create_registrar_handle).compare(boost::algorithm::to_upper_copy(rhs.create_registrar_handle)) == 0)
             && (creation_time == rhs.creation_time)
-            && (update_time == rhs.update_time)
-            && (transfer_time == rhs.transfer_time)
             && (expiration_date == rhs.expiration_date)
             && (authinfopw.compare(rhs.authinfopw) == 0)
             && (outzone_time == rhs.outzone_time)
-            && (cancel_time == rhs.cancel_time);
+            && (cancel_time == rhs.cancel_time)
+            //&& (historyid == rhs.historyid)
+            //&& (utc_timestamp == rhs.utc_timestamp)
+            //&& (local_timestamp == rhs.local_timestamp)
+            ;
 
             bool result_update_registrar_handle = (update_registrar_handle.isnull() == rhs.update_registrar_handle.isnull());
             if(!update_registrar_handle.isnull() && !rhs.update_registrar_handle.isnull())
@@ -110,6 +119,18 @@ namespace Fred
             {
                 result_keyset_handle = (boost::algorithm::to_upper_copy(std::string(keyset_handle))
                 .compare(boost::algorithm::to_upper_copy(std::string(rhs.keyset_handle))) == 0);
+            }
+
+            bool result_update_time = (update_time.isnull() == rhs.update_time.isnull());
+            if(!update_time.isnull() && !rhs.update_time.isnull())
+            {
+                result_update_time = (boost::posix_time::ptime(update_time) == boost::posix_time::ptime(rhs.update_time));
+            }
+
+            bool result_transfer_time = (transfer_time.isnull() == rhs.transfer_time.isnull());
+            if(!delete_time.isnull() && !rhs.delete_time.isnull())
+            {
+                result_transfer_time = (boost::posix_time::ptime(transfer_time) == boost::posix_time::ptime(rhs.transfer_time));
             }
 
             bool result_enum_domain_validation = (enum_domain_validation.isnull() == rhs.enum_domain_validation.isnull());
@@ -141,7 +162,8 @@ namespace Fred
 
 
             return result_simple && result_update_registrar_handle && result_nsset_handle && result_keyset_handle
-                    && result_enum_domain_validation && result_admin_contacts;
+                    && result_update_time && result_transfer_time && result_enum_domain_validation && result_admin_contacts
+                    && result_delete_time;
         }
 
         bool operator!=(const InfoDomainData& rhs) const
@@ -161,7 +183,7 @@ namespace Fred
         InfoDomain(const std::string& fqdn
                 , const std::string& registrar);
         InfoDomain& set_lock(bool lock = true);//set lock object_registry row for domain
-        InfoDomainData exec(OperationContext& ctx);//return data
+        InfoDomainData exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
     };//class InfoDomain
 
 //exception impl
