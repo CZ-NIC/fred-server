@@ -1648,6 +1648,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
   if (me) {
     switch (m->getType()) {
       case Fred::Poll::MT_IDLE_DELETE_CONTACT:
+      case Fred::Poll::MT_DELETE_CONTACT:
         type = ccReg::polltype_delete_contact;
         break;
       case Fred::Poll::MT_IDLE_DELETE_NSSET:

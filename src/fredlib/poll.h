@@ -38,7 +38,8 @@ namespace Fred
       MT_REQUEST_FEE_INFO = 16,
       MT_UPDATE_DOMAIN = 17,
       MT_UPDATE_NSSET = 18,
-      MT_UPDATE_KEYSET = 19
+      MT_UPDATE_KEYSET = 19,
+      MT_DELETE_CONTACT = 20
     };
 
 

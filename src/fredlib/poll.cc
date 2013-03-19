@@ -444,6 +444,7 @@ public:
     bool hasStateChange= false;
     bool hasRequestFeeInfo = false;
     bool hasUpdateObject = false;
+    bool hasDeleteObject = false;
     std::ostringstream sql;
     clear();
     fillTempTable(true);
@@ -516,6 +517,14 @@ public:
               MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
           );
           hasUpdateObject = true;
+          break;
+        case MT_DELETE_CONTACT:
+          o = new MessageEventImpl(
+              type,STR_TO_ID(db->GetFieldValue(i,1)),
+              STR_TO_ID(db->GetFieldValue(i,2)),
+              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
+          );
+          hasDeleteObject = true;
           break;
         default:
           o = new MessageImpl(
@@ -730,6 +739,27 @@ public:
 
         m->setData(Util::make_svtrid(req_id));
       }
+    }
+    if (hasDeleteObject)
+    {
+        sql.str("");
+        sql << "SELECT tmp.id, oreg.erdate, oreg.name"
+            << " FROM " << getTempTableName() << " tmp"
+            << " JOIN poll_eppaction pea ON pea.msgid = tmp.id"
+            << " JOIN object_registry oreg ON oreg.historyid = pea.objid"
+            << " ORDER BY tmp.id";
+        if (!db->ExecSelect(sql.str().c_str()))
+            throw SQL_ERROR();
+        resetIDSequence();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
+        {
+            MessageEventImpl *m = dynamic_cast<MessageEventImpl *>(
+                    findIDSequence(STR_TO_ID(db->GetFieldValue(i, 0))));
+            if (!m) {
+               throw SQL_ERROR();
+            }
+            m->setData(MAKE_DATE(i, 1), db->GetFieldValue(i, 2));
+        }
     }
   }
   virtual const char *getTempTableName() const {
