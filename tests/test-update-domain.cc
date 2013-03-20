@@ -54,6 +54,7 @@
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/info_domain.h"
+#include "fredlib/domain/info_domain_history.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -235,7 +236,7 @@ BOOST_AUTO_TEST_CASE(update_domain)
 }//update_domain
 
 
-struct update_domain_errors_fixture
+struct update_domain_fixture
 {
     Fred::OperationContext ctx;
     std::string registrar_handle;
@@ -244,7 +245,7 @@ struct update_domain_errors_fixture
     std::string registrant_contact_handle;
     std::string test_domain_handle;
 
-    update_domain_errors_fixture()
+    update_domain_fixture()
     :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
     , xmark(RandomDataGenerator().xnumstring(6))
     , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
@@ -279,7 +280,7 @@ struct update_domain_errors_fixture
 
         ctx.commit_transaction();//commit fixture
     }
-    ~update_domain_errors_fixture()
+    ~update_domain_fixture()
     {}
 };
 
@@ -287,7 +288,7 @@ struct update_domain_errors_fixture
  * test UpdateDomain with wrong fqdn
  */
 
-BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_errors_fixture )
+BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_fixture )
 {
 
     std::string bad_test_domain_handle = std::string("bad")+xmark+".cz";
@@ -310,7 +311,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_errors_fixture )
 /**
  * test UpdateDomain with wrong registrar
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_errors_fixture)
+BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
 
@@ -339,7 +340,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_errors_fixt
 /**
  * test UpdateDomain with wrong registrant
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_errors_fixture)
+BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
 {
     std::string bad_registrant_handle = registrant_contact_handle+xmark;
 
@@ -370,7 +371,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_errors_fix
 /**
  * test UpdateDomain add non-existing admin
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_errors_fixture)
+BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
 {
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
@@ -401,7 +402,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_errors_fixt
 /**
  * test UpdateDomain add already added admin
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_errors_fixture)
+BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fixture)
 {
     Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
 
@@ -431,7 +432,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_err
 /**
  * test UpdateDomain remove non-existing admin
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_errors_fixture)
+BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
 {
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
@@ -462,7 +463,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_errors_fixt
 /**
  * test UpdateDomain remove existing unassigned admin
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_errors_fixture)
+BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixture)
 {
     std::string bad_admin_contact_handle = registrant_contact_handle;
 
@@ -489,5 +490,25 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_errors
     BOOST_CHECK(info_data_2.delete_time.isnull());
 
 }
+
+/**
+ * test call InfoDomainHistory
+ */
+BOOST_FIXTURE_TEST_CASE(info_domain_history_test_call, update_domain_fixture)
+{
+    //call update
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoDomainHistoryData> history_info_data_1 = Fred::InfoDomainHistory(info_data_1.roid, registrar_handle).exec(ctx);
+
+    std::cout << " history_info_data_1.size(): " << history_info_data_1.size() << std::endl;
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateDomain
