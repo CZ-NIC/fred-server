@@ -35,25 +35,11 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 
+#include "fredlib/domain/enum_validation_extension.h"
+
+
 namespace Fred
 {
-
-    ///enum domain validation extension
-    struct ENUMValidationExtension
-    {
-        boost::gregorian::date validation_expiration;//expiration date of validation
-        bool publish;//publish in ENUM dictionary
-        ENUMValidationExtension()
-        : validation_expiration()//not a date time
-        , publish(false)
-        {}
-        ENUMValidationExtension(const boost::gregorian::date& _validation_expiration
-                , bool _publish)
-        : validation_expiration(_validation_expiration)
-        , publish(_publish)
-        {}
-    };
-
     struct InfoDomainData
     {
         std::string roid;//domain identifier

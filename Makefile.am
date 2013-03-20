@@ -729,6 +729,7 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/info_domain.h \
 		src/fredlib/domain/info_domain.cc \
+		src/fredlib/domain/enum_validation_extension.h \
 		src/fredlib/nsset/update_nsset.h \
 		src/fredlib/nsset/update_nsset.cc \
 		src/fredlib/keyset/update_keyset.h \
