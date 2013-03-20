@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -128,17 +129,21 @@ namespace Fred
                         == ENUMValidationExtension(rhs.enum_domain_validation).validation_expiration);
             }
 
-            bool result_admin_contacts = (admin_contacts.size() == rhs.admin_contacts.size());
-            if (result_admin_contacts)
+            std::set<std::string> lhs_admin_contacts;
+            for(std::vector<std::string>::size_type i = 0
+                ; i != admin_contacts.size(); ++i)
             {
-                for(std::vector<std::string>::size_type i = 0
-                    ; i != admin_contacts.size(); ++i)
-                {
-                    result_admin_contacts = (result_admin_contacts && (boost::algorithm::to_upper_copy(admin_contacts[i])
-                        .compare(boost::algorithm::to_upper_copy(rhs.admin_contacts[i])) == 0));
-                    if (!result_admin_contacts) break;
-                }
+                lhs_admin_contacts.insert(boost::algorithm::to_upper_copy(admin_contacts[i]));
             }
+
+            std::set<std::string> rhs_admin_contacts;
+            for(std::vector<std::string>::size_type i = 0
+                ; i != rhs.admin_contacts.size(); ++i)
+            {
+                rhs_admin_contacts.insert(boost::algorithm::to_upper_copy(rhs.admin_contacts[i]));
+            }
+
+            bool result_admin_contacts = (lhs_admin_contacts == rhs_admin_contacts);
 
             bool result_delete_time = (delete_time.isnull() == rhs.delete_time.isnull());
             if(!delete_time.isnull() && !rhs.delete_time.isnull())

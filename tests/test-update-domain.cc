@@ -496,6 +496,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
  */
 BOOST_FIXTURE_TEST_CASE(info_domain_history_test_call, update_domain_fixture)
 {
+    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     //call update
     {
         Fred::OperationContext ctx;//new connection to rollback on error
@@ -504,7 +505,11 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test_call, update_domain_fixture)
         ctx.commit_transaction();
     }
 
-    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.delete_time.isnull());
+
+
     std::vector<Fred::InfoDomainHistoryData> history_info_data_1 = Fred::InfoDomainHistory(info_data_1.roid, registrar_handle).exec(ctx);
 
     std::cout << " history_info_data_1.size(): " << history_info_data_1.size() << std::endl;
