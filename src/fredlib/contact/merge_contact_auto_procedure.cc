@@ -2,6 +2,7 @@
 #include "merge_contact.h"
 #include "find_contact_duplicates.h"
 #include "poll/create_update_object_poll_message.h"
+#include "poll/create_delete_contact_poll_message.h"
 #include "merge_contact_email_notification_data.h"
 #include "mailer_manager.h"
 #include "mailer.h"
@@ -231,6 +232,7 @@ void create_poll_messages(const MergeContactOutput &_merge_data, Fred::Operation
     {
         Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
     }
+    Fred::Poll::CreateDeleteContactPollMessage(_merge_data.contactid.src_contact_historyid).exec(_ctx);
 }
 
 
