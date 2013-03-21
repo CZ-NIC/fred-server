@@ -54,10 +54,11 @@ namespace Fred
         MergeContactLockedContactId ret;
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.id, oreg.historyid, oreg.roid "
+                std::string("SELECT oreg.id, oreg.historyid, oreg.roid, r.handle"
                 " FROM enum_object_type eot "
                 " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
                 " AND oreg.name = UPPER($1::text) "
+                " JOIN object o ON o.id = oreg.id JOIN registrar r ON r.id = o.clid"
                 " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(src_contact_handle_));
 
@@ -72,14 +73,16 @@ namespace Fred
             ret.src_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
             ret.src_contact_historyid = static_cast<unsigned long long>(lock_res[0][1]);
             ret.src_contact_roid = static_cast<std::string>(lock_res[0][2]);
+            ret.src_contact_sponsoring_registrar = static_cast<std::string>(lock_res[0][3]);
         }
 
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.id, oreg.historyid, oreg.roid "
+                std::string("SELECT oreg.id, oreg.historyid, oreg.roid, r.handle "
                         " FROM enum_object_type eot "
                         " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
                         " AND oreg.name = UPPER($1::text) "
+                        " JOIN object o ON o.id = oreg.id JOIN registrar r ON r.id = o.clid"
                         " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(dst_contact_handle_));
 
@@ -94,6 +97,7 @@ namespace Fred
             ret.dst_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
             ret.dst_contact_historyid = static_cast<unsigned long long>(lock_res[0][1]);
             ret.dst_contact_roid = static_cast<std::string>(lock_res[0][2]);
+            ret.dst_contact_sponsoring_registrar = static_cast<std::string>(lock_res[0][3]);
         }
 
         return ret;
