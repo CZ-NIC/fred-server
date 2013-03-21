@@ -493,7 +493,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
 }
 
 /**
- * test call InfoDomainHistory
+ * test InfoDomainHistory
+ * create and update test domain
+ * compare successive states from info domain with states from info domain history
+ * check next historyid in info domain history
+ * check valid_from and valid_to in info domain history
  */
 BOOST_FIXTURE_TEST_CASE(info_domain_history_test_call, update_domain_fixture)
 {
@@ -518,6 +522,8 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test_call, update_domain_fixture)
     BOOST_CHECK(history_info_data.at(1).history_valid_from < history_info_data.at(1).history_valid_to);
     BOOST_CHECK(history_info_data.at(1).history_valid_to <= history_info_data.at(0).history_valid_from);
     BOOST_CHECK(history_info_data.at(0).history_valid_to.isnull());
+
+    BOOST_CHECK(history_info_data.at(1).crhistoryid == history_info_data.at(1).historyid);
 
 }
 

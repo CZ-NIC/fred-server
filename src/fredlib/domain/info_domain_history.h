@@ -44,6 +44,7 @@ namespace Fred
         std::string roid;//domain identifier
         std::string fqdn;//domain name
         Nullable<boost::posix_time::ptime> delete_time; //domain delete time
+        unsigned long long crhistoryid;//crhistoryid
         unsigned long long historyid;//historyid
         Nullable<unsigned long long> next_historyid; //next historyid
         boost::posix_time::ptime history_valid_from;//history valid from time
