@@ -55,6 +55,7 @@
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/info_domain.h"
 #include "fredlib/domain/info_domain_history.h"
+#include "fredlib/domain/info_domain_compare.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -505,8 +506,13 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test_call, update_domain_fixture)
         ctx.commit_transaction();
     }
 
+    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
 
-    std::vector<Fred::InfoDomainHistoryData> history_info_data_1 = Fred::InfoDomainHistory(info_data_1.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoDomainHistoryData> history_info_data = Fred::InfoDomainHistory(info_data_1.roid, registrar_handle).exec(ctx);
+
+    BOOST_CHECK(history_info_data.at(0) == info_data_2);
+    BOOST_CHECK(history_info_data.at(1) == info_data_1);
+
 }
 
 

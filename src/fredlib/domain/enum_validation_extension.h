@@ -44,6 +44,11 @@ namespace Fred
         : validation_expiration(_validation_expiration)
         , publish(_publish)
         {}
+
+        bool operator==(const ENUMValidationExtension& rhs) const
+        {
+            return (publish == rhs.publish) && (validation_expiration == rhs.validation_expiration);
+        }
     };
 
 }//namespace Fred

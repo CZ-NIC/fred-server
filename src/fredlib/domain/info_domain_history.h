@@ -49,7 +49,7 @@ namespace Fred
         boost::posix_time::ptime history_valid_from;//history valid from time
         Nullable<boost::posix_time::ptime> history_valid_to;//history valid to time, null means open end
         std::string registrant_handle;//domain owner
-        Nullable<std::string> nsset_handle;//nssset might not be set
+        Nullable<std::string> nsset_handle;//nsset might not be set
         Nullable<std::string> keyset_handle;//keyset might not be set
         std::string sponsoring_registrar_handle;//registrar which have right for change
         std::string create_registrar_handle;//registrar which created domain

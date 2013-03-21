@@ -46,7 +46,7 @@ namespace Fred
         std::string roid;//domain identifier
         std::string fqdn;//domain name
         std::string registrant_handle;//domain owner
-        Nullable<std::string> nsset_handle;//nssset might not be set
+        Nullable<std::string> nsset_handle;//nsset might not be set
         Nullable<std::string> keyset_handle;//keyset might not be set
         std::string sponsoring_registrar_handle;//registrar which have right for change
         std::string create_registrar_handle;//registrar which created domain
@@ -123,10 +123,8 @@ namespace Fred
             bool result_enum_domain_validation = (enum_domain_validation.isnull() == rhs.enum_domain_validation.isnull());
             if(!enum_domain_validation.isnull() && !rhs.enum_domain_validation.isnull())
             {
-                result_enum_domain_validation = (ENUMValidationExtension(enum_domain_validation).publish
-                        == ENUMValidationExtension(rhs.enum_domain_validation).publish)
-                && (ENUMValidationExtension(enum_domain_validation).validation_expiration
-                        == ENUMValidationExtension(rhs.enum_domain_validation).validation_expiration);
+                result_enum_domain_validation = (ENUMValidationExtension(enum_domain_validation)
+                    == ENUMValidationExtension(rhs.enum_domain_validation));
             }
 
             std::set<std::string> lhs_admin_contacts;
