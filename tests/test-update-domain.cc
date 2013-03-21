@@ -513,6 +513,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test_call, update_domain_fixture)
     BOOST_CHECK(history_info_data.at(0) == info_data_2);
     BOOST_CHECK(history_info_data.at(1) == info_data_1);
 
+    BOOST_CHECK(history_info_data.at(1).next_historyid == history_info_data.at(0).historyid);
 }
 
 
