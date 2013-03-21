@@ -496,10 +496,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
  * test InfoDomainHistory
  * create and update test domain
  * compare successive states from info domain with states from info domain history
- * check next historyid in info domain history
+ * check initial and next historyid in info domain history
  * check valid_from and valid_to in info domain history
  */
-BOOST_FIXTURE_TEST_CASE(info_domain_history_test_call, update_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
 {
     Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     //call update
