@@ -68,9 +68,9 @@ namespace Fred
         return *this;
     }
 
-    std::vector<InfoDomainHistoryData> InfoDomainHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoDomainHistoryOutput> InfoDomainHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        std::vector<InfoDomainHistoryData> domain_history_info_data;
+        std::vector<InfoDomainHistoryOutput> domain_history_res;
 
         try
         {
@@ -171,72 +171,72 @@ namespace Fred
                     throw IDHEX(errmsg.c_str());
                 }
 
-                domain_history_info_data.reserve(res.size());//alloc
+                domain_history_res.reserve(res.size());//alloc
                 for(Database::Result::size_type i = 0; i < res.size(); ++i)
                 {
                     unsigned long long domain_id = 0;//domain id
-                    InfoDomainHistoryData domain_history_element;
+                    InfoDomainHistoryOutput domain_history_output;
 
                     domain_id = static_cast<unsigned long long>(res[i][0]);//dobr.id
 
-                    domain_history_element.roid = static_cast<std::string>(res[i][1]);//dobr.roid
+                    domain_history_output.info_domain_data.roid = static_cast<std::string>(res[i][1]);//dobr.roid
 
-                    domain_history_element.fqdn = static_cast<std::string>(res[i][2]);//dobr.name
+                    domain_history_output.info_domain_data.fqdn = static_cast<std::string>(res[i][2]);//dobr.name
 
-                    domain_history_element.delete_time = res[i][3].isnull() ? Nullable<boost::posix_time::ptime>()
+                    domain_history_output.info_domain_data.delete_time = res[i][3].isnull() ? Nullable<boost::posix_time::ptime>()
                     : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[i][3])));//dobr.erdate
 
-                    domain_history_element.historyid = static_cast<unsigned long long>(res[i][4]);//oh.historyid
+                    domain_history_output.info_domain_data.historyid = static_cast<unsigned long long>(res[i][4]);//oh.historyid
 
-                    domain_history_element.next_historyid = res[i][6].isnull() ? Nullable<unsigned long long>()
+                    domain_history_output.next_historyid = res[i][6].isnull() ? Nullable<unsigned long long>()
                     : Nullable<unsigned long long>(static_cast<unsigned long long>(res[i][6]));//h.next
 
-                    domain_history_element.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(res[i][7]));//h.valid_from
+                    domain_history_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(res[i][7]));//h.valid_from
 
-                    domain_history_element.history_valid_to = res[i][8].isnull() ? Nullable<boost::posix_time::ptime>()
+                    domain_history_output.history_valid_to = res[i][8].isnull() ? Nullable<boost::posix_time::ptime>()
                     : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[i][8])));//h.valid_to
 
-                    domain_history_element.registrant_handle = static_cast<std::string>(res[i][10]);//cor.name
+                    domain_history_output.info_domain_data.registrant_handle = static_cast<std::string>(res[i][10]);//cor.name
 
-                    domain_history_element.nsset_handle = res[i][12].isnull() ? Nullable<std::string>()
+                    domain_history_output.info_domain_data.nsset_handle = res[i][12].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(res[i][12]));//nobr.name
 
-                    domain_history_element.nsset_handle = res[i][14].isnull() ? Nullable<std::string>()
+                    domain_history_output.info_domain_data.nsset_handle = res[i][14].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(res[i][14]));//kobr.name
 
-                    domain_history_element.sponsoring_registrar_handle = static_cast<std::string>(res[i][16]);//clr.handle
+                    domain_history_output.info_domain_data.sponsoring_registrar_handle = static_cast<std::string>(res[i][16]);//clr.handle
 
-                    domain_history_element.create_registrar_handle = static_cast<std::string>(res[i][18]);//crr.handle
+                    domain_history_output.info_domain_data.create_registrar_handle = static_cast<std::string>(res[i][18]);//crr.handle
 
-                    domain_history_element.update_registrar_handle = res[i][20].isnull() ? Nullable<std::string>()
+                    domain_history_output.info_domain_data.update_registrar_handle = res[i][20].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(res[i][20]));//upr.handle
 
-                    domain_history_element.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[i][21]));//dobr.crdate
+                    domain_history_output.info_domain_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[i][21]));//dobr.crdate
 
-                    domain_history_element.transfer_time = res[i][22].isnull() ? Nullable<boost::posix_time::ptime>()
+                    domain_history_output.info_domain_data.transfer_time = res[i][22].isnull() ? Nullable<boost::posix_time::ptime>()
                     : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[i][22])));//oh.trdate
 
-                    domain_history_element.update_time = res[i][23].isnull() ? Nullable<boost::posix_time::ptime>()
+                    domain_history_output.info_domain_data.update_time = res[i][23].isnull() ? Nullable<boost::posix_time::ptime>()
                     : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[i][23])));//oh.update
 
-                    domain_history_element.expiration_date = res[i][24].isnull() ? boost::gregorian::date()
+                    domain_history_output.info_domain_data.expiration_date = res[i][24].isnull() ? boost::gregorian::date()
                     : boost::gregorian::from_string(static_cast<std::string>(res[i][24]));//dh.exdate
 
-                    domain_history_element.authinfopw = static_cast<std::string>(res[i][25]);//oh.authinfopw
+                    domain_history_output.info_domain_data.authinfopw = static_cast<std::string>(res[i][25]);//oh.authinfopw
 
-                    domain_history_element.enum_domain_validation = (res[i][26].isnull() || res[i][27].isnull())
+                    domain_history_output.info_domain_data.enum_domain_validation = (res[i][26].isnull() || res[i][27].isnull())
                     ? Nullable<ENUMValidationExtension>()
                     : Nullable<ENUMValidationExtension>(ENUMValidationExtension(
                         boost::gregorian::from_string(static_cast<std::string>(res[i][26]))
                         ,static_cast<bool>(res[i][27])));
 
-                    domain_history_element.outzone_time = res[i][28].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                    domain_history_output.info_domain_data.outzone_time = res[i][28].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
                     : boost::posix_time::time_from_string(static_cast<std::string>(res[i][28]));//outzonedate
 
-                    domain_history_element.cancel_time = res[i][29].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                    domain_history_output.info_domain_data.cancel_time = res[i][29].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
                     : boost::posix_time::time_from_string(static_cast<std::string>(res[i][29]));//canceldate
 
-                    domain_history_element.crhistoryid = static_cast<unsigned long long>(res[i][30]);//dobr.crhistoryid
+                    domain_history_output.info_domain_data.crhistoryid = static_cast<unsigned long long>(res[i][30]);//dobr.crhistoryid
 
                     //list of historic administrative contacts
                     Database::Result admin_contact_res = ctx.get_conn().exec_params(
@@ -248,15 +248,15 @@ namespace Fred
                         " AND dcmh.historyid = $2::bigint "
                         " AND dcmh.role = 1 "// admin contact
                         " ORDER BY dcmh.historyid , cobr.name "
-                    , Database::query_param_list(domain_id)(domain_history_element.historyid));
+                    , Database::query_param_list(domain_id)(domain_history_output.info_domain_data.historyid));
 
-                    domain_history_element.admin_contacts.reserve(admin_contact_res.size());
+                    domain_history_output.info_domain_data.admin_contacts.reserve(admin_contact_res.size());
                     for(Database::Result::size_type j = 0; j < admin_contact_res.size(); ++j)
                     {
-                        domain_history_element.admin_contacts.push_back(static_cast<std::string>(admin_contact_res[j][1]));
+                        domain_history_output.info_domain_data.admin_contacts.push_back(static_cast<std::string>(admin_contact_res[j][1]));
                     }
 
-                    domain_history_info_data.push_back(domain_history_element);
+                    domain_history_res.push_back(domain_history_output);
                 }//for res
             }//if roid
         }//try
@@ -264,7 +264,7 @@ namespace Fred
         {
             handleOperationExceptions<InfoDomainHistoryException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
         }
-        return domain_history_info_data;
+        return domain_history_res;
     }//InfoDomain::exec
 
 }//namespace Fred

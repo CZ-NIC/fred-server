@@ -316,7 +316,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
 
-    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
 
     try
     {
@@ -332,9 +332,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:registrar")->second).compare(bad_registrar_handle) == 0);
     }
 
-    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.delete_time.isnull());
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
 }
 
@@ -345,7 +345,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
 {
     std::string bad_registrant_handle = registrant_contact_handle+xmark;
 
-    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
 
     try
     {
@@ -363,9 +363,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:registrant")->second).compare(bad_registrant_handle) == 0);
     }
 
-    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.delete_time.isnull());
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
 }
 
@@ -376,7 +376,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
 {
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
-    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
 
     try
     {
@@ -394,9 +394,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:admin contact")->second).compare(bad_admin_contact_handle) == 0);
     }
 
-    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.delete_time.isnull());
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
 }
 
@@ -405,7 +405,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fixture)
 {
-    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
 
     try
     {
@@ -424,9 +424,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fix
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("already set:admin contact")->second).compare(admin_contact2_handle) == 0);
     }
 
-    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.delete_time.isnull());
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
 }
 
@@ -437,7 +437,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
 {
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
-    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
 
     try
     {
@@ -455,9 +455,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:admin contact")->second).compare(bad_admin_contact_handle) == 0);
     }
 
-    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.delete_time.isnull());
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
 }
 
@@ -468,7 +468,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
 {
     std::string bad_admin_contact_handle = registrant_contact_handle;
 
-    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
 
     try
     {
@@ -486,9 +486,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:admin contact")->second).compare(bad_admin_contact_handle) == 0);
     }
 
-    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.delete_time.isnull());
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
 }
 
@@ -501,7 +501,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
  */
 BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
 {
-    Fred::InfoDomainData info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     //call update
     {
         Fred::OperationContext ctx;//new connection to rollback on error
@@ -510,20 +510,20 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
         ctx.commit_transaction();
     }
 
-    Fred::InfoDomainData info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
 
-    std::vector<Fred::InfoDomainHistoryData> history_info_data = Fred::InfoDomainHistory(info_data_1.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoDomainHistoryOutput> history_info_data = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
 
     BOOST_CHECK(history_info_data.at(0) == info_data_2);
     BOOST_CHECK(history_info_data.at(1) == info_data_1);
 
-    BOOST_CHECK(history_info_data.at(1).next_historyid == history_info_data.at(0).historyid);
+    BOOST_CHECK(history_info_data.at(1).next_historyid == history_info_data.at(0).info_domain_data.historyid);
 
     BOOST_CHECK(history_info_data.at(1).history_valid_from < history_info_data.at(1).history_valid_to);
     BOOST_CHECK(history_info_data.at(1).history_valid_to <= history_info_data.at(0).history_valid_from);
     BOOST_CHECK(history_info_data.at(0).history_valid_to.isnull());
 
-    BOOST_CHECK(history_info_data.at(1).crhistoryid == history_info_data.at(1).historyid);
+    BOOST_CHECK(history_info_data.at(1).info_domain_data.crhistoryid == history_info_data.at(1).info_domain_data.historyid);
 
 }
 

@@ -727,11 +727,14 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/opcontext.h \
 		src/fredlib/domain/update_domain.h \
 		src/fredlib/domain/update_domain.cc \
+		src/fredlib/domain/info_domain_data.h \
+		src/fredlib/domain/info_domain_data.cc \
 		src/fredlib/domain/info_domain.h \
 		src/fredlib/domain/info_domain.cc \
 		src/fredlib/domain/info_domain_history.h \
 		src/fredlib/domain/info_domain_history.cc \
 		src/fredlib/domain/info_domain_compare.h \
+		src/fredlib/domain/info_domain_compare.cc \
 		src/fredlib/domain/enum_validation_extension.h \
 		src/fredlib/nsset/update_nsset.h \
 		src/fredlib/nsset/update_nsset.cc \

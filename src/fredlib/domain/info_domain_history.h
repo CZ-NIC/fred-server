@@ -34,39 +34,20 @@
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
-#include "fredlib/domain/enum_validation_extension.h"
+#include "fredlib/domain/info_domain_data.h"
 
 namespace Fred
 {
 
-    struct InfoDomainHistoryData
+    struct InfoDomainHistoryOutput
     {
-        std::string roid;//domain identifier
-        std::string fqdn;//domain name
-        Nullable<boost::posix_time::ptime> delete_time; //domain delete time
-        unsigned long long crhistoryid;//crhistoryid
-        unsigned long long historyid;//historyid
+        InfoDomainData info_domain_data;//common info domain data
+
         Nullable<unsigned long long> next_historyid; //next historyid
         boost::posix_time::ptime history_valid_from;//history valid from time
         Nullable<boost::posix_time::ptime> history_valid_to;//history valid to time, null means open end
-        std::string registrant_handle;//domain owner
-        Nullable<std::string> nsset_handle;//nsset might not be set
-        Nullable<std::string> keyset_handle;//keyset might not be set
-        std::string sponsoring_registrar_handle;//registrar which have right for change
-        std::string create_registrar_handle;//registrar which created domain
-        Nullable<std::string> update_registrar_handle;//registrar which last time changed domain
-        boost::posix_time::ptime creation_time;//time of domain creation
-        Nullable<boost::posix_time::ptime> update_time; //last update time
-        Nullable<boost::posix_time::ptime> transfer_time; //last transfer time
-        boost::gregorian::date expiration_date; //domain expiration date
-        std::string authinfopw;//password for domain transfer
-        Nullable<ENUMValidationExtension > enum_domain_validation;//enum domain validation info
-        boost::posix_time::ptime outzone_time; //domain outzone time
-        boost::posix_time::ptime cancel_time; //domain cancel time
-        std::vector<std::string> admin_contacts;//list of administrative contacts
 
-        InfoDomainHistoryData()
-        : historyid(0)
+        InfoDomainHistoryOutput()
         {}
     };
 
@@ -83,7 +64,7 @@ namespace Fred
 
         InfoDomainHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);//set history timestamp
         InfoDomainHistory& set_lock(bool lock = true);//set lock object_registry row for domain
-        std::vector<InfoDomainHistoryData> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        std::vector<InfoDomainHistoryOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
     };//class InfoDomainHistory
 
 //exception impl
