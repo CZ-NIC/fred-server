@@ -60,9 +60,16 @@ namespace Fred
         unsigned long long historyid;//last historyid
         unsigned long long crhistoryid;//first historyid
 
+    private:
+        bool print_diff_;
+    public:
+
         InfoDomainData();
         bool operator==(const InfoDomainData& rhs) const;
         bool operator!=(const InfoDomainData& rhs) const;
+
+        void set_diff_print(bool print_diff = true);
+
     };
 
 }//namespace Fred
