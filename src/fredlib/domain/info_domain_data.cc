@@ -57,7 +57,7 @@ namespace Fred
         && (authinfopw.compare(rhs.authinfopw) == 0)
         && (outzone_time == rhs.outzone_time)
         && (cancel_time == rhs.cancel_time)
-        //&& (historyid == rhs.historyid)
+        && (historyid == rhs.historyid)
         && (crhistoryid == rhs.crhistoryid)
         ;
 
