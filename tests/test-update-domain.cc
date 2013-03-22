@@ -108,68 +108,95 @@ BOOST_AUTO_TEST_CASE(update_domain_exception)
         , Fred::OperationExceptionBase);
 }
 
-/**
- * test UpdateDomain
- * test UpdateDomain construction and methods calls with precreated data
- * calls in test shouldn't throw
- */
-BOOST_AUTO_TEST_CASE(update_domain)
+struct update_domain_fixture
 {
     Fred::OperationContext ctx;
+    std::string registrar_handle;
+    std::string xmark;
+    std::string admin_contact2_handle;
+    std::string registrant_contact_handle;
+    std::string test_domain_handle;
 
-    std::string registrar_handle = static_cast<std::string>(
-            ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
-    BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
+    update_domain_fixture()
+    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
+    , xmark(RandomDataGenerator().xnumstring(6))
+    , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
+    , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
+    , test_domain_handle ( std::string("fred")+xmark+".cz")
+    {
+        BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
-
-    std::string xmark = RandomDataGenerator().xnumstring(6);
-
-    std::string admin_contact_handle = std::string("TEST-ADMIN-CONTACT-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact_handle,registrar_handle)
-        .set_name(std::string("TEST-ADMIN-CONTACT NAME")+xmark)
-        .set_disclosename(true)
-        .set_street1(std::string("STR1")+xmark)
-        .set_city("Praha").set_postalcode("11150").set_country("CZ")
-        .set_discloseaddress(true)
-        .exec(ctx);
-
-    std::string admin_contact1_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact1_handle,registrar_handle)
-        .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
-        .set_disclosename(true)
-        .set_street1(std::string("STR1")+xmark)
-        .set_city("Praha").set_postalcode("11150").set_country("CZ")
-        .set_discloseaddress(true)
-        .exec(ctx);
-
-    std::string admin_contact2_handle = std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact2_handle,registrar_handle)
-        .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
-        .set_disclosename(true)
-        .set_street1(std::string("STR1")+xmark)
-        .set_city("Praha").set_postalcode("11150").set_country("CZ")
-        .set_discloseaddress(true)
-        .exec(ctx);
-
-
-    std::string registrant_contact_handle = std::string("TEST-REGISTRANT-CONTACT-HANDLE")+xmark;
-    Fred::CreateContact(registrant_contact_handle,registrar_handle)
-            .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
+        Fred::CreateContact(admin_contact2_handle,registrar_handle)
+            .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
             .set_disclosename(true)
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
             .exec(ctx);
 
-    std::string test_domain_handle = std::string("fred")+xmark+".cz";
-    Fred::CreateDomain(
-            test_domain_handle //const std::string& fqdn
-            , registrar_handle //const std::string& registrar
-            , registrant_contact_handle //registrant
-            )
-    .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
-    .exec(ctx);
+        Fred::CreateContact(registrant_contact_handle,registrar_handle)
+                .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
+                .set_disclosename(true)
+                .set_street1(std::string("STR1")+xmark)
+                .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                .set_discloseaddress(true)
+                .exec(ctx);
 
+        Fred::CreateDomain(
+                test_domain_handle //const std::string& fqdn
+                , registrar_handle //const std::string& registrar
+                , registrant_contact_handle //registrant
+                )
+        .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+        .exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+    ~update_domain_fixture()
+    {}
+};
+
+
+struct update_domain_admin_fixture
+: virtual update_domain_fixture
+{
+    std::string admin_contact_handle;
+    std::string admin_contact1_handle;
+
+    update_domain_admin_fixture()
+    : admin_contact_handle (std::string("TEST-ADMIN-CONTACT-HANDLE")+xmark)
+    , admin_contact1_handle (std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark)
+    {
+
+        Fred::CreateContact(admin_contact_handle,registrar_handle)
+            .set_name(std::string("TEST-ADMIN-CONTACT NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        Fred::CreateContact(admin_contact1_handle,registrar_handle)
+            .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~update_domain_admin_fixture(){}
+};
+
+/**
+ * test UpdateDomain
+ * test UpdateDomain construction and methods calls with precreated data
+ * calls in test shouldn't throw
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_fixture )
+{
     //call update using big ctor
     Fred::UpdateDomain(test_domain_handle//fqdn
             , registrar_handle//registrar
@@ -237,53 +264,6 @@ BOOST_AUTO_TEST_CASE(update_domain)
 }//update_domain
 
 
-struct update_domain_fixture
-{
-    Fred::OperationContext ctx;
-    std::string registrar_handle;
-    std::string xmark;
-    std::string admin_contact2_handle;
-    std::string registrant_contact_handle;
-    std::string test_domain_handle;
-
-    update_domain_fixture()
-    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
-    , xmark(RandomDataGenerator().xnumstring(6))
-    , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
-    , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
-    , test_domain_handle ( std::string("fred")+xmark+".cz")
-    {
-        BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
-
-        Fred::CreateContact(admin_contact2_handle,registrar_handle)
-            .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
-            .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
-            .set_discloseaddress(true)
-            .exec(ctx);
-
-        Fred::CreateContact(registrant_contact_handle,registrar_handle)
-                .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
-                .set_disclosename(true)
-                .set_street1(std::string("STR1")+xmark)
-                .set_city("Praha").set_postalcode("11150").set_country("CZ")
-                .set_discloseaddress(true)
-                .exec(ctx);
-
-        Fred::CreateDomain(
-                test_domain_handle //const std::string& fqdn
-                , registrar_handle //const std::string& registrar
-                , registrant_contact_handle //registrant
-                )
-        .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
-        .exec(ctx);
-
-        ctx.commit_transaction();//commit fixture
-    }
-    ~update_domain_fixture()
-    {}
-};
 
 /**
  * test UpdateDomain with wrong fqdn
