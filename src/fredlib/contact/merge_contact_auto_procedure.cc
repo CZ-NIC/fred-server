@@ -2,6 +2,7 @@
 #include "merge_contact.h"
 #include "find_contact_duplicates.h"
 #include "poll/create_update_object_poll_message.h"
+#include "poll/create_delete_contact_poll_message.h"
 #include "merge_contact_email_notification_data.h"
 #include "mailer_manager.h"
 #include "mailer.h"
@@ -231,6 +232,7 @@ void create_poll_messages(const MergeContactOutput &_merge_data, Fred::Operation
     {
         Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
     }
+    Fred::Poll::CreateDeleteContactPollMessage(_merge_data.contactid.src_contact_historyid).exec(_ctx);
 }
 
 
@@ -267,17 +269,20 @@ struct MergeContactOperationSummary
         unsigned long long update_domain;
         unsigned long long update_nsset;
         unsigned long long update_keyset;
+        unsigned long long delete_contact;
 
         OperationCount()
             : update_domain(0),
               update_nsset(0),
-              update_keyset(0)
+              update_keyset(0),
+              delete_contact(0)
+
         {
         };
 
         unsigned long long get_total() const
         {
-            return update_domain + update_nsset + update_keyset;
+            return update_domain + update_nsset + update_keyset + delete_contact;
         }
     };
     typedef std::map<std::string, OperationCount> RegistrarOperationMap;
@@ -305,15 +310,16 @@ struct MergeContactOperationSummary
         {
             ops_by_registrar[i->sponsoring_registrar].update_keyset += 1;
         }
+        ops_by_registrar[_merge_data.contactid.src_contact_sponsoring_registrar].delete_contact += 1;
     }
 
 
     std::string format(OutputIndenter _indenter)
     {
         std::stringstream output;
-        std::string fmt_str("%1% %20t%2% %35t%3% %50t%4% %65t%5%");
+        std::string fmt_str("%1% %20t%2% %35t%3% %50t%4% %65t%5% %80t%6%");
         std::string header = str(boost::format(fmt_str)
-                % "registrar" % "total" % "update_domain" % "update_nsset" % "update_keyset");
+                % "registrar" % "total" % "update_domain" % "update_nsset" % "update_keyset" % "delete_contact");
 
         output << _indenter << std::string(header.length(), '-') << std::endl;
         output << _indenter <<  header << std::endl;
@@ -323,7 +329,8 @@ struct MergeContactOperationSummary
                 i != ops_by_registrar.end(); ++i)
         {
             output << _indenter << str(boost::format(fmt_str) % i->first % i->second.get_total()
-                    % i->second.update_domain % i->second.update_nsset % i->second.update_keyset) << std::endl;
+                    % i->second.update_domain % i->second.update_nsset % i->second.update_keyset
+                    % i->second.delete_contact) << std::endl;
         }
         output << std::endl;
         return output.str();

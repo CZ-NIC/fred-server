@@ -1647,16 +1647,17 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
       dynamic_cast<Fred::Poll::MessageEvent *>(m.get());
   if (me) {
     switch (m->getType()) {
+      case Fred::Poll::MT_IDLE_DELETE_CONTACT:
       case Fred::Poll::MT_DELETE_CONTACT:
         type = ccReg::polltype_delete_contact;
         break;
-      case Fred::Poll::MT_DELETE_NSSET:
+      case Fred::Poll::MT_IDLE_DELETE_NSSET:
         type = ccReg::polltype_delete_nsset;
         break;
-      case Fred::Poll::MT_DELETE_DOMAIN:
+      case Fred::Poll::MT_IDLE_DELETE_DOMAIN:
         type = ccReg::polltype_delete_domain;
         break;
-      case Fred::Poll::MT_DELETE_KEYSET:
+      case Fred::Poll::MT_IDLE_DELETE_KEYSET:
         type = ccReg::polltype_delete_keyset;
         break;
       case Fred::Poll::MT_IMP_EXPIRATION:

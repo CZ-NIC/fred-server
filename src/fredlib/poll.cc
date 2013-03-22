@@ -444,6 +444,7 @@ public:
     bool hasStateChange= false;
     bool hasRequestFeeInfo = false;
     bool hasUpdateObject = false;
+    bool hasDeleteObject = false;
     std::ostringstream sql;
     clear();
     fillTempTable(true);
@@ -483,10 +484,10 @@ public:
           );
           hasAction = true;
           break;
-        case MT_DELETE_CONTACT:
-        case MT_DELETE_NSSET:
-        case MT_DELETE_DOMAIN:
-        case MT_DELETE_KEYSET:
+        case MT_IDLE_DELETE_CONTACT:
+        case MT_IDLE_DELETE_NSSET:
+        case MT_IDLE_DELETE_DOMAIN:
+        case MT_IDLE_DELETE_KEYSET:
         case MT_IMP_EXPIRATION:
         case MT_EXPIRATION:
         case MT_IMP_VALIDATION:
@@ -516,6 +517,14 @@ public:
               MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
           );
           hasUpdateObject = true;
+          break;
+        case MT_DELETE_CONTACT:
+          o = new MessageEventImpl(
+              type,STR_TO_ID(db->GetFieldValue(i,1)),
+              STR_TO_ID(db->GetFieldValue(i,2)),
+              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
+          );
+          hasDeleteObject = true;
           break;
         default:
           o = new MessageImpl(
@@ -663,10 +672,10 @@ public:
           case MT_IMP_EXPIRATION:
           case MT_EXPIRATION:
           case MT_OUTZONE:
-          case MT_DELETE_CONTACT:
-          case MT_DELETE_NSSET:
-          case MT_DELETE_DOMAIN:
-          case MT_DELETE_KEYSET:
+          case MT_IDLE_DELETE_CONTACT:
+          case MT_IDLE_DELETE_NSSET:
+          case MT_IDLE_DELETE_DOMAIN:
+          case MT_IDLE_DELETE_KEYSET:
             d = MAKE_DATE(i, 1);
             break;
           default:
@@ -730,6 +739,27 @@ public:
 
         m->setData(Util::make_svtrid(req_id));
       }
+    }
+    if (hasDeleteObject)
+    {
+        sql.str("");
+        sql << "SELECT tmp.id, oreg.erdate, oreg.name"
+            << " FROM " << getTempTableName() << " tmp"
+            << " JOIN poll_eppaction pea ON pea.msgid = tmp.id"
+            << " JOIN object_registry oreg ON oreg.historyid = pea.objid"
+            << " ORDER BY tmp.id";
+        if (!db->ExecSelect(sql.str().c_str()))
+            throw SQL_ERROR();
+        resetIDSequence();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
+        {
+            MessageEventImpl *m = dynamic_cast<MessageEventImpl *>(
+                    findIDSequence(STR_TO_ID(db->GetFieldValue(i, 0))));
+            if (!m) {
+               throw SQL_ERROR();
+            }
+            m->setData(MAKE_DATE(i, 1), db->GetFieldValue(i, 2));
+        }
     }
   }
   virtual const char *getTempTableName() const {
@@ -853,13 +883,13 @@ public:
               "      WHEN os.state_id=13 THEN 12 "
               // MT_OUTZONE
               "      WHEN os.state_id=20 THEN 13 "
-              // MT_DELETE_CONTACT
+              // MT_IDLE_DELETE_CONTACT
               "      WHEN os.state_id=17 AND ob.type=1 THEN 6 "
-              // MT_DELETE_NSSET
+              // MT_IDLE_DELETE_NSSET
               "      WHEN os.state_id=17 AND ob.type=2 THEN 7 "
-              // MT_DELETE_DOMAIN
+              // MT_IDLE_DELETE_DOMAIN
               "      WHEN os.state_id=17 AND ob.type=3 THEN 8 "
-              // MT_DELETE_DOMAIN
+              // MT_IDLE_DELETE_DOMAIN
               "      WHEN os.state_id=17 AND ob.type=4 THEN 15 END ";
     std::stringstream insertSelect;
     insertSelect << "SELECT "

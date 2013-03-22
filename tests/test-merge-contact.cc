@@ -187,9 +187,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                     0 //unsigned long long _src_contact_id
                     , 0 // unsigned long long _src_contact_historyid
                     , "TEST_CONTACT1" // const std::string& _src_contact_roid
+                    , "REG-SPONSORING"
                     , 0 // unsigned long long _dst_contact_id
                     , 0 // unsigned long long _dst_contact_historyid
                     , "TEST_CONTACT2" //const std::string& _dst_contact_roid
+                    , "REG-SPONSORING"
                 )
                 , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
                     (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
@@ -216,9 +218,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                       0 //unsigned long long _src_contact_id
                       , 0 // unsigned long long _src_contact_historyid
                       , "TEST_CONTACT3" // const std::string& _src_contact_roid
+                      , "REG-SPONSORING"
                       , 0 // unsigned long long _dst_contact_id
                       , 0 // unsigned long long _dst_contact_historyid
                       , "TEST_CONTACT2" //const std::string& _dst_contact_roid
+                      , "REG-SPONSORING"
               )
               , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
                   (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
@@ -245,9 +249,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                       0 //unsigned long long _src_contact_id
                       , 0 // unsigned long long _src_contact_historyid
                       , "TEST_CONTACT2" // const std::string& _src_contact_roid
+                      , "REG-SPONSORING"
                       , 0 // unsigned long long _dst_contact_id
                       , 0 // unsigned long long _dst_contact_historyid
                       , "TEST_CONTACT4" //const std::string& _dst_contact_roid
+                      , "REG-SPONSORING"
               )
               , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
                   (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
@@ -276,9 +282,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                       0 //unsigned long long _src_contact_id
                       , 0 // unsigned long long _src_contact_historyid
                       , "TEST_CONTACT1" // const std::string& _src_contact_roid
+                      , "REG-SPONSORING"
                       , 0 // unsigned long long _dst_contact_id
                       , 0 // unsigned long long _dst_contact_historyid
                       , "TEST_CONTACT5" //const std::string& _dst_contact_roid
+                      , "REG-SPONSORING"
               )
               , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
                   (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
@@ -306,9 +314,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                   0 //unsigned long long _src_contact_id
                   , 0 // unsigned long long _src_contact_historyid
                   , "TEST_CONTACT5" // const std::string& _src_contact_roid
+                  , "REG-SPONSORING"
                   , 0 // unsigned long long _dst_contact_id
                   , 0 // unsigned long long _dst_contact_historyid
                   , "TEST_CONTACT4" //const std::string& _dst_contact_roid
+                  , "REG-SPONSORING"
               )
               , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
                   (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
@@ -359,9 +369,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
                             0 //unsigned long long _src_contact_id
                             , 0 // unsigned long long _src_contact_historyid
                             , "TEST_CONTACT4" // const std::string& _src_contact_roid
+                            , "REG-SPONSORING"
                             , 0 // unsigned long long _dst_contact_id
                             , 0 // unsigned long long _dst_contact_historyid
                             , "TEST_CONTACT4" //const std::string& _dst_contact_roid
+                            , "REG-SPONSORING"
                     )
                     , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
                         (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
@@ -421,9 +433,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_notification_email_addr)
                         0 //unsigned long long _src_contact_id
                         , 0 // unsigned long long _src_contact_historyid
                         , "TEST_CONTACT1_ROID" // const std::string& _src_contact_roid
+                        , registrar_handle
                         , 0 // unsigned long long _dst_contact_id
                         , 0 // unsigned long long _dst_contact_historyid
                         , dst_contact_roid //const std::string& _dst_contact_roid
+                        , registrar_handle
                 )
                 , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
                     (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"

@@ -148,29 +148,37 @@ namespace Fred
         unsigned long long src_contact_id;
         unsigned long long src_contact_historyid;
         std::string src_contact_roid;
+        std::string src_contact_sponsoring_registrar;
         unsigned long long dst_contact_id;
         unsigned long long dst_contact_historyid;
         std::string dst_contact_roid;
+        std::string dst_contact_sponsoring_registrar;
         MergeContactLockedContactId()
         : src_contact_id(0)
         , src_contact_historyid(0)
+        , src_contact_sponsoring_registrar()
         , dst_contact_id(0)
         , dst_contact_historyid(0)
+        , dst_contact_sponsoring_registrar()
         {}
         MergeContactLockedContactId(
                 unsigned long long _src_contact_id
                 , unsigned long long _src_contact_historyid
                 , const std::string& _src_contact_roid
+                , const std::string& _src_contact_sponsoring_registrar
                 , unsigned long long _dst_contact_id
                 , unsigned long long _dst_contact_historyid
                 , const std::string& _dst_contact_roid
+                , const std::string& _dst_contact_sponsoring_registrar
                 )
         : src_contact_id(_src_contact_id)
         , src_contact_historyid(_src_contact_historyid)
         , src_contact_roid(_src_contact_roid)
+        , src_contact_sponsoring_registrar(_src_contact_sponsoring_registrar)
         , dst_contact_id(_dst_contact_id)
         , dst_contact_historyid(_dst_contact_historyid)
         , dst_contact_roid(_dst_contact_roid)
+        , dst_contact_sponsoring_registrar(_dst_contact_sponsoring_registrar)
         {}
     };
 
