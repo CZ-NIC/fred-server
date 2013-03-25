@@ -201,7 +201,7 @@ namespace Fred
                     domain_history_output.info_domain_data.nsset_handle = res[i][12].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(res[i][12]));//nobr.name
 
-                    domain_history_output.info_domain_data.nsset_handle = res[i][14].isnull() ? Nullable<std::string>()
+                    domain_history_output.info_domain_data.keyset_handle = res[i][14].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(res[i][14]));//kobr.name
 
                     domain_history_output.info_domain_data.sponsoring_registrar_handle = static_cast<std::string>(res[i][16]);//clr.handle
