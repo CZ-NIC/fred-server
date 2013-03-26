@@ -220,7 +220,6 @@ Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contac
     data.handle = corba_unwrap_string(_contact.username);
     data.organization = corba_unwrap_nullable_string(_contact.organization);
     data.vat = corba_unwrap_nullable_string(_contact.vat_reg_num);
-    data.auth_info = corba_unwrap_normalize_nullable_string(_contact.auth_info);
     data.disclosename = true;
     data.discloseorganization = true;
     data.discloseaddress = corba_unwrap_nullable_boolean(_contact.disclose_address, true);
@@ -249,7 +248,6 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
     data->organization = corba_wrap_nullable_string(_contact.organization);
     data->vat_reg_num  = corba_wrap_nullable_string(_contact.vat);
     data->ssn_type     = corba_wrap_nullable_string(_contact.ssntype);
-    data->auth_info    = corba_wrap_nullable_string(_contact.auth_info);
 
     std::string type = static_cast<std::string>(_contact.ssntype);
     data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(_contact.ssn) : 0;

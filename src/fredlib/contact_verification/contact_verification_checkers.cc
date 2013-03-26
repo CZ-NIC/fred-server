@@ -73,29 +73,6 @@ bool contact_checker_fax_format(const Contact &_data, FieldErrorMap &_errors)
 }
 
 
-bool contact_checker_auth_info(const Contact &_data
-        , FieldErrorMap &_errors)
-{
-    bool result = true;
-    if (_data.auth_info.isnull()
-            || boost::algorithm::trim_copy(
-                    static_cast<std::string>(_data.auth_info)).empty())
-    {
-        _errors[field_auth_info] = REQUIRED;
-        result = false;
-    }
-    else if (static_cast<std::string>(_data.auth_info).length()
-                > 16 //normalizedString max length
-            )
-    {
-        _errors[field_auth_info] = INVALID;
-        result = false;
-    }
-
-    return result;
-}
-
-
 bool contact_checker_phone_required(const Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
