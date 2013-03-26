@@ -962,7 +962,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_17.at(0).info_domain_data.crhistoryid == info_data_17.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
-    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_logd_request_id(0u).exec(ctx);
+    Fred::UpdateDomain(test_domain_handle, registrar_handle).set_logd_request_id(3).exec(ctx);
 
 
     Fred::InfoDomainOutput info_data_18 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -982,7 +982,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
 
     //check changes made by last update
     BOOST_CHECK(info_data_17_with_changes == info_data_18);
-    BOOST_CHECK(history_info_data_18.at(0).logd_request_id == 0);
+    BOOST_CHECK(history_info_data_18.at(0).logd_request_id == 3);
 
     //check info domain history against info domain
     BOOST_CHECK(history_info_data_18.at(0) == info_data_18);
