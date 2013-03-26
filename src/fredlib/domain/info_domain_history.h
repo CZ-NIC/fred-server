@@ -46,6 +46,7 @@ namespace Fred
         Nullable<unsigned long long> next_historyid; //next historyid
         boost::posix_time::ptime history_valid_from;//history valid from time
         Nullable<boost::posix_time::ptime> history_valid_to;//history valid to time, null means open end
+        Nullable<unsigned long long> logd_request_id; //logd.request_id
 
         InfoDomainHistoryOutput()
         {}

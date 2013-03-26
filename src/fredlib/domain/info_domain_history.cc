@@ -140,6 +140,7 @@ namespace Fred
                 " + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) "
                 " AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate "
                 " , dobr.crhistoryid " //first historyid 30
+                " , h.request_id " //logd request_id 31
                 " FROM object_registry dobr "
                 " JOIN object_history oh ON oh.id = dobr.id "
                 " JOIN domain_history dh ON dh.historyid = oh.historyid "
@@ -237,6 +238,9 @@ namespace Fred
                     : boost::posix_time::time_from_string(static_cast<std::string>(res[i][29]));//canceldate
 
                     domain_history_output.info_domain_data.crhistoryid = static_cast<unsigned long long>(res[i][30]);//dobr.crhistoryid
+
+                    domain_history_output.logd_request_id = res[i][31].isnull() ? Nullable<unsigned long long>()
+                        : Nullable<unsigned long long>(static_cast<unsigned long long>(res[i][31]));
 
                     //list of historic administrative contacts
                     Database::Result admin_contact_res = ctx.get_conn().exec_params(
