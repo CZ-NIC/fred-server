@@ -982,6 +982,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
 
     //check changes made by last update
     BOOST_CHECK(info_data_17_with_changes == info_data_18);
+    BOOST_CHECK(history_info_data_18.at(0).logd_request_id == 0);
 
     //check info domain history against info domain
     BOOST_CHECK(history_info_data_18.at(0) == info_data_18);
@@ -1014,7 +1015,6 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //commit db transaction
     ctx.commit_transaction();
 
-    //TODO check result of updates
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "SELECT o.authinfopw = $1::text "
         //" AND "
