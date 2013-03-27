@@ -53,6 +53,7 @@
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
+#include "fredlib/nsset/info_nsset.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -82,6 +83,47 @@ BOOST_AUTO_TEST_SUITE(TestUpdateNsset)
 
 const std::string server_name = "test-update-nsset";
 
+/**
+ * test call InfoNsset
+*/
+
+BOOST_AUTO_TEST_CASE(info_nsset)
+{
+    std::string registrar_handle = "REG-FRED_A";
+    Fred::OperationContext ctx;
+    std::string xmark = RandomDataGenerator().xnumstring(6);
+
+    std::string admin_contact2_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
+    Fred::CreateContact(admin_contact2_handle,registrar_handle)
+        .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .exec(ctx);
+
+    std::string admin_contact3_handle = std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark;
+    Fred::CreateContact(admin_contact3_handle,registrar_handle)
+        .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
+        .set_disclosename(true)
+        .set_street1(std::string("STR1")+xmark)
+        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        .set_discloseaddress(true)
+        .exec(ctx);
+
+    std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
+    Fred::CreateNsset(test_nsset_handle, registrar_handle)
+        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+            )
+            .exec(ctx);
+
+    //ctx.commit_transaction();
+
+    Fred::InfoNssetOutput nsset_info1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoNssetOutput nsset_info2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).set_lock().exec(ctx);
+}
 
 /**
  * test UpdateNsset
