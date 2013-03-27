@@ -162,8 +162,7 @@ namespace Fred
                 domain_info_output.info_domain_data.update_registrar_handle = res[0][15].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(res[0][15]));//upr.handle
 
-                domain_info_output.info_domain_data.creation_time = res[0][16].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][16]));//dobr.crdate
+                domain_info_output.info_domain_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[0][16]));//dobr.crdate
 
                 domain_info_output.info_domain_data.transfer_time = res[0][17].isnull() ? Nullable<boost::posix_time::ptime>()
                 : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][17])));//o.trdate
