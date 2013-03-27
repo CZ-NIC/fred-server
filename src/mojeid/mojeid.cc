@@ -347,6 +347,12 @@ namespace Registry
             unsigned long long cid;
             try
             {
+                /* XXX: not safe interface
+                 * due to #8375 we need to load disclose flags from database
+                 * should be replaced by separate data structures or better
+                 * wrapped core operations approach
+                 */
+                contact_load_disclose_flags(_contact);
                 LOGGER(PACKAGE).info(boost::format("request data --"
                     "  handle: %1%  transaction_id: %2%"
                     "  request_id: %3%")

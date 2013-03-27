@@ -302,6 +302,34 @@ const Contact contact_info(const unsigned long long &_id)
 }
 
 
+void contact_load_disclose_flags(Contact &_data)
+{
+    if (_data.id == 0) {
+        throw std::runtime_error("can't load disclose flags for not saved contact");
+    }
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result r = conn.exec_params(
+            "SELECT disclosename, discloseorganization,"
+            " discloseaddress, disclosetelephone,"
+            " disclosefax, discloseemail, disclosevat,"
+            " discloseident, disclosenotifyemail"
+            " FROM contact WHERE id = $1",
+            Database::query_param_list(_data.id));
+    if (r.size() != 1) {
+        throw std::runtime_error("unable to load contact dislose flags");
+    }
+    _data.disclosename = r[0][0];
+    _data.discloseorganization = r[0][1];
+    _data.discloseaddress = r[0][2];
+    _data.disclosetelephone = r[0][3];
+    _data.disclosefax = r[0][4];
+    _data.discloseemail = r[0][5];
+    _data.disclosevat = r[0][6];
+    _data.discloseident = r[0][7];
+    _data.disclosenotifyemail = r[0][8];
+}
+
+
 void contact_transfer_poll_message(const unsigned long long &_old_registrar_id,
                                    const unsigned long long &_contact_id)
 {
