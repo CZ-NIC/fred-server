@@ -101,6 +101,7 @@ void ccReg_Files_i::reload_worker() {
 
   TRACE("[CALL] ccReg_Files_i::reload_worker()");
   file_list_->setTimeout(query_timeout);
+  file_list_->setLimit(limit_);
   file_list_->reload(uf);
 }
 

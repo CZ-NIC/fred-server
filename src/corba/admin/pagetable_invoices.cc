@@ -136,6 +136,7 @@ void ccReg_Invoices_i::reload_worker() {
 
   invoice_list_->setPartialLoad(true);
   invoice_list_->setTimeout(query_timeout);
+  invoice_list_->setLimit(limit_);
   invoice_list_->reload(uf);
 }
 
