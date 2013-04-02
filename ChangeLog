@@ -1,3 +1,7 @@
+2013-04-02 Jiri Sadek, Jan Zima (2.14.0)
+
+  * automatic procedure for duplicate contacts merging
+
 2013-01-11 Jiri Sadek (2.13.3)
 
   * notification letters send (postservis upload) is done in two batches (domestic and foreign)
