@@ -119,7 +119,7 @@ namespace Fred
         if(print_diff_ && !result_update_time) std::cout << "update_time: " << update_time << " != "<< rhs.update_time << std::endl;
 
         bool result_transfer_time = (transfer_time.isnull() == rhs.transfer_time.isnull());
-        if(!delete_time.isnull() && !rhs.delete_time.isnull())
+        if(!transfer_time.isnull() && !rhs.transfer_time.isnull())
         {
             result_transfer_time = (boost::posix_time::ptime(transfer_time) == boost::posix_time::ptime(rhs.transfer_time));
         }
