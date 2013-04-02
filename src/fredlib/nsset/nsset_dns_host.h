@@ -46,12 +46,12 @@ class DnsHost
         , inet_addr_(_inet_addr)
         {}
 
-        std::string get_fqdn()
+        std::string get_fqdn() const
         {
             return fqdn_;
         }
 
-        std::vector<std::string> get_inet_addr()
+        std::vector<std::string> get_inet_addr() const
         {
             return inet_addr_;
         }

@@ -314,7 +314,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_registrar, update_nsset_fixture)
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.delete_time.isnull());
+    BOOST_CHECK(info_data_2.info_nsset_data.delete_time.isnull());
 
 }
 

@@ -36,44 +36,28 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 
-#include "fredlib/nsset/nsset_dns_host.h"
+#include "fredlib/nsset/info_nsset_data.h"
 
 
 namespace Fred
 {
     struct InfoNssetOutput
     {
+        InfoNssetData info_nsset_data;//common info nsset data
         boost::posix_time::ptime utc_timestamp;//utc timestamp
         boost::posix_time::ptime local_timestamp;//local zone timestamp
-        unsigned long long crhistoryid;//first historyid
-        unsigned long long historyid;//last historyid
-        Nullable<boost::posix_time::ptime> delete_time; //nsset delete time
-        std::string handle;//nsset identifier
-        std::string roid;//nsset identifier
-        std::string sponsoring_registrar_handle;//registrar which have right for change
-        std::string create_registrar_handle;//registrar which created domain
-        Nullable<std::string> update_registrar_handle;//registrar which last time changed domain
-        boost::posix_time::ptime creation_time;//time of creation
-        Nullable<boost::posix_time::ptime> update_time; //last update time
-        Nullable<boost::posix_time::ptime> transfer_time; //last transfer time
-        std::string authinfopw;//password for transfer
-        Nullable<short> tech_check_level; //nsset tech check level
-        std::vector<DnsHost> dns_hosts; //dns hosts
-        std::vector<std::string> tech_contacts;//list of technical contacts
 
         InfoNssetOutput()
-        : crhistoryid(0)
-        , historyid(0)
         {}
 
         bool operator==(const InfoNssetOutput& rhs) const
         {
-            return false;//info_domain_data == rhs.info_domain_data;
+            return info_nsset_data == rhs.info_nsset_data;
         }
 
         bool operator!=(const InfoNssetOutput& rhs) const
         {
-            return false;//!this->operator ==(rhs);
+            return !this->operator ==(rhs);
         }
 
     };

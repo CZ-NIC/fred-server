@@ -139,37 +139,37 @@ namespace Fred
                 nsset_info_output.local_timestamp = res[0][1].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
                 : boost::posix_time::time_from_string(static_cast<std::string>(res[0][1]));//local zone timestamp
 
-                nsset_info_output.crhistoryid = static_cast<unsigned long long>(res[0][2]);//nobr.crhistoryid
+                nsset_info_output.info_nsset_data.crhistoryid = static_cast<unsigned long long>(res[0][2]);//nobr.crhistoryid
 
-                nsset_info_output.historyid = static_cast<unsigned long long>(res[0][3]);//nobr.historyid
+                nsset_info_output.info_nsset_data.historyid = static_cast<unsigned long long>(res[0][3]);//nobr.historyid
 
-                nsset_info_output.delete_time = res[0][4].isnull() ? Nullable<boost::posix_time::ptime>()
+                nsset_info_output.info_nsset_data.delete_time = res[0][4].isnull() ? Nullable<boost::posix_time::ptime>()
                     : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][4])));//nobr.erdate
 
                 nsset_id = static_cast<unsigned long long>(res[0][5]);//nobr.id
 
-                nsset_info_output.handle = static_cast<std::string>(res[0][6]);//nobr.name
+                nsset_info_output.info_nsset_data.handle = static_cast<std::string>(res[0][6]);//nobr.name
 
-                nsset_info_output.roid = static_cast<std::string>(res[0][7]);//nobr.roid
+                nsset_info_output.info_nsset_data.roid = static_cast<std::string>(res[0][7]);//nobr.roid
 
-                nsset_info_output.sponsoring_registrar_handle = static_cast<std::string>(res[0][9]);//clr.handle
+                nsset_info_output.info_nsset_data.sponsoring_registrar_handle = static_cast<std::string>(res[0][9]);//clr.handle
 
-                nsset_info_output.create_registrar_handle = static_cast<std::string>(res[0][11]);//crr.handle
+                nsset_info_output.info_nsset_data.create_registrar_handle = static_cast<std::string>(res[0][11]);//crr.handle
 
-                nsset_info_output.update_registrar_handle = res[0][13].isnull() ? Nullable<std::string>()
+                nsset_info_output.info_nsset_data.update_registrar_handle = res[0][13].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(res[0][13]));//upr.handle
 
-                nsset_info_output.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[0][14]));//nobr.crdate
+                nsset_info_output.info_nsset_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[0][14]));//nobr.crdate
 
-                nsset_info_output.transfer_time = res[0][15].isnull() ? Nullable<boost::posix_time::ptime>()
+                nsset_info_output.info_nsset_data.transfer_time = res[0][15].isnull() ? Nullable<boost::posix_time::ptime>()
                 : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][15])));//o.trdate
 
-                nsset_info_output.update_time = res[0][16].isnull() ? Nullable<boost::posix_time::ptime>()
+                nsset_info_output.info_nsset_data.update_time = res[0][16].isnull() ? Nullable<boost::posix_time::ptime>()
                 : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][16])));//o.update
 
-                nsset_info_output.authinfopw = static_cast<std::string>(res[0][17]);//o.authinfopw
+                nsset_info_output.info_nsset_data.authinfopw = static_cast<std::string>(res[0][17]);//o.authinfopw
 
-                nsset_info_output.tech_check_level = res[0][18].isnull() ? Nullable<short>()
+                nsset_info_output.info_nsset_data.tech_check_level = res[0][18].isnull() ? Nullable<short>()
                 : Nullable<short>(static_cast<short>(res[0][18]));//n.checklevel
             }
 
@@ -184,7 +184,7 @@ namespace Fred
                 " ORDER BY h.fqdn "
                 , Database::query_param_list(handle_));
 
-                nsset_info_output.dns_hosts.reserve(hres.size());//alloc
+                nsset_info_output.info_nsset_data.dns_hosts.reserve(hres.size());//alloc
                 for(Database::Result::size_type i = 0; i < hres.size(); ++i)
                 {
                     unsigned long long dns_host_id = static_cast<unsigned long long>(hres[i][1]);//h.id
@@ -205,7 +205,7 @@ namespace Fred
                         std::string dns_host_ipaddr = static_cast<std::string>(ipres[j][0]);//him.ipaddr
                         dns_host_ips.push_back(dns_host_ipaddr);
                     }//for dns host ip
-                    nsset_info_output.dns_hosts.push_back(DnsHost(dns_host_fqdn, dns_host_ips));
+                    nsset_info_output.info_nsset_data.dns_hosts.push_back(DnsHost(dns_host_fqdn, dns_host_ips));
 
                 }//for dns host
             }//list of dns hosts
@@ -221,10 +221,10 @@ namespace Fred
                         " ORDER BY cobr.name "
                 , Database::query_param_list(nsset_id));
 
-                nsset_info_output.tech_contacts.reserve(result.size());
+                nsset_info_output.info_nsset_data.tech_contacts.reserve(result.size());
                 for(Database::Result::size_type i = 0; i < result.size(); ++i)
                 {
-                    nsset_info_output.tech_contacts.push_back(
+                    nsset_info_output.info_nsset_data.tech_contacts.push_back(
                     static_cast<std::string>(result[i][0]));
                 }
             }
