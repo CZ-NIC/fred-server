@@ -266,5 +266,29 @@ struct update_nsset_fixture
     {}
 };
 
+/**
+ * test UpdateNsset with wrong handle
+ */
+
+BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_handle, update_nsset_fixture )
+{
+
+    std::string bad_test_nsset_handle = std::string("bad")+test_nsset_handle;
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateNsset(bad_test_nsset_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:handle")->second).compare(bad_test_nsset_handle) == 0);
+    }
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateNsset
