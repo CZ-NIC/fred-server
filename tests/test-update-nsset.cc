@@ -378,4 +378,67 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_tech_contact, update_nsse
 }
 
 
+/**
+ * test UpdateNsset remove non-existing tech contact
+ */
+BOOST_FIXTURE_TEST_CASE(update_nsset_rem_wrong_tech_contact, update_nsset_fixture)
+{
+    std::string bad_tech_contact_handle = admin_contact2_handle+xmark;
+
+    Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateNsset(test_nsset_handle, registrar_handle)
+        .rem_tech_contact(bad_tech_contact_handle)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:tech contact")->second).compare(bad_tech_contact_handle) == 0);
+    }
+
+    Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_nsset_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateNsset remove existing unassigned tech contact
+ */
+BOOST_FIXTURE_TEST_CASE(update_nsset_rem_unassigned_tech_contact, update_nsset_fixture)
+{
+    std::string bad_tech_contact_handle = admin_contact2_handle;
+
+    Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateNsset(test_nsset_handle, registrar_handle)
+        .rem_tech_contact(bad_tech_contact_handle)
+        .exec(ctx);
+
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 2);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:handle")->second).compare(test_nsset_handle) == 0);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:tech contact")->second).compare(bad_tech_contact_handle) == 0);
+    }
+
+    Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_nsset_data.delete_time.isnull());
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateNsset
