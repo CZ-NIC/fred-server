@@ -169,7 +169,8 @@ noinst_HEADERS = \
 		util/factory_check.h \
 		util/map_get.h \
 		src/corba/common_wrappers.h \
-		src/corba/contact_verification/corba_conversion.h
+		src/corba/contact_verification/corba_conversion.h \
+		util/optional_value.h
 
 
 noinst_LIBRARIES = \
@@ -721,7 +722,56 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/common_diff.cc \
 		src/fredlib/common_diff.h \
 		src/fredlib/reminder.cc \
-		src/fredlib/reminder.h
+		src/fredlib/reminder.h \
+		src/fredlib/opcontext.cc \
+		src/fredlib/opcontext.h \
+		src/fredlib/domain/update_domain.h \
+		src/fredlib/domain/update_domain.cc \
+		src/fredlib/domain/info_domain_data.h \
+		src/fredlib/domain/info_domain_data.cc \
+		src/fredlib/domain/info_domain.h \
+		src/fredlib/domain/info_domain.cc \
+		src/fredlib/domain/info_domain_history.h \
+		src/fredlib/domain/info_domain_history.cc \
+		src/fredlib/domain/info_domain_compare.h \
+		src/fredlib/domain/info_domain_compare.cc \
+		src/fredlib/domain/enum_validation_extension.h \
+		src/fredlib/nsset/update_nsset.h \
+		src/fredlib/nsset/update_nsset.cc \
+		src/fredlib/keyset/update_keyset.h \
+		src/fredlib/keyset/keyset_dns_key.h \
+		src/fredlib/keyset/update_keyset.cc \
+		src/fredlib/keyset/create_keyset.cc \
+		src/fredlib/keyset/create_keyset.h \
+		src/fredlib/contact/delete_contact.h \
+		src/fredlib/contact/delete_contact.cc \
+		src/fredlib/object/object.h \
+		src/fredlib/object/object.cc \
+		src/fredlib/poll/create_poll_message.h \
+		src/fredlib/poll/create_poll_message.cc \
+		src/fredlib/poll/create_update_object_poll_message.h \
+		src/fredlib/poll/create_update_object_poll_message.cc \
+		src/fredlib/poll/create_delete_contact_poll_message.h \
+		src/fredlib/poll/create_delete_contact_poll_message.cc \
+		src/fredlib/opexception.h \
+		src/fredlib/contact/merge_contact.h \
+		src/fredlib/contact/merge_contact.cc \
+		src/fredlib/contact/create_contact.cc \
+		src/fredlib/contact/create_contact.h \
+		src/fredlib/nsset/create_nsset.cc \
+		src/fredlib/nsset/create_nsset.h \
+		src/fredlib/nsset/nsset_dns_host.h \
+		src/fredlib/domain/create_domain.cc \
+		src/fredlib/domain/create_domain.h \
+		src/fredlib/contact/merge_contact_selection.cc \
+		src/fredlib/contact/merge_contact_selection.h \
+		src/fredlib/contact/merge_contact_auto_procedure.cc \
+		src/fredlib/contact/merge_contact_auto_procedure.h \
+		src/fredlib/contact/find_contact_duplicates.cc \
+		src/fredlib/contact/find_contact_duplicates.h \
+		src/fredlib/contact/merge_contact_email_notification_data.cc \
+		src/fredlib/contact/merge_contact_email_notification_data.h
+
 #
 # src/fredlib/libfred.a
 
@@ -1590,7 +1640,14 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid.h \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
-		tests/checks.h
+		tests/checks.h \
+		tests/test-utils.cc \
+		tests/test-update-nsset.cc \
+		tests/test-update-keyset.cc \
+		tests/test-update-domain.cc \
+		tests/test-delete-contact.cc \
+		tests/test-info-domain.cc \
+		tests/test-merge-contact.cc
 
 
 tests_test_server_LDFLAGS = \

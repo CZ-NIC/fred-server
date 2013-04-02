@@ -17,6 +17,7 @@
  */
 
 #include <pthread.h>
+#include <boost/algorithm/string.hpp>
 
 #include "config.h"
 
@@ -159,8 +160,12 @@ ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
             while(file) {
                 std::string input;
                 file >> input;
-                monitoring_ips.push_back(input);
+                boost::algorithm::trim(input);
+                if (!input.empty())
+                {
+                    monitoring_ips.push_back(input);
                                 log_monitoring = log_monitoring + input + " ";
+                }
             }
 
                         logger_notice(log_monitoring.c_str());

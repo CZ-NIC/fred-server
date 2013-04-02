@@ -33,6 +33,8 @@
 #include "cli_admin/contactclient.h"
 #include "commonclient.h"
 #include "fredlib/reminder.h"
+#include "fredlib/contact/merge_contact_auto_procedure.h"
+#include "corba/logger_client_impl.h"
 
 
 /**
@@ -87,6 +89,52 @@ struct contact_reminder_impl
 
       return;
   }
+};
+
+
+/**
+ * \class contact_merge_duplicate_auto_impl
+ * \brief functor to run automatic contact duplicates merge procedure
+ */
+struct contact_merge_duplicate_auto_impl
+{
+    void operator()() const
+    {
+        Logging::Context ctx("contact_merge_duplicate_auto_impl");
+
+
+        FakedArgs orb_fa = CfgArgGroups::instance()->fa;
+
+        /* prepare logger corba client */
+        HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
+                   get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+
+        CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
+               , ns_args_ptr->get_nameservice_host()
+               , ns_args_ptr->get_nameservice_port()
+               , ns_args_ptr->get_nameservice_context());
+
+        std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
+                new Fred::Logger::LoggerCorbaClientImpl());
+
+        std::auto_ptr<Fred::Mailer::Manager> mm(
+                new MailerManager(CorbaContainer::get_instance()->getNS()));
+
+        if (!logger_client.get()) {
+            throw std::runtime_error("unable to get request logger reference");
+        }
+
+        ContactMergeDuplicateAutoArgs params = CfgArgGroups::instance()->
+            get_handler_ptr_by_type<HandleAdminClientContactMergeDuplicateAutoArgsGrp>()->params;
+
+        Fred::Contact::MergeContactAutoProcedure(
+                *(mm.get()),
+                *(logger_client.get()), params.registrar,
+                params.limit, params.dry_run, params.verbose)
+            .set_selection_filter_order(params.selection_filter_order).exec();
+
+        return;
+    }
 };
 
 
