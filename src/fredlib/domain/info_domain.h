@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -35,116 +36,25 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 
+#include "fredlib/domain/info_domain_data.h"
+
 namespace Fred
 {
-
-    ///enum domain validation extension
-    struct ENUMValidationExtension
+    struct InfoDomainOutput
     {
-        boost::gregorian::date validation_expiration;//expiration date of validation
-        bool publish;//publish in ENUM dictionary
-        ENUMValidationExtension()
-        : validation_expiration()//not a date time
-        , publish(false)
-        {}
-        ENUMValidationExtension(const boost::gregorian::date& _validation_expiration
-                , bool _publish)
-        : validation_expiration(_validation_expiration)
-        , publish(_publish)
-        {}
-    };
+        InfoDomainData info_domain_data;//common info domain data
+        boost::posix_time::ptime utc_timestamp;// utc timestamp
+        boost::posix_time::ptime local_timestamp;//local zone timestamp
 
-    struct InfoDomainData
-    {
-        std::string roid;//domain identifier
-        std::string fqdn;//domain name
-        std::string registrant_handle;//domain owner
-        Nullable<std::string> nsset_handle;//nssset might not be set
-        Nullable<std::string> keyset_handle;//keyset might not be set
-        std::string sponsoring_registrar_handle;//registrar which have right for change
-        std::string create_registrar_handle;//registrar which created domain
-        Nullable<std::string> update_registrar_handle;//registrar which last time changed domain
-        boost::posix_time::ptime creation_time;//time of domain creation
-        boost::posix_time::ptime update_time; //last update time
-        boost::posix_time::ptime transfer_time; //last transfer time
-        boost::gregorian::date expiration_date; //domain expiration date
-        std::string authinfopw;//password for domain transfer
-        std::vector<std::string> admin_contacts;//list of administrative contacts
-        Nullable<ENUMValidationExtension > enum_domain_validation;//enum domain validation info
-        boost::posix_time::ptime outzone_time; //domain outzone time
-        boost::posix_time::ptime cancel_time; //domain cancel time
-        Nullable<boost::posix_time::ptime> delete_time; //domain delete time
+        InfoDomainOutput()
+        {}
 
-        bool operator==(const InfoDomainData& rhs) const
+        bool operator==(const InfoDomainOutput& rhs) const
         {
-            bool result_simple =
-            (roid.compare(rhs.roid) == 0)
-            && (boost::algorithm::to_lower_copy(fqdn).compare(boost::algorithm::to_lower_copy(rhs.fqdn)) == 0)
-            && (boost::algorithm::to_upper_copy(registrant_handle).compare(boost::algorithm::to_upper_copy(rhs.registrant_handle)) == 0)
-            && (boost::algorithm::to_upper_copy(sponsoring_registrar_handle).compare(boost::algorithm::to_upper_copy(rhs.sponsoring_registrar_handle)) == 0)
-            && (boost::algorithm::to_upper_copy(create_registrar_handle).compare(boost::algorithm::to_upper_copy(rhs.create_registrar_handle)) == 0)
-            && (creation_time == rhs.creation_time)
-            && (update_time == rhs.update_time)
-            && (transfer_time == rhs.transfer_time)
-            && (expiration_date == rhs.expiration_date)
-            && (authinfopw.compare(rhs.authinfopw) == 0)
-            && (outzone_time == rhs.outzone_time)
-            && (cancel_time == rhs.cancel_time);
-
-            bool result_update_registrar_handle = (update_registrar_handle.isnull() == rhs.update_registrar_handle.isnull());
-            if(!update_registrar_handle.isnull() && !rhs.update_registrar_handle.isnull())
-            {
-                result_update_registrar_handle = (boost::algorithm::to_upper_copy(std::string(update_registrar_handle))
-                .compare(boost::algorithm::to_upper_copy(std::string(rhs.update_registrar_handle))) == 0);
-            }
-
-            bool result_nsset_handle = (nsset_handle.isnull() == rhs.nsset_handle.isnull());
-            if(!nsset_handle.isnull() && !rhs.nsset_handle.isnull())
-            {
-                result_nsset_handle = (boost::algorithm::to_upper_copy(std::string(nsset_handle))
-                .compare(boost::algorithm::to_upper_copy(std::string(rhs.nsset_handle))) == 0);
-            }
-
-            bool result_keyset_handle = (keyset_handle.isnull() == rhs.keyset_handle.isnull());
-            if(!keyset_handle.isnull() && !rhs.keyset_handle.isnull())
-            {
-                result_keyset_handle = (boost::algorithm::to_upper_copy(std::string(keyset_handle))
-                .compare(boost::algorithm::to_upper_copy(std::string(rhs.keyset_handle))) == 0);
-            }
-
-            bool result_enum_domain_validation = (enum_domain_validation.isnull() == rhs.enum_domain_validation.isnull());
-            if(!enum_domain_validation.isnull() && !rhs.enum_domain_validation.isnull())
-            {
-                result_enum_domain_validation = (ENUMValidationExtension(enum_domain_validation).publish
-                        == ENUMValidationExtension(rhs.enum_domain_validation).publish)
-                && (ENUMValidationExtension(enum_domain_validation).validation_expiration
-                        == ENUMValidationExtension(rhs.enum_domain_validation).validation_expiration);
-            }
-
-            bool result_admin_contacts = (admin_contacts.size() == rhs.admin_contacts.size());
-            if (result_admin_contacts)
-            {
-                for(std::vector<std::string>::size_type i = 0
-                    ; i != admin_contacts.size(); ++i)
-                {
-                    result_admin_contacts = (result_admin_contacts && (boost::algorithm::to_upper_copy(admin_contacts[i])
-                        .compare(boost::algorithm::to_upper_copy(rhs.admin_contacts[i])) == 0));
-                    if (!result_admin_contacts) break;
-                }
-            }
-
-            bool result_delete_time = (delete_time.isnull() == rhs.delete_time.isnull());
-            if(!delete_time.isnull() && !rhs.delete_time.isnull())
-            {
-                result_delete_time = (boost::posix_time::ptime(delete_time) == boost::posix_time::ptime(rhs.delete_time));
-            }
-
-
-            return result_simple && result_update_registrar_handle && result_nsset_handle && result_keyset_handle
-                    && result_enum_domain_validation && result_admin_contacts;
+            return info_domain_data == rhs.info_domain_data;
         }
 
-        bool operator!=(const InfoDomainData& rhs) const
+        bool operator!=(const InfoDomainOutput& rhs) const
         {
             return !this->operator ==(rhs);
         }
@@ -161,7 +71,7 @@ namespace Fred
         InfoDomain(const std::string& fqdn
                 , const std::string& registrar);
         InfoDomain& set_lock(bool lock = true);//set lock object_registry row for domain
-        InfoDomainData exec(OperationContext& ctx);//return data
+        InfoDomainOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
     };//class InfoDomain
 
 //exception impl

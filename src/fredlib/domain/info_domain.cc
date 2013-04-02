@@ -53,9 +53,9 @@ namespace Fred
         return *this;
     }
 
-    InfoDomainData InfoDomain::exec(OperationContext& ctx)
+    InfoDomainOutput InfoDomain::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        InfoDomainData domain_info_data;
+        InfoDomainOutput domain_info_output;
 
         try
         {
@@ -114,7 +114,11 @@ namespace Fred
                 " AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate "
                 " , d.keyset, kobr.name "// keyset id and keyset handle 23-24
                 " , ev.exdate, ev.publish "//enumval 25-26
-                ", dobr.erdate "// domain delete time 27
+                " , dobr.erdate "// domain delete time 27
+                " , dobr.historyid as historyid " // last historyid 28
+                " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp " // utc timestamp 29
+                " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp " // local zone timestamp 30
+                " , dobr.crhistoryid "//first historyid 31
                 " FROM object_registry dobr "
                 " JOIN domain d ON dobr.id=d.id "
                 " JOIN object o ON d.id=o.id "
@@ -128,9 +132,9 @@ namespace Fred
                  " AND kobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) "
                 " LEFT JOIN registrar upr ON upr.id = o.upid "
                 " LEFT JOIN  enumval ev ON ev.domainid = d.id "
-                " WHERE dobr.name=LOWER($1::text) AND dobr.erdate IS NULL "
+                " WHERE dobr.name=LOWER($2::text) AND dobr.erdate IS NULL "
                 " AND dobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='domain'::text)"
-                , Database::query_param_list(fqdn_));
+                , Database::query_param_list(local_timestamp_pg_time_zone_name)(fqdn_));
 
                 if (res.size() != 1)
                 {
@@ -141,36 +145,63 @@ namespace Fred
                 }
 
                 domain_id = static_cast<unsigned long long>(res[0][0]);//dobr.id
-                domain_info_data.fqdn = static_cast<std::string>(res[0][1]);//dobr.name
-                domain_info_data.roid = static_cast<std::string>(res[0][2]);//dobr.roid
-                domain_info_data.nsset_handle = res[0][5].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][5]));//nobr.name
-                domain_info_data.registrant_handle = static_cast<std::string>(res[0][7]);
-                domain_info_data.sponsoring_registrar_handle = static_cast<std::string>(res[0][11]);//clr.handle
-                domain_info_data.create_registrar_handle = static_cast<std::string>(res[0][13]);//crr.handle
-                domain_info_data.update_registrar_handle = static_cast<std::string>(res[0][15]);//upr.handle
-                domain_info_data.creation_time = res[0][16].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][16]));//dobr.crdate
-                domain_info_data.transfer_time = res[0][17].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][17]));//o.trdate
-                domain_info_data.update_time = res[0][18].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][18]));//o.update
-                domain_info_data.authinfopw = static_cast<std::string>(res[0][19]);//o.authinfopw
-                domain_info_data.expiration_date = res[0][20].isnull() ? boost::gregorian::date()
-                : boost::gregorian::from_string(static_cast<std::string>(res[0][20]));//d.exdate
-                domain_info_data.outzone_time = res[0][21].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][21]));//outzonedate
-                domain_info_data.cancel_time = res[0][22].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                                                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][22]));//canceldate
-                domain_info_data.keyset_handle = res[0][24].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][24]));//kobr.name
 
-                domain_info_data.enum_domain_validation = (res[0][25].isnull() || res[0][26].isnull())
+                domain_info_output.info_domain_data.fqdn = static_cast<std::string>(res[0][1]);//dobr.name
+
+                domain_info_output.info_domain_data.roid = static_cast<std::string>(res[0][2]);//dobr.roid
+
+                domain_info_output.info_domain_data.nsset_handle = res[0][5].isnull() ? Nullable<std::string>()
+                        : Nullable<std::string> (static_cast<std::string>(res[0][5]));//nobr.name
+
+                domain_info_output.info_domain_data.registrant_handle = static_cast<std::string>(res[0][7]);
+
+                domain_info_output.info_domain_data.sponsoring_registrar_handle = static_cast<std::string>(res[0][11]);//clr.handle
+
+                domain_info_output.info_domain_data.create_registrar_handle = static_cast<std::string>(res[0][13]);//crr.handle
+
+                domain_info_output.info_domain_data.update_registrar_handle = res[0][15].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(res[0][15]));//upr.handle
+
+                domain_info_output.info_domain_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[0][16]));//dobr.crdate
+
+                domain_info_output.info_domain_data.transfer_time = res[0][17].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][17])));//o.trdate
+
+                domain_info_output.info_domain_data.update_time = res[0][18].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][18])));//o.update
+
+                domain_info_output.info_domain_data.authinfopw = static_cast<std::string>(res[0][19]);//o.authinfopw
+
+                domain_info_output.info_domain_data.expiration_date = res[0][20].isnull() ? boost::gregorian::date()
+                : boost::gregorian::from_string(static_cast<std::string>(res[0][20]));//d.exdate
+
+                domain_info_output.info_domain_data.outzone_time = res[0][21].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][21]));//outzonedate
+
+                domain_info_output.info_domain_data.cancel_time = res[0][22].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][22]));//canceldate
+
+                domain_info_output.info_domain_data.keyset_handle = res[0][24].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(res[0][24]));//kobr.name
+
+                domain_info_output.info_domain_data.enum_domain_validation = (res[0][25].isnull() || res[0][26].isnull())
                         ? Nullable<ENUMValidationExtension > ()
                         : Nullable<ENUMValidationExtension > (ENUMValidationExtension(
                             boost::gregorian::from_string(static_cast<std::string>(res[0][25]))
                             ,static_cast<bool>(res[0][26])));
 
+                domain_info_output.info_domain_data.delete_time = res[0][27].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][27])));//dobr.erdate
+
+                domain_info_output.info_domain_data.historyid = static_cast<unsigned long long>(res[0][28]);//last historyid
+
+                domain_info_output.utc_timestamp = res[0][29].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][29]));// utc timestamp
+
+                domain_info_output.local_timestamp = res[0][30].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][30]));//local zone timestamp
+
+                domain_info_output.info_domain_data.crhistoryid = static_cast<unsigned long long>(res[0][31]);//dobr.crhistoryid
             }
 
             //list of administrative contacts
@@ -185,10 +216,10 @@ namespace Fred
                 " ORDER BY cobr.name "
                 , Database::query_param_list(domain_id));
 
-                domain_info_data.admin_contacts.reserve(result.size());
+                domain_info_output.info_domain_data.admin_contacts.reserve(result.size());
                 for(Database::Result::size_type i = 0; i < result.size(); ++i)
                 {
-                    domain_info_data.admin_contacts.push_back(
+                    domain_info_output.info_domain_data.admin_contacts.push_back(
                     static_cast<std::string>(result[i][0]));
                 }
             }
@@ -198,7 +229,7 @@ namespace Fred
         {
             handleOperationExceptions<InfoDomainException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
         }
-        return domain_info_data;
+        return domain_info_output;
     }//InfoDomain::exec
 
 }//namespace Fred
