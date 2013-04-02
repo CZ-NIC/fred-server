@@ -217,4 +217,54 @@ BOOST_AUTO_TEST_CASE(update_nsset)
     //ctx.commit_transaction();
 }//update_nsset
 
+
+struct update_nsset_fixture
+{
+    Fred::OperationContext ctx;
+    std::string registrar_handle;
+    std::string xmark;
+    std::string admin_contact2_handle;
+    std::string admin_contact3_handle;
+    std::string test_nsset_handle;
+
+    update_nsset_fixture()
+    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
+    , xmark(RandomDataGenerator().xnumstring(6))
+    , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark)
+    , admin_contact3_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
+    , test_nsset_handle ( std::string("TEST-NSSET-HANDLE")+xmark)
+    {
+        BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
+
+        Fred::CreateContact(admin_contact2_handle,registrar_handle)
+            .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        Fred::CreateContact(admin_contact3_handle,registrar_handle)
+            .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        Fred::CreateNsset(test_nsset_handle, registrar_handle)
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                )
+                .set_tech_contacts(Util::vector_of<std::string>(admin_contact3_handle))
+                .exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+    ~update_nsset_fixture()
+    {}
+};
+
+
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateNsset
