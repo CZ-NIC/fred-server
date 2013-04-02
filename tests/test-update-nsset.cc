@@ -89,8 +89,12 @@ const std::string server_name = "test-update-nsset";
 
 BOOST_AUTO_TEST_CASE(info_nsset)
 {
-    std::string registrar_handle = "REG-FRED_A";
     Fred::OperationContext ctx;
+
+    std::string registrar_handle = static_cast<std::string>(
+            ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
+    BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
+
     std::string xmark = RandomDataGenerator().xnumstring(6);
 
     std::string admin_contact2_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
@@ -132,8 +136,12 @@ BOOST_AUTO_TEST_CASE(info_nsset)
  */
 BOOST_AUTO_TEST_CASE(update_nsset)
 {
-    std::string registrar_handle = "REG-FRED_A";
     Fred::OperationContext ctx;
+
+    std::string registrar_handle = static_cast<std::string>(
+                ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
+    BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
+
     std::string xmark = RandomDataGenerator().xnumstring(6);
 
     std::string admin_contact2_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
