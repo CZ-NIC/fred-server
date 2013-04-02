@@ -827,6 +827,7 @@ class HandleAdminClientBankPaymentListArgsGrp : public HandleCommandGrpArgs
 public:
 
     optional_ulong bank_payment_type;
+    bool show_details;
 
     CommandDescription get_command_option()
     {
@@ -845,6 +846,9 @@ public:
             ("bank_payment_type", boost::program_options
                 ::value<Checked::ulong>()->notifier(save_optional_ulong(bank_payment_type))
                 , "payment type is  1 - 6")
+            ("show_details", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(show_details)),
+                    "instead of payment id list print more info about payments")
             ;
         return cfg_opts;
     }//get_options_description

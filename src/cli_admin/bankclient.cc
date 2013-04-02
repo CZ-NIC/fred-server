@@ -76,7 +76,22 @@ BankClient::payment_list()
     for (unsigned int i = 0; i < list->size(); ++i) {
         Fred::Banking::Payment *payment = list->get(i);
         if (payment) {
-            std::cout << payment->getId() << std::endl;
+            if (bank_payment_list_details) {
+                std::cout << std::setw(10) << std::left;
+            }
+            std::cout << payment->getId();
+            if (bank_payment_list_details) {
+                std::cout << to_iso_extended_string(payment->getCrTime())
+                          << "  amount: "
+                          << std::setw(10) << std::right << payment->getPrice();
+                if (!payment->getAccountMemo().empty()) {
+                    std::cout << "  account_memo: " << payment->getAccountMemo();
+                }
+                if (!payment->getAccountName().empty()) {
+                    std::cout << "  account_name: " << payment->getAccountName();
+                }
+            }
+            std::cout << std::endl;
         }
     }
 }
