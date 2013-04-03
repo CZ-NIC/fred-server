@@ -430,8 +430,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_unassigned_tech_contact, update_nsset_f
     {
         Fred::GetOperationExceptionParamsDataToMmapCallback cb;
         ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 2);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:handle")->second).compare(test_nsset_handle) == 0);
+        BOOST_CHECK((cb.get().size()) == 1);
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:tech contact")->second).compare(bad_tech_contact_handle) == 0);
     }
 
