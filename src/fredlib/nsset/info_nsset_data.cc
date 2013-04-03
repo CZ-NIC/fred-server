@@ -193,6 +193,7 @@ namespace Fred
                 && result_update_registrar_handle
                 && result_update_time
                 && result_transfer_time
+                && result_dns_hosts
                 && result_tech_contacts
                 && result_delete_time
                 ;
