@@ -54,6 +54,8 @@
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/nsset/info_nsset.h"
+#include "fredlib/nsset/info_nsset_history.h"
+#include "fredlib/nsset/info_nsset_compare.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -439,5 +441,39 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_unassigned_tech_contact, update_nsset_f
     BOOST_CHECK(info_data_2.info_nsset_data.delete_time.isnull());
 }
 
+/**
+ * test InfoNssetHistory
+ * create and update test nsset
+ * compare successive states from info nsset with states from info nsset history
+ * check initial and next historyid in info nsset history
+ * check valid_from and valid_to in info nsset history
+ */
+BOOST_FIXTURE_TEST_CASE(info_nsset_history_test, update_nsset_fixture)
+{
+    Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    //call update
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateNsset(test_nsset_handle, registrar_handle)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    BOOST_CHECK(history_info_data.at(0) == info_data_2);
+    BOOST_CHECK(history_info_data.at(1) == info_data_1);
+
+    BOOST_CHECK(history_info_data.at(1).next_historyid == history_info_data.at(0).info_nsset_data.historyid);
+
+    BOOST_CHECK(history_info_data.at(1).history_valid_from < history_info_data.at(1).history_valid_to);
+    BOOST_CHECK(history_info_data.at(1).history_valid_to <= history_info_data.at(0).history_valid_from);
+    BOOST_CHECK(history_info_data.at(0).history_valid_to.isnull());
+
+    BOOST_CHECK(history_info_data.at(1).info_nsset_data.crhistoryid == history_info_data.at(1).info_nsset_data.historyid);
+
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateNsset
