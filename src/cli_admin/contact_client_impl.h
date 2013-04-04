@@ -138,4 +138,21 @@ struct contact_merge_duplicate_auto_impl
 };
 
 
+/**
+ * \class contact_merge_impl
+ * \brief functor to run manual two contact merge command
+ */
+struct contact_merge_impl
+{
+    void operator()() const
+    {
+        Logging::Context ctx("contact_merge_impl");
+        ContactMergeArgs params = CfgArgGroups::instance()
+            ->get_handler_ptr_by_type<HandleAdminClientContactMergeArgsGrp>()->params;
+
+        return;
+    }
+};
+
+
 #endif // CONTACT_CLIENT_IMPL_H_
