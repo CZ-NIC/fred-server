@@ -187,9 +187,51 @@ struct update_nsset_fixture
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 {
+    Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_1 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
 
+    //update_registrar_handle check
+    BOOST_CHECK(info_data_1.info_nsset_data.update_registrar_handle.isnull());
 
+    //update_time
+    BOOST_CHECK(info_data_1.info_nsset_data.update_time.isnull());
+
+    //history check
+    BOOST_CHECK(history_info_data_1.at(0) == info_data_1);
+    BOOST_CHECK(history_info_data_1.at(0).info_nsset_data.crhistoryid == info_data_1.info_nsset_data.historyid);
+
+    //empty update
     Fred::UpdateNsset(test_nsset_handle, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_2 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_1_with_changes = info_data_1;
+
+    //updated historyid
+    BOOST_CHECK(info_data_1.info_nsset_data.historyid !=info_data_2.info_nsset_data.historyid);
+    info_data_1_with_changes.info_nsset_data.historyid = info_data_2.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_2.info_nsset_data.update_registrar_handle));
+    info_data_1_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_1_with_changes.info_nsset_data.update_time = info_data_2.info_nsset_data.update_time;
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_1_with_changes == info_data_2);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_2.at(0) == info_data_2);
+    BOOST_CHECK(history_info_data_2.at(1) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_2.at(1).info_nsset_data == history_info_data_1.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_2.at(1).next_historyid == history_info_data_2.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_2.at(0).info_nsset_data.crhistoryid == info_data_2.info_nsset_data.crhistoryid);
 
     Fred::UpdateNsset(test_nsset_handle//handle
             , registrar_handle//registrar
@@ -201,6 +243,37 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
             , Optional<short>() //tech_check_level
             , Optional<unsigned long long>() //logd_request_id
             ).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_3 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_3 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_2_with_changes = info_data_2;
+
+    //updated historyid
+    BOOST_CHECK(info_data_2.info_nsset_data.historyid !=info_data_3.info_nsset_data.historyid);
+    info_data_2_with_changes.info_nsset_data.historyid = info_data_3.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_3.info_nsset_data.update_registrar_handle));
+    info_data_2_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_2_with_changes.info_nsset_data.update_time = info_data_3.info_nsset_data.update_time;
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_2_with_changes == info_data_3);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_3.at(0) == info_data_3);
+    BOOST_CHECK(history_info_data_3.at(1) == info_data_2);
+    BOOST_CHECK(history_info_data_3.at(2) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_3.at(1).info_nsset_data == history_info_data_2.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_3.at(1).next_historyid == history_info_data_3.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_3.at(0).info_nsset_data.crhistoryid == info_data_3.info_nsset_data.crhistoryid);
 
     Fred::UpdateNsset(test_nsset_handle//handle
             , registrar_handle//registrar
@@ -215,25 +288,425 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
                 , Optional<unsigned long long>(0) //logd_request_id
                 ).exec(ctx);
 
+    Fred::InfoNssetOutput info_data_4 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_4 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_3_with_changes = info_data_3;
+
+    //updated historyid
+    BOOST_CHECK(info_data_3.info_nsset_data.historyid !=info_data_4.info_nsset_data.historyid);
+    info_data_3_with_changes.info_nsset_data.historyid = info_data_4.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_4.info_nsset_data.update_registrar_handle));
+    info_data_3_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_3_with_changes.info_nsset_data.update_time = info_data_4.info_nsset_data.update_time;
+
+    //updated authinfopw
+    BOOST_CHECK(info_data_3.info_nsset_data.authinfopw != info_data_4.info_nsset_data.authinfopw);
+    BOOST_CHECK(std::string("passwd") == info_data_4.info_nsset_data.authinfopw);
+    info_data_3_with_changes.info_nsset_data.authinfopw = std::string("passwd");
+
+    //update dns_hosts
+    info_data_3_with_changes.info_nsset_data.dns_hosts = Util::vector_of<Fred::DnsHost>
+        (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4")))
+        (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
+        (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2")));
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_3_with_changes == info_data_4);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_4.at(0) == info_data_4);
+    BOOST_CHECK(history_info_data_4.at(1) == info_data_3);
+    BOOST_CHECK(history_info_data_4.at(2) == info_data_2);
+    BOOST_CHECK(history_info_data_4.at(3) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_4.at(1).info_nsset_data == history_info_data_3.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_4.at(1).next_historyid == history_info_data_4.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_4.at(0).info_nsset_data.crhistoryid == info_data_4.info_nsset_data.crhistoryid);
+
     Fred::UpdateNsset(test_nsset_handle, registrar_handle)
         .add_dns(Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))
         .rem_dns("b.ns.nic.cz")
         .add_tech_contact(admin_contact2_handle)
         .rem_tech_contact(admin_contact2_handle)
         .set_authinfo("passw")
-        .set_logd_request_id(0)
-        .set_tech_check_level(0)
+        .set_logd_request_id(4)
+        .set_tech_check_level(3)
     .exec(ctx);
 
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_dns(Fred::DnsHost("host3",  Util::vector_of<std::string>("127.0.0.5")("127.1.1.5"))).exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).rem_dns("host2").exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).rem_tech_contact(admin_contact3_handle).exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_tech_contact(admin_contact3_handle).exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_authinfo("passw").exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_logd_request_id(0).exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_tech_check_level(0).exec(ctx);
+    Fred::InfoNssetOutput info_data_5 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_5 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
 
-    //ctx.commit_transaction();
+    Fred::InfoNssetOutput info_data_4_with_changes = info_data_4;
+
+    //updated historyid
+    BOOST_CHECK(info_data_4.info_nsset_data.historyid !=info_data_5.info_nsset_data.historyid);
+    info_data_4_with_changes.info_nsset_data.historyid = info_data_5.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_5.info_nsset_data.update_registrar_handle));
+    info_data_4_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_4_with_changes.info_nsset_data.update_time = info_data_5.info_nsset_data.update_time;
+
+    //updated authinfopw
+    BOOST_CHECK(info_data_4.info_nsset_data.authinfopw != info_data_5.info_nsset_data.authinfopw);
+    BOOST_CHECK(std::string("passw") == info_data_5.info_nsset_data.authinfopw);
+    info_data_4_with_changes.info_nsset_data.authinfopw = std::string("passw");
+
+    //update dns_hosts
+    info_data_4_with_changes.info_nsset_data.dns_hosts = Util::vector_of<Fred::DnsHost>
+        (Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))
+        (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
+        (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2")));
+
+    //updated tech_check_level
+    BOOST_CHECK(3 == info_data_5.info_nsset_data.tech_check_level);
+    info_data_4_with_changes.info_nsset_data.tech_check_level = 3;
+
+    //check logd request_id
+    BOOST_CHECK(4 == history_info_data_5.at(0).logd_request_id);
+
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_4_with_changes == info_data_5);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_5.at(0) == info_data_5);
+    BOOST_CHECK(history_info_data_5.at(1) == info_data_4);
+    BOOST_CHECK(history_info_data_5.at(2) == info_data_3);
+    BOOST_CHECK(history_info_data_5.at(3) == info_data_2);
+    BOOST_CHECK(history_info_data_5.at(4) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_5.at(1).info_nsset_data == history_info_data_4.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_5.at(1).next_historyid == history_info_data_5.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_5.at(0).info_nsset_data.crhistoryid == info_data_5.info_nsset_data.crhistoryid);
+
+    //add dns host
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_dns(Fred::DnsHost("host3",  Util::vector_of<std::string>("127.0.0.5")("127.1.1.5"))).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_6 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_6 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_5_with_changes = info_data_5;
+
+    //updated historyid
+    BOOST_CHECK(info_data_5.info_nsset_data.historyid !=info_data_6.info_nsset_data.historyid);
+    info_data_5_with_changes.info_nsset_data.historyid = info_data_6.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_6.info_nsset_data.update_registrar_handle));
+    info_data_5_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_5_with_changes.info_nsset_data.update_time = info_data_6.info_nsset_data.update_time;
+
+    //update dns_hosts
+    info_data_5_with_changes.info_nsset_data.dns_hosts = Util::vector_of<Fred::DnsHost>
+        (Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))
+        (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
+        (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2")))
+        (Fred::DnsHost("host3",  Util::vector_of<std::string>("127.0.0.5")("127.1.1.5")));
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_5_with_changes == info_data_6);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_6.at(0) == info_data_6);
+    BOOST_CHECK(history_info_data_6.at(1) == info_data_5);
+    BOOST_CHECK(history_info_data_6.at(2) == info_data_4);
+    BOOST_CHECK(history_info_data_6.at(3) == info_data_3);
+    BOOST_CHECK(history_info_data_6.at(4) == info_data_2);
+    BOOST_CHECK(history_info_data_6.at(5) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_6.at(1).info_nsset_data == history_info_data_5.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_6.at(1).next_historyid == history_info_data_6.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_6.at(0).info_nsset_data.crhistoryid == info_data_6.info_nsset_data.crhistoryid);
+
+    //rem dns host
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).rem_dns("host2").exec(ctx);
+
+    Fred::InfoNssetOutput info_data_7 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_7 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_6_with_changes = info_data_6;
+
+    //updated historyid
+    BOOST_CHECK(info_data_6.info_nsset_data.historyid !=info_data_7.info_nsset_data.historyid);
+    info_data_6_with_changes.info_nsset_data.historyid = info_data_7.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_7.info_nsset_data.update_registrar_handle));
+    info_data_6_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_6_with_changes.info_nsset_data.update_time = info_data_7.info_nsset_data.update_time;
+
+    //update dns_hosts
+    info_data_6_with_changes.info_nsset_data.dns_hosts = Util::vector_of<Fred::DnsHost>
+        (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
+        (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2")))
+        (Fred::DnsHost("host3",  Util::vector_of<std::string>("127.0.0.5")("127.1.1.5")));
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_6_with_changes == info_data_7);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_7.at(0) == info_data_7);
+    BOOST_CHECK(history_info_data_7.at(1) == info_data_6);
+    BOOST_CHECK(history_info_data_7.at(2) == info_data_5);
+    BOOST_CHECK(history_info_data_7.at(3) == info_data_4);
+    BOOST_CHECK(history_info_data_7.at(4) == info_data_3);
+    BOOST_CHECK(history_info_data_7.at(5) == info_data_2);
+    BOOST_CHECK(history_info_data_7.at(6) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_7.at(1).info_nsset_data == history_info_data_6.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_7.at(1).next_historyid == history_info_data_7.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_7.at(0).info_nsset_data.crhistoryid == info_data_7.info_nsset_data.crhistoryid);
+
+    //rem tech contact
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).rem_tech_contact(admin_contact3_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_8 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_8 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_7_with_changes = info_data_7;
+
+    //updated historyid
+    BOOST_CHECK(info_data_7.info_nsset_data.historyid !=info_data_8.info_nsset_data.historyid);
+    info_data_7_with_changes.info_nsset_data.historyid = info_data_8.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_8.info_nsset_data.update_registrar_handle));
+    info_data_7_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_7_with_changes.info_nsset_data.update_time = info_data_8.info_nsset_data.update_time;
+
+    //rem tech contact
+    info_data_7_with_changes.info_nsset_data.tech_contacts.erase(std::remove(
+            info_data_7_with_changes.info_nsset_data.tech_contacts.begin()
+            , info_data_7_with_changes.info_nsset_data.tech_contacts.end()
+            , admin_contact3_handle));
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_7_with_changes == info_data_8);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_8.at(0) == info_data_8);
+    BOOST_CHECK(history_info_data_8.at(1) == info_data_7);
+    BOOST_CHECK(history_info_data_8.at(2) == info_data_6);
+    BOOST_CHECK(history_info_data_8.at(3) == info_data_5);
+    BOOST_CHECK(history_info_data_8.at(4) == info_data_4);
+    BOOST_CHECK(history_info_data_8.at(5) == info_data_3);
+    BOOST_CHECK(history_info_data_8.at(6) == info_data_2);
+    BOOST_CHECK(history_info_data_8.at(7) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_8.at(1).info_nsset_data == history_info_data_7.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_8.at(1).next_historyid == history_info_data_8.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_8.at(0).info_nsset_data.crhistoryid == info_data_8.info_nsset_data.crhistoryid);
+
+    //add tech contact
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_tech_contact(admin_contact3_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_9 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_9 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_8_with_changes = info_data_8;
+
+    //updated historyid
+    BOOST_CHECK(info_data_8.info_nsset_data.historyid !=info_data_9.info_nsset_data.historyid);
+    info_data_8_with_changes.info_nsset_data.historyid = info_data_9.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_9.info_nsset_data.update_registrar_handle));
+    info_data_8_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_8_with_changes.info_nsset_data.update_time = info_data_9.info_nsset_data.update_time;
+
+    //add tech contact
+    info_data_8_with_changes.info_nsset_data.tech_contacts.push_back(admin_contact3_handle);
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_8_with_changes == info_data_9);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_9.at(0) == info_data_9);
+    BOOST_CHECK(history_info_data_9.at(1) == info_data_8);
+    BOOST_CHECK(history_info_data_9.at(2) == info_data_7);
+    BOOST_CHECK(history_info_data_9.at(3) == info_data_6);
+    BOOST_CHECK(history_info_data_9.at(4) == info_data_5);
+    BOOST_CHECK(history_info_data_9.at(5) == info_data_4);
+    BOOST_CHECK(history_info_data_9.at(6) == info_data_3);
+    BOOST_CHECK(history_info_data_9.at(7) == info_data_2);
+    BOOST_CHECK(history_info_data_9.at(8) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_9.at(1).info_nsset_data == history_info_data_8.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_9.at(1).next_historyid == history_info_data_9.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_9.at(0).info_nsset_data.crhistoryid == info_data_9.info_nsset_data.crhistoryid);
+
+    //set authinfopw
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_authinfo("passw").exec(ctx);
+
+    Fred::InfoNssetOutput info_data_10 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_10 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_9_with_changes = info_data_9;
+
+    //updated historyid
+    BOOST_CHECK(info_data_9.info_nsset_data.historyid !=info_data_10.info_nsset_data.historyid);
+    info_data_9_with_changes.info_nsset_data.historyid = info_data_10.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_10.info_nsset_data.update_registrar_handle));
+    info_data_9_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_9_with_changes.info_nsset_data.update_time = info_data_10.info_nsset_data.update_time;
+
+    //set authinfopw
+    info_data_9_with_changes.info_nsset_data.authinfopw = "passw";
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_9_with_changes == info_data_10);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_10.at(0) == info_data_10);
+    BOOST_CHECK(history_info_data_10.at(1) == info_data_9);
+    BOOST_CHECK(history_info_data_10.at(2) == info_data_8);
+    BOOST_CHECK(history_info_data_10.at(3) == info_data_7);
+    BOOST_CHECK(history_info_data_10.at(4) == info_data_6);
+    BOOST_CHECK(history_info_data_10.at(5) == info_data_5);
+    BOOST_CHECK(history_info_data_10.at(6) == info_data_4);
+    BOOST_CHECK(history_info_data_10.at(7) == info_data_3);
+    BOOST_CHECK(history_info_data_10.at(8) == info_data_2);
+    BOOST_CHECK(history_info_data_10.at(9) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_10.at(1).info_nsset_data == history_info_data_9.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_10.at(1).next_historyid == history_info_data_10.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_10.at(0).info_nsset_data.crhistoryid == info_data_10.info_nsset_data.crhistoryid);
+
+    //set logd request_id
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_logd_request_id(1).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_11 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_11 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_10_with_changes = info_data_10;
+
+    //updated historyid
+    BOOST_CHECK(info_data_10.info_nsset_data.historyid !=info_data_11.info_nsset_data.historyid);
+    info_data_10_with_changes.info_nsset_data.historyid = info_data_11.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_11.info_nsset_data.update_registrar_handle));
+    info_data_10_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_10_with_changes.info_nsset_data.update_time = info_data_11.info_nsset_data.update_time;
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_10_with_changes == info_data_11);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_11.at(0) == info_data_11);
+    BOOST_CHECK(history_info_data_11.at(1) == info_data_10);
+    BOOST_CHECK(history_info_data_11.at(2) == info_data_9);
+    BOOST_CHECK(history_info_data_11.at(3) == info_data_8);
+    BOOST_CHECK(history_info_data_11.at(4) == info_data_7);
+    BOOST_CHECK(history_info_data_11.at(5) == info_data_6);
+    BOOST_CHECK(history_info_data_11.at(6) == info_data_5);
+    BOOST_CHECK(history_info_data_11.at(7) == info_data_4);
+    BOOST_CHECK(history_info_data_11.at(8) == info_data_3);
+    BOOST_CHECK(history_info_data_11.at(9) == info_data_2);
+    BOOST_CHECK(history_info_data_11.at(10) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_11.at(1).info_nsset_data == history_info_data_10.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_11.at(1).next_historyid == history_info_data_11.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_11.at(0).info_nsset_data.crhistoryid == info_data_11.info_nsset_data.crhistoryid);
+
+    //check logd request_id
+    BOOST_CHECK(1 == history_info_data_11.at(0).logd_request_id);
+
+    //set tech check level
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_tech_check_level(2).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_12 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_12 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput info_data_11_with_changes = info_data_11;
+
+    //updated historyid
+    BOOST_CHECK(info_data_11.info_nsset_data.historyid !=info_data_12.info_nsset_data.historyid);
+    info_data_11_with_changes.info_nsset_data.historyid = info_data_12.info_nsset_data.historyid;
+
+    //updated update_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_12.info_nsset_data.update_registrar_handle));
+    info_data_11_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated update_time
+    info_data_11_with_changes.info_nsset_data.update_time = info_data_12.info_nsset_data.update_time;
+
+    //updated tech_check_level
+    BOOST_CHECK(2 == info_data_12.info_nsset_data.tech_check_level);
+    info_data_11_with_changes.info_nsset_data.tech_check_level = 2;
+
+
+    //check changes made by last update
+    BOOST_CHECK(info_data_11_with_changes == info_data_12);
+
+    //check info domain history against info domain
+    BOOST_CHECK(history_info_data_12.at(0) == info_data_12);
+    BOOST_CHECK(history_info_data_12.at(1) == info_data_11);
+    BOOST_CHECK(history_info_data_12.at(2) == info_data_10);
+    BOOST_CHECK(history_info_data_12.at(3) == info_data_9);
+    BOOST_CHECK(history_info_data_12.at(4) == info_data_8);
+    BOOST_CHECK(history_info_data_12.at(5) == info_data_7);
+    BOOST_CHECK(history_info_data_12.at(6) == info_data_6);
+    BOOST_CHECK(history_info_data_12.at(7) == info_data_5);
+    BOOST_CHECK(history_info_data_12.at(8) == info_data_4);
+    BOOST_CHECK(history_info_data_12.at(9) == info_data_3);
+    BOOST_CHECK(history_info_data_12.at(10) == info_data_2);
+    BOOST_CHECK(history_info_data_12.at(11) == info_data_1);
+
+    //check info domain history against last info domain history
+    BOOST_CHECK(history_info_data_12.at(1).info_nsset_data == history_info_data_11.at(0).info_nsset_data);
+
+    //check historyid
+    BOOST_CHECK(history_info_data_12.at(1).next_historyid == history_info_data_12.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_12.at(0).info_nsset_data.crhistoryid == info_data_12.info_nsset_data.crhistoryid);
+
+    ctx.commit_transaction();
 }//update_nsset
 
 

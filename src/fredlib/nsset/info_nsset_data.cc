@@ -109,14 +109,14 @@ namespace Fred
         for(std::vector<std::string>::size_type i = 0
             ; i != dns_hosts.size(); ++i)
         {
-            lhs_dns_hosts.insert(boost::algorithm::to_upper_copy(dns_hosts[i].get_fqdn()));
+            lhs_dns_hosts.insert(boost::algorithm::to_lower_copy(dns_hosts[i].get_fqdn()));
         }
 
         std::set<std::string> rhs_dns_hosts;
         for(std::vector<std::string>::size_type i = 0
             ; i != rhs.dns_hosts.size(); ++i)
         {
-            rhs_dns_hosts.insert(boost::algorithm::to_upper_copy(rhs.dns_hosts[i].get_fqdn()));
+            rhs_dns_hosts.insert(boost::algorithm::to_lower_copy(rhs.dns_hosts[i].get_fqdn()));
         }
 
         bool result_dns_hosts = (lhs_dns_hosts == rhs_dns_hosts);
@@ -193,6 +193,7 @@ namespace Fred
                 && result_update_registrar_handle
                 && result_update_time
                 && result_transfer_time
+                && result_tech_check_level
                 && result_dns_hosts
                 && result_tech_contacts
                 && result_delete_time
