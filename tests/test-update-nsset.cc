@@ -131,95 +131,6 @@ BOOST_AUTO_TEST_CASE(info_nsset)
     Fred::InfoNssetOutput nsset_info2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).set_lock().exec(ctx);
 }
 
-/**
- * test UpdateNsset
- * test UpdateNsset construction and methods calls with precreated data
- * calls in test shouldn't throw
- */
-BOOST_AUTO_TEST_CASE(update_nsset)
-{
-    Fred::OperationContext ctx;
-
-    std::string registrar_handle = static_cast<std::string>(
-                ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
-    BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
-
-    std::string xmark = RandomDataGenerator().xnumstring(6);
-
-    std::string admin_contact2_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact2_handle,registrar_handle)
-        .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
-        .set_disclosename(true)
-        .set_street1(std::string("STR1")+xmark)
-        .set_city("Praha").set_postalcode("11150").set_country("CZ")
-        .set_discloseaddress(true)
-        .exec(ctx);
-
-    std::string admin_contact3_handle = std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact3_handle,registrar_handle)
-        .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
-        .set_disclosename(true)
-        .set_street1(std::string("STR1")+xmark)
-        .set_city("Praha").set_postalcode("11150").set_country("CZ")
-        .set_discloseaddress(true)
-        .exec(ctx);
-
-    std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
-    Fred::CreateNsset(test_nsset_handle, registrar_handle)
-        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
-            )
-            .exec(ctx);
-
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).exec(ctx);
-
-    Fred::UpdateNsset(test_nsset_handle//handle
-            , registrar_handle//registrar
-            , Optional<std::string>()//authinfo
-            , std::vector<Fred::DnsHost>() //add_dns
-            , std::vector<std::string>() //rem_dns
-            , std::vector<std::string>() //add_tech_contact
-            , std::vector<std::string>() //rem_tech_contact
-            , Optional<short>() //tech_check_level
-            , Optional<unsigned long long>() //logd_request_id
-            ).exec(ctx);
-
-    Fred::UpdateNsset(test_nsset_handle//handle
-            , registrar_handle//registrar
-                , Optional<std::string>("passwd")//authinfo
-                , Util::vector_of<Fred::DnsHost>
-                    (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //add_dns
-                    (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2"))) //add_dns
-                , Util::vector_of<std::string>("a.ns.nic.cz") //rem_dns
-                , Util::vector_of<std::string>(admin_contact3_handle) //std::vector<std::string>() //add_tech_contact
-                , Util::vector_of<std::string>(admin_contact3_handle) //std::vector<std::string>() //rem_tech_contact
-                , Optional<short>(0) //tech_check_level
-                , Optional<unsigned long long>(0) //logd_request_id
-                ).exec(ctx);
-
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle)
-        .add_dns(Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))
-        .rem_dns("b.ns.nic.cz")
-        .add_tech_contact(admin_contact3_handle)
-        .rem_tech_contact(admin_contact3_handle)
-        .set_authinfo("passw")
-        .set_logd_request_id(0)
-        .set_tech_check_level(0)
-    .exec(ctx);
-
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_dns(Fred::DnsHost("host3",  Util::vector_of<std::string>("127.0.0.5")("127.1.1.5"))).exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).rem_dns("host2").exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_tech_contact(admin_contact3_handle).exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).rem_tech_contact(admin_contact3_handle).exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_authinfo("passw").exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_logd_request_id(0).exec(ctx);
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_tech_check_level(0).exec(ctx);
-
-    //ctx.commit_transaction();
-}//update_nsset
-
-
 struct update_nsset_fixture
 {
     Fred::OperationContext ctx;
@@ -267,6 +178,65 @@ struct update_nsset_fixture
     ~update_nsset_fixture()
     {}
 };
+
+
+/**
+ * test UpdateNsset
+ * test UpdateNsset construction and methods calls with precreated data
+ * calls in test shouldn't throw
+ */
+BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
+{
+
+
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).exec(ctx);
+
+    Fred::UpdateNsset(test_nsset_handle//handle
+            , registrar_handle//registrar
+            , Optional<std::string>()//authinfo
+            , std::vector<Fred::DnsHost>() //add_dns
+            , std::vector<std::string>() //rem_dns
+            , std::vector<std::string>() //add_tech_contact
+            , std::vector<std::string>() //rem_tech_contact
+            , Optional<short>() //tech_check_level
+            , Optional<unsigned long long>() //logd_request_id
+            ).exec(ctx);
+
+    Fred::UpdateNsset(test_nsset_handle//handle
+            , registrar_handle//registrar
+                , Optional<std::string>("passwd")//authinfo
+                , Util::vector_of<Fred::DnsHost>
+                    (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //add_dns
+                    (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2"))) //add_dns
+                , Util::vector_of<std::string>("a.ns.nic.cz") //rem_dns
+                , Util::vector_of<std::string>(admin_contact2_handle) //std::vector<std::string>() //add_tech_contact
+                , Util::vector_of<std::string>(admin_contact2_handle) //std::vector<std::string>() //rem_tech_contact
+                , Optional<short>(0) //tech_check_level
+                , Optional<unsigned long long>(0) //logd_request_id
+                ).exec(ctx);
+
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle)
+        .add_dns(Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))
+        .rem_dns("b.ns.nic.cz")
+        .add_tech_contact(admin_contact2_handle)
+        .rem_tech_contact(admin_contact2_handle)
+        .set_authinfo("passw")
+        .set_logd_request_id(0)
+        .set_tech_check_level(0)
+    .exec(ctx);
+
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_dns(Fred::DnsHost("host3",  Util::vector_of<std::string>("127.0.0.5")("127.1.1.5"))).exec(ctx);
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).rem_dns("host2").exec(ctx);
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).rem_tech_contact(admin_contact3_handle).exec(ctx);
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_tech_contact(admin_contact3_handle).exec(ctx);
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_authinfo("passw").exec(ctx);
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_logd_request_id(0).exec(ctx);
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_tech_check_level(0).exec(ctx);
+
+    //ctx.commit_transaction();
+}//update_nsset
+
+
 
 /**
  * test UpdateNsset with wrong handle
