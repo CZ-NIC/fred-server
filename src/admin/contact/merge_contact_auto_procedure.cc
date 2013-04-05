@@ -4,8 +4,6 @@
 #include "fredlib/contact/merge_contact_email_notification_data.h"
 #include "fredlib/poll/create_update_object_poll_message.h"
 #include "fredlib/poll/create_delete_contact_poll_message.h"
-#include "mailer_manager.h"
-#include "mailer.h"
 #include "util/util.h"
 
 #include <boost/algorithm/string/join.hpp>
@@ -14,8 +12,9 @@
 #include <sstream>
 
 
-namespace Fred {
-namespace Contact {
+namespace Admin {
+
+
 
 void email_notification(Fred::Mailer::Manager& mm
         , const std::vector<Fred::MergeContactEmailNotificationInput>& email_notification_input_vector)
@@ -101,11 +100,11 @@ void email_notification(Fred::Mailer::Manager& mm
 }
 
 void logger_merge_contact_transform_output_data(
-        const MergeContactOutput &_merge_data,
+        const Fred::MergeContactOutput &_merge_data,
         Fred::Logger::RequestProperties &_properties,
         Fred::Logger::ObjectReferences &_references)
 {
-    for (std::vector<MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
+    for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
             i != _merge_data.update_domain_registrant.end(); ++i)
     {
         _properties.push_back(Fred::Logger::RequestProperty("command", "update_domain", false));
@@ -113,7 +112,7 @@ void logger_merge_contact_transform_output_data(
         _properties.push_back(Fred::Logger::RequestProperty("registrant", i->set_registrant, true));
         _references.push_back(Fred::Logger::ObjectReference("domain", i->domain_id));
     }
-    for (std::vector<MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
+    for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
             i != _merge_data.update_domain_admin_contact.end(); ++i)
     {
         _properties.push_back(Fred::Logger::RequestProperty("command", "update_domain", false));
@@ -122,7 +121,7 @@ void logger_merge_contact_transform_output_data(
         _properties.push_back(Fred::Logger::RequestProperty("addAdmin", i->add_admin_contact, true));
         _references.push_back(Fred::Logger::ObjectReference("domain", i->domain_id));
     }
-    for (std::vector<MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
+    for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
             i != _merge_data.update_nsset_tech_contact.end(); ++i)
     {
         _properties.push_back(Fred::Logger::RequestProperty("command", "update_nsset", false));
@@ -131,7 +130,7 @@ void logger_merge_contact_transform_output_data(
         _properties.push_back(Fred::Logger::RequestProperty("addTech", i->add_tech_contact, true));
         _references.push_back(Fred::Logger::ObjectReference("nsset", i->nsset_id));
     }
-    for (std::vector<MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
+    for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
             i != _merge_data.update_keyset_tech_contact.end(); ++i)
     {
         _properties.push_back(Fred::Logger::RequestProperty("command", "update_keyset", false));
@@ -181,7 +180,7 @@ void logger_merge_contact_close(
 void logger_merge_contact_close_request_success(
         Fred::Logger::LoggerClient &_logger_client,
         const unsigned long long _req_id,
-        const MergeContactOutput &_merge_data)
+        const Fred::MergeContactOutput &_merge_data)
 {
     Fred::Logger::RequestProperties props;
     Fred::Logger::ObjectReferences refs;
@@ -210,24 +209,24 @@ void logger_merge_contact_close_request_fail(
 }
 
 
-void create_poll_messages(const MergeContactOutput &_merge_data, Fred::OperationContext &_ctx)
+void create_poll_messages(const Fred::MergeContactOutput &_merge_data, Fred::OperationContext &_ctx)
 {
-    for (std::vector<MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
+    for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
             i != _merge_data.update_domain_registrant.end(); ++i)
     {
         Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
     }
-    for (std::vector<MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
+    for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
             i != _merge_data.update_domain_admin_contact.end(); ++i)
     {
         Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
     }
-    for (std::vector<MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
+    for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
             i != _merge_data.update_nsset_tech_contact.end(); ++i)
     {
         Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
     }
-    for (std::vector<MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
+    for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
             i != _merge_data.update_keyset_tech_contact.end(); ++i)
     {
         Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
@@ -288,24 +287,24 @@ struct MergeContactOperationSummary
     typedef std::map<std::string, OperationCount> RegistrarOperationMap;
     RegistrarOperationMap ops_by_registrar;
 
-    void add_merge_output(const MergeContactOutput &_merge_data)
+    void add_merge_output(const Fred::MergeContactOutput &_merge_data)
     {
-        for (std::vector<MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
+        for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
                 i != _merge_data.update_domain_registrant.end(); ++i)
         {
             ops_by_registrar[i->sponsoring_registrar].update_domain += 1;
         }
-        for (std::vector<MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
+        for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
                 i != _merge_data.update_domain_admin_contact.end(); ++i)
         {
             ops_by_registrar[i->sponsoring_registrar].update_domain += 1;
         }
-        for (std::vector<MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
+        for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
                 i != _merge_data.update_nsset_tech_contact.end(); ++i)
         {
             ops_by_registrar[i->sponsoring_registrar].update_nsset += 1;
         }
-        for (std::vector<MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
+        for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
                 i != _merge_data.update_keyset_tech_contact.end(); ++i)
         {
             ops_by_registrar[i->sponsoring_registrar].update_keyset += 1;
@@ -376,7 +375,7 @@ std::string format_header(const std::string &_text, OutputIndenter _indenter)
 
 
 std::string format_merge_contact_output(
-        const MergeContactOutput &_merge_data,
+        const Fred::MergeContactOutput &_merge_data,
         const std::string &_src_handle,
         const std::string &_dst_handle,
         const MergeContactSummaryInfo &_msi,
@@ -389,28 +388,28 @@ std::string format_merge_contact_output(
 
     output << format_header(header, _indenter);
 
-    for (std::vector<MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
+    for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
             i != _merge_data.update_domain_registrant.end(); ++i)
     {
         output << str(boost::format("  %1%  update_domain %2% (id=%3%, hid=%4%) -- new owner: %5%")
                 % i->sponsoring_registrar % i->fqdn % i->domain_id % i->history_id % i->set_registrant)
                  << std::endl;
     }
-    for (std::vector<MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
+    for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
             i != _merge_data.update_domain_admin_contact.end(); ++i)
     {
         output << str(boost::format("  %1%  update_domain %2% (id=%3%, hid=%4%) -- new admin-c: %5%")
                 % i->sponsoring_registrar % i->fqdn % i->domain_id % i->history_id % i->add_admin_contact)
                  << std::endl;
     }
-    for (std::vector<MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
+    for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
             i != _merge_data.update_nsset_tech_contact.end(); ++i)
     {
         output << str(boost::format("  %1%  update_nsset %2% (id=%3%, hid=%4%) -- new tech-c: %5%")
                 % i->sponsoring_registrar % i->handle % i->nsset_id % i->history_id % i->add_tech_contact)
                  << std::endl;
     }
-    for (std::vector<MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
+    for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
             i != _merge_data.update_keyset_tech_contact.end(); ++i)
     {
         output << str(boost::format("  %1%  update_keyset %2% (id=%3%, hid=%4%) -- new tech-c: %5%")
@@ -506,10 +505,10 @@ MergeContactAutoProcedure& MergeContactAutoProcedure::set_dry_run(
 
 
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_selection_filter_order(
-        const std::vector<ContactSelectionFilterType> &_selection_filter_order)
+        const std::vector<Fred::ContactSelectionFilterType> &_selection_filter_order)
 {
     /* XXX: this throws - should do better error reporting */
-    FactoryHaveSupersetOfKeysChecker<ContactSelectionFilterFactory>(_selection_filter_order).check();
+    FactoryHaveSupersetOfKeysChecker<Fred::ContactSelectionFilterFactory>(_selection_filter_order).check();
     selection_filter_order_ = _selection_filter_order;
     return *this;
 }
@@ -529,17 +528,17 @@ bool MergeContactAutoProcedure::is_set_dry_run() const
 }
 
 
-std::vector<ContactSelectionFilterType> MergeContactAutoProcedure::get_default_selection_filter_order() const
+std::vector<Fred::ContactSelectionFilterType> MergeContactAutoProcedure::get_default_selection_filter_order() const
 {
-    std::vector<ContactSelectionFilterType> tmp = boost::assign::list_of
-        (MCS_FILTER_IDENTIFIED_CONTACT)
-        (MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
-        (MCS_FILTER_HANDLE_MOJEID_SYNTAX)
-        (MCS_FILTER_MAX_DOMAINS_BOUND)
-        (MCS_FILTER_MAX_OBJECTS_BOUND)
-        (MCS_FILTER_RECENTLY_UPDATED)
-        (MCS_FILTER_NOT_REGCZNIC)
-        (MCS_FILTER_RECENTLY_CREATED);
+    std::vector<Fred::ContactSelectionFilterType> tmp = boost::assign::list_of
+        (Fred::MCS_FILTER_IDENTIFIED_CONTACT)
+        (Fred::MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
+        (Fred::MCS_FILTER_HANDLE_MOJEID_SYNTAX)
+        (Fred::MCS_FILTER_MAX_DOMAINS_BOUND)
+        (Fred::MCS_FILTER_MAX_OBJECTS_BOUND)
+        (Fred::MCS_FILTER_RECENTLY_UPDATED)
+        (Fred::MCS_FILTER_NOT_REGCZNIC)
+        (Fred::MCS_FILTER_RECENTLY_CREATED);
     return tmp;
 }
 
@@ -571,7 +570,7 @@ void MergeContactAutoProcedure::exec()
 
 
     /* filter for best contact selection */
-    std::vector<ContactSelectionFilterType> selection_filter = selection_filter_order_;
+    std::vector<Fred::ContactSelectionFilterType> selection_filter = selection_filter_order_;
     if (selection_filter_order_.empty()) {
         selection_filter = this->get_default_selection_filter_order();
     }
@@ -582,7 +581,7 @@ void MergeContactAutoProcedure::exec()
     OutputIndenter indenter(2, 0, ' ');
     std::ostream &out_stream = std::cout;
 
-    std::set<std::string> any_dup_set = FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
+    std::set<std::string> any_dup_set = Fred::Contact::FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
     while (any_dup_set.size() >= 2)
     {
         /* one specific contact set merges scope */
@@ -601,7 +600,7 @@ void MergeContactAutoProcedure::exec()
                     % boost::algorithm::join(dup_set, ", "));
 
             /* compute best handle to merge all others onto */
-            MergeContactSelectionOutput contact_select = MergeContactSelection(
+            Fred::MergeContactSelectionOutput contact_select = Fred::MergeContactSelection(
                     std::vector<std::string>(dup_set.begin(), dup_set.end()), selection_filter).exec(octx);
             std::string winner_handle = contact_select.handle;
             octx.get_log().debug(boost::format("winner handle: %1%") % winner_handle);
@@ -611,8 +610,8 @@ void MergeContactAutoProcedure::exec()
             /* merge first one */
             std::string pick_one = *(dup_set.begin());
 
-            MergeContactOutput merge_data;
-            MergeContact merge_op = MergeContact(pick_one, winner_handle, system_registrar);
+            Fred::MergeContactOutput merge_data;
+            Fred::MergeContact merge_op = Fred::MergeContact(pick_one, winner_handle, system_registrar);
             if (this->is_set_dry_run())
             {
                 Fred::OperationContext merge_octx;
@@ -637,7 +636,7 @@ void MergeContactAutoProcedure::exec()
                     merge_octx.commit_transaction();
                     /* save merge output for email notification */
                     email_notification_input_vector.push_back(
-                            MergeContactEmailNotificationInput(pick_one, winner_handle, merge_data));
+                            Fred::MergeContactEmailNotificationInput(pick_one, winner_handle, merge_data));
 
                     logger_merge_contact_close_request_success(logger_client_, req_id, merge_data);
                 }
@@ -661,7 +660,7 @@ void MergeContactAutoProcedure::exec()
 
             /* find contact duplicates for winner contact - if nothing changed in registry data this
              * would be the same list as in previous step but without the merged one */
-            dup_set = FindSpecificContactDuplicates(winner_handle).exec(octx);
+            dup_set = Fred::Contact::FindSpecificContactDuplicates(winner_handle).exec(octx);
             if (this->is_set_dry_run())
             {
                 dup_set = dry_run_info.remove_fake_deleted_from_set(dup_set);
@@ -675,7 +674,7 @@ void MergeContactAutoProcedure::exec()
             out_stream << merge_set_operation_info.format(indenter);
         }
 
-        FindAnyContactDuplicates new_dup_search = FindAnyContactDuplicates().set_registrar(registrar_);
+        Fred::Contact::FindAnyContactDuplicates new_dup_search = Fred::Contact::FindAnyContactDuplicates().set_registrar(registrar_);
         if (this->is_set_dry_run()) {
             new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded);
         }
@@ -697,6 +696,5 @@ void MergeContactAutoProcedure::exec()
 }
 
 
-}
 }
 

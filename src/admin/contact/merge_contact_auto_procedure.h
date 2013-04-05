@@ -2,15 +2,13 @@
 #define MERGE_CONTACT_AUTO_PROC_H__
 
 #include "util/types/optional.h"
-#include "fredlib/opcontext.h"
 #include "fredlib/logger_client.h"
+#include "fredlib/mailer.h"
 #include "fredlib/contact/merge_contact_selection.h"
-#include "mailer.h"
 
 
 
-namespace Fred {
-namespace Contact {
+namespace Admin {
 
 
 class MergeContactAutoProcedure
@@ -33,7 +31,7 @@ public:
     MergeContactAutoProcedure& set_dry_run(const optional_bool &_dry_run);
 
     MergeContactAutoProcedure& set_selection_filter_order(
-            const std::vector<ContactSelectionFilterType> &_selection_filter_order);
+            const std::vector<Fred::ContactSelectionFilterType> &_selection_filter_order);
 
     MergeContactAutoProcedure& set_verbose(const optional_ushort &_verbose);
 
@@ -43,7 +41,7 @@ public:
 private:
     bool is_set_dry_run() const;
 
-    std::vector<ContactSelectionFilterType> get_default_selection_filter_order() const;
+    std::vector<Fred::ContactSelectionFilterType> get_default_selection_filter_order() const;
 
     unsigned short get_verbose_level() const;
 
@@ -53,12 +51,11 @@ private:
     optional_string registrar_;
     optional_ulonglong limit_;
     optional_bool dry_run_;
-    std::vector<ContactSelectionFilterType> selection_filter_order_;
+    std::vector<Fred::ContactSelectionFilterType> selection_filter_order_;
     optional_ushort verbose_;
 };
 
 
-}
 }
 
 
