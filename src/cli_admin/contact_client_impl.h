@@ -34,6 +34,7 @@
 #include "commonclient.h"
 #include "fredlib/reminder.h"
 #include "fredlib/contact/merge_contact_auto_procedure.h"
+#include "admin/contact/merge_contact.h"
 #include "corba/logger_client_impl.h"
 
 
@@ -147,8 +148,34 @@ struct contact_merge_impl
     void operator()() const
     {
         Logging::Context ctx("contact_merge_impl");
+
+        FakedArgs orb_fa = CfgArgGroups::instance()->fa;
+
+        /* prepare logger corba client */
+        HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
+                   get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+
+        CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
+               , ns_args_ptr->get_nameservice_host()
+               , ns_args_ptr->get_nameservice_port()
+               , ns_args_ptr->get_nameservice_context());
+
+        std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
+                new Fred::Logger::LoggerCorbaClientImpl());
+
         ContactMergeArgs params = CfgArgGroups::instance()
             ->get_handler_ptr_by_type<HandleAdminClientContactMergeArgsGrp>()->params;
+
+        Fred::MergeContactOutput merge_data;
+        Admin::MergeContact merge_op = Admin::MergeContact(params.src, params.dst);
+        if (params.dry_run)
+        {
+            merge_data = merge_op.exec_dry_run();
+        }
+        else
+        {
+            merge_data = merge_op.exec(*(logger_client.get()));
+        }
 
         return;
     }
