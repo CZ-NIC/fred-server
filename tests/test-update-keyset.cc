@@ -53,6 +53,7 @@
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
+#include "fredlib/keyset/info_keyset.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -81,6 +82,75 @@
 BOOST_AUTO_TEST_SUITE(TestUpdateKeyset)
 
 const std::string server_name = "test-update-keyset";
+
+
+struct update_keyset_fixture
+{
+    Fred::OperationContext ctx;
+    std::string registrar_handle;
+    std::string xmark;
+    std::string admin_contact4_handle;
+    std::string admin_contact5_handle;
+    std::string admin_contact6_handle;
+    std::string test_keyset_handle;
+
+    update_keyset_fixture()
+    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
+    , xmark(RandomDataGenerator().xnumstring(6))
+    , admin_contact4_handle(std::string("TEST-ADMIN-CONTACT4-HANDLE")+xmark)
+    , admin_contact5_handle(std::string("TEST-ADMIN-CONTACT5-HANDLE")+xmark)
+    , admin_contact6_handle(std::string("TEST-ADMIN-CONTACT6-HANDLE")+xmark)
+    , test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
+    {
+        BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
+
+        Fred::CreateContact(admin_contact4_handle,registrar_handle)
+            .set_name(admin_contact4_handle+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        Fred::CreateContact(admin_contact5_handle,registrar_handle)
+            .set_name(admin_contact5_handle+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        Fred::CreateContact(admin_contact6_handle,registrar_handle)
+            .set_name(admin_contact6_handle+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        Fred::CreateKeyset(test_keyset_handle, registrar_handle)
+                .set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
+                .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
+                .exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+    ~update_keyset_fixture()
+    {}
+};
+
+/**
+ * test call InfoKeyset
+*/
+BOOST_FIXTURE_TEST_CASE(info_keyset, update_keyset_fixture )
+{
+    Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput keyset_info2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).set_lock().exec(ctx);
+
+    BOOST_CHECK(keyset_info1 == keyset_info2);
+}
+
+
 
 /**
  * test UpdateKeyset

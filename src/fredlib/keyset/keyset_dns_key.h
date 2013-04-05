@@ -25,6 +25,7 @@
 #define KEYSET_DNS_KEY_H_
 
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include "fredlib/opexception.h"
@@ -43,6 +44,7 @@ class DnsKey
     std::string key_;//base64 encoding
 public:
     virtual ~DnsKey(){}
+
     DnsKey(unsigned short _flags
             , unsigned short _protocol
             , unsigned short _alg
@@ -51,6 +53,13 @@ public:
     , protocol_(_protocol)
     , alg_(_alg)
     , key_(_key)
+    {}
+
+    DnsKey()
+    : flags_(0)
+    , protocol_(0)
+    , alg_(0)
+    //, key_("")
     {}
 
     unsigned short get_flags()
@@ -72,6 +81,50 @@ public:
     {
         return key_;
     }
+
+    bool operator==(const DnsKey& rhs) const
+    {
+        return (flags_ == rhs.flags_)
+            && (protocol_ == rhs.protocol_)
+            && (alg_ == rhs.alg_)
+            && (key_.compare( rhs.key_) == 0)
+            ;
+    }
+
+    bool operator!=(const DnsKey& rhs) const
+    {
+        return !this->operator ==(rhs);
+    }
+
+    void swap(DnsKey& dk) //throw()
+    {
+        std::swap(this->flags_, dk.flags_);
+        std::swap(this->protocol_, dk.protocol_);
+        std::swap(this->alg_, dk.alg_);
+        std::swap(this->key_, dk.key_);
+    }
+
+    DnsKey& operator=(const DnsKey& dk)
+    {
+        if (this != &dk)
+            DnsKey(dk).swap (*this); //copy and swap
+        return *this;
+    }
+
+    operator std::string() const
+    {
+        std::stringstream ret;
+
+        ret << "flags:" << flags_ << " protocol:" << protocol_ << " alg:" << alg_ << " key:" << key_ ;
+
+        return ret.str();
+    }
+
+    bool operator<(const DnsKey& rhs) const
+    {
+        return static_cast<std::string>(*this) < static_cast<std::string>(rhs);
+    }
+
 }; //class DnsKey
 
 
