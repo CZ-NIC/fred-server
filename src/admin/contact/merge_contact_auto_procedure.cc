@@ -1,9 +1,8 @@
 #include "admin/contact/merge_contact_auto_procedure.h"
+#include "admin/contact/merge_contact.h"
 #include "fredlib/contact/merge_contact.h"
 #include "fredlib/contact/find_contact_duplicates.h"
 #include "fredlib/contact/merge_contact_email_notification_data.h"
-#include "fredlib/poll/create_update_object_poll_message.h"
-#include "fredlib/poll/create_delete_contact_poll_message.h"
 #include "util/util.h"
 
 #include <boost/algorithm/string/join.hpp>
@@ -97,141 +96,6 @@ void email_notification(Fred::Mailer::Manager& mm
             enctx.get_log().error(errmsg.str());
         }
     }//for emails
-}
-
-void logger_merge_contact_transform_output_data(
-        const Fred::MergeContactOutput &_merge_data,
-        Fred::Logger::RequestProperties &_properties,
-        Fred::Logger::ObjectReferences &_references)
-{
-    for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
-            i != _merge_data.update_domain_registrant.end(); ++i)
-    {
-        _properties.push_back(Fred::Logger::RequestProperty("command", "update_domain", false));
-        _properties.push_back(Fred::Logger::RequestProperty("handle", i->fqdn, true));
-        _properties.push_back(Fred::Logger::RequestProperty("registrant", i->set_registrant, true));
-        _references.push_back(Fred::Logger::ObjectReference("domain", i->domain_id));
-    }
-    for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
-            i != _merge_data.update_domain_admin_contact.end(); ++i)
-    {
-        _properties.push_back(Fred::Logger::RequestProperty("command", "update_domain", false));
-        _properties.push_back(Fred::Logger::RequestProperty("handle", i->fqdn, true));
-        _properties.push_back(Fred::Logger::RequestProperty("remAdmin", i->rem_admin_contact, true));
-        _properties.push_back(Fred::Logger::RequestProperty("addAdmin", i->add_admin_contact, true));
-        _references.push_back(Fred::Logger::ObjectReference("domain", i->domain_id));
-    }
-    for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
-            i != _merge_data.update_nsset_tech_contact.end(); ++i)
-    {
-        _properties.push_back(Fred::Logger::RequestProperty("command", "update_nsset", false));
-        _properties.push_back(Fred::Logger::RequestProperty("handle", i->handle, true));
-        _properties.push_back(Fred::Logger::RequestProperty("remTech", i->rem_tech_contact, true));
-        _properties.push_back(Fred::Logger::RequestProperty("addTech", i->add_tech_contact, true));
-        _references.push_back(Fred::Logger::ObjectReference("nsset", i->nsset_id));
-    }
-    for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
-            i != _merge_data.update_keyset_tech_contact.end(); ++i)
-    {
-        _properties.push_back(Fred::Logger::RequestProperty("command", "update_keyset", false));
-        _properties.push_back(Fred::Logger::RequestProperty("handle", i->handle, true));
-        _properties.push_back(Fred::Logger::RequestProperty("remTech", i->rem_tech_contact, true));
-        _properties.push_back(Fred::Logger::RequestProperty("addTech", i->add_tech_contact, true));
-        _references.push_back(Fred::Logger::ObjectReference("keyset", i->keyset_id));
-    }
-}
-
-
-unsigned long long logger_merge_contact_create_request(
-        Fred::Logger::LoggerClient &_logger_client,
-        const std::string &_src_contact,
-        const std::string &_dst_contact)
-{
-    unsigned long long req_id = _logger_client.createRequest("", "Admin", "",
-            boost::assign::list_of
-                (Fred::Logger::RequestProperty("src_contact", _src_contact, false))
-                (Fred::Logger::RequestProperty("dst_contact", _dst_contact, false)),
-            Fred::Logger::ObjectReferences(),
-            "ContactMerge", 0);
-    if (req_id == 0) {
-        throw std::runtime_error("unable to log merge contact request");
-    }
-    return req_id;
-}
-
-
-void logger_merge_contact_close(
-        Fred::Logger::LoggerClient &_logger_client,
-        const unsigned long long _req_id,
-        Fred::Logger::RequestProperties &_properties,
-        Fred::Logger::ObjectReferences &_references,
-        const std::string &_result)
-{
-    if (_req_id) {
-        _properties.push_back(Fred::Logger::RequestProperty("opTRID", Util::make_svtrid(_req_id), false));
-        _logger_client.closeRequest(_req_id, "Admin", "",
-                _properties,
-                _references,
-                _result, 0);
-    }
-}
-
-
-void logger_merge_contact_close_request_success(
-        Fred::Logger::LoggerClient &_logger_client,
-        const unsigned long long _req_id,
-        const Fred::MergeContactOutput &_merge_data)
-{
-    Fred::Logger::RequestProperties props;
-    Fred::Logger::ObjectReferences refs;
-    logger_merge_contact_transform_output_data(_merge_data, props, refs),
-    logger_merge_contact_close(
-            _logger_client,
-            _req_id,
-            props,
-            refs,
-            "Success");
-}
-
-
-void logger_merge_contact_close_request_fail(
-        Fred::Logger::LoggerClient &_logger_client,
-        const unsigned long long _req_id)
-{
-    Fred::Logger::RequestProperties props;
-    Fred::Logger::ObjectReferences refs;
-    logger_merge_contact_close(
-            _logger_client,
-            _req_id,
-            props,
-            refs,
-            "Fail");
-}
-
-
-void create_poll_messages(const Fred::MergeContactOutput &_merge_data, Fred::OperationContext &_ctx)
-{
-    for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
-            i != _merge_data.update_domain_registrant.end(); ++i)
-    {
-        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
-    }
-    for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
-            i != _merge_data.update_domain_admin_contact.end(); ++i)
-    {
-        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
-    }
-    for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
-            i != _merge_data.update_nsset_tech_contact.end(); ++i)
-    {
-        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
-    }
-    for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
-            i != _merge_data.update_keyset_tech_contact.end(); ++i)
-    {
-        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
-    }
-    Fred::Poll::CreateDeleteContactPollMessage(_merge_data.contactid.src_contact_historyid).exec(_ctx);
 }
 
 
@@ -611,11 +475,10 @@ void MergeContactAutoProcedure::exec()
             std::string pick_one = *(dup_set.begin());
 
             Fred::MergeContactOutput merge_data;
-            Fred::MergeContact merge_op = Fred::MergeContact(pick_one, winner_handle, system_registrar);
+            Admin::MergeContact merge_op = Admin::MergeContact(pick_one, winner_handle, system_registrar);
             if (this->is_set_dry_run())
             {
-                Fred::OperationContext merge_octx;
-                merge_data = merge_op.exec_dry_run(merge_octx);
+                merge_data = merge_op.exec_dry_run();
 
                 dry_run_info.add_fake_deleted(pick_one);
                 dry_run_info.add_search_excluded(winner_handle);
@@ -624,27 +487,10 @@ void MergeContactAutoProcedure::exec()
             else
             {
                 /* MERGE ONE CONTACT */
-                unsigned long long req_id = 0;
-                try {
-                    req_id = logger_merge_contact_create_request(logger_client_, pick_one, winner_handle);
-
-                    Fred::OperationContext merge_octx;
-                    merge_data = merge_op.set_logd_request_id(req_id).exec(merge_octx);
-
-                    /* merge operation notification handling */
-                    create_poll_messages(merge_data, merge_octx);
-                    merge_octx.commit_transaction();
-                    /* save merge output for email notification */
-                    email_notification_input_vector.push_back(
-                            Fred::MergeContactEmailNotificationInput(pick_one, winner_handle, merge_data));
-
-                    logger_merge_contact_close_request_success(logger_client_, req_id, merge_data);
-                }
-                catch (...) {
-                    logger_merge_contact_close_request_fail(logger_client_, req_id);
-                    /* stop at first error */
-                    throw;
-                }
+                merge_data = merge_op.exec(logger_client_);
+                /* save output for later email notification */
+                email_notification_input_vector.push_back(
+                        Fred::MergeContactEmailNotificationInput(pick_one, winner_handle, merge_data));
             }
 
             if (this->get_verbose_level() > 0) {
