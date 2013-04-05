@@ -170,7 +170,8 @@ noinst_HEADERS = \
 		util/map_get.h \
 		src/corba/common_wrappers.h \
 		src/corba/contact_verification/corba_conversion.h \
-		util/optional_value.h
+		util/optional_value.h \
+		util/output_indenter.h
 
 
 noinst_LIBRARIES = \
@@ -236,7 +237,8 @@ sbin_PROGRAMS = \
 #
 util_libutil_a_SOURCES = \
 		util/random.cc \
-		util/util.cc
+		util/util.cc \
+		util/output_indenter.cc
 #
 # util/libutil.a
 
@@ -1534,7 +1536,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/merge_contact_logger.cc \
 		src/admin/contact/merge_contact_logger.h \
 		src/admin/contact/merge_contact_auto_procedure.cc \
-		src/admin/contact/merge_contact_auto_procedure.h
+		src/admin/contact/merge_contact_auto_procedure.h \
+		src/admin/contact/merge_contact_reporting.cc \
+		src/admin/contact/merge_contact_reporting.h
 
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)
