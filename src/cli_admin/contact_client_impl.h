@@ -33,7 +33,7 @@
 #include "cli_admin/contactclient.h"
 #include "commonclient.h"
 #include "fredlib/reminder.h"
-#include "fredlib/contact/merge_contact_auto_procedure.h"
+#include "admin/contact/merge_contact_auto_procedure.h"
 #include "admin/contact/merge_contact.h"
 #include "corba/logger_client_impl.h"
 

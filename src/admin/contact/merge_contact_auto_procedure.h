@@ -4,7 +4,7 @@
 #include "util/types/optional.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/logger_client.h"
-#include "merge_contact_selection.h"
+#include "fredlib/contact/merge_contact_selection.h"
 #include "mailer.h"
 
 
