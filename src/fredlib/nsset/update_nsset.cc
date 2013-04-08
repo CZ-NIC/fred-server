@@ -318,6 +318,22 @@ namespace Fred
         {
             for(std::vector<DnsHost>::iterator i = add_dns_.begin(); i != add_dns_.end(); ++i)
             {
+                {//precheck uniqueness
+                    Database::Result nsset_res = ctx.get_conn().exec_params(
+                    "SELECT nssetid, fqdn FROM host "
+                    " WHERE nssetid = $1::bigint "
+                    "  AND fqdn = LOWER($2::text) "
+                    , Database::query_param_list(nsset_id)(i->get_fqdn()));
+
+                    if (nsset_res.size() == 1)
+                    {
+                        std::string errmsg("dns host precheck uniqueness failed || invalid:dns fqdn: ");
+                        errmsg += boost::replace_all_copy(i->get_fqdn(),"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UNEX(errmsg.c_str());
+                    }
+                }
+
                 Database::Result add_host_id_res = ctx.get_conn().exec_params(
                     "INSERT INTO host (nssetid, fqdn) VALUES( "
                     " $1::integer, LOWER($2::text)) RETURNING id"
