@@ -35,6 +35,7 @@
 #include "fredlib/reminder.h"
 #include "admin/contact/merge_contact_auto_procedure.h"
 #include "admin/contact/merge_contact.h"
+#include "admin/contact/merge_contact_reporting.h"
 #include "corba/logger_client_impl.h"
 
 
@@ -166,7 +167,18 @@ struct contact_merge_impl
         ContactMergeArgs params = CfgArgGroups::instance()
             ->get_handler_ptr_by_type<HandleAdminClientContactMergeArgsGrp>()->params;
 
+        unsigned short verbose_level = 0;
+        if (params.verbose.is_value_set()) {
+            verbose_level = params.verbose.get_value();
+        }
+        if (params.dry_run) {
+            verbose_level = 1;
+        }
+
+
         Fred::MergeContactOutput merge_data;
+        Admin::MergeContactOperationSummary merge_operation_info;
+        Admin::MergeContactSummaryInfo merge_summary_info;
         Admin::MergeContact merge_op = Admin::MergeContact(params.src, params.dst);
         if (params.dry_run)
         {
@@ -175,6 +187,15 @@ struct contact_merge_impl
         else
         {
             merge_data = merge_op.exec(*(logger_client.get()));
+        }
+        merge_operation_info.add_merge_output(merge_data);
+        merge_summary_info.inc_merge_set();
+        merge_summary_info.inc_merge_operation();
+
+        if (verbose_level > 0) {
+            OutputIndenter indenter(2, 0, ' ');
+            std::cout << Admin::format_merge_contact_output(merge_data, params.src, params.dst, merge_summary_info, indenter);
+            std::cout << merge_operation_info.format(indenter.dive());
         }
 
         return;
