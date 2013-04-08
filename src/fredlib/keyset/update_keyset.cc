@@ -211,9 +211,7 @@ namespace Fred
                 Database::Result keyset_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
                 if (keyset_add_check_res.size() != 1)
                 {
-                    std::string errmsg("add tech contact failed || invalid:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " | invalid:tech contact: ";
+                    std::string errmsg("add tech contact failed || invalid:tech contact: ");
                     errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
                     errmsg += " |";
                     throw UKEX(errmsg.c_str());
@@ -264,9 +262,7 @@ namespace Fred
                 Database::Result keyset_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
                 if (keyset_del_res.size() != 1)
                 {
-                    std::string errmsg("delete tech contact failed || invalid:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " | invalid:tech contact: ";
+                    std::string errmsg("delete tech contact failed || invalid:tech contact: ");
                     errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
                     errmsg += " |";
                     throw UKEX(errmsg.c_str());
