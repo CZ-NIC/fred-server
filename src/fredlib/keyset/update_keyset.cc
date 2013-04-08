@@ -275,20 +275,15 @@ namespace Fred
         {
             for(std::vector<DnsKey>::iterator i = rem_dns_key_.begin(); i != rem_dns_key_.end(); ++i)
             {
-                std::string nwkey = i->get_key();
-
-                //erase spaces in key
-                nwkey.erase(std::remove_if(nwkey.begin(), nwkey.end(), isspace), nwkey.end());
-
                 Database::Result rem_dns_key_res = ctx.get_conn().exec_params(
                     "DELETE FROM dnskey WHERE keysetid = $1::integer "
                     " AND flags = $2::integer AND protocol = $3::integer AND alg = $4::integer AND key = $5::text "
                     " RETURNING id"
-                    , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(nwkey));
+                    , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
                 if (rem_dns_key_res.size() != 1)
                 {
                     std::string errmsg("delete dns keys || not found:dns key: ");
-                    errmsg += boost::replace_all_copy(nwkey,"|", "[pipe]");//quote pipes
+                    errmsg += boost::replace_all_copy(static_cast<std::string>(*i),"|", "[pipe]");//quote pipes
                     errmsg += " |";
                     throw UKEX(errmsg.c_str());
                 }
@@ -300,19 +295,14 @@ namespace Fred
         {
             for(std::vector<DnsKey>::iterator i = add_dns_key_.begin(); i != add_dns_key_.end(); ++i)
             {
-                std::string nwkey = i->get_key();
-
-                //erase spaces in key
-                nwkey.erase(std::remove_if(nwkey.begin(), nwkey.end(), isspace), nwkey.end());
-
                 Database::Result add_dns_key_res = ctx.get_conn().exec_params(
                     "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
                     ", $2::integer, $3::integer, $4::integer, $5::text) RETURNING id"
-                    , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(nwkey));
+                    , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
                 if (add_dns_key_res.size() != 1)
                 {
                     std::string errmsg("add dns keys || invalid:dns key: ");
-                    errmsg += boost::replace_all_copy(nwkey,"|", "[pipe]");//quote pipes
+                    errmsg += boost::replace_all_copy(static_cast<std::string>(*i),"|", "[pipe]");//quote pipes
                     errmsg += " |";
                     throw UKEX(errmsg.c_str());
                 }

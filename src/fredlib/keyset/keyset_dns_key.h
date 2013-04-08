@@ -53,7 +53,10 @@ public:
     , protocol_(_protocol)
     , alg_(_alg)
     , key_(_key)
-    {}
+    {
+        //erase spaces in key
+        key_.erase(std::remove_if(key_.begin(), key_.end(), isspace), key_.end());
+    }
 
     DnsKey()
     : flags_(0)
