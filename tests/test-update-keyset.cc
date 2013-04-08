@@ -230,4 +230,179 @@ BOOST_AUTO_TEST_CASE(update_keyset)
 
 }//update_keyset
 
+/**
+ * test UpdateKeyset with wrong handle
+ */
+
+BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_handle, update_keyset_fixture )
+{
+
+    std::string bad_test_keyset_handle = std::string("bad")+test_keyset_handle;
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateKeyset(bad_test_keyset_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:handle")->second).compare(bad_test_keyset_handle) == 0);
+    }
+}
+
+/**
+ * test UpdateKeyset with wrong registrar
+ */
+BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_registrar, update_keyset_fixture)
+{
+    std::string bad_registrar_handle = registrar_handle+xmark;
+
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateKeyset(test_keyset_handle, bad_registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:registrar")->second).compare(bad_registrar_handle) == 0);
+    }
+
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
+
+}
+
+/**
+ * test UpdateKeyset add non-existing tech contact
+ */
+BOOST_FIXTURE_TEST_CASE(update_keyset_add_wrong_tech_contact, update_keyset_fixture)
+{
+    std::string bad_tech_contact_handle = admin_contact5_handle+xmark;
+
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
+        .add_tech_contact(bad_tech_contact_handle)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:tech contact")->second).compare(bad_tech_contact_handle) == 0);
+    }
+
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateKeyset add already added tech contact
+ */
+BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_tech_contact, update_keyset_fixture)
+{
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
+        .add_tech_contact(admin_contact6_handle)//already added in fixture
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("already set:tech contact")->second).compare(admin_contact6_handle) == 0);
+    }
+
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
+}
+
+
+/**
+ * test UpdateKeyset remove non-existing tech contact
+ */
+BOOST_FIXTURE_TEST_CASE(update_keyset_rem_wrong_tech_contact, update_keyset_fixture)
+{
+    std::string bad_tech_contact_handle = admin_contact6_handle+xmark;
+
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
+        .rem_tech_contact(bad_tech_contact_handle)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:tech contact")->second).compare(bad_tech_contact_handle) == 0);
+    }
+
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateKeyset remove existing unassigned tech contact
+ */
+BOOST_FIXTURE_TEST_CASE(update_keyset_rem_unassigned_tech_contact, update_keyset_fixture)
+{
+    std::string bad_tech_contact_handle = admin_contact4_handle;
+
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
+        .rem_tech_contact(bad_tech_contact_handle)
+        .exec(ctx);
+
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:tech contact")->second).compare(bad_tech_contact_handle) == 0);
+    }
+
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
+}
+
+
+
+
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateKeyset
