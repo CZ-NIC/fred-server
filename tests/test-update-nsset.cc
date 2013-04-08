@@ -884,6 +884,36 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_unassigned_tech_contact, update_nsset_f
     BOOST_CHECK(info_data_2.info_nsset_data.delete_time.isnull());
 }
 
+
+/**
+ * test UpdateNsset add already added dnshost
+ */
+BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_dnshost, update_nsset_fixture)
+{
+    Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateNsset(test_nsset_handle, registrar_handle)
+        .add_dns(Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))//already added in fixture
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:dns fqdn")->second).compare("a.ns.nic.cz") == 0);
+    }
+
+    Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_nsset_data.delete_time.isnull());
+}
+
+
 /**
  * test InfoNssetHistory
  * create and update test nsset
