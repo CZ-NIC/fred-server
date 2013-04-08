@@ -41,17 +41,17 @@ class DnsHost
         std::vector<std::string> inet_addr_;
     public:
         virtual ~DnsHost(){}
-        DnsHost(const std::string& _fqdn, const std::vector<std::string> _inet_addr)
+        DnsHost(const std::string& _fqdn, const std::vector<std::string>& _inet_addr)
         : fqdn_(_fqdn)
         , inet_addr_(_inet_addr)
         {}
 
-        std::string get_fqdn()
+        std::string get_fqdn() const
         {
             return fqdn_;
         }
 
-        std::vector<std::string> get_inet_addr()
+        std::vector<std::string> get_inet_addr() const
         {
             return inet_addr_;
         }

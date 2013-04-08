@@ -280,9 +280,7 @@ namespace Fred
                 Database::Result nsset_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
                 if (nsset_del_res.size() != 1)
                 {
-                    std::string errmsg("delete tech contact failed || invalid:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " | invalid:tech contact: ";
+                    std::string errmsg("delete tech contact failed || invalid:tech contact: ");
                     errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
                     errmsg += " |";
                     throw UNEX(errmsg.c_str());
@@ -320,6 +318,22 @@ namespace Fred
         {
             for(std::vector<DnsHost>::iterator i = add_dns_.begin(); i != add_dns_.end(); ++i)
             {
+                {//precheck uniqueness
+                    Database::Result nsset_res = ctx.get_conn().exec_params(
+                    "SELECT nssetid, fqdn FROM host "
+                    " WHERE nssetid = $1::bigint "
+                    "  AND fqdn = LOWER($2::text) "
+                    , Database::query_param_list(nsset_id)(i->get_fqdn()));
+
+                    if (nsset_res.size() == 1)
+                    {
+                        std::string errmsg("dns host precheck uniqueness failed || invalid:dns fqdn: ");
+                        errmsg += boost::replace_all_copy(i->get_fqdn(),"|", "[pipe]");//quote pipes
+                        errmsg += " |";
+                        throw UNEX(errmsg.c_str());
+                    }
+                }
+
                 Database::Result add_host_id_res = ctx.get_conn().exec_params(
                     "INSERT INTO host (nssetid, fqdn) VALUES( "
                     " $1::integer, LOWER($2::text)) RETURNING id"
@@ -338,18 +352,21 @@ namespace Fred
 
                 for(std::vector<std::string>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
                 {
-                    Database::Result add_host_ipaddr_res = ctx.get_conn().exec_params(
-                        "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
-                        " VALUES($1::integer, $2::integer, $3::inet) RETURNING hostid"
-                        , Database::query_param_list(add_host_id)(nsset_id)(*j));
-                    if(add_host_ipaddr_res.size() != 1)
-                    {
-                        std::string errmsg("add dns hosts || invalid:ipaddr: ");
-                        errmsg += boost::replace_all_copy(*j,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UNEX(errmsg.c_str());
-                    }
-
+                    try
+                     {
+                         Database::Result add_host_ipaddr_res = ctx.get_conn().exec_params(
+                         "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
+                         " VALUES($1::integer, $2::integer, $3::inet) RETURNING hostid"
+                         , Database::query_param_list(add_host_id)(nsset_id)(*j));
+                     }
+                     catch(Database::ResultFailed& ex)
+                     {
+                         std::string errmsg = ex.what();
+                         errmsg +=" || invalid:ipaddr: ";
+                         errmsg += boost::replace_all_copy(*j,"|", "[pipe]");//quote pipes
+                         errmsg += " |";
+                         throw UNEX(errmsg.c_str());
+                     }
                 }//for j
             }//for i
         }//if add dns hosts
