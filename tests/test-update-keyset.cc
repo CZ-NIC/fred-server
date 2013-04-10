@@ -54,6 +54,8 @@
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/keyset/info_keyset.h"
+#include "fredlib/keyset/info_keyset_history.h"
+#include "fredlib/keyset/info_keyset_compare.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -402,6 +404,40 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_unassigned_tech_contact, update_keyset
     BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
 }
 
+
+/**
+ * test InfoKeysetHistory
+ * create and update test keyset
+ * compare successive states from info keyset with states from info keyset history
+ * check initial and next historyid in info keyset history
+ * check valid_from and valid_to in info keyset history
+ */
+BOOST_FIXTURE_TEST_CASE(info_keyset_history_test, update_keyset_fixture)
+{
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    //call update
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+
+    BOOST_CHECK(history_info_data.at(0) == info_data_2);
+    BOOST_CHECK(history_info_data.at(1) == info_data_1);
+
+    BOOST_CHECK(history_info_data.at(1).next_historyid == history_info_data.at(0).info_keyset_data.historyid);
+
+    BOOST_CHECK(history_info_data.at(1).history_valid_from < history_info_data.at(1).history_valid_to);
+    BOOST_CHECK(history_info_data.at(1).history_valid_to <= history_info_data.at(0).history_valid_from);
+    BOOST_CHECK(history_info_data.at(0).history_valid_to.isnull());
+
+    BOOST_CHECK(history_info_data.at(1).info_keyset_data.crhistoryid == history_info_data.at(1).info_keyset_data.historyid);
+}
 
 
 
