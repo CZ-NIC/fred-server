@@ -199,10 +199,6 @@ BOOST_AUTO_TEST_CASE(update_keyset)
 
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).exec(ctx);
 
-    Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
-        .add_dns_key(Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"))
-        .exec(ctx);
-
     Fred::UpdateKeyset(test_keyset_handle//const std::string& handle
                 , registrar_handle//const std::string& registrar
                 , Optional<std::string>("testauthinfo")//const Optional<std::string>& authinfo
@@ -397,6 +393,65 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_unassigned_tech_contact, update_keyset
         ex.callback_exception_params(boost::ref(cb));
         BOOST_CHECK((cb.get().size()) == 1);
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:tech contact")->second).compare(bad_tech_contact_handle) == 0);
+    }
+
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
+}
+
+
+/**
+ * test UpdateKeyset add already added dnskey
+ */
+BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_dnskey, update_keyset_fixture)
+{
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
+        .add_dns_key(Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"))
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:dns key")->second)
+            .compare(Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")) == 0);
+    }
+
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateKeyset remove unassigned dnskey
+ */
+BOOST_FIXTURE_TEST_CASE(update_keyset_unassigned_dnskey, update_keyset_fixture)
+{
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
+        .rem_dns_key(Fred::DnsKey(257, 3, 5, "unassignedkey"))
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:dns key")->second)
+            .compare(Fred::DnsKey(257, 3, 5, "unassignedkey")) == 0);
     }
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);

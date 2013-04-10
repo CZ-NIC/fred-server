@@ -295,17 +295,22 @@ namespace Fred
         {
             for(std::vector<DnsKey>::iterator i = add_dns_key_.begin(); i != add_dns_key_.end(); ++i)
             {
-                Database::Result add_dns_key_res = ctx.get_conn().exec_params(
-                    "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
-                    ", $2::integer, $3::integer, $4::integer, $5::text) RETURNING id"
-                    , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
-                if (add_dns_key_res.size() != 1)
+                try
                 {
-                    std::string errmsg("add dns keys || invalid:dns key: ");
+                    ctx.get_conn().exec_params(
+                    "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
+                    ", $2::integer, $3::integer, $4::integer, $5::text)"
+                    , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
+                }
+                catch(Database::ResultFailed& ex)
+                {
+                    std::string errmsg = ex.what();
+                    errmsg += " add dns keys || invalid:dns key: ";
                     errmsg += boost::replace_all_copy(static_cast<std::string>(*i),"|", "[pipe]");//quote pipes
                     errmsg += " |";
                     throw UKEX(errmsg.c_str());
                 }
+
             }//for i
         }//if add dns keys
 
