@@ -104,19 +104,14 @@ namespace Fred
                 {
                     for(std::vector<DnsKey>::iterator i = dns_keys_.begin(); i != dns_keys_.end(); ++i)
                     {
-                        std::string nwkey = i->get_key();
-
-                        //erase spaces in key
-                        nwkey.erase(std::remove_if(nwkey.begin(), nwkey.end(), isspace), nwkey.end());
-
                         Database::Result dns_keys_res = ctx.get_conn().exec_params(
                             "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
                             ", $2::integer, $3::integer, $4::integer, $5::text) RETURNING id"
-                            , Database::query_param_list(object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(nwkey));
+                            , Database::query_param_list(object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
                         if (dns_keys_res.size() != 1)
                         {
                             std::string errmsg("dns keys || invalid:dns key: ");
-                            errmsg += boost::replace_all_copy(nwkey,"|", "[pipe]");//quote pipes
+                            errmsg += boost::replace_all_copy(static_cast<std::string>(*i),"|", "[pipe]");//quote pipes
                             errmsg += " |";
                             throw CKEX(errmsg.c_str());
                         }
@@ -233,7 +228,7 @@ namespace Fred
 
                 //object_registry historyid
                 ctx.get_conn().exec_params(
-                    "UPDATE object_registry SET historyid = $1::bigint "
+                    "UPDATE object_registry SET historyid = $1::bigint, crhistoryid = $1::bigint  "
                         " WHERE id = $2::integer"
                         , Database::query_param_list(history_id)(object_id));
 
