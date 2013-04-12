@@ -53,6 +53,7 @@
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
+#include "fredlib/contact/info_contact.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -83,6 +84,20 @@ BOOST_AUTO_TEST_SUITE(TestDeleteContact)
 const std::string server_name = "test-delete-contact";
 
 
+/**
+ * test call InfoContact
+*/
+BOOST_AUTO_TEST_CASE(info_contact)
+{
+    std::string registrar_handle = "REG-FRED_A";
+    Fred::OperationContext ctx;
+    std::string xmark = RandomDataGenerator().xnumstring(6);
+
+    Fred::InfoContactOutput contact_info1 = Fred::InfoContact("KONTAKT", registrar_handle).exec(ctx);
+    Fred::InfoContactOutput contact_info2 = Fred::InfoContact("KONTAKT", registrar_handle).set_lock().exec(ctx);
+
+    BOOST_CHECK(contact_info1 == contact_info2);
+}
 /**
  * test DeleteContact
  * create test contact, delete test contact, check erdate of test contact is null
