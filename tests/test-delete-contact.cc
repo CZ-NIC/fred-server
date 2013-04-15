@@ -84,17 +84,41 @@ BOOST_AUTO_TEST_SUITE(TestDeleteContact)
 const std::string server_name = "test-delete-contact";
 
 
+struct test_contact_fixture
+{
+    Fred::OperationContext ctx;
+    std::string registrar_handle;
+    std::string xmark;
+    std::string test_contact_handle;
+
+    test_contact_fixture()
+    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
+    , xmark(RandomDataGenerator().xnumstring(6))
+    , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
+    {
+        BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
+
+        Fred::CreateContact(test_contact_handle,registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
+            .set_name(std::string("TEST-CONTACT NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+    ~test_contact_fixture()
+    {}
+};
+
 /**
  * test call InfoContact
 */
-BOOST_AUTO_TEST_CASE(info_contact)
+BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
 {
-    std::string registrar_handle = "REG-FRED_A";
-    Fred::OperationContext ctx;
-    std::string xmark = RandomDataGenerator().xnumstring(6);
-
-    Fred::InfoContactOutput contact_info1 = Fred::InfoContact("KONTAKT", registrar_handle).exec(ctx);
-    Fred::InfoContactOutput contact_info2 = Fred::InfoContact("KONTAKT", registrar_handle).set_lock().exec(ctx);
+    Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
+    Fred::InfoContactOutput contact_info2 = Fred::InfoContact(test_contact_handle, registrar_handle).set_lock().exec(ctx);
 
     BOOST_CHECK(contact_info1 == contact_info2);
 }
@@ -103,27 +127,15 @@ BOOST_AUTO_TEST_CASE(info_contact)
  * create test contact, delete test contact, check erdate of test contact is null
  * calls in test shouldn't throw
  */
-BOOST_AUTO_TEST_CASE(delete_contact)
+BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
 {
-    std::string registrar_handle = "REG-FRED_A";
-    Fred::OperationContext ctx;
-    std::string xmark = RandomDataGenerator().xnumstring(6);
-    std::string handle = std::string("TEST-DEL-CONTACT-HANDLE")+xmark;
 
-    Fred::CreateContact(handle,registrar_handle).set_name(std::string("TEST-DEL-CONTACT NAME")+xmark)
-        .set_name(std::string("TEST-DEL-CONTACT NAME")+xmark)
-        .set_disclosename(true)
-        .set_street1(std::string("STR1")+xmark)
-        .set_city("Praha").set_postalcode("11150").set_country("CZ")
-        .set_discloseaddress(true)
-        .exec(ctx);
-
-    Fred::DeleteContact(handle).exec(ctx);
+    Fred::DeleteContact(test_contact_handle).exec(ctx);
     ctx.commit_transaction();
 
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "select erdate is not null from object_registry where name = $1::text"
-        ,Database::query_param_list(handle))[0][0]));
+        , Database::query_param_list(test_contact_handle))[0][0]));
 }//delete_contact
 
 
