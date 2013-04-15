@@ -118,11 +118,11 @@ namespace Fred
                 " , c.discloseemail, c.disclosevat, c.discloseident, c.disclosenotifyemail "// 39-42
                 " FROM object_registry cobr "
                 " JOIN contact c ON cobr.id=c.id "
-                " JOIN enum_ssntype est ON est.id = c.ssntype "
                 " JOIN object o ON c.id=o.id "
                 " JOIN registrar clr ON clr.id = o.clid "
                 " JOIN registrar crr ON crr.id = cobr.crid "
                 " LEFT JOIN registrar upr ON upr.id = o.upid "
+                " LEFT JOIN enum_ssntype est ON est.id = c.ssntype "
                 " WHERE cobr.name=UPPER($2::text) AND cobr.erdate IS NULL "
                 " AND cobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text)"
                 , Database::query_param_list(local_timestamp_pg_time_zone_name)(handle_));
