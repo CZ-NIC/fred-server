@@ -122,6 +122,7 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
 
     BOOST_CHECK(contact_info1 == contact_info2);
 }
+
 /**
  * test DeleteContact
  * create test contact, delete test contact, check erdate of test contact is null
@@ -159,6 +160,38 @@ BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
         ex.callback_exception_params(boost::ref(cb));
         BOOST_CHECK((cb.get().size()) == 1);
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:handle")->second).compare(bad_test_contact_handle) == 0);
+    }
+}
+
+/**
+ * test DeleteContact linked
+ */
+
+BOOST_FIXTURE_TEST_CASE(delete_linked_contact, test_contact_fixture )
+{
+    //create linked object
+   std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
+   Fred::CreateNsset(test_nsset_handle, registrar_handle)
+       .set_tech_contacts(Util::vector_of<std::string>(test_contact_handle))
+       .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+           (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+           (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+           ).exec(ctx);
+
+   ctx.commit_transaction();
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::DeleteContact(test_contact_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::OperationExceptionBase& ex)
+    {
+        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
+        ex.callback_exception_params(boost::ref(cb));
+        BOOST_CHECK((cb.get().size()) == 1);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("is linked:handle")->second).compare(test_contact_handle) == 0);
     }
 }
 
