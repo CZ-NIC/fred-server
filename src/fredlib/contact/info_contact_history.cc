@@ -212,6 +212,57 @@ namespace Fred
                     contact_history_output.logd_request_id = res[i][20].isnull() ? Nullable<unsigned long long>()
                         : Nullable<unsigned long long>(static_cast<unsigned long long>(res[i][20]));
 
+                    contact_history_output.info_contact_data.name = res[i][21].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][21]));
+                    contact_history_output.info_contact_data.organization = res[i][22].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][22]));
+                    contact_history_output.info_contact_data.street1 = res[i][23].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][23]));
+                    contact_history_output.info_contact_data.street2 = res[i][24].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][24]));
+                    contact_history_output.info_contact_data.street3 = res[i][25].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][25]));
+                    contact_history_output.info_contact_data.city = res[i][26].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][26]));
+                    contact_history_output.info_contact_data.stateorprovince = res[i][27].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][27]));
+                    contact_history_output.info_contact_data.postalcode = res[i][28].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][28]));
+                    contact_history_output.info_contact_data.country = res[i][29].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][29]));
+                    contact_history_output.info_contact_data.telephone = res[i][30].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][30]));
+                    contact_history_output.info_contact_data.fax = res[i][31].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][31]));
+                    contact_history_output.info_contact_data.email = res[i][32].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][32]));
+                    contact_history_output.info_contact_data.notifyemail = res[i][33].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][33]));
+                    contact_history_output.info_contact_data.vat = res[i][34].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][34]));
+                    contact_history_output.info_contact_data.ssn = res[i][35].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][35]));
+                    contact_history_output.info_contact_data.ssntype = res[i][36].isnull() ? Nullable<std::string>()
+                            : Nullable<std::string> (static_cast<std::string>(res[i][36]));
+                    contact_history_output.info_contact_data.disclosename = res[i][37].isnull() ? Nullable<bool>()
+                            : Nullable<bool> (static_cast<bool>(res[i][37]));
+                    contact_history_output.info_contact_data.discloseorganization = res[i][38].isnull() ? Nullable<bool>()
+                            : Nullable<bool> (static_cast<bool>(res[i][38]));
+                    contact_history_output.info_contact_data.discloseaddress = res[i][39].isnull() ? Nullable<bool>()
+                            : Nullable<bool> (static_cast<bool>(res[i][39]));
+                    contact_history_output.info_contact_data.disclosetelephone = res[i][40].isnull() ? Nullable<bool>()
+                            : Nullable<bool> (static_cast<bool>(res[i][40]));
+                    contact_history_output.info_contact_data.disclosefax = res[i][41].isnull() ? Nullable<bool>()
+                            : Nullable<bool> (static_cast<bool>(res[i][41]));
+                    contact_history_output.info_contact_data.discloseemail = res[i][42].isnull() ? Nullable<bool>()
+                            : Nullable<bool> (static_cast<bool>(res[i][42]));
+                    contact_history_output.info_contact_data.disclosevat = res[i][43].isnull() ? Nullable<bool>()
+                            : Nullable<bool> (static_cast<bool>(res[i][43]));
+                    contact_history_output.info_contact_data.discloseident = res[i][44].isnull() ? Nullable<bool>()
+                            : Nullable<bool> (static_cast<bool>(res[i][44]));
+                    contact_history_output.info_contact_data.disclosenotifyemail = res[i][45].isnull() ? Nullable<bool>()
+                            : Nullable<bool> (static_cast<bool>(res[i][45]));
+
                     contact_history_res.push_back(contact_history_output);
                 }//for res
             }//if roid
