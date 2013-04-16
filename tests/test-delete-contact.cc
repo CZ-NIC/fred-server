@@ -50,6 +50,8 @@
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
+#include "fredlib/contact/info_contact_history.h"
+#include "fredlib/contact/info_contact_compare.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
@@ -120,6 +122,9 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
     Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
     Fred::InfoContactOutput contact_info2 = Fred::InfoContact(test_contact_handle, registrar_handle).set_lock().exec(ctx);
 
+    std::vector<Fred::InfoContactHistoryOutput> contact_history_info1 = Fred::InfoContactHistory(
+        contact_info1.info_contact_data.roid, registrar_handle).exec(ctx);
+
     BOOST_CHECK(contact_info1 == contact_info2);
 }
 
@@ -131,8 +136,18 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
 BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
 {
 
+    Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
+
     Fred::DeleteContact(test_contact_handle).exec(ctx);
     ctx.commit_transaction();
+
+    std::vector<Fred::InfoContactHistoryOutput> contact_history_info1 = Fred::InfoContactHistory(
+        contact_info1.info_contact_data.roid, registrar_handle).exec(ctx);
+
+    contact_info1.info_contact_data.set_diff_print();
+    contact_info1 == contact_history_info1.at(0);
+
+
 
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "select erdate is not null from object_registry where name = $1::text"
@@ -170,13 +185,13 @@ BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
 BOOST_FIXTURE_TEST_CASE(delete_linked_contact, test_contact_fixture )
 {
     //create linked object
-   std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
-   Fred::CreateNsset(test_nsset_handle, registrar_handle)
-       .set_tech_contacts(Util::vector_of<std::string>(test_contact_handle))
-       .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-           (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-           (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
-           ).exec(ctx);
+    std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
+    Fred::CreateNsset(test_nsset_handle, registrar_handle)
+        .set_tech_contacts(Util::vector_of<std::string>(test_contact_handle))
+        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+            ).exec(ctx);
 
    ctx.commit_transaction();
 
@@ -194,7 +209,6 @@ BOOST_FIXTURE_TEST_CASE(delete_linked_contact, test_contact_fixture )
         BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("is linked:handle")->second).compare(test_contact_handle) == 0);
     }
 }
-
 
 
 BOOST_AUTO_TEST_SUITE_END();//TestDeleteContact
