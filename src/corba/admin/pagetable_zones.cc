@@ -179,6 +179,7 @@ ccReg_Zones_i::reload_worker()
     ConnectionReleaser releaser;
 
     m_zoneList->setTimeout(query_timeout);
+    m_zoneList->setLimit(limit_);
     m_zoneList->reload(uf);
 }
 

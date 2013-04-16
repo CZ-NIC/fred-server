@@ -112,6 +112,7 @@ void ccReg_Contacts_i::reload_worker() {
 
 //  cl->makeRealCount();
   cl->setTimeout(query_timeout);
+  cl->setLimit(limit_);
   cl->reload(uf);
   cl->deleteDuplicatesId();
 }

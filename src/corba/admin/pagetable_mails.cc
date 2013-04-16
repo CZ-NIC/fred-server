@@ -97,6 +97,7 @@ void ccReg_Mails_i::reload_worker() {
 
   TRACE("[CALL] ccReg_Mails_i::reload_worker()");
   mail_list_->setTimeout(query_timeout);
+  mail_list_->setLimit(limit_);
   mail_list_->reload(uf);
 }
 

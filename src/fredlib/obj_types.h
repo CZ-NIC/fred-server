@@ -270,7 +270,7 @@ public:
         return limit_;
     }
 
-    void setLimit(std::size_t limit) const
+    void setLimit(std::size_t limit)
     {
         limit_ = limit;
     }

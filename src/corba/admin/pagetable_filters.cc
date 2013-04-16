@@ -14,6 +14,7 @@ ccReg_Filters_i::reload_worker() {
   ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Filters_i::reload_worker()");
+  m_filter_list.setLimit(limit_);
   m_filter_list.reload(uf);
 }
 

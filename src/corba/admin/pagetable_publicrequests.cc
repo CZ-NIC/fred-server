@@ -23,6 +23,7 @@ void ccReg_PublicRequests_i::reload_worker() {
 
   TRACE("[CALL] ccReg_PublicRequests_i::reload_worker()");
   request_list_->setTimeout(query_timeout);
+  request_list_->setLimit(limit_);
   request_list_->reload(uf);
 }
 
