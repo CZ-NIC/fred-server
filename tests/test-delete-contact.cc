@@ -137,6 +137,7 @@ BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
 {
 
     Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(contact_info1.info_contact_data.delete_time.isnull());
 
     Fred::DeleteContact(test_contact_handle).exec(ctx);
     ctx.commit_transaction();
@@ -144,10 +145,7 @@ BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
     std::vector<Fred::InfoContactHistoryOutput> contact_history_info1 = Fred::InfoContactHistory(
         contact_info1.info_contact_data.roid, registrar_handle).exec(ctx);
 
-    contact_info1.info_contact_data.set_diff_print();
-    contact_info1 == contact_history_info1.at(0);
-
-
+    BOOST_CHECK(!contact_history_info1.at(0).info_contact_data.delete_time.isnull());
 
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "select erdate is not null from object_registry where name = $1::text"
