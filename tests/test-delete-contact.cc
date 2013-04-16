@@ -154,6 +154,11 @@ BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
 
     BOOST_CHECK(!contact_history_info1.at(0).info_contact_data.delete_time.isnull());
 
+    BOOST_CHECK(contact_history_info1.at(0).next_historyid.isnull());
+    BOOST_CHECK(!contact_history_info1.at(0).history_valid_from.is_not_a_date_time());
+    BOOST_CHECK(!contact_history_info1.at(0).history_valid_to.isnull());
+    BOOST_CHECK(contact_history_info1.at(0).history_valid_from <= contact_history_info1.at(0).history_valid_to);
+
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "select erdate is not null from object_registry where name = $1::text"
         , Database::query_param_list(test_contact_handle))[0][0]));
