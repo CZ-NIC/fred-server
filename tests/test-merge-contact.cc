@@ -64,7 +64,9 @@
 #include "fredlib/domain/info_domain.h"
 #include "fredlib/domain/info_domain_history.h"
 #include "fredlib/domain/info_domain_compare.h"
-
+#include "fredlib/contact/info_contact.h"
+#include "fredlib/contact/info_contact_history.h"
+#include "fredlib/contact/info_contact_compare.h"
 
 
 #include "util/util.h"
@@ -267,6 +269,11 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
     Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
 
+    Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContact(src_contact_handle, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
+            info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
+
     //merge
     Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
     ctx.commit_transaction();
@@ -305,6 +312,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     info_nsset_with_change.info_nsset_data.update_registrar_handle = registrar_handle;
     info_nsset_with_change.info_nsset_data.update_time = info_nsset_2.info_nsset_data.update_time;
     BOOST_CHECK(info_nsset_with_change == info_nsset_2);
+
+    std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
+        info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
+    BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 }
 
 
