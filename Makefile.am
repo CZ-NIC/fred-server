@@ -761,6 +761,14 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/info_keyset_compare.cc \
 		src/fredlib/contact/delete_contact.h \
 		src/fredlib/contact/delete_contact.cc \
+		src/fredlib/contact/info_contact_data.h \
+		src/fredlib/contact/info_contact_data.cc \
+		src/fredlib/contact/info_contact.h \
+		src/fredlib/contact/info_contact.cc \
+		src/fredlib/contact/info_contact_history.h \
+		src/fredlib/contact/info_contact_history.cc \
+		src/fredlib/contact/info_contact_compare.h \
+		src/fredlib/contact/info_contact_compare.cc \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
 		src/fredlib/poll/create_poll_message.h \

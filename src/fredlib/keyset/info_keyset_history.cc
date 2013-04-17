@@ -83,7 +83,7 @@ namespace Fred
             {
                 Database::Result res = ctx.get_conn().exec_params(
                     std::string("SELECT id FROM object_registry WHERE roid = $1::text "
-                    " AND erdate IS NULL AND type = ( SELECT id FROM enum_object_type eot "
+                    " AND type = ( SELECT id FROM enum_object_type eot "
                     " WHERE eot.name='keyset'::text) ")
                     + (lock_ ? std::string(" FOR UPDATE") : std::string(""))
                     , Database::query_param_list(roid_));
