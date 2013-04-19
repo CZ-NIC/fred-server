@@ -148,7 +148,7 @@ public:
     object_info_query.from() << getTempTableName() << " tmp "
                              << "JOIN mail_archive t_1 ON (tmp.id = t_1.id) "
                              << "JOIN mail_type t_2 ON (t_1.mailtype = t_2.id)";
-    object_info_query.order_by() << "tmp.id DESC";
+    object_info_query.order_by() << "tmp.id";
     try {
       fillTempTable(tmp_table_query);
       

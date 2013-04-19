@@ -438,7 +438,7 @@ public:
         << "JOIN contact_history t_2 ON (tmp.id = t_2.historyid) "
         << "JOIN object_history t_3 ON (t_2.historyid = t_3.historyid) "
         << "JOIN object_registry t_1 ON (t_3.id = t_1.id)";
-    object_info_query.order_by() << "tmp.id DESC";
+    object_info_query.order_by() << "tmp.id";
 
     try {
       Database::Connection conn = Database::Manager::acquire();

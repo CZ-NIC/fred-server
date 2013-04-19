@@ -2671,7 +2671,7 @@ public:
                                << "LEFT JOIN files t_6 ON (t_1.file = t_6.id) "
                                << "LEFT JOIN files t_7 ON (t_1.filexml = t_7.id)";
 
-      object_info_query.order_by() << "tmp.id DESC";
+      object_info_query.order_by() << "tmp.id";
 
       try {
         Database::Connection conn = Database::Manager::acquire();

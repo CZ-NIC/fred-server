@@ -571,7 +571,7 @@ ListImpl::reload(Database::Filters::Union &uf)
         << "JOIN object_history t_2 ON (t_3.historyid=t_2.historyid) "
         << "JOIN object_registry t_1 ON (t_1.id=t_2.id)";
     object_info_query.order_by()
-        << "tmp.id DESC";
+        << "tmp.id";
 
     try {
         Database::Connection conn = Database::Manager::acquire();

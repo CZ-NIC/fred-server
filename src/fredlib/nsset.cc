@@ -426,7 +426,7 @@ public:
         << " tmp JOIN nsset_history t_3 ON (tmp.id = t_3.historyid) "
         << "JOIN object_history t_2 ON (t_3.historyid = t_2.historyid) "
         << "JOIN object_registry t_1 ON (t_1.id = t_2.id)";
-    object_info_query.order_by() << "tmp.id DESC";
+    object_info_query.order_by() << "tmp.id";
 
     try {
       Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");

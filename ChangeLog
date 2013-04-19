@@ -2,6 +2,11 @@
 
   * automatic procedure for duplicate contacts merging
 
+2013-04-17 Jiri Sadek (2.13.5)
+
+  * removed fix pagetable filter sort in database which caused problem with
+    selection object history
+
 2013-04-02 Jiri Sadek (2.13.4)
 
   * fix pagetable limit settings (didn't work at all)

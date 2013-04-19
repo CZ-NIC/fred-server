@@ -84,7 +84,7 @@ List::reload(Database::Filters::Union &filter)
     object_info_query.from() << getTempTableName() << " tmp "
         << "JOIN files t_1 ON (tmp.id = t_1.id) "
         << "JOIN enum_filetype t_2 ON (t_1.filetype = t_2.id)";
-    object_info_query.order_by() << "tmp.id DESC";
+    object_info_query.order_by() << "tmp.id";
 
     Database::Connection conn = Database::Manager::acquire();
     try {
