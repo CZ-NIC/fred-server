@@ -168,10 +168,7 @@ namespace Fred
                 contact_history_res.reserve(res.size());//alloc
                 for(Database::Result::size_type i = 0; i < res.size(); ++i)
                 {
-                    unsigned long long contact_id = 0;//contact id
                     InfoContactHistoryOutput contact_history_output;
-
-                    contact_id = static_cast<unsigned long long>(res[i][0]);//cobr.id
 
                     contact_history_output.info_contact_data.roid = static_cast<std::string>(res[i][1]);//cobr.roid
 

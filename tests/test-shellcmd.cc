@@ -65,13 +65,6 @@ BOOST_AUTO_TEST_SUITE(TestShellCmd)
 
 const std::string server_name = "test-shellcmd";
 
-
-static bool check_std_exception(std::exception const & ex)
-{
-    std::string ex_msg(ex.what());
-    return (ex_msg.length() != 0);
-}
-
 BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
 {
     for(int i = 0; i < 100; ++i)

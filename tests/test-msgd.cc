@@ -52,9 +52,7 @@ BOOST_AUTO_TEST_CASE( test_corba_interface )
             CORBA::String_var content = CORBA::string_dup("Ahoj!");
             CORBA::String_var sms_message_type = CORBA::string_dup("mojeid_pin2");
 
-            CORBA::ULongLong message_archive_id = 0;
-
-            message_archive_id = messages_ref->saveSmsToSend(
+            messages_ref->saveSmsToSend(
                     sms_contact, phone , content, sms_message_type, 1, 1);
 
             //letter test
@@ -113,12 +111,12 @@ BOOST_AUTO_TEST_CASE( test_corba_interface )
             CORBA::String_var letter_message_type = CORBA::string_dup("mojeid_pin3");
 
             if(i%2)
-                message_archive_id = messages_ref->saveLetterToSend(
+                messages_ref->saveLetterToSend(
                     letter_contact, paddr.in()
                     , file_content, file_name,file_type
                     , registered_letter_message_type, 1, 1, "registered_letter");
             else
-                message_archive_id = messages_ref->saveLetterToSend(
+                messages_ref->saveLetterToSend(
                     letter_contact, paddr.in()
                     , file_content, file_name,file_type
                     , letter_message_type, 1, 1, "letter");
