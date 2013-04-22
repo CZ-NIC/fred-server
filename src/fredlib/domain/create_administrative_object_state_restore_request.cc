@@ -129,7 +129,9 @@ namespace Fred
             }
         }
         ClearObjectStateRequest(object_handle_, object_type_).exec(_ctx);
-        CreateObjectStateRequest(object_handle_, object_type_, previous_status_list).exec(_ctx);
+        if (!previous_status_list.empty()) {
+            CreateObjectStateRequest(object_handle_, object_type_, previous_status_list).exec(_ctx);
+        }
         return object_id;
     }
 

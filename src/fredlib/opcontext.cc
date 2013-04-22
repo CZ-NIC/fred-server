@@ -30,9 +30,16 @@
 
 namespace Fred
 {
-    OperationContext::~OperationContext()
+    OperationContextTransaction::OperationContextTransaction()
+    : conn_(Database::StandaloneManager(new Database::StandaloneConnectionFactory("host=/data/fred/fred/scripts/root/nofred/pg_sockets port=22345 dbname=fred user=fred connect_timeout=2")).acquire())
+    , log_(LOGGER(PACKAGE))
     {
-        if (in_transaction_)
+        this->get_conn().exec("START TRANSACTION ISOLATION LEVEL READ COMMITTED");
+    }
+
+    OperationContextTransaction::~OperationContextTransaction()
+    {
+        if (transaction_in_progress())
         {
             try
             {
@@ -42,34 +49,46 @@ namespace Fred
             {
                 try
                 {
-                    log_.error("OperationContext::~OperationContext: rollback failed");
+                    log_.error("OperationContextTransaction::~OperationContextTransaction: rollback failed");
+                }
+                catch(...){}
+            }
+            try
+            {
+                conn_.release();
+            }
+            catch(...)
+            {
+                try
+                {
+                    log_.error("OperationContextTransaction::~OperationContextTransaction: connection release failed");
                 }
                 catch(...){}
             }
         }
     }
 
-    OperationContext::OperationContext()
-    : conn_(Database::StandaloneManager(new Database::StandaloneConnectionFactory("host=/data/fred/fred/scripts/root/nofred/pg_sockets port=22345 dbname=fred user=fred connect_timeout=2")).acquire())
-    , in_transaction_(true)
-    , log_(LOGGER(PACKAGE))
+    Database::StandaloneConnection& OperationContextTransaction::get_conn()
     {
-        conn_->exec("START TRANSACTION  ISOLATION LEVEL READ COMMITTED");
+        if (transaction_in_progress()) {
+            return *conn_.get();
+        }
+        throw std::runtime_error("no transaction in progress");
     }
 
-    Database::StandaloneConnection& OperationContext::get_conn()
-    {
-        return *conn_.get();
-    }
-
-    Logging::Log& OperationContext::get_log()
+    Logging::Log& OperationContextTransaction::get_log()
     {
         return log_;
     }
 
-    void OperationContext::commit_transaction()
+    void OperationContextTransaction::commit_transaction()
     {
-        conn_->exec("COMMIT TRANSACTION");
-        in_transaction_ = false;
+        this->get_conn().exec("COMMIT TRANSACTION");
+        conn_.release();
+    }
+
+    bool OperationContextTransaction::transaction_in_progress()const
+    {
+        return conn_.get() != NULL;
     }
 }

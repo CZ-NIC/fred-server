@@ -70,11 +70,12 @@ namespace Fred
         const std::string lang = lang_.isset() ? lang_.get_value() : defaultLang;
         enum ResultColumnIndex
         {
-            NAME_IDX = 0,
-            DESC_IDX = 1,
+            ID_IDX   = 0,
+            NAME_IDX = 1,
+            DESC_IDX = 2,
         };
         std::string query =
-            "SELECT eos.name,eosd.description "
+            "SELECT eos.id,eos.name,eosd.description "
             "FROM enum_object_states eos "
             "JOIN enum_object_states_desc eosd ON eosd.state_id=eos.id "
             "WHERE eos.manual AND "
@@ -95,7 +96,8 @@ namespace Fred
         }
         status_desc_list_.reserve(nameDescResult.size());
         for (::size_t rowIdx = 0; rowIdx < nameDescResult.size(); ++rowIdx) {
-            const StatusDesc statusDesc(nameDescResult[rowIdx][NAME_IDX],
+            const StatusDesc statusDesc(nameDescResult[rowIdx][ID_IDX],
+                                        nameDescResult[rowIdx][NAME_IDX],
                                         nameDescResult[rowIdx][DESC_IDX]);
             status_desc_list_.push_back(statusDesc);
         }

@@ -53,14 +53,17 @@ namespace Fred
         typedef struct _StatusDesc
         {
             _StatusDesc() {}
-            _StatusDesc(std::string _status, std::string _desc)
-            :   status(_status),
+            _StatusDesc(TID _state_id, std::string _status, std::string _desc)
+            :   state_id(_state_id),
+                status(_status),
                 desc(_desc)
             {}
             _StatusDesc(const struct _StatusDesc &_src)
-            :   status(_src.status),
+            :   state_id(_src.state_id),
+                status(_src.status),
                 desc(_src.desc)
             {}
+            TID state_id;
             std::string status;
             std::string desc;
         } StatusDesc;
