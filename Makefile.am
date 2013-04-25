@@ -1418,6 +1418,8 @@ src_corba_administrativeblocking_fred_abfd_SOURCES = \
 		src/fredlib/domain/create_administrative_object_state_restore_request.h \
 		src/fredlib/domain/clear_object_state_request.cc \
 		src/fredlib/domain/clear_object_state_request.h \
+		src/fredlib/domain/create_domain_name_blacklist.cc \
+		src/fredlib/domain/create_domain_name_blacklist.h \
 		src/fredlib/opcontext.cc \
 		src/fredlib/opcontext.h \
 		src/corba/nameservice.cc \
