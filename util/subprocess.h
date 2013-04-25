@@ -133,7 +133,7 @@ struct SubProcessOutput
 
 /**
  * \class ShellCmd
- * \brief shell command wrapper, after command is entered "\n" is added
+ * \brief shell command wrapper
  */
 
 class ShellCmd
@@ -143,23 +143,48 @@ class ShellCmd
     std::string cmd_;
     std::string shell_;
     unsigned long timeout_;
+    pid_t child_pid_;
 
-    void check_timeout_kill_child(pid_t pid, boost::posix_time::ptime timeout_time_utc)
+    void kill_child() throw()
     {
-        if(timeout_time_utc < boost::posix_time::microsec_clock::universal_time())//child timeout, kill child
+        if(child_pid_ > 0)
         {
-            kill(pid, SIGKILL);
-            Logging::Manager::instance_ref()
-                .get(PACKAGE).error(std::string("ShellCmd::operator() child timeout, kill child, command: ")+cmd_);
-            pid_t dp = waitpid(pid, NULL, WNOHANG); //death pid
+            kill(child_pid_, SIGKILL);
+
+            try
+            {
+                Logging::Manager::instance_ref()
+                    .get(PACKAGE).error(std::string(
+                        "ShellCmd::operator() error - kill child, command: ")+cmd_);
+            }
+            catch(...){}
+
+            pid_t dp = waitpid(child_pid_, NULL, WNOHANG); //death pid
 
             if(dp == -1)
             {
-                std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error waitpid in timeout: ");
-                throw std::runtime_error(msg+err_msg);
-            }//if waitpid error
 
+                try
+                {
+                    Logging::Manager::instance_ref()
+                        .get(PACKAGE).error(std::string(
+                            "ShellCmd::operator() kill_child error waitpid: ") + strerror(errno));
+                }
+                catch(...){}
+
+            }//if waitpid error
+            else
+            {//if killed child waited
+                child_pid_ = 0;
+            }
+        }//if pid_
+    }
+
+    void check_timeout(boost::posix_time::ptime timeout_time_utc)
+    {
+        if(timeout_time_utc < boost::posix_time::microsec_clock::universal_time())//child timeout, kill child
+        {
+            kill_child();
             throw std::runtime_error(std::string("ShellCmd::operator() timeout cmd: "+cmd_ ));
         }
     }
@@ -169,6 +194,7 @@ public:
     :cmd_(cmd)
     , shell_("/bin/sh")
     , timeout_(10)
+    , child_pid_(0)
     {}
 
     ShellCmd(const std::string& cmd
@@ -177,8 +203,8 @@ public:
     :cmd_(cmd)
     , shell_("/bin/sh")
     , timeout_(timeout)
+    , child_pid_(0)
     {}
-
 
     ShellCmd(const std::string& cmd
             , const std::string& shell //shell is filename, not command line
@@ -187,10 +213,13 @@ public:
     :cmd_(cmd)
     , shell_(shell)
     , timeout_(timeout)
+    , child_pid_(0)
     {}
 
-
-    ~ShellCmd(){}
+    ~ShellCmd()
+    {
+        kill_child();//if in parent and have child
+    }
 
     SubProcessOutput execute(std::string stdin_str = std::string())
     {
@@ -220,16 +249,16 @@ public:
             }//for i is num_of_pipes
         }
 
-        pid_t pid;//child pid
-        pid = fork();
-        if(pid == -1)
+
+        child_pid_ = fork();
+        if(child_pid_ == -1)
         {
           std::string err_msg(strerror(errno));
           throw std::runtime_error(std::string("ShellCmd::operator() fork error: ")+err_msg);
         }
         //parent and child now share the pipe's file descriptors
         //readable end is p[x][0], and p[x][1] is the writable end
-        else if (pid == 0)
+        else if (child_pid_ == 0)
         {
             //in child
             //close writable end of stdin
@@ -307,7 +336,7 @@ public:
             }
 
         }//if in child
-        else if(pid > 0)
+        else if(child_pid_ > 0)
         {
             //in parent
             //waitpid need default SIGCHLD handler to work
@@ -371,7 +400,7 @@ public:
             std::size_t stdin_str_size_to_be_written = stdin_str.size();
             do
             {
-                check_timeout_kill_child(pid, timeout_time);
+                check_timeout(timeout_time);
                 //init fd sets for reading and writing
                 fd_set rfds, wfds;
                 FD_ZERO(&rfds);
@@ -573,8 +602,8 @@ public:
             //check for child completion
             do
             {
-                pid_t dp = waitpid(pid, NULL, WNOHANG);//death pid
-                if(dp == pid) break; //child waited - ok
+                pid_t dp = waitpid(child_pid_, NULL, WNOHANG);//death pid
+                if(dp == child_pid_) break; //child waited - ok
 
                 if(dp == -1) //error
                 {
@@ -583,7 +612,7 @@ public:
                     throw std::runtime_error(msg+err_msg);
                 }//if waitpid error
 
-                if(dp == 0) check_timeout_kill_child(pid, timeout_time);
+                if(dp == 0) check_timeout(timeout_time);
 
             } while (true);//timeout waiting
 
