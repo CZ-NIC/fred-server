@@ -175,12 +175,20 @@ class ShellCmd
             }//if waitpid error
             else
             {//if killed child waited
+                try
+                {
+                    Logging::Manager::instance_ref()
+                        .get(PACKAGE).debug(std::string(
+                            "kill_child, killed child waited, command: ")+cmd_);
+                }
+                catch(...){}
+
                 child_pid_ = 0;
             }
         }//if pid_
     }
 
-    void check_timeout(boost::posix_time::ptime timeout_time_utc)
+    void check_timeout(const boost::posix_time::ptime& timeout_time_utc)
     {
         if(timeout_time_utc < boost::posix_time::microsec_clock::universal_time())//child timeout, kill child
         {
@@ -603,7 +611,6 @@ public:
             do
             {
                 pid_t dp = waitpid(child_pid_, NULL, WNOHANG);//death pid
-                if(dp == child_pid_) break; //child waited - ok
 
                 if(dp == -1) //error
                 {
@@ -614,7 +621,9 @@ public:
 
                 if(dp == 0) check_timeout(timeout_time);
 
-            } while (true);//timeout waiting
+                if(dp == child_pid_) child_pid_ = 0;//child waited ok
+
+            } while (child_pid_ > 0);//timeout waiting
 
             signal(SIGCHLD, sig_chld_h);//restore saved SIGCHLD handler
 
