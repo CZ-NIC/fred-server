@@ -155,7 +155,7 @@ class ShellCmd
             {
                 Logging::Manager::instance_ref()
                     .get(PACKAGE).error(std::string(
-                        "ShellCmd::operator() error - kill child, command: ")+cmd_);
+                        "ShellCmd::kill_child command: ")+cmd_);
             }
             catch(...){}
 
@@ -168,7 +168,7 @@ class ShellCmd
                 {
                     Logging::Manager::instance_ref()
                         .get(PACKAGE).error(std::string(
-                            "ShellCmd::operator() kill_child error waitpid: ") + strerror(errno));
+                            "ShellCmd::kill_child error in waitpid: ") + strerror(errno));
                 }
                 catch(...){}
 
@@ -179,7 +179,7 @@ class ShellCmd
                 {
                     Logging::Manager::instance_ref()
                         .get(PACKAGE).debug(std::string(
-                            "kill_child, killed child waited, command: ")+cmd_);
+                            "ShellCmd::kill_child, killed child waited, command: ")+cmd_);
                 }
                 catch(...){}
 
@@ -193,7 +193,7 @@ class ShellCmd
         if(timeout_time_utc < boost::posix_time::microsec_clock::universal_time())//child timeout, kill child
         {
             kill_child();
-            throw std::runtime_error(std::string("ShellCmd::operator() timeout cmd: "+cmd_ ));
+            throw std::runtime_error(std::string("ShellCmd::check_timeout timeout cmd: "+cmd_ ));
         }
     }
 
@@ -248,7 +248,7 @@ public:
                 if(pipe(p[i]) < 0)
                 {
                     std::string pipe_error (strerror(errno));
-                    throw std::runtime_error(std::string("ShellCmd::create_pipes() error creating pipe: ")
+                    throw std::runtime_error(std::string("ShellCmd::execute error creating pipe: ")
                         + boost::lexical_cast<std::string>(i)+ (" msg: ")+pipe_error);
                 }
                 //set fds
@@ -262,7 +262,7 @@ public:
         if(child_pid_ == -1)
         {
           std::string err_msg(strerror(errno));
-          throw std::runtime_error(std::string("ShellCmd::operator() fork error: ")+err_msg);
+          throw std::runtime_error(std::string("ShellCmd::execute fork error: ")+err_msg);
         }
         //parent and child now share the pipe's file descriptors
         //readable end is p[x][0], and p[x][1] is the writable end
@@ -273,21 +273,21 @@ public:
             if(pfd[STDIN_FILENO][1].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in child closing stdin pipe 0 1: ");
+                std::string msg("ShellCmd::execute error in child closing stdin pipe 0 1: ");
                 throw std::runtime_error(msg+err_msg);
             }
             //close readable end of stdout
             if(pfd[STDOUT_FILENO][0].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in child closing stdout pipe 1 0: ");
+                std::string msg("ShellCmd::execute error in child closing stdout pipe 1 0: ");
                 throw std::runtime_error(msg+err_msg);
             }
             //close readable end of stderr
             if(pfd[STDERR_FILENO][0].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in child closing stderr pipe 2 0: ");
+                std::string msg("ShellCmd::execute error in child closing stderr pipe 2 0: ");
                 throw std::runtime_error(msg+err_msg);
             }
 
@@ -297,7 +297,7 @@ public:
                 if(dup2(pfd[STDIN_FILENO][0].get(),STDIN_FILENO) != STDIN_FILENO)
                 {
                     std::string err_msg(strerror(errno));
-                    std::string msg("ShellCmd::operator() error in child duplicating stdin pipe 0 0: ");
+                    std::string msg("ShellCmd::execute error in child duplicating stdin pipe 0 0: ");
                     throw std::runtime_error(msg+err_msg);
                 }
                 pfd[STDIN_FILENO][0].closefd();
@@ -308,7 +308,7 @@ public:
                 if(dup2(pfd[STDOUT_FILENO][1].get(),STDOUT_FILENO) != STDOUT_FILENO)
                 {
                     std::string err_msg(strerror(errno));
-                    std::string msg("ShellCmd::operator() error in child duplicating stdout pipe 1 1: ");
+                    std::string msg("ShellCmd::execute error in child duplicating stdout pipe 1 1: ");
                     throw std::runtime_error(msg+err_msg);
                 }
                 pfd[STDOUT_FILENO][1].closefd();
@@ -319,7 +319,7 @@ public:
                 if(dup2(pfd[STDERR_FILENO][1].get(),STDERR_FILENO) != STDERR_FILENO)
                 {
                     std::string err_msg(strerror(errno));
-                    std::string msg("ShellCmd::operator() error in child duplicating stdout pipe 2 1: ");
+                    std::string msg("ShellCmd::execute error in child duplicating stdout pipe 2 1: ");
                     throw std::runtime_error(msg+err_msg);
                 }
                 pfd[STDERR_FILENO][1].closefd();
@@ -339,7 +339,7 @@ public:
             {
                 //failed to launch the shell
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() failed to launch shell: ");
+                std::string msg("ShellCmd::execute execvp failed: ");
                 throw std::runtime_error(msg+ err_msg);
             }
 
@@ -354,7 +354,7 @@ public:
             if(pfd[STDIN_FILENO][0].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in parent closing pipe 0 0: ");
+                std::string msg("ShellCmd::execute error in parent closing pipe 0 0: ");
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
 
@@ -362,7 +362,7 @@ public:
             if(pfd[STDOUT_FILENO][1].closefd() == -1 )
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in parent closing pipe 1 1: ");
+                std::string msg("ShellCmd::execute error in parent closing pipe 1 1: ");
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
 
@@ -370,7 +370,7 @@ public:
             if(pfd[STDERR_FILENO][1].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in parent closing pipe 2 1: ");
+                std::string msg("ShellCmd::execute error in parent closing pipe 2 1: ");
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
 
@@ -378,21 +378,21 @@ public:
             if(pfd[STDIN_FILENO][1].set_nonblocking() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in parent setting stdin nonblocking: ");
+                std::string msg("ShellCmd::execute error in parent setting stdin nonblocking: ");
                 throw std::runtime_error(msg+err_msg);
             }
 
             if(pfd[STDOUT_FILENO][0].set_nonblocking() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in parent setting stdout nonblocking: ");
+                std::string msg("ShellCmd::execute error in parent setting stdout nonblocking: ");
                 throw std::runtime_error(msg+err_msg);
             }
 
             if(pfd[STDERR_FILENO][0].set_nonblocking() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in parent setting stderr nonblocking: ");
+                std::string msg("ShellCmd::execute error in parent setting stderr nonblocking: ");
                 throw std::runtime_error(msg+err_msg);
             }
 
@@ -443,7 +443,7 @@ public:
                     {
                         //error
                         std::string err_msg(strerror(errno));
-                        std::string msg("ShellCmd::operator() error in select: ");
+                        std::string msg("ShellCmd::execute error in select: ");
                         throw std::runtime_error(msg+err_msg);
                     }
 
@@ -456,19 +456,14 @@ public:
                             int wbytes = write(pfd[STDIN_FILENO][1].get()
                                 , stdin_str.c_str() + (stdin_str.size() - stdin_str_size_to_be_written)
                                 , stdin_str_size_to_be_written );
-
-                            stdin_str_size_to_be_written -= wbytes;
-
-                            //std::cout << "wbytes: " << wbytes << std::endl;
-
-                            if(stdin_str_size_to_be_written == 0) stdin_str.clear();
-
                             if(wbytes == -1)
                             {
                                 std::string err_msg(strerror(errno));
-                                std::string msg("ShellCmd::operator() stdin pipe write error: ");
+                                std::string msg("ShellCmd::execute stdin pipe write error: ");
                                 throw std::runtime_error(msg+err_msg);
                             }
+                            stdin_str_size_to_be_written -= wbytes;
+                            if(stdin_str_size_to_be_written == 0) stdin_str.clear();
                         }
                     }//if stdin fd ready
 
@@ -476,7 +471,7 @@ public:
                     if(pfd[STDIN_FILENO][1].closefd() == -1)
                     {
                         std::string err_msg(strerror(errno));
-                        std::string msg("ShellCmd::operator() error in parent closing pipe 0 1: ");
+                        std::string msg("ShellCmd::execute error in parent closing pipe 0 1: ");
                         throw std::runtime_error(msg+err_msg);
                     }//check pipe fds close
 
@@ -489,7 +484,7 @@ public:
                         if (read_result < 0)
                         {//error
                             std::string err_msg(strerror(errno));
-                            std::string msg("ShellCmd::operator() read stdout error: ");
+                            std::string msg("ShellCmd::execute read stdout error: ");
                             throw std::runtime_error(msg+err_msg);
                         }
                         else if (read_result == 0)
@@ -498,7 +493,7 @@ public:
                             if(pfd[STDOUT_FILENO][0].closefd() == -1)
                             {
                                 std::string err_msg(strerror(errno));
-                                std::string msg("ShellCmd::operator() error in parent closing pipe 1 1: ");
+                                std::string msg("ShellCmd::execute error in parent closing pipe 1 1: ");
                                 throw std::runtime_error(msg+err_msg);
                             }//check pipe fds close
                         }
@@ -517,7 +512,7 @@ public:
                         if (read_result < 0)
                         {//error
                             std::string err_msg(strerror(errno));
-                            std::string msg("ShellCmd::operator() read stderr error: ");
+                            std::string msg("ShellCmd::execute read stderr error: ");
                             throw std::runtime_error(msg+err_msg);
                         }
                         else if (read_result == 0)
@@ -526,7 +521,7 @@ public:
                             if(pfd[STDERR_FILENO][0].closefd() == -1)
                             {
                                 std::string err_msg(strerror(errno));
-                                std::string msg("ShellCmd::operator() error in parent closing pipe 1 1: ");
+                                std::string msg("ShellCmd::execute error in parent closing pipe 1 1: ");
                                 throw std::runtime_error(msg+err_msg);
                             }//check pipe fds close
                         }
@@ -544,7 +539,7 @@ public:
             if(pfd[STDIN_FILENO][1].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in parent closing pipe 0 1: ");
+                std::string msg("ShellCmd::execute error in parent closing pipe 0 1: ");
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
 
@@ -556,7 +551,7 @@ public:
                 if (read_result < 0)
                 {//error
                     std::string err_msg(strerror(errno));
-                    std::string msg("ShellCmd::operator() read stdout error: ");
+                    std::string msg("ShellCmd::execute read stdout error: ");
                     throw std::runtime_error(msg+err_msg);
                 }
                 else if (read_result == 0)
@@ -578,7 +573,7 @@ public:
                 if (read_result < 0)
                 {//error
                     std::string err_msg(strerror(errno));
-                    std::string msg("ShellCmd::operator() read stderr error: ");
+                    std::string msg("ShellCmd::execute read stderr error: ");
                     throw std::runtime_error(msg+err_msg);
                 }
                 else if (read_result == 0)
@@ -595,7 +590,7 @@ public:
             if(pfd[STDOUT_FILENO][0].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in parent closing pipe 1 1: ");
+                std::string msg("ShellCmd::execute error in parent closing pipe 1 1: ");
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
 
@@ -603,7 +598,7 @@ public:
             if(pfd[STDERR_FILENO][0].closefd() == -1)
             {
                 std::string err_msg(strerror(errno));
-                std::string msg("ShellCmd::operator() error in parent closing pipe 2 1: ");
+                std::string msg("ShellCmd::execute error in parent closing pipe 2 1: ");
                 throw std::runtime_error(msg+err_msg);
             }//check pipe fds close
 
@@ -615,7 +610,7 @@ public:
                 if(dp == -1) //error
                 {
                     std::string err_msg(strerror(errno));
-                    std::string msg("ShellCmd::operator() error waitpid: ");
+                    std::string msg("ShellCmd::execute error waitpid: ");
                     throw std::runtime_error(msg+err_msg);
                 }//if waitpid error
 
