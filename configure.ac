@@ -67,6 +67,7 @@ AC_CHECK_HEADER([curl/curl.h],,[AC_MSG_ERROR([Header curl/curl.h not found])])
 
 # For logger class when log type is console or custom file
 AX_BOOST_THREAD 
+AX_BOOST_SYSTEM
 # For filter serialization to xml
 AX_BOOST_SERIALIZATION
 
