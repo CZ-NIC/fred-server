@@ -272,7 +272,8 @@ util_log_test_log_LDFLAGS = \
 util_log_test_log_LDADD = \
 		util/log/liblog.a \
 		$(BOOST_DATE_TIME_LIB) \
-		$(BOOST_THREAD_LIB)
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # util/log/test-log
 
@@ -373,7 +374,8 @@ util_db_test_db_LDADD = \
 		util/db/libdb.a \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_THREAD_LIB) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # util/db/test-db
 
@@ -433,7 +435,8 @@ util_db_test_mockdb_LDADD = \
 		util/log/liblog.a \
 		util/types/libtypes.a \
 		$(BOOST_DATE_TIME_LIB) \
-		$(BOOST_THREAD_LIB)
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SYSTEM_LIB)
 
 #
 # util/db/mock
@@ -629,7 +632,8 @@ src_model_test_model_LDADD = \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/model/test-model
 
@@ -1219,7 +1223,8 @@ src_corba_fred_rifd_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/fred-rifd
 
@@ -1266,7 +1271,8 @@ src_corba_fred_adifd_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/fred-adifd
 
@@ -1321,7 +1327,8 @@ src_corba_fred_pifd_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/fred-pifd
 
@@ -1359,7 +1366,8 @@ src_corba_fred_logd_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/fred-logd
 
@@ -1398,7 +1406,8 @@ src_corba_messages_fred_msgd_LDADD = \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
 		$(BOOST_THREAD_LIB) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/messages/fred-msgd
 
@@ -1457,7 +1466,8 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		$(BOOST_REGEX_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/mojeid/fred-mifd
 
@@ -1556,7 +1566,8 @@ src_cli_admin_fred_admin_LDADD = \
 		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/cli_admin/fred-admin
 
@@ -1592,7 +1603,8 @@ tools_logd_migration_migrate_log_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(XML2_LIBS) \
 		$(LIBIDN_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # tools/logd_migration
 
@@ -1723,7 +1735,8 @@ tests_test_server_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # tests/test_server
 
@@ -1746,7 +1759,8 @@ tests_test_exception_LDADD = \
 		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
-		$(XML2_LIBS)
+		$(XML2_LIBS) \
+		$(BOOST_SYSTEM_LIB)
 #
 # non-corba tests with overloaded global operator new
 
