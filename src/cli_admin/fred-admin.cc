@@ -250,9 +250,10 @@ int main(int argc, char* argv[])
                 string("ReturnCode: ") + boost::lexical_cast<std::string>(rc.get_return_code())
                 + string(" ") + rc.what()
                 );
-        cerr << (string("ReturnCode: ") + boost::lexical_cast<std::string>(rc.get_return_code())
-                        + string(" ") + rc.what())
-                << endl;
+        if (!std::string(rc.what()).empty()) {
+            std::cerr << "error: " << rc.what() << std::endl;
+        }
+
         return rc.get_return_code();
     }
 
