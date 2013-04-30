@@ -1355,14 +1355,8 @@ namespace Registry
                             "Contact is not registered with MojeID");
                 }
 
-                //try lock object states
-                Fred::lock_multiple_object_states(_contact_id
-                    , Util::vector_of<std::string>
-                        (::MojeID::ObjectState::MOJEID_CONTACT)
-                        (Fred::ObjectState::SERVER_DELETE_PROHIBITED)
-                        (Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)
-                        (Fred::ObjectState::SERVER_UPDATE_PROHIBITED)
-                        (Fred::ObjectState::VALIDATED_CONTACT) );
+                //lock object states
+                Fred::lock_object_state_request_lock(_contact_id);
 
                 if (!Fred::cancel_object_state(
                     _contact_id, ::MojeID::ObjectState::MOJEID_CONTACT)) {

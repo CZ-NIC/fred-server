@@ -9,7 +9,7 @@ bool object_has_state(
         const std::string &_state_name)
 {
     Database::Connection conn = Database::Manager::acquire();
-    lock_object_state_request_lock(_state_name, _object_id);
+    lock_object_state_request_lock(_object_id);
     Database::Result rcheck = conn.exec_params(
             "SELECT count(*) FROM object_state os"
             " JOIN enum_object_states eos ON eos.id = os.state_id"
@@ -52,7 +52,7 @@ unsigned long long insert_object_state(
         const std::string &_state_name)
 {
     Database::Connection conn = Database::Manager::acquire();
-    lock_object_state_request_lock(_state_name, _object_id);
+    lock_object_state_request_lock(_object_id);
     Database::Result reqid =conn.exec_params(
             "INSERT INTO object_state_request (object_id, state_id)"
             " VALUES ($1::integer, (SELECT id FROM enum_object_states"
@@ -119,7 +119,7 @@ bool cancel_object_state(
     if (object_has_state(_object_id, _state_name) == true) {
         Database::Transaction tx(conn);
 
-        lock_object_state_request_lock(_state_name,_object_id);
+        lock_object_state_request_lock(_object_id);
 
         Database::Result rid_result = conn.exec_params(
                 "UPDATE object_state_request SET canceled = CURRENT_TIMESTAMP WHERE id IN ("
@@ -207,21 +207,6 @@ void cancel_multiple_object_states(
 
 }
 
-void lock_multiple_object_states(
-    const unsigned long long _object_id
-    , const std::vector<std::string> &_states_names)
-{
-    if(_states_names.empty()) return;
-
-    Database::Connection conn = Database::Manager::acquire();
-
-    for (std::vector<std::string>::const_iterator state_name_it = _states_names.begin()
-            ; state_name_it != _states_names.end(); ++state_name_it)
-    {
-        lock_object_state_request_lock(*state_name_it, _object_id);
-    }
-}
-
 void update_object_states(
         const unsigned long long &_object_id)
 {
@@ -288,7 +273,7 @@ void createObjectStateRequestName(
 
     unsigned long long object_state_id = obj_state_res[0][0];
 
-    lock_object_state_request_lock(object_state_id, object_id);
+    lock_object_state_request_lock(object_id);
 
     //get existing state requests for object and state
     //assuming requests for different states of the same object may overlay
@@ -393,38 +378,12 @@ void createObjectStateRequestName(
     return;
 }//createObjectStateRequestName
 
-//select for update by state_id from enum_object_states.id and object_id from object_registry.id
-void lock_object_state_request_lock(unsigned long long state_id, unsigned long long object_id)
-{
-    {//insert separately
-        typedef std::auto_ptr<Database::StandaloneConnection> StandaloneConnectionPtr;
-        Database::StandaloneManager sm = Database::StandaloneManager(
-                new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
-        StandaloneConnectionPtr conn_standalone(sm.acquire());
-        conn_standalone->exec_params(
-            "INSERT INTO object_state_request_lock (id, state_id, object_id) "
-            " VALUES (DEFAULT, $1::bigint, $2::bigint)"
-            , Database::query_param_list(state_id)(object_id));
-    }
-
-    Database::Connection conn = Database::Manager::acquire();
-    conn.exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)"
-        , Database::query_param_list(state_id)(object_id));
-
-}
-
-//select for update by state_name from enum_object_states.name and object_id from object_registry.id
-void lock_object_state_request_lock(const std::string& state_name, unsigned long long object_id)
+//select for update by object_id from object_registry.id
+void lock_object_state_request_lock(unsigned long long object_id)
 {
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result res_state_id = conn.exec_params("SELECT id FROM enum_object_states "
-        " WHERE name=$1::text ", Database::query_param_list (state_name));
-
-    if(res_state_id.size() == 1)
-    {
-        lock_object_state_request_lock(static_cast<unsigned long long>(res_state_id[0][0])
-                , object_id);
-    }
+    conn.exec_params("SELECT lock_object_state_request_lock($1::bigint)"
+        , Database::query_param_list(object_id));
 }
 
 };
