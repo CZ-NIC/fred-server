@@ -875,8 +875,7 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 Database::Transaction tx(conn);
 
-                Fred::PublicRequest::lock_public_request_lock(
-                        Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION,_contact_id);
+                Fred::PublicRequest::lock_public_request_by_object(_contact_id);
 
                 Database::Result res = conn.exec_params(
                     "SELECT "
@@ -1392,14 +1391,7 @@ namespace Registry
                 }
 
                 //lock public requests
-                Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION, _contact_id);
-                Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION, _contact_id);
-                Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION, _contact_id);
-                Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION, _contact_id);
+                Fred::PublicRequest::lock_public_request_by_object(_contact_id);
 
                 conn.exec_params(
                     "UPDATE public_request pr "
