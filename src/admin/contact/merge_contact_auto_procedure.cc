@@ -245,9 +245,6 @@ void MergeContactAutoProcedure::exec()
     }
     std::string system_registrar = static_cast<std::string>(system_registrar_result[0][0]);
 
-    /* find any contact duplicates set (optionally for specific registrar only) */
-
-
     /* filter for best contact selection */
     std::vector<Fred::ContactSelectionFilterType> selection_filter = selection_filter_order_;
     if (selection_filter_order_.empty()) {
@@ -260,6 +257,7 @@ void MergeContactAutoProcedure::exec()
     OutputIndenter indenter(2, 0, ' ');
     std::ostream &out_stream = std::cout;
 
+    /* find any contact duplicates set (optionally for specific registrar only) */
     std::set<std::string> any_dup_set = Fred::Contact::FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
     while (any_dup_set.size() >= 2)
     {
