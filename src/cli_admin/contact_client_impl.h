@@ -176,26 +176,48 @@ struct contact_merge_impl
         }
 
 
-        Fred::MergeContactOutput merge_data;
-        Admin::MergeContactOperationSummary merge_operation_info;
-        Admin::MergeContactSummaryInfo merge_summary_info;
-        Admin::MergeContact merge_op = Admin::MergeContact(params.src, params.dst);
-        if (params.dry_run)
+        try
         {
-            merge_data = merge_op.exec_dry_run();
-        }
-        else
-        {
-            merge_data = merge_op.exec(*(logger_client.get()));
-        }
-        merge_operation_info.add_merge_output(merge_data);
-        merge_summary_info.inc_merge_set();
-        merge_summary_info.inc_merge_operation();
+            Fred::MergeContactOutput merge_data;
+            Admin::MergeContactOperationSummary merge_operation_info;
+            Admin::MergeContactSummaryInfo merge_summary_info;
+            Admin::MergeContact merge_op = Admin::MergeContact(params.src, params.dst);
+            if (params.dry_run)
+            {
+                merge_data = merge_op.exec_dry_run();
+            }
+            else
+            {
+                merge_data = merge_op.exec(*(logger_client.get()));
+            }
+            merge_operation_info.add_merge_output(merge_data);
+            merge_summary_info.inc_merge_set();
+            merge_summary_info.inc_merge_operation();
 
-        if (verbose_level > 0) {
-            OutputIndenter indenter(2, 0, ' ');
-            std::cout << Admin::format_merge_contact_output(merge_data, params.src, params.dst, merge_summary_info, indenter);
-            std::cout << merge_operation_info.format(indenter.dive());
+            if (verbose_level > 0) {
+                OutputIndenter indenter(2, 0, ' ');
+                std::cout << Admin::format_merge_contact_output(merge_data, params.src, params.dst, merge_summary_info, indenter);
+                std::cout << merge_operation_info.format(indenter.dive());
+            }
+        }
+        catch (Fred::MergeContactException &ex)
+        {
+            Fred::GetOperationExceptionParamsDataToBoolCallback cb;
+            ex.callback_exception_params(boost::ref(cb), "not found:src_contact_handle");
+            if (cb.get() == true) {
+                throw ReturnCode(std::string("source contact '") + params.src + std::string("' not found"), 1);
+            }
+            ex.callback_exception_params(boost::ref(cb), "not found:dst_contact_handle");
+            if (cb.get() == true) {
+                throw ReturnCode(std::string("destination contact '") + params.dst + std::string("' not found"), 1);
+            }
+            ex.callback_exception_params(boost::ref(cb), "invalid:src_contact_handle");
+            bool isrc = cb.get();
+            ex.callback_exception_params(boost::ref(cb), "invalid:dst_contact_handle");
+            bool idst = cb.get();
+            if (isrc || idst) {
+                throw ReturnCode(std::string("contact differs - cannot merge"), 1);
+            }
         }
 
         return;
