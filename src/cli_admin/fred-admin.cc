@@ -91,6 +91,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientContactListArgsGrp),contact_list_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientContactReminderArgsGrp),contact_reminder_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientContactMergeDuplicateAutoArgsGrp), contact_merge_duplicate_auto_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientContactMergeArgsGrp), contact_merge_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceListArgsGrp),invoice_list_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceArchiveArgsGrp),invoice_archive_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceCreditArgsGrp),invoice_credit_impl()))
@@ -249,9 +250,10 @@ int main(int argc, char* argv[])
                 string("ReturnCode: ") + boost::lexical_cast<std::string>(rc.get_return_code())
                 + string(" ") + rc.what()
                 );
-        cerr << (string("ReturnCode: ") + boost::lexical_cast<std::string>(rc.get_return_code())
-                        + string(" ") + rc.what())
-                << endl;
+        if (!std::string(rc.what()).empty()) {
+            std::cerr << "error: " << rc.what() << std::endl;
+        }
+
         return rc.get_return_code();
     }
 

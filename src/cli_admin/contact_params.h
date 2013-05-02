@@ -132,4 +132,33 @@ struct ContactMergeDuplicateAutoArgs
 };
 
 
+/**
+ * \class ContactMergeArgs
+ * \brief manual two contact merge command args
+ */
+struct ContactMergeArgs
+{
+    std::string src;
+    std::string dst;
+    bool dry_run;
+    optional_ushort verbose;
+
+    ContactMergeArgs()
+    {
+    }
+
+    ContactMergeArgs(
+            const std::string &_src,
+            const std::string &_dst,
+            bool _dry_run,
+            const optional_ushort &_verbose)
+        : src(_src),
+          dst(_dst),
+          dry_run(_dry_run),
+          verbose(_verbose)
+    {
+    }
+};
+
+
 #endif // CONTACT_PARAMS_H_

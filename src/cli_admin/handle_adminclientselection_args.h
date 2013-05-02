@@ -399,6 +399,51 @@ public:
     }//handle
 };//class HandleAdminClientContactMergeDuplicateAutoArgsGrp
 
+
+class HandleAdminClientContactMergeArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ContactMergeArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("contact_merge");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("contact_merge options")));
+        cfg_opts->add_options()
+            ("contact_merge",
+                "command to merge two contacts")
+            ("src", boost::program_options::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.src)),
+                "source contact handle to be merge (this one will be deleted)")
+            ("dst", boost::program_options::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.dst)),
+                "destination contact handle to be merge onto")
+            ("dry_run", boost::program_options::value<bool>()
+                ->default_value(false)->zero_tokens()
+                ->notifier(save_arg<bool>(params.dry_run)),
+                "just write what could be done; don't actually touch data")
+            ("verbose", boost::program_options::value<Checked::ushort>()
+                ->notifier(save_optional_ushort(params.verbose)),
+                "specify output verbosity level");
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};
+
+
 /**
  * \class HandleAdminClientContactListArgsGrp
  * \brief admin client contact_list options handler

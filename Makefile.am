@@ -170,7 +170,8 @@ noinst_HEADERS = \
 		util/map_get.h \
 		src/corba/common_wrappers.h \
 		src/corba/contact_verification/corba_conversion.h \
-		util/optional_value.h
+		util/optional_value.h \
+		util/output_indenter.h
 
 
 noinst_LIBRARIES = \
@@ -236,7 +237,8 @@ sbin_PROGRAMS = \
 #
 util_libutil_a_SOURCES = \
 		util/random.cc \
-		util/util.cc
+		util/util.cc \
+		util/output_indenter.cc
 #
 # util/libutil.a
 
@@ -793,8 +795,6 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/create_domain.h \
 		src/fredlib/contact/merge_contact_selection.cc \
 		src/fredlib/contact/merge_contact_selection.h \
-		src/fredlib/contact/merge_contact_auto_procedure.cc \
-		src/fredlib/contact/merge_contact_auto_procedure.h \
 		src/fredlib/contact/find_contact_duplicates.cc \
 		src/fredlib/contact/find_contact_duplicates.h \
 		src/fredlib/contact/merge_contact_email_notification_data.cc \
@@ -1530,7 +1530,15 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/cli_admin/charge_params.h \
 		src/cli_admin/chargeclient.cc \
 		src/cli_admin/chargeclient.h \
-		src/cli_admin/charge_client_impl.h
+		src/cli_admin/charge_client_impl.h \
+		src/admin/contact/merge_contact.cc \
+		src/admin/contact/merge_contact.h \
+		src/admin/contact/merge_contact_logger.cc \
+		src/admin/contact/merge_contact_logger.h \
+		src/admin/contact/merge_contact_auto_procedure.cc \
+		src/admin/contact/merge_contact_auto_procedure.h \
+		src/admin/contact/merge_contact_reporting.cc \
+		src/admin/contact/merge_contact_reporting.h
 
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)

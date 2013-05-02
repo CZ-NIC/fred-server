@@ -33,7 +33,9 @@
 #include "cli_admin/contactclient.h"
 #include "commonclient.h"
 #include "fredlib/reminder.h"
-#include "fredlib/contact/merge_contact_auto_procedure.h"
+#include "admin/contact/merge_contact_auto_procedure.h"
+#include "admin/contact/merge_contact.h"
+#include "admin/contact/merge_contact_reporting.h"
 #include "corba/logger_client_impl.h"
 
 
@@ -127,11 +129,96 @@ struct contact_merge_duplicate_auto_impl
         ContactMergeDuplicateAutoArgs params = CfgArgGroups::instance()->
             get_handler_ptr_by_type<HandleAdminClientContactMergeDuplicateAutoArgsGrp>()->params;
 
-        Fred::Contact::MergeContactAutoProcedure(
+        Admin::MergeContactAutoProcedure(
                 *(mm.get()),
                 *(logger_client.get()), params.registrar,
                 params.limit, params.dry_run, params.verbose)
             .set_selection_filter_order(params.selection_filter_order).exec();
+
+        return;
+    }
+};
+
+
+/**
+ * \class contact_merge_impl
+ * \brief functor to run manual two contact merge command
+ */
+struct contact_merge_impl
+{
+    void operator()() const
+    {
+        Logging::Context ctx("contact_merge_impl");
+
+        FakedArgs orb_fa = CfgArgGroups::instance()->fa;
+
+        /* prepare logger corba client */
+        HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
+                   get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+
+        CorbaContainer::set_instance(orb_fa.get_argc(), orb_fa.get_argv()
+               , ns_args_ptr->get_nameservice_host()
+               , ns_args_ptr->get_nameservice_port()
+               , ns_args_ptr->get_nameservice_context());
+
+        std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
+                new Fred::Logger::LoggerCorbaClientImpl());
+
+        ContactMergeArgs params = CfgArgGroups::instance()
+            ->get_handler_ptr_by_type<HandleAdminClientContactMergeArgsGrp>()->params;
+
+        unsigned short verbose_level = 0;
+        if (params.verbose.is_value_set()) {
+            verbose_level = params.verbose.get_value();
+        }
+        if (params.dry_run) {
+            verbose_level = 1;
+        }
+
+
+        try
+        {
+            Fred::MergeContactOutput merge_data;
+            Admin::MergeContactOperationSummary merge_operation_info;
+            Admin::MergeContactSummaryInfo merge_summary_info;
+            Admin::MergeContact merge_op = Admin::MergeContact(params.src, params.dst);
+            if (params.dry_run)
+            {
+                merge_data = merge_op.exec_dry_run();
+            }
+            else
+            {
+                merge_data = merge_op.exec(*(logger_client.get()));
+            }
+            merge_operation_info.add_merge_output(merge_data);
+            merge_summary_info.inc_merge_set();
+            merge_summary_info.inc_merge_operation();
+
+            if (verbose_level > 0) {
+                OutputIndenter indenter(2, 0, ' ');
+                std::cout << Admin::format_merge_contact_output(merge_data, params.src, params.dst, merge_summary_info, indenter);
+                std::cout << merge_operation_info.format(indenter.dive());
+            }
+        }
+        catch (Fred::MergeContactException &ex)
+        {
+            Fred::GetOperationExceptionParamsDataToBoolCallback cb;
+            ex.callback_exception_params(boost::ref(cb), "not found:src_contact_handle");
+            if (cb.get() == true) {
+                throw ReturnCode(std::string("source contact '") + params.src + std::string("' not found"), 1);
+            }
+            ex.callback_exception_params(boost::ref(cb), "not found:dst_contact_handle");
+            if (cb.get() == true) {
+                throw ReturnCode(std::string("destination contact '") + params.dst + std::string("' not found"), 1);
+            }
+            ex.callback_exception_params(boost::ref(cb), "invalid:src_contact_handle");
+            bool isrc = cb.get();
+            ex.callback_exception_params(boost::ref(cb), "invalid:dst_contact_handle");
+            bool idst = cb.get();
+            if (isrc || idst) {
+                throw ReturnCode(std::string("contact differs - cannot merge"), 1);
+            }
+        }
 
         return;
     }
