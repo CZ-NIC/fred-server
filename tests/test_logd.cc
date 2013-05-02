@@ -1431,8 +1431,8 @@ BOOST_AUTO_TEST_CASE( get_request_count_users_compare )
 {
     TestImplLog test (CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
-    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
-    boost::posix_time::ptime end   (time_from_string("2011-06-30"));
+    boost::posix_time::ptime begin (time_from_string("2011-01-01 00:00:00"));
+    boost::posix_time::ptime end   (time_from_string("2011-06-30 00:00:00"));
 
     std::auto_ptr<RequestCountInfo> info_ptr = test.getRequestCountUsers(begin, end, "EPP");
 
