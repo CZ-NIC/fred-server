@@ -167,6 +167,13 @@ struct contact_merge_impl
         ContactMergeArgs params = CfgArgGroups::instance()
             ->get_handler_ptr_by_type<HandleAdminClientContactMergeArgsGrp>()->params;
 
+        if (params.src.empty()) {
+            throw ReturnCode("the option '--src' is required but missing", 1);
+        }
+        if (params.dst.empty()) {
+            throw ReturnCode("the option '--dst' is required but missing", 1);
+        }
+
         unsigned short verbose_level = 0;
         if (params.verbose.is_value_set()) {
             verbose_level = params.verbose.get_value();

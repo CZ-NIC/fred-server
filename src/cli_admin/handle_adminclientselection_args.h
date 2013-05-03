@@ -419,10 +419,10 @@ public:
         cfg_opts->add_options()
             ("contact_merge",
                 "command to merge two contacts")
-            ("src", boost::program_options::value<Checked::string>()->required()
+            ("src", boost::program_options::value<Checked::string>()
                 ->notifier(save_arg<std::string>(params.src)),
                 "source contact handle to be merge (this one will be deleted)")
-            ("dst", boost::program_options::value<Checked::string>()->required()
+            ("dst", boost::program_options::value<Checked::string>()
                 ->notifier(save_arg<std::string>(params.dst)),
                 "destination contact handle to be merge onto")
             ("dry_run", boost::program_options::value<bool>()
