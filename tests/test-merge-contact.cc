@@ -823,7 +823,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_same_src_and_dst_contact, merge_conta
         Fred::GetOperationExceptionParamsDataToMmapCallback cb;
         ex.callback_exception_params(boost::ref(cb));
         BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("is linked:handle")->second).compare(src_contact_handle) == 0);
+        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("identical:dst_contact_handle")->second).compare(src_contact_handle) == 0);
     }
 
     //info after merge

@@ -238,7 +238,7 @@ namespace Fred
         ConstArr get_fail_param_impl() throw()
         {
             static const char* list[]={"not found:src_contact_handle", "not found:dst_contact_handle", "not found:registrar"
-                , "invalid:src_contact_handle", "invalid:dst_contact_handle"};
+                , "invalid:src_contact_handle", "invalid:dst_contact_handle", "identical:dst_contact_handle"};
             return ConstArr(list,sizeof(list)/sizeof(char*));
         }
     };//class MergeContactException
