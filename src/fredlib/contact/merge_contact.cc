@@ -108,6 +108,14 @@ namespace Fred
             ret.dst_contact_sponsoring_registrar = static_cast<std::string>(lock_res[0][3]);
         }
 
+        if(ret.src_contact_roid.compare(ret.dst_contact_roid) == 0)
+        {
+            std::string errmsg("unable to merge the same contacts || identical:dst_contact_roid: ");
+            errmsg += boost::replace_all_copy(ret.dst_contact_roid,"|", "[pipe]");//quote pipes
+            errmsg += " |";
+            throw MCEX(errmsg.c_str());
+        }
+
         return ret;
     }//lock_object_registry_row_for_update
 
