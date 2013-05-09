@@ -558,7 +558,10 @@ struct Locking_public_request_fixture
     Fred::InfoContactOutput info_contact;
     std::vector<Fred::InfoContactOutput> info_contact_history;
     std::auto_ptr<Fred::Manager> registry_manager;
+    std::auto_ptr<Fred::Document::Manager> doc_manager;
+    boost::shared_ptr<Fred::Mailer::Manager> mailer_manager;
     std::auto_ptr<Fred::PublicRequest::Manager> request_manager;
+    unsigned long long preq_id;
 
     //init
     Locking_public_request_fixture()
@@ -568,6 +571,7 @@ struct Locking_public_request_fixture
     , xmark(RandomDataGenerator().xnumstring(6))
     , contact_handle(std::string("TEST-PUBLIC-REQUEST-CONTACT-HANDLE")+xmark)
     , contact_id(0)
+    , preq_id(0)
     {
         //corba config
         FakedArgs fa = CfgArgs::instance()->fa;
@@ -615,11 +619,6 @@ struct Locking_public_request_fixture
         HandleRegistryArgs *rconf =
             CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
         DBSharedPtr nodb;
-        boost::shared_ptr<Fred::Mailer::Manager> mailer_manager( new MailerManager(CorbaContainer::get_instance()->getNS()));;
-
-        std::auto_ptr<Fred::Document::Manager> doc_manager;
-
-
 
         registry_manager.reset(Fred::Manager::create(
                     nodb,
@@ -634,6 +633,8 @@ struct Locking_public_request_fixture
                         HandleCorbaNameServiceArgs>()
                             ->get_nameservice_host_port());
 
+        mailer_manager.reset( new MailerManager(CorbaContainer::get_instance()->getNS()));
+
         request_manager.reset(Fred::PublicRequest::Manager::create(
                     registry_manager->getDomainManager(),
                     registry_manager->getContactManager(),
@@ -643,16 +644,19 @@ struct Locking_public_request_fixture
                     doc_manager.get(),
                     registry_manager->getMessageManager()));
 
-        Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_AUTHINFO_POST_PIF;
+        Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF;
 
         std::auto_ptr<Fred::PublicRequest::PublicRequest> new_request(
                 request_manager->createRequest(type));
-        new_request->setRegistrarId(registrar_id);
+        new_request->setType(type);
+        new_request->setRegistrarId(0);
+        new_request->setReason("reason");
+        new_request->setEmailToAnswer("email_to_answer@nic.cz");
         new_request->setRequestId(0);
         new_request->addObject(
             Fred::PublicRequest::OID(contact_id, contact_handle, Fred::PublicRequest::OT_CONTACT));
         new_request->save();
-
+        preq_id = new_request->getId();
         trans.commit();
     }
 
@@ -698,26 +702,23 @@ public:
             //std::cout << "waiting: " << number_ << std::endl;
             if(sb_ptr_) sb_ptr_->barrier1.wait();//wait for other synced threads
             //std::cout << "start: " << number_ << std::endl;
-
-            //call some impl
-            Fred::PublicRequest::lock_public_request_by_object(fixture_ptr_->contact_id);
-            //if(sb_ptr_) sb_ptr_->barrier2.wait();//wait for other synced threads
-
-            BOOST_TEST_MESSAGE( "start thread: " << number_ << " object_id: " << fixture_ptr_->contact_id);
-            boost::this_thread::sleep( boost::posix_time::milliseconds(2000));
+            //Fred::PublicRequest::lock_public_request_by_object(fixture_ptr_->contact_id);
+            //BOOST_TEST_MESSAGE( "start thread: " << number_ << " object_id: " << fixture_ptr_->contact_id);
+            //boost::this_thread::sleep( boost::posix_time::milliseconds(2000));
 
             /* check if object has given request type already active */
             unsigned long long p_req_id = Fred::PublicRequest::check_public_request(
                     fixture_ptr_->contact_id
                     , Fred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF);
 
-
-            fixture_ptr_->request_manager->processRequest(p_req_id,false,false);
-
-
+            if(fixture_ptr_->preq_id == p_req_id)//if not processed, process request
+            {
+                fixture_ptr_->request_manager->processRequest(fixture_ptr_->preq_id,false,true);
+                res.ret = 1;
+            }
 
             tx.commit();
-            BOOST_TEST_MESSAGE( "end p_req_id: " << p_req_id << " thread: " << number_ << " object_id: " << fixture_ptr_->contact_id);
+            //BOOST_TEST_MESSAGE( "fixture_ptr_->preq_id: " << fixture_ptr_->preq_id << " thread: " << number_ << " object_id: " << fixture_ptr_->contact_id);
         }
         catch(const std::exception& ex)
         {
