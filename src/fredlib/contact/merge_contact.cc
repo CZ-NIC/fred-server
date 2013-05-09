@@ -41,7 +41,15 @@ namespace Fred
     : src_contact_handle_(from_contact_handle)
     , dst_contact_handle_(to_contact_handle)
     , registrar_(registrar)
-    {}
+    {
+        if(boost::algorithm::to_upper_copy(src_contact_handle_).compare(boost::algorithm::to_upper_copy(dst_contact_handle_)) == 0)
+        {
+            std::string errmsg("unable to merge the same contacts || identical:dst_contact_handle: ");
+            errmsg += boost::replace_all_copy(dst_contact_handle_,"|", "[pipe]");//quote pipes
+            errmsg += " |";
+            throw MCEX(errmsg.c_str());
+        }
+    }
 
     MergeContact& MergeContact::set_logd_request_id(unsigned long long logd_request_id)
     {
@@ -100,11 +108,27 @@ namespace Fred
             ret.dst_contact_sponsoring_registrar = static_cast<std::string>(lock_res[0][3]);
         }
 
+        if(ret.src_contact_roid.compare(ret.dst_contact_roid) == 0)
+        {
+            std::string errmsg("unable to merge the same contacts || identical:dst_contact_roid: ");
+            errmsg += boost::replace_all_copy(ret.dst_contact_roid,"|", "[pipe]");//quote pipes
+            errmsg += " |";
+            throw MCEX(errmsg.c_str());
+        }
+
         return ret;
     }//lock_object_registry_row_for_update
 
     void MergeContact::diff_contacts(OperationContext& ctx)
     {
+        if(boost::algorithm::to_upper_copy(src_contact_handle_).compare(boost::algorithm::to_upper_copy(dst_contact_handle_)) == 0)
+        {
+            std::string errmsg("unable to merge the same contacts || identical:dst_contact_handle: ");
+            errmsg += boost::replace_all_copy(dst_contact_handle_,"|", "[pipe]");//quote pipes
+            errmsg += " |";
+            throw MCEX(errmsg.c_str());
+        }
+
         Database::Result diff_result = ctx.get_conn().exec_params(
         "SELECT "//c1.name, oreg1.name, o1.clid, c2.name, oreg2.name , o2.clid,
         " (trim(both ' ' from COALESCE(c1.name,'')) != trim(both ' ' from COALESCE(c2.name,''))) OR "
