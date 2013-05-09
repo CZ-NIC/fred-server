@@ -225,6 +225,10 @@ struct contact_merge_impl
             if (isrc || idst) {
                 throw ReturnCode(std::string("contact differs - cannot merge"), 1);
             }
+            ex.callback_exception_params(boost::ref(cb), "identical:dst_contact_handle");
+            if (cb.get() == true) {
+                throw ReturnCode(std::string("identical contacts passed as source and destination"), 1);
+            }
         }
 
         return;
