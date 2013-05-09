@@ -37,11 +37,19 @@
 #include <algorithm>
 #include <functional>
 #include <boost/function.hpp>
+#include <boost/exception/all.hpp>
 
 #include "fredlib/db_settings.h"
 
 namespace Fred
 {
+
+///parent of operation exceptions
+struct OperationException
+    : virtual std::exception
+    , virtual boost::exception
+{};
+
 
 /// const array wrapper
 class ConstArr
