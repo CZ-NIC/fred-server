@@ -93,30 +93,102 @@ static bool check_std_exception(std::exception const & ex)
     return (ex_msg.length() != 0);
 }
 
+//declaration of exception tag related methods getter and chaining setter with error_info type
+#define DECLARE_EXCEPTION_DATA(ex_data_tag) \
+typedef boost::error_info<BOOST_JOIN(struct ExceptionTag_,ex_data_tag),std::string> BOOST_JOIN(ErrorInfo_,ex_data_tag);\
+template <class DERIVED_EXCEPTION> struct BOOST_JOIN(ExceptionData_,ex_data_tag)\
+{\
+public:\
+    typedef BOOST_JOIN(ErrorInfo_,ex_data_tag) error_info_type;\
+private:\
+    const std::string* get_str_ptr()\
+    {\
+        return boost::get_error_info<error_info_type>(*(static_cast<DERIVED_EXCEPTION*>(this)));\
+    }\
+public:\
+    DERIVED_EXCEPTION& BOOST_JOIN(set_,ex_data_tag)(const std::string& arg)\
+    {\
+        DERIVED_EXCEPTION& ex = *static_cast<DERIVED_EXCEPTION*>(this);\
+        ex << error_info_type(arg);\
+        return ex;\
+    }\
+    std::string BOOST_JOIN(get_,ex_data_tag)()\
+    {\
+        const std::string* str_ptr = get_str_ptr();\
+        return str_ptr ? *str_ptr : std::string("");\
+    }\
+    bool BOOST_JOIN(is_set_,ex_data_tag)()\
+    {\
+        const std::string* str_ptr = get_str_ptr();\
+        return str_ptr;\
+    }\
+protected:\
+    BOOST_JOIN(ExceptionData_,ex_data_tag)(){}\
+    BOOST_JOIN(~ExceptionData_,ex_data_tag)() throw () {}\
+}\
+
+
+
+DECLARE_EXCEPTION_DATA(unknown_registrar_handle);
+DECLARE_EXCEPTION_DATA(unknown_contact_handle);
+DECLARE_EXCEPTION_DATA(unknown_registry_object_identifier);
 
 BOOST_AUTO_TEST_SUITE(TestOperationException)
 
 const std::string server_name = "test-opexception";
 
-///exception for tests
+///exception instance for tests
 struct TestException
 : virtual Fred::OperationException
+  , ExceptionData_unknown_contact_handle<TestException>
+  , ExceptionData_unknown_registrar_handle<TestException>
 {};
-
-typedef boost::error_info<struct tag_my_info,std::string> my_info;
 
 BOOST_AUTO_TEST_CASE(throw_child)
 {
+    BOOST_CHECK_EXCEPTION(
     try
     {
-        BOOST_THROW_EXCEPTION(TestException() << my_info("test info data"));
+        BOOST_THROW_EXCEPTION(
+                TestException()
+                .set_unknown_registrar_handle("test_registrar")
+                .set_unknown_contact_handle("test_contact")
+                );
     }
     catch(boost::exception& ex)
     {
         BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
-        std::string test_data = *(boost::get_error_info<my_info>(ex));
-        BOOST_TEST_MESSAGE( test_data);
+
+        BOOST_TEST_MESSAGE("\nwhen not interested in exception child type using error_info instance");
+        const std::string* test_data_ptr = 0;
+        test_data_ptr = boost::get_error_info<ErrorInfo_unknown_contact_handle>(ex);
+        if(test_data_ptr)
+        {
+            BOOST_TEST_MESSAGE(*test_data_ptr);
+            BOOST_CHECK(std::string("test_contact").compare(*test_data_ptr)==0);
+        }
+        test_data_ptr = boost::get_error_info<ErrorInfo_unknown_registrar_handle>(ex);
+        if(test_data_ptr)
+        {
+            BOOST_TEST_MESSAGE(*test_data_ptr);
+            BOOST_CHECK(std::string("test_registrar").compare(*test_data_ptr)==0);
+        }
+
+        BOOST_TEST_MESSAGE("\nwith known child exception type using wrapper");
+        if(dynamic_cast<TestException&>(ex).is_set_unknown_contact_handle())
+        {
+            BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_unknown_contact_handle());
+            BOOST_CHECK(std::string("test_contact").compare(dynamic_cast<TestException&>(ex).get_unknown_contact_handle())==0);
+        }
+        if(dynamic_cast<TestException&>(ex).is_set_unknown_registrar_handle())
+        {
+            BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_unknown_registrar_handle());
+            BOOST_CHECK(std::string("test_registrar").compare(dynamic_cast<TestException&>(ex).get_unknown_registrar_handle())==0);
+        }
+        throw;//to check std::exception
     }
+    , std::exception
+    , check_std_exception);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestOperationException
