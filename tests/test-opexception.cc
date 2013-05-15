@@ -149,6 +149,8 @@ BOOST_AUTO_TEST_CASE(throw_child)
     BOOST_CHECK_EXCEPTION(
     try
     {
+        TestException() << ErrorInfo_unknown_registry_object_identifier("test_roid");
+
         BOOST_THROW_EXCEPTION(
                 TestException()
                 .set_unknown_registrar_handle("test_registrar")
