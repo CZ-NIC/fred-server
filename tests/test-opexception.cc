@@ -94,21 +94,26 @@ static bool check_std_exception(std::exception const & ex)
 }
 
 //declaration of exception tag related methods getter and chaining setter with error_info type
-#define DECLARE_EXCEPTION_DATA(ex_data_tag) \
+#define DECLARE_EXCEPTION_STRDATA(ex_data_tag) \
 typedef boost::error_info<BOOST_JOIN(struct ExceptionTag_,ex_data_tag),std::string> BOOST_JOIN(ErrorInfo_,ex_data_tag);\
 template <class DERIVED_EXCEPTION> struct BOOST_JOIN(ExceptionData_,ex_data_tag)\
 {\
 public:\
     typedef BOOST_JOIN(ErrorInfo_,ex_data_tag) error_info_type;\
 private:\
+\
+    DERIVED_EXCEPTION* get_derived_ptr()\
+    {\
+        return static_cast<DERIVED_EXCEPTION*>(this);\
+    }\
     const std::string* get_str_ptr()\
     {\
-        return boost::get_error_info<error_info_type>(*(static_cast<DERIVED_EXCEPTION*>(this)));\
+        return boost::get_error_info<error_info_type>(*(get_derived_ptr()));\
     }\
 public:\
     DERIVED_EXCEPTION& BOOST_JOIN(set_,ex_data_tag)(const std::string& arg)\
     {\
-        DERIVED_EXCEPTION& ex = *static_cast<DERIVED_EXCEPTION*>(this);\
+        DERIVED_EXCEPTION& ex = *get_derived_ptr();\
         ex << error_info_type(arg);\
         return ex;\
     }\
@@ -128,10 +133,50 @@ protected:\
 }\
 
 
+#define DECLARE_EXCEPTION_DATA(ex_data_tag, ex_data_type) \
+typedef boost::error_info<BOOST_JOIN(struct ExceptionTag_,ex_data_tag),ex_data_type> BOOST_JOIN(ErrorInfo_,ex_data_tag);\
+template <class DERIVED_EXCEPTION> struct BOOST_JOIN(ExceptionData_,ex_data_tag)\
+{\
+public:\
+    typedef BOOST_JOIN(ErrorInfo_,ex_data_tag) error_info_type;\
+private:\
+\
+    DERIVED_EXCEPTION* get_derived_ptr()\
+    {\
+        return static_cast<DERIVED_EXCEPTION*>(this);\
+    }\
+    const ex_data_type* get_data_ptr()\
+    {\
+        return boost::get_error_info<error_info_type>(*(get_derived_ptr()));\
+    }\
+public:\
+    DERIVED_EXCEPTION& BOOST_JOIN(set_,ex_data_tag)(const ex_data_type& arg)\
+    {\
+        DERIVED_EXCEPTION& ex = *get_derived_ptr();\
+        ex << error_info_type(arg);\
+        return ex;\
+    }\
+    ex_data_type BOOST_JOIN(get_,ex_data_tag)()\
+    {\
+        const ex_data_type* data_ptr = get_data_ptr();\
+        return data_ptr ? *data_ptr : ex_data_type();\
+    }\
+    bool BOOST_JOIN(is_set_,ex_data_tag)()\
+    {\
+        const ex_data_type* data_ptr = get_data_ptr();\
+        return data_ptr;\
+    }\
+protected:\
+    BOOST_JOIN(ExceptionData_,ex_data_tag)(){}\
+    BOOST_JOIN(~ExceptionData_,ex_data_tag)() throw () {}\
+}\
 
-DECLARE_EXCEPTION_DATA(unknown_registrar_handle);
-DECLARE_EXCEPTION_DATA(unknown_contact_handle);
-DECLARE_EXCEPTION_DATA(unknown_registry_object_identifier);
+
+
+DECLARE_EXCEPTION_STRDATA(unknown_registrar_handle);
+DECLARE_EXCEPTION_STRDATA(unknown_contact_handle);
+DECLARE_EXCEPTION_DATA(unknown_registry_object_identifier, std::string);
+DECLARE_EXCEPTION_DATA(testing_int_data, int);
 
 BOOST_AUTO_TEST_SUITE(TestOperationException)
 
@@ -142,6 +187,7 @@ struct TestException
 : virtual Fred::OperationException
   , ExceptionData_unknown_contact_handle<TestException>
   , ExceptionData_unknown_registrar_handle<TestException>
+  , ExceptionData_testing_int_data<TestException>
 {};
 
 BOOST_AUTO_TEST_CASE(throw_child)
@@ -149,12 +195,13 @@ BOOST_AUTO_TEST_CASE(throw_child)
     BOOST_CHECK_EXCEPTION(
     try
     {
-        TestException() << ErrorInfo_unknown_registry_object_identifier("test_roid");
-
         BOOST_THROW_EXCEPTION(
                 TestException()
                 .set_unknown_registrar_handle("test_registrar")
                 .set_unknown_contact_handle("test_contact")
+                .set_testing_int_data(5)
+                << ErrorInfo_unknown_registry_object_identifier("test_roid")//add anything
+
                 );
     }
     catch(boost::exception& ex)
@@ -186,6 +233,11 @@ BOOST_AUTO_TEST_CASE(throw_child)
         {
             BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_unknown_registrar_handle());
             BOOST_CHECK(std::string("test_registrar").compare(dynamic_cast<TestException&>(ex).get_unknown_registrar_handle())==0);
+        }
+        if(dynamic_cast<TestException&>(ex).is_set_testing_int_data())
+        {
+            BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_testing_int_data());
+            BOOST_CHECK(5 == dynamic_cast<TestException&>(ex).get_testing_int_data());
         }
         throw;//to check std::exception
     }
