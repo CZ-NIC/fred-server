@@ -50,6 +50,46 @@ struct OperationException
     , virtual boost::exception
 {};
 
+///declaration of exception tag related methods getter and chaining setter with error_info type
+#define DECLARE_EXCEPTION_DATA(ex_data_tag, ex_data_type) \
+typedef boost::error_info<BOOST_JOIN(struct ExceptionTag_,ex_data_tag),ex_data_type> BOOST_JOIN(ErrorInfo_,ex_data_tag);\
+template <class DERIVED_EXCEPTION> struct BOOST_JOIN(ExceptionData_,ex_data_tag)\
+{\
+public:\
+    typedef BOOST_JOIN(ErrorInfo_,ex_data_tag) error_info_type;\
+private:\
+\
+    DERIVED_EXCEPTION* get_derived_ptr()\
+    {\
+        return static_cast<DERIVED_EXCEPTION*>(this);\
+    }\
+    const ex_data_type* get_data_ptr()\
+    {\
+        return boost::get_error_info<error_info_type>(*(get_derived_ptr()));\
+    }\
+public:\
+    DERIVED_EXCEPTION& BOOST_JOIN(set_,ex_data_tag)(const ex_data_type& arg)\
+    {\
+        DERIVED_EXCEPTION& ex = *get_derived_ptr();\
+        ex << error_info_type(arg);\
+        return ex;\
+    }\
+    ex_data_type BOOST_JOIN(get_,ex_data_tag)()\
+    {\
+        const ex_data_type* data_ptr = get_data_ptr();\
+        return data_ptr ? *data_ptr : ex_data_type();\
+    }\
+    bool BOOST_JOIN(is_set_,ex_data_tag)()\
+    {\
+        const ex_data_type* data_ptr = get_data_ptr();\
+        return data_ptr;\
+    }\
+protected:\
+    BOOST_JOIN(ExceptionData_,ex_data_tag)(){}\
+    BOOST_JOIN(~ExceptionData_,ex_data_tag)() throw () {}\
+}\
+
+
 
 /// const array wrapper
 class ConstArr
