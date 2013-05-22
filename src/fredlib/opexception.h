@@ -48,7 +48,22 @@ namespace Fred
 struct OperationException
     : virtual std::exception
     , virtual boost::exception
-{};
+{
+    ///string tag to record/append operation stack context
+    typedef boost::error_info<struct OperationStackTag,std::string> ErrorInfoOperationStack;
+
+    ///append operation stack context
+    void add_opstack_info(const std::string& opstack_dump)
+    {
+        std::string operation_stack_info;
+        const std::string* ptr = 0;
+        ptr = boost::get_error_info<ErrorInfoOperationStack>(*this);
+        if(ptr) operation_stack_info += *ptr;
+        operation_stack_info += opstack_dump;
+        (*this) << ErrorInfoOperationStack(operation_stack_info);
+    }
+};
+
 
 ///declaration of exception tag related methods getter and chaining setter with error_info type
 #define DECLARE_EXCEPTION_DATA(ex_data_tag, ex_data_type) \
@@ -90,6 +105,9 @@ protected:\
 }\
 
 
+    ///common exception data tags
+    DECLARE_EXCEPTION_DATA(internal_error, std::string);
+    DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
 
 /// const array wrapper
 class ConstArr

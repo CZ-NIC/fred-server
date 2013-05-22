@@ -24,6 +24,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include <boost/algorithm/string.hpp>
 
@@ -276,9 +277,32 @@ namespace Fred
 
         try
         {
+            //check registrar
+            {
+                Database::Result registrar_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                    , Database::query_param_list(registrar_));
+                if(registrar_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+            }
+
             unsigned long long object_id = CreateObject("contact", handle_, registrar_, authinfo_).exec(ctx);
             //create contact
             {
+                unsigned long long ssntype_id = 0;
+                if(ssntype_.isset())
+                {
+                    Database::Result ssntype_res = ctx.get_conn().exec_params(
+                        "SELECT id FROM enum_ssntype WHERE type = UPPER($1::text) FOR SHARE"
+                        , Database::query_param_list(ssntype_.get_value()));
+                    if(ssntype_res.size() != 1)
+                    {
+                        BOOST_THROW_EXCEPTION(Exception().set_unknown_ssntype(ssntype_.get_value()));
+                    }
+                }
+
                 Database::QueryParams params;//query params
                 std::stringstream col_sql, val_sql;
                 Util::HeadSeparator col_separator("",", "), val_separator("",", ");
@@ -391,11 +415,9 @@ namespace Fred
 
                 if(ssntype_.isset())
                 {
-                    params.push_back(ssntype_.get_value());
+                    params.push_back(ssntype_id);
                     col_sql << col_separator.get() << "ssntype";
-                    val_sql << val_separator.get() << "raise_exception_ifnull( "
-                    " (SELECT id FROM enum_ssntype WHERE type = UPPER($" << params.size() <<"::text)) "
-                    " ,'|| not found:ssntype: '||ex_data($1::text)||' |') ";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::integer";
                 }
 
                 if(ssn_.isset())
@@ -425,7 +447,6 @@ namespace Fred
                     col_sql << col_separator.get() << "discloseaddress";
                     val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
-
 
                 if(disclosetelephone_.isset())
                 {
@@ -484,10 +505,7 @@ namespace Fred
 
                     if (crdate_res.size() != 1)
                     {
-                        std::string errmsg("|| not found crdate:handle: ");
-                        errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw CCEX(errmsg.c_str());
+                        BOOST_THROW_EXCEPTION(Exception().set_internal_error("timestamp of the contact creation was not found"));
                     }
 
                     timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
@@ -530,14 +548,55 @@ namespace Fred
 
             }//save history
 
-
         }//try
-        catch(...)//common exception processing
+        catch(OperationException& ex)
         {
-            handleOperationExceptions<CreateContactException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_opstack_info(to_string());
+            throw;
         }
 
         return timestamp;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const CreateContact& cc)
+    {
+        return os << "#CreateContact handle: " << cc.handle_
+                << " registrar: " << cc.registrar_
+                << " authinfo: " << cc.authinfo_
+                << " name: " << cc.name_
+                << " organization: " << cc.organization_
+                << " street1: " << cc.street1_
+                << " street2: " << cc.street2_
+                << " street3: " << cc.street3_
+                << " city: " << cc.city_
+                << " stateorprovince: " << cc.stateorprovince_
+                << " postalcode: " << cc.postalcode_
+                << " country: " << cc.country_
+                << " telephone: " << cc.telephone_
+                << " fax: " << cc.fax_
+                << " email: " << cc.email_
+                << " notifyemail_: " << cc.notifyemail_
+                << " vat: " << cc.vat_
+                << " ssntype: " << cc.ssntype_
+                << " ssn: " << cc.ssn_
+                << " disclosename: " << cc.disclosename_
+                << " discloseorganization: " << cc.discloseorganization_
+                << " discloseaddress: " << cc.discloseaddress_
+                << " disclosetelephone: " << cc.disclosetelephone_
+                << " disclosefax: " << cc.disclosefax_
+                << " discloseemail: " << cc.discloseemail_
+                << " disclosevat: " << cc.disclosevat_
+                << " discloseident: " << cc.discloseident_
+                << " disclosenotifyemail: " << cc.disclosenotifyemail_
+                << " logd_request_id: " << cc.logd_request_id_
+                ;
+    }
+
+    std::string CreateContact::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
     }
 
 }//namespace Fred
