@@ -77,7 +77,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Optional<T>& ov)
     {
-        return ov.isset() ? os << ov.get_value() : os << "[N/A]";
+        return ov.isset() ? os << "'" << ov.get_value() << "'" : os << "[N/A]";
     }
 };
 

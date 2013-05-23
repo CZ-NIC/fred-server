@@ -125,7 +125,10 @@ BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)
     BOOST_CHECK_EXCEPTION(
     try
     {
-        Fred::CreateContact(create_contact_handle, bad_registrar_handle).exec(ctx);
+        Fred::CreateContact(create_contact_handle, bad_registrar_handle)
+        .set_authinfo("testauthinfo")
+        .set_logd_request_id(0)
+        .exec(ctx);
     }
     catch(const Fred::CreateContact::Exception& ex)
     {
