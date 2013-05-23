@@ -62,6 +62,15 @@ struct OperationException
         operation_stack_info += opstack_dump;
         (*this) << ErrorInfoOperationStack(operation_stack_info);
     }
+    ///std::exception content override
+    const char* what() const throw()
+    {
+    #if ( BOOST_VERSION > 104000 )
+            return boost::diagnostic_information_what(*this);
+    #else
+            return std::exception::what();
+    #endif
+    }
 };
 
 

@@ -115,51 +115,60 @@ BOOST_AUTO_TEST_CASE(throw_child)
     BOOST_CHECK_EXCEPTION(
     try
     {
-        BOOST_THROW_EXCEPTION(
-                TestException()
-                .set_unknown_registrar_handle("test_registrar")
-                .set_unknown_contact_handle("test_contact")
-                .set_testing_int_data(5)
-                << ErrorInfo_unknown_registry_object_identifier("test_roid")//add anything
+        try
+        {
+            BOOST_THROW_EXCEPTION(
+                    TestException()
+                    .set_unknown_registrar_handle("test_registrar")
+                    .set_unknown_contact_handle("test_contact")
+                    .set_testing_int_data(5)
+                    << ErrorInfo_unknown_registry_object_identifier("test_roid")//add anything
 
-                );
+                    );
+        }
+        catch(boost::exception& ex)
+        {
+            BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+
+            BOOST_TEST_MESSAGE("\nwhen not interested in exception child type using error_info instance");
+            const std::string* test_data_ptr = 0;
+            test_data_ptr = boost::get_error_info<ErrorInfo_unknown_contact_handle>(ex);
+            if(test_data_ptr)
+            {
+                BOOST_TEST_MESSAGE(*test_data_ptr);
+                BOOST_CHECK(std::string("test_contact").compare(*test_data_ptr)==0);
+            }
+            test_data_ptr = boost::get_error_info<ErrorInfo_unknown_registrar_handle>(ex);
+            if(test_data_ptr)
+            {
+                BOOST_TEST_MESSAGE(*test_data_ptr);
+                BOOST_CHECK(std::string("test_registrar").compare(*test_data_ptr)==0);
+            }
+
+            BOOST_TEST_MESSAGE("\nwith known child exception type using wrapper");
+            if(dynamic_cast<TestException&>(ex).is_set_unknown_contact_handle())
+            {
+                BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_unknown_contact_handle());
+                BOOST_CHECK(std::string("test_contact").compare(dynamic_cast<TestException&>(ex).get_unknown_contact_handle())==0);
+            }
+            if(dynamic_cast<TestException&>(ex).is_set_unknown_registrar_handle())
+            {
+                BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_unknown_registrar_handle());
+                BOOST_CHECK(std::string("test_registrar").compare(dynamic_cast<TestException&>(ex).get_unknown_registrar_handle())==0);
+            }
+            if(dynamic_cast<TestException&>(ex).is_set_testing_int_data())
+            {
+                BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_testing_int_data());
+                BOOST_CHECK(5 == dynamic_cast<TestException&>(ex).get_testing_int_data());
+            }
+            throw;//to check std::exception
+        }
     }
-    catch(boost::exception& ex)
+    catch(std::exception& ex)
     {
-        BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
-
-        BOOST_TEST_MESSAGE("\nwhen not interested in exception child type using error_info instance");
-        const std::string* test_data_ptr = 0;
-        test_data_ptr = boost::get_error_info<ErrorInfo_unknown_contact_handle>(ex);
-        if(test_data_ptr)
-        {
-            BOOST_TEST_MESSAGE(*test_data_ptr);
-            BOOST_CHECK(std::string("test_contact").compare(*test_data_ptr)==0);
-        }
-        test_data_ptr = boost::get_error_info<ErrorInfo_unknown_registrar_handle>(ex);
-        if(test_data_ptr)
-        {
-            BOOST_TEST_MESSAGE(*test_data_ptr);
-            BOOST_CHECK(std::string("test_registrar").compare(*test_data_ptr)==0);
-        }
-
-        BOOST_TEST_MESSAGE("\nwith known child exception type using wrapper");
-        if(dynamic_cast<TestException&>(ex).is_set_unknown_contact_handle())
-        {
-            BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_unknown_contact_handle());
-            BOOST_CHECK(std::string("test_contact").compare(dynamic_cast<TestException&>(ex).get_unknown_contact_handle())==0);
-        }
-        if(dynamic_cast<TestException&>(ex).is_set_unknown_registrar_handle())
-        {
-            BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_unknown_registrar_handle());
-            BOOST_CHECK(std::string("test_registrar").compare(dynamic_cast<TestException&>(ex).get_unknown_registrar_handle())==0);
-        }
-        if(dynamic_cast<TestException&>(ex).is_set_testing_int_data())
-        {
-            BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_testing_int_data());
-            BOOST_CHECK(5 == dynamic_cast<TestException&>(ex).get_testing_int_data());
-        }
-        throw;//to check std::exception
+        BOOST_TEST_MESSAGE("catch(std::exception&): ");
+        BOOST_TEST_MESSAGE(ex.what());
+        throw;
     }
     , std::exception
     , check_std_exception);
