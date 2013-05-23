@@ -127,7 +127,7 @@ BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)
     {
         Fred::CreateContact(create_contact_handle, bad_registrar_handle).exec(ctx);
     }
-    catch(boost::exception& ex)
+    catch(const Fred::CreateContact::Exception& ex)
     {
         BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
         throw;
