@@ -83,27 +83,27 @@ public:\
     typedef BOOST_JOIN(ErrorInfo_,ex_data_tag) error_info_type;\
 private:\
 \
-    DERIVED_EXCEPTION* get_derived_ptr()\
+    const DERIVED_EXCEPTION* get_derived_ptr() const\
     {\
-        return static_cast<DERIVED_EXCEPTION*>(this);\
+        return static_cast<const DERIVED_EXCEPTION*>(this);\
     }\
-    const ex_data_type* get_data_ptr()\
+    const ex_data_type* get_data_ptr() const\
     {\
         return boost::get_error_info<error_info_type>(*(get_derived_ptr()));\
     }\
 public:\
     DERIVED_EXCEPTION& BOOST_JOIN(set_,ex_data_tag)(const ex_data_type& arg)\
     {\
-        DERIVED_EXCEPTION& ex = *get_derived_ptr();\
+        DERIVED_EXCEPTION& ex = *static_cast<DERIVED_EXCEPTION*>(this);\
         ex << error_info_type(arg);\
         return ex;\
     }\
-    ex_data_type BOOST_JOIN(get_,ex_data_tag)()\
+    ex_data_type BOOST_JOIN(get_,ex_data_tag)() const\
     {\
         const ex_data_type* data_ptr = get_data_ptr();\
         return data_ptr ? *data_ptr : ex_data_type();\
     }\
-    bool BOOST_JOIN(is_set_,ex_data_tag)()\
+    bool BOOST_JOIN(is_set_,ex_data_tag)() const\
     {\
         const ex_data_type* data_ptr = get_data_ptr();\
         return data_ptr;\

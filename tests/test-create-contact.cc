@@ -133,6 +133,32 @@ BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)
     catch(const Fred::CreateContact::Exception& ex)
     {
         BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.is_set_unknown_registrar_handle());
+        throw;
+    }
+    , std::exception
+    , check_std_exception);
+}
+
+/**
+ * test CreateContact with wrong ssntype
+ */
+BOOST_FIXTURE_TEST_CASE(create_contact_wrong_ssntype, create_contact_fixture)
+{
+    BOOST_CHECK_EXCEPTION(
+    try
+    {
+        Fred::CreateContact(create_contact_handle, registrar_handle)
+        .set_authinfo("testauthinfo")
+        .set_logd_request_id(0)
+        .set_ssntype("BAD")
+        .set_ssn("any")
+        .exec(ctx);
+    }
+    catch(const Fred::CreateContact::Exception& ex)
+    {
+        BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.is_set_unknown_ssntype());
         throw;
     }
     , std::exception
