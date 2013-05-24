@@ -299,7 +299,7 @@ namespace Fred
                         , Database::query_param_list(ssntype_.get_value()));
                     if(ssntype_res.size() != 1)
                     {
-                        BOOST_THROW_EXCEPTION(Exception().set_unknown_ssntype(ssntype_.get_value()));
+                        BOOST_THROW_EXCEPTION(Exception().set_unknown_ssntype(ssntype_.print_quoted()));
                     }
                 }
 
@@ -562,33 +562,33 @@ namespace Fred
     {
         return os << "#CreateContact handle: " << cc.handle_
                 << " registrar: " << cc.registrar_
-                << " authinfo: " << cc.authinfo_
-                << " name: " << cc.name_
-                << " organization: " << cc.organization_
-                << " street1: " << cc.street1_
-                << " street2: " << cc.street2_
-                << " street3: " << cc.street3_
-                << " city: " << cc.city_
-                << " stateorprovince: " << cc.stateorprovince_
-                << " postalcode: " << cc.postalcode_
-                << " country: " << cc.country_
-                << " telephone: " << cc.telephone_
-                << " fax: " << cc.fax_
-                << " email: " << cc.email_
-                << " notifyemail_: " << cc.notifyemail_
-                << " vat: " << cc.vat_
-                << " ssntype: " << cc.ssntype_
-                << " ssn: " << cc.ssn_
-                << " disclosename: " << cc.disclosename_
-                << " discloseorganization: " << cc.discloseorganization_
-                << " discloseaddress: " << cc.discloseaddress_
-                << " disclosetelephone: " << cc.disclosetelephone_
-                << " disclosefax: " << cc.disclosefax_
-                << " discloseemail: " << cc.discloseemail_
-                << " disclosevat: " << cc.disclosevat_
-                << " discloseident: " << cc.discloseident_
-                << " disclosenotifyemail: " << cc.disclosenotifyemail_
-                << " logd_request_id: " << cc.logd_request_id_
+                << " authinfo: " << cc.authinfo_.print_quoted()
+                << " name: " << cc.name_.print_quoted()
+                << " organization: " << cc.organization_.print_quoted()
+                << " street1: " << cc.street1_.print_quoted()
+                << " street2: " << cc.street2_.print_quoted()
+                << " street3: " << cc.street3_.print_quoted()
+                << " city: " << cc.city_.print_quoted()
+                << " stateorprovince: " << cc.stateorprovince_.print_quoted()
+                << " postalcode: " << cc.postalcode_.print_quoted()
+                << " country: " << cc.country_.print_quoted()
+                << " telephone: " << cc.telephone_.print_quoted()
+                << " fax: " << cc.fax_.print_quoted()
+                << " email: " << cc.email_.print_quoted()
+                << " notifyemail_: " << cc.notifyemail_.print_quoted()
+                << " vat: " << cc.vat_.print_quoted()
+                << " ssntype: " << cc.ssntype_.print_quoted()
+                << " ssn: " << cc.ssn_.print_quoted()
+                << " disclosename: " << cc.disclosename_.print_quoted()
+                << " discloseorganization: " << cc.discloseorganization_.print_quoted()
+                << " discloseaddress: " << cc.discloseaddress_.print_quoted()
+                << " disclosetelephone: " << cc.disclosetelephone_.print_quoted()
+                << " disclosefax: " << cc.disclosefax_.print_quoted()
+                << " discloseemail: " << cc.discloseemail_.print_quoted()
+                << " disclosevat: " << cc.disclosevat_.print_quoted()
+                << " discloseident: " << cc.discloseident_.print_quoted()
+                << " disclosenotifyemail: " << cc.disclosenotifyemail_.print_quoted()
+                << " logd_request_id: " << cc.logd_request_id_.print_quoted()
                 ;
     }
 

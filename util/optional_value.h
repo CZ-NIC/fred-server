@@ -77,8 +77,16 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Optional<T>& ov)
     {
-        return ov.isset() ? os << "'" << ov.get_value() << "'" : os << "[N/A]";
+        return os << ov.get_value();
     }
+
+    std::string print_quoted() const
+    {
+        std::stringstream ss;
+        ss << (*this);
+        return isset() ? std::string("'") + ss.str() + "'" : std::string("[N/A]");
+    }
+
 };
 
 #endif //OPTIONAL_VALUE_H_
