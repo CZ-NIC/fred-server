@@ -27,11 +27,34 @@
 #include <MojeID.hh>
 #include <memory>
 #include <string>
+#include <vector>
+#include <boost/shared_ptr.hpp>
+
 
 namespace Registry
 {
     namespace MojeID
     {
+
+        class ContactHandleList_i: public POA_Registry::MojeID::ContactHandleList
+        {
+        private:
+            std::vector<std::string> handles_;
+            std::vector<std::string>::const_iterator it_;
+            // Make sure all instances are built on the heap by making the
+            // destructor non-public
+            //virtual ~ContactHandleList_i();
+        public:
+            // standard constructor
+            ContactHandleList_i(const std::vector<std::string> &_handles);
+            virtual ~ContactHandleList_i();
+
+            // methods corresponding to defined IDL attributes and operations
+            Registry::MojeID::ContactHandleSeq* getNext(::CORBA::ULong count);
+            void destroy();
+        };
+
+
         class MojeIDImpl;//pimpl class
 
         ///mojeid corba interface
@@ -40,6 +63,8 @@ namespace Registry
         private:
             // do not copy
             const std::auto_ptr<MojeIDImpl> pimpl_;
+            std::vector<boost::shared_ptr<ContactHandleList_i> > chl_objects_;
+
             Server_i(const Server_i&);//no body
             Server_i& operator= (const Server_i&);//no body
 
@@ -103,7 +128,7 @@ namespace Registry
                , const char* trans_id
                , ::CORBA::ULongLong request_id);
 
-          Registry::MojeID::ContactHandleList* getUnregistrableHandles();
+          Registry::MojeID::ContactHandleList_ptr getUnregistrableHandles();
 
           char* contactAuthInfo(::CORBA::ULongLong contact_id);
 

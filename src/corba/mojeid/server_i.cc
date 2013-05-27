@@ -37,6 +37,38 @@ namespace Registry
     namespace MojeID
     {
 
+        ContactHandleList_i::ContactHandleList_i(
+                const std::vector<std::string> &_handles)
+            : handles_(_handles),
+              it_(handles_.begin())
+        {
+        }
+
+        ContactHandleList_i::~ContactHandleList_i()
+        {
+        }
+
+        Registry::MojeID::ContactHandleSeq* ContactHandleList_i::getNext(::CORBA::ULong count)
+        {
+            Registry::MojeID::ContactHandleSeq_var ret = new Registry::MojeID::ContactHandleSeq;
+            ret->length(0);
+
+            for (unsigned long i = 0; it_ != handles_.end() && i < count; ++it_, ++i)
+            {
+                unsigned int act_size = ret->length();
+                ret->length(act_size +1);
+                ret[act_size] = corba_wrap_string(*it_);
+            }
+
+            return ret._retn();
+        }
+
+        void ContactHandleList_i::destroy()
+        {
+        }
+
+
+
         Server_i::Server_i(const std::string &_server_name)
         : pimpl_(new MojeIDImpl(_server_name
                 , boost::shared_ptr<Fred::Mailer::Manager>(
@@ -474,7 +506,7 @@ namespace Registry
             }
         }//contactCancelAccountPrepare
 
-        Registry::MojeID::ContactHandleList*
+        Registry::MojeID::ContactHandleList_ptr
         Server_i::getUnregistrableHandles()
         {
             try
@@ -482,18 +514,8 @@ namespace Registry
                 std::vector<std::string> result;
                 result = pimpl_->getUnregistrableHandles();
 
-                Registry::MojeID::ContactHandleList_var ret
-                    = new Registry::MojeID::ContactHandleList;
-                ret->length(0);
-
-                for (std::vector<std::string>::const_iterator
-                    it = result.begin(); it != result.end(); ++it)
-                {
-                    unsigned int act_size = ret->length();
-                    ret->length(act_size +1);
-                    ret[act_size] = corba_wrap_string(*it);
-                }
-                return ret._retn();
+                ContactHandleList_i * ret = new ContactHandleList_i(result);
+                return ret->_this();
             }
             catch (std::exception &_ex)
             {
