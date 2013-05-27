@@ -39,7 +39,9 @@ namespace Registry
 
         ContactHandleList_i::ContactHandleList_i(
                 const std::vector<std::string> &_handles)
-            : handles_(_handles),
+            : status_(ACTIVE),
+              last_used_(boost::posix_time::second_clock::local_time()),
+              handles_(_handles),
               it_(handles_.begin())
         {
         }
@@ -50,22 +52,60 @@ namespace Registry
 
         Registry::MojeID::ContactHandleSeq* ContactHandleList_i::getNext(::CORBA::ULong count)
         {
-            Registry::MojeID::ContactHandleSeq_var ret = new Registry::MojeID::ContactHandleSeq;
-            ret->length(0);
-
-            for (unsigned long i = 0; it_ != handles_.end() && i < count; ++it_, ++i)
+            try
             {
-                unsigned int act_size = ret->length();
-                ret->length(act_size +1);
-                ret[act_size] = corba_wrap_string(*it_);
-            }
+                if (status_ != ACTIVE) {
+                    throw Registry::MojeID::ContactHandleList::NOT_ACTIVE();
+                }
 
-            return ret._retn();
+                last_used_ = boost::posix_time::second_clock::local_time();
+
+                Registry::MojeID::ContactHandleSeq_var ret = new Registry::MojeID::ContactHandleSeq;
+                ret->length(0);
+
+                for (unsigned long i = 0; it_ != handles_.end() && i < count; ++it_, ++i)
+                {
+                    unsigned int act_size = ret->length();
+                    ret->length(act_size +1);
+                    ret[act_size] = corba_wrap_string(*it_);
+                }
+
+                return ret._retn();
+            }
+            catch (Registry::MojeID::ContactHandleList::NOT_ACTIVE)
+            {
+                throw;
+            }
+            catch (...)
+            {
+                throw Registry::MojeID::ContactHandleList::INTERNAL_SERVER_ERROR();
+            }
         }
+
 
         void ContactHandleList_i::destroy()
         {
+            this->close();
         }
+
+
+        void ContactHandleList_i::close()
+        {
+            status_ = CLOSED;
+        }
+
+
+        const boost::posix_time::ptime& ContactHandleList_i::get_last_used() const
+        {
+            return last_used_;
+        }
+
+
+        const ContactHandleList_i::Status& ContactHandleList_i::get_status() const
+        {
+            return status_;
+        }
+
 
 
 
@@ -73,11 +113,51 @@ namespace Registry
         : pimpl_(new MojeIDImpl(_server_name
                 , boost::shared_ptr<Fred::Mailer::Manager>(
                     new MailerManager(CorbaContainer::get_instance()
-                    ->getNS()))))
+                    ->getNS())))),
+          contact_handle_list_scavenger_active_(true),
+          contact_handle_list_scavenger_(boost::bind(&Server_i::clean_contact_handle_list_objects, this))
         {}
 
         Server_i::~Server_i()
-        {}
+        {
+            contact_handle_list_scavenger_active_ = false;
+            contact_handle_list_scavenger_.join();
+        }
+
+
+        void Server_i::clean_contact_handle_list_objects()
+        {
+            while (contact_handle_list_scavenger_active_)
+            {
+                LOGGER(PACKAGE).debug("fred-mifd contact handle list scavenger worker iteration");
+                {
+                    boost::lock_guard<boost::mutex> lock(contact_handle_list_objects_mutex_);
+
+                    std::vector<ContactHandleListPtr>::iterator it = contact_handle_list_objects_.begin();
+                    while(it != contact_handle_list_objects_.end())
+                    {
+                        if ((boost::posix_time::second_clock::local_time() - (*it)->get_last_used()) > seconds(300))
+                        {
+                            (*it)->close();
+                        }
+
+                        if ((*it)->get_status() == ContactHandleList_i::CLOSED)
+                        {
+                            LOGGER(PACKAGE).debug(boost::format("destroying contact handle list search from %1%") % (*it)->get_last_used());
+                            PortableServer::ObjectId_var id = CorbaContainer::get_instance()->root_poa->servant_to_id(it->get());
+                            CorbaContainer::get_instance()->root_poa->deactivate_object(id);
+                            it = contact_handle_list_objects_.erase(it);
+                        }
+                        else
+                        {
+                            it++;
+                        }
+                    }
+                }
+                boost::this_thread::sleep(boost::posix_time::seconds(30));
+            }
+        }
+
 
         //   Methods corresponding to IDL attributes and operations
         ::CORBA::ULongLong Server_i::contactCreatePrepare(
@@ -514,8 +594,10 @@ namespace Registry
                 std::vector<std::string> result;
                 result = pimpl_->getUnregistrableHandles();
 
-                ContactHandleList_i * ret = new ContactHandleList_i(result);
-                return ret->_this();
+                boost::shared_ptr<ContactHandleList_i> ret(new ContactHandleList_i(result));
+                boost::lock_guard<boost::mutex> lock(contact_handle_list_objects_mutex_);
+                contact_handle_list_objects_.push_back(ret);
+                return ret.get()->_this();
             }
             catch (std::exception &_ex)
             {

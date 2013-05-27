@@ -29,6 +29,8 @@
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/thread/thread.hpp>
 
 
 namespace Registry
@@ -38,20 +40,35 @@ namespace Registry
 
         class ContactHandleList_i: public POA_Registry::MojeID::ContactHandleList
         {
-        private:
-            std::vector<std::string> handles_;
-            std::vector<std::string>::const_iterator it_;
-            // Make sure all instances are built on the heap by making the
-            // destructor non-public
-            //virtual ~ContactHandleList_i();
         public:
+            enum Status
+            {
+                ACTIVE = 1,
+                CLOSED = 2
+            };
+
             // standard constructor
             ContactHandleList_i(const std::vector<std::string> &_handles);
+
             virtual ~ContactHandleList_i();
 
             // methods corresponding to defined IDL attributes and operations
             Registry::MojeID::ContactHandleSeq* getNext(::CORBA::ULong count);
+
             void destroy();
+
+            void close();
+
+            const boost::posix_time::ptime& get_last_used() const;
+
+            const Status& get_status() const;
+
+
+        private:
+            Status status_;
+            boost::posix_time::ptime last_used_;
+            std::vector<std::string> handles_;
+            std::vector<std::string>::const_iterator it_;
         };
 
 
@@ -63,10 +80,21 @@ namespace Registry
         private:
             // do not copy
             const std::auto_ptr<MojeIDImpl> pimpl_;
-            std::vector<boost::shared_ptr<ContactHandleList_i> > chl_objects_;
+
+            typedef boost::shared_ptr<ContactHandleList_i> ContactHandleListPtr;
+            /* list of created unregistrable contact handles iterable objects */
+            std::vector<ContactHandleListPtr> contact_handle_list_objects_;
+            /* unused (closed) object scavenger thread */
+            bool contact_handle_list_scavenger_active_;
+            boost::thread contact_handle_list_scavenger_;
+            /* list access mutex */
+            boost::mutex contact_handle_list_objects_mutex_;
+            /* garbage unclosed (timeouted) objects */
+            void clean_contact_handle_list_objects();
 
             Server_i(const Server_i&);//no body
             Server_i& operator= (const Server_i&);//no body
+
 
         public:
           // standard constructor
@@ -131,7 +159,6 @@ namespace Registry
           Registry::MojeID::ContactHandleList_ptr getUnregistrableHandles();
 
           char* contactAuthInfo(::CORBA::ULongLong contact_id);
-
         };//class Server_i
     }//namespace MojeID
 }//namespace Registry
