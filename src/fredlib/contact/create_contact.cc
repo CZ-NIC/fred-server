@@ -505,7 +505,7 @@ namespace Fred
 
                     if (crdate_res.size() != 1)
                     {
-                        BOOST_THROW_EXCEPTION(Exception().set_internal_error("timestamp of the contact creation was not found"));
+                        BOOST_THROW_EXCEPTION(Fred::InternalError("timestamp of the contact creation was not found"));
                     }
 
                     timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
@@ -549,9 +549,9 @@ namespace Fred
             }//save history
 
         }//try
-        catch(OperationException& ex)
+        catch(ExceptionStack& ex)
         {
-            ex.add_opstack_info(to_string());
+            ex.add_exception_stack_info(to_string());
             throw;
         }
 

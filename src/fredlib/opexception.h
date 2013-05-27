@@ -44,34 +44,89 @@
 namespace Fred
 {
 
-///parent of operation exceptions
-struct OperationException
-    : virtual std::exception
-    , virtual boost::exception
+///exception stack context info
+struct ExceptionStack
+: virtual boost::exception
 {
     ///string tag to record/append operation stack context
     typedef boost::error_info<struct OperationStackTag,std::string> ErrorInfoOperationStack;
 
     ///append operation stack context
-    void add_opstack_info(const std::string& opstack_dump)
+    void add_exception_stack_info(const std::string& info)
     {
         std::string operation_stack_info;
         const std::string* ptr = 0;
-        ptr = boost::get_error_info<ErrorInfoOperationStack>(*this);
+        ptr = get_data_ptr();
         if(ptr) operation_stack_info += *ptr;
-        operation_stack_info += opstack_dump;
+        operation_stack_info += info;
         (*this) << ErrorInfoOperationStack(operation_stack_info);
     }
+
+    ///get exception stack info data
+    std::string get_exception_stack_info() const
+    {
+        const std::string* data_ptr = get_data_ptr();
+        return data_ptr ? *data_ptr : std::string();
+    }
+
+    ///check if exception stack info is set
+    bool is_set_exception_stack_info() const
+    {
+        const std::string* data_ptr = get_data_ptr();
+        return data_ptr;
+    }
+
+    virtual ~ExceptionStack() throw() {}
+
+private:
+
+    const std::string* get_data_ptr() const
+    {
+        return boost::get_error_info<ErrorInfoOperationStack>(*this);
+    }
+};
+
+///parent of operation exceptions
+struct OperationException
+    : virtual std::exception
+    , virtual ExceptionStack
+{
     ///std::exception content override
     const char* what() const throw()
     {
-    #if ( BOOST_VERSION > 104000 )
-            return boost::diagnostic_information_what(*this);
-    #else
-            return std::exception::what();
-    #endif
+        return "OperationException";
     }
+    virtual ~OperationException() throw() {}
 };
+
+///internal error exception with describing message
+struct InternalError
+: virtual std::exception
+, virtual ExceptionStack
+{
+    explicit InternalError(std::string const& message)
+        : msg_(message)
+        {}
+    explicit InternalError(const char* message)
+    : msg_(message)
+    {}
+    ///std::exception content override
+    virtual const char* what() const throw ()
+    {
+        try
+        {
+            return msg_.c_str();
+        }
+        catch(...)
+        {}
+        return "error: std::string::c_str() exception";
+    }
+
+    virtual ~InternalError() throw() try{}catch(...){}
+private:
+    std::string msg_;
+};
+
 
 
 ///declaration of exception tag related methods getter and chaining setter with error_info type
@@ -115,7 +170,6 @@ protected:\
 
 
     ///common exception data tags
-    DECLARE_EXCEPTION_DATA(internal_error, std::string);
     DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
 
 /// const array wrapper

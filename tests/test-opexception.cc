@@ -110,25 +110,45 @@ struct TestException
   , ExceptionData_testing_int_data<TestException>
 {};
 
-BOOST_AUTO_TEST_CASE(throw_child)
+BOOST_AUTO_TEST_CASE(throwTestException)
 {
     BOOST_CHECK_EXCEPTION(
     try
     {
         try
         {
-            BOOST_THROW_EXCEPTION(
-                    TestException()
-                    .set_unknown_registrar_handle("test_registrar")
-                    .set_unknown_contact_handle("test_contact")
-                    .set_testing_int_data(5)
-                    << ErrorInfo_unknown_registry_object_identifier("test_roid")//add anything
+            try
+            {
+                BOOST_THROW_EXCEPTION(
+                        TestException()
+                        .set_unknown_registrar_handle("test_registrar")
+                        .set_unknown_contact_handle("test_contact")
+                        .set_testing_int_data(5)
+                        << ErrorInfo_unknown_registry_object_identifier("test_roid")//add anything
 
-                    );
+                        );
+            }
+            catch (Fred::ExceptionStack& exs)
+            {
+                exs.add_exception_stack_info("stack context info");
+                throw;
+            }
         }
         catch(boost::exception& ex)
         {
             BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+
+            try
+            {
+                if (dynamic_cast<const Fred::ExceptionStack&>(ex).is_set_exception_stack_info())
+                {
+                    BOOST_TEST_MESSAGE(dynamic_cast<const Fred::ExceptionStack&>(ex).get_exception_stack_info());
+                }
+            }
+            catch(const std::exception&)
+            {
+                BOOST_TEST_MESSAGE("\nhave no  ExceptionStack info");
+            }
 
             BOOST_TEST_MESSAGE("\nwhen not interested in exception child type using error_info instance");
             const std::string* test_data_ptr = 0;
@@ -173,6 +193,56 @@ BOOST_AUTO_TEST_CASE(throw_child)
     , std::exception
     , check_std_exception);
 }
+
+BOOST_AUTO_TEST_CASE(throwInternalError)
+{
+    BOOST_CHECK_EXCEPTION(
+    try
+    {
+        try
+        {
+            try
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("oops"));
+            }
+            catch (Fred::ExceptionStack& exs)
+            {
+                exs.add_exception_stack_info("stack context info");
+                throw;
+            }
+        }
+        catch(Fred::InternalError& ex)
+        {
+            BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+
+            BOOST_TEST_MESSAGE( ex.what());
+
+            try
+            {
+                if (dynamic_cast<const Fred::ExceptionStack&>(ex).is_set_exception_stack_info())
+                {
+                    BOOST_TEST_MESSAGE(dynamic_cast<const Fred::ExceptionStack&>(ex).get_exception_stack_info());
+                }
+            }
+            catch(const std::exception&)
+            {
+                BOOST_TEST_MESSAGE("\nhave no  ExceptionStack info");
+            }
+
+            throw;//to check std::exception
+        }
+    }
+    catch(std::exception& ex)
+    {
+        BOOST_TEST_MESSAGE("catch(std::exception&): ");
+        BOOST_TEST_MESSAGE(ex.what());
+        throw;
+    }
+    , std::exception
+    , check_std_exception);
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestOperationException
 

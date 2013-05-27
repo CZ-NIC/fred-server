@@ -132,7 +132,7 @@ BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)
     }
     catch(const Fred::CreateContact::Exception& ex)
     {
-        ex << Fred::ErrorInfo_internal_error("modifying const EX& by operator<<");
+        ex << Fred::ErrorInfo_unknown_registrar_handle("modifying const EX& by operator<<");
         //ex.set_internal_error("unable to modify const EX& by setter - ok");
         BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());

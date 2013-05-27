@@ -43,7 +43,6 @@ namespace Fred
         DECLARE_EXCEPTION_DATA(unknown_ssntype, std::string);
         struct Exception
         : virtual Fred::OperationException
-          , ExceptionData_internal_error<Exception>
           , ExceptionData_unknown_ssntype<Exception>
           , ExceptionData_unknown_registrar_handle<Exception>
         {};
