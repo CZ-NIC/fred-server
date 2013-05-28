@@ -122,10 +122,11 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
     Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
     Fred::InfoContactOutput contact_info2 = Fred::InfoContact(test_contact_handle, registrar_handle).set_lock().exec(ctx);
 
+    /*
     Fred::InfoContactOutput empty_contact_info;
     empty_contact_info.info_contact_data.set_diff_print();
-
     empty_contact_info == contact_info1;
+    */
 
     std::vector<Fred::InfoContactHistoryOutput> contact_history_info1 = Fred::InfoContactHistory(
         contact_info1.info_contact_data.roid, registrar_handle).exec(ctx);
