@@ -90,10 +90,7 @@ namespace Fred
 
                 if (res.size() != 1)
                 {
-                    std::string errmsg("|| not found:roid: ");
-                    errmsg += boost::replace_all_copy(roid_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICHEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
                 }
             }
 
@@ -106,10 +103,7 @@ namespace Fred
 
                 if (res.size() != 1)
                 {
-                    std::string errmsg("|| not found:registrar: ");
-                    errmsg += boost::replace_all_copy(registrar_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICHEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
                 }
             }
 
@@ -159,10 +153,7 @@ namespace Fred
 
                 if (res.size() == 0)
                 {
-                    std::string errmsg("|| not found:roid: ");
-                    errmsg += boost::replace_all_copy(roid_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICHEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
                 }
 
                 contact_history_res.reserve(res.size());//alloc
@@ -267,12 +258,29 @@ namespace Fred
                 }//for res
             }//if roid
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<InfoContactHistoryException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
         return contact_history_res;
     }//InfoContactHistory::exec
+
+    std::ostream& operator<<(std::ostream& os, const InfoContactHistory& ich)
+    {
+        return os << "#InfoContactHistory roid: " << ich.roid_
+                << " history_timestamp: " << ich.history_timestamp_.print_quoted()
+                << " registrar: " << ich.registrar_
+                << " lock: " << ich.lock_
+                ;
+    }
+    std::string InfoContactHistory::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
+
 
 }//namespace Fred
 

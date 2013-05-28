@@ -169,9 +169,11 @@ protected:\
 }\
 
 
-    ///common exception data tags
+///common exception data tags
 DECLARE_EXCEPTION_DATA(unknown_contact_handle, std::string);
 DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
+DECLARE_EXCEPTION_DATA(unknown_registry_object_identifier, std::string);
+
 
 
 
