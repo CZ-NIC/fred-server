@@ -170,7 +170,10 @@ protected:\
 
 
     ///common exception data tags
-    DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
+DECLARE_EXCEPTION_DATA(unknown_contact_handle, std::string);
+DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
+
+
 
 /// const array wrapper
 class ConstArr

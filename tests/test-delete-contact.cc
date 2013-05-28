@@ -179,12 +179,10 @@ BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
         Fred::DeleteContact(bad_test_contact_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::DeleteContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:handle")->second).compare(bad_test_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_contact_handle());
+        BOOST_CHECK(ex.get_unknown_contact_handle().compare(bad_test_contact_handle) == 0);
     }
 }
 
@@ -211,12 +209,10 @@ BOOST_FIXTURE_TEST_CASE(delete_linked_contact, test_contact_fixture )
         Fred::DeleteContact(test_contact_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::DeleteContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("is linked:handle")->second).compare(test_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_object_linked_to_contact_handle());
+        BOOST_CHECK(ex.get_object_linked_to_contact_handle().compare(test_contact_handle) == 0);
     }
 }
 

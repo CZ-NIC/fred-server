@@ -37,77 +37,90 @@ namespace Fred
 
     void DeleteContact::exec(OperationContext& ctx)
     {
-        //lock object_registry row for update
+        try
         {
-            Database::Result lock_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM enum_object_type eot"
-                " JOIN object_registry oreg ON oreg.type = eot.id "
-                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                , Database::query_param_list(handle_));
-
-            if (lock_res.size() != 1)
+            //lock object_registry row for update
             {
-                std::string errmsg("unable to lock || not found:handle: ");
-                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw DCEX(errmsg.c_str());
-            }
-        }
+                Database::Result lock_res = ctx.get_conn().exec_params(
+                    "SELECT oreg.id FROM enum_object_type eot"
+                    " JOIN object_registry oreg ON oreg.type = eot.id "
+                    " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                    " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
+                    , Database::query_param_list(handle_));
 
-        //get contact_id
-        unsigned long long contact_id =0;
-        {
-            Database::Result contact_id_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM contact c "
-                " JOIN object_registry oreg ON c.id = oreg.id "
-                " WHERE oreg.name = UPPER($1::text) AND oreg.erdate IS NULL"
-                , Database::query_param_list(handle_));
-
-            if (contact_id_res.size() != 1)
-            {
-                std::string errmsg("|| not found:handle: ");
-                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw DCEX(errmsg.c_str());
+                if (lock_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
+                }
             }
 
-            contact_id = contact_id_res[0][0];
-        }
+            //get contact_id
+            unsigned long long contact_id =0;
+            {
+                Database::Result contact_id_res = ctx.get_conn().exec_params(
+                    "SELECT oreg.id FROM contact c "
+                    " JOIN object_registry oreg ON c.id = oreg.id "
+                    " WHERE oreg.name = UPPER($1::text) AND oreg.erdate IS NULL"
+                    , Database::query_param_list(handle_));
 
-        //check if object is linked
-        Database::Result linked_result = ctx.get_conn().exec_params(
-            "SELECT * FROM object_state os "
-            " JOIN enum_object_states eos ON eos.id = os.state_id "
-            " WHERE os.object_id = $1::integer AND eos.name = $2::text "
-            " AND valid_to IS NULL",
-            Database::query_param_list
-            (contact_id)
-            (Fred::ObjectState::LINKED));
+                if (contact_id_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
+                }
 
-        if (linked_result.size() > 0)
-        {
-            std::string errmsg("|| is linked:handle: ");
-            errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-            errmsg += " |";
-            throw DCEX(errmsg.c_str());
-        }
+                contact_id = contact_id_res[0][0];
+            }
 
-        ctx.get_conn().exec_params(
-            "UPDATE object_registry SET erdate = now() "
-            " WHERE id = $1::integer"
-            , Database::query_param_list(contact_id));
+            //check if object is linked
+            Database::Result linked_result = ctx.get_conn().exec_params(
+                "SELECT * FROM object_state os "
+                " JOIN enum_object_states eos ON eos.id = os.state_id "
+                " WHERE os.object_id = $1::integer AND eos.name = $2::text "
+                " AND valid_to IS NULL",
+                Database::query_param_list
+                (contact_id)
+                (Fred::ObjectState::LINKED));
 
-        ctx.get_conn().exec_params(
-            "DELETE FROM contact "
+            if (linked_result.size() > 0)
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_object_linked_to_contact_handle(handle_));
+            }
+
+            ctx.get_conn().exec_params(
+                "UPDATE object_registry SET erdate = now() "
                 " WHERE id = $1::integer"
                 , Database::query_param_list(contact_id));
 
-        ctx.get_conn().exec_params(
-            "DELETE FROM object "
-                " WHERE id = $1::integer"
-                , Database::query_param_list(contact_id));
+            ctx.get_conn().exec_params(
+                "DELETE FROM contact "
+                    " WHERE id = $1::integer"
+                    , Database::query_param_list(contact_id));
+
+            ctx.get_conn().exec_params(
+                "DELETE FROM object "
+                    " WHERE id = $1::integer"
+                    , Database::query_param_list(contact_id));
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+
     }//DeleteContact::exec
+
+    std::ostream& operator<<(std::ostream& os, const DeleteContact& dc)
+    {
+        return os << "#DeleteContact handle: " << dc.handle_
+                ;
+    }
+    std::string DeleteContact::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
+
 
 }//namespace Fred
 
