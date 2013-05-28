@@ -81,9 +81,9 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestDeleteContact)
+BOOST_AUTO_TEST_SUITE(TestInfoContact)
 
-const std::string server_name = "test-delete-contact";
+const std::string server_name = "test-info-contact";
 
 
 struct test_contact_fixture
@@ -115,92 +115,22 @@ struct test_contact_fixture
 };
 
 /**
- * test DeleteContact
- * create test contact, delete test contact, check erdate of test contact is null
- * calls in test shouldn't throw
- */
-BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
+ * test call InfoContact
+*/
+BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
 {
-
     Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
-    BOOST_CHECK(contact_info1.info_contact_data.delete_time.isnull());
+    Fred::InfoContactOutput contact_info2 = Fred::InfoContact(test_contact_handle, registrar_handle).set_lock().exec(ctx);
 
-    Fred::DeleteContact(test_contact_handle).exec(ctx);
-    ctx.commit_transaction();
+    Fred::InfoContactOutput empty_contact_info;
+    empty_contact_info.info_contact_data.set_diff_print();
+
+    empty_contact_info == contact_info1;
 
     std::vector<Fred::InfoContactHistoryOutput> contact_history_info1 = Fred::InfoContactHistory(
         contact_info1.info_contact_data.roid, registrar_handle).exec(ctx);
 
-    BOOST_CHECK(!contact_history_info1.at(0).info_contact_data.delete_time.isnull());
-
-    Fred::InfoContactOutput contact_info1_with_change = contact_info1;
-    contact_info1_with_change.info_contact_data.delete_time = contact_history_info1.at(0).info_contact_data.delete_time;
-
-    BOOST_CHECK(contact_info1_with_change == contact_history_info1.at(0));
-
-    BOOST_CHECK(!contact_history_info1.at(0).info_contact_data.delete_time.isnull());
-
-    BOOST_CHECK(contact_history_info1.at(0).next_historyid.isnull());
-    BOOST_CHECK(!contact_history_info1.at(0).history_valid_from.is_not_a_date_time());
-    BOOST_CHECK(!contact_history_info1.at(0).history_valid_to.isnull());
-    BOOST_CHECK(contact_history_info1.at(0).history_valid_from <= contact_history_info1.at(0).history_valid_to);
-
-    BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
-        "select erdate is not null from object_registry where name = $1::text"
-        , Database::query_param_list(test_contact_handle))[0][0]));
-}//delete_contact
-
-
-/**
- * test DeleteContact with wrong handle
- */
-
-BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
-{
-
-    std::string bad_test_contact_handle = std::string("bad")+test_contact_handle;
-    try
-    {
-        Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::DeleteContact(bad_test_contact_handle).exec(ctx);
-        ctx.commit_transaction();
-    }
-    catch(const Fred::DeleteContact::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_unknown_contact_handle());
-        BOOST_CHECK(ex.get_unknown_contact_handle().compare(bad_test_contact_handle) == 0);
-    }
+    BOOST_CHECK(contact_info1 == contact_info2);
 }
 
-/**
- * test DeleteContact linked
- */
-
-BOOST_FIXTURE_TEST_CASE(delete_linked_contact, test_contact_fixture )
-{
-    //create linked object
-    std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
-    Fred::CreateNsset(test_nsset_handle, registrar_handle)
-        .set_tech_contacts(Util::vector_of<std::string>(test_contact_handle))
-        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
-            ).exec(ctx);
-
-   ctx.commit_transaction();
-
-    try
-    {
-        Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::DeleteContact(test_contact_handle).exec(ctx);
-        ctx.commit_transaction();
-    }
-    catch(const Fred::DeleteContact::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_object_linked_to_contact_handle());
-        BOOST_CHECK(ex.get_object_linked_to_contact_handle().compare(test_contact_handle) == 0);
-    }
-}
-
-
-BOOST_AUTO_TEST_SUITE_END();//TestDeleteContact
+BOOST_AUTO_TEST_SUITE_END();//TestInfoContact
