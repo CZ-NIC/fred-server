@@ -38,10 +38,6 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 
-#define ICEX(DATA) InfoContactException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define ICERR(DATA) InfoContactError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
-
 namespace Fred
 {
     InfoContact::InfoContact(const std::string& handle
