@@ -223,6 +223,7 @@ struct merge_contact_contacts_fixture
 struct merge_contact_domain_fixture
     : virtual merge_contact_contacts_fixture
 {
+    Fred::OperationContext ctx;
     std::string test_nsset_handle;
     std::string test_keyset_handle;
     std::string test_domain_owner_handle;
@@ -272,6 +273,7 @@ struct merge_contact_domain_fixture
 struct merge_contact_n_nsset_fixture
     : virtual merge_contact_contacts_fixture
 {
+    Fred::OperationContext ctx;
     int nsset_count;
     std::string test_nsset_handle;
 
@@ -303,9 +305,46 @@ struct merge_contact_n_nsset_fixture
     ~merge_contact_n_nsset_fixture(){}
 };
 
+struct merge_contact_r_nsset_fixture
+    : virtual merge_contact_contacts_fixture
+{
+    Fred::OperationContext ctx;
+    int nsset_count;
+    std::string test_nsset_handle;
+
+    std::string get_handle(int i) const
+    {
+        std::stringstream test_nsset_handle_n;
+        test_nsset_handle_n << test_nsset_handle << i;
+        return test_nsset_handle_n.str();
+    }
+
+    merge_contact_r_nsset_fixture(int n)
+    : nsset_count(n)
+    , test_nsset_handle(std::string("TEST-MC-R-NSSET-HANDLE")+xmark+"_")
+    {
+        for(int i = 0 ; i < nsset_count; ++i)
+        {
+            Fred::CreateNsset(get_handle(i), registrar_handle)
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                )
+                .set_tech_contacts(Util::vector_of<std::string>(dst_contact_handle))
+                .exec(ctx);
+        }//for nsset_count
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~merge_contact_r_nsset_fixture(){}
+};
+
+
 struct merge_contact_n_keyset_fixture
     : virtual merge_contact_contacts_fixture
 {
+    Fred::OperationContext ctx;
     int keyset_count;
     std::string test_keyset_handle;
 
@@ -333,9 +372,42 @@ struct merge_contact_n_keyset_fixture
     ~merge_contact_n_keyset_fixture(){}
 };
 
+struct merge_contact_r_keyset_fixture
+    : virtual merge_contact_contacts_fixture
+{
+    Fred::OperationContext ctx;
+    int keyset_count;
+    std::string test_keyset_handle;
+
+    std::string get_handle(int i) const
+    {
+        std::stringstream test_keyset_handle_n;
+        test_keyset_handle_n << test_keyset_handle << i;
+        return test_keyset_handle_n.str();
+    }
+
+    merge_contact_r_keyset_fixture(int n)
+    : keyset_count(n)
+    , test_keyset_handle(std::string("TEST-MC-R-KEYSET-HANDLE")+xmark+"_")
+    {
+        for(int i = 0 ; i < keyset_count; ++i)
+        {
+            Fred::CreateKeyset(get_handle(i), registrar_handle)
+                    .set_tech_contacts(Util::vector_of<std::string>(dst_contact_handle))
+                    .exec(ctx);
+        }//for keyset_count
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~merge_contact_r_keyset_fixture(){}
+};
+
+
 struct merge_contact_n_domain_owner_fixture
     : virtual merge_contact_contacts_fixture
 {
+    Fred::OperationContext ctx;
     int domain_owner_count;
     std::string test_domain_owner_handle;
 
@@ -371,9 +443,50 @@ struct merge_contact_n_domain_owner_fixture
     ~merge_contact_n_domain_owner_fixture(){}
 };
 
+struct merge_contact_r_domain_owner_fixture
+    : virtual merge_contact_contacts_fixture
+{
+    Fred::OperationContext ctx;
+    int domain_owner_count;
+    std::string test_domain_owner_handle;
+
+    std::string get_handle(int i) const
+    {
+        std::stringstream test_domain_owner_handle_n;
+        test_domain_owner_handle_n << test_domain_owner_handle << i << ".cz";
+        return test_domain_owner_handle_n.str();
+    }
+
+
+    merge_contact_r_domain_owner_fixture(int n)
+    : domain_owner_count(n)
+    , test_domain_owner_handle(std::string("rmergecontactowner")+xmark+"-")
+    {
+        for(int i = 0 ; i < domain_owner_count; ++i)
+        {
+            std::stringstream test_domain_owner_handle_n;
+            test_domain_owner_handle_n << test_domain_owner_handle << i << ".cz";
+
+            Fred::CreateDomain(
+                    get_handle(i) //const std::string& fqdn
+                    , registrar_handle //const std::string& registrar
+                    , dst_contact_handle //registrant
+                    )
+            .set_admin_contacts(Util::vector_of<std::string>(common_contact_handle))
+            .exec(ctx);
+        }//for domain_owner_count
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~merge_contact_r_domain_owner_fixture(){}
+};
+
+
 struct merge_contact_n_domain_admin_fixture
     : virtual merge_contact_contacts_fixture
 {
+    Fred::OperationContext ctx;
     int domain_admin_count;
     std::string test_domain_admin_handle;
 
@@ -409,12 +522,54 @@ struct merge_contact_n_domain_admin_fixture
 };
 
 
+struct merge_contact_r_domain_admin_fixture
+    : virtual merge_contact_contacts_fixture
+{
+    Fred::OperationContext ctx;
+    int domain_admin_count;
+    std::string test_domain_admin_handle;
+
+    std::string get_handle(int i) const
+    {
+        std::stringstream test_domain_admin_handle_n;
+        test_domain_admin_handle_n << test_domain_admin_handle << i << ".cz";
+        return test_domain_admin_handle_n.str();
+    }
+
+    merge_contact_r_domain_admin_fixture(int n)
+    : domain_admin_count(n)
+    , test_domain_admin_handle(std::string("rmergecontactadmin")+xmark+"-")
+    {
+        for(int i = 0 ; i < domain_admin_count; ++i)
+        {
+            std::stringstream test_domain_admin_handle_n;
+            test_domain_admin_handle_n << test_domain_admin_handle << i << ".cz";
+
+            Fred::CreateDomain(
+                    get_handle(i) //const std::string& fqdn
+                    , registrar_handle //const std::string& registrar
+                    , common_contact_handle //registrant
+                    )
+            .set_admin_contacts(Util::vector_of<std::string>(dst_contact_handle))
+            .exec(ctx);
+        }//for domain_admin_count
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~merge_contact_r_domain_admin_fixture(){}
+};
+
+
+
 struct merge_contact_n_fixture
     : virtual merge_contact_n_nsset_fixture
     , virtual merge_contact_n_keyset_fixture
     , virtual merge_contact_n_domain_owner_fixture
     , virtual merge_contact_n_domain_admin_fixture
 {
+    Fred::OperationContext ctx;
+
     merge_contact_n_fixture(int nssets, int keysets, int domainowners, int domainadmins )
         : merge_contact_n_nsset_fixture(nssets)
         , merge_contact_n_keyset_fixture(keysets)
@@ -536,6 +691,8 @@ struct merge_contact_n_fixture
         std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
             info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
         BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
+
+        ctx.commit_transaction();//commit test
     }
 };
 
@@ -1157,5 +1314,33 @@ BOOST_AUTO_TEST_CASE(merge_contact_notification_email_addr)
     BOOST_CHECK(notif_emails.at(0).notification_email_addr == "mntf@nic.cz");
 
 }
+
+struct contact_merge_duplicate_auto_fixture
+    : virtual merge_contact_n_nsset_fixture
+    , virtual merge_contact_n_keyset_fixture
+    , virtual merge_contact_n_domain_owner_fixture
+    , virtual merge_contact_n_domain_admin_fixture
+    , virtual merge_contact_r_nsset_fixture
+    , virtual merge_contact_r_keyset_fixture
+    , virtual merge_contact_r_domain_owner_fixture
+    , virtual merge_contact_r_domain_admin_fixture
+{
+    contact_merge_duplicate_auto_fixture(int nssets, int keysets, int domainowners, int domainadmins )
+        : merge_contact_n_nsset_fixture(nssets)
+        , merge_contact_n_keyset_fixture(keysets)
+        , merge_contact_n_domain_owner_fixture(domainowners)
+        , merge_contact_n_domain_admin_fixture(domainadmins)
+        , merge_contact_r_nsset_fixture(nssets)
+        , merge_contact_r_keyset_fixture(keysets)
+        , merge_contact_r_domain_owner_fixture(domainowners)
+        , merge_contact_r_domain_admin_fixture(domainadmins)
+        {}
+    ~contact_merge_duplicate_auto_fixture(){}
+};
+
+
+
+BOOST_AUTO_TEST_CASE(create_merge_contact_data){(void)contact_merge_duplicate_auto_fixture(10,10,10,10);}
+
 BOOST_AUTO_TEST_SUITE_END();//TestMergeContact
 
