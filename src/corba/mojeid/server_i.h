@@ -24,6 +24,7 @@
 #ifndef SERVER_I_H_
 #define SERVER_I_H_
 
+#include "src/corba/corba_auto_garbaged_list.h"
 #include <MojeID.hh>
 #include <memory>
 #include <string>
@@ -74,6 +75,7 @@ namespace Registry
 
         class MojeIDImpl;//pimpl class
 
+
         ///mojeid corba interface
         class Server_i: public POA_Registry::MojeID::Server
         {
@@ -81,16 +83,7 @@ namespace Registry
             // do not copy
             const std::auto_ptr<MojeIDImpl> pimpl_;
 
-            typedef boost::shared_ptr<ContactHandleListIter_i> ContactHandleListIterPtr;
-            /* list of created unregistrable contact handles iterable objects */
-            std::vector<ContactHandleListIterPtr> contact_handle_list_objects_;
-            /* unused (closed) object scavenger thread */
-            bool contact_handle_list_scavenger_active_;
-            boost::thread contact_handle_list_scavenger_;
-            /* list access mutex */
-            boost::mutex contact_handle_list_objects_mutex_;
-            /* garbage unclosed (timeouted) objects */
-            void clean_contact_handle_list_objects();
+            CorbaAutoGarbagedList<ContactHandleListIter_i> contact_handle_list_objects_;
 
             Server_i(const Server_i&);//no body
             Server_i& operator= (const Server_i&);//no body

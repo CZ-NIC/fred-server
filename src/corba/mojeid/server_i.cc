@@ -24,7 +24,6 @@
 
 
 #include "server_i.h"
-#include "corba_wrapper_decl.h"
 #include "corba_conversion.h"
 #include "mojeid/mojeid.h"
 #include "mailer_manager.h"
@@ -114,50 +113,12 @@ namespace Registry
                 , boost::shared_ptr<Fred::Mailer::Manager>(
                     new MailerManager(CorbaContainer::get_instance()
                     ->getNS())))),
-          contact_handle_list_scavenger_active_(true),
-          contact_handle_list_scavenger_(boost::bind(&Server_i::clean_contact_handle_list_objects, this))
+          contact_handle_list_objects_("fred-mifd/contact-handle-list", boost::posix_time::seconds(30))
         {}
 
         Server_i::~Server_i()
         {
-            contact_handle_list_scavenger_active_ = false;
-            contact_handle_list_scavenger_.join();
         }
-
-
-        void Server_i::clean_contact_handle_list_objects()
-        {
-            while (contact_handle_list_scavenger_active_)
-            {
-                LOGGER(PACKAGE).debug("fred-mifd contact handle list scavenger worker iteration");
-                {
-                    boost::lock_guard<boost::mutex> lock(contact_handle_list_objects_mutex_);
-
-                    std::vector<ContactHandleListIterPtr>::iterator it = contact_handle_list_objects_.begin();
-                    while(it != contact_handle_list_objects_.end())
-                    {
-                        if ((boost::posix_time::second_clock::local_time() - (*it)->get_last_used()) > seconds(300))
-                        {
-                            (*it)->close();
-                        }
-
-                        if ((*it)->get_status() == ContactHandleListIter_i::CLOSED)
-                        {
-                            LOGGER(PACKAGE).debug(boost::format("destroying contact handle list search from %1%") % (*it)->get_last_used());
-                            PortableServer::ObjectId_var id = CorbaContainer::get_instance()->root_poa->servant_to_id(it->get());
-                            CorbaContainer::get_instance()->root_poa->deactivate_object(id);
-                            it = contact_handle_list_objects_.erase(it);
-                        }
-                        else
-                        {
-                            it++;
-                        }
-                    }
-                }
-                boost::this_thread::sleep(boost::posix_time::seconds(30));
-            }
-        }
-
 
         //   Methods corresponding to IDL attributes and operations
         ::CORBA::ULongLong Server_i::contactCreatePrepare(
@@ -627,7 +588,6 @@ namespace Registry
                 result = pimpl_->getUnregistrableHandles();
 
                 boost::shared_ptr<ContactHandleListIter_i> ret(new ContactHandleListIter_i(result));
-                boost::lock_guard<boost::mutex> lock(contact_handle_list_objects_mutex_);
                 contact_handle_list_objects_.push_back(ret);
                 return ret.get()->_this();
             }
