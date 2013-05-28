@@ -38,7 +38,7 @@ namespace Registry
     namespace MojeID
     {
 
-        class ContactHandleList_i: public POA_Registry::MojeID::ContactHandleList
+        class ContactHandleListIter_i : public POA_Registry::MojeID::ContactHandleListIter
         {
         public:
             enum Status
@@ -48,12 +48,12 @@ namespace Registry
             };
 
             // standard constructor
-            ContactHandleList_i(const std::vector<std::string> &_handles);
+            ContactHandleListIter_i(const std::vector<std::string> &_handles);
 
-            virtual ~ContactHandleList_i();
+            virtual ~ContactHandleListIter_i();
 
             // methods corresponding to defined IDL attributes and operations
-            Registry::MojeID::ContactHandleSeq* getNext(::CORBA::ULong count);
+            Registry::MojeID::ContactHandleList* getNext(::CORBA::ULong count);
 
             void destroy();
 
@@ -81,9 +81,9 @@ namespace Registry
             // do not copy
             const std::auto_ptr<MojeIDImpl> pimpl_;
 
-            typedef boost::shared_ptr<ContactHandleList_i> ContactHandleListPtr;
+            typedef boost::shared_ptr<ContactHandleListIter_i> ContactHandleListIterPtr;
             /* list of created unregistrable contact handles iterable objects */
-            std::vector<ContactHandleListPtr> contact_handle_list_objects_;
+            std::vector<ContactHandleListIterPtr> contact_handle_list_objects_;
             /* unused (closed) object scavenger thread */
             bool contact_handle_list_scavenger_active_;
             boost::thread contact_handle_list_scavenger_;
@@ -156,7 +156,9 @@ namespace Registry
                , const char* trans_id
                , ::CORBA::ULongLong request_id);
 
-          Registry::MojeID::ContactHandleList_ptr getUnregistrableHandles();
+          Registry::MojeID::ContactHandleList* getUnregistrableHandles();
+
+          Registry::MojeID::ContactHandleListIter_ptr getUnregistrableHandlesIter();
 
           char* contactAuthInfo(::CORBA::ULongLong contact_id);
         };//class Server_i

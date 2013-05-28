@@ -37,7 +37,7 @@ namespace Registry
     namespace MojeID
     {
 
-        ContactHandleList_i::ContactHandleList_i(
+        ContactHandleListIter_i::ContactHandleListIter_i(
                 const std::vector<std::string> &_handles)
             : status_(ACTIVE),
               last_used_(boost::posix_time::second_clock::local_time()),
@@ -46,21 +46,21 @@ namespace Registry
         {
         }
 
-        ContactHandleList_i::~ContactHandleList_i()
+        ContactHandleListIter_i::~ContactHandleListIter_i()
         {
         }
 
-        Registry::MojeID::ContactHandleSeq* ContactHandleList_i::getNext(::CORBA::ULong count)
+        Registry::MojeID::ContactHandleList* ContactHandleListIter_i::getNext(::CORBA::ULong count)
         {
             try
             {
                 if (status_ != ACTIVE) {
-                    throw Registry::MojeID::ContactHandleList::NOT_ACTIVE();
+                    throw Registry::MojeID::ContactHandleListIter::NOT_ACTIVE();
                 }
 
                 last_used_ = boost::posix_time::second_clock::local_time();
 
-                Registry::MojeID::ContactHandleSeq_var ret = new Registry::MojeID::ContactHandleSeq;
+                Registry::MojeID::ContactHandleList_var ret = new Registry::MojeID::ContactHandleList;
                 ret->length(0);
 
                 for (unsigned long i = 0; it_ != handles_.end() && i < count; ++it_, ++i)
@@ -72,36 +72,36 @@ namespace Registry
 
                 return ret._retn();
             }
-            catch (Registry::MojeID::ContactHandleList::NOT_ACTIVE)
+            catch (Registry::MojeID::ContactHandleListIter::NOT_ACTIVE)
             {
                 throw;
             }
             catch (...)
             {
-                throw Registry::MojeID::ContactHandleList::INTERNAL_SERVER_ERROR();
+                throw Registry::MojeID::ContactHandleListIter::INTERNAL_SERVER_ERROR();
             }
         }
 
 
-        void ContactHandleList_i::destroy()
+        void ContactHandleListIter_i::destroy()
         {
             this->close();
         }
 
 
-        void ContactHandleList_i::close()
+        void ContactHandleListIter_i::close()
         {
             status_ = CLOSED;
         }
 
 
-        const boost::posix_time::ptime& ContactHandleList_i::get_last_used() const
+        const boost::posix_time::ptime& ContactHandleListIter_i::get_last_used() const
         {
             return last_used_;
         }
 
 
-        const ContactHandleList_i::Status& ContactHandleList_i::get_status() const
+        const ContactHandleListIter_i::Status& ContactHandleListIter_i::get_status() const
         {
             return status_;
         }
@@ -133,7 +133,7 @@ namespace Registry
                 {
                     boost::lock_guard<boost::mutex> lock(contact_handle_list_objects_mutex_);
 
-                    std::vector<ContactHandleListPtr>::iterator it = contact_handle_list_objects_.begin();
+                    std::vector<ContactHandleListIterPtr>::iterator it = contact_handle_list_objects_.begin();
                     while(it != contact_handle_list_objects_.end())
                     {
                         if ((boost::posix_time::second_clock::local_time() - (*it)->get_last_used()) > seconds(300))
@@ -141,7 +141,7 @@ namespace Registry
                             (*it)->close();
                         }
 
-                        if ((*it)->get_status() == ContactHandleList_i::CLOSED)
+                        if ((*it)->get_status() == ContactHandleListIter_i::CLOSED)
                         {
                             LOGGER(PACKAGE).debug(boost::format("destroying contact handle list search from %1%") % (*it)->get_last_used());
                             PortableServer::ObjectId_var id = CorbaContainer::get_instance()->root_poa->servant_to_id(it->get());
@@ -586,7 +586,7 @@ namespace Registry
             }
         }//contactCancelAccountPrepare
 
-        Registry::MojeID::ContactHandleList_ptr
+        Registry::MojeID::ContactHandleList*
         Server_i::getUnregistrableHandles()
         {
             try
@@ -594,7 +594,39 @@ namespace Registry
                 std::vector<std::string> result;
                 result = pimpl_->getUnregistrableHandles();
 
-                boost::shared_ptr<ContactHandleList_i> ret(new ContactHandleList_i(result));
+                Registry::MojeID::ContactHandleList_var ret
+                    = new Registry::MojeID::ContactHandleList;
+                ret->length(0);
+
+                for (std::vector<std::string>::const_iterator
+                    it = result.begin(); it != result.end(); ++it)
+                {
+                    unsigned int act_size = ret->length();
+                    ret->length(act_size +1);
+                    ret[act_size] = corba_wrap_string(*it);
+                }
+                return ret._retn();
+            }
+            catch (std::exception &_ex)
+            {
+                throw Registry::MojeID::Server
+                    ::INTERNAL_SERVER_ERROR(_ex.what());
+            }
+            catch (...)
+            {
+                throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+            }
+        }//getUnregistrableHandles
+
+        Registry::MojeID::ContactHandleListIter_ptr
+        Server_i::getUnregistrableHandlesIter()
+        {
+            try
+            {
+                std::vector<std::string> result;
+                result = pimpl_->getUnregistrableHandles();
+
+                boost::shared_ptr<ContactHandleListIter_i> ret(new ContactHandleListIter_i(result));
                 boost::lock_guard<boost::mutex> lock(contact_handle_list_objects_mutex_);
                 contact_handle_list_objects_.push_back(ret);
                 return ret.get()->_this();
@@ -608,8 +640,7 @@ namespace Registry
             {
                 throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
             }
-        }//getUnregistrableHandles
-
+        }//getUnregistrableHandlesIter
 
         char* Server_i::contactAuthInfo(::CORBA::ULongLong contact_id)
         {
