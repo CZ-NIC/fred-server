@@ -74,10 +74,7 @@ namespace Fred
 
                 if (res.size() != 1)
                 {
-                    std::string errmsg("check handle || not found:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
                 }
             }
 
@@ -90,10 +87,7 @@ namespace Fred
 
                 if (res.size() != 1)
                 {
-                    std::string errmsg("|| not found:registrar: ");
-                    errmsg += boost::replace_all_copy(registrar_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
                 }
             }
 
@@ -129,10 +123,7 @@ namespace Fred
 
                 if (res.size() != 1)
                 {
-                    std::string errmsg("info contact || not found:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
                 }
 
                 contact_info_output.utc_timestamp = res[0][0].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
@@ -225,12 +216,26 @@ namespace Fred
             }
 
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<InfoContactException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
         return contact_info_output;
     }//InfoContact::exec
+
+    std::ostream& operator<<(std::ostream& os, const InfoContact& ic)
+    {
+        return os << "#InfoContact handle: " << ic.handle_
+                ;
+    }
+    std::string DeleteContact::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
+
 
 }//namespace Fred
 
