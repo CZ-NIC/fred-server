@@ -227,6 +227,8 @@ namespace Fred
     std::ostream& operator<<(std::ostream& os, const InfoContact& ic)
     {
         return os << "#InfoContact handle: " << ic.handle_
+                << " registrar: " << ic.registrar_
+                << " lock: " << ic.lock_
                 ;
     }
     std::string InfoContact::to_string()
