@@ -229,7 +229,7 @@ namespace Fred
         return os << "#InfoContact handle: " << ic.handle_
                 ;
     }
-    std::string DeleteContact::to_string()
+    std::string InfoContact::to_string()
     {
         std::stringstream ss;
         ss << *this;
