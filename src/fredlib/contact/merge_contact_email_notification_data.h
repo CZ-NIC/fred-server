@@ -48,6 +48,14 @@ namespace Fred
         , dst_contact_handle(_dst_contact_handle)
         , merge_output(_merge_output)
         {}
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactEmailNotificationInput& i)
+        {
+            return os << "MergeContactEmailNotificationInput"
+                    " src_contact_handle: " << i.src_contact_handle
+                << " dst_contact_handle: " << i.dst_contact_handle
+                << " merge_output: " << i.merge_output
+            ;
+        }
     };
 
     struct MergeContactNotificationEmail
@@ -60,6 +68,30 @@ namespace Fred
         std::vector<std::string> keyset_tech_list;
         std::vector<std::string> removed_list;
         std::vector<std::string> removed_roid_list;
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactNotificationEmail& i)
+        {
+            os << "MergeContactNotificationEmail dst_contact_handle: " << i.dst_contact_handle
+                    << " dst_contact_roid: " << i.dst_contact_roid;
+            if(!i.domain_registrant_list.empty()) os << " ";
+            for(std::vector<std::string>::const_iterator ci = i.domain_registrant_list.begin()
+                    ; ci != i.domain_registrant_list.end() ;  ++ci) os << *ci;
+            if(!i.domain_admin_list.empty()) os << " ";
+            for(std::vector<std::string>::const_iterator ci = i.domain_admin_list.begin()
+                    ; ci != i.domain_admin_list.end() ;  ++ci) os << *ci;
+            if(!i.nsset_tech_list.empty()) os << " ";
+            for(std::vector<std::string>::const_iterator ci = i.nsset_tech_list.begin()
+                    ; ci != i.nsset_tech_list.end() ;  ++ci) os << *ci;
+            if(!i.keyset_tech_list.empty()) os << " ";
+            for(std::vector<std::string>::const_iterator ci = i.keyset_tech_list.begin()
+                    ; ci != i.keyset_tech_list.end() ;  ++ci) os << *ci;
+            if(!i.removed_list.empty()) os << " ";
+            for(std::vector<std::string>::const_iterator ci = i.removed_list.begin()
+                    ; ci != i.removed_list.end() ;  ++ci) os << *ci;
+            if(!i.removed_roid_list.empty()) os << " ";
+            for(std::vector<std::string>::const_iterator ci = i.removed_roid_list.begin()
+                    ; ci != i.removed_roid_list.end() ;  ++ci) os << *ci;
+            return os;
+        }
     };
 
     struct SortedContactNotificationEmail
@@ -81,32 +113,21 @@ namespace Fred
                     , SortedContactNotificationEmail& email);
 
     public:
+        DECLARE_EXCEPTION_DATA(invalid_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(invalid_registry_object_identifier, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_invalid_contact_handle<Exception>
+        , ExceptionData_invalid_registry_object_identifier<Exception>
+        {};
+
         MergeContactEmailNotificationData(const std::vector<MergeContactEmailNotificationInput>& merge_contact_data_);
         std::vector<MergeContactNotificationEmail> exec(OperationContext& ctx);
+
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactEmailNotificationData& i);
+        std::string to_string();
+
     };//class MergeContactEmailNotificationData
-
-    //exception impl
-    class MergeContactEmailNotificationDataException
-    : public OperationExceptionImpl<MergeContactEmailNotificationDataException, 8192>
-    {
-    public:
-        MergeContactEmailNotificationDataException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<MergeContactEmailNotificationDataException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"invalid:contact handle", "invalid:contact roid"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class MergeContactEmailNotificationDataException
-
-    typedef MergeContactEmailNotificationDataException::OperationErrorType MergeContactEmailNotificationDataError;
-#define MCENDEX(DATA) MergeContactEmailNotificationDataException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MCENDERR(DATA) MergeContactEmailNotificationDataError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
     struct MergeContactNotificationEmailWithAddr
     {
@@ -118,33 +139,18 @@ namespace Fred
     {
         const std::vector<MergeContactNotificationEmail> email_data_;
     public:
+        DECLARE_EXCEPTION_DATA(invalid_registry_object_identifier, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_invalid_registry_object_identifier<Exception>
+        {};
+
         MergeContactNotificationEmailAddr(const std::vector<MergeContactNotificationEmail>& email_data);
         std::vector<MergeContactNotificationEmailWithAddr> exec(OperationContext& ctx);
+
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactNotificationEmailAddr& ich);
+        std::string to_string();
     };
-
-    //exception impl
-    class MergeContactNotificationEmailAddrException
-    : public OperationExceptionImpl<MergeContactNotificationEmailAddrException, 8192>
-    {
-    public:
-        MergeContactNotificationEmailAddrException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<MergeContactNotificationEmailAddrException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"invalid:contact handle", "invalid:contact roid"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class MergeContactNotificationEmailAddrException
-
-    typedef MergeContactNotificationEmailAddrException::OperationErrorType MergeContactNotificationEmailAddrError;
-#define MCNEAEX(DATA) MergeContactNotificationEmailAddrException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MCNEAERR(DATA) MergeContactNotificationEmailAddrError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 
 }//namespace Fred
 

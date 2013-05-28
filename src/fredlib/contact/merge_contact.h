@@ -57,6 +57,15 @@ namespace Fred
             , set_registrant(_set_registrant)
             , history_id(_history_id)
         {}
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateDomainRegistrant& i)
+        {
+            return os << "MergeContactUpdateDomainRegistrant fqdn: " << i.fqdn
+                << " domain_id: " << i.domain_id
+                << " sponsoring_registrar: " << i.sponsoring_registrar
+                << " set_registrant: " << i.set_registrant
+                << " history_id: " << i.history_id.print_quoted()
+                    ;
+        }
     };
 
     struct MergeContactUpdateDomainAdminContact
@@ -85,6 +94,16 @@ namespace Fred
             , add_admin_contact(_add_admin_contact)
             , history_id(_history_id)
         {}
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateDomainAdminContact& i)
+        {
+            return os << "MergeContactUpdateDomainRegistrant fqdn: " << i.fqdn
+                    << " domain_id: " << i.domain_id
+                    << " sponsoring_registrar: " << i.sponsoring_registrar
+                    << " rem_admin_contact: " << i.rem_admin_contact
+                    << " add_admin_contact: " << i.add_admin_contact
+                    << " history_id: " << i.history_id.print_quoted()
+                    ;
+        }
     };
 
     struct MergeContactUpdateNssetTechContact
@@ -113,6 +132,16 @@ namespace Fred
             , add_tech_contact(_add_tech_contact)
             , history_id(_history_id)
             {}
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateNssetTechContact& i)
+        {
+            return os << "MergeContactUpdateDomainRegistrant handle: " << i.handle
+                    << " nsset_id: " << i.nsset_id
+                    << " sponsoring_registrar: " << i.sponsoring_registrar
+                    << " rem_tech_contact: " << i.rem_tech_contact
+                    << " add_tech_contact: " << i.add_tech_contact
+                    << " history_id: " << i.history_id.print_quoted()
+                    ;
+        }
     };
 
     struct MergeContactUpdateKeysetTechContact
@@ -141,6 +170,16 @@ namespace Fred
             , add_tech_contact(_add_tech_contact)
             , history_id(_history_id)
         {}
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateKeysetTechContact& i)
+        {
+            return os << "MergeContactUpdateDomainRegistrant handle: " << i.handle
+                    << " keyset_id: " << i.keyset_id
+                    << " sponsoring_registrar: " << i.sponsoring_registrar
+                    << " rem_tech_contact: " << i.rem_tech_contact
+                    << " add_tech_contact: " << i.add_tech_contact
+                    << " history_id: " << i.history_id.print_quoted()
+                    ;
+        }
     };
 
     struct MergeContactLockedContactId
@@ -180,6 +219,19 @@ namespace Fred
         , dst_contact_roid(_dst_contact_roid)
         , dst_contact_sponsoring_registrar(_dst_contact_sponsoring_registrar)
         {}
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactLockedContactId& i)
+        {
+            return os << "MergeContactLockedContactId"
+                    " src_contact_id: " << i.src_contact_id
+                << " src_contact_historyid: " << i.src_contact_historyid
+                << " src_contact_roid: " << i.src_contact_roid
+                << " src_contact_sponsoring_registrar: " << i.src_contact_sponsoring_registrar
+                << " dst_contact_id: " << i.dst_contact_id
+                << " dst_contact_historyid: " << i.dst_contact_historyid
+                << " dst_contact_roid: " << i.dst_contact_roid
+                << "dst_contact_sponsoring_registrar: " << i.dst_contact_sponsoring_registrar
+            ;
+        }
     };
 
     struct MergeContactOutput
@@ -203,6 +255,23 @@ namespace Fred
         , update_nsset_tech_contact(_update_nsset_tech_contact)
         , update_keyset_tech_contact(_update_keyset_tech_contact)
         {}
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactOutput& i)
+        {
+            os << "MergeContactOutput contactid: " << i.contactid;
+            if(!i.update_domain_registrant.empty()) os << " ";
+            for(std::vector<MergeContactUpdateDomainRegistrant>::const_iterator ci = i.update_domain_registrant.begin()
+                    ; ci != i.update_domain_registrant.end() ;  ++ci) os << *ci;
+            if(!i.update_domain_admin_contact.empty()) os << " ";
+            for(std::vector<MergeContactUpdateDomainAdminContact>::const_iterator ci = i.update_domain_admin_contact.begin()
+                    ; ci != i.update_domain_admin_contact.end() ;  ++ci) os << *ci;
+            if(!i.update_nsset_tech_contact.empty()) os << " ";
+            for(std::vector<MergeContactUpdateNssetTechContact>::const_iterator ci = i.update_nsset_tech_contact.begin()
+                    ; ci != i.update_nsset_tech_contact.end() ;  ++ci) os << *ci;
+            if(!i.update_keyset_tech_contact.empty()) os << " ";
+            for(std::vector<MergeContactUpdateKeysetTechContact>::const_iterator ci = i.update_keyset_tech_contact.begin()
+                    ; ci != i.update_keyset_tech_contact.end() ;  ++ci) os << *ci;
+            return os;
+        }
     };
 
     class MergeContact
