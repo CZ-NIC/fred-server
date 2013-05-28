@@ -38,11 +38,6 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 
-
-#define ICHEX(DATA) InfoContactHistoryException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define ICHERR(DATA) InfoContactHistoryError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
-
 namespace Fred
 {
 

@@ -77,30 +77,6 @@ namespace Fred
 
     };//class InfoContactHistory
 
-//exception impl
-    class InfoContactHistoryException
-    : public OperationExceptionImpl<InfoContactHistoryException, 8192>
-    {
-    public:
-        InfoContactHistoryException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<InfoContactHistoryException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                    "not found:roid"
-                    , "not found:registrar"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class InfoContactHistoryException
-
-    typedef InfoContactHistoryException::OperationErrorType InfoContactHistoryError;
-
 }//namespace Fred
 
 #endif//INFO_CONTACT_HISTORY_H_
