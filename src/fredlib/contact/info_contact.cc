@@ -59,21 +59,6 @@ namespace Fred
 
         try
         {
-            //check handle or lock object_registry row for update and get contact_id
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                    std::string("SELECT id FROM object_registry WHERE name=UPPER($1::text) "
-                    " AND erdate IS NULL AND type = ( SELECT id FROM enum_object_type eot "
-                    " WHERE eot.name='contact'::text) ")
-                    + (lock_ ? std::string(" FOR UPDATE") : std::string(""))
-                    , Database::query_param_list(handle_));
-
-                if (res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
-                }
-            }
-
             //check registrar exists
             //TODO: check registrar access
             {
@@ -87,10 +72,10 @@ namespace Fred
                 }
             }
 
-            //info about contact
+            //info about contact and optionally lock object_registry row for update
             unsigned long long contact_id = 0;
             {
-                Database::Result res = ctx.get_conn().exec_params(
+                Database::Result res = ctx.get_conn().exec_params(std::string(
                 "SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 0
                 " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp  "// local zone timestamp 1
                 " , cobr.crhistoryid "//first historyid 2
@@ -114,7 +99,8 @@ namespace Fred
                 " LEFT JOIN registrar upr ON upr.id = o.upid "
                 " LEFT JOIN enum_ssntype est ON est.id = c.ssntype "
                 " WHERE cobr.name=UPPER($2::text) AND cobr.erdate IS NULL "
-                " AND cobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text)"
+                " AND cobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text)")
+                + (lock_ ? std::string(" FOR UPDATE OF cobr") : std::string(""))
                 , Database::query_param_list(local_timestamp_pg_time_zone_name)(handle_));
 
                 if (res.size() != 1)
