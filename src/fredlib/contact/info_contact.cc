@@ -59,7 +59,7 @@ namespace Fred
 
         try
         {
-            //check handle or lock object_registry row for update
+            //check handle or lock object_registry row for update and get contact_id
             {
                 Database::Result res = ctx.get_conn().exec_params(
                     std::string("SELECT id FROM object_registry WHERE name=UPPER($1::text) "
@@ -78,7 +78,7 @@ namespace Fred
             //TODO: check registrar access
             {
                 Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
+                        "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
                     , Database::query_param_list(registrar_));
 
                 if (res.size() != 1)
