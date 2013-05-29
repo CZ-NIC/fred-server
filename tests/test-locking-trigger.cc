@@ -69,13 +69,6 @@ BOOST_AUTO_TEST_SUITE(TestLockingTrigger)
 
 const std::string server_name = "test-locking-trigger";
 
-
-static bool check_std_exception(std::exception const & ex)
-{
-    std::string ex_msg(ex.what());
-    return (ex_msg.length() != 0);
-}
-
 struct Case_locking_trigger_threaded_Fixture
 {
     unsigned long long registrar_id;

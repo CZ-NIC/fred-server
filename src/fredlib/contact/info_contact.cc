@@ -98,7 +98,6 @@ namespace Fred
             }
 
             //info about contact
-            unsigned long long contact_id = 0;
             {
                 Database::Result res = ctx.get_conn().exec_params(
                 "SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 0
@@ -147,8 +146,6 @@ namespace Fred
 
                 contact_info_output.info_contact_data.delete_time = res[0][4].isnull() ? Nullable<boost::posix_time::ptime>()
                     : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][4])));//cobr.erdate
-
-                contact_id = static_cast<unsigned long long>(res[0][5]);//cobr.id
 
                 contact_info_output.info_contact_data.handle = static_cast<std::string>(res[0][6]);//cobr.name
 
