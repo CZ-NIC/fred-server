@@ -288,9 +288,14 @@ namespace Fred
     public:
         DECLARE_EXCEPTION_DATA(unknown_source_contact_handle, std::string);
         DECLARE_EXCEPTION_DATA(unknown_destination_contact_handle, std::string);
-        struct InvalidContacts{std::string source_handle; std::string destination_handle;
-        InvalidContacts(const std::string& _source_handle, const std::string& _destination_handle)
-        : source_handle(_source_handle), destination_handle(_destination_handle){}};
+        struct InvalidContacts
+        {
+            std::string source_handle;
+            std::string destination_handle;
+            InvalidContacts(){}
+            InvalidContacts(const std::string& _source_handle, const std::string& _destination_handle)
+            : source_handle(_source_handle), destination_handle(_destination_handle){}
+        };
         DECLARE_EXCEPTION_DATA(unable_to_get_difference_of_contacts, InvalidContacts);
         DECLARE_EXCEPTION_DATA(contacts_differ, InvalidContacts);
         DECLARE_EXCEPTION_DATA(identical_contacts_handle, std::string);

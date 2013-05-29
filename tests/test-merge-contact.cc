@@ -642,12 +642,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_src_contact, merge_contact_domain
         Fred::MergeContactOutput merge_data = Fred::MergeContact(bad_src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(Fred::MergeContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:src_contact_handle")->second).compare(bad_src_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_source_contact_handle());
+        BOOST_CHECK(ex.get_unknown_source_contact_handle().compare(bad_src_contact_handle) == 0);
     }
 
     //info after merge
@@ -682,12 +680,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_dst_contact, merge_contact_domain
         Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, bad_dst_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(Fred::MergeContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:dst_contact_handle")->second).compare(bad_dst_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_destination_contact_handle());
+        BOOST_CHECK(ex.get_unknown_destination_contact_handle().compare(bad_dst_contact_handle) == 0);
     }
 
     //info after merge
@@ -729,13 +725,11 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_src_contact, merge_contact_
         Fred::MergeContactOutput merge_data = Fred::MergeContact(different_src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(Fred::MergeContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 2);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:src_contact_handle")->second).compare(different_src_contact_handle) == 0);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:dst_contact_handle")->second).compare(dst_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_contacts_differ());
+        BOOST_CHECK(ex.get_contacts_differ().source_handle.compare(different_src_contact_handle) == 0);
+        BOOST_CHECK(ex.get_contacts_differ().destination_handle.compare(dst_contact_handle) == 0);
     }
 
     //info after merge
@@ -777,13 +771,11 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_dst_contact, merge_contact_
         Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, different_dst_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(Fred::MergeContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 2);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:src_contact_handle")->second).compare(src_contact_handle) == 0);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:dst_contact_handle")->second).compare(different_dst_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_contacts_differ());
+        BOOST_CHECK(ex.get_contacts_differ().source_handle.compare(src_contact_handle) == 0);
+        BOOST_CHECK(ex.get_contacts_differ().destination_handle.compare(different_dst_contact_handle) == 0);
     }
 
     //info after merge
@@ -818,12 +810,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_same_src_and_dst_contact, merge_conta
         Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, src_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(Fred::MergeContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("identical:dst_contact_handle")->second).compare(src_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_identical_contacts_handle());
+        BOOST_CHECK(ex.get_identical_contacts_handle().compare(src_contact_handle) == 0);
     }
 
     //info after merge
