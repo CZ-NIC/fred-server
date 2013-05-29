@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/log/log.h"
 #include "util/factory.h"
@@ -74,9 +75,29 @@ namespace Fred
         std::vector<std::string> contact_handle_;//contact handle vector
         std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > > ff_;//filter functor ptr vector
     public:
+
+        struct NoContactHandles
+        : virtual Fred::OperationException
+        {
+            const char* what() const throw() {return "no contact handles, nothing to process";}
+        };
+        struct NoContactHandlesLeft
+        : virtual Fred::OperationException
+        {
+            const char* what() const throw() {return "no contact handles left, selection of contact with given rules failed";}
+        };
+        struct TooManyContactHandlesLeft
+        : virtual Fred::OperationException
+        {
+            const char* what() const throw() {return "too many contact handles left, selection of contact with given rules failed";}
+        };
+
         MergeContactSelection(const std::vector<std::string>& contact_handle
                 , const std::vector<ContactSelectionFilterType>& filter);
         MergeContactSelectionOutput exec(OperationContext& ctx);
+
+        friend std::ostream& operator<<(std::ostream& os, const MergeContactSelection& i);
+        std::string to_string();
     };//class MergeContactSelection
 
 
