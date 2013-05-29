@@ -207,26 +207,18 @@ struct contact_merge_impl
                 std::cout << merge_operation_info.format(indenter.dive());
             }
         }
-        catch (Fred::MergeContactException &ex)
+        catch (Fred::MergeContact::Exception &ex)
         {
-            Fred::GetOperationExceptionParamsDataToBoolCallback cb;
-            ex.callback_exception_params(boost::ref(cb), "not found:src_contact_handle");
-            if (cb.get() == true) {
+            if (ex.is_set_unknown_source_contact_handle()) {
                 throw ReturnCode(std::string("source contact '") + params.src + std::string("' not found"), 1);
             }
-            ex.callback_exception_params(boost::ref(cb), "not found:dst_contact_handle");
-            if (cb.get() == true) {
+            if (ex.is_set_unknown_destination_contact_handle()) {
                 throw ReturnCode(std::string("destination contact '") + params.dst + std::string("' not found"), 1);
             }
-            ex.callback_exception_params(boost::ref(cb), "invalid:src_contact_handle");
-            bool isrc = cb.get();
-            ex.callback_exception_params(boost::ref(cb), "invalid:dst_contact_handle");
-            bool idst = cb.get();
-            if (isrc || idst) {
+            if (ex.is_set_contacts_differ()) {
                 throw ReturnCode(std::string("contact differs - cannot merge"), 1);
             }
-            ex.callback_exception_params(boost::ref(cb), "identical:dst_contact_handle");
-            if (cb.get() == true) {
+            if (ex.is_set_identical_contacts_handle() || ex.is_set_identical_contacts_roid()) {
                 throw ReturnCode(std::string("identical contacts passed as source and destination"), 1);
             }
         }

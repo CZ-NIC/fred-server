@@ -286,36 +286,33 @@ namespace Fred
         MergeContactOutput merge_contact_impl(OperationContext& ctx, bool dry_run);
 
     public:
+        DECLARE_EXCEPTION_DATA(unknown_source_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_destination_contact_handle, std::string);
+        struct InvalidContacts{std::string source_handle; std::string destination_handle;
+        InvalidContacts(const std::string& _source_handle, const std::string& _destination_handle)
+        : source_handle(_source_handle), destination_handle(_destination_handle){}};
+        DECLARE_EXCEPTION_DATA(unable_to_get_difference_of_contacts, InvalidContacts);
+        DECLARE_EXCEPTION_DATA(contacts_differ, InvalidContacts);
+        DECLARE_EXCEPTION_DATA(identical_contacts_handle, std::string);
+        DECLARE_EXCEPTION_DATA(identical_contacts_roid, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_source_contact_handle<Exception>
+        , ExceptionData_unknown_destination_contact_handle<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        , ExceptionData_unable_to_get_difference_of_contacts<Exception>
+        , ExceptionData_contacts_differ<Exception>
+        , ExceptionData_identical_contacts_handle<Exception>
+        , ExceptionData_identical_contacts_roid<Exception>
+        {};
+
         MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle, const std::string& registrar);
         MergeContact& set_logd_request_id(unsigned long long logd_request_id);
         MergeContactOutput exec_dry_run(OperationContext& ctx);//history_id not set in output
         MergeContactOutput exec(OperationContext& ctx);
+        friend std::ostream& operator<<(std::ostream& os, const MergeContact& i);
+        std::string to_string();
     };//class MergeContact
-
-    //exception impl
-    class MergeContactException
-    : public OperationExceptionImpl<MergeContactException, 8192>
-    {
-    public:
-        MergeContactException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<MergeContactException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"not found:src_contact_handle", "not found:dst_contact_handle", "not found:registrar"
-                , "invalid:src_contact_handle", "invalid:dst_contact_handle"
-                , "identical:dst_contact_handle", "identical:dst_contact_roid"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class MergeContactException
-
-    typedef MergeContactException::OperationErrorType MergeContactError;
-#define MCEX(DATA) MergeContactException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MCERR(DATA) MergeContactError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 
