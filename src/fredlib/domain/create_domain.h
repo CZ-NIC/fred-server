@@ -49,8 +49,25 @@ namespace Fred
         std::vector<std::string> admin_contacts_; //set admin contacts
         Optional<unsigned> expiration_period_;//for exdate in months
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
-
     public:
+        DECLARE_EXCEPTION_DATA(unknown_zone_fqdn, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_registrant_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_nsset_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_keyset_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_admin_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
+
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_zone_fqdn<Exception>
+        , ExceptionData_unknown_registrant_handle<Exception>
+        , ExceptionData_unknown_nsset_handle<Exception>
+        , ExceptionData_unknown_keyset_handle<Exception>
+        , ExceptionData_unknown_admin_contact_handle<Exception>
+        , ExceptionData_already_set_admin_contact_handle<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
+
         CreateDomain(const std::string& fqdn
                 , const std::string& registrar
                 , const std::string& registrant);
@@ -74,39 +91,8 @@ namespace Fred
         CreateDomain& set_logd_request_id(unsigned long long logd_request_id);
         boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
+        friend std::ostream& operator<<(std::ostream& os, const CreateDomain& i);
+        std::string to_string();
     };//CreateDomain
-
-    //exception impl
-    class CreateDomainException
-    : public OperationExceptionImpl<CreateDomainException, 8192>
-    {
-    public:
-        CreateDomainException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<CreateDomainException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                "not found crdate:fqdn"
-                , "not found zone:fqdn"
-                , "not found:registrant"
-                , "not found:nsset"
-                , "not found:keyset"
-                , "not found:admin contact"
-                , "already set:admin contact"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-
-    };//class CreateDomainException
-
-    typedef CreateDomainException::OperationErrorType CreateDomainError;
-#define CDEX(DATA) CreateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define CDERR(DATA) CreateDomainError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 }
 #endif // CREATE_DOMAIN_H_
