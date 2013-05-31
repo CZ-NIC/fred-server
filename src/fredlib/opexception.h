@@ -173,7 +173,12 @@ protected:\
 DECLARE_EXCEPTION_DATA(unknown_contact_handle, std::string);
 DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
 DECLARE_EXCEPTION_DATA(unknown_registry_object_identifier, std::string);
-
+DECLARE_EXCEPTION_DATA(unknown_domain_fqdn, std::string);
+DECLARE_EXCEPTION_DATA(unknown_nsset_handle, std::string);
+DECLARE_EXCEPTION_DATA(unknown_keyset_handle, std::string);
+DECLARE_EXCEPTION_DATA(unknown_registrant_handle, std::string);
+DECLARE_EXCEPTION_DATA(unknown_admin_contact_handle, std::string);
+DECLARE_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
 
 
 

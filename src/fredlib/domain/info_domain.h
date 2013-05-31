@@ -68,7 +68,6 @@ namespace Fred
         bool lock_;//lock object_registry row for domain
 
     public:
-        DECLARE_EXCEPTION_DATA(unknown_domain_fqdn, std::string);
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_domain_fqdn<Exception>

@@ -51,12 +51,6 @@ namespace Fred
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
     public:
         DECLARE_EXCEPTION_DATA(unknown_zone_fqdn, std::string);
-        DECLARE_EXCEPTION_DATA(unknown_registrant_handle, std::string);
-        DECLARE_EXCEPTION_DATA(unknown_nsset_handle, std::string);
-        DECLARE_EXCEPTION_DATA(unknown_keyset_handle, std::string);
-        DECLARE_EXCEPTION_DATA(unknown_admin_contact_handle, std::string);
-        DECLARE_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
-
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_zone_fqdn<Exception>

@@ -137,40 +137,33 @@ namespace Fred
         unsigned long long history_id=0;//return
         try
         {
-
-        //lock object_registry row for update
-        {
-            Database::Result lock_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM enum_object_type eot"
-                " JOIN object_registry oreg ON oreg.type = eot.id "
-                " AND oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
-                " WHERE eot.name = 'domain' FOR UPDATE OF oreg"
-                , Database::query_param_list(fqdn_));
-
-            if (lock_res.size() != 1)
+            //check registrar exists
+            //TODO: check registrar access
             {
-                std::string errmsg("unable to lock || not found:fqdn: ");
-                errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw UDEX(errmsg.c_str());
-            }
-        }
+                Database::Result res = ctx.get_conn().exec_params(
+                        "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                    , Database::query_param_list(registrar_));
 
-        //get domain_id
+                if (res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+            }
+
+        //get domain_id and lock object_registry row for update
         unsigned long long domain_id =0;
         {
             Database::Result domain_id_res = ctx.get_conn().exec_params(
                 "SELECT oreg.id FROM domain d "
                 " JOIN object_registry oreg ON d.id = oreg.id "
-                " WHERE oreg.name = LOWER($1::text) AND oreg.erdate IS NULL"
+                " JOIN enum_object_type eot ON oreg.type = eot.id AND eot.name = 'domain' "
+                " WHERE oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
+                " FOR UPDATE OF oreg"
                 , Database::query_param_list(fqdn_));
 
             if (domain_id_res.size() != 1)
             {
-                std::string errmsg("|| not found:fqdn: ");
-                errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw UDEX(errmsg.c_str());
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_domain_fqdn(fqdn_));
             }
 
             domain_id = domain_id_res[0][0];
@@ -191,153 +184,78 @@ namespace Fred
             if(nsset_.isset())//change nsset
             {
                 Nullable<std::string> new_nsset_value = nsset_;
-
-                //lock object_registry row for update
                 if(new_nsset_value.isnull())
                 {
-                    //Database::Result lock_res =
-                        ctx.get_conn().exec_params(
-                        "SELECT noreg.id FROM nsset n "
-                        " JOIN object_registry noreg ON noreg.id = n.id AND noreg.erdate IS NULL "
-                        " JOIN domain d ON d.nsset = n.id "
-                        " JOIN object_registry doreg ON doreg.id = d.id AND doreg.erdate IS NULL "
-                        " AND LOWER(doreg.name) = LOWER($1::text) "
-                        " FOR UPDATE OF noreg "
-                        , Database::query_param_list(fqdn_));
-                    //result may be empty if there is no nsset
-                    /*
-                    if (lock_res.size() != 1)
-                    {
-                        std::string errmsg("unable to lock current nsset|| not found:fqdn: ");
-                        errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UDEX(errmsg.c_str());
-                    }
-                    */
+                    params.push_back(Database::NullQueryParam);//NULL, no nsset
                 }
                 else
                 {
+                    //lock nsset object_registry row for update and get id
+                    unsigned long long nsset_id = 0;
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
                         " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'nsset' FOR UPDATE OF oreg"
                         , Database::query_param_list(nsset_.get_value()));
-
                     if (lock_res.size() != 1)
                     {
-                        std::string errmsg("unable to lock || not found:nsset: ");
-                        errmsg += boost::replace_all_copy(std::string(nsset_.get_value()),"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UDEX(errmsg.c_str());
+                        BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(nsset_.get_value()));
                     }
+                    nsset_id = static_cast<unsigned long long>(lock_res[0][0]);
+                    params.push_back(nsset_id); //nsset update
                 }
-
-
-
-                params.push_back(new_nsset_value);//NULL or value via Nullable operator Database::QueryParam()
-
-                if(new_nsset_value.isnull())
-                {//null case query
-                    sql << set_separator.get() << " nsset = $"
-                        << params.size() << "::integer "; //nsset delete
-                }
-                else
-                {//value case query
-                    sql << set_separator.get()
-                        << " nsset = raise_exception_ifnull((SELECT oreg.id FROM object_registry oreg "
-                        " JOIN nsset n ON oreg.id = n.id "
-                        " WHERE oreg.name = UPPER($" << params.size() << "::text) AND oreg.erdate IS NULL) "
-                        " ,'|| not found:nsset: '||ex_data($"<< params.size() << "::text)||' |') "; //nsset update
-                }
+                sql << set_separator.get() << " nsset = $"
+                    << params.size() << "::integer ";
             }//if change nsset
 
             if(keyset_.isset())//change keyset
             {
                 Nullable<std::string> new_keyset_value = keyset_;
-
-                //lock object_registry row for update
                 if(new_keyset_value.isnull())
                 {
-                    Database::Result lock_res = ctx.get_conn().exec_params(
-                        "SELECT koreg.id FROM keyset k "
-                        " JOIN object_registry koreg ON koreg.id = k.id AND koreg.erdate IS NULL "
-                        " JOIN domain d ON d.keyset = k.id "
-                        " JOIN object_registry doreg ON doreg.id = d.id AND doreg.erdate IS NULL "
-                        " AND doreg.name = LOWER($1::text) "
-                        " FOR UPDATE OF koreg "
-                        , Database::query_param_list(fqdn_));
-                    //result may be empty if there is no keyset
-                    /*
-                    if (lock_res.size() != 1)
-                    {
-                        std::string errmsg("unable to lock current keyset|| not found:fqdn: ");
-                        errmsg += boost::replace_all_copy(fqdn_, "|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UDEX(errmsg.c_str());
-                    }
-                    */
+                    params.push_back(Database::NullQueryParam);//NULL, no nsset
                 }
                 else
                 {
+                    //lock keyset object_registry row for update and get id
+                    unsigned long long keyset_id = 0;
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
                         " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'keyset' FOR UPDATE OF oreg"
                         , Database::query_param_list(keyset_.get_value()));
-
                     if (lock_res.size() != 1)
                     {
-                        std::string errmsg("unable to lock || not found:keyset: ");
-                        errmsg += boost::replace_all_copy(std::string(keyset_.get_value()),"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UDEX(errmsg.c_str());
+                        BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(keyset_.get_value()));
                     }
+                    keyset_id = static_cast<unsigned long long>(lock_res[0][0]);
+                    params.push_back(keyset_id); //keyset update
                 }
-
-                params.push_back(new_keyset_value);//NULL or value via Nullable operator Database::QueryParam()
-
-                if(new_keyset_value.isnull())
-                {//null case query
-                    sql << set_separator.get() << " keyset = $"
-                        << params.size() << "::integer "; //keyset delete
-                }
-                else
-                {//value case query
-                    sql << set_separator.get()
-                        << " keyset = raise_exception_ifnull("
-                        " (SELECT oreg.id FROM object_registry oreg JOIN keyset k ON oreg.id = k.id "
-                        " WHERE oreg.name = UPPER($" << params.size() << "::text) AND oreg.erdate IS NULL),"
-                        " '|| not found:keyset: '||ex_data($"<< params.size() << "::text)||' |') "; //keyset update
-                }
+                sql << set_separator.get() << " keyset = $"
+                    << params.size() << "::integer ";
             }//if change keyset
 
             if(registrant_.isset())//change registrant
             {
                 //lock object_registry row for update
+
+                unsigned long long registrant_id = 0;
+                Database::Result lock_res = ctx.get_conn().exec_params(
+                    "SELECT oreg.id FROM enum_object_type eot"
+                    " JOIN object_registry oreg ON oreg.type = eot.id "
+                    " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                    " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
+                    , Database::query_param_list(registrant_.get_value()));
+                if (lock_res.size() != 1)
                 {
-                    Database::Result lock_res = ctx.get_conn().exec_params(
-                        "SELECT oreg.id FROM enum_object_type eot"
-                        " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                        , Database::query_param_list(registrant_.get_value()));
-
-                    if (lock_res.size() != 1)
-                    {
-                        std::string errmsg("unable to lock || not found:registrant: ");
-                        errmsg += boost::replace_all_copy(std::string(registrant_.get_value()),"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UDEX(errmsg.c_str());
-                    }
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrant_handle(registrant_.get_value()));
                 }
-
-                params.push_back(registrant_);
-                sql << set_separator.get() << " registrant = raise_exception_ifnull( "
-                    " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE oreg.name = UPPER($" << params.size() << "::text) AND oreg.erdate IS NULL) "
-                    " ,'|| not found:registrant: '||ex_data($"<< params.size() << "::text)||' |') "; //registrant update
+                registrant_id = static_cast<unsigned long long>(lock_res[0][0]);
+                params.push_back(registrant_id);
+                sql << set_separator.get() << " registrant = $"
+                    << params.size() << "::integer ";
             }//if change registrant
 
             params.push_back(domain_id);
@@ -357,62 +275,48 @@ namespace Fred
 
             for(std::vector<std::string>::iterator i = add_admin_contact_.begin(); i != add_admin_contact_.end(); ++i)
             {
-                //lock object_registry row for update
-                {
-                    Database::Result lock_res = ctx.get_conn().exec_params(
-                        "SELECT oreg.id FROM enum_object_type eot"
-                        " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                        , Database::query_param_list(*i));
+                //lock object_registry row for update and get id
 
-                    if (lock_res.size() != 1)
-                    {
-                        std::string errmsg("unable to lock || not found:admin contact: ");
-                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UDEX(errmsg.c_str());
-                    }
+                unsigned long long admin_contact_id = 0;
+                Database::Result lock_res = ctx.get_conn().exec_params(
+                    "SELECT oreg.id FROM enum_object_type eot"
+                    " JOIN object_registry oreg ON oreg.type = eot.id "
+                    " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                    " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
+                    , Database::query_param_list(*i));
+
+                if (lock_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_admin_contact_handle(*i));
                 }
+                admin_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
+
 
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
                 sql_i << sql.str();
 
-                params_i.push_back(*i);
+                params_i.push_back(admin_contact_id);
 
                 {//precheck uniqueness
                     Database::Result domain_add_check_res = ctx.get_conn().exec_params(
                     "SELECT domainid, contactid FROM domain_contact_map "
                     " WHERE domainid = $1::bigint "
-                    "  AND contactid = raise_exception_ifnull("
-                    "    (SELECT oreg.id FROM object_registry oreg "
-                    "       JOIN contact c ON oreg.id = c.id "
-                    "     WHERE oreg.name = UPPER($2::text) AND oreg.erdate IS NULL) "
-                    "     ,'|| not found:admin contact: '||ex_data($2::text)||' |')"
+                    "  AND contactid = $2::bigint "
                     , params_i);
 
                     if (domain_add_check_res.size() == 1)
                     {
-                        std::string errmsg("add admin contact precheck uniqueness failed || already set:admin contact: ");
-                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UDEX(errmsg.c_str());
+                        BOOST_THROW_EXCEPTION(Exception().set_already_set_admin_contact_handle(*i));
                     }
                 }
 
-                sql_i << " raise_exception_ifnull("
-                    " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL)"
-                    " , '|| not found:admin contact: '||ex_data($"<< params.size() << "::text)||' |')) "
+                sql_i << " $" << params_i.size() << "::integer) "
                     " RETURNING domainid";
                 Database::Result domain_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
                 if (domain_add_check_res.size() != 1)
                 {
-                    std::string errmsg("add admin contact failed || already set:admin contact: ");
-                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UDEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_already_set_admin_contact_handle(*i));
                 }
             }//for i
         }//if add admin contacts
@@ -428,41 +332,33 @@ namespace Fred
 
             for(std::vector<std::string>::iterator i = rem_admin_contact_.begin(); i != rem_admin_contact_.end(); ++i)
             {
-                //lock object_registry row for update
-                {
-                    Database::Result lock_res = ctx.get_conn().exec_params(
-                        "SELECT oreg.id FROM enum_object_type eot"
-                        " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                        , Database::query_param_list(*i));
+                //lock object_registry row for update and get id
 
-                    if (lock_res.size() != 1)
-                    {
-                        std::string errmsg("unable to lock || not found:admin contact: ");
-                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UDEX(errmsg.c_str());
-                    }
+                unsigned long long admin_contact_id = 0;
+                Database::Result lock_res = ctx.get_conn().exec_params(
+                    "SELECT oreg.id FROM enum_object_type eot"
+                    " JOIN object_registry oreg ON oreg.type = eot.id "
+                    " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                    " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
+                    , Database::query_param_list(*i));
+
+                if (lock_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_admin_contact_handle(*i));
                 }
+                admin_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
 
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
                 sql_i << sql.str();
 
-                params_i.push_back(*i);
-                sql_i << "contactid = raise_exception_ifnull("
-                        " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                        " WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL) "
-                        " ,'|| not found:admin contact: '||ex_data($"<< params.size() << "::text)||' |') "
+                params_i.push_back(admin_contact_id);
+                sql_i << "contactid = $" << params_i.size() << "::integer "
                         " RETURNING domainid";
                 Database::Result domain_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
                 if (domain_del_res.size() != 1)
                 {
-                    std::string errmsg("delete admin contact failed || invalid:admin contact: ");
-                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UDEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unassigned_admin_contact_handle(*i));
                 }
             }//for i
         }//if delete admin contacts
@@ -507,12 +403,41 @@ namespace Fred
         }//save history
 
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<UpdateDomainException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
+
         return history_id;
     }//UpdateDomain::exec
+
+    std::ostream& operator<<(std::ostream& os, const UpdateDomain& i)
+    {
+        os << "#UpdateDomain fqdn: " << i.fqdn_
+            << " registrar: " << i.registrar_
+            << " registrant: " << i.registrant_.print_quoted()
+            << " authinfo: " << i.authinfo_.print_quoted()
+            << " nsset: " << (i.nsset_.isset() ? i.nsset_.get_value().print_quoted() : i.nsset_.print_quoted())
+            << " keyset: " << (i.keyset_.isset() ? i.keyset_.get_value().print_quoted() : i.keyset_.print_quoted())
+            ;
+        if(!i.add_admin_contact_.empty()) os << " add_admin_contact: ";
+        for(std::vector<std::string>::const_iterator ci = i.add_admin_contact_.begin()
+                ; ci != i.add_admin_contact_.end() ; ++ci ) os << *ci;
+        if(!i.rem_admin_contact_.empty()) os << " rem_admin_contact: ";
+                for(std::vector<std::string>::const_iterator ci = i.rem_admin_contact_.begin()
+                        ; ci != i.rem_admin_contact_.end() ; ++ci ) os << *ci;
+
+        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
+        return os;
+    }
+
+    std::string UpdateDomain::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 
 }//namespace Fred
 

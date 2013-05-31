@@ -86,26 +86,19 @@ BOOST_AUTO_TEST_SUITE(TestUpdateDomain)
 const std::string server_name = "test-update-domain";
 
 /**
- * test UpdateDomainException
+ * test UpdateDomain::Exception
  * test create and throw exception with special data
  */
 BOOST_AUTO_TEST_CASE(update_domain_exception)
 {
-    //no parsable data - ok
-    BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, "test")
-    , Fred::OperationExceptionBase);
+    //good path exception
+    BOOST_CHECK_THROW (BOOST_THROW_EXCEPTION(Fred::UpdateDomain::Exception().set_unknown_domain_fqdn("badfqdn.cz"));
+    , Fred::OperationException);
 
-    //no data - error
-    BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, "test ||  |")
-    , Fred::OperationErrorBase);
+    //bad path exception exception
+    BOOST_CHECK_THROW ( BOOST_THROW_EXCEPTION(Fred::InternalError("test error"));
+    , Fred::OperationException);
 
-    //error exception - ok
-    BOOST_CHECK_THROW (throw Fred::UpdateDomainException::OperationErrorType("test")
-    , Fred::OperationErrorBase);
-
-    //not ended by | - no parsable data - ok
-    BOOST_CHECK_THROW (throw Fred::UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, "test exception || not found:1111: errtest")
-        , Fred::OperationExceptionBase);
 }
 
 struct update_domain_fixture
@@ -1040,12 +1033,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_fixture )
         Fred::UpdateDomain(bad_test_domain_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateDomain::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:fqdn")->second).compare(bad_test_domain_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_domain_fqdn());
+        BOOST_CHECK(ex.get_unknown_domain_fqdn().compare(bad_test_domain_handle) == 0);
     }
 }
 
@@ -1065,12 +1056,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
         Fred::UpdateDomain(test_domain_handle, bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateDomain::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:registrar")->second).compare(bad_registrar_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_registrar_handle());
+        BOOST_CHECK(ex.get_unknown_registrant_handle().compare(bad_registrar_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1096,12 +1085,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateDomain::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:registrant")->second).compare(bad_registrant_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_registrant_handle());
+        BOOST_CHECK(ex.get_unknown_registrant_handle().compare(bad_registrant_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1127,12 +1114,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateDomain::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:admin contact")->second).compare(bad_admin_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_admin_contact_handle());
+        BOOST_CHECK(ex.get_unknown_admin_contact_handle().compare(bad_admin_contact_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1157,12 +1142,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fix
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateDomain::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("already set:admin contact")->second).compare(admin_contact2_handle) == 0);
+        BOOST_CHECK(ex.is_set_already_set_admin_contact_handle());
+        BOOST_CHECK(ex.get_already_set_admin_contact_handle().compare(admin_contact2_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1188,12 +1171,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateDomain::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:admin contact")->second).compare(bad_admin_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_admin_contact_handle());
+        BOOST_CHECK(ex.get_unknown_admin_contact_handle().compare(bad_admin_contact_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1219,12 +1200,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateDomain::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:admin contact")->second).compare(bad_admin_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_unassigned_admin_contact_handle());
+        BOOST_CHECK(ex.get_unassigned_admin_contact_handle().compare(bad_admin_contact_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);

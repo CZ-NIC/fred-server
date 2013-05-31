@@ -235,13 +235,11 @@ namespace Fred
                         if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
                         tmp.history_id = ud.exec(ctx);
                     }
-                    catch(UpdateDomainException& ex)
+                    catch(UpdateDomain::Exception& ex)
                     {
-                        GetOperationExceptionParamsDataToBoolCallback cb;
                         //look for already set: admin contact
-                        ex.callback_exception_params(boost::ref(cb),"already set:admin contact");
                         //if found ignore exception, if not found rethrow exception
-                        if(cb.get())
+                        if(ex.is_set_already_set_admin_contact_handle())
                         {
                             //only remove source admin contact, dest admin contact is already there
                             UpdateDomain ud (tmp.fqdn, registrar_ );
