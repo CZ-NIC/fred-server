@@ -213,7 +213,7 @@ namespace Fred
 
     std::ostream& operator<<(std::ostream& os, const InfoDomain& i)
     {
-        return os << "#InfoDomain handle: " << i.fqdn_
+        return os << "#InfoDomain fqdn: " << i.fqdn_
                 << " registrar: " << i.registrar_
                 << " lock: " << i.lock_
                 ;

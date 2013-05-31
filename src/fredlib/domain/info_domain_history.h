@@ -60,12 +60,21 @@ namespace Fred
         bool lock_;//lock object_registry row for domain
 
     public:
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_registry_object_identifier<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
         InfoDomainHistory(const std::string& roid, const std::string& registrar);
         InfoDomainHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp, const std::string& registrar);
 
         InfoDomainHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);//set history timestamp
         InfoDomainHistory& set_lock(bool lock = true);//set lock object_registry row for domain
         std::vector<InfoDomainHistoryOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        friend std::ostream& operator<<(std::ostream& os, const InfoDomainHistory& i);
+        std::string to_string();
+
     };//class InfoDomainHistory
 
 //exception impl
