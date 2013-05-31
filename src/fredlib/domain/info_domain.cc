@@ -59,24 +59,6 @@ namespace Fred
 
         try
         {
-            //check fqdn or lock object_registry row for update
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                    std::string("SELECT id FROM object_registry WHERE name=LOWER($1::text) "
-                    " AND erdate IS NULL AND type = ( SELECT id FROM enum_object_type eot "
-                    " WHERE eot.name='domain'::text) ")
-                    + (lock_ ? std::string(" FOR UPDATE") : std::string(""))
-                    , Database::query_param_list(fqdn_));
-
-                if (res.size() != 1)
-                {
-                    std::string errmsg("|| not found:fqdn: ");
-                    errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw IDEX(errmsg.c_str());
-                }
-            }
-
             //check registrar exists
             //TODO: check registrar access
             {
@@ -86,14 +68,11 @@ namespace Fred
 
                 if (res.size() != 1)
                 {
-                    std::string errmsg("|| not found:registrar: ");
-                    errmsg += boost::replace_all_copy(registrar_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw IDEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
                 }
             }
 
-            //info about domain
+            //info about domain and optionally lock object_registry row for update
             unsigned long long domain_id = 0;
             {
                 Database::Result res = ctx.get_conn().exec_params(
@@ -134,14 +113,12 @@ namespace Fred
                 " LEFT JOIN  enumval ev ON ev.domainid = d.id "
                 " WHERE dobr.name=LOWER($2::text) AND dobr.erdate IS NULL "
                 " AND dobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='domain'::text)"
+                + (lock_ ? std::string(" FOR UPDATE OF dobr") : std::string(""))
                 , Database::query_param_list(local_timestamp_pg_time_zone_name)(fqdn_));
 
                 if (res.size() != 1)
                 {
-                    std::string errmsg("|| not found:fqdn: ");
-                    errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw IDEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_domain_fqdn(fqdn_));
                 }
 
                 domain_id = static_cast<unsigned long long>(res[0][0]);//dobr.id
@@ -225,12 +202,28 @@ namespace Fred
             }
 
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<InfoDomainException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
+
         return domain_info_output;
     }//InfoDomain::exec
+
+    std::ostream& operator<<(std::ostream& os, const InfoDomain& i)
+    {
+        return os << "#InfoDomain handle: " << i.fqdn_
+                << " registrar: " << i.registrar_
+                << " lock: " << i.lock_
+                ;
+    }
+    std::string InfoDomain::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 
 }//namespace Fred
 
