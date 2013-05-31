@@ -281,7 +281,7 @@ namespace Fred
 
                             if (lock_nsset_res.size() != 1)
                             {
-                                BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(new_nsset_value.print_quoted()));
+                                BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(new_nsset_value));
                             }
                             nsset_id = static_cast<unsigned long long>(lock_nsset_res[0][0]);
 
@@ -316,7 +316,7 @@ namespace Fred
 
                             if (lock_keyset_res.size() != 1)
                             {
-                                BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(new_keyset_value.print_quoted()));
+                                BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(new_keyset_value));
                             }
                             keyset_id = static_cast<unsigned long long>(lock_keyset_res[0][0]);
 
