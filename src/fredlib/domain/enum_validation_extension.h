@@ -49,6 +49,11 @@ namespace Fred
         {
             return (publish == rhs.publish) && (validation_expiration == rhs.validation_expiration);
         }
+        friend std::ostream& operator<<(std::ostream& os, const ENUMValidationExtension& i)
+        {
+            return os << "ENUMValidationExtension publish: " << i.publish
+                << " validation_expiration: " << boost::gregorian::to_simple_string(i.validation_expiration);
+        }
     };
 
 }//namespace Fred
