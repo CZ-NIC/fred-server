@@ -299,8 +299,9 @@ namespace Fred
                         , Database::query_param_list(ssntype_.get_value()));
                     if(ssntype_res.size() != 1)
                     {
-                        BOOST_THROW_EXCEPTION(Exception().set_unknown_ssntype(ssntype_.print_quoted()));
+                        BOOST_THROW_EXCEPTION(Exception().set_unknown_ssntype(ssntype_.get_value()));
                     }
+                    ssntype_id = static_cast<unsigned long long>(ssntype_res[0][0]);
                 }
 
                 Database::QueryParams params;//query params
