@@ -1059,7 +1059,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
     catch(const Fred::UpdateDomain::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
-        BOOST_CHECK(ex.get_unknown_registrant_handle().compare(bad_registrar_handle) == 0);
+        BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
