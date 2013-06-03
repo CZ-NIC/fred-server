@@ -124,6 +124,16 @@ namespace Fred
 
         try
         {
+            //check registrar
+            {
+                Database::Result registrar_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                    , Database::query_param_list(registrar_));
+                if(registrar_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+            }
             //zone
             unsigned long long zone_id = 0;
             {
