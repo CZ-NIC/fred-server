@@ -94,17 +94,16 @@ namespace Registry
         }
 
 
+        bool ContactHandleListIter_i::is_closed() const
+        {
+            return status_ == CLOSED;
+        }
+
+
         const boost::posix_time::ptime& ContactHandleListIter_i::get_last_used() const
         {
             return last_used_;
         }
-
-
-        const ContactHandleListIter_i::Status& ContactHandleListIter_i::get_status() const
-        {
-            return status_;
-        }
-
 
 
 

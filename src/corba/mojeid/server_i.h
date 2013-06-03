@@ -42,12 +42,6 @@ namespace Registry
         class ContactHandleListIter_i : public POA_Registry::MojeID::ContactHandleListIter
         {
         public:
-            enum Status
-            {
-                ACTIVE = 1,
-                CLOSED = 2
-            };
-
             // standard constructor
             ContactHandleListIter_i(const std::vector<std::string> &_handles);
 
@@ -58,14 +52,21 @@ namespace Registry
 
             void destroy();
 
+            // methods for compatibility with CorbaAutoGarbageList
             void close();
+
+            bool is_closed() const;
 
             const boost::posix_time::ptime& get_last_used() const;
 
-            const Status& get_status() const;
-
 
         private:
+            enum Status
+            {
+                ACTIVE = 1,
+                CLOSED = 2
+            };
+
             Status status_;
             boost::posix_time::ptime last_used_;
             std::vector<std::string> handles_;

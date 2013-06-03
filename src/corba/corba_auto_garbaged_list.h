@@ -69,15 +69,16 @@ public:
                         (*it)->close();
                     }
 
-                    if ((*it)->get_status() == T::CLOSED)
+                    if ((*it)->is_closed())
                     {
-                        boost::posix_time::ptime last_used = (*it)->get_last_used();
+                        LOGGER(PACKAGE).debug(boost::format("AutoGarbageList::scavenger: erasing object (last_used=%1%)") % (*it)->get_last_used());
                         value_type_ptr del = *it;
                         it = data_.erase(it);
+                        LOGGER(PACKAGE).debug("AutoGarbageList::scavenger: object erased from list");
                         /* corba object deactivation */
                         PortableServer::ObjectId_var id = CorbaContainer::get_instance()->root_poa->servant_to_id(del.get());
                         CorbaContainer::get_instance()->root_poa->deactivate_object(id);
-                        LOGGER(PACKAGE).debug(boost::format("AutoGarbageList::scavenger: object (last_used=%1%) erased") % last_used);
+                        LOGGER(PACKAGE).debug("AutoGarbageList::scavenger: object deactivated");
                     }
                     else
                     {
