@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(update_domain_exception)
 
     //bad path exception exception
     BOOST_CHECK_THROW ( BOOST_THROW_EXCEPTION(Fred::InternalError("test error"));
-    , Fred::OperationException);
+    , std::exception);
 
 }
 
