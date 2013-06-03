@@ -18,6 +18,7 @@ private:
     typedef std::vector<value_type_ptr> value_type_ptr_list;
 
     std::string name_;
+    boost::posix_time::time_duration object_max_idle_interval_;
     boost::posix_time::time_duration scavenger_thread_interval_;
     bool scavenger_thread_active_;
     boost::thread scavenger_thread_;
@@ -29,8 +30,10 @@ private:
 public:
     CorbaAutoGarbagedList(
             const std::string &_name,
-            const boost::posix_time::time_duration &_scavenger_thread_interval)
+            const boost::posix_time::time_duration &_scavenger_thread_interval,
+            const boost::posix_time::time_duration &_object_max_idle_interval)
         : name_(_name),
+          object_max_idle_interval_(_object_max_idle_interval),
           scavenger_thread_interval_(_scavenger_thread_interval),
           scavenger_thread_active_(true),
           scavenger_thread_(boost::bind(&CorbaAutoGarbagedList::scavenger, this))
@@ -64,7 +67,7 @@ public:
                 typename value_type_ptr_list::iterator it = data_.begin();
                 while (it != data_.end())
                 {
-                    if ((boost::posix_time::second_clock::local_time() - (*it)->get_last_used()) > boost::posix_time::seconds(300))
+                    if ((boost::posix_time::second_clock::local_time() - (*it)->get_last_used()) > object_max_idle_interval_)
                     {
                         (*it)->close();
                     }
@@ -87,7 +90,7 @@ public:
                 }
             }
             LOGGER(PACKAGE).debug("AutoGarbageList::scavenger: iteration finished");
-            boost::this_thread::sleep(boost::posix_time::seconds(30));
+            boost::this_thread::sleep(scavenger_thread_interval_);
         }
 
     }

@@ -112,7 +112,10 @@ namespace Registry
                 , boost::shared_ptr<Fred::Mailer::Manager>(
                     new MailerManager(CorbaContainer::get_instance()
                     ->getNS())))),
-          contact_handle_list_objects_("fred-mifd/contact-handle-list", boost::posix_time::seconds(30))
+          contact_handle_list_objects_(
+                  "fred-mifd/contact-handle-list",
+                  boost::posix_time::seconds(30),
+                  boost::posix_time::seconds(300))
         {}
 
         Server_i::~Server_i()
