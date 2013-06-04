@@ -89,7 +89,8 @@ public:
                     }
                 }
             }
-            LOGGER(PACKAGE).debug("AutoGarbageList::scavenger: iteration finished");
+            LOGGER(PACKAGE).debug(boost::format("AutoGarbageList::scavenger: iteration finished"
+                        " (next at %1%)") % (boost::posix_time::second_clock::local_time() + scavenger_thread_interval_));
             boost::this_thread::sleep(scavenger_thread_interval_);
         }
 
