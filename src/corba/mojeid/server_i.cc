@@ -23,6 +23,7 @@
  */
 
 
+#include "util/cfg/handle_mojeid_args.h"
 #include "server_i.h"
 #include "corba_conversion.h"
 #include "mojeid/mojeid.h"
@@ -114,8 +115,8 @@ namespace Registry
                     ->getNS())))),
           contact_handle_list_objects_(
                   "fred-mifd/contact-handle-list",
-                  boost::posix_time::seconds(30),
-                  boost::posix_time::seconds(300))
+                  CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->uho_scavenger_thread_period,
+                  CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->uho_scavenger_object_max_idle_period)
         {}
 
         Server_i::~Server_i()
