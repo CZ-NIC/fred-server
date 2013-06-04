@@ -105,267 +105,266 @@ namespace Fred
 
         try
         {
-
-        //lock object_registry row for update
-        {
-            Database::Result lock_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM enum_object_type eot"
-                " JOIN object_registry oreg ON oreg.type = eot.id "
-                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                " WHERE eot.name = 'keyset' FOR UPDATE OF oreg"
-                , Database::query_param_list(handle_));
-
-            if (lock_res.size() != 1)
+            //check registrar
             {
-                std::string errmsg("unable to lock || not found:handle: ");
-                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw UKEX(errmsg.c_str());
-            }
-        }
-
-        //get keyset_id
-        unsigned long long keyset_id =0;
-        {
-            Database::Result keyset_id_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM keyset k "
-                " JOIN object_registry oreg ON k.id = oreg.id "
-                " WHERE oreg.name = UPPER($1::text) AND oreg.erdate IS NULL"
-                , Database::query_param_list(handle_));
-
-            if (keyset_id_res.size() != 1)
-            {
-                std::string errmsg("|| not found:handle: ");
-                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw UKEX(errmsg.c_str());
+                Database::Result registrar_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                    , Database::query_param_list(registrar_));
+                if(registrar_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
             }
 
-            keyset_id = keyset_id_res[0][0];
-        }
-
-        Fred::UpdateObject(handle_,"keyset", registrar_, authinfo_).exec(ctx);
-
-        //add tech contacts
-        if(!add_tech_contact_.empty())
-        {
-            Database::QueryParams params;//query params
-            std::stringstream sql;
-
-            params.push_back(keyset_id);
-            sql << "INSERT INTO keyset_contact_map(keysetid, contactid) "
-                    " VALUES ($" << params.size() << "::integer, ";
-
-            for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
+            //lock row and get keyset_id
+            unsigned long long keyset_id =0;
             {
-                //lock object_registry row for update
-                {
-                    Database::Result lock_res = ctx.get_conn().exec_params(
-                        "SELECT oreg.id FROM enum_object_type eot"
-                        " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                        , Database::query_param_list(*i));
+                Database::Result keyset_id_res = ctx.get_conn().exec_params(
+                    "SELECT oreg.id FROM keyset k "
+                    " JOIN object_registry oreg ON k.id = oreg.id "
+                    " JOIN enum_object_type eot ON eot.id = oreg.type "
+                    " WHERE eot.name = 'keyset' AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                    " FOR UPDATE OF oreg "
+                    , Database::query_param_list(handle_));
 
-                    if (lock_res.size() != 1)
+                if (keyset_id_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(handle_));
+                }
+
+                keyset_id = keyset_id_res[0][0];
+            }
+
+            Fred::UpdateObject(handle_,"keyset", registrar_, authinfo_).exec(ctx);
+
+            //add tech contacts
+            if(!add_tech_contact_.empty())
+            {
+                Database::QueryParams params;//query params
+                std::stringstream sql;
+
+                params.push_back(keyset_id);
+                sql << "INSERT INTO keyset_contact_map(keysetid, contactid) "
+                        " VALUES ($" << params.size() << "::integer, ";
+
+                for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
+                {
+                    //lock object_registry row for update
+                    unsigned long long tech_contact_id = 0;
                     {
-                        std::string errmsg("unable to lock || not found:tech contact: ");
-                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UKEX(errmsg.c_str());
+                        Database::Result lock_res = ctx.get_conn().exec_params(
+                            "SELECT oreg.id FROM enum_object_type eot "
+                            " JOIN object_registry oreg ON oreg.type = eot.id "
+                            " JOIN contact c ON oreg.id = c.id "
+                            " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                            " WHERE eot.name = 'contact' FOR UPDATE OF oreg "
+                            , Database::query_param_list(*i));
+
+                        if (lock_res.size() != 1)
+                        {
+                            BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                        }
+                        tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
                     }
-                }
 
-                Database::QueryParams params_i = params;//query params
-                std::stringstream sql_i;
-                sql_i << sql.str();
+                    Database::QueryParams params_i = params;//query params
+                    std::stringstream sql_i;
+                    sql_i << sql.str();
 
-                params_i.push_back(*i);
+                    params_i.push_back(tech_contact_id);
 
-                {//precheck uniqueness
-                    Database::Result keyset_res = ctx.get_conn().exec_params(
-                    "SELECT keysetid, contactid FROM keyset_contact_map "
-                    " WHERE keysetid = $1::bigint "
-                    "  AND contactid = raise_exception_ifnull("
-                    "    (SELECT oreg.id FROM object_registry oreg "
-                    "       JOIN contact c ON oreg.id = c.id "
-                    "     WHERE oreg.name = UPPER($2::text) AND oreg.erdate IS NULL) "
-                    "     ,'|| not found:tech contact: '||ex_data($2::text)||' |')"
-                    , params_i);
+                    {//precheck uniqueness
+                        Database::Result keyset_res = ctx.get_conn().exec_params(
+                        "SELECT keysetid, contactid FROM keyset_contact_map "
+                        " WHERE keysetid = $1::bigint "
+                        "  AND contactid = $2::bigint "
+                        , params_i);
 
-                    if (keyset_res.size() == 1)
+                        if (keyset_res.size() == 1)
+                        {
+                            BOOST_THROW_EXCEPTION(Exception().set_already_set_technical_contact_handle(*i));
+                        }
+                    }
+
+                    sql_i << " $" << params_i.size() << "::integer) "
+                            " RETURNING keysetid";
+
+                    Database::Result keyset_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
+                    if (keyset_add_check_res.size() != 1)
                     {
-                        std::string errmsg("tech contact already set || already set:tech contact: ");
-                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UKEX(errmsg.c_str());
+                        BOOST_THROW_EXCEPTION(Exception().set_already_set_technical_contact_handle(*i));
                     }
-                }
+                }//for i
+            }//if add tech contacts
 
-                sql_i << " raise_exception_ifnull("
-                    " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL) "
-                    " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |')) "
-                    " RETURNING keysetid";
-
-                Database::Result keyset_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
-                if (keyset_add_check_res.size() != 1)
-                {
-                    std::string errmsg("add tech contact failed || invalid:tech contact: ");
-                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UKEX(errmsg.c_str());
-                }
-            }//for i
-        }//if add tech contacts
-
-        //delete tech contacts
-        if(!rem_tech_contact_.empty())
-        {
-            Database::QueryParams params;//query params
-            std::stringstream sql;
-
-            params.push_back(keyset_id);
-            sql << "DELETE FROM keyset_contact_map WHERE keysetid = "
-                    " $" << params.size() << "::integer AND ";
-
-            for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
+            //delete tech contacts
+            if(!rem_tech_contact_.empty())
             {
-                //lock object_registry row for update
-                {
-                    Database::Result lock_res = ctx.get_conn().exec_params(
-                        "SELECT oreg.id FROM enum_object_type eot"
-                        " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                        , Database::query_param_list(*i));
+                Database::QueryParams params;//query params
+                std::stringstream sql;
 
-                    if (lock_res.size() != 1)
+                params.push_back(keyset_id);
+                sql << "DELETE FROM keyset_contact_map WHERE keysetid = "
+                        " $" << params.size() << "::integer AND ";
+
+                for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
+                {
+                    unsigned long long tech_contact_id = 0;
                     {
-                        std::string errmsg("unable to lock || not found:tech contact: ");
-                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UKEX(errmsg.c_str());
+                        Database::Result lock_res = ctx.get_conn().exec_params(
+                            "SELECT oreg.id FROM enum_object_type eot "
+                            " JOIN object_registry oreg ON oreg.type = eot.id "
+                            " JOIN contact c ON oreg.id = c.id "
+                            " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                            " WHERE eot.name = 'contact' FOR UPDATE OF oreg "
+                            , Database::query_param_list(*i));
+
+                        if (lock_res.size() != 1)
+                        {
+                            BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                        }
+                        tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
                     }
-                }
 
-                Database::QueryParams params_i = params;//query params
-                std::stringstream sql_i;
-                sql_i << sql.str();
+                    Database::QueryParams params_i = params;//query params
+                    std::stringstream sql_i;
+                    sql_i << sql.str();
 
-                params_i.push_back(*i);
-                sql_i << "contactid = raise_exception_ifnull( "
-                    " (SELECT oreg.id FROM object_registry oreg "
-                    " JOIN contact c ON oreg.id = c.id WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL) "
-                    " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |') "
-                    " RETURNING keysetid";
-                Database::Result keyset_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
-                if (keyset_del_res.size() != 1)
-                {
-                    std::string errmsg("delete tech contact failed || invalid:tech contact: ");
-                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UKEX(errmsg.c_str());
-                }
-            }//for i
-        }//if delete tech contacts
+                    params_i.push_back(tech_contact_id);
+                    sql_i << "contactid = $" << params_i.size() << "::integer "
+                            " RETURNING keysetid";
 
-        //delete dns keys - before adding new ones
-        if(!rem_dns_key_.empty())
-        {
-            for(std::vector<DnsKey>::iterator i = rem_dns_key_.begin(); i != rem_dns_key_.end(); ++i)
+                    Database::Result keyset_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
+                    if (keyset_del_res.size() != 1)
+                    {
+                        BOOST_THROW_EXCEPTION(Exception().set_unassigned_technical_contact_handle(*i));
+                    }
+                }//for i
+            }//if delete tech contacts
+
+            //delete dns keys - before adding new ones
+            if(!rem_dns_key_.empty())
             {
-                Database::Result rem_dns_key_res = ctx.get_conn().exec_params(
-                    "DELETE FROM dnskey WHERE keysetid = $1::integer "
-                    " AND flags = $2::integer AND protocol = $3::integer AND alg = $4::integer AND key = $5::text "
-                    " RETURNING id"
-                    , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
-                if (rem_dns_key_res.size() != 1)
+                for(std::vector<DnsKey>::iterator i = rem_dns_key_.begin(); i != rem_dns_key_.end(); ++i)
                 {
-                    std::string errmsg("delete dns keys || not found:dns key: ");
-                    errmsg += boost::replace_all_copy(static_cast<std::string>(*i),"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UKEX(errmsg.c_str());
-                }
-            }//for i
-        }//if delete dns keys
+                    Database::Result rem_dns_key_res = ctx.get_conn().exec_params(
+                        "DELETE FROM dnskey WHERE keysetid = $1::integer "
+                        " AND flags = $2::integer AND protocol = $3::integer AND alg = $4::integer AND key = $5::text "
+                        " RETURNING id"
+                        , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
+                    if (rem_dns_key_res.size() != 1)
+                    {
+                        BOOST_THROW_EXCEPTION(Exception().set_unassigned_dns_key(*i));
+                    }
+                }//for i
+            }//if delete dns keys
 
-        //add dns keys
-        if(!add_dns_key_.empty())
-        {
-            for(std::vector<DnsKey>::iterator i = add_dns_key_.begin(); i != add_dns_key_.end(); ++i)
+            //add dns keys
+            if(!add_dns_key_.empty())
             {
-                try
+                for(std::vector<DnsKey>::iterator i = add_dns_key_.begin(); i != add_dns_key_.end(); ++i)
                 {
-                    ctx.get_conn().exec_params(
-                    "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
-                    ", $2::integer, $3::integer, $4::integer, $5::text)"
-                    , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
-                }
-                catch(Database::ResultFailed& ex)
-                {
-                    std::string errmsg = ex.what();
-                    errmsg += " add dns keys || invalid:dns key: ";
-                    errmsg += boost::replace_all_copy(static_cast<std::string>(*i),"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UKEX(errmsg.c_str());
-                }
+                    try
+                    {
+                        ctx.get_conn().exec_params(
+                        "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
+                        ", $2::integer, $3::integer, $4::integer, $5::text)"
+                        , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
+                    }
+                    catch(const std::exception&)
+                    {
+                        BOOST_THROW_EXCEPTION(Exception().set_already_set_dns_key(*i));
+                    }
 
-            }//for i
-        }//if add dns keys
+                }//for i
+            }//if add dns keys
 
-        //save history
-        {
-            history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
+            //save history
+            {
+                history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
 
-            //object_history
-            ctx.get_conn().exec_params(
-                "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
-                " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                " WHERE id = $2::integer"
-                , Database::query_param_list(history_id)(keyset_id));
-
-            //object_registry historyid
-            ctx.get_conn().exec_params(
-                "UPDATE object_registry SET historyid = $1::bigint "
+                //object_history
+                ctx.get_conn().exec_params(
+                    "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
+                    " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
                     " WHERE id = $2::integer"
                     , Database::query_param_list(history_id)(keyset_id));
 
-            //keyset_history
-            ctx.get_conn().exec_params(
-                "INSERT INTO keyset_history(historyid,id) "
-                " SELECT $1::bigint, id FROM keyset "
-                " WHERE id = $2::integer"
-                , Database::query_param_list(history_id)(keyset_id));
+                //object_registry historyid
+                ctx.get_conn().exec_params(
+                    "UPDATE object_registry SET historyid = $1::bigint "
+                        " WHERE id = $2::integer"
+                        , Database::query_param_list(history_id)(keyset_id));
 
-            //dsrecord_history
-            ctx.get_conn().exec_params(
-                "INSERT INTO dsrecord_history(historyid, id, keysetid, keytag, alg, digesttype, digest, maxsiglife) "
-                " SELECT $1::bigint, id, keysetid, keytag, alg, digesttype, digest, maxsiglife FROM dsrecord "
-                " WHERE keysetid = $2::integer"
-                , Database::query_param_list(history_id)(keyset_id));
+                //keyset_history
+                ctx.get_conn().exec_params(
+                    "INSERT INTO keyset_history(historyid,id) "
+                    " SELECT $1::bigint, id FROM keyset "
+                    " WHERE id = $2::integer"
+                    , Database::query_param_list(history_id)(keyset_id));
 
-            //dnskey_history
-            ctx.get_conn().exec_params(
-                "INSERT INTO dnskey_history(historyid, id, keysetid, flags, protocol, alg, key) "
-                " SELECT $1::bigint, id, keysetid, flags, protocol, alg, key FROM dnskey "
-                " WHERE keysetid = $2::integer"
-                , Database::query_param_list(history_id)(keyset_id));
-
-            //keyset_contact_map_history
-            ctx.get_conn().exec_params(
-                "INSERT INTO keyset_contact_map_history(historyid,keysetid, contactid) "
-                " SELECT $1::bigint, keysetid, contactid FROM keyset_contact_map "
+                //dsrecord_history
+                ctx.get_conn().exec_params(
+                    "INSERT INTO dsrecord_history(historyid, id, keysetid, keytag, alg, digesttype, digest, maxsiglife) "
+                    " SELECT $1::bigint, id, keysetid, keytag, alg, digesttype, digest, maxsiglife FROM dsrecord "
                     " WHERE keysetid = $2::integer"
                     , Database::query_param_list(history_id)(keyset_id));
-        }//save history
+
+                //dnskey_history
+                ctx.get_conn().exec_params(
+                    "INSERT INTO dnskey_history(historyid, id, keysetid, flags, protocol, alg, key) "
+                    " SELECT $1::bigint, id, keysetid, flags, protocol, alg, key FROM dnskey "
+                    " WHERE keysetid = $2::integer"
+                    , Database::query_param_list(history_id)(keyset_id));
+
+                //keyset_contact_map_history
+                ctx.get_conn().exec_params(
+                    "INSERT INTO keyset_contact_map_history(historyid,keysetid, contactid) "
+                    " SELECT $1::bigint, keysetid, contactid FROM keyset_contact_map "
+                        " WHERE keysetid = $2::integer"
+                        , Database::query_param_list(history_id)(keyset_id));
+            }//save history
 
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<UpdateKeysetException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
         return history_id;
     }//UpdateKeyset::exec
+
+    std::ostream& operator<<(std::ostream& os, const UpdateKeyset& i)
+    {
+        os << "#UpdateKeyset handle: " << i.handle_
+            << " registrar: " << i.registrar_
+            << " authinfo: " << i.authinfo_.print_quoted();
+
+        if(!i.add_tech_contact_.empty()) os << " add_tech_contact: ";
+        for(std::vector<std::string>::const_iterator ci = i.add_tech_contact_.begin()
+                ; ci != i.add_tech_contact_.end() ; ++ci ) os << *ci;
+
+        if(!i.rem_tech_contact_.empty()) os << " rem_tech_contact: ";
+        for(std::vector<std::string>::const_iterator ci = i.rem_tech_contact_.begin()
+                ; ci != i.rem_tech_contact_.end() ; ++ci ) os << *ci;
+
+        if(!i.add_dns_key_.empty()) os << " add_dns_key: ";
+        for(std::vector<DnsKey>::const_iterator ci = i.add_dns_key_.begin()
+                ; ci != i.add_dns_key_.end() ; ++ci ) os << static_cast<std::string>(*ci);
+
+        if(!i.rem_dns_key_.empty()) os << " rem_dns_key: ";
+        for(std::vector<DnsKey>::const_iterator ci = i.rem_dns_key_.begin()
+                ; ci != i.rem_dns_key_.end() ; ++ci ) os << static_cast<std::string>(*ci);
+
+        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
+        return os;
+    }
+
+    std::string UpdateKeyset::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 
 }//namespace Fred

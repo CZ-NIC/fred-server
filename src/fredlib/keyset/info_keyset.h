@@ -70,8 +70,6 @@ namespace Fred
 
     public:
 
-        DECLARE_EXCEPTION_DATA(unknown_keyset_handle, std::string);
-
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_keyset_handle<Exception>

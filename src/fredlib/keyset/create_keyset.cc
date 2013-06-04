@@ -266,16 +266,6 @@ namespace Fred
         return timestamp;
     }
 
-    const std::string handle_;//keyset identifier
-    const std::string registrar_;//registrar identifier
-    Optional<std::string> authinfo_;//set authinfo
-    std::vector<DnsKey> dns_keys_; //dns keys to be set
-    std::vector<std::string> tech_contacts_; //tech contacts to be set
-    Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
-
-
-
-
     std::ostream& operator<<(std::ostream& os, const CreateKeyset& i)
     {
         os << "#CreateKeyset handle: " << i.handle_

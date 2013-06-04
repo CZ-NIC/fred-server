@@ -51,6 +51,21 @@ namespace Fred
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
 
     public:
+        DECLARE_EXCEPTION_DATA(unassigned_technical_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(already_set_dns_key, DnsKey);
+        DECLARE_EXCEPTION_DATA(unassigned_dns_key, DnsKey);
+
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_keyset_handle<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        , ExceptionData_unknown_technical_contact_handle<Exception>
+        , ExceptionData_already_set_technical_contact_handle<Exception>
+        , ExceptionData_unassigned_technical_contact_handle<Exception>
+        , ExceptionData_already_set_dns_key<Exception>
+        , ExceptionData_unassigned_dns_key<Exception>
+        {};
+
         UpdateKeyset(const std::string& handle
                 , const std::string& registrar);
         UpdateKeyset(const std::string& handle
@@ -69,38 +84,10 @@ namespace Fred
         UpdateKeyset& rem_dns_key(const DnsKey& dns_key);
         UpdateKeyset& set_logd_request_id(unsigned long long logd_request_id);
         unsigned long long exec(OperationContext& ctx);//return new history_id
+
+        friend std::ostream& operator<<(std::ostream& os, const UpdateKeyset& i);
+        std::string to_string();
     };//class UpdateKeyset
-
-    //exception impl
-    class UpdateKeysetException
-    : public OperationExceptionImpl<UpdateKeysetException, 8192>
-    {
-    public:
-        UpdateKeysetException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<UpdateKeysetException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"not found:handle"
-                    , "not found:registrar"
-                    , "not found:tech contact"
-                    , "already set:tech contact"
-                    , "invalid:tech contact"
-                    , "not found:dns key"
-                    , "invalid:dns key"
-                };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class UpdateKeysetException
-
-    typedef UpdateKeysetException::OperationErrorType UpdateKeysetError;
-#define UKEX(DATA) UpdateKeysetException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define UKERR(DATA) UpdateKeysetError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 
 }//namespace Fred
 
