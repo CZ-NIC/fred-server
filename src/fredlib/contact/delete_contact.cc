@@ -50,9 +50,13 @@ namespace Fred
                     " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                     , Database::query_param_list(handle_));
 
-                if (lock_res.size() != 1)
+                if (lock_res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
+                }
+                if (lock_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get contact"));
                 }
 
                 contact_id = lock_res[0][0];
