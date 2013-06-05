@@ -39,9 +39,6 @@
 #include "util/util.h"
 
 
-#define IKHEX(DATA) InfoKeysetHistoryException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define IKHERR(DATA) InfoKeysetHistoryError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 
 namespace Fred
 {
@@ -86,10 +83,15 @@ namespace Fred
                         "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
                     , Database::query_param_list(registrar_));
 
-                if (res.size() != 1)
+                if (res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
                 }
+                if (res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
+                }
+
             }
 
             //info about keyset history by roid and optional history timestamp

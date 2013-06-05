@@ -76,30 +76,6 @@ namespace Fred
         std::string to_string();
     };//class InfoKeysetHistory
 
-//exception impl
-    class InfoKeysetHistoryException
-    : public OperationExceptionImpl<InfoKeysetHistoryException, 8192>
-    {
-    public:
-        InfoKeysetHistoryException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<InfoKeysetHistoryException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                    "not found:roid"
-                    , "not found:registrar"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class InfoKeysetHistoryException
-
-    typedef InfoKeysetHistoryException::OperationErrorType InfoKeysetHistoryError;
-
 }//namespace Fred
 
 #endif//INFO_KEYSET_HISTORY_H_
