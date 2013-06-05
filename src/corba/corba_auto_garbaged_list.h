@@ -59,6 +59,8 @@ public:
         while (scavenger_thread_active_)
         {
             try {
+                boost::this_thread::sleep(scavenger_thread_interval_);
+
                 Logging::Context ctx(name_);
                 LOGGER(PACKAGE).debug("AutoGarbageList::scavenger: iteration started");
                 {
@@ -109,7 +111,6 @@ public:
                 }
                 catch (...) { }
             }
-            boost::this_thread::sleep(scavenger_thread_interval_);
         }
 
     }
