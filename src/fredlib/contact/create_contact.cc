@@ -282,10 +282,15 @@ namespace Fred
                 Database::Result registrar_res = ctx.get_conn().exec_params(
                     "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
                     , Database::query_param_list(registrar_));
-                if(registrar_res.size() != 1)
+                if(registrar_res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
                 }
+                if (registrar_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
+                }
+
             }
 
             unsigned long long object_id = CreateObject("contact", handle_, registrar_, authinfo_).exec(ctx);
@@ -297,10 +302,15 @@ namespace Fred
                     Database::Result ssntype_res = ctx.get_conn().exec_params(
                         "SELECT id FROM enum_ssntype WHERE type = UPPER($1::text) FOR SHARE"
                         , Database::query_param_list(ssntype_.get_value()));
-                    if(ssntype_res.size() != 1)
+                    if(ssntype_res.size() == 0)
                     {
                         BOOST_THROW_EXCEPTION(Exception().set_unknown_ssntype(ssntype_.get_value()));
                     }
+                    if(ssntype_res.size() != 1)
+                    {
+                        BOOST_THROW_EXCEPTION(InternalError("failed to get ssntype"));
+                    }
+
                     ssntype_id = static_cast<unsigned long long>(ssntype_res[0][0]);
                 }
 
