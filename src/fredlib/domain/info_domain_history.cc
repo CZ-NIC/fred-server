@@ -74,24 +74,6 @@ namespace Fred
 
         try
         {
-            //check roid and lock object_registry row for update if set
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                    std::string("SELECT id FROM object_registry WHERE roid = $1::text "
-                    " AND type = ( SELECT id FROM enum_object_type eot "
-                    " WHERE eot.name='domain'::text) ")
-                    + (lock_ ? std::string(" FOR UPDATE") : std::string(""))
-                    , Database::query_param_list(roid_));
-
-                if (res.size() != 1)
-                {
-                    std::string errmsg("|| not found:roid: ");
-                    errmsg += boost::replace_all_copy(roid_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw IDHEX(errmsg.c_str());
-                }
-            }
-
             //check registrar exists
             //TODO: check registrar access
             {
@@ -99,9 +81,13 @@ namespace Fred
                         "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
                     , Database::query_param_list(registrar_));
 
-                if (res.size() != 1)
+                if (res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+                if (res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
             }
 

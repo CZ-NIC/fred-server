@@ -77,32 +77,6 @@ namespace Fred
 
     };//class InfoDomainHistory
 
-//exception impl
-    class InfoDomainHistoryException
-    : public OperationExceptionImpl<InfoDomainHistoryException, 8192>
-    {
-    public:
-        InfoDomainHistoryException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<InfoDomainHistoryException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                    "not found:roid"
-                    , "not found:registrar"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class InfoDomainHistoryException
-
-    typedef InfoDomainHistoryException::OperationErrorType InfoDomainHistoryError;
-#define IDHEX(DATA) InfoDomainHistoryException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define IDHERR(DATA) InfoDomainHistoryError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 }//namespace Fred
 
 #endif//INFO_DOMAIN_HISTORY_H_
