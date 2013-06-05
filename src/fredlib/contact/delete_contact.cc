@@ -73,20 +73,33 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_object_linked_to_contact_handle(handle_));
             }
 
-            ctx.get_conn().exec_params(
+            Database::Result update_erdate_res = ctx.get_conn().exec_params(
                 "UPDATE object_registry SET erdate = now() "
-                " WHERE id = $1::integer"
+                " WHERE id = $1::integer RETURNING id"
                 , Database::query_param_list(contact_id));
+            if (update_erdate_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("erdate update failed"));
+            }
 
-            ctx.get_conn().exec_params(
+            Database::Result delete_contact_res = ctx.get_conn().exec_params(
                 "DELETE FROM contact "
-                    " WHERE id = $1::integer"
+                    " WHERE id = $1::integer RETURNING id"
                     , Database::query_param_list(contact_id));
+            if (delete_contact_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("delete contact failed"));
+            }
 
-            ctx.get_conn().exec_params(
+            Database::Result delete_object_res = ctx.get_conn().exec_params(
                 "DELETE FROM object "
-                    " WHERE id = $1::integer"
+                    " WHERE id = $1::integer RETURNING id"
                     , Database::query_param_list(contact_id));
+            if (delete_object_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("delete object failed"));
+            }
+
         }//try
         catch(ExceptionStack& ex)
         {
