@@ -66,9 +66,13 @@ namespace Fred
                         "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
                     , Database::query_param_list(registrar_));
 
-                if (res.size() != 1)
+                if (res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+                if (res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
             }
 
@@ -116,9 +120,13 @@ namespace Fred
                 + (lock_ ? std::string(" FOR UPDATE OF dobr") : std::string(""))
                 , Database::query_param_list(local_timestamp_pg_time_zone_name)(fqdn_));
 
-                if (res.size() != 1)
+                if (res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_domain_fqdn(fqdn_));
+                }
+                if (res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get domain"));
                 }
 
                 domain_id = static_cast<unsigned long long>(res[0][0]);//dobr.id
