@@ -81,9 +81,13 @@ namespace Fred
                         "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
                     , Database::query_param_list(registrar_));
 
-                if (res.size() != 1)
+                if (res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+                if (res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
             }
 
