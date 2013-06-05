@@ -129,9 +129,13 @@ namespace Fred
                 Database::Result registrar_res = ctx.get_conn().exec_params(
                     "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
                     , Database::query_param_list(registrar_));
-                if(registrar_res.size() != 1)
+                if(registrar_res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+                if (registrar_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
             }
             //zone
@@ -229,9 +233,13 @@ namespace Fred
                     " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                     , Database::query_param_list(registrant_));
 
-                if (registrant_res.size() != 1)
+                if (registrant_res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrant_handle(registrant_));
+                }
+                if (registrant_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrant"));
                 }
 
                 registrant_id = static_cast<unsigned long long>(registrant_res[0][0]);
@@ -289,10 +297,15 @@ namespace Fred
                                 " WHERE eot.name = 'nsset' FOR UPDATE OF oreg"
                                 , Database::query_param_list(new_nsset_value));
 
-                            if (lock_nsset_res.size() != 1)
+                            if (lock_nsset_res.size() == 0)
                             {
                                 BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(new_nsset_value));
                             }
+                            if (lock_nsset_res.size() != 1)
+                            {
+                                BOOST_THROW_EXCEPTION(InternalError("failed to get nsset"));
+                            }
+
                             nsset_id = static_cast<unsigned long long>(lock_nsset_res[0][0]);
 
                             params.push_back(nsset_id);//id
@@ -324,10 +337,15 @@ namespace Fred
                                 " WHERE eot.name = 'keyset' FOR UPDATE OF oreg"
                                 , Database::query_param_list(new_keyset_value));
 
-                            if (lock_keyset_res.size() != 1)
+                            if (lock_keyset_res.size() == 0)
                             {
                                 BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(new_keyset_value));
                             }
+                            if (lock_keyset_res.size() != 1)
+                            {
+                                BOOST_THROW_EXCEPTION(InternalError("failed to get keyset"));
+                            }
+
                             keyset_id = static_cast<unsigned long long>(lock_keyset_res[0][0]);
 
                             params.push_back(keyset_id);//id
@@ -364,9 +382,13 @@ namespace Fred
                                 " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                                 , Database::query_param_list(*i));
 
-                            if (lock_res.size() != 1)
+                            if (lock_res.size() == 0)
                             {
                                 BOOST_THROW_EXCEPTION(Exception().set_unknown_admin_contact_handle(*i));
+                            }
+                            if (lock_res.size() != 1)
+                            {
+                                BOOST_THROW_EXCEPTION(InternalError("failed to get admin contact"));
                             }
 
                             admin_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
@@ -377,26 +399,19 @@ namespace Fred
                         sql_i << sql.str();
 
                         params_i.push_back(admin_contact_id);
+                        sql_i << " $" << params_i.size() << "::integer)";
 
-                        {//precheck uniqueness
-                            Database::Result domain_add_check_res = ctx.get_conn().exec_params(
-                            "SELECT domainid, contactid FROM domain_contact_map "
-                            " WHERE domainid = $1::bigint "
-                            "  AND contactid = $2::bigint "
-                            , params_i);
-
-                            if (domain_add_check_res.size() == 1)
-                            {
-                                BOOST_THROW_EXCEPTION(Exception().set_already_set_admin_contact_handle(*i));
-                            }
-                        }
-
-                        sql_i << " $" << params_i.size() << "::integer)"
-                            " RETURNING domainid";
-                        Database::Result domain_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
-                        if (domain_add_check_res.size() != 1)
+                        try
                         {
-                            BOOST_THROW_EXCEPTION(Exception().set_already_set_admin_contact_handle(*i));
+                            ctx.get_conn().exec_params(sql_i.str(), params_i);
+                        }
+                        catch(const std::exception& ex)
+                        {
+                            std::string what_string(ex.what());
+                            if(what_string.find("domain_contact_map_pkey") != std::string::npos)
+                                BOOST_THROW_EXCEPTION(Exception().set_already_set_admin_contact_handle(*i));
+                            else
+                                throw;
                         }
                     }//for i
                 }//if admin contacts
