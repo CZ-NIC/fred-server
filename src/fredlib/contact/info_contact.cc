@@ -66,10 +66,15 @@ namespace Fred
                         "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
                     , Database::query_param_list(registrar_));
 
-                if (res.size() != 1)
+                if (res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
                 }
+                if (res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
+                }
+
             }
 
             //info about contact and optionally lock object_registry row for update
@@ -103,9 +108,13 @@ namespace Fred
                 + (lock_ ? std::string(" FOR UPDATE OF cobr") : std::string(""))
                 , Database::query_param_list(local_timestamp_pg_time_zone_name)(handle_));
 
-                if (res.size() != 1)
+                if (res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
+                }
+                if (res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get contact"));
                 }
 
                 contact_info_output.utc_timestamp = res[0][0].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
