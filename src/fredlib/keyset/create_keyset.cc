@@ -97,9 +97,13 @@ namespace Fred
                 Database::Result registrar_res = ctx.get_conn().exec_params(
                     "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
                     , Database::query_param_list(registrar_));
-                if(registrar_res.size() != 1)
+                if(registrar_res.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+                if (registrar_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
             }
 
@@ -122,9 +126,13 @@ namespace Fred
                             ", $2::integer, $3::integer, $4::integer, $5::text) RETURNING id"
                             , Database::query_param_list(object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
                         }
-                        catch(const std::exception&)
+                        catch(const std::exception& ex)
                         {
-                            BOOST_THROW_EXCEPTION(Exception().set_already_set_dns_key(*i));
+                            std::string what_string(ex.what());
+                            if(what_string.find("dnskey_unique_key") != std::string::npos)
+                                BOOST_THROW_EXCEPTION(Exception().set_already_set_dns_key(*i));
+                            else
+                                throw;
                         }
                     }//for i
                 }//if set dns keys
@@ -153,9 +161,13 @@ namespace Fred
                                 " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                                 , Database::query_param_list(*i));
 
-                            if (lock_res.size() != 1)
+                            if (lock_res.size() == 0)
                             {
                                 BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                            }
+                            if (lock_res.size() != 1)
+                            {
+                                BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
                             }
                             tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
                         }
@@ -165,27 +177,19 @@ namespace Fred
                         sql_i << sql.str();
 
                         params_i.push_back(tech_contact_id);
+                        sql_i << " $" << params_i.size() << "::integer) ";
 
-                        {//precheck uniqueness
-                            Database::Result keyset_res = ctx.get_conn().exec_params(
-                            "SELECT keysetid, contactid FROM keyset_contact_map "
-                            " WHERE keysetid = $1::bigint "
-                            "  AND contactid = $2::bigint "
-                            , params_i);
-
-                            if (keyset_res.size() == 1)
-                            {
-                                BOOST_THROW_EXCEPTION(Exception().set_already_set_technical_contact_handle(*i));
-                            }
-                        }
-
-                        sql_i << " $" << params_i.size() << "::integer) "
-                            " RETURNING keysetid";
-
-                        Database::Result keyset_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
-                        if (keyset_add_check_res.size() != 1)
+                        try
                         {
-                            BOOST_THROW_EXCEPTION(Exception().set_already_set_technical_contact_handle(*i));
+                            ctx.get_conn().exec_params(sql_i.str(), params_i);
+                        }
+                        catch(const std::exception& ex)
+                        {
+                            std::string what_string(ex.what());
+                            if(what_string.find("keyset_contact_map_pkey") != std::string::npos)
+                                BOOST_THROW_EXCEPTION(Exception().set_already_set_technical_contact_handle(*i));
+                            else
+                                throw;
                         }
                     }//for i
                 }//if set tech contacts
@@ -258,7 +262,6 @@ namespace Fred
                         , Database::query_param_list(history_id)(object_id));
 
             }//save history
-
 
         }//try
         catch(ExceptionStack& ex)
