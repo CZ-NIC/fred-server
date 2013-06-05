@@ -143,16 +143,20 @@ namespace Fred
                 {
                     for(std::vector<DnsHost>::iterator i = dns_hosts_.begin(); i != dns_hosts_.end(); ++i)
                     {
-                        Database::Result add_host_id_res = ctx.get_conn().exec_params(
+                        unsigned long long add_host_id = 0;
+                        try
+                        {
+                            Database::Result add_host_id_res = ctx.get_conn().exec_params(
                             "INSERT INTO host (nssetid, fqdn) VALUES( "
                             " $1::integer, LOWER($2::text)) RETURNING id"
                             , Database::query_param_list(object_id)(i->get_fqdn()));
-                        if(add_host_id_res.size() != 1)
+
+                            add_host_id = static_cast<unsigned long long>(add_host_id_res[0][0]);
+                        }
+                        catch(const std::exception&)
                         {
                             BOOST_THROW_EXCEPTION(Exception().set_already_set_dns_host(i->get_fqdn()));
                         }
-
-                        unsigned long long add_host_id = add_host_id_res[0][0];
 
                         std::vector<std::string> dns_host_ip = i->get_inet_addr();
 
@@ -266,7 +270,6 @@ namespace Fred
                 {
                     BOOST_THROW_EXCEPTION(Fred::InternalError("update historyid failed"));
                 }
-
 
                 //nsset_history
                 ctx.get_conn().exec_params(
