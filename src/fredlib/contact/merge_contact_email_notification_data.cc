@@ -247,10 +247,14 @@ namespace Fred
                     " WHERE oreg.roid = $1::text"
                 , Database::query_param_list(ci->dst_contact_roid));
 
-                if(email_result.size() != 1)
+                if(email_result.size() == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_invalid_registry_object_identifier(
                             ci->dst_contact_roid));
+                }
+                if(email_result.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get destination contact email"));
                 }
 
                 MergeContactNotificationEmailWithAddr email_with_addr;
