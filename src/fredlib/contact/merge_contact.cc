@@ -67,9 +67,13 @@ namespace Fred
                 " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(src_contact_handle_));
 
-            if (lock_res.size() != 1)
+            if (lock_res.size() == 0)
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_source_contact_handle(src_contact_handle_));
+            }
+            if (lock_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("failed to get source contact"));
             }
 
             ret.src_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
@@ -88,9 +92,13 @@ namespace Fred
                         " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(dst_contact_handle_));
 
-            if (lock_res.size() != 1)
+            if (lock_res.size() == 0)
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_destination_contact_handle(dst_contact_handle_));
+            }
+            if (lock_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("failed to get destination contact"));
             }
 
             ret.dst_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
