@@ -81,7 +81,7 @@ namespace Fred
             result_update_registrar_handle = (boost::algorithm::to_upper_copy(std::string(update_registrar_handle))
             .compare(boost::algorithm::to_upper_copy(std::string(rhs.update_registrar_handle))) == 0);
         }
-        if(print_diff_ && !result_update_registrar_handle) std::cout << "update_registrar_handle: " << std::string(update_registrar_handle) << " != "<< std::string(rhs.update_registrar_handle) << std::endl;
+        if(print_diff_ && !result_update_registrar_handle) std::cout << "update_registrar_handle: " <<update_registrar_handle.print_quoted() << " != "<< rhs.update_registrar_handle.print_quoted() << std::endl;
 
 
         bool result_update_time = (update_time.isnull() == rhs.update_time.isnull());
@@ -89,21 +89,21 @@ namespace Fred
         {
             result_update_time = (boost::posix_time::ptime(update_time) == boost::posix_time::ptime(rhs.update_time));
         }
-        if(print_diff_ && !result_update_time) std::cout << "update_time: " << update_time << " != "<< rhs.update_time << std::endl;
+        if(print_diff_ && !result_update_time) std::cout << "update_time: " << update_time.print_quoted() << " != "<< rhs.update_time.print_quoted() << std::endl;
 
         bool result_transfer_time = (transfer_time.isnull() == rhs.transfer_time.isnull());
         if(!transfer_time.isnull() && !rhs.transfer_time.isnull())
         {
             result_transfer_time = (boost::posix_time::ptime(transfer_time) == boost::posix_time::ptime(rhs.transfer_time));
         }
-        if(print_diff_ && !result_transfer_time) std::cout << "transfer_time: " << transfer_time << " != "<< rhs.transfer_time << std::endl;
+        if(print_diff_ && !result_transfer_time) std::cout << "transfer_time: " << transfer_time.print_quoted() << " != "<< rhs.transfer_time.print_quoted() << std::endl;
 
         bool result_tech_check_level = (tech_check_level.isnull() == rhs.tech_check_level.isnull());
         if(!tech_check_level.isnull() && !rhs.tech_check_level.isnull())
         {
             result_tech_check_level = (tech_check_level == tech_check_level);
         }
-        if(print_diff_ && !result_tech_check_level) std::cout << "tech_check_level: " << tech_check_level << " != "<< rhs.tech_check_level << std::endl;
+        if(print_diff_ && !result_tech_check_level) std::cout << "tech_check_level: " << tech_check_level.print_quoted() << " != "<< rhs.tech_check_level.print_quoted() << std::endl;
 
         std::set<std::string> lhs_dns_hosts;
         for(std::vector<std::string>::size_type i = 0
@@ -180,7 +180,7 @@ namespace Fred
         {
             result_delete_time = (boost::posix_time::ptime(delete_time) == boost::posix_time::ptime(rhs.delete_time));
         }
-        if(print_diff_ && !result_delete_time) std::cout << "delete_time: " << delete_time << " != "<< rhs.delete_time << std::endl;
+        if(print_diff_ && !result_delete_time) std::cout << "delete_time: " << delete_time.print_quoted() << " != "<< rhs.delete_time.print_quoted() << std::endl;
 
         return  result_roid
                 && result_handle
