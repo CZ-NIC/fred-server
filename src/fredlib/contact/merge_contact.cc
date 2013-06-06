@@ -298,13 +298,11 @@ namespace Fred
                         if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
                         tmp.history_id = un.exec(ctx);
                     }
-                    catch(UpdateNssetException& ex)
+                    catch(UpdateNsset::Exception& ex)
                     {
-                        GetOperationExceptionParamsDataToBoolCallback cb;
                         //look for already set: tech contact
-                        ex.callback_exception_params(boost::ref(cb),"already set:tech contact");
                         //if found ignore exception, if not found rethrow exception
-                        if(cb.get())
+                        if(ex.is_set_already_set_technical_contact_handle())
                         {
                             //only remove source tech contact, dest tech contact is already there
                             UpdateNsset un(tmp.handle, registrar_ );

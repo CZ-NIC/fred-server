@@ -49,6 +49,23 @@ namespace Fred
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
 
     public:
+        DECLARE_EXCEPTION_DATA(unassigned_technical_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(already_set_dns_host, std::string);
+        DECLARE_EXCEPTION_DATA(unassigned_dns_host, std::string);
+        DECLARE_EXCEPTION_DATA(invalid_dns_host_ipaddr, std::string);
+
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_nsset_handle<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        , ExceptionData_unknown_technical_contact_handle<Exception>
+        , ExceptionData_already_set_technical_contact_handle<Exception>
+        , ExceptionData_unassigned_technical_contact_handle<Exception>
+        , ExceptionData_already_set_dns_host<Exception>
+        , ExceptionData_unassigned_dns_host<Exception>
+        , ExceptionData_invalid_dns_host_ipaddr<Exception>
+        {};
+
         UpdateNsset(const std::string& handle
                 , const std::string& registrar);
         UpdateNsset(const std::string& handle
@@ -69,38 +86,10 @@ namespace Fred
         UpdateNsset& set_tech_check_level(short tech_check_level);
         UpdateNsset& set_logd_request_id(unsigned long long logd_request_id);
         unsigned long long exec(OperationContext& ctx);//return new history_id
+
+        friend std::ostream& operator<<(std::ostream& os, const UpdateNsset& i);
+        std::string to_string();
     };//class UpdateNsset
-
-    //exception impl
-    class UpdateNssetException
-    : public OperationExceptionImpl<UpdateNssetException, 8192>
-    {
-    public:
-        UpdateNssetException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<UpdateNssetException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"not found:handle"
-                    , "not found:registrar"
-                    , "not found:tech contact"
-                    , "not found:dns fqdn"
-                    , "invalid:dns fqdn"
-                    , "invalid:handle"
-                    , "already set:tech contact"
-                    , "invalid:tech contact"
-                    , "invalid:ipaddr"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class UpdateNssetException
-
-    typedef UpdateNssetException::OperationErrorType UpdateNssetError;
-#define UNEX(DATA) UpdateNssetException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define UNERR(DATA) UpdateNssetError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 

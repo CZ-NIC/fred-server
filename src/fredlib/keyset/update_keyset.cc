@@ -184,8 +184,7 @@ namespace Fred
 
                     params_i.push_back(tech_contact_id);
 
-                    sql_i << " $" << params_i.size() << "::integer) "
-                            " RETURNING keysetid";
+                    sql_i << " $" << params_i.size() << "::integer) ";
 
                     try
                     {

@@ -113,21 +113,18 @@ namespace Fred
         try
         {
 
-        //lock object_registry row for update
+        //check registrar
         {
-            Database::Result lock_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM enum_object_type eot"
-                " JOIN object_registry oreg ON oreg.type = eot.id "
-                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                " WHERE eot.name = 'nsset' FOR UPDATE OF oreg"
-                , Database::query_param_list(handle_));
-
-            if (lock_res.size() != 1)
+            Database::Result registrar_res = ctx.get_conn().exec_params(
+                "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                , Database::query_param_list(registrar_));
+            if(registrar_res.size() == 0)
             {
-                std::string errmsg("unable to lock || not found:handle: ");
-                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw UNEX(errmsg.c_str());
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+            }
+            if (registrar_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
             }
         }
 
@@ -137,18 +134,20 @@ namespace Fred
             Database::Result nsset_id_res = ctx.get_conn().exec_params(
                 "SELECT oreg.id FROM nsset n "
                 " JOIN object_registry oreg ON n.id = oreg.id "
-                " WHERE oreg.name = UPPER($1::text) AND oreg.erdate IS NULL"
+                " JOIN enum_object_type eot ON eot.id = oreg.type "
+                " WHERE eot.name = 'nsset' AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                " FOR UPDATE OF oreg "
                 , Database::query_param_list(handle_));
 
+            if (nsset_id_res.size() == 0)
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(handle_));
+            }
             if (nsset_id_res.size() != 1)
             {
-                std::string errmsg("|| not found:handle: ");
-                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw UNEX(errmsg.c_str());
+                BOOST_THROW_EXCEPTION(InternalError("failed to get nsset"));
             }
-
-            nsset_id = nsset_id_res[0][0];
+            nsset_id = static_cast<unsigned long long>(nsset_id_res[0][0]);
         }
 
 
@@ -158,10 +157,14 @@ namespace Fred
         //update nsset tech check level
         if(tech_check_level_.isset() && tech_check_level_.get_value() >= 0)
         {
-            ctx.get_conn().exec_params(
+            Database::Result update_checklevel_res = ctx.get_conn().exec_params(
                 "UPDATE nsset SET checklevel = $1::smallint "
-                " WHERE id = $2::integer"
+                " WHERE id = $2::integer RETURNING id"
                 , Database::query_param_list(tech_check_level_.get_value())(nsset_id));
+            if(update_checklevel_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("failed to update checklevel"));
+            }
         }//update nsset tech check level
 
         //add tech contacts
@@ -177,64 +180,47 @@ namespace Fred
             for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
             {
                 //lock object_registry row for update
+                unsigned long long tech_contact_id = 0;
                 {
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " JOIN contact c ON oreg.id = c.id "
                         " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                         , Database::query_param_list(*i));
 
+                    if (lock_res.size() == 0)
+                    {
+                        BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                    }
                     if (lock_res.size() != 1)
                     {
-                        std::string errmsg("unable to lock || not found:tech contact: ");
-                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UNEX(errmsg.c_str());
+                        BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
                     }
+                    tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
                 }
 
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
                 sql_i << sql.str();
 
-                params_i.push_back(*i);
+                params_i.push_back(tech_contact_id);
+                sql_i << " $" << params_i.size() << "::integer) ";
 
-                {//precheck uniqueness
-                    Database::Result nsset_res = ctx.get_conn().exec_params(
-                    "SELECT nssetid, contactid FROM nsset_contact_map "
-                    " WHERE nssetid = $1::bigint "
-                    "  AND contactid = raise_exception_ifnull("
-                    "    (SELECT oreg.id FROM object_registry oreg "
-                    "       JOIN contact c ON oreg.id = c.id "
-                    "     WHERE oreg.name = UPPER($2::text) AND oreg.erdate IS NULL) "
-                    "     ,'|| not found:tech contact: '||ex_data($2::text)||' |')"
-                    , params_i);
-
-                    if (nsset_res.size() == 1)
-                    {
-                        std::string errmsg("add tech contact precheck uniqueness failed || already set:tech contact: ");
-                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UNEX(errmsg.c_str());
-                    }
-                }
-
-                sql_i << " raise_exception_ifnull("
-                    " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                    " WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL) "
-                    " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |')) "
-                    " RETURNING nssetid";
-                Database::Result nsset_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
-                if (nsset_add_check_res.size() != 1)
+                try
                 {
-                    std::string errmsg("add tech contact failed || invalid:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " | invalid:tech contact: ";
-                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UNEX(errmsg.c_str());
+                    ctx.get_conn().exec_params(sql_i.str(), params_i);
                 }
+                catch(const std::exception& ex)
+                {
+                    std::string what_string(ex.what());
+                    if(what_string.find("nsset_contact_map_pkey") != std::string::npos)
+                        BOOST_THROW_EXCEPTION(Exception().set_already_set_technical_contact_handle(*i));
+                    else
+                        throw;
+                }
+
             }//for i
         }//if add tech contacts
 
@@ -250,40 +236,43 @@ namespace Fred
             for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
             {
                 //lock object_registry row for update
+                unsigned long long tech_contact_id = 0;
                 {
                     Database::Result lock_res = ctx.get_conn().exec_params(
                         "SELECT oreg.id FROM enum_object_type eot"
                         " JOIN object_registry oreg ON oreg.type = eot.id "
+                        " JOIN contact c ON oreg.id = c.id "
                         " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
                         " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                         , Database::query_param_list(*i));
 
+                    if (lock_res.size() == 0)
+                    {
+                        BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                    }
                     if (lock_res.size() != 1)
                     {
-                        std::string errmsg("unable to lock || not found:tech contact: ");
-                        errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UNEX(errmsg.c_str());
+                        BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
                     }
+                    tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
                 }
 
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
                 sql_i << sql.str();
 
-                params_i.push_back(*i);
-                sql_i << "contactid = raise_exception_ifnull( "
-                    " (SELECT oreg.id FROM object_registry oreg "
-                    " JOIN contact c ON oreg.id = c.id WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL) "
-                    " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |') "
-                    " RETURNING nssetid";
+                params_i.push_back(tech_contact_id);
+                sql_i << "contactid = $" << params_i.size() << "::integer "
+                        " RETURNING nssetid";
+
                 Database::Result nsset_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
+                if (nsset_del_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unassigned_technical_contact_handle(*i));
+                }
                 if (nsset_del_res.size() != 1)
                 {
-                    std::string errmsg("delete tech contact failed || invalid:tech contact: ");
-                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UNEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(InternalError("failed to delete technical contact"));
                 }
             }//for i
         }//if delete tech contacts
@@ -298,12 +287,13 @@ namespace Fred
                     " nssetid = $2::integer RETURNING id "
                     , Database::query_param_list(*i)(nsset_id));
 
+                if (rem_host_id_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unassigned_dns_host(*i));
+                }
                 if (rem_host_id_res.size() != 1)
                 {
-                    std::string errmsg("delete dns hosts || not found:dns fqdn: ");
-                    errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UNEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(InternalError("failed to delete DNS host"));
                 }
 
                 unsigned long long rem_host_id = rem_host_id_res[0][0];
@@ -318,35 +308,23 @@ namespace Fred
         {
             for(std::vector<DnsHost>::iterator i = add_dns_.begin(); i != add_dns_.end(); ++i)
             {
-                {//precheck uniqueness
-                    Database::Result nsset_res = ctx.get_conn().exec_params(
-                    "SELECT nssetid, fqdn FROM host "
-                    " WHERE nssetid = $1::bigint "
-                    "  AND fqdn = LOWER($2::text) "
-                    , Database::query_param_list(nsset_id)(i->get_fqdn()));
-
-                    if (nsset_res.size() == 1)
-                    {
-                        std::string errmsg("dns host precheck uniqueness failed || invalid:dns fqdn: ");
-                        errmsg += boost::replace_all_copy(i->get_fqdn(),"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw UNEX(errmsg.c_str());
-                    }
-                }
-
-                Database::Result add_host_id_res = ctx.get_conn().exec_params(
-                    "INSERT INTO host (nssetid, fqdn) VALUES( "
-                    " $1::integer, LOWER($2::text)) RETURNING id"
-                    , Database::query_param_list(nsset_id)(i->get_fqdn()));
-                if(add_host_id_res.size() != 1)
+                unsigned long long add_host_id = 0;
+                try
                 {
-                    std::string errmsg("add dns hosts || invalid:dns fqdn: ");
-                    errmsg += boost::replace_all_copy(i->get_fqdn(),"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UNEX(errmsg.c_str());
+                    Database::Result add_host_id_res = ctx.get_conn().exec_params(
+                        "INSERT INTO host (nssetid, fqdn) VALUES( "
+                        " $1::integer, LOWER($2::text)) RETURNING id"
+                        , Database::query_param_list(nsset_id)(i->get_fqdn()));
+                    add_host_id = static_cast<unsigned long long>(add_host_id_res[0][0]);
                 }
-
-                unsigned long long add_host_id = add_host_id_res[0][0];
+                catch(const std::exception& ex)
+                {
+                    std::string what_string(ex.what());
+                    if(what_string.find("host_nssetid_key") != std::string::npos)
+                        BOOST_THROW_EXCEPTION(Exception().set_already_set_dns_host(i->get_fqdn()));
+                    else
+                        throw;
+                }
 
                 std::vector<std::string> dns_host_ip = i->get_inet_addr();
 
@@ -359,14 +337,14 @@ namespace Fred
                          " VALUES($1::integer, $2::integer, $3::inet) RETURNING hostid"
                          , Database::query_param_list(add_host_id)(nsset_id)(*j));
                      }
-                     catch(Database::ResultFailed& ex)
-                     {
-                         std::string errmsg = ex.what();
-                         errmsg +=" || invalid:ipaddr: ";
-                         errmsg += boost::replace_all_copy(*j,"|", "[pipe]");//quote pipes
-                         errmsg += " |";
-                         throw UNEX(errmsg.c_str());
-                     }
+                    catch(const std::exception& ex)
+                    {
+                        std::string what_string(ex.what());
+                        if(what_string.find("syntax for type inet") != std::string::npos)
+                            BOOST_THROW_EXCEPTION(Exception().set_invalid_dns_host_ipaddr(*j));
+                        else
+                            throw;
+                    }
                 }//for j
             }//for i
         }//if add dns hosts
@@ -383,10 +361,15 @@ namespace Fred
                 , Database::query_param_list(history_id)(nsset_id));
 
             //object_registry historyid
-            ctx.get_conn().exec_params(
+            Database::Result update_historyid_res = ctx.get_conn().exec_params(
                 "UPDATE object_registry SET historyid = $1::bigint "
-                    " WHERE id = $2::integer"
+                    " WHERE id = $2::integer  RETURNING id"
                     , Database::query_param_list(history_id)(nsset_id));
+            if (update_historyid_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("update historyid failed"));
+            }
+
 
             //nsset_history
             ctx.get_conn().exec_params(
@@ -418,12 +401,49 @@ namespace Fred
         }//save history
 
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<UpdateNssetException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
+
         return history_id;
     }//UpdateNsset::exec
+
+    std::ostream& operator<<(std::ostream& os, const UpdateNsset& i)
+    {
+        os << "#UpdateNsset handle: " << i.handle_
+            << " registrar: " << i.registrar_
+            << " authinfo: " << i.authinfo_.print_quoted();
+
+        if(!i.add_dns_.empty()) os << " add_dns_host: ";
+        for(std::vector<DnsHost>::const_iterator ci = i.add_dns_.begin()
+                ; ci != i.add_dns_.end() ; ++ci ) os << static_cast<std::string>(*ci);
+
+        if(!i.rem_dns_.empty()) os << " rem_dns_key: ";
+        for(std::vector<std::string>::const_iterator ci = i.rem_dns_.begin()
+                ; ci != i.rem_dns_.end() ; ++ci ) os << static_cast<std::string>(*ci);
+
+        if(!i.add_tech_contact_.empty()) os << " add_tech_contact: ";
+        for(std::vector<std::string>::const_iterator ci = i.add_tech_contact_.begin()
+                ; ci != i.add_tech_contact_.end() ; ++ci ) os << *ci;
+
+        if(!i.rem_tech_contact_.empty()) os << " rem_tech_contact: ";
+        for(std::vector<std::string>::const_iterator ci = i.rem_tech_contact_.begin()
+                ; ci != i.rem_tech_contact_.end() ; ++ci ) os << *ci;
+
+        os << " tech_check_level: " << i.tech_check_level_.print_quoted()
+        << " logd_request_id: " << i.logd_request_id_.print_quoted();
+        return os;
+    }
+
+    std::string UpdateNsset::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
+
 
 }//namespace Fred
 
