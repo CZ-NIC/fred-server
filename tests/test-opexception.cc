@@ -242,7 +242,11 @@ BOOST_AUTO_TEST_CASE(throwInternalError)
     , check_std_exception);
 }
 
-
+BOOST_AUTO_TEST_CASE(substring)
+{
+    BOOST_CHECK(std::string("aaabbbccc").find("abc") == std::string::npos);
+    BOOST_CHECK(std::string("aaababcbbccc").find("abc") != std::string::npos);
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestOperationException
 
