@@ -79,7 +79,7 @@ namespace Fred
             //info about keyset
             unsigned long long keyset_id = 0;
             {
-                Database::Result res = ctx.get_conn().exec_params(
+                Database::Result res = ctx.get_conn().exec_params(std::string(
                 "SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp " // utc timestamp 0
                 " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp " // local zone timestamp 1
                 " , kobr.crhistoryid "//first historyid 2
@@ -98,7 +98,7 @@ namespace Fred
                 " JOIN registrar crr ON crr.id = kobr.crid "
                 " LEFT JOIN registrar upr ON upr.id = o.upid "
                 " WHERE kobr.name=UPPER($2::text) AND kobr.erdate IS NULL "
-                " AND kobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text)"
+                " AND kobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text)")
                 + (lock_ ? std::string(" FOR UPDATE OF kobr") : std::string(""))
                 , Database::query_param_list(local_timestamp_pg_time_zone_name)(handle_));
 
