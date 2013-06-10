@@ -331,12 +331,12 @@ namespace Fred
                 for(std::vector<std::string>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
                 {
                     try
-                     {
-                         Database::Result add_host_ipaddr_res = ctx.get_conn().exec_params(
-                         "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
-                         " VALUES($1::integer, $2::integer, $3::inet) RETURNING hostid"
-                         , Database::query_param_list(add_host_id)(nsset_id)(*j));
-                     }
+                    {
+                        ctx.get_conn().exec_params(
+                        "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
+                        " VALUES($1::integer, $2::integer, $3::inet)"
+                        , Database::query_param_list(add_host_id)(nsset_id)(*j));
+                    }
                     catch(const std::exception& ex)
                     {
                         std::string what_string(ex.what());

@@ -175,7 +175,7 @@ namespace Fred
                             {
                                 ctx.get_conn().exec_params(
                                 "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
-                                " VALUES($1::integer, $2::integer, $3::inet) RETURNING id"
+                                " VALUES($1::integer, $2::integer, $3::inet)"
                                 , Database::query_param_list(add_host_id)(object_id)(*j));
                             }
                             catch(const std::exception& ex)
