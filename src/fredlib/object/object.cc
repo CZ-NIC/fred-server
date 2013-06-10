@@ -296,7 +296,7 @@ namespace Fred
 
         if (history_id_res.size() != 1)
         {
-            BOOST_THROW_EXCEPTION(InternalError("unable to get history_id"));
+            BOOST_THROW_EXCEPTION(InternalError("unable to save history"));
         }
 
         history_id = static_cast<unsigned long long>(history_id_res[0][0]);
