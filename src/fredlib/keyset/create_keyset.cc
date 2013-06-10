@@ -123,7 +123,7 @@ namespace Fred
                         {
                             ctx.get_conn().exec_params(
                             "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
-                            ", $2::integer, $3::integer, $4::integer, $5::text) RETURNING id"
+                            ", $2::integer, $3::integer, $4::integer, $5::text)"
                             , Database::query_param_list(object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
                         }
                         catch(const std::exception& ex)
