@@ -191,7 +191,6 @@ noinst_LIBRARIES = \
 		src/corba/libcorba.a \
 		src/corba/libcorbamessages.a \
 		src/corba/libcorbamojeid.a \
-		src/corba/libcorbaadministrativeblocking.a \
 		src/corba/libcorbazone.a \
 		src/corba/libfilemanager.a \
 		src/corba/libmailer.a \
@@ -1562,6 +1561,7 @@ src_cli_admin_fred_admin_LDADD = \
 		src/corba/libcorbadatatypes.a \
 		src/corba/libmailer.a \
 		src/corba/libfilemanager.a \
+		src/corba/libcorbaadministrativeblocking.a \
 		src/fredlib/messages/libmessages.a \
 		src/fredlib/requests/librequests.a \
 		util/log/liblog.a \
