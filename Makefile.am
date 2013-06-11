@@ -211,6 +211,7 @@ noinst_LIBRARIES = \
 		src/corba/libcorbatechcheck.a \
 		src/corba/libcorbaepp.a \
 		src/corba/libcorbazonegenerator.a \
+		src/corba/libcorbaadministrativeblocking.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a
@@ -233,7 +234,6 @@ sbin_PROGRAMS = \
 		src/corba/fred-logd \
 		src/corba/messages/fred-msgd \
 		src/corba/mojeid/fred-mifd \
-		src/corba/administrativeblocking/fred-abfd \
 		src/cli_admin/fred-admin \
 		tools/logd_migration/migrate_log
 
@@ -902,11 +902,6 @@ nodist_src_corba_libcorbamojeid_a_SOURCES = \
 		src/corba/MojeIDDynSK.cc \
 		src/corba/MojeID.hh
 
-nodist_src_corba_libcorbaadministrativeblocking_a_SOURCES = \
-		src/corba/AdministrativeBlockingSK.cc \
-		src/corba/AdministrativeBlockingDynSK.cc \
-		src/corba/AdministrativeBlocking.hh
-
 nodist_src_corba_libfilemanager_a_SOURCES = \
 		src/corba/FileManagerSK.cc \
 		src/corba/FileManagerDynSK.cc \
@@ -971,6 +966,11 @@ nodist_src_corba_libcorbacontactverification_a_SOURCES = \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
 		src/corba/ContactVerification.hh
+
+nodist_src_corba_libcorbaadministrativeblocking_a_SOURCES = \
+		src/corba/AdministrativeBlockingSK.cc \
+		src/corba/AdministrativeBlockingDynSK.cc \
+		src/corba/AdministrativeBlocking.hh
 
 #
 # nodist corba libs
@@ -1403,63 +1403,63 @@ src_corba_mojeid_fred_mifd_LDADD = \
 #
 # src/corba/mojeid/fred-mifd
 
-src_corba_administrativeblocking_fred_abfd_SOURCES = \
-		src/administrativeblocking/administrativeblocking.cc \
-		src/administrativeblocking/administrativeblocking.h \
-		src/fredlib/domain/get_blocking_status_desc_list.cc \
-		src/fredlib/domain/get_blocking_status_desc_list.h \
-		src/fredlib/domain/create_object_state_request.cc \
-		src/fredlib/domain/create_object_state_request.h \
-		src/fredlib/domain/get_object_state_id_map.cc \
-		src/fredlib/domain/get_object_state_id_map.h \
-		src/fredlib/domain/create_administrative_object_block_request.cc \
-		src/fredlib/domain/create_administrative_object_block_request.h \
-		src/fredlib/domain/create_administrative_object_state_restore_request.cc \
-		src/fredlib/domain/create_administrative_object_state_restore_request.h \
-		src/fredlib/domain/clear_object_state_request.cc \
-		src/fredlib/domain/clear_object_state_request.h \
-		src/fredlib/domain/create_domain_name_blacklist.cc \
-		src/fredlib/domain/create_domain_name_blacklist.h \
-		src/fredlib/opcontext.cc \
-		src/fredlib/opcontext.h \
-		src/corba/nameservice.cc \
-		src/corba/mailer_manager.cc \
-		src/corba/administrativeblocking/corba_conversion.h \
-		src/corba/administrativeblocking/server_i.cc \
-		src/corba/administrativeblocking/server_i.h \
-		src/corba/administrativeblocking/fred-abfd.cc
+#src_corba_administrativeblocking_fred_abfd_SOURCES = \
+#		src/administrativeblocking/administrativeblocking.cc \
+#		src/administrativeblocking/administrativeblocking.h \
+#		src/fredlib/domain/get_blocking_status_desc_list.cc \
+#		src/fredlib/domain/get_blocking_status_desc_list.h \
+#		src/fredlib/domain/create_object_state_request.cc \
+#		src/fredlib/domain/create_object_state_request.h \
+#		src/fredlib/domain/get_object_state_id_map.cc \
+#		src/fredlib/domain/get_object_state_id_map.h \
+#		src/fredlib/domain/create_administrative_object_block_request.cc \
+#		src/fredlib/domain/create_administrative_object_block_request.h \
+#		src/fredlib/domain/create_administrative_object_state_restore_request.cc \
+#		src/fredlib/domain/create_administrative_object_state_restore_request.h \
+#		src/fredlib/domain/clear_object_state_request.cc \
+#		src/fredlib/domain/clear_object_state_request.h \
+#		src/fredlib/domain/create_domain_name_blacklist.cc \
+#		src/fredlib/domain/create_domain_name_blacklist.h \
+#		src/fredlib/opcontext.cc \
+#		src/fredlib/opcontext.h \
+#		src/corba/nameservice.cc \
+#		src/corba/mailer_manager.cc \
+#		src/corba/administrativeblocking/corba_conversion.h \
+#		src/corba/administrativeblocking/server_i.cc \
+#		src/corba/administrativeblocking/server_i.h \
+#		src/corba/administrativeblocking/fred-abfd.cc
 
-nodist_src_corba_administrativeblocking_fred_abfd_SOURCES = \
-		src/corba/AdministrativeBlockingSK.cc \
-		src/corba/MailerSK.cc
+#nodist_src_corba_administrativeblocking_fred_abfd_SOURCES = \
+#		src/corba/AdministrativeBlockingSK.cc \
+#		src/corba/MailerSK.cc
 
-src_corba_administrativeblocking_fred_abfd_LDFLAGS = \
-		$(POSTGRESQL_LDFLAGS) \
-		$(BOOST_LDFLAGS) \
-		$(AM_LDFLAGS)
+#src_corba_administrativeblocking_fred_abfd_LDFLAGS = \
+#		$(POSTGRESQL_LDFLAGS) \
+#		$(BOOST_LDFLAGS) \
+#		$(AM_LDFLAGS)
 
-src_corba_administrativeblocking_fred_abfd_LDADD = \
-		src/corba/libcorbadatatypes.a \
-		src/fredlib/notifier/libnotifier.a \
-		src/fredlib/libfred.a \
-		src/model/libmodel.a \
-		src/fredlib/contact_verification/libcontact_verification.a \
-		src/fredlib/public_request/libpublic_request.a \
-		src/fredlib/messages/libmessages.a \
-		util/libutil.a \
-		util/log/liblog.a \
-		util/types/libtypes.a \
-		util/db/libdb.a \
-		src/old_utils/liboldutils.a \
-		util/decimal/libmpdec.a -lm \
-		$(LIBIDN_LIBS) \
-		$(BOOST_PROGRAM_OPTIONS_LIB) \
-		$(OMNIORB4_LIBS) \
-		$(BOOST_DATE_TIME_LIB) \
-		$(BOOST_REGEX_LIB) \
-		$(BOOST_THREAD_LIB) \
-		$(BOOST_SERIALIZATION_LIB) \
-		$(POSTGRESQL_LIB)
+#src_corba_administrativeblocking_fred_abfd_LDADD = \
+#		src/corba/libcorbadatatypes.a \
+#		src/fredlib/notifier/libnotifier.a \
+#		src/fredlib/libfred.a \
+#		src/model/libmodel.a \
+#		src/fredlib/contact_verification/libcontact_verification.a \
+#		src/fredlib/public_request/libpublic_request.a \
+#		src/fredlib/messages/libmessages.a \
+#		util/libutil.a \
+#		util/log/liblog.a \
+#		util/types/libtypes.a \
+#		util/db/libdb.a \
+#		src/old_utils/liboldutils.a \
+#		util/decimal/libmpdec.a -lm \
+#		$(LIBIDN_LIBS) \
+#		$(BOOST_PROGRAM_OPTIONS_LIB) \
+#		$(OMNIORB4_LIBS) \
+#		$(BOOST_DATE_TIME_LIB) \
+#		$(BOOST_REGEX_LIB) \
+#		$(BOOST_THREAD_LIB) \
+#		$(BOOST_SERIALIZATION_LIB) \
+#		$(POSTGRESQL_LIB)
 
 
 # src/cli_admin/fred-admin
@@ -1520,7 +1520,31 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/cli_admin/charge_params.h \
 		src/cli_admin/chargeclient.cc \
 		src/cli_admin/chargeclient.h \
-		src/cli_admin/charge_client_impl.h
+		src/cli_admin/charge_client_impl.h \
+		src/admin_block/administrativeblocking.cc \
+		src/admin_block/administrativeblocking.h \
+		src/fredlib/domain/get_blocking_status_desc_list.cc \
+		src/fredlib/domain/get_blocking_status_desc_list.h \
+		src/fredlib/domain/create_object_state_request.cc \
+		src/fredlib/domain/create_object_state_request.h \
+		src/fredlib/domain/get_object_state_id_map.cc \
+		src/fredlib/domain/get_object_state_id_map.h \
+		src/fredlib/domain/create_administrative_object_block_request.cc \
+		src/fredlib/domain/create_administrative_object_block_request.h \
+		src/fredlib/domain/create_administrative_object_state_restore_request.cc \
+		src/fredlib/domain/create_administrative_object_state_restore_request.h \
+		src/fredlib/domain/clear_object_state_request.cc \
+		src/fredlib/domain/clear_object_state_request.h \
+		src/fredlib/domain/create_domain_name_blacklist.cc \
+		src/fredlib/domain/create_domain_name_blacklist.h \
+		src/fredlib/opcontext.cc \
+		src/fredlib/opcontext.h \
+		src/corba/nameservice.cc \
+		src/corba/mailer_manager.cc \
+		src/corba/admin_block/corba_conversion.h \
+		src/corba/admin_block/server_i.cc \
+		src/corba/admin_block/server_i.h
+#		src/corba/admin_block/fred-abfd.cc
 
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)
@@ -1697,6 +1721,7 @@ tests_test_server_LDADD = \
 		src/corba/libfilemanager.a \
 		src/corba/libmailer.a \
 		src/corba/libcorbazonegenerator.a \
+		src/corba/libcorbaadministrativeblocking.a \
 		src/corba/libcorbaepp.a \
 		src/corba/libcorbatechcheck.a \
 		src/corba/libcorbalogger.a \
