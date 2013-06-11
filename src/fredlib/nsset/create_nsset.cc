@@ -161,7 +161,7 @@ namespace Fred
                         catch(const std::exception& ex)
                         {
                             std::string what_string(ex.what());
-                            if(what_string.find("host_nssetid_key") != std::string::npos)
+                            if(what_string.find("host_nssetid_fqdn_key") != std::string::npos)
                                 BOOST_THROW_EXCEPTION(Exception().set_already_set_dns_host(i->get_fqdn()));
                             else
                                 throw;
