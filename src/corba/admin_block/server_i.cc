@@ -26,7 +26,7 @@
 #include "server_i.h"
 #include "corba_wrapper_decl.h"
 //#include "corba_conversion.h"
-#include "administrativeblocking/administrativeblocking.h"
+#include "admin_block/administrativeblocking.h"
 //#include "mailer_manager.h"
 #include <string>
 
