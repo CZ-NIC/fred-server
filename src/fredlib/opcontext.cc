@@ -31,7 +31,7 @@
 namespace Fred
 {
     OperationContextTransaction::OperationContextTransaction()
-    : conn_(Database::StandaloneManager(new Database::StandaloneConnectionFactory("host=/data/fred/fred/scripts/root/nofred/pg_sockets port=22345 dbname=fred user=fred connect_timeout=2")).acquire())
+    : conn_(Database::StandaloneManager(new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString())).acquire())
     , log_(LOGGER(PACKAGE))
     {
         this->get_conn().exec("START TRANSACTION ISOLATION LEVEL READ COMMITTED");

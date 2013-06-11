@@ -279,7 +279,7 @@ namespace Fred
         {//insert separately
             typedef std::auto_ptr< Database::StandaloneConnection > StandaloneConnectionPtr;
             Database::StandaloneManager sm = Database::StandaloneManager(
-                new Database::StandaloneConnectionFactory(/*Database::Manager::getConnectionString()*/"host=/data/fred/fred/scripts/root/nofred/pg_sockets port=22345 dbname=fred user=fred connect_timeout=2"));
+                new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
             StandaloneConnectionPtr conn_standalone(sm.acquire());
             conn_standalone->exec_params(
                 "INSERT INTO object_state_request_lock (id,state_id,object_id) "
