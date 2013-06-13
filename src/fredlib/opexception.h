@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <assert.h>
 #include <string>
+#include <vector>
 #include <map>
 
 #include <algorithm>
@@ -169,6 +170,62 @@ protected:\
     BOOST_JOIN(~ExceptionData_,ex_data_tag)() throw () {}\
 }\
 
+///declaration of std::vector based exception tag, related methods, getter and chaining setter with error_info type
+#define DECLARE_VECTOR_OF_EXCEPTION_DATA(ex_data_tag, ex_data_type) \
+typedef boost::error_info<BOOST_JOIN(struct ExceptionTag_vector_of_,ex_data_tag), std::vector<ex_data_type> > BOOST_JOIN(ErrorInfo_vector_of_,ex_data_tag);\
+\
+static std::string to_string(const BOOST_JOIN(ErrorInfo_vector_of_,ex_data_tag)& info)\
+{\
+    std::ostringstream oss;\
+    oss << "vector data:";\
+    for(BOOST_JOIN(ErrorInfo_vector_of_,ex_data_tag)::value_type::const_iterator ci = info.value().begin()\
+            ; ci != info.value().end(); ++ci) oss << ' ' << *ci;\
+    return oss.str();\
+}\
+\
+template <class DERIVED_EXCEPTION> struct BOOST_JOIN(ExceptionData_vector_of_,ex_data_tag)\
+{\
+public:\
+    typedef BOOST_JOIN(ErrorInfo_vector_of_,ex_data_tag) error_info_type;\
+private:\
+\
+    const DERIVED_EXCEPTION* get_derived_ptr() const\
+    {\
+        return static_cast<const DERIVED_EXCEPTION*>(this);\
+    }\
+    const std::vector<ex_data_type>* get_data_ptr() const\
+    {\
+        return boost::get_error_info<error_info_type>(*(get_derived_ptr()));\
+    }\
+public:\
+    DERIVED_EXCEPTION& BOOST_JOIN(set_vector_of_,ex_data_tag)(const std::vector<ex_data_type>& arg)\
+    {\
+        DERIVED_EXCEPTION& ex = *static_cast<DERIVED_EXCEPTION*>(this);\
+        ex << error_info_type(arg);\
+        return ex;\
+    }\
+    std::vector<ex_data_type> BOOST_JOIN(get_vector_of_,ex_data_tag)() const\
+    {\
+        const std::vector<ex_data_type>* data_ptr = get_data_ptr();\
+        return data_ptr ? *data_ptr : std::vector<ex_data_type>();\
+    }\
+    bool BOOST_JOIN(is_set_vector_of_,ex_data_tag)() const\
+    {\
+        const std::vector<ex_data_type>* data_ptr = get_data_ptr();\
+        return data_ptr;\
+    }\
+    DERIVED_EXCEPTION& BOOST_JOIN(add_,ex_data_tag)(const ex_data_type& arg)\
+    {\
+        std::vector<ex_data_type> data_vector = BOOST_JOIN(get_vector_of_,ex_data_tag)();\
+        data_vector.push_back(arg);\
+        return BOOST_JOIN(set_vector_of_,ex_data_tag)(data_vector);\
+    }\
+protected:\
+    BOOST_JOIN(ExceptionData_vector_of_,ex_data_tag)(){}\
+    BOOST_JOIN(~ExceptionData_vector_of_,ex_data_tag)() throw () {}\
+}\
+
+//DECLARE_VECTOR_OF_EXCEPTION_DATA(contact_handle, std::string); //test decl
 
 ///common exception data tags
 DECLARE_EXCEPTION_DATA(unknown_contact_handle, std::string);
