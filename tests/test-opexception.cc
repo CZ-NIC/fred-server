@@ -100,6 +100,7 @@ DECLARE_EXCEPTION_DATA(testing_int_data, int);
 
 DECLARE_VECTOR_OF_EXCEPTION_DATA(contact1_handle, std::string);
 DECLARE_VECTOR_OF_EXCEPTION_DATA(contact2_handle, std::string);
+DECLARE_VECTOR_OF_EXCEPTION_DATA(contact3_handle, int);
 
 BOOST_AUTO_TEST_SUITE(TestOperationException)
 
@@ -113,6 +114,7 @@ struct TestException
   , ExceptionData_testing_int_data<TestException>
   , ExceptionData_vector_of_contact1_handle<TestException>
   , ExceptionData_vector_of_contact2_handle<TestException>
+  , ExceptionData_vector_of_contact3_handle<TestException>
 {};
 
 BOOST_AUTO_TEST_CASE(throwTestException)
@@ -131,6 +133,11 @@ BOOST_AUTO_TEST_CASE(throwTestException)
                         .set_testing_int_data(5)
                         .add_contact1_handle("test-vector-data")
                         .set_vector_of_contact2_handle(Util::vector_of<std::string>("test-vector-data1")("test-vector-data2")("test-vector-data3"))
+                        .set_vector_of_contact3_handle(Util::vector_of<int>(5)(5)(5))
+                        .add_contact3_handle(1)
+                        .add_contact3_handle(2)
+                        .add_contact3_handle(1)
+                        .add_contact3_handle(3)
                         << ErrorInfo_unknown_registry_object_identifier("test_roid")//add anything
 
                         );
@@ -211,6 +218,7 @@ public:
 
     DECLARE_VECTOR_OF_EXCEPTION_DATA(contact1_handle, std::string);
     DECLARE_VECTOR_OF_EXCEPTION_DATA(contact2_handle, std::string);
+    DECLARE_VECTOR_OF_EXCEPTION_DATA(contact3_handle, int);
 
     ///exception instance for tests
     struct TestException
@@ -220,6 +228,7 @@ public:
       , ExceptionData_testing_int_data<TestException>
       , ExceptionData_vector_of_contact1_handle<TestException>
       , ExceptionData_vector_of_contact2_handle<TestException>
+      , ExceptionData_vector_of_contact3_handle<TestException>
     {};
 
     void whoops()
@@ -231,6 +240,11 @@ public:
                 .set_testing_int_data(5)
                 .add_contact1_handle("test-vector-data")
                 .set_vector_of_contact2_handle(Util::vector_of<std::string>("test-vector-data1")("test-vector-data2")("test-vector-data3"))
+                .set_vector_of_contact3_handle(Util::vector_of<int>(5)(5)(5))
+                .add_contact3_handle(1)
+                .add_contact3_handle(2)
+                .add_contact3_handle(1)
+                .add_contact3_handle(3)
                 << ErrorInfo_unknown_registry_object_identifier("test_roid")//add anything
 
                 );
