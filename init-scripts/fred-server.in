@@ -22,7 +22,6 @@ PIFD_PORT=@PIFDPORT@
 ADIFD_PORT=@ADIFDPORT@
 LOGD_PORT=@LOGDPORT@
 MIFD_PORT=@MIFDPORT@
-ABFD_PORT=@ABFDPORT@
 MSGD_PORT=@MSGDPORT@
 OPTIONS="-ORBnativeCharCodeSet UTF-8 -ORBendPoint giop:tcp::"
 
@@ -120,13 +119,6 @@ fred_start() {
 	    NUM=$(($NUM+1))
         fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-abfd.pid; then NUM=$(($NUM+1)); else
-        ${FRED_PATH}/fred-abfd ${OPTIONS}${ABFD_PORT} 2>/dev/null &
-        if store_pid "${FRED_PATH}/fred-abfd" ${VARRUN_PATH}/fred-abfd.pid
-	then
-	    NUM=$(($NUM+1))
-        fi
-    fi
     if check_pidfile ${VARRUN_PATH}/fred-msgd.pid; then NUM=$(($NUM+1)); else
         ${FRED_PATH}/fred-msgd ${OPTIONS}${MSGD_PORT} 2>/dev/null &
         if store_pid "${FRED_PATH}/fred-msgd" ${VARRUN_PATH}/fred-msgd.pid
@@ -161,7 +153,6 @@ fred_status() {
     check_server_status "fred-logd" "${VARRUN_PATH}/fred-logd.pid"
     check_server_status "fred-mifd" "${VARRUN_PATH}/fred-mifd.pid"
     check_server_status "fred-msgd" "${VARRUN_PATH}/fred-msgd.pid"
-    check_server_status "fred-abfd" "${VARRUN_PATH}/fred-abfd.pid"
 }
 
 fred_stop() {
@@ -195,12 +186,6 @@ fred_stop() {
 	kill -TERM `cat ${VARRUN_PATH}/fred-mifd.pid` 2>/dev/null
         STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
 	rm -f ${VARRUN_PATH}/fred-mifd.pid
-    fi
-    if [ -f ${VARRUN_PATH}/fred-abfd.pid ]
-    then
-	kill -TERM `cat ${VARRUN_PATH}/fred-abfd.pid` 2>/dev/null
-        STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
-	rm -f ${VARRUN_PATH}/fred-abfd.pid
     fi
     if [ -f ${VARRUN_PATH}/fred-msgd.pid ]
     then
