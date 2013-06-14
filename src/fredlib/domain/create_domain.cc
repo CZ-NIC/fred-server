@@ -222,6 +222,8 @@ namespace Fred
                 expiration_date = boost::gregorian::from_simple_string(std::string(reg_date_res[0][1]));
             }
 
+            Exception create_domain_exception;
+
             //lock registrant object_registry row for update and get id
             unsigned long long registrant_id = 0;
             {
@@ -235,14 +237,16 @@ namespace Fred
 
                 if (registrant_res.size() == 0)
                 {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrant_handle(registrant_));
+                    create_domain_exception.set_unknown_registrant_handle(registrant_);
                 }
-                if (registrant_res.size() != 1)
+                if (registrant_res.size() > 1)
                 {
                     BOOST_THROW_EXCEPTION(InternalError("failed to get registrant"));
                 }
-
-                registrant_id = static_cast<unsigned long long>(registrant_res[0][0]);
+                if (registrant_res.size() == 1)
+                {
+                    registrant_id = static_cast<unsigned long long>(registrant_res[0][0]);
+                }
             }
 
             //create domain
@@ -299,14 +303,16 @@ namespace Fred
 
                             if (lock_nsset_res.size() == 0)
                             {
-                                BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(new_nsset_value));
+                                create_domain_exception.set_unknown_nsset_handle(new_nsset_value);
                             }
-                            if (lock_nsset_res.size() != 1)
+                            if (lock_nsset_res.size() > 1)
                             {
                                 BOOST_THROW_EXCEPTION(InternalError("failed to get nsset"));
                             }
-
-                            nsset_id = static_cast<unsigned long long>(lock_nsset_res[0][0]);
+                            if (lock_nsset_res.size() == 1)
+                            {
+                                nsset_id = static_cast<unsigned long long>(lock_nsset_res[0][0]);
+                            }
 
                             params.push_back(nsset_id);//id
                             val_sql << val_separator.get() << "$" << params.size() <<"::integer";
@@ -339,9 +345,9 @@ namespace Fred
 
                             if (lock_keyset_res.size() == 0)
                             {
-                                BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(new_keyset_value));
+                                create_domain_exception.set_unknown_keyset_handle(new_keyset_value);
                             }
-                            if (lock_keyset_res.size() != 1)
+                            if (lock_keyset_res.size() > 1)
                             {
                                 BOOST_THROW_EXCEPTION(InternalError("failed to get keyset"));
                             }
@@ -356,7 +362,14 @@ namespace Fred
 
                 col_sql <<")";
                 val_sql << ")";
-                //insert into contact
+
+                //check exception
+                if(create_domain_exception.is_set_unknown_registrant_handle()
+                || create_domain_exception.is_set_unknown_nsset_handle()
+                || create_domain_exception.is_set_unknown_keyset_handle()
+                ) BOOST_THROW_EXCEPTION(create_domain_exception);
+
+                //insert into domain
                 ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
 
                 //set admin contacts
@@ -368,6 +381,7 @@ namespace Fred
                     params.push_back(object_id);
                     sql << "INSERT INTO domain_contact_map(domainid, contactid) "
                             " VALUES ($" << params.size() << "::integer, ";
+
 
                     for(std::vector<std::string>::iterator i = admin_contacts_.begin(); i != admin_contacts_.end(); ++i)
                     {
@@ -384,14 +398,14 @@ namespace Fred
 
                             if (lock_res.size() == 0)
                             {
-                                BOOST_THROW_EXCEPTION(Exception().set_unknown_admin_contact_handle(*i));
+                                create_domain_exception.add_unknown_admin_contact_handle(*i);
+                                continue;
                             }
                             if (lock_res.size() != 1)
                             {
                                 BOOST_THROW_EXCEPTION(InternalError("failed to get admin contact"));
                             }
-
-                            admin_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
+                                admin_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
                         }
 
                         Database::QueryParams params_i = params;//query params
@@ -409,13 +423,18 @@ namespace Fred
                         {
                             std::string what_string(ex.what());
                             if(what_string.find("domain_contact_map_pkey") != std::string::npos)
-                                BOOST_THROW_EXCEPTION(Exception().set_already_set_admin_contact_handle(*i));
+                                create_domain_exception.add_already_set_admin_contact_handle(*i);
                             else
                                 throw;
                         }
                     }//for i
                 }//if admin contacts
             }
+
+            //check exception
+            if(create_domain_exception.is_set_vector_of_unknown_admin_contact_handle()
+            || create_domain_exception.is_set_vector_of_already_set_admin_contact_handle()
+            ) BOOST_THROW_EXCEPTION(create_domain_exception);
 
             //save history
             {

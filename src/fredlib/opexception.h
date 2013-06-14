@@ -225,8 +225,6 @@ protected:\
     BOOST_JOIN(~ExceptionData_vector_of_,ex_data_tag)() throw () {}\
 }\
 
-//DECLARE_VECTOR_OF_EXCEPTION_DATA(contact_handle, std::string); //test decl
-
 ///common exception data tags
 DECLARE_EXCEPTION_DATA(unknown_contact_handle, std::string);
 DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
@@ -235,13 +233,11 @@ DECLARE_EXCEPTION_DATA(unknown_domain_fqdn, std::string);
 DECLARE_EXCEPTION_DATA(unknown_nsset_handle, Nullable<std::string>);
 DECLARE_EXCEPTION_DATA(unknown_keyset_handle, Nullable<std::string>);
 DECLARE_EXCEPTION_DATA(unknown_registrant_handle, std::string);
+DECLARE_EXCEPTION_DATA(unknown_object_type, std::string);
 DECLARE_EXCEPTION_DATA(unknown_admin_contact_handle, std::string);
 DECLARE_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
 DECLARE_EXCEPTION_DATA(unknown_technical_contact_handle, std::string);
 DECLARE_EXCEPTION_DATA(already_set_technical_contact_handle, std::string);
-DECLARE_EXCEPTION_DATA(unknown_object_type, std::string);
-
-
 
 /// const array wrapper
 class ConstArr
