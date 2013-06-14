@@ -364,10 +364,8 @@ namespace Fred
                 val_sql << ")";
 
                 //check exception
-                if(create_domain_exception.is_set_unknown_registrant_handle()
-                || create_domain_exception.is_set_unknown_nsset_handle()
-                || create_domain_exception.is_set_unknown_keyset_handle()
-                ) BOOST_THROW_EXCEPTION(create_domain_exception);
+                if(create_domain_exception.is_changed())
+                    BOOST_THROW_EXCEPTION(create_domain_exception);
 
                 //insert into domain
                 ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
@@ -432,9 +430,8 @@ namespace Fred
             }
 
             //check exception
-            if(create_domain_exception.is_set_vector_of_unknown_admin_contact_handle()
-            || create_domain_exception.is_set_vector_of_already_set_admin_contact_handle()
-            ) BOOST_THROW_EXCEPTION(create_domain_exception);
+            if(create_domain_exception.is_changed())
+                BOOST_THROW_EXCEPTION(create_domain_exception);
 
             //save history
             {
