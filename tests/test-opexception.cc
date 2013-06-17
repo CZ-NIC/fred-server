@@ -231,23 +231,35 @@ public:
       , ExceptionData_vector_of_contact3_handle<TestException>
     {};
 
-    void whoops()
+    void whoops1()
     {
-        BOOST_THROW_EXCEPTION(
-                TestException()
-                .set_unknown_registrar_handle("test_registrar")
-                .set_unknown_contact_handle("test_contact")
-                .set_testing_int_data(5)
-                .add_contact1_handle("test-vector-data")
-                .set_vector_of_contact2_handle(Util::vector_of<std::string>("test-vector-data1")("test-vector-data2")("test-vector-data3"))
-                .set_vector_of_contact3_handle(Util::vector_of<int>(5)(5)(5))
-                .add_contact3_handle(1)
-                .add_contact3_handle(2)
-                .add_contact3_handle(1)
-                .add_contact3_handle(3)
-                << ErrorInfo_unknown_registry_object_identifier("test_roid")//add anything
+        TestException test_exception;
+        test_exception.set_unknown_registrar_handle("test_registrar")
+        .set_unknown_contact_handle("test_contact")
+        .set_testing_int_data(5)
+        .add_contact1_handle("test-vector-data")
+        .set_vector_of_contact2_handle(Util::vector_of<std::string>("test-vector-data1")("test-vector-data2")("test-vector-data3"))
+        .set_vector_of_contact3_handle(Util::vector_of<int>(5)(5)(5))
+        .add_contact3_handle(1)
+        .add_contact3_handle(2)
+        .add_contact3_handle(1)
+        .add_contact3_handle(3)
+        ;
 
-                );
+        if(test_exception.throw_me())
+            BOOST_THROW_EXCEPTION(test_exception);
+    }
+
+    void whoops2()
+    {
+        TestException test_exception;
+        test_exception
+        << ErrorInfo_unknown_registry_object_identifier("test_roid")//add anything
+        ;
+        test_exception.set_throw_me();//used operator<<
+
+        if(test_exception.throw_me())
+            BOOST_THROW_EXCEPTION(test_exception);
     }
 
 };
@@ -261,7 +273,81 @@ BOOST_AUTO_TEST_CASE(throwNestedException)
         {
             try
             {
-                TestClass().whoops();//test throw
+                TestClass().whoops1();//test throw
+            }
+            catch (Fred::ExceptionStack& exs)
+            {
+                exs.add_exception_stack_info("stack context info");
+                throw;
+            }
+        }
+        catch(boost::exception& ex)
+        {
+            BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+
+            try
+            {
+                if (dynamic_cast<const Fred::ExceptionStack&>(ex).is_set_exception_stack_info())
+                {
+                    BOOST_TEST_MESSAGE(dynamic_cast<const Fred::ExceptionStack&>(ex).get_exception_stack_info());
+                }
+            }
+            catch(const std::exception&)
+            {
+                BOOST_TEST_MESSAGE("\nhave no  ExceptionStack info");
+            }
+
+            BOOST_TEST_MESSAGE("\nwhen not interested in exception child type using error_info instance");
+            const std::string* test_data_ptr = 0;
+            test_data_ptr = boost::get_error_info<ErrorInfo_unknown_contact_handle>(ex);
+            if(test_data_ptr)
+            {
+                BOOST_TEST_MESSAGE(*test_data_ptr);
+                BOOST_CHECK(std::string("test_contact").compare(*test_data_ptr)==0);
+            }
+            test_data_ptr = boost::get_error_info<ErrorInfo_unknown_registrar_handle>(ex);
+            if(test_data_ptr)
+            {
+                BOOST_TEST_MESSAGE(*test_data_ptr);
+                BOOST_CHECK(std::string("test_registrar").compare(*test_data_ptr)==0);
+            }
+
+            BOOST_TEST_MESSAGE("\nwith known child exception type using wrapper");
+            if(dynamic_cast<TestException&>(ex).is_set_unknown_contact_handle())
+            {
+                BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_unknown_contact_handle());
+                BOOST_CHECK(std::string("test_contact").compare(dynamic_cast<TestException&>(ex).get_unknown_contact_handle())==0);
+            }
+            if(dynamic_cast<TestException&>(ex).is_set_unknown_registrar_handle())
+            {
+                BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_unknown_registrar_handle());
+                BOOST_CHECK(std::string("test_registrar").compare(dynamic_cast<TestException&>(ex).get_unknown_registrar_handle())==0);
+            }
+            if(dynamic_cast<TestException&>(ex).is_set_testing_int_data())
+            {
+                BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_testing_int_data());
+                BOOST_CHECK(5 == dynamic_cast<TestException&>(ex).get_testing_int_data());
+            }
+            throw;//to check std::exception
+        }
+    }
+    catch(std::exception& ex)
+    {
+        BOOST_TEST_MESSAGE("catch(std::exception&): ");
+        BOOST_TEST_MESSAGE(ex.what());
+        throw;
+    }
+    , std::exception
+    , check_std_exception);
+
+    BOOST_CHECK_EXCEPTION(
+    try
+    {
+        try
+        {
+            try
+            {
+                TestClass().whoops2();//test throw
             }
             catch (Fred::ExceptionStack& exs)
             {
