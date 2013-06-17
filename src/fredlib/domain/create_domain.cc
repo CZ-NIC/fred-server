@@ -364,7 +364,7 @@ namespace Fred
                 val_sql << ")";
 
                 //check exception
-                if(create_domain_exception.is_changed())
+                if(create_domain_exception.throw_me())
                     BOOST_THROW_EXCEPTION(create_domain_exception);
 
                 //insert into domain
@@ -430,7 +430,7 @@ namespace Fred
             }
 
             //check exception
-            if(create_domain_exception.is_changed())
+            if(create_domain_exception.throw_me())
                 BOOST_THROW_EXCEPTION(create_domain_exception);
 
             //save history

@@ -88,34 +88,34 @@ private:
     }
 };
 
-///exception data change flag
-struct ChangeFlag
+///exception data set flag
+struct ThrowMeFlagImpl
 {
 private:
-    bool changed_;
+    bool throw_me_;
 public:
     ///if exception data is set, throw exception
-    bool is_changed()
+    bool throw_me()
     {
-        return changed_;
+        return throw_me_;
     }
     ///setter is called by exception data setters or directly if using operator<< with error_info type
-    void set_changed()
+    void set_throw_me()
     {
-        changed_ = true;
+        throw_me_ = true;
     }
 protected:
-    ChangeFlag()
-    : changed_(false)
+    ThrowMeFlagImpl()
+    : throw_me_(false)
     {}
-    ~ChangeFlag() throw () {}
+    ~ThrowMeFlagImpl() throw () {}
 };
 
 ///parent of operation exceptions
 struct OperationException
     : virtual std::exception
     , virtual ExceptionStack
-    , virtual ChangeFlag
+    , virtual ThrowMeFlagImpl
 {
     ///std::exception content override
     const char* what() const throw()
@@ -177,7 +177,7 @@ public:\
     {\
         DERIVED_EXCEPTION& ex = *static_cast<DERIVED_EXCEPTION*>(this);\
         ex << error_info_type(arg);\
-        ex.set_changed();\
+        ex.set_throw_me();\
         return ex;\
     }\
     ex_data_type BOOST_JOIN(get_,ex_data_tag)() const\
@@ -227,7 +227,7 @@ public:\
     {\
         DERIVED_EXCEPTION& ex = *static_cast<DERIVED_EXCEPTION*>(this);\
         ex << error_info_type(arg);\
-        ex.set_changed();\
+        ex.set_throw_me();\
         return ex;\
     }\
     std::vector<ex_data_type> BOOST_JOIN(get_vector_of_,ex_data_tag)() const\
