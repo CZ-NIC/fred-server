@@ -81,7 +81,7 @@ namespace Fred
             "WHERE eos.manual AND "
                   "eos.name LIKE 'server%' AND "
                   "eos.name!='serverBlocked' AND "
-                  "eosd.lang=$1";
+                  "UPPER(eosd.lang)=UPPER($1)";
         Database::query_param_list param(lang);
         if (object_type_.isset()) {
             query += " AND $2=ANY(eos.types)";
