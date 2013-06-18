@@ -47,12 +47,8 @@ namespace Registry
             // standard constructor
             Server_i(const std::string &_server_name);
             virtual ~Server_i();
-            // methods corresponding to defined IDL attributes and operations
-            char* getName(
-                  const char *_lang);
-            CORBA::ULongLong getLangID(
-                  const char *_lang);
 
+            // methods corresponding to defined IDL attributes and operations
             virtual StatusDescList* getBlockingStatusDescList(const char* _lang);
             virtual void blockDomains(const ::Registry::Administrative::DomainList& domain_list, const ::Registry::Administrative::StatusList& status_list, ::CORBA::Boolean block_owner, ::CORBA::Boolean create_owner_copy);
             virtual DomainOwnerChangeList* blockDomains(const ::Registry::Administrative::DomainList& domain_list, const ::Registry::Administrative::StatusList& status_list, ::Registry::Administrative::OwnerBlockMode owner_block_mode, const char* reason) { return NULL; }

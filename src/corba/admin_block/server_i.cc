@@ -42,22 +42,6 @@ namespace Registry
         {}
 
         //   Methods corresponding to IDL attributes and operations
-        char* Server_i::getName(
-                const char *_lang)
-        {
-            std::string name = bimpl_->getName(_lang);
-            char *const result = CORBA::string_alloc(name.length() + 1);
-            ::strncpy(result, name.c_str(), name.length() + 1);
-            return result;
-        }
-
-        CORBA::ULongLong Server_i::getLangID(
-            const char *_lang)
-        {
-            return bimpl_->getLangID(_lang);
-        }
-
-
         StatusDescList* Server_i::getBlockingStatusDescList(const char* _lang)
         {
             return bimpl_->getBlockingStatusDescList(_lang);
