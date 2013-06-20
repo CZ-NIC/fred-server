@@ -397,7 +397,7 @@ namespace Fred
                             if (lock_res.size() == 0)
                             {
                                 create_domain_exception.add_unknown_admin_contact_handle(*i);
-                                continue;
+                                continue;//for admin_contacts_
                             }
                             if (lock_res.size() != 1)
                             {
@@ -415,13 +415,17 @@ namespace Fred
 
                         try
                         {
+                            ctx.get_conn().exec("SAVEPOINT admin_contact");
                             ctx.get_conn().exec_params(sql_i.str(), params_i);
                         }
                         catch(const std::exception& ex)
                         {
                             std::string what_string(ex.what());
                             if(what_string.find("domain_contact_map_pkey") != std::string::npos)
+                            {
                                 create_domain_exception.add_already_set_admin_contact_handle(*i);
+                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT admin_contact");
+                            }
                             else
                                 throw;
                         }

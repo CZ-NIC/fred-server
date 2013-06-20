@@ -1116,8 +1116,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_unknown_admin_contact_handle());
-        BOOST_CHECK(ex.get_unknown_admin_contact_handle().compare(bad_admin_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_unknown_admin_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_unknown_admin_contact_handle().at(0).compare(bad_admin_contact_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1144,8 +1144,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fix
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_already_set_admin_contact_handle());
-        BOOST_CHECK(ex.get_already_set_admin_contact_handle().compare(admin_contact2_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_already_set_admin_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_already_set_admin_contact_handle().at(0).compare(admin_contact2_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1173,8 +1173,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_unknown_admin_contact_handle());
-        BOOST_CHECK(ex.get_unknown_admin_contact_handle().compare(bad_admin_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_unknown_admin_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_unknown_admin_contact_handle().at(0).compare(bad_admin_contact_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1202,8 +1202,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_unassigned_admin_contact_handle());
-        BOOST_CHECK(ex.get_unassigned_admin_contact_handle().compare(bad_admin_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_unassigned_admin_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_unassigned_admin_contact_handle().at(0).compare(bad_admin_contact_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);

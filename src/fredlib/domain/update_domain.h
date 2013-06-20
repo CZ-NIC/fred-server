@@ -47,7 +47,10 @@ namespace Fred
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
 
     public:
-        DECLARE_EXCEPTION_DATA(unassigned_admin_contact_handle, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(unassigned_admin_contact_handle, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(unknown_admin_contact_handle, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
+
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_domain_fqdn<Exception>
@@ -55,9 +58,9 @@ namespace Fred
         , ExceptionData_unknown_nsset_handle<Exception>
         , ExceptionData_unknown_keyset_handle<Exception>
         , ExceptionData_unknown_registrant_handle<Exception>
-        , ExceptionData_unknown_admin_contact_handle<Exception>
-        , ExceptionData_already_set_admin_contact_handle<Exception>
-        , ExceptionData_unassigned_admin_contact_handle<Exception>
+        , ExceptionData_vector_of_unknown_admin_contact_handle<Exception>
+        , ExceptionData_vector_of_already_set_admin_contact_handle<Exception>
+        , ExceptionData_vector_of_unassigned_admin_contact_handle<Exception>
         {};
 
         UpdateDomain(const std::string& fqdn

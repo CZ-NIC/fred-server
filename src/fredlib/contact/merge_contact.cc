@@ -247,7 +247,7 @@ namespace Fred
                     {
                         //look for already set: admin contact
                         //if found ignore exception, if not found rethrow exception
-                        if(ex.is_set_already_set_admin_contact_handle())
+                        if(ex.is_set_vector_of_already_set_admin_contact_handle())
                         {
                             //only remove source admin contact, dest admin contact is already there
                             UpdateDomain ud (tmp.fqdn, registrar_ );

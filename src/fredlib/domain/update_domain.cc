@@ -181,6 +181,8 @@ namespace Fred
         //update object
         Fred::UpdateObject(fqdn_,"domain", registrar_, authinfo_).exec(ctx);
 
+        Exception update_domain_exception;
+
         //update domain
         if(nsset_.isset() || keyset_.isset() || registrant_.isset())
         {
@@ -209,14 +211,17 @@ namespace Fred
                         , Database::query_param_list(nsset_.get_value()));
                     if (lock_res.size() == 0)
                     {
-                        BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(nsset_.get_value()));
+                        update_domain_exception.set_unknown_nsset_handle(nsset_.get_value());
                     }
-                    if (lock_res.size() != 1)
+                    if (lock_res.size() > 1)
                     {
                         BOOST_THROW_EXCEPTION(InternalError("failed to get nsset"));
                     }
 
-                    nsset_id = static_cast<unsigned long long>(lock_res[0][0]);
+                    if (lock_res.size() == 1)
+                    {
+                        nsset_id = static_cast<unsigned long long>(lock_res[0][0]);
+                    }
                     params.push_back(nsset_id); //nsset update
                 }
                 sql << set_separator.get() << " nsset = $"
@@ -242,14 +247,16 @@ namespace Fred
                         , Database::query_param_list(keyset_.get_value()));
                     if (lock_res.size() == 0)
                     {
-                        BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(keyset_.get_value()));
+                        update_domain_exception.set_unknown_keyset_handle(keyset_.get_value());
                     }
-                    if (lock_res.size() != 1)
+                    if (lock_res.size() > 1)
                     {
                         BOOST_THROW_EXCEPTION(InternalError("failed to get keyset"));
                     }
-
-                    keyset_id = static_cast<unsigned long long>(lock_res[0][0]);
+                    if (lock_res.size() == 1)
+                    {
+                        keyset_id = static_cast<unsigned long long>(lock_res[0][0]);
+                    }
                     params.push_back(keyset_id); //keyset update
                 }
                 sql << set_separator.get() << " keyset = $"
@@ -269,18 +276,24 @@ namespace Fred
                     , Database::query_param_list(registrant_.get_value()));
                 if (lock_res.size() == 0)
                 {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrant_handle(registrant_.get_value()));
+                    update_domain_exception.set_unknown_registrant_handle(registrant_.get_value());
                 }
                 if (lock_res.size() != 1)
                 {
                     BOOST_THROW_EXCEPTION(InternalError("failed to get registrant"));
                 }
-
-                registrant_id = static_cast<unsigned long long>(lock_res[0][0]);
+                if (lock_res.size() == 1)
+                {
+                    registrant_id = static_cast<unsigned long long>(lock_res[0][0]);
+                }
                 params.push_back(registrant_id);
                 sql << set_separator.get() << " registrant = $"
                     << params.size() << "::integer ";
             }//if change registrant
+
+            //check exception
+            if(update_domain_exception.throw_me())
+                BOOST_THROW_EXCEPTION(update_domain_exception);
 
             params.push_back(domain_id);
             sql << " WHERE id = $" << params.size() << "::integer RETURNING id";
@@ -316,9 +329,10 @@ namespace Fred
 
                 if (lock_res.size() == 0)
                 {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_admin_contact_handle(*i));
+                    update_domain_exception.add_unknown_admin_contact_handle(*i);
+                    continue;//for add_admin_contact_
                 }
-                if (lock_res.size() != 1)
+                if (lock_res.size() > 1)
                 {
                     BOOST_THROW_EXCEPTION(InternalError("failed to get admin contact"));
                 }
@@ -334,13 +348,17 @@ namespace Fred
                 sql_i << " $" << params_i.size() << "::integer) ";
                 try
                 {
+                    ctx.get_conn().exec("SAVEPOINT admin_contact");
                     ctx.get_conn().exec_params(sql_i.str(), params_i);
                 }
                 catch(const std::exception& ex)
                 {
                     std::string what_string(ex.what());
                     if(what_string.find("domain_contact_map_pkey") != std::string::npos)
-                        BOOST_THROW_EXCEPTION(Exception().set_already_set_admin_contact_handle(*i));
+                    {
+                        update_domain_exception.add_already_set_admin_contact_handle(*i);
+                        ctx.get_conn().exec("ROLLBACK TO SAVEPOINT admin_contact");
+                    }
                     else
                         throw;
                 }
@@ -368,10 +386,16 @@ namespace Fred
                     " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                     , Database::query_param_list(*i));
 
-                if (lock_res.size() != 1)
+                if (lock_res.size() == 0)
                 {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_admin_contact_handle(*i));
+                    update_domain_exception.add_unknown_admin_contact_handle(*i);
+                    continue;//for rem_admin_contact_
                 }
+                if (lock_res.size() > 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get admin contact"));
+                }
+
                 admin_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
 
                 Database::QueryParams params_i = params;//query params
@@ -384,15 +408,20 @@ namespace Fred
                 Database::Result domain_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
                 if (domain_del_res.size() == 0)
                 {
-                    BOOST_THROW_EXCEPTION(Exception().set_unassigned_admin_contact_handle(*i));
+                    update_domain_exception.add_unassigned_admin_contact_handle(*i);
+                    continue;//for rem_admin_contact_
                 }
-                if (domain_del_res.size() != 1)
+                if (domain_del_res.size() > 1)
                 {
                     BOOST_THROW_EXCEPTION(InternalError("failed to unassign admin contact"));
                 }
 
             }//for i
         }//if delete admin contacts
+
+        //check exception
+        if(update_domain_exception.throw_me())
+            BOOST_THROW_EXCEPTION(update_domain_exception);
 
         //save history
         {
