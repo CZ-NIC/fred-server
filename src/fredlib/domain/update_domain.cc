@@ -278,7 +278,7 @@ namespace Fred
                 {
                     update_domain_exception.set_unknown_registrant_handle(registrant_.get_value());
                 }
-                if (lock_res.size() != 1)
+                if (lock_res.size() > 1)
                 {
                     BOOST_THROW_EXCEPTION(InternalError("failed to get registrant"));
                 }
