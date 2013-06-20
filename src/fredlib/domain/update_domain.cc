@@ -266,7 +266,6 @@ namespace Fred
             if(registrant_.isset())//change registrant
             {
                 //lock object_registry row for update
-
                 unsigned long long registrant_id = 0;
                 Database::Result lock_res = ctx.get_conn().exec_params(
                     "SELECT oreg.id FROM enum_object_type eot"

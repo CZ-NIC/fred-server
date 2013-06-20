@@ -103,6 +103,7 @@ BOOST_AUTO_TEST_CASE(update_domain_exception)
 
 struct update_domain_fixture
 {
+    Fred::OperationContext fixture_ctx;
     Fred::OperationContext ctx;
     std::string registrar_handle;
     std::string xmark;
@@ -111,7 +112,7 @@ struct update_domain_fixture
     std::string test_domain_handle;
 
     update_domain_fixture()
-    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
+    :registrar_handle (static_cast<std::string>(fixture_ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
     , xmark(RandomDataGenerator().xnumstring(6))
     , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
@@ -125,7 +126,7 @@ struct update_domain_fixture
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
-            .exec(ctx);
+            .exec(fixture_ctx);
 
         Fred::CreateContact(registrant_contact_handle,registrar_handle)
                 .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
@@ -133,7 +134,7 @@ struct update_domain_fixture
                 .set_street1(std::string("STR1")+xmark)
                 .set_city("Praha").set_postalcode("11150").set_country("CZ")
                 .set_discloseaddress(true)
-                .exec(ctx);
+                .exec(fixture_ctx);
 
         Fred::CreateDomain(
                 test_domain_handle //const std::string& fqdn
@@ -141,7 +142,8 @@ struct update_domain_fixture
                 , registrant_contact_handle //registrant
                 )
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
-        .exec(ctx);
+        .exec(fixture_ctx);
+        fixture_ctx.commit_transaction();
     }
     ~update_domain_fixture()
     {}
@@ -1083,6 +1085,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
     catch(const Fred::UpdateDomain::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_registrant_handle());
+        BOOST_MESSAGE(bad_registrant_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_unknown_registrant_handle().compare(bad_registrant_handle) == 0);
     }
 
