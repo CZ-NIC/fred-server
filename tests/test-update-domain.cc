@@ -142,8 +142,6 @@ struct update_domain_fixture
                 )
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .exec(ctx);
-
-        ctx.commit_transaction();//commit fixture
     }
     ~update_domain_fixture()
     {}
@@ -192,9 +190,6 @@ struct update_domain_admin_nsset_keyset_fixture
         Fred::CreateKeyset(test_keyset_handle, registrar_handle)
                 //.set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
                 .exec(ctx);
-
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~update_domain_admin_nsset_keyset_fixture(){}

@@ -214,7 +214,6 @@ struct merge_contact_contacts_fixture
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
             .exec(ctx);
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_contacts_fixture(){}
@@ -261,8 +260,6 @@ struct merge_contact_domain_fixture
                 )
         .set_admin_contacts(Util::vector_of<std::string>(src_contact_handle))
         .exec(ctx);
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_domain_fixture(){}
@@ -296,8 +293,6 @@ struct merge_contact_n_nsset_fixture
                 .set_tech_contacts(Util::vector_of<std::string>(src_contact_handle))
                 .exec(ctx);
         }//for nsset_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_n_nsset_fixture(){}
@@ -326,8 +321,6 @@ struct merge_contact_n_keyset_fixture
                     .set_tech_contacts(Util::vector_of<std::string>(src_contact_handle))
                     .exec(ctx);
         }//for keyset_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_n_keyset_fixture(){}
@@ -364,8 +357,6 @@ struct merge_contact_n_domain_owner_fixture
             .set_admin_contacts(Util::vector_of<std::string>(common_contact_handle))
             .exec(ctx);
         }//for domain_owner_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_n_domain_owner_fixture(){}
@@ -401,8 +392,6 @@ struct merge_contact_n_domain_admin_fixture
             .set_admin_contacts(Util::vector_of<std::string>(src_contact_handle))
             .exec(ctx);
         }//for domain_admin_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_n_domain_admin_fixture(){}
