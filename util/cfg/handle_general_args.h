@@ -76,7 +76,7 @@ static void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
 
 /**
  * \class HandleGeneralArgs
- * \brief common options and config file handler
+ * \brief common options and config file handler for tests
  */
 class HandleGeneralArgs : public HandleArgs
 {
@@ -290,11 +290,11 @@ public:
  * \class HandleConfigFileArgsGrp
  * \brief config file handler
  */
-class HandleConfigFileArgsGrp : public HandleGrpArgs
+class HandleConfigFileGrpArgs : public HandleGrpArgs
                                 , private HandleConfigFileArgs
 {
 public:
-    HandleConfigFileArgsGrp(const std::string def_cfg)
+    HandleConfigFileGrpArgs(const std::string def_cfg)
         : HandleConfigFileArgs(def_cfg) {};
 
     boost::shared_ptr<boost::program_options::options_description>

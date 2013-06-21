@@ -138,7 +138,7 @@ CommandOptionGroups cog(chpv);
 //common config file processing in path 0
 HandlerGrpVector config_gv = boost::assign::list_of
     (HandleGrpArgsPtr(
-            new HandleConfigFileArgsGrp(CONFIG_FILE))) ;
+            new HandleConfigFileGrpArgs(CONFIG_FILE))) ;
 HandlerGrpVector loging_gv = boost::assign::list_of
     (HandleGrpArgsPtr(
             new HandleLoggingArgsGrp));
