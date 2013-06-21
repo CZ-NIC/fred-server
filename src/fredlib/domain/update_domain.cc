@@ -349,6 +349,7 @@ namespace Fred
                 {
                     ctx.get_conn().exec("SAVEPOINT admin_contact");
                     ctx.get_conn().exec_params(sql_i.str(), params_i);
+                    ctx.get_conn().exec("RELEASE SAVEPOINT admin_contact");
                 }
                 catch(const std::exception& ex)
                 {
