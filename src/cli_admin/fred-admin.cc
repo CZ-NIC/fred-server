@@ -78,7 +78,7 @@ const string prog_name = "fred-admin";
 //print help if required
 HandlerGrpVector help_gv = boost::assign::list_of
     (HandleGrpArgsPtr(
-            new HandleHelpArgGrp("\nUsage: " + prog_name + " <switches>\n")));
+            new HandleHelpGrpArg("\nUsage: " + prog_name + " <switches>\n")));
 
 //print help on dates if required
 HandlerGrpVector help_dates_gv = boost::assign::list_of
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
     try
     {
         //config
-        fa = CfgArgGroups::instance<HandleHelpArgGrp>(global_hpg)->handle(argc, argv);
+        fa = CfgArgGroups::instance<HandleHelpGrpArg>(global_hpg)->handle(argc, argv);
 
         // setting up logger
         setup_admin_logging(CfgArgGroups::instance());

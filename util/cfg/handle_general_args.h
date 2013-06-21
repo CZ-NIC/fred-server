@@ -259,13 +259,13 @@ public:
  * \class HandleHelpArgGrp
  * \brief common options and config file handler
  */
-class HandleHelpArgGrp : public HandleGrpArgs
+class HandleHelpGrpArg : public HandleGrpArgs
                         , private HandleHelpArg
 {
 public:
 
-    HandleHelpArgGrp(){}
-    HandleHelpArgGrp(const std::string& usage)
+    HandleHelpGrpArg(){}
+    HandleHelpGrpArg(const std::string& usage)
         : HandleHelpArg(usage){}
 
     boost::shared_ptr<boost::program_options::options_description>
