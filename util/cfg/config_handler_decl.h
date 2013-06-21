@@ -86,7 +86,7 @@ private:
     }
 
 public:
-    template <class HELP> static  CfgArgs * instance(const HandlerPtrVector& hpv);
+    template <class HELP> static  CfgArgs * init(const HandlerPtrVector& hpv);
     static CfgArgs * instance();
 
     FakedArgs fa;
@@ -108,7 +108,7 @@ public:
 
 
 //setter
-template <class HELP> CfgArgs* CfgArgs::instance(const HandlerPtrVector& hpv)
+template <class HELP> CfgArgs* CfgArgs::init(const HandlerPtrVector& hpv)
 {
     std::auto_ptr<CfgArgs>
     tmp_instance(new CfgArgs(hpv));
@@ -181,7 +181,7 @@ private:
     }
 
 public:
-    template <class HELP> static  CfgArgGroups * instance(const HandlerPtrGrid& hpg);
+    template <class HELP> static  CfgArgGroups * init(const HandlerPtrGrid& hpg);
     static CfgArgGroups * instance();
 
     FakedArgs fa;
@@ -205,7 +205,7 @@ public:
 };//class CfgArgGroups
 
 //setter
-template <class HELP> CfgArgGroups* CfgArgGroups::instance(const HandlerPtrGrid& hpg)
+template <class HELP> CfgArgGroups* CfgArgGroups::init(const HandlerPtrGrid& hpg)
 {
     std::auto_ptr<CfgArgGroups>
     tmp_instance(new CfgArgGroups(hpg));
