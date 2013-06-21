@@ -161,7 +161,8 @@ public:
 
         //command option have to be first on commandline to prevent command option ambiguity with others
         FakedArgs first_fa;
-        //copy only first option with possible arg
+        //copy only first option with possible arguments
+        //fred-admin --command arg1 arg2 ...
         int prefix_count=0;//option begin counter
         for (int i = 0; i < fa.get_argc(); ++i)
         {
