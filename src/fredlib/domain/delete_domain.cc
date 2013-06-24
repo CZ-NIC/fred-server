@@ -24,6 +24,7 @@
 #include <string>
 
 #include "fredlib/domain/delete_domain.h"
+#include "fredlib/object/object.h"
 
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
@@ -61,15 +62,6 @@ namespace Fred
                 domain_id = domain_id_res[0][0];
             }
 
-            Database::Result update_erdate_res = ctx.get_conn().exec_params(
-                "UPDATE object_registry SET erdate = now() "
-                " WHERE id = $1::integer RETURNING id"
-                , Database::query_param_list(domain_id));
-            if (update_erdate_res.size() != 1)
-            {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("erdate update failed"));
-            }
-
             ctx.get_conn().exec_params("DELETE FROM domain_contact_map WHERE domainid = $1::integer"
                 , Database::query_param_list(domain_id));//delete 0..n rows, nothing to be checked in result
 
@@ -89,13 +81,7 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Fred::InternalError("delete domain failed"));
             }
 
-            Database::Result delete_object_res = ctx.get_conn().exec_params(
-                "DELETE FROM object WHERE id = $1::integer RETURNING id"
-                    , Database::query_param_list(domain_id));
-            if (delete_object_res.size() != 1)
-            {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("delete object failed"));
-            }
+            Fred::DeleteObject(fqdn_,"domain").exec(ctx);
 
         }//try
         catch(ExceptionStack& ex)

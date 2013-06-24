@@ -222,7 +222,8 @@ namespace Fred
                 "SELECT oreg.id FROM object_registry oreg "
                 " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
                 " WHERE oreg.name = CASE WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
-                " ELSE UPPER($1::text) END AND oreg.erdate IS NULL"
+                " ELSE UPPER($1::text) END AND oreg.erdate IS NULL "
+                " FOR UPDATE OF oreg"
                 , Database::query_param_list(handle_)(obj_type_));
 
                 if(object_id_res.size() == 0)
@@ -325,5 +326,90 @@ namespace Fred
         return ss.str();
     }
 
+    DeleteObject::DeleteObject(const std::string& handle
+        , const std::string& obj_type)
+    : handle_(handle)
+    , obj_type_(obj_type)
+    {}
+
+    void DeleteObject::exec(OperationContext& ctx)
+    {
+        try
+        {
+            //check object type
+            {
+                Database::Result object_type_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
+                    , Database::query_param_list(obj_type_));
+                if(object_type_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_type(obj_type_));
+                }
+                if (object_type_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
+                }
+            }
+
+            unsigned long long object_id = 0;
+            {
+                Database::Result object_id_res = ctx.get_conn().exec_params(
+                "SELECT oreg.id FROM object_registry oreg "
+                " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
+                " WHERE oreg.name = CASE WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
+                " ELSE UPPER($1::text) END AND oreg.erdate IS NULL "
+                " FOR UPDATE OF oreg"
+                , Database::query_param_list(handle_)(obj_type_));
+
+                if(object_id_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_handle(handle_));
+                }
+                if (object_id_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get object handle"));
+                }
+                object_id = static_cast<unsigned long long> (object_id_res[0][0]);
+            }
+
+            Database::Result update_erdate_res = ctx.get_conn().exec_params(
+                "UPDATE object_registry SET erdate = now() "
+                " WHERE id = $1::integer RETURNING id"
+                , Database::query_param_list(object_id));
+            if (update_erdate_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("erdate update failed"));
+            }
+
+            Database::Result delete_object_res = ctx.get_conn().exec_params(
+                "DELETE FROM object WHERE id = $1::integer RETURNING id"
+                    , Database::query_param_list(object_id));
+            if (delete_object_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("delete object failed"));
+            }
+
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+    }
+
+    std::ostream& operator<<(std::ostream& os, const DeleteObject& i)
+    {
+        os << "#DeleteObject obj_type: " << i.obj_type_
+            << " handle: " << i.handle_
+            ;
+        return os;
+    }
+
+    std::string DeleteObject::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 
 }//namespace Fred
