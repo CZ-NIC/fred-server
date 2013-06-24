@@ -798,7 +798,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/find_contact_duplicates.cc \
 		src/fredlib/contact/find_contact_duplicates.h \
 		src/fredlib/contact/merge_contact_email_notification_data.cc \
-		src/fredlib/contact/merge_contact_email_notification_data.h
+		src/fredlib/contact/merge_contact_email_notification_data.h \
+		src/fredlib/domain/delete_domain.h \
+		src/fredlib/domain/delete_domain.cc
 
 #
 # src/fredlib/libfred.a
