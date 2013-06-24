@@ -347,7 +347,7 @@ template <typename CONTAINER_TYPE > struct list_of_gv
         this->push_back(t);
         return *this;
     }
-    list_of_gv& operator()(const CommandOptionGroups& t)
+    list_of_gv& addCommandOptions(const CommandOptionGroups& t)
     {
         this->push_back(t.get_command_selection_gv());
         this->push_back(t.get_command_options_gv());

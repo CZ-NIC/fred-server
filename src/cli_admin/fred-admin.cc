@@ -157,7 +157,7 @@ HandlerGrpVector sms_gv = boost::assign::list_of
 
 HandlerPtrGrid global_hpg = gv_list
     (help_gv)(help_dates_gv)
-    (cog)
+    .addCommandOptions(cog)
     (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)
     ;
 
