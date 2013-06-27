@@ -88,10 +88,10 @@ public:
     PoDescs po_description;
 
 #ifdef CONFIG_FILE
-    HandleGeneralArgs(const std::string def_cfg = std::string(CONFIG_FILE)) 
+    HandleGeneralArgs(const std::string& def_cfg = std::string(CONFIG_FILE))
         : default_config(def_cfg) {};
 #else
-    HandleGeneralArgs(const std::string def_cfg = std::string("")) 
+    HandleGeneralArgs(const std::string& def_cfg = std::string(""))
         : default_config(def_cfg) {};
 #endif
 
@@ -212,7 +212,7 @@ class HandleConfigFileArgs : public HandleArgs
 
 public:
 
-    HandleConfigFileArgs(const std::string def_cfg)
+    HandleConfigFileArgs(const std::string& def_cfg)
         : default_config(def_cfg) {};
 
     boost::shared_ptr<boost::program_options::options_description>
@@ -294,7 +294,7 @@ class HandleConfigFileGrpArgs : public HandleGrpArgs
                                 , private HandleConfigFileArgs
 {
 public:
-    HandleConfigFileGrpArgs(const std::string def_cfg)
+    HandleConfigFileGrpArgs(const std::string& def_cfg)
         : HandleConfigFileArgs(def_cfg) {};
 
     boost::shared_ptr<boost::program_options::options_description>
