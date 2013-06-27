@@ -46,11 +46,9 @@ class FakedArgs //faked args
 public:
     void copy(const FakedArgs& fa)
     {
-        std::size_t vects_size = fa.argv_buffers.size();
-        argv_buffers.reserve(vects_size);
-        argv.reserve(vects_size);
-        argv_buffers.clear();
         argv_buffers=fa.argv_buffers;
+
+        argv.reserve( fa.argv_buffers.size() );
         argv.clear();
         for(argv_buffers_t::iterator i = argv_buffers.begin()
                 ; i!=argv_buffers.end();++i)
