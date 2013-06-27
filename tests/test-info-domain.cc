@@ -173,6 +173,8 @@ BOOST_AUTO_TEST_CASE(info_domain)
             , Optional<Nullable<std::string> >()//dont change keyset
             , Util::vector_of<std::string> (admin_contact1_handle)(registrant_contact_handle) //add admin contacts
             , Util::vector_of<std::string> (admin_contact2_handle) //remove admin contacts
+            , Optional<boost::gregorian::date>()
+            , Optional<bool>()
             , Optional<unsigned long long>() //request_id not set
             ).exec(ctx);
 
