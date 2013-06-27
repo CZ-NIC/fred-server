@@ -281,7 +281,8 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
                 , Util::vector_of<Fred::DnsHost>
                     (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //add_dns
                     (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2"))) //add_dns
-                , Util::vector_of<std::string>("a.ns.nic.cz") //rem_dns
+                    (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")))//add_dns
+                , Util::vector_of<std::string>("a.ns.nic.cz")("b.ns.nic.cz") //rem_dns
                 , Util::vector_of<std::string>(admin_contact2_handle) //std::vector<std::string>() //add_tech_contact
                 , Util::vector_of<std::string>(admin_contact2_handle) //std::vector<std::string>() //rem_tech_contact
                 , Optional<short>(0) //tech_check_level
@@ -311,7 +312,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     //update dns_hosts
     info_data_3_with_changes.info_nsset_data.dns_hosts = Util::vector_of<Fred::DnsHost>
-        (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4")))
+        (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")))
         (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
         (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2")));
 

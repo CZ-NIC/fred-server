@@ -263,8 +263,8 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
         , Optional<std::string>()//const Optional<std::string>& authinfo
         , std::vector<std::string>() //const std::vector<std::string>& add_tech_contact
         , std::vector<std::string>()//const std::vector<std::string>& rem_tech_contact
-        , std::vector<Fred::DnsKey>()//const std::vector<DnsKey>& add_dns_key
-        , std::vector<Fred::DnsKey>()//const std::vector<DnsKey>& rem_dns_key
+        , Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "key"))//const std::vector<DnsKey>& add_dns_key
+        , Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "key"))//const std::vector<DnsKey>& rem_dns_key
         , Optional<unsigned long long>()//const Optional<unsigned long long> logd_request_id
         ).exec(ctx);
 

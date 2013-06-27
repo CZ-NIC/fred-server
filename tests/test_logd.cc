@@ -1752,7 +1752,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_irregular)
 
     std::string time_string(TimeStamp::microsec());
     std::string reg_handle = "REG-"+ time_string;
-    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+    test.createSession(0, reg_handle.c_str());
 
     boost::gregorian::date current_date = boost::gregorian::day_clock::local_day();
 

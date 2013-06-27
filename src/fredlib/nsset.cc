@@ -508,7 +508,7 @@ public:
         Database::Row::Iterator col = (*it).begin();
 
         Database::ID nsset_historyid = *col;
-        Database::ID nsset_id        = *(++col);
+                                        (++col);//Database::ID nsset_id
         Database::ID contact_id      = *(++col);
         std::string  contact_handle  = *(++col);
         
@@ -533,7 +533,7 @@ public:
         Database::Row::Iterator col = (*it).begin();
 
         Database::ID nsset_historyid = *col;
-        Database::ID nsset_id        = *(++col);
+                                        (++col);//Database::ID nsset_id
         std::string  host_fqdn       = *(++col);
         std::string  host_ip         = *(++col);
         

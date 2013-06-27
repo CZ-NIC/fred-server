@@ -21,7 +21,6 @@ void Union::serialize(Database::SelectQuery& _q) {
     throw std::runtime_error(msg.str());
   }
 
-  bool at_least_one = false;
   std::vector<Filter*>::iterator it_f = filter_list.begin();
   std::vector<SelectQuery*>::iterator it_q = query_list.begin();
   for (; it_f != filter_list.end(); ++it_f, ++it_q) {
@@ -30,7 +29,6 @@ void Union::serialize(Database::SelectQuery& _q) {
       (*it_q)->make();
       _q.buffer() << (it_f != filter_list.begin() ? " UNION " : "" );
       _q.buffer() << (*it_q)->buffer().str();
-      at_least_one = true;
     }
   }
   _q.finalize();

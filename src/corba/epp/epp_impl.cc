@@ -4633,12 +4633,10 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     std::string valexdate;
     ccReg::Disclose publish;
     int id, nssetid, contactid, adminid, keysetid;
-    int seq, zone;
+    int zone;
     std::vector<int> ac_add, ac_rem, tc_rem;
     unsigned int i, j;
     short int code = 0;
-
-    seq=0;
 
     EPPAction action(this, params.loginID, EPP_DomainUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
@@ -6523,7 +6521,6 @@ ccReg_EPP_i::KeySetUpdate(
     // dnsk_add tests - if exact same exist for this keyset
     if (!code) {
         for (int ii = 0; ii < (int)dnsk_add.length(); ii++) {
-            bool pass = true;
             int id;
             char *key;
             // keys are inserted into database without whitespaces
@@ -6531,7 +6528,6 @@ ccReg_EPP_i::KeySetUpdate(
                 code = COMMAND_FAILED;
                 LOG(WARNING_LOG, "removeWhitespaces failed");
                 free(key);
-                pass = false;
                 break;
             }
             id = action.getDB()->GetDNSKeyId(
@@ -6548,7 +6544,6 @@ ccReg_EPP_i::KeySetUpdate(
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_dnskey_add, ii,
                         REASON_MSG_DNSKEY_EXIST);
-                pass = false;
                 break;
             }
         }
