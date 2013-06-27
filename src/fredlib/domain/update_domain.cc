@@ -25,6 +25,7 @@
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "fredlib/domain/update_domain.h"
 #include "fredlib/object/object.h"
@@ -51,6 +52,8 @@ namespace Fred
             , const Optional<Nullable<std::string> >& keyset
             , const std::vector<std::string>& add_admin_contact
             , const std::vector<std::string>& rem_admin_contact
+            , const Optional<boost::gregorian::date>& enum_validation_expiration
+            , const Optional<bool>& enum_publish_flag
             , const Optional<unsigned long long> logd_request_id
             )
     : fqdn_(fqdn)
@@ -61,6 +64,8 @@ namespace Fred
     , keyset_(keyset)
     , add_admin_contact_(add_admin_contact)
     , rem_admin_contact_(rem_admin_contact)
+    , enum_validation_expiration_(enum_validation_expiration)
+    , enum_publish_flag_(enum_publish_flag)
     , logd_request_id_(logd_request_id.isset()
         ? Nullable<unsigned long long>(logd_request_id.get_value())
         : Nullable<unsigned long long>())//is NULL if not set
@@ -126,6 +131,18 @@ namespace Fred
         return *this;
     }
 
+    UpdateDomain& UpdateDomain::set_enum_validation_expiration(const boost::gregorian::date& valexdate)
+    {
+        enum_validation_expiration_ = valexdate;
+        return *this;
+    }
+
+    UpdateDomain& UpdateDomain::set_enum_publish_flag(bool enum_publish_flag)
+    {
+        enum_publish_flag_ = enum_publish_flag;
+        return *this;
+    }
+
     UpdateDomain& UpdateDomain::set_logd_request_id(unsigned long long logd_request_id)
     {
         logd_request_id_ = logd_request_id;
@@ -154,29 +171,42 @@ namespace Fred
                 }
             }
 
-        //get domain_id and lock object_registry row for update
+        //get domain_id, ENUM flag and lock object_registry row for update
         unsigned long long domain_id =0;
+        bool is_enum_zone = false;
         {
-            Database::Result domain_id_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM domain d "
+            Database::Result domain_res = ctx.get_conn().exec_params(
+                "SELECT oreg.id, z.enum_zone FROM domain d "
+                " JOIN zone z ON z.id = d.zone "
                 " JOIN object_registry oreg ON d.id = oreg.id "
                 " JOIN enum_object_type eot ON oreg.type = eot.id AND eot.name = 'domain' "
                 " WHERE oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
                 " FOR UPDATE OF oreg"
                 , Database::query_param_list(fqdn_));
 
-            if (domain_id_res.size() == 0)
+            if (domain_res.size() == 0)
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_domain_fqdn(fqdn_));
             }
-            if (domain_id_res.size() != 1)
+            if (domain_res.size() != 1)
             {
                 BOOST_THROW_EXCEPTION(InternalError("failed to get domain"));
             }
 
-
-            domain_id = domain_id_res[0][0];
+            domain_id = static_cast<unsigned long long>(domain_res[0][0]);
+            is_enum_zone = static_cast<bool>(domain_res[0][1]);
         }
+
+        if (!is_enum_zone)//check ENUM specific parameters
+        {
+            if(enum_validation_expiration_.isset())
+                BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration set for non-ENUM domain"));
+            if(enum_publish_flag_.isset())
+                BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for not-ENUM domain"));
+        }
+        if (is_enum_zone && enum_validation_expiration_.isset()
+                && enum_validation_expiration_.get_value().is_special())
+                BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration requested for ENUM domain is not valid date"));
 
         //update object
         Fred::UpdateObject(fqdn_,"domain", registrar_, authinfo_).exec(ctx);
@@ -422,6 +452,39 @@ namespace Fred
         //check exception
         if(update_domain_exception.throw_me())
             BOOST_THROW_EXCEPTION(update_domain_exception);
+
+        //update enumval
+        if(enum_validation_expiration_.isset() || enum_publish_flag_.isset())
+        {
+            Database::QueryParams params;//query params
+            std::stringstream sql;
+            Util::HeadSeparator set_separator(" SET "," , ");
+
+            sql <<"UPDATE enumval ";
+
+            if(enum_validation_expiration_.isset())
+            {
+                params.push_back(enum_validation_expiration_.get_value());
+                sql << set_separator.get() << " exdate = $"
+                    << params.size() << "::date ";
+            }
+
+            if(enum_publish_flag_.isset())
+            {
+                params.push_back(enum_publish_flag_.get_value());
+                sql << set_separator.get() << " publish = $"
+                    << params.size() << "::boolean ";
+            }
+
+            params.push_back(domain_id);
+            sql << " WHERE domainid = $" << params.size() << "::integer RETURNING domainid";
+
+            Database::Result update_enumval_res = ctx.get_conn().exec_params(sql.str(), params);
+            if (update_enumval_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("failed to update enumval"));
+            }
+        }
 
         //save history
         {
