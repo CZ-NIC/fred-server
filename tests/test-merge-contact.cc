@@ -1298,7 +1298,9 @@ struct contact_merge_duplicate_auto_fixture
         , merge_contact_r_keyset_fixture(keysets)
         , merge_contact_r_domain_owner_fixture(domainowners)
         , merge_contact_r_domain_admin_fixture(domainadmins)
-        {}
+        {
+            ctx.commit_transaction();
+        }
     ~contact_merge_duplicate_auto_fixture(){}
 };
 
