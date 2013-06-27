@@ -79,7 +79,6 @@ namespace Fred
 
 
             //info about contact and optionally lock object_registry row for update
-            unsigned long long contact_id = 0;
             {
                 Database::Result res = ctx.get_conn().exec_params(std::string(
                 "SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 0
