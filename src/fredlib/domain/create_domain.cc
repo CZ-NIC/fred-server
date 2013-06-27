@@ -201,6 +201,13 @@ namespace Fred
                     if(!enum_publish_flag_.isset())
                         BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag not set for ENUM domain"));
                 }
+                else
+                {
+                    if(enum_validation_expiration_.isset())
+                        BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration set for non-ENUM domain"));
+                    if(enum_publish_flag_.isset())
+                        BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for not-ENUM domain"));
+                }
             }//zone
 
             //expiration_period
