@@ -27,7 +27,8 @@
 #include <string>
 #include <vector>
 
-#include "boost/date_time/posix_time/posix_time.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
@@ -48,7 +49,10 @@ namespace Fred
         Optional<Nullable<std::string> > keyset_;//set keyset
         std::vector<std::string> admin_contacts_; //set admin contacts
         Optional<unsigned> expiration_period_;//for exdate in months
+        Optional<boost::gregorian::date> enum_validation_expiration_;//the expiration date of the ENUM domain validation, have to be set for enum domain, otherwise unused
+        Optional<bool> enum_publish_flag_;//flag for publishing ENUM number and associated contact in public directory, have to be set for enum domain, otherwise unused
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
+
     public:
         DECLARE_EXCEPTION_DATA(unknown_zone_fqdn, std::string);
 
@@ -79,6 +83,8 @@ namespace Fred
                 , const Optional<Nullable<std::string> >& keyset
                 , const std::vector<std::string>& admin_contacts
                 , const Optional<unsigned>& expiration_period
+                , const Optional<boost::gregorian::date>& enum_validation_expiration
+                , const Optional<bool>& enum_publish_flag
                 , const Optional<unsigned long long> logd_request_id);
 
         CreateDomain& set_authinfo(const std::string& authinfo);
@@ -88,6 +94,8 @@ namespace Fred
         CreateDomain& set_keyset(const std::string& keyset);
         CreateDomain& set_admin_contacts(const std::vector<std::string>& admin_contacts);
         CreateDomain& set_expiration_period(unsigned expiration_period);
+        CreateDomain& set_enum_validation_expiration(const boost::gregorian::date& valexdate);
+        CreateDomain& set_enum_publish_flag(bool enum_publish_flag);
         CreateDomain& set_logd_request_id(unsigned long long logd_request_id);
         boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 

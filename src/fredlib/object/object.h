@@ -103,5 +103,24 @@ namespace Fred
         std::string to_string();
     };
 
+    class DeleteObject
+    {
+        const std::string handle_;//object identifier
+        const std::string obj_type_;//object type name
+    public:
+        DECLARE_EXCEPTION_DATA(unknown_object_handle, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_object_type<Exception>
+        , ExceptionData_unknown_object_handle<Exception>
+        {};
+        DeleteObject(const std::string& handle
+                , const std::string& obj_type);
+        void exec(OperationContext& ctx);
+
+        friend std::ostream& operator<<(std::ostream& os, const DeleteObject& i);
+        std::string to_string();
+    };
+
 }//namespace Fred
 #endif //OBJECT_H_

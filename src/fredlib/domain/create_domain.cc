@@ -55,6 +55,8 @@ namespace Fred
             , const Optional<Nullable<std::string> >& keyset
             , const std::vector<std::string>& admin_contacts
             , const Optional<unsigned>& expiration_period
+            , const Optional<boost::gregorian::date>& enum_validation_expiration
+            , const Optional<bool>& enum_publish_flag
             , const Optional<unsigned long long> logd_request_id
             )
     : fqdn_(fqdn)
@@ -65,6 +67,8 @@ namespace Fred
     , keyset_(keyset)
     , admin_contacts_(admin_contacts)
     , expiration_period_(expiration_period)
+    , enum_validation_expiration_(enum_validation_expiration)
+    , enum_publish_flag_(enum_publish_flag)
     , logd_request_id_(logd_request_id.isset()
             ? Nullable<unsigned long long>(logd_request_id.get_value())
             : Nullable<unsigned long long>())//is NULL if not set
@@ -112,6 +116,18 @@ namespace Fred
         return *this;
     }
 
+    CreateDomain& CreateDomain::set_enum_validation_expiration(const boost::gregorian::date& valexdate)
+    {
+        enum_validation_expiration_ = valexdate;
+        return *this;
+    }
+
+    CreateDomain& CreateDomain::set_enum_publish_flag(bool enum_publish_flag)
+    {
+        enum_publish_flag_ = enum_publish_flag;
+        return *this;
+    }
+
     CreateDomain& CreateDomain::set_logd_request_id(unsigned long long logd_request_id)
     {
         logd_request_id_ = logd_request_id;
@@ -140,6 +156,7 @@ namespace Fred
             }
             //zone
             unsigned long long zone_id = 0;
+            bool is_enum_zone = false;
             {
                 std::string domain(boost::to_lower_copy(fqdn_));
 
@@ -160,12 +177,13 @@ namespace Fred
                         if (domain.find(zone, from) != std::string::npos)
                         {
                             Database::Result zone_id_res = ctx.get_conn().exec_params(
-                                "SELECT id FROM zone WHERE lower(fqdn)=lower($1::text) FOR SHARE"
+                                "SELECT id, enum_zone  FROM zone WHERE lower(fqdn)=lower($1::text) FOR SHARE"
                                 , Database::query_param_list(domain.substr(from, std::string::npos)));
 
                             if(zone_id_res.size() == 1)
                             {
                                 zone_id = static_cast<unsigned long long>(zone_id_res[0][0]);
+                                is_enum_zone = static_cast<bool>(zone_id_res[0][1]);
                                 break;
                             }
                         }
@@ -175,6 +193,13 @@ namespace Fred
                 if(zone_id == 0)
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_fqdn(fqdn_));
+                }
+                if (is_enum_zone)//check ENUM specific parameters
+                {
+                    if((!enum_validation_expiration_.isset()) || (enum_validation_expiration_.get_value().is_special()))
+                        BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration not set for ENUM domain"));
+                    if(!enum_publish_flag_.isset())
+                        BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag not set for ENUM domain"));
                 }
             }//zone
 
@@ -438,6 +463,16 @@ namespace Fred
             if(create_domain_exception.throw_me())
                 BOOST_THROW_EXCEPTION(create_domain_exception);
 
+            if(is_enum_zone)//if ENUM domain, insert enumval
+            {
+                ctx.get_conn().exec_params(
+                    "INSERT INTO enumval(domainid, exdate, publish) "
+                    " VALUES ($1::integer, $2::date, $3::boolean)"
+                    , Database::query_param_list(object_id)
+                    (enum_validation_expiration_.get_value())
+                    (enum_publish_flag_.get_value()));
+            }
+
             //save history
             {
                 unsigned long long history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
@@ -506,6 +541,8 @@ namespace Fred
         for(std::vector<std::string>::const_iterator ci = i.admin_contacts_.begin()
                 ; ci != i.admin_contacts_.end() ; ++ci ) os << *ci;
         os << " expiration_period: " << i.expiration_period_.print_quoted()
+            << " enum_validation_expiration: " << i.enum_validation_expiration_.print_quoted()
+            << " enum_publish_flag: " << i.enum_publish_flag_.print_quoted()
             << " logd_request_id: " << i.logd_request_id_.print_quoted();
         return os;
     }
