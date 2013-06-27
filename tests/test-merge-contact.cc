@@ -206,6 +206,11 @@ struct merge_contact_contacts_fixture
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
             .exec(ctx);
+        BOOST_TEST_MESSAGE(std::string("merge_contact_contacts_fixture src_contact_handle: ") + src_contact_handle);
+
+        Fred::InfoContactOutput  ic = Fred::InfoContact(src_contact_handle,registrar_handle).exec(ctx);
+
+        BOOST_TEST_MESSAGE(std::string("merge_contact_contacts_fixture src_contact_handle roid: ") + ic.info_contact_data.roid);
 
         Fred::CreateContact(dst_contact_handle,registrar_handle)
             .set_name("COMMON NAME")
@@ -222,7 +227,6 @@ struct merge_contact_contacts_fixture
 struct merge_contact_domain_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     std::string test_nsset_handle;
     std::string test_keyset_handle;
     std::string test_domain_owner_handle;
@@ -270,7 +274,6 @@ struct merge_contact_domain_fixture
 struct merge_contact_n_nsset_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int nsset_count;
     std::string test_nsset_handle;
 
@@ -303,7 +306,6 @@ struct merge_contact_n_nsset_fixture
 struct merge_contact_r_nsset_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int nsset_count;
     std::string test_nsset_handle;
 
@@ -328,8 +330,6 @@ struct merge_contact_r_nsset_fixture
                 .set_tech_contacts(Util::vector_of<std::string>(dst_contact_handle))
                 .exec(ctx);
         }//for nsset_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_r_nsset_fixture(){}
@@ -339,7 +339,6 @@ struct merge_contact_r_nsset_fixture
 struct merge_contact_n_keyset_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int keyset_count;
     std::string test_keyset_handle;
 
@@ -368,7 +367,6 @@ struct merge_contact_n_keyset_fixture
 struct merge_contact_r_keyset_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int keyset_count;
     std::string test_keyset_handle;
 
@@ -389,8 +387,6 @@ struct merge_contact_r_keyset_fixture
                     .set_tech_contacts(Util::vector_of<std::string>(dst_contact_handle))
                     .exec(ctx);
         }//for keyset_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_r_keyset_fixture(){}
@@ -400,7 +396,6 @@ struct merge_contact_r_keyset_fixture
 struct merge_contact_n_domain_owner_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int domain_owner_count;
     std::string test_domain_owner_handle;
 
@@ -437,7 +432,6 @@ struct merge_contact_n_domain_owner_fixture
 struct merge_contact_r_domain_owner_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int domain_owner_count;
     std::string test_domain_owner_handle;
 
@@ -466,8 +460,6 @@ struct merge_contact_r_domain_owner_fixture
             .set_admin_contacts(Util::vector_of<std::string>(common_contact_handle))
             .exec(ctx);
         }//for domain_owner_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_r_domain_owner_fixture(){}
@@ -477,7 +469,6 @@ struct merge_contact_r_domain_owner_fixture
 struct merge_contact_n_domain_admin_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int domain_admin_count;
     std::string test_domain_admin_handle;
 
@@ -514,7 +505,6 @@ struct merge_contact_n_domain_admin_fixture
 struct merge_contact_r_domain_admin_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int domain_admin_count;
     std::string test_domain_admin_handle;
 
@@ -542,8 +532,6 @@ struct merge_contact_r_domain_admin_fixture
             .set_admin_contacts(Util::vector_of<std::string>(dst_contact_handle))
             .exec(ctx);
         }//for domain_admin_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_r_domain_admin_fixture(){}
@@ -557,8 +545,6 @@ struct merge_contact_n_fixture
     , virtual merge_contact_n_domain_owner_fixture
     , virtual merge_contact_n_domain_admin_fixture
 {
-    Fred::OperationContext ctx;
-
     merge_contact_n_fixture(int nssets, int keysets, int domainowners, int domainadmins )
         : merge_contact_n_nsset_fixture(nssets)
         , merge_contact_n_keyset_fixture(keysets)
@@ -681,7 +667,6 @@ struct merge_contact_n_fixture
             info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
         BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 
-        ctx.commit_transaction();//commit test
     }
 };
 
