@@ -49,13 +49,15 @@ namespace Fred
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
 
     public:
-        DECLARE_EXCEPTION_DATA(already_set_dns_key, DnsKey);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_dns_key, DnsKey);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(unknown_technical_contact_handle, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_technical_contact_handle, std::string);
 
         struct Exception
         : virtual Fred::OperationException
-        , ExceptionData_unknown_technical_contact_handle<Exception>
-        , ExceptionData_already_set_technical_contact_handle<Exception>
-        , ExceptionData_already_set_dns_key<Exception>
+        , ExceptionData_vector_of_unknown_technical_contact_handle<Exception>
+        , ExceptionData_vector_of_already_set_technical_contact_handle<Exception>
+        , ExceptionData_vector_of_already_set_dns_key<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
         {};
 

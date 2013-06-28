@@ -108,6 +108,9 @@ namespace Fred
             }
 
             unsigned long long object_id = CreateObject("keyset", handle_, registrar_, authinfo_).exec(ctx);
+
+            Exception create_keyset_exception;
+
             //create keyset
             {
                 //insert
@@ -121,16 +124,21 @@ namespace Fred
                     {
                         try
                         {
+                            ctx.get_conn().exec("SAVEPOINT dnskey");
                             ctx.get_conn().exec_params(
                             "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
                             ", $2::integer, $3::integer, $4::integer, $5::text)"
                             , Database::query_param_list(object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
+                            ctx.get_conn().exec("RELEASE SAVEPOINT dnskey");
                         }
                         catch(const std::exception& ex)
                         {
                             std::string what_string(ex.what());
                             if(what_string.find("dnskey_unique_key") != std::string::npos)
-                                BOOST_THROW_EXCEPTION(Exception().set_already_set_dns_key(*i));
+                            {
+                                create_keyset_exception.add_already_set_dns_key(*i);
+                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnskey");
+                            }
                             else
                                 throw;
                         }
@@ -163,7 +171,8 @@ namespace Fred
 
                             if (lock_res.size() == 0)
                             {
-                                BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                                create_keyset_exception.add_unknown_technical_contact_handle(*i);
+                                continue;//for tech_contacts_
                             }
                             if (lock_res.size() != 1)
                             {
@@ -181,13 +190,18 @@ namespace Fred
 
                         try
                         {
+                            ctx.get_conn().exec("SAVEPOINT tech_contact");
                             ctx.get_conn().exec_params(sql_i.str(), params_i);
+                            ctx.get_conn().exec("RELEASE SAVEPOINT tech_contact");
                         }
                         catch(const std::exception& ex)
                         {
                             std::string what_string(ex.what());
                             if(what_string.find("keyset_contact_map_pkey") != std::string::npos)
-                                BOOST_THROW_EXCEPTION(Exception().set_already_set_technical_contact_handle(*i));
+                            {
+                                create_keyset_exception.add_already_set_technical_contact_handle(*i);
+                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT tech_contact");
+                            }
                             else
                                 throw;
                         }
@@ -211,6 +225,10 @@ namespace Fred
                     timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
                 }
             }
+
+            //check exception
+            if(create_keyset_exception.throw_me())
+                BOOST_THROW_EXCEPTION(create_keyset_exception);
 
             //save history
             {
