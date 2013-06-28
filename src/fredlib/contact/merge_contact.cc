@@ -355,7 +355,7 @@ namespace Fred
                     }
                     catch(UpdateKeyset::Exception& ex)
                     {
-                        if(ex.is_set_already_set_technical_contact_handle())
+                        if(ex.is_set_vector_of_already_set_technical_contact_handle())
                         {
                             //only remove source tech contact, dest tech contact is already there
                             UpdateKeyset uk(tmp.handle, registrar_);

@@ -88,6 +88,7 @@ const std::string server_name = "test-update-keyset";
 
 struct update_keyset_fixture
 {
+    Fred::OperationContext fixture_ctx;
     Fred::OperationContext ctx;
     std::string registrar_handle;
     std::string xmark;
@@ -97,7 +98,7 @@ struct update_keyset_fixture
     std::string test_keyset_handle;
 
     update_keyset_fixture()
-    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
+    :registrar_handle (static_cast<std::string>(fixture_ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
     , xmark(RandomDataGenerator().xnumstring(6))
     , admin_contact4_handle(std::string("TEST-ADMIN-CONTACT4-HANDLE")+xmark)
     , admin_contact5_handle(std::string("TEST-ADMIN-CONTACT5-HANDLE")+xmark)
@@ -112,7 +113,8 @@ struct update_keyset_fixture
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
-            .exec(ctx);
+            .exec(fixture_ctx);
+        BOOST_MESSAGE(std::string("admin_contact4_handle: ") + admin_contact4_handle);
 
         Fred::CreateContact(admin_contact5_handle,registrar_handle)
             .set_name(admin_contact5_handle+xmark)
@@ -120,7 +122,8 @@ struct update_keyset_fixture
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
-            .exec(ctx);
+            .exec(fixture_ctx);
+        BOOST_MESSAGE(std::string("admin_contact5_handle: ") + admin_contact5_handle);
 
         Fred::CreateContact(admin_contact6_handle,registrar_handle)
             .set_name(admin_contact6_handle+xmark)
@@ -128,14 +131,15 @@ struct update_keyset_fixture
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
-            .exec(ctx);
+            .exec(fixture_ctx);
+        BOOST_MESSAGE(std::string("admin_contact6_handle: ") + admin_contact6_handle);
 
         Fred::CreateKeyset(test_keyset_handle, registrar_handle)
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
                 .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
-                .exec(ctx);
-
-        ctx.commit_transaction();//commit fixture
+                .exec(fixture_ctx);
+        BOOST_MESSAGE(std::string("test_keyset_handle: ") + test_keyset_handle);
+        fixture_ctx.commit_transaction();
     }
     ~update_keyset_fixture()
     {}
@@ -619,6 +623,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_wrong_tech_contact, update_keyset_fixt
 
     Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
 
+    BOOST_MESSAGE(std::string("handle: ") + info_data_1.info_keyset_data.handle + " roid: " + info_data_1.info_keyset_data.roid);
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
@@ -629,8 +634,9 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_wrong_tech_contact, update_keyset_fixt
     }
     catch(const Fred::UpdateKeyset::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_unknown_technical_contact_handle());
-        BOOST_CHECK(ex.get_unknown_technical_contact_handle().compare(bad_tech_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_unknown_technical_contact_handle());
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_vector_of_unknown_technical_contact_handle().at(0).compare(bad_tech_contact_handle) == 0);
     }
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
@@ -655,8 +661,8 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_tech_contact, update_key
     }
     catch(const Fred::UpdateKeyset::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_already_set_technical_contact_handle());
-        BOOST_CHECK(ex.get_already_set_technical_contact_handle().compare(admin_contact6_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_already_set_technical_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_already_set_technical_contact_handle().at(0).compare(admin_contact6_handle) == 0);
     }
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
@@ -684,8 +690,8 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_wrong_tech_contact, update_keyset_fixt
     }
     catch(const Fred::UpdateKeyset::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_unknown_technical_contact_handle());
-        BOOST_CHECK(ex.get_unknown_technical_contact_handle().compare(bad_tech_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_unknown_technical_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_unknown_technical_contact_handle().at(0).compare(bad_tech_contact_handle) == 0);
     }
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
@@ -713,8 +719,8 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_unassigned_tech_contact, update_keyset
     }
     catch(const Fred::UpdateKeyset::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_unassigned_technical_contact_handle());
-        BOOST_CHECK(ex.get_unassigned_technical_contact_handle().compare(bad_tech_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_unassigned_technical_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_unassigned_technical_contact_handle().at(0).compare(bad_tech_contact_handle) == 0);
     }
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
@@ -740,8 +746,8 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_dnskey, update_keyset_fi
     }
     catch(const Fred::UpdateKeyset::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_already_set_dns_key());
-        BOOST_CHECK(ex.get_already_set_dns_key() == Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"));
+        BOOST_CHECK(ex.is_set_vector_of_already_set_dns_key());
+        BOOST_CHECK(ex.get_vector_of_already_set_dns_key().at(0) == Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"));
     }
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
@@ -766,8 +772,8 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_unassigned_dnskey, update_keyset_fixture)
     }
     catch(const Fred::UpdateKeyset::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_unassigned_dns_key());
-        BOOST_CHECK(ex.get_unassigned_dns_key() == Fred::DnsKey(257, 3, 5, "unassignedkey"));
+        BOOST_CHECK(ex.is_set_vector_of_unassigned_dns_key());
+        BOOST_CHECK(ex.get_vector_of_unassigned_dns_key().at(0) == Fred::DnsKey(257, 3, 5, "unassignedkey"));
     }
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);

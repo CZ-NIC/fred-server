@@ -144,6 +144,8 @@ namespace Fred
 
             Fred::UpdateObject(handle_,"keyset", registrar_, authinfo_).exec(ctx);
 
+            Exception update_keyset_exception;
+
             //add tech contacts
             if(!add_tech_contact_.empty())
             {
@@ -169,7 +171,8 @@ namespace Fred
 
                         if (lock_res.size() == 0)
                         {
-                            BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                            update_keyset_exception.add_unknown_technical_contact_handle(*i);
+                            continue;//for add_tech_contact_
                         }
                         if (lock_res.size() != 1)
                         {
@@ -188,13 +191,18 @@ namespace Fred
 
                     try
                     {
+                        ctx.get_conn().exec("SAVEPOINT add_tech_contact");
                         ctx.get_conn().exec_params(sql_i.str(), params_i);
+                        ctx.get_conn().exec("RELEASE SAVEPOINT add_tech_contact");
                     }
                     catch(const std::exception& ex)
                     {
                         std::string what_string(ex.what());
                         if(what_string.find("keyset_contact_map_pkey") != std::string::npos)
-                            BOOST_THROW_EXCEPTION(Exception().set_already_set_technical_contact_handle(*i));
+                        {
+                            update_keyset_exception.add_already_set_technical_contact_handle(*i);
+                            ctx.get_conn().exec("ROLLBACK TO SAVEPOINT add_tech_contact");
+                        }
                         else
                             throw;
                     }
@@ -225,7 +233,8 @@ namespace Fred
 
                         if (lock_res.size() == 0)
                         {
-                            BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                            update_keyset_exception.add_unknown_technical_contact_handle(*i);
+                            continue;//for rem_tech_contact_
                         }
                         if (lock_res.size() != 1)
                         {
@@ -245,7 +254,8 @@ namespace Fred
                     Database::Result keyset_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
                     if (keyset_del_res.size() == 0)
                     {
-                        BOOST_THROW_EXCEPTION(Exception().set_unassigned_technical_contact_handle(*i));
+                        update_keyset_exception.add_unassigned_technical_contact_handle(*i);
+                        continue;//for rem_tech_contact_
                     }
                     if (keyset_del_res.size() != 1)
                     {
@@ -266,7 +276,8 @@ namespace Fred
                         , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
                     if (rem_dns_key_res.size() == 0)
                     {
-                        BOOST_THROW_EXCEPTION(Exception().set_unassigned_dns_key(*i));
+                        update_keyset_exception.add_unassigned_dns_key(*i);
+                        continue;//for rem_dns_key_
                     }
                     if (rem_dns_key_res.size() != 1)
                     {
@@ -282,21 +293,30 @@ namespace Fred
                 {
                     try
                     {
+                        ctx.get_conn().exec("SAVEPOINT add_dns_key");
                         ctx.get_conn().exec_params(
                         "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
                         ", $2::integer, $3::integer, $4::integer, $5::text)"
                         , Database::query_param_list(keyset_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
+                        ctx.get_conn().exec("RELEASE SAVEPOINT add_dns_key");
                     }
                     catch(const std::exception& ex)
                     {
                         std::string what_string(ex.what());
                         if(what_string.find("dnskey_unique_key") != std::string::npos)
-                            BOOST_THROW_EXCEPTION(Exception().set_already_set_dns_key(*i));
+                        {
+                            update_keyset_exception.add_already_set_dns_key(*i);
+                            ctx.get_conn().exec("ROLLBACK TO SAVEPOINT add_dns_key");
+                        }
                         else
                             throw;
                     }
                 }//for i
             }//if add dns keys
+
+            //check exception
+            if(update_keyset_exception.throw_me())
+                BOOST_THROW_EXCEPTION(update_keyset_exception);
 
             //save history
             {
