@@ -198,8 +198,6 @@ namespace Fred
                 {
                     if((!enum_validation_expiration_.isset()) || (enum_validation_expiration_.get_value().is_special()))
                         BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration not set for ENUM domain"));
-                    if(!enum_publish_flag_.isset())
-                        BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag not set for ENUM domain"));
                 }
                 else
                 {
@@ -472,12 +470,35 @@ namespace Fred
 
             if(is_enum_zone)//if ENUM domain, insert enumval
             {
-                ctx.get_conn().exec_params(
-                    "INSERT INTO enumval(domainid, exdate, publish) "
-                    " VALUES ($1::integer, $2::date, $3::boolean)"
-                    , Database::query_param_list(object_id)
-                    (enum_validation_expiration_.get_value())
-                    (enum_publish_flag_.get_value()));
+                Database::QueryParams params;//query params
+                std::stringstream col_sql, val_sql;
+                Util::HeadSeparator col_separator("",", "), val_separator("",", ");
+
+                col_sql <<"INSERT INTO enumval (";
+                val_sql << " VALUES (";
+
+                //domainid
+                params.push_back(object_id);
+                col_sql << col_separator.get() << "domainid";
+                val_sql << val_separator.get() << "$" << params.size() <<"::integer";
+
+                //ENUM validation expiration date
+                params.push_back(enum_validation_expiration_.get_value());
+                col_sql << col_separator.get() << "exdate";
+                val_sql << val_separator.get() << "$" << params.size() <<"::date";
+
+                //ENUM publish flag
+                if(enum_publish_flag_.isset())
+                {
+                    params.push_back(enum_publish_flag_.get_value());
+                    col_sql << col_separator.get() << "publish";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                }
+                col_sql <<")";
+                val_sql << ")";
+
+                //insert into enumval
+                ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
             }
 
             //save history
