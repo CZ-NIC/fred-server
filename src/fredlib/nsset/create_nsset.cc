@@ -117,6 +117,9 @@ namespace Fred
             }
 
             unsigned long long object_id = CreateObject("nsset", handle_, registrar_, authinfo_).exec(ctx);
+
+            Exception create_nsset_exception;
+
             //create nsset
             {
                 Database::QueryParams params;//query params
@@ -151,10 +154,12 @@ namespace Fred
                         unsigned long long add_host_id = 0;
                         try
                         {
+                            ctx.get_conn().exec("SAVEPOINT dnshost");
                             Database::Result add_host_id_res = ctx.get_conn().exec_params(
                             "INSERT INTO host (nssetid, fqdn) VALUES( "
                             " $1::integer, LOWER($2::text)) RETURNING id"
                             , Database::query_param_list(object_id)(i->get_fqdn()));
+                            ctx.get_conn().exec("RELEASE SAVEPOINT dnshost");
 
                             add_host_id = static_cast<unsigned long long>(add_host_id_res[0][0]);
                         }
@@ -162,7 +167,10 @@ namespace Fred
                         {
                             std::string what_string(ex.what());
                             if(what_string.find("host_nssetid_fqdn_key") != std::string::npos)
-                                BOOST_THROW_EXCEPTION(Exception().set_already_set_dns_host(i->get_fqdn()));
+                            {
+                                create_nsset_exception.add_already_set_dns_host(i->get_fqdn());
+                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnshost");
+                            }
                             else
                                 throw;
                         }
@@ -173,16 +181,21 @@ namespace Fred
                         {
                             try
                             {
+                                ctx.get_conn().exec("SAVEPOINT dnshostipaddr");
                                 ctx.get_conn().exec_params(
                                 "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
                                 " VALUES($1::integer, $2::integer, $3::inet)"
                                 , Database::query_param_list(add_host_id)(object_id)(*j));
+                                ctx.get_conn().exec("RELEASE SAVEPOINT dnshostipaddr");
                             }
                             catch(const std::exception& ex)
                             {
                                 std::string what_string(ex.what());
                                 if(what_string.find("syntax for type inet") != std::string::npos)
-                                    BOOST_THROW_EXCEPTION(Exception().set_invalid_dns_host_ipaddr(*j));
+                                {
+                                    create_nsset_exception.add_invalid_dns_host_ipaddr(*j);
+                                    ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnshostipaddr");
+                                }
                                 else
                                     throw;
                             }
@@ -216,7 +229,8 @@ namespace Fred
 
                             if (lock_res.size() == 0)
                             {
-                                BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                                create_nsset_exception.add_unknown_technical_contact_handle(*i);
+                                continue;//for tech_contacts_
                             }
                             if (lock_res.size() != 1)
                             {
@@ -235,18 +249,27 @@ namespace Fred
 
                         try
                         {
+                            ctx.get_conn().exec("SAVEPOINT tech_contact");
                             ctx.get_conn().exec_params(sql_i.str(), params_i);
+                            ctx.get_conn().exec("RELEASE SAVEPOINT tech_contact");
                         }
                         catch(const std::exception& ex)
                         {
                             std::string what_string(ex.what());
                             if(what_string.find("nsset_contact_map_pkey") != std::string::npos)
-                                BOOST_THROW_EXCEPTION(Exception().set_already_set_technical_contact_handle(*i));
+                            {
+                                create_nsset_exception.add_already_set_technical_contact_handle(*i);
+                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT tech_contact");
+                            }
                             else
                                 throw;
                         }
                     }//for i
                 }//if set tech contacts
+
+                //check exception
+                if(create_nsset_exception.throw_me())
+                    BOOST_THROW_EXCEPTION(create_nsset_exception);
 
                 //get crdate from object_registry
                 {
