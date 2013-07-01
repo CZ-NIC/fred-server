@@ -47,7 +47,7 @@ namespace Fred
         std::vector<std::string> add_admin_contact_; //admin contacts to be added
         std::vector<std::string> rem_admin_contact_; //admin contacts to be removed
         Optional<boost::gregorian::date> enum_validation_expiration_;//the expiration date of the ENUM domain validation, have to be set for enum domain, otherwise unused
-        Optional<bool> enum_publish_flag_;//flag for publishing ENUM number and associated contact in public directory, have to be set for enum domain, otherwise unused
+        Optional<bool> enum_publish_flag_;//flag for publishing ENUM number and associated contact in public directory
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
 
     public:
