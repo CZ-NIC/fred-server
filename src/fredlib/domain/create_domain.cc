@@ -24,6 +24,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 #include <boost/algorithm/string.hpp>
 
@@ -393,12 +394,13 @@ namespace Fred
                 col_sql <<")";
                 val_sql << ")";
 
-                //check exception
-                if(create_domain_exception.throw_me())
-                    BOOST_THROW_EXCEPTION(create_domain_exception);
-
-                //insert into domain
-                ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
+                bool domain_ok = false;//domain params ok
+                //insert into domain if ok
+                if(!create_domain_exception.throw_me())
+                {
+                    ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
+                    domain_ok = true;
+                }
 
                 //set admin contacts
                 if(!admin_contacts_.empty())
@@ -410,6 +412,7 @@ namespace Fred
                     sql << "INSERT INTO domain_contact_map(domainid, contactid) "
                             " VALUES ($" << params.size() << "::integer, ";
 
+                    std::set<unsigned long long> admin_contact_id_duplicity_check;//in case we have no domain created
 
                     for(std::vector<std::string>::iterator i = admin_contacts_.begin(); i != admin_contacts_.end(); ++i)
                     {
@@ -443,22 +446,32 @@ namespace Fred
                         params_i.push_back(admin_contact_id);
                         sql_i << " $" << params_i.size() << "::integer)";
 
-                        try
-                        {
-                            ctx.get_conn().exec("SAVEPOINT admin_contact");
-                            ctx.get_conn().exec_params(sql_i.str(), params_i);
-                            ctx.get_conn().exec("RELEASE SAVEPOINT admin_contact");
+                        if(domain_ok)
+                        {//assign admin contact to domain
+                            try
+                            {
+                                ctx.get_conn().exec("SAVEPOINT admin_contact");
+                                ctx.get_conn().exec_params(sql_i.str(), params_i);
+                                ctx.get_conn().exec("RELEASE SAVEPOINT admin_contact");
+                            }
+                            catch(const std::exception& ex)
+                            {
+                                std::string what_string(ex.what());
+                                if(what_string.find("domain_contact_map_pkey") != std::string::npos)
+                                {
+                                    create_domain_exception.add_already_set_admin_contact_handle(*i);
+                                    ctx.get_conn().exec("ROLLBACK TO SAVEPOINT admin_contact");
+                                }
+                                else
+                                    throw;
+                            }
                         }
-                        catch(const std::exception& ex)
-                        {
-                            std::string what_string(ex.what());
-                            if(what_string.find("domain_contact_map_pkey") != std::string::npos)
+                        else
+                        {//create domain failed - admin_contact duplicity check only
+                            if(admin_contact_id_duplicity_check.insert(admin_contact_id).second == false)
                             {
                                 create_domain_exception.add_already_set_admin_contact_handle(*i);
-                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT admin_contact");
                             }
-                            else
-                                throw;
                         }
                     }//for i
                 }//if admin contacts
