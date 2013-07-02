@@ -88,16 +88,17 @@ const std::string server_name = "test-info-contact";
 
 struct test_contact_fixture
 {
-    Fred::OperationContext ctx;
     std::string registrar_handle;
     std::string xmark;
     std::string test_contact_handle;
 
     test_contact_fixture()
-    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
-    , xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(RandomDataGenerator().xnumstring(6))
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     {
+        Fred::OperationContext ctx;
+        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+                "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
         Fred::CreateContact(test_contact_handle,registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
@@ -119,6 +120,7 @@ struct test_contact_fixture
 */
 BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
 {
+    Fred::OperationContext ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
     Fred::InfoContactOutput contact_info2 = Fred::InfoContact(test_contact_handle, registrar_handle).set_lock().exec(ctx);
 

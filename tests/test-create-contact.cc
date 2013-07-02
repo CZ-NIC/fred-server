@@ -99,18 +99,18 @@ const std::string server_name = "test-create-contact";
 
 struct create_contact_fixture
 {
-    Fred::OperationContext ctx;
     std::string registrar_handle;
     std::string xmark;
     std::string create_contact_handle;
 
     create_contact_fixture()
-    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
-    , xmark(RandomDataGenerator().xnumstring(6))
+    : xmark(RandomDataGenerator().xnumstring(6))
     , create_contact_handle(std::string("TEST-CREATE-CONTACT-HANDLE")+xmark)
     {
+        Fred::OperationContext ctx;
+        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+                "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
-        //nothing to commit - ctx.commit_transaction();//commit fixture
     }
     ~create_contact_fixture()
     {}
@@ -121,6 +121,7 @@ struct create_contact_fixture
  */
 BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)
 {
+    Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
     BOOST_CHECK_EXCEPTION(
     try
@@ -147,6 +148,7 @@ BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(create_contact_wrong_ssntype, create_contact_fixture)
 {
+    Fred::OperationContext ctx;
     BOOST_CHECK_EXCEPTION(
     try
     {
