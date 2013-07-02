@@ -103,8 +103,6 @@ BOOST_AUTO_TEST_CASE(update_domain_exception)
 
 struct update_domain_fixture
 {
-    Fred::OperationContext fixture_ctx;
-    Fred::OperationContext ctx;
     std::string registrar_handle;
     std::string xmark;
     std::string admin_contact2_handle;
@@ -112,12 +110,14 @@ struct update_domain_fixture
     std::string test_domain_handle;
 
     update_domain_fixture()
-    :registrar_handle (static_cast<std::string>(fixture_ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
-    , xmark(RandomDataGenerator().xnumstring(6))
+    : xmark(RandomDataGenerator().xnumstring(6))
     , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
     , test_domain_handle ( std::string("fred")+xmark+".cz")
     {
+        Fred::OperationContext ctx;
+        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+                "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
         Fred::CreateContact(admin_contact2_handle,registrar_handle)
@@ -126,7 +126,7 @@ struct update_domain_fixture
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
-            .exec(fixture_ctx);
+            .exec(ctx);
 
         Fred::CreateContact(registrant_contact_handle,registrar_handle)
                 .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
@@ -134,7 +134,7 @@ struct update_domain_fixture
                 .set_street1(std::string("STR1")+xmark)
                 .set_city("Praha").set_postalcode("11150").set_country("CZ")
                 .set_discloseaddress(true)
-                .exec(fixture_ctx);
+                .exec(ctx);
 
         Fred::CreateDomain(
                 test_domain_handle //const std::string& fqdn
@@ -142,8 +142,8 @@ struct update_domain_fixture
                 , registrant_contact_handle //registrant
                 )
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
-        .exec(fixture_ctx);
-        fixture_ctx.commit_transaction();
+        .exec(ctx);
+        ctx.commit_transaction();
     }
     ~update_domain_fixture()
     {}
@@ -164,6 +164,7 @@ struct update_domain_admin_nsset_keyset_fixture
     , test_nsset_handle(std::string("TEST-D-NSSET-HANDLE")+xmark)
     , test_keyset_handle (std::string("TEST-D-KEYSET-HANDLE")+xmark)
     {
+        Fred::OperationContext ctx;
 
         Fred::CreateContact(admin_contact_handle,registrar_handle)
             .set_name(std::string("TEST-ADMIN-CONTACT NAME")+xmark)
@@ -192,6 +193,8 @@ struct update_domain_admin_nsset_keyset_fixture
         Fred::CreateKeyset(test_keyset_handle, registrar_handle)
                 //.set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
                 .exec(ctx);
+
+        ctx.commit_transaction();
     }
 
     ~update_domain_admin_nsset_keyset_fixture(){}
@@ -205,6 +208,8 @@ struct update_domain_admin_nsset_keyset_fixture
  */
 BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture )
 {
+    Fred::OperationContext ctx;
+
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     std::vector<Fred::InfoDomainHistoryOutput> history_info_data_1 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
 
@@ -1024,7 +1029,6 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
 
 BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_fixture )
 {
-
     std::string bad_test_domain_handle = std::string("bad")+xmark+".cz";
     try
     {
@@ -1045,6 +1049,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_fixture )
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
 {
+    Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
 
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1072,6 +1077,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
 {
+    Fred::OperationContext ctx;
     std::string bad_registrant_handle = registrant_contact_handle+xmark;
 
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1095,7 +1101,6 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
-
 }
 
 /**
@@ -1103,6 +1108,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
 {
+    Fred::OperationContext ctx;
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1132,6 +1138,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fixture)
 {
+    Fred::OperationContext ctx;
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
 
     try
@@ -1160,6 +1167,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fix
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
 {
+    Fred::OperationContext ctx;
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1189,6 +1197,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixture)
 {
+    Fred::OperationContext ctx;
     std::string bad_admin_contact_handle = registrant_contact_handle;
 
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
@@ -1222,6 +1231,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
  */
 BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
 {
+    Fred::OperationContext ctx;
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
     //call update
     {
