@@ -49,21 +49,23 @@ namespace Fred
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
 
     public:
-        DECLARE_EXCEPTION_DATA(unassigned_technical_contact_handle, std::string);
-        DECLARE_EXCEPTION_DATA(already_set_dns_host, std::string);
-        DECLARE_EXCEPTION_DATA(unassigned_dns_host, std::string);
-        DECLARE_EXCEPTION_DATA(invalid_dns_host_ipaddr, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_dns_host, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(invalid_dns_host_ipaddr, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(unknown_technical_contact_handle, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_technical_contact_handle, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(unassigned_technical_contact_handle, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(unassigned_dns_host, std::string);
 
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_nsset_handle<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
-        , ExceptionData_unknown_technical_contact_handle<Exception>
-        , ExceptionData_already_set_technical_contact_handle<Exception>
-        , ExceptionData_unassigned_technical_contact_handle<Exception>
-        , ExceptionData_already_set_dns_host<Exception>
-        , ExceptionData_unassigned_dns_host<Exception>
-        , ExceptionData_invalid_dns_host_ipaddr<Exception>
+        , ExceptionData_vector_of_unknown_technical_contact_handle<Exception>
+        , ExceptionData_vector_of_already_set_technical_contact_handle<Exception>
+        , ExceptionData_vector_of_unassigned_technical_contact_handle<Exception>
+        , ExceptionData_vector_of_already_set_dns_host<Exception>
+        , ExceptionData_vector_of_unassigned_dns_host<Exception>
+        , ExceptionData_vector_of_invalid_dns_host_ipaddr<Exception>
         {};
 
         UpdateNsset(const std::string& handle

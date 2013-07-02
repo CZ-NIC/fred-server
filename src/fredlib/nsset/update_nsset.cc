@@ -150,9 +150,10 @@ namespace Fred
             nsset_id = static_cast<unsigned long long>(nsset_id_res[0][0]);
         }
 
-
         //update object
         Fred::UpdateObject(handle_,"nsset", registrar_, authinfo_).exec(ctx);
+
+        Exception update_nsset_exception;
 
         //update nsset tech check level
         if(tech_check_level_.isset() && tech_check_level_.get_value() >= 0)
@@ -192,7 +193,8 @@ namespace Fred
 
                     if (lock_res.size() == 0)
                     {
-                        BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                        update_nsset_exception.add_unknown_technical_contact_handle(*i);
+                        continue;//for add_tech_contact_
                     }
                     if (lock_res.size() != 1)
                     {
@@ -210,13 +212,18 @@ namespace Fred
 
                 try
                 {
+                    ctx.get_conn().exec("SAVEPOINT add_tech_contact");
                     ctx.get_conn().exec_params(sql_i.str(), params_i);
+                    ctx.get_conn().exec("RELEASE SAVEPOINT add_tech_contact");
                 }
                 catch(const std::exception& ex)
                 {
                     std::string what_string(ex.what());
                     if(what_string.find("nsset_contact_map_pkey") != std::string::npos)
-                        BOOST_THROW_EXCEPTION(Exception().set_already_set_technical_contact_handle(*i));
+                    {
+                        update_nsset_exception.add_already_set_technical_contact_handle(*i);
+                        ctx.get_conn().exec("ROLLBACK TO SAVEPOINT add_tech_contact");
+                    }
                     else
                         throw;
                 }
@@ -248,7 +255,8 @@ namespace Fred
 
                     if (lock_res.size() == 0)
                     {
-                        BOOST_THROW_EXCEPTION(Exception().set_unknown_technical_contact_handle(*i));
+                        update_nsset_exception.add_unknown_technical_contact_handle(*i);
+                        continue;//for rem_tech_contact_
                     }
                     if (lock_res.size() != 1)
                     {
@@ -268,7 +276,8 @@ namespace Fred
                 Database::Result nsset_del_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
                 if (nsset_del_res.size() == 0)
                 {
-                    BOOST_THROW_EXCEPTION(Exception().set_unassigned_technical_contact_handle(*i));
+                    update_nsset_exception.add_unassigned_technical_contact_handle(*i);
+                    continue;//for rem_tech_contact_
                 }
                 if (nsset_del_res.size() != 1)
                 {
@@ -289,7 +298,8 @@ namespace Fred
 
                 if (rem_host_id_res.size() == 0)
                 {
-                    BOOST_THROW_EXCEPTION(Exception().set_unassigned_dns_host(*i));
+                    update_nsset_exception.add_unassigned_dns_host(*i);
+                    continue;//for rem_dns_
                 }
                 if (rem_host_id_res.size() != 1)
                 {
@@ -311,17 +321,23 @@ namespace Fred
                 unsigned long long add_host_id = 0;
                 try
                 {
+                    ctx.get_conn().exec("SAVEPOINT add_dns_host");
                     Database::Result add_host_id_res = ctx.get_conn().exec_params(
                         "INSERT INTO host (nssetid, fqdn) VALUES( "
                         " $1::integer, LOWER($2::text)) RETURNING id"
                         , Database::query_param_list(nsset_id)(i->get_fqdn()));
+                    ctx.get_conn().exec("RELEASE SAVEPOINT add_dns_host");
                     add_host_id = static_cast<unsigned long long>(add_host_id_res[0][0]);
                 }
                 catch(const std::exception& ex)
                 {
                     std::string what_string(ex.what());
                     if(what_string.find("host_nssetid_fqdn_key") != std::string::npos)
-                        BOOST_THROW_EXCEPTION(Exception().set_already_set_dns_host(i->get_fqdn()));
+                    {
+                        update_nsset_exception.add_already_set_dns_host(i->get_fqdn());
+                        ctx.get_conn().exec("ROLLBACK TO SAVEPOINT add_dns_host");
+                        continue;//for add_dns_
+                    }
                     else
                         throw;
                 }
@@ -332,22 +348,31 @@ namespace Fred
                 {
                     try
                     {
+                        ctx.get_conn().exec("SAVEPOINT add_dns_host_ipaddr");
                         ctx.get_conn().exec_params(
                         "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
                         " VALUES($1::integer, $2::integer, $3::inet)"
                         , Database::query_param_list(add_host_id)(nsset_id)(*j));
+                        ctx.get_conn().exec("RELEASE SAVEPOINT add_dns_host_ipaddr");
                     }
                     catch(const std::exception& ex)
                     {
                         std::string what_string(ex.what());
                         if(what_string.find("syntax for type inet") != std::string::npos)
-                            BOOST_THROW_EXCEPTION(Exception().set_invalid_dns_host_ipaddr(*j));
+                        {
+                            update_nsset_exception.add_invalid_dns_host_ipaddr(*j);
+                            ctx.get_conn().exec("ROLLBACK TO SAVEPOINT add_dns_host_ipaddr");
+                        }
                         else
                             throw;
                     }
                 }//for j
             }//for i
         }//if add dns hosts
+
+        //check exception
+        if(update_nsset_exception.throw_me())
+            BOOST_THROW_EXCEPTION(update_nsset_exception);
 
         //save history
         {
@@ -369,7 +394,6 @@ namespace Fred
             {
                 BOOST_THROW_EXCEPTION(Fred::InternalError("update historyid failed"));
             }
-
 
             //nsset_history
             ctx.get_conn().exec_params(

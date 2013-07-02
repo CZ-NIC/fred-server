@@ -302,7 +302,7 @@ namespace Fred
                     {
                         //look for already set: tech contact
                         //if found ignore exception, if not found rethrow exception
-                        if(ex.is_set_already_set_technical_contact_handle())
+                        if(ex.is_set_vector_of_already_set_technical_contact_handle())
                         {
                             //only remove source tech contact, dest tech contact is already there
                             UpdateNsset un(tmp.handle, registrar_ );
