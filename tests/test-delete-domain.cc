@@ -89,8 +89,6 @@ const std::string server_name = "test-delete-domain";
 
 struct delete_enum_domain_fixture
 {
-    Fred::OperationContext fixture_ctx;
-    Fred::OperationContext ctx;
     std::string registrar_handle;
     std::string xmark;
     std::string admin_contact2_handle;
@@ -98,14 +96,16 @@ struct delete_enum_domain_fixture
     std::string test_domain_fqdn;
 
     delete_enum_domain_fixture()
-    :registrar_handle (static_cast<std::string>(fixture_ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
-    , xmark(RandomDataGenerator().xnumstring(9))
+    : xmark(RandomDataGenerator().xnumstring(9))
     , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
     , test_domain_fqdn ( std::string()+xmark.at(0)+'.'+xmark.at(1)+'.'+xmark.at(2)+'.'
                                     +xmark.at(3)+'.'+xmark.at(4)+'.'+xmark.at(5)+'.'
                                     +xmark.at(6)+'.'+xmark.at(7)+'.'+xmark.at(8)+".0.2.4.e164.arpa")
     {
+        Fred::OperationContext ctx;
+        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+                "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
         Fred::CreateContact(admin_contact2_handle,registrar_handle)
@@ -114,7 +114,7 @@ struct delete_enum_domain_fixture
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
-            .exec(fixture_ctx);
+            .exec(ctx);
 
         Fred::CreateContact(registrant_contact_handle,registrar_handle)
                 .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
@@ -122,7 +122,7 @@ struct delete_enum_domain_fixture
                 .set_street1(std::string("STR1")+xmark)
                 .set_city("Praha").set_postalcode("11150").set_country("CZ")
                 .set_discloseaddress(true)
-                .exec(fixture_ctx);
+                .exec(ctx);
 
         Fred::CreateDomain(
                 test_domain_fqdn //const std::string& fqdn
@@ -132,8 +132,8 @@ struct delete_enum_domain_fixture
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .set_enum_validation_expiration(boost::gregorian::day_clock::day_clock::universal_day()+boost::gregorian::days(5))
         .set_enum_publish_flag(false)
-        .exec(fixture_ctx);
-        fixture_ctx.commit_transaction();
+        .exec(ctx);
+        ctx.commit_transaction();
     }
     ~delete_enum_domain_fixture()
     {}
@@ -141,8 +141,6 @@ struct delete_enum_domain_fixture
 
 struct delete_domain_fixture
 {
-    Fred::OperationContext fixture_ctx;
-    Fred::OperationContext ctx;
     std::string registrar_handle;
     std::string xmark;
     std::string admin_contact2_handle;
@@ -150,12 +148,14 @@ struct delete_domain_fixture
     std::string test_domain_fqdn;
 
     delete_domain_fixture()
-    :registrar_handle (static_cast<std::string>(fixture_ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
-    , xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(RandomDataGenerator().xnumstring(6))
     , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
     , test_domain_fqdn ( std::string("fred")+xmark+".cz")
     {
+        Fred::OperationContext ctx;
+        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+            "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
         Fred::CreateContact(admin_contact2_handle,registrar_handle)
@@ -164,7 +164,7 @@ struct delete_domain_fixture
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
-            .exec(fixture_ctx);
+            .exec(ctx);
 
         Fred::CreateContact(registrant_contact_handle,registrar_handle)
                 .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
@@ -172,7 +172,7 @@ struct delete_domain_fixture
                 .set_street1(std::string("STR1")+xmark)
                 .set_city("Praha").set_postalcode("11150").set_country("CZ")
                 .set_discloseaddress(true)
-                .exec(fixture_ctx);
+                .exec(ctx);
 
         Fred::CreateDomain(
                 test_domain_fqdn //const std::string& fqdn
@@ -180,8 +180,8 @@ struct delete_domain_fixture
                 , registrant_contact_handle //registrant
                 )
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
-        .exec(fixture_ctx);
-        fixture_ctx.commit_transaction();
+        .exec(ctx);
+        ctx.commit_transaction();
     }
     ~delete_domain_fixture()
     {}
@@ -194,6 +194,7 @@ struct delete_domain_fixture
  */
 BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
 {
+    Fred::OperationContext ctx;
 
     Fred::InfoDomainOutput domain_info1 = Fred::InfoDomain(test_domain_fqdn, registrar_handle).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
@@ -247,6 +248,7 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
  */
 BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
 {
+    Fred::OperationContext ctx;
 
     Fred::InfoDomainOutput domain_info1 = Fred::InfoDomain(test_domain_fqdn, registrar_handle).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
@@ -300,7 +302,6 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
 
 BOOST_FIXTURE_TEST_CASE(delete_domain_with_wrong_fqdn, delete_domain_fixture )
 {
-
     std::string bad_test_domain_fqdn = std::string("bad")+test_domain_fqdn;
     try
     {
