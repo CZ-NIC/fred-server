@@ -29,6 +29,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "fredlib/domain/create_domain.h"
+#include "fredlib/zone/zone.h"
 #include "fredlib/object/object.h"
 
 #include "fredlib/opcontext.h"
@@ -155,59 +156,36 @@ namespace Fred
                     BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
             }
+
             //zone
-            unsigned long long zone_id = 0;
-            bool is_enum_zone = false;
+            Zone::Data zone;
+            try
             {
-                std::string domain(boost::to_lower_copy(fqdn_));
-
-                Database::Result zone_res = ctx.get_conn().exec(
-                    "SELECT fqdn FROM zone ORDER BY length(fqdn) DESC");
-
-                if (zone_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("unable to create domain without zone configuration"));
-                }
-
-                for (Database::Result::size_type i = 0 ; i < zone_res.size(); ++i)
-                {
-                    std::string zone  = static_cast<std::string>(zone_res[i][0]);
-                    int from = domain.length() - zone.length();
-                    if(from > 1)
-                    {
-                        if (domain.find(zone, from) != std::string::npos)
-                        {
-                            Database::Result zone_id_res = ctx.get_conn().exec_params(
-                                "SELECT id, enum_zone  FROM zone WHERE lower(fqdn)=lower($1::text) FOR SHARE"
-                                , Database::query_param_list(domain.substr(from, std::string::npos)));
-
-                            if(zone_id_res.size() == 1)
-                            {
-                                zone_id = static_cast<unsigned long long>(zone_id_res[0][0]);
-                                is_enum_zone = static_cast<bool>(zone_id_res[0][1]);
-                                break;
-                            }
-                        }
-                    }
-                }//for zone_res
-
-                if(zone_id == 0)
+                zone = Zone::find_zone_in_fqdn(ctx, fqdn_);
+            }
+            catch(const Zone::Exception& ex)
+            {
+                if(ex.is_set_unknown_zone_in_fqdn()
+                        && (ex.get_unknown_zone_in_fqdn().compare(fqdn_) == 0))
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_fqdn(fqdn_));
                 }
-                if (is_enum_zone)//check ENUM specific parameters
-                {
-                    if((!enum_validation_expiration_.isset()) || (enum_validation_expiration_.get_value().is_special()))
-                        BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration not set for ENUM domain"));
-                }
                 else
-                {
-                    if(enum_validation_expiration_.isset())
-                        BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration set for non-ENUM domain"));
-                    if(enum_publish_flag_.isset())
-                        BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for not-ENUM domain"));
-                }
-            }//zone
+                    throw;
+            }
+
+            if (zone.is_enum)//check ENUM specific parameters
+            {
+                if((!enum_validation_expiration_.isset()) || (enum_validation_expiration_.get_value().is_special()))
+                    BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration not set for ENUM domain"));
+            }
+            else
+            {
+                if(enum_validation_expiration_.isset())
+                    BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration set for non-ENUM domain"));
+                if(enum_publish_flag_.isset())
+                    BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for not-ENUM domain"));
+            }
 
             //expiration_period
             unsigned expiration_period = 0;//in months
@@ -221,7 +199,7 @@ namespace Fred
                     //get default
                     Database::Result ex_period_min_res = ctx.get_conn().exec_params(
                         "SELECT ex_period_min FROM zone WHERE id=$1::bigint FOR SHARE"
-                        , Database::query_param_list(zone_id));
+                        , Database::query_param_list(zone.id));
 
                     if (ex_period_min_res.size() == 0)
                     {
@@ -295,7 +273,7 @@ namespace Fred
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
                 //zone id
-                params.push_back(zone_id);
+                params.push_back(zone.id);
                 col_sql << col_separator.get() << "zone";
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
@@ -481,7 +459,7 @@ namespace Fred
             if(create_domain_exception.throw_me())
                 BOOST_THROW_EXCEPTION(create_domain_exception);
 
-            if(is_enum_zone)//if ENUM domain, insert enumval
+            if(zone.is_enum)//if ENUM domain, insert enumval
             {
                 Database::QueryParams params;//query params
                 std::stringstream col_sql, val_sql;

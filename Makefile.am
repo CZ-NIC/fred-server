@@ -800,7 +800,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/merge_contact_email_notification_data.cc \
 		src/fredlib/contact/merge_contact_email_notification_data.h \
 		src/fredlib/domain/delete_domain.h \
-		src/fredlib/domain/delete_domain.cc
+		src/fredlib/domain/delete_domain.cc \
+		src/fredlib/zone/zone.h \
+		src/fredlib/zone/zone.cc
 
 #
 # src/fredlib/libfred.a
