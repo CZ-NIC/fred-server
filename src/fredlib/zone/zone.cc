@@ -28,10 +28,13 @@
 namespace Fred {
 namespace Zone {
 
+    ///zone name in db have to be in lower case
     Data find_zone_in_fqdn(OperationContext& ctx, const std::string& fqdn)
     {
         try
         {
+            const std::string label_separator(".");//viz rfc1035
+
             std::string domain(boost::to_lower_copy(fqdn));
 
             Database::Result available_zones_res = ctx.get_conn().exec(
@@ -45,14 +48,15 @@ namespace Zone {
             for (Database::Result::size_type i = 0 ; i < available_zones_res.size(); ++i)
             {
                 std::string zone  = static_cast<std::string>(available_zones_res[i][0]);
-                int from = domain.length() - zone.length();
+                std::string dot_zone  = label_separator + zone;
+                int from = domain.length() - dot_zone.length();
                 if(from > 1)
                 {
-                    if (domain.find(zone, from) != std::string::npos)
+                    if (domain.find(dot_zone, from) != std::string::npos)
                     {
                         Database::Result zone_res = ctx.get_conn().exec_params(
                             "SELECT id, enum_zone, fqdn  FROM zone WHERE fqdn=lower($1::text) FOR SHARE"
-                            , Database::query_param_list(domain.substr(from, std::string::npos)));
+                            , Database::query_param_list(zone));
 
                         if(zone_res.size() == 1)
                         {
