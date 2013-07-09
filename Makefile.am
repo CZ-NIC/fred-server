@@ -1699,7 +1699,8 @@ tests_test_server_SOURCES = \
 		tests/test-opexception.cc \
 		tests/test-create-contact.cc \
 		tests/test-info-contact.cc \
-		tests/test-delete-domain.cc
+		tests/test-delete-domain.cc \
+		tests/test-create-domain.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
