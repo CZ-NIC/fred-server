@@ -5109,7 +5109,9 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     std::auto_ptr<EPPNotifier> ntf;
     std::string valexdate;
     ccReg::Disclose publish;
-    char FQDN[164];
+    std::string FQDN(fqdn);
+    boost::to_lower(FQDN);
+
     int contactid, nssetid, adminid, id, keysetid;
     int zone =0;
     unsigned int i, j;
@@ -5158,7 +5160,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 
         LOG( NOTICE_LOG , "Domain::checkAvail  fqdn [%s]" , (const char * ) fqdn );
 
-        dType = dman->checkAvail( ( const char * ) fqdn , dConflict);
+        dType = dman->checkAvail( FQDN , dConflict);
         LOG( NOTICE_LOG , "domain type %d" , dType );
         switch (dType) {
             case Fred::Domain::CA_INVALID_HANDLE:
@@ -5181,11 +5183,11 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
             case Fred::Domain::CA_AVAILABLE: // if is free
                 // conver fqdn to lower case and get zone
                 zone = getFQDN(action.getDB(), FQDN, fqdn);
-                LOG( NOTICE_LOG , "domain %s avail zone %d" ,(const char * ) FQDN , zone );
+                LOG( NOTICE_LOG , "domain %s avail zone %d" ,(const char * ) FQDN.c_str(), zone );
                 break;
             case Fred::Domain::CA_BAD_ZONE:
                 // domain not in zone
-                LOG( NOTICE_LOG , "NOn in zone not applicable %s" , (const char * ) fqdn );
+                LOG( NOTICE_LOG , "NOn in zone not applicable %s" , (const char * ) FQDN.c_str() );
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::domain_fqdn, 1, REASON_MSG_NOT_APPLICABLE_DOMAIN);
                 break;
@@ -5336,7 +5338,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                 if (code == 0) // if not error
                 {
 
-                    id= action.getDB()->CreateObject("D", action.getRegistrar(), FQDN, AuthInfoPw);
+                    id= action.getDB()->CreateObject("D", action.getRegistrar(), FQDN.c_str(), AuthInfoPw);
                     if (id<=0) {
                         if (id == 0) {
                             LOG( WARNING_LOG, "domain fqdn [%s] EXIST", fqdn );
@@ -7301,7 +7303,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 {
     int zone;
     int id = 0;
-    char FQDN[164];
+    std::string FQDN(name);
+    boost::to_lower(FQDN);
     short int code = 0;
 
     EPPAction action(this, params.loginID, act, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
@@ -7346,7 +7349,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                             REASON_MSG_BAD_FORMAT_FQDN);
                 }
             } else {
-                if ( (id = action.getDB()->GetDomainID(FQDN, GetZoneEnum(action.getDB(), zone) ) ) == 0) {
+                if ( (id = action.getDB()->GetDomainID(FQDN.c_str(), GetZoneEnum(action.getDB(), zone) ) ) == 0) {
                     LOG( WARNING_LOG , "domain [%s] NOT_EXIST" , name );
                     code= COMMAND_OBJECT_NOT_EXIST;
                 }
