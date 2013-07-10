@@ -37,13 +37,13 @@ namespace Domain {
  * - allow to begin the non-highest-level label with digit
  *   according to RFC1123 section 2.1 Host Names and Numbers and because of ENUM RFC3761 section 2.4. Valid Databases
  *   otherwise it is syntax according to RFC1035 section 2.3.1. Preferred name syntax
- * - allow "IDNA punnycode" in any label according to RFC3696 section 5. Implications of internationalization
+ * - allow "IDNA Punycode" in any label according to RFC3696 section 5. Implications of internationalization
  */
 const boost::regex GENERAL_DOMAIN_NAME_SYNTAX("^"//begin
     "(([A-Za-z0-9]|[A-Za-z0-9][-A-Za-z0-9]{0,61}[A-Za-z0-9])[.])+"//at least one non-highest-level label, may start with digit
         "([A-Za-z]|[A-Za-z][-A-Za-z0-9]{0,61}[A-Za-z0-9])"//mandatory highest-level label, have to begin with letter
         "[.]?$");//allowed optional root period
-///using GENERAL_DOMAIN_NAME_SYNTAX and checking max overal length
+///using GENERAL_DOMAIN_NAME_SYNTAX and checking max overall length
 bool general_domain_name_syntax_check(const std::string& fqdn);
 
 /**
