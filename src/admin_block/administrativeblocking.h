@@ -38,23 +38,14 @@ namespace Registry
             BlockingImpl(const std::string &_server_name):server_name_(_server_name) { }
             virtual ~BlockingImpl() { }
 
-            const std::string& get_server_name() { return server_name_; }
-
-// for test purposes *** start ***
-            std::string getName(
-                const std::string &_lang);
-            unsigned long long getLangID(
-                const std::string &_lang);
-// for test purposes **** end ****
-
             StatusDescList* getBlockingStatusDescList(
                 const std::string &_lang);
 
             void blockDomains(
                 const ::Registry::Administrative::DomainList &_domain_list,
                 const ::Registry::Administrative::StatusList &_status_list,
-                ::CORBA::Boolean _block_owner,
-                ::CORBA::Boolean _create_owner_copy);
+                bool _block_owner,
+                bool _create_owner_copy);
 
             void restorePreAdministrativeBlockStates(
                 const ::Registry::Administrative::DomainList &_domain_list);
@@ -75,7 +66,7 @@ namespace Registry
             void blacklistDomains(
                 const ::Registry::Administrative::DomainList &_domain_list,
                 ::Registry::Administrative::NullableDate *_blacklist_to_date,
-                ::CORBA::Boolean _with_delete);
+                bool _with_delete);
 
             void unblacklistAndCreateDomains(
                 const ::Registry::Administrative::DomainList &_domain_list,

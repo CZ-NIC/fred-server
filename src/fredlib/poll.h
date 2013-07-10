@@ -25,17 +25,21 @@ namespace Fred
       MT_TRANSFER_CONTACT = 3,
       MT_TRANSFER_NSSET = 4,
       MT_TRANSFER_DOMAIN = 5,
-      MT_DELETE_CONTACT = 6,
-      MT_DELETE_NSSET = 7,
-      MT_DELETE_DOMAIN = 8,
+      MT_IDLE_DELETE_CONTACT = 6,
+      MT_IDLE_DELETE_NSSET = 7,
+      MT_IDLE_DELETE_DOMAIN = 8,
       MT_IMP_EXPIRATION = 9,
       MT_EXPIRATION = 10,
       MT_IMP_VALIDATION = 11,
       MT_VALIDATION = 12,
       MT_OUTZONE = 13,
       MT_TRANSFER_KEYSET = 14,
-      MT_DELETE_KEYSET = 15,
-      MT_REQUEST_FEE_INFO = 16
+      MT_IDLE_DELETE_KEYSET = 15,
+      MT_REQUEST_FEE_INFO = 16,
+      MT_UPDATE_DOMAIN = 17,
+      MT_UPDATE_NSSET = 18,
+      MT_UPDATE_KEYSET = 19,
+      MT_DELETE_CONTACT = 20
     };
 
 
@@ -116,6 +120,13 @@ namespace Fred
          virtual const unsigned long long& getTotalFreeCount() const = 0;
          virtual const unsigned long long& getUsedCount() const = 0;
          virtual const std::string& getPrice() const = 0;
+    };
+
+    class MessageUpdateObject : virtual public Message
+    {
+     public:
+      virtual ~MessageUpdateObject() {}
+      virtual const std::string& getOpTRID() const = 0;
     };
 
     class List : virtual public CommonList

@@ -1177,16 +1177,28 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin_block/administrativeblocking.h \
 		src/fredlib/domain/get_blocking_status_desc_list.cc \
 		src/fredlib/domain/get_blocking_status_desc_list.h \
+		src/fredlib/domain/cancel_object_state_request.cc \
+		src/fredlib/domain/cancel_object_state_request.h \
+		src/fredlib/domain/cancel_object_state_request_id.cc \
+		src/fredlib/domain/cancel_object_state_request_id.h \
 		src/fredlib/domain/create_object_state_request.cc \
 		src/fredlib/domain/create_object_state_request.h \
+		src/fredlib/domain/create_object_state_request_id.cc \
+		src/fredlib/domain/create_object_state_request_id.h \
 		src/fredlib/domain/get_object_state_id_map.cc \
 		src/fredlib/domain/get_object_state_id_map.h \
 		src/fredlib/domain/create_administrative_object_block_request.cc \
 		src/fredlib/domain/create_administrative_object_block_request.h \
+		src/fredlib/domain/create_administrative_object_block_request_id.cc \
+		src/fredlib/domain/create_administrative_object_block_request_id.h \
 		src/fredlib/domain/create_administrative_object_state_restore_request.cc \
 		src/fredlib/domain/create_administrative_object_state_restore_request.h \
+		src/fredlib/domain/create_administrative_object_state_restore_request_id.cc \
+		src/fredlib/domain/create_administrative_object_state_restore_request_id.h \
 		src/fredlib/domain/clear_object_state_request.cc \
 		src/fredlib/domain/clear_object_state_request.h \
+		src/fredlib/domain/clear_object_state_request_id.cc \
+		src/fredlib/domain/clear_object_state_request_id.h \
 		src/fredlib/domain/create_domain_name_blacklist.cc \
 		src/fredlib/domain/create_domain_name_blacklist.h \
 		src/fredlib/opcontext.cc \

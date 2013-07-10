@@ -40,30 +40,6 @@ namespace Registry
 {
     namespace Administrative
     {
-        std::string BlockingImpl::getName(
-            const std::string &_lang)
-        {
-            if (_lang == "CZ") {
-                return _lang;
-            }
-            throw INTERNAL_SERVER_ERROR(("bad language " + _lang).c_str());
-        }//getName
-
-        unsigned long long BlockingImpl::getLangID(
-            const std::string &_lang)
-        {
-            if (_lang == "CZ") {
-                return 0;
-            }
-            if (!_lang.empty()) {
-                unsigned long long sum = 0;
-                for (::size_t idx = 0; idx < _lang.length(); ++idx) {
-                    sum += (unsigned long long)(_lang[idx]);
-                }
-                return sum;
-            }
-            throw INTERNAL_SERVER_ERROR("no language");
-        }//getLangID
 
         StatusDescList* BlockingImpl::getBlockingStatusDescList(const std::string &_lang)
         {
@@ -77,11 +53,11 @@ namespace Registry
                 int n = 0;
                 for (Fred::GetBlockingStatusDescList::StatusDescList::const_iterator pItem = desc_list.begin();
                      pItem != desc_list.end(); ++n, ++pItem) {
-                    StatusDesc item;
+                    StatusDesc &item = (*result)[n];
                     item.id = pItem->state_id;
-                    item.shortName = pItem->status.c_str();
-                    item.name = pItem->desc.c_str();
-                    (*result)[n] = item;
+                    item.shortName = ::CORBA::string_dup(pItem->status.c_str());
+                    item.name = ::CORBA::string_dup(pItem->desc.c_str());
+//                    (*result)[n] = item;
                 }
                 return result.release();
             }
@@ -93,8 +69,8 @@ namespace Registry
         void BlockingImpl::blockDomains(
             const ::Registry::Administrative::DomainList &_domain_list,
             const ::Registry::Administrative::StatusList &_status_list,
-            ::CORBA::Boolean _block_owner,
-            ::CORBA::Boolean _create_owner_copy)
+            bool _block_owner,
+            bool _create_owner_copy)
         {
             try {
                 Fred::OperationContextTransaction ctx;
@@ -161,7 +137,7 @@ namespace Registry
         void BlockingImpl::unblockDomains(
             const ::Registry::Administrative::DomainList &_domain_list,
             ::Registry::Administrative::NullableString *_new_owner,
-            ::CORBA::Boolean _remove_admin_c)
+            bool _remove_admin_c)
         {
         }
 
@@ -174,7 +150,7 @@ namespace Registry
         void BlockingImpl::blacklistDomains(
             const ::Registry::Administrative::DomainList &_domain_list,
             ::Registry::Administrative::NullableDate *_blacklist_to_date,
-            ::CORBA::Boolean _with_delete)
+            bool _with_delete)
         {
             try {
                 Fred::OperationContextTransaction ctx;

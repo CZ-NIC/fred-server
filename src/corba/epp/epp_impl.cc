@@ -51,6 +51,7 @@
 #include "old_utils/log.h"
 
 // MailerManager is connected in constructor
+#include "fredlib/common_diff.h"
 #include "fredlib/domain.h"
 #include "fredlib/contact.h"
 #include "fredlib/nsset.h"
@@ -409,6 +410,244 @@ DBSharedPtr db, const char *handle, bool lock_epp_commands
   } catch (...) {}
   return ret;
 }
+
+
+/*
+ * common function to copy domain data to corba structure
+ *
+ * \param a        action data (transaction and registrar info - authinfo fill check)
+ * \param regMan   registry manager - to get object states description
+ * \param d        destination corba domain structure to fill data into
+ * \param dom      source domain data
+ */
+void corba_domain_data_copy(
+        EPPAction &a,
+        const Fred::Manager * const regMan,
+        ccReg::Domain *d,
+        const Fred::Domain::Domain * const dom)
+{
+  std::auto_ptr<Fred::Zone::Manager>
+      zman(Fred::Zone::Manager::create() );
+  std::auto_ptr<Fred::Domain::Manager>
+      dman(Fred::Domain::Manager::create(a.getDB(), zman.get()) );
+
+  // fill common object data
+  d->ROID = CORBA::string_dup(dom->getROID().c_str());
+  d->name = CORBA::string_dup(dom->getFQDN().c_str());
+  d->CrDate = CORBA::string_dup(formatTime(dom->getCreateDate()).c_str());
+  d->UpDate = CORBA::string_dup(formatTime(dom->getUpdateDate()).c_str());
+  d->TrDate = CORBA::string_dup(formatTime(dom->getTransferDate()).c_str());
+  d->ClID = CORBA::string_dup(dom->getRegistrarHandle().c_str());
+  d->CrID = CORBA::string_dup(dom->getCreateRegistrarHandle().c_str());
+  d->UpID = CORBA::string_dup(dom->getUpdateRegistrarHandle().c_str());
+  // authinfo is filled only if session registar is ownering registrar
+  d->AuthInfoPw = CORBA::string_dup(
+    a.getRegistrar() == (int)dom->getRegistrarId() ? dom->getAuthPw().c_str()
+          : ""
+  );
+  // states
+  for (unsigned i=0; i<dom->getStatusCount(); i++) {
+    Fred::TID stateId = dom->getStatusByIdx(i)->getStatusId();
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
+    if (!sd || !sd->getExternal())
+      continue;
+    d->stat.length(d->stat.length()+1);
+    d->stat[d->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
+    d->stat[d->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
+        a.getLang() == LANG_CS ? "CS" : "EN"
+    ).c_str());
+  }
+  if (!d->stat.length()) {
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
+    if (sd) {
+      d->stat.length(1);
+      d->stat[0].value = CORBA::string_dup(sd->getName().c_str());
+      d->stat[0].text = CORBA::string_dup(sd->getDesc(
+          a.getLang() == LANG_CS ? "CS" : "EN"
+      ).c_str());
+    }
+  }
+  // fill domain specific data
+  d->nsset = CORBA::string_dup(dom->getNSSetHandle().c_str());
+  d->keyset = CORBA::string_dup(dom->getKeySetHandle().c_str());
+  d->ExDate = CORBA::string_dup(to_iso_extended_string(dom->getExpirationDate()).c_str() );
+  // registrant and contacts are disabled for other registrars
+  // in case of enum domain
+  bool disabled = a.getRegistrar() != (int)dom->getRegistrarId()
+      && zman->findApplicableZone(dom->getFQDN())->isEnumZone();
+  // registrant
+  d->Registrant = CORBA::string_dup(disabled ? "" : dom->getRegistrantHandle().c_str() );
+  // admin
+  unsigned adminCount = disabled ? 0 : dom->getAdminCount(1);
+  d->admin.length(adminCount);
+  for (unsigned i=0; i<adminCount; i++)
+    d->admin[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,1).c_str());
+  // temps
+  unsigned tempCount = disabled ? 0 : dom->getAdminCount(2);
+  d->tmpcontact.length(tempCount);
+  for (unsigned i=0; i<tempCount; i++)
+    d->tmpcontact[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,2).c_str());
+  // validation
+  if (!dom->getValExDate().is_special()) {
+    ccReg::ENUMValidationExtension *enumVal =
+        new ccReg::ENUMValidationExtension();
+    enumVal->valExDate = CORBA::string_dup(to_iso_extended_string(dom->getValExDate()).c_str() );
+    enumVal->publish = dom->getPublish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
+    d->ext.length(1);
+    d->ext[0] <<= enumVal;
+  }
+}
+
+
+/*
+ * common function to copy nsset data to corba structure
+ *
+ * \param a        action data (transaction and registrar info - authinfo fill check)
+ * \param regMan   registry manager - to get object states description
+ * \param n        destination corba nsset structure to fill data into
+ * \param nss      source nsset data
+ */
+void corba_nsset_data_copy(
+        EPPAction &a,
+        const Fred::Manager * const regMan,
+        ccReg::NSSet *n,
+        const Fred::NSSet::NSSet * const nss)
+{
+  // fill common object data
+  n->ROID = CORBA::string_dup(nss->getROID().c_str());
+  n->CrDate = CORBA::string_dup(formatTime(nss->getCreateDate()).c_str());
+  n->UpDate = CORBA::string_dup(formatTime(nss->getUpdateDate()).c_str());
+  n->TrDate = CORBA::string_dup(formatTime(nss->getTransferDate()).c_str());
+  n->ClID = CORBA::string_dup(nss->getRegistrarHandle().c_str());
+  n->CrID = CORBA::string_dup(nss->getCreateRegistrarHandle().c_str());
+  n->UpID = CORBA::string_dup(nss->getUpdateRegistrarHandle().c_str());
+  // authinfo is filled only if session registar is ownering registrar
+  n->AuthInfoPw = CORBA::string_dup(
+    a.getRegistrar() == (int)nss->getRegistrarId() ? nss->getAuthPw().c_str()
+          : ""
+  );
+  // states
+  for (unsigned i=0; i<nss->getStatusCount(); i++) {
+    Fred::TID stateId = nss->getStatusByIdx(i)->getStatusId();
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
+    if (!sd || !sd->getExternal())
+      continue;
+    n->stat.length(n->stat.length()+1);
+    n->stat[n->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
+    n->stat[n->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
+        a.getLang() == LANG_CS ? "CS" : "EN"
+    ).c_str());
+  }
+  if (!n->stat.length()) {
+    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
+    if (sd) {
+      n->stat.length(1);
+      n->stat[0].value = CORBA::string_dup(sd->getName().c_str());
+      n->stat[0].text = CORBA::string_dup(sd->getDesc(
+          a.getLang() == LANG_CS ? "CS" : "EN"
+      ).c_str());
+    }
+  }
+  // nsset specific data
+  n->handle = CORBA::string_dup(nss->getHandle().c_str());
+  n->level = nss->getCheckLevel();
+  n->tech.length(nss->getAdminCount());
+  for (unsigned i=0; i<nss->getAdminCount(); i++)
+    n->tech[i] = CORBA::string_dup(nss->getAdminByIdx(i).c_str());
+  n->dns.length(nss->getHostCount());
+  for (unsigned i=0; i<nss->getHostCount(); i++) {
+    const Fred::NSSet::Host *h = nss->getHostByIdx(i);
+    n->dns[i].fqdn = CORBA::string_dup(h->getName().c_str());
+    n->dns[i].inet.length(h->getAddrCount());
+    for (unsigned j=0; j<h->getAddrCount(); j++)
+      n->dns[i].inet[j] = CORBA::string_dup(h->getAddrByIdx(j).c_str());
+  }
+}
+
+
+/*
+ * common function to copy keyset data to corba structure
+ *
+ * \param a        action data (transaction and registrar info - authinfo fill check)
+ * \param regMan   registry manager - to get object states description
+ * \param n        destination corba keyset structure to fill data into
+ * \param nss      source keyset data
+ */
+void corba_keyset_data_copy(
+        EPPAction &a,
+        const Fred::Manager * const regMan,
+        ccReg::KeySet *k,
+        const Fred::KeySet::KeySet * const kss)
+{
+    //fill common object data
+    k->ROID = CORBA::string_dup(kss->getROID().c_str());
+    k->CrDate = CORBA::string_dup(formatTime(kss->getCreateDate()).c_str());
+    k->UpDate = CORBA::string_dup(formatTime(kss->getUpdateDate()).c_str());
+    k->TrDate = CORBA::string_dup(formatTime(kss->getTransferDate()).c_str());
+    k->ClID = CORBA::string_dup(kss->getRegistrarHandle().c_str());
+    k->CrID = CORBA::string_dup(kss->getCreateRegistrarHandle().c_str());
+    k->UpID = CORBA::string_dup(kss->getUpdateRegistrarHandle().c_str());
+    //authinfo is filled only if session registrar is also owner
+    k->AuthInfoPw = CORBA::string_dup(
+            a.getRegistrar() == (int)kss->getRegistrarId() ?
+            kss->getAuthPw().c_str() : "");
+
+
+    // states
+    for (unsigned int i = 0; i < kss->getStatusCount(); i++) {
+        Fred::TID stateId = kss->getStatusByIdx(i)->getStatusId();
+        const Fred::StatusDesc *sd = regMan->getStatusDesc(stateId);
+        if (!sd || !sd->getExternal())
+            continue;
+        k->stat.length(k->stat.length() + 1);
+        k->stat[k->stat.length()-1].value =
+            CORBA::string_dup(sd->getName().c_str());
+        k->stat[k->stat.length()-1].text =
+            CORBA::string_dup(sd->getDesc(
+                        a.getLang() == LANG_CS ? "CS" : "EN").c_str()
+                    );
+    }
+
+    if (!k->stat.length()) {
+        const Fred::StatusDesc *sd = regMan->getStatusDesc(0);
+        if (sd) {
+            k->stat.length(1);
+            k->stat[0].value = CORBA::string_dup(sd->getName().c_str());
+            k->stat[0].text = CORBA::string_dup(
+                    sd->getDesc(a.getLang() == LANG_CS ? "CS" : "EN").c_str());
+        }
+    }
+
+    // keyset specific data
+    k->handle = CORBA::string_dup(kss->getHandle().c_str());
+    k->tech.length(kss->getAdminCount());
+    for (unsigned int i = 0; i < kss->getAdminCount(); i++)
+        k->tech[i] = CORBA::string_dup(kss->getAdminByIdx(i).c_str());
+
+
+    // dsrecord
+    k->dsrec.length(kss->getDSRecordCount());
+    for (unsigned int i = 0; i < kss->getDSRecordCount(); i++) {
+        const Fred::KeySet::DSRecord *dsr = kss->getDSRecordByIdx(i);
+        k->dsrec[i].keyTag = dsr->getKeyTag();
+        k->dsrec[i].alg = dsr->getAlg();
+        k->dsrec[i].digestType = dsr->getDigestType();
+        k->dsrec[i].digest = CORBA::string_dup(dsr->getDigest().c_str());
+        k->dsrec[i].maxSigLife = dsr->getMaxSigLife();
+    }
+
+    // dnskey record
+    k->dnsk.length(kss->getDNSKeyCount());
+    for (unsigned int i = 0; i < kss->getDNSKeyCount(); i++) {
+        const Fred::KeySet::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
+        k->dnsk[i].flags = dnsk->getFlags();
+        k->dnsk[i].protocol = dnsk->getProtocol();
+        k->dnsk[i].alg = dnsk->getAlg();
+        k->dnsk[i].key = CORBA::string_dup(dnsk->getKey().c_str());
+    }
+}
+
+
 
 //
 // Example implementational code for IDL interface ccReg::EPP
@@ -1408,16 +1647,17 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
       dynamic_cast<Fred::Poll::MessageEvent *>(m.get());
   if (me) {
     switch (m->getType()) {
+      case Fred::Poll::MT_IDLE_DELETE_CONTACT:
       case Fred::Poll::MT_DELETE_CONTACT:
         type = ccReg::polltype_delete_contact;
         break;
-      case Fred::Poll::MT_DELETE_NSSET:
+      case Fred::Poll::MT_IDLE_DELETE_NSSET:
         type = ccReg::polltype_delete_nsset;
         break;
-      case Fred::Poll::MT_DELETE_DOMAIN:
+      case Fred::Poll::MT_IDLE_DELETE_DOMAIN:
         type = ccReg::polltype_delete_domain;
         break;
-      case Fred::Poll::MT_DELETE_KEYSET:
+      case Fred::Poll::MT_IDLE_DELETE_KEYSET:
         type = ccReg::polltype_delete_keyset;
         break;
       case Fred::Poll::MT_IMP_EXPIRATION:
@@ -1489,11 +1729,245 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
       LOGGER(PACKAGE).debug("poll message request_fee_info packed");
       return a.getRet()._retn();
   }
+  Fred::Poll::MessageUpdateObject *muo =
+      dynamic_cast<Fred::Poll::MessageUpdateObject*>(m.get());
+  if (muo)
+  {
+      switch (muo->getType())
+      {
+          case Fred::Poll::MT_UPDATE_DOMAIN:
+              type = ccReg::polltype_update_domain;
+              break;
+          case Fred::Poll::MT_UPDATE_NSSET:
+              type = ccReg::polltype_update_nsset;
+              break;
+          case Fred::Poll::MT_UPDATE_KEYSET:
+              type = ccReg::polltype_update_keyset;
+              break;
+      }
+      ccReg::PollMsg_Update *hdm = new ccReg::PollMsg_Update;
+      hdm->opTRID = CORBA::string_dup(muo->getOpTRID().c_str());
+      hdm->pollID = muo->getId();
+      *msg <<= hdm;
+      LOGGER(PACKAGE).debug("poll message update_domain packed");
+      return a.getRet()._retn();
+  }
   a.failedInternal("Invalid message structure");
   // previous command throw exception in any case so this code
   // will never be called
   return NULL;
 }
+
+
+/*
+ * idl method for retrieving old and new data of updated domain
+ *
+ * \param _poll_id        database id of poll message where is stored
+ *                        historyid of object we want details about
+ * \param _old_data       output parameter - data of object before update
+ * \param _new_data       output parameter - data of object after update
+ * \param params          common epp parameters
+ *
+ */
+void
+ccReg_EPP_i::PollRequestGetUpdateDomainDetails(
+        CORBA::ULongLong _poll_id,
+        ccReg::Domain_out _old_data,
+        ccReg::Domain_out _new_data,
+        const ccReg::EppParams &params)
+{
+    try {
+        Logging::Context::clear();
+        Logging::Context ctx("rifd");
+        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
+        Logging::Context ctx3("poll-req-update-domain-details");
+        ConnectionReleaser releaser;
+
+        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+
+        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+
+        _old_data = new ccReg::Domain;
+        _new_data = new ccReg::Domain;
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result hids = conn.exec_params(
+                "SELECT h1.id as old_hid, h1.next as new_hid"
+                " FROM poll_eppaction pea"
+                " JOIN domain_history dh ON dh.historyid = pea.objid"
+                " JOIN history h1 ON h1.next = pea.objid"
+                " WHERE pea.msgid = $1::bigint",
+                Database::query_param_list(_poll_id));
+
+        if (hids.size() != 1) {
+            throw std::runtime_error("unable to get poll message data");
+        }
+
+        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
+        rmgr->initStates();
+        std::auto_ptr<const Fred::Domain::Domain> old_data = Fred::get_object_by_hid<
+            Fred::Domain::Domain, Fred::Domain::Manager, Fred::Domain::List, Database::Filters::DomainHistoryImpl>(
+                    rmgr->getDomainManager(), static_cast<unsigned long long>(hids[0][0]));
+        std::auto_ptr<const Fred::Domain::Domain> new_data = Fred::get_object_by_hid<
+            Fred::Domain::Domain, Fred::Domain::Manager, Fred::Domain::List, Database::Filters::DomainHistoryImpl>(
+                    rmgr->getDomainManager(), static_cast<unsigned long long>(hids[0][1]));
+
+        corba_domain_data_copy(a, rmgr.get(), _old_data, old_data.get());
+        corba_domain_data_copy(a, rmgr.get(), _new_data, new_data.get());
+
+        return;
+    }
+    catch (std::exception &ex)
+    {
+        LOGGER(PACKAGE).error(ex.what());
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("unknown error");
+    }
+    this->ServerInternalError(">> PollRequestGetUpdateDomainDetails - failed internal");
+}
+
+
+/*
+ * idl method for retrieving old and new data of updated nsset
+ *
+ * \param _poll_id        database id of poll message where is stored
+ *                        historyid of object we want details about
+ * \param _old_data       output parameter - data of object before update
+ * \param _new_data       output parameter - data of object after update
+ * \param params          common epp parameters
+ *
+ */
+void
+ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
+        CORBA::ULongLong _poll_id,
+        ccReg::NSSet_out _old_data,
+        ccReg::NSSet_out _new_data,
+        const ccReg::EppParams &params)
+{
+    try {
+        Logging::Context::clear();
+        Logging::Context ctx("rifd");
+        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
+        Logging::Context ctx3("poll-req-update-nsset-details");
+        ConnectionReleaser releaser;
+
+        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+
+        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+
+        _old_data = new ccReg::NSSet;
+        _new_data = new ccReg::NSSet;
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result hids = conn.exec_params(
+                "SELECT h1.id as old_hid, h1.next as new_hid"
+                " FROM poll_eppaction pea"
+                " JOIN nsset_history dh ON dh.historyid = pea.objid"
+                " JOIN history h1 ON h1.next = pea.objid"
+                " WHERE pea.msgid = $1::bigint",
+                Database::query_param_list(_poll_id));
+
+        if (hids.size() != 1) {
+            throw std::runtime_error("unable to get poll message data");
+        }
+
+        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
+        rmgr->initStates();
+        std::auto_ptr<const Fred::NSSet::NSSet> old_data = Fred::get_object_by_hid<
+            Fred::NSSet::NSSet, Fred::NSSet::Manager, Fred::NSSet::List, Database::Filters::NSSetHistoryImpl>(
+                    rmgr->getNSSetManager(), static_cast<unsigned long long>(hids[0][0]));
+        std::auto_ptr<const Fred::NSSet::NSSet> new_data = Fred::get_object_by_hid<
+            Fred::NSSet::NSSet, Fred::NSSet::Manager, Fred::NSSet::List, Database::Filters::NSSetHistoryImpl>(
+                    rmgr->getNSSetManager(), static_cast<unsigned long long>(hids[0][1]));
+
+        corba_nsset_data_copy(a, rmgr.get(), _old_data, old_data.get());
+        corba_nsset_data_copy(a, rmgr.get(), _new_data, new_data.get());
+
+        return;
+    }
+    catch (std::exception &ex)
+    {
+        LOGGER(PACKAGE).error(ex.what());
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("unknown error");
+    }
+    this->ServerInternalError(">> PollRequestGetUpdateNSSetDetails - failed internal");
+}
+
+
+/*
+ * idl method for retrieving old and new data of updated keyset
+ *
+ * \param _poll_id        database id of poll message where is stored
+ *                        historyid of object we want details about
+ * \param _old_data       output parameter - data of object before update
+ * \param _new_data       output parameter - data of object after update
+ * \param params          common epp parameters
+ *
+ */
+void
+ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
+        CORBA::ULongLong _poll_id,
+        ccReg::KeySet_out _old_data,
+        ccReg::KeySet_out _new_data,
+        const ccReg::EppParams &params)
+{
+    try {
+        Logging::Context::clear();
+        Logging::Context ctx("rifd");
+        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
+        Logging::Context ctx3("poll-req-update-keyset-details");
+        ConnectionReleaser releaser;
+
+        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+
+        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+
+        _old_data = new ccReg::KeySet;
+        _new_data = new ccReg::KeySet;
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result hids = conn.exec_params(
+                "SELECT h1.id as old_hid, h1.next as new_hid"
+                " FROM poll_eppaction pea"
+                " JOIN keyset_history dh ON dh.historyid = pea.objid"
+                " JOIN history h1 ON h1.next = pea.objid"
+                " WHERE pea.msgid = $1::bigint",
+                Database::query_param_list(_poll_id));
+
+        if (hids.size() != 1) {
+            throw std::runtime_error("unable to get poll message data");
+        }
+
+        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
+        rmgr->initStates();
+        std::auto_ptr<const Fred::KeySet::KeySet> old_data = Fred::get_object_by_hid<
+            Fred::KeySet::KeySet, Fred::KeySet::Manager, Fred::KeySet::List, Database::Filters::KeySetHistoryImpl>(
+                    rmgr->getKeySetManager(), static_cast<unsigned long long>(hids[0][0]));
+        std::auto_ptr<const Fred::KeySet::KeySet> new_data = Fred::get_object_by_hid<
+            Fred::KeySet::KeySet, Fred::KeySet::Manager, Fred::KeySet::List, Database::Filters::KeySetHistoryImpl>(
+                    rmgr->getKeySetManager(), static_cast<unsigned long long>(hids[0][1]));
+
+        corba_keyset_data_copy(a, rmgr.get(), _old_data, old_data.get());
+        corba_keyset_data_copy(a, rmgr.get(), _new_data, new_data.get());
+
+        return;
+    }
+    catch (std::exception &ex)
+    {
+        LOGGER(PACKAGE).error(ex.what());
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("unknown error");
+    }
+    this->ServerInternalError(">> PollRequestGetUpdateKeySetDetails - failed internal");
+}
+
 
 /***********************************************************************
  *
@@ -3080,55 +3554,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
   // start filling output nsset structure
   Fred::NSSet::NSSet *nss = nlist->getNSSet(0);
   n = new ccReg::NSSet;
-  // fill common object data
-  n->ROID = CORBA::string_dup(nss->getROID().c_str());
-  n->CrDate = CORBA::string_dup(formatTime(nss->getCreateDate()).c_str());
-  n->UpDate = CORBA::string_dup(formatTime(nss->getUpdateDate()).c_str());
-  n->TrDate = CORBA::string_dup(formatTime(nss->getTransferDate()).c_str());
-  n->ClID = CORBA::string_dup(nss->getRegistrarHandle().c_str());
-  n->CrID = CORBA::string_dup(nss->getCreateRegistrarHandle().c_str());
-  n->UpID = CORBA::string_dup(nss->getUpdateRegistrarHandle().c_str());
-  // authinfo is filled only if session registar is ownering registrar
-  n->AuthInfoPw = CORBA::string_dup(
-    a.getRegistrar() == (int)nss->getRegistrarId() ? nss->getAuthPw().c_str()
-          : ""
-  );
-  // states
-  for (unsigned i=0; i<nss->getStatusCount(); i++) {
-    Fred::TID stateId = nss->getStatusByIdx(i)->getStatusId();
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
-    if (!sd || !sd->getExternal())
-      continue;
-    n->stat.length(n->stat.length()+1);
-    n->stat[n->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
-    n->stat[n->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
-        a.getLang() == LANG_CS ? "CS" : "EN"
-    ).c_str());
-  }
-  if (!n->stat.length()) {
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
-    if (sd) {
-      n->stat.length(1);
-      n->stat[0].value = CORBA::string_dup(sd->getName().c_str());
-      n->stat[0].text = CORBA::string_dup(sd->getDesc(
-          a.getLang() == LANG_CS ? "CS" : "EN"
-      ).c_str());
-    }
-  }
-  // nsset specific data
-  n->handle = CORBA::string_dup(nss->getHandle().c_str());
-  n->level = nss->getCheckLevel();
-  n->tech.length(nss->getAdminCount());
-  for (unsigned i=0; i<nss->getAdminCount(); i++)
-    n->tech[i] = CORBA::string_dup(nss->getAdminByIdx(i).c_str());
-  n->dns.length(nss->getHostCount());
-  for (unsigned i=0; i<nss->getHostCount(); i++) {
-    const Fred::NSSet::Host *h = nss->getHostByIdx(i);
-    n->dns[i].fqdn = CORBA::string_dup(h->getName().c_str());
-    n->dns[i].inet.length(h->getAddrCount());
-    for (unsigned j=0; j<h->getAddrCount(); j++)
-      n->dns[i].inet[j] = CORBA::string_dup(h->getAddrByIdx(j).c_str());
-  }
+  corba_nsset_data_copy(a, regMan.get(), n, nss);
   return a.getRet()._retn();
 }
 
@@ -4087,71 +4513,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   // start filling output domain structure
   Fred::Domain::Domain *dom = dlist->getDomain(0);
   d = new ccReg::Domain;
-  // fill common object data
-  d->ROID = CORBA::string_dup(dom->getROID().c_str());
-  d->name = CORBA::string_dup(dom->getFQDN().c_str());
-  d->CrDate = CORBA::string_dup(formatTime(dom->getCreateDate()).c_str());
-  d->UpDate = CORBA::string_dup(formatTime(dom->getUpdateDate()).c_str());
-  d->TrDate = CORBA::string_dup(formatTime(dom->getTransferDate()).c_str());
-  d->ClID = CORBA::string_dup(dom->getRegistrarHandle().c_str());
-  d->CrID = CORBA::string_dup(dom->getCreateRegistrarHandle().c_str());
-  d->UpID = CORBA::string_dup(dom->getUpdateRegistrarHandle().c_str());
-  // authinfo is filled only if session registar is ownering registrar
-  d->AuthInfoPw = CORBA::string_dup(
-    a.getRegistrar() == (int)dom->getRegistrarId() ? dom->getAuthPw().c_str()
-          : ""
-  );
-  // states
-  for (unsigned i=0; i<dom->getStatusCount(); i++) {
-    Fred::TID stateId = dom->getStatusByIdx(i)->getStatusId();
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
-    if (!sd || !sd->getExternal())
-      continue;
-    d->stat.length(d->stat.length()+1);
-    d->stat[d->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
-    d->stat[d->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
-        a.getLang() == LANG_CS ? "CS" : "EN"
-    ).c_str());
-  }
-  if (!d->stat.length()) {
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
-    if (sd) {
-      d->stat.length(1);
-      d->stat[0].value = CORBA::string_dup(sd->getName().c_str());
-      d->stat[0].text = CORBA::string_dup(sd->getDesc(
-          a.getLang() == LANG_CS ? "CS" : "EN"
-      ).c_str());
-    }
-  }
-  // fill domain specific data
-  d->nsset = CORBA::string_dup(dom->getNSSetHandle().c_str());
-  d->keyset = CORBA::string_dup(dom->getKeySetHandle().c_str());
-  d->ExDate = CORBA::string_dup(to_iso_extended_string(dom->getExpirationDate()).c_str() );
-  // registrant and contacts are disabled for other registrars
-  // in case of enum domain
-  bool disabled = a.getRegistrar() != (int)dom->getRegistrarId()
-      && zman->findApplicableZone(fqdn)->isEnumZone();
-  // registrant
-  d->Registrant = CORBA::string_dup(disabled ? "" : dom->getRegistrantHandle().c_str() );
-  // admin
-  unsigned adminCount = disabled ? 0 : dom->getAdminCount(1);
-  d->admin.length(adminCount);
-  for (unsigned i=0; i<adminCount; i++)
-    d->admin[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,1).c_str());
-  // temps
-  unsigned tempCount = disabled ? 0 : dom->getAdminCount(2);
-  d->tmpcontact.length(tempCount);
-  for (unsigned i=0; i<tempCount; i++)
-    d->tmpcontact[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,2).c_str());
-  // validation
-  if (!dom->getValExDate().is_special()) {
-    ccReg::ENUMValidationExtension *enumVal =
-        new ccReg::ENUMValidationExtension();
-    enumVal->valExDate = CORBA::string_dup(to_iso_extended_string(dom->getValExDate()).c_str() );
-    enumVal->publish = dom->getPublish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
-    d->ext.length(1);
-    d->ext[0] <<= enumVal;
-  }
+  corba_domain_data_copy(a, regMan.get(), d, dom);
   return a.getRet()._retn();
 }
 
@@ -4271,12 +4633,10 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     std::string valexdate;
     ccReg::Disclose publish;
     int id, nssetid, contactid, adminid, keysetid;
-    int seq, zone;
+    int zone;
     std::vector<int> ac_add, ac_rem, tc_rem;
     unsigned int i, j;
     short int code = 0;
-
-    seq=0;
 
     EPPAction action(this, params.loginID, EPP_DomainUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
@@ -5405,74 +5765,7 @@ ccReg_EPP_i::KeySetInfo(
 
     Fred::KeySet::KeySet *kss = klist->getKeySet(0);
     k = new ccReg::KeySet;
-
-    //fill common object data
-    k->ROID = CORBA::string_dup(kss->getROID().c_str());
-    k->CrDate = CORBA::string_dup(formatTime(kss->getCreateDate()).c_str());
-    k->UpDate = CORBA::string_dup(formatTime(kss->getUpdateDate()).c_str());
-    k->TrDate = CORBA::string_dup(formatTime(kss->getTransferDate()).c_str());
-    k->ClID = CORBA::string_dup(kss->getRegistrarHandle().c_str());
-    k->CrID = CORBA::string_dup(kss->getCreateRegistrarHandle().c_str());
-    k->UpID = CORBA::string_dup(kss->getUpdateRegistrarHandle().c_str());
-    //authinfo is filled only if session registrar is also owner
-    k->AuthInfoPw = CORBA::string_dup(
-            a.getRegistrar() == (int)kss->getRegistrarId() ?
-            kss->getAuthPw().c_str() : "");
-
-
-    // states
-    for (unsigned int i = 0; i < kss->getStatusCount(); i++) {
-        Fred::TID stateId = kss->getStatusByIdx(i)->getStatusId();
-        const Fred::StatusDesc *sd = regMan->getStatusDesc(stateId);
-        if (!sd || !sd->getExternal())
-            continue;
-        k->stat.length(k->stat.length() + 1);
-        k->stat[k->stat.length()-1].value =
-            CORBA::string_dup(sd->getName().c_str());
-        k->stat[k->stat.length()-1].text =
-            CORBA::string_dup(sd->getDesc(
-                        a.getLang() == LANG_CS ? "CS" : "EN").c_str()
-                    );
-    }
-
-    if (!k->stat.length()) {
-        const Fred::StatusDesc *sd = regMan->getStatusDesc(0);
-        if (sd) {
-            k->stat.length(1);
-            k->stat[0].value = CORBA::string_dup(sd->getName().c_str());
-            k->stat[0].text = CORBA::string_dup(
-                    sd->getDesc(a.getLang() == LANG_CS ? "CS" : "EN").c_str());
-        }
-    }
-
-    // keyset specific data
-    k->handle = CORBA::string_dup(kss->getHandle().c_str());
-    k->tech.length(kss->getAdminCount());
-    for (unsigned int i = 0; i < kss->getAdminCount(); i++)
-        k->tech[i] = CORBA::string_dup(kss->getAdminByIdx(i).c_str());
-
-
-    // dsrecord
-    k->dsrec.length(kss->getDSRecordCount());
-    for (unsigned int i = 0; i < kss->getDSRecordCount(); i++) {
-        const Fred::KeySet::DSRecord *dsr = kss->getDSRecordByIdx(i);
-        k->dsrec[i].keyTag = dsr->getKeyTag();
-        k->dsrec[i].alg = dsr->getAlg();
-        k->dsrec[i].digestType = dsr->getDigestType();
-        k->dsrec[i].digest = CORBA::string_dup(dsr->getDigest().c_str());
-        k->dsrec[i].maxSigLife = dsr->getMaxSigLife();
-    }
-
-    // dnskey record
-    k->dnsk.length(kss->getDNSKeyCount());
-    for (unsigned int i = 0; i < kss->getDNSKeyCount(); i++) {
-        const Fred::KeySet::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
-        k->dnsk[i].flags = dnsk->getFlags();
-        k->dnsk[i].protocol = dnsk->getProtocol();
-        k->dnsk[i].alg = dnsk->getAlg();
-        k->dnsk[i].key = CORBA::string_dup(dnsk->getKey().c_str());
-    }
-
+    corba_keyset_data_copy(a, regMan.get(), k, kss);
     return a.getRet()._retn();
 }
 
@@ -6228,7 +6521,6 @@ ccReg_EPP_i::KeySetUpdate(
     // dnsk_add tests - if exact same exist for this keyset
     if (!code) {
         for (int ii = 0; ii < (int)dnsk_add.length(); ii++) {
-            bool pass = true;
             int id;
             char *key;
             // keys are inserted into database without whitespaces
@@ -6236,7 +6528,6 @@ ccReg_EPP_i::KeySetUpdate(
                 code = COMMAND_FAILED;
                 LOG(WARNING_LOG, "removeWhitespaces failed");
                 free(key);
-                pass = false;
                 break;
             }
             id = action.getDB()->GetDNSKeyId(
@@ -6253,7 +6544,6 @@ ccReg_EPP_i::KeySetUpdate(
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_dnskey_add, ii,
                         REASON_MSG_DNSKEY_EXIST);
-                pass = false;
                 break;
             }
         }
