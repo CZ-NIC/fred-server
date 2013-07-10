@@ -184,7 +184,7 @@ public:
      if (allowIDN)
        fqdn = m_zone_manager->encodeIDN(fqdn);
     NameIdPair conflictFQDN;
-    switch (m_domain_manager->checkAvail(fqdn, conflictFQDN, false, allowIDN)) {
+    switch (m_domain_manager->checkAvail(fqdn, conflictFQDN, allowIDN, false )) {
       case Domain::CA_INVALID_HANDLE:
         isDomain = false;
         break;

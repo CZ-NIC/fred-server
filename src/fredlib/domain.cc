@@ -1270,9 +1270,9 @@ public:
   }
   /// interface method implementation  
   CheckAvailType checkAvail(const std::string& _fqdn,
-  												  NameIdPair& conflictFqdn,
-  												  bool lock,
-  												  bool allowIDN) const throw (SQL_ERROR) {
+                            NameIdPair& conflictFqdn,
+                            bool allowIDN,
+                            bool lock) const throw (SQL_ERROR) {
     std::string fqdn = _fqdn;
     boost::algorithm::to_lower(fqdn);
     // clear output

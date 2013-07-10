@@ -376,7 +376,7 @@ getIdOfKeySet(DBSharedPtr db, const char *handle, bool restricted_handles
 /// replace GetDomainID
 static long int getIdOfDomain(
 DBSharedPtr db, const char *handle, bool lock_epp_commands
-    , bool lock = false, int* zone = NULL)
+    , bool allow_idn, bool lock = false, int* zone = NULL)
 {
   if (lock && !lock_epp_commands) lock = false;
   std::auto_ptr<Fred::Zone::Manager> zm(
@@ -388,7 +388,7 @@ DBSharedPtr db, const char *handle, bool lock_epp_commands
   Fred::NameIdPair nameId;
   long int ret = -1;
   try {
-    switch (dman->checkAvail(handle, nameId, lock)) {
+    switch (dman->checkAvail(handle, nameId, allow_idn, lock )) {
       case Fred::Domain::CA_REGISTRED :
         ret = nameId.id;
         break;
@@ -667,6 +667,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     , unsigned rifd_session_timeout
     , unsigned rifd_session_registrar_max
     , bool rifd_epp_update_domain_keyset_clear
+    , bool _allow_idn
 )
 
     : database(_db),
@@ -693,7 +694,8 @@ ccReg_EPP_i::ccReg_EPP_i(
     ErrorMsg(),
     ReasonMsg(),
     CC(),
-    max_zone()
+    max_zone(),
+    allow_idn_(_allow_idn)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
@@ -778,8 +780,21 @@ int ccReg_EPP_i::GetRegistrarLang(
   return epp_sessions.get_registrar_lang(clientID);
 }
 
-// Load table to memory for speed
+bool ccReg_EPP_i::idn_allowed(EPPAction& action) const {
+    DBSharedPtr db = action.getDB();
+    if (!db.get()) {
+        throw Fred::SQL_ERROR();
+    }
 
+    // system registrar has IDN always allowed
+    if (db->GetRegistrarSystem(action.getRegistrar())) {
+        return true;
+    } else {
+        return this->allow_idn_;
+    }
+}
+
+// Load table to memory for speed
 int ccReg_EPP_i::LoadReasonMessages()
 {
   Logging::Context::clear();
@@ -2399,7 +2414,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
 
                     LOG( NOTICE_LOG , "domain checkAvail fqdn [%s]" , (const char * ) chck[i] );
 
-                    caType = dman->checkAvail( ( const char * ) chck[i] , caConflict);
+                    caType = dman->checkAvail( ( const char * ) chck[i] , caConflict, allow_idn_);
                     LOG( NOTICE_LOG , "domain type %d" , caType );
                     switch (caType) {
                         case Fred::Domain::CA_INVALID_HANDLE:
@@ -3293,7 +3308,7 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 
         case EPP_DomainTransfer:
             if ( (id = getIdOfDomain(action.getDB(), name, lock_epp_commands_
-                    , true, &zone) ) <= 0) {
+                    , allow_idn_, true, &zone ) ) <= 0) {
                 code=COMMAND_OBJECT_NOT_EXIST;
             }
             if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) {
@@ -4497,7 +4512,8 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   std::auto_ptr<Fred::Domain::Manager>
       dman(Fred::Domain::Manager::create(a.getDB(), zman.get()) );
   // first check handle for proper format
-  Fred::Domain::CheckAvailType caType = dman->checkHandle(fqdn);
+
+  Fred::Domain::CheckAvailType caType = dman->checkHandle(fqdn, allow_idn_);
   if (caType != Fred::Domain::CA_AVAILABLE) {
     // failure in FQDN check, throw exception
     a.failed(SetReasonDomainFQDN(a.getErrors(), fqdn, caType
@@ -4548,7 +4564,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     LOGGER(PACKAGE).notice(boost::format("DomainDelete: clientID -> %1% clTRID [%2%] fqdn  [%3%] ") % (int ) params.loginID % static_cast<const char*>(params.clTRID) % fqdn );
 
     if ( (id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
-            , true, &zone) ) <= 0) {
+            , allow_idn_, true,  &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -4654,7 +4670,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     extractEnumDomainExtension(valexdate, publish, ext);
 
     if ( (id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
-            , true, &zone) ) <= 0) {
+            , allow_idn_, true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -5161,7 +5177,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 
         LOG( NOTICE_LOG , "Domain::checkAvail  fqdn [%s]" , (const char * ) fqdn );
 
-        dType = dman->checkAvail( FQDN , dConflict);
+        dType = dman->checkAvail( FQDN , dConflict, allow_idn_);
         const Fred::Zone::Zone* temp_zone;
 
         LOG( NOTICE_LOG , "domain type %d" , dType );
@@ -5557,7 +5573,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     extractEnumDomainExtension(valexdate, publish, ext);
 
     if ((id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
-            , true, &zone) ) <= 0) {
+            , allow_idn_, true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -7354,7 +7370,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 
             // static check of fqdn format (no db)
             try {
-                zm->parseDomainName(FQDN, dev_null);
+                zm->parseDomainName(FQDN, dev_null, allow_idn_);
             } catch(Fred::Zone::INVALID_DOMAIN_NAME&) {
                 zone = -1;
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
