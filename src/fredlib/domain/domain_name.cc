@@ -30,6 +30,8 @@
 namespace Fred {
 namespace Domain {
 
+FACTORY_MODULE_INIT_DEFI(domain_name_validator)
+
 bool general_domain_name_syntax_check(const std::string& fqdn)
 {
     if(fqdn.length() > 255) return false;

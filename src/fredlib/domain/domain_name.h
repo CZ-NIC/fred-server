@@ -26,6 +26,9 @@
 
 #include <string>
 #include <boost/regex.hpp>
+#include "fredlib/opcontext.h"
+#include "util/factory.h"
+#include "util/factory_check.h"
 
 namespace Fred {
 namespace Domain {
@@ -52,6 +55,35 @@ bool general_domain_name_syntax_check(const std::string& fqdn);
  * but is not part of preferred name syntax RFC1035 section 2.3.1.
  */
 std::string rem_trailing_dot(const std::string& fqdn);
+
+//domain name validator
+FACTORY_MODULE_INIT_DECL(domain_name_validator)
+
+
+class DomainNameValidator
+{
+public:
+    explicit DomainNameValidator(const std::string& fqdn);
+    bool exec(const Fred::OperationContext& ctx);//fqdn valid/invalid
+
+    //to be called from DomainNameCheckerBase child implementation
+    Fred::OperationContext& get_op_ctx() const;
+    std::string get_fqdn() const;
+    unsigned long long get_zone_id() const;
+};
+
+class DomainNameCheckerBase
+{
+public:
+  virtual ~DomainNameCheckerBase(){}
+  virtual bool operator()(const DomainNameValidator& dnv) = 0;
+};
+
+const std::string DNCHECK_NO_DOUBLE_HYPHEN_UNICODE="dncheck_no_double_hyphen_unicode";
+const std::string DNCHECK_NO_DOUBLE_HYPHEN_ASCII="dncheck_no_double_hyphen_ascii";
+const std::string DNCHECK_RFC1035_PREFERRED_WITH_OPTIONAL_TRAILING_DOT="dncheck_rfc1035_preferred_with_optional_trailing_dot";
+const std::string DNCHECK_ENUM="dncheck_enum";
+
 
 }//namespace Fred
 }//namespace Domain
