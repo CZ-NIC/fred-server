@@ -171,6 +171,22 @@ namespace Registry
         {
         }
 
+        DomainIdHandleOwnerChangeList* BlockingImpl::blockDomainsId(
+            const ::Registry::Administrative::DomainIdList &_domain_list,
+            const ::Registry::Administrative::StatusList &_status_list,
+            ::Registry::Administrative::OwnerBlockMode _owner_block_mode,
+            const char *_reason)
+        {
+            try {
+                std::auto_ptr< DomainIdHandleOwnerChangeList > result(new DomainIdHandleOwnerChangeList);
+                Fred::OperationContextTransaction ctx;
+                return result.release();
+            }
+            catch (const std::exception &e) {
+                throw INTERNAL_SERVER_ERROR(e.what());
+            }
+        }
+
     }//namespace Administrative
 }//namespace Registry
 

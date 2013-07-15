@@ -71,6 +71,12 @@ namespace Registry
             void unblacklistAndCreateDomains(
                 const ::Registry::Administrative::DomainList &_domain_list,
                 const std::string &_owner);
+
+            DomainIdHandleOwnerChangeList* blockDomainsId(
+                const ::Registry::Administrative::DomainIdList &_domain_list,
+                const ::Registry::Administrative::StatusList &_status_list,
+                ::Registry::Administrative::OwnerBlockMode _owner_block_mode,
+                const char *_reason);
         private:
             std::string server_name_;
         };//class BlockingImpl

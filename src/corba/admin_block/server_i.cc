@@ -56,6 +56,11 @@ namespace Registry
             bimpl_->blockDomains(domain_list, status_list, block_owner, create_owner_copy);
         }
 
+        DomainIdHandleOwnerChangeList* Server_i::blockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const ::Registry::Administrative::StatusList& status_list, ::Registry::Administrative::OwnerBlockMode owner_block_mode, const char* reason)
+        {
+            return bimpl_->blockDomainsId(domain_list, status_list, owner_block_mode, reason);
+        }
+
         void Server_i::restorePreAdministrativeBlockStates(
             const ::Registry::Administrative::DomainList &domain_list)
         {
