@@ -77,7 +77,7 @@ namespace Fred
         return *this;
     }
 
-//  CREATE TABLE object_blocked
+//  CREATE TABLE object_state_request_reason
 //  (
 //    object_state_request_id INTEGER NOT NULL REFERENCES object_state_request (id),
 //    state_on BOOL NOT NULL,
@@ -104,7 +104,7 @@ namespace Fred
         const ObjectId object_id = createObjectStateRequest.exec(_ctx);
         if (reason_.isset()) {
             Database::Result request_id_res = _ctx.get_conn().exec_params(
-                "INSERT INTO object_blocked (object_state_request_id,state_on,reason) "
+                "INSERT INTO object_state_request_reason (object_state_request_id,state_on,reason) "
                     "SELECT osr.id,true,$1 "
                     "FROM object_state_request osr "
                     "JOIN enum_object_states eos ON eos.id=osr.state_id "
