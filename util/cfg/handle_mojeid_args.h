@@ -30,6 +30,7 @@
 #include <vector>
 
 #include <boost/program_options.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "faked_args.h"
 #include "handle_args.h"
@@ -47,6 +48,8 @@ public:
     std::string hostname;
     bool demo_mode;
     bool notify_commands;
+    boost::posix_time::time_duration uho_scavenger_thread_period;
+    boost::posix_time::time_duration uho_scavenger_object_max_idle_period;
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -67,7 +70,15 @@ public:
                  "turn demo mode on/off")
                 ("mojeid.notify_commands",
                  po::value<bool>()->default_value(false),
-                 "turn command notifier on/off");
+                 "turn command notifier on/off")
+                ("mojeid.uho_scavenger_thread_period",
+                 po::value<int>()->default_value(30),
+                 "unregistrable handles iterator object scavenger thread configuration"
+                 " - period between garbage procedure runs in seconds")
+                ("mojeid.uho_scavenger_object_max_idle_period",
+                 po::value<int>()->default_value(300),
+                 "unregistrable handles iterator object scavenger thread configuration"
+                 " - maximal object idle period (timeout) in seconds");
 
         return cfg_opts;
     }//get_options_description
@@ -80,6 +91,10 @@ public:
         hostname = vm["mojeid.hostname"].as<std::string>();
         demo_mode = vm["mojeid.demo_mode"].as<bool>();
         notify_commands = vm["mojeid.notify_commands"].as<bool>();
+        uho_scavenger_thread_period = boost::posix_time::seconds(
+                vm["mojeid.uho_scavenger_thread_period"].as<int>());
+        uho_scavenger_object_max_idle_period = boost::posix_time::seconds(
+                vm["mojeid.uho_scavenger_object_max_idle_period"].as<int>());
     }//handle
 };
 

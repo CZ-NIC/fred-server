@@ -44,6 +44,8 @@ public:
     virtual unsigned long long getRealCount(Database::Filters::Union &filter) = 0;
     virtual bool isLimited() const = 0;
     virtual void setTimeout(unsigned _timeout) = 0;
+    virtual void setLimit(unsigned int _limit) = 0;
+    virtual unsigned int getLimit() const = 0;
 };
 
 

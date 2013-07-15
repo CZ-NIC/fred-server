@@ -50,6 +50,7 @@ struct payment_list_impl
               , ImportXMLArgs()
               , false//BANK_ADD_ACCOUNT_NAME
               , AddAccountArgs()
+              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientBankPaymentListArgsGrp>()->show_details
               );
       pom.runMethod();
   }
@@ -75,6 +76,7 @@ struct bank_import_xml_impl
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientBankImportXMLArgsGrp>()->params //ImportXMLArgs()
               , false//BANK_ADD_ACCOUNT_NAME
               , AddAccountArgs()
+              , false
               );
       pom.runMethod();
   }
@@ -101,6 +103,7 @@ struct bank_add_account_impl
               , ImportXMLArgs()
               , true//BANK_ADD_ACCOUNT_NAME
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientBankAddAccountArgsGrp>()->params //AddAccountArgs()
+              , false
               );
       pom.runMethod();
   }

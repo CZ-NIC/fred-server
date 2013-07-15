@@ -127,6 +127,7 @@ ccReg_KeySets_i::reload_worker()
 
     TRACE("[CALL] ccReg_KeySets_i::reload_worker()");
     m_kl->setTimeout(query_timeout);
+    m_kl->setLimit(limit_);
     m_kl->reload(uf);
     m_kl->deleteDuplicatesId();
 }

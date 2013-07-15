@@ -1431,8 +1431,8 @@ BOOST_AUTO_TEST_CASE( get_request_count_users_compare )
 {
     TestImplLog test (CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
-    boost::posix_time::ptime begin (time_from_string("2011-01-01"));
-    boost::posix_time::ptime end   (time_from_string("2011-06-30"));
+    boost::posix_time::ptime begin (time_from_string("2011-01-01 00:00:00"));
+    boost::posix_time::ptime end   (time_from_string("2011-06-30 00:00:00"));
 
     std::auto_ptr<RequestCountInfo> info_ptr = test.getRequestCountUsers(begin, end, "EPP");
 
@@ -1752,7 +1752,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_irregular)
 
     std::string time_string(TimeStamp::microsec());
     std::string reg_handle = "REG-"+ time_string;
-    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+    test.createSession(0, reg_handle.c_str());
 
     boost::gregorian::date current_date = boost::gregorian::day_clock::local_day();
 

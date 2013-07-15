@@ -59,6 +59,11 @@ public:
         }
         return *this;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const Nullable<T>& v)
+    {
+        return os << static_cast<T>(v);
+    }
 };
 
 

@@ -42,6 +42,7 @@ private:
     ImportXMLArgs import_xml_params;
     bool bank_add_account;//BANK_ADD_ACCOUNT_NAME
     AddAccountArgs add_account_params;
+    bool bank_payment_list_details;
 
     bool parse_line(const char *line, std::vector<std::string> &vec);
 
@@ -64,6 +65,7 @@ public:
             , const ImportXMLArgs& _import_xml_params
             , bool _bank_add_account
             , const AddAccountArgs& _add_account_params
+            , bool _bank_payment_list_details
             )
     : BaseClient(connstring, nsAddr)
     , nameservice_context(_nameservice_context)
@@ -74,6 +76,7 @@ public:
     , import_xml_params(_import_xml_params)
     , bank_add_account(_bank_add_account)
     , add_account_params(_add_account_params)
+    , bank_payment_list_details(_bank_payment_list_details)
     { }
     ~BankClient()
     { }

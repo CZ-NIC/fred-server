@@ -133,6 +133,7 @@ void ccReg_Logger_i::reload_worker() {
 
   // CustomPartitioningTweak::process_filters(uf.begin(), uf.end()); 
   m_lel->setTimeout(query_timeout);
+  m_lel->setLimit(limit_);
   m_lel->reload(uf);
 }
 
@@ -205,10 +206,4 @@ void ccReg_Logger_i::setOffset(CORBA::Long _offset)
 {
     m_lel->setOffset(_offset);
 }
-
-void ccReg_Logger_i::setLimit(CORBA::Long _limit)
-{
-    m_lel->setLimit(_limit);
-}
-
 

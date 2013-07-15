@@ -118,6 +118,7 @@ ccReg_NSSets_i::reload_worker()
   TRACE("[CALL] ccReg_NSSets_i::reload_worker()");
 //  nl->makeRealCount();
   nl->setTimeout(query_timeout);
+  nl->setLimit(limit_);
   nl->reload(uf);
   nl->deleteDuplicatesId();
 }

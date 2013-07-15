@@ -174,7 +174,9 @@ noinst_HEADERS = \
 		util/factory_check.h \
 		util/map_get.h \
 		src/corba/common_wrappers.h \
-		src/corba/contact_verification/corba_conversion.h
+		src/corba/contact_verification/corba_conversion.h \
+		util/optional_value.h \
+		util/output_indenter.h
 
 
 noinst_LIBRARIES = \
@@ -241,7 +243,8 @@ sbin_PROGRAMS = \
 #
 util_libutil_a_SOURCES = \
 		util/random.cc \
-		util/util.cc
+		util/util.cc \
+		util/output_indenter.cc
 #
 # util/libutil.a
 
@@ -277,7 +280,8 @@ util_log_test_log_LDFLAGS = \
 util_log_test_log_LDADD = \
 		util/log/liblog.a \
 		$(BOOST_DATE_TIME_LIB) \
-		$(BOOST_THREAD_LIB)
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # util/log/test-log
 
@@ -378,7 +382,8 @@ util_db_test_db_LDADD = \
 		util/db/libdb.a \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_THREAD_LIB) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # util/db/test-db
 
@@ -438,7 +443,8 @@ util_db_test_mockdb_LDADD = \
 		util/log/liblog.a \
 		util/types/libtypes.a \
 		$(BOOST_DATE_TIME_LIB) \
-		$(BOOST_THREAD_LIB)
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SYSTEM_LIB)
 
 #
 # util/db/mock
@@ -634,7 +640,8 @@ src_model_test_model_LDADD = \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/model/test-model
 
@@ -727,7 +734,78 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/common_diff.cc \
 		src/fredlib/common_diff.h \
 		src/fredlib/reminder.cc \
-		src/fredlib/reminder.h
+		src/fredlib/reminder.h \
+		src/fredlib/opcontext.cc \
+		src/fredlib/opcontext.h \
+		src/fredlib/domain/update_domain.h \
+		src/fredlib/domain/update_domain.cc \
+		src/fredlib/domain/info_domain_data.h \
+		src/fredlib/domain/info_domain_data.cc \
+		src/fredlib/domain/info_domain.h \
+		src/fredlib/domain/info_domain.cc \
+		src/fredlib/domain/info_domain_history.h \
+		src/fredlib/domain/info_domain_history.cc \
+		src/fredlib/domain/info_domain_compare.h \
+		src/fredlib/domain/info_domain_compare.cc \
+		src/fredlib/domain/enum_validation_extension.h \
+		src/fredlib/nsset/update_nsset.h \
+		src/fredlib/nsset/update_nsset.cc \
+		src/fredlib/nsset/info_nsset.h \
+		src/fredlib/nsset/info_nsset.cc \
+		src/fredlib/nsset/info_nsset_history.h \
+		src/fredlib/nsset/info_nsset_history.cc \
+		src/fredlib/nsset/info_nsset_data.h \
+		src/fredlib/nsset/info_nsset_data.cc \
+		src/fredlib/nsset/info_nsset_compare.h \
+		src/fredlib/nsset/info_nsset_compare.cc \
+		src/fredlib/keyset/update_keyset.h \
+		src/fredlib/keyset/keyset_dns_key.h \
+		src/fredlib/keyset/update_keyset.cc \
+		src/fredlib/keyset/create_keyset.cc \
+		src/fredlib/keyset/create_keyset.h \
+		src/fredlib/keyset/info_keyset_data.h \
+		src/fredlib/keyset/info_keyset_data.cc \
+		src/fredlib/keyset/info_keyset.h \
+		src/fredlib/keyset/info_keyset.cc \
+		src/fredlib/keyset/info_keyset_history.h \
+		src/fredlib/keyset/info_keyset_history.cc \
+		src/fredlib/keyset/info_keyset_compare.h \
+		src/fredlib/keyset/info_keyset_compare.cc \
+		src/fredlib/contact/delete_contact.h \
+		src/fredlib/contact/delete_contact.cc \
+		src/fredlib/contact/info_contact_data.h \
+		src/fredlib/contact/info_contact_data.cc \
+		src/fredlib/contact/info_contact.h \
+		src/fredlib/contact/info_contact.cc \
+		src/fredlib/contact/info_contact_history.h \
+		src/fredlib/contact/info_contact_history.cc \
+		src/fredlib/contact/info_contact_compare.h \
+		src/fredlib/contact/info_contact_compare.cc \
+		src/fredlib/object/object.h \
+		src/fredlib/object/object.cc \
+		src/fredlib/poll/create_poll_message.h \
+		src/fredlib/poll/create_poll_message.cc \
+		src/fredlib/poll/create_update_object_poll_message.h \
+		src/fredlib/poll/create_update_object_poll_message.cc \
+		src/fredlib/poll/create_delete_contact_poll_message.h \
+		src/fredlib/poll/create_delete_contact_poll_message.cc \
+		src/fredlib/opexception.h \
+		src/fredlib/contact/merge_contact.h \
+		src/fredlib/contact/merge_contact.cc \
+		src/fredlib/contact/create_contact.cc \
+		src/fredlib/contact/create_contact.h \
+		src/fredlib/nsset/create_nsset.cc \
+		src/fredlib/nsset/create_nsset.h \
+		src/fredlib/nsset/nsset_dns_host.h \
+		src/fredlib/domain/create_domain.cc \
+		src/fredlib/domain/create_domain.h \
+		src/fredlib/contact/merge_contact_selection.cc \
+		src/fredlib/contact/merge_contact_selection.h \
+		src/fredlib/contact/find_contact_duplicates.cc \
+		src/fredlib/contact/find_contact_duplicates.h \
+		src/fredlib/contact/merge_contact_email_notification_data.cc \
+		src/fredlib/contact/merge_contact_email_notification_data.h
+
 #
 # src/fredlib/libfred.a
 
@@ -1160,7 +1238,8 @@ src_corba_fred_rifd_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/fred-rifd
 
@@ -1243,7 +1322,8 @@ src_corba_fred_adifd_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/fred-adifd
 
@@ -1298,7 +1378,8 @@ src_corba_fred_pifd_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/fred-pifd
 
@@ -1336,7 +1417,8 @@ src_corba_fred_logd_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/fred-logd
 
@@ -1375,7 +1457,8 @@ src_corba_messages_fred_msgd_LDADD = \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
 		$(BOOST_THREAD_LIB) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/messages/fred-msgd
 
@@ -1399,6 +1482,7 @@ src_corba_mojeid_fred_mifd_SOURCES = \
 		src/mojeid/mojeid.h \
 		src/corba/nameservice.cc \
 		src/corba/mailer_manager.cc \
+		src/corba/corba_auto_garbaged_list.h \
 		src/corba/mojeid/corba_conversion.h \
 		src/corba/mojeid/server_i.cc \
 		src/corba/mojeid/server_i.h \
@@ -1434,7 +1518,8 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		$(BOOST_REGEX_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/mojeid/fred-mifd
 
@@ -1497,7 +1582,15 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/cli_admin/charge_params.h \
 		src/cli_admin/chargeclient.cc \
 		src/cli_admin/chargeclient.h \
-		src/cli_admin/charge_client_impl.h
+		src/cli_admin/charge_client_impl.h \
+		src/admin/contact/merge_contact.cc \
+		src/admin/contact/merge_contact.h \
+		src/admin/contact/merge_contact_logger.cc \
+		src/admin/contact/merge_contact_logger.h \
+		src/admin/contact/merge_contact_auto_procedure.cc \
+		src/admin/contact/merge_contact_auto_procedure.h \
+		src/admin/contact/merge_contact_reporting.cc \
+		src/admin/contact/merge_contact_reporting.h
 
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)
@@ -1533,7 +1626,8 @@ src_cli_admin_fred_admin_LDADD = \
 		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # src/cli_admin/fred-admin
 
@@ -1569,7 +1663,8 @@ tools_logd_migration_migrate_log_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(XML2_LIBS) \
 		$(LIBIDN_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # tools/logd_migration
 
@@ -1641,7 +1736,14 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid.h \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
-		tests/checks.h
+		tests/checks.h \
+		tests/test-utils.cc \
+		tests/test-update-nsset.cc \
+		tests/test-update-keyset.cc \
+		tests/test-update-domain.cc \
+		tests/test-delete-contact.cc \
+		tests/test-info-domain.cc \
+		tests/test-merge-contact.cc
 
 
 tests_test_server_LDFLAGS = \
@@ -1694,7 +1796,8 @@ tests_test_server_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
-		$(POSTGRESQL_LIB)
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
 #
 # tests/test_server
 
@@ -1717,7 +1820,8 @@ tests_test_exception_LDADD = \
 		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
-		$(XML2_LIBS)
+		$(XML2_LIBS) \
+		$(BOOST_SYSTEM_LIB)
 #
 # non-corba tests with overloaded global operator new
 

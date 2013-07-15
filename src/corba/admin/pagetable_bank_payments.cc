@@ -212,6 +212,7 @@ ccReg_Payments_i::reload_worker()
     ConnectionReleaser releaser;
 
     list_->setTimeout(query_timeout);
+    list_->setLimit(limit_);
     list_->reload(uf);
 }
 

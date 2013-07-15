@@ -20,6 +20,15 @@ enum Languages { EN, CS  };
 struct ObjectReference {
   std::string type;
   Database::ID id;
+
+  ObjectReference() : type(), id()
+  {
+  }
+
+  ObjectReference(const std::string &_type, const unsigned long long _id)
+      : type(_type), id(_id)
+  {
+  }
 };
 
 typedef std::vector<ObjectReference> ObjectReferences;

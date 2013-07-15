@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([fred-server], [2.13.3])
+AC_INIT([fred-server], [2.14.1])
 AC_CONFIG_SRCDIR(src/corba/fred-rifd.cc)
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -67,6 +67,7 @@ AC_CHECK_HEADER([curl/curl.h],,[AC_MSG_ERROR([Header curl/curl.h not found])])
 
 # For logger class when log type is console or custom file
 AX_BOOST_THREAD 
+AX_BOOST_SYSTEM
 # For filter serialization to xml
 AX_BOOST_SERIALIZATION
 

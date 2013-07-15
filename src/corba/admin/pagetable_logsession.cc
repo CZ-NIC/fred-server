@@ -107,6 +107,7 @@ void ccReg_LogSession_i::reload_worker() {
   TRACE("[CALL] ccReg_LogSession_i::reload_worker()");
 //  m_lel->reload(uf, dbm);
   m_lel->setTimeout(query_timeout);
+  m_lel->setLimit(limit_);
   m_lel->reload(uf);
 }
 

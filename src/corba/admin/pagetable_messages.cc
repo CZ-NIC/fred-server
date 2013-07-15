@@ -288,6 +288,7 @@ ccReg_Messages_i::reload_worker()
 
     LOGGER(PACKAGE).debug("ccReg_Messages_i::reload");
     ml->setTimeout(query_timeout);
+    ml->setLimit(limit_);
     ml->reload(uf);
     }//try
     catch(std::exception& ex)

@@ -654,7 +654,7 @@ ListImpl::reload(Database::Filters::Union &uf)
             Database::Row::Iterator col = (*it).begin();
 
             Database::ID keyset_historyid   = *col;
-            Database::ID keyset_id          = *(++col);
+                                               (++col);//Database::ID keyset_id
             Database::ID contact_id         = *(++col);
             std::string  contact_handle     = *(++col);
 
@@ -679,8 +679,8 @@ ListImpl::reload(Database::Filters::Union &uf)
             Database::Row::Iterator col = (*it).begin();
 
             Database::ID keyset_historyid  = *col;
-            Database::ID keyset_id         = *(++col);
-            Database::ID dsrecord_id       = *(++col);
+                                           (++col);//Database::ID keyset_id
+            Database::ID dsrecord_id    = *(++col);
             unsigned int keytag         = *(++col);
             unsigned int alg            = *(++col);
             unsigned int digesttype     = *(++col);
@@ -717,7 +717,7 @@ ListImpl::reload(Database::Filters::Union &uf)
             Database::Row::Iterator col = (*it).begin();
 
             Database::ID keyset_historyid  = *col;
-            Database::ID keyset_id         = *(++col);
+                                              (++col);//Database::ID keyset_id
             Database::ID dnskey_id         = *(++col);
             unsigned int flags             = *(++col);
             unsigned int protocol          = *(++col);

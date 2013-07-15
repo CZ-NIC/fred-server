@@ -168,8 +168,43 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper1 )
 
 }
 
-//TODO: test with threads
-//#if 0
+BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_stdout )
+{
+    std::size_t slen =  16777216;//1073741824;//536870912;//268435456;//134217728; //67108864;//33554432;//16777216;
+    SubProcessOutput sub_output1 = ShellCmd(
+        "cat | tr u -","/bin/bash",10).execute(std::string(slen,'u'));
+    BOOST_CHECK(sub_output1.stderr.empty());
+    BOOST_CHECK(sub_output1.stdout.compare(std::string(slen,'-')) == 0);
+    //std::cout << "sub_output1.stdout.length(): " << sub_output1.stdout.length() << " slen: " << slen << std::endl;
+    BOOST_CHECK(sub_output1.stdout.length() == slen);
+}
+
+BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_stderr )
+{
+    std::size_t slen =  16777216;//2147483648;//1073741824;//536870912;//268435456;//134217728; //67108864;//33554432;//16777216;
+    SubProcessOutput sub_output1 = ShellCmd(
+        "cat | tr u - 1>&2","/bin/bash",10).execute(std::string(slen,'u'));
+    BOOST_CHECK(sub_output1.stdout.empty());
+    BOOST_CHECK(sub_output1.stderr.compare(std::string(slen,'-')) == 0);
+    BOOST_CHECK(sub_output1.stderr.length() == slen);
+}
+
+BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_timeout )
+{
+    std::size_t slen =  16;
+
+    BOOST_CHECK_EXCEPTION(SubProcessOutput sub_output1 = ShellCmd(
+        "cat | tr u - ; sleep 2","/bin/bash",1).execute(std::string(slen,'u'))
+        , std::exception
+        , check_std_exception);
+
+    BOOST_CHECK_EXCEPTION(SubProcessOutput sub_output1 = ShellCmd(
+        "sleep 2; cat | tr u - ","/bin/bash",1).execute(std::string(slen,'u'))
+        , std::exception
+        , check_std_exception);
+}
+
+
 //shell cmd threaded test
 struct TestParams
 {
@@ -359,7 +394,6 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_threaded )
 {
     //waitpid need default SIGCHLD handler to work
     sighandler_t sig_chld_h = signal(SIGCHLD, SIG_DFL);
-    signal(SIGALRM, handleSIGALARM);     //install the handler
 
     HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
                    get_handler_ptr_by_type<HandleThreadGroupArgs>();

@@ -853,7 +853,7 @@ public:
         Database::Row::Iterator col = (*it).begin();
 
         Database::ID domain_historyid = *col;
-        Database::ID domain_id        = *(++col);
+                                         (++col);//Database::ID domain_id
         Database::ID admin_id         = *(++col);
         std::string  admin_handle     = *(++col);
         std::string  admin_name       = *(++col);
@@ -885,7 +885,7 @@ public:
         Database::Row::Iterator col = (*it).begin();
 
         Database::ID domain_historyid = *col;
-        Database::ID domain_id        = *(++col);
+                                         (++col);//Database::ID domain_id
         std::string  nsset_handle     = *(++col);
 
         DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findHistoryIDSequence(domain_historyid));
@@ -909,7 +909,7 @@ public:
           Database::Row::Iterator col = (*it).begin();
 
           Database::ID domain_historyid = *col;
-          Database::ID domain_id        = *(++col);
+                                           (++col);//Database::ID domain_id
           std::string  keyset_handle    = *(++col);
 
           DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findHistoryIDSequence(domain_historyid));
@@ -931,7 +931,7 @@ public:
         Database::Row::Iterator col = (*it).begin();
 
         Database::ID   domain_historyid = *col;
-        Database::ID   domain_id        = *(++col);
+                                           (++col);//Database::ID   domain_id
         Database::Date validation_date  = *(++col);
         bool           publish          = *(++col);
 

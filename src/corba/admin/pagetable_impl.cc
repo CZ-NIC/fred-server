@@ -7,7 +7,8 @@
 #include "log/logger.h"
 
 ccReg_PageTable_i::ccReg_PageTable_i()
-  : aPageSize(10), aPage(0), filterType(), sorted_by_(-1), sorted_dir_(false), query_timeout(DEFAULT_QUERY_TIMEOUT)
+  : aPageSize(10), aPage(0), filterType(), sorted_by_(-1), sorted_dir_(false), query_timeout(DEFAULT_QUERY_TIMEOUT),
+    limit_(1000)
 {
   base_context_ = Logging::Context::get();
 }
@@ -49,7 +50,9 @@ ccReg_PageTable_i::setOffset(CORBA::Long _offset)
 
 void 
 ccReg_PageTable_i::setLimit(CORBA::Long _limit)
-{}
+{
+    limit_ = _limit;
+}
 
 void
 ccReg_PageTable_i::setTimeout(CORBA::Long _timeout)

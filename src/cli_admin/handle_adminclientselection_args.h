@@ -1,17 +1,17 @@
-/*  
+/*
  * Copyright (C) 2010  CZ.NIC, z.s.p.o.
- * 
+ *
  * This file is part of FRED.
- * 
+ *
  * FRED is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 2 of the License.
- * 
+ *
  * FRED is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -50,6 +50,7 @@
 #include "file_params.h"
 #include "regblock_params.h"
 #include "charge_params.h"
+
 
 /**
  * \class HandleAdminClientDomainListArgsGrp
@@ -336,6 +337,112 @@ public:
         return option_group_index;
     }//handle
 };//class HandleAdminClientContactReminderArgsGrp
+
+
+/**
+ * \class HandleAdminClientContactMergeDuplicateAutoArgsGrp
+ * \brief admin client contact_reminder options handler
+ */
+class HandleAdminClientContactMergeDuplicateAutoArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ContactMergeDuplicateAutoArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("contact_merge_duplicate_auto");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("contact_merge_duplicate_auto options")));
+        cfg_opts->add_options()
+            ("contact_merge_duplicate_auto",
+                "command for run contact merge duplicate automatic procedure")
+            ("registrar", boost::program_options::value<Checked::string>()
+                ->notifier(save_optional_string(params.registrar)),
+                "registrar handle to run merge for")
+            ("limit", boost::program_options::value<Checked::ulonglong>()
+                ->notifier(save_optional_ulonglong(params.limit)),
+                "limit")
+            ("dry_run", boost::program_options::value<bool>()
+                ->default_value(false)->zero_tokens()
+                ->notifier(save_arg<bool>(params.dry_run)),
+                "just write what could be done; don't actually touch data")
+            ("selection_filter_order",
+                boost::program_options::value<std::vector<std::string> >()->multitoken()
+                    ->notifier(save_arg<std::vector<std::string> >(params.selection_filter_order)),
+                "specify custom order of filters for best contact selection; available values are:\n"
+                "\tmcs_filter_identified_contact\n"
+                "\tmcs_filter_conditionally_identified_contact\n"
+                "\tmcs_filter_handle_mojeid_syntax\n"
+                "\tmcs_filter_max_domains_bound\n"
+                "\tmcs_filter_max_objects_bound\n"
+                "\tmcs_filter_recently_updated\n"
+                "\tmcs_filter_not_regcznic\n"
+                "\tmcs_filter_recently_created")
+            ("verbose", boost::program_options::value<Checked::ushort>()
+                ->notifier(save_optional_ushort(params.verbose)),
+                "specify output verbosity level");
+        /* list of contact selection filters could be done by listing keys of ContactSelectionFilterFactory */
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientContactMergeDuplicateAutoArgsGrp
+
+
+class HandleAdminClientContactMergeArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ContactMergeArgs params;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("contact_merge");
+    }
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("contact_merge options")));
+        cfg_opts->add_options()
+            ("contact_merge",
+                "command to merge two contacts")
+            ("src", boost::program_options::value<Checked::string>()
+                ->notifier(save_arg<std::string>(params.src)),
+                "source contact handle to be merge (this one will be deleted)")
+            ("dst", boost::program_options::value<Checked::string>()
+                ->notifier(save_arg<std::string>(params.dst)),
+                "destination contact handle to be merge onto")
+            ("dry_run", boost::program_options::value<bool>()
+                ->default_value(false)->zero_tokens()
+                ->notifier(save_arg<bool>(params.dry_run)),
+                "just write what could be done; don't actually touch data")
+            ("verbose", boost::program_options::value<Checked::ushort>()
+                ->notifier(save_optional_ushort(params.verbose)),
+                "specify output verbosity level");
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};
+
 
 /**
  * \class HandleAdminClientContactListArgsGrp
@@ -827,6 +934,7 @@ class HandleAdminClientBankPaymentListArgsGrp : public HandleCommandGrpArgs
 public:
 
     optional_ulong bank_payment_type;
+    bool show_details;
 
     CommandDescription get_command_option()
     {
@@ -845,6 +953,9 @@ public:
             ("bank_payment_type", boost::program_options
                 ::value<Checked::ulong>()->notifier(save_optional_ulong(bank_payment_type))
                 , "payment type is  1 - 6")
+            ("show_details", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(show_details)),
+                    "instead of payment id list print more info about payments")
             ;
         return cfg_opts;
     }//get_options_description

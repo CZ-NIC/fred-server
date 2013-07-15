@@ -23,6 +23,7 @@ void ccReg_Domains_i::reload_worker() {
 
   TRACE("[CALL] ccReg_Domains_i::reload_worker()");
   dl->setTimeout(query_timeout);
+  dl->setLimit(limit_);
   dl->reload(uf);
   dl->deleteDuplicatesId();
 }

@@ -1,3 +1,23 @@
+2013-06-05 Jiri Sadek (2.14.1)
+
+  * mojeid - implementation of getUnregistrableHandlesIter() idl method
+             transfer contact handles to client by small chunks
+
+2013-04-02 Jiri Sadek, Jan Zima (2.14.0)
+
+  * automatic procedure for duplicate contacts merging
+
+2013-04-17 Jiri Sadek (2.13.5)
+
+  * removed fix pagetable filter sort in database which caused problem with
+    selection object history
+
+2013-04-02 Jiri Sadek (2.13.4)
+
+  * fix pagetable limit settings (didn't work at all)
+
+  * fix pagetable filter sort in database
+
 2013-01-11 Jiri Sadek (2.13.3)
 
   * notification letters send (postservis upload) is done in two batches (domestic and foreign)

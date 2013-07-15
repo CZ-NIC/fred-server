@@ -45,7 +45,7 @@ namespace Registry
         {
             try {
                 std::auto_ptr< StatusDescList > result(new StatusDescList);
-                Fred::OperationContextTransaction ctx;
+                Fred::OperationContext ctx;
                 Fred::GetBlockingStatusDescList blocking_status_desc_list;
                 blocking_status_desc_list.set_lang(_lang);
                 Fred::GetBlockingStatusDescList::StatusDescList &desc_list = blocking_status_desc_list.exec(ctx);
@@ -73,7 +73,7 @@ namespace Registry
             bool _create_owner_copy)
         {
             try {
-                Fred::OperationContextTransaction ctx;
+                Fred::OperationContext ctx;
                 Fred::StatusList status_list;
                 for (unsigned idx = 0; idx < _status_list.length(); ++idx) {
                     status_list.push_back(_status_list[idx].in());
@@ -95,7 +95,7 @@ namespace Registry
             const ::Registry::Administrative::DomainList &_domain_list)
         {
             try {
-                Fred::OperationContextTransaction ctx;
+                Fred::OperationContext ctx;
                 for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
                     const std::string domain = _domain_list[idx].in();
                     Fred::CreateAdministrativeObjectStateRestoreRequest create_object_state_restore_request(domain, OBJECT_TYPE_DOMAIN);
@@ -115,7 +115,7 @@ namespace Registry
             const ::Registry::Administrative::StatusList &_status_list)
         {
             try {
-                Fred::OperationContextTransaction ctx;
+                Fred::OperationContext ctx;
                 Fred::StatusList status_list;
                 for (unsigned idx = 0; idx < _status_list.length(); ++idx) {
                     status_list.push_back(_status_list[idx].in());
@@ -153,7 +153,7 @@ namespace Registry
             bool _with_delete)
         {
             try {
-                Fred::OperationContextTransaction ctx;
+                Fred::OperationContext ctx;
                 for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
                     const std::string domain = _domain_list[idx].in();
                     Fred::CreateDomainNameBlacklist(domain, "").exec(ctx);
@@ -179,7 +179,7 @@ namespace Registry
         {
             try {
                 std::auto_ptr< DomainIdHandleOwnerChangeList > result(new DomainIdHandleOwnerChangeList);
-                Fred::OperationContextTransaction ctx;
+                Fred::OperationContext ctx;
                 return result.release();
             }
             catch (const std::exception &e) {

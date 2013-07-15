@@ -25,6 +25,7 @@ ccReg_Registrars_i::reload_worker() {
 
   TRACE("[CALL] void ccReg_Registrars_i::reload_worker()");
   rl->setTimeout(query_timeout);
+  rl->setLimit(limit_);
   rl->reload(uf);
 
   Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();

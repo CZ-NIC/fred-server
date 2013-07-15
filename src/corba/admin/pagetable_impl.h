@@ -85,6 +85,7 @@ protected:
   int sorted_by_;
   bool sorted_dir_;
   long query_timeout;
+  unsigned long limit_;
 
   /**
    * context with session object was created - need for futher call on object

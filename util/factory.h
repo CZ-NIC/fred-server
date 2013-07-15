@@ -5,6 +5,7 @@
 #include <string>
 #include <stdexcept>
 #include <boost/utility.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "singleton.h"
 #include "map_get.h"
@@ -37,13 +38,30 @@ public:
      * Creates instance of class using registered class creator
      *
      * \param _key      name of registered class to instance
-     * \return          instance of concrete type through Base pointer
+     * \return          instance of concrete type through naked Base pointer
      */
     Base* create(const Key &_key) const
     {
         typename FunctionMap::const_iterator it = class_creators_.find(_key);
         if (it != class_creators_.end()) {
             return (it->second)->create();
+        }
+        else {
+            throw std::out_of_range("factory: key not found");
+        }
+    }
+
+    /*
+     * Creates instance of class using registered class creator
+     *
+     * \param _key      name of registered class to instance
+     * \return          instance of concrete type through shared Base pointer
+     */
+    boost::shared_ptr<Base> create_sh_ptr(const Key &_key) const
+    {
+        typename FunctionMap::const_iterator it = class_creators_.find(_key);
+        if (it != class_creators_.end()) {
+            return (it->second)->create_sh_ptr();
         }
         else {
             throw std::out_of_range("factory: key not found");
@@ -72,7 +90,9 @@ private:
 template<typename Base>
 struct ClassCreator
 {
+    virtual ~ClassCreator(){}
     virtual Base* create() const = 0;
+    virtual boost::shared_ptr<Base> create_sh_ptr() const = 0;
 };
 
 
@@ -84,6 +104,13 @@ struct DerivedClassCreator : public ClassCreator<Base>
     Base* create() const
     {
         return new Derived();
+    }
+
+    boost::shared_ptr<Base> create_sh_ptr() const
+    {
+        return boost::shared_ptr<Base>(
+                dynamic_cast<Base*>(new Derived())
+        );
     }
 };
 

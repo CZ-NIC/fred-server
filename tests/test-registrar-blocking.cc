@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE( test_is_registrar_blocked )
     std::auto_ptr<Fred::Registrar::Manager> regman(
                    Fred::Registrar::Manager::create(nodb));
 
-    Database::ID reg_id = block_reg_and_test(regman.get());
+    block_reg_and_test(regman.get());
 }
 
 BOOST_AUTO_TEST_CASE(test_unblock_registrar)
