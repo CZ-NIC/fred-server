@@ -50,28 +50,20 @@ namespace Registry
 
             // methods corresponding to defined IDL attributes and operations
             virtual StatusDescList* getBlockingStatusDescList(const char* _lang);
-            virtual void blockDomains(const ::Registry::Administrative::DomainList& domain_list, const ::Registry::Administrative::StatusList& status_list, ::CORBA::Boolean block_owner, ::CORBA::Boolean create_owner_copy);
-            virtual DomainOwnerChangeList* blockDomains(const ::Registry::Administrative::DomainList& domain_list, const ::Registry::Administrative::StatusList& status_list, ::Registry::Administrative::OwnerBlockMode owner_block_mode, const char* reason) { return NULL; }
-            virtual void updateBlockDomains(const ::Registry::Administrative::DomainList& domain_list, const ::Registry::Administrative::StatusList& status_list);
-            virtual void updateBlockDomains(const ::Registry::Administrative::DomainList& domain_list, const ::Registry::Administrative::StatusList& status_list, const char* reason) { }
-            virtual void restorePreAdministrativeBlockStates(const ::Registry::Administrative::DomainList& domain_list);
-            virtual void restorePreAdministrativeBlockStates(const ::Registry::Administrative::DomainList& domain_list, ::Registry::Administrative::NullableString* new_owner, const char* reason) { }
-            virtual void unblockDomains(const ::Registry::Administrative::DomainList& domain_list, ::Registry::Administrative::NullableString* new_owner, ::CORBA::Boolean remove_admin_c);
-            virtual void unblockDomains(const ::Registry::Administrative::DomainList& domain_list, ::Registry::Administrative::NullableString* new_owner, ::CORBA::Boolean remove_admin_c, const char* reason) { }
+            virtual DomainOwnerChangeList* blockDomains(const ::Registry::Administrative::DomainList& domain_list, const ::Registry::Administrative::StatusList& status_list, ::Registry::Administrative::OwnerBlockMode owner_block_mode, const char* reason);
+            virtual void updateBlockDomains(const ::Registry::Administrative::DomainList& domain_list, const ::Registry::Administrative::StatusList& status_list, const char* reason);
+            virtual void restorePreAdministrativeBlockStates(const ::Registry::Administrative::DomainList& domain_list, ::Registry::Administrative::NullableString* new_owner, const char* reason);
+            virtual void unblockDomains(const ::Registry::Administrative::DomainList& domain_list, ::Registry::Administrative::NullableString* new_owner, ::CORBA::Boolean remove_admin_c, const char* reason);
             virtual void blacklistAndDeleteDomains(const ::Registry::Administrative::DomainList& domain_list, ::Registry::Administrative::NullableDate* blacklist_to_date);
             virtual void blacklistDomains(const ::Registry::Administrative::DomainList& domain_list, ::Registry::Administrative::NullableDate* blacklist_to_date, ::CORBA::Boolean with_delete);
             virtual void unblacklistAndCreateDomains(const ::Registry::Administrative::DomainList& domain_list, const char* owner);
-            virtual void blockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const ::Registry::Administrative::StatusList& status_list, ::CORBA::Boolean block_owner, ::CORBA::Boolean create_owner_copy) { }
             virtual DomainIdHandleOwnerChangeList* blockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const ::Registry::Administrative::StatusList& status_list, ::Registry::Administrative::OwnerBlockMode owner_block_mode, const char* reason);
-            virtual void updateBlockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const ::Registry::Administrative::StatusList& status_list) { }
-            virtual void updateBlockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const ::Registry::Administrative::StatusList& status_list, const char* reason) { }
-            virtual void restorePreAdministrativeBlockStatesId(const ::Registry::Administrative::DomainIdList& domain_list) { }
-            virtual void restorePreAdministrativeBlockStatesId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableString* new_owner, const char* reason) { }
-            virtual void unblockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableString* new_owner, ::CORBA::Boolean remove_admin_c) { }
-            virtual void unblockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableString* new_owner, ::CORBA::Boolean remove_admin_c, const char* reason) { }
-            virtual void blacklistAndDeleteDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableDate* blacklist_to_date) { }
-            virtual void blacklistDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableDate* blacklist_to_date, ::CORBA::Boolean with_delete) { }
-            virtual void unblacklistAndCreateDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const char* owner) { }
+            virtual void updateBlockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const ::Registry::Administrative::StatusList& status_list, const char* reason);
+            virtual void restorePreAdministrativeBlockStatesId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableString* new_owner, const char* reason);
+            virtual void unblockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableString* new_owner, ::CORBA::Boolean remove_admin_c, const char* reason);
+            virtual void blacklistAndDeleteDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableDate* blacklist_to_date);
+            virtual void blacklistDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableDate* blacklist_to_date, ::CORBA::Boolean with_delete);
+            virtual void unblacklistAndCreateDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const char* owner);
         };//class Server_i
     }//namespace Administrative
 }//namespace Registry

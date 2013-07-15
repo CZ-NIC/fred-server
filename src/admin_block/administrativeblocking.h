@@ -41,26 +41,56 @@ namespace Registry
             StatusDescList* getBlockingStatusDescList(
                 const std::string &_lang);
 
-            void blockDomains(
+            DomainOwnerChangeList* blockDomains(
                 const ::Registry::Administrative::DomainList &_domain_list,
                 const ::Registry::Administrative::StatusList &_status_list,
-                bool _block_owner,
-                bool _create_owner_copy);
+                ::Registry::Administrative::OwnerBlockMode _owner_block_mode,
+                const std::string &_reason);
+
+            DomainIdHandleOwnerChangeList* blockDomainsId(
+                const ::Registry::Administrative::DomainIdList &_domain_list,
+                const ::Registry::Administrative::StatusList &_status_list,
+                ::Registry::Administrative::OwnerBlockMode _owner_block_mode,
+                const std::string &_reason);
 
             void restorePreAdministrativeBlockStates(
-                const ::Registry::Administrative::DomainList &_domain_list);
+                const ::Registry::Administrative::DomainList &_domain_list,
+                ::Registry::Administrative::NullableString *_new_owner,
+                const std::string &_reason);
+
+            void restorePreAdministrativeBlockStatesId(
+                const ::Registry::Administrative::DomainIdList &_domain_list,
+                ::Registry::Administrative::NullableString *_new_owner,
+                const std::string &_reason);
 
             void updateBlockDomains(
                 const ::Registry::Administrative::DomainList &_domain_list,
-                const ::Registry::Administrative::StatusList &_status_list);
+                const ::Registry::Administrative::StatusList &_status_list,
+                const std::string &_reason);
+
+            void updateBlockDomainsId(
+                const ::Registry::Administrative::DomainIdList &_domain_list,
+                const ::Registry::Administrative::StatusList &_status_list,
+                const std::string &_reason);
 
             void unblockDomains(
                 const ::Registry::Administrative::DomainList &_domain_list,
                 ::Registry::Administrative::NullableString *_new_owner,
-                ::CORBA::Boolean _remove_admin_c);
+                bool _remove_admin_c,
+                const std::string &_reason);
+
+            void unblockDomainsId(
+                const ::Registry::Administrative::DomainIdList &_domain_list,
+                ::Registry::Administrative::NullableString *_new_owner,
+                bool _remove_admin_c,
+                const std::string &_reason);
 
             void blacklistAndDeleteDomains(
                 const ::Registry::Administrative::DomainList &_domain_list,
+                ::Registry::Administrative::NullableDate *_blacklist_to_date);
+
+            void blacklistAndDeleteDomainsId(
+                const ::Registry::Administrative::DomainIdList &_domain_list,
                 ::Registry::Administrative::NullableDate *_blacklist_to_date);
 
             void blacklistDomains(
@@ -68,15 +98,19 @@ namespace Registry
                 ::Registry::Administrative::NullableDate *_blacklist_to_date,
                 bool _with_delete);
 
+            void blacklistDomainsId(
+                const ::Registry::Administrative::DomainIdList &_domain_list,
+                ::Registry::Administrative::NullableDate *_blacklist_to_date,
+                bool _with_delete);
+
             void unblacklistAndCreateDomains(
                 const ::Registry::Administrative::DomainList &_domain_list,
                 const std::string &_owner);
 
-            DomainIdHandleOwnerChangeList* blockDomainsId(
+            void unblacklistAndCreateDomainsId(
                 const ::Registry::Administrative::DomainIdList &_domain_list,
-                const ::Registry::Administrative::StatusList &_status_list,
-                ::Registry::Administrative::OwnerBlockMode _owner_block_mode,
-                const char *_reason);
+                const std::string &_owner);
+
         private:
             std::string server_name_;
         };//class BlockingImpl

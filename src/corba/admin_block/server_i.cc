@@ -47,39 +47,72 @@ namespace Registry
             return bimpl_->getBlockingStatusDescList(_lang);
         }
 
-        void Server_i::blockDomains(
-            const ::Registry::Administrative::DomainList& domain_list,
-            const ::Registry::Administrative::StatusList& status_list,
-            ::CORBA::Boolean block_owner,
-            ::CORBA::Boolean create_owner_copy)
+        DomainOwnerChangeList* Server_i::blockDomains(
+            const ::Registry::Administrative::DomainList &domain_list,
+            const ::Registry::Administrative::StatusList &status_list,
+            ::Registry::Administrative::OwnerBlockMode owner_block_mode,
+            const char *reason)
         {
-            bimpl_->blockDomains(domain_list, status_list, block_owner, create_owner_copy);
+            return bimpl_->blockDomains(domain_list, status_list, owner_block_mode, reason);
         }
 
-        DomainIdHandleOwnerChangeList* Server_i::blockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const ::Registry::Administrative::StatusList& status_list, ::Registry::Administrative::OwnerBlockMode owner_block_mode, const char* reason)
+        DomainIdHandleOwnerChangeList* Server_i::blockDomainsId(
+            const ::Registry::Administrative::DomainIdList& domain_list,
+            const ::Registry::Administrative::StatusList& status_list,
+            ::Registry::Administrative::OwnerBlockMode owner_block_mode,
+            const char* reason)
         {
             return bimpl_->blockDomainsId(domain_list, status_list, owner_block_mode, reason);
         }
 
-        void Server_i::restorePreAdministrativeBlockStates(
-            const ::Registry::Administrative::DomainList &domain_list)
-        {
-            bimpl_->restorePreAdministrativeBlockStates(domain_list);
-        }
-
         void Server_i::updateBlockDomains(
             const ::Registry::Administrative::DomainList &domain_list,
-            const ::Registry::Administrative::StatusList &status_list)
+            const ::Registry::Administrative::StatusList &status_list,
+            const char *reason)
         {
-            bimpl_->updateBlockDomains(domain_list, status_list);
+            bimpl_->updateBlockDomains(domain_list, status_list, reason);
         }
         
+        void Server_i::updateBlockDomainsId(
+            const ::Registry::Administrative::DomainIdList &domain_list,
+            const ::Registry::Administrative::StatusList &status_list,
+            const char *reason)
+        {
+            bimpl_->updateBlockDomainsId(domain_list, status_list, reason);
+        }
+        
+        void Server_i::restorePreAdministrativeBlockStates(
+            const ::Registry::Administrative::DomainList &domain_list,
+            ::Registry::Administrative::NullableString *new_owner,
+            const char *reason)
+        {
+            bimpl_->restorePreAdministrativeBlockStates(domain_list, new_owner, reason);
+        }
+
+        void Server_i::restorePreAdministrativeBlockStatesId(
+            const ::Registry::Administrative::DomainIdList &domain_list,
+            ::Registry::Administrative::NullableString *new_owner,
+            const char* reason)
+        {
+            bimpl_->restorePreAdministrativeBlockStatesId(domain_list, new_owner, reason);
+        }
+
         void Server_i::unblockDomains(
             const ::Registry::Administrative::DomainList &domain_list,
             ::Registry::Administrative::NullableString *new_owner,
-            ::CORBA::Boolean remove_admin_c)
+            ::CORBA::Boolean remove_admin_c,
+            const char* reason)
         {
-            bimpl_->unblockDomains(domain_list, new_owner, remove_admin_c);
+            bimpl_->unblockDomains(domain_list, new_owner, remove_admin_c, reason);
+        }
+        
+        void Server_i::unblockDomainsId(
+            const ::Registry::Administrative::DomainIdList &domain_list,
+            ::Registry::Administrative::NullableString *new_owner,
+            ::CORBA::Boolean remove_admin_c,
+            const char* reason)
+        {
+            bimpl_->unblockDomainsId(domain_list, new_owner, remove_admin_c, reason);
         }
         
         void Server_i::blacklistAndDeleteDomains(
@@ -87,6 +120,13 @@ namespace Registry
             ::Registry::Administrative::NullableDate *blacklist_to_date)
         {
             bimpl_->blacklistAndDeleteDomains(domain_list, blacklist_to_date);
+        }
+
+        void Server_i::blacklistAndDeleteDomainsId(
+            const ::Registry::Administrative::DomainIdList &domain_list,
+            ::Registry::Administrative::NullableDate *blacklist_to_date)
+        {
+            bimpl_->blacklistAndDeleteDomainsId(domain_list, blacklist_to_date);
         }
 
         void Server_i::blacklistDomains(
@@ -97,11 +137,26 @@ namespace Registry
             bimpl_->blacklistDomains(domain_list, blacklist_to_date, with_delete);
         }
 
+        void Server_i::blacklistDomainsId(
+            const ::Registry::Administrative::DomainIdList &domain_list,
+            ::Registry::Administrative::NullableDate *blacklist_to_date,
+            ::CORBA::Boolean with_delete)
+        {
+            bimpl_->blacklistDomainsId(domain_list, blacklist_to_date, with_delete);
+        }
+
         void Server_i::unblacklistAndCreateDomains(
             const ::Registry::Administrative::DomainList &domain_list,
             const char* owner)
         {
             bimpl_->unblacklistAndCreateDomains(domain_list, owner);
+        }
+
+        void Server_i::unblacklistAndCreateDomainsId(
+            const ::Registry::Administrative::DomainIdList &domain_list,
+            const char *owner)
+        {
+            bimpl_->unblacklistAndCreateDomainsId(domain_list, owner);
         }
 
     }//namespace Administrative
