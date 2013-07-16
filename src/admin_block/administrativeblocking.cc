@@ -25,7 +25,9 @@
 #include "corba/connection_releaser.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
 #include "fredlib/domain/create_administrative_object_block_request.h"
+#include "fredlib/domain/create_administrative_object_block_request_id.h"
 #include "fredlib/domain/create_administrative_object_state_restore_request.h"
+#include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
 #include "fredlib/domain/create_domain_name_blacklist.h"
 #include <memory>
 
@@ -57,7 +59,6 @@ namespace Registry
                     item.id = pItem->state_id;
                     item.shortName = ::CORBA::string_dup(pItem->status.c_str());
                     item.name = ::CORBA::string_dup(pItem->desc.c_str());
-//                    (*result)[n] = item;
                 }
                 return result.release();
             }
@@ -101,7 +102,22 @@ namespace Registry
         {
             try {
                 std::auto_ptr< DomainIdHandleOwnerChangeList > result(new DomainIdHandleOwnerChangeList);
+                result->length(_domain_list.length());
                 Fred::OperationContext ctx;
+                Fred::StatusList status_list;
+                for (unsigned idx = 0; idx < _status_list.length(); ++idx) {
+                    status_list.push_back(_status_list[idx].in());
+                }
+                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
+                    const Fred::ObjectId object_id = _domain_list[idx];
+                    Fred::CreateAdministrativeObjectBlockRequestId create_object_block_request(object_id, status_list);
+                    create_object_block_request.set_reason(_reason);
+                    ::Registry::Administrative::DomainIdHandleOwnerChange &result_item = (*result)[idx];
+                    result_item.domainId = object_id;
+                    result_item.domainHandle = ::CORBA::string_dup(create_object_block_request.exec(ctx).c_str());
+                    Fred::PerformObjectStateRequest(object_id).exec(ctx);
+                }
+                ctx.commit_transaction();
                 return result.release();
             }
             catch (const std::exception &e) {
@@ -134,6 +150,19 @@ namespace Registry
             ::Registry::Administrative::NullableString *_new_owner,
             const std::string &_reason)
         {
+            try {
+                Fred::OperationContext ctx;
+                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
+                    const Fred::ObjectId object_id = _domain_list[idx];
+                    Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
+                    create_object_state_restore_request.exec(ctx);
+                    Fred::PerformObjectStateRequest(object_id).exec(ctx);
+                }
+                ctx.commit_transaction();
+            }
+            catch (const std::exception &e) {
+                throw INTERNAL_SERVER_ERROR(e.what());
+            }
         }
 
         void BlockingImpl::updateBlockDomains(

@@ -70,7 +70,7 @@ namespace Fred
         return *this;
     }
 
-    void CreateObjectStateRequestId::exec(OperationContext &_ctx)
+    std::string CreateObjectStateRequestId::exec(OperationContext &_ctx)
     {
         std::string object_state_names;
 
@@ -111,10 +111,11 @@ namespace Fred
 
         //get object type
         ObjectType object_type = 0;
+        std::string handle_name;
         Database::query_param_list param(object_id_);
         {
             Database::Result object_type_result = _ctx.get_conn().exec_params(
-                "SELECT type "
+                "SELECT type,name "
                 "FROM object_registry "
                 "WHERE id=$1::bigint", param);
             if (object_type_result.size() <= 0) {
@@ -125,6 +126,7 @@ namespace Fred
             }
             const Database::Row &row = object_type_result[0];
             object_type = static_cast< ObjectType >(row[0]);
+            handle_name = static_cast< std::string >(row[1]);
         }
 
         GetObjectStateIdMap get_object_state_id_map(status_list_, object_type);
@@ -254,6 +256,7 @@ namespace Fred
         }
 
         _ctx.get_conn().exec_params(cmd.str(), param);
+        return handle_name;
     }//CreateObjectStateRequestId::exec
 
 }//namespace Fred

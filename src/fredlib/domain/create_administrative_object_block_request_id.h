@@ -53,7 +53,7 @@ namespace Fred
         CreateAdministrativeObjectBlockRequestId& set_valid_from(const Time &_valid_from);
         CreateAdministrativeObjectBlockRequestId& set_valid_to(const Time &_valid_to);
         CreateAdministrativeObjectBlockRequestId& set_reason(const std::string &_reason);
-        void exec(OperationContext &_ctx);
+        std::string exec(OperationContext &_ctx);
 
     //exception impl
         enum { EXCEPTION_DATASIZE = 2048 };

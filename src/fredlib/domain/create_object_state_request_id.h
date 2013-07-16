@@ -49,7 +49,7 @@ pozadavek na nastaveni stavu objektu (insert do object_state_request)
             );
         CreateObjectStateRequestId& set_valid_from(const Time &_valid_from);
         CreateObjectStateRequestId& set_valid_to(const Time &_valid_to);
-        void exec(OperationContext &_ctx);
+        std::string exec(OperationContext &_ctx);
 
     private:
         const ObjectId object_id_;

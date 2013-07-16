@@ -79,7 +79,7 @@ namespace Fred
         return *this;
     }
 
-    void CreateAdministrativeObjectBlockRequestId::exec(OperationContext &_ctx)
+    std::string CreateAdministrativeObjectBlockRequestId::exec(OperationContext &_ctx)
     {
         this->check_administrative_block_status_only(_ctx);
         this->check_server_blocked_status_absent(_ctx);
@@ -89,7 +89,7 @@ namespace Fred
             status_list,
             valid_from_,
             valid_to_);
-        createObjectStateRequestId.exec(_ctx);
+        const std::string handle_name = createObjectStateRequestId.exec(_ctx);
         if (reason_.isset()) {
             Database::Result request_id_res = _ctx.get_conn().exec_params(
                 "INSERT INTO object_state_request_reason (object_state_request_id,state_on,reason) "
@@ -106,6 +106,7 @@ namespace Fred
                 Database::query_param_list(reason_.get_value())
                                           (object_id_));
         }
+        return handle_name;
     }//CreateAdministrativeObjectBlockRequestId::exec
 
     void CreateAdministrativeObjectBlockRequestId::check_administrative_block_status_only(OperationContext &_ctx) const
