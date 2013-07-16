@@ -158,12 +158,12 @@ public:
 
 
 ///check domain name according to RFC1035 section 2.3.1. Preferred name syntax
-class CheckRFC1035PrefferedNameSyntax
+class CheckRFC1035PreferredNameSyntax
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckRFC1035PrefferedNameSyntax>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckRFC1035PreferredNameSyntax>
 {
 public:
-    CheckRFC1035PrefferedNameSyntax()
+    CheckRFC1035PreferredNameSyntax()
     {}
 
     bool validate(const std::string& relative_domain_name)
