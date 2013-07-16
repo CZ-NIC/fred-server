@@ -301,7 +301,7 @@ namespace Fred
     {
         typedef std::auto_ptr< Database::StandaloneConnection > StandaloneConnectionPtr;
         Database::StandaloneManager sm = Database::StandaloneManager(
-            new Database::StandaloneConnectionFactory(/*Database::Manager::getConnectionString()*/"host=/data/fred/fred/scripts/root/nofred/pg_sockets port=22345 dbname=fred user=fred connect_timeout=2"));
+            new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
         StandaloneConnectionPtr conn_standalone(sm.acquire());
         for (MultipleObjectStateId::const_iterator pStateId = state_id_.begin(); pStateId != state_id_.end(); ++pStateId) {
             Database::query_param_list param(*pStateId);

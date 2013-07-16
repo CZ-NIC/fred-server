@@ -115,6 +115,8 @@ namespace Registry
                     ::Registry::Administrative::DomainIdHandleOwnerChange &result_item = (*result)[idx];
                     result_item.domainId = object_id;
                     result_item.domainHandle = ::CORBA::string_dup(create_object_block_request.exec(ctx).c_str());
+                    // KEEP_OWNER / BLOCK_OWNER / BLOCK_OWNER_COPY
+//                    if (_owner_block_mode == )
                     Fred::PerformObjectStateRequest(object_id).exec(ctx);
                 }
                 ctx.commit_transaction();
