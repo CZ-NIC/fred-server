@@ -97,7 +97,11 @@ DomainNameValidator& DomainNameValidator::operator()(const std::string& checker_
 bool DomainNameValidator::exec(const Fred::OperationContext& ctx)
 {
     if(!zone_name_.empty() && *(--zone_name_.end()) == '.') return false; //unexpected root dot
-    if(general_domain_name_syntax_check(relative_domain_name_+"."+zone_name_) == false) return false;
+    if(general_domain_name_syntax_check(relative_domain_name_
+        +(zone_name_.empty() ? std::string("") : std::string(".")+zone_name_)) == false)
+    {
+        return false;
+    }
 
     for(std::vector<std::string>::const_iterator ci = checker_name_vector_.begin(); ci !=checker_name_vector_.end(); ++ci)
     {
