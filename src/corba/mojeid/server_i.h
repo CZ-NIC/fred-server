@@ -24,15 +24,58 @@
 #ifndef SERVER_I_H_
 #define SERVER_I_H_
 
+#include "src/corba/corba_auto_garbaged_list.h"
 #include <MojeID.hh>
 #include <memory>
 #include <string>
+#include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/thread/thread.hpp>
+
 
 namespace Registry
 {
     namespace MojeID
     {
+
+        class ContactHandleListIter_i : public POA_Registry::MojeID::ContactHandleListIter
+        {
+        public:
+            // standard constructor
+            ContactHandleListIter_i(const std::vector<std::string> &_handles);
+
+            virtual ~ContactHandleListIter_i();
+
+            // methods corresponding to defined IDL attributes and operations
+            Registry::MojeID::ContactHandleList* getNext(::CORBA::ULong count);
+
+            void destroy();
+
+            // methods for compatibility with CorbaAutoGarbageList
+            void close();
+
+            bool is_closed() const;
+
+            const boost::posix_time::ptime& get_last_used() const;
+
+
+        private:
+            enum Status
+            {
+                ACTIVE = 1,
+                CLOSED = 2
+            };
+
+            Status status_;
+            boost::posix_time::ptime last_used_;
+            std::vector<std::string> handles_;
+            std::vector<std::string>::const_iterator it_;
+        };
+
+
         class MojeIDImpl;//pimpl class
+
 
         ///mojeid corba interface
         class Server_i: public POA_Registry::MojeID::Server
@@ -40,8 +83,12 @@ namespace Registry
         private:
             // do not copy
             const std::auto_ptr<MojeIDImpl> pimpl_;
+
+            CorbaAutoGarbagedList<ContactHandleListIter_i> contact_handle_list_objects_;
+
             Server_i(const Server_i&);//no body
             Server_i& operator= (const Server_i&);//no body
+
 
         public:
           // standard constructor
@@ -105,8 +152,9 @@ namespace Registry
 
           Registry::MojeID::ContactHandleList* getUnregistrableHandles();
 
-          char* contactAuthInfo(::CORBA::ULongLong contact_id);
+          Registry::MojeID::ContactHandleListIter_ptr getUnregistrableHandlesIter();
 
+          char* contactAuthInfo(::CORBA::ULongLong contact_id);
         };//class Server_i
     }//namespace MojeID
 }//namespace Registry
