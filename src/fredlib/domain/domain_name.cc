@@ -201,6 +201,29 @@ public:
     }
 };//class CheckNoConsecutiveHyphensDomainName
 
+///check domain name for single digit labels
+class CheckSingleDigitLabelsSyntax
+: public DomainNameChecker
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckSingleDigitLabelsSyntax>
+{
+public:
+    CheckSingleDigitLabelsSyntax(){}
+
+    bool validate(const std::string& relative_domain_name)
+    {
+        static const boost::regex SINGLE_DIGIT_LABELS_SYNTAX(
+            "([0-9][.])*"//optional non-highest-level single digit labels labels
+            "[0-9]"//mandatory highest-level single digit label
+        );
+        return boost::regex_match(relative_domain_name, SINGLE_DIGIT_LABELS_SYNTAX);
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_SINGLE_DIGIT_LABELS;
+    }
+};//class CheckSingleDigitLabelsSyntax
+
 
 }//namespace Fred
 }//namespace Domain
