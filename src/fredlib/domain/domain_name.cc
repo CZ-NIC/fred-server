@@ -157,6 +157,31 @@ public:
 };//class DomainNameCheckerNotEmptyDomainName
 
 
+///check domain name according to RFC1035 section 2.3.1. Preferred name syntax
+class CheckRFC1035PrefferedNameSyntax
+: public DomainNameChecker
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckRFC1035PrefferedNameSyntax>
+{
+public:
+    CheckRFC1035PrefferedNameSyntax()
+    {}
+
+    bool validate(const std::string& relative_domain_name)
+    {
+        static const boost::regex RFC1035_NAME_SYNTAX(
+            "(([A-Za-z]|[A-Za-z][-A-Za-z0-9]{0,61}[A-Za-z0-9])[.])*"//optional non-highest-level labels
+            "([A-Za-z]|[A-Za-z][-A-Za-z0-9]{0,61}[A-Za-z0-9])"//mandatory highest-level label
+        );
+        return boost::regex_match(relative_domain_name, RFC1035_NAME_SYNTAX);
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_RFC1035_PREFERRED_SYNTAX;
+    }
+};//class DomainNameCheckerNotEmptyDomainName
+
+
 }//namespace Fred
 }//namespace Domain
 

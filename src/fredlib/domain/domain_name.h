@@ -93,7 +93,7 @@ typedef Util::Factory<DomainNameChecker, Util::ClassCreator<DomainNameChecker> >
 
 const std::string DNCHECK_NO_DOUBLE_HYPHEN_UNICODE="dncheck_no_double_hyphen_unicode";
 const std::string DNCHECK_NO_DOUBLE_HYPHEN_ASCII="dncheck_no_double_hyphen_ascii";
-const std::string DNCHECK_RFC1035_PREFERRED_WITH_OPTIONAL_TRAILING_DOT="dncheck_rfc1035_preferred_with_optional_trailing_dot";
+const std::string DNCHECK_RFC1035_PREFERRED_SYNTAX="dncheck_rfc1035_preferred_syntax";
 const std::string DNCHECK_ENUM="dncheck_enum";
 
 //trivial checker for testing
