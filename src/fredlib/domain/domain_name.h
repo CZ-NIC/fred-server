@@ -34,7 +34,7 @@
 namespace Fred {
 namespace Domain {
 
-///checking fqdn length < 255 and label length is from 1 to 63 octets
+///checking fqdn length < 255 and label length is from 1 to 63 octets, labels are separated by '.'
 bool general_domain_name_syntax_check(const std::string& fqdn);
 
 /**
