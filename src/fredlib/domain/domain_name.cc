@@ -42,8 +42,15 @@ bool general_domain_name_syntax_check(const std::string& fqdn)
     e.g. RFC4343 section 2.1. Escaping Unusual DNS Label Octets */
 
     if(fqdn.empty()) return false;//we need some domain
-    if(fqdn.length() > 255) return false; //full domain name length, including the separators, is limited to 255 octets
-    if(fqdn.at(0) == '.') return false;//fqdn have to start with label
+    if(*fqdn.begin() == '.') return false;//fqdn have to start with label
+    //full domain name length, is limited to 255 octets
+    //every label including the root label need one octet for label length
+    //number of length octets corresponds to number of '.' separators
+    //when fqdn ends with '.' it need one extra octet for length of the root label
+    //when fqdn don't ends with '.' it need two extra octet for length of last label and length of the root label
+    if(*fqdn.rbegin() == '.' ? fqdn.length() > 254 : fqdn.length() > 253) return false;
+
+    //check the length of labels
     unsigned long long label_octet_counter = 0;
     for(std::string::const_iterator i = fqdn.begin(); i != fqdn.end(); ++i)
     {
