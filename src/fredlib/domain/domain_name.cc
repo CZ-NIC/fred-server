@@ -179,7 +179,27 @@ public:
     {
         return DNCHECK_RFC1035_PREFERRED_SYNTAX;
     }
-};//class DomainNameCheckerNotEmptyDomainName
+};//class CheckRFC1035PrefferedNameSyntax
+
+///prohibit consecutive hyphens '--'
+class CheckNoConsecutiveHyphensDomainName
+: public DomainNameChecker
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoConsecutiveHyphensDomainName>
+{
+public:
+    CheckNoConsecutiveHyphensDomainName(){}
+
+    bool validate(const std::string& relative_domain_name)
+    {
+        static const boost::regex CONSECUTIVE_HYPHENS_SYNTAX("[-][-]");
+        return !boost::regex_search(relative_domain_name, CONSECUTIVE_HYPHENS_SYNTAX);
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_NO_CONSECUTIVE_HYPHENS;
+    }
+};//class CheckNoConsecutiveHyphensDomainName
 
 
 }//namespace Fred
