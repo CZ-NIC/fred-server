@@ -42,9 +42,16 @@ namespace Domain {
 const boost::regex GENERAL_DOMAIN_NAME_SYNTAX("^"//begin
     "(([A-Za-z0-9]|[A-Za-z0-9][-A-Za-z0-9]{0,61}[A-Za-z0-9])[.])+"//at least one non-highest-level label, may start with digit
         "([A-Za-z]|[A-Za-z][-A-Za-z0-9]{0,61}[A-Za-z0-9])"//mandatory highest-level label, have to begin with letter
-        "[.]?$");//allowed optional root dot
+        "[.]?$");//allowed optional root period
 ///using GENERAL_DOMAIN_NAME_SYNTAX and checking max overal length
 bool general_domain_name_syntax_check(const std::string& fqdn);
+
+/**
+ * remove optional root dot from fqdn, domain names are considered fully qualified without trailing dot internally
+ * optional root dot is required to be accepted by applications according to RFC3696 section 2.
+ * but is not part of preferred name syntax RFC1035 section 2.3.1.
+ */
+std::string rem_trailing_dot(const std::string& fqdn);
 
 }//namespace Fred
 }//namespace Domain

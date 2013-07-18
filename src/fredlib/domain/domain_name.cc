@@ -36,6 +36,12 @@ bool general_domain_name_syntax_check(const std::string& fqdn)
     return boost::regex_match(fqdn, GENERAL_DOMAIN_NAME_SYNTAX);
 }
 
+std::string rem_trailing_dot(const std::string& fqdn)
+{
+    if(!fqdn.empty() && fqdn.at(fqdn.size()-1) == '.') return fqdn.substr(0,fqdn.size()-1);
+    return fqdn;
+}
+
 }//namespace Fred
 }//namespace Domain
 
