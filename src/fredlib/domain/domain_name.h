@@ -33,20 +33,7 @@
 namespace Fred {
 namespace Domain {
 
-/**
- * GENERAL_DOMAIN_NAME_SYNTAX checking:
- * - labels length and root label according to RFC2181 section 11. Name syntax
- * - domain name preferred form using "LDH rule" according to RFC3696 section 2. Restrictions on domain (DNS) names
- * - allow to begin the non-highest-level label with digit
- *   according to RFC1123 section 2.1 Host Names and Numbers and because of ENUM RFC3761 section 2.4. Valid Databases
- *   otherwise it is syntax according to RFC1035 section 2.3.1. Preferred name syntax
- * - allow "IDNA Punycode" in any label according to RFC3696 section 5. Implications of internationalization
- */
-const boost::regex GENERAL_DOMAIN_NAME_SYNTAX("^"//begin
-    "(([A-Za-z0-9]|[A-Za-z0-9][-A-Za-z0-9]{0,61}[A-Za-z0-9])[.])+"//at least one non-highest-level label, may start with digit
-        "([A-Za-z]|[A-Za-z][-A-Za-z0-9]{0,61}[A-Za-z0-9])"//mandatory highest-level label, have to begin with letter
-        "[.]?$");//allowed optional root period
-///using GENERAL_DOMAIN_NAME_SYNTAX and checking max overall length
+///checking fqdn length < 255 and label length is from 1 to 63 octets
 bool general_domain_name_syntax_check(const std::string& fqdn);
 
 /**
@@ -62,13 +49,16 @@ FACTORY_MODULE_INIT_DECL(domain_name_validator)
 
 class DomainNameValidator
 {
+    const Fred::OperationContext *ctx_ptr_;
+    const std::string fqdn_;
+    unsigned long long zone_id_;
 public:
     explicit DomainNameValidator(const std::string& fqdn);
     bool exec(const Fred::OperationContext& ctx);//fqdn valid/invalid
 
     //to be called from DomainNameCheckerBase child implementation
-    Fred::OperationContext& get_op_ctx() const;
-    std::string get_fqdn() const;
+    const Fred::OperationContext& get_op_ctx() const;
+    const std::string get_fqdn() const;
     unsigned long long get_zone_id() const;
 };
 
