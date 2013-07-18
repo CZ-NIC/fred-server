@@ -26,6 +26,7 @@
 
 #include <string>
 #include <boost/regex.hpp>
+#include <boost/assign.hpp>
 
 namespace Fred {
 namespace Domain {
@@ -79,39 +80,82 @@ std::string rem_trailing_dot(const std::string& fqdn)
 }
 
 //domain name validator
-DomainNameValidator::DomainNameValidator(const std::string& fqdn)
-: ctx_ptr_(0), fqdn_(fqdn), zone_id_(0)
-{
+DomainNameValidator::DomainNameValidator(const std::string& relative_domain_name, const std::string& zone_name)
+: relative_domain_name_(relative_domain_name), zone_name_(zone_name)
+{}
 
+DomainNameValidator& DomainNameValidator::operator()(const std::string& checker_name)
+{
+    FactoryHaveSupersetOfKeysChecker<Fred::Domain::DomainNameCheckerFactory>
+        ::KeyVector required_keys = boost::assign::list_of(checker_name);
+    FactoryHaveSupersetOfKeysChecker<Fred::Domain::DomainNameCheckerFactory>
+        (required_keys).check();
+    checker_name_vector_.push_back(checker_name);
+    return *this;
 }
 
 bool DomainNameValidator::exec(const Fred::OperationContext& ctx)
 {
-    ctx_ptr_ = &ctx;
-    if(general_domain_name_syntax_check(fqdn_) == false) return false;
+    if(!zone_name_.empty() && *(--zone_name_.end()) == '.') return false; //unexpected root dot
+    if(general_domain_name_syntax_check(relative_domain_name_+"."+zone_name_) == false) return false;
 
-    return true;
+    for(std::vector<std::string>::const_iterator ci = checker_name_vector_.begin(); ci !=checker_name_vector_.end(); ++ci)
+    {
+        boost::shared_ptr<DomainNameChecker> checker = DomainNameCheckerFactory::instance_ref().create_sh_ptr(*ci);
+
+        if(DomainNameCheckerNeedZoneName* need_zone_checker
+                = dynamic_cast<DomainNameCheckerNeedZoneName*>(checker.get()))
+        {
+            need_zone_checker->set_zone_name(zone_name_);
+        }
+
+        if(DomainNameCheckerNeedOperationContext* need_ctx_checker
+                = dynamic_cast<DomainNameCheckerNeedOperationContext*>(checker.get()))
+        {
+            need_ctx_checker->set_ctx(ctx);
+        }
+        if(checker.get()->validate(relative_domain_name_) == false) return false; //validation failed
+    }//for checker_name_vector_
+    // check
+
+    return true;//validation ok
 }
 
-const Fred::OperationContext& DomainNameValidator::get_op_ctx() const
+//trivial checker for testing
+class DomainNameCheckerNotEmptyDomainName
+: public DomainNameChecker
+, public DomainNameCheckerNeedZoneName
+, public DomainNameCheckerNeedOperationContext
+, public Util::FactoryAutoRegister<DomainNameChecker, DomainNameCheckerNotEmptyDomainName>
 {
-    if (ctx_ptr_ != 0)
+    std::string zone_name_;
+    const Fred::OperationContext* ctx_ptr_;
+public:
+    DomainNameCheckerNotEmptyDomainName()
+    : ctx_ptr_(0)
+    {}
+
+    bool validate(const std::string& relative_domain_name)
     {
-        return *ctx_ptr_;
+        return !zone_name_.empty() && !relative_domain_name.empty() && ctx_ptr_;
     }
-    else
+
+    void set_zone_name(const std::string& zone_name)
     {
-        throw std::runtime_error("DomainNameValidator::get_op_ctx have no OperationContext");
+        zone_name_ = zone_name;
     }
-}
-const std::string DomainNameValidator::get_fqdn() const
-{
-    return fqdn_;
-}
-unsigned long long DomainNameValidator::get_zone_id() const
-{
-    return zone_id_;
-}
+
+    void set_ctx(const Fred::OperationContext& ctx)
+    {
+        ctx_ptr_ = &ctx;
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_NOT_EMPTY_DOMAIN_NAME;
+    }
+};//class DomainNameCheckerNotEmptyDomainName
+
 
 }//namespace Fred
 }//namespace Domain
