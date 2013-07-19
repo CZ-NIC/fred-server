@@ -95,6 +95,8 @@ const std::string DNCHECK_NO_CONSECUTIVE_HYPHENS="dncheck_no_consecutive_hyphens
 const std::string DNCHECK_RFC1035_PREFERRED_SYNTAX="dncheck_rfc1035_preferred_syntax";
 const std::string DNCHECK_SINGLE_DIGIT_LABELS="dncheck_single_digit_labels";
 const std::string DNCHECK_LETTER_DIGIT_HYPHEN_LABELS="dncheck_letter_digit_hyphen_labels";
+const std::string DNCHECK_NO_START_HYPHEN_LABELS="dncheck_no_start_hyphen_labels";
+const std::string DNCHECK_NO_END_HYPHEN_LABELS="dncheck_no_end_hyphen_labels";
 
 //trivial checker for testing
 const std::string DNCHECK_NOT_EMPTY_DOMAIN_NAME="dncheck_not_empty_domain_name";

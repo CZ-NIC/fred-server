@@ -259,6 +259,50 @@ public:
     }
 };//class CheckSingleDigitLabelsSyntax
 
+///check domain name for no hyphen at the start of the label
+class CheckNoStartHyphenSyntax
+: public DomainNameChecker
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoStartHyphenSyntax>
+{
+public:
+    CheckNoStartHyphenSyntax() {}
+
+    bool validate(const std::string& relative_domain_name)
+    {
+        //label starting by '-' prohibited
+        if (!relative_domain_name.empty() && *relative_domain_name.begin() == '-') return false;
+        static const boost::regex NO_NEXT_START_HYPHEN_SYNTAX("[.][-]");
+        return !boost::regex_search(relative_domain_name, NO_NEXT_START_HYPHEN_SYNTAX);
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_NO_START_HYPHEN_LABELS;
+    }
+};//class CheckNoStartHyphenSyntax
+
+///check domain name for no hyphen at the end of the label
+class CheckNoEndHyphenSyntax
+: public DomainNameChecker
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoEndHyphenSyntax>
+{
+public:
+    CheckNoEndHyphenSyntax() {}
+
+    bool validate(const std::string& relative_domain_name)
+    {
+        //label ending by '-' prohibited
+        if (!relative_domain_name.empty() && *relative_domain_name.rbegin() == '-') return false;
+        static const boost::regex NO_NEXT_END_HYPHEN_SYNTAX("[-][.]");
+        return !boost::regex_search(relative_domain_name, NO_NEXT_END_HYPHEN_SYNTAX);
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_NO_END_HYPHEN_LABELS;
+    }
+};//class CheckNoEndHyphenSyntax
+
 
 }//namespace Fred
 }//namespace Domain
