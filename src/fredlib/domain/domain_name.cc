@@ -235,6 +235,30 @@ public:
     }
 };//class CheckSingleDigitLabelsSyntax
 
+///check that domain name labels contains only letters , digits or hyphens
+///regardless of character position in the label
+class CheckLetterDigitHyphenLabelsSyntax
+: public DomainNameChecker
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckLetterDigitHyphenLabelsSyntax>
+{
+public:
+    CheckLetterDigitHyphenLabelsSyntax(){}
+
+    bool validate(const std::string& relative_domain_name)
+    {
+        static const boost::regex DNCHECK_LETTER_DIGIT_HYPHEN_LABELS(
+                "([-A-Za-z0-9]{1,63}[.])*"//optional non-highest-level labels
+                "([-A-Za-z0-9]{1,63})"//mandatory highest-level label
+        );
+        return boost::regex_match(relative_domain_name, DNCHECK_LETTER_DIGIT_HYPHEN_LABELS);
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_LETTER_DIGIT_HYPHEN_LABELS;
+    }
+};//class CheckSingleDigitLabelsSyntax
+
 
 }//namespace Fred
 }//namespace Domain

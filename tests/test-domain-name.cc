@@ -157,6 +157,14 @@ BOOST_AUTO_TEST_CASE(test_domain_name_validator)
     BOOST_CHECK(!Fred::Domain::DomainNameValidator("8.4.1.0.6.4.9.7.0.", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS).exec(ctx));
     BOOST_CHECK(!Fred::Domain::DomainNameValidator(".8.4.1.0.6.4.9.7.0", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS).exec(ctx));
 
+    //general LDH rule
+    BOOST_CHECK(Fred::Domain::DomainNameValidator("8.4.1.0.6.4.9.7.0", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_LETTER_DIGIT_HYPHEN_LABELS).exec(ctx));
+    BOOST_CHECK(Fred::Domain::DomainNameValidator("-fred.fred-.2fred.fred2.-Fred.Fred-.2Fred.Fred2", "cz")(Fred::Domain::DNCHECK_LETTER_DIGIT_HYPHEN_LABELS).exec(ctx));
+    BOOST_CHECK(Fred::Domain::DomainNameValidator("1a", "cz")(Fred::Domain::DNCHECK_LETTER_DIGIT_HYPHEN_LABELS).exec(ctx));
+
+    BOOST_CHECK(!Fred::Domain::DomainNameValidator("1~a", "cz")(Fred::Domain::DNCHECK_LETTER_DIGIT_HYPHEN_LABELS).exec(ctx));
+    BOOST_CHECK(!Fred::Domain::DomainNameValidator("fred@", "cz")(Fred::Domain::DNCHECK_LETTER_DIGIT_HYPHEN_LABELS).exec(ctx));
+
     //combined
     BOOST_CHECK(Fred::Domain::DomainNameValidator("fred", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX)(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(ctx));
     BOOST_CHECK(!Fred::Domain::DomainNameValidator("8.4.1.0.6.4.9.7.0", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS)(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
