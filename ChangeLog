@@ -1,3 +1,8 @@
+2013-06-05 Jiri Sadek (2.14.1)
+
+  * mojeid - implementation of getUnregistrableHandlesIter() idl method
+             transfer contact handles to client by small chunks
+
 2013-04-02 Jiri Sadek, Jan Zima (2.14.0)
 
   * automatic procedure for duplicate contacts merging
