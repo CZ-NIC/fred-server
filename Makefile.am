@@ -802,7 +802,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/delete_domain.h \
 		src/fredlib/domain/delete_domain.cc \
 		src/fredlib/zone/zone.h \
-		src/fredlib/zone/zone.cc
+		src/fredlib/zone/zone.cc \
+		src/fredlib/domain/domain_name.h \
+		src/fredlib/domain/domain_name.cc
 
 #
 # src/fredlib/libfred.a
@@ -1694,6 +1696,7 @@ tests_test_server_SOURCES = \
 		tests/test-update-nsset.cc \
 		tests/test-update-keyset.cc \
 		tests/test-update-domain.cc \
+		tests/test-domain-name.cc \
 		tests/test-delete-contact.cc \
 		tests/test-info-domain.cc \
 		tests/test-merge-contact.cc \
