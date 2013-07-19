@@ -1695,6 +1695,7 @@ tests_test_server_SOURCES = \
 		tests/test-update-nsset.cc \
 		tests/test-update-keyset.cc \
 		tests/test-update-domain.cc \
+		tests/test-domain-name.cc \
 		tests/test-delete-contact.cc \
 		tests/test-info-domain.cc \
 		tests/test-merge-contact.cc \
