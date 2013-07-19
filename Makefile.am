@@ -801,6 +801,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/merge_contact_email_notification_data.h \
 		src/fredlib/domain/delete_domain.h \
 		src/fredlib/domain/delete_domain.cc \
+		src/fredlib/domain/domain_name.h \
+		src/fredlib/domain/domain_name.cc \
 		src/fredlib/zone/zone.h \
 		src/fredlib/zone/zone.cc \
 		src/fredlib/domain/domain_name.h \
@@ -1704,7 +1706,8 @@ tests_test_server_SOURCES = \
 		tests/test-create-contact.cc \
 		tests/test-info-contact.cc \
 		tests/test-delete-domain.cc \
-		tests/test-create-domain.cc
+		tests/test-create-domain.cc \
+		tests/test-domain-name.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

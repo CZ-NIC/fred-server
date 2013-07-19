@@ -28,6 +28,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "fredlib/domain/update_domain.h"
+#include "fredlib/domain/domain_name.h"
 #include "fredlib/object/object.h"
 
 #include "fredlib/opcontext.h"
@@ -171,6 +172,9 @@ namespace Fred
                 }
             }
 
+            //remove optional root dot from fqdn
+            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+
         //get domain_id, ENUM flag and lock object_registry row for update
         unsigned long long domain_id =0;
         bool is_enum_zone = false;
@@ -182,7 +186,7 @@ namespace Fred
                 " JOIN enum_object_type eot ON oreg.type = eot.id AND eot.name = 'domain' "
                 " WHERE oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
                 " FOR UPDATE OF oreg"
-                , Database::query_param_list(fqdn_));
+                , Database::query_param_list(no_root_dot_fqdn));
 
             if (domain_res.size() == 0)
             {
@@ -209,7 +213,7 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration requested for ENUM domain is not valid date"));
 
         //update object
-        Fred::UpdateObject(fqdn_,"domain", registrar_, authinfo_).exec(ctx);
+        Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_, authinfo_).exec(ctx);
 
         Exception update_domain_exception;
 

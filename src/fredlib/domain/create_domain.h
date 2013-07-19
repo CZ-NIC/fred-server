@@ -32,6 +32,7 @@
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
+#include "fredlib/domain/domain_name.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 
@@ -55,6 +56,7 @@ namespace Fred
 
     public:
         DECLARE_EXCEPTION_DATA(unknown_zone_fqdn, std::string);
+        DECLARE_EXCEPTION_DATA(invalid_fqdn_syntax, std::string);
 
         DECLARE_VECTOR_OF_EXCEPTION_DATA(unknown_admin_contact_handle, std::string);
         DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
@@ -70,6 +72,7 @@ namespace Fred
         , ExceptionData_vector_of_unknown_admin_contact_handle<Exception>
         , ExceptionData_vector_of_already_set_admin_contact_handle<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
+        , ExceptionData_invalid_fqdn_syntax<Exception>
         {};
 
         CreateDomain(const std::string& fqdn

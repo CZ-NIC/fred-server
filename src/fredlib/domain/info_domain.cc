@@ -30,6 +30,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "fredlib/domain/info_domain.h"
+#include "fredlib/domain/domain_name.h"
 #include "fredlib/object/object.h"
 
 #include "fredlib/opcontext.h"
@@ -76,6 +77,9 @@ namespace Fred
                 }
             }
 
+            //remove optional root dot from fqdn
+            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+
             //info about domain and optionally lock object_registry row for update
             unsigned long long domain_id = 0;
             {
@@ -118,7 +122,7 @@ namespace Fred
                 " WHERE dobr.name=LOWER($2::text) AND dobr.erdate IS NULL "
                 " AND dobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='domain'::text)"
                 + (lock_ ? std::string(" FOR UPDATE OF dobr") : std::string(""))
-                , Database::query_param_list(local_timestamp_pg_time_zone_name)(fqdn_));
+                , Database::query_param_list(local_timestamp_pg_time_zone_name)(no_root_dot_fqdn));
 
                 if (res.size() == 0)
                 {

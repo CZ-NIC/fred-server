@@ -29,13 +29,13 @@ namespace Fred {
 namespace Zone {
 
     ///zone name in db have to be in lower case
-    Data find_zone_in_fqdn(OperationContext& ctx, const std::string& fqdn)
+    Data find_zone_in_fqdn(OperationContext& ctx, const std::string& no_root_dot_fqdn)
     {
         try
         {
             const std::string label_separator(".");//viz rfc1035
 
-            std::string domain(boost::to_lower_copy(fqdn));
+            std::string domain(boost::to_lower_copy(no_root_dot_fqdn));
 
             Database::Result available_zones_res = ctx.get_conn().exec(
                 "SELECT fqdn FROM zone ORDER BY length(fqdn) DESC");
@@ -69,11 +69,11 @@ namespace Zone {
                 }
             }//for available_zones_res
 
-            BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_in_fqdn(fqdn));
+            BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_in_fqdn(no_root_dot_fqdn));
         }//try
         catch(ExceptionStack& ex)
         {
-            ex.add_exception_stack_info(std::string("fqdn: ")+fqdn);
+            ex.add_exception_stack_info(std::string("fqdn: ")+no_root_dot_fqdn);
             throw;
         }
     }

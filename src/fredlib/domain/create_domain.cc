@@ -29,6 +29,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "fredlib/domain/create_domain.h"
+#include "fredlib/domain/domain_name.h"
 #include "fredlib/zone/zone.h"
 #include "fredlib/object/object.h"
 
@@ -157,16 +158,23 @@ namespace Fred
                 }
             }
 
+            //check general domain name syntax
+            if(!Domain::general_domain_name_syntax_check(fqdn_))
+                BOOST_THROW_EXCEPTION(Exception().set_invalid_fqdn_syntax(fqdn_));
+
+            //remove optional root dot from fqdn
+            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+
             //zone
             Zone::Data zone;
             try
             {
-                zone = Zone::find_zone_in_fqdn(ctx, fqdn_);
+                zone = Zone::find_zone_in_fqdn(ctx, no_root_dot_fqdn);
             }
             catch(const Zone::Exception& ex)
             {
                 if(ex.is_set_unknown_zone_in_fqdn()
-                        && (ex.get_unknown_zone_in_fqdn().compare(fqdn_) == 0))
+                        && (ex.get_unknown_zone_in_fqdn().compare(no_root_dot_fqdn) == 0))
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_fqdn(fqdn_));
                 }
@@ -210,7 +218,7 @@ namespace Fred
                 }
             }//expiration_period
 
-            unsigned long long object_id = CreateObject("domain", fqdn_, registrar_, authinfo_).exec(ctx);
+            unsigned long long object_id = CreateObject("domain", no_root_dot_fqdn, registrar_, authinfo_).exec(ctx);
 
             //get crdate and exdate and lock row from object_registry
             boost::gregorian::date expiration_date;

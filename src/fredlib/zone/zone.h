@@ -54,7 +54,7 @@ namespace Zone {
     {};
 
     ///look for zone in domain name
-    Data find_zone_in_fqdn(OperationContext& ctx, const std::string& fqdn);
+    Data find_zone_in_fqdn(OperationContext& ctx, const std::string& no_root_dot_fqdn);
 
 }//namespace Zone
 }//namespace Fred

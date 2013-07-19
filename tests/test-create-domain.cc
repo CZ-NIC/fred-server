@@ -39,6 +39,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/regex.hpp>
 
 
 //#include <omniORB4/fixed.h>
@@ -162,7 +163,34 @@ BOOST_FIXTURE_TEST_CASE(create_domain_wrong_registrar, create_domain_fixture)
     , check_std_exception);
 }
 
-
+/**
+ * test CreateDomain with wrong fqdn syntax
+ */
+BOOST_FIXTURE_TEST_CASE(create_domain_wrong_fqdn_syntax, create_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    std::string bad_test_domain_handle = test_domain_handle+".2bad..";
+    BOOST_CHECK_EXCEPTION(
+    try
+    {
+        Fred::CreateDomain(
+                bad_test_domain_handle //const std::string& fqdn
+                , registrar_handle //const std::string& registrar
+                , registrant_contact_handle //registrant
+                )
+        .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::CreateDomain::Exception& ex)
+    {
+        BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.is_set_invalid_fqdn_syntax());
+        throw;
+    }
+    , std::exception
+    , check_std_exception);
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestCreateContact
 
