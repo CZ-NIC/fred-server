@@ -43,7 +43,7 @@ class HostImpl : public virtual Host {
   std::string nameIDN;
 public:
   HostImpl(const std::string& _name, Zone::Manager *zm) : 
-  		name(_name), nameIDN(zm->decodeIDN(name)) {
+  		name(_name), nameIDN(zm->punycode_to_utf8(name)) {
   }
   virtual const std::string getName() const {
 		return name;

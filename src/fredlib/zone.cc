@@ -24,8 +24,8 @@
 #include <sstream>
 #include "types.h"
 #include <ctype.h>
-#include <idna.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "model_zone.h"
 #include "model_zone_ns.h"
@@ -839,7 +839,7 @@ namespace Fred
           if (part.empty()) {
             // first character of every label has to be letter or digit
             // digit is not in RFC 1034 but it's required in ENUM domains
-            if (!IS_NUMBER(fqdn[i]) && !IS_LETTER(fqdn[i]))
+            if (!IS_NUMBER(fqdn.at(i)) && !IS_LETTER(fqdn.at(i)))
               throw INVALID_DOMAIN_NAME();
           }
           else {
@@ -851,16 +851,30 @@ namespace Fred
               // length of part should be < 64
               if (part.length() > 63)
                 throw INVALID_DOMAIN_NAME();
+              // if there is punycode present and allowed, it must be valid
+              if( allowIDN && part.compare(0, 4, "xn--") == 0 ) {
+                  if( is_valid_punycode(part) == false ) {
+                      throw INVALID_DOMAIN_NAME();
+                  }
+              }
               domain.push_back(part);
               part.clear();
               continue;
             }
             else {
-              if (fqdn[i] == '-') {
-                // dash '-' is acceptable only if last character wasn't dash
-                if (part[part.length()-1] == '-' &&
-                    (!allowIDN || part != "xn-"))
-                  throw INVALID_DOMAIN_NAME();
+              if (fqdn.at(i) == '-') {
+                // only single hyphen '-' is generaly acceptable (specific .cz rule)
+                if (*part.rbegin() == '-') {
+                    // exceptions are:
+                    // idn (in form of punycode)...
+                    if( !allowIDN ) {
+                        throw INVALID_DOMAIN_NAME();
+                    // ...in ACE prefix (xn--) or ELSEWHERE ("--" can be produced during encoding)
+                    // therefore we don't check it here but check validity of the whole punycode label above
+                    } else if ( (i == 3 && part != "xn-") || (i >= 4 && part.compare(0, 4, "xn--") != 0) ) {
+                        throw INVALID_DOMAIN_NAME();
+                    }
+                }
               }
               else {
                 // other character could be only number or letter
@@ -870,7 +884,7 @@ namespace Fred
             }
           }
           // add character into part
-          part += fqdn[i];
+          part += fqdn.at(i);
         }
         // last part cannot be empty
         if (part.empty()) throw INVALID_DOMAIN_NAME();
@@ -1402,24 +1416,59 @@ namespace Fred
           }//catch (...)
       }//addPrice
 
-      virtual std::string encodeIDN(const std::string& fqdn) const
-      {
-        std::string result;
-        char *p;
-        idna_to_ascii_8z(fqdn.c_str(), &p, 0);
-        result = p ? p : fqdn;
-        if (p) free(p);
-        return result;
+      virtual bool is_valid_punycode(const std::string& fqdn) const {
+          // TODO - prepared for proper check, current implementation is not strict enough
+
+          std::string dev_null;
+          try {
+              dev_null = punycode_to_utf8(fqdn);
+              utf8_to_punycode(dev_null);
+          } catch (const idn_conversion_fail& ) {
+              return false;
+          }
+
+          return true;
       }
 
-      virtual std::string decodeIDN(const std::string& fqdn) const
+
+      virtual std::string utf8_to_punycode(const std::string& fqdn) const throw(idn_conversion_fail)
       {
-        std::string result;
-        char *p;
-        idna_to_unicode_8z8z(fqdn.c_str(), &p, 0);
-        result = p ? p : fqdn;
-        if (p) free(p);
-        return result;
+          char *p;
+
+          if(idna_to_ascii_8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS) {
+              std::string result( p );
+              if (p != NULL) {
+                  free(p);
+              }
+              return result;
+
+          } else {
+
+              if (p != NULL) {
+                  free(p);
+              }
+              throw idn_conversion_fail();
+          }
+      }
+
+      virtual std::string punycode_to_utf8(const std::string& fqdn) const throw(idn_conversion_fail)
+      {
+          char *p;
+
+          if(idna_to_unicode_8z8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS) {
+              std::string result( p );
+              if (p != NULL) {
+                  free(p);
+              }
+              return result;
+
+          } else {
+
+              if (p != NULL) {
+                  free(p);
+              }
+              throw idn_conversion_fail();
+          }
       }
 /*
       virtual ZoneList *getList()
