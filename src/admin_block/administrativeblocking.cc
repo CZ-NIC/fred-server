@@ -29,6 +29,7 @@
 #include "fredlib/domain/create_administrative_object_state_restore_request.h"
 #include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
 #include "fredlib/domain/create_domain_name_blacklist.h"
+#include "fredlib/domain/create_domain_name_blacklist_id.h"
 #include <memory>
 
 namespace
@@ -102,7 +103,7 @@ namespace Registry
         {
             try {
                 std::auto_ptr< DomainIdHandleOwnerChangeList > result(new DomainIdHandleOwnerChangeList);
-                result->length(_domain_list.length());
+//                result->length(_domain_list.length());
                 Fred::OperationContext ctx;
                 Fred::StatusList status_list;
                 for (unsigned idx = 0; idx < _status_list.length(); ++idx) {
@@ -112,11 +113,12 @@ namespace Registry
                     const Fred::ObjectId object_id = _domain_list[idx];
                     Fred::CreateAdministrativeObjectBlockRequestId create_object_block_request(object_id, status_list);
                     create_object_block_request.set_reason(_reason);
-                    ::Registry::Administrative::DomainIdHandleOwnerChange &result_item = (*result)[idx];
-                    result_item.domainId = object_id;
-                    result_item.domainHandle = ::CORBA::string_dup(create_object_block_request.exec(ctx).c_str());
+//                    ::Registry::Administrative::DomainIdHandleOwnerChange &result_item = (*result)[idx];
+//                    result_item.domainId = object_id;
+//                    result_item.domainHandle = ::CORBA::string_dup(create_object_block_request.exec(ctx).c_str());
                     // KEEP_OWNER / BLOCK_OWNER / BLOCK_OWNER_COPY
 //                    if (_owner_block_mode == )
+                    create_object_block_request.exec(ctx);
                     Fred::PerformObjectStateRequest(object_id).exec(ctx);
                 }
                 ctx.commit_transaction();
@@ -197,6 +199,27 @@ namespace Registry
             const ::Registry::Administrative::StatusList &_status_list,
             const std::string &_reason)
         {
+            try {
+                Fred::OperationContext ctx;
+                Fred::StatusList status_list;
+                for (unsigned idx = 0; idx < _status_list.length(); ++idx) {
+                    status_list.push_back(_status_list[idx].in());
+                }
+                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
+                    const Fred::ObjectId object_id = _domain_list[idx];
+                    Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
+                    create_object_state_restore_request.exec(ctx);
+                    Fred::PerformObjectStateRequest(object_id).exec(ctx);
+                    Fred::CreateAdministrativeObjectBlockRequestId create_object_state_request(object_id, status_list);
+                    create_object_state_request.set_reason(_reason);
+                    create_object_state_request.exec(ctx);
+                    Fred::PerformObjectStateRequest(object_id).exec(ctx);
+                }
+                ctx.commit_transaction();
+            }
+            catch (const std::exception &e) {
+                throw INTERNAL_SERVER_ERROR(e.what());
+            }
         }
 
         void BlockingImpl::unblockDomains(
@@ -213,6 +236,7 @@ namespace Registry
             bool _remove_admin_c,
             const std::string &_reason)
         {
+            this->restorePreAdministrativeBlockStatesId(_domain_list, _new_owner, _reason);
         }
 
         void BlockingImpl::blacklistAndDeleteDomains(
@@ -250,6 +274,18 @@ namespace Registry
             ::Registry::Administrative::NullableDate *_blacklist_to_date,
             bool _with_delete)
         {
+            try {
+                Fred::OperationContext ctx;
+                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
+                    const Fred::ObjectId object_id = _domain_list[idx];
+                    Fred::CreateDomainNameBlacklistId create_domain_name_blacklist(object_id, "blacklistDomainsId() call");
+                    create_domain_name_blacklist.exec(ctx);
+                }
+                ctx.commit_transaction();
+            }
+            catch (const std::exception &e) {
+                throw INTERNAL_SERVER_ERROR(e.what());
+            }
         }
 
         void BlockingImpl::unblacklistAndCreateDomains(
