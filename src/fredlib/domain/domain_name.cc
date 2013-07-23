@@ -208,12 +208,12 @@ public:
 };//class CheckRFC1035PrefferedNameSyntax
 
 ///prohibit consecutive hyphens '--'
-class CheckNoConsecutiveHyphensDomainName
+class CheckNoConsecutiveHyphens
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoConsecutiveHyphensDomainName>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoConsecutiveHyphens>
 {
 public:
-    CheckNoConsecutiveHyphensDomainName(){}
+    CheckNoConsecutiveHyphens(){}
 
     bool validate(const std::string& relative_domain_name)
     {
@@ -228,12 +228,12 @@ public:
 };//class CheckNoConsecutiveHyphensDomainName
 
 ///check domain name for single digit labels
-class CheckSingleDigitLabelsSyntax
+class CheckSingleDigitLabelsOnly
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckSingleDigitLabelsSyntax>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckSingleDigitLabelsOnly>
 {
 public:
-    CheckSingleDigitLabelsSyntax(){}
+    CheckSingleDigitLabelsOnly(){}
 
     bool validate(const std::string& relative_domain_name)
     {
@@ -246,18 +246,18 @@ public:
 
     static std::string registration_name()
     {
-        return DNCHECK_SINGLE_DIGIT_LABELS;
+        return DNCHECK_SINGLE_DIGIT_LABELS_ONLY;
     }
 };//class CheckSingleDigitLabelsSyntax
 
 ///check that domain name labels contains only letters , digits or hyphens
 ///regardless of character position in the label
-class CheckLetterDigitHyphenLabelsSyntax
+class CheckLettersDigitsHyphenCharsOnly
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckLetterDigitHyphenLabelsSyntax>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckLettersDigitsHyphenCharsOnly>
 {
 public:
-    CheckLetterDigitHyphenLabelsSyntax(){}
+    CheckLettersDigitsHyphenCharsOnly(){}
 
     bool validate(const std::string& relative_domain_name)
     {
@@ -270,17 +270,17 @@ public:
 
     static std::string registration_name()
     {
-        return DNCHECK_LETTER_DIGIT_HYPHEN_LABELS;
+        return DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY;
     }
 };//class CheckSingleDigitLabelsSyntax
 
 ///check domain name for no hyphen at the start of the label
-class CheckNoStartHyphenSyntax
+class CheckNoLabelBeginningHyphen
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoStartHyphenSyntax>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoLabelBeginningHyphen>
 {
 public:
-    CheckNoStartHyphenSyntax() {}
+    CheckNoLabelBeginningHyphen() {}
 
     bool validate(const std::string& relative_domain_name)
     {
@@ -292,17 +292,17 @@ public:
 
     static std::string registration_name()
     {
-        return DNCHECK_NO_START_HYPHEN_LABELS;
+        return DNCHECK_NO_LABEL_BEGINNING_HYPHEN;
     }
 };//class CheckNoStartHyphenSyntax
 
 ///check domain name for no hyphen at the end of the label
-class CheckNoEndHyphenSyntax
+class CheckNoLabelEndingHyphen
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoEndHyphenSyntax>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoLabelEndingHyphen>
 {
 public:
-    CheckNoEndHyphenSyntax() {}
+    CheckNoLabelEndingHyphen() {}
 
     bool validate(const std::string& relative_domain_name)
     {
@@ -314,7 +314,7 @@ public:
 
     static std::string registration_name()
     {
-        return DNCHECK_NO_END_HYPHEN_LABELS;
+        return DNCHECK_NO_LABEL_ENDING_HYPHEN;
     }
 };//class CheckNoEndHyphenSyntax
 
