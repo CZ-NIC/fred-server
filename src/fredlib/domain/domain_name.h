@@ -25,6 +25,7 @@
 #define DOMAIN_NAME_H_
 
 #include <string>
+#include <vector>
 #include <boost/regex.hpp>
 #include <boost/shared_ptr.hpp>
 #include "fredlib/opcontext.h"
@@ -100,6 +101,12 @@ const std::string DNCHECK_NO_END_HYPHEN_LABELS="dncheck_no_end_hyphen_labels";
 
 //trivial checker for testing
 const std::string DNCHECK_NOT_EMPTY_DOMAIN_NAME="dncheck_not_empty_domain_name";
+
+//insert checker name into database
+void insert_domain_name_checker_name_into_database(
+        Fred::OperationContext& ctx
+        , const std::string& checker_name
+        , const std::string& checker_description);
 
 }//namespace Fred
 }//namespace Domain

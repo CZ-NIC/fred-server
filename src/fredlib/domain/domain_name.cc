@@ -25,8 +25,13 @@
 #include "domain_name.h"
 
 #include <string>
+#include <vector>
 #include <boost/regex.hpp>
 #include <boost/assign.hpp>
+
+#include "fredlib/opcontext.h"
+#include "util/factory.h"
+#include "util/factory_check.h"
 
 namespace Fred {
 namespace Domain {
@@ -303,6 +308,11 @@ public:
     }
 };//class CheckNoEndHyphenSyntax
 
+void insert_domain_name_checker_name_into_database(Fred::OperationContext& ctx, const std::string& checker_name, const std::string& checker_description)
+{
+    ctx.get_conn().exec_params("INSERT INTO enum_domain_name_validation_checker(name, description)"
+        " VALUES($1::text, $2::text)",Database::query_param_list(checker_name)(checker_description));
+}
 
 }//namespace Fred
 }//namespace Domain
