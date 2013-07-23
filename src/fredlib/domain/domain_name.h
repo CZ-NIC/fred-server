@@ -30,6 +30,7 @@
 #include "fredlib/opcontext.h"
 #include "util/factory.h"
 #include "util/factory_check.h"
+#include "util/optional_value.h"
 
 namespace Fred {
 namespace Domain {
@@ -70,23 +71,22 @@ protected:
    ~DomainNameCheckerNeedOperationContext(){}
 };
 
+class ZoneNameNotSet : public std::exception {};
+class CtxNotSet : public std::exception {};
+
 class DomainNameValidator
 {
-    const std::string relative_domain_name_;
-    const std::string zone_name_;
+    Optional<std::string> zone_name_;
+    Optional<Fred::OperationContext*> ctx_;
+
     std::vector<std::string> checker_name_vector_;
 public:
-    ///domain name is considered relative and zone name is considered fully qualified here
-    ///, so no root dot at the end of strings are expected
-    ///relative_domain_name is validated by checkers
-    ///zone_name begins with label and may be empty if considered unimportant for checkers
-    ///zone_name may be used by implementation of DomainNameChecker
-    ///if zone_name is empty and checker implementation need some value, validation shall fail
-    explicit DomainNameValidator(const std::string& relative_domain_name, const std::string& zone_name = "");
+    DomainNameValidator& set_zone_name(const std::string& _zone_name);
+    DomainNameValidator& set_ctx(Fred::OperationContext& _ctx);
     ///add checker instance shared pointer
-    DomainNameValidator& operator()(const std::string& checker_name);
+    DomainNameValidator& add(const std::string& checker_name);
     ///returns true if domain name is valid otherwise it returns false
-    bool exec(const Fred::OperationContext& ctx);
+    bool exec(const std::string& relative_domain_name) throw(ZoneNameNotSet, CtxNotSet);
 };
 
 typedef Util::Factory<DomainNameChecker, Util::ClassCreator<DomainNameChecker> > DomainNameCheckerFactory;

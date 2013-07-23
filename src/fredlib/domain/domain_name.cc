@@ -87,11 +87,18 @@ std::string rem_trailing_dot(const std::string& fqdn)
 }
 
 //domain name validator
-DomainNameValidator::DomainNameValidator(const std::string& relative_domain_name, const std::string& zone_name)
-: relative_domain_name_(relative_domain_name), zone_name_(zone_name)
-{}
+DomainNameValidator& DomainNameValidator::set_zone_name(const std::string& _zone_name) {
+    zone_name_ = _zone_name;
 
-DomainNameValidator& DomainNameValidator::operator()(const std::string& checker_name)
+    return *this;
+}
+DomainNameValidator& DomainNameValidator::set_ctx(Fred::OperationContext& _ctx) {
+    ctx_= &_ctx;
+
+    return *this;
+}
+
+DomainNameValidator& DomainNameValidator::add(const std::string& checker_name)
 {
     FactoryHaveSupersetOfKeysChecker<Fred::Domain::DomainNameCheckerFactory>
         ::KeyVector required_keys = boost::assign::list_of(checker_name);
@@ -101,11 +108,13 @@ DomainNameValidator& DomainNameValidator::operator()(const std::string& checker_
     return *this;
 }
 
-bool DomainNameValidator::exec(const Fred::OperationContext& ctx)
+bool DomainNameValidator::exec(const std::string& _relative_domain_name) throw(ZoneNameNotSet, CtxNotSet)
 {
-    if(!zone_name_.empty() && *(--zone_name_.end()) == '.') return false; //unexpected root dot
-    if(general_domain_name_syntax_check(relative_domain_name_
-        +(zone_name_.empty() ? std::string("") : std::string(".")+zone_name_)) == false)
+    std::string temp_zone_name = zone_name_.get_value();
+
+    if(!temp_zone_name.empty() && *(--temp_zone_name.end()) == '.') return false; //unexpected root dot
+    if(general_domain_name_syntax_check(_relative_domain_name
+        +(temp_zone_name.empty() ? std::string("") : std::string(".")+temp_zone_name )) == false)
     {
         return false;
     }
@@ -117,15 +126,21 @@ bool DomainNameValidator::exec(const Fred::OperationContext& ctx)
         if(DomainNameCheckerNeedZoneName* need_zone_checker
                 = dynamic_cast<DomainNameCheckerNeedZoneName*>(checker.get()))
         {
+            if(zone_name_.isset() == false) {
+                throw ZoneNameNotSet();
+            }
             need_zone_checker->set_zone_name(zone_name_);
         }
 
         if(DomainNameCheckerNeedOperationContext* need_ctx_checker
                 = dynamic_cast<DomainNameCheckerNeedOperationContext*>(checker.get()))
         {
-            need_ctx_checker->set_ctx(ctx);
+            if(ctx_.isset() == false) {
+                throw CtxNotSet();
+            }
+            need_ctx_checker->set_ctx(*ctx_);
         }
-        if(checker.get()->validate(relative_domain_name_) == false) return false; //validation failed
+        if(checker.get()->validate(_relative_domain_name) == false) return false; //validation failed
     }//for checker_name_vector_
     // check
 
