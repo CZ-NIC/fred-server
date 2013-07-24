@@ -71,8 +71,8 @@ protected:
    ~DomainNameCheckerNeedOperationContext(){}
 };
 
-class ZoneNameNotSet : public std::exception {};
-class CtxNotSet : public std::exception {};
+class ExceptionZoneNameNotSet : public std::exception {};
+class ExceptionCtxNotSet : public std::exception {};
 
 class DomainNameValidator
 {
@@ -85,8 +85,11 @@ public:
     DomainNameValidator& set_ctx(Fred::OperationContext& _ctx);
     ///add checker instance shared pointer
     DomainNameValidator& add(const std::string& checker_name);
-    ///returns true if domain name is valid otherwise it returns false
-    bool exec(const std::string& relative_domain_name) throw(ZoneNameNotSet, CtxNotSet);
+    /*! \brief Returns true if domain name is valid otherwise it returns false.
+     * @throw ZoneNameNotSet in case Zone name have not been set and checker which needs it was added.
+     * @throw CtxNotSet in case OperationContext have not been set and checker which needs it was added.
+     */
+    bool exec(const std::string& relative_domain_name);
 };
 
 typedef Util::Factory<DomainNameChecker, Util::ClassCreator<DomainNameChecker> > DomainNameCheckerFactory;

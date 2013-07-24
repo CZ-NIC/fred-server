@@ -108,8 +108,7 @@ DomainNameValidator& DomainNameValidator::add(const std::string& checker_name)
     return *this;
 }
 
-bool DomainNameValidator::exec(const std::string& _relative_domain_name) throw(ZoneNameNotSet, CtxNotSet)
-{
+bool DomainNameValidator::exec(const std::string& _relative_domain_name) {
     std::string temp_zone_name = zone_name_.get_value();
 
     if(!temp_zone_name.empty() && *(--temp_zone_name.end()) == '.') return false; //unexpected root dot
@@ -127,7 +126,7 @@ bool DomainNameValidator::exec(const std::string& _relative_domain_name) throw(Z
                 = dynamic_cast<DomainNameCheckerNeedZoneName*>(checker.get()))
         {
             if(zone_name_.isset() == false) {
-                throw ZoneNameNotSet();
+                throw ExceptionZoneNameNotSet();
             }
             need_zone_checker->set_zone_name(zone_name_);
         }
@@ -136,7 +135,7 @@ bool DomainNameValidator::exec(const std::string& _relative_domain_name) throw(Z
                 = dynamic_cast<DomainNameCheckerNeedOperationContext*>(checker.get()))
         {
             if(ctx_.isset() == false) {
-                throw CtxNotSet();
+                throw ExceptionCtxNotSet();
             }
             need_ctx_checker->set_ctx(*ctx_);
         }
