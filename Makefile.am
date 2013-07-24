@@ -1437,6 +1437,7 @@ src_corba_mojeid_fred_mifd_SOURCES = \
 		src/mojeid/mojeid.h \
 		src/corba/nameservice.cc \
 		src/corba/mailer_manager.cc \
+		src/corba/corba_auto_garbaged_list.h \
 		src/corba/mojeid/corba_conversion.h \
 		src/corba/mojeid/server_i.cc \
 		src/corba/mojeid/server_i.h \

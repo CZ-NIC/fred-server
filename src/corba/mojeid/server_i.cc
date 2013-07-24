@@ -23,8 +23,8 @@
  */
 
 
+#include "util/cfg/handle_mojeid_args.h"
 #include "server_i.h"
-#include "corba_wrapper_decl.h"
 #include "corba_conversion.h"
 #include "mojeid/mojeid.h"
 #include "mailer_manager.h"
@@ -37,15 +37,91 @@ namespace Registry
     namespace MojeID
     {
 
+        ContactHandleListIter_i::ContactHandleListIter_i(
+                const std::vector<std::string> &_handles)
+            : status_(ACTIVE),
+              last_used_(boost::posix_time::second_clock::local_time()),
+              handles_(_handles),
+              it_(handles_.begin())
+        {
+        }
+
+        ContactHandleListIter_i::~ContactHandleListIter_i()
+        {
+        }
+
+        Registry::MojeID::ContactHandleList* ContactHandleListIter_i::getNext(::CORBA::ULong count)
+        {
+            try
+            {
+                if (status_ != ACTIVE) {
+                    throw Registry::MojeID::ContactHandleListIter::NOT_ACTIVE();
+                }
+
+                last_used_ = boost::posix_time::second_clock::local_time();
+
+                Registry::MojeID::ContactHandleList_var ret = new Registry::MojeID::ContactHandleList;
+                ret->length(0);
+
+                for (unsigned long i = 0; it_ != handles_.end() && i < count; ++it_, ++i)
+                {
+                    unsigned int act_size = ret->length();
+                    ret->length(act_size +1);
+                    ret[act_size] = corba_wrap_string(*it_);
+                }
+
+                return ret._retn();
+            }
+            catch (Registry::MojeID::ContactHandleListIter::NOT_ACTIVE)
+            {
+                throw;
+            }
+            catch (...)
+            {
+                throw Registry::MojeID::ContactHandleListIter::INTERNAL_SERVER_ERROR();
+            }
+        }
+
+
+        void ContactHandleListIter_i::destroy()
+        {
+            this->close();
+        }
+
+
+        void ContactHandleListIter_i::close()
+        {
+            status_ = CLOSED;
+        }
+
+
+        bool ContactHandleListIter_i::is_closed() const
+        {
+            return status_ == CLOSED;
+        }
+
+
+        const boost::posix_time::ptime& ContactHandleListIter_i::get_last_used() const
+        {
+            return last_used_;
+        }
+
+
+
         Server_i::Server_i(const std::string &_server_name)
         : pimpl_(new MojeIDImpl(_server_name
                 , boost::shared_ptr<Fred::Mailer::Manager>(
                     new MailerManager(CorbaContainer::get_instance()
-                    ->getNS()))))
+                    ->getNS())))),
+          contact_handle_list_objects_(
+                  "fred-mifd/contact-handle-list",
+                  CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->uho_scavenger_thread_period,
+                  CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->uho_scavenger_object_max_idle_period)
         {}
 
         Server_i::~Server_i()
-        {}
+        {
+        }
 
         //   Methods corresponding to IDL attributes and operations
         ::CORBA::ULongLong Server_i::contactCreatePrepare(
@@ -506,6 +582,28 @@ namespace Registry
             }
         }//getUnregistrableHandles
 
+        Registry::MojeID::ContactHandleListIter_ptr
+        Server_i::getUnregistrableHandlesIter()
+        {
+            try
+            {
+                std::vector<std::string> result;
+                result = pimpl_->getUnregistrableHandles();
+
+                boost::shared_ptr<ContactHandleListIter_i> ret(new ContactHandleListIter_i(result));
+                contact_handle_list_objects_.push_back(ret);
+                return ret.get()->_this();
+            }
+            catch (std::exception &_ex)
+            {
+                throw Registry::MojeID::Server
+                    ::INTERNAL_SERVER_ERROR(_ex.what());
+            }
+            catch (...)
+            {
+                throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+            }
+        }//getUnregistrableHandlesIter
 
         char* Server_i::contactAuthInfo(::CORBA::ULongLong contact_id)
         {
