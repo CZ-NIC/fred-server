@@ -30,6 +30,7 @@
 #include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
 #include "fredlib/domain/create_domain_name_blacklist.h"
 #include "fredlib/domain/create_domain_name_blacklist_id.h"
+#include "fredlib/domain/update_domain.h"
 #include <memory>
 
 namespace
@@ -161,6 +162,26 @@ namespace Registry
                     Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
                     create_object_state_restore_request.exec(ctx);
                     Fred::PerformObjectStateRequest(object_id).exec(ctx);
+                    if (_new_owner != NULL) {
+                        Database::query_param_list param(object_id);
+                        Database::Result registrar_fqdn_result = ctx.get_conn().exec_params(
+                            "SELECT reg.handle,oreg.name "
+                            "FROM object_registry oreg "
+                            "JOIN registrar reg ON oreg.crid=reg.id "
+                            "WHERE oreg.id=$1::bigint", param);
+                        if (registrar_fqdn_result.size() <= 0) {
+                            std::string errmsg("|| not found:object_id: ");
+                            errmsg += boost::lexical_cast< std::string >(object_id);
+                            errmsg += " |";
+                            throw INTERNAL_SERVER_ERROR(errmsg.c_str());
+                        }
+                        const Database::Row &row = registrar_fqdn_result[0];
+                        const std::string registrar = static_cast< std::string >(row[0]);
+                        const std::string domain = static_cast< std::string >(row[1]);
+                        Fred::UpdateDomain update_domain(domain, registrar);
+//                        update_domain.add_admin_contact(*_new_owner);
+                        update_domain.exec(ctx);
+                    }
                 }
                 ctx.commit_transaction();
             }
