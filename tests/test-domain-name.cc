@@ -128,117 +128,71 @@ BOOST_AUTO_TEST_CASE(test_domain_name_validator)
 
     // basic check
     Fred::Domain::DomainNameValidator basic;
-    basic.add(Fred::Domain::DNCHECK_NOT_EMPTY_DOMAIN_NAME).set_ctx(ctx).set_zone_name("zone");
-    BOOST_CHECK(basic.exec("domain"));
-
+    basic.set_ctx(ctx);
+    BOOST_CHECK( basic.add(Fred::Domain::DNCHECK_NOT_EMPTY_DOMAIN_NAME).set_zone_name("zone").exec("domain") );
 
     //RFC1035 preferred syntax check test cases
-    Fred::Domain::DomainNameValidator rfc1035_preferred;
-    rfc1035_preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX);
-    rfc1035_preferred.set_ctx(ctx);
+    Fred::Domain::DomainNameValidator preferred;
+    preferred.set_ctx(ctx);
 
-    std::vector<std::string> valid_pref_labels = list_of
-                                            ("fred")
-                                            ("f--red")
-                                            ("f--red5")
-                                            ("fred.fred");
-    std::vector<std::string> temp_valid = valid_pref_labels;
-    BOOST_FOREACH(const std::string& label, temp_valid) {
-        valid_pref_labels.push_back(label + ".fred");
-        valid_pref_labels.push_back(label + ".f--red5");
-    }
-    std::vector<std::string> invalid_pref_labels = list_of
-                                                ("2fred")
-                                                ("-fred")
-                                                ("fred-");
-    std::vector<std::string> temp_invalid = invalid_pref_labels;
-    BOOST_FOREACH(const std::string& label, temp_invalid) {
-        invalid_pref_labels.push_back(label + ".fred");
-    }
-    rfc1035_preferred.set_zone_name("cz");
-    // ...launch
-    BOOST_FOREACH(const std::string& label, valid_pref_labels) {
-        BOOST_CHECK(rfc1035_preferred.exec(label));
-    }
-    BOOST_FOREACH(const std::string& label, invalid_pref_labels) {
-        BOOST_CHECK(!rfc1035_preferred.exec(label));
-    }
-
-    rfc1035_preferred.set_zone_name("");
-    BOOST_CHECK(rfc1035_preferred.exec("fred.com"));
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("fred") );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("").exec("fred.com") );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("2fred") );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("-fred") );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("fred-") );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("f--red") );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("f--red5") );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("fred") );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("com").exec("fred.fred") );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("2fred.fred") );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("-fred.fred") );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("fred-.fred") );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("f--red.fred") );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("f--red5.fred") );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("cz").exec("f--red5.f--red5") );
 
     //no '--' checks
     Fred::Domain::DomainNameValidator double_hyphen;
-    double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS);
     double_hyphen.set_ctx(ctx);
 
-    std::vector<std::string> valid_double_hyphen_labels = list_of
-                                                    ("fred-.fred")
-                                                    ("fre-d-.fred")
-                                                    ("fre-d.fre-d");
-    std::vector<std::string> invalid_double_hyphen_labels = list_of
-                                                            ("fre-d--.fred")
-                                                            ("fre-d.fre--d");
-    double_hyphen.set_zone_name("cz");
-
-    // ...launch
-    BOOST_FOREACH(const std::string& label, valid_double_hyphen_labels) {
-        BOOST_CHECK(double_hyphen.exec(label));
-    }
-    BOOST_FOREACH(const std::string& label, invalid_double_hyphen_labels) {
-        BOOST_CHECK(!double_hyphen.exec(label));
-    }
+    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("cz").exec("fred-.fred") );
+    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("cz").exec("fre-d-.fred") );
+    BOOST_CHECK( !double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("cz").exec("fre-d--.fred") );
+    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("cz").exec("fre-d.fre-d") );
+    BOOST_CHECK( !double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("cz").exec("fre-d.fre--d") );
 
     //single digit labels
     Fred::Domain::DomainNameValidator single_digits;
-    single_digits.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS);
     single_digits.set_ctx(ctx);
-    std::vector<std::string> valid_single_digits_labels = list_of
-                                                            ("8.4.1.0.6.4.9.7.0");
-    std::vector<std::string> invalid_single_digits_labels = list_of
-                                                            ("8.4.10.0.6.4.9.7.0")
-                                                            ("8.4.1..0.6.4.9.7.0")
-                                                            ("8.4.1.0.6.4.9.7.a")
-                                                            ("8.4.1.0.6.4.9.7.0.")
-                                                            (".8.4.1.0.6.4.9.7.0");
-    single_digits.set_zone_name("2.4.4.e164.arpa");
-    // ...launch
-    BOOST_FOREACH(const std::string& label, valid_single_digits_labels) {
-        BOOST_CHECK(single_digits.exec(label));
-    }
-    BOOST_FOREACH(const std::string& label, invalid_single_digits_labels) {
-        BOOST_CHECK(!single_digits.exec(label));
-    }
+
+    BOOST_CHECK(  single_digits.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("2.4.4.e164.arpa").exec("8.4.1.0.6.4.9.7.0") );
+    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("2.4.4.e164.arpa").exec("8.4.10.0.6.4.9.7.0") );
+    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("2.4.4.e164.arpa").exec("8.4.1..0.6.4.9.7.0") );
+    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("2.4.4.e164.arpa").exec("8.4.1.0.6.4.9.7.a") );
+    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("2.4.4.e164.arpa").exec("8.4.1.0.6.4.9.7.0.") );
+    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("2.4.4.e164.arpa").exec(".8.4.1.0.6.4.9.7.0") );
 
 
     //general LDH rule
     Fred::Domain::DomainNameValidator ldh;
-    ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY);
     ldh.set_ctx(ctx);
 
-    ldh.set_zone_name("2.4.4.e164.arpa");
-    BOOST_CHECK(ldh.exec("8.4.1.0.6.4.9.7.0"));
-    ldh.set_zone_name("cz");
-    BOOST_CHECK(ldh.exec("-fred.fred-.2fred.fred2.-Fred.Fred-.2Fred.Fred2"));
-    BOOST_CHECK(ldh.exec("1a"));
-
-    BOOST_CHECK(!ldh.exec("1~a"));
-    BOOST_CHECK(!ldh.exec("fred@"));
+    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).set_zone_name("2.4.4.e164.arpa").exec("8.4.1.0.6.4.9.7.0"));
+    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).set_zone_name("cz").exec("-fred.fred-.2fred.fred2.-Fred.Fred-.2Fred.Fred2"));
+    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).set_zone_name("cz").exec("1a"));
+    BOOST_CHECK(!ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).set_zone_name("cz").exec("1~a"));
+    BOOST_CHECK(!ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).set_zone_name("cz").exec("fred@"));
 
     //combined
     Fred::Domain::DomainNameValidator combined1;
-    combined1.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX)
-                .add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS);
-    combined1.set_zone_name("cz");
     combined1.set_ctx(ctx);
-    BOOST_CHECK(combined1.exec("fred"));
+
+    BOOST_CHECK(  combined1.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).set_zone_name("cz").exec("fred"));
 
     Fred::Domain::DomainNameValidator combined2;
-    combined2.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY)
-                .add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX);
-    combined2.set_zone_name("2.4.4.e164.arpa");
     combined2.set_ctx(ctx);
-    BOOST_CHECK(!combined2.exec("8.4.1.0.6.4.9.7.0"));
+
+    BOOST_CHECK( !combined2.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).set_zone_name("2.4.4.e164.arpa").exec("8.4.1.0.6.4.9.7.0"));
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainName
