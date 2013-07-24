@@ -47,7 +47,10 @@ PKG_PROG_PKG_CONFIG
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_exit])
-AC_CHECK_LIB([mpdec], [mpd_free])
+AC_CHECK_LIB([mpdec], [mpd_free], [],
+[
+    AC_MSG_ERROR([library mpdec not found])
+])
 
 # Check for omniORB (note that 4.1.1 is bugged for us)
 PKG_CHECK_MODULES(OMNIORB4, [omniORB4 > 4.1.1, omniDynamic4, omnithread3])
