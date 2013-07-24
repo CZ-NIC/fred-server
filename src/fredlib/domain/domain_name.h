@@ -45,6 +45,35 @@ bool general_domain_name_syntax_check(const std::string& fqdn);
  */
 std::string rem_trailing_dot(const std::string& fqdn);
 
+class ExceptionInvalidFqdn : public std::exception {};
+class ExceptionInvalidLabelCount : public std::exception {};
+
+class DomainName {
+    private:
+        std::vector<std::string> labels_;
+        /**
+         * @throw ExceptionInvalidFqdn in case fqdn_ is not valid by RFC 1035 mandatory rules
+         */
+        void init(const char* const _fqdn);
+
+    public:
+        /**
+         * @throw ExceptionInvalidFqdn in case fqdn_ is not valid by RFC 1035 mandatory rules
+         */
+        DomainName(const std::string& _fqdn);
+        /**
+         * @throw ExceptionInvalidFqdn in case fqdn_ is not valid by RFC 1035 mandatory rules
+         */
+        DomainName(const char* const _fqdn);
+        std::string get_string() const;
+        /// Returns vector of labels - delimiting dots are not present in labels
+        inline std::vector<std::string> get_labels() const { return labels_; }
+        /*! \brief Returns subset of labels in this fqdn
+         * @param[in] top_labels_to_skip how many top labels (from the "right") to ommit
+         */
+        DomainName get_subdomains(int _top_labels_to_skip) const;
+};
+
 //domain name validator
 FACTORY_MODULE_INIT_DECL(domain_name_validator)
 
@@ -52,13 +81,13 @@ class DomainNameChecker
 {
 public:
   virtual ~DomainNameChecker(){}
-  virtual bool validate(const std::string& domain_name) = 0;
+  virtual bool validate(const DomainName& domain_name) = 0;
 };
 
 class DomainNameCheckerNeedZoneName
 {
 public:
-    virtual void set_zone_name(const std::string& zone_name) = 0;
+    virtual void set_zone_name(const DomainName& zone_name) = 0;
 protected:
    ~DomainNameCheckerNeedZoneName(){}
 };
@@ -76,12 +105,12 @@ class ExceptionCtxNotSet : public std::exception {};
 
 class DomainNameValidator
 {
-    Optional<std::string> zone_name_;
+    boost::scoped_ptr<DomainName> zone_name_;
     Optional<Fred::OperationContext*> ctx_;
 
     std::vector<std::string> checker_name_vector_;
 public:
-    DomainNameValidator& set_zone_name(const std::string& _zone_name);
+    DomainNameValidator& set_zone_name(const DomainName& _zone_name);
     DomainNameValidator& set_ctx(Fred::OperationContext& _ctx);
     ///add checker instance shared pointer
     DomainNameValidator& add(const std::string& checker_name);
@@ -89,7 +118,7 @@ public:
      * @throw ZoneNameNotSet in case Zone name have not been set and checker which needs it was added.
      * @throw CtxNotSet in case OperationContext have not been set and checker which needs it was added.
      */
-    bool exec(const std::string& relative_domain_name);
+        bool exec(const DomainName& _fqdn, int _top_labels_to_skip = 0);
 };
 
 typedef Util::Factory<DomainNameChecker, Util::ClassCreator<DomainNameChecker> > DomainNameCheckerFactory;
