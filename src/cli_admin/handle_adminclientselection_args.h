@@ -2395,5 +2395,43 @@ public:
     }//handle
 };//class HandleInitDomainNameValidationCheckersArgsGrp
 
+/**
+ * \class HandleDomainNameValidationByZoneArgsGrp
+ * \brief admin client set_zone_domain_name_validation options handler
+ */
+class HandleDomainNameValidationByZoneArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ZoneDomainNameValidationCheckersArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("set_zone_domain_name_validation");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("set_zone_domain_name_validation options")));
+        cfg_opts->add_options()
+            ("set_zone_domain_name_validation","set checkers applied to domain names per zone")
+            ("zone_name,z",boost::program_options
+                ::value<Checked::string>()->notifier(save_optional_string(params.zone_name))
+                 ,"name of the zone to configure checkers")
+            ("checker_name,c",boost::program_options
+                  ::value<std::vector<std::string> >()->notifier(insert_arg< std::vector<std::string> >(params.checker_names))
+                   ,"checker names to apply per zone to domain name e.g. \" -c dncheck_rfc1035_preferred_syntax -c dncheck_no_consecutive_hyphens \"")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleDomainNameValidationByZoneArgsGrp
+
 
 #endif //HANDLE_ADMINCLIENTSELECTION_ARGS_H_

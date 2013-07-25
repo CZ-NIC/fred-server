@@ -133,6 +133,8 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectDeleteCandidatesArgsGrp),object_delete_candidates_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientFileListArgsGrp),file_list_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleInitDomainNameValidationCheckersArgsGrp),init_domain_name_validation_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleDomainNameValidationByZoneArgsGrp),set_zone_domain_name_validation_impl()))
+
  ;
 
 CommandOptionGroups cog(chpv);

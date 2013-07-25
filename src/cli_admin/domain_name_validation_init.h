@@ -37,8 +37,8 @@
 
 
 /**
- * \class file_list_impl
- * \brief admin client implementation of file_list
+ * \class init_domain_name_validation_impl
+ * \brief implementation of domain name validation initialization
  */
 struct init_domain_name_validation_impl
 {
@@ -105,5 +105,27 @@ struct init_domain_name_validation_impl
         ctx.commit_transaction();
   }
 };
+
+/**
+ * \class set_zone_domain_name_validation_impl
+ * \brief set domain name validation config per zone
+ */
+struct set_zone_domain_name_validation_impl
+{
+    void operator()() const
+    {
+        Logging::Context logctx("set_zone_domain_name_validation_impl");
+
+        Fred::OperationContext ctx;
+
+        ZoneDomainNameValidationCheckersArgs cfg_params
+            = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDomainNameValidationByZoneArgsGrp>()->params;
+
+        Fred::Domain::set_domain_name_validation_config_into_database(ctx,cfg_params.zone_name, cfg_params.checker_names);
+
+        ctx.commit_transaction();
+  }
+};
+
 
 #endif // DOMAIN_NAME_VALIDATION_INIT_H_

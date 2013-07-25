@@ -49,4 +49,25 @@ struct DomainNameValidationCheckersInitArgs
     {}//init ctor
 };//struct DomainNameValidationCheckersInitArgs
 
+/**
+ * \class ZoneDomainNameValidationCheckersArgs
+ * \brief set domain name validation checkers per zone
+ */
+struct ZoneDomainNameValidationCheckersArgs
+{
+    optional_string zone_name;
+    std::vector<std::string> checker_names;
+
+    ZoneDomainNameValidationCheckersArgs()
+    {}
+
+    ZoneDomainNameValidationCheckersArgs(
+            const optional_string& _zone_name
+            , const std::vector<std::string> &_checker_names
+            )
+    : zone_name(_zone_name)
+    , checker_names(_checker_names)
+    {}//init ctor
+};//struct ZoneDomainNameValidationCheckersArgs
+
 #endif // DOMAIN_NAME_VALIDATION_PARAMS_H_

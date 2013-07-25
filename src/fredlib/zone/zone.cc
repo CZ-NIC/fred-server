@@ -28,6 +28,22 @@
 namespace Fred {
 namespace Zone {
 
+    Data get_zone(OperationContext& ctx, const std::string& zone_name)
+    {
+        Database::Result zone_res = ctx.get_conn().exec_params(
+            "SELECT id, enum_zone, fqdn  FROM zone WHERE fqdn=lower($1::text) FOR SHARE"
+            , Database::query_param_list(zone_name));
+
+        if(zone_res.size() == 1)
+        {
+            return Data(static_cast<unsigned long long>(zone_res[0][0])// zone.id
+                , static_cast<bool>(zone_res[0][1])//is_enum_zone
+                , static_cast<std::string>(zone_res[0][2])//zone_name
+                );
+        }
+        throw std::runtime_error("not found");
+    }
+
     ///zone name in db have to be in lower case
     Data find_zone_in_fqdn(OperationContext& ctx, const std::string& fqdn)
     {
@@ -54,16 +70,13 @@ namespace Zone {
                 {
                     if (domain.find(dot_zone, from) != std::string::npos)
                     {
-                        Database::Result zone_res = ctx.get_conn().exec_params(
-                            "SELECT id, enum_zone, fqdn  FROM zone WHERE fqdn=lower($1::text) FOR SHARE"
-                            , Database::query_param_list(zone));
-
-                        if(zone_res.size() == 1)
+                        try
                         {
-                            return Data(static_cast<unsigned long long>(zone_res[0][0])// zone.id
-                                , static_cast<bool>(zone_res[0][1])//is_enum_zone
-                                , static_cast<std::string>(zone_res[0][2])//zone_name
-                                );
+                            return get_zone(ctx,zone);
+                        }
+                        catch(const std::exception& ex)
+                        {
+                            BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_in_fqdn(fqdn));
                         }
                     }
                 }

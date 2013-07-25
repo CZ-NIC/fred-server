@@ -45,7 +45,7 @@ bool general_domain_name_syntax_check(const std::string& fqdn);
  */
 std::string rem_trailing_dot(const std::string& fqdn);
 
-//domain name validator
+///domain name validator
 FACTORY_MODULE_INIT_DECL(domain_name_validator)
 
 class DomainNameChecker
@@ -99,14 +99,18 @@ const std::string DNCHECK_LETTER_DIGIT_HYPHEN_LABELS="dncheck_letter_digit_hyphe
 const std::string DNCHECK_NO_START_HYPHEN_LABELS="dncheck_no_start_hyphen_labels";
 const std::string DNCHECK_NO_END_HYPHEN_LABELS="dncheck_no_end_hyphen_labels";
 
-//trivial checker for testing
+///trivial checker for testing
 const std::string DNCHECK_NOT_EMPTY_DOMAIN_NAME="dncheck_not_empty_domain_name";
 
-//insert checker name into database
+///insert checker name into database
 void insert_domain_name_checker_name_into_database(
         Fred::OperationContext& ctx
         , const std::string& checker_name
         , const std::string& checker_description);
+
+///set domain name checkers for given zone
+void set_domain_name_validation_config_into_database(Fred::OperationContext& ctx
+    , const std::string& zone_name, const std::vector<std::string>& checker_names);
 
 }//namespace Fred
 }//namespace Domain
