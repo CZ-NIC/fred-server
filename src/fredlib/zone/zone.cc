@@ -76,7 +76,7 @@ namespace Zone {
                         }
                         catch(const std::exception& ex)
                         {
-                            BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_in_fqdn(fqdn));
+                            BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_in_fqdn(no_root_dot_fqdn));
                         }
                     }
                 }
