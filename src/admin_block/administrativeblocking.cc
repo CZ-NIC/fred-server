@@ -119,7 +119,27 @@ namespace Registry
 //                    result_item.domainHandle = ::CORBA::string_dup(create_object_block_request.exec(ctx).c_str());
                     // KEEP_OWNER / BLOCK_OWNER / BLOCK_OWNER_COPY
                     if (_owner_block_mode == BLOCK_OWNER) {
-                        
+                        Database::query_param_list param(object_id);
+                        Database::Result registrant_result = ctx.get_conn().exec_params(
+                            "SELECT rc.name,rc.type "
+                            "FROM domain d "
+                            "JOIN object_registry rc ON rc.id=d.registrant "
+                            "WHERE d.id=$1::bigint", param);
+                        if (registrant_result.size() <= 0) {
+                            std::string errmsg("|| not found:object_id: ");
+                            errmsg += boost::lexical_cast< std::string >(object_id);
+                            errmsg += " |";
+                            throw INTERNAL_SERVER_ERROR(errmsg.c_str());
+                        }
+                        const Database::Row &row = registrant_result[0];
+                        const std::string registrant = static_cast< std::string >(row[0]);
+                        const Fred::ObjectType type = static_cast< Fred::ObjectType >(row[1]);
+                        Fred::StatusList status_list;
+                        status_list.push_back("serverUpdateProhibited");
+                        Fred::CreateAdministrativeObjectBlockRequest create_object_block_request(registrant, type, status_list);
+                        create_object_block_request.set_reason(_reason);
+                        const Fred::ObjectId registrant_id = create_object_block_request.exec(ctx);
+                        Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
                     }
                     create_object_block_request.exec(ctx);
                     Fred::PerformObjectStateRequest(object_id).exec(ctx);
