@@ -323,8 +323,8 @@ void set_domain_name_validation_config_into_database(Fred::OperationContext& ctx
         , Database::query_param_list(zone.id));
     for(std::vector<std::string>::const_iterator i = checker_names.begin(); i != checker_names.end(); ++i)
     {
-        ctx.get_conn().exec_params("INSERT INTO domain_name_validation_config_by_zone(zone_id, checker_id)"
-            " VALUES($1::text, $2::text)",Database::query_param_list(zone.id)(*i));
+        ctx.get_conn().exec_params("INSERT INTO domain_name_validation_config_by_zone(zone_id, checker_id) "
+            " VALUES($1::bigint, (SELECT id FROM enum_domain_name_validation_checker WHERE name = $2::text))",Database::query_param_list(zone.id)(*i));
     }//for checker_names
 }
 
