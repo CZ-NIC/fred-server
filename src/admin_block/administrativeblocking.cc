@@ -118,7 +118,9 @@ namespace Registry
 //                    result_item.domainId = object_id;
 //                    result_item.domainHandle = ::CORBA::string_dup(create_object_block_request.exec(ctx).c_str());
                     // KEEP_OWNER / BLOCK_OWNER / BLOCK_OWNER_COPY
-//                    if (_owner_block_mode == )
+                    if (_owner_block_mode == BLOCK_OWNER) {
+                        
+                    }
                     create_object_block_request.exec(ctx);
                     Fred::PerformObjectStateRequest(object_id).exec(ctx);
                 }
@@ -162,7 +164,7 @@ namespace Registry
                     Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
                     create_object_state_restore_request.exec(ctx);
                     Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                    if (_new_owner != NULL) {
+                    if ((_new_owner != NULL) && (_new_owner->_value() != NULL)) {
                         Database::query_param_list param(object_id);
                         Database::Result registrar_fqdn_result = ctx.get_conn().exec_params(
                             "SELECT reg.handle,oreg.name "
@@ -179,7 +181,7 @@ namespace Registry
                         const std::string registrar = static_cast< std::string >(row[0]);
                         const std::string domain = static_cast< std::string >(row[1]);
                         Fred::UpdateDomain update_domain(domain, registrar);
-//                        update_domain.add_admin_contact(*_new_owner);
+                        update_domain.set_registrant(_new_owner->_value());
                         update_domain.exec(ctx);
                     }
                 }
@@ -257,7 +259,53 @@ namespace Registry
             bool _remove_admin_c,
             const std::string &_reason)
         {
-            this->restorePreAdministrativeBlockStatesId(_domain_list, _new_owner, _reason);
+            if (!_remove_admin_c) {
+                this->restorePreAdministrativeBlockStatesId(_domain_list, _new_owner, _reason);
+                return;
+            }
+            try {
+                Fred::OperationContext ctx;
+                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
+                    const Fred::ObjectId object_id = _domain_list[idx];
+                    Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
+                    create_object_state_restore_request.exec(ctx);
+                    Fred::PerformObjectStateRequest(object_id).exec(ctx);
+                    Database::query_param_list param(object_id);
+                    Database::Result registrar_fqdn_result = ctx.get_conn().exec_params(
+                        "SELECT reg.handle,oreg.name "
+                        "FROM object_registry oreg "
+                        "JOIN registrar reg ON oreg.crid=reg.id "
+                        "WHERE oreg.id=$1::bigint", param);
+                    if (registrar_fqdn_result.size() <= 0) {
+                        std::string errmsg("|| not found:object_id: ");
+                        errmsg += boost::lexical_cast< std::string >(object_id);
+                        errmsg += " |";
+                        throw INTERNAL_SERVER_ERROR(errmsg.c_str());
+                    }
+                    const Database::Row &row = registrar_fqdn_result[0];
+                    const std::string registrar = static_cast< std::string >(row[0]);
+                    const std::string domain = static_cast< std::string >(row[1]);
+                    Fred::UpdateDomain update_domain(domain, registrar);
+                    if ((_new_owner != NULL) && (_new_owner->_value() != NULL)) {
+                        update_domain.set_registrant(_new_owner->_value());
+                    }
+                    Database::Result admin_name_result = ctx.get_conn().exec_params(
+                        "SELECT rc.name "
+                        "FROM domain_contact_map dcm "
+                        "JOIN object_registry rc ON rc.id=dcm.contactid "
+                        "WHERE dcm.domainid=$1::bigint", param);
+                    for (::size_t idx = 0; idx < admin_name_result.size(); ++idx) {
+                        const Database::Row &row = admin_name_result[idx];
+                        const std::string admin_name = static_cast< std::string >(row[0]);
+                        update_domain.rem_admin_contact(admin_name);
+                    }
+                    update_domain.exec(ctx);
+                }
+                ctx.commit_transaction();
+            }
+            catch (const std::exception &e) {
+                throw INTERNAL_SERVER_ERROR(e.what());
+            }
         }
 
         void BlockingImpl::blacklistAndDeleteDomains(
