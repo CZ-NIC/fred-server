@@ -1431,7 +1431,7 @@ namespace Fred
       }
 
 
-      virtual std::string utf8_to_punycode(const std::string& fqdn) const throw(idn_conversion_fail)
+      virtual std::string utf8_to_punycode(const std::string& fqdn) const
       {
           char *p;
 
@@ -1451,7 +1451,7 @@ namespace Fred
           }
       }
 
-      virtual std::string punycode_to_utf8(const std::string& fqdn) const throw(idn_conversion_fail)
+      virtual std::string punycode_to_utf8(const std::string& fqdn) const
       {
           char *p;
 

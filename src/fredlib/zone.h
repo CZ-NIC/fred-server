@@ -213,9 +213,9 @@ namespace Fred
       /// check Punycode validity
       virtual bool is_valid_punycode(const std::string& fqdn) const = 0;
       /// encode UTF8 domain name into IDN ascii string
-      virtual std::string utf8_to_punycode(const std::string& fqdn) const throw(idn_conversion_fail) = 0;
+      virtual std::string utf8_to_punycode(const std::string& fqdn) const = 0;
       /// decode IDN ascii domain name into UTF8 string
-      virtual std::string punycode_to_utf8(const std::string& fqdn) const throw(idn_conversion_fail) = 0;
+      virtual std::string punycode_to_utf8(const std::string& fqdn) const = 0;
       /// tokenize domain name into sequence
       virtual void parseDomainName(
         const std::string& fqdn, DomainName& domain, bool allowIDN
