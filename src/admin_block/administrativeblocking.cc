@@ -136,9 +136,9 @@ namespace Registry
                         const Fred::ObjectType type = static_cast< Fred::ObjectType >(row[1]);
                         Fred::StatusList status_list;
                         status_list.push_back("serverUpdateProhibited");
-                        Fred::CreateAdministrativeObjectBlockRequest create_object_block_request(registrant, type, status_list);
-                        create_object_block_request.set_reason(_reason);
-                        const Fred::ObjectId registrant_id = create_object_block_request.exec(ctx);
+                        Fred::CreateAdministrativeObjectBlockRequest block_owner_request(registrant, type, status_list);
+                        block_owner_request.set_reason(_reason);
+                        const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
                         Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
                         create_object_block_request.exec(ctx);
                     }
@@ -362,7 +362,7 @@ namespace Registry
                     Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
                     create_object_state_restore_request.exec(ctx);
                     Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                    if ((_new_owner != NULL) && (_new_owner->_value() != NULL)) {
+                    if ((_new_owner != NULL) && (_new_owner->_value() != NULL) && (_new_owner->_value()[0] != '\0')) {
                         Database::query_param_list param(object_id);
                         Database::Result registrar_fqdn_result = ctx.get_conn().exec_params(
                             "SELECT reg.handle,oreg.name "
@@ -484,7 +484,7 @@ namespace Registry
                     const std::string registrar = static_cast< std::string >(row[0]);
                     const std::string domain = static_cast< std::string >(row[1]);
                     Fred::UpdateDomain update_domain(domain, registrar);
-                    if ((_new_owner != NULL) && (_new_owner->_value() != NULL)) {
+                    if ((_new_owner != NULL) && (_new_owner->_value() != NULL) && (_new_owner->_value()[0] != '\0')) {
                         update_domain.set_registrant(_new_owner->_value());
                     }
                     Database::Result admin_name_result = ctx.get_conn().exec_params(
