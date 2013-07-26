@@ -1284,6 +1284,12 @@ src_corba_fred_adifd_SOURCES = \
 		src/fredlib/domain/create_domain_name_blacklist_id.h \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/update_domain.h \
+		src/fredlib/contact/info_contact_data.h \
+		src/fredlib/contact/info_contact_data.cc \
+		src/fredlib/contact/info_contact.h \
+		src/fredlib/contact/info_contact.cc \
+		src/fredlib/contact/create_contact.h \
+		src/fredlib/contact/create_contact.cc \
 		src/fredlib/opcontext.cc \
 		src/fredlib/opcontext.h \
 		src/corba/nameservice.cc \
