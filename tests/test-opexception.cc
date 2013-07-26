@@ -97,6 +97,7 @@ DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
 DECLARE_EXCEPTION_DATA(unknown_contact_handle, std::string);
 DECLARE_EXCEPTION_DATA(unknown_registry_object_identifier, std::string);
 DECLARE_EXCEPTION_DATA(testing_int_data, int);
+DECLARE_EXCEPTION_DATA(testing_unsigned_int_data, unsigned int);
 
 DECLARE_VECTOR_OF_EXCEPTION_DATA(contact1_handle, std::string);
 DECLARE_VECTOR_OF_EXCEPTION_DATA(contact2_handle, std::string);
@@ -112,6 +113,7 @@ struct TestException
   , ExceptionData_unknown_contact_handle<TestException>
   , ExceptionData_unknown_registrar_handle<TestException>
   , ExceptionData_testing_int_data<TestException>
+  , ExceptionData_testing_unsigned_int_data<TestException>
   , ExceptionData_vector_of_contact1_handle<TestException>
   , ExceptionData_vector_of_contact2_handle<TestException>
   , ExceptionData_vector_of_contact3_handle<TestException>
@@ -131,6 +133,7 @@ BOOST_AUTO_TEST_CASE(throwTestException)
                         .set_unknown_registrar_handle("test_registrar")
                         .set_unknown_contact_handle("test_contact")
                         .set_testing_int_data(5)
+                        .set_testing_unsigned_int_data(6)
                         .add_contact1_handle("test-vector-data")
                         .set_vector_of_contact2_handle(Util::vector_of<std::string>("test-vector-data1")("test-vector-data2")("test-vector-data3"))
                         .set_vector_of_contact3_handle(Util::vector_of<int>(5)(5)(5))
@@ -195,6 +198,12 @@ BOOST_AUTO_TEST_CASE(throwTestException)
                 BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_testing_int_data());
                 BOOST_CHECK(5 == dynamic_cast<TestException&>(ex).get_testing_int_data());
             }
+            if(dynamic_cast<TestException&>(ex).is_set_testing_unsigned_int_data())
+            {
+                BOOST_TEST_MESSAGE(dynamic_cast<TestException&>(ex).get_testing_unsigned_int_data());
+                BOOST_CHECK(6 == dynamic_cast<TestException&>(ex).get_testing_unsigned_int_data());
+            }
+
             throw;//to check std::exception
         }
     }
@@ -219,6 +228,7 @@ public:
     DECLARE_VECTOR_OF_EXCEPTION_DATA(contact1_handle, std::string);
     DECLARE_VECTOR_OF_EXCEPTION_DATA(contact2_handle, std::string);
     DECLARE_VECTOR_OF_EXCEPTION_DATA(contact3_handle, int);
+    DECLARE_VECTOR_OF_EXCEPTION_DATA(contact4_handle, unsigned int);
 
     ///exception instance for tests
     struct TestException
@@ -229,6 +239,7 @@ public:
       , ExceptionData_vector_of_contact1_handle<TestException>
       , ExceptionData_vector_of_contact2_handle<TestException>
       , ExceptionData_vector_of_contact3_handle<TestException>
+      , ExceptionData_vector_of_contact4_handle<TestException>
     {};
 
     void whoops1()
@@ -244,6 +255,11 @@ public:
         .add_contact3_handle(2)
         .add_contact3_handle(1)
         .add_contact3_handle(3)
+        .set_vector_of_contact4_handle(Util::vector_of<unsigned int>(5)(5)(5))
+        .add_contact4_handle(1)
+        .add_contact4_handle(2)
+        .add_contact4_handle(1)
+        .add_contact4_handle(3)
         ;
 
         if(test_exception.throw_me())
