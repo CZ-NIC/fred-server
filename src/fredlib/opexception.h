@@ -183,7 +183,7 @@ public:\
     ex_data_type BOOST_JOIN(get_,ex_data_tag)() const\
     {\
         const ex_data_type* data_ptr = get_data_ptr();\
-        return data_ptr ? *data_ptr : ex_data_type();\
+        return data_ptr ? *data_ptr : error_info_type::value_type();\
     }\
     bool BOOST_JOIN(is_set_,ex_data_tag)() const\
     {\
