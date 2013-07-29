@@ -154,9 +154,6 @@ bool DomainNameValidator::exec(const DomainName& _fqdn, int top_labels_to_skip) 
 
     DomainName labels_to_check = _fqdn.get_subdomains(top_labels_to_skip);
 
-    {
-    }
-
     for(std::vector<std::string>::const_iterator ci = checker_name_vector_.begin(); ci !=checker_name_vector_.end(); ++ci)
     {
         boost::shared_ptr<DomainNameChecker> checker = DomainNameCheckerFactory::instance_ref().create_sh_ptr(*ci);
@@ -164,7 +161,7 @@ bool DomainNameValidator::exec(const DomainName& _fqdn, int top_labels_to_skip) 
         if(DomainNameCheckerNeedZoneName* need_zone_checker
                 = dynamic_cast<DomainNameCheckerNeedZoneName*>(checker.get()))
         {
-            if(zone_name_ == NULL) {
+            if(zone_name_.get() == NULL) {
                 throw ExceptionZoneNameNotSet();
             }
             need_zone_checker->set_zone_name(*zone_name_);
