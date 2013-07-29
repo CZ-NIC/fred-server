@@ -25,8 +25,14 @@
 #include "domain_name.h"
 
 #include <string>
+#include <vector>
 #include <boost/regex.hpp>
 #include <boost/assign.hpp>
+
+#include "fredlib/opcontext.h"
+#include "fredlib/zone/zone.h"
+#include "util/factory.h"
+#include "util/factory_check.h"
 
 namespace Fred {
 namespace Domain {
@@ -234,6 +240,95 @@ public:
         return DNCHECK_SINGLE_DIGIT_LABELS;
     }
 };//class CheckSingleDigitLabelsSyntax
+
+///check that domain name labels contains only letters , digits or hyphens
+///regardless of character position in the label
+class CheckLetterDigitHyphenLabelsSyntax
+: public DomainNameChecker
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckLetterDigitHyphenLabelsSyntax>
+{
+public:
+    CheckLetterDigitHyphenLabelsSyntax(){}
+
+    bool validate(const std::string& relative_domain_name)
+    {
+        static const boost::regex DNCHECK_LETTER_DIGIT_HYPHEN_LABELS(
+                "([-A-Za-z0-9]{1,63}[.])*"//optional non-highest-level labels
+                "([-A-Za-z0-9]{1,63})"//mandatory highest-level label
+        );
+        return boost::regex_match(relative_domain_name, DNCHECK_LETTER_DIGIT_HYPHEN_LABELS);
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_LETTER_DIGIT_HYPHEN_LABELS;
+    }
+};//class CheckSingleDigitLabelsSyntax
+
+///check domain name for no hyphen at the start of the label
+class CheckNoStartHyphenSyntax
+: public DomainNameChecker
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoStartHyphenSyntax>
+{
+public:
+    CheckNoStartHyphenSyntax() {}
+
+    bool validate(const std::string& relative_domain_name)
+    {
+        //label starting by '-' prohibited
+        if (!relative_domain_name.empty() && *relative_domain_name.begin() == '-') return false;
+        static const boost::regex NO_NEXT_START_HYPHEN_SYNTAX("[.][-]");
+        return !boost::regex_search(relative_domain_name, NO_NEXT_START_HYPHEN_SYNTAX);
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_NO_START_HYPHEN_LABELS;
+    }
+};//class CheckNoStartHyphenSyntax
+
+///check domain name for no hyphen at the end of the label
+class CheckNoEndHyphenSyntax
+: public DomainNameChecker
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoEndHyphenSyntax>
+{
+public:
+    CheckNoEndHyphenSyntax() {}
+
+    bool validate(const std::string& relative_domain_name)
+    {
+        //label ending by '-' prohibited
+        if (!relative_domain_name.empty() && *relative_domain_name.rbegin() == '-') return false;
+        static const boost::regex NO_NEXT_END_HYPHEN_SYNTAX("[-][.]");
+        return !boost::regex_search(relative_domain_name, NO_NEXT_END_HYPHEN_SYNTAX);
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_NO_END_HYPHEN_LABELS;
+    }
+};//class CheckNoEndHyphenSyntax
+
+void insert_domain_name_checker_name_into_database(Fred::OperationContext& ctx, const std::string& checker_name, const std::string& checker_description)
+{
+    ctx.get_conn().exec_params("INSERT INTO enum_domain_name_validation_checker(name, description)"
+        " VALUES($1::text, $2::text)",Database::query_param_list(checker_name)(checker_description));
+}
+
+void set_domain_name_validation_config_into_database(Fred::OperationContext& ctx
+    , const std::string& zone_name, const std::vector<std::string>& checker_names)
+{
+    Zone::Data zone = Zone::get_zone(ctx,zone_name);
+    ctx.get_conn().exec_params("DELETE FROM domain_name_validation_config_by_zone WHERE zone_id = $1::bigint"
+        , Database::query_param_list(zone.id));
+    for(std::vector<std::string>::const_iterator i = checker_names.begin(); i != checker_names.end(); ++i)
+    {
+        ctx.get_conn().exec_params("INSERT INTO domain_name_validation_config_by_zone(zone_id, checker_id) "
+            " VALUES($1::bigint, (SELECT id FROM enum_domain_name_validation_checker WHERE name = $2::text))",Database::query_param_list(zone.id)(*i));
+    }//for checker_names
+}
+
+
 
 
 }//namespace Fred

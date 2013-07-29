@@ -1547,7 +1547,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/merge_contact_auto_procedure.cc \
 		src/admin/contact/merge_contact_auto_procedure.h \
 		src/admin/contact/merge_contact_reporting.cc \
-		src/admin/contact/merge_contact_reporting.h
+		src/admin/contact/merge_contact_reporting.h \
+		src/cli_admin/domain_name_validation_params.h \
+		src/cli_admin/domain_name_validation_init.h
 
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)

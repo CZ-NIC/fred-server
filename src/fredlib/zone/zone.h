@@ -53,8 +53,10 @@ namespace Zone {
     , ExceptionData_unknown_zone_in_fqdn<Exception>
     {};
 
-    ///look for zone in domain name
-    Data find_zone_in_fqdn(OperationContext& ctx, const std::string& no_root_dot_fqdn);
+    ///look for zone in domain name and return zone data
+    Data find_zone_in_fqdn(OperationContext& ctx, const std::string& fqdn);
+    ///lock zone for share and get zone data
+    Data get_zone(OperationContext& ctx, const std::string& zone_name);
 
 }//namespace Zone
 }//namespace Fred
