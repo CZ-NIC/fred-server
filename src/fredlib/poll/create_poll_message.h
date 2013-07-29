@@ -19,40 +19,18 @@ public:
 
     unsigned long long exec(Fred::OperationContext &_ctx);
 
+    DECLARE_EXCEPTION_DATA(registrar_not_found, std::string);
+    DECLARE_EXCEPTION_DATA(poll_message_type_not_found, std::string);
+    struct Exception
+    : virtual Fred::OperationException
+    , ExceptionData_registrar_not_found<Exception>
+    , ExceptionData_poll_message_type_not_found<Exception>
+    {};
 
 private:
     std::string registrar_handle_;
     std::string msg_type_;
 };
-
-
-
-class CreatePollMessageException
-    : public OperationExceptionImpl<CreatePollMessageException, 8192>
-{
-public:
-    CreatePollMessageException(
-            const char *_file,
-            const int _line,
-            const char *_function,
-            const char *_data)
-        : OperationExceptionImpl<CreatePollMessageException, 8192>
-                (_file, _line, _function, _data)
-    {
-    }
-
-    ConstArr get_fail_param_impl() throw()
-    {
-        static const char* list[] = {
-            "not found:registrar",
-            "not found:poll message type"
-        };
-        return ConstArr(list, sizeof(list) / sizeof(char*));
-    }
-};
-
-
-typedef CreatePollMessageException::OperationErrorType CreatePollMessageError;
 
 }
 }

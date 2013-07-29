@@ -1,13 +1,7 @@
 #include "create_poll_message.h"
 
-
-#define MY_EXCEPTION_CLASS(DATA) CreatePollMessageException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA)     CreatePollMessageError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
-
 namespace Fred {
 namespace Poll {
-
 
 CreatePollMessage::CreatePollMessage(
         const std::string &_registrar_handle,
@@ -17,33 +11,60 @@ CreatePollMessage::CreatePollMessage(
 {
 }
 
-
 unsigned long long CreatePollMessage::exec(Fred::OperationContext &_ctx)
 {
     unsigned long long mid = 0;
-    try
-    {
-        Database::Result r = _ctx.get_conn().exec_params(
-                "INSERT INTO message (clid, msgtype, crdate, exdate)"
-                " VALUES (raise_exception_ifnull((SELECT id FROM registrar WHERE handle = $1::varchar),"
-                " '|| not found:registrar: ' || ex_data($1::text) || ' |'),"
-                " raise_exception_ifnull((SELECT id FROM messagetype WHERE name = $2::varchar),"
-                " '|| not found:poll message type: ' || ex_data($2::text) || ' |'),"
-                " now(), now() + interval '7 day')"
-                " RETURNING id",
-                Database::query_param_list(registrar_handle_)(msg_type_));
 
-        if (r.size() == 1) {
-            mid = static_cast<unsigned long long>(r[0][0]);
-        }
-        else {
-            throw MY_ERROR_CLASS("insert new poll messge failed");
-        }
-    }
-    catch (...)
+    //get registrar id
+    unsigned long long registrar_id = 0;
     {
-        handleOperationExceptions<CreatePollMessageException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+        Database::Result registrar_res = _ctx.get_conn().exec_params(
+            "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+            , Database::query_param_list(registrar_handle_));
+        if(registrar_res.size() == 0)
+        {
+            BOOST_THROW_EXCEPTION(Exception().set_registrar_not_found(registrar_handle_));
+        }
+        if (registrar_res.size() != 1)
+        {
+            BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
+        }
+
+        registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
     }
+
+    //get messagetype id
+    unsigned long long messagetype_id = 0;
+    {
+        Database::Result messagetype_res = _ctx.get_conn().exec_params(
+            "SELECT id FROM messagetype WHERE name = $1::text FOR SHARE"
+            , Database::query_param_list(msg_type_));
+        if(messagetype_res.size() == 0)
+        {
+            BOOST_THROW_EXCEPTION(Exception().set_poll_message_type_not_found(msg_type_));
+        }
+        if (messagetype_res.size() != 1)
+        {
+            BOOST_THROW_EXCEPTION(InternalError("failed to get poll message type"));
+        }
+
+        messagetype_id = static_cast<unsigned long long>(messagetype_res[0][0]);
+    }
+
+    Database::Result r = _ctx.get_conn().exec_params(
+            "INSERT INTO message (clid, msgtype, crdate, exdate)"
+            " VALUES ($1::bigint,$2::bigint,"
+            " now(), now() + interval '7 day')"
+            " RETURNING id",
+            Database::query_param_list(registrar_id)(messagetype_id));
+
+    if (r.size() == 1) {
+        mid = static_cast<unsigned long long>(r[0][0]);
+    }
+    else {
+        BOOST_THROW_EXCEPTION(InternalError("insert new poll message failed"));
+    }
+
     return mid;
 }
 
