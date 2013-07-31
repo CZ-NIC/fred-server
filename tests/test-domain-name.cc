@@ -72,6 +72,65 @@ BOOST_AUTO_TEST_SUITE(TestDomainName)
 const std::string server_name = "test-domain-name";
 
 /**
+ * test cases for DomainName type
+ *
+*/
+BOOST_AUTO_TEST_CASE(test_DomainName)
+{
+    /// ctor
+    bool exception_thrown_from_DomainName_ctor_when_NULL_ptr_given = false;
+    try {
+        Fred::Domain::DomainName temp(NULL);
+    } catch(Fred::Domain::ExceptionInvalidFqdn&) {
+        exception_thrown_from_DomainName_ctor_when_NULL_ptr_given = true;
+    } catch (...) {
+        BOOST_FAIL( "Unexpected exception type after DomainName::DomainName(NULL) called" );
+    }
+    BOOST_CHECK( exception_thrown_from_DomainName_ctor_when_NULL_ptr_given );
+
+    bool exception_thrown_from_DomainName_ctor_when_0_given = false;
+    try {
+        Fred::Domain::DomainName temp(0);
+    } catch(Fred::Domain::ExceptionInvalidFqdn&) {
+        exception_thrown_from_DomainName_ctor_when_0_given = true;
+    } catch (...) {
+        BOOST_FAIL( "Unexpected exception type after DomainName::DomainName(0) called" );
+    }
+    BOOST_CHECK( exception_thrown_from_DomainName_ctor_when_0_given );
+
+
+    /// get_subdomains
+    Fred::Domain::DomainName temp2("relative.zone1.zone2");
+    Fred::Domain::DomainName temp3("dummy_valid_string");
+
+    try {
+        temp2.get_subdomains(2);
+    } catch (...) {
+        BOOST_FAIL( "Unexpected exception after DomainName::get_subdomains(valid int) called" );
+    }
+
+
+    bool exception_thrown_from_get_subdomains_when_to_high_int_given = false;
+    try {
+        temp2.get_subdomains(4);
+    } catch(Fred::Domain::ExceptionInvalidLabelCount&) {
+        exception_thrown_from_get_subdomains_when_to_high_int_given = true;
+    } catch (...) {
+        BOOST_FAIL( "Unexpected exception type after DomainName::get_subdomains(too big int) called" );
+    }
+    BOOST_CHECK( exception_thrown_from_get_subdomains_when_to_high_int_given );
+
+    bool exception_thrown_from_get_subdomains_when_negative_input_given = false;
+    try {
+        temp2.get_subdomains(-1);
+    } catch(Fred::Domain::ExceptionInvalidLabelCount&) {
+        exception_thrown_from_get_subdomains_when_negative_input_given = true;
+    } catch (...) {
+        BOOST_FAIL( "Unexpected exception type after DomainName::get_subdomains(negative int) called" );
+    }
+    BOOST_CHECK( exception_thrown_from_get_subdomains_when_negative_input_given );
+}
+/**
  * test cases for general domain name syntax with '.' separator and lengths
  *
 */
