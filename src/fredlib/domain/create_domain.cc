@@ -183,8 +183,16 @@ namespace Fred
             }
 
             //domain_name_validation
-            std::vector<std::string> doman_name_checkers = Fred::Domain::get_domain_name_validation_config_for_zone(ctx,zone.name);
-
+            if(!Fred::Domain::DomainNameValidator()
+                .set_checker_names(Fred::Domain::get_domain_name_validation_config_for_zone(ctx,zone.name))
+                .set_zone_name(Fred::Domain::DomainName(zone.name))
+                .set_ctx(ctx)
+                .exec(Fred::Domain::DomainName(no_root_dot_fqdn)
+                    , std::count(zone.name.begin(), zone.name.end(),'.')+1)//skip zone labels
+            )
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_invalid_fqdn_syntax(fqdn_));
+            }
 
             if (zone.is_enum)//check ENUM specific parameters
             {
