@@ -67,7 +67,9 @@ class DomainName {
         DomainName(const char* const _fqdn);
         std::string get_string() const;
         /// Returns vector of labels - delimiting dots are not present in labels
-        inline std::vector<std::string> get_labels() const { return labels_; }
+        std::vector<std::string> get_labels() const {
+            return labels_;
+        }
         /*! \brief Returns subset of labels in this fqdn
          * @param[in] top_labels_to_skip how many top labels (from the "right") to ommit
          */
