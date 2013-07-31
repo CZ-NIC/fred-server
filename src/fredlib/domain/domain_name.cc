@@ -103,6 +103,9 @@ DomainNameValidator& DomainNameValidator::set_ctx(Fred::OperationContext& _ctx) 
 
 
 void DomainName::init(const char* const _fqdn) {
+    if(_fqdn == NULL) {
+        throw ExceptionInvalidFqdn();
+    }
     std::string temp_fqdn(_fqdn);
 
     if( general_domain_name_syntax_check (temp_fqdn) == false) {
