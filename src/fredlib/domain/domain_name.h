@@ -146,6 +146,10 @@ void insert_domain_name_checker_name_into_database(
 void set_domain_name_validation_config_into_database(Fred::OperationContext& ctx
     , const std::string& zone_name, const std::vector<std::string>& checker_names);
 
+///get domain name checkers for given zone
+std::vector<std::string> get_domain_name_validation_config_for_zone(Fred::OperationContext& ctx
+    , const std::string& zone_name);
+
 }//namespace Fred
 }//namespace Domain
 

@@ -182,6 +182,10 @@ namespace Fred
                     throw;
             }
 
+            //domain_name_validation
+            std::vector<std::string> doman_name_checkers = Fred::Domain::get_domain_name_validation_config_for_zone(ctx,zone.name);
+
+
             if (zone.is_enum)//check ENUM specific parameters
             {
                 if((!enum_validation_expiration_.isset()) || (enum_validation_expiration_.get_value().is_special()))

@@ -379,6 +379,23 @@ void set_domain_name_validation_config_into_database(Fred::OperationContext& ctx
     }//for checker_names
 }
 
+std::vector<std::string> get_domain_name_validation_config_for_zone(Fred::OperationContext& ctx
+    , const std::string& zone_name)
+{
+    std::vector<std::string> checker_names;
+
+    Database::Result checker_names_res = ctx.get_conn().exec_params(
+        "SELECT ch.name FROM enum_domain_name_validation_checker ch "
+        " JOIN domain_name_validation_config_by_zone cfg ON ch.id = cfg.checker_id "
+        " JOIN zone z ON z.id = cfg.zone_id "
+        " WHERE z.fqdn = LOWER($1::text)", Database::query_param_list(zone_name));
+
+    for(Database::Result::size_type i = 0 ; i < checker_names_res.size(); ++i)
+    {
+        checker_names.push_back(static_cast<std::string>(checker_names_res[i][0]));
+    }
+    return checker_names;
+}
 
 
 
