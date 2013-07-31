@@ -159,6 +159,18 @@ DomainNameValidator& DomainNameValidator::add(const std::string& checker_name)
     return *this;
 }
 
+DomainNameValidator& DomainNameValidator::set_checker_names(const std::vector<std::string>& checker_names)
+{
+    for(std::vector<std::string>::const_iterator i = checker_names.begin(); i != checker_names.end() ; ++i){}
+    FactoryHaveSupersetOfKeysChecker<Fred::Domain::DomainNameCheckerFactory>
+        ::KeyVector required_keys = checker_names;
+    FactoryHaveSupersetOfKeysChecker<Fred::Domain::DomainNameCheckerFactory>
+        (required_keys).check();
+    checker_name_vector_ = checker_names;
+    return *this;
+}
+
+
 bool DomainNameValidator::exec(const DomainName& _fqdn, int top_labels_to_skip) {
 
     DomainName labels_to_check = _fqdn.get_subdomains(top_labels_to_skip);

@@ -115,8 +115,10 @@ class DomainNameValidator
 public:
     DomainNameValidator& set_zone_name(const DomainName& _zone_name);
     DomainNameValidator& set_ctx(Fred::OperationContext& _ctx);
-    ///add checker instance shared pointer
+    ///add checker name
     DomainNameValidator& add(const std::string& checker_name);
+    ///set checker names, forget previous set of names
+    DomainNameValidator& DomainNameValidator::set_checker_names(const std::vector<std::string>& checker_names);
     /*! \brief Returns true if domain name is valid otherwise it returns false.
      * @throw ZoneNameNotSet in case Zone name have not been set and checker which needs it was added.
      * @throw CtxNotSet in case OperationContext have not been set and checker which needs it was added.
