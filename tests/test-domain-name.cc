@@ -72,6 +72,65 @@ BOOST_AUTO_TEST_SUITE(TestDomainName)
 const std::string server_name = "test-domain-name";
 
 /**
+ * test cases for DomainName type
+ *
+*/
+BOOST_AUTO_TEST_CASE(test_DomainName)
+{
+    /// ctor
+    bool exception_thrown_from_DomainName_ctor_when_NULL_ptr_given = false;
+    try {
+        Fred::Domain::DomainName temp(NULL);
+    } catch(Fred::Domain::ExceptionInvalidFqdn&) {
+        exception_thrown_from_DomainName_ctor_when_NULL_ptr_given = true;
+    } catch (...) {
+        BOOST_FAIL( "Unexpected exception type after DomainName::DomainName(NULL) called" );
+    }
+    BOOST_CHECK( exception_thrown_from_DomainName_ctor_when_NULL_ptr_given );
+
+    bool exception_thrown_from_DomainName_ctor_when_0_given = false;
+    try {
+        Fred::Domain::DomainName temp(0);
+    } catch(Fred::Domain::ExceptionInvalidFqdn&) {
+        exception_thrown_from_DomainName_ctor_when_0_given = true;
+    } catch (...) {
+        BOOST_FAIL( "Unexpected exception type after DomainName::DomainName(0) called" );
+    }
+    BOOST_CHECK( exception_thrown_from_DomainName_ctor_when_0_given );
+
+
+    /// get_subdomains
+    Fred::Domain::DomainName temp2("relative.zone1.zone2");
+    Fred::Domain::DomainName temp3("dummy_valid_string");
+
+    try {
+        temp2.get_subdomains(2);
+    } catch (...) {
+        BOOST_FAIL( "Unexpected exception after DomainName::get_subdomains(valid int) called" );
+    }
+
+
+    bool exception_thrown_from_get_subdomains_when_to_high_int_given = false;
+    try {
+        temp2.get_subdomains(4);
+    } catch(Fred::Domain::ExceptionInvalidLabelCount&) {
+        exception_thrown_from_get_subdomains_when_to_high_int_given = true;
+    } catch (...) {
+        BOOST_FAIL( "Unexpected exception type after DomainName::get_subdomains(too big int) called" );
+    }
+    BOOST_CHECK( exception_thrown_from_get_subdomains_when_to_high_int_given );
+
+    bool exception_thrown_from_get_subdomains_when_negative_input_given = false;
+    try {
+        temp2.get_subdomains(-1);
+    } catch(Fred::Domain::ExceptionInvalidLabelCount&) {
+        exception_thrown_from_get_subdomains_when_negative_input_given = true;
+    } catch (...) {
+        BOOST_FAIL( "Unexpected exception type after DomainName::get_subdomains(negative int) called" );
+    }
+    BOOST_CHECK( exception_thrown_from_get_subdomains_when_negative_input_given );
+}
+/**
  * test cases for general domain name syntax with '.' separator and lengths
  *
 */
@@ -82,6 +141,7 @@ BOOST_AUTO_TEST_CASE(test_general_domain_name_syntax_check)
     BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("Donald\\032E\\.\\032Eastlake\\0323rd.example."));
     BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("fred.cz"));
     BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("fred.cz."));
+    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check("fred..cz"));
     BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(".fred.cz"));
     BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check("fred.cz.."));
     BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
@@ -124,51 +184,68 @@ BOOST_AUTO_TEST_CASE(test_general_domain_name_syntax_check)
 */
 BOOST_AUTO_TEST_CASE(test_domain_name_validator)
 {
-
+    typedef Fred::Domain::DomainName DomainName;
     Fred::OperationContext ctx;
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("domain", "zone")(Fred::Domain::DNCHECK_NOT_EMPTY_DOMAIN_NAME).exec(ctx));
+
+    // basic check
+    Fred::Domain::DomainNameValidator basic;
+    BOOST_CHECK( basic.add(Fred::Domain::DNCHECK_NOT_EMPTY_DOMAIN_NAME)
+            .set_zone_name(DomainName("zone"))
+            .set_ctx(ctx)
+            .exec(DomainName("domain.zone"), 1) );
+
     //RFC1035 preferred syntax check test cases
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("fred", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("fred.com")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("2fred", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("-fred", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("fred-", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("f--red", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("f--red5", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
+    Fred::Domain::DomainNameValidator preferred;
 
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("2fred.fred", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("-fred.fred", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("fred-.fred", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("f--red.fred", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("f--red5.fred", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.com"), 0) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("2fred.cz"), 1) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("-fred.cz"), 1) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred-.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red5.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.fred.com"), 1) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("2fred.fred.cz"), 1) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("-fred.fred.cz"), 1) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred-.fred.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red.fred.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red5.fred.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red5.f--red5.cz"), 1) );
 
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("f--red5.f--red5", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
-    //no '--' check
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("fred-.fred", "cz")(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(ctx));
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("fre-d-.fred", "cz")(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("fre-d--.fred", "cz")(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(ctx));
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("fre-d.fre-d", "cz")(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("fre-d.fre--d", "cz")(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(ctx));
+    //no '--' checks
+    Fred::Domain::DomainNameValidator double_hyphen;
+
+    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fred-.fred.cz"), 1) );
+    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d-.fred.cz"), 1) );
+    BOOST_CHECK( !double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d--.fred.cz"), 1) );
+    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d.fre-d.cz"), 1) );
+    BOOST_CHECK( !double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d.fre--d.cz"), 1) );
+
     //single digit labels
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("8.4.1.0.6.4.9.7.0", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("8.4.10.0.6.4.9.7.0", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("8.4.1..0.6.4.9.7.0", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("8.4.1.0.6.4.9.7.a", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("8.4.1.0.6.4.9.7.0.", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator(".8.4.1.0.6.4.9.7.0", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS).exec(ctx));
+    Fred::Domain::DomainNameValidator single_digits;
+
+    BOOST_CHECK(  single_digits.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa"), 5) );
+    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.10.0.6.4.9.7.4.0.2.4.e164.arpa"), 5) );
+    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.a.0.2.4.e164.arpa"), 5) );
 
     //general LDH rule
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("8.4.1.0.6.4.9.7.0", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_LETTER_DIGIT_HYPHEN_LABELS).exec(ctx));
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("-fred.fred-.2fred.fred2.-Fred.Fred-.2Fred.Fred2", "cz")(Fred::Domain::DNCHECK_LETTER_DIGIT_HYPHEN_LABELS).exec(ctx));
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("1a", "cz")(Fred::Domain::DNCHECK_LETTER_DIGIT_HYPHEN_LABELS).exec(ctx));
+    Fred::Domain::DomainNameValidator ldh;
 
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("1~a", "cz")(Fred::Domain::DNCHECK_LETTER_DIGIT_HYPHEN_LABELS).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("fred@", "cz")(Fred::Domain::DNCHECK_LETTER_DIGIT_HYPHEN_LABELS).exec(ctx));
+    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa"), 5));
+    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("-fred.fred-.2fred.fred2.-Fred.Fred-.2Fred.Fred2.cz"), 1));
+    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("1a.cz"), 1));
+    BOOST_CHECK(!ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("1~a.cz"), 1));
+    BOOST_CHECK(!ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("fred@.cz"), 1));
 
     //combined
-    BOOST_CHECK(Fred::Domain::DomainNameValidator("fred", "cz")(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX)(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(ctx));
-    BOOST_CHECK(!Fred::Domain::DomainNameValidator("8.4.1.0.6.4.9.7.0", "2.4.4.e164.arpa")(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS)(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(ctx));
+    Fred::Domain::DomainNameValidator combined1;
 
+    BOOST_CHECK(  combined1.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fred.cz"), 1));
+
+    Fred::Domain::DomainNameValidator combined2;
+
+    BOOST_CHECK( !combined2.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa"), 5));
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainName

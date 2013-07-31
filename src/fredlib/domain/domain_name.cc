@@ -28,6 +28,8 @@
 #include <vector>
 #include <boost/regex.hpp>
 #include <boost/assign.hpp>
+#include <boost/foreach.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "fredlib/opcontext.h"
 #include "fredlib/zone/zone.h"
@@ -93,11 +95,61 @@ std::string rem_trailing_dot(const std::string& fqdn)
 }
 
 //domain name validator
-DomainNameValidator::DomainNameValidator(const std::string& relative_domain_name, const std::string& zone_name)
-: relative_domain_name_(relative_domain_name), zone_name_(zone_name)
-{}
+DomainNameValidator& DomainNameValidator::set_zone_name(const DomainName& _zone_name) {
+    zone_name_.reset(new DomainName(_zone_name));
 
-DomainNameValidator& DomainNameValidator::operator()(const std::string& checker_name)
+    return *this;
+}
+
+DomainNameValidator& DomainNameValidator::set_ctx(Fred::OperationContext& _ctx) {
+    ctx_= &_ctx;
+
+    return *this;
+}
+
+
+void DomainName::init(const char* const _fqdn) {
+    if(_fqdn == NULL) {
+        throw ExceptionInvalidFqdn();
+    }
+    std::string temp_fqdn(_fqdn);
+
+    if( general_domain_name_syntax_check (temp_fqdn) == false) {
+        throw ExceptionInvalidFqdn();
+    }
+
+    temp_fqdn = rem_trailing_dot(temp_fqdn);
+    boost::split(labels_,temp_fqdn , boost::is_any_of("."));
+}
+
+
+DomainName::DomainName(const std::string& _fqdn) {
+    init(_fqdn.c_str());
+}
+
+DomainName::DomainName(const char* const _fqdn) {
+    init(_fqdn);
+}
+
+std::string DomainName::get_string() const {
+    return boost::join(labels_, ".");
+}
+
+DomainName DomainName::get_subdomains(int _root_length_in_labels) const {
+    if( _root_length_in_labels < 0 || _root_length_in_labels > static_cast<int>(labels_.size()) ) {
+        throw ExceptionInvalidLabelCount();
+    }
+
+    std::vector<std::string> selected_labels;
+
+    selected_labels.assign( labels_.begin(), labels_.end() - _root_length_in_labels );
+
+    return DomainName(boost::join(selected_labels, "."));
+
+    return *this;
+}
+
+DomainNameValidator& DomainNameValidator::add(const std::string& checker_name)
 {
     FactoryHaveSupersetOfKeysChecker<Fred::Domain::DomainNameCheckerFactory>
         ::KeyVector required_keys = boost::assign::list_of(checker_name);
@@ -107,14 +159,9 @@ DomainNameValidator& DomainNameValidator::operator()(const std::string& checker_
     return *this;
 }
 
-bool DomainNameValidator::exec(const Fred::OperationContext& ctx)
-{
-    if(!zone_name_.empty() && *(--zone_name_.end()) == '.') return false; //unexpected root dot
-    if(general_domain_name_syntax_check(relative_domain_name_
-        +(zone_name_.empty() ? std::string("") : std::string(".")+zone_name_)) == false)
-    {
-        return false;
-    }
+bool DomainNameValidator::exec(const DomainName& _fqdn, int top_labels_to_skip) {
+
+    DomainName labels_to_check = _fqdn.get_subdomains(top_labels_to_skip);
 
     for(std::vector<std::string>::const_iterator ci = checker_name_vector_.begin(); ci !=checker_name_vector_.end(); ++ci)
     {
@@ -123,18 +170,22 @@ bool DomainNameValidator::exec(const Fred::OperationContext& ctx)
         if(DomainNameCheckerNeedZoneName* need_zone_checker
                 = dynamic_cast<DomainNameCheckerNeedZoneName*>(checker.get()))
         {
-            need_zone_checker->set_zone_name(zone_name_);
+            if(zone_name_.get() == NULL) {
+                throw ExceptionZoneNameNotSet();
+            }
+            need_zone_checker->set_zone_name(*zone_name_);
         }
 
         if(DomainNameCheckerNeedOperationContext* need_ctx_checker
                 = dynamic_cast<DomainNameCheckerNeedOperationContext*>(checker.get()))
         {
-            need_ctx_checker->set_ctx(ctx);
+            if(ctx_.isset() == false) {
+                throw ExceptionCtxNotSet();
+            }
+            need_ctx_checker->set_ctx(*ctx_);
         }
-        if(checker.get()->validate(relative_domain_name_) == false) return false; //validation failed
-    }//for checker_name_vector_
-    // check
-
+        if(checker->validate(labels_to_check) == false) return false; //validation failed
+    }
     return true;//validation ok
 }
 
@@ -145,26 +196,26 @@ class DomainNameCheckerNotEmptyDomainName
 , public DomainNameCheckerNeedOperationContext
 , public Util::FactoryAutoRegister<DomainNameChecker, DomainNameCheckerNotEmptyDomainName>
 {
-    std::string zone_name_;
+    boost::scoped_ptr<DomainName> zone_name_;
     const Fred::OperationContext* ctx_ptr_;
 public:
     DomainNameCheckerNotEmptyDomainName()
     : ctx_ptr_(0)
     {}
 
-    bool validate(const std::string& relative_domain_name)
+    bool validate(const DomainName& relative_domain_name)
     {
-        return !zone_name_.empty() && !relative_domain_name.empty() && ctx_ptr_;
+        return !zone_name_->get_string().empty() && !relative_domain_name.get_string().empty() && ctx_ptr_;
     }
 
-    void set_zone_name(const std::string& zone_name)
+    void set_zone_name(const DomainName& _zone_name)
     {
-        zone_name_ = zone_name;
+        zone_name_.reset(new DomainName(_zone_name) );
     }
 
-    void set_ctx(const Fred::OperationContext& ctx)
+    void set_ctx(const Fred::OperationContext& _ctx)
     {
-        ctx_ptr_ = &ctx;
+        ctx_ptr_ = &_ctx;
     }
 
     static std::string registration_name()
@@ -183,13 +234,13 @@ public:
     CheckRFC1035PreferredNameSyntax()
     {}
 
-    bool validate(const std::string& relative_domain_name)
+    bool validate(const DomainName& relative_domain_name)
     {
         static const boost::regex RFC1035_NAME_SYNTAX(
             "(([A-Za-z]|[A-Za-z][-A-Za-z0-9]{0,61}[A-Za-z0-9])[.])*"//optional non-highest-level labels
             "([A-Za-z]|[A-Za-z][-A-Za-z0-9]{0,61}[A-Za-z0-9])"//mandatory highest-level label
         );
-        return boost::regex_match(relative_domain_name, RFC1035_NAME_SYNTAX);
+        return boost::regex_match(relative_domain_name.get_string(), RFC1035_NAME_SYNTAX);
     }
 
     static std::string registration_name()
@@ -199,17 +250,17 @@ public:
 };//class CheckRFC1035PrefferedNameSyntax
 
 ///prohibit consecutive hyphens '--'
-class CheckNoConsecutiveHyphensDomainName
+class CheckNoConsecutiveHyphens
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoConsecutiveHyphensDomainName>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoConsecutiveHyphens>
 {
 public:
-    CheckNoConsecutiveHyphensDomainName(){}
+    CheckNoConsecutiveHyphens(){}
 
-    bool validate(const std::string& relative_domain_name)
+    bool validate(const DomainName& relative_domain_name)
     {
         static const boost::regex CONSECUTIVE_HYPHENS_SYNTAX("[-][-]");
-        return !boost::regex_search(relative_domain_name, CONSECUTIVE_HYPHENS_SYNTAX);
+        return !boost::regex_search(relative_domain_name.get_string(), CONSECUTIVE_HYPHENS_SYNTAX);
     }
 
     static std::string registration_name()
@@ -219,93 +270,93 @@ public:
 };//class CheckNoConsecutiveHyphensDomainName
 
 ///check domain name for single digit labels
-class CheckSingleDigitLabelsSyntax
+class CheckSingleDigitLabelsOnly
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckSingleDigitLabelsSyntax>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckSingleDigitLabelsOnly>
 {
 public:
-    CheckSingleDigitLabelsSyntax(){}
+    CheckSingleDigitLabelsOnly(){}
 
-    bool validate(const std::string& relative_domain_name)
+    bool validate(const DomainName& relative_domain_name)
     {
         static const boost::regex SINGLE_DIGIT_LABELS_SYNTAX(
             "([0-9][.])*"//optional non-highest-level single digit labels labels
             "[0-9]"//mandatory highest-level single digit label
         );
-        return boost::regex_match(relative_domain_name, SINGLE_DIGIT_LABELS_SYNTAX);
+        return boost::regex_match(relative_domain_name.get_string(), SINGLE_DIGIT_LABELS_SYNTAX);
     }
 
     static std::string registration_name()
     {
-        return DNCHECK_SINGLE_DIGIT_LABELS;
+        return DNCHECK_SINGLE_DIGIT_LABELS_ONLY;
     }
 };//class CheckSingleDigitLabelsSyntax
 
 ///check that domain name labels contains only letters , digits or hyphens
 ///regardless of character position in the label
-class CheckLetterDigitHyphenLabelsSyntax
+class CheckLettersDigitsHyphenCharsOnly
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckLetterDigitHyphenLabelsSyntax>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckLettersDigitsHyphenCharsOnly>
 {
 public:
-    CheckLetterDigitHyphenLabelsSyntax(){}
+    CheckLettersDigitsHyphenCharsOnly(){}
 
-    bool validate(const std::string& relative_domain_name)
+    bool validate(const DomainName& relative_domain_name)
     {
         static const boost::regex DNCHECK_LETTER_DIGIT_HYPHEN_LABELS(
                 "([-A-Za-z0-9]{1,63}[.])*"//optional non-highest-level labels
                 "([-A-Za-z0-9]{1,63})"//mandatory highest-level label
         );
-        return boost::regex_match(relative_domain_name, DNCHECK_LETTER_DIGIT_HYPHEN_LABELS);
+        return boost::regex_match(relative_domain_name.get_string(), DNCHECK_LETTER_DIGIT_HYPHEN_LABELS);
     }
 
     static std::string registration_name()
     {
-        return DNCHECK_LETTER_DIGIT_HYPHEN_LABELS;
+        return DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY;
     }
 };//class CheckSingleDigitLabelsSyntax
 
 ///check domain name for no hyphen at the start of the label
-class CheckNoStartHyphenSyntax
+class CheckNoLabelBeginningHyphen
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoStartHyphenSyntax>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoLabelBeginningHyphen>
 {
 public:
-    CheckNoStartHyphenSyntax() {}
+    CheckNoLabelBeginningHyphen() {}
 
-    bool validate(const std::string& relative_domain_name)
+    bool validate(const DomainName& relative_domain_name)
     {
         //label starting by '-' prohibited
-        if (!relative_domain_name.empty() && *relative_domain_name.begin() == '-') return false;
+        if (!relative_domain_name.get_string().empty() && *relative_domain_name.get_string().begin() == '-') return false;
         static const boost::regex NO_NEXT_START_HYPHEN_SYNTAX("[.][-]");
-        return !boost::regex_search(relative_domain_name, NO_NEXT_START_HYPHEN_SYNTAX);
+        return !boost::regex_search(relative_domain_name.get_string(), NO_NEXT_START_HYPHEN_SYNTAX);
     }
 
     static std::string registration_name()
     {
-        return DNCHECK_NO_START_HYPHEN_LABELS;
+        return DNCHECK_NO_LABEL_BEGINNING_HYPHEN;
     }
 };//class CheckNoStartHyphenSyntax
 
 ///check domain name for no hyphen at the end of the label
-class CheckNoEndHyphenSyntax
+class CheckNoLabelEndingHyphen
 : public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoEndHyphenSyntax>
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoLabelEndingHyphen>
 {
 public:
-    CheckNoEndHyphenSyntax() {}
+    CheckNoLabelEndingHyphen() {}
 
-    bool validate(const std::string& relative_domain_name)
+    bool validate(const DomainName& relative_domain_name)
     {
         //label ending by '-' prohibited
-        if (!relative_domain_name.empty() && *relative_domain_name.rbegin() == '-') return false;
+        if (!relative_domain_name.get_string().empty() && *relative_domain_name.get_string().rbegin() == '-') return false;
         static const boost::regex NO_NEXT_END_HYPHEN_SYNTAX("[-][.]");
-        return !boost::regex_search(relative_domain_name, NO_NEXT_END_HYPHEN_SYNTAX);
+        return !boost::regex_search(relative_domain_name.get_string(), NO_NEXT_END_HYPHEN_SYNTAX);
     }
 
     static std::string registration_name()
     {
-        return DNCHECK_NO_END_HYPHEN_LABELS;
+        return DNCHECK_NO_LABEL_ENDING_HYPHEN;
     }
 };//class CheckNoEndHyphenSyntax
 

@@ -31,6 +31,7 @@
 #include "fredlib/opcontext.h"
 #include "util/factory.h"
 #include "util/factory_check.h"
+#include "util/optional_value.h"
 
 namespace Fred {
 namespace Domain {
@@ -45,20 +46,51 @@ bool general_domain_name_syntax_check(const std::string& fqdn);
  */
 std::string rem_trailing_dot(const std::string& fqdn);
 
-///domain name validator
+class ExceptionInvalidFqdn : public std::exception {};
+class ExceptionInvalidLabelCount : public std::exception {};
+
+class DomainName {
+    private:
+        std::vector<std::string> labels_;
+        /**
+         * @throw ExceptionInvalidFqdn in case fqdn_ is not valid by RFC 1035 mandatory rules
+         */
+        void init(const char* const _fqdn);
+
+    public:
+        /**
+         * @throw ExceptionInvalidFqdn in case fqdn_ is not valid by RFC 1035 mandatory rules
+         */
+        explicit DomainName(const std::string& _fqdn);
+        /**
+         * @throw ExceptionInvalidFqdn in case fqdn_ is not valid by RFC 1035 mandatory rules
+         */
+        explicit DomainName(const char* const _fqdn);
+        std::string get_string() const;
+        /// Returns vector of labels - delimiting dots are not present in labels
+        std::vector<std::string> get_labels() const {
+            return labels_;
+        }
+        /*! \brief Returns subset of labels in this fqdn
+         * @param[in] top_labels_to_skip how many top labels (from the "right") to ommit
+         */
+        DomainName get_subdomains(int _top_labels_to_skip) const;
+};
+
+//domain name validator
 FACTORY_MODULE_INIT_DECL(domain_name_validator)
 
 class DomainNameChecker
 {
 public:
   virtual ~DomainNameChecker(){}
-  virtual bool validate(const std::string& domain_name) = 0;
+  virtual bool validate(const DomainName& domain_name) = 0;
 };
 
 class DomainNameCheckerNeedZoneName
 {
 public:
-    virtual void set_zone_name(const std::string& zone_name) = 0;
+    virtual void set_zone_name(const DomainName& zone_name) = 0;
 protected:
    ~DomainNameCheckerNeedZoneName(){}
 };
@@ -71,33 +103,35 @@ protected:
    ~DomainNameCheckerNeedOperationContext(){}
 };
 
+class ExceptionZoneNameNotSet : public std::exception {};
+class ExceptionCtxNotSet : public std::exception {};
+
 class DomainNameValidator
 {
-    const std::string relative_domain_name_;
-    const std::string zone_name_;
+    boost::scoped_ptr<DomainName> zone_name_;
+    Optional<Fred::OperationContext*> ctx_;
+
     std::vector<std::string> checker_name_vector_;
 public:
-    ///domain name is considered relative and zone name is considered fully qualified here
-    ///, so no root dot at the end of strings are expected
-    ///relative_domain_name is validated by checkers
-    ///zone_name begins with label and may be empty if considered unimportant for checkers
-    ///zone_name may be used by implementation of DomainNameChecker
-    ///if zone_name is empty and checker implementation need some value, validation shall fail
-    explicit DomainNameValidator(const std::string& relative_domain_name, const std::string& zone_name = "");
+    DomainNameValidator& set_zone_name(const DomainName& _zone_name);
+    DomainNameValidator& set_ctx(Fred::OperationContext& _ctx);
     ///add checker instance shared pointer
-    DomainNameValidator& operator()(const std::string& checker_name);
-    ///returns true if domain name is valid otherwise it returns false
-    bool exec(const Fred::OperationContext& ctx);
+    DomainNameValidator& add(const std::string& checker_name);
+    /*! \brief Returns true if domain name is valid otherwise it returns false.
+     * @throw ZoneNameNotSet in case Zone name have not been set and checker which needs it was added.
+     * @throw CtxNotSet in case OperationContext have not been set and checker which needs it was added.
+     */
+        bool exec(const DomainName& _fqdn, int _top_labels_to_skip = 0);
 };
 
 typedef Util::Factory<DomainNameChecker, Util::ClassCreator<DomainNameChecker> > DomainNameCheckerFactory;
 
 const std::string DNCHECK_NO_CONSECUTIVE_HYPHENS="dncheck_no_consecutive_hyphens";
 const std::string DNCHECK_RFC1035_PREFERRED_SYNTAX="dncheck_rfc1035_preferred_syntax";
-const std::string DNCHECK_SINGLE_DIGIT_LABELS="dncheck_single_digit_labels";
-const std::string DNCHECK_LETTER_DIGIT_HYPHEN_LABELS="dncheck_letter_digit_hyphen_labels";
-const std::string DNCHECK_NO_START_HYPHEN_LABELS="dncheck_no_start_hyphen_labels";
-const std::string DNCHECK_NO_END_HYPHEN_LABELS="dncheck_no_end_hyphen_labels";
+const std::string DNCHECK_SINGLE_DIGIT_LABELS_ONLY="dncheck_single_digit_labels_only";
+const std::string DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY="dncheck_letters_digits_hyphen_chars_only";
+const std::string DNCHECK_NO_LABEL_BEGINNING_HYPHEN="dncheck_no_label_beginning_hyphen";
+const std::string DNCHECK_NO_LABEL_ENDING_HYPHEN="dncheck_no_label_ending_hyphen";
 
 ///trivial checker for testing
 const std::string DNCHECK_NOT_EMPTY_DOMAIN_NAME="dncheck_not_empty_domain_name";
