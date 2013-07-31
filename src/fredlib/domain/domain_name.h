@@ -60,11 +60,11 @@ class DomainName {
         /**
          * @throw ExceptionInvalidFqdn in case fqdn_ is not valid by RFC 1035 mandatory rules
          */
-        DomainName(const std::string& _fqdn);
+        explicit DomainName(const std::string& _fqdn);
         /**
          * @throw ExceptionInvalidFqdn in case fqdn_ is not valid by RFC 1035 mandatory rules
          */
-        DomainName(const char* const _fqdn);
+        explicit DomainName(const char* const _fqdn);
         std::string get_string() const;
         /// Returns vector of labels - delimiting dots are not present in labels
         std::vector<std::string> get_labels() const {

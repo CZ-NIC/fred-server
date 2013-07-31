@@ -184,67 +184,68 @@ BOOST_AUTO_TEST_CASE(test_general_domain_name_syntax_check)
 */
 BOOST_AUTO_TEST_CASE(test_domain_name_validator)
 {
+    typedef Fred::Domain::DomainName DomainName;
     Fred::OperationContext ctx;
 
     // basic check
     Fred::Domain::DomainNameValidator basic;
     BOOST_CHECK( basic.add(Fred::Domain::DNCHECK_NOT_EMPTY_DOMAIN_NAME)
-            .set_zone_name("zone")
+            .set_zone_name(DomainName("zone"))
             .set_ctx(ctx)
-            .exec("domain.zone", 1) );
+            .exec(DomainName("domain.zone"), 1) );
 
     //RFC1035 preferred syntax check test cases
     Fred::Domain::DomainNameValidator preferred;
 
-    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("fred.cz", 1) );
-    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("fred.com", 0) );
-    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("2fred.cz", 1) );
-    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("-fred.cz", 1) );
-    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("fred-.cz", 1) );
-    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("f--red.cz", 1) );
-    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("f--red5.cz", 1) );
-    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("fred.cz", 1) );
-    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("fred.fred.com", 1) );
-    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("2fred.fred.cz", 1) );
-    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("-fred.fred.cz", 1) );
-    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("fred-.fred.cz", 1) );
-    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("f--red.fred.cz", 1) );
-    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("f--red5.fred.cz", 1) );
-    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("f--red5.f--red5.cz", 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.com"), 0) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("2fred.cz"), 1) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("-fred.cz"), 1) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred-.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red5.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.fred.com"), 1) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("2fred.fred.cz"), 1) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("-fred.fred.cz"), 1) );
+    BOOST_CHECK( !preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred-.fred.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red.fred.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red5.fred.cz"), 1) );
+    BOOST_CHECK(  preferred.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red5.f--red5.cz"), 1) );
 
     //no '--' checks
     Fred::Domain::DomainNameValidator double_hyphen;
 
-    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec("fred-.fred.cz", 1) );
-    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec("fre-d-.fred.cz", 1) );
-    BOOST_CHECK( !double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec("fre-d--.fred.cz", 1) );
-    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec("fre-d.fre-d.cz", 1) );
-    BOOST_CHECK( !double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec("fre-d.fre--d.cz", 1) );
+    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fred-.fred.cz"), 1) );
+    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d-.fred.cz"), 1) );
+    BOOST_CHECK( !double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d--.fred.cz"), 1) );
+    BOOST_CHECK(  double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d.fre-d.cz"), 1) );
+    BOOST_CHECK( !double_hyphen.add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d.fre--d.cz"), 1) );
 
     //single digit labels
     Fred::Domain::DomainNameValidator single_digits;
 
-    BOOST_CHECK(  single_digits.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa", 5) );
-    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec("8.4.10.0.6.4.9.7.4.0.2.4.e164.arpa", 5) );
-    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec("8.4.1.0.6.4.9.7.a.0.2.4.e164.arpa", 5) );
+    BOOST_CHECK(  single_digits.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa"), 5) );
+    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.10.0.6.4.9.7.4.0.2.4.e164.arpa"), 5) );
+    BOOST_CHECK( !single_digits.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.a.0.2.4.e164.arpa"), 5) );
 
     //general LDH rule
     Fred::Domain::DomainNameValidator ldh;
 
-    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa", 5));
-    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec("-fred.fred-.2fred.fred2.-Fred.Fred-.2Fred.Fred2.cz", 1));
-    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec("1a.cz", 1));
-    BOOST_CHECK(!ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec("1~a.cz", 1));
-    BOOST_CHECK(!ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec("fred@.cz", 1));
+    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa"), 5));
+    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("-fred.fred-.2fred.fred2.-Fred.Fred-.2Fred.Fred2.cz"), 1));
+    BOOST_CHECK(ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("1a.cz"), 1));
+    BOOST_CHECK(!ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("1~a.cz"), 1));
+    BOOST_CHECK(!ldh.add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("fred@.cz"), 1));
 
     //combined
     Fred::Domain::DomainNameValidator combined1;
 
-    BOOST_CHECK(  combined1.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec("fred.cz", 1));
+    BOOST_CHECK(  combined1.add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fred.cz"), 1));
 
     Fred::Domain::DomainNameValidator combined2;
 
-    BOOST_CHECK( !combined2.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa", 5));
+    BOOST_CHECK( !combined2.add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa"), 5));
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainName
