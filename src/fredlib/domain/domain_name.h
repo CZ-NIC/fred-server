@@ -111,11 +111,13 @@ class DomainNameValidator
     boost::scoped_ptr<DomainName> zone_name_;
     Optional<Fred::OperationContext*> ctx_;
 
-    std::vector<std::string> checker_name_vector_;
+    std::vector<std::string> checker_name_vector_;//TODO: std::set might be better here
 public:
+    ///set zone name if checker implementaion need one
     DomainNameValidator& set_zone_name(const DomainName& _zone_name);
+    ///set operation context if checker implementaion need one
     DomainNameValidator& set_ctx(Fred::OperationContext& _ctx);
-    ///add checker name
+    ///add checker name, checker names should be unique in instance of the validator
     DomainNameValidator& add(const std::string& checker_name);
     ///set checker names, forget previous set of names
     DomainNameValidator& set_checker_names(const std::vector<std::string>& checker_names);
@@ -123,7 +125,7 @@ public:
      * @throw ZoneNameNotSet in case Zone name have not been set and checker which needs it was added.
      * @throw CtxNotSet in case OperationContext have not been set and checker which needs it was added.
      */
-        bool exec(const DomainName& _fqdn, int _top_labels_to_skip = 0);
+    bool exec(const DomainName& _fqdn, int _top_labels_to_skip = 0);
 };
 
 typedef Util::Factory<DomainNameChecker, Util::ClassCreator<DomainNameChecker> > DomainNameCheckerFactory;
