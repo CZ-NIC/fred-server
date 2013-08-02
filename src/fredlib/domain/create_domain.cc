@@ -30,6 +30,7 @@
 
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/domain_name.h"
+#include "fredlib/domain/check_domain.h"
 #include "fredlib/zone/zone.h"
 #include "fredlib/object/object.h"
 
@@ -160,12 +161,26 @@ namespace Fred
 
             //check general domain name syntax
             if(!Domain::general_domain_name_syntax_check(fqdn_))
+            {
                 BOOST_THROW_EXCEPTION(Exception().set_invalid_fqdn_syntax(fqdn_));
+            }
 
             //remove optional root dot from fqdn
             std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
 
-            //zone
+            //check zone
+            if(CheckDomain(fqdn_).is_bad_zone(ctx))
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_fqdn(fqdn_));
+            }
+
+            //check domain name
+            if(CheckDomain(fqdn_).is_invalid_handle(ctx))
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_invalid_fqdn_syntax(fqdn_));
+            }
+
+            //get zone
             Zone::Data zone;
             try
             {
@@ -180,18 +195,6 @@ namespace Fred
                 }
                 else
                     throw;
-            }
-
-            //domain_name_validation
-            if(!Fred::Domain::DomainNameValidator()
-                .set_checker_names(Fred::Domain::get_domain_name_validation_config_for_zone(ctx,zone.name))
-                .set_zone_name(Fred::Domain::DomainName(zone.name))
-                .set_ctx(ctx)
-                .exec(Fred::Domain::DomainName(no_root_dot_fqdn)
-                    , std::count(zone.name.begin(), zone.name.end(),'.')+1)//skip zone labels
-            )
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_invalid_fqdn_syntax(fqdn_));
             }
 
             if (zone.is_enum)//check ENUM specific parameters

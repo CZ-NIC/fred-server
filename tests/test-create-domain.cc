@@ -185,7 +185,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_wrong_fqdn_syntax, create_domain_fixture)
     catch(const Fred::CreateDomain::Exception& ex)
     {
         BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
-        BOOST_CHECK(ex.is_set_invalid_fqdn_syntax());
+        BOOST_CHECK(ex.is_set_unknown_zone_fqdn());
         throw;
     }
     , std::exception
