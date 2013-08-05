@@ -382,11 +382,11 @@ void set_domain_name_validation_config_into_database(Fred::OperationContext& ctx
     , const std::string& zone_name, const std::vector<std::string>& checker_names)
 {
     Zone::Data zone = Zone::get_zone(ctx,zone_name);
-    ctx.get_conn().exec_params("DELETE FROM domain_name_validation_config_by_zone WHERE zone_id = $1::bigint"
+    ctx.get_conn().exec_params("DELETE FROM zone_domain_name_validation_checker_map WHERE zone_id = $1::bigint"
         , Database::query_param_list(zone.id));
     for(std::vector<std::string>::const_iterator i = checker_names.begin(); i != checker_names.end(); ++i)
     {
-        ctx.get_conn().exec_params("INSERT INTO domain_name_validation_config_by_zone(zone_id, checker_id) "
+        ctx.get_conn().exec_params("INSERT INTO zone_domain_name_validation_checker_map(zone_id, checker_id) "
             " VALUES($1::bigint, (SELECT id FROM enum_domain_name_validation_checker WHERE name = $2::text))",Database::query_param_list(zone.id)(*i));
     }//for checker_names
 }
@@ -398,7 +398,7 @@ std::vector<std::string> get_domain_name_validation_config_for_zone(Fred::Operat
 
     Database::Result checker_names_res = ctx.get_conn().exec_params(
         "SELECT ch.name FROM enum_domain_name_validation_checker ch "
-        " JOIN domain_name_validation_config_by_zone cfg ON ch.id = cfg.checker_id "
+        " JOIN zone_domain_name_validation_checker_map cfg ON ch.id = cfg.checker_id "
         " JOIN zone z ON z.id = cfg.zone_id "
         " WHERE z.fqdn = LOWER($1::text)", Database::query_param_list(zone_name));
 
