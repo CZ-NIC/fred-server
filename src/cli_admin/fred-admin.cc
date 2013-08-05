@@ -55,6 +55,7 @@
 #include "cli_admin/file_client_impl.h"
 #include "cli_admin/regblock_client.h"
 #include "cli_admin/charge_client_impl.h"
+#include "cli_admin/domain_name_validation_init.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_logging_args.h"
@@ -131,6 +132,9 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectRegularProcedureArgsGrp),object_regular_procedure_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectDeleteCandidatesArgsGrp),object_delete_candidates_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientFileListArgsGrp),file_list_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleInitDomainNameValidationCheckersArgsGrp),init_domain_name_validation_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleDomainNameValidationByZoneArgsGrp),set_zone_domain_name_validation_impl()))
+
  ;
 
 CommandOptionGroups cog(chpv);

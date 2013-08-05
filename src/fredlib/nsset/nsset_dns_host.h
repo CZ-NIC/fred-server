@@ -35,7 +35,7 @@
 namespace Fred
 {
 
-class DnsHost
+    class DnsHost
     {
         std::string fqdn_;
         std::vector<std::string> inet_addr_;
@@ -55,6 +55,17 @@ class DnsHost
         {
             return inet_addr_;
         }
+
+        operator std::string() const
+        {
+            std::stringstream ret;
+            ret << "DnsHost fqdn: " << fqdn_;
+            if(!inet_addr_.empty()) ret << " inet_addr:";
+            for(std::vector<std::string>::const_iterator ci = inet_addr_.begin()
+                ; ci != inet_addr_.end(); ++ci) ret << " " << *ci;
+            return ret.str();
+        }
+
     };
 
 }//namespace Fred

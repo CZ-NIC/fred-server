@@ -60,38 +60,22 @@ namespace Fred
         bool lock_;//lock object_registry row for domain
 
     public:
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_registry_object_identifier<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
+
         InfoNssetHistory(const std::string& roid, const std::string& registrar);
         InfoNssetHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp, const std::string& registrar);
 
         InfoNssetHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);//set history timestamp
         InfoNssetHistory& set_lock(bool lock = true);//set lock object_registry row for domain
         std::vector<InfoNssetHistoryOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        friend std::ostream& operator<<(std::ostream& os, const InfoNssetHistory& i);
+        std::string to_string();
     };//class InfoNssetHistory
-
-//exception impl
-    class InfoNssetHistoryException
-    : public OperationExceptionImpl<InfoNssetHistoryException, 8192>
-    {
-    public:
-        InfoNssetHistoryException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<InfoNssetHistoryException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                    "not found:roid"
-                    , "not found:registrar"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class InfoNssetHistoryException
-
-    typedef InfoNssetHistoryException::OperationErrorType InfoNssetHistoryError;
-
 }//namespace Fred
 
 #endif//INFO_NSSET_HISTORY_H_

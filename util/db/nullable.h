@@ -64,6 +64,13 @@ public:
     {
         return os << static_cast<T>(v);
     }
+
+    std::string print_quoted() const
+    {
+        std::stringstream ss;
+        ss << (*this);
+        return isnull() ? std::string("[NULL]") : std::string("'") + ss.str() + "'";
+    }
 };
 
 

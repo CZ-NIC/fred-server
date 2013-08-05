@@ -67,37 +67,21 @@ namespace Fred
         const std::string handle_;//nsset identifier
         const std::string registrar_;//registrar identifier
         bool lock_;//lock object_registry row for domain
-
     public:
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_nsset_handle<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
+
         InfoNsset(const std::string& handle
                 , const std::string& registrar);
         InfoNsset& set_lock(bool lock = true);//set lock object_registry row
         InfoNssetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        friend std::ostream& operator<<(std::ostream& os, const InfoNsset& i);
+        std::string to_string();
     };//class InfoNsset
-
-//exception impl
-    class InfoNssetException
-    : public OperationExceptionImpl<InfoNssetException, 8192>
-    {
-    public:
-        InfoNssetException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<InfoNssetException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                    "not found:handle"
-                    , "not found:registrar"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class InfoNssetException
-
-    typedef InfoNssetException::OperationErrorType InfoNssetError;
 
 }//namespace Fred
 

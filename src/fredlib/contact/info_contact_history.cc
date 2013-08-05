@@ -38,11 +38,6 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 
-
-#define ICHEX(DATA) InfoContactHistoryException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define ICHERR(DATA) InfoContactHistoryError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
-
 namespace Fred
 {
 
@@ -79,37 +74,20 @@ namespace Fred
 
         try
         {
-            //check roid and lock object_registry row for update if set
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                    std::string("SELECT id FROM object_registry WHERE roid = $1::text "
-                    " AND type = ( SELECT id FROM enum_object_type eot "
-                    " WHERE eot.name='contact'::text) ")
-                    + (lock_ ? std::string(" FOR UPDATE") : std::string(""))
-                    , Database::query_param_list(roid_));
-
-                if (res.size() != 1)
-                {
-                    std::string errmsg("|| not found:roid: ");
-                    errmsg += boost::replace_all_copy(roid_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICHEX(errmsg.c_str());
-                }
-            }
-
             //check registrar exists
             //TODO: check registrar access
             {
                 Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
+                        "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
                     , Database::query_param_list(registrar_));
 
+                if (res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
                 if (res.size() != 1)
                 {
-                    std::string errmsg("|| not found:registrar: ");
-                    errmsg += boost::replace_all_copy(registrar_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICHEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
             }
 
@@ -124,7 +102,7 @@ namespace Fred
                     params.push_back(history_timestamp_);
                     params.push_back(local_timestamp_pg_time_zone_name);
                 }
-
+                //get info and lock object_registry row for update if set
                 Database::Result res = ctx.get_conn().exec_params(std::string(
                 "SELECT cobr.id, cobr.roid, cobr.name, cobr.erdate " //contact 0-3
                 " , oh.historyid, h.id , h.next, h.valid_from, h.valid_to "//history 4-8
@@ -151,18 +129,16 @@ namespace Fred
                 " cobr.roid = $1::text "
                 " AND cobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text) ")
                 + (history_timestamp_.isset()
-                ? " AND h.valid_from <= ($2::timestamp AT TIME ZONE $3::text) AT TIME ZONE 'UTC' "
-                  " AND ($2::timestamp AT TIME ZONE $3::text) AT TIME ZONE 'UTC' < h.valid_to "
-                  " ORDER BY h.id DESC"
-                : " ORDER BY h.id DESC ")
+                  ? " AND h.valid_from <= ($2::timestamp AT TIME ZONE $3::text) AT TIME ZONE 'UTC' "
+                    " AND ($2::timestamp AT TIME ZONE $3::text) AT TIME ZONE 'UTC' < h.valid_to "
+                  : std::string())
+                + std::string(" ORDER BY h.id DESC ")
+                + (lock_ ? std::string(" FOR UPDATE of cobr ") : std::string())
                 , params);
 
                 if (res.size() == 0)
                 {
-                    std::string errmsg("|| not found:roid: ");
-                    errmsg += boost::replace_all_copy(roid_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICHEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
                 }
 
                 contact_history_res.reserve(res.size());//alloc
@@ -264,12 +240,29 @@ namespace Fred
                 }//for res
             }//if roid
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<InfoContactHistoryException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
         return contact_history_res;
     }//InfoContactHistory::exec
+
+    std::ostream& operator<<(std::ostream& os, const InfoContactHistory& ich)
+    {
+        return os << "#InfoContactHistory roid: " << ich.roid_
+                << " history_timestamp: " << ich.history_timestamp_.print_quoted()
+                << " registrar: " << ich.registrar_
+                << " lock: " << ich.lock_
+                ;
+    }
+    std::string InfoContactHistory::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
+
 
 }//namespace Fred
 

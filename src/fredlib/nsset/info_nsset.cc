@@ -38,10 +38,6 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 
-#define INEX(DATA) InfoNssetException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define INERR(DATA) InfoNssetError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
-
 namespace Fred
 {
     InfoNsset::InfoNsset(const std::string& handle
@@ -63,25 +59,6 @@ namespace Fred
 
         try
         {
-
-            //check handle or lock object_registry row for update
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                    std::string("SELECT id FROM object_registry WHERE name=UPPER($1::text) "
-                    " AND erdate IS NULL AND type = ( SELECT id FROM enum_object_type eot "
-                    " WHERE eot.name='nsset'::text) ")
-                    + (lock_ ? std::string(" FOR UPDATE") : std::string(""))
-                    , Database::query_param_list(handle_));
-
-                if (res.size() != 1)
-                {
-                    std::string errmsg("check handle || not found:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw INEX(errmsg.c_str());
-                }
-            }
-
             //check registrar exists
             //TODO: check registrar access
             {
@@ -89,20 +66,22 @@ namespace Fred
                         "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
                     , Database::query_param_list(registrar_));
 
+                if (res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
                 if (res.size() != 1)
                 {
-                    std::string errmsg("|| not found:registrar: ");
-                    errmsg += boost::replace_all_copy(registrar_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw INEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
+
             }
 
 
             //info about nsset
             unsigned long long nsset_id = 0;
             {
-                Database::Result res = ctx.get_conn().exec_params(
+                Database::Result res = ctx.get_conn().exec_params(std::string(
                 "SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp " // utc timestamp 0
                 " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp " // local zone timestamp 1
                 " , nobr.crhistoryid "//first historyid 2
@@ -122,15 +101,17 @@ namespace Fred
                 " JOIN registrar crr ON crr.id = nobr.crid "
                 " LEFT JOIN registrar upr ON upr.id = o.upid "
                 " WHERE nobr.name=UPPER($2::text) AND nobr.erdate IS NULL "
-                " AND nobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text)"
+                " AND nobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text)")
+                + (lock_ ? std::string(" FOR UPDATE OF nobr") : std::string(""))
                 , Database::query_param_list(local_timestamp_pg_time_zone_name)(handle_));
 
+                if (res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(handle_));
+                }
                 if (res.size() != 1)
                 {
-                    std::string errmsg("info nsset || not found:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw INEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get nsset"));
                 }
 
                 nsset_info_output.utc_timestamp = res[0][0].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
@@ -230,12 +211,27 @@ namespace Fred
             }
 
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<InfoNssetException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
         return nsset_info_output;
     }//InfoNsset::exec
+
+    std::ostream& operator<<(std::ostream& os, const InfoNsset& i)
+    {
+        return os << "#InfoNsset handle: " << i.handle_
+            << " registrar: " << i.registrar_
+            << " lock: " << i.lock_;
+    }
+
+    std::string InfoNsset::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 
 }//namespace Fred
 

@@ -154,6 +154,8 @@ BOOST_AUTO_TEST_CASE(info_domain)
                 , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
                 , Util::vector_of<std::string>(admin_contact2_handle)//const std::vector<std::string>& admin_contacts
                 , 12//const Optional<unsigned>& expiration_period
+                , Optional<boost::gregorian::date>()
+                , Optional<bool>()
                 , 0//const Optional<unsigned long long> logd_request_id
                 ).exec(ctx);
 
@@ -171,6 +173,8 @@ BOOST_AUTO_TEST_CASE(info_domain)
             , Optional<Nullable<std::string> >()//dont change keyset
             , Util::vector_of<std::string> (admin_contact1_handle)(registrant_contact_handle) //add admin contacts
             , Util::vector_of<std::string> (admin_contact2_handle) //remove admin contacts
+            , Optional<boost::gregorian::date>()
+            , Optional<bool>()
             , Optional<unsigned long long>() //request_id not set
             ).exec(ctx);
 

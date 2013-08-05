@@ -88,16 +88,17 @@ const std::string server_name = "test-delete-contact";
 
 struct test_contact_fixture
 {
-    Fred::OperationContext ctx;
     std::string registrar_handle;
     std::string xmark;
     std::string test_contact_handle;
 
     test_contact_fixture()
-    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
-    , xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(RandomDataGenerator().xnumstring(6))
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     {
+        Fred::OperationContext ctx;
+        registrar_handle  = static_cast<std::string>(ctx.get_conn().exec(
+                "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
         Fred::CreateContact(test_contact_handle,registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
@@ -115,27 +116,13 @@ struct test_contact_fixture
 };
 
 /**
- * test call InfoContact
-*/
-BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
-{
-    Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
-    Fred::InfoContactOutput contact_info2 = Fred::InfoContact(test_contact_handle, registrar_handle).set_lock().exec(ctx);
-
-    std::vector<Fred::InfoContactHistoryOutput> contact_history_info1 = Fred::InfoContactHistory(
-        contact_info1.info_contact_data.roid, registrar_handle).exec(ctx);
-
-    BOOST_CHECK(contact_info1 == contact_info2);
-}
-
-/**
  * test DeleteContact
  * create test contact, delete test contact, check erdate of test contact is null
  * calls in test shouldn't throw
  */
 BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
 {
-
+    Fred::OperationContext ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(contact_info1.info_contact_data.delete_time.isnull());
 
@@ -171,7 +158,6 @@ BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
 
 BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
 {
-
     std::string bad_test_contact_handle = std::string("bad")+test_contact_handle;
     try
     {
@@ -179,12 +165,10 @@ BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
         Fred::DeleteContact(bad_test_contact_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::DeleteContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:handle")->second).compare(bad_test_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_contact_handle());
+        BOOST_CHECK(ex.get_unknown_contact_handle().compare(bad_test_contact_handle) == 0);
     }
 }
 
@@ -194,16 +178,19 @@ BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
 
 BOOST_FIXTURE_TEST_CASE(delete_linked_contact, test_contact_fixture )
 {
-    //create linked object
-    std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
-    Fred::CreateNsset(test_nsset_handle, registrar_handle)
-        .set_tech_contacts(Util::vector_of<std::string>(test_contact_handle))
-        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
-            ).exec(ctx);
+    {
+        Fred::OperationContext ctx;
+        //create linked object
+        std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
+        Fred::CreateNsset(test_nsset_handle, registrar_handle)
+            .set_tech_contacts(Util::vector_of<std::string>(test_contact_handle))
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                ).exec(ctx);
 
-   ctx.commit_transaction();
+       ctx.commit_transaction();
+    }
 
     try
     {
@@ -211,12 +198,10 @@ BOOST_FIXTURE_TEST_CASE(delete_linked_contact, test_contact_fixture )
         Fred::DeleteContact(test_contact_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::DeleteContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("is linked:handle")->second).compare(test_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_object_linked_to_contact_handle());
+        BOOST_CHECK(ex.get_object_linked_to_contact_handle().compare(test_contact_handle) == 0);
     }
 }
 

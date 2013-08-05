@@ -128,6 +128,11 @@ public:
         return static_cast<std::string>(*this) < static_cast<std::string>(rhs);
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const DnsKey& i)
+    {
+        return os << "DnsKey " << static_cast<std::string>(i);
+    }
+
 }; //class DnsKey
 
 

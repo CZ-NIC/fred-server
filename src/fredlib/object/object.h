@@ -32,11 +32,8 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 
-
-
 namespace Fred
 {
-
     class CreateObject
     {
         const std::string object_type_;//object type name
@@ -44,6 +41,14 @@ namespace Fred
         const std::string registrar_;//set registrar
         Optional<std::string> authinfo_;//set authinfo
     public:
+        DECLARE_EXCEPTION_DATA(invalid_object_handle, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_object_type<Exception>
+        , ExceptionData_invalid_object_handle<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
+
         CreateObject(const std::string& object_type
                 , const std::string& handle
                 , const std::string& registrar);
@@ -53,31 +58,10 @@ namespace Fred
             , const Optional<std::string>& authinfo);
         CreateObject& set_authinfo(const std::string& authinfo);
         unsigned long long exec(OperationContext& ctx);
+
+        friend std::ostream& operator<<(std::ostream& os, const CreateObject& i);
+        std::string to_string();
     };
-    //exception impl
-    class CreateObjectException
-    : public OperationExceptionImpl<CreateObjectException, 8192>
-    {
-    public:
-        CreateObjectException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<CreateObjectException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"not found:object type", "invalid:handle", "not found:registrar"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-
-    };//class CreateObjectException
-
-    typedef CreateObjectException::OperationErrorType CreteaObjectError;
-#define COEX(DATA) CreateObjectException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define COERR(DATA) CreteaObjectError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 
     class UpdateObject
     {
@@ -86,6 +70,14 @@ namespace Fred
         const std::string registrar_;//set registrar
         Optional<std::string> authinfo_;//set authinfo
     public:
+        DECLARE_EXCEPTION_DATA(unknown_object_handle, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_object_type<Exception>
+        , ExceptionData_unknown_object_handle<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
+
         UpdateObject(const std::string& handle
                 , const std::string& obj_type
                 , const std::string& registrar);
@@ -95,32 +87,10 @@ namespace Fred
             , const Optional<std::string>& authinfo);
         UpdateObject& set_authinfo(const std::string& authinfo);
         void exec(OperationContext& ctx);
+
+        friend std::ostream& operator<<(std::ostream& os, const UpdateObject& i);
+        std::string to_string();
     };
-
-    //exception impl
-    class UpdateObjectException
-    : public OperationExceptionImpl<UpdateObjectException, 8192>
-    {
-    public:
-        UpdateObjectException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<UpdateObjectException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"not found:handle", "not found:registrar", "not found:object type"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-
-    };//class UpdateObjectException
-
-    typedef UpdateObjectException::OperationErrorType UpdateObjectError;
-#define UOEX(DATA) UpdateObjectException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define UOERR(DATA) UpdateObjectError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 
     class InsertHistory
     {
@@ -128,31 +98,29 @@ namespace Fred
     public:
         InsertHistory(const Nullable<unsigned long long>& logd_request_id);
         unsigned long long exec(OperationContext& ctx);
+
+        friend std::ostream& operator<<(std::ostream& os, const InsertHistory& i);
+        std::string to_string();
     };
 
-    //exception impl
-        class InsertHistoryException
-        : public OperationExceptionImpl<InsertHistoryException, 8192>
-        {
-        public:
-            InsertHistoryException(const char* file
-                    , const int line
-                    , const char* function
-                    , const char* data)
-            : OperationExceptionImpl<InsertHistoryException, 8192>(file, line, function, data)
-            {}
+    class DeleteObject
+    {
+        const std::string handle_;//object identifier
+        const std::string obj_type_;//object type name
+    public:
+        DECLARE_EXCEPTION_DATA(unknown_object_handle, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_object_type<Exception>
+        , ExceptionData_unknown_object_handle<Exception>
+        {};
+        DeleteObject(const std::string& handle
+                , const std::string& obj_type);
+        void exec(OperationContext& ctx);
 
-            ConstArr get_fail_param_impl() throw()
-            {
-                static const char* list[]={"invalid:logd_request_id"};
-                return ConstArr(list,sizeof(list)/sizeof(char*));
-            }
-
-        };//class InsertHistoryException
-
-    typedef InsertHistoryException::OperationErrorType InsertHistoryError;
-#define IHEX(DATA) InsertHistoryException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define IHERR(DATA) InsertHistoryError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
+        friend std::ostream& operator<<(std::ostream& os, const DeleteObject& i);
+        std::string to_string();
+    };
 
 }//namespace Fred
 #endif //OBJECT_H_

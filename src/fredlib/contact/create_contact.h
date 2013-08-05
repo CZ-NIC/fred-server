@@ -37,9 +37,17 @@
 
 namespace Fred
 {
-
     class CreateContact
     {
+    public:
+        DECLARE_EXCEPTION_DATA(unknown_ssntype, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+          , ExceptionData_unknown_ssntype<Exception>
+          , ExceptionData_unknown_registrar_handle<Exception>
+        {};
+
+    private:
         const std::string handle_;//contact identifier
         const std::string registrar_;//registrar identifier
         Optional<std::string> authinfo_;//set authinfo
@@ -69,7 +77,6 @@ namespace Fred
         Optional<bool> discloseident_;//whether reveal SSN number
         Optional<bool> disclosenotifyemail_;//whether reveal notify email
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
-
 
     public:
         CreateContact(const std::string& handle
@@ -134,31 +141,9 @@ namespace Fred
         CreateContact& set_logd_request_id(unsigned long long logd_request_id);
         boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
+        friend std::ostream& operator<<(std::ostream& os, const CreateContact& cc);
+        std::string to_string();
+
     };//CreateContact
-
-    //exception impl
-    class CreateContactException
-    : public OperationExceptionImpl<CreateContactException, 8192>
-    {
-    public:
-        CreateContactException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<CreateContactException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"not found:ssntype", "not found crdate:handle"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-
-    };//class CreateContactException
-
-    typedef CreateContactException::OperationErrorType CreateContactError;
-#define CCEX(DATA) CreateContactException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define CCERR(DATA) CreateContactError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 }
 #endif // CREATE_CONTACT_H_

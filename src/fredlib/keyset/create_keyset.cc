@@ -92,7 +92,25 @@ namespace Fred
 
         try
         {
+            //check registrar
+            {
+                Database::Result registrar_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                    , Database::query_param_list(registrar_));
+                if(registrar_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+                if (registrar_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
+                }
+            }
+
             unsigned long long object_id = CreateObject("keyset", handle_, registrar_, authinfo_).exec(ctx);
+
+            Exception create_keyset_exception;
+
             //create keyset
             {
                 //insert
@@ -104,16 +122,25 @@ namespace Fred
                 {
                     for(std::vector<DnsKey>::iterator i = dns_keys_.begin(); i != dns_keys_.end(); ++i)
                     {
-                        Database::Result dns_keys_res = ctx.get_conn().exec_params(
-                            "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
-                            ", $2::integer, $3::integer, $4::integer, $5::text) RETURNING id"
-                            , Database::query_param_list(object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
-                        if (dns_keys_res.size() != 1)
+                        try
                         {
-                            std::string errmsg("dns keys || invalid:dns key: ");
-                            errmsg += boost::replace_all_copy(static_cast<std::string>(*i),"|", "[pipe]");//quote pipes
-                            errmsg += " |";
-                            throw CKEX(errmsg.c_str());
+                            ctx.get_conn().exec("SAVEPOINT dnskey");
+                            ctx.get_conn().exec_params(
+                            "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
+                            ", $2::integer, $3::integer, $4::integer, $5::text)"
+                            , Database::query_param_list(object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
+                            ctx.get_conn().exec("RELEASE SAVEPOINT dnskey");
+                        }
+                        catch(const std::exception& ex)
+                        {
+                            std::string what_string(ex.what());
+                            if(what_string.find("dnskey_unique_key") != std::string::npos)
+                            {
+                                create_keyset_exception.add_already_set_dns_key(*i);
+                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnskey");
+                            }
+                            else
+                                throw;
                         }
                     }//for i
                 }//if set dns keys
@@ -131,65 +158,52 @@ namespace Fred
 
                     for(std::vector<std::string>::iterator i = tech_contacts_.begin(); i != tech_contacts_.end(); ++i)
                     {
-                        //lock object_registry row for update
+                        //lock object_registry row for update and get id
+                        unsigned long long tech_contact_id = 0;
                         {
                             Database::Result lock_res = ctx.get_conn().exec_params(
                                 "SELECT oreg.id FROM enum_object_type eot"
                                 " JOIN object_registry oreg ON oreg.type = eot.id "
+                                " JOIN contact c ON oreg.id = c.id "
                                 " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
                                 " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
                                 , Database::query_param_list(*i));
 
+                            if (lock_res.size() == 0)
+                            {
+                                create_keyset_exception.add_unknown_technical_contact_handle(*i);
+                                continue;//for tech_contacts_
+                            }
                             if (lock_res.size() != 1)
                             {
-                                std::string errmsg("unable to lock || not found:tech contact: ");
-                                errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                                errmsg += " |";
-                                throw CKEX(errmsg.c_str());
+                                BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
                             }
+                            tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
                         }
 
                         Database::QueryParams params_i = params;//query params
                         std::stringstream sql_i;
                         sql_i << sql.str();
 
-                        params_i.push_back(*i);
+                        params_i.push_back(tech_contact_id);
+                        sql_i << " $" << params_i.size() << "::integer) ";
 
-                        {//precheck uniqueness
-                            Database::Result keyset_res = ctx.get_conn().exec_params(
-                            "SELECT keysetid, contactid FROM keyset_contact_map "
-                            " WHERE keysetid = $1::bigint "
-                            "  AND contactid = raise_exception_ifnull("
-                            "    (SELECT oreg.id FROM object_registry oreg "
-                            "       JOIN contact c ON oreg.id = c.id "
-                            "     WHERE oreg.name = UPPER($2::text) AND oreg.erdate IS NULL) "
-                            "     ,'|| not found:tech contact: '||ex_data($2::text)||' |')"
-                            , params_i);
-
-                            if (keyset_res.size() == 1)
-                            {
-                                std::string errmsg("tech contact already set || already set:tech contact: ");
-                                errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                                errmsg += " |";
-                                throw CKEX(errmsg.c_str());
-                            }
-                        }
-
-                        sql_i << " raise_exception_ifnull("
-                            " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                            " WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL) "
-                            " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |')) "
-                            " RETURNING keysetid";
-
-                        Database::Result keyset_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
-                        if (keyset_add_check_res.size() != 1)
+                        try
                         {
-                            std::string errmsg("add tech contact failed || invalid:handle: ");
-                            errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                            errmsg += " | invalid:tech contact: ";
-                            errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                            errmsg += " |";
-                            throw CKEX(errmsg.c_str());
+                            ctx.get_conn().exec("SAVEPOINT tech_contact");
+                            ctx.get_conn().exec_params(sql_i.str(), params_i);
+                            ctx.get_conn().exec("RELEASE SAVEPOINT tech_contact");
+                        }
+                        catch(const std::exception& ex)
+                        {
+                            std::string what_string(ex.what());
+                            if(what_string.find("keyset_contact_map_pkey") != std::string::npos)
+                            {
+                                create_keyset_exception.add_already_set_technical_contact_handle(*i);
+                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT tech_contact");
+                            }
+                            else
+                                throw;
                         }
                     }//for i
                 }//if set tech contacts
@@ -205,15 +219,16 @@ namespace Fred
 
                     if (crdate_res.size() != 1)
                     {
-                        std::string errmsg("|| not found crdate:handle: ");
-                        errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw CKEX(errmsg.c_str());
+                        BOOST_THROW_EXCEPTION(Fred::InternalError("timestamp of the keyset creation was not found"));
                     }
 
                     timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
                 }
             }
+
+            //check exception
+            if(create_keyset_exception.throw_me())
+                BOOST_THROW_EXCEPTION(create_keyset_exception);
 
             //save history
             {
@@ -227,10 +242,14 @@ namespace Fred
                     , Database::query_param_list(history_id)(object_id));
 
                 //object_registry historyid
-                ctx.get_conn().exec_params(
+                Database::Result update_historyid_res = ctx.get_conn().exec_params(
                     "UPDATE object_registry SET historyid = $1::bigint, crhistoryid = $1::bigint  "
-                        " WHERE id = $2::integer"
+                        " WHERE id = $2::integer RETURNING id"
                         , Database::query_param_list(history_id)(object_id));
+                if (update_historyid_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Fred::InternalError("update historyid failed"));
+                }
 
                 //keyset_history
                 ctx.get_conn().exec_params(
@@ -262,14 +281,37 @@ namespace Fred
 
             }//save history
 
-
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<CreateKeysetException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
 
         return timestamp;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const CreateKeyset& i)
+    {
+        os << "#CreateKeyset handle: " << i.handle_
+            << " registrar: " << i.registrar_
+            << " authinfo: " << i.authinfo_.print_quoted()
+            ;
+        if(!i.dns_keys_.empty()) os << " dns_keys: ";
+        for(std::vector<DnsKey>::const_iterator ci = i.dns_keys_.begin()
+                ; ci != i.dns_keys_.end() ; ++ci ) os << static_cast<std::string>(*ci);
+        if(!i.tech_contacts_.empty()) os << " tech_contacts: ";
+        for(std::vector<std::string>::const_iterator ci = i.tech_contacts_.begin()
+                ; ci != i.tech_contacts_.end() ; ++ci ) os << *ci;
+        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
+        return os;
+    }
+
+    std::string CreateKeyset::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
     }
 
 }//namespace Fred

@@ -60,37 +60,22 @@ namespace Fred
         bool lock_;//lock object_registry row for contact
 
     public:
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_registry_object_identifier<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
+
         InfoContactHistory(const std::string& roid, const std::string& registrar);
         InfoContactHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp, const std::string& registrar);
 
         InfoContactHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);//set history timestamp
         InfoContactHistory& set_lock(bool lock = true);//set lock object_registry row for contact
         std::vector<InfoContactHistoryOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        friend std::ostream& operator<<(std::ostream& os, const InfoContactHistory& ich);
+        std::string to_string();
+
     };//class InfoContactHistory
-
-//exception impl
-    class InfoContactHistoryException
-    : public OperationExceptionImpl<InfoContactHistoryException, 8192>
-    {
-    public:
-        InfoContactHistoryException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<InfoContactHistoryException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                    "not found:roid"
-                    , "not found:registrar"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class InfoContactHistoryException
-
-    typedef InfoContactHistoryException::OperationErrorType InfoContactHistoryError;
 
 }//namespace Fred
 

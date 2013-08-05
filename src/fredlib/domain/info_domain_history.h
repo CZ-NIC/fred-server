@@ -60,39 +60,22 @@ namespace Fred
         bool lock_;//lock object_registry row for domain
 
     public:
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_registry_object_identifier<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
         InfoDomainHistory(const std::string& roid, const std::string& registrar);
         InfoDomainHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp, const std::string& registrar);
 
         InfoDomainHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);//set history timestamp
         InfoDomainHistory& set_lock(bool lock = true);//set lock object_registry row for domain
         std::vector<InfoDomainHistoryOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        friend std::ostream& operator<<(std::ostream& os, const InfoDomainHistory& i);
+        std::string to_string();
+
     };//class InfoDomainHistory
-
-//exception impl
-    class InfoDomainHistoryException
-    : public OperationExceptionImpl<InfoDomainHistoryException, 8192>
-    {
-    public:
-        InfoDomainHistoryException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<InfoDomainHistoryException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                    "not found:roid"
-                    , "not found:registrar"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class InfoDomainHistoryException
-
-    typedef InfoDomainHistoryException::OperationErrorType InfoDomainHistoryError;
-#define IDHEX(DATA) InfoDomainHistoryException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define IDHERR(DATA) InfoDomainHistoryError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 

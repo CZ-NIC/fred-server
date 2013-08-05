@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/date_time/gregorian/gregorian.hpp>
+
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
@@ -44,9 +46,27 @@ namespace Fred
         Optional<Nullable<std::string> > keyset_;//set keyset
         std::vector<std::string> add_admin_contact_; //admin contacts to be added
         std::vector<std::string> rem_admin_contact_; //admin contacts to be removed
+        Optional<boost::gregorian::date> enum_validation_expiration_;//the expiration date of the ENUM domain validation, have to be set for enum domain, otherwise unused
+        Optional<bool> enum_publish_flag_;//flag for publishing ENUM number and associated contact in public directory
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
 
     public:
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(unassigned_admin_contact_handle, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(unknown_admin_contact_handle, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
+
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_domain_fqdn<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        , ExceptionData_unknown_nsset_handle<Exception>
+        , ExceptionData_unknown_keyset_handle<Exception>
+        , ExceptionData_unknown_registrant_handle<Exception>
+        , ExceptionData_vector_of_unknown_admin_contact_handle<Exception>
+        , ExceptionData_vector_of_already_set_admin_contact_handle<Exception>
+        , ExceptionData_vector_of_unassigned_admin_contact_handle<Exception>
+        {};
+
         UpdateDomain(const std::string& fqdn
                 , const std::string& registrar);
         UpdateDomain(const std::string& fqdn
@@ -57,6 +77,8 @@ namespace Fred
             , const Optional<Nullable<std::string> >& keyset
             , const std::vector<std::string>& add_admin_contact
             , const std::vector<std::string>& rem_admin_contact
+            , const Optional<boost::gregorian::date>& enum_validation_expiration
+            , const Optional<bool>& enum_publish_flag
             , const Optional<unsigned long long> logd_request_id
             );
         UpdateDomain& set_registrant(const std::string& registrant);
@@ -69,40 +91,13 @@ namespace Fred
         UpdateDomain& unset_keyset();
         UpdateDomain& add_admin_contact(const std::string& admin_contact);
         UpdateDomain& rem_admin_contact(const std::string& admin_contact);
+        UpdateDomain& set_enum_validation_expiration(const boost::gregorian::date& valexdate);
+        UpdateDomain& set_enum_publish_flag(bool enum_publish_flag);
         UpdateDomain& set_logd_request_id(unsigned long long logd_request_id);
         unsigned long long exec(OperationContext& ctx);//return new history_id
+        friend std::ostream& operator<<(std::ostream& os, const UpdateDomain& i);
+        std::string to_string();
     };//class UpdateDomain
-
-//exception impl
-    class UpdateDomainException
-    : public OperationExceptionImpl<UpdateDomainException, 8192>
-    {
-    public:
-        UpdateDomainException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<UpdateDomainException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"not found:fqdn"
-                    , "not found:registrar"
-                    , "not found:nsset"
-                    , "not found:keyset"
-                    , "not found:registrant"
-                    , "not found:admin contact"
-                    , "invalid:fqdn"
-                    , "already set:admin contact"
-                    , "invalid:admin contact"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class UpdateDomainException
-
-    typedef UpdateDomainException::OperationErrorType UpdateDomainError;
-#define UDEX(DATA) UpdateDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define UDERR(DATA) UpdateDomainError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 

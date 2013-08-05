@@ -68,37 +68,19 @@ namespace Fred
         bool lock_;//lock object_registry row for domain
 
     public:
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_domain_fqdn<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
         InfoDomain(const std::string& fqdn
                 , const std::string& registrar);
         InfoDomain& set_lock(bool lock = true);//set lock object_registry row for domain
         InfoDomainOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        friend std::ostream& operator<<(std::ostream& os, const InfoDomain& i);
+        std::string to_string();
     };//class InfoDomain
-
-//exception impl
-    class InfoDomainException
-    : public OperationExceptionImpl<InfoDomainException, 8192>
-    {
-    public:
-        InfoDomainException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<InfoDomainException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                    "not found:fqdn"
-                    , "not found:registrar"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class InfoDomainException
-
-    typedef InfoDomainException::OperationErrorType InfoDomainError;
-#define IDEX(DATA) InfoDomainException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define IDERR(DATA) InfoDomainError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 

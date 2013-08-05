@@ -206,6 +206,11 @@ struct merge_contact_contacts_fixture
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
             .exec(ctx);
+        BOOST_TEST_MESSAGE(std::string("merge_contact_contacts_fixture src_contact_handle: ") + src_contact_handle);
+
+        Fred::InfoContactOutput  ic = Fred::InfoContact(src_contact_handle,registrar_handle).exec(ctx);
+
+        BOOST_TEST_MESSAGE(std::string("merge_contact_contacts_fixture src_contact_handle roid: ") + ic.info_contact_data.roid);
 
         Fred::CreateContact(dst_contact_handle,registrar_handle)
             .set_name("COMMON NAME")
@@ -214,7 +219,6 @@ struct merge_contact_contacts_fixture
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
             .exec(ctx);
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_contacts_fixture(){}
@@ -223,7 +227,6 @@ struct merge_contact_contacts_fixture
 struct merge_contact_domain_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     std::string test_nsset_handle;
     std::string test_keyset_handle;
     std::string test_domain_owner_handle;
@@ -262,8 +265,6 @@ struct merge_contact_domain_fixture
                 )
         .set_admin_contacts(Util::vector_of<std::string>(src_contact_handle))
         .exec(ctx);
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_domain_fixture(){}
@@ -273,7 +274,6 @@ struct merge_contact_domain_fixture
 struct merge_contact_n_nsset_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int nsset_count;
     std::string test_nsset_handle;
 
@@ -298,8 +298,6 @@ struct merge_contact_n_nsset_fixture
                 .set_tech_contacts(Util::vector_of<std::string>(src_contact_handle))
                 .exec(ctx);
         }//for nsset_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_n_nsset_fixture(){}
@@ -308,7 +306,6 @@ struct merge_contact_n_nsset_fixture
 struct merge_contact_r_nsset_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int nsset_count;
     std::string test_nsset_handle;
 
@@ -333,8 +330,6 @@ struct merge_contact_r_nsset_fixture
                 .set_tech_contacts(Util::vector_of<std::string>(dst_contact_handle))
                 .exec(ctx);
         }//for nsset_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_r_nsset_fixture(){}
@@ -344,7 +339,6 @@ struct merge_contact_r_nsset_fixture
 struct merge_contact_n_keyset_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int keyset_count;
     std::string test_keyset_handle;
 
@@ -365,8 +359,6 @@ struct merge_contact_n_keyset_fixture
                     .set_tech_contacts(Util::vector_of<std::string>(src_contact_handle))
                     .exec(ctx);
         }//for keyset_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_n_keyset_fixture(){}
@@ -375,7 +367,6 @@ struct merge_contact_n_keyset_fixture
 struct merge_contact_r_keyset_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int keyset_count;
     std::string test_keyset_handle;
 
@@ -396,8 +387,6 @@ struct merge_contact_r_keyset_fixture
                     .set_tech_contacts(Util::vector_of<std::string>(dst_contact_handle))
                     .exec(ctx);
         }//for keyset_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_r_keyset_fixture(){}
@@ -407,7 +396,6 @@ struct merge_contact_r_keyset_fixture
 struct merge_contact_n_domain_owner_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int domain_owner_count;
     std::string test_domain_owner_handle;
 
@@ -436,8 +424,6 @@ struct merge_contact_n_domain_owner_fixture
             .set_admin_contacts(Util::vector_of<std::string>(common_contact_handle))
             .exec(ctx);
         }//for domain_owner_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_n_domain_owner_fixture(){}
@@ -446,7 +432,6 @@ struct merge_contact_n_domain_owner_fixture
 struct merge_contact_r_domain_owner_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int domain_owner_count;
     std::string test_domain_owner_handle;
 
@@ -475,8 +460,6 @@ struct merge_contact_r_domain_owner_fixture
             .set_admin_contacts(Util::vector_of<std::string>(common_contact_handle))
             .exec(ctx);
         }//for domain_owner_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_r_domain_owner_fixture(){}
@@ -486,7 +469,6 @@ struct merge_contact_r_domain_owner_fixture
 struct merge_contact_n_domain_admin_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int domain_admin_count;
     std::string test_domain_admin_handle;
 
@@ -514,8 +496,6 @@ struct merge_contact_n_domain_admin_fixture
             .set_admin_contacts(Util::vector_of<std::string>(src_contact_handle))
             .exec(ctx);
         }//for domain_admin_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_n_domain_admin_fixture(){}
@@ -525,7 +505,6 @@ struct merge_contact_n_domain_admin_fixture
 struct merge_contact_r_domain_admin_fixture
     : virtual merge_contact_contacts_fixture
 {
-    Fred::OperationContext ctx;
     int domain_admin_count;
     std::string test_domain_admin_handle;
 
@@ -553,8 +532,6 @@ struct merge_contact_r_domain_admin_fixture
             .set_admin_contacts(Util::vector_of<std::string>(dst_contact_handle))
             .exec(ctx);
         }//for domain_admin_count
-
-        ctx.commit_transaction();//commit fixture
     }
 
     ~merge_contact_r_domain_admin_fixture(){}
@@ -568,8 +545,6 @@ struct merge_contact_n_fixture
     , virtual merge_contact_n_domain_owner_fixture
     , virtual merge_contact_n_domain_admin_fixture
 {
-    Fred::OperationContext ctx;
-
     merge_contact_n_fixture(int nssets, int keysets, int domainowners, int domainadmins )
         : merge_contact_n_nsset_fixture(nssets)
         , merge_contact_n_keyset_fixture(keysets)
@@ -692,7 +667,6 @@ struct merge_contact_n_fixture
             info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
         BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 
-        ctx.commit_transaction();//commit test
     }
 };
 
@@ -799,12 +773,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_src_contact, merge_contact_domain
         Fred::MergeContactOutput merge_data = Fred::MergeContact(bad_src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(Fred::MergeContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:src_contact_handle")->second).compare(bad_src_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_source_contact_handle());
+        BOOST_CHECK(ex.get_unknown_source_contact_handle().compare(bad_src_contact_handle) == 0);
     }
 
     //info after merge
@@ -839,12 +811,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_dst_contact, merge_contact_domain
         Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, bad_dst_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(Fred::MergeContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:dst_contact_handle")->second).compare(bad_dst_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_destination_contact_handle());
+        BOOST_CHECK(ex.get_unknown_destination_contact_handle().compare(bad_dst_contact_handle) == 0);
     }
 
     //info after merge
@@ -886,13 +856,11 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_src_contact, merge_contact_
         Fred::MergeContactOutput merge_data = Fred::MergeContact(different_src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(Fred::MergeContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 2);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:src_contact_handle")->second).compare(different_src_contact_handle) == 0);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:dst_contact_handle")->second).compare(dst_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_contacts_differ());
+        BOOST_CHECK(ex.get_contacts_differ().source_handle.compare(different_src_contact_handle) == 0);
+        BOOST_CHECK(ex.get_contacts_differ().destination_handle.compare(dst_contact_handle) == 0);
     }
 
     //info after merge
@@ -934,13 +902,11 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_dst_contact, merge_contact_
         Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, different_dst_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(Fred::MergeContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 2);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:src_contact_handle")->second).compare(src_contact_handle) == 0);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:dst_contact_handle")->second).compare(different_dst_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_contacts_differ());
+        BOOST_CHECK(ex.get_contacts_differ().source_handle.compare(src_contact_handle) == 0);
+        BOOST_CHECK(ex.get_contacts_differ().destination_handle.compare(different_dst_contact_handle) == 0);
     }
 
     //info after merge
@@ -975,12 +941,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_same_src_and_dst_contact, merge_conta
         Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, src_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(Fred::MergeContact::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("identical:dst_contact_handle")->second).compare(src_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_identical_contacts_handle());
+        BOOST_CHECK(ex.get_identical_contacts_handle().compare(src_contact_handle) == 0);
     }
 
     //info after merge
@@ -1334,7 +1298,9 @@ struct contact_merge_duplicate_auto_fixture
         , merge_contact_r_keyset_fixture(keysets)
         , merge_contact_r_domain_owner_fixture(domainowners)
         , merge_contact_r_domain_admin_fixture(domainadmins)
-        {}
+        {
+            ctx.commit_transaction();
+        }
     ~contact_merge_duplicate_auto_fixture(){}
 };
 

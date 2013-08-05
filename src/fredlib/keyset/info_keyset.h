@@ -69,35 +69,23 @@ namespace Fred
         bool lock_;//lock object_registry row
 
     public:
+
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_keyset_handle<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
+
+
         InfoKeyset(const std::string& handle
                 , const std::string& registrar);
         InfoKeyset& set_lock(bool lock = true);//set lock object_registry row
         InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        friend std::ostream& operator<<(std::ostream& os, const InfoKeyset& i);
+        std::string to_string();
+
     };//class InfoKeyset
-
-//exception impl
-    class InfoKeysetException
-    : public OperationExceptionImpl<InfoKeysetException, 8192>
-    {
-    public:
-        InfoKeysetException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<InfoKeysetException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                    "not found:handle"
-                    , "not found:registrar"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class InfoKeysetException
-
-    typedef InfoKeysetException::OperationErrorType InfoKeysetError;
 
 }//namespace Fred
 

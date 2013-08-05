@@ -79,6 +79,14 @@ public:
     {
         return os << ov.get_value();
     }
+
+    std::string print_quoted() const
+    {
+        std::stringstream ss;
+        ss << (*this);
+        return isset() ? std::string("'") + ss.str() + "'" : std::string("[N/A]");
+    }
+
 };
 
 #endif //OPTIONAL_VALUE_H_

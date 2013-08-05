@@ -69,36 +69,20 @@ namespace Fred
         bool lock_;//lock object_registry row
 
     public:
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_contact_handle<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
+
         InfoContact(const std::string& handle
                 , const std::string& registrar);
         InfoContact& set_lock(bool lock = true);//set lock object_registry row
         InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        friend std::ostream& operator<<(std::ostream& os, const InfoContact& ic);
+        std::string to_string();
     };//class InfoContact
-
-    //exception impl
-    class InfoContactException
-    : public OperationExceptionImpl<InfoContactException, 8192>
-    {
-    public:
-        InfoContactException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<InfoContactException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={
-                    "not found:handle"
-                    , "not found:registrar"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class InfoContactException
-
-    typedef InfoContactException::OperationErrorType InfoContactError;
-
 }//namespace Fred
 
 #endif//INFO_CONTACT_H_

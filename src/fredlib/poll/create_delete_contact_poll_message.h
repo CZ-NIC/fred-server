@@ -18,36 +18,17 @@ public:
 
     void exec(Fred::OperationContext &_ctx);
 
+    DECLARE_EXCEPTION_DATA(contact_not_found, unsigned long long);
+    DECLARE_EXCEPTION_DATA(object_history_not_found, unsigned long long);
+    struct Exception
+    : virtual Fred::OperationException
+    , ExceptionData_contact_not_found<Exception>
+    , ExceptionData_object_history_not_found<Exception>
+    {};
 
 private:
     ObjectHistoryId history_id_;
 };
-
-
-class CreateDeleteContactPollMessageException
-    : public OperationExceptionImpl<CreateDeleteContactPollMessageException, 8192>
-{
-public:
-    CreateDeleteContactPollMessageException(
-            const char *_file,
-            const int _line,
-            const char *_function,
-            const char *_data)
-        : OperationExceptionImpl<CreateDeleteContactPollMessageException, 8192>
-                (_file, _line, _function, _data)
-    {
-    }
-
-    ConstArr get_fail_param_impl() throw()
-    {
-        static const char *list[] = {
-            "not found:object history",
-            "not found:contact"
-        };
-        return ConstArr(list, sizeof(list) / sizeof(char*));
-    }
-};
-
 
 }
 }

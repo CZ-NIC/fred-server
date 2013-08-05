@@ -44,10 +44,7 @@ namespace Fred
     {
         if(boost::algorithm::to_upper_copy(src_contact_handle_).compare(boost::algorithm::to_upper_copy(dst_contact_handle_)) == 0)
         {
-            std::string errmsg("unable to merge the same contacts || identical:dst_contact_handle: ");
-            errmsg += boost::replace_all_copy(dst_contact_handle_,"|", "[pipe]");//quote pipes
-            errmsg += " |";
-            throw MCEX(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_identical_contacts_handle(dst_contact_handle_));
         }
     }
 
@@ -70,12 +67,13 @@ namespace Fred
                 " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(src_contact_handle_));
 
+            if (lock_res.size() == 0)
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_source_contact_handle(src_contact_handle_));
+            }
             if (lock_res.size() != 1)
             {
-                std::string errmsg("|| not found:src_contact_handle: ");
-                errmsg += boost::replace_all_copy(src_contact_handle_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw MCEX(errmsg.c_str());
+                BOOST_THROW_EXCEPTION(InternalError("failed to get source contact"));
             }
 
             ret.src_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
@@ -94,12 +92,13 @@ namespace Fred
                         " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
                 , Database::query_param_list(dst_contact_handle_));
 
+            if (lock_res.size() == 0)
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_destination_contact_handle(dst_contact_handle_));
+            }
             if (lock_res.size() != 1)
             {
-                std::string errmsg("|| not found:dst_contact_handle: ");
-                errmsg += boost::replace_all_copy(dst_contact_handle_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw MCEX(errmsg.c_str());
+                BOOST_THROW_EXCEPTION(InternalError("failed to get destination contact"));
             }
 
             ret.dst_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
@@ -110,10 +109,7 @@ namespace Fred
 
         if(ret.src_contact_roid.compare(ret.dst_contact_roid) == 0)
         {
-            std::string errmsg("unable to merge the same contacts || identical:dst_contact_roid: ");
-            errmsg += boost::replace_all_copy(ret.dst_contact_roid,"|", "[pipe]");//quote pipes
-            errmsg += " |";
-            throw MCEX(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_identical_contacts_roid(ret.dst_contact_roid));
         }
 
         return ret;
@@ -123,10 +119,7 @@ namespace Fred
     {
         if(boost::algorithm::to_upper_copy(src_contact_handle_).compare(boost::algorithm::to_upper_copy(dst_contact_handle_)) == 0)
         {
-            std::string errmsg("unable to merge the same contacts || identical:dst_contact_handle: ");
-            errmsg += boost::replace_all_copy(dst_contact_handle_,"|", "[pipe]");//quote pipes
-            errmsg += " |";
-            throw MCEX(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_identical_contacts_handle(dst_contact_handle_));
         }
 
         Database::Result diff_result = ctx.get_conn().exec_params(
@@ -168,22 +161,14 @@ namespace Fred
           , Database::query_param_list(src_contact_handle_)(dst_contact_handle_));
         if (diff_result.size() != 1)
         {
-            std::string errmsg("unable to get contact difference || invalid:src_contact_handle: ");
-            errmsg += boost::replace_all_copy(src_contact_handle_,"|", "[pipe]");//quote pipes
-            errmsg += " | invalid:dst_contact_handle: ";
-            errmsg += boost::replace_all_copy(dst_contact_handle_,"|", "[pipe]");//quote pipes
-            errmsg += " |";
-            throw MCEX(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_unable_to_get_difference_of_contacts(
+                    InvalidContacts(src_contact_handle_,dst_contact_handle_)));
         }
         bool contact_differs = static_cast<bool>(diff_result[0][0]);
         if(contact_differs)
         {
-            std::string errmsg("contacts differ || invalid:src_contact_handle: ");
-            errmsg += boost::replace_all_copy(src_contact_handle_,"|", "[pipe]");//quote pipes
-            errmsg += " | invalid:dst_contact_handle: ";
-            errmsg += boost::replace_all_copy(dst_contact_handle_,"|", "[pipe]");//quote pipes
-            errmsg += " |";
-            throw MCEX(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_contacts_differ(
+                    InvalidContacts(src_contact_handle_,dst_contact_handle_)));
         }
     }//diff_contacts
 
@@ -258,13 +243,11 @@ namespace Fred
                         if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
                         tmp.history_id = ud.exec(ctx);
                     }
-                    catch(UpdateDomainException& ex)
+                    catch(UpdateDomain::Exception& ex)
                     {
-                        GetOperationExceptionParamsDataToBoolCallback cb;
                         //look for already set: admin contact
-                        ex.callback_exception_params(boost::ref(cb),"already set:admin contact");
                         //if found ignore exception, if not found rethrow exception
-                        if(cb.get())
+                        if(ex.is_set_vector_of_already_set_admin_contact_handle())
                         {
                             //only remove source admin contact, dest admin contact is already there
                             UpdateDomain ud (tmp.fqdn, registrar_ );
@@ -315,13 +298,11 @@ namespace Fred
                         if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
                         tmp.history_id = un.exec(ctx);
                     }
-                    catch(UpdateNssetException& ex)
+                    catch(UpdateNsset::Exception& ex)
                     {
-                        GetOperationExceptionParamsDataToBoolCallback cb;
                         //look for already set: tech contact
-                        ex.callback_exception_params(boost::ref(cb),"already set:tech contact");
                         //if found ignore exception, if not found rethrow exception
-                        if(cb.get())
+                        if(ex.is_set_vector_of_already_set_technical_contact_handle())
                         {
                             //only remove source tech contact, dest tech contact is already there
                             UpdateNsset un(tmp.handle, registrar_ );
@@ -372,13 +353,9 @@ namespace Fred
                         if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
                         tmp.history_id = uk.exec(ctx);
                     }
-                    catch(UpdateKeysetException& ex)
+                    catch(UpdateKeyset::Exception& ex)
                     {
-                        GetOperationExceptionParamsDataToBoolCallback cb;
-                        //look for already set: tech contact
-                        ex.callback_exception_params(boost::ref(cb),"already set:tech contact");
-                        //if found ignore exception, if not found rethrow exception
-                        if(cb.get())
+                        if(ex.is_set_vector_of_already_set_technical_contact_handle())
                         {
                             //only remove source tech contact, dest tech contact is already there
                             UpdateKeyset uk(tmp.handle, registrar_);
@@ -420,9 +397,10 @@ namespace Fred
             out.contactid = locked_contact;
             return out;
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<MergeContactException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
         return MergeContactOutput();
     }//MergeContact::exec_dry_run
@@ -443,12 +421,29 @@ namespace Fred
             out.contactid = locked_contact;
             return out;
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<MergeContactException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
         return MergeContactOutput();
     }//MergeContact::exec
+
+    std::ostream& operator<<(std::ostream& os, const MergeContact& i)
+    {
+        return os << "#MergeContact src_contact_handle_: " << i.src_contact_handle_
+                << " dst_contact_handle_: " << i.dst_contact_handle_
+                << " registrar_: " << i.registrar_
+                << " logd_request_id_: " << i.logd_request_id_.print_quoted()
+                ;
+    }
+
+    std::string MergeContact::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 
 }//namespace Fred
 

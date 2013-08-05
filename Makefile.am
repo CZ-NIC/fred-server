@@ -740,7 +740,15 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/find_contact_duplicates.cc \
 		src/fredlib/contact/find_contact_duplicates.h \
 		src/fredlib/contact/merge_contact_email_notification_data.cc \
-		src/fredlib/contact/merge_contact_email_notification_data.h
+		src/fredlib/contact/merge_contact_email_notification_data.h \
+		src/fredlib/domain/delete_domain.h \
+		src/fredlib/domain/delete_domain.cc \
+		src/fredlib/domain/domain_name.h \
+		src/fredlib/domain/domain_name.cc \
+		src/fredlib/zone/zone.h \
+		src/fredlib/zone/zone.cc \
+		src/fredlib/domain/domain_name.h \
+		src/fredlib/domain/domain_name.cc
 
 #
 # src/fredlib/libfred.a
@@ -1481,7 +1489,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/merge_contact_auto_procedure.cc \
 		src/admin/contact/merge_contact_auto_procedure.h \
 		src/admin/contact/merge_contact_reporting.cc \
-		src/admin/contact/merge_contact_reporting.h
+		src/admin/contact/merge_contact_reporting.h \
+		src/cli_admin/domain_name_validation_params.h \
+		src/cli_admin/domain_name_validation_init.h
 
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)
@@ -1634,8 +1644,13 @@ tests_test_server_SOURCES = \
 		tests/test-update-domain.cc \
 		tests/test-delete-contact.cc \
 		tests/test-info-domain.cc \
-		tests/test-merge-contact.cc
-
+		tests/test-merge-contact.cc \
+		tests/test-opexception.cc \
+		tests/test-create-contact.cc \
+		tests/test-info-contact.cc \
+		tests/test-delete-domain.cc \
+		tests/test-create-domain.cc \
+		tests/test-domain-name.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
