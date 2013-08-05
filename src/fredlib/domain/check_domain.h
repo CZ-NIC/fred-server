@@ -50,6 +50,10 @@ namespace Fred
         bool is_bad_zone(OperationContext& ctx);
         //check number of domain name labels
         bool is_bad_length(OperationContext& ctx);
+        //check if domain name is on blacklist
+        bool is_blacklisted(OperationContext& ctx);
+        //check if domain name is registered, if true then set conflicting_fqdn
+        bool is_registered(OperationContext& ctx, std::string& conflicting_fqdn_out);
 
         friend std::ostream& operator<<(std::ostream& os, const CheckDomain& i);
         std::string to_string();

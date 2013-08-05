@@ -156,6 +156,90 @@ namespace Fred
         return false;//meaning ok
     }
 
+    bool CheckDomain::is_blacklisted(OperationContext& ctx)
+    {
+        try
+        {
+            //remove optional root dot from fqdn
+            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+
+            //check blacklist regexp for match with fqdn
+            Database::Result bl_res  = ctx.get_conn().exec_params(
+                "SELECT id FROM domain_blacklist b "
+                "WHERE $1::text ~ b.regexp AND NOW()>b.valid_from "
+                "AND (b.valid_to ISNULL OR NOW()<b.valid_to) "
+            , Database::query_param_list(no_root_dot_fqdn));
+            if(bl_res.size() > 0)//positively blacklisted
+            {
+                return true;
+            }
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return false;//meaning ok
+    }
+
+    bool CheckDomain::is_registered(OperationContext& ctx, std::string& conflicting_fqdn_out)
+    {
+        try
+        {
+            //remove optional root dot from fqdn
+            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+
+            //get zone
+            Zone::Data zone;
+            try
+            {
+                zone = Zone::find_zone_in_fqdn(ctx, no_root_dot_fqdn);
+            }
+            catch(const Zone::Exception& ex)
+            {
+                if(ex.is_set_unknown_zone_in_fqdn()
+                        && (ex.get_unknown_zone_in_fqdn().compare(no_root_dot_fqdn) == 0))
+                {
+                    return false;//zone not found
+                }
+                else
+                    throw;
+            }
+
+            if(zone.is_enum)
+            {
+                Database::Result conflicting_fqdn_res  = ctx.get_conn().exec_params(
+                    "SELECT o.name, o.id FROM object_registry o JOIN enum_object_type eot on o.type = eot.id "
+                    " WHERE eot.name='domain' AND o.erdate ISNULL ""AND (($1::text LIKE '%.'|| o.name) "
+                    " OR (o.name LIKE '%.'||$1::text) OR o.name=$1::text) LIMIT 1"
+                , Database::query_param_list(no_root_dot_fqdn));
+                if(conflicting_fqdn_res.size() > 0)//have conflicting_fqdn
+                {
+                    conflicting_fqdn_out = static_cast<std::string>(conflicting_fqdn_res[0][0]);
+                    return true;
+                }
+            }
+            else
+            {//is not ENUM
+                Database::Result conflicting_fqdn_res  = ctx.get_conn().exec_params(
+                    "SELECT o.name, o.id FROM object_registry o JOIN enum_object_type eot on o.type = eot.id "
+                    " WHERE eot.name='domain' AND o.erdate ISNULL AND o.name=$1::text LIMIT 1"
+                , Database::query_param_list(no_root_dot_fqdn));
+                if(conflicting_fqdn_res.size() > 0)//have conflicting_fqdn
+                {
+                    conflicting_fqdn_out = static_cast<std::string>(conflicting_fqdn_res[0][0]);
+                    return true;
+                }
+
+            }
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return false;//meaning ok
+    }
 
     std::ostream& operator<<(std::ostream& os, const CheckDomain& i)
     {
