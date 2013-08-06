@@ -32,7 +32,6 @@ CLEANFILES = \
 		config/server.conf \
 		config/hpmail.conf \
 		init-scripts/fred-server \
-		util/decimal/mpdecimal-2.2/mpdecimal.h \
 		src/corba/MessagesSK.cc \
 		src/corba/MessagesDynSK.cc \
 		src/corba/MessagesSK.h \
@@ -102,9 +101,7 @@ rcconfdir = $(sysconfdir)/init.d
 EXTRA_DIST = \
 		fred-server.spec \
 		util/sms_send.bash \
-		tests/test-file.pdf \
-		util/decimal/mpdecimal-2.2/README.txt \
-		util/decimal/mpdecimal-2.2/LICENSE.txt
+		tests/test-file.pdf
 
 dist_fredconf_DATA = \
 		config/server.conf \
@@ -193,7 +190,6 @@ noinst_LIBRARIES = \
 		src/corba/libmailer.a \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/whois/libwhois_impl.a \
-		util/decimal/libmpdec.a \
 		src/corba/epp/libepp_impl.a \
 		src/corba/log/liblog_impl.a \
 		util/hp/libhp.a \
@@ -491,60 +487,6 @@ util_hp_crc32_LDADD = \
 		$(BOOST_DATE_TIME_LIB)
 #
 # util/hp/crc32
-
-
-# util/decimal/libmpdec.a
-#
-MPD_HEADER = @MPD_HEADER@
-MPD_WARN = @MPD_WARN@
-MPD_CONFIG = @MPD_CONFIG@
-
-util_decimal_libmpdec_a_CFLAGS = \
-		-I $(top_srcdir)/util/decimal/mpdecimal-2.2 \
-		-I $(top_builddir)/util/decimal/mpdecimal-2.2 \
-		$(CONFIGURE_CFLAGS)
-
-util_decimal_libmpdec_a_SOURCES = \
-		util/decimal/mpdecimal-2.2/basearith.c \
-		util/decimal/mpdecimal-2.2/context.c \
-		util/decimal/mpdecimal-2.2/constants.c \
-		util/decimal/mpdecimal-2.2/convolute.c \
-		util/decimal/mpdecimal-2.2/crt.c \
-		util/decimal/mpdecimal-2.2/mpdecimal.c \
-		util/decimal/mpdecimal-2.2/mpsignal.c \
-		util/decimal/mpdecimal-2.2/difradix2.c \
-		util/decimal/mpdecimal-2.2/fnt.c \
-		util/decimal/mpdecimal-2.2/fourstep.c \
-		util/decimal/mpdecimal-2.2/io.c \
-		util/decimal/mpdecimal-2.2/memory.c \
-		util/decimal/mpdecimal-2.2/numbertheory.c \
-		util/decimal/mpdecimal-2.2/sixstep.c \
-		util/decimal/mpdecimal-2.2/transpose.c \
-		util/decimal/mpdecimal-2.2/mptypes.h \
-		util/decimal/mpdecimal-2.2/umodarith.h \
-		util/decimal/mpdecimal-2.2/basearith.h \
-		util/decimal/mpdecimal-2.2/fnt.h \
-		util/decimal/mpdecimal-2.2/memory.h \
-		util/decimal/mpdecimal-2.2/mpdecimal32vc.h \
-		util/decimal/mpdecimal-2.2/convolute.h \
-		util/decimal/mpdecimal-2.2/difradix2.h \
-		util/decimal/mpdecimal-2.2/io.h \
-		util/decimal/mpdecimal-2.2/mpdecimal64vc.h \
-		util/decimal/mpdecimal-2.2/numbertheory.h \
-		util/decimal/mpdecimal-2.2/vccompat.h \
-		util/decimal/mpdecimal-2.2/constants.h \
-		util/decimal/mpdecimal-2.2/transpose.h \
-		util/decimal/mpdecimal-2.2/bits.h \
-		util/decimal/mpdecimal-2.2/fourstep.h \
-		util/decimal/mpdecimal-2.2/sixstep.h \
-		util/decimal/mpdecimal-2.2/vcstdint.h \
-		util/decimal/mpdecimal-2.2/crt.h \
-		util/decimal/mpdecimal-2.2/docstrings.h \
-		util/decimal/mpdecimal-2.2/mptest.h \
-		util/decimal/mpdecimal-2.2/typearith.h \
-		util/decimal/mpdecimal-2.2/vcdiv64.asm
-#
-# util/decimal/libmpdec.a
 
 
 # src/old_utils/liboldutils.a
@@ -1224,7 +1166,7 @@ src_corba_fred_rifd_LDADD = \
 		util/log/liblog.a \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
-		util/decimal/libmpdec.a -lm \
+		-lmpdec -lm \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -1272,7 +1214,7 @@ src_corba_fred_adifd_LDADD = \
 		util/log/liblog.a \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
-		util/decimal/libmpdec.a -lm \
+		-lmpdec -lm \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -1328,7 +1270,7 @@ src_corba_fred_pifd_LDADD = \
 		src/old_utils/liboldutils.a \
 		util/log/liblog.a \
 		util/libutil.a \
-		util/decimal/libmpdec.a -lm \
+		-lmpdec -lm \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -1367,7 +1309,7 @@ src_corba_fred_logd_LDADD = \
 		util/log/liblog.a \
 		util/libutil.a \
 		src/old_utils/liboldutils.a \
-		util/decimal/libmpdec.a -lm \
+		-lmpdec -lm \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -1469,7 +1411,7 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		util/types/libtypes.a \
 		util/db/libdb.a \
 		src/old_utils/liboldutils.a \
-		util/decimal/libmpdec.a -lm \
+		-lmpdec -lm \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(OMNIORB4_LIBS) \
@@ -1577,7 +1519,7 @@ src_cli_admin_fred_admin_LDADD = \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
 		util/hp/libhp.a \
-		util/decimal/libmpdec.a -lm \
+		-lmpdec -lm \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -1751,7 +1693,7 @@ tests_test_server_LDADD = \
 		src/corba/libcorbafilters.a \
 		src/corba/libcorbadatatypes.a \
 		src/corba/libmailer.a \
-		util/decimal/libmpdec.a -lm \
+		-lmpdec -lm \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -1777,7 +1719,7 @@ tests_test_exception_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 tests_test_exception_LDADD = \
-		util/decimal/libmpdec.a -lm \
+		-lmpdec -lm \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
