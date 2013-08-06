@@ -36,34 +36,20 @@ namespace Fred
     {
         const std::string handle_;//contact identifier
     public:
+
+        DECLARE_EXCEPTION_DATA(object_linked_to_contact_handle, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_contact_handle<Exception>
+        , ExceptionData_object_linked_to_contact_handle<Exception>
+        {};
+
         DeleteContact(const std::string& handle);
         void exec(OperationContext& ctx);
+
+        friend std::ostream& operator<<(std::ostream& os, const DeleteContact& dc);
+        std::string to_string();
     };//class DeleteContact
-
-    //exception impl
-    class DeleteContactException
-    : public OperationExceptionImpl<DeleteContactException, 8192>
-    {
-    public:
-        DeleteContactException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<DeleteContactException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"not found:handle"
-                    , "is linked:handle"
-                };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class DeleteContactException
-
-    typedef DeleteContactException::OperationErrorType DeleteContactError;
-#define DCEX(DATA) DeleteContactException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define DCERR(DATA) DeleteContactError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 

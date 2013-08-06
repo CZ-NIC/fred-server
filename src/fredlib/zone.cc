@@ -976,10 +976,11 @@ namespace Fred
       {
         try
         {
+            std::string fqdn_lower = boost::to_lower_copy(fqdn);
         	Database::Connection conn = Database::Manager::acquire();
 
         	std::stringstream sql;
-			sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << conn.escape(fqdn) << "'";
+			sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << conn.escape(fqdn_lower) << "'";
 
 			Database::Result res = conn.exec(sql.str());
 
@@ -992,13 +993,13 @@ namespace Fred
 			}
 
 			unsigned dots = 1;
-			bool enumZone = checkEnumDomainSuffix(fqdn);
+			bool enumZone = checkEnumDomainSuffix(fqdn_lower);
 			if (enumZone) dots = 9;
 
 			Database::Transaction tx(conn);
 
 			ModelZoneSoa zn;
-			zn.setFqdn(fqdn);
+			zn.setFqdn(fqdn_lower);
 			zn.setExPeriodMax(ex_period_max);
 			zn.setExPeriodMin(ex_period_min);
 			zn.setValPeriod(enumZone ? 6 : 0);

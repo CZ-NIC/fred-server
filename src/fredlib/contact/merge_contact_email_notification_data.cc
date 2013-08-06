@@ -79,140 +79,151 @@ namespace Fred
 
         try
         {
+            typedef std::map<std::string , SortedContactNotificationEmail> EmailMap;//key is dst_contact_roid
+            EmailMap email_by_dst_contact;
 
-        typedef std::map<std::string , SortedContactNotificationEmail> EmailMap;//key is dst_contact_roid
-        EmailMap email_by_dst_contact;
-
-        for( std::vector<MergeContactEmailNotificationInput>::iterator i = merge_contact_data_.begin()
-                ; i != merge_contact_data_.end(); ++i )
-        {
-            //check contacts are different
-            if(i->merge_output.contactid.dst_contact_roid.compare(i->merge_output.contactid.src_contact_roid) == 0)
-            {//error if equal
-                std::string errmsg("src_contact_roid equals dst_contact_roid || invalid:contact roid: ");
-                errmsg += boost::replace_all_copy(i->merge_output.contactid.dst_contact_roid,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw MCENDEX(errmsg.c_str());
-            }
-
-            //look for notification email by contact roid
-            EmailMap::iterator email_by_dst_contact_it = email_by_dst_contact.find(i->merge_output.contactid.dst_contact_roid);
-            EmailMap::iterator email_by_src_contact_it = email_by_dst_contact.find(i->merge_output.contactid.src_contact_roid);
-            if(email_by_dst_contact_it == email_by_dst_contact.end())
-            {//email not found -> create new
-                SortedContactNotificationEmail email;
-
-                email.dst_contact_handle = i->dst_contact_handle;
-                email.removed_list.insert(i->src_contact_handle);
-                email.removed_roid_list.insert(i->merge_output.contactid.src_contact_roid);
-
-                update_email(i,email);
-
-                //add and erase previous merge record
-                if(email_by_src_contact_it != email_by_dst_contact.end())
-                {
-                    SortedContactNotificationEmail src_email(email_by_src_contact_it->second);
-                    email.domain_registrant_list.insert(src_email.domain_registrant_list.begin(), src_email.domain_registrant_list.end());
-                    email.domain_admin_list.insert(src_email.domain_admin_list.begin(), src_email.domain_admin_list.end());
-                    email.nsset_tech_list.insert(src_email.nsset_tech_list.begin(), src_email.nsset_tech_list.end());
-                    email.keyset_tech_list.insert(src_email.keyset_tech_list.begin(), src_email.keyset_tech_list.end());
-                    email.removed_list.insert(src_email.removed_list.begin(), src_email.removed_list.end());
-                    email.removed_roid_list.insert(src_email.removed_roid_list.begin(), src_email.removed_roid_list.end());
-                    email_by_dst_contact.erase(email_by_src_contact_it);
-                }
-
-                //insert new email
-                email_by_dst_contact.insert(EmailMap::value_type(i->merge_output.contactid.dst_contact_roid, email));
-            }
-            else
-            {//email found -> update
-                SortedContactNotificationEmail email(email_by_dst_contact_it->second);
-
-                if(email.dst_contact_handle.compare(i->dst_contact_handle) != 0)
+            for( std::vector<MergeContactEmailNotificationInput>::iterator i = merge_contact_data_.begin()
+                    ; i != merge_contact_data_.end(); ++i )
+            {
+                //check contacts are different
+                if(i->merge_output.contactid.dst_contact_roid.compare(i->merge_output.contactid.src_contact_roid) == 0)
                 {//error if equal
-                    std::string errmsg("dst_contact_handle changed || invalid:contact handle: ");
-                    errmsg += boost::replace_all_copy(i->dst_contact_handle,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw MCENDEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_invalid_registry_object_identifier(
+                            i->merge_output.contactid.dst_contact_roid));
                 }
 
-                email.removed_list.insert(i->src_contact_handle);
-                email.removed_roid_list.insert(i->merge_output.contactid.src_contact_roid);
+                //look for notification email by contact roid
+                EmailMap::iterator email_by_dst_contact_it = email_by_dst_contact.find(i->merge_output.contactid.dst_contact_roid);
+                EmailMap::iterator email_by_src_contact_it = email_by_dst_contact.find(i->merge_output.contactid.src_contact_roid);
+                if(email_by_dst_contact_it == email_by_dst_contact.end())
+                {//email not found -> create new
+                    SortedContactNotificationEmail email;
 
-                update_email(i,email);
+                    email.dst_contact_handle = i->dst_contact_handle;
+                    email.removed_list.insert(i->src_contact_handle);
+                    email.removed_roid_list.insert(i->merge_output.contactid.src_contact_roid);
 
-                //add and erase previous merge record
-                if(email_by_src_contact_it != email_by_dst_contact.end())
+                    update_email(i,email);
+
+                    //add and erase previous merge record
+                    if(email_by_src_contact_it != email_by_dst_contact.end())
+                    {
+                        SortedContactNotificationEmail src_email(email_by_src_contact_it->second);
+                        email.domain_registrant_list.insert(src_email.domain_registrant_list.begin(), src_email.domain_registrant_list.end());
+                        email.domain_admin_list.insert(src_email.domain_admin_list.begin(), src_email.domain_admin_list.end());
+                        email.nsset_tech_list.insert(src_email.nsset_tech_list.begin(), src_email.nsset_tech_list.end());
+                        email.keyset_tech_list.insert(src_email.keyset_tech_list.begin(), src_email.keyset_tech_list.end());
+                        email.removed_list.insert(src_email.removed_list.begin(), src_email.removed_list.end());
+                        email.removed_roid_list.insert(src_email.removed_roid_list.begin(), src_email.removed_roid_list.end());
+                        email_by_dst_contact.erase(email_by_src_contact_it);
+                    }
+
+                    //insert new email
+                    email_by_dst_contact.insert(EmailMap::value_type(i->merge_output.contactid.dst_contact_roid, email));
+                }
+                else
+                {//email found -> update
+                    SortedContactNotificationEmail email(email_by_dst_contact_it->second);
+
+                    if(email.dst_contact_handle.compare(i->dst_contact_handle) != 0)
+                    {//error if equal
+                        BOOST_THROW_EXCEPTION(Exception().set_invalid_contact_handle(
+                                i->dst_contact_handle));
+                    }
+
+                    email.removed_list.insert(i->src_contact_handle);
+                    email.removed_roid_list.insert(i->merge_output.contactid.src_contact_roid);
+
+                    update_email(i,email);
+
+                    //add and erase previous merge record
+                    if(email_by_src_contact_it != email_by_dst_contact.end())
+                    {
+                        SortedContactNotificationEmail src_email(email_by_src_contact_it->second);
+                        email.domain_registrant_list.insert(src_email.domain_registrant_list.begin(), src_email.domain_registrant_list.end());
+                        email.domain_admin_list.insert(src_email.domain_admin_list.begin(), src_email.domain_admin_list.end());
+                        email.nsset_tech_list.insert(src_email.nsset_tech_list.begin(), src_email.nsset_tech_list.end());
+                        email.keyset_tech_list.insert(src_email.keyset_tech_list.begin(), src_email.keyset_tech_list.end());
+                        email.removed_list.insert(src_email.removed_list.begin(), src_email.removed_list.end());
+                        email.removed_roid_list.insert(src_email.removed_roid_list.begin(), src_email.removed_roid_list.end());
+                        email_by_dst_contact.erase(email_by_src_contact_it);
+                    }
+
+                    //update email
+                    email_by_dst_contact_it->second = email;
+                    //email_by_dst_contact[i->dst_contact_handle] = email;
+                }
+            }//for i
+
+            result.reserve(email_by_dst_contact.size());
+            for(EmailMap::iterator it = email_by_dst_contact.begin(); it != email_by_dst_contact.end(); ++it)
+            {
+                MergeContactNotificationEmail notifemail;
+                notifemail.dst_contact_handle = it->second.dst_contact_handle;
+                notifemail.dst_contact_roid = it->first;
+
+                for(std::set<std::string>::iterator si = it->second.domain_registrant_list.begin()
+                        ; si != it->second.domain_registrant_list.end(); ++si)
                 {
-                    SortedContactNotificationEmail src_email(email_by_src_contact_it->second);
-                    email.domain_registrant_list.insert(src_email.domain_registrant_list.begin(), src_email.domain_registrant_list.end());
-                    email.domain_admin_list.insert(src_email.domain_admin_list.begin(), src_email.domain_admin_list.end());
-                    email.nsset_tech_list.insert(src_email.nsset_tech_list.begin(), src_email.nsset_tech_list.end());
-                    email.keyset_tech_list.insert(src_email.keyset_tech_list.begin(), src_email.keyset_tech_list.end());
-                    email.removed_list.insert(src_email.removed_list.begin(), src_email.removed_list.end());
-                    email.removed_roid_list.insert(src_email.removed_roid_list.begin(), src_email.removed_roid_list.end());
-                    email_by_dst_contact.erase(email_by_src_contact_it);
+                    notifemail.domain_registrant_list.push_back(*si);
                 }
 
-                //update email
-                email_by_dst_contact_it->second = email;
-                //email_by_dst_contact[i->dst_contact_handle] = email;
-            }
-        }//for i
+                for(std::set<std::string>::iterator si = it->second.domain_admin_list.begin()
+                        ; si != it->second.domain_admin_list.end(); ++si)
+                {
+                    notifemail.domain_admin_list.push_back(*si);
+                }
 
-        result.reserve(email_by_dst_contact.size());
-        for(EmailMap::iterator it = email_by_dst_contact.begin(); it != email_by_dst_contact.end(); ++it)
-        {
-            MergeContactNotificationEmail notifemail;
-            notifemail.dst_contact_handle = it->second.dst_contact_handle;
-            notifemail.dst_contact_roid = it->first;
+                for(std::set<std::string>::iterator si = it->second.nsset_tech_list.begin()
+                        ; si != it->second.nsset_tech_list.end(); ++si)
+                {
+                    notifemail.nsset_tech_list.push_back(*si);
+                }
 
-            for(std::set<std::string>::iterator si = it->second.domain_registrant_list.begin()
-                    ; si != it->second.domain_registrant_list.end(); ++si)
-            {
-                notifemail.domain_registrant_list.push_back(*si);
-            }
+                for(std::set<std::string>::iterator si = it->second.keyset_tech_list.begin()
+                        ; si != it->second.keyset_tech_list.end(); ++si)
+                {
+                    notifemail.keyset_tech_list.push_back(*si);
+                }
 
-            for(std::set<std::string>::iterator si = it->second.domain_admin_list.begin()
-                    ; si != it->second.domain_admin_list.end(); ++si)
-            {
-                notifemail.domain_admin_list.push_back(*si);
-            }
+                for(std::set<std::string>::iterator si = it->second.removed_list.begin()
+                        ; si != it->second.removed_list.end(); ++si)
+                {
+                    notifemail.removed_list.push_back(*si);
+                }
 
-            for(std::set<std::string>::iterator si = it->second.nsset_tech_list.begin()
-                    ; si != it->second.nsset_tech_list.end(); ++si)
-            {
-                notifemail.nsset_tech_list.push_back(*si);
-            }
+                for(std::set<std::string>::iterator si = it->second.removed_roid_list.begin()
+                        ; si != it->second.removed_roid_list.end(); ++si)
+                {
+                    notifemail.removed_roid_list.push_back(*si);
+                }
 
-            for(std::set<std::string>::iterator si = it->second.keyset_tech_list.begin()
-                    ; si != it->second.keyset_tech_list.end(); ++si)
-            {
-                notifemail.keyset_tech_list.push_back(*si);
-            }
-
-            for(std::set<std::string>::iterator si = it->second.removed_list.begin()
-                    ; si != it->second.removed_list.end(); ++si)
-            {
-                notifemail.removed_list.push_back(*si);
-            }
-
-            for(std::set<std::string>::iterator si = it->second.removed_roid_list.begin()
-                    ; si != it->second.removed_roid_list.end(); ++si)
-            {
-                notifemail.removed_roid_list.push_back(*si);
-            }
-
-            result.push_back(notifemail);
-        }//for it
-
+                result.push_back(notifemail);
+            }//for it
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<MergeContactEmailNotificationDataException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
 
         return result;
+    }
+
+
+    std::ostream& operator<<(std::ostream& os, const MergeContactEmailNotificationData& i)
+    {
+        os << "#MergeContactEmailNotificationData";
+        if(!i.merge_contact_data_.empty()) os << " ";
+        for(std::vector<MergeContactEmailNotificationInput>::const_iterator ci = i.merge_contact_data_.begin()
+                ; ci != i.merge_contact_data_.end() ;  ++ci) os << *ci;
+        return os;
+    }
+    std::string MergeContactEmailNotificationData::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
     }
 
     MergeContactNotificationEmailAddr::MergeContactNotificationEmailAddr(
@@ -236,12 +247,14 @@ namespace Fred
                     " WHERE oreg.roid = $1::text"
                 , Database::query_param_list(ci->dst_contact_roid));
 
+                if(email_result.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_invalid_registry_object_identifier(
+                            ci->dst_contact_roid));
+                }
                 if(email_result.size() != 1)
                 {
-                    std::string errmsg("unable to get notification email address || invalid:contact roid: ");
-                    errmsg += boost::replace_all_copy(ci->dst_contact_roid,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw MCNEAEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get destination contact email"));
                 }
 
                 MergeContactNotificationEmailWithAddr email_with_addr;
@@ -253,12 +266,29 @@ namespace Fred
             }//for ci
 
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<MergeContactNotificationEmailAddrException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
 
         return result;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const MergeContactNotificationEmailAddr& i)
+    {
+
+        os << "#MergeContactNotificationEmailAddr";
+        if(!i.email_data_.empty()) os << " ";
+        for(std::vector<MergeContactNotificationEmail>::const_iterator ci = i.email_data_.begin()
+                ; ci != i.email_data_.end() ;  ++ci) os << *ci;
+        return os;
+    }
+    std::string MergeContactNotificationEmailAddr::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
     }
 
 }//namespace Fred

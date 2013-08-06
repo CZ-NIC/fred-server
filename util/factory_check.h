@@ -116,4 +116,23 @@ public:
         }
     }//check()
 };
+
+//get implementation names begining with prefix from factory
+template <class FACTORY> std::vector<std::string> get_names_begining_with_prefix_from_factory (const std::string& prefix)
+{
+    typedef  std::vector< typename FACTORY::key_type > KeyVector;
+    std::vector<std::string> names;
+    KeyVector key_vector = FACTORY::instance_ref().get_keys();
+    for(typename KeyVector::const_iterator i = key_vector.begin()
+                    ; i != key_vector.end(); ++i)
+    {
+        if(i->substr(0, prefix.length()).compare(prefix) == 0)
+        {
+            names.push_back(*i);
+        }
+    }//for
+    return names;
+
+}
+
 #endif // FACTORY_CHECK_H_

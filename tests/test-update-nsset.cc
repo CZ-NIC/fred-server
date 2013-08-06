@@ -133,7 +133,6 @@ BOOST_AUTO_TEST_CASE(info_nsset)
 
 struct update_nsset_fixture
 {
-    Fred::OperationContext ctx;
     std::string registrar_handle;
     std::string xmark;
     std::string admin_contact2_handle;
@@ -141,12 +140,14 @@ struct update_nsset_fixture
     std::string test_nsset_handle;
 
     update_nsset_fixture()
-    :registrar_handle (static_cast<std::string>(ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
-    , xmark(RandomDataGenerator().xnumstring(6))
+    : xmark(RandomDataGenerator().xnumstring(6))
     , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark)
     , admin_contact3_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , test_nsset_handle ( std::string("TEST-NSSET-HANDLE")+xmark)
     {
+        Fred::OperationContext ctx;
+        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+            "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
         Fred::CreateContact(admin_contact2_handle,registrar_handle)
@@ -187,6 +188,7 @@ struct update_nsset_fixture
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 {
+    Fred::OperationContext ctx;
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
     std::vector<Fred::InfoNssetHistoryOutput> history_info_data_1 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
 
@@ -718,7 +720,6 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
 BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_handle, update_nsset_fixture )
 {
-
     std::string bad_test_nsset_handle = std::string("bad")+test_nsset_handle;
     try
     {
@@ -726,12 +727,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_handle, update_nsset_fixture )
         Fred::UpdateNsset(bad_test_nsset_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateNsset::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:handle")->second).compare(bad_test_nsset_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_nsset_handle());
+        BOOST_CHECK(static_cast<std::string>(ex.get_unknown_nsset_handle()).compare(bad_test_nsset_handle) == 0);
     }
 }
 
@@ -740,8 +739,8 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_handle, update_nsset_fixture )
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_registrar, update_nsset_fixture)
 {
+    Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
-
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
 
     try
@@ -750,12 +749,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_registrar, update_nsset_fixture)
         Fred::UpdateNsset(test_nsset_handle, bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateNsset::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:registrar")->second).compare(bad_registrar_handle) == 0);
+        BOOST_CHECK(ex.is_set_unknown_registrar_handle());
+        BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
@@ -770,6 +767,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_registrar, update_nsset_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset_add_wrong_tech_contact, update_nsset_fixture)
 {
+    Fred::OperationContext ctx;
     std::string bad_tech_contact_handle = admin_contact2_handle+xmark;
 
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
@@ -782,12 +780,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_wrong_tech_contact, update_nsset_fixtur
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateNsset::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:tech contact")->second).compare(bad_tech_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_unknown_technical_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_unknown_technical_contact_handle().at(0).compare(bad_tech_contact_handle) == 0);
     }
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
@@ -800,6 +796,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_wrong_tech_contact, update_nsset_fixtur
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_tech_contact, update_nsset_fixture)
 {
+    Fred::OperationContext ctx;
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
 
     try
@@ -810,12 +807,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_tech_contact, update_nsse
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateNsset::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("already set:tech contact")->second).compare(admin_contact3_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_already_set_technical_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_already_set_technical_contact_handle().at(0).compare(admin_contact3_handle) == 0);
     }
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
@@ -823,12 +818,12 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_tech_contact, update_nsse
     BOOST_CHECK(info_data_2.info_nsset_data.delete_time.isnull());
 }
 
-
 /**
  * test UpdateNsset remove non-existing tech contact
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset_rem_wrong_tech_contact, update_nsset_fixture)
 {
+    Fred::OperationContext ctx;
     std::string bad_tech_contact_handle = admin_contact2_handle+xmark;
 
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
@@ -841,13 +836,12 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_wrong_tech_contact, update_nsset_fixtur
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateNsset::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:tech contact")->second).compare(bad_tech_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_unknown_technical_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_unknown_technical_contact_handle().at(0).compare(bad_tech_contact_handle) == 0);
     }
+
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -859,6 +853,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_wrong_tech_contact, update_nsset_fixtur
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset_rem_unassigned_tech_contact, update_nsset_fixture)
 {
+    Fred::OperationContext ctx;
     std::string bad_tech_contact_handle = admin_contact2_handle;
 
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
@@ -872,12 +867,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_unassigned_tech_contact, update_nsset_f
 
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateNsset::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:tech contact")->second).compare(bad_tech_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_vector_of_unassigned_technical_contact_handle());
+        BOOST_CHECK(ex.get_vector_of_unassigned_technical_contact_handle().at(0).compare(bad_tech_contact_handle) == 0);
     }
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
@@ -891,6 +884,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_unassigned_tech_contact, update_nsset_f
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_dnshost, update_nsset_fixture)
 {
+    Fred::OperationContext ctx;
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
 
     try
@@ -901,12 +895,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_dnshost, update_nsset_fix
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateNsset::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("invalid:dns fqdn")->second).compare("a.ns.nic.cz") == 0);
+        BOOST_CHECK(ex.is_set_vector_of_already_set_dns_host());
+        BOOST_CHECK(ex.get_vector_of_already_set_dns_host().at(0).compare("a.ns.nic.cz") == 0);
     }
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
@@ -919,6 +911,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_dnshost, update_nsset_fix
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset_remove_unassigned_dnshost, update_nsset_fixture)
 {
+    Fred::OperationContext ctx;
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
 
     try
@@ -929,13 +922,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_remove_unassigned_dnshost, update_nsset_fix
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(Fred::OperationExceptionBase& ex)
+    catch(const Fred::UpdateNsset::Exception& ex)
     {
-        Fred::GetOperationExceptionParamsDataToMmapCallback cb;
-        ex.callback_exception_params(boost::ref(cb));
-        BOOST_CHECK((cb.get().size()) == 1);
-        BOOST_CHECK(boost::algorithm::trim_copy(cb.get().find("not found:dns fqdn")->second).compare("c.ns.nic.cz") == 0);
-
+        BOOST_CHECK(ex.is_set_vector_of_unassigned_dns_host());
+        BOOST_CHECK(ex.get_vector_of_unassigned_dns_host().at(0).compare("c.ns.nic.cz") == 0);
     }
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
@@ -953,6 +943,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_remove_unassigned_dnshost, update_nsset_fix
  */
 BOOST_FIXTURE_TEST_CASE(info_nsset_history_test, update_nsset_fixture)
 {
+    Fred::OperationContext ctx;
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
     //call update
     {

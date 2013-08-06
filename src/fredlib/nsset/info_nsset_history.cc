@@ -38,11 +38,6 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 
-
-#define INHEX(DATA) InfoNssetHistoryException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define INHERR(DATA) InfoNssetHistoryError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
-
 namespace Fred
 {
 
@@ -79,24 +74,6 @@ namespace Fred
 
         try
         {
-            //check roid and lock object_registry row for update if set
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                    std::string("SELECT id FROM object_registry WHERE roid = $1::text "
-                    " AND type = ( SELECT id FROM enum_object_type eot "
-                    " WHERE eot.name='nsset'::text) ")
-                    + (lock_ ? std::string(" FOR UPDATE") : std::string(""))
-                    , Database::query_param_list(roid_));
-
-                if (res.size() != 1)
-                {
-                    std::string errmsg("|| not found:roid: ");
-                    errmsg += boost::replace_all_copy(roid_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw INHEX(errmsg.c_str());
-                }
-            }
-
             //check registrar exists
             //TODO: check registrar access
             {
@@ -104,12 +81,13 @@ namespace Fred
                         "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
                     , Database::query_param_list(registrar_));
 
+                if (res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
                 if (res.size() != 1)
                 {
-                    std::string errmsg("|| not found:registrar: ");
-                    errmsg += boost::replace_all_copy(registrar_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw INHEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
             }
 
@@ -147,18 +125,16 @@ namespace Fred
                 " nobr.roid = $1::text "
                 " AND nobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) ")
                 + (history_timestamp_.isset()
-                ? " AND h.valid_from <= ($2::timestamp AT TIME ZONE $3::text) AT TIME ZONE 'UTC' "
-                  " AND ($2::timestamp AT TIME ZONE $3::text) AT TIME ZONE 'UTC' < h.valid_to "
-                  " ORDER BY h.id DESC"
-                : " ORDER BY h.id DESC ")
+                ? std::string(" AND h.valid_from <= ($2::timestamp AT TIME ZONE $3::text) AT TIME ZONE 'UTC' "
+                  " AND ($2::timestamp AT TIME ZONE $3::text) AT TIME ZONE 'UTC' < h.valid_to ")
+                : std::string())
+                + std::string(" ORDER BY h.id DESC ")
+                + (lock_ ? std::string(" FOR UPDATE OF nobr") : std::string())
                 , params);
 
                 if (res.size() == 0)
                 {
-                    std::string errmsg("|| not found:roid: ");
-                    errmsg += boost::replace_all_copy(roid_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw INHEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
                 }
 
                 nsset_history_res.reserve(res.size());//alloc
@@ -270,12 +246,29 @@ namespace Fred
                 }//for res
             }//if roid
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<InfoNssetHistoryException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
+
         return nsset_history_res;
     }//InfoNssetHistory::exec
+
+    std::ostream& operator<<(std::ostream& os, const InfoNssetHistory& i)
+    {
+        return os << "#InfoNssetHistory roid: " << i.roid_
+            << " history_timestamp: " << i.history_timestamp_.print_quoted()
+            << " registrar: " << i.registrar_
+            << " lock: " << i.lock_;
+    }
+
+    std::string InfoNssetHistory::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 
 }//namespace Fred
 

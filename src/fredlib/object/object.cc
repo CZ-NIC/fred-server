@@ -68,30 +68,55 @@ namespace Fred
 
         try
         {
-
-            Database::Result id_res = ctx.get_conn().exec_params(
-                "SELECT create_object(raise_exception_ifnull( "
-                    " (SELECT id FROM registrar WHERE handle = UPPER($1::text)) "
-                    " ,'|| not found:registrar: '||ex_data($1::text)||' |') "//registrar handle
-                    " , $2::text "//object handle
-                    " , raise_exception_ifnull( "
-                    " (SELECT id FROM enum_object_type WHERE name = $3::text) "
-                    " ,'|| not found:object type: '||ex_data($3::text)||' |') )"//object type
-                        , Database::query_param_list(registrar_)(handle_)(object_type_));
-
-            if (id_res.size() != 1)
+            //check registrar
+            unsigned long long registrar_id = 0;
             {
-                throw COERR("unable to call create_object");
+                Database::Result registrar_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                    , Database::query_param_list(registrar_));
+                if(registrar_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+                if (registrar_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
+                }
+                registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
             }
 
-            object_id = id_res[0][0];
+            //check object type
+            unsigned long long object_type_id = 0;
+            {
+                Database::Result object_type_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
+                    , Database::query_param_list(object_type_));
+                if(object_type_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_type(object_type_));
+                }
+                if (object_type_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
+                }
+                object_type_id = static_cast<unsigned long long>(object_type_res[0][0]);
+            }
+
+            //create object
+            Database::Result id_res = ctx.get_conn().exec_params(
+                "SELECT create_object($1::integer "//registrar
+                    " , $2::text "//object handle
+                    " , $3::integer )"//object type
+                        , Database::query_param_list(registrar_id)(handle_)(object_type_id));
+            if (id_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("unable to call create_object"));
+            }
+            object_id = static_cast<unsigned long long>(id_res[0][0]);
 
             if (object_id == 0)
             {
-                std::string errmsg("unable to create object || invalid:handle: ");
-                errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                errmsg += " |";
-                throw COEX(errmsg.c_str());
+                BOOST_THROW_EXCEPTION(Exception().set_invalid_object_handle(handle_));
             }
 
             if(authinfo_.get_value().empty())
@@ -100,19 +125,34 @@ namespace Fred
             }
 
             ctx.get_conn().exec_params("INSERT INTO object(id, clid, authinfopw) VALUES ($1::bigint "//object id from create_object
-                    " , raise_exception_ifnull( "
-                    " (SELECT id FROM registrar WHERE handle = UPPER($2::text)) "
-                    " ,'|| not found:registrar: '||ex_data($2::text)||' |') "//registrar handle
-                    " , $3::text)"
-                    , Database::query_param_list(object_id)(registrar_)(authinfo_));
+                    " , $2::integer, $3::text)"
+                    , Database::query_param_list(object_id)(registrar_id)(authinfo_));
 
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<CreateObjectException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
 
         return object_id;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const CreateObject& i)
+    {
+        os << "#CreateObject object_type: " << i.object_type_
+            << " handle: " << i.handle_
+            << " registrar: " << i.registrar_
+            << " authinfo: " << i.authinfo_.print_quoted()
+            ;
+        return os;
+    }
+
+    std::string CreateObject::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
     }
 
 
@@ -144,36 +184,65 @@ namespace Fred
     {
         try
         {
+            //check registrar
+            unsigned long long registrar_id = 0;
+            {
+                Database::Result registrar_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                    , Database::query_param_list(registrar_));
+                if(registrar_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
+                }
+                if (registrar_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
+                }
+                registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
+            }
+
+            //check object type
+            {
+                Database::Result object_type_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
+                    , Database::query_param_list(obj_type_));
+                if(object_type_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_type(obj_type_));
+                }
+                if (object_type_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
+                }
+            }
 
             unsigned long long object_id = 0;
-
             {
                 Database::Result object_id_res = ctx.get_conn().exec_params(
                 "SELECT oreg.id FROM object_registry oreg "
                 " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
                 " WHERE oreg.name = CASE WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
-                " ELSE UPPER($1::text) END AND oreg.erdate IS NULL"
+                " ELSE UPPER($1::text) END AND oreg.erdate IS NULL "
+                " FOR UPDATE OF oreg"
                 , Database::query_param_list(handle_)(obj_type_));
 
+                if(object_id_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_handle(handle_));
+                }
                 if (object_id_res.size() != 1)
                 {
-                    std::string errmsg("object id || not found:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " | not found:object type: ";
-                    errmsg += boost::replace_all_copy(obj_type_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw UOEX(errmsg.c_str());
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get object handle"));
                 }
-
                 object_id = static_cast<unsigned long long> (object_id_res[0][0]);
             }
 
         Database::QueryParams params;//query params
         std::stringstream sql;
-        params.push_back(registrar_);
+        params.push_back(registrar_id);
         sql <<"UPDATE object SET update = now() "
-            ", upid = raise_exception_ifnull((SELECT id FROM registrar WHERE handle = UPPER($"
-            << params.size() << "::text)),'|| not found:registrar: '||ex_data($"<< params.size() <<"::text)||' |') " ; //registrar from epp-session container by client_id from epp-params
+            ", upid = $"
+            << params.size() << "::integer " ; //registrar from epp-session container by client_id from epp-params
 
         if(authinfo_.isset())
         {
@@ -187,11 +256,30 @@ namespace Fred
         ctx.get_conn().exec_params(sql.str(), params);
 
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<UpdateObjectException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
     }
+
+    std::ostream& operator<<(std::ostream& os, const UpdateObject& i)
+    {
+        os << "#UpdateObject obj_type: " << i.obj_type_
+            << " handle: " << i.handle_
+            << " registrar: " << i.registrar_
+            << " authinfo: " << i.authinfo_.print_quoted()
+            ;
+        return os;
+    }
+
+    std::string UpdateObject::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
+
 
     InsertHistory::InsertHistory(const Nullable<unsigned long long>& logd_request_id)
         : logd_request_id_(logd_request_id)
@@ -209,18 +297,119 @@ namespace Fred
 
         if (history_id_res.size() != 1)
         {
-            throw IHERR("unable to get history_id");
+            BOOST_THROW_EXCEPTION(InternalError("unable to save history"));
         }
 
-        history_id = history_id_res[0][0];
+        history_id = static_cast<unsigned long long>(history_id_res[0][0]);
 
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<InsertHistoryException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
 
         return history_id;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const InsertHistory& i)
+    {
+        os << "#InsertHistory logd_request_id: " << i.logd_request_id_.print_quoted()
+            ;
+        return os;
+    }
+
+    std::string InsertHistory::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
+
+    DeleteObject::DeleteObject(const std::string& handle
+        , const std::string& obj_type)
+    : handle_(handle)
+    , obj_type_(obj_type)
+    {}
+
+    void DeleteObject::exec(OperationContext& ctx)
+    {
+        try
+        {
+            //check object type
+            {
+                Database::Result object_type_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
+                    , Database::query_param_list(obj_type_));
+                if(object_type_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_type(obj_type_));
+                }
+                if (object_type_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
+                }
+            }
+
+            unsigned long long object_id = 0;
+            {
+                Database::Result object_id_res = ctx.get_conn().exec_params(
+                "SELECT oreg.id FROM object_registry oreg "
+                " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
+                " WHERE oreg.name = CASE WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
+                " ELSE UPPER($1::text) END AND oreg.erdate IS NULL "
+                " FOR UPDATE OF oreg"
+                , Database::query_param_list(handle_)(obj_type_));
+
+                if(object_id_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_handle(handle_));
+                }
+                if (object_id_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get object handle"));
+                }
+                object_id = static_cast<unsigned long long> (object_id_res[0][0]);
+            }
+
+            Database::Result update_erdate_res = ctx.get_conn().exec_params(
+                "UPDATE object_registry SET erdate = now() "
+                " WHERE id = $1::integer RETURNING id"
+                , Database::query_param_list(object_id));
+            if (update_erdate_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("erdate update failed"));
+            }
+
+            Database::Result delete_object_res = ctx.get_conn().exec_params(
+                "DELETE FROM object WHERE id = $1::integer RETURNING id"
+                    , Database::query_param_list(object_id));
+            if (delete_object_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("delete object failed"));
+            }
+
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+    }
+
+    std::ostream& operator<<(std::ostream& os, const DeleteObject& i)
+    {
+        os << "#DeleteObject obj_type: " << i.obj_type_
+            << " handle: " << i.handle_
+            ;
+        return os;
+    }
+
+    std::string DeleteObject::to_string()
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
     }
 
 }//namespace Fred

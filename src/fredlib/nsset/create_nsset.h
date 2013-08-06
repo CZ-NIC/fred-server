@@ -50,6 +50,20 @@ namespace Fred
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
 
     public:
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_dns_host, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(invalid_dns_host_ipaddr, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(unknown_technical_contact_handle, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_technical_contact_handle, std::string);
+
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_vector_of_unknown_technical_contact_handle<Exception>
+        , ExceptionData_vector_of_already_set_technical_contact_handle<Exception>
+        , ExceptionData_vector_of_already_set_dns_host<Exception>
+        , ExceptionData_vector_of_invalid_dns_host_ipaddr<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        {};
+
         CreateNsset(const std::string& handle
                 , const std::string& registrar);
         CreateNsset(const std::string& handle
@@ -68,38 +82,9 @@ namespace Fred
         CreateNsset& set_logd_request_id(unsigned long long logd_request_id);
         boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
+        friend std::ostream& operator<<(std::ostream& os, const CreateNsset& i);
+        std::string to_string();
     };//CreateNsset
-
-    //exception impl
-    class CreateNssetException
-    : public OperationExceptionImpl<CreateNssetException, 8192>
-    {
-    public:
-        CreateNssetException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<CreateNssetException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"not found:tech contact"
-                    ,"already set:tech contact"
-                    , "not found crdate:handle"
-                    , "invalid:dns fqdn"
-                    , "invalid:ipaddr"
-                    , "invalid:handle"
-                    , "invalid:tech contact"
-            };
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-
-    };//class CreateNssetException
-
-    typedef CreateNssetException::OperationErrorType CreateNssetError;
-#define CNEX(DATA) CreateNssetException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define CNERR(DATA) CreateNssetError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }
 #endif // CREATE_NSSET_H_
