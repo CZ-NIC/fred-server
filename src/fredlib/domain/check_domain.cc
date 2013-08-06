@@ -241,6 +241,34 @@ namespace Fred
         return false;//meaning ok
     }
 
+    bool CheckDomain::is_registered(OperationContext& ctx)
+    {
+        std::string conflicting_fqdn_out;
+        return is_registered(ctx, conflicting_fqdn_out);
+    }
+
+
+    bool CheckDomain::is_available(OperationContext& ctx)
+    {
+        try
+        {
+            if(is_invalid_handle(ctx)
+            || is_bad_length(ctx)
+            || is_registered(ctx)
+            || is_blacklisted(ctx))
+            {
+                return false;
+            }
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return true;//meaning ok
+    }
+
+
     std::ostream& operator<<(std::ostream& os, const CheckDomain& i)
     {
         return os << "#CheckDomain fqdn: " << i.fqdn_

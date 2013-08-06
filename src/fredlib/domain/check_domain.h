@@ -54,6 +54,9 @@ namespace Fred
         bool is_blacklisted(OperationContext& ctx);
         //check if domain name is registered, if true then set conflicting_fqdn
         bool is_registered(OperationContext& ctx, std::string& conflicting_fqdn_out);
+        bool is_registered(OperationContext& ctx);
+        //check if domain name is available for registration
+        bool is_available(OperationContext& ctx);
 
         friend std::ostream& operator<<(std::ostream& os, const CheckDomain& i);
         std::string to_string();
