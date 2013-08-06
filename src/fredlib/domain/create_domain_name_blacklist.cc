@@ -33,13 +33,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) CreateDomainNameBlacklist::Exception(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) CreateDomainNameBlacklist::Error(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 namespace Fred
 {
 
@@ -138,11 +131,10 @@ namespace Fred
         if (valid_to_.isset()) {
             if (valid_from_.isset()) { // <from,to)
                 if (valid_to_.get_value() < valid_from_.get_value()) {
-                    std::string errmsg("|| out of turn:valid_from-to: ");
-                    errmsg += boost::posix_time::to_iso_string(valid_from_.get_value()) + " - " +
-                              boost::posix_time::to_iso_string(valid_to_.get_value());
-                    errmsg += " |";
-                    throw MY_EXCEPTION_CLASS(errmsg.c_str());
+                    std::string errmsg("valid from-to <");
+                    errmsg += boost::posix_time::to_iso_string(valid_from_.get_value()) + ", " +
+                              boost::posix_time::to_iso_string(valid_to_.get_value()) + ")";
+                    BOOST_THROW_EXCEPTION(Exception().set_out_of_turn(errmsg));
                 }
             }
             else { // <now,to)
@@ -150,19 +142,15 @@ namespace Fred
                         "SELECT $1::timestamp<CURRENT_TIMESTAMP",
                         Database::query_param_list(valid_to_.get_value()));
                 if (bool(out_of_turn_result[0][0])) {
-                    std::string errmsg("|| out of turn:valid_from-to: CURRENT_TIMESTAMP - ");
-                    errmsg += boost::posix_time::to_iso_string(valid_to_.get_value());
-                    errmsg += " |";
-                    throw MY_EXCEPTION_CLASS(errmsg.c_str());
+                    std::string errmsg("valid from-to <CURRENT_TIMESTAMP, ");
+                    errmsg += boost::posix_time::to_iso_string(valid_to_.get_value()) + ")";
+                    BOOST_THROW_EXCEPTION(Exception().set_out_of_turn(errmsg));
                 }
             }
         }
 
         if (is_blacklisted(_ctx.get_conn(), domain_, valid_from_, valid_to_)) {
-            std::string errmsg("|| domain:already blacklisted: ");
-            errmsg += boost::replace_all_copy(domain_,"|", "[pipe]");//quote pipes;
-            errmsg += " |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_already_blacklisted_domain(domain_));
         }
 
         if (creator_.isset()) {
@@ -173,10 +161,7 @@ namespace Fred
                 "LIMIT 1",
                 Database::query_param_list(creator_.get_value()));
             if (creator_result.size() <= 0) {
-                std::string errmsg("|| creator:not found: ");
-                errmsg += boost::lexical_cast< std::string >(creator_.get_value());
-                errmsg += " |";
-                throw MY_EXCEPTION_CLASS(errmsg.c_str());
+                BOOST_THROW_EXCEPTION(Exception().set_creator_not_found(creator_.get_value()));
             }
         }
 

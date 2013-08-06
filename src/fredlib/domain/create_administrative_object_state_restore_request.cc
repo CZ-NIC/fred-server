@@ -34,13 +34,6 @@
 #include <boost/algorithm/string.hpp>
 #include <set>
 
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) CreateAdministrativeObjectStateRestoreRequestException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) CreateAdministrativeObjectStateRestoreRequestError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 namespace Fred
 {
 
@@ -146,7 +139,7 @@ namespace Fred
                 "WHERE name='serverBlocked'");
 
             if (obj_state_res.size() != 1) {
-                throw MY_EXCEPTION_CLASS("|| not found:state: serverBlocked |");
+                BOOST_THROW_EXCEPTION(Exception().set_state_not_found("serverBlocked"));
             }
             server_blocked_id = obj_state_res[0][0];
             _ctx.get_log().debug("serverBlockedId = " + boost::lexical_cast< std::string >(server_blocked_id));
@@ -169,11 +162,7 @@ namespace Fred
         if (0 < rcheck.size()) {
             return server_blocked_id;
         }
-        std::string errmsg("|| serverBlocked:absent: handle ");
-        errmsg += boost::replace_all_copy(object_handle_,"|", "[pipe]");//quote pipes
-        errmsg += " of type " + boost::lexical_cast< std::string >(object_type_);
-        errmsg += " |";
-        throw MY_EXCEPTION_CLASS(errmsg.c_str());
+        BOOST_THROW_EXCEPTION(Exception().set_server_blocked_absent(object_handle_));
     }
 
 }//namespace Fred

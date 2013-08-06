@@ -41,32 +41,18 @@ pozadavek na zruseni vsech stavu objektu (update object_state_request)
             ObjectType _object_type);
         ObjectId exec(OperationContext &_ctx);
 
+    //exception impl
+        DECLARE_EXCEPTION_DATA(handle_not_found, std::string);
+
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_handle_not_found<Exception>
+        {};
     private:
         const std::string object_handle_;
         const ObjectType object_type_;
     };//class ClearObjectStateRequest
 
-
-//exception impl
-    class ClearObjectStateRequestException
-    : public OperationExceptionImpl< ClearObjectStateRequestException, 2048 >
-    {
-    public:
-        ClearObjectStateRequestException(const char* file,
-            const int line,
-            const char* function,
-            const char* data)
-        :   OperationExceptionImpl< ClearObjectStateRequestException, 2048 >(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[] = {"not found:handle"};
-            return ConstArr(list, sizeof(list) / sizeof(char*));
-        }
-    };//class ClearObjectStateRequestException
-
-    typedef ClearObjectStateRequestException::OperationErrorType ClearObjectStateRequestError;
 
 }//namespace Fred
 

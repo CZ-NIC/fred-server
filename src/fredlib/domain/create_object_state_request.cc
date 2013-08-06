@@ -33,13 +33,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) CreateObjectStateRequestException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) CreateObjectStateRequestError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 namespace Fred
 {
     CreateObjectStateRequest::CreateObjectStateRequest(const std::string &_object_handle,
@@ -94,11 +87,10 @@ namespace Fred
         if (valid_to_.isset()) {
             if (valid_from_.isset()) { // <from,to)
                 if (valid_to_.get_value() < valid_from_.get_value()) {
-                    std::string errmsg("|| out of turn:valid_from-to: ");
-                    errmsg += boost::posix_time::to_iso_string(valid_from_.get_value()) + " - " +
-                              boost::posix_time::to_iso_string(valid_to_.get_value());
-                    errmsg += " |";
-                    throw MY_EXCEPTION_CLASS(errmsg.c_str());
+                    std::string errmsg("valid from-to <");
+                    errmsg += boost::posix_time::to_iso_string(valid_from_.get_value()) + ", " +
+                              boost::posix_time::to_iso_string(valid_to_.get_value()) + ")";
+                    BOOST_THROW_EXCEPTION(Exception().set_out_of_turn(errmsg));
                 }
             }
             else { // <now,to)
@@ -106,10 +98,9 @@ namespace Fred
                         "SELECT $1<CURRENT_TIMESTAMP",
                         Database::query_param_list(valid_to_.get_value()));
                 if (bool(out_of_turn_result[0][0])) {
-                    std::string errmsg("|| out of turn:valid_from-to: CURRENT_TIMESTAMP - ");
-                    errmsg += boost::posix_time::to_iso_string(valid_to_.get_value());
-                    errmsg += " |";
-                    throw MY_EXCEPTION_CLASS(errmsg.c_str());
+                    std::string errmsg("valid from-to <CURRENT_TIMESTAMP, ");
+                    errmsg += boost::posix_time::to_iso_string(valid_to_.get_value()) + ")";
+                    BOOST_THROW_EXCEPTION(Exception().set_out_of_turn(errmsg));
                 }
             }
         }
@@ -183,23 +174,22 @@ namespace Fred
                                                               ? boost::posix_time::ptime(boost::posix_time::pos_infin)
                                                               : static_cast< const boost::posix_time::ptime& >(row[1]);
             if (obj_valid_to < obj_valid_from ) {
-                std::string errmsg("|| out of turn:valid_from-to: ");
-                errmsg += boost::posix_time::to_iso_string(obj_valid_from) + " - " +
-                          boost::posix_time::to_iso_string(obj_valid_to);
-                errmsg += " |";
-                throw MY_EXCEPTION_CLASS(errmsg.c_str());
+                std::string errmsg("valid from-to <");
+                errmsg += boost::posix_time::to_iso_string(obj_valid_from) + ", " +
+                          boost::posix_time::to_iso_string(obj_valid_to) + ")";
+                BOOST_THROW_EXCEPTION(Exception().set_out_of_turn(errmsg));
             }
             const boost::posix_time::ptime new_valid_from = static_cast< const boost::posix_time::ptime& >(row[2]);
             const boost::posix_time::ptime new_valid_to = row[3].isnull()
                                                             ? boost::posix_time::ptime(boost::posix_time::pos_infin)
                                                             : static_cast< const boost::posix_time::ptime& >(row[3]);
-            std::string errmsg("|| overlayed validity time intervals:object: ");
-            errmsg += "<" + boost::posix_time::to_iso_string(obj_valid_from) + ", " +
+            std::string errmsg("object:");
+            errmsg += object_handle_ + " "
+                      "<" + boost::posix_time::to_iso_string(obj_valid_from) + ", " +
                       boost::posix_time::to_iso_string(obj_valid_to) + ") - "
                       "<" + boost::posix_time::to_iso_string(new_valid_from) + ", " +
                       boost::posix_time::to_iso_string(new_valid_to) + ")";
-            errmsg += " |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_overlayed_time_intervals(errmsg));
         }
 
         param.clear();
@@ -326,11 +316,7 @@ namespace Fred
                 (object_type_)(object_handle_));
 
         if (obj_id_res.size() != 1) {
-            std::string errmsg("|| not found:handle: ");
-            errmsg += boost::replace_all_copy(object_handle_,"|", "[pipe]");//quote pipes
-            errmsg += " of type " + boost::lexical_cast< std::string >(object_type_);
-            errmsg += " |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_handle_not_found(object_handle_));
         }
 
         return obj_id_res[0][0];

@@ -84,27 +84,6 @@ namespace Fred
         StatusDescList status_desc_list_;
     };//class GetBlockingStatusDescList
 
-//exception impl
-    class GetBlockingStatusDescListException
-    : public OperationExceptionImpl<GetBlockingStatusDescListException, 2048>
-    {
-    public:
-        GetBlockingStatusDescListException(const char* file,
-            const int line,
-            const char* function,
-            const char* data)
-        :   OperationExceptionImpl< GetBlockingStatusDescListException, 2048 >(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[] = {"not found:lang"};
-            return ConstArr(list, sizeof(list) / sizeof(char*));
-        }
-    };//class GetBlockingStatusDescListException
-
-typedef GetBlockingStatusDescListException::OperationErrorType GetBlockingStatusDescListError;
-
 }//namespace Fred
 
 #endif//GET_BLOCKING_STATUS_DESC_LIST_H_

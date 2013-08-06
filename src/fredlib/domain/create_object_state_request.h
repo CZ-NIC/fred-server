@@ -68,6 +68,17 @@ pozadavek na nastaveni stavu objektu (insert do object_state_request)
         CreateObjectStateRequest& set_valid_to(const Time &_valid_to);
         ObjectId exec(OperationContext &_ctx);
 
+    //exception impl
+        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
+        DECLARE_EXCEPTION_DATA(out_of_turn, std::string);
+        DECLARE_EXCEPTION_DATA(overlayed_time_intervals, std::string);
+
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_state_not_found<Exception>,
+            ExceptionData_out_of_turn<Exception>,
+            ExceptionData_overlayed_time_intervals<Exception>
+        {};
     private:
         const std::string object_handle_;
         const ObjectType object_type_;
@@ -99,6 +110,13 @@ vykonani pozadavku na nastaveni stavu objektu (vola update_object_states)
     public:
         GetObjectId(const std::string &_object_handle, ObjectType _object_type);
         ObjectId exec(OperationContext &_ctx);
+    //exception impl
+        DECLARE_EXCEPTION_DATA(handle_not_found, std::string);
+
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_handle_not_found<Exception>
+        {};
     private:
         const std::string object_handle_;
         const ObjectType object_type_;
@@ -124,28 +142,6 @@ vykonani pozadavku na nastaveni stavu objektu (vola update_object_states)
         const MultipleObjectStateId state_id_;
         const ObjectId object_id_;
     };
-
-//exception impl
-    class CreateObjectStateRequestException
-    : public OperationExceptionImpl<CreateObjectStateRequestException, 2048>
-    {
-    public:
-        CreateObjectStateRequestException(const char* file,
-            const int line,
-            const char* function,
-            const char* data)
-        :   OperationExceptionImpl< CreateObjectStateRequestException, 2048 >(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[] = {"not found:handle", "not found:state", "out of turn:valid_from-to",
-                                         "overlayed validity time intervals:object"};
-            return ConstArr(list, sizeof(list) / sizeof(char*));
-        }
-    };//class CreateObjectStateRequestException
-
-    typedef CreateObjectStateRequestException::OperationErrorType CreateObjectStateRequestError;
 
 }//namespace Fred
 
