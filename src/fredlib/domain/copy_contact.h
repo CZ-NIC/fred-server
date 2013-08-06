@@ -41,25 +41,16 @@ namespace Fred
         ObjectId exec(OperationContext &_ctx);
 
     //exception impl
-        class Exception
-        : public OperationExceptionImpl< Exception, 2048 >
-        {
-        public:
-            Exception(const char* file,
-                const int line,
-                const char* function,
-                const char* data)
-            :   OperationExceptionImpl< Exception, 2048 >(file, line, function, data)
-            {}
+        DECLARE_EXCEPTION_DATA(src_contact_handle_not_found, std::string);
+        DECLARE_EXCEPTION_DATA(dst_contact_handle_already_exist, std::string);
+        DECLARE_EXCEPTION_DATA(create_contact_failed, std::string);
 
-            ConstArr get_fail_param_impl() throw()
-            {
-                static const char* list[] = {"not found:src_contact_handle", "create failed:dst_contact_handle"};
-                return ConstArr(list, sizeof(list) / sizeof(char*));
-            }
-        };//class CopyContactException
-
-        typedef Exception::OperationErrorType Error;
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_src_contact_handle_not_found<Exception>,
+            ExceptionData_dst_contact_handle_already_exist<Exception>,
+            ExceptionData_create_contact_failed<Exception>
+        {};
     private:
         const std::string src_contact_handle_;
         const std::string dst_contact_handle_;

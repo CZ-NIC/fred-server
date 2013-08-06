@@ -33,13 +33,6 @@
 #include <boost/algorithm/string.hpp>
 #include <set>
 
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) CreateAdministrativeObjectBlockRequestId::Exception(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) CreateAdministrativeObjectBlockRequestId::Error(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 namespace Fred
 {
 
@@ -112,8 +105,7 @@ namespace Fred
     void CreateAdministrativeObjectBlockRequestId::check_administrative_block_status_only(OperationContext &_ctx) const
     {
         if (status_list_.empty()) {
-            std::string errmsg("|| invalid argument:state: status list empty |");
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_invalid_argument("status list empty"));
         }
         typedef std::set< std::string > StatusSet;
         typedef GetBlockingStatusDescList::StatusDescList StatusDescList;
@@ -132,8 +124,7 @@ namespace Fred
             }
         }
         if (!invalidStatus.empty()) {
-            std::string errmsg("|| invalid argument:state: unable to set" + invalidStatus + " status |");
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_invalid_argument("unable to set" + invalidStatus + " status"));
         }
     }
 
@@ -147,7 +138,7 @@ namespace Fred
                 "WHERE name='serverBlocked'");
 
             if (obj_state_res.size() != 1) {
-                throw MY_EXCEPTION_CLASS("|| not found:state: serverBlocked |");
+                BOOST_THROW_EXCEPTION(Exception().set_state_not_found("serverBlocked"));
             }
             serverBlockedId = obj_state_res[0][0];
             _ctx.get_log().debug("serverBlockedId = " + boost::lexical_cast< std::string >(serverBlockedId));
@@ -170,10 +161,7 @@ namespace Fred
         if (rcheck.size() <= 0) {
             return;
         }
-        std::string errmsg("|| serverBlocked:present: object_id ");
-        errmsg += boost::lexical_cast< std::string >(object_id_);
-        errmsg += " |";
-        throw MY_EXCEPTION_CLASS(errmsg.c_str());
+        BOOST_THROW_EXCEPTION(Exception().set_server_blocked_present(object_id_));
     }
 
 }//namespace Fred

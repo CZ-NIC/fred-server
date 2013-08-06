@@ -49,32 +49,23 @@ namespace Fred
         CreateAdministrativeObjectStateRestoreRequestId& set_notice(const std::string &_notice);
         void exec(OperationContext &_ctx);
 
+    //exception impl
+        DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);
+        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
+        DECLARE_EXCEPTION_DATA(server_blocked_absent, ObjectId);
+
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_object_id_not_found<Exception>,
+            ExceptionData_state_not_found<Exception>,
+            ExceptionData_server_blocked_absent<Exception>
+        {};
+
     private:
         ObjectStateId check_server_blocked_status_present(OperationContext &_ctx) const;
         const ObjectId object_id_;
         Optional< std::string > notice_;
     };//class CreateAdministrativeObjectStateRestoreRequestId
-
-//exception impl
-    class CreateAdministrativeObjectStateRestoreRequestIdException
-    : public OperationExceptionImpl<CreateAdministrativeObjectStateRestoreRequestIdException, 2048>
-    {
-    public:
-        CreateAdministrativeObjectStateRestoreRequestIdException(const char* file,
-            const int line,
-            const char* function,
-            const char* data)
-        :   OperationExceptionImpl< CreateAdministrativeObjectStateRestoreRequestIdException, 2048 >(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[] = {"invalid argument:state", "not found:state", "serverBlocked:absent", "not found:object_id"};
-            return ConstArr(list, sizeof(list) / sizeof(char*));
-        }
-    };//class CreateAdministrativeObjectStateRestoreRequestIdException
-
-typedef CreateAdministrativeObjectStateRestoreRequestIdException::OperationErrorType CreateAdministrativeObjectStateRestoreRequestIdError;
 
 }//namespace Fred
 

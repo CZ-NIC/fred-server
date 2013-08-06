@@ -39,31 +39,17 @@ pozadavek na zruseni vsech stavu objektu (update object_state_request)
         ClearObjectStateRequestId(ObjectId _object_id);
         void exec(OperationContext &_ctx);
 
+    //exception impl
+        DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);
+
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_object_id_not_found<Exception>
+        {};
     private:
         const ObjectId object_id_;
     };//class ClearObjectStateRequest
 
-
-//exception impl
-    class ClearObjectStateRequestIdException
-    : public OperationExceptionImpl< ClearObjectStateRequestIdException, 2048 >
-    {
-    public:
-        ClearObjectStateRequestIdException(const char* file,
-            const int line,
-            const char* function,
-            const char* data)
-        :   OperationExceptionImpl< ClearObjectStateRequestIdException, 2048 >(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[] = {"not found:object_id"};
-            return ConstArr(list, sizeof(list) / sizeof(char*));
-        }
-    };//class ClearObjectStateRequestIdException
-
-    typedef ClearObjectStateRequestIdException::OperationErrorType ClearObjectStateRequestIdError;
 
 }//namespace Fred
 

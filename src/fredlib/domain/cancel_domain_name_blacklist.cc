@@ -33,13 +33,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) CancelDomainNameBlacklist::Exception(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) CancelDomainNameBlacklist::Error(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 namespace Fred
 {
 
@@ -59,10 +52,7 @@ namespace Fred
         if (0 < cancel_result.size()) {
             return;
         }
-        std::string errmsg("|| domain:not found: ");
-        errmsg += boost::replace_all_copy(domain_,"|", "[pipe]");//quote pipes;
-        errmsg += " |";
-        throw MY_EXCEPTION_CLASS(errmsg.c_str());
+        BOOST_THROW_EXCEPTION(Exception().set_domain_not_found(domain_));
     }//CancelDomainNameBlacklist::exec
 
 }//namespace Fred

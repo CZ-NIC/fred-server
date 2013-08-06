@@ -33,13 +33,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) CancelObjectStateRequestException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) CancelObjectStateRequestError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 namespace Fred
 {
     CancelObjectStateRequest::CancelObjectStateRequest(const std::string &_object_handle,
@@ -125,14 +118,17 @@ namespace Fred
                 }
             }
         }
-        std::string errmsg("|| not found:state:");
+        std::string errmsg;
         for (StateIdMap::const_iterator pStateId = state_id_map.begin();
              pStateId != state_id_map.end(); ++pStateId) {
-            errmsg += " " + pStateId->first;
+            if (!errmsg.empty()) {
+                errmsg += " ";
+            }
+            errmsg += pStateId->first;
         }
         errmsg += " for object " + object_handle_ +
                   " of type " + boost::lexical_cast< std::string >(object_type_) + " |";
-        throw MY_EXCEPTION_CLASS(errmsg.c_str());
+        BOOST_THROW_EXCEPTION(Exception().set_state_not_found(errmsg));
     }//CancelObjectStateRequest::exec
 
 }//namespace Fred

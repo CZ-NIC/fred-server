@@ -31,13 +31,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) GetObjectStateIdMapException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) GetObjectStateIdMapError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 namespace Fred
 {
 
@@ -84,10 +77,7 @@ namespace Fred
                 }
             }
             if (!not_found.empty()) {
-                std::string errmsg("|| not found:state:" + not_found);
-                errmsg += " of type " + boost::lexical_cast< std::string >(object_type_);
-                errmsg += " |";
-                throw MY_EXCEPTION_CLASS(errmsg.c_str());
+                BOOST_THROW_EXCEPTION(Exception().set_state_not_found(not_found));
             }
         }
         return state_id_map_;

@@ -33,13 +33,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) ClearObjectStateRequestException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) ClearObjectStateRequestError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 namespace Fred
 {
     ClearObjectStateRequest::ClearObjectStateRequest(const std::string &_object_handle,

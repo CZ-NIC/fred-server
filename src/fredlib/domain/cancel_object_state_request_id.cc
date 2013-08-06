@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file cancel_object_state_request.cc
+ *  @file cancel_object_state_request_id.cc
  *  cancel object state request
  */
 
@@ -32,13 +32,6 @@
 #include "fredlib/object.h"
 
 #include <boost/algorithm/string.hpp>
-
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) CancelObjectStateRequestIdException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) CancelObjectStateRequestIdError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 namespace Fred
 {
@@ -70,10 +63,7 @@ namespace Fred
                 "FROM object_registry "
                 "WHERE id=$1::bigint", param);
             if (object_type_result.size() <= 0) {
-                std::string errmsg("|| not found:object_id: ");
-                errmsg += boost::lexical_cast< std::string >(object_id_);
-                errmsg += " |";
-                throw MY_EXCEPTION_CLASS(errmsg.c_str());
+                BOOST_THROW_EXCEPTION(Exception().set_object_id_not_found(object_id_));
             }
             const Database::Row &row = object_type_result[0];
             object_type = static_cast< ObjectType >(row[0]);
@@ -136,13 +126,16 @@ namespace Fred
                 }
             }
         }
-        std::string errmsg("|| not found:state:");
+        std::string errmsg;
         for (StateIdMap::const_iterator pStateId = state_id_map.begin();
              pStateId != state_id_map.end(); ++pStateId) {
-            errmsg += " " + pStateId->first;
+            if (!errmsg.empty()) {
+                errmsg += " ";
+            }
+            errmsg += pStateId->first;
         }
-        errmsg += " for object_id " + boost::lexical_cast< std::string >(object_type) + " |";
-        throw MY_EXCEPTION_CLASS(errmsg.c_str());
+        errmsg += " for object_id " + boost::lexical_cast< std::string >(object_id_);
+        BOOST_THROW_EXCEPTION(Exception().set_state_not_found(errmsg));
     }//CancelObjectStateRequestId::exec
 
 }//namespace Fred

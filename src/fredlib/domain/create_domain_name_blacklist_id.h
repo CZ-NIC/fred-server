@@ -48,26 +48,19 @@ namespace Fred
         void exec(OperationContext &_ctx);
 
     //exception impl
-        class Exception
-        : public OperationExceptionImpl< Exception, 2048 >
-        {
-        public:
-            Exception(const char* file,
-                const int line,
-                const char* function,
-                const char* data)
-            :   OperationExceptionImpl< Exception, 2048 >(file, line, function, data)
-            {}
+        DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);
+        DECLARE_EXCEPTION_DATA(already_blacklisted_domain, ObjectId);
+        DECLARE_EXCEPTION_DATA(out_of_turn, std::string);
+        DECLARE_EXCEPTION_DATA(creator_not_found, UserId);
 
-            ConstArr get_fail_param_impl() throw()
-            {
-                static const char* list[] = {"out of turn:valid_from-to", "domain:already blacklisted",
-                                             "creator:not found"};
-                return ConstArr(list, sizeof(list) / sizeof(char*));
-            }
-        };//class CreateDomainNameBlacklistIdException
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_object_id_not_found<Exception>,
+            ExceptionData_already_blacklisted_domain<Exception>,
+            ExceptionData_out_of_turn<Exception>,
+            ExceptionData_creator_not_found<Exception>
+        {};
 
-        typedef Exception::OperationErrorType Error;
     private:
         ObjectId object_id_;
         const std::string reason_;

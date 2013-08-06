@@ -32,13 +32,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) GetBlockingStatusDescListException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) GetBlockingStatusDescListError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 namespace Fred
 {
 
@@ -89,10 +82,7 @@ namespace Fred
         }
         Database::Result nameDescResult = _ctx.get_conn().exec_params(query.c_str(), param);
         if (nameDescResult.size() <= 0) {
-            std::string errmsg("|| not found:lang: ");
-            errmsg += boost::replace_all_copy(lang,"|", "[pipe]");//quote pipes
-            errmsg += " |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_lang_not_found(lang));
         }
         status_desc_list_.reserve(nameDescResult.size());
         for (::size_t rowIdx = 0; rowIdx < nameDescResult.size(); ++rowIdx) {

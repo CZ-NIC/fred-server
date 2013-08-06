@@ -56,26 +56,16 @@ namespace Fred
         std::string exec(OperationContext &_ctx);
 
     //exception impl
-        enum { EXCEPTION_DATASIZE = 2048 };
-        class Exception
-        : public OperationExceptionImpl< Exception, EXCEPTION_DATASIZE >
-        {
-        public:
-            Exception(const char* file,
-                const int line,
-                const char* function,
-                const char* data)
-            :   OperationExceptionImpl< Exception, EXCEPTION_DATASIZE >(file, line, function, data)
-            {}
+        DECLARE_EXCEPTION_DATA(invalid_argument, std::string);
+        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
+        DECLARE_EXCEPTION_DATA(server_blocked_present, ObjectId);
 
-            ConstArr get_fail_param_impl() throw()
-            {
-                static const char* list[] = {"invalid argument:state", "not found:state", "serverBlocked:present"};
-                return ConstArr(list, sizeof(list) / sizeof(char*));
-            }
-        };//class CreateAdministrativeObjectBlockRequest::Exception
-
-        typedef Exception::OperationErrorType Error;
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_invalid_argument<Exception>,
+            ExceptionData_state_not_found<Exception>,
+            ExceptionData_server_blocked_present<Exception>
+        {};
     private:
         void check_administrative_block_status_only(OperationContext &_ctx) const;
         void check_server_blocked_status_absent(OperationContext &_ctx) const;

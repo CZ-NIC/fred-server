@@ -71,6 +71,13 @@ namespace Fred
 
         StatusDescList& exec(OperationContext &_ctx);
 
+    //exception impl
+        DECLARE_EXCEPTION_DATA(lang_not_found, std::string);
+
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_lang_not_found<Exception>
+        {};
     private:
         Optional< std::string > lang_;
         Optional< ObjectType > object_type_;

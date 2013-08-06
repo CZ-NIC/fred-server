@@ -33,13 +33,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION __PRETTY_FUNCTION__
-#endif
-
-#define MY_EXCEPTION_CLASS(DATA) CopyContact::Exception(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA) CopyContact::Error(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 namespace Fred
 {
     CopyContact::CopyContact(const std::string &_src_contact_handle,
@@ -68,10 +61,7 @@ namespace Fred
                 (OBJECT_TYPE_ID_CONTACT)(src_contact_handle_));
 
         if (src_obj_info_res.size() != 1) {
-            std::string errmsg("|| not found:src_contact_handle: ");
-            errmsg += boost::replace_all_copy(src_contact_handle_, "|", "[pipe]");//quote pipes
-            errmsg += " |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_src_contact_handle_not_found(src_contact_handle_));
         }
         const ObjectId src_object_id   = src_obj_info_res[0][COL_OBJ_REG_ID];
         const ObjectId src_object_crid = src_obj_info_res[0][COL_OBJ_REG_CRID];
@@ -80,17 +70,11 @@ namespace Fred
             "SELECT create_object($1::integer,$2::text, $3::integer)",
             Database::query_param_list(src_object_crid)(dst_contact_handle_)(OBJECT_TYPE_ID_CONTACT));
         if (roreg.size() != 1) {
-            std::string errmsg("|| create failed:dst_contact_handle: ");
-            errmsg += boost::replace_all_copy(dst_contact_handle_, "|", "[pipe]");//quote pipes
-            errmsg += " |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_create_contact_failed(dst_contact_handle_));
         }
         const ObjectId dst_object_id = static_cast< ObjectId >(roreg[0][0]);
         if (dst_object_id == 0) {
-            std::string errmsg("|| create failed:dst_contact_handle: ");
-            errmsg += boost::replace_all_copy(dst_contact_handle_, "|", "[pipe]");//quote pipes
-            errmsg += " already exist |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(Exception().set_dst_contact_handle_already_exist(dst_contact_handle_));
         }
         /* object record */
         _ctx.get_conn().exec_params(

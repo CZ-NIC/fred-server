@@ -66,25 +66,12 @@ namespace Fred
         DomainNameBlacklist& exec(OperationContext &_ctx);
 
     //exception impl
-        class Exception
-        : public OperationExceptionImpl< Exception, 2048 >
-        {
-        public:
-            Exception(const char* file,
-                const int line,
-                const char* function,
-                const char* data)
-            :   OperationExceptionImpl< Exception, 2048 >(file, line, function, data)
-            {}
+        DECLARE_EXCEPTION_DATA(domain_not_found, std::string);
 
-            ConstArr get_fail_param_impl() throw()
-            {
-                static const char* list[] = {"domain:not found"};
-                return ConstArr(list, sizeof(list) / sizeof(char*));
-            }
-        };//class ListDomainNameBlacklistException
-
-        typedef Exception::OperationErrorType Error;
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_domain_not_found<Exception>
+        {};
     private:
         DomainNameBlacklist blacklist_;
     };//class ListDomainNameBlacklist

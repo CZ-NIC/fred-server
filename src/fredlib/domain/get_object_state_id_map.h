@@ -50,32 +50,19 @@ namespace Fred
 
         typedef std::map< std::string, ObjectStateId > StateIdMap;
         StateIdMap& exec(OperationContext &_ctx);
+
+    //exception impl
+        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
+
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_state_not_found<Exception>
+        {};
     private:
         const StatusList status_list_;
         const ObjectType object_type_;
         StateIdMap state_id_map_;
     };//class GetObjectStateIdMap
-
-//exception impl
-    class GetObjectStateIdMapException
-    : public OperationExceptionImpl< GetObjectStateIdMapException, 2048 >
-    {
-    public:
-        GetObjectStateIdMapException(const char* file,
-            const int line,
-            const char* function,
-            const char* data)
-        :   OperationExceptionImpl< GetObjectStateIdMapException, 2048 >(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[] = {"not found:state"};
-            return ConstArr(list, sizeof(list) / sizeof(char*));
-        }
-    };//class GetBlockingStatusDescListException
-
-typedef GetObjectStateIdMapException::OperationErrorType GetObjectStateIdMapError;
 
 }//namespace Fred
 

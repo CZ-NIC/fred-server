@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file cancel_object_state_request.h
+ *  @file cancel_object_state_request_id.h
  *  cancel object state request
  */
 
@@ -42,32 +42,20 @@ pozadavek na zruseni stavu objektu (update object_state_request)
             const StatusList &_status_list);
         void exec(OperationContext &_ctx);
 
+    //exception impl
+        DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);
+        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
+
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_object_id_not_found<Exception>,
+            ExceptionData_state_not_found<Exception>
+        {};
     private:
         const ObjectId object_id_;
         const StatusList status_list_; //list of status names to be canceled
     };//class CancelObjectStateRequestId
 
-
-//exception impl
-    class CancelObjectStateRequestIdException
-    : public OperationExceptionImpl<CancelObjectStateRequestIdException, 2048>
-    {
-    public:
-        CancelObjectStateRequestIdException(const char* file,
-            const int line,
-            const char* function,
-            const char* data)
-        :   OperationExceptionImpl< CancelObjectStateRequestIdException, 2048 >(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[] = {"not found:object_id", "not found:state"};
-            return ConstArr(list, sizeof(list) / sizeof(char*));
-        }
-    };//class CancelObjectStateRequestException
-
-    typedef CancelObjectStateRequestIdException::OperationErrorType CancelObjectStateRequestIdError;
 
 }//namespace Fred
 

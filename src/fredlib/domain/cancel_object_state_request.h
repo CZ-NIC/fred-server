@@ -44,33 +44,21 @@ pozadavek na zruseni stavu objektu (update object_state_request)
             const StatusList &_status_list);
         ObjectId exec(OperationContext &_ctx);
 
+    //exception impl
+        DECLARE_EXCEPTION_DATA(handle_not_found, std::string);
+        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
+
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_handle_not_found<Exception>,
+            ExceptionData_state_not_found<Exception>
+        {};
     private:
         const std::string object_handle_;
         const ObjectType object_type_;
         const StatusList status_list_; //list of status names to be canceled
     };//class CancelObjectStateRequest
 
-
-//exception impl
-    class CancelObjectStateRequestException
-    : public OperationExceptionImpl<CancelObjectStateRequestException, 2048>
-    {
-    public:
-        CancelObjectStateRequestException(const char* file,
-            const int line,
-            const char* function,
-            const char* data)
-        :   OperationExceptionImpl< CancelObjectStateRequestException, 2048 >(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[] = {"not found:handle", "not found:state"};
-            return ConstArr(list, sizeof(list) / sizeof(char*));
-        }
-    };//class CancelObjectStateRequestException
-
-    typedef CancelObjectStateRequestException::OperationErrorType CancelObjectStateRequestError;
 
 }//namespace Fred
 

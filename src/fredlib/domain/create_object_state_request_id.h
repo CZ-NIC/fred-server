@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file create_object_state_request.h
+ *  @file create_object_state_request_id.h
  *  create object state request
  */
 
@@ -51,34 +51,26 @@ pozadavek na nastaveni stavu objektu (insert do object_state_request)
         CreateObjectStateRequestId& set_valid_to(const Time &_valid_to);
         std::string exec(OperationContext &_ctx);
 
+    //exception impl
+        DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);
+        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
+        DECLARE_EXCEPTION_DATA(out_of_turn, std::string);
+        DECLARE_EXCEPTION_DATA(overlayed_time_intervals, std::string);
+
+        struct Exception
+        :   virtual Fred::OperationException,
+            ExceptionData_object_id_not_found<Exception>,
+            ExceptionData_state_not_found<Exception>,
+            ExceptionData_out_of_turn<Exception>,
+            ExceptionData_overlayed_time_intervals<Exception>
+        {};
+
     private:
         const ObjectId object_id_;
         const StatusList status_list_; //list of status names to be set
         Optional< Time > valid_from_;
         Optional< Time > valid_to_;
     };//class CreateObjectStateRequest
-
-//exception impl
-    class CreateObjectStateRequestIdException
-    : public OperationExceptionImpl<CreateObjectStateRequestIdException, 2048>
-    {
-    public:
-        CreateObjectStateRequestIdException(const char* file,
-            const int line,
-            const char* function,
-            const char* data)
-        :   OperationExceptionImpl< CreateObjectStateRequestIdException, 2048 >(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[] = {"not found:object_id", "not found:state", "out of turn:valid_from-to",
-                                         "overlayed validity time intervals:object"};
-            return ConstArr(list, sizeof(list) / sizeof(char*));
-        }
-    };//class CreateObjectStateRequestIdException
-
-    typedef CreateObjectStateRequestIdException::OperationErrorType CreateObjectStateRequestIdError;
 
 }//namespace Fred
 
