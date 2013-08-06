@@ -102,7 +102,8 @@ namespace Registry
             const ::Registry::Administrative::DomainIdList &_domain_list,
             const ::Registry::Administrative::StatusList &_status_list,
             ::Registry::Administrative::OwnerBlockMode _owner_block_mode,
-            const std::string &_reason)
+            const std::string &_reason,
+            unsigned long long _log_req_id)
         {
             try {
                 std::auto_ptr< DomainIdHandleOwnerChangeList > result(new DomainIdHandleOwnerChangeList);
@@ -353,7 +354,8 @@ namespace Registry
         void BlockingImpl::restorePreAdministrativeBlockStatesId(
             const ::Registry::Administrative::DomainIdList &_domain_list,
             ::Registry::Administrative::NullableString *_new_owner,
-            const std::string &_reason)
+            const std::string &_reason,
+            unsigned long long _log_req_id)
         {
             try {
                 Fred::OperationContext ctx;
@@ -418,7 +420,8 @@ namespace Registry
         void BlockingImpl::updateBlockDomainsId(
             const ::Registry::Administrative::DomainIdList &_domain_list,
             const ::Registry::Administrative::StatusList &_status_list,
-            const std::string &_reason)
+            const std::string &_reason,
+            unsigned long long _log_req_id)
         {
             try {
                 Fred::OperationContext ctx;
@@ -455,10 +458,11 @@ namespace Registry
             const ::Registry::Administrative::DomainIdList &_domain_list,
             ::Registry::Administrative::NullableString *_new_owner,
             bool _remove_admin_c,
-            const std::string &_reason)
+            const std::string &_reason,
+            unsigned long long _log_req_id)
         {
             if (!_remove_admin_c) {
-                this->restorePreAdministrativeBlockStatesId(_domain_list, _new_owner, _reason);
+                this->restorePreAdministrativeBlockStatesId(_domain_list, _new_owner, _reason, _log_req_id);
                 return;
             }
             try {
@@ -514,7 +518,8 @@ namespace Registry
 
         void BlockingImpl::blacklistAndDeleteDomainsId(
             const ::Registry::Administrative::DomainIdList &_domain_list,
-            ::Registry::Administrative::NullableDate *_blacklist_to_date)
+            ::Registry::Administrative::NullableDate *_blacklist_to_date,
+            unsigned long long _log_req_id)
         {
         }
 
@@ -539,7 +544,8 @@ namespace Registry
         void BlockingImpl::blacklistDomainsId(
             const ::Registry::Administrative::DomainIdList &_domain_list,
             ::Registry::Administrative::NullableDate *_blacklist_to_date,
-            bool _with_delete)
+            bool _with_delete,
+            unsigned long long _log_req_id)
         {
             try {
                 Fred::OperationContext ctx;
@@ -562,11 +568,11 @@ namespace Registry
         }
 
 
-        void BlockingImpl::unblacklistAndCreateDomainsId(
-            const ::Registry::Administrative::DomainIdList &_domain_list,
-            const std::string &_owner)
-        {
-        }
+//        void BlockingImpl::unblacklistAndCreateDomainsId(
+//            const ::Registry::Administrative::DomainIdList &_domain_list,
+//            const std::string &_owner)
+//        {
+//        }
 
     }//namespace Administrative
 }//namespace Registry
