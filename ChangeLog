@@ -1,3 +1,7 @@
+2013-08-07 Jiri Sadek (2.15.0)
+
+  * mojeid - managing of disclose flags removed from interface
+
 2013-06-05 Jiri Sadek (2.14.1)
 
   * mojeid - implementation of getUnregistrableHandlesIter() idl method
