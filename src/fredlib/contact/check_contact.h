@@ -59,4 +59,4 @@ namespace Fred
 
 }//namespace Fred
 
-#endif//CHECK_Contact_H
+#endif//CHECK_CONTACT_H
