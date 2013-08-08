@@ -751,8 +751,10 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/domain_name.cc \
 		src/fredlib/domain/check_domain.h \
 		src/fredlib/domain/check_domain.cc \
-		src/fredlib/contact/check_contact.cc\
-		src/fredlib/contact/check_contact.h
+		src/fredlib/contact/check_contact.cc \
+		src/fredlib/contact/check_contact.h \
+		src/fredlib/nsset/check_nsset.cc \
+		src/fredlib/nsset/check_nsset.h
 
 #
 # src/fredlib/libfred.a
