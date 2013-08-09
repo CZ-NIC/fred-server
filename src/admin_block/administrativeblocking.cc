@@ -105,6 +105,9 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
+            DOMAIN_ID_NOT_FOUND domain_id_not_found;
+            UNKNOWN_STATUS unknown_status;
+            DOMAIN_ID_ALREADY_BLOCKED domain_id_already_blocked;
             try {
                 std::auto_ptr< DomainIdHandleOwnerChangeList > result(new DomainIdHandleOwnerChangeList);
                 if (_owner_block_mode == BLOCK_OWNER_COPY) {
@@ -116,215 +119,264 @@ namespace Registry
                     status_list.push_back(_status_list[idx].in());
                 }
                 for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
-                    const Fred::ObjectId object_id = _domain_list[idx];
-                    Fred::CreateAdministrativeObjectBlockRequestId create_object_block_request(object_id, status_list);
-                    create_object_block_request.set_reason(_reason);
-                    if (_owner_block_mode == BLOCK_OWNER) {
-                        Database::query_param_list param(object_id);
-                        Database::Result registrant_result = ctx.get_conn().exec_params(
-                            "SELECT rc.name,rc.type "
-                            "FROM domain d "
-                            "JOIN object_registry rc ON rc.id=d.registrant "
-                            "WHERE d.id=$1::bigint", param);
-                        if (registrant_result.size() <= 0) {
-                            std::string errmsg("|| not found:object_id: ");
-                            errmsg += boost::lexical_cast< std::string >(object_id);
-                            errmsg += " |";
-                            throw INTERNAL_SERVER_ERROR(errmsg.c_str());
-                        }
-                        const Database::Row &row = registrant_result[0];
-                        const std::string registrant = static_cast< std::string >(row[0]);
-                        const Fred::ObjectType type = static_cast< Fred::ObjectType >(row[1]);
-                        Fred::StatusList status_list;
-                        status_list.push_back("serverUpdateProhibited");
-                        Fred::CreateAdministrativeObjectBlockRequest block_owner_request(registrant, type, status_list);
-                        block_owner_request.set_reason(_reason);
-                        const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
-                        Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
-                        create_object_block_request.exec(ctx);
-                    }
-                    else if (_owner_block_mode == BLOCK_OWNER_COPY) {
-                        std::string owner_copy_name;
-                        Fred::ObjectId contact_type;
-                        std::string registrar;
-                        const std::string domain = create_object_block_request.exec(ctx);
-                        ::Registry::Administrative::DomainIdHandleOwnerChange &result_item = (*result)[idx];
-                        result_item.domainId = object_id;
-                        result_item.domainHandle = ::CORBA::string_dup(domain.c_str());
-                        {
+                    try {
+                        const Fred::ObjectId object_id = _domain_list[idx];
+                        Fred::CreateAdministrativeObjectBlockRequestId create_object_block_request(object_id, status_list);
+                        create_object_block_request.set_reason(_reason);
+                        if (_owner_block_mode == BLOCK_OWNER) {
                             Database::query_param_list param(object_id);
-                            Database::Result owner_result = ctx.get_conn().exec_params(
-                                "SELECT o.id,o.name,o.type,rar.handle "
+                            Database::Result registrant_result = ctx.get_conn().exec_params(
+                                "SELECT rc.name,rc.type "
                                 "FROM domain d "
-                                "JOIN object_registry o ON o.id=d.registrant "
-                                "JOIN registrar rar ON rar.id=o.crid "
+                                "JOIN object_registry rc ON rc.id=d.registrant "
                                 "WHERE d.id=$1::bigint", param);
-                            if (owner_result.size() <= 0) {
-                                std::string errmsg("|| not found:object_id: ");
-                                errmsg += boost::lexical_cast< std::string >(object_id);
-                                errmsg += " |";
-                                throw INTERNAL_SERVER_ERROR(errmsg.c_str());
+                            if (registrant_result.size() <= 0) {
+                                domain_id_not_found.what.length(domain_id_not_found.what.length() + 1);
+                                domain_id_not_found.what[domain_id_not_found.what.length() - 1] = object_id;
+                                continue;
                             }
-                            const Database::Row &row = owner_result[0];
-                            result_item.oldOwnerId = static_cast< Fred::ObjectId >(row[0]);
-                            const std::string owner_name = static_cast< std::string >(row[1]);
-                            contact_type = static_cast< Fred::ObjectId >(row[2]);
-                            registrar = static_cast< std::string >(row[3]);
-                            result_item.oldOwnerHandle = ::CORBA::string_dup(owner_name.c_str());
-                            static const std::string owner_copy_suffix = "-ABC_"; //AdministrativeBlockingCopy
-                            owner_copy_name = owner_name + owner_copy_suffix;
-                            Database::Result last_owner_result = ctx.get_conn().exec_params(
-                                "SELECT name "
-                                "FROM object_registry "
-                                "WHERE (type=$1::bigint) AND "
-                                      "($2<name) AND "
-                                      "(name LIKE $3) AND "
-                                      "((erdate IS NULL) OR (NOW()<erdate)) "
-                                "ORDER BY name DESC LIMIT 1", Database::query_param_list(contact_type)
-                                                                                        (owner_copy_name)
-                                                                                        (owner_copy_name + "%"));
-                            static const std::string owner_copy_zero_idx = "00000";
-                            if (last_owner_result.size() == 0) {
-                                owner_copy_name += owner_copy_zero_idx;
-                            }
-                            else {
-                                const std::string last_owner_name = static_cast< std::string >(last_owner_result[0][0]);
-                                const std::string str_copy_idx = last_owner_name.substr(owner_copy_name.length());
-                                ::size_t copy_idx = 0;
-                                bool ilegal_copy_idx = false;
-                                for (const char *pC = str_copy_idx.c_str(); *pC != '\0'; ++pC) {
-                                    if (('0' <= *pC) && (*pC <= '9')) {
-                                        copy_idx = 10 * copy_idx + int(*pC) - int('0');
-                                    }
-                                    else {
-                                        ilegal_copy_idx = true;
-                                        break;
-                                    }
+                            const Database::Row &row = registrant_result[0];
+                            const std::string registrant = static_cast< std::string >(row[0]);
+                            const Fred::ObjectType type = static_cast< Fred::ObjectType >(row[1]);
+                            Fred::StatusList status_list;
+                            status_list.push_back("serverUpdateProhibited");
+                            Fred::CreateAdministrativeObjectBlockRequest block_owner_request(registrant, type, status_list);
+                            block_owner_request.set_reason(_reason);
+                            const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
+                            Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
+                            create_object_block_request.exec(ctx);
+                        }
+                        else if (_owner_block_mode == BLOCK_OWNER_COPY) {
+                            std::string owner_copy_name;
+                            Fred::ObjectId contact_type;
+                            std::string registrar;
+                            const std::string domain = create_object_block_request.exec(ctx);
+                            ::Registry::Administrative::DomainIdHandleOwnerChange &result_item = (*result)[idx];
+                            result_item.domainId = object_id;
+                            result_item.domainHandle = ::CORBA::string_dup(domain.c_str());
+                            {
+                                Database::query_param_list param(object_id);
+                                Database::Result owner_result = ctx.get_conn().exec_params(
+                                    "SELECT o.id,o.name,o.type,rar.handle "
+                                    "FROM domain d "
+                                    "JOIN object_registry o ON o.id=d.registrant "
+                                    "JOIN registrar rar ON rar.id=o.crid "
+                                    "WHERE d.id=$1::bigint", param);
+                                if (owner_result.size() <= 0) {
+                                    std::string errmsg("|| not found:object_id: ");
+                                    errmsg += boost::lexical_cast< std::string >(object_id);
+                                    errmsg += " |";
+                                    throw INTERNAL_SERVER_ERROR(errmsg.c_str());
                                 }
-                                if (ilegal_copy_idx) {
-                                    owner_copy_name = last_owner_name + owner_copy_suffix + owner_copy_zero_idx;
+                                const Database::Row &row = owner_result[0];
+                                result_item.oldOwnerId = static_cast< Fred::ObjectId >(row[0]);
+                                const std::string owner_name = static_cast< std::string >(row[1]);
+                                contact_type = static_cast< Fred::ObjectId >(row[2]);
+                                registrar = static_cast< std::string >(row[3]);
+                                result_item.oldOwnerHandle = ::CORBA::string_dup(owner_name.c_str());
+                                static const std::string owner_copy_suffix = "-ABC_"; //AdministrativeBlockingCopy
+                                owner_copy_name = owner_name + owner_copy_suffix;
+                                Database::Result last_owner_result = ctx.get_conn().exec_params(
+                                    "SELECT name "
+                                    "FROM object_registry "
+                                    "WHERE (type=$1::bigint) AND "
+                                          "($2<name) AND "
+                                          "(name LIKE $3) AND "
+                                          "((erdate IS NULL) OR (NOW()<erdate)) "
+                                    "ORDER BY name DESC LIMIT 1", Database::query_param_list(contact_type)
+                                                                                            (owner_copy_name)
+                                                                                            (owner_copy_name + "%"));
+                                static const std::string owner_copy_zero_idx = "00000";
+                                if (last_owner_result.size() == 0) {
+                                    owner_copy_name += owner_copy_zero_idx;
                                 }
                                 else {
-                                    ++copy_idx;
-                                    std::ostringstream idx;
-                                    idx << std::setw(owner_copy_zero_idx.length()) << std::setfill('0') << copy_idx;
-                                    owner_copy_name += idx.str();
+                                    const std::string last_owner_name = static_cast< std::string >(last_owner_result[0][0]);
+                                    const std::string str_copy_idx = last_owner_name.substr(owner_copy_name.length());
+                                    ::size_t copy_idx = 0;
+                                    bool ilegal_copy_idx = false;
+                                    for (const char *pC = str_copy_idx.c_str(); *pC != '\0'; ++pC) {
+                                        if (('0' <= *pC) && (*pC <= '9')) {
+                                            copy_idx = 10 * copy_idx + int(*pC) - int('0');
+                                        }
+                                        else {
+                                            ilegal_copy_idx = true;
+                                            break;
+                                        }
+                                    }
+                                    if (ilegal_copy_idx) {
+                                        owner_copy_name = last_owner_name + owner_copy_suffix + owner_copy_zero_idx;
+                                    }
+                                    else {
+                                        ++copy_idx;
+                                        std::ostringstream idx;
+                                        idx << std::setw(owner_copy_zero_idx.length()) << std::setfill('0') << copy_idx;
+                                        owner_copy_name += idx.str();
+                                    }
                                 }
+                                Fred::InfoContact info_contact(owner_name, registrar);
+                                Fred::InfoContactOutput old_contact = info_contact.exec(ctx);
+                                Fred::CreateContact create_contact(owner_copy_name, registrar);
+                                if (!old_contact.info_contact_data.authinfopw.empty()) {
+                                    create_contact.set_authinfo(old_contact.info_contact_data.authinfopw);
+                                }
+                                if (!old_contact.info_contact_data.name.isnull()) {
+                                    create_contact.set_name(old_contact.info_contact_data.name);
+                                }
+                                if (!old_contact.info_contact_data.organization.isnull()) {
+                                    create_contact.set_organization(old_contact.info_contact_data.organization);
+                                }
+                                if (!old_contact.info_contact_data.street1.isnull()) {
+                                    create_contact.set_street1(old_contact.info_contact_data.street1);
+                                }
+                                if (!old_contact.info_contact_data.street2.isnull()) {
+                                    create_contact.set_street2(old_contact.info_contact_data.street2);
+                                }
+                                if (!old_contact.info_contact_data.street3.isnull()) {
+                                    create_contact.set_street3(old_contact.info_contact_data.street3);
+                                }
+                                if (!old_contact.info_contact_data.city.isnull()) {
+                                    create_contact.set_city(old_contact.info_contact_data.city);
+                                }
+                                if (!old_contact.info_contact_data.stateorprovince.isnull()) {
+                                    create_contact.set_stateorprovince(old_contact.info_contact_data.stateorprovince);
+                                }
+                                if (!old_contact.info_contact_data.postalcode.isnull()) {
+                                    create_contact.set_postalcode(old_contact.info_contact_data.postalcode);
+                                }
+                                if (!old_contact.info_contact_data.country.isnull()) {
+                                    create_contact.set_country(old_contact.info_contact_data.country);
+                                }
+                                if (!old_contact.info_contact_data.telephone.isnull()) {
+                                    create_contact.set_telephone(old_contact.info_contact_data.telephone);
+                                }
+                                if (!old_contact.info_contact_data.fax.isnull()) {
+                                    create_contact.set_fax(old_contact.info_contact_data.fax);
+                                }
+                                if (!old_contact.info_contact_data.email.isnull()) {
+                                    create_contact.set_email(old_contact.info_contact_data.email);
+                                }
+                                if (!old_contact.info_contact_data.notifyemail.isnull()) {
+                                    create_contact.set_notifyemail(old_contact.info_contact_data.notifyemail);
+                                }
+                                if (!old_contact.info_contact_data.vat.isnull()) {
+                                    create_contact.set_vat(old_contact.info_contact_data.vat);
+                                }
+                                if (!old_contact.info_contact_data.ssntype.isnull()) {
+                                    create_contact.set_ssntype(old_contact.info_contact_data.ssntype);
+                                }
+                                if (!old_contact.info_contact_data.ssn.isnull()) {
+                                    create_contact.set_ssn(old_contact.info_contact_data.ssn);
+                                }
+                                if (!old_contact.info_contact_data.disclosename.isnull()) {
+                                    create_contact.set_disclosename(old_contact.info_contact_data.disclosename);
+                                }
+                                if (!old_contact.info_contact_data.discloseorganization.isnull()) {
+                                    create_contact.set_discloseorganization(old_contact.info_contact_data.discloseorganization);
+                                }
+                                if (!old_contact.info_contact_data.discloseaddress.isnull()) {
+                                    create_contact.set_discloseaddress(old_contact.info_contact_data.discloseaddress);
+                                }
+                                if (!old_contact.info_contact_data.disclosetelephone.isnull()) {
+                                    create_contact.set_disclosetelephone(old_contact.info_contact_data.disclosetelephone);
+                                }
+                                if (!old_contact.info_contact_data.disclosefax.isnull()) {
+                                    create_contact.set_disclosefax(old_contact.info_contact_data.disclosefax);
+                                }
+                                if (!old_contact.info_contact_data.discloseemail.isnull()) {
+                                    create_contact.set_discloseemail(old_contact.info_contact_data.discloseemail);
+                                }
+                                if (!old_contact.info_contact_data.disclosevat.isnull()) {
+                                    create_contact.set_disclosevat(old_contact.info_contact_data.disclosevat);
+                                }
+                                if (!old_contact.info_contact_data.discloseident.isnull()) {
+                                    create_contact.set_discloseident(old_contact.info_contact_data.discloseident);
+                                }
+                                if (!old_contact.info_contact_data.disclosenotifyemail.isnull()) {
+                                    create_contact.set_disclosenotifyemail(old_contact.info_contact_data.disclosenotifyemail);
+                                }
+                                create_contact.exec(ctx);
+                                Database::Result new_owner_result = ctx.get_conn().exec_params(
+                                    "SELECT id "
+                                    "FROM object_registry "
+                                    "WHERE (type=$1::bigint) AND "
+                                          "(name=$2)", Database::query_param_list(contact_type)
+                                                                                 (owner_copy_name));
+                                if (new_owner_result.size() <= 0) {
+                                    std::string errmsg("|| not found:object_id: ");
+                                    errmsg += boost::lexical_cast< std::string >(object_id);
+                                    errmsg += " |";
+                                    throw INTERNAL_SERVER_ERROR(errmsg.c_str());
+                                }
+                                result_item.newOwnerHandle = ::CORBA::string_dup(owner_copy_name.c_str());
+                                result_item.newOwnerId = static_cast< Fred::ObjectId >(new_owner_result[0][0]);
                             }
-                            Fred::InfoContact info_contact(owner_name, registrar);
-                            Fred::InfoContactOutput old_contact = info_contact.exec(ctx);
-                            Fred::CreateContact create_contact(owner_copy_name, registrar);
-                            if (!old_contact.info_contact_data.authinfopw.empty()) {
-                                create_contact.set_authinfo(old_contact.info_contact_data.authinfopw);
-                            }
-                            if (!old_contact.info_contact_data.name.isnull()) {
-                                create_contact.set_name(old_contact.info_contact_data.name);
-                            }
-                            if (!old_contact.info_contact_data.organization.isnull()) {
-                                create_contact.set_organization(old_contact.info_contact_data.organization);
-                            }
-                            if (!old_contact.info_contact_data.street1.isnull()) {
-                                create_contact.set_street1(old_contact.info_contact_data.street1);
-                            }
-                            if (!old_contact.info_contact_data.street2.isnull()) {
-                                create_contact.set_street2(old_contact.info_contact_data.street2);
-                            }
-                            if (!old_contact.info_contact_data.street3.isnull()) {
-                                create_contact.set_street3(old_contact.info_contact_data.street3);
-                            }
-                            if (!old_contact.info_contact_data.city.isnull()) {
-                                create_contact.set_city(old_contact.info_contact_data.city);
-                            }
-                            if (!old_contact.info_contact_data.stateorprovince.isnull()) {
-                                create_contact.set_stateorprovince(old_contact.info_contact_data.stateorprovince);
-                            }
-                            if (!old_contact.info_contact_data.postalcode.isnull()) {
-                                create_contact.set_postalcode(old_contact.info_contact_data.postalcode);
-                            }
-                            if (!old_contact.info_contact_data.country.isnull()) {
-                                create_contact.set_country(old_contact.info_contact_data.country);
-                            }
-                            if (!old_contact.info_contact_data.telephone.isnull()) {
-                                create_contact.set_telephone(old_contact.info_contact_data.telephone);
-                            }
-                            if (!old_contact.info_contact_data.fax.isnull()) {
-                                create_contact.set_fax(old_contact.info_contact_data.fax);
-                            }
-                            if (!old_contact.info_contact_data.email.isnull()) {
-                                create_contact.set_email(old_contact.info_contact_data.email);
-                            }
-                            if (!old_contact.info_contact_data.notifyemail.isnull()) {
-                                create_contact.set_notifyemail(old_contact.info_contact_data.notifyemail);
-                            }
-                            if (!old_contact.info_contact_data.vat.isnull()) {
-                                create_contact.set_vat(old_contact.info_contact_data.vat);
-                            }
-                            if (!old_contact.info_contact_data.ssntype.isnull()) {
-                                create_contact.set_ssntype(old_contact.info_contact_data.ssntype);
-                            }
-                            if (!old_contact.info_contact_data.ssn.isnull()) {
-                                create_contact.set_ssn(old_contact.info_contact_data.ssn);
-                            }
-                            if (!old_contact.info_contact_data.disclosename.isnull()) {
-                                create_contact.set_disclosename(old_contact.info_contact_data.disclosename);
-                            }
-                            if (!old_contact.info_contact_data.discloseorganization.isnull()) {
-                                create_contact.set_discloseorganization(old_contact.info_contact_data.discloseorganization);
-                            }
-                            if (!old_contact.info_contact_data.discloseaddress.isnull()) {
-                                create_contact.set_discloseaddress(old_contact.info_contact_data.discloseaddress);
-                            }
-                            if (!old_contact.info_contact_data.disclosetelephone.isnull()) {
-                                create_contact.set_disclosetelephone(old_contact.info_contact_data.disclosetelephone);
-                            }
-                            if (!old_contact.info_contact_data.disclosefax.isnull()) {
-                                create_contact.set_disclosefax(old_contact.info_contact_data.disclosefax);
-                            }
-                            if (!old_contact.info_contact_data.discloseemail.isnull()) {
-                                create_contact.set_discloseemail(old_contact.info_contact_data.discloseemail);
-                            }
-                            if (!old_contact.info_contact_data.disclosevat.isnull()) {
-                                create_contact.set_disclosevat(old_contact.info_contact_data.disclosevat);
-                            }
-                            if (!old_contact.info_contact_data.discloseident.isnull()) {
-                                create_contact.set_discloseident(old_contact.info_contact_data.discloseident);
-                            }
-                            if (!old_contact.info_contact_data.disclosenotifyemail.isnull()) {
-                                create_contact.set_disclosenotifyemail(old_contact.info_contact_data.disclosenotifyemail);
-                            }
-                            create_contact.exec(ctx);
-                            Database::Result new_owner_result = ctx.get_conn().exec_params(
-                                "SELECT id "
-                                "FROM object_registry "
-                                "WHERE (type=$1::bigint) AND "
-                                      "(name=$2)", Database::query_param_list(contact_type)
-                                                                             (owner_copy_name));
-                            if (new_owner_result.size() <= 0) {
-                                std::string errmsg("|| not found:object_id: ");
-                                errmsg += boost::lexical_cast< std::string >(object_id);
-                                errmsg += " |";
-                                throw INTERNAL_SERVER_ERROR(errmsg.c_str());
-                            }
-                            result_item.newOwnerHandle = ::CORBA::string_dup(owner_copy_name.c_str());
-                            result_item.newOwnerId = static_cast< Fred::ObjectId >(new_owner_result[0][0]);
+                            Fred::StatusList owner_block_list;
+                            owner_block_list.push_back("serverUpdateProhibited");
+                            Fred::CreateAdministrativeObjectBlockRequest block_owner_request(owner_copy_name, contact_type, owner_block_list);
+                            block_owner_request.set_reason(_reason);
+                            const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
+                            Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
+                            Fred::UpdateDomain update_domain(domain, registrar);
+                            update_domain.set_registrant(owner_copy_name);
+                            update_domain.exec(ctx);
                         }
-                        Fred::StatusList owner_block_list;
-                        owner_block_list.push_back("serverUpdateProhibited");
-                        Fred::CreateAdministrativeObjectBlockRequest block_owner_request(owner_copy_name, contact_type, owner_block_list);
-                        block_owner_request.set_reason(_reason);
-                        const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
-                        Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
-                        Fred::UpdateDomain update_domain(domain, registrar);
-                        update_domain.set_registrant(owner_copy_name);
-                        update_domain.exec(ctx);
+                        else { // KEEP_OWNER 
+                            create_object_block_request.exec(ctx);
+                        }
+                        Fred::PerformObjectStateRequest(object_id).exec(ctx);
                     }
-                    else { // KEEP_OWNER 
-                        create_object_block_request.exec(ctx);
+                    catch (const Fred::CreateObjectStateRequestId::Exception &e) {
+                        if (e.is_set_object_id_not_found()) {
+                            domain_id_not_found.what.length(domain_id_not_found.what.length() + 1);
+                            domain_id_not_found.what[domain_id_not_found.what.length() - 1] = e.get_object_id_not_found();
+                        }
+                        else if (e.is_set_state_not_found()) {
+                            unknown_status.what.length(unknown_status.what.length() + 1);
+                            unknown_status.what[unknown_status.what.length() - 1] = ::CORBA::string_dup(e.get_state_not_found().c_str());
+                        }
+                        else {
+                            throw std::runtime_error("Fred::CreateObjectStateRequestId::Exception");
+                        }
                     }
-                    Fred::PerformObjectStateRequest(object_id).exec(ctx);
+                    catch (const Fred::CreateAdministrativeObjectBlockRequestId::Exception &e) {
+                        if (e.is_set_server_blocked_present()) {
+                            domain_id_already_blocked.what.length(domain_id_already_blocked.what.length() + 1);
+                            domain_id_already_blocked.what[domain_id_already_blocked.what.length() - 1].domainId = e.get_server_blocked_present();
+                        }
+                        else if (e.is_set_state_not_found()) {
+                            unknown_status.what.length(unknown_status.what.length() + 1);
+                            unknown_status.what[unknown_status.what.length() - 1] = ::CORBA::string_dup(e.get_state_not_found().c_str());
+                        }
+                        else if (e.is_set_invalid_argument()) {
+                            unknown_status.what.length(unknown_status.what.length() + 1);
+                            unknown_status.what[unknown_status.what.length() - 1] = ::CORBA::string_dup(e.get_invalid_argument().c_str());
+                        }
+                        else {
+                            throw std::runtime_error("Fred::CreateAdministrativeObjectBlockRequestId::Exception");
+                        }
+                    }
+                }
+                if (0 < domain_id_not_found.what.length()) {
+                    throw domain_id_not_found;
+                }
+                if (0 < domain_id_already_blocked.what.length()) {
+                    throw domain_id_already_blocked;
+                }
+                if (0 < unknown_status.what.length()) {
+                    throw unknown_status;
                 }
                 ctx.commit_transaction();
                 return result.release();
+            }
+            catch (const DOMAIN_ID_NOT_FOUND&) {
+                throw;
+            }
+            catch (const UNKNOWN_STATUS&) {
+                throw;
+            }
+            catch (const DOMAIN_ID_ALREADY_BLOCKED&) {
+                throw;
             }
             catch (const std::exception &e) {
                 throw INTERNAL_SERVER_ERROR(e.what());
