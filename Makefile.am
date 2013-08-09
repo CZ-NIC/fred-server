@@ -756,8 +756,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/check_nsset.cc \
 		src/fredlib/nsset/check_nsset.h \
 		src/fredlib/keyset/check_keyset.cc \
-		src/fredlib/keyset/check_keyset.h
-
+		src/fredlib/keyset/check_keyset.h \
+		src/fredlib/object/check_handle.cc \
+		src/fredlib/object/check_handle.h
 #
 # src/fredlib/libfred.a
 
