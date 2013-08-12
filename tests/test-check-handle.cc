@@ -49,7 +49,9 @@
 #include "fredlib/registrar.h"
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/nsset/create_nsset.h"
+#include "fredlib/nsset/delete_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
+#include "fredlib/keyset/delete_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/keyset/info_keyset.h"
 #include "fredlib/keyset/info_keyset_history.h"
@@ -136,6 +138,7 @@ struct check_handle_fixture
             .set_discloseaddress(true)
             .exec(ctx);
 
+        Fred::DeleteContact(admin_contact_handle_rem).exec(ctx);
 
         Fred::CreateNsset(test_nsset_handle, registrar_handle)
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact_handle))
@@ -151,6 +154,8 @@ struct check_handle_fixture
                 (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
                 ).exec(ctx);
 
+        Fred::DeleteNsset(test_nsset_handle_rem).exec(ctx);
+
         Fred::CreateKeyset(test_keyset_handle, registrar_handle)
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact_handle))
                 .exec(ctx);
@@ -159,6 +164,7 @@ struct check_handle_fixture
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact_handle))
                 .exec(ctx);
 
+        Fred::DeleteKeyset(test_keyset_handle_rem).exec(ctx);
 
         ctx.commit_transaction();
     }
