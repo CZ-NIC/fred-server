@@ -755,6 +755,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/check_contact.h \
 		src/fredlib/nsset/check_nsset.cc \
 		src/fredlib/nsset/check_nsset.h \
+		src/fredlib/nsset/delete_nsset.cc \
+		src/fredlib/nsset/delete_nsset.h \
 		src/fredlib/keyset/check_keyset.cc \
 		src/fredlib/keyset/check_keyset.h \
 		src/fredlib/object/check_handle.cc \
@@ -1658,6 +1660,7 @@ tests_test_server_SOURCES = \
 		tests/test-create-contact.cc \
 		tests/test-info-contact.cc \
 		tests/test-delete-domain.cc \
+		tests/test-delete-nsset.cc \
 		tests/test-create-domain.cc \
 		tests/test-domain-name.cc \
 		tests/test-check-handle.cc
