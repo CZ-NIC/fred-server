@@ -41,7 +41,7 @@ namespace Fred
     {
         try
         {
-            if(CheckHandle(handle_).is_invalid_handle()) return true;
+            if(TestHandle(handle_).is_invalid_handle()) return true;
         }//try
         catch(ExceptionStack& ex)
         {
@@ -55,7 +55,7 @@ namespace Fred
     {
         try
         {
-            if(CheckHandle(handle_).is_registered(ctx,"keyset",conflicting_handle_out)) return true;
+            if(TestHandle(handle_).is_registered(ctx,"keyset",conflicting_handle_out)) return true;
         }//try
         catch(ExceptionStack& ex)
         {
@@ -76,7 +76,7 @@ namespace Fred
     {
         try
         {
-            if(CheckHandle(handle_).is_protected(ctx,"keyset")) return true;
+            if(TestHandle(handle_).is_protected(ctx,"keyset")) return true;
         }//try
         catch(ExceptionStack& ex)
         {

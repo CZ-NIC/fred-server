@@ -31,20 +31,20 @@
 namespace Fred
 {
 
-    class CheckHandle
+    class TestHandle
     {
         const std::string handle_;
     public:
-        CheckHandle(const std::string& handle);
+        TestHandle(const std::string& handle);
         //check handle syntax
-        bool is_invalid_handle();
+        bool is_invalid_handle() const;
+        //check if handle is in protected period
+        bool is_protected(OperationContext& ctx, const std::string& object_type_name) const;
         //check if handle is already registered, if true then set conflicting handle
         bool is_registered(OperationContext& ctx,
             const std::string& object_type_name,//from db enum_object_type.name
-            std::string& conflicting_handle_out);
-        //check if handle is in protected period
-        bool is_protected(OperationContext& ctx, const std::string& object_type_name);
-    };//class CheckHandle
+            std::string& conflicting_handle_out) const;
+    };
 
 }//namespace Fred
 

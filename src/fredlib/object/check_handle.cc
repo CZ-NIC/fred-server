@@ -34,35 +34,20 @@
 
 namespace Fred
 {
+
     ///init registry handle ctor
-    CheckHandle::CheckHandle(const std::string& handle)
+    TestHandle::TestHandle(const std::string& handle)
     :handle_(handle)
     {}
     ///check handle syntax
-    bool CheckHandle::is_invalid_handle()
+    bool TestHandle::is_invalid_handle() const
     {
         static const boost::regex HANDLE_SYNTAX("[a-zA-Z0-9_:.-]{1,63}");
-        if(!boost::regex_match(handle_, HANDLE_SYNTAX)) return true;
-        return false;
+        return !boost::regex_match(handle_, HANDLE_SYNTAX);
     }
-    //check if handle is already registered, if true then set conflicting handle
-    bool CheckHandle::is_registered(OperationContext& ctx,
-        const std::string& object_type_name,//from db enum_object_type.name
-        std::string& conflicting_handle_out)
-    {
-        Database::Result conflicting_handle_res  = ctx.get_conn().exec_params(
-            "SELECT o.name, o.id FROM object_registry o JOIN enum_object_type eot on o.type = eot.id "
-            " WHERE eot.name=$1::text AND o.erdate ISNULL AND o.name=UPPER($2::text) LIMIT 1"
-        , Database::query_param_list(object_type_name)(handle_));
-        if(conflicting_handle_res.size() > 0)//have conflicting_handle
-        {
-            conflicting_handle_out = static_cast<std::string>(conflicting_handle_res[0][0]);
-            return true;
-        }
-        return false;
-    }
+
     //check if handle is in protected period
-    bool CheckHandle::is_protected(OperationContext& ctx, const std::string& object_type_name)
+    bool TestHandle::is_protected(OperationContext& ctx, const std::string& object_type_name) const
     {
         Database::Result protection_res = ctx.get_conn().exec_params(
         "SELECT COALESCE(MAX(oreg.erdate) + ((SELECT val FROM enum_parameters "
@@ -76,6 +61,24 @@ namespace Fred
 
         if(static_cast<bool>(protection_res[0][0]) == true) return true;
 
+        return false;
+    }
+
+    //check if handle is already registered, if true then set conflicting handle
+    bool TestHandle::is_registered(OperationContext& ctx,
+        const std::string& object_type_name,//from db enum_object_type.name
+        std::string& conflicting_handle_out) const
+    {
+        Database::Result conflicting_handle_res  = ctx.get_conn().exec_params(
+            "SELECT o.name, o.id FROM object_registry o JOIN enum_object_type eot on o.type = eot.id "
+            " WHERE eot.name=$1::text AND o.erdate ISNULL AND o.name=UPPER($2::text) LIMIT 1"
+        , Database::query_param_list(object_type_name)(handle_));
+
+        if(conflicting_handle_res.size() > 0)//have conflicting_handle
+        {
+            conflicting_handle_out = static_cast<std::string>(conflicting_handle_res[0][0]);
+            return true;
+        }
         return false;
     }
 

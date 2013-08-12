@@ -48,6 +48,7 @@
 #include "time_clock.h"
 #include "fredlib/registrar.h"
 #include "fredlib/contact/create_contact.h"
+#include "fredlib/contact/delete_contact.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/nsset/delete_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
@@ -65,7 +66,9 @@
 #include "fredlib/contact/info_contact.h"
 #include "fredlib/contact/info_contact_history.h"
 #include "fredlib/contact/info_contact_compare.h"
-
+#include "fredlib/contact/check_contact.h"
+#include "fredlib/nsset/check_nsset.h"
+#include "fredlib/keyset/check_keyset.h"
 
 #include "util/util.h"
 
@@ -175,17 +178,34 @@ struct check_handle_fixture
 /**
  * test CheckHandle true returning cases
  */
-BOOST_FIXTURE_TEST_CASE(check_handle_true, check_handle_fixture)
+
+
+BOOST_FIXTURE_TEST_CASE(check_contact_handle_true, check_handle_fixture)
 {
     Fred::OperationContext ctx;
+    std::string conflicting_handle;
+    BOOST_CHECK(Fred::CheckContact(admin_contact_handle).is_registered(ctx, conflicting_handle));
+    BOOST_CHECK(admin_contact_handle.compare(conflicting_handle) == 0);
+    BOOST_CHECK(Fred::CheckContact(admin_contact_handle).is_registered(ctx));
+    BOOST_CHECK(Fred::CheckContact(admin_contact_handle+"@").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact(admin_contact_handle_rem).is_protected(ctx));
+    BOOST_CHECK(Fred::CheckContact(admin_contact_handle+xmark).is_free(ctx));
 }
 
 /**
  * test CheckHandle false returning cases
  */
-BOOST_FIXTURE_TEST_CASE(check_handle_false, check_handle_fixture)
+BOOST_FIXTURE_TEST_CASE(check_contact_handle_false, check_handle_fixture)
 {
+    BOOST_CHECK(!Fred::CheckContact(admin_contact_handle).is_invalid_handle());
     Fred::OperationContext ctx;
+
+    std::string conflicting_handle;
+    BOOST_CHECK(!Fred::CheckContact(admin_contact_handle+xmark).is_registered(ctx, conflicting_handle));
+    BOOST_CHECK(conflicting_handle.empty());
+
+    BOOST_CHECK(!Fred::CheckContact(admin_contact_handle).is_protected(ctx));
+    BOOST_CHECK(!Fred::CheckContact(admin_contact_handle).is_free(ctx));
 }
 
 
