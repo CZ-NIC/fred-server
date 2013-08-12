@@ -36,7 +36,7 @@ namespace Fred
     {
         const std::string handle_;//keyset identifier
     public:
-
+        DECLARE_EXCEPTION_DATA(unknown_keyset_handle, std::string);
         DECLARE_EXCEPTION_DATA(object_linked_to_keyset_handle, std::string);
         struct Exception
         : virtual Fred::OperationException
