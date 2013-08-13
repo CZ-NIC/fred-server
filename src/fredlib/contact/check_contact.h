@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2013  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -36,12 +36,6 @@ namespace Fred
     {
         const std::string handle_;//contact identifier
     public:
-
-        struct Exception
-        : virtual Fred::OperationException
-        , ExceptionData_unknown_contact_handle<Exception>
-        {};
-
         CheckContact(const std::string& handle);
         //check contact handle syntax
         bool is_invalid_handle();

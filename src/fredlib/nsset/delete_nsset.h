@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2012  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -17,12 +17,12 @@
  */
 
 /**
- *  @file check_nsset.h
- *  nsset check
+ *  @file delete_nsset.h
+ *  nsset delete
  */
 
-#ifndef CHECK_NSSET_H
-#define CHECK_NSSET_H
+#ifndef DELETE_NSSET_H
+#define DELETE_NSSET_H
 
 #include <string>
 
@@ -32,31 +32,25 @@
 namespace Fred
 {
 
-    class CheckNsset
+    class DeleteNsset
     {
         const std::string handle_;//nsset identifier
     public:
-
+        DECLARE_EXCEPTION_DATA(unknown_nsset_handle, std::string);
+        DECLARE_EXCEPTION_DATA(object_linked_to_nsset_handle, std::string);
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_nsset_handle<Exception>
+        , ExceptionData_object_linked_to_nsset_handle<Exception>
         {};
 
-        CheckNsset(const std::string& handle);
-        //check nsset handle syntax
-        bool is_invalid_handle();
-        //check if nsset handle is already registered, if true then set conflicting handle
-        bool is_registered(OperationContext& ctx, std::string& conflicting_handle_out);
-        bool is_registered(OperationContext& ctx);
-        //check if nsset handle is in protected period
-        bool is_protected(OperationContext& ctx);
-        //check if nsset handle is free for registration
-       bool is_free(OperationContext& ctx);
+        DeleteNsset(const std::string& handle);
+        void exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const CheckNsset& i);
+        friend std::ostream& operator<<(std::ostream& os, const DeleteNsset& dc);
         std::string to_string();
-    };//class CheckNsset
+    };//class DeleteNsset
 
 }//namespace Fred
 
-#endif//CHECK_NSSET_H
+#endif//DELETE_NSSET_H

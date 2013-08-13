@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2012  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -17,12 +17,12 @@
  */
 
 /**
- *  @file check_keyset.h
- *  keyset check
+ *  @file delete_keyset.h
+ *  keyset delete
  */
 
-#ifndef CHECK_KEYSET_H
-#define CHECK_KEYSET_H
+#ifndef DELETE_KEYSET_H
+#define DELETE_KEYSET_H
 
 #include <string>
 
@@ -32,31 +32,25 @@
 namespace Fred
 {
 
-    class CheckKeyset
+    class DeleteKeyset
     {
         const std::string handle_;//keyset identifier
     public:
-
+        DECLARE_EXCEPTION_DATA(unknown_keyset_handle, std::string);
+        DECLARE_EXCEPTION_DATA(object_linked_to_keyset_handle, std::string);
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_keyset_handle<Exception>
+        , ExceptionData_object_linked_to_keyset_handle<Exception>
         {};
 
-        CheckKeyset(const std::string& handle);
-        //check keyset handle syntax
-        bool is_invalid_handle();
-        //check if keyset handle is already registered, if true then set conflicting handle
-        bool is_registered(OperationContext& ctx, std::string& conflicting_handle_out);
-        bool is_registered(OperationContext& ctx);
-        //check if keyset handle is in protected period
-        bool is_protected(OperationContext& ctx);
-        //check if keyset handle is free for registration
-       bool is_free(OperationContext& ctx);
+        DeleteKeyset(const std::string& handle);
+        void exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const CheckKeyset& i);
+        friend std::ostream& operator<<(std::ostream& os, const DeleteKeyset& dc);
         std::string to_string();
-    };//class CheckKeyset
+    };//class DeleteKeyset
 
 }//namespace Fred
 
-#endif//CHECK_KEYSET_H
+#endif//DELETE_KEYSET_H

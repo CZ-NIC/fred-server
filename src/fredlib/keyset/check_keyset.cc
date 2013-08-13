@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2013  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -26,6 +26,7 @@
 #include <boost/regex.hpp>
 
 #include "fredlib/keyset/check_keyset.h"
+#include "fredlib/object/check_handle.h"
 
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
@@ -40,8 +41,7 @@ namespace Fred
     {
         try
         {
-            static const boost::regex KEYSET_HANDLE_SYNTAX("[a-zA-Z0-9_:.-]{1,63}");
-            if(!boost::regex_match(handle_, KEYSET_HANDLE_SYNTAX)) return true;
+            if(TestHandle(handle_).is_invalid_handle()) return true;
         }//try
         catch(ExceptionStack& ex)
         {
@@ -55,15 +55,7 @@ namespace Fred
     {
         try
         {
-            Database::Result conflicting_handle_res  = ctx.get_conn().exec_params(
-                "SELECT o.name, o.id FROM object_registry o JOIN enum_object_type eot on o.type = eot.id "
-                " WHERE eot.name='keyset' AND o.erdate ISNULL AND o.name=$1::text LIMIT 1"
-            , Database::query_param_list(handle_));
-            if(conflicting_handle_res.size() > 0)//have conflicting_handle
-            {
-                conflicting_handle_out = static_cast<std::string>(conflicting_handle_res[0][0]);
-                return true;
-            }
+            if(TestHandle(handle_).is_registered(ctx,"keyset",conflicting_handle_out)) return true;
         }//try
         catch(ExceptionStack& ex)
         {
@@ -84,18 +76,7 @@ namespace Fred
     {
         try
         {
-            Database::Result protection_res = ctx.get_conn().exec_params(
-            "SELECT COALESCE(MAX(oreg.erdate) + ((SELECT val FROM enum_parameters "
-                " WHERE name = 'handle_registration_protection_period') || ' month')::interval > CURRENT_TIMESTAMP, false) "
-            " FROM object_registry oreg "
-            " JOIN enum_object_type eot ON oreg.type = eot.id "
-            " WHERE oreg.erdate IS NOT NULL "
-            " AND eot.name='keyset' "
-            " AND oreg.name=UPPER($1::text)"
-            , Database::query_param_list(handle_));
-
-            if(static_cast<bool>(protection_res[0][0]) == true) return true;
-
+            if(TestHandle(handle_).is_protected(ctx,"keyset")) return true;
         }//try
         catch(ExceptionStack& ex)
         {
@@ -121,7 +102,7 @@ namespace Fred
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return false;//meaning ok
+        return true;//meaning ok
     }
 
     std::ostream& operator<<(std::ostream& os, const CheckKeyset& i)
