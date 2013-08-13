@@ -100,7 +100,7 @@ namespace Fred
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return false;//meaning ok
+        return true;//meaning ok
     }
 
     std::ostream& operator<<(std::ostream& os, const CheckContact& i)
