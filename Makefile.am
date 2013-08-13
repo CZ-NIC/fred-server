@@ -748,7 +748,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/zone/zone.h \
 		src/fredlib/zone/zone.cc \
 		src/fredlib/domain/domain_name.h \
-		src/fredlib/domain/domain_name.cc
+		src/fredlib/domain/domain_name.cc \
+		src/fredlib/contact/verification/create_check.h \
+		src/fredlib/contact/verification/create_check.cc
 
 #
 # src/fredlib/libfred.a
