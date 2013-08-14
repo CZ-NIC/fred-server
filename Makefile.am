@@ -730,6 +730,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/merge_contact.cc \
 		src/fredlib/contact/create_contact.cc \
 		src/fredlib/contact/create_contact.h \
+		src/fredlib/contact/update_contact.cc \
+		src/fredlib/contact/update_contact.h \
 		src/fredlib/nsset/create_nsset.cc \
 		src/fredlib/nsset/create_nsset.h \
 		src/fredlib/nsset/nsset_dns_host.h \
