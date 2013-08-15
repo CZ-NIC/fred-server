@@ -536,7 +536,7 @@ namespace Fred
 
                 //object_registry historyid
                 Database::Result update_historyid_res = ctx.get_conn().exec_params(
-                    "UPDATE object_registry SET historyid = $1::bigint "
+                    "UPDATE object_registry SET historyid = $1::bigint, crhistoryid = $1::bigint "
                         " WHERE id = $2::integer RETURNING id"
                         , Database::query_param_list(history_id)(object_id));
                 if (update_historyid_res.size() != 1)
