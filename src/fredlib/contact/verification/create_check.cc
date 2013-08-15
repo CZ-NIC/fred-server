@@ -21,54 +21,111 @@
  *  create contact check
  */
 
+#include <boost/assign/list_of.hpp>
+#include <boost/algorithm/string/join.hpp>
+
 #include "fredlib/contact/verification/create_check.h"
+#include "fredlib/contact/verification/enum_check_status.h"
 
 namespace Fred
 {
-    CreateContactCheck::CreateContactCheck(Pg::Integer _contact_history_id, Pg::Serial _testsuite_id, Pg::BigSerial _logd_request_id, Pg::Serial _status_id)
-        : contact_history_id_(_contact_history_id),
-          testsuite_id_(_testsuite_id),
-          logd_request_id_(_logd_request_id),
-          status_id_(_status_id)
+    CreateContactCheck::CreateContactCheck(
+        const std::string& _contact_handle,
+        const std::string& _testsuite_name,
+    ) :
+        contact_handle_(_contact_handle),
+        testsuite_name_(_testsuite_name)
     { }
 
-    boost::posix_time::ptime CreateContactCheck::exec(OperationContext& _ctx, const std::string& _postgres_time_zone) {
-        boost::posix_time::ptime timestamp;
+    CreateContactCheck::CreateContactCheck(
+        const std::string& _contact_handle,
+        const std::string& _testsuite_name,
+        Optional<long long> _logd_request_id
+    ) :
+        contact_handle_(_contact_handle),
+        testsuite_name_(_testsuite_name),
+        logd_request_id_(
+            ( _logd_request_id.isset() )
+                ?
+                (_logd_request_id.get_value() )
+                :
+                Nullable<long long>()
+        )
+    { }
+
+    CreateContactCheck& CreateContactCheck::set_logd_request_id(long long _logd_request_id) {
+        logd_request_id_ = _logd_request_id;
+        return *this;
+    }
+
+    CreateContactCheck& CreateContactCheck::unset_logd_request_id() {
+        logd_request_id_ = Nullable<long long>();
+        return *this;
+    }
+
+    std::string CreateContactCheck::exec(OperationContext& _ctx) {
+        std::string handle;
+
+        std::vector<std::string> columns = boost::assign::list_of
+            ("contact_history_id")
+            ("enum_contact_testsuite_id")
+            ("enum_contact_check_status_id");
+
+        std::vector<std::string> values = boost::assign::list_of
+            ("(SELECT o_h.historyid"
+             "    FROM object_registry AS o_r"
+             "        LEFT JOIN object_history AS o_h USING(id)"
+             "        LEFT JOIN h AS ON o_h.historyid = h.id"
+             "    WHERE o_r.name=$1::varchar"
+             "        AND h.next IS NULL"
+             "    ORDER BY )")
+            ("(SELECT id FROM enum_contact_testsuite WHERE name=$2::varchar)")
+            ("(SELECT id FROM enum_contact_check_status WHERE name=$3::varchar)");
+
+        Database::query_param_list params;
+        params
+            (contact_handle_)
+            (testsuite_name_)
+            (Fred::ContactCheckStatus::ENQUEUED);
+
+        // optional logd_request_id
+        columns.push_back("logd_request_id");
+        values.push_back("$4::bigint");
+        if( logd_request_id_.isnull_() ) {
+            params(Database::NullQueryParam);
+        } else {
+            params(logd_request_id_);
+        }
 
         try {
             Database::Result insert_contact_check_res = _ctx.get_conn().exec_params(
-                "INSERT INTO contact_check ("
-                "   contact_history_id,"
-                "   log_request_id,"
-                "   enum_contact_testsuite_id,"
-                "   enum_contact_check_status_id )"
+                "INSERT INTO contact_check ( "
+                    + boost::algorithm::join( columns, ", ") +
+                ")"
                 "VALUES ("
-                "   $1::int,"
-                "   $2::bigint,"
-                "   $3::int,"
-                "   $4::int )"
-                "RETURNING create_time AT TIME ZONE 'UTC' AT TIME ZONE $5::text;",
-                Database::query_param_list(contact_history_id_)(testsuite_id_)(logd_request_id_)(status_id_)(_postgres_time_zone));
+                    + boost::algorithm::join( values, ", ") +
+                ")"
+                "RETURNING handle;",
+                params);
 
             if (insert_contact_check_res.size() != 1) {
                 BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check creation failed"));
             }
 
-            timestamp = boost::posix_time::time_from_string(std::string(insert_contact_check_res[0][0]));
+            handle = insert_contact_check_res[0][0];
 
         } catch(ExceptionStack& ex) {
             ex.add_exception_stack_info( to_string() );
             throw;
         }
 
-        return timestamp;
+        return handle;
     }
 
     std::ostream& operator<<(std::ostream& os, const CreateContactCheck& i) {
-        os << "#CreateContactCheck contact_history_id_: " << i.contact_history_id_
-            << " testsuite_id_: " << i.testsuite_id_
-            << " logd_request_id_: " << i.logd_request_id_
-            << " status_id_: " << i.status_id_;
+        os << "#CreateContactCheck contact_history_id_: " << i.contact_handle_
+            << " testsuite_name_: " << i.testsuite_name_
+            << " logd_request_id_: " << i.logd_request_id_.print_quoted();
 
         return os;
     }

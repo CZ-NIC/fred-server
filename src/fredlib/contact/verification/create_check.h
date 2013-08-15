@@ -25,7 +25,6 @@
 #define CONTACT_VERIFICATION_CREATE_CHECK_51537653410_
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include "fredlib/contact/verification/postgres_types.h"
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
@@ -35,15 +34,29 @@ namespace Fred
 
     class CreateContactCheck
     {
-        Pg::Integer contact_history_id_; //id of contact to be checked - history is used so that contact data won't change during check
-        Pg::Serial testsuite_id_; //id of testsuite definition
-        Pg::BigSerial logd_request_id_; //id of the new entry in log_entry database table
-        Pg::Serial status_id_;
+        std::string         contact_handle_;    // contact to be checked - current version of historical data is used during check
+        std::string         testsuite_name_;    // testsuite definition
+        Nullable<long long> logd_request_id_;   // entry in log_entry database table
 
     public:
-        CreateContactCheck(Pg::Integer _contact_history_id, Pg::Serial _testsuite_id, Pg::BigSerial _logd_request_id, Pg::Serial _status_id);
-        boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
+        // constructors
+        CreateContactCheck(
+            const std::string& _contact_handle,
+            const std::string& _testsuite_name,
+        );
+        CreateContactCheck(
+            const std::string&  _contact_handle,
+            const std::string&  _testsuite_name,
+            Optional<long long> _logd_request_id
+        );
 
+        // setters for optional parameters
+        CreateContactCheck& set_logd_request_id(long long _logd_request_id);
+        CreateContactCheck& unset_logd_request_id();
+
+        // exec and serialization
+        /// @return handle of created contact_check
+        std::string exec(OperationContext& ctx);
         friend std::ostream& operator<<(std::ostream& os, const CreateContactCheck& i);
         std::string to_string() const;
     };
