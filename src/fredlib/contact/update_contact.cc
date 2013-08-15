@@ -493,10 +493,13 @@ namespace Fred
                 params.push_back(contact_id);
                 sql <<" WHERE id = $" << params.size() << "::integer  RETURNING id";
 
-                Database::Result update_contact_res = ctx.get_conn().exec_params(sql.str(), params);
-                if(update_contact_res.size() != 1)
+                if(params.size() > 1)
                 {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
+                    Database::Result update_contact_res = ctx.get_conn().exec_params(sql.str(), params);
+                    if(update_contact_res.size() != 1)
+                    {
+                        BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
+                    }
                 }
             }//update contact
 
