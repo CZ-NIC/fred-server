@@ -286,6 +286,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     info_data_3_with_changes.info_contact_data.street2 = std::string("str2");
     info_data_3_with_changes.info_contact_data.city = std::string("Prague");
     info_data_3_with_changes.info_contact_data.postalcode = std::string("11150");
+    info_data_3_with_changes.info_contact_data.country = std::string("CZ");
     info_data_3_with_changes.info_contact_data.telephone = std::string("+420.123456789");
     info_data_3_with_changes.info_contact_data.email = std::string("test@nic.cz");
     info_data_3_with_changes.info_contact_data.notifyemail = std::string("notif-test@nic.cz");
@@ -320,14 +321,16 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     BOOST_CHECK(history_info_data_4.at(0).info_contact_data.crhistoryid == info_data_4.info_contact_data.crhistoryid);
 
     Fred::UpdateContact(test_contact_handle, registrar_handle)
-    .set_authinfo("passwd")
+    .set_authinfo("passw")
     .set_name("Test Name")
     .set_organization("Test o.r.g.")
     .set_street1("Str 1")
     .set_street2("str2")
+    .set_street3("")
     .set_city("Prague")
     .set_postalcode("11150")
     .set_telephone("+420.123456789")
+    .set_fax("")
     .set_email("test@nic.cz")
     .set_notifyemail("notif-test@nic.cz")
     .set_vat("7805962556")
@@ -342,6 +345,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     .set_disclosevat(true)
     .set_discloseident(true)
     .set_disclosenotifyemail(false)
+    .set_logd_request_id(4)
     .exec(ctx);
 
     Fred::InfoContactOutput info_data_5 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
@@ -364,6 +368,10 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     BOOST_CHECK(info_data_4.info_contact_data.authinfopw != info_data_5.info_contact_data.authinfopw);
     BOOST_CHECK(std::string("passw") == info_data_5.info_contact_data.authinfopw);
     info_data_4_with_changes.info_contact_data.authinfopw = std::string("passw");
+
+    //empty string in street3 and fax
+    info_data_4_with_changes.info_contact_data.street3 = std::string("");
+    info_data_4_with_changes.info_contact_data.fax = std::string("");
 
     //check logd request_id
     BOOST_CHECK(4 == history_info_data_5.at(0).logd_request_id);
