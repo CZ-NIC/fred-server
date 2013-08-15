@@ -462,5 +462,32 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_ssntype, update_contact_fixture)
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
 
+/**
+ * test UpdateContact with wrong country
+ */
+BOOST_FIXTURE_TEST_CASE(update_contact_wrong_country, update_contact_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoContactOutput info_data_1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateContact(test_contact_handle, registrar_handle)
+        .set_country("bad-country")
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateContact::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_country());
+        BOOST_CHECK(ex.get_unknown_country().compare("bad-country") == 0);
+    }
+
+    Fred::InfoContactOutput info_data_2 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateContact

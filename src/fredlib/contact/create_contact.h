@@ -41,10 +41,12 @@ namespace Fred
     {
     public:
         DECLARE_EXCEPTION_DATA(unknown_ssntype, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_country, std::string);
         struct Exception
         : virtual Fred::OperationException
           , ExceptionData_unknown_ssntype<Exception>
           , ExceptionData_unknown_registrar_handle<Exception>
+          , ExceptionData_unknown_country<Exception>
         {};
 
     private:

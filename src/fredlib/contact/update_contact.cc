@@ -334,6 +334,24 @@ namespace Fred
                     ssntype_id = static_cast<unsigned long long>(ssntype_res[0][0]);
                 }
 
+                std::string country_code;
+                if(country_.isset())
+                {
+                    Database::Result country_code_res = ctx.get_conn().exec_params(
+                        "SELECT id FROM enum_country WHERE id = $1::text OR country = $1::text OR country_cs = $1::text FOR SHARE"
+                        , Database::query_param_list(country_.get_value()));
+                    if(country_code_res.size() == 0)
+                    {
+                        BOOST_THROW_EXCEPTION(Exception().set_unknown_country(country_.get_value()));
+                    }
+                    if(country_code_res.size() != 1)
+                    {
+                        BOOST_THROW_EXCEPTION(InternalError("failed to get country"));
+                    }
+
+                    country_code = static_cast<std::string>(country_code_res[0][0]);
+                }
+
                 //update contact
                 Database::QueryParams params;//query params
                 std::stringstream sql;
@@ -390,7 +408,7 @@ namespace Fred
 
                 if(country_.isset())
                 {
-                    params.push_back(country_.get_value());
+                    params.push_back(country_code);
                     sql << set_separator.get() << "country = $" << params.size() << "::text ";
                 }
 
