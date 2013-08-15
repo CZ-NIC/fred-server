@@ -30,6 +30,7 @@
 
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/object/object.h"
+#include "fredlib/contact/contact_enum.h"
 
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
@@ -296,42 +297,6 @@ namespace Fred
             unsigned long long object_id = CreateObject("contact", handle_, registrar_, authinfo_).exec(ctx);
             //create contact
             {
-                unsigned long long ssntype_id = 0;
-                if(ssntype_.isset())
-                {
-                    Database::Result ssntype_res = ctx.get_conn().exec_params(
-                        "SELECT id FROM enum_ssntype WHERE type = UPPER($1::text) FOR SHARE"
-                        , Database::query_param_list(ssntype_.get_value()));
-                    if(ssntype_res.size() == 0)
-                    {
-                        BOOST_THROW_EXCEPTION(Exception().set_unknown_ssntype(ssntype_.get_value()));
-                    }
-                    if(ssntype_res.size() != 1)
-                    {
-                        BOOST_THROW_EXCEPTION(InternalError("failed to get ssntype"));
-                    }
-
-                    ssntype_id = static_cast<unsigned long long>(ssntype_res[0][0]);
-                }
-
-                std::string country_code;
-                if(country_.isset())
-                {
-                    Database::Result country_code_res = ctx.get_conn().exec_params(
-                        "SELECT id FROM enum_country WHERE id = $1::text OR country = $1::text OR country_cs = $1::text FOR SHARE"
-                        , Database::query_param_list(country_.get_value()));
-                    if(country_code_res.size() == 0)
-                    {
-                        BOOST_THROW_EXCEPTION(Exception().set_unknown_country(country_.get_value()));
-                    }
-                    if(country_code_res.size() != 1)
-                    {
-                        BOOST_THROW_EXCEPTION(InternalError("failed to get country"));
-                    }
-
-                    country_code = static_cast<std::string>(country_code_res[0][0]);
-                }
-
                 Database::QueryParams params;//query params
                 std::stringstream col_sql, val_sql;
                 Util::HeadSeparator col_separator("",", "), val_separator("",", ");
@@ -402,7 +367,7 @@ namespace Fred
 
                 if(country_.isset())
                 {
-                    params.push_back(country_code);
+                    params.push_back(Contact::get_country_code<Exception>(country_, ctx));
                     col_sql << col_separator.get() << "country";
                     val_sql << val_separator.get() << "$" << params.size() <<"::text";
                 }
@@ -444,7 +409,7 @@ namespace Fred
 
                 if(ssntype_.isset())
                 {
-                    params.push_back(ssntype_id);
+                    params.push_back(Contact::get_ssntype_id<Exception>(ssntype_,ctx));
                     col_sql << col_separator.get() << "ssntype";
                     val_sql << val_separator.get() << "$" << params.size() <<"::integer";
                 }
