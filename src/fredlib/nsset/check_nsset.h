@@ -37,11 +37,6 @@ namespace Fred
         const std::string handle_;//nsset identifier
     public:
 
-        struct Exception
-        : virtual Fred::OperationException
-        , ExceptionData_unknown_nsset_handle<Exception>
-        {};
-
         CheckNsset(const std::string& handle);
         //check nsset handle syntax
         bool is_invalid_handle();

@@ -38,11 +38,6 @@ namespace Fred
         const std::string fqdn_;//domain identifier
     public:
 
-        struct Exception
-        : virtual Fred::OperationException
-        , ExceptionData_unknown_domain_fqdn<Exception>
-        {};
-
         CheckDomain(const std::string& fqdn);
         //check domain name syntax and zone
         bool is_invalid_handle(OperationContext& ctx);

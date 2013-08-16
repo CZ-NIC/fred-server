@@ -37,11 +37,6 @@ namespace Fred
         const std::string handle_;//keyset identifier
     public:
 
-        struct Exception
-        : virtual Fred::OperationException
-        , ExceptionData_unknown_keyset_handle<Exception>
-        {};
-
         CheckKeyset(const std::string& handle);
         //check keyset handle syntax
         bool is_invalid_handle();
