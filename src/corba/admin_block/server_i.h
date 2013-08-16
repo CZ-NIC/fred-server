@@ -61,7 +61,7 @@ namespace Registry
             virtual void updateBlockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const ::Registry::Administrative::StatusList& status_list, ::Registry::Administrative::NullableDate *block_to_date, const char* reason, ::CORBA::ULongLong log_req_id);
             virtual void restorePreAdministrativeBlockStatesId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableString* new_owner, const char* reason, ::CORBA::ULongLong log_req_id);
             virtual void unblockDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableString* new_owner, ::CORBA::Boolean remove_admin_c, const char* reason, ::CORBA::ULongLong log_req_id);
-            virtual void blacklistAndDeleteDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableDate* blacklist_to_date, ::CORBA::ULongLong log_req_id);
+            virtual void blacklistAndDeleteDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableDate* blacklist_to_date, const char* reason, ::CORBA::ULongLong log_req_id);
             virtual void blacklistDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, ::Registry::Administrative::NullableDate* blacklist_to_date, ::CORBA::Boolean with_delete, ::CORBA::ULongLong log_req_id);
 //            virtual void unblacklistAndCreateDomainsId(const ::Registry::Administrative::DomainIdList& domain_list, const char* owner, ::CORBA::ULongLong log_req_id);
         };//class Server_i

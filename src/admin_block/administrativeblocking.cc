@@ -710,6 +710,7 @@ namespace Registry
         void BlockingImpl::blacklistAndDeleteDomainsId(
             const ::Registry::Administrative::DomainIdList &_domain_list,
             ::Registry::Administrative::NullableDate *_blacklist_to_date,
+            const std::string &_reason,
             unsigned long long _log_req_id)
         {
         }

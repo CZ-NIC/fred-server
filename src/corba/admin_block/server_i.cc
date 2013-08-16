@@ -131,9 +131,10 @@ namespace Registry
         void Server_i::blacklistAndDeleteDomainsId(
             const ::Registry::Administrative::DomainIdList &domain_list,
             ::Registry::Administrative::NullableDate *blacklist_to_date,
+            const char* reason,
             ::CORBA::ULongLong log_req_id)
         {
-            bimpl_->blacklistAndDeleteDomainsId(domain_list, blacklist_to_date, log_req_id);
+            bimpl_->blacklistAndDeleteDomainsId(domain_list, blacklist_to_date, reason, log_req_id);
         }
 
         void Server_i::blacklistDomains(
