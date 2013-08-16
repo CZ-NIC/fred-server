@@ -41,34 +41,7 @@ namespace Fred
 
     GetObjectStateIdMap::StateIdMap& GetObjectStateIdMap::exec(OperationContext &_ctx)
     {
-        state_id_map_.clear();
-        if (status_list_.empty()) {
-            return state_id_map_;
-        }
-        StatusList::const_iterator pState = status_list_.begin();
-        Database::query_param_list param(*pState);
-        ++pState;
-        std::ostringstream query;
-        enum ResultColumnIdx
-        {
-            ID_IDX   = 0,
-            NAME_IDX = 1,
-        };
-        query << "SELECT id,name "
-                 "FROM enum_object_states "
-                 "WHERE " << object_type_ << "=ANY(types) AND "
-                     "name IN ($" << param.size() << "::text";
-        while (pState != status_list_.end()) {
-            param(*pState);
-            query << ",$" << param.size() << "::text";
-            ++pState;
-        }
-        query << ")";
-        Database::Result id_name_result = _ctx.get_conn().exec_params(query.str(), param);
-        for (::size_t rowIdx = 0; rowIdx < id_name_result.size(); ++rowIdx) {
-            const Database::Row &row = id_name_result[rowIdx];
-            state_id_map_[row[NAME_IDX]] = row[ID_IDX];
-        }
+        GetObjectStateIdMap::get_result(_ctx, status_list_, object_type_, state_id_map_);
         if (state_id_map_.size() < status_list_.size()) {
             std::string not_found;
             for (StatusList::const_iterator pState = status_list_.begin(); pState != status_list_.end(); ++pState) {
@@ -81,6 +54,43 @@ namespace Fred
             }
         }
         return state_id_map_;
+    }
+
+    GetObjectStateIdMap::StateIdMap& GetObjectStateIdMap::get_result(OperationContext &_ctx,
+                                                                     const StatusList &_status_list,
+                                                                     ObjectType _object_type,
+                                                                     StateIdMap &_result)
+    {
+        _result.clear();
+        if (_status_list.empty()) {
+            return _result;
+        }
+        StatusList::const_iterator pState = _status_list.begin();
+        Database::query_param_list param(_object_type);
+        param(*pState);
+        ++pState;
+        std::ostringstream query;
+        enum ResultColumnIdx
+        {
+            ID_IDX   = 0,
+            NAME_IDX = 1,
+        };
+        query << "SELECT id,name "
+                 "FROM enum_object_states "
+                 "WHERE $1=ANY(types) AND "
+                     "name IN ($" << param.size() << "::text";
+        while (pState != _status_list.end()) {
+            param(*pState);
+            query << ",$" << param.size() << "::text";
+            ++pState;
+        }
+        query << ")";
+        Database::Result id_name_result = _ctx.get_conn().exec_params(query.str(), param);
+        for (::size_t rowIdx = 0; rowIdx < id_name_result.size(); ++rowIdx) {
+            const Database::Row &row = id_name_result[rowIdx];
+            _result[row[NAME_IDX]] = row[ID_IDX];
+        }
+        return _result;
     }
 
 }//namespace Fred

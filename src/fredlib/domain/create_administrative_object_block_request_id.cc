@@ -105,7 +105,7 @@ namespace Fred
     void CreateAdministrativeObjectBlockRequestId::check_administrative_block_status_only(OperationContext &_ctx) const
     {
         if (status_list_.empty()) {
-            BOOST_THROW_EXCEPTION(Exception().set_invalid_argument("status list empty"));
+            BOOST_THROW_EXCEPTION(Exception().set_vector_of_state_not_found(std::vector< std::string >()));
         }
         typedef std::set< std::string > StatusSet;
         typedef GetBlockingStatusDescList::StatusDescList StatusDescList;
@@ -117,14 +117,14 @@ namespace Fred
                 administrativeBlockStatusSet.insert(pItem->status);
             }
         }
-        std::string invalidStatus;
+        Exception ex;
         for (StatusList::const_iterator pState = status_list_.begin(); pState != status_list_.end(); ++pState) {
             if (administrativeBlockStatusSet.count(*pState) <= 0) {
-                invalidStatus += " " + *pState;
+                ex.add_state_not_found(*pState);
             }
         }
-        if (!invalidStatus.empty()) {
-            BOOST_THROW_EXCEPTION(Exception().set_invalid_argument("unable to set" + invalidStatus + " status"));
+        if (ex.throw_me()) {
+            BOOST_THROW_EXCEPTION(ex);
         }
     }
 
@@ -138,7 +138,7 @@ namespace Fred
                 "WHERE name='serverBlocked'");
 
             if (obj_state_res.size() != 1) {
-                BOOST_THROW_EXCEPTION(Exception().set_state_not_found("serverBlocked"));
+                BOOST_THROW_EXCEPTION(Exception().add_state_not_found("serverBlocked"));
             }
             serverBlockedId = obj_state_res[0][0];
             _ctx.get_log().debug("serverBlockedId = " + boost::lexical_cast< std::string >(serverBlockedId));

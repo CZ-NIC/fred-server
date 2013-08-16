@@ -56,14 +56,12 @@ namespace Fred
         std::string exec(OperationContext &_ctx);
 
     //exception impl
-        DECLARE_EXCEPTION_DATA(invalid_argument, std::string);
-        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
+        DECLARE_VECTOR_OF_EXCEPTION_DATA(state_not_found, std::string);
         DECLARE_EXCEPTION_DATA(server_blocked_present, ObjectId);
 
         struct Exception
         :   virtual Fred::OperationException,
-            ExceptionData_invalid_argument<Exception>,
-            ExceptionData_state_not_found<Exception>,
+            ExceptionData_vector_of_state_not_found<Exception>,
             ExceptionData_server_blocked_present<Exception>
         {};
     private:

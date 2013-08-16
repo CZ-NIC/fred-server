@@ -24,6 +24,7 @@
 #include "administrativeblocking.h"
 #include "corba/connection_releaser.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
+#include "fredlib/domain/get_object_state_id_map.h"
 #include "fredlib/domain/create_administrative_object_block_request.h"
 #include "fredlib/domain/create_administrative_object_block_request_id.h"
 #include "fredlib/domain/create_administrative_object_state_restore_request.h"
@@ -106,7 +107,7 @@ namespace Registry
             unsigned long long _log_req_id)
         {
             DOMAIN_ID_NOT_FOUND domain_id_not_found;
-            UNKNOWN_STATUS unknown_status;
+            std::set< std::string > unknown_status;
             DOMAIN_ID_ALREADY_BLOCKED domain_id_already_blocked;
             try {
                 std::auto_ptr< DomainIdHandleOwnerChangeList > result(new DomainIdHandleOwnerChangeList);
@@ -118,6 +119,19 @@ namespace Registry
                 for (unsigned idx = 0; idx < _status_list.length(); ++idx) {
                     status_list.push_back(_status_list[idx].in());
                 }
+                Fred::StatusList contact_status_list;
+                if ((_owner_block_mode == BLOCK_OWNER) ||
+                    (_owner_block_mode == BLOCK_OWNER_COPY)) {
+                    Fred::GetObjectStateIdMap::StateIdMap state_id;
+                    enum { CONTACT_TYPE = 1 };
+                    Fred::GetObjectStateIdMap::get_result(ctx, status_list, CONTACT_TYPE, state_id);
+                    for (Fred::GetObjectStateIdMap::StateIdMap::const_iterator pState = state_id.begin();
+                         pState != state_id.end(); ++pState) {
+                        contact_status_list.push_back(pState->first);
+                    }
+                }
+                typedef std::set< std::string > StringSet;
+                StringSet contact_blocked;
                 for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
                     try {
                         const Fred::ObjectId object_id = _domain_list[idx];
@@ -138,12 +152,13 @@ namespace Registry
                             const Database::Row &row = registrant_result[0];
                             const std::string registrant = static_cast< std::string >(row[0]);
                             const Fred::ObjectType type = static_cast< Fred::ObjectType >(row[1]);
-                            Fred::StatusList status_list;
-                            status_list.push_back("serverUpdateProhibited");
-                            Fred::CreateAdministrativeObjectBlockRequest block_owner_request(registrant, type, status_list);
-                            block_owner_request.set_reason(_reason);
-                            const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
-                            Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
+                            if ((contact_blocked.find(registrant) == contact_blocked.end()) && !contact_status_list.empty()) {
+                                contact_blocked.insert(registrant);
+                                Fred::CreateAdministrativeObjectBlockRequest block_owner_request(registrant, type, contact_status_list);
+                                block_owner_request.set_reason(_reason);
+                                const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
+                                Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
+                            }
                             create_object_block_request.exec(ctx);
                         }
                         else if (_owner_block_mode == BLOCK_OWNER_COPY) {
@@ -295,6 +310,9 @@ namespace Registry
                                 if (!old_contact.info_contact_data.disclosenotifyemail.isnull()) {
                                     create_contact.set_disclosenotifyemail(old_contact.info_contact_data.disclosenotifyemail);
                                 }
+                                if (0 < _log_req_id) {
+                                    create_contact.set_logd_request_id(_log_req_id);
+                                }
                                 create_contact.exec(ctx);
                                 Database::Result new_owner_result = ctx.get_conn().exec_params(
                                     "SELECT id "
@@ -311,15 +329,18 @@ namespace Registry
                                 result_item.newOwnerHandle = ::CORBA::string_dup(owner_copy_name.c_str());
                                 result_item.newOwnerId = static_cast< Fred::ObjectId >(new_owner_result[0][0]);
                             }
-                            Fred::StatusList owner_block_list;
-                            owner_block_list.push_back("serverUpdateProhibited");
-                            Fred::CreateAdministrativeObjectBlockRequest block_owner_request(owner_copy_name, contact_type, owner_block_list);
-                            block_owner_request.set_reason(_reason);
-                            const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
-                            Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
-                            Fred::UpdateDomain update_domain(domain, registrar);
-                            update_domain.set_registrant(owner_copy_name);
-                            update_domain.exec(ctx);
+                            if (!contact_status_list.empty()) {
+                                Fred::CreateAdministrativeObjectBlockRequest block_owner_request(owner_copy_name, contact_type, contact_status_list);
+                                block_owner_request.set_reason(_reason);
+                                const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
+                                Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
+                                Fred::UpdateDomain update_domain(domain, registrar);
+                                update_domain.set_registrant(owner_copy_name);
+                                if (0 < _log_req_id) {
+                                    update_domain.set_logd_request_id(_log_req_id);
+                                }
+                                update_domain.exec(ctx);
+                            }
                         }
                         else { // KEEP_OWNER 
                             create_object_block_request.exec(ctx);
@@ -332,8 +353,7 @@ namespace Registry
                             domain_id_not_found.what[domain_id_not_found.what.length() - 1] = e.get_object_id_not_found();
                         }
                         else if (e.is_set_state_not_found()) {
-                            unknown_status.what.length(unknown_status.what.length() + 1);
-                            unknown_status.what[unknown_status.what.length() - 1] = ::CORBA::string_dup(e.get_state_not_found().c_str());
+                            unknown_status.insert(e.get_state_not_found());
                         }
                         else {
                             throw std::runtime_error("Fred::CreateObjectStateRequestId::Exception");
@@ -344,13 +364,12 @@ namespace Registry
                             domain_id_already_blocked.what.length(domain_id_already_blocked.what.length() + 1);
                             domain_id_already_blocked.what[domain_id_already_blocked.what.length() - 1].domainId = e.get_server_blocked_present();
                         }
-                        else if (e.is_set_state_not_found()) {
-                            unknown_status.what.length(unknown_status.what.length() + 1);
-                            unknown_status.what[unknown_status.what.length() - 1] = ::CORBA::string_dup(e.get_state_not_found().c_str());
-                        }
-                        else if (e.is_set_invalid_argument()) {
-                            unknown_status.what.length(unknown_status.what.length() + 1);
-                            unknown_status.what[unknown_status.what.length() - 1] = ::CORBA::string_dup(e.get_invalid_argument().c_str());
+                        else if (e.is_set_vector_of_state_not_found()) {
+                            std::vector< std::string > state_not_found = e.get_vector_of_state_not_found();
+                            for (std::vector< std::string >::const_iterator pStat = state_not_found.begin();
+                                 pStat != state_not_found.end(); ++pStat) {
+                                unknown_status.insert(*pStat);
+                            }
                         }
                         else {
                             throw std::runtime_error("Fred::CreateAdministrativeObjectBlockRequestId::Exception");
@@ -363,8 +382,15 @@ namespace Registry
                 if (0 < domain_id_already_blocked.what.length()) {
                     throw domain_id_already_blocked;
                 }
-                if (0 < unknown_status.what.length()) {
-                    throw unknown_status;
+                if (!unknown_status.empty()) {
+                    UNKNOWN_STATUS ex;
+                    ex.what.length(unknown_status.size());
+                    int idx = 0;
+                    for (std::set< std::string >::const_iterator pStat = unknown_status.begin(); pStat != unknown_status.end();
+                         ++pStat, ++idx) {
+                        ex.what[idx] = ::CORBA::string_dup(pStat->c_str());
+                    }
+                    throw ex;
                 }
                 ctx.commit_transaction();
                 return result.release();
@@ -447,8 +473,10 @@ namespace Registry
                             domain_id_not_blocked.what.length(domain_id_not_blocked.what.length() + 1);
                             domain_id_not_blocked.what[domain_id_not_blocked.what.length() - 1].domainId = e.get_server_blocked_absent();
                         }
-                        else {
-                            throw std::runtime_error("Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception");
+                        else if (e.is_set_object_id_not_found()) {
+                            std::ostringstream o;
+                            o << "Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception object_id_not_found " << e.get_object_id_not_found();
+                            throw std::runtime_error(o.str());
                         }
                     }
                     catch (const Fred::UpdateDomain::Exception &e) {
@@ -508,7 +536,7 @@ namespace Registry
             unsigned long long _log_req_id)
         {
             DOMAIN_ID_NOT_FOUND domain_id_not_found;
-            UNKNOWN_STATUS unknown_status;
+            std::set< std::string > unknown_status;
             try {
                 Fred::OperationContext ctx;
                 Fred::StatusList status_list;
@@ -532,21 +560,19 @@ namespace Registry
                             domain_id_not_found.what[domain_id_not_found.what.length() - 1] = e.get_object_id_not_found();
                         }
                         else if (e.is_set_state_not_found()) {
-                            unknown_status.what.length(unknown_status.what.length() + 1);
-                            unknown_status.what[unknown_status.what.length() - 1] = ::CORBA::string_dup(e.get_state_not_found().c_str());
+                            unknown_status.insert(e.get_state_not_found());
                         }
                         else {
                             throw std::runtime_error("Fred::CreateObjectStateRequestId::Exception");
                         }
                     }
                     catch (const Fred::CreateAdministrativeObjectBlockRequestId::Exception &e) {
-                        if (e.is_set_state_not_found()) {
-                            unknown_status.what.length(unknown_status.what.length() + 1);
-                            unknown_status.what[unknown_status.what.length() - 1] = ::CORBA::string_dup(e.get_state_not_found().c_str());
-                        }
-                        else if (e.is_set_invalid_argument()) {
-                            unknown_status.what.length(unknown_status.what.length() + 1);
-                            unknown_status.what[unknown_status.what.length() - 1] = ::CORBA::string_dup(e.get_invalid_argument().c_str());
+                        if (e.is_set_vector_of_state_not_found()) {
+                            std::vector< std::string > state_not_found = e.get_vector_of_state_not_found();
+                            for (std::vector< std::string >::const_iterator pStat = state_not_found.begin();
+                                 pStat != state_not_found.end(); ++pStat) {
+                                unknown_status.insert(*pStat);
+                            }
                         }
                         else {
                             throw std::runtime_error("Fred::CreateAdministrativeObjectBlockRequestId::Exception");
@@ -556,8 +582,15 @@ namespace Registry
                 if (0 < domain_id_not_found.what.length()) {
                     throw domain_id_not_found;
                 }
-                if (0 < unknown_status.what.length()) {
-                    throw unknown_status;
+                if (!unknown_status.empty()) {
+                    UNKNOWN_STATUS ex;
+                    ex.what.length(unknown_status.size());
+                    int idx = 0;
+                    for (std::set< std::string >::const_iterator pStat = unknown_status.begin(); pStat != unknown_status.end();
+                         ++pStat, ++idx) {
+                        ex.what[idx] = ::CORBA::string_dup(pStat->c_str());
+                    }
+                    throw ex;
                 }
                 ctx.commit_transaction();
             }

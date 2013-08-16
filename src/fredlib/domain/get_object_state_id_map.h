@@ -58,6 +58,9 @@ namespace Fred
         :   virtual Fred::OperationException,
             ExceptionData_state_not_found<Exception>
         {};
+
+        static StateIdMap& get_result(OperationContext &_ctx, const StatusList &_status_list, ObjectType _object_type,
+                                      StateIdMap &_result);
     private:
         const StatusList status_list_;
         const ObjectType object_type_;
