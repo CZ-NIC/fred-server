@@ -65,37 +65,31 @@ namespace Fred
 
     std::string CreateContactCheck::exec(OperationContext& _ctx) {
         std::string handle;
-
-        std::vector<std::string> columns = boost::assign::list_of
-            ("contact_history_id")
-            ("enum_contact_testsuite_id")
-            ("enum_contact_check_status_id");
-
-        // subselects for insert values
-        std::vector<std::string> values = boost::assign::list_of
-            ("(SELECT o_h.historyid"
-             "    FROM object_registry AS o_r"
-             "        LEFT JOIN object_history AS o_h USING(id)"
-             "        LEFT JOIN h AS ON o_h.historyid = h.id"
-             "    WHERE o_r.name=$1::varchar"
-             "        AND h.next IS NULL)")
-            ("(SELECT id FROM enum_contact_testsuite WHERE name=$2::varchar)")
-            ("(SELECT id FROM enum_contact_check_status WHERE name=$3::varchar)");
-
+        std::vector<std::string> values;
+        std::vector<std::string> columns;
         Database::query_param_list params;
-        params
-            (contact_handle_)
-            (testsuite_name_)
-            (Fred::ContactCheckStatus::ENQUEUED);
 
-        // optional logd_request_id
+        columns.push_back("contact_history_id");
+        values.push_back
+                    ("(SELECT o_h.historyid"
+                     "    FROM object_registry AS o_r"
+                     "        LEFT JOIN object_history AS o_h USING(id)"
+                     "        LEFT JOIN h AS ON o_h.historyid = h.id"
+                     "    WHERE o_r.name=$1::varchar"
+                     "        AND h.next IS NULL)");
+        params(contact_handle_);
+
+        columns.push_back("enum_contact_testsuite_id");
+        values.push_back("(SELECT id FROM enum_contact_testsuite WHERE name=$2::varchar)");
+        params(testsuite_name_);
+
+        columns.push_back("enum_contact_check_status_id");
+        values.push_back("(SELECT id FROM enum_contact_check_status WHERE name=$3::varchar)");
+        params(Fred::ContactCheckStatus::ENQUEUED);
+
         columns.push_back("logd_request_id");
         values.push_back("$4::bigint");
-        if( logd_request_id_.isnull_() ) {
-            params(Database::NullQueryParam);
-        } else {
-            params(logd_request_id_);
-        }
+        params(logd_request_id_);
 
         try {
             Database::Result insert_contact_check_res = _ctx.get_conn().exec_params(
