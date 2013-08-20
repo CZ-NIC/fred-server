@@ -71,14 +71,14 @@ namespace Fred
             ("enum_contact_testsuite_id")
             ("enum_contact_check_status_id");
 
+        // subselects for insert values
         std::vector<std::string> values = boost::assign::list_of
             ("(SELECT o_h.historyid"
              "    FROM object_registry AS o_r"
              "        LEFT JOIN object_history AS o_h USING(id)"
              "        LEFT JOIN h AS ON o_h.historyid = h.id"
              "    WHERE o_r.name=$1::varchar"
-             "        AND h.next IS NULL"
-             "    ORDER BY )")
+             "        AND h.next IS NULL)")
             ("(SELECT id FROM enum_contact_testsuite WHERE name=$2::varchar)")
             ("(SELECT id FROM enum_contact_check_status WHERE name=$3::varchar)");
 
@@ -112,7 +112,7 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check creation failed"));
             }
 
-            handle = insert_contact_check_res[0][0];
+            handle = *(insert_contact_check_res.begin())["handle"];
 
         } catch(ExceptionStack& ex) {
             ex.add_exception_stack_info( to_string() );
