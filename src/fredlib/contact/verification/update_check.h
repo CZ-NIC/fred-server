@@ -34,16 +34,16 @@ namespace Fred
 {
 
     class UpdateContactCheck {
-        std::string         handle_;          // identify which check to update
+        std::string         check_handle_;          // identify which check to update
         std::string         status_name_;     // check status
         Optional<long long> logd_request_id_; // entry in log_entry database table
 
         public:
             // constructors
-            UpdateContactCheck( const std::string& _handle,
+            UpdateContactCheck( const std::string& _check_handle,
                                 const std::string& _status_name);
 
-            UpdateContactCheck( const std::string&  _handle,
+            UpdateContactCheck( const std::string&  _check_handle,
                                 const std::string&  _status_name,
                                 Optional<long long> _logd_request_id
             );

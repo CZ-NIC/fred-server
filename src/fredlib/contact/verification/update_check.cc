@@ -27,19 +27,19 @@
 namespace Fred
 {
     UpdateContactCheck::UpdateContactCheck(
-        const std::string& _handle,
+        const std::string& _check_handle,
         const std::string& _status_name
     ) :
-        handle_(_handle),
+        check_handle_(_check_handle),
         status_name_(_status_name)
     { }
 
     UpdateContactCheck::UpdateContactCheck(
-        const std::string&              _handle,
+        const std::string&              _check_handle,
         const std::string&              _status_name,
         Optional<long long> _logd_request_id
     ) :
-        handle_(_handle),
+        check_handle_(_check_handle),
         status_name_(_status_name),
         logd_request_id_(_logd_request_id)
     { }
@@ -61,7 +61,7 @@ namespace Fred
 
         // setting the first mandatory parameter - handle for WHERE condition
         //   - doing it here so I don't have to think which $number it is
-        params(handle_);
+        params(check_handle_);
 
         columns.push_back("enum_contact_check_status_id");
         // subselect for enum_contact_check_status_id value
@@ -97,7 +97,7 @@ namespace Fred
     }
 
     std::ostream& operator<<(std::ostream& os, const UpdateContactCheck& i) {
-        os << "#UpdateContactCheck handle_: " << i.handle_
+        os << "#UpdateContactCheck handle_: " << i.check_handle_
             << " logd_request_id_: " << i.logd_request_id_.print_quoted()
             << " status_name_: " << i.status_name_;
 
