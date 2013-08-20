@@ -43,7 +43,13 @@ namespace Fred
     ) :
         check_handle_(_check_handle),
         status_name_(_status_name),
-        logd_request_id_(_logd_request_id)
+        logd_request_id_(
+            ( _logd_request_id.isset() )
+                ?
+                (_logd_request_id.get_value() )
+                :
+                Nullable<long long>()
+        )
     { }
 
     UpdateContactCheck& UpdateContactCheck::set_logd_request_id (long long _logd_request_id) {
@@ -66,14 +72,9 @@ namespace Fred
         values.push_back("(SELECT id FROM enum_contact_check_status WHERE name=$1::varchar)");
         params(status_name_);
 
-        // optional values
         columns.push_back("logd_request_id");
         values.push_back("$2::bigint)");
-        if( logd_request_id_.isset() ) {
-            params(logd_request_id_.get_value());
-        } else {
-            params(Database::NullQueryParam);
-        }
+        params(logd_request_id_);
 
         try {
             Database::Result update_contact_check_res = _ctx.get_conn().exec_params(

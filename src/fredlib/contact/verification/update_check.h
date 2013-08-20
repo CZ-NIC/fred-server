@@ -35,7 +35,7 @@ namespace Fred
     class UpdateContactCheck {
         std::string         check_handle_;          // identify which check to update
         std::string         status_name_;     // check status
-        Optional<long long> logd_request_id_; // entry in log_entry database table
+        Nullable<long long> logd_request_id_; // entry in log_entry database table
 
         public:
             // constructors
