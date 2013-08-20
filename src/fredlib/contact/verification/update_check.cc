@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file update_check.cc
+ *  @file
  *  update contact check
  */
 #include <boost/lexical_cast.hpp>
@@ -37,8 +37,8 @@ namespace Fred
     { }
 
     UpdateContactCheck::UpdateContactCheck(
-        const std::string&              _check_handle,
-        const std::string&              _status_name,
+        const std::string&  _check_handle,
+        const std::string&  _status_name,
         Optional<long long> _logd_request_id
     ) :
         check_handle_(_check_handle),
@@ -61,18 +61,14 @@ namespace Fred
         std::vector<std::string> values;
         Database::query_param_list params;
 
-        // setting the first mandatory parameter - handle for WHERE condition
-        //   - doing it here so I don't have to think which $number it is
-        params(check_handle_);
-
         columns.push_back("enum_contact_check_status_id");
         // subselect for enum_contact_check_status_id value
-        values.push_back("(SELECT id FROM enum_contact_check_status WHERE name=$2::varchar)");
+        values.push_back("(SELECT id FROM enum_contact_check_status WHERE name=$1::varchar)");
         params(status_name_);
 
         // optional values
         columns.push_back("logd_request_id");
-        values.push_back("$3::bigint)");
+        values.push_back("$2::bigint)");
         if( logd_request_id_.isset() ) {
             params(logd_request_id_.get_value());
         } else {
@@ -86,8 +82,8 @@ namespace Fred
                ") = ("
                    + boost::algorithm::join( values, ", ") +
                ")"
-               "WHERE handle=$1::cont_chck_handle;",
-               params);
+               "WHERE handle=$3::cont_chck_handle;",
+               params(check_handle_));
 
             if (update_contact_check_res.size() != 1) {
                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check update failed"));
@@ -99,9 +95,10 @@ namespace Fred
     }
 
     std::ostream& operator<<(std::ostream& os, const UpdateContactCheck& i) {
-        os << "#UpdateContactCheck handle_: " << i.check_handle_
+        os << "#UpdateContactCheck "
+            << " handle_: "          << i.check_handle_
             << " logd_request_id_: " << i.logd_request_id_.print_quoted()
-            << " status_name_: " << i.status_name_;
+            << " status_name_: "     << i.status_name_;
 
         return os;
     }

@@ -121,7 +121,10 @@ namespace Fred
                     "$2::bigint[]"
                     ""
                     "ORDER BY id_ ASC, update_time_ ASC;",
-                    Database::query_param_list(_output_timezone, "ARRAY[" + boost::algorithm::join(boost::lexical_cast<std::string>(test_ids), ",") + "]") );
+                    Database::query_param_list(
+                        _output_timezone,
+                        "ARRAY[" + boost::algorithm::join(boost::lexical_cast<std::string>(test_ids), ",") + "]")
+                );
 
                 result.tests.reserve(contact_test_result.size());
 

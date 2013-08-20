@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file update_check.h
+ *  @file
  *  update contact check
  */
 
@@ -57,4 +57,4 @@ namespace Fred
             std::string to_string() const;
     };
 }
-#endif // CONTACT_VERIFICATION_UPDATE_CHECK_51547983410_
+#endif // include guard

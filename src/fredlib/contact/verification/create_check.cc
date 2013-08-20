@@ -38,8 +38,8 @@ namespace Fred
     { }
 
     CreateContactCheck::CreateContactCheck(
-        const std::string& _contact_handle,
-        const std::string& _testsuite_name,
+        const std::string&  _contact_handle,
+        const std::string&  _testsuite_name,
         Optional<long long> _logd_request_id
     ) :
         contact_handle_(_contact_handle),
@@ -117,8 +117,9 @@ namespace Fred
     }
 
     std::ostream& operator<<(std::ostream& os, const CreateContactCheck& i) {
-        os << "#CreateContactCheck contact_handle_: " << i.contact_handle_
-            << " testsuite_name_: " << i.testsuite_name_
+        os << "#CreateContactCheck"
+            << " contact_handle_: "  << i.contact_handle_
+            << " testsuite_name_: "  << i.testsuite_name_
             << " logd_request_id_: " << i.logd_request_id_.print_quoted();
 
         return os;

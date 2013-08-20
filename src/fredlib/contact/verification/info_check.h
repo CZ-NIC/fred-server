@@ -44,7 +44,7 @@ namespace Fred
         struct ContactTestResultData {
             std::string                         test_name;
             boost::posix_time::ptime            local_create_time;
-            std::vector<ContactTestResultState> state_history;  /**< current state is also included */
+            std::vector<ContactTestResultState> state_history;  /* current state is also included */
         };
 
         struct ContactCheckState {
@@ -58,7 +58,7 @@ namespace Fred
         std::string                        testsuite_name;
         long                               contact_history_id;
         boost::posix_time::ptime           utc_create_time;
-        std::vector<ContactCheckState>     check_state_history; /**< current state is also included */
+        std::vector<ContactCheckState>     check_state_history; /* current state is also included */
         std::vector<ContactTestResultData> tests;
     };
 
