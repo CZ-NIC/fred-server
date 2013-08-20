@@ -64,6 +64,7 @@ namespace Fred
         params(handle_);
 
         columns.push_back("enum_contact_check_status_id");
+        // subselect for enum_contact_check_status_id value
         values.push_back("(SELECT id FROM enum_contact_check_status WHERE name=$2::varchar)");
         params(status_name_);
 
