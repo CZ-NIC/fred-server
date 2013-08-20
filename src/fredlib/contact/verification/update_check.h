@@ -17,8 +17,8 @@
  */
 
 /**
- *  @file create_check.h
- *  create check
+ *  @file update_check.h
+ *  update contact check
  */
 
 #ifndef CONTACT_VERIFICATION_UPDATE_CHECK_51547983410_

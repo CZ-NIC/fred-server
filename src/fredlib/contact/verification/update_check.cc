@@ -17,8 +17,8 @@
  */
 
 /**
- *  @file create_check.cc
- *  create contact check
+ *  @file update_check.cc
+ *  update contact check
  */
 
 #include "fredlib/contact/verification/update_check.h"
