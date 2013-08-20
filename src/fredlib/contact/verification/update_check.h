@@ -24,10 +24,9 @@
 #ifndef CONTACT_VERIFICATION_UPDATE_CHECK_51547983410_
 #define CONTACT_VERIFICATION_UPDATE_CHECK_51547983410_
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
+#include "util/db/nullable.h"
 #include "util/optional_value.h"
 
 namespace Fred

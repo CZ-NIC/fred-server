@@ -23,6 +23,7 @@
 
 #include "fredlib/contact/verification/update_test.h"
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/join.hpp>
 
 namespace Fred
 {

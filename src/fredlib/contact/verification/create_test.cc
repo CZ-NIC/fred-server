@@ -20,6 +20,7 @@
  *  @file
  *  create contact test
  */
+#include <boost/algorithm/string/join.hpp>
 
 #include "fredlib/contact/verification/create_test.h"
 #include "fredlib/contact/verification/enum_test_status.h"
