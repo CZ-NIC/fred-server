@@ -123,7 +123,7 @@ namespace Fred
     }
 
     std::ostream& operator<<(std::ostream& os, const CreateContactCheck& i) {
-        os << "#CreateContactCheck contact_history_id_: " << i.contact_handle_
+        os << "#CreateContactCheck contact_handle_: " << i.contact_handle_
             << " testsuite_name_: " << i.testsuite_name_
             << " logd_request_id_: " << i.logd_request_id_.print_quoted();
 
