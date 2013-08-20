@@ -17,35 +17,33 @@
  */
 
 /**
- *  @file create_contact.h
- *  create contact
+ *  @file update_contact.h
+ *  contact update
  */
 
-#ifndef CREATE_CONTACT_H_
-#define CREATE_CONTACT_H_
+#ifndef UPDATE_CONTACT_H_
+#define UPDATE_CONTACT_H_
 
 #include <string>
 #include <vector>
-
-#include "boost/date_time/posix_time/posix_time.hpp"
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 
-
 namespace Fred
 {
-    class CreateContact
+    class UpdateContact
     {
     public:
         DECLARE_EXCEPTION_DATA(unknown_ssntype, std::string);
         DECLARE_EXCEPTION_DATA(unknown_country, std::string);
         struct Exception
         : virtual Fred::OperationException
-          , ExceptionData_unknown_ssntype<Exception>
+          , ExceptionData_unknown_contact_handle<Exception>
           , ExceptionData_unknown_registrar_handle<Exception>
+          , ExceptionData_unknown_ssntype<Exception>
           , ExceptionData_unknown_country<Exception>
         {};
 
@@ -81,9 +79,9 @@ namespace Fred
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
 
     public:
-        CreateContact(const std::string& handle
+        UpdateContact(const std::string& handle
                 , const std::string& registrar);
-        CreateContact(const std::string& handle
+        UpdateContact(const std::string& handle
                 , const std::string& registrar
                 , const Optional<std::string>& authinfo
                 , const Optional<std::string>& name
@@ -114,38 +112,39 @@ namespace Fred
                 , const Optional<unsigned long long> logd_request_id
                 );
 
-        CreateContact& set_authinfo(const std::string& authinfo);
-        CreateContact& set_name(const std::string& name);
-        CreateContact& set_organization(const std::string& organization);
-        CreateContact& set_street1(const std::string& street1);
-        CreateContact& set_street2(const std::string& street2);
-        CreateContact& set_street3(const std::string& street3);
-        CreateContact& set_city(const std::string& city);
-        CreateContact& set_stateorprovince(const std::string& stateorprovince);
-        CreateContact& set_postalcode(const std::string& postalcode);
-        CreateContact& set_country(const std::string& country);
-        CreateContact& set_telephone(const std::string& telephone);
-        CreateContact& set_fax(const std::string& fax);
-        CreateContact& set_email(const std::string& email);
-        CreateContact& set_notifyemail(const std::string& notifyemail);
-        CreateContact& set_vat(const std::string& vat);
-        CreateContact& set_ssntype(const std::string& ssntype);
-        CreateContact& set_ssn(const std::string& ssn);
-        CreateContact& set_disclosename(const bool disclosename);
-        CreateContact& set_discloseorganization(const bool discloseorganization);
-        CreateContact& set_discloseaddress(const bool discloseaddress);
-        CreateContact& set_disclosetelephone(const bool disclosetelephone);
-        CreateContact& set_disclosefax(const bool disclosefax);
-        CreateContact& set_discloseemail(const bool discloseemail);
-        CreateContact& set_disclosevat(const bool disclosevat);
-        CreateContact& set_discloseident(const bool discloseident);
-        CreateContact& set_disclosenotifyemail(const bool disclosenotifyemail);
-        CreateContact& set_logd_request_id(unsigned long long logd_request_id);
-        boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
+        UpdateContact& set_authinfo(const std::string& authinfo);
+        UpdateContact& set_name(const std::string& name);
+        UpdateContact& set_organization(const std::string& organization);
+        UpdateContact& set_street1(const std::string& street1);
+        UpdateContact& set_street2(const std::string& street2);
+        UpdateContact& set_street3(const std::string& street3);
+        UpdateContact& set_city(const std::string& city);
+        UpdateContact& set_stateorprovince(const std::string& stateorprovince);
+        UpdateContact& set_postalcode(const std::string& postalcode);
+        UpdateContact& set_country(const std::string& country);
+        UpdateContact& set_telephone(const std::string& telephone);
+        UpdateContact& set_fax(const std::string& fax);
+        UpdateContact& set_email(const std::string& email);
+        UpdateContact& set_notifyemail(const std::string& notifyemail);
+        UpdateContact& set_vat(const std::string& vat);
+        UpdateContact& set_ssntype(const std::string& ssntype);
+        UpdateContact& set_ssn(const std::string& ssn);
+        UpdateContact& set_disclosename(const bool disclosename);
+        UpdateContact& set_discloseorganization(const bool discloseorganization);
+        UpdateContact& set_discloseaddress(const bool discloseaddress);
+        UpdateContact& set_disclosetelephone(const bool disclosetelephone);
+        UpdateContact& set_disclosefax(const bool disclosefax);
+        UpdateContact& set_discloseemail(const bool discloseemail);
+        UpdateContact& set_disclosevat(const bool disclosevat);
+        UpdateContact& set_discloseident(const bool discloseident);
+        UpdateContact& set_disclosenotifyemail(const bool disclosenotifyemail);
+        UpdateContact& set_logd_request_id(unsigned long long logd_request_id);
+        unsigned long long exec(OperationContext& ctx);//return new history_id
 
-        friend std::ostream& operator<<(std::ostream& os, const CreateContact& cc);
+        friend std::ostream& operator<<(std::ostream& os, const UpdateContact& cc);
         std::string to_string();
 
-    };//CreateContact
-}
-#endif // CREATE_CONTACT_H_
+    };//UpdateContact
+}//namespace Fred
+
+#endif//UPDATE_CONTACT_H_

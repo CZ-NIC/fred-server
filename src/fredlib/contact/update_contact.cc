@@ -17,10 +17,9 @@
  */
 
 /**
- *  @file create_contact.h
- *  create contact
+ *  @file update_contact.cc
+ *  contact update
  */
-
 
 #include <string>
 #include <vector>
@@ -28,7 +27,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/contact/create_contact.h"
+#include "fredlib/contact/update_contact.h"
 #include "fredlib/object/object.h"
 #include "fredlib/contact/contact_enum.h"
 
@@ -40,14 +39,13 @@
 
 namespace Fred
 {
-
-    CreateContact::CreateContact(const std::string& handle
+    UpdateContact::UpdateContact(const std::string& handle
                 , const std::string& registrar)
     : handle_(handle)
     , registrar_(registrar)
     {}
 
-    CreateContact::CreateContact(const std::string& handle
+    UpdateContact::UpdateContact(const std::string& handle
             , const std::string& registrar
             , const Optional<std::string>& authinfo
             , const Optional<std::string>& name
@@ -110,171 +108,171 @@ namespace Fred
             : Nullable<unsigned long long>())//is NULL if not set
     {}
 
-    CreateContact& CreateContact::set_authinfo(const std::string& authinfo)
+    UpdateContact& UpdateContact::set_authinfo(const std::string& authinfo)
     {
         authinfo_ = authinfo;
         return *this;
     }
 
-    CreateContact& CreateContact::set_name(const std::string& name)
+    UpdateContact& UpdateContact::set_name(const std::string& name)
     {
         name_ = name;
         return *this;
     }
 
-    CreateContact& CreateContact::set_organization(const std::string& organization)
+    UpdateContact& UpdateContact::set_organization(const std::string& organization)
     {
         organization_ = organization;
         return *this;
     }
 
-    CreateContact& CreateContact::set_street1(const std::string& street1)
+    UpdateContact& UpdateContact::set_street1(const std::string& street1)
     {
         street1_ = street1;
         return *this;
     }
 
-    CreateContact& CreateContact::set_street2(const std::string& street2)
+    UpdateContact& UpdateContact::set_street2(const std::string& street2)
     {
         street2_ = street2;
         return *this;
     }
 
-    CreateContact& CreateContact::set_street3(const std::string& street3)
+    UpdateContact& UpdateContact::set_street3(const std::string& street3)
     {
         street3_ = street3;
         return *this;
     }
 
-    CreateContact& CreateContact::set_city(const std::string& city)
+    UpdateContact& UpdateContact::set_city(const std::string& city)
     {
         city_ = city;
         return *this;
     }
 
-    CreateContact& CreateContact::set_stateorprovince(const std::string& stateorprovince)
+    UpdateContact& UpdateContact::set_stateorprovince(const std::string& stateorprovince)
     {
         stateorprovince_ = stateorprovince;
         return *this;
     }
 
-    CreateContact& CreateContact::set_postalcode(const std::string& postalcode)
+    UpdateContact& UpdateContact::set_postalcode(const std::string& postalcode)
     {
         postalcode_ = postalcode;
         return *this;
     }
 
-    CreateContact& CreateContact::set_country(const std::string& country)
+    UpdateContact& UpdateContact::set_country(const std::string& country)
     {
         country_ = country;
         return *this;
     }
 
-    CreateContact& CreateContact::set_telephone(const std::string& telephone)
+    UpdateContact& UpdateContact::set_telephone(const std::string& telephone)
     {
         telephone_ = telephone;
         return *this;
     }
 
-    CreateContact& CreateContact::set_fax(const std::string& fax)
+    UpdateContact& UpdateContact::set_fax(const std::string& fax)
     {
         fax_ = fax;
         return *this;
     }
 
-    CreateContact& CreateContact::set_email(const std::string& email)
+    UpdateContact& UpdateContact::set_email(const std::string& email)
     {
         email_ = email;
         return *this;
     }
 
-    CreateContact& CreateContact::set_notifyemail(const std::string& notifyemail)
+    UpdateContact& UpdateContact::set_notifyemail(const std::string& notifyemail)
     {
         notifyemail_ = notifyemail;
         return *this;
     }
 
-    CreateContact& CreateContact::set_vat(const std::string& vat)
+    UpdateContact& UpdateContact::set_vat(const std::string& vat)
     {
         vat_ = vat;
         return *this;
     }
 
-    CreateContact& CreateContact::set_ssntype(const std::string& ssntype)
+    UpdateContact& UpdateContact::set_ssntype(const std::string& ssntype)
     {
         ssntype_ = ssntype;
         return *this;
     }
 
-    CreateContact& CreateContact::set_ssn(const std::string& ssn)
+    UpdateContact& UpdateContact::set_ssn(const std::string& ssn)
     {
         ssn_ = ssn;
         return *this;
     }
 
-    CreateContact& CreateContact::set_disclosename(const bool disclosename)
+    UpdateContact& UpdateContact::set_disclosename(const bool disclosename)
     {
         disclosename_ = disclosename;
         return *this;
     }
 
-    CreateContact& CreateContact::set_discloseorganization(const bool discloseorganization)
+    UpdateContact& UpdateContact::set_discloseorganization(const bool discloseorganization)
     {
         discloseorganization_ = discloseorganization;
         return *this;
     }
 
-    CreateContact& CreateContact::set_discloseaddress(const bool discloseaddress)
+    UpdateContact& UpdateContact::set_discloseaddress(const bool discloseaddress)
     {
         discloseaddress_ = discloseaddress;
         return *this;
     }
 
-    CreateContact& CreateContact::set_disclosetelephone(const bool disclosetelephone)
+    UpdateContact& UpdateContact::set_disclosetelephone(const bool disclosetelephone)
     {
         disclosetelephone_ = disclosetelephone;
         return *this;
     }
 
-    CreateContact& CreateContact::set_disclosefax(const bool disclosefax)
+    UpdateContact& UpdateContact::set_disclosefax(const bool disclosefax)
     {
         disclosefax_ = disclosefax;
         return *this;
     }
 
-    CreateContact& CreateContact::set_discloseemail(const bool discloseemail)
+    UpdateContact& UpdateContact::set_discloseemail(const bool discloseemail)
     {
         discloseemail_ = discloseemail;
         return *this;
     }
 
-    CreateContact& CreateContact::set_disclosevat(const bool disclosevat)
+    UpdateContact& UpdateContact::set_disclosevat(const bool disclosevat)
     {
         disclosevat_ = disclosevat;
         return *this;
     }
 
-    CreateContact& CreateContact::set_discloseident(const bool discloseident)
+    UpdateContact& UpdateContact::set_discloseident(const bool discloseident)
     {
         discloseident_ = discloseident;
         return *this;
     }
 
-    CreateContact& CreateContact::set_disclosenotifyemail(const bool disclosenotifyemail)
+    UpdateContact& UpdateContact::set_disclosenotifyemail(const bool disclosenotifyemail)
     {
         disclosenotifyemail_ = disclosenotifyemail;
         return *this;
     }
 
-    CreateContact& CreateContact::set_logd_request_id(unsigned long long logd_request_id)
+    UpdateContact& UpdateContact::set_logd_request_id(unsigned long long logd_request_id)
     {
         logd_request_id_ = logd_request_id;
         return *this;
     }
 
-    boost::posix_time::ptime CreateContact::exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name)
+    unsigned long long UpdateContact::exec(OperationContext& ctx)
     {
-        boost::posix_time::ptime timestamp;
+        unsigned long long history_id = 0;
 
         try
         {
@@ -291,237 +289,218 @@ namespace Fred
                 {
                     BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
-
             }
 
-            unsigned long long object_id = CreateObject("contact", handle_, registrar_, authinfo_).exec(ctx);
-            //create contact
+            //lock row and get contact_id
+            unsigned long long contact_id =0;
+            {
+                Database::Result contact_id_res = ctx.get_conn().exec_params(
+                    "SELECT oreg.id FROM contact c "
+                    " JOIN object_registry oreg ON c.id = oreg.id "
+                    " JOIN enum_object_type eot ON eot.id = oreg.type "
+                    " WHERE eot.name = 'contact' AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
+                    " FOR UPDATE OF oreg "
+                    , Database::query_param_list(handle_));
+
+                if (contact_id_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
+                }
+                if (contact_id_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get contact"));
+                }
+                contact_id = contact_id_res[0][0];
+            }
+
+            Fred::UpdateObject(handle_,"contact", registrar_, authinfo_).exec(ctx);
+
+            //update contact
             {
                 Database::QueryParams params;//query params
-                std::stringstream col_sql, val_sql;
-                Util::HeadSeparator col_separator("",", "), val_separator("",", ");
-
-                col_sql <<"INSERT INTO contact (";
-                val_sql << " VALUES (";
-
-                //id
-                params.push_back(object_id);
-                col_sql << col_separator.get() << "id";
-                val_sql << val_separator.get() << "$" << params.size() <<"::integer";
+                std::stringstream sql;
+                Util::HeadSeparator set_separator("SET ",", ");
+                sql <<"UPDATE contact ";
 
                 if(name_.isset())
                 {
                     params.push_back(name_.get_value());
-                    col_sql << col_separator.get() << "name";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "name = $" << params.size() << "::text ";
                 }
 
                 if(organization_.isset())
                 {
                     params.push_back(organization_.get_value());
-                    col_sql << col_separator.get() << "organization";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "organization = $" << params.size() << "::text ";
                 }
 
                 if(street1_.isset())
                 {
                     params.push_back(street1_.get_value());
-                    col_sql << col_separator.get() << "street1";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "street1 = $" << params.size() << "::text ";
                 }
 
                 if(street2_.isset())
                 {
                     params.push_back(street2_.get_value());
-                    col_sql << col_separator.get() << "street2";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "street2 = $" << params.size() << "::text ";
                 }
 
                 if(street3_.isset())
                 {
                     params.push_back(street3_.get_value());
-                    col_sql << col_separator.get() << "street3";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "street3 = $" << params.size() << "::text ";
                 }
 
                 if(city_.isset())
                 {
                     params.push_back(city_.get_value());
-                    col_sql << col_separator.get() << "city";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "city = $" << params.size() << "::text ";
                 }
 
                 if(stateorprovince_.isset())
                 {
                     params.push_back(stateorprovince_.get_value());
-                    col_sql << col_separator.get() << "stateorprovince";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "stateorprovince = $" << params.size() << "::text ";
                 }
 
                 if(postalcode_.isset())
                 {
                     params.push_back(postalcode_.get_value());
-                    col_sql << col_separator.get() << "postalcode";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "postalcode = $" << params.size() << "::text ";
                 }
 
                 if(country_.isset())
                 {
                     params.push_back(Contact::get_country_code<Exception>(country_, ctx));
-                    col_sql << col_separator.get() << "country";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "country = $" << params.size() << "::text ";
                 }
 
                 if(telephone_.isset())
                 {
                     params.push_back(telephone_.get_value());
-                    col_sql << col_separator.get() << "telephone";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "telephone = $" << params.size() << "::text ";
                 }
 
                 if(fax_.isset())
                 {
                     params.push_back(fax_.get_value());
-                    col_sql << col_separator.get() << "fax";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "fax = $" << params.size() << "::text ";
                 }
 
                 if(email_.isset())
                 {
                     params.push_back(email_.get_value());
-                    col_sql << col_separator.get() << "email";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "email = $" << params.size() << "::text ";
                 }
 
                 if(notifyemail_.isset())
                 {
                     params.push_back(notifyemail_.get_value());
-                    col_sql << col_separator.get() << "notifyemail";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "notifyemail = $" << params.size() << "::text ";
                 }
 
                 if(vat_.isset())
                 {
                     params.push_back(vat_.get_value());
-                    col_sql << col_separator.get() << "vat";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "vat = $" << params.size() << "::text ";
                 }
 
                 if(ssntype_.isset())
                 {
                     params.push_back(Contact::get_ssntype_id<Exception>(ssntype_,ctx));
-                    col_sql << col_separator.get() << "ssntype";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::integer";
+                    sql << set_separator.get() << "ssntype = $" << params.size() << "::integer ";
                 }
 
                 if(ssn_.isset())
                 {
                     params.push_back(ssn_.get_value());
-                    col_sql << col_separator.get() << "ssn";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    sql << set_separator.get() << "ssn = $" << params.size() << "::text ";
                 }
 
                 if(disclosename_.isset())
                 {
                     params.push_back(disclosename_.get_value());
-                    col_sql << col_separator.get() << "disclosename";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                    sql << set_separator.get() << "disclosename = $" << params.size() << "::boolean ";
                 }
 
                 if(discloseorganization_.isset())
                 {
                     params.push_back(discloseorganization_.get_value());
-                    col_sql << col_separator.get() << "discloseorganization";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                    sql << set_separator.get() << "discloseorganization = $" << params.size() << "::boolean ";
                 }
 
                 if(discloseaddress_.isset())
                 {
                     params.push_back(discloseaddress_.get_value());
-                    col_sql << col_separator.get() << "discloseaddress";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                    sql << set_separator.get() << "discloseaddress = $" << params.size() << "::boolean ";
                 }
 
                 if(disclosetelephone_.isset())
                 {
                     params.push_back(disclosetelephone_.get_value());
-                    col_sql << col_separator.get() << "disclosetelephone";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                    sql << set_separator.get() << "disclosetelephone = $" << params.size() << "::boolean ";
                 }
 
                 if(disclosefax_.isset())
                 {
                     params.push_back(disclosefax_.get_value());
-                    col_sql << col_separator.get() << "disclosefax";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                    sql << set_separator.get() << "disclosefax = $" << params.size() << "::boolean ";
                 }
 
                 if(discloseemail_.isset())
                 {
                     params.push_back(discloseemail_.get_value());
-                    col_sql << col_separator.get() << "discloseemail";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                    sql << set_separator.get() << "discloseemail = $" << params.size() << "::boolean ";
                 }
 
                 if(disclosevat_.isset())
                 {
                     params.push_back(disclosevat_.get_value());
-                    col_sql << col_separator.get() << "disclosevat";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                    sql << set_separator.get() << "disclosevat = $" << params.size() << "::boolean ";
                 }
 
                 if(discloseident_.isset())
                 {
                     params.push_back(discloseident_.get_value());
-                    col_sql << col_separator.get() << "discloseident";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                    sql << set_separator.get() << "discloseident = $" << params.size() << "::boolean ";
                 }
 
                 if(disclosenotifyemail_.isset())
                 {
                     params.push_back(disclosenotifyemail_.get_value());
-                    col_sql << col_separator.get() << "disclosenotifyemail";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                    sql << set_separator.get() << "disclosenotifyemail = $" << params.size() << "::boolean ";
                 }
 
-                col_sql <<")";
-                val_sql << ")";
-                //insert into contact
-                ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
+                params.push_back(contact_id);
+                sql <<" WHERE id = $" << params.size() << "::integer  RETURNING id";
 
-                //get crdate from object_registry
+                if(params.size() > 1)
                 {
-                    Database::Result crdate_res = ctx.get_conn().exec_params(
-                            "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
-                            "  FROM object_registry "
-                            " WHERE id = $2::bigint"
-                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(object_id));
-
-                    if (crdate_res.size() != 1)
+                    Database::Result update_contact_res = ctx.get_conn().exec_params(sql.str(), params);
+                    if(update_contact_res.size() != 1)
                     {
-                        BOOST_THROW_EXCEPTION(Fred::InternalError("timestamp of the contact creation was not found"));
+                        BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
                     }
-
-                    timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
                 }
-            }
+            }//update contact
 
             //save history
             {
-                unsigned long long history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
+                history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
 
                 //object_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
                     " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
                     " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
+                    , Database::query_param_list(history_id)(contact_id));
 
                 //object_registry historyid
                 Database::Result update_historyid_res = ctx.get_conn().exec_params(
-                    "UPDATE object_registry SET historyid = $1::bigint, crhistoryid = $1::bigint "
+                    "UPDATE object_registry SET historyid = $1::bigint "
                         " WHERE id = $2::integer RETURNING id"
-                        , Database::query_param_list(history_id)(object_id));
+                        , Database::query_param_list(history_id)(contact_id));
                 if (update_historyid_res.size() != 1)
                 {
                     BOOST_THROW_EXCEPTION(Fred::InternalError("historyid update failed"));
@@ -542,7 +521,7 @@ namespace Fred
                     " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
                     " FROM contact "
                     " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
+                    , Database::query_param_list(history_id)(contact_id));
 
             }//save history
 
@@ -553,12 +532,12 @@ namespace Fred
             throw;
         }
 
-        return timestamp;
+        return history_id;
     }
 
-    std::ostream& operator<<(std::ostream& os, const CreateContact& cc)
+    std::ostream& operator<<(std::ostream& os, const UpdateContact& cc)
     {
-        return os << "#CreateContact handle: " << cc.handle_
+        return os << "#UpdateContact handle: " << cc.handle_
                 << " registrar: " << cc.registrar_
                 << " authinfo: " << cc.authinfo_.print_quoted()
                 << " name: " << cc.name_.print_quoted()
@@ -590,7 +569,7 @@ namespace Fred
                 ;
     }
 
-    std::string CreateContact::to_string()
+    std::string UpdateContact::to_string()
     {
         std::stringstream ss;
         ss << *this;

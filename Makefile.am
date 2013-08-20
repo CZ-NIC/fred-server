@@ -730,6 +730,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/merge_contact.cc \
 		src/fredlib/contact/create_contact.cc \
 		src/fredlib/contact/create_contact.h \
+		src/fredlib/contact/update_contact.cc \
+		src/fredlib/contact/update_contact.h \
+		src/fredlib/contact/contact_enum.h \
 		src/fredlib/nsset/create_nsset.cc \
 		src/fredlib/nsset/create_nsset.h \
 		src/fredlib/nsset/nsset_dns_host.h \
@@ -1667,8 +1670,8 @@ tests_test_server_SOURCES = \
 		tests/test-check-domain.cc \
 		tests/test-domain-name.cc \
 		tests/test-check-handle.cc \
-		tests/test-delete-keyset.cc
-
+		tests/test-delete-keyset.cc \
+		tests/test-update-contact.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
