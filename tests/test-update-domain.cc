@@ -1259,5 +1259,34 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
 
 }
 
+/**
+ * test UpdateDomain set exdate
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_exdate, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+
+    boost::gregorian::date exdate(boost::gregorian::from_string("2010-12-20"));
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .set_domain_expiration(exdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateDomain::Exception& ex)
+    {
+        BOOST_ERROR(boost::diagnostic_information(ex));
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
+
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateDomain
