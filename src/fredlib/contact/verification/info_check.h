@@ -58,7 +58,7 @@ namespace Fred
     struct InfoContactCheckOutput {
         struct ContactTestResultState {
             std::string              status_name;
-            std::string              error_msg;
+            Nullable<std::string>    error_msg;
             boost::posix_time::ptime local_update_time;
             Nullable<long long>      logd_request_id;
         };
