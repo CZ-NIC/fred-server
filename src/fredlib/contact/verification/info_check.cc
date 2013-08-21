@@ -139,7 +139,9 @@ namespace Fred
                     temp_test_data.test_name = static_cast<std::string>( (*it_tests)["test_name_"]);
 
                     // for each history state of this test
-                    while( (*it_test_histories)["id_"] == (*it_tests)["id_"] && it_test_histories != contact_test_history_result.end() ) {
+                    while( static_cast<long long>( (*it_test_histories)["id_"] ) == static_cast<long long>( (*it_tests)["id_"] )
+                        && it_test_histories != contact_test_history_result.end()
+                    ) {
                         InfoContactCheckOutput::ContactTestResultState temp_test_history_state;
                         temp_test_history_state.error_msg = static_cast<std::string>( (*it_test_histories)["error_msg_"]);
                         temp_test_history_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it_test_histories)["update_time_"]));

@@ -106,7 +106,7 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check creation failed"));
             }
 
-            handle = ( *insert_contact_check_res.begin() )["handle"];
+            handle = static_cast<std::string>( ( *insert_contact_check_res.begin() )["handle"] );
 
         } catch(ExceptionStack& ex) {
             ex.add_exception_stack_info( to_string() );
