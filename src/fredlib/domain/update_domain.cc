@@ -214,11 +214,8 @@ namespace Fred
             if(enum_validation_expiration_.isset())
                 BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration set for non-ENUM domain"));
             if(enum_publish_flag_.isset())
-                BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for not-ENUM domain"));
+                BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for non-ENUM domain"));
         }
-        if (is_enum_zone && enum_validation_expiration_.isset()
-                && enum_validation_expiration_.get_value().is_special())
-                BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration requested for ENUM domain is not valid date"));
 
         //update object
         Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_, authinfo_).exec(ctx);
@@ -471,9 +468,16 @@ namespace Fred
             }//for i
         }//if delete admin contacts
 
+        //check valexdate if set
+        if(enum_validation_expiration_.isset() && enum_validation_expiration_.get_value().is_special())
+        {
+            update_domain_exception.set_invalid_enum_validation_expiration_date(enum_validation_expiration_.get_value());
+        }
+
         //check exception
         if(update_domain_exception.throw_me())
             BOOST_THROW_EXCEPTION(update_domain_exception);
+
 
         //update enumval
         if(enum_validation_expiration_.isset() || enum_publish_flag_.isset())
@@ -507,6 +511,7 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("failed to update enumval"));
             }
         }
+
 
         //save history
         {
