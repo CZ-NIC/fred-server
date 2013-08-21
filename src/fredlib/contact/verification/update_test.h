@@ -60,7 +60,7 @@ namespace Fred
 
             // exec and serialization
             void exec(OperationContext& _ctx);
-            friend std::ostream& operator<<(std::ostream& _os, const CreateContactCheck& _i);
+            friend std::ostream& operator<<(std::ostream& _os, const UpdateContactTest& _i);
             std::string to_string() const;
     };
 }
