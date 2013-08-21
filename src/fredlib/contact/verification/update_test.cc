@@ -50,16 +50,16 @@ namespace Fred
         logd_request_id_(
             ( _logd_request_id.isset() )
                 ?
-                (_logd_request_id.get_value() )
+                Nullable<long long>( _logd_request_id.get_value() )
                 :
                 Nullable<long long>()
         ),
         error_msg_(
             ( _error_msg.isset() )
                 ?
-                (_error_msg.get_value() )
+                Nullable<std::string>( _error_msg.get_value() )
                 :
-                Nullable<long long>()
+                Nullable<std::string>()
         )
     { }
 
