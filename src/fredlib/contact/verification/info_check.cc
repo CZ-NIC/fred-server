@@ -83,10 +83,12 @@ namespace Fred
 
             if(contact_test_result.size() > 0) {
                 // there can be 0-n tests (zero being check still enqueued to run or trivial empty testcase instance)
-                std::vector<long long> test_ids;
+                std::vector<std::string> test_ids;
                 for(Database::Result::Iterator it = contact_test_result.begin(); it != contact_test_result.end(); ++it) {
                     test_ids.push_back(
-                        static_cast<long>( (*it)["id_"]) );
+                        boost::lexical_cast<std::string>(
+                            static_cast<long>( (*it)["id_"]) )
+                        );
                 }
 
                 // get history "timelines" for all tests at once
@@ -123,7 +125,7 @@ namespace Fred
                     "ORDER BY id_ ASC, update_time_ ASC;",
                     Database::query_param_list
                         (_output_timezone)
-                        ("ARRAY[" + boost::algorithm::join(boost::lexical_cast<std::string>(test_ids), ",") + "]")
+                        ("ARRAY[" + boost::algorithm::join(test_ids, ",") + "]")
                 );
 
                 result.tests.reserve(contact_test_result.size());
