@@ -61,4 +61,4 @@ namespace Fred
         std::string to_string() const;
     };
 }
-#endif // CONTACT_VERIFICATION_CREATE_CHECK_51537653410_
+#endif // #include guard end

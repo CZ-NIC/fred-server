@@ -34,5 +34,5 @@ namespace Fred
         const std::string FAIL          = "fail";
     }
 }
-#endif // CONTACT_VERIFICATION_CHECK_STATUS_35892232386_
+#endif // #include guard end
 

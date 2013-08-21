@@ -57,4 +57,4 @@ namespace Fred
             std::string to_string() const;
     };
 }
-#endif // include guard
+#endif // #include guard end
