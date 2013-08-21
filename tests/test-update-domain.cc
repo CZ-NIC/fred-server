@@ -232,8 +232,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
             , Optional<Nullable<std::string> >()//dont change keyset
             , Util::vector_of<std::string> (admin_contact1_handle)(registrant_contact_handle) //add admin contacts
             , Util::vector_of<std::string> (admin_contact2_handle) //remove admin contacts
-            , Optional<boost::gregorian::date>()
-            , Optional<bool>()
+            , Optional<boost::gregorian::date>()//exdate
+            , Optional<boost::gregorian::date>()//enumvalexdate
+            , Optional<bool>()//enum publish
             , Optional<unsigned long long>() //request_id not set
             ).exec(ctx);
 

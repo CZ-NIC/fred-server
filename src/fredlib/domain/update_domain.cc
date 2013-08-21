@@ -53,6 +53,7 @@ namespace Fred
             , const Optional<Nullable<std::string> >& keyset
             , const std::vector<std::string>& add_admin_contact
             , const std::vector<std::string>& rem_admin_contact
+            , const Optional<boost::gregorian::date>& expiration_date
             , const Optional<boost::gregorian::date>& enum_validation_expiration
             , const Optional<bool>& enum_publish_flag
             , const Optional<unsigned long long> logd_request_id
@@ -65,6 +66,7 @@ namespace Fred
     , keyset_(keyset)
     , add_admin_contact_(add_admin_contact)
     , rem_admin_contact_(rem_admin_contact)
+    , expiration_date_(expiration_date)
     , enum_validation_expiration_(enum_validation_expiration)
     , enum_publish_flag_(enum_publish_flag)
     , logd_request_id_(logd_request_id.isset()
@@ -129,6 +131,12 @@ namespace Fred
     UpdateDomain& UpdateDomain::rem_admin_contact(const std::string& admin_contact)
     {
         rem_admin_contact_.push_back(admin_contact);
+        return *this;
+    }
+
+    UpdateDomain& UpdateDomain::set_domain_expiration(const boost::gregorian::date& exdate)
+    {
+        expiration_date_ = exdate;
         return *this;
     }
 
@@ -212,13 +220,17 @@ namespace Fred
                 && enum_validation_expiration_.get_value().is_special())
                 BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration requested for ENUM domain is not valid date"));
 
+        if(expiration_date_.isset() && expiration_date_.get_value().is_special())
+            BOOST_THROW_EXCEPTION(InternalError("domain expiration_date set for update is not valid date"));
+
+
         //update object
         Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_, authinfo_).exec(ctx);
 
         Exception update_domain_exception;
 
         //update domain
-        if(nsset_.isset() || keyset_.isset() || registrant_.isset())
+        if(nsset_.isset() || keyset_.isset() || registrant_.isset() || expiration_date_.isset())
         {
             Database::QueryParams params;//query params
             std::stringstream sql;
@@ -323,6 +335,13 @@ namespace Fred
                 sql << set_separator.get() << " registrant = $"
                     << params.size() << "::integer ";
             }//if change registrant
+
+            if(expiration_date_.isset())
+            {
+                params.push_back(expiration_date_.get_value());
+                sql << set_separator.get() << " exdate = $"
+                    << params.size() << "::date ";
+            }//if change exdate
 
             //check exception
             if(update_domain_exception.throw_me())

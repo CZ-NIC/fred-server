@@ -46,6 +46,7 @@ namespace Fred
         Optional<Nullable<std::string> > keyset_;//set keyset
         std::vector<std::string> add_admin_contact_; //admin contacts to be added
         std::vector<std::string> rem_admin_contact_; //admin contacts to be removed
+        Optional<boost::gregorian::date> expiration_date_;//the expiration date of the domain
         Optional<boost::gregorian::date> enum_validation_expiration_;//the expiration date of the ENUM domain validation, have to be set for enum domain, otherwise unused
         Optional<bool> enum_publish_flag_;//flag for publishing ENUM number and associated contact in public directory
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
@@ -77,6 +78,7 @@ namespace Fred
             , const Optional<Nullable<std::string> >& keyset
             , const std::vector<std::string>& add_admin_contact
             , const std::vector<std::string>& rem_admin_contact
+            , const Optional<boost::gregorian::date>& expiration_date
             , const Optional<boost::gregorian::date>& enum_validation_expiration
             , const Optional<bool>& enum_publish_flag
             , const Optional<unsigned long long> logd_request_id
@@ -91,6 +93,7 @@ namespace Fred
         UpdateDomain& unset_keyset();
         UpdateDomain& add_admin_contact(const std::string& admin_contact);
         UpdateDomain& rem_admin_contact(const std::string& admin_contact);
+        UpdateDomain& set_domain_expiration(const boost::gregorian::date& exdate);
         UpdateDomain& set_enum_validation_expiration(const boost::gregorian::date& valexdate);
         UpdateDomain& set_enum_publish_flag(bool enum_publish_flag);
         UpdateDomain& set_logd_request_id(unsigned long long logd_request_id);
