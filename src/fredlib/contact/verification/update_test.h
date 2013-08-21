@@ -31,31 +31,59 @@
 
 namespace Fred
 {
-
+    /**
+     * Updates existing record in contact_test_result table. Has no sideeffects.
+     */
     class UpdateContactTest {
-        std::string           check_handle_;    // identification is done by pair(check_handle, test_name)
-        std::string           test_name_;
-        std::string           status_name_;     // news status to be applied
-        Nullable<long long>   logd_request_id_; // entry in log_entry database table
-        Nullable<std::string> error_msg_; // entry in log_entry database table
+            std::string           check_handle_;
+            std::string           test_name_;
+            std::string           status_name_;
+            Nullable<long long>   logd_request_id_;
+            Nullable<std::string> error_msg_;
 
         public:
-            // constructors
+            /**
+             * constructor only with mandatory parameters
+             * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
+             * @param _test_name        denotes type of test (by it's name) to be run. Allowed values are in enum_contact_test.name in database.
+             * @param _status_name      denotes status to be set by it's name. Allowed values are in enum_test_status.h or enum_contact_test_status.name in database.
+             */
             UpdateContactTest( const std::string&    _check_handle,
                                const std::string&    _test_name,
                                const std::string&    _status_name);
-
+            /**
+             * constructor with all available parameters including optional ones
+             * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
+             * @param _test_name        denotes type of test (by it's name) to be run. Allowed values are in enum_contact_test.name in database.
+             * @param _status_name      denotes status to be set by it's name. Allowed values are in enum_test_status.h or enum_contact_test_status.name in database.
+             * @param _error_msg        optional error message (free text string) describing test state.
+             */
             UpdateContactTest( const std::string&    _check_handle,
                                const std::string&    _test_name,
                                const std::string&    _status_name,
                                Optional<long long>   _logd_request_id,
                                Optional<std::string> _error_msg);
 
-            // setters for optional properties
+            /**
+             * setter of optional logd_request_id
+             */
             UpdateContactTest& set_logd_request_id (long long _logd_request_id);
+            /**
+             * unsetter of optional logd_request_id
+             * Erases set value. Is idempotent.
+             * If no value is set at exec() run no logd_request is reffered to by this record after creation.
+             */
             UpdateContactTest& unset_logd_request_id ();
 
+            /**
+             * setter of optional error message
+             */
             UpdateContactTest& set_error_msg (const std::string& _error_msg);
+            /**
+             * unsetter of optional error message
+             * Erases set value. Is idempotent.
+             * If no value is set at exec() run no error message is stored for this update.
+             */
             UpdateContactTest& unset_error_msg ();
 
             // exec and serialization

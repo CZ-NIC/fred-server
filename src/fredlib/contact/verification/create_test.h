@@ -31,31 +31,52 @@
 
 namespace Fred
 {
-
+    /**
+     * Creates new record in contact_test_resutl table with status @ref ContactTestStatus::RUNNING . Has no sideeffects.
+     */
     class CreateContactTest
     {
-        std::string         check_handle_;    // to which check (must be already present in db) does this test belong to
+        std::string         check_handle_;
         std::string         test_name_;
-        Nullable<long long> logd_request_id_; // entry in log_entry database table
+        Nullable<long long> logd_request_id_;
 
     public:
-        // constructors
+        /**
+         * constructor only with mandatory parameters
+         * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
+         * @param _test_name        denotes type of test (by it's name) to be run. Allowed values are in enum_contact_test.name in database.
+         */
         CreateContactTest(
             const std::string& _check_handle,
             const std::string& _test_name
         );
+        /**
+         * constructor with all available parameters including optional ones
+         * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
+         * @param _test_name        denotes type of test (by it's name) to be run. Allowed values are in enum_contact_test.name in database.
+         * @param _logd_request_id  identifies (by id) optional log entry in logd related to this operation.
+         */
         CreateContactTest(
             const std::string&  _check_handle,
             const std::string&  _test_name,
             Optional<long long> _logd_request_id
         );
 
-        // setters for optional parameters
+        /**
+         * setter of optional logd_request_id
+         * Call with another value for re-set, no need to unset first.
+         */
         CreateContactTest& set_logd_request_id(long long _logd_request_id);
+        /**
+         * unsetter of optional logd_request_id
+         * Erases set value. Is idempotent.
+         * If no value is set at exec() run no logd_request is reffered to by this record after creation.
+         */
         CreateContactTest& unset_logd_request_id();
 
-        // exec and serialization
+        // exec
         void exec(OperationContext& ctx);
+        // serialization
         friend std::ostream& operator<<(std::ostream& os, const CreateContactTest& i);
         std::string to_string() const;
     };

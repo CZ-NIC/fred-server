@@ -17,8 +17,8 @@
  */
 
 /**
- *  @file create_check.h
- *  create check
+ *  @file
+ *  enum check status
  */
 
 #ifndef CONTACT_VERIFICATION_CHECK_STATUS_35892232386_
