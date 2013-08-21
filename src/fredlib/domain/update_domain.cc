@@ -582,7 +582,10 @@ namespace Fred
                 for(std::vector<std::string>::const_iterator ci = i.rem_admin_contact_.begin()
                         ; ci != i.rem_admin_contact_.end() ; ++ci ) os << *ci;
 
-        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
+        os << " expiration_date: " << i.expiration_date_.print_quoted()
+        << " enum_validation_expiration: " << i.enum_validation_expiration_.print_quoted()
+        << " enum_publish_flag: " << i.enum_publish_flag_.print_quoted()
+        << " logd_request_id: " << i.logd_request_id_.print_quoted();
         return os;
     }
 
