@@ -220,10 +220,6 @@ namespace Fred
                 && enum_validation_expiration_.get_value().is_special())
                 BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration requested for ENUM domain is not valid date"));
 
-        if(expiration_date_.isset() && expiration_date_.get_value().is_special())
-            BOOST_THROW_EXCEPTION(InternalError("domain expiration_date set for update is not valid date"));
-
-
         //update object
         Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_, authinfo_).exec(ctx);
 
@@ -338,6 +334,9 @@ namespace Fred
 
             if(expiration_date_.isset())
             {
+                if(expiration_date_.get_value().is_special())
+                    update_domain_exception.set_invalid_expiration_date(expiration_date_.get_value());
+
                 params.push_back(expiration_date_.get_value());
                 sql << set_separator.get() << " exdate = $"
                     << params.size() << "::date ";

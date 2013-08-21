@@ -55,6 +55,7 @@ namespace Fred
         DECLARE_VECTOR_OF_EXCEPTION_DATA(unassigned_admin_contact_handle, std::string);
         DECLARE_VECTOR_OF_EXCEPTION_DATA(unknown_admin_contact_handle, std::string);
         DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(invalid_expiration_date, boost::gregorian::date);
 
         struct Exception
         : virtual Fred::OperationException
@@ -66,6 +67,7 @@ namespace Fred
         , ExceptionData_vector_of_unknown_admin_contact_handle<Exception>
         , ExceptionData_vector_of_already_set_admin_contact_handle<Exception>
         , ExceptionData_vector_of_unassigned_admin_contact_handle<Exception>
+        , ExceptionData_invalid_expiration_date<Exception>
         {};
 
         UpdateDomain(const std::string& fqdn
