@@ -29,7 +29,7 @@ namespace Fred
 {
     CreateContactTest::CreateContactTest(
         const std::string& _check_handle,
-        const std::string& _test_name,
+        const std::string& _test_name
     ) :
         check_handle_(_check_handle),
         test_name_(_test_name)

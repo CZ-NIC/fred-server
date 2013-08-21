@@ -31,7 +31,7 @@ namespace Fred
 {
     CreateContactCheck::CreateContactCheck(
         const std::string& _contact_handle,
-        const std::string& _testsuite_name,
+        const std::string& _testsuite_name
     ) :
         contact_handle_(_contact_handle),
         testsuite_name_(_testsuite_name)

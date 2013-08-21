@@ -42,7 +42,7 @@ namespace Fred
         // constructors
         CreateContactTest(
             const std::string& _check_handle,
-            const std::string& _test_name,
+            const std::string& _test_name
         );
         CreateContactTest(
             const std::string&  _check_handle,
