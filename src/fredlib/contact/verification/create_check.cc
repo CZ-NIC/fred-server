@@ -67,7 +67,7 @@ namespace Fred
         std::string handle;
         std::vector<std::string> values;
         std::vector<std::string> columns;
-        Database::query_param_list params;
+        Database::QueryParams params;
 
         columns.push_back("contact_history_id");
         values.push_back
@@ -77,19 +77,19 @@ namespace Fred
                      "        LEFT JOIN h AS ON o_h.historyid = h.id"
                      "    WHERE o_r.name=$1::varchar"
                      "        AND h.next IS NULL)");
-        params(contact_handle_);
+        params.push_back(contact_handle_);
 
         columns.push_back("enum_contact_testsuite_id");
         values.push_back("(SELECT id FROM enum_contact_testsuite WHERE name=$2::varchar)");
-        params(testsuite_name_);
+        params.push_back(testsuite_name_);
 
         columns.push_back("enum_contact_check_status_id");
         values.push_back("(SELECT id FROM enum_contact_check_status WHERE name=$3::varchar)");
-        params(Fred::ContactCheckStatus::ENQUEUED);
+        params.push_back(Fred::ContactCheckStatus::ENQUEUED);
 
         columns.push_back("logd_request_id");
         values.push_back("$4::bigint");
-        params(logd_request_id_);
+        params.push_back(logd_request_id_);
 
         try {
             Database::Result insert_contact_check_res = _ctx.get_conn().exec_params(

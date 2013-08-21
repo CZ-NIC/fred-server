@@ -83,28 +83,26 @@ namespace Fred
 
     void UpdateContactTest::exec (OperationContext& _ctx) {
 
-        std::vector<std::string> columns = boost::assign::list_of
-            ("enum_contact_test_status_id");
+        std::vector<std::string> columns;
+        std::vector<std::string> values;
+        Database::QueryParams params;
 
-        std::vector<std::string> values = boost::assign::list_of
-            ("(SELECT id FROM enum_contact_test_status WHERE name=$1::varchar)");
+        columns.push_back("enum_contact_test_status_id");
+        values.push_back("(SELECT id FROM enum_contact_test_status WHERE name=$1::varchar)");
+        params.push_back(status_name_);
 
-        Database::query_param_list params(status_name_);
-
-        // optional values
         columns.push_back("logd_request_id");
         values.push_back("$2::bigint)");
-        if( logd_request_id_.isnull() == false ) {
-            params(logd_request_id_ );
-        } else {
-            params(Database::NullQueryParam);
-        }
+        params.push_back(logd_request_id_ );
 
         columns.push_back("error_msg");
         values.push_back("$3::bigint)");
-        params(error_msg_);
+        params.push_back(error_msg_);
 
         try {
+            params.push_back(check_handle_);
+            params.push_back(test_name_);
+
             Database::Result update_contact_check_res = _ctx.get_conn().exec_params(
                "UPDATE contact_test_result SET ( "
                    + boost::algorithm::join( columns, ", ") +
@@ -115,7 +113,7 @@ namespace Fred
                "    (SELECT id FROM contact_check WHERE handle=$4::cont_chck_handle)"
                "AND enum_contact_test_id="
                "    (SELECT id FROM enum_contact_test WHERE name=$5::varchar)",
-               params(check_handle_)(test_name_) );
+               params );
 
             if (update_contact_check_res.size() != 1) {
                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_test update failed"));

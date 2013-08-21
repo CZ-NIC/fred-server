@@ -65,18 +65,19 @@ namespace Fred
 
         std::vector<std::string> columns;
         std::vector<std::string> values;
-        Database::query_param_list params;
+        Database::QueryParams params;
 
         columns.push_back("enum_contact_check_status_id");
         // subselect for enum_contact_check_status_id value
         values.push_back("(SELECT id FROM enum_contact_check_status WHERE name=$1::varchar)");
-        params(status_name_);
+        params.push_back(status_name_);
 
         columns.push_back("logd_request_id");
         values.push_back("$2::bigint)");
-        params(logd_request_id_);
+        params.push_back(logd_request_id_);
 
         try {
+            params.push_back(check_handle_);
             Database::Result update_contact_check_res = _ctx.get_conn().exec_params(
                "UPDATE contact_check SET ( "
                    + boost::algorithm::join( columns, ", ") +
@@ -84,7 +85,7 @@ namespace Fred
                    + boost::algorithm::join( values, ", ") +
                ")"
                "WHERE handle=$3::cont_chck_handle;",
-               params(check_handle_));
+               params);
 
             if (update_contact_check_res.size() != 1) {
                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check update failed"));

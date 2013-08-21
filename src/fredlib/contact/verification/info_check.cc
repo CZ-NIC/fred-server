@@ -52,7 +52,7 @@ namespace Fred
                 "    ON check.enum_contact_testsuite_id = testsuite.id"
                 "WHERE check.handle=$2::cnt_chck_handle"
                 "FOR UPDATE OF check;",
-                Database::query_param_list(_output_timezone, handle_));
+                Database::query_param_list(_output_timezone)(handle_) );
 
             if (contact_check_data.size() != 1) {
                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check (get) info failed"));
@@ -79,7 +79,7 @@ namespace Fred
                 "WHERE test.contact_check_id=$2::bigint"
                 "ORDER BY id_ ASC"
                 "FOR UPDATE OF test;",
-                Database::query_param_list(_output_timezone, temp_check_id));
+                Database::query_param_list(_output_timezone)(temp_check_id));
 
             if(contact_test_result.size() > 0) {
                 // there can be 0-n tests (zero being check still enqueued to run or trivial empty testcase instance)
@@ -121,9 +121,9 @@ namespace Fred
                     "$2::bigint[]"
                     ""
                     "ORDER BY id_ ASC, update_time_ ASC;",
-                    Database::query_param_list(
-                        _output_timezone,
-                        "ARRAY[" + boost::algorithm::join(boost::lexical_cast<std::string>(test_ids), ",") + "]")
+                    Database::query_param_list
+                        (_output_timezone)
+                        ("ARRAY[" + boost::algorithm::join(boost::lexical_cast<std::string>(test_ids), ",") + "]")
                 );
 
                 result.tests.reserve(contact_test_result.size());
@@ -190,7 +190,7 @@ namespace Fred
                 "WHERE history.contact_check_id=$2::bigint"
                 ""
                 "ORDER BY status_name_ ASC;",
-                Database::query_param_list(_output_timezone, temp_check_id));
+                Database::query_param_list(_output_timezone)(temp_check_id) );
 
             if (contact_check_historical_data.size() < 1) {
                // at least in (non-historical) contact_check table should be a record
