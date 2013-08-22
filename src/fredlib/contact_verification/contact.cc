@@ -199,9 +199,7 @@ unsigned long long contact_create(const unsigned long long &_request_id,
                                   const unsigned long long &_registrar_id,
                                   Contact &_data)
 {
-    std::string auth_info = (_data.auth_info.isnull() == true) ? Random::string_alphanum(8)
-            : static_cast<std::string>(_data.auth_info);
-    _data.id = db_contact_object_create(_registrar_id, _data.handle, auth_info);
+    _data.id = db_contact_object_create(_registrar_id, _data.handle, Random::string_alphanum(8));
     db_contact_insert(_data);
     unsigned long long hid = db_contact_insert_history(_request_id, _data.id);
     Database::Connection conn = Database::Manager::acquire();
@@ -233,12 +231,10 @@ unsigned long long contact_update(const unsigned long long &_request_id,
 {
     Database::Connection conn = Database::Manager::acquire();
     conn.exec_params("UPDATE object SET upid = $1::integer, update = now()"
-                     " , authinfopw = $3::text "
                      " WHERE id = $2::integer",
                      Database::query_param_list
                         (_registrar_id)
-                        (_data.id)
-                        (_data.auth_info));
+                        (_data.id));
     db_contact_update(_data);
     return db_contact_insert_history(_request_id, _data.id);
 }
@@ -301,9 +297,36 @@ const Contact contact_info(const unsigned long long &_id)
     data.notifyemail = rinfo[0][24];
     data.telephone = rinfo[0][25];
     data.fax = rinfo[0][26];
-    data.auth_info = rinfo[0][28];
 
     return data;
+}
+
+
+void contact_load_disclose_flags(Contact &_data)
+{
+    if (_data.id == 0) {
+        throw std::runtime_error("can't load disclose flags for not saved contact");
+    }
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result r = conn.exec_params(
+            "SELECT disclosename, discloseorganization,"
+            " discloseaddress, disclosetelephone,"
+            " disclosefax, discloseemail, disclosevat,"
+            " discloseident, disclosenotifyemail"
+            " FROM contact WHERE id = $1",
+            Database::query_param_list(_data.id));
+    if (r.size() != 1) {
+        throw std::runtime_error("unable to load contact dislose flags");
+    }
+    _data.disclosename = r[0][0];
+    _data.discloseorganization = r[0][1];
+    _data.discloseaddress = r[0][2];
+    _data.disclosetelephone = r[0][3];
+    _data.disclosefax = r[0][4];
+    _data.discloseemail = r[0][5];
+    _data.disclosevat = r[0][6];
+    _data.discloseident = r[0][7];
+    _data.disclosenotifyemail = r[0][8];
 }
 
 

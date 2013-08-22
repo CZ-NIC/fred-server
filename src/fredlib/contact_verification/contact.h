@@ -14,15 +14,15 @@ class Contact
 {
 public:
     Contact() : id(0)
-    , disclosename()
-    , discloseorganization()
-    , discloseaddress()
-    , disclosetelephone()
-    , disclosefax()
-    , discloseemail()
-    , disclosevat()
-    , discloseident()
-    , disclosenotifyemail()
+    , disclosename(true)
+    , discloseorganization(true)
+    , discloseaddress(true)
+    , disclosetelephone(false)
+    , disclosefax(false)
+    , discloseemail(false)
+    , disclosevat(false)
+    , discloseident(false)
+    , disclosenotifyemail(false)
     {
     }
 
@@ -70,6 +70,9 @@ unsigned long long contact_update(const unsigned long long &_request_id,
                                   Contact &_data);
 
 const Contact contact_info(const unsigned long long &_id);
+
+
+void contact_load_disclose_flags(Contact &_data);
 
 
 void contact_transfer_poll_message(const unsigned long long &_old_registrar_id,
