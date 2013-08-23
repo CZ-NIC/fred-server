@@ -92,3 +92,4 @@ src/corba/_dataTypesDynSK.cc
 src/corba/_dataTypesSK.cc
 /.settings
 /.autotools
+doc/html
