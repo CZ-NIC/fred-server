@@ -32,6 +32,7 @@ CLEANFILES = \
 		config/server.conf \
 		config/hpmail.conf \
 		init-scripts/fred-server \
+		doxy.conf \
 		src/corba/MessagesSK.cc \
 		src/corba/MessagesDynSK.cc \
 		src/corba/MessagesSK.h \
