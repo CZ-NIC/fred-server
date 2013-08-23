@@ -26,6 +26,10 @@
 
 namespace Fred
 {
+    /**
+     * Available statuses for Contact check.
+     * Should be in sync with enum_contact_check_status.name in db.
+     */
     namespace ContactCheckStatus
     {
         const std::string ENQUEUED      = "enqueued";

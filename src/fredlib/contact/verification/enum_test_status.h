@@ -26,6 +26,10 @@
 
 namespace Fred
 {
+    /**
+     * Available statuses for Contact test.
+     * Should be in sync with enum_contact_test_status.name in db.
+     */
     namespace ContactTestStatus
     {
         const std::string RUNNING       = "running";
