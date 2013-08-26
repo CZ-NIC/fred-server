@@ -65,42 +65,33 @@ namespace Fred
 
     std::string CreateContactCheck::exec(OperationContext& _ctx) {
         std::string handle;
-        std::vector<std::string> values;
-        std::vector<std::string> columns;
-        Database::QueryParams params;
-
-        columns.push_back("contact_history_id");
-        values.push_back
-                    ("(SELECT o_h.historyid"
-                     "    FROM object_registry AS o_r"
-                     "        LEFT JOIN object_history AS o_h USING(id)"
-                     "        LEFT JOIN h AS ON o_h.historyid = h.id"
-                     "    WHERE o_r.name=$1::varchar"
-                     "        AND h.next IS NULL)");
-        params.push_back(contact_handle_);
-
-        columns.push_back("enum_contact_testsuite_id");
-        values.push_back("(SELECT id FROM enum_contact_testsuite WHERE name=$2::varchar)");
-        params.push_back(testsuite_name_);
-
-        columns.push_back("enum_contact_check_status_id");
-        values.push_back("(SELECT id FROM enum_contact_check_status WHERE name=$3::varchar)");
-        params.push_back(Fred::ContactCheckStatus::ENQUEUED);
-
-        columns.push_back("logd_request_id");
-        values.push_back("$4::bigint");
-        params.push_back(logd_request_id_);
 
         try {
             Database::Result insert_contact_check_res = _ctx.get_conn().exec_params(
                 "INSERT INTO contact_check ( "
-                    + boost::algorithm::join( columns, ", ") +
+                "   contact_history_id,"
+                "   enum_contact_testsuite_id,"
+                "   enum_contact_check_status_id,"
+                "   logd_request_id"
                 ")"
                 "VALUES ("
-                    + boost::algorithm::join( values, ", ") +
+                "   (SELECT o_h.historyid"
+                "       FROM object_registry AS o_r"
+                "           LEFT JOIN object_history AS o_h USING(id)"
+                "           LEFT JOIN h AS ON o_h.historyid = h.id"
+                "       WHERE o_r.name=$1::varchar"
+                "       AND h.next IS NULL),"
+                "   (SELECT id FROM enum_contact_testsuite WHERE name=$2::varchar),"
+                "   (SELECT id FROM enum_contact_check_status WHERE name=$3::varchar),"
+                "   $4::bigint"
                 ")"
                 "RETURNING handle;",
-                params);
+                Database::query_param_list
+                    (contact_handle_)
+                    (testsuite_name_)
+                    (Fred::ContactCheckStatus::ENQUEUED)
+                    (logd_request_id_)
+            );
 
             if (insert_contact_check_res.size() != 1) {
                 BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check creation failed"));

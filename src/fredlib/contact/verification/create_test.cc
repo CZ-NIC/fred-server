@@ -62,37 +62,27 @@ namespace Fred
     }
 
     void CreateContactTest::exec(OperationContext& _ctx) {
-        std::vector<std::string> columns;
-        std::vector<std::string> values;
-        Database::QueryParams params;
-
-        columns.push_back("contact_check_id");
-        values.push_back("(SELECT id FROM contact_check WHERE handle=$1::varchar)");
-        params.push_back(check_handle_);
-
-
-        columns.push_back("enum_contact_test_id");
-        values.push_back("(SELECT id FROM enum_contact_test WHERE name=$2::varchar)");
-        params.push_back(test_name_);
-
-        columns.push_back("enum_contact_test_status_id");
-        values.push_back("(SELECT id FROM enum_contact_test_status WHERE name=$3::varchar)");
-        params.push_back(Fred::ContactTestStatus::RUNNING);
-
-        columns.push_back("logd_request_id");
-        values.push_back("$4::bigint");
-        params.push_back(logd_request_id_);
-
         try {
             Database::Result insert_contact_check_res = _ctx.get_conn().exec_params(
                 "INSERT INTO contact_test_result ( "
-                    + boost::algorithm::join( columns, ", ") +
+                "   contact_check_id,"
+                "   enum_contact_test_id,"
+                "   enum_contact_test_status_id,"
+                "   logd_request_id"
                 ")"
                 "VALUES ("
-                    + boost::algorithm::join( values, ", ") +
+                "   (SELECT id FROM contact_check WHERE handle=$1::varchar),"
+                "   (SELECT id FROM enum_contact_test WHERE name=$2::varchar),"
+                "   (SELECT id FROM enum_contact_test_status WHERE name=$3::varchar),"
+                "   $4::bigint"
                 ")"
                 "RETURNING id;",
-                params);
+                Database::query_param_list
+                    (check_handle_)
+                    (test_name_)
+                    (Fred::ContactTestStatus::RUNNING)
+                    (logd_request_id_)
+            );
 
             if (insert_contact_check_res.size() != 1) {
                 BOOST_THROW_EXCEPTION(Fred::InternalError("contact_test creation failed"));
