@@ -53,6 +53,7 @@ namespace Fred
             , const Optional<Nullable<std::string> >& keyset
             , const std::vector<std::string>& add_admin_contact
             , const std::vector<std::string>& rem_admin_contact
+            , const Optional<boost::gregorian::date>& expiration_date
             , const Optional<boost::gregorian::date>& enum_validation_expiration
             , const Optional<bool>& enum_publish_flag
             , const Optional<unsigned long long> logd_request_id
@@ -65,6 +66,7 @@ namespace Fred
     , keyset_(keyset)
     , add_admin_contact_(add_admin_contact)
     , rem_admin_contact_(rem_admin_contact)
+    , expiration_date_(expiration_date)
     , enum_validation_expiration_(enum_validation_expiration)
     , enum_publish_flag_(enum_publish_flag)
     , logd_request_id_(logd_request_id.isset()
@@ -129,6 +131,12 @@ namespace Fred
     UpdateDomain& UpdateDomain::rem_admin_contact(const std::string& admin_contact)
     {
         rem_admin_contact_.push_back(admin_contact);
+        return *this;
+    }
+
+    UpdateDomain& UpdateDomain::set_domain_expiration(const boost::gregorian::date& exdate)
+    {
+        expiration_date_ = exdate;
         return *this;
     }
 
@@ -206,11 +214,8 @@ namespace Fred
             if(enum_validation_expiration_.isset())
                 BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration set for non-ENUM domain"));
             if(enum_publish_flag_.isset())
-                BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for not-ENUM domain"));
+                BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for non-ENUM domain"));
         }
-        if (is_enum_zone && enum_validation_expiration_.isset()
-                && enum_validation_expiration_.get_value().is_special())
-                BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration requested for ENUM domain is not valid date"));
 
         //update object
         Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_, authinfo_).exec(ctx);
@@ -218,7 +223,7 @@ namespace Fred
         Exception update_domain_exception;
 
         //update domain
-        if(nsset_.isset() || keyset_.isset() || registrant_.isset())
+        if(nsset_.isset() || keyset_.isset() || registrant_.isset() || expiration_date_.isset())
         {
             Database::QueryParams params;//query params
             std::stringstream sql;
@@ -323,6 +328,16 @@ namespace Fred
                 sql << set_separator.get() << " registrant = $"
                     << params.size() << "::integer ";
             }//if change registrant
+
+            if(expiration_date_.isset())
+            {
+                if(expiration_date_.get_value().is_special())
+                    update_domain_exception.set_invalid_expiration_date(expiration_date_.get_value());
+
+                params.push_back(expiration_date_.get_value());
+                sql << set_separator.get() << " exdate = $"
+                    << params.size() << "::date ";
+            }//if change exdate
 
             //check exception
             if(update_domain_exception.throw_me())
@@ -453,9 +468,16 @@ namespace Fred
             }//for i
         }//if delete admin contacts
 
+        //check valexdate if set
+        if(enum_validation_expiration_.isset() && enum_validation_expiration_.get_value().is_special())
+        {
+            update_domain_exception.set_invalid_enum_validation_expiration_date(enum_validation_expiration_.get_value());
+        }
+
         //check exception
         if(update_domain_exception.throw_me())
             BOOST_THROW_EXCEPTION(update_domain_exception);
+
 
         //update enumval
         if(enum_validation_expiration_.isset() || enum_publish_flag_.isset())
@@ -489,6 +511,7 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("failed to update enumval"));
             }
         }
+
 
         //save history
         {
@@ -559,7 +582,10 @@ namespace Fred
                 for(std::vector<std::string>::const_iterator ci = i.rem_admin_contact_.begin()
                         ; ci != i.rem_admin_contact_.end() ; ++ci ) os << *ci;
 
-        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
+        os << " expiration_date: " << i.expiration_date_.print_quoted()
+        << " enum_validation_expiration: " << i.enum_validation_expiration_.print_quoted()
+        << " enum_publish_flag: " << i.enum_publish_flag_.print_quoted()
+        << " logd_request_id: " << i.logd_request_id_.print_quoted();
         return os;
     }
 

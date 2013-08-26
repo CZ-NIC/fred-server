@@ -16,6 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *  @file test-update-domain.cc
+ *  UpdateDomain tests
+ */
+
 #include <memory>
 #include <iostream>
 #include <string>
@@ -108,12 +113,16 @@ struct update_domain_fixture
     std::string admin_contact2_handle;
     std::string registrant_contact_handle;
     std::string test_domain_handle;
+    std::string test_enum_domain;
 
     update_domain_fixture()
-    : xmark(RandomDataGenerator().xnumstring(6))
+    : xmark(RandomDataGenerator().xnumstring(9))
     , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
     , test_domain_handle ( std::string("fred")+xmark+".cz")
+    , test_enum_domain ( std::string()+xmark.at(0)+'.'+xmark.at(1)+'.'+xmark.at(2)+'.'
+                                        +xmark.at(3)+'.'+xmark.at(4)+'.'+xmark.at(5)+'.'
+                                        +xmark.at(6)+'.'+xmark.at(7)+'.'+xmark.at(8)+".0.2.4.e164.arpa")
     {
         Fred::OperationContext ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
@@ -143,6 +152,17 @@ struct update_domain_fixture
                 )
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .exec(ctx);
+
+        Fred::CreateDomain(
+                test_enum_domain//const std::string& fqdn
+                , registrar_handle //const std::string& registrar
+                , registrant_contact_handle //registrant
+                )
+        .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+        .set_enum_validation_expiration(boost::gregorian::from_string("2012-01-21"))
+        .set_enum_publish_flag(false)
+        .exec(ctx);
+
         ctx.commit_transaction();
     }
     ~update_domain_fixture()
@@ -232,8 +252,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
             , Optional<Nullable<std::string> >()//dont change keyset
             , Util::vector_of<std::string> (admin_contact1_handle)(registrant_contact_handle) //add admin contacts
             , Util::vector_of<std::string> (admin_contact2_handle) //remove admin contacts
-            , Optional<boost::gregorian::date>()
-            , Optional<bool>()
+            , Optional<boost::gregorian::date>()//exdate
+            , Optional<boost::gregorian::date>()//enumvalexdate
+            , Optional<bool>()//enum publish
             , Optional<unsigned long long>() //request_id not set
             ).exec(ctx);
 
@@ -1256,6 +1277,174 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
 
     BOOST_CHECK(history_info_data.at(1).info_domain_data.crhistoryid == history_info_data.at(1).info_domain_data.historyid);
 
+}
+
+/**
+ * test UpdateDomain set exdate
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_exdate, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+
+    boost::gregorian::date exdate(boost::gregorian::from_string("2010-12-20"));
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .set_domain_expiration(exdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateDomain::Exception& ex)
+    {
+        BOOST_ERROR(boost::diagnostic_information(ex));
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_2.info_domain_data.expiration_date == exdate);
+}
+
+/**
+ * test UpdateDomain set invalid exdate
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_exdate, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+
+    boost::gregorian::date exdate;
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .set_domain_expiration(exdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateDomain::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_invalid_expiration_date());
+        BOOST_CHECK(ex.get_invalid_expiration_date().is_special());
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateDomain set ENUM valexdate to ENUM domain
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_enum_domain, registrar_handle).exec(ctx);
+
+    boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_enum_domain, registrar_handle)
+        .set_enum_validation_expiration(valexdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateDomain::Exception& ex)
+    {
+        BOOST_ERROR(boost::diagnostic_information(ex));
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_enum_domain, registrar_handle).exec(ctx);
+    BOOST_CHECK(static_cast<Fred::ENUMValidationExtension>(info_data_2.info_domain_data.enum_domain_validation)
+            .validation_expiration == valexdate);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateDomain set invalid ENUM valexdate to ENUM domain
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_valexdate, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_enum_domain, registrar_handle).exec(ctx);
+
+    boost::gregorian::date valexdate;
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_enum_domain, registrar_handle)
+        .set_enum_validation_expiration(valexdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateDomain::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_invalid_enum_validation_expiration_date());
+        BOOST_CHECK(ex.get_invalid_enum_validation_expiration_date().is_special());
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_enum_domain, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateDomain set ENUM valexdate to non-ENUM domain
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate_wrong_domain, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_enum_domain, registrar_handle).exec(ctx);
+
+    boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .set_enum_validation_expiration(valexdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::InternalError& ex)
+    {
+        BOOST_MESSAGE(ex.what());
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_enum_domain, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateDomain set ENUM publish flag to non-ENUM domain
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_publish_wrong_domain, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_enum_domain, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .set_enum_publish_flag(true)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::InternalError& ex)
+    {
+        BOOST_MESSAGE(ex.what());
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_enum_domain, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }
 
 
