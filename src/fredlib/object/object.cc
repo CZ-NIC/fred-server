@@ -49,11 +49,13 @@ namespace Fred
     CreateObject::CreateObject(const std::string& object_type
         , const std::string& handle
         , const std::string& registrar
-        , const Optional<std::string>& authinfo)
+        , const Optional<std::string>& authinfo
+        , const Nullable<unsigned long long>& logd_request_id)
     : object_type_(object_type)
     , handle_(handle)
     , registrar_(registrar)
     , authinfo_(authinfo)
+    , logd_request_id_(logd_request_id)
     {}
 
     CreateObject& CreateObject::set_authinfo(const std::string& authinfo)
@@ -62,9 +64,15 @@ namespace Fred
         return *this;
     }
 
-    unsigned long long  CreateObject::exec(OperationContext& ctx)
+    CreateObject& CreateObject::set_logd_request_id(const Nullable<unsigned long long>& logd_request_id)
     {
-        unsigned long long object_id = 0;
+        logd_request_id_ = logd_request_id;
+        return *this;
+    }
+
+    CreateObjectOutput  CreateObject::exec(OperationContext& ctx)
+    {
+        CreateObjectOutput output;
 
         try
         {
@@ -112,9 +120,9 @@ namespace Fred
             {
                 BOOST_THROW_EXCEPTION(InternalError("unable to call create_object"));
             }
-            object_id = static_cast<unsigned long long>(id_res[0][0]);
+            output.object_id = static_cast<unsigned long long>(id_res[0][0]);
 
-            if (object_id == 0)
+            if (output.object_id == 0)
             {
                 BOOST_THROW_EXCEPTION(Exception().set_invalid_object_handle(handle_));
             }
@@ -126,7 +134,26 @@ namespace Fred
 
             ctx.get_conn().exec_params("INSERT INTO object(id, clid, authinfopw) VALUES ($1::bigint "//object id from create_object
                     " , $2::integer, $3::text)"
-                    , Database::query_param_list(object_id)(registrar_id)(authinfo_));
+                    , Database::query_param_list(output.object_id)(registrar_id)(authinfo_));
+
+            output.history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
+
+            //object_history
+            ctx.get_conn().exec_params(
+                "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
+                " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
+                " WHERE id = $2::integer"
+                , Database::query_param_list(output.history_id)(output.object_id));
+
+            //object_registry historyid
+            Database::Result update_historyid_res = ctx.get_conn().exec_params(
+                "UPDATE object_registry SET historyid = $1::bigint, crhistoryid = $1::bigint "
+                    " WHERE id = $2::integer RETURNING id"
+                    , Database::query_param_list(output.history_id)(output.object_id));
+            if (update_historyid_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("historyid update failed"));
+            }
 
         }//try
         catch(ExceptionStack& ex)
@@ -135,7 +162,7 @@ namespace Fred
             throw;
         }
 
-        return object_id;
+        return output;
     }
 
     std::ostream& operator<<(std::ostream& os, const CreateObject& i)
@@ -144,6 +171,7 @@ namespace Fred
             << " handle: " << i.handle_
             << " registrar: " << i.registrar_
             << " authinfo: " << i.authinfo_.print_quoted()
+            << " logd_request_id: " << i.logd_request_id_.print_quoted()
             ;
         return os;
     }

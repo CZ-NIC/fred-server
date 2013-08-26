@@ -233,7 +233,7 @@ namespace Fred
                 }
             }//expiration_period
 
-            unsigned long long object_id = CreateObject("domain", no_root_dot_fqdn, registrar_, authinfo_).exec(ctx);
+            CreateObjectOutput create_object_output = CreateObject("domain", no_root_dot_fqdn, registrar_, authinfo_, logd_request_id_).exec(ctx);
 
             //get crdate and exdate and lock row from object_registry
             boost::gregorian::date expiration_date;
@@ -243,7 +243,7 @@ namespace Fred
                     " , (crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text + ( $3::integer * interval '1 month') )::date "
                     "  FROM object_registry "
                     " WHERE id = $2::bigint FOR UPDATE OF object_registry"
-                    , Database::query_param_list(returned_timestamp_pg_time_zone_name)(object_id)(expiration_period));
+                    , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_output.object_id)(expiration_period));
 
                 if (reg_date_res.size() != 1)
                 {
@@ -291,7 +291,7 @@ namespace Fred
                 val_sql << " VALUES (";
 
                 //id
-                params.push_back(object_id);
+                params.push_back(create_object_output.object_id);
                 col_sql << col_separator.get() << "id";
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
@@ -409,7 +409,7 @@ namespace Fred
                     Database::QueryParams params;//query params
                     std::stringstream sql;
 
-                    params.push_back(object_id);
+                    params.push_back(create_object_output.object_id);
                     sql << "INSERT INTO domain_contact_map(domainid, contactid) "
                             " VALUES ($" << params.size() << "::integer, ";
 
@@ -492,7 +492,7 @@ namespace Fred
                 val_sql << " VALUES (";
 
                 //domainid
-                params.push_back(object_id);
+                params.push_back(create_object_output.object_id);
                 col_sql << col_separator.get() << "domainid";
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
@@ -517,45 +517,26 @@ namespace Fred
 
             //save history
             {
-                unsigned long long history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
-
-                //object_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
-                    " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                    " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
-
-                //object_registry historyid
-                Database::Result update_historyid_res = ctx.get_conn().exec_params(
-                    "UPDATE object_registry SET historyid = $1::bigint, crhistoryid = $1::bigint "
-                        " WHERE id = $2::integer RETURNING id"
-                        , Database::query_param_list(history_id)(object_id));
-                if (update_historyid_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(Fred::InternalError("update historyid failed"));
-                }
-
                 //domain_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO domain_history(historyid,id,zone, registrant, nsset, exdate, keyset) "
                     " SELECT $1::bigint, id, zone, registrant, nsset, exdate, keyset FROM domain "
                         " WHERE id = $2::integer"
-                        , Database::query_param_list(history_id)(object_id));
+                        , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
                 //domain_contact_map_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO domain_contact_map_history(historyid,domainid,contactid, role) "
                     " SELECT $1::bigint, domainid,contactid, role FROM domain_contact_map "
                         " WHERE domainid = $2::integer"
-                        , Database::query_param_list(history_id)(object_id));
+                        , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
                 //enumval_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO enumval_history(historyid,domainid,exdate, publish) "
                     " SELECT $1::bigint, domainid,exdate, publish FROM enumval "
                         " WHERE domainid = $2::integer"
-                        , Database::query_param_list(history_id)(object_id));
+                        , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
             }//save history
 
