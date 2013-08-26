@@ -45,15 +45,21 @@
 
 namespace Fred
 {
-
-///exception stack context info
+/**
+ * Exception stack context info.
+ */
 struct ExceptionStack
 : virtual boost::exception
 {
-    ///string tag to record/append operation stack context
+    /**
+    * String tag to record/append operation stack context.
+    */
     typedef boost::error_info<struct OperationStackTag,std::string> ErrorInfoOperationStack;
 
-    ///append operation stack context
+    /**
+    * Append operation stack context.
+    * @param info string to be appended to the exception data
+    */
     void add_exception_stack_info(const std::string& info)
     {
         std::string operation_stack_info;
@@ -64,68 +70,102 @@ struct ExceptionStack
         (*this) << ErrorInfoOperationStack(operation_stack_info);
     }
 
-    ///get exception stack info data
+    /**
+     * Get current exception stack info data.
+     * @return exception stack text
+     */
     std::string get_exception_stack_info() const
     {
         const std::string* data_ptr = get_data_ptr();
         return data_ptr ? *data_ptr : std::string();
     }
 
-    ///check if exception stack info is set
+    /**
+     * Check if exception stack info is set.
+     */
     bool is_set_exception_stack_info() const
     {
         const std::string* data_ptr = get_data_ptr();
         return data_ptr;
     }
 
+    /**
+     * Public virtual nothrow empty dtor.
+     */
     virtual ~ExceptionStack() throw() {}
 
 private:
 
+    /**
+     * Get pointer to exception stack data.
+     */
     const std::string* get_data_ptr() const
     {
         return boost::get_error_info<ErrorInfoOperationStack>(*this);
     }
 };
 
-///exception data set flag
+/**
+ * Exception data set flag.
+ */
 struct ThrowMeFlagImpl
 {
 private:
     bool throw_me_;
 public:
-    ///if exception data is set, throw exception
+    /**
+     * Check if exception instance have set content to be thrown.
+     *@return true if exception data is set then throw exception
+     */
     bool throw_me()
     {
         return throw_me_;
     }
-    ///setter is called by exception data setters or directly if using operator<< with error_info type
+    /**
+     * Set to indicate throw.
+     * Setter is called by exception data setters or directly if using operator<< with error_info type.
+     */
     void set_throw_me()
     {
         throw_me_ = true;
     }
 protected:
+    /**
+     * Ctor with initial throw_me_ value false, have meaning nothing to be thrown
+     */
     ThrowMeFlagImpl()
     : throw_me_(false)
     {}
+    /**
+    * Protected non-virtual nothrow empty dtor.
+    */
     ~ThrowMeFlagImpl() throw () {}
 };
 
-///parent of operation exceptions
+/**
+ * Parent of operation exceptions.
+ */
 struct OperationException
     : virtual std::exception
     , virtual ExceptionStack
     , virtual ThrowMeFlagImpl
 {
-    ///std::exception content override
+    /**
+     * std::exception content override
+     */
     const char* what() const throw()
     {
         return "OperationException";
     }
+    /**
+     * Public virtual nothrow empty dtor.
+     */
     virtual ~OperationException() throw() {}
 };
 
-///internal error exception with describing message
+/**
+ * Internal error exception with describing message.
+ */
 struct InternalError
 : virtual std::exception
 , virtual ExceptionStack
@@ -136,7 +176,9 @@ struct InternalError
     explicit InternalError(const char* message)
     : msg_(message)
     {}
-    ///std::exception content override
+    /**
+     * std::exception content override
+     */
     virtual const char* what() const throw ()
     {
         try
@@ -154,8 +196,17 @@ private:
 };
 
 
-
-///declaration of exception tag related methods getter and chaining setter with error_info type
+/**
+* Declaration of exception tag related methods getter and chaining setter with error_info type.
+*
+* ErrorInfo_ex_data_tag //is boost::error_info typedef generated for exception data tag
+*
+* DERIVED_EXCEPTION& set_ex_data_tag(const ex_data_type& arg) //is generated setter of exception data
+*
+* ex_data_type get_ex_data_tag() const //is generated getter of exception data
+*
+* bool is_set_ex_data_tag() const //is generated check if exception data is set
+*/
 #define DECLARE_EXCEPTION_DATA(ex_data_tag, ex_data_type) \
 typedef boost::error_info<BOOST_JOIN(struct ExceptionTag_,ex_data_tag),ex_data_type> BOOST_JOIN(ErrorInfo_,ex_data_tag);\
 template <class DERIVED_EXCEPTION> struct BOOST_JOIN(ExceptionData_,ex_data_tag)\
@@ -195,7 +246,19 @@ protected:\
     BOOST_JOIN(~ExceptionData_,ex_data_tag)() throw () {}\
 }\
 
-///declaration of std::vector based exception tag, related methods, getter and chaining setter with error_info type
+/**
+* Declaration of std::vector based exception tag, related methods, getter and chaining setter with error_info type
+*
+* ErrorInfo_vector_of_ex_data_tag //is boost::error_info typedef generated for exception vector of exception data
+*
+* DERIVED_EXCEPTION& set_vector_of_ex_data_tag(const std::vector<ex_data_type>& arg) //is generated setter for vector of exception data
+*
+* DERIVED_EXCEPTION& add_ex_data_tag(const ex_data_type& arg) //adds element into vector of exception data
+*
+* std::vector<ex_data_type> get_vector_of_ex_data_tag() const //is generated getter for vector of exception data
+*
+* bool is_set_vector_of_ex_data_tag() const //is generated check if vector of exception data is set
+ */
 #define DECLARE_VECTOR_OF_EXCEPTION_DATA(ex_data_tag, ex_data_type) \
 typedef boost::error_info<BOOST_JOIN(struct ExceptionTag_vector_of_,ex_data_tag), std::vector<ex_data_type> > BOOST_JOIN(ErrorInfo_vector_of_,ex_data_tag);\
 \
