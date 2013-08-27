@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([fred-server], [2.14.1])
+AC_INIT([fred-server], [2.15.0])
 AC_CONFIG_SRCDIR(src/corba/fred-rifd.cc)
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -220,6 +220,9 @@ AS_AC_EXPAND([SYSCONFDIR], [$sysconfdir])
 AS_AC_EXPAND([LOCALSTATEDIR], [$localstatedir])
 AS_AC_EXPAND([PREFIX], [$prefix])
 
+#doxygen preprocessor config
+AS_AC_EXPAND([BOOST_INCLUDE_DOXYGEN_PATH],[`echo $BOOST_CPPFLAGS | sed 's/-I//g' | sed 's/-pthread//g'`])
+
 #put context name into config.h file
 AC_DEFINE_UNQUOTED([CONFIG_FILE], [["]$SYSCONFDIR/fred/server.conf["]], [location of fred config file])
 
@@ -432,5 +435,6 @@ AC_CONFIG_FILES([Makefile
                  config/server.conf
                  config/hpmail.conf
                  init-scripts/fred-server
+                 doxy.conf
                  ])
 AC_OUTPUT
