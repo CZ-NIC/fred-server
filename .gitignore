@@ -47,6 +47,9 @@ missing
 src/corba/Admin.hh
 src/corba/AdminDynSK.cc
 src/corba/AdminSK.cc
+src/corba/ContactVerification.hh
+src/corba/ContactVerificationSK.cc
+src/corba/ContactVerificationDynSK.cc
 src/corba/EPP.hh
 src/corba/EPPDynSK.cc
 src/corba/EPPSK.cc
@@ -89,3 +92,4 @@ src/corba/_dataTypesDynSK.cc
 src/corba/_dataTypesSK.cc
 /.settings
 /.autotools
+doc/html
