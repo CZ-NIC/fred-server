@@ -47,10 +47,10 @@ namespace Fred
                 "        AT TIME ZONE $1::text AS create_time_, "   /* ... to _output_timezone */
                 "    check.contact_history_id  AS contact_history_id_, "
                 "    testsuite.name            AS testsuite_name_ "
-                "FROM contact_check AS check"
+                "FROM contact_check AS check "
                 "JOIN enum_contact_testsuite AS testsuite "
-                "    ON check.enum_contact_testsuite_id = testsuite.id"
-                "WHERE check.handle=$2::cnt_chck_handle"
+                "    ON check.enum_contact_testsuite_id = testsuite.id "
+                "WHERE check.handle=$2::cnt_chck_handle "
                 "FOR UPDATE OF check;",
                 Database::query_param_list(_output_timezone)(handle_) );
 
@@ -72,12 +72,12 @@ namespace Fred
                 "    test.create_time "
                 "        AT TIME ZOME 'utc' "                       /* conversion from 'utc' ... */
                 "        AT TIME ZONE $1::text AS create_time_, "   /* ... to _output_timezone */
-                "    testdef.name              AS test_name_"
-                "FROM contact_test_result AS test"
-                "JOIN enum_contact_test AS testdef"
-                "    ON test.enum_contact_test_id = testdef.id"
-                "WHERE test.contact_check_id=$2::bigint"
-                "ORDER BY id_ ASC"
+                "    testdef.name              AS test_name_ "
+                "FROM contact_test_result AS test "
+                "JOIN enum_contact_test AS testdef "
+                "    ON test.enum_contact_test_id = testdef.id "
+                "WHERE test.contact_check_id=$2::bigint "
+                "ORDER BY id_ ASC "
                 "FOR UPDATE OF test;",
                 Database::query_param_list(_output_timezone)(temp_check_id));
 
@@ -101,10 +101,10 @@ namespace Fred
                     "        AT TIME ZOME 'utc' "                       /* conversion from 'utc' ... */
                     "        AT TIME ZONE $1::text AS update_time_, "   /* ... to _output_timezone */
                     "    status.name               AS status_name_ "
-                    "FROM contact_test_result AS test"
-                    "JOIN enum_contact_check_status AS status"
-                    "    ON test.enum_contact_status_id = status.id"
-                    "WHERE test.id IN"
+                    "FROM contact_test_result AS test "
+                    "JOIN enum_contact_check_status AS status "
+                    "    ON test.enum_contact_status_id = status.id "
+                    "WHERE test.id IN "
                     ""
                     "UNION ALL " /* only reason for "ALL" is to disable search for duplicates in postgres*/
                     ""
@@ -116,11 +116,10 @@ namespace Fred
                     "        AT TIME ZOME 'utc' "                     /* conversion from 'utc' ... */
                     "        AT TIME ZONE $1::text AS update_time_, " /* ... to _output_timezone */
                     "    status.name               AS status_name_ "
-                    "FROM contact_test_result_history AS history"
-                    "JOIN enum_contact_test_status AS status"
-                    "    ON history.enum_contact_test_status_id = status.id"
-                    "WHERE history.contact_test_result_id="
-                    "$2::bigint[]"
+                    "FROM contact_test_result_history AS history "
+                    "JOIN enum_contact_test_status AS status "
+                    "    ON history.enum_contact_test_status_id = status.id "
+                    "WHERE history.contact_test_result_id=$2::bigint[] "
                     ""
                     "ORDER BY id_ ASC, update_time_ ASC;",
                     Database::query_param_list
@@ -175,10 +174,10 @@ namespace Fred
                 "        AT TIME ZOME 'utc' "
                 "        AT TIME ZONE $1::text AS update_time_, "
                 "    status.name               AS status_name_ "
-                "FROM contact_check AS check"
-                "JOIN enum_contact_check_status AS status"
-                "    ON check.enum_contact_status_id = status.id"
-                "WHERE check.id=$1::bigint"
+                "FROM contact_check AS check "
+                "JOIN enum_contact_check_status AS status "
+                "    ON check.enum_contact_status_id = status.id "
+                "WHERE check.id=$1::bigint "
                 ""
                 "UNION ALL " /* only reason for "ALL" is to disable search for duplicates in postgres*/
                 ""
@@ -187,11 +186,11 @@ namespace Fred
                 "    history.update_time "
                 "        AT TIME ZOME 'utc' "                       /* conversion from 'utc' ... */
                 "        AT TIME ZONE $1::text AS update_time_, "   /* ... to _output_timezone */
-                "    status.name               AS status_name_"
-                "FROM contact_check_history AS history"
-                "JOIN enum_contact_check_status AS status"
-                "    ON check.enum_contact_status_id = status.id"
-                "WHERE history.contact_check_id=$2::bigint"
+                "    status.name               AS status_name_ "
+                "FROM contact_check_history AS history "
+                "JOIN enum_contact_check_status AS status "
+                "    ON check.enum_contact_status_id = status.id "
+                "WHERE history.contact_check_id=$2::bigint "
                 ""
                 "ORDER BY status_name_ ASC;",
                 Database::query_param_list(_output_timezone)(temp_check_id) );
