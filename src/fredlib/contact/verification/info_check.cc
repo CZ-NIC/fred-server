@@ -102,8 +102,8 @@ namespace Fred
                     "        AT TIME ZONE $1::text AS update_time_, "   /* ... to _output_timezone */
                     "    status.name               AS status_name_ "
                     "FROM contact_test_result AS test "
-                    "JOIN enum_contact_check_status AS status "
-                    "    ON test.enum_contact_status_id = status.id "
+                    "JOIN enum_contact_test_status AS status "
+                    "    ON test.enum_contact_test_status_id = status.id "
                     "WHERE test.id IN "
                     ""
                     "UNION ALL " /* only reason for "ALL" is to disable search for duplicates in postgres*/
@@ -176,7 +176,7 @@ namespace Fred
                 "    status.name               AS status_name_ "
                 "FROM contact_check AS check_ "
                 "JOIN enum_contact_check_status AS status "
-                "    ON check_.enum_contact_status_id = status.id "
+                "    ON check_.enum_contact_check_status_id = status.id "
                 "WHERE check_.id=$1::bigint "
                 ""
                 "UNION ALL " /* only reason for "ALL" is to disable search for duplicates in postgres*/
@@ -189,7 +189,7 @@ namespace Fred
                 "    status.name               AS status_name_ "
                 "FROM contact_check_history AS history "
                 "JOIN enum_contact_check_status AS status "
-                "    ON history.enum_contact_status_id = status.id "
+                "    ON history.enum_contact_check_status_id = status.id "
                 "WHERE history.contact_check_id=$2::bigint "
                 ""
                 "ORDER BY status_name_ ASC;",
