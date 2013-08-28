@@ -145,9 +145,9 @@ namespace Fred
                         && it_test_histories != contact_test_history_result.end()
                     ) {
                         InfoContactCheckOutput::ContactTestResultState temp_test_history_state;
-                        temp_test_history_state.error_msg = static_cast< Nullable<std::string> >( (*it_test_histories)["error_msg_"]);
+                        temp_test_history_state.error_msg = (*it_test_histories)["error_msg_"]; // nullable has it's own implicit casting
                         temp_test_history_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it_test_histories)["update_time_"]));
-                        temp_test_history_state.logd_request_id = static_cast< Nullable<long long> >( (*it_test_histories)["logd_request_id_"]);
+                        temp_test_history_state.logd_request_id = (*it_test_histories)["logd_request_id_"]; // nullable has it's own implicit casting
                         temp_test_history_state.status_name = static_cast<std::string>( (*it_test_histories)["status_name_"]);
 
                         // add to this test history
@@ -208,7 +208,7 @@ namespace Fred
 
                InfoContactCheckOutput::ContactCheckState temp_check_history_state;
 
-               temp_check_history_state.logd_request_id = static_cast<long long>( (*it_check_history)["logd_request_id_"]);
+               temp_check_history_state.logd_request_id = (*it_check_history)["logd_request_id_"];
                temp_check_history_state.status_name = static_cast<std::string>( (*it_check_history)["status_name_"]);
                temp_check_history_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it_check_history)["update_time_"]));
 
