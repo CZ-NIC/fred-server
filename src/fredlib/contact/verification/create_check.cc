@@ -81,11 +81,12 @@ namespace Fred
 
         struct BOOST { struct UUIDS { struct RANDOM_GENERATOR {
             static std::string generate() {
-                std::string bytes;
+                srand(time(NULL));
+                std::vector<unsigned char> bytes;
 
                 // generate random 128bits = 16 bytes
                 for (int i = 0; i < 16; ++i) {
-                    bytes += static_cast<char>(rand()%256);
+                    bytes.push_back( rand()%256 );
                 }
                 /* some specific uuid rules
                  * http://www.cryptosys.net/pki/Uuid.c.html
@@ -98,8 +99,10 @@ namespace Fred
 
                 // converting raw bytes to hex string representation
                 std::string result;
-                for (std::string::iterator it = bytes.begin(); it != bytes.end(); ++it) {
-                    sprintf(hex_rep,"%x",*it);
+                for (std::vector<unsigned char>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
+                    sprintf(hex_rep,"%02x",*it);
+                    // conversion target is hhhh - so in case it gets wrong just cut off the tail
+                    hex_rep[2] = 0;
                     result += hex_rep;
                 }
 
@@ -108,6 +111,7 @@ namespace Fred
                 result.insert(13, "-");
                 result.insert(18, "-");
                 result.insert(23, "-");
+
                 return result;
             }
         }; }; };
