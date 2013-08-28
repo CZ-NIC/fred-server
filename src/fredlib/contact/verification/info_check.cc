@@ -43,7 +43,7 @@ namespace Fred
                 "SELECT "
                 "    check.id                  AS id_, "
                 "    check.create_time "
-                "        AT TIME ZOME 'utc' "                       /* conversion from 'utc' ... */
+                "        AT TIME ZONE 'utc' "                       /* conversion from 'utc' ... */
                 "        AT TIME ZONE $1::text AS create_time_, "   /* ... to _output_timezone */
                 "    check.contact_history_id  AS contact_history_id_, "
                 "    testsuite.name            AS testsuite_name_ "
@@ -70,7 +70,7 @@ namespace Fred
                 "SELECT "
                 "    test.id                   AS id_, "
                 "    test.create_time "
-                "        AT TIME ZOME 'utc' "                       /* conversion from 'utc' ... */
+                "        AT TIME ZONE 'utc' "                       /* conversion from 'utc' ... */
                 "        AT TIME ZONE $1::text AS create_time_, "   /* ... to _output_timezone */
                 "    testdef.name              AS test_name_ "
                 "FROM contact_test_result AS test "
@@ -98,7 +98,7 @@ namespace Fred
                     "    test.error_msg            AS error_msg_, "
                     "    test.logd_request_id      AS logd_request_id_, "
                     "    test.update_time "
-                    "        AT TIME ZOME 'utc' "                       /* conversion from 'utc' ... */
+                    "        AT TIME ZONE 'utc' "                       /* conversion from 'utc' ... */
                     "        AT TIME ZONE $1::text AS update_time_, "   /* ... to _output_timezone */
                     "    status.name               AS status_name_ "
                     "FROM contact_test_result AS test "
@@ -113,7 +113,7 @@ namespace Fred
                     "    history.error_msg         AS error_msg_, "
                     "    history.logd_request_id   AS logd_request_id_, "
                     "    history.update_time "
-                    "        AT TIME ZOME 'utc' "                     /* conversion from 'utc' ... */
+                    "        AT TIME ZONE 'utc' "                     /* conversion from 'utc' ... */
                     "        AT TIME ZONE $1::text AS update_time_, " /* ... to _output_timezone */
                     "    status.name               AS status_name_ "
                     "FROM contact_test_result_history AS history "
@@ -171,7 +171,7 @@ namespace Fred
                 "SELECT "
                 "    check.logd_request_id     AS logd_request_id_, "
                 "    check.update_time "
-                "        AT TIME ZOME 'utc' "
+                "        AT TIME ZONE 'utc' "
                 "        AT TIME ZONE $1::text AS update_time_, "
                 "    status.name               AS status_name_ "
                 "FROM contact_check AS check "
@@ -184,7 +184,7 @@ namespace Fred
                 "SELECT "
                 "    history.logd_request_id   AS logd_request_id_, "
                 "    history.update_time "
-                "        AT TIME ZOME 'utc' "                       /* conversion from 'utc' ... */
+                "        AT TIME ZONE 'utc' "                       /* conversion from 'utc' ... */
                 "        AT TIME ZONE $1::text AS update_time_, "   /* ... to _output_timezone */
                 "    status.name               AS status_name_ "
                 "FROM contact_check_history AS history "
