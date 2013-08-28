@@ -48,11 +48,13 @@ namespace Fred
             const StatusList &_status_list,
             const Optional< Time > &_valid_from,
             const Optional< Time > &_valid_to,
-            const std::string &_reason
+            const std::string &_reason,
+            const Optional<unsigned long long> _logd_request_id
             );
         CreateAdministrativeObjectBlockRequestId& set_valid_from(const Time &_valid_from);
         CreateAdministrativeObjectBlockRequestId& set_valid_to(const Time &_valid_to);
         CreateAdministrativeObjectBlockRequestId& set_reason(const std::string &_reason);
+        CreateAdministrativeObjectBlockRequestId& set_logd_request_id(unsigned long long _logd_request_id);
         std::string exec(OperationContext &_ctx);
 
     //exception impl
@@ -72,6 +74,7 @@ namespace Fred
         Optional< Time > valid_from_;
         Optional< Time > valid_to_;
         Optional< std::string > reason_;
+        Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
     };//class CreateAdministrativeObjectBlockRequestId
 
 

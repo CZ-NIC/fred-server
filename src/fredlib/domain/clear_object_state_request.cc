@@ -52,9 +52,8 @@ namespace Fred
             "WHERE $1::integer=ANY(types)",
             Database::query_param_list(object_type_));
         MultipleObjectStateId status_all;
-        status_all.reserve(status_result.size());
         for (Database::Result::Iterator pRow = status_result.begin(); pRow != status_result.end(); ++pRow) {
-            status_all.push_back((*pRow)[0]);
+            status_all.insert((*pRow)[0]);
         }
         LockMultipleObjectStateRequestLock(status_all, object_id).exec(_ctx);
 

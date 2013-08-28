@@ -24,7 +24,7 @@
 
 
 #include "server_i.h"
-#include "corba_wrapper_decl.h"
+#include "corba_conversion.h"
 #include "admin_block/administrativeblocking.h"
 #include <string>
 
@@ -44,7 +44,12 @@ namespace Registry
         //   Methods corresponding to IDL attributes and operations
         StatusDescList* Server_i::getBlockingStatusDescList(const char* _lang)
         {
-            return bimpl_->getBlockingStatusDescList(_lang);
+            try {
+                return corba_wrap_status_desc_list(bimpl_->getBlockingStatusDescList(_lang));
+            }
+            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+                throw corba_wrap_exception(e);
+            }
         }
 
         DomainOwnerChangeList* Server_i::blockDomains(
@@ -53,7 +58,7 @@ namespace Registry
             ::Registry::Administrative::OwnerBlockMode owner_block_mode,
             const char *reason)
         {
-            return bimpl_->blockDomains(domain_list, status_list, owner_block_mode, reason);
+            throw std::runtime_error("blockDomains not implemented");
         }
 
         DomainIdHandleOwnerChangeList* Server_i::blockDomainsId(
@@ -64,7 +69,25 @@ namespace Registry
             const char* reason,
             ::CORBA::ULongLong log_req_id)
         {
-            return bimpl_->blockDomainsId(domain_list, status_list, owner_block_mode, reason, log_req_id);
+            try {
+                return corba_wrap_owner_change_list(bimpl_->blockDomainsId(corba_unwrap_domain_id_list(domain_list),
+                                                                           corba_unwrap_status_list(status_list),
+                                                                           corba_unwrap_owner_block_mode(owner_block_mode),
+                                                                           reason,
+                                                                           log_req_id));
+            }
+            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+                throw corba_wrap_exception(e);
+            }
+            catch (const EX_UNKNOWN_STATUS &e) {
+                throw corba_wrap_exception(e);
+            }
+            catch (const EX_DOMAIN_ID_ALREADY_BLOCKED &e) {
+                throw corba_wrap_exception(e);
+            }
+            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+                throw corba_wrap_exception(e);
+            }
         }
 
         void Server_i::updateBlockDomains(
@@ -72,7 +95,7 @@ namespace Registry
             const ::Registry::Administrative::StatusList &status_list,
             const char *reason)
         {
-            bimpl_->updateBlockDomains(domain_list, status_list, reason);
+            throw std::runtime_error("updateBlockDomains not implemented");
         }
         
         void Server_i::updateBlockDomainsId(
@@ -82,7 +105,21 @@ namespace Registry
             const char *reason,
             ::CORBA::ULongLong log_req_id)
         {
-            bimpl_->updateBlockDomainsId(domain_list, status_list, reason, log_req_id);
+            try {
+                bimpl_->updateBlockDomainsId(corba_unwrap_domain_id_list(domain_list),
+                                             corba_unwrap_status_list(status_list),
+                                             reason,
+                                             log_req_id);
+            }
+            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+                throw corba_wrap_exception(e);
+            }
+            catch (const EX_UNKNOWN_STATUS &e) {
+                throw corba_wrap_exception(e);
+            }
+            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+                throw corba_wrap_exception(e);
+            }
         }
         
         void Server_i::restorePreAdministrativeBlockStates(
@@ -90,7 +127,7 @@ namespace Registry
             ::Registry::Administrative::NullableString *new_owner,
             const char *reason)
         {
-            bimpl_->restorePreAdministrativeBlockStates(domain_list, new_owner, reason);
+            throw std::runtime_error("restorePreAdministrativeBlockStates not implemented");
         }
 
         void Server_i::restorePreAdministrativeBlockStatesId(
@@ -99,7 +136,21 @@ namespace Registry
             const char* reason,
             ::CORBA::ULongLong log_req_id)
         {
-            bimpl_->restorePreAdministrativeBlockStatesId(domain_list, new_owner, reason, log_req_id);
+            try {
+                bimpl_->restorePreAdministrativeBlockStatesId(corba_unwrap_domain_id_list(domain_list),
+                                                              corba_unwrap_nullable_string(new_owner),
+                                                              reason,
+                                                              log_req_id);
+            }
+            catch (const EX_DOMAIN_ID_NOT_BLOCKED &e) {
+                throw corba_wrap_exception(e);
+            }
+            catch (const EX_NEW_OWNER_DOES_NOT_EXISTS &e) {
+                throw corba_wrap_exception(e);
+            }
+            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+                throw corba_wrap_exception(e);
+            }
         }
 
         void Server_i::unblockDomains(
@@ -108,7 +159,7 @@ namespace Registry
             ::CORBA::Boolean remove_admin_c,
             const char* reason)
         {
-            bimpl_->unblockDomains(domain_list, new_owner, remove_admin_c, reason);
+            throw std::runtime_error("unblockDomains not implemented");
         }
         
         void Server_i::unblockDomainsId(
@@ -118,14 +169,29 @@ namespace Registry
             const char* reason,
             ::CORBA::ULongLong log_req_id)
         {
-            bimpl_->unblockDomainsId(domain_list, new_owner, remove_admin_c, reason, log_req_id);
+            try {
+                bimpl_->unblockDomainsId(corba_unwrap_domain_id_list(domain_list),
+                                         corba_unwrap_nullable_string(new_owner),
+                                         remove_admin_c,
+                                         reason,
+                                         log_req_id);
+            }
+            catch (const EX_DOMAIN_ID_NOT_BLOCKED &e) {
+                throw corba_wrap_exception(e);
+            }
+            catch (const EX_NEW_OWNER_DOES_NOT_EXISTS &e) {
+                throw corba_wrap_exception(e);
+            }
+            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+                throw corba_wrap_exception(e);
+            }
         }
         
         void Server_i::blacklistAndDeleteDomains(
             const ::Registry::Administrative::DomainList &domain_list,
             ::Registry::Administrative::NullableDate *blacklist_to_date)
         {
-            bimpl_->blacklistAndDeleteDomains(domain_list, blacklist_to_date);
+            throw std::runtime_error("blacklistAndDeleteDomains not implemented");
         }
 
         void Server_i::blacklistAndDeleteDomainsId(
@@ -134,7 +200,15 @@ namespace Registry
             const char* reason,
             ::CORBA::ULongLong log_req_id)
         {
-            bimpl_->blacklistAndDeleteDomainsId(domain_list, blacklist_to_date, reason, log_req_id);
+            try {
+                bimpl_->blacklistAndDeleteDomainsId(corba_unwrap_domain_id_list(domain_list),
+                                                    corba_unwrap_nullable_date(blacklist_to_date),
+                                                    reason,
+                                                    log_req_id);
+            }
+            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+                throw corba_wrap_exception(e);
+            }
         }
 
         void Server_i::blacklistDomains(
@@ -142,7 +216,7 @@ namespace Registry
             ::Registry::Administrative::NullableDate *blacklist_to_date,
             ::CORBA::Boolean with_delete)
         {
-            bimpl_->blacklistDomains(domain_list, blacklist_to_date, with_delete);
+            throw std::runtime_error("blacklistDomains not implemented");
         }
 
         void Server_i::blacklistDomainsId(
@@ -151,22 +225,23 @@ namespace Registry
             ::CORBA::Boolean with_delete,
             ::CORBA::ULongLong log_req_id)
         {
-            bimpl_->blacklistDomainsId(domain_list, blacklist_to_date, with_delete, log_req_id);
+            try {
+                bimpl_->blacklistDomainsId(corba_unwrap_domain_id_list(domain_list),
+                                           corba_unwrap_nullable_date(blacklist_to_date),
+                                           with_delete,
+                                           log_req_id);
+            }
+            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+                throw corba_wrap_exception(e);
+            }
         }
 
         void Server_i::unblacklistAndCreateDomains(
             const ::Registry::Administrative::DomainList &domain_list,
             const char* owner)
         {
-            bimpl_->unblacklistAndCreateDomains(domain_list, owner);
+            throw std::runtime_error("unblacklistAndCreateDomains not implemented");
         }
-
-//        void Server_i::unblacklistAndCreateDomainsId(
-//            const ::Registry::Administrative::DomainIdList &domain_list,
-//            const char *owner)
-//        {
-//            bimpl_->unblacklistAndCreateDomainsId(domain_list, owner);
-//        }
 
     }//namespace Administrative
 }//namespace Registry

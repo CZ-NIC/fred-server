@@ -88,7 +88,7 @@ namespace Fred
         this->check_administrative_block_status_only(_ctx);
         this->check_server_blocked_status_absent(_ctx);
         StatusList status_list = status_list_;
-        status_list.push_back("serverBlocked");
+        status_list.insert("serverBlocked");
         CreateObjectStateRequest createObjectStateRequest(object_handle_,
             object_type_,
             status_list,

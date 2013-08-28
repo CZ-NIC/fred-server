@@ -24,13 +24,80 @@
 #ifndef ADMINISTRATIVEBLOCKING_H_
 #define ADMINISTRATIVEBLOCKING_H_
 
-#include <AdministrativeBlocking.hh>
+#include "db/nullable.h"
+#include "fredlib/domain/get_blocking_status_desc_list.h"
 #include <string>
+#include <list>
+#include <set>
 
 namespace Registry
 {
     namespace Administrative
     {
+
+        struct IdlOwnerChange {
+            unsigned long long domain_id;
+            std::string domain_handle;
+            unsigned long long old_owner_id;
+            std::string old_owner_handle;
+            unsigned long long new_owner_id;
+            std::string new_owner_handle;
+        };
+
+        typedef std::list< IdlOwnerChange > IdlOwnerChangeList;
+
+        typedef std::set< Fred::ObjectId > IdSet;
+        typedef IdSet IdlDomainIdList;
+
+        typedef std::set< std::string > StringSet;
+        typedef StringSet IdlStatusList;
+
+        enum IdlOwnerBlockMode
+        {
+            OWNER_BLOCK_MODE_KEEP_OWNER,
+            OWNER_BLOCK_MODE_BLOCK_OWNER,
+            OWNER_BLOCK_MODE_BLOCK_OWNER_COPY
+        };
+
+        struct EX_INTERNAL_SERVER_ERROR
+        {
+            std::string what;
+        };
+
+        struct EX_DOMAIN_ID_NOT_FOUND {
+            typedef IdSet Type;
+            Type what;
+        };
+
+        struct EX_UNKNOWN_STATUS {
+            typedef StringSet Type;
+            Type what;
+        };
+
+        struct EX_DOMAIN_ID_ALREADY_BLOCKED {
+            struct Item {
+                unsigned long long domain_id;
+                std::string domain_handle;
+                bool operator<(const struct Item &_b) const { return domain_id < _b.domain_id; }
+            };
+            typedef std::set< struct Item > Type;
+            Type what;
+        };
+
+        struct EX_DOMAIN_ID_NOT_BLOCKED {
+            struct Item {
+                unsigned long long domain_id;
+                std::string domain_handle;
+                bool operator<(const struct Item &_b) const { return domain_id < _b.domain_id; }
+            };
+            typedef std::set< struct Item > Type;
+            Type what;
+        };
+
+        struct EX_NEW_OWNER_DOES_NOT_EXISTS
+        {
+            std::string what;
+        };
 
         class BlockingImpl
         {
@@ -38,84 +105,51 @@ namespace Registry
             BlockingImpl(const std::string &_server_name):server_name_(_server_name) { }
             virtual ~BlockingImpl() { }
 
-            StatusDescList* getBlockingStatusDescList(
+            const std::string& get_server_name() const { return server_name_; }
+
+            Fred::GetBlockingStatusDescList::StatusDescList getBlockingStatusDescList(
                 const std::string &_lang);
 
-            DomainOwnerChangeList* blockDomains(
-                const ::Registry::Administrative::DomainList &_domain_list,
-                const ::Registry::Administrative::StatusList &_status_list,
-                ::Registry::Administrative::OwnerBlockMode _owner_block_mode,
-                const std::string &_reason);
-
-            DomainIdHandleOwnerChangeList* blockDomainsId(
-                const ::Registry::Administrative::DomainIdList &_domain_list,
-                const ::Registry::Administrative::StatusList &_status_list,
-                ::Registry::Administrative::OwnerBlockMode _owner_block_mode,
+            IdlOwnerChangeList blockDomainsId(
+                const IdlDomainIdList &_domain_list,
+                const Fred::StatusList &_status_list,
+                IdlOwnerBlockMode _owner_block_mode,
                 const std::string &_reason,
                 unsigned long long _log_req_id);
-
-            void restorePreAdministrativeBlockStates(
-                const ::Registry::Administrative::DomainList &_domain_list,
-                ::Registry::Administrative::NullableString *_new_owner,
-                const std::string &_reason);
 
             void restorePreAdministrativeBlockStatesId(
-                const ::Registry::Administrative::DomainIdList &_domain_list,
-                ::Registry::Administrative::NullableString *_new_owner,
+                const IdlDomainIdList &_domain_list,
+                const Nullable< std::string > &_new_owner,
                 const std::string &_reason,
                 unsigned long long _log_req_id);
-
-            void updateBlockDomains(
-                const ::Registry::Administrative::DomainList &_domain_list,
-                const ::Registry::Administrative::StatusList &_status_list,
-                const std::string &_reason);
 
             void updateBlockDomainsId(
-                const ::Registry::Administrative::DomainIdList &_domain_list,
-                const ::Registry::Administrative::StatusList &_status_list,
+                const IdlDomainIdList &_domain_list,
+                const Fred::StatusList &_status_list,
                 const std::string &_reason,
                 unsigned long long _log_req_id);
-
-            void unblockDomains(
-                const ::Registry::Administrative::DomainList &_domain_list,
-                ::Registry::Administrative::NullableString *_new_owner,
-                bool _remove_admin_c,
-                const std::string &_reason);
 
             void unblockDomainsId(
-                const ::Registry::Administrative::DomainIdList &_domain_list,
-                ::Registry::Administrative::NullableString *_new_owner,
+                const IdlDomainIdList &_domain_list,
+                const Nullable< std::string > &_new_owner,
                 bool _remove_admin_c,
                 const std::string &_reason,
                 unsigned long long _log_req_id);
 
-            void blacklistAndDeleteDomains(
-                const ::Registry::Administrative::DomainList &_domain_list,
-                ::Registry::Administrative::NullableDate *_blacklist_to_date);
-
             void blacklistAndDeleteDomainsId(
-                const ::Registry::Administrative::DomainIdList &_domain_list,
-                ::Registry::Administrative::NullableDate *_blacklist_to_date,
+                const IdlDomainIdList &_domain_list,
+                const Nullable<std::string> &_blacklist_to_date,
                 const std::string &_reason,
                 unsigned long long _log_req_id);
 
-            void blacklistDomains(
-                const ::Registry::Administrative::DomainList &_domain_list,
-                ::Registry::Administrative::NullableDate *_blacklist_to_date,
-                bool _with_delete);
-
             void blacklistDomainsId(
-                const ::Registry::Administrative::DomainIdList &_domain_list,
-                ::Registry::Administrative::NullableDate *_blacklist_to_date,
+                const IdlDomainIdList &_domain_list,
+                const Nullable<std::string> &_blacklist_to_date,
                 bool _with_delete,
                 unsigned long long _log_req_id);
 
-            void unblacklistAndCreateDomains(
-                const ::Registry::Administrative::DomainList &_domain_list,
-                const std::string &_owner);
-
-//            void unblacklistAndCreateDomainsId(
-//                const ::Registry::Administrative::DomainIdList &_domain_list,
+//            void unblacklistAndCreateDomains(
+//                const ::Registry::Administrative::DomainList &_domain_list,
 //                const std::string &_owner);
 
         private:

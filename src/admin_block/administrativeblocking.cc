@@ -48,96 +48,54 @@ namespace Registry
     namespace Administrative
     {
 
-        StatusDescList* BlockingImpl::getBlockingStatusDescList(const std::string &_lang)
+        Fred::GetBlockingStatusDescList::StatusDescList BlockingImpl::getBlockingStatusDescList(const std::string &_lang)
         {
             try {
-                std::auto_ptr< StatusDescList > result(new StatusDescList);
                 Fred::OperationContext ctx;
                 Fred::GetBlockingStatusDescList blocking_status_desc_list;
                 blocking_status_desc_list.set_lang(_lang);
                 Fred::GetBlockingStatusDescList::StatusDescList &desc_list = blocking_status_desc_list.exec(ctx);
-                result->length(desc_list.size());
-                int n = 0;
-                for (Fred::GetBlockingStatusDescList::StatusDescList::const_iterator pItem = desc_list.begin();
-                     pItem != desc_list.end(); ++n, ++pItem) {
-                    StatusDesc &item = (*result)[n];
-                    item.id = pItem->state_id;
-                    item.shortName = ::CORBA::string_dup(pItem->status.c_str());
-                    item.name = ::CORBA::string_dup(pItem->desc.c_str());
-                }
-                return result.release();
-            }
-            catch (const std::exception &e) {
-                throw INTERNAL_SERVER_ERROR(e.what());
-            }
-        }
-
-        DomainOwnerChangeList* BlockingImpl::blockDomains(
-            const ::Registry::Administrative::DomainList &_domain_list,
-            const ::Registry::Administrative::StatusList &_status_list,
-            ::Registry::Administrative::OwnerBlockMode _owner_block_mode,
-            const std::string &_reason)
-        {
-            try {
-                std::auto_ptr< DomainOwnerChangeList > result(new DomainOwnerChangeList);
-                Fred::OperationContext ctx;
-                Fred::StatusList status_list;
-                for (unsigned idx = 0; idx < _status_list.length(); ++idx) {
-                    status_list.push_back(_status_list[idx].in());
-                }
-                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
-                    const std::string domain = _domain_list[idx].in();
-                    Fred::CreateAdministrativeObjectBlockRequest create_object_state_request(domain, OBJECT_TYPE_DOMAIN, status_list);
-                    const Fred::ObjectId object_id = create_object_state_request.exec(ctx);
-                    Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                }
                 ctx.commit_transaction();
-                return result.release();
+                return desc_list;
             }
             catch (const std::exception &e) {
-                throw INTERNAL_SERVER_ERROR(e.what());
+                EX_INTERNAL_SERVER_ERROR ex;
+                ex.what = e.what();
+                throw ex;
             }
         }
 
-        DomainIdHandleOwnerChangeList* BlockingImpl::blockDomainsId(
-            const ::Registry::Administrative::DomainIdList &_domain_list,
-            const ::Registry::Administrative::StatusList &_status_list,
-            ::Registry::Administrative::OwnerBlockMode _owner_block_mode,
+        IdlOwnerChangeList BlockingImpl::blockDomainsId(
+            const IdlDomainIdList &_domain_list,
+            const Fred::StatusList &_status_list,
+            IdlOwnerBlockMode _owner_block_mode,
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
-            DOMAIN_ID_NOT_FOUND domain_id_not_found;
-            std::set< std::string > unknown_status;
-            DOMAIN_ID_ALREADY_BLOCKED domain_id_already_blocked;
+            EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
+            EX_UNKNOWN_STATUS unknown_status;
+            EX_DOMAIN_ID_ALREADY_BLOCKED domain_id_already_blocked;
             try {
-                std::auto_ptr< DomainIdHandleOwnerChangeList > result(new DomainIdHandleOwnerChangeList);
-                if (_owner_block_mode == BLOCK_OWNER_COPY) {
-                    result->length(_domain_list.length());
-                }
+                IdlOwnerChangeList result;
                 Fred::OperationContext ctx;
-                Fred::StatusList status_list;
-                for (unsigned idx = 0; idx < _status_list.length(); ++idx) {
-                    status_list.push_back(_status_list[idx].in());
-                }
                 Fred::StatusList contact_status_list;
-                if ((_owner_block_mode == BLOCK_OWNER) ||
-                    (_owner_block_mode == BLOCK_OWNER_COPY)) {
+                if ((_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER) ||
+                    (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY)) {
                     Fred::GetObjectStateIdMap::StateIdMap state_id;
                     enum { CONTACT_TYPE = 1 };
-                    Fred::GetObjectStateIdMap::get_result(ctx, status_list, CONTACT_TYPE, state_id);
+                    Fred::GetObjectStateIdMap::get_result(ctx, _status_list, CONTACT_TYPE, state_id);
                     for (Fred::GetObjectStateIdMap::StateIdMap::const_iterator pState = state_id.begin();
                          pState != state_id.end(); ++pState) {
-                        contact_status_list.push_back(pState->first);
+                        contact_status_list.insert(pState->first);
                     }
                 }
-                typedef std::set< std::string > StringSet;
                 StringSet contact_blocked;
-                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
+                for (IdlDomainIdList::const_iterator pObjectId = _domain_list.begin(); pObjectId != _domain_list.end(); ++pObjectId) {
                     try {
-                        const Fred::ObjectId object_id = _domain_list[idx];
-                        Fred::CreateAdministrativeObjectBlockRequestId create_object_block_request(object_id, status_list);
+                        const Fred::ObjectId object_id = *pObjectId;
+                        Fred::CreateAdministrativeObjectBlockRequestId create_object_block_request(object_id, _status_list);
                         create_object_block_request.set_reason(_reason);
-                        if (_owner_block_mode == BLOCK_OWNER) {
+                        if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER) {
                             Database::query_param_list param(object_id);
                             Database::Result registrant_result = ctx.get_conn().exec_params(
                                 "SELECT rc.name,rc.type "
@@ -145,8 +103,7 @@ namespace Registry
                                 "JOIN object_registry rc ON rc.id=d.registrant "
                                 "WHERE d.id=$1::bigint", param);
                             if (registrant_result.size() <= 0) {
-                                domain_id_not_found.what.length(domain_id_not_found.what.length() + 1);
-                                domain_id_not_found.what[domain_id_not_found.what.length() - 1] = object_id;
+                                domain_id_not_found.what.insert(object_id);
                                 continue;
                             }
                             const Database::Row &row = registrant_result[0];
@@ -161,14 +118,14 @@ namespace Registry
                             }
                             create_object_block_request.exec(ctx);
                         }
-                        else if (_owner_block_mode == BLOCK_OWNER_COPY) {
+                        else if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY) {
                             std::string owner_copy_name;
                             Fred::ObjectId contact_type;
                             std::string registrar;
                             const std::string domain = create_object_block_request.exec(ctx);
-                            ::Registry::Administrative::DomainIdHandleOwnerChange &result_item = (*result)[idx];
-                            result_item.domainId = object_id;
-                            result_item.domainHandle = ::CORBA::string_dup(domain.c_str());
+                            IdlOwnerChange result_item;
+                            result_item.domain_id = object_id;
+                            result_item.domain_handle = domain;
                             {
                                 Database::query_param_list param(object_id);
                                 Database::Result owner_result = ctx.get_conn().exec_params(
@@ -181,14 +138,16 @@ namespace Registry
                                     std::string errmsg("|| not found:object_id: ");
                                     errmsg += boost::lexical_cast< std::string >(object_id);
                                     errmsg += " |";
-                                    throw INTERNAL_SERVER_ERROR(errmsg.c_str());
+                                    EX_INTERNAL_SERVER_ERROR ex;
+                                    ex.what = errmsg;
+                                    throw ex;
                                 }
                                 const Database::Row &row = owner_result[0];
-                                result_item.oldOwnerId = static_cast< Fred::ObjectId >(row[0]);
+                                result_item.old_owner_id = static_cast< Fred::ObjectId >(row[0]);
                                 const std::string owner_name = static_cast< std::string >(row[1]);
                                 contact_type = static_cast< Fred::ObjectId >(row[2]);
                                 registrar = static_cast< std::string >(row[3]);
-                                result_item.oldOwnerHandle = ::CORBA::string_dup(owner_name.c_str());
+                                result_item.old_owner_handle = owner_name;
                                 static const std::string owner_copy_suffix = "-ABC_"; //AdministrativeBlockingCopy
                                 owner_copy_name = owner_name + owner_copy_suffix;
                                 Database::Result last_owner_result = ctx.get_conn().exec_params(
@@ -324,10 +283,12 @@ namespace Registry
                                     std::string errmsg("|| not found:object_id: ");
                                     errmsg += boost::lexical_cast< std::string >(object_id);
                                     errmsg += " |";
-                                    throw INTERNAL_SERVER_ERROR(errmsg.c_str());
+                                    EX_INTERNAL_SERVER_ERROR ex;
+                                    ex.what = errmsg;
+                                    throw ex;
                                 }
-                                result_item.newOwnerHandle = ::CORBA::string_dup(owner_copy_name.c_str());
-                                result_item.newOwnerId = static_cast< Fred::ObjectId >(new_owner_result[0][0]);
+                                result_item.new_owner_handle = owner_copy_name;
+                                result_item.new_owner_id = static_cast< Fred::ObjectId >(new_owner_result[0][0]);
                             }
                             if (!contact_status_list.empty()) {
                                 Fred::CreateAdministrativeObjectBlockRequest block_owner_request(owner_copy_name, contact_type, contact_status_list);
@@ -341,6 +302,7 @@ namespace Registry
                                 }
                                 update_domain.exec(ctx);
                             }
+                            result.push_back(result_item);
                         }
                         else { // KEEP_OWNER 
                             create_object_block_request.exec(ctx);
@@ -349,11 +311,10 @@ namespace Registry
                     }
                     catch (const Fred::CreateObjectStateRequestId::Exception &e) {
                         if (e.is_set_object_id_not_found()) {
-                            domain_id_not_found.what.length(domain_id_not_found.what.length() + 1);
-                            domain_id_not_found.what[domain_id_not_found.what.length() - 1] = e.get_object_id_not_found();
+                            domain_id_not_found.what.insert(e.get_object_id_not_found());
                         }
                         else if (e.is_set_state_not_found()) {
-                            unknown_status.insert(e.get_state_not_found());
+                            unknown_status.what.insert(e.get_state_not_found());
                         }
                         else {
                             throw std::runtime_error("Fred::CreateObjectStateRequestId::Exception");
@@ -361,14 +322,15 @@ namespace Registry
                     }
                     catch (const Fred::CreateAdministrativeObjectBlockRequestId::Exception &e) {
                         if (e.is_set_server_blocked_present()) {
-                            domain_id_already_blocked.what.length(domain_id_already_blocked.what.length() + 1);
-                            domain_id_already_blocked.what[domain_id_already_blocked.what.length() - 1].domainId = e.get_server_blocked_present();
+                            EX_DOMAIN_ID_ALREADY_BLOCKED::Item e_item;
+                            e_item.domain_id = e.get_server_blocked_present();
+                            domain_id_already_blocked.what.insert(e_item);
                         }
                         else if (e.is_set_vector_of_state_not_found()) {
                             std::vector< std::string > state_not_found = e.get_vector_of_state_not_found();
                             for (std::vector< std::string >::const_iterator pStat = state_not_found.begin();
                                  pStat != state_not_found.end(); ++pStat) {
-                                unknown_status.insert(*pStat);
+                                unknown_status.what.insert(*pStat);
                             }
                         }
                         else {
@@ -376,75 +338,50 @@ namespace Registry
                         }
                     }
                 }
-                if (0 < domain_id_not_found.what.length()) {
+                if (!domain_id_not_found.what.empty()) {
                     throw domain_id_not_found;
                 }
-                if (0 < domain_id_already_blocked.what.length()) {
+                if (!domain_id_already_blocked.what.empty()) {
                     throw domain_id_already_blocked;
                 }
-                if (!unknown_status.empty()) {
-                    UNKNOWN_STATUS ex;
-                    ex.what.length(unknown_status.size());
-                    int idx = 0;
-                    for (std::set< std::string >::const_iterator pStat = unknown_status.begin(); pStat != unknown_status.end();
-                         ++pStat, ++idx) {
-                        ex.what[idx] = ::CORBA::string_dup(pStat->c_str());
-                    }
-                    throw ex;
+                if (!unknown_status.what.empty()) {
+                    throw unknown_status;
                 }
                 ctx.commit_transaction();
-                return result.release();
+                return result;
             }
-            catch (const DOMAIN_ID_NOT_FOUND&) {
+            catch (const EX_DOMAIN_ID_NOT_FOUND&) {
                 throw;
             }
-            catch (const UNKNOWN_STATUS&) {
+            catch (const EX_UNKNOWN_STATUS&) {
                 throw;
             }
-            catch (const DOMAIN_ID_ALREADY_BLOCKED&) {
+            catch (const EX_DOMAIN_ID_ALREADY_BLOCKED&) {
                 throw;
             }
             catch (const std::exception &e) {
-                throw INTERNAL_SERVER_ERROR(e.what());
-            }
-        }
-
-        void BlockingImpl::restorePreAdministrativeBlockStates(
-            const ::Registry::Administrative::DomainList &_domain_list,
-            ::Registry::Administrative::NullableString *_new_owner,
-            const std::string &_reason)
-        {
-            try {
-                Fred::OperationContext ctx;
-                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
-                    const std::string domain = _domain_list[idx].in();
-                    Fred::CreateAdministrativeObjectStateRestoreRequest create_object_state_restore_request(domain, OBJECT_TYPE_DOMAIN);
-                    const Fred::ObjectId object_id = create_object_state_restore_request.exec(ctx);
-                    Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                }
-                ctx.commit_transaction();
-            }
-            catch (const std::exception &e) {
-                throw INTERNAL_SERVER_ERROR(e.what());
+                EX_INTERNAL_SERVER_ERROR ex;
+                ex.what = e.what();
+                throw ex;
             }
         }
 
         void BlockingImpl::restorePreAdministrativeBlockStatesId(
-            const ::Registry::Administrative::DomainIdList &_domain_list,
-            ::Registry::Administrative::NullableString *_new_owner,
+            const IdlDomainIdList &_domain_list,
+            const Nullable< std::string > &_new_owner,
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
-            DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
+            EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
                 Fred::OperationContext ctx;
-                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
-                    const Fred::ObjectId object_id = _domain_list[idx];
+                for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
+                    const Fred::ObjectId object_id = *pDomainId;
                     try {
                         Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
                         create_object_state_restore_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                        if ((_new_owner != NULL) && (_new_owner->_value() != NULL) && (_new_owner->_value()[0] != '\0')) {
+                        if (!_new_owner.isnull() && !static_cast< std::string >(_new_owner).empty()) {
                             Database::query_param_list param(object_id);
                             Database::Result registrar_fqdn_result = ctx.get_conn().exec_params(
                                 "SELECT reg.handle,oreg.name "
@@ -455,13 +392,15 @@ namespace Registry
                                 std::string errmsg("|| not found:object_id: ");
                                 errmsg += boost::lexical_cast< std::string >(object_id);
                                 errmsg += " |";
-                                throw INTERNAL_SERVER_ERROR(errmsg.c_str());
+                                EX_INTERNAL_SERVER_ERROR ex;
+                                ex.what = errmsg;
+                                throw ex;
                             }
                             const Database::Row &row = registrar_fqdn_result[0];
                             const std::string registrar = static_cast< std::string >(row[0]);
                             const std::string domain = static_cast< std::string >(row[1]);
                             Fred::UpdateDomain update_domain(domain, registrar);
-                            update_domain.set_registrant(_new_owner->_value());
+                            update_domain.set_registrant(_new_owner);
                             if (0 < _log_req_id) {
                                 update_domain.set_logd_request_id(_log_req_id);
                             }
@@ -470,8 +409,9 @@ namespace Registry
                     }
                     catch (const Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception &e) {
                         if (e.is_set_server_blocked_absent()) {
-                            domain_id_not_blocked.what.length(domain_id_not_blocked.what.length() + 1);
-                            domain_id_not_blocked.what[domain_id_not_blocked.what.length() - 1].domainId = e.get_server_blocked_absent();
+                            EX_DOMAIN_ID_NOT_BLOCKED::Item e_item;
+                            e_item.domain_id = e.get_server_blocked_absent();
+                            domain_id_not_blocked.what.insert(e_item);
                         }
                         else if (e.is_set_object_id_not_found()) {
                             std::ostringstream o;
@@ -481,86 +421,60 @@ namespace Registry
                     }
                     catch (const Fred::UpdateDomain::Exception &e) {
                         if (e.is_set_unknown_registrant_handle()) {
-                            throw NEW_OWNER_DOES_NOT_EXISTS(::CORBA::string_dup(e.get_unknown_registrant_handle().c_str()));
+                            EX_NEW_OWNER_DOES_NOT_EXISTS ex;
+                            ex.what = e.get_unknown_registrant_handle();
+                            throw ex;
                         }
                         else {
                             throw std::runtime_error("Fred::UpdateDomain::Exception");
                         }
                     }
                 }
-                if (0 < domain_id_not_blocked.what.length()) {
+                if (!domain_id_not_blocked.what.empty()) {
                     throw domain_id_not_blocked;
                 }
                 ctx.commit_transaction();
             }
-            catch (const DOMAIN_ID_NOT_BLOCKED&) {
+            catch (const EX_DOMAIN_ID_NOT_BLOCKED&) {
                 throw;
             }
-            catch (const NEW_OWNER_DOES_NOT_EXISTS&) {
+            catch (const EX_NEW_OWNER_DOES_NOT_EXISTS&) {
                 throw;
             }
             catch (const std::exception &e) {
-                throw INTERNAL_SERVER_ERROR(e.what());
-            }
-        }
-
-        void BlockingImpl::updateBlockDomains(
-            const ::Registry::Administrative::DomainList &_domain_list,
-            const ::Registry::Administrative::StatusList &_status_list,
-            const std::string &_reason)
-        {
-            try {
-                Fred::OperationContext ctx;
-                Fred::StatusList status_list;
-                for (unsigned idx = 0; idx < _status_list.length(); ++idx) {
-                    status_list.push_back(_status_list[idx].in());
-                }
-//                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
-//                    const std::string domain = _domain_list[idx].in();
-//                    enum { OBJECT_TYPE_DOMAIN = 3 };
-//                    Fred::CreateAdministrativeObjectBlockRequest create_object_state_request(domain, OBJECT_TYPE_DOMAIN, status_list);
-//                    const Fred::ObjectId object_id = create_object_state_request.exec(ctx);
-//                    Fred::PerformObjectStateRequest(object_id).exec(ctx);
-//                }
-                ctx.commit_transaction();
-            }
-            catch (const std::exception &e) {
-                throw INTERNAL_SERVER_ERROR(e.what());
+                EX_INTERNAL_SERVER_ERROR ex;
+                ex.what = e.what();
+                throw ex;
             }
         }
 
         void BlockingImpl::updateBlockDomainsId(
-            const ::Registry::Administrative::DomainIdList &_domain_list,
-            const ::Registry::Administrative::StatusList &_status_list,
+            const IdlDomainIdList &_domain_list,
+            const Fred::StatusList &_status_list,
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
-            DOMAIN_ID_NOT_FOUND domain_id_not_found;
-            std::set< std::string > unknown_status;
+            EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
+            EX_UNKNOWN_STATUS unknown_status;
             try {
                 Fred::OperationContext ctx;
-                Fred::StatusList status_list;
-                for (unsigned idx = 0; idx < _status_list.length(); ++idx) {
-                    status_list.push_back(_status_list[idx].in());
-                }
-                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
-                    const Fred::ObjectId object_id = _domain_list[idx];
+                for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
+                    const Fred::ObjectId object_id = *pDomainId;
                     try {
                         Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
                         create_object_state_restore_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                        Fred::CreateAdministrativeObjectBlockRequestId create_object_state_request(object_id, status_list);
+                        Fred::CreateAdministrativeObjectBlockRequestId create_object_state_request(object_id, _status_list);
                         create_object_state_request.set_reason(_reason);
                         create_object_state_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
                     }
                     catch (const Fred::CreateObjectStateRequestId::Exception &e) {
                         if (e.is_set_object_id_not_found()) {
-                            domain_id_not_found.what.length(domain_id_not_found.what.length() + 1);
-                            domain_id_not_found.what[domain_id_not_found.what.length() - 1] = e.get_object_id_not_found();
+                            domain_id_not_found.what.insert(e.get_object_id_not_found());
                         }
                         else if (e.is_set_state_not_found()) {
-                            unknown_status.insert(e.get_state_not_found());
+                            unknown_status.what.insert(e.get_state_not_found());
                         }
                         else {
                             throw std::runtime_error("Fred::CreateObjectStateRequestId::Exception");
@@ -571,7 +485,7 @@ namespace Registry
                             std::vector< std::string > state_not_found = e.get_vector_of_state_not_found();
                             for (std::vector< std::string >::const_iterator pStat = state_not_found.begin();
                                  pStat != state_not_found.end(); ++pStat) {
-                                unknown_status.insert(*pStat);
+                                unknown_status.what.insert(*pStat);
                             }
                         }
                         else {
@@ -579,43 +493,30 @@ namespace Registry
                         }
                     }
                 }
-                if (0 < domain_id_not_found.what.length()) {
+                if (!domain_id_not_found.what.empty()) {
                     throw domain_id_not_found;
                 }
-                if (!unknown_status.empty()) {
-                    UNKNOWN_STATUS ex;
-                    ex.what.length(unknown_status.size());
-                    int idx = 0;
-                    for (std::set< std::string >::const_iterator pStat = unknown_status.begin(); pStat != unknown_status.end();
-                         ++pStat, ++idx) {
-                        ex.what[idx] = ::CORBA::string_dup(pStat->c_str());
-                    }
-                    throw ex;
+                if (!unknown_status.what.empty()) {
+                    throw unknown_status;
                 }
                 ctx.commit_transaction();
             }
-            catch (const DOMAIN_ID_NOT_FOUND&) {
+            catch (const EX_DOMAIN_ID_NOT_FOUND&) {
                 throw;
             }
-            catch (const UNKNOWN_STATUS&) {
+            catch (const EX_UNKNOWN_STATUS&) {
                 throw;
             }
             catch (const std::exception &e) {
-                throw INTERNAL_SERVER_ERROR(e.what());
+                EX_INTERNAL_SERVER_ERROR ex;
+                ex.what = e.what();
+                throw ex;
             }
         }
 
-        void BlockingImpl::unblockDomains(
-            const ::Registry::Administrative::DomainList &_domain_list,
-            ::Registry::Administrative::NullableString *_new_owner,
-            bool _remove_admin_c,
-            const std::string &_reason)
-        {
-        }
-
         void BlockingImpl::unblockDomainsId(
-            const ::Registry::Administrative::DomainIdList &_domain_list,
-            ::Registry::Administrative::NullableString *_new_owner,
+            const IdlDomainIdList &_domain_list,
+            const Nullable< std::string > &_new_owner,
             bool _remove_admin_c,
             const std::string &_reason,
             unsigned long long _log_req_id)
@@ -624,11 +525,11 @@ namespace Registry
                 this->restorePreAdministrativeBlockStatesId(_domain_list, _new_owner, _reason, _log_req_id);
                 return;
             }
-            DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
+            EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
                 Fred::OperationContext ctx;
-                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
-                    const Fred::ObjectId object_id = _domain_list[idx];
+                for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
+                    const Fred::ObjectId object_id = *pDomainId;
                     try {
                         Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
                         create_object_state_restore_request.exec(ctx);
@@ -643,14 +544,16 @@ namespace Registry
                             std::string errmsg("|| not found:object_id: ");
                             errmsg += boost::lexical_cast< std::string >(object_id);
                             errmsg += " |";
-                            throw INTERNAL_SERVER_ERROR(errmsg.c_str());
+                            EX_INTERNAL_SERVER_ERROR ex;
+                            ex.what = errmsg;
+                            throw ex;
                         }
                         const Database::Row &row = registrar_fqdn_result[0];
                         const std::string registrar = static_cast< std::string >(row[0]);
                         const std::string domain = static_cast< std::string >(row[1]);
                         Fred::UpdateDomain update_domain(domain, registrar);
-                        if ((_new_owner != NULL) && (_new_owner->_value() != NULL) && (_new_owner->_value()[0] != '\0')) {
-                            update_domain.set_registrant(_new_owner->_value());
+                        if (!_new_owner.isnull() && !static_cast< std::string >(_new_owner).empty()) {
+                            update_domain.set_registrant(_new_owner);
                         }
                         if (0 < _log_req_id) {
                             update_domain.set_logd_request_id(_log_req_id);
@@ -669,8 +572,9 @@ namespace Registry
                     }
                     catch (const Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception &e) {
                         if (e.is_set_server_blocked_absent()) {
-                            domain_id_not_blocked.what.length(domain_id_not_blocked.what.length() + 1);
-                            domain_id_not_blocked.what[domain_id_not_blocked.what.length() - 1].domainId = e.get_server_blocked_absent();
+                            EX_DOMAIN_ID_NOT_BLOCKED::Item e_item;
+                            e_item.domain_id = e.get_server_blocked_absent();
+                            domain_id_not_blocked.what.insert(e_item);
                         }
                         else {
                             throw std::runtime_error("Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception");
@@ -678,90 +582,65 @@ namespace Registry
                     }
                     catch (const Fred::UpdateDomain::Exception &e) {
                         if (e.is_set_unknown_registrant_handle()) {
-                            throw NEW_OWNER_DOES_NOT_EXISTS(::CORBA::string_dup(e.get_unknown_registrant_handle().c_str()));
+                            EX_NEW_OWNER_DOES_NOT_EXISTS ex;
+                            ex.what = e.get_unknown_registrant_handle();
+                            throw ex;
                         }
                         else {
                             throw std::runtime_error("Fred::UpdateDomain::Exception");
                         }
                     }
                 }
-                if (0 < domain_id_not_blocked.what.length()) {
+                if (!domain_id_not_blocked.what.empty()) {
                     throw domain_id_not_blocked;
                 }
                 ctx.commit_transaction();
             }
-            catch (const DOMAIN_ID_NOT_BLOCKED&) {
+            catch (const EX_DOMAIN_ID_NOT_BLOCKED&) {
                 throw;
             }
-            catch (const NEW_OWNER_DOES_NOT_EXISTS&) {
+            catch (const EX_NEW_OWNER_DOES_NOT_EXISTS&) {
                 throw;
             }
             catch (const std::exception &e) {
-                throw INTERNAL_SERVER_ERROR(e.what());
+                EX_INTERNAL_SERVER_ERROR ex;
+                ex.what = e.what();
+                throw ex;
             }
         }
 
-        void BlockingImpl::blacklistAndDeleteDomains(
-            const ::Registry::Administrative::DomainList &_domain_list,
-            ::Registry::Administrative::NullableDate *_blacklist_to_date)
-        {
-        }
-
         void BlockingImpl::blacklistAndDeleteDomainsId(
-            const ::Registry::Administrative::DomainIdList &_domain_list,
-            ::Registry::Administrative::NullableDate *_blacklist_to_date,
+            const IdlDomainIdList &_domain_list,
+            const Nullable< std::string > &_blacklist_to_date,
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
         }
 
-        void BlockingImpl::blacklistDomains(
-            const ::Registry::Administrative::DomainList &_domain_list,
-            ::Registry::Administrative::NullableDate *_blacklist_to_date,
-            bool _with_delete)
-        {
-            try {
-                Fred::OperationContext ctx;
-                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
-                    const std::string domain = _domain_list[idx].in();
-                    Fred::CreateDomainNameBlacklist(domain, "").exec(ctx);
-                }
-                ctx.commit_transaction();
-            }
-            catch (const std::exception &e) {
-                throw INTERNAL_SERVER_ERROR(e.what());
-            }
-        }
-
         void BlockingImpl::blacklistDomainsId(
-            const ::Registry::Administrative::DomainIdList &_domain_list,
-            ::Registry::Administrative::NullableDate *_blacklist_to_date,
+            const IdlDomainIdList &_domain_list,
+            const Nullable<std::string> &_blacklist_to_date,
             bool _with_delete,
             unsigned long long _log_req_id)
         {
             try {
                 Fred::OperationContext ctx;
-                for (unsigned idx = 0; idx < _domain_list.length(); ++idx) {
-                    const Fred::ObjectId object_id = _domain_list[idx];
+                for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
+                    const Fred::ObjectId object_id = *pDomainId;
                     Fred::CreateDomainNameBlacklistId create_domain_name_blacklist(object_id, "blacklistDomainsId() call");
                     create_domain_name_blacklist.exec(ctx);
                 }
                 ctx.commit_transaction();
             }
             catch (const std::exception &e) {
-                throw INTERNAL_SERVER_ERROR(e.what());
+                EX_INTERNAL_SERVER_ERROR ex;
+                ex.what = e.what();
+                throw ex;
             }
         }
 
-        void BlockingImpl::unblacklistAndCreateDomains(
-            const ::Registry::Administrative::DomainList &_domain_list,
-            const std::string &_owner)
-        {
-        }
-
-
-//        void BlockingImpl::unblacklistAndCreateDomainsId(
-//            const ::Registry::Administrative::DomainIdList &_domain_list,
+//        void BlockingImpl::unblacklistAndCreateDomains(
+//            const ::Registry::Administrative::DomainList &_domain_list,
 //            const std::string &_owner)
 //        {
 //        }

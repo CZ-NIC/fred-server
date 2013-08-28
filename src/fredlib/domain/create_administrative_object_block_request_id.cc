@@ -46,12 +46,16 @@ namespace Fred
         const StatusList &_status_list,
         const Optional< Time > &_valid_from,
         const Optional< Time > &_valid_to,
-        const std::string &_reason)
+        const std::string &_reason,
+        const Optional<unsigned long long> _logd_request_id)
     :   object_id_(_object_id),
         status_list_(_status_list),
         valid_from_(_valid_from),
         valid_to_(_valid_to),
-        reason_(_reason)
+        reason_(_reason),
+        logd_request_id_(_logd_request_id.isset()
+        ? Nullable<unsigned long long>(_logd_request_id.get_value())
+        : Nullable<unsigned long long>())//is NULL if not set
     {}
 
     CreateAdministrativeObjectBlockRequestId& CreateAdministrativeObjectBlockRequestId::set_valid_from(const Time &_valid_from)
@@ -72,12 +76,18 @@ namespace Fred
         return *this;
     }
 
+    CreateAdministrativeObjectBlockRequestId& CreateAdministrativeObjectBlockRequestId::set_logd_request_id(unsigned long long _logd_request_id)
+    {
+        logd_request_id_ = _logd_request_id;
+        return *this;
+    }
+    
     std::string CreateAdministrativeObjectBlockRequestId::exec(OperationContext &_ctx)
     {
         this->check_administrative_block_status_only(_ctx);
         this->check_server_blocked_status_absent(_ctx);
         StatusList status_list = status_list_;
-        status_list.push_back("serverBlocked");
+        status_list.insert("serverBlocked");
         CreateObjectStateRequestId createObjectStateRequestId(object_id_,
             status_list,
             valid_from_,

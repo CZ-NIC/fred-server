@@ -32,16 +32,16 @@
 
 #include <boost/date_time/local_time/local_time.hpp>
 #include <string>
-#include <vector>
+#include <set>
 
 namespace Fred
 {
 
     typedef TID ObjectId;
     typedef TID ObjectStateId;
-    typedef std::vector< ObjectStateId > MultipleObjectStateId;
+    typedef std::set< ObjectStateId > MultipleObjectStateId;
     typedef short int ObjectType;
-    typedef std::vector< std::string > StatusList;
+    typedef std::set< std::string > StatusList;
 
 /*
 pozadavek na nastaveni stavu objektu (insert do object_state_request)

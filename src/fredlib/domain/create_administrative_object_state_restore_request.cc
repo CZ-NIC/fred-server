@@ -101,9 +101,8 @@ namespace Fred
                 "WHERE $1::integer=ANY(types)",
                 Database::query_param_list(object_type_));
             MultipleObjectStateId status_all;
-            status_all.reserve(status_result.size());
             for (Database::Result::Iterator pStatusRow = status_result.begin(); pStatusRow != status_result.end(); ++pStatusRow) {
-                status_all.push_back((*pStatusRow)[0]);
+                status_all.insert((*pStatusRow)[0]);
             }
             LockMultipleObjectStateRequestLock(status_all, object_id).exec(_ctx);
 
@@ -118,7 +117,7 @@ namespace Fred
                 Database::query_param_list(start_object_state_id));
             for (Database::Result::Iterator pName = previous_status_list_result.begin();
                  pName != previous_status_list_result.end(); ++pName) {
-                previous_status_list.push_back((*pName)[0]);
+                previous_status_list.insert((*pName)[0]);
             }
         }
         ClearObjectStateRequest(object_handle_, object_type_).exec(_ctx);
