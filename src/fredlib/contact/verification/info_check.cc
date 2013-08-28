@@ -177,7 +177,7 @@ namespace Fred
                 "FROM contact_check AS check_ "
                 "JOIN enum_contact_check_status AS status "
                 "    ON check_.enum_contact_check_status_id = status.id "
-                "WHERE check_.id=$1::bigint "
+                "WHERE check_.id=$2::bigint "
                 ""
                 "UNION ALL " /* only reason for "ALL" is to disable search for duplicates in postgres*/
                 ""
