@@ -142,7 +142,7 @@ namespace Fred
                 keyset_id = keyset_id_res[0][0];
             }
 
-            Fred::UpdateObject(handle_,"keyset", registrar_, authinfo_).exec(ctx);
+            history_id = Fred::UpdateObject(handle_,"keyset", registrar_, authinfo_, logd_request_id_).exec(ctx);
 
             Exception update_keyset_exception;
 
@@ -320,25 +320,6 @@ namespace Fred
 
             //save history
             {
-                history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
-
-                //object_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
-                    " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                    " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(keyset_id));
-
-                //object_registry historyid
-                Database::Result update_historyid_res = ctx.get_conn().exec_params(
-                    "UPDATE object_registry SET historyid = $1::bigint "
-                        " WHERE id = $2::integer  RETURNING id"
-                        , Database::query_param_list(history_id)(keyset_id));
-                if (update_historyid_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(Fred::InternalError("update historyid failed"));
-                }
-
                 //keyset_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO keyset_history(historyid,id) "

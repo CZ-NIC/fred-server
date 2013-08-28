@@ -81,6 +81,7 @@ namespace Fred
         const std::string obj_type_;//object type name
         const std::string registrar_;//set registrar
         Optional<std::string> authinfo_;//set authinfo
+        Nullable<unsigned long long> logd_request_id_;//logger request_id
     public:
         DECLARE_EXCEPTION_DATA(unknown_object_handle, std::string);
         struct Exception
@@ -96,9 +97,11 @@ namespace Fred
         UpdateObject(const std::string& handle
             , const std::string& obj_type
             , const std::string& registrar
-            , const Optional<std::string>& authinfo);
+            , const Optional<std::string>& authinfo
+            , const Nullable<unsigned long long>& logd_request_id);
         UpdateObject& set_authinfo(const std::string& authinfo);
-        void exec(OperationContext& ctx);
+        UpdateObject& set_logd_request_id(const Nullable<unsigned long long>& logd_request_id);
+        unsigned long long exec(OperationContext& ctx);//return history_id
 
         friend std::ostream& operator<<(std::ostream& os, const UpdateObject& i);
         std::string to_string();
@@ -107,8 +110,9 @@ namespace Fred
     class InsertHistory
     {
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
+        unsigned long long object_id_;
     public:
-        InsertHistory(const Nullable<unsigned long long>& logd_request_id);
+        InsertHistory(const Nullable<unsigned long long>& logd_request_id, unsigned long long object_id);
         unsigned long long exec(OperationContext& ctx);
 
         friend std::ostream& operator<<(std::ostream& os, const InsertHistory& i);

@@ -136,14 +136,7 @@ namespace Fred
                     " , $2::integer, $3::text)"
                     , Database::query_param_list(output.object_id)(registrar_id)(authinfo_));
 
-            output.history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
-
-            //object_history
-            ctx.get_conn().exec_params(
-                "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
-                " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                " WHERE id = $2::integer"
-                , Database::query_param_list(output.history_id)(output.object_id));
+            output.history_id = Fred::InsertHistory(logd_request_id_, output.object_id).exec(ctx);
 
             //object_registry historyid
             Database::Result update_historyid_res = ctx.get_conn().exec_params(
@@ -154,6 +147,7 @@ namespace Fred
             {
                 BOOST_THROW_EXCEPTION(Fred::InternalError("historyid update failed"));
             }
+
 
         }//try
         catch(ExceptionStack& ex)
@@ -195,11 +189,13 @@ namespace Fred
     UpdateObject::UpdateObject(const std::string& handle
         , const std::string& obj_type
         , const std::string& registrar
-        , const Optional<std::string>& authinfo)
+        , const Optional<std::string>& authinfo
+        , const Nullable<unsigned long long>& logd_request_id)
     : handle_(handle)
     , obj_type_(obj_type)
     , registrar_(registrar)
     , authinfo_(authinfo)
+    , logd_request_id_(logd_request_id)
     {}
 
     UpdateObject& UpdateObject::set_authinfo(const std::string& authinfo)
@@ -208,8 +204,16 @@ namespace Fred
         return *this;
     }
 
-    void UpdateObject::exec(OperationContext& ctx)
+    UpdateObject& UpdateObject::set_logd_request_id(const Nullable<unsigned long long>& logd_request_id)
     {
+        logd_request_id_ = logd_request_id;
+        return *this;
+    }
+
+
+    unsigned long long UpdateObject::exec(OperationContext& ctx)
+    {
+        unsigned long long history_id = 0;
         try
         {
             //check registrar
@@ -265,23 +269,36 @@ namespace Fred
                 object_id = static_cast<unsigned long long> (object_id_res[0][0]);
             }
 
-        Database::QueryParams params;//query params
-        std::stringstream sql;
-        params.push_back(registrar_id);
-        sql <<"UPDATE object SET update = now() "
-            ", upid = $"
-            << params.size() << "::integer " ; //registrar from epp-session container by client_id from epp-params
+            Database::QueryParams params;//query params
+            std::stringstream sql;
+            params.push_back(registrar_id);
+            sql <<"UPDATE object SET update = now() "
+                ", upid = $"
+                << params.size() << "::integer " ; //registrar from epp-session container by client_id from epp-params
 
-        if(authinfo_.isset())
-        {
-            params.push_back(authinfo_);
-            sql << " , authinfopw = $" << params.size() << "::text ";//set authinfo
-        }
+            if(authinfo_.isset())
+            {
+                params.push_back(authinfo_);
+                sql << " , authinfopw = $" << params.size() << "::text ";//set authinfo
+            }
 
-        params.push_back(object_id);
-        sql <<" WHERE id = $" << params.size() << "::integer ";
+            params.push_back(object_id);
+            sql <<" WHERE id = $" << params.size() << "::integer ";
 
-        ctx.get_conn().exec_params(sql.str(), params);
+            ctx.get_conn().exec_params(sql.str(), params);
+
+            history_id = Fred::InsertHistory(logd_request_id_, object_id).exec(ctx);
+
+            //object_registry historyid
+            Database::Result update_historyid_res = ctx.get_conn().exec_params(
+                "UPDATE object_registry SET historyid = $1::bigint "
+                    " WHERE id = $2::integer RETURNING id"
+                    , Database::query_param_list(history_id)(object_id));
+            if (update_historyid_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(Fred::InternalError("historyid update failed"));
+            }
+
 
         }//try
         catch(ExceptionStack& ex)
@@ -289,6 +306,8 @@ namespace Fred
             ex.add_exception_stack_info(to_string());
             throw;
         }
+
+        return history_id;
     }
 
     std::ostream& operator<<(std::ostream& os, const UpdateObject& i)
@@ -297,6 +316,7 @@ namespace Fred
             << " handle: " << i.handle_
             << " registrar: " << i.registrar_
             << " authinfo: " << i.authinfo_.print_quoted()
+            << " logd_request_id: " << i.logd_request_id_.print_quoted()
             ;
         return os;
     }
@@ -308,9 +328,10 @@ namespace Fred
         return ss.str();
     }
 
-
-    InsertHistory::InsertHistory(const Nullable<unsigned long long>& logd_request_id)
-        : logd_request_id_(logd_request_id)
+    InsertHistory::InsertHistory(const Nullable<unsigned long long>& logd_request_id
+        , unsigned long long object_id)
+    : logd_request_id_(logd_request_id)
+    , object_id_(object_id)
     {}
 
     unsigned long long InsertHistory::exec(OperationContext& ctx)
@@ -318,18 +339,23 @@ namespace Fred
         unsigned long long history_id = 0;
         try
         {
+            Database::Result history_id_res = ctx.get_conn().exec_params(
+                "INSERT INTO history(request_id) VALUES ($1::bigint) RETURNING id;"
+                , Database::query_param_list(logd_request_id_));
 
-        Database::Result history_id_res = ctx.get_conn().exec_params(
-            "INSERT INTO history(request_id) VALUES ($1::bigint) RETURNING id;"
-            , Database::query_param_list(logd_request_id_));
+            if (history_id_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("unable to save history"));
+            }
 
-        if (history_id_res.size() != 1)
-        {
-            BOOST_THROW_EXCEPTION(InternalError("unable to save history"));
-        }
+            history_id = static_cast<unsigned long long>(history_id_res[0][0]);
 
-        history_id = static_cast<unsigned long long>(history_id_res[0][0]);
-
+            //object_history
+            ctx.get_conn().exec_params(
+                "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
+                " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
+                " WHERE id = $2::integer"
+                , Database::query_param_list(history_id)(object_id_));
         }//try
         catch(ExceptionStack& ex)
         {
@@ -343,6 +369,7 @@ namespace Fred
     std::ostream& operator<<(std::ostream& os, const InsertHistory& i)
     {
         os << "#InsertHistory logd_request_id: " << i.logd_request_id_.print_quoted()
+            << " object_id: " << i.object_id_
             ;
         return os;
     }
