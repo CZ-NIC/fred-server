@@ -63,7 +63,7 @@ namespace Fred
 
     void CreateContactTest::exec(OperationContext& _ctx) {
         try {
-            Database::Result insert_contact_check_res = _ctx.get_conn().exec_params(
+            _ctx.get_conn().exec_params(
                 "INSERT INTO contact_test_result ( "
                 "   contact_check_id,"
                 "   enum_contact_test_id,"
@@ -84,9 +84,6 @@ namespace Fred
                     (logd_request_id_)
             );
 
-            if (insert_contact_check_res.size() != 1) {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_test creation failed"));
-            }
         } catch(ExceptionStack& ex) {
             ex.add_exception_stack_info( to_string() );
             throw;

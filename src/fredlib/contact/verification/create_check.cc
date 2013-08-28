@@ -121,7 +121,7 @@ namespace Fred
         std::string handle = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
 
         try {
-            Database::Result insert_contact_check_res = _ctx.get_conn().exec_params(
+            _ctx.get_conn().exec_params(
                 "INSERT INTO contact_check ( "
                 "   handle,"
                 "   contact_history_id,"
@@ -148,10 +148,6 @@ namespace Fred
                     (Fred::ContactCheckStatus::ENQUEUED)
                     (logd_request_id_)
             );
-
-            if (insert_contact_check_res.size() != 1) {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check creation failed"));
-            }
         } catch(ExceptionStack& ex) {
             ex.add_exception_stack_info( to_string() );
             throw;
