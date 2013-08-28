@@ -79,7 +79,7 @@ namespace Fred
         std::string                        handle;
         std::string                        testsuite_name;
         long                               contact_history_id;
-        boost::posix_time::ptime           utc_create_time;
+        boost::posix_time::ptime           local_create_time;
         std::vector<ContactCheckState>     check_state_history; /* current state is also included */
         std::vector<ContactTestResultData> tests;
     };

@@ -59,7 +59,7 @@ namespace Fred
             }
 
             result.handle = handle_;
-            result.utc_create_time = boost::posix_time::time_from_string(static_cast<std::string>(contact_check_data[0]["create_time_"]));
+            result.local_create_time = boost::posix_time::time_from_string(static_cast<std::string>(contact_check_data[0]["create_time_"]));
             result.contact_history_id = static_cast<long>(contact_check_data[0]["contact_history_id_"]);
             result.testsuite_name = static_cast<std::string>(contact_check_data[0]["testsuite_name_"]);
             long long temp_check_id = contact_check_data[0]["id_"]; /* only used within this function, output contains handle instead */
