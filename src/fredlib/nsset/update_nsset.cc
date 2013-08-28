@@ -43,6 +43,7 @@ namespace Fred
 
     UpdateNsset::UpdateNsset(const std::string& handle
             , const std::string& registrar
+            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
             , const std::vector<DnsHost>& add_dns
             , const std::vector<std::string>& rem_dns
@@ -53,6 +54,7 @@ namespace Fred
             )
     : handle_(handle)
     , registrar_(registrar)
+    , sponsoring_registrar_(sponsoring_registrar)
     , authinfo_(authinfo)
     , add_dns_(add_dns)
     , rem_dns_(rem_dns)
@@ -63,6 +65,12 @@ namespace Fred
         ? Nullable<unsigned long long>(logd_request_id.get_value())
         : Nullable<unsigned long long>())//is NULL if not set
     {}
+
+    UpdateNsset& UpdateNsset::set_sponsoring_registrar(const std::string& sponsoring_registrar)
+    {
+        sponsoring_registrar_ = sponsoring_registrar;
+        return *this;
+    }
 
     UpdateNsset& UpdateNsset::set_authinfo(const std::string& authinfo)
     {
@@ -150,8 +158,25 @@ namespace Fred
             nsset_id = static_cast<unsigned long long>(nsset_id_res[0][0]);
         }
 
+        //check sponsoring registrar
+        if(sponsoring_registrar_.isset())
+        {
+            Database::Result registrar_res = ctx.get_conn().exec_params(
+                "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                , Database::query_param_list(sponsoring_registrar_.get_value()));
+            if(registrar_res.size() == 0)
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_sponsoring_registrar_handle(sponsoring_registrar_));
+            }
+            if (registrar_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
+            }
+        }
+
         //update object
-        history_id = Fred::UpdateObject(handle_,"nsset", registrar_, authinfo_, logd_request_id_).exec(ctx);
+        history_id = Fred::UpdateObject(handle_,"nsset", registrar_
+                , sponsoring_registrar_, authinfo_, logd_request_id_).exec(ctx);
 
         Exception update_nsset_exception;
 
@@ -419,6 +444,7 @@ namespace Fred
     {
         os << "#UpdateNsset handle: " << i.handle_
             << " registrar: " << i.registrar_
+            << " sponsoring_registrar: " << i.sponsoring_registrar_.print_quoted()
             << " authinfo: " << i.authinfo_.print_quoted();
 
         if(!i.add_dns_.empty()) os << " add_dns_host: ";

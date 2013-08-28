@@ -41,7 +41,8 @@ namespace Fred
     class UpdateKeyset
     {
         const std::string handle_;//nsset identifier
-        const std::string registrar_;//registrar identifier
+        const std::string registrar_;//registrar performing the update
+        Optional<std::string> sponsoring_registrar_;//registrar administering the object
         Optional<std::string> authinfo_;//set authinfo
         std::vector<std::string> add_tech_contact_; //tech contacts to be added
         std::vector<std::string> rem_tech_contact_; //tech contacts to be removed
@@ -55,11 +56,13 @@ namespace Fred
         DECLARE_VECTOR_OF_EXCEPTION_DATA(unknown_technical_contact_handle, std::string);
         DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_technical_contact_handle, std::string);
         DECLARE_VECTOR_OF_EXCEPTION_DATA(unassigned_technical_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_sponsoring_registrar_handle, std::string);
 
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_keyset_handle<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
+        , ExceptionData_unknown_sponsoring_registrar_handle<Exception>
         , ExceptionData_vector_of_unknown_technical_contact_handle<Exception>
         , ExceptionData_vector_of_already_set_technical_contact_handle<Exception>
         , ExceptionData_vector_of_unassigned_technical_contact_handle<Exception>
@@ -71,6 +74,7 @@ namespace Fred
                 , const std::string& registrar);
         UpdateKeyset(const std::string& handle
                 , const std::string& registrar
+                , const Optional<std::string>& sponsoring_registrar
                 , const Optional<std::string>& authinfo
                 , const std::vector<std::string>& add_tech_contact
                 , const std::vector<std::string>& rem_tech_contact
@@ -78,6 +82,7 @@ namespace Fred
                 , const std::vector<DnsKey>& rem_dns_key
                 , const Optional<unsigned long long> logd_request_id
                 );
+        UpdateKeyset& set_sponsoring_registrar(const std::string& sponsoring_registrar);
         UpdateKeyset& set_authinfo(const std::string& authinfo);
         UpdateKeyset& add_tech_contact(const std::string& tech_contact);
         UpdateKeyset& rem_tech_contact(const std::string& tech_contact);

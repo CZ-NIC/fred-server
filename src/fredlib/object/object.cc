@@ -189,14 +189,22 @@ namespace Fred
     UpdateObject::UpdateObject(const std::string& handle
         , const std::string& obj_type
         , const std::string& registrar
+        , const Optional<std::string>& sponsoring_registrar
         , const Optional<std::string>& authinfo
         , const Nullable<unsigned long long>& logd_request_id)
     : handle_(handle)
     , obj_type_(obj_type)
     , registrar_(registrar)
+    , sponsoring_registrar_(sponsoring_registrar)
     , authinfo_(authinfo)
     , logd_request_id_(logd_request_id)
     {}
+
+    UpdateObject& UpdateObject::set_sponsoring_registrar(const std::string& sponsoring_registrar)
+    {
+        sponsoring_registrar_ = sponsoring_registrar;
+        return *this;
+    }
 
     UpdateObject& UpdateObject::set_authinfo(const std::string& authinfo)
     {
@@ -269,12 +277,37 @@ namespace Fred
                 object_id = static_cast<unsigned long long> (object_id_res[0][0]);
             }
 
+            //check sponsoring registrar
+            unsigned long long sponsoring_registrar_id = 0;
+            if(sponsoring_registrar_.isset())
+            {
+                Database::Result registrar_res = ctx.get_conn().exec_params(
+                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                    , Database::query_param_list(sponsoring_registrar_));
+                if(registrar_res.size() == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_sponsoring_registrar_handle(sponsoring_registrar_));
+                }
+                if (registrar_res.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
+                }
+                sponsoring_registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
+            }
+
+
             Database::QueryParams params;//query params
             std::stringstream sql;
             params.push_back(registrar_id);
             sql <<"UPDATE object SET update = now() "
                 ", upid = $"
                 << params.size() << "::integer " ; //registrar from epp-session container by client_id from epp-params
+
+            if(sponsoring_registrar_.isset())
+            {
+                params.push_back(sponsoring_registrar_id);
+                sql << " , clid = $" << params.size() << "::integer ";//set sponsoring registrar
+            }
 
             if(authinfo_.isset())
             {
@@ -315,6 +348,7 @@ namespace Fred
         os << "#UpdateObject obj_type: " << i.obj_type_
             << " handle: " << i.handle_
             << " registrar: " << i.registrar_
+            << " sponsoring registrar: " << i.sponsoring_registrar_.print_quoted()
             << " authinfo: " << i.authinfo_.print_quoted()
             << " logd_request_id: " << i.logd_request_id_.print_quoted()
             ;

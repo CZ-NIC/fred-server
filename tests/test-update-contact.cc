@@ -169,6 +169,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
 
     Fred::UpdateContact(test_contact_handle//handle
             , registrar_handle//registrar
+            , Optional<std::string>()//sponsoring registrar
             , Optional<std::string>()//authinfo
             , Optional<std::string>()//name
             , Optional<std::string>()//organization
@@ -231,6 +232,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
 
     Fred::UpdateContact(test_contact_handle//handle
             , registrar_handle//registrar
+                , Optional<std::string>(registrar_handle)//sponsoring registrar
                 , Optional<std::string>("passwd")//authinfo
                 , Optional<std::string>("Test Name")//name
                 , Optional<std::string>("Test o.r.g.")//organization
@@ -272,6 +274,10 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     //updated update_registrar_handle
     BOOST_CHECK(registrar_handle == std::string(info_data_4.info_contact_data.update_registrar_handle));
     info_data_3_with_changes.info_contact_data.update_registrar_handle = registrar_handle;
+
+    //updated sponsoring_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_4.info_contact_data.sponsoring_registrar_handle));
+    info_data_3_with_changes.info_contact_data.sponsoring_registrar_handle = registrar_handle;
 
     //updated update_time
     info_data_3_with_changes.info_contact_data.update_time = info_data_4.info_contact_data.update_time;
@@ -321,6 +327,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     BOOST_CHECK(history_info_data_4.at(0).info_contact_data.crhistoryid == info_data_4.info_contact_data.crhistoryid);
 
     Fred::UpdateContact(test_contact_handle, registrar_handle)
+    .set_sponsoring_registrar(registrar_handle)
     .set_authinfo("passw")
     .set_name("Test Name")
     .set_organization("Test o.r.g.")
@@ -360,6 +367,10 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     //updated update_registrar_handle
     BOOST_CHECK(registrar_handle == std::string(info_data_5.info_contact_data.update_registrar_handle));
     info_data_4_with_changes.info_contact_data.update_registrar_handle = registrar_handle;
+
+    //updated sponsoring_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_5.info_contact_data.sponsoring_registrar_handle));
+    info_data_4_with_changes.info_contact_data.sponsoring_registrar_handle = registrar_handle;
 
     //updated update_time
     info_data_4_with_changes.info_contact_data.update_time = info_data_5.info_contact_data.update_time;
@@ -435,6 +446,33 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_registrar, update_contact_fixture)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
+    }
+
+    Fred::InfoContactOutput info_data_2 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateContact with wrong sponsoring registrar
+ */
+BOOST_FIXTURE_TEST_CASE(update_contact_wrong_sponsoring_registrar, update_contact_fixture)
+{
+    Fred::OperationContext ctx;
+    std::string bad_registrar_handle = registrar_handle+xmark;
+    Fred::InfoContactOutput info_data_1 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateContact(test_contact_handle, registrar_handle)
+            .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateContact::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_sponsoring_registrar_handle());
+        BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
     Fred::InfoContactOutput info_data_2 = Fred::InfoContact(test_contact_handle, registrar_handle).exec(ctx);

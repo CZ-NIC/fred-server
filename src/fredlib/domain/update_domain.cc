@@ -47,6 +47,7 @@ namespace Fred
 
     UpdateDomain::UpdateDomain(const std::string& fqdn
             , const std::string& registrar
+            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& registrant
             , const Optional<std::string>& authinfo
             , const Optional<Nullable<std::string> >& nsset
@@ -60,6 +61,7 @@ namespace Fred
             )
     : fqdn_(fqdn)
     , registrar_(registrar)
+    , sponsoring_registrar_(sponsoring_registrar)
     , registrant_(registrant)
     , authinfo_(authinfo)
     , nsset_(nsset)
@@ -73,6 +75,12 @@ namespace Fred
         ? Nullable<unsigned long long>(logd_request_id.get_value())
         : Nullable<unsigned long long>())//is NULL if not set
     {}
+
+    UpdateDomain& UpdateDomain::set_sponsoring_registrar(const std::string& sponsoring_registrar)
+    {
+        sponsoring_registrar_ = sponsoring_registrar;
+        return *this;
+    }
 
     UpdateDomain& UpdateDomain::set_registrant(const std::string& registrant)
     {
@@ -217,8 +225,25 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for non-ENUM domain"));
         }
 
+        //check sponsoring registrar
+        if(sponsoring_registrar_.isset())
+        {
+            Database::Result registrar_res = ctx.get_conn().exec_params(
+                "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
+                , Database::query_param_list(sponsoring_registrar_.get_value()));
+            if(registrar_res.size() == 0)
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_sponsoring_registrar_handle(sponsoring_registrar_));
+            }
+            if (registrar_res.size() != 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
+            }
+        }
+
         //update object
-        history_id = Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_, authinfo_, logd_request_id_).exec(ctx);
+        history_id = Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_
+            , sponsoring_registrar_, authinfo_, logd_request_id_).exec(ctx);
 
         Exception update_domain_exception;
 
@@ -512,7 +537,6 @@ namespace Fred
             }
         }
 
-
         //save history
         {
             //domain_history
@@ -551,6 +575,7 @@ namespace Fred
     {
         os << "#UpdateDomain fqdn: " << i.fqdn_
             << " registrar: " << i.registrar_
+            << " sponsoring_registrar: " << i.sponsoring_registrar_.print_quoted()
             << " registrant: " << i.registrant_.print_quoted()
             << " authinfo: " << i.authinfo_.print_quoted()
             << " nsset: " << (i.nsset_.isset() ? i.nsset_.get_value().print_quoted() : i.nsset_.print_quoted())

@@ -39,7 +39,8 @@ namespace Fred
     class UpdateNsset
     {
         const std::string handle_;//nsset identifier
-        const std::string registrar_;//registrar identifier
+        const std::string registrar_;//registrar performing the update
+        Optional<std::string> sponsoring_registrar_;//registrar administering the object
         Optional<std::string> authinfo_;//set authinfo
         std::vector<DnsHost> add_dns_;//dns hosts to add
         std::vector<std::string> rem_dns_;//dns hosts to remove
@@ -55,11 +56,13 @@ namespace Fred
         DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_technical_contact_handle, std::string);
         DECLARE_VECTOR_OF_EXCEPTION_DATA(unassigned_technical_contact_handle, std::string);
         DECLARE_VECTOR_OF_EXCEPTION_DATA(unassigned_dns_host, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_sponsoring_registrar_handle, std::string);
 
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_nsset_handle<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
+        , ExceptionData_unknown_sponsoring_registrar_handle<Exception>
         , ExceptionData_vector_of_unknown_technical_contact_handle<Exception>
         , ExceptionData_vector_of_already_set_technical_contact_handle<Exception>
         , ExceptionData_vector_of_unassigned_technical_contact_handle<Exception>
@@ -72,6 +75,7 @@ namespace Fred
                 , const std::string& registrar);
         UpdateNsset(const std::string& handle
                 , const std::string& registrar
+                , const Optional<std::string>& sponsoring_registrar
                 , const Optional<std::string>& authinfo
                 , const std::vector<DnsHost>& add_dns
                 , const std::vector<std::string>& rem_dns
@@ -80,6 +84,7 @@ namespace Fred
                 , const Optional<short>& tech_check_level
                 , const Optional<unsigned long long> logd_request_id
                 );
+        UpdateNsset& set_sponsoring_registrar(const std::string& sponsoring_registrar);
         UpdateNsset& set_authinfo(const std::string& authinfo);
         UpdateNsset& add_dns(const DnsHost& dns);
         UpdateNsset& rem_dns(const std::string& fqdn);

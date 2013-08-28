@@ -39,17 +39,20 @@ namespace Fred
     public:
         DECLARE_EXCEPTION_DATA(unknown_ssntype, std::string);
         DECLARE_EXCEPTION_DATA(unknown_country, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_sponsoring_registrar_handle, std::string);
         struct Exception
         : virtual Fred::OperationException
           , ExceptionData_unknown_contact_handle<Exception>
           , ExceptionData_unknown_registrar_handle<Exception>
+          , ExceptionData_unknown_sponsoring_registrar_handle<Exception>
           , ExceptionData_unknown_ssntype<Exception>
           , ExceptionData_unknown_country<Exception>
         {};
 
     private:
         const std::string handle_;//contact identifier
-        const std::string registrar_;//registrar identifier
+        const std::string registrar_;//registrar performing the update
+        Optional<std::string> sponsoring_registrar_;//registrar administering the object
         Optional<std::string> authinfo_;//set authinfo
         Optional<std::string> name_ ;//name of contact person
         Optional<std::string> organization_;//full trade name of organization
@@ -83,6 +86,7 @@ namespace Fred
                 , const std::string& registrar);
         UpdateContact(const std::string& handle
                 , const std::string& registrar
+                , const Optional<std::string>& sponsoring_registrar
                 , const Optional<std::string>& authinfo
                 , const Optional<std::string>& name
                 , const Optional<std::string>& organization
@@ -112,6 +116,7 @@ namespace Fred
                 , const Optional<unsigned long long> logd_request_id
                 );
 
+        UpdateContact& set_sponsoring_registrar(const std::string& sponsoring_registrar);
         UpdateContact& set_authinfo(const std::string& authinfo);
         UpdateContact& set_name(const std::string& name);
         UpdateContact& set_organization(const std::string& organization);
