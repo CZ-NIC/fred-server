@@ -32,6 +32,7 @@ CLEANFILES = \
 		config/server.conf \
 		config/hpmail.conf \
 		init-scripts/fred-server \
+		doxy.conf \
 		src/corba/MessagesSK.cc \
 		src/corba/MessagesDynSK.cc \
 		src/corba/MessagesSK.h \
@@ -1660,7 +1661,9 @@ tests_test_server_SOURCES = \
 		tests/test-info-contact.cc \
 		tests/test-delete-domain.cc \
 		tests/test-create-domain.cc \
-		tests/test-domain-name.cc
+		tests/test-domain-name.cc \
+		tests/contact_verification/test-create_check_unit.cc \
+		tests/contact_verification/test-create_check_integ.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
