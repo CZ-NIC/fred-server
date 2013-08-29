@@ -191,13 +191,16 @@ namespace Fred
         , const std::string& registrar
         , const Optional<std::string>& sponsoring_registrar
         , const Optional<std::string>& authinfo
-        , const Nullable<unsigned long long>& logd_request_id)
+        , const Nullable<unsigned long long>& logd_request_id
+        , const boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>&
+            callback_unknown_sponsoring_registrar_handle)
     : handle_(handle)
     , obj_type_(obj_type)
     , registrar_(registrar)
     , sponsoring_registrar_(sponsoring_registrar)
     , authinfo_(authinfo)
     , logd_request_id_(logd_request_id)
+    , callback_unknown_sponsoring_registrar_handle_(callback_unknown_sponsoring_registrar_handle)
     {}
 
     UpdateObject& UpdateObject::set_sponsoring_registrar(const std::string& sponsoring_registrar)
@@ -218,6 +221,12 @@ namespace Fred
         return *this;
     }
 
+    UpdateObject& UpdateObject::set_callback_unknown_sponsoring_registrar_handle(
+        const boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>& callback_unknown_sponsoring_registrar_handle)
+    {
+        callback_unknown_sponsoring_registrar_handle_ = callback_unknown_sponsoring_registrar_handle;
+        return *this;
+    }
 
     unsigned long long UpdateObject::exec(OperationContext& ctx)
     {
@@ -284,17 +293,20 @@ namespace Fred
                 Database::Result registrar_res = ctx.get_conn().exec_params(
                     "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
                     , Database::query_param_list(sponsoring_registrar_));
-                if(registrar_res.size() == 0)
+                if(registrar_res.size() == 0 && callback_unknown_sponsoring_registrar_handle_)//if not found and callback is set
                 {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_sponsoring_registrar_handle(sponsoring_registrar_));
+                    callback_unknown_sponsoring_registrar_handle_(sponsoring_registrar_);
+                    sponsoring_registrar_ = Optional<std::string>();//unset wrong sponsoring_registrar_ to continue
                 }
-                if (registrar_res.size() != 1)
+                else if (registrar_res.size() != 1)//if not found
                 {
                     BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
                 }
-                sponsoring_registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
+                else //if found save id
+                {
+                    sponsoring_registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
+                }
             }
-
 
             Database::QueryParams params;//query params
             std::stringstream sql;

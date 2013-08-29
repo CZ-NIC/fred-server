@@ -321,24 +321,18 @@ namespace Fred
                 contact_id = contact_id_res[0][0];
             }
 
-            //check sponsoring registrar
-            if(sponsoring_registrar_.isset())
-            {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(sponsoring_registrar_.get_value()));
-                if(registrar_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_sponsoring_registrar_handle(sponsoring_registrar_));
-                }
-                if (registrar_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-            }
+            Exception update_contact_exception;
 
             history_id = Fred::UpdateObject(handle_,"contact", registrar_
-                , sponsoring_registrar_, authinfo_, logd_request_id_).exec(ctx);
+                , sponsoring_registrar_, authinfo_, logd_request_id_
+                , boost::bind(&Exception::set_unknown_sponsoring_registrar_handle,&update_contact_exception,_1)
+            ).exec(ctx);
+
+            if(update_contact_exception.throw_me())
+            {
+                BOOST_THROW_EXCEPTION(update_contact_exception);
+            }
+
 
             //update contact
             {
