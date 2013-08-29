@@ -46,7 +46,7 @@ using namespace Fred::Logger;
 
 
 
-BOOST_AUTO_TEST_SUITE(TestLogd)
+namespace TestLogd {
 
 //args processing config for custom main
 // TODO this should be taken from the database 
@@ -107,7 +107,12 @@ std::list<ID> MyFixture::id_list_entry;
 std::list<ID> MyFixture::id_list_session;
 concurrent_set<ID>  MyFixture::id_list_property_name;
 
-BOOST_GLOBAL_FIXTURE( MyFixture );
+}//namespace TestLogd
+BOOST_FIXTURE_TEST_SUITE(TestLogd, MyFixture)
+
+//BOOST_AUTO_TEST_SUITE(TestLogd)
+//BOOST_GLOBAL_FIXTURE( MyFixture );
+
 
 
 class TestImplLog {
