@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
@@ -118,6 +119,35 @@ struct TestException
   , ExceptionData_vector_of_contact2_handle<TestException>
   , ExceptionData_vector_of_contact3_handle<TestException>
 {};
+
+BOOST_AUTO_TEST_CASE(throwTestExceptionCallback)
+{
+    try
+    {
+        //instance of the client's Exception
+        TestException ex;
+
+        //callback interface
+        boost::function<void (const std::string& unknown_registrar_handle)> f;
+
+        //exception setter assignment into callback parameter
+        f = boost::bind(&TestException::set_unknown_registrar_handle,&ex,_1);
+
+        //implementation callback call
+        f("test_registrar");
+
+        //client checking exception instance
+        if(ex.throw_me())
+        {
+            BOOST_THROW_EXCEPTION(ex);
+        }
+    }
+    catch(const TestException& ex)
+    {
+        BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.is_set_unknown_registrar_handle());
+    }
+}
 
 BOOST_AUTO_TEST_CASE(throwTestException)
 {
