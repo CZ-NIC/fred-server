@@ -25,3 +25,8 @@
  *
  * Here will be information about troubleshooting.
  */
+
+/**
+ * @namespace Fred
+ * registry library top level namespace.
+ */
