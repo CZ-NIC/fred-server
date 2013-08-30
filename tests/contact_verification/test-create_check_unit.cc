@@ -16,6 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *  @file
+ *  unit tests for CreateContactCheck
+ */
+
 #include <vector>
 #include <utility>
 #include <string>
@@ -34,6 +39,12 @@ BOOST_AUTO_TEST_SUITE(TestCreateContactCheck_unit)
 
 const std::string server_name = "test-contact_verification-create_check_unit";
 
+/**
+ passing mandatory values to constructor
+ @pre valid contact handle
+ @pre valid testsuite name
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Ctor_mandatory)
 {
     typedef std::pair<std::string, std::string> testcase_set;
@@ -52,6 +63,13 @@ BOOST_AUTO_TEST_CASE(test_Ctor_mandatory)
     }
 }
 
+/**
+ passing mandatory and optional values to constructor
+ @pre valid contact handle
+ @pre valid testsuite name
+ @pre valid logd request id
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Ctor_optional)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
@@ -73,6 +91,13 @@ BOOST_AUTO_TEST_CASE(test_Ctor_optional)
     }
 }
 
+/**
+ passing mandatory values to constructor and optional values to setter
+ @pre valid contact handle
+ @pre valid testsuite name
+ @pre valid logd request id
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Setter)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
@@ -96,29 +121,13 @@ BOOST_AUTO_TEST_CASE(test_Setter)
     }
 }
 
-BOOST_AUTO_TEST_CASE(test_Ctor_and_Setter)
-{
-    typedef boost::tuple<std::string, std::string, long long> testcase_set;
-    std::vector<testcase_set> testdata;
-    testdata.push_back( boost::make_tuple("handle33440", "testsuite24274", 678643) );
-
-    for( std::vector<testcase_set>::iterator it = testdata.begin(); it != testdata.end(); ++it) {
-        Fred::CreateContactCheck dummy(it->get<0>(), it->get<1>(), it->get<2>());
-        dummy.set_logd_request_id(it->get<2>());
-
-        std::string serialized = dummy.to_string();
-        BOOST_CHECK_MESSAGE(
-            serialized.find("contact_handle_: " + it->get<0>() ) != std::string::npos,
-            "Cannot find handle \"" + it->get<0>() + "\" in " + serialized + ".");
-        BOOST_CHECK_MESSAGE(
-            serialized.find("testsuite_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
-        BOOST_CHECK_MESSAGE(
-            serialized.find("logd_request_id_: " + Nullable<long long>( it->get<2>() ).print_quoted() ) != std::string::npos,
-            "Cannot find logd request id \"" + Nullable<long long>( it->get<2>() ).print_quoted() + "\" in " + serialized + ".");
-    }
-}
-
+/**
+ passing mandatory and optional values to constructor and resetting optional values by setter
+ @pre valid contact handle
+ @pre valid testsuite name
+ @pre valid logd request id
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Ctor_versus_Setter)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
@@ -137,6 +146,14 @@ BOOST_AUTO_TEST_CASE(test_Ctor_versus_Setter)
     }
 }
 
+/**
+ passing optional value to setter and resetting it by second call to another value
+ @pre valid contact handle
+ @pre valid testsuite name
+ @pre valid logd request id
+ @pre another valid logd request id
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Setter_reset)
 {
     typedef boost::tuple<std::string, std::string, long long, long long> testcase_set;
@@ -164,6 +181,13 @@ BOOST_AUTO_TEST_CASE(test_Setter_reset)
     }
 }
 
+/**
+ passing mandatory and optional values to constructor and unsetting optional value
+ @pre valid contact handle
+ @pre valid testsuite name
+ @pre valid logd request id
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Ctor_Unsetter)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
@@ -182,6 +206,12 @@ BOOST_AUTO_TEST_CASE(test_Ctor_Unsetter)
     }
 }
 
+/**
+ passing ONLY mandatory values to constructor and unsetting optional value by unsetter
+ @pre valid contact handle
+ @pre valid testsuite name
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Unsetter_on_unset)
 {
     typedef boost::tuple<std::string, std::string> testcase_set;
@@ -200,6 +230,13 @@ BOOST_AUTO_TEST_CASE(test_Unsetter_on_unset)
     }
 }
 
+/**
+ passing ONLY mandatory values to constructor, unsetting optional value by unsetter and setting the same value by setter
+ @pre valid contact handle
+ @pre valid testsuite name
+ @pre valid logd request id
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Unsetter_on_unset_Setter)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
@@ -219,6 +256,13 @@ BOOST_AUTO_TEST_CASE(test_Unsetter_on_unset_Setter)
     }
 }
 
+/**
+ passing ONLY mandatory values to constructor, setting optional value by setter and unsetting the same value
+ @pre valid contact handle
+ @pre valid testsuite name
+ @pre valid logd request id
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Setter_Unsetter)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
@@ -238,6 +282,14 @@ BOOST_AUTO_TEST_CASE(test_Setter_Unsetter)
     }
 }
 
+/**
+ unsetting optional value (set previously by constructor) by unsetter twice
+ @pre valid contact handle
+ @pre valid testsuite name
+ @pre valid logd request id
+ @pre another valid logd request id
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Ctor_Unsetter_Unsetter)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
@@ -262,6 +314,14 @@ BOOST_AUTO_TEST_CASE(test_Ctor_Unsetter_Unsetter)
     }
 }
 
+/**
+ unsetting optional value (set previously by setter) by unsetter twice
+ @pre valid contact handle
+ @pre valid testsuite name
+ @pre valid logd request id
+ @pre another valid logd request id
+ @post correct values present in to_string() output
+ */
 BOOST_AUTO_TEST_CASE(test_Setter_Unsetter_Unsetter)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
