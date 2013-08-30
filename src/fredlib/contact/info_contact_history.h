@@ -56,18 +56,16 @@ namespace Fred
     {
         const std::string roid_;//contact identifier
         Optional<boost::posix_time::ptime> history_timestamp_;//history timestamp
-        const std::string registrar_;//registrar identifier
         bool lock_;//lock object_registry row for contact
 
     public:
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_registry_object_identifier<Exception>
-        , ExceptionData_unknown_registrar_handle<Exception>
         {};
 
-        InfoContactHistory(const std::string& roid, const std::string& registrar);
-        InfoContactHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp, const std::string& registrar);
+        InfoContactHistory(const std::string& roid);
+        InfoContactHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp);
 
         InfoContactHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);//set history timestamp
         InfoContactHistory& set_lock(bool lock = true);//set lock object_registry row for contact

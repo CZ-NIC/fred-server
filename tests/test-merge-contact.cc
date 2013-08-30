@@ -586,7 +586,7 @@ struct merge_contact_n_fixture
 
         Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContact(src_contact_handle).exec(ctx);
         std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
-                info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
+                info_src_contact_1.info_contact_data.roid).exec(ctx);
         BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
 
         //merge
@@ -664,7 +664,7 @@ struct merge_contact_n_fixture
         }
 
         std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
-            info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
+            info_src_contact_1.info_contact_data.roid).exec(ctx);
         BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 
     }
@@ -707,7 +707,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
 
     Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContact(src_contact_handle).exec(ctx);
     std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
-            info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
+            info_src_contact_1.info_contact_data.roid).exec(ctx);
     BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
 
     //merge
@@ -750,7 +750,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     BOOST_CHECK(info_nsset_with_change == info_nsset_2);
 
     std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
-        info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
+        info_src_contact_1.info_contact_data.roid).exec(ctx);
     BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 }
 
