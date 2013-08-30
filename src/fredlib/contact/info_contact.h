@@ -65,18 +65,15 @@ namespace Fred
     class InfoContact
     {
         const std::string handle_;//keyset identifier
-        const std::string registrar_;//registrar identifier
         bool lock_;//lock object_registry row
 
     public:
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_contact_handle<Exception>
-        , ExceptionData_unknown_registrar_handle<Exception>
         {};
 
-        InfoContact(const std::string& handle
-                , const std::string& registrar);
+        InfoContact(const std::string& handle);
         InfoContact& set_lock(bool lock = true);//set lock object_registry row
         InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
