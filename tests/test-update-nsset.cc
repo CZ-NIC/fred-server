@@ -190,7 +190,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 {
     Fred::OperationContext ctx;
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_1 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_1 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     //update_registrar_handle check
     BOOST_CHECK(info_data_1.info_nsset_data.update_registrar_handle.isnull());
@@ -206,7 +206,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     Fred::UpdateNsset(test_nsset_handle, registrar_handle).exec(ctx);
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_2 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_2 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_1_with_changes = info_data_1;
 
@@ -248,7 +248,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
             ).exec(ctx);
 
     Fred::InfoNssetOutput info_data_3 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_3 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_3 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_2_with_changes = info_data_2;
 
@@ -294,7 +294,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
                 ).exec(ctx);
 
     Fred::InfoNssetOutput info_data_4 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_4 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_4 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_3_with_changes = info_data_3;
 
@@ -353,7 +353,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     .exec(ctx);
 
     Fred::InfoNssetOutput info_data_5 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_5 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_5 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_4_with_changes = info_data_4;
 
@@ -412,7 +412,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_dns(Fred::DnsHost("host3",  Util::vector_of<std::string>("127.0.0.5")("127.1.1.5"))).exec(ctx);
 
     Fred::InfoNssetOutput info_data_6 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_6 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_6 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_5_with_changes = info_data_5;
 
@@ -456,7 +456,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     Fred::UpdateNsset(test_nsset_handle, registrar_handle).rem_dns("host2").exec(ctx);
 
     Fred::InfoNssetOutput info_data_7 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_7 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_7 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_6_with_changes = info_data_6;
 
@@ -500,7 +500,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     Fred::UpdateNsset(test_nsset_handle, registrar_handle).rem_tech_contact(admin_contact3_handle).exec(ctx);
 
     Fred::InfoNssetOutput info_data_8 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_8 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_8 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_7_with_changes = info_data_7;
 
@@ -545,7 +545,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_tech_contact(admin_contact3_handle).exec(ctx);
 
     Fred::InfoNssetOutput info_data_9 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_9 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_9 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_8_with_changes = info_data_8;
 
@@ -588,7 +588,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_authinfo("passw").exec(ctx);
 
     Fred::InfoNssetOutput info_data_10 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_10 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_10 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_9_with_changes = info_data_9;
 
@@ -632,7 +632,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_logd_request_id(1).exec(ctx);
 
     Fred::InfoNssetOutput info_data_11 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_11 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_11 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_10_with_changes = info_data_10;
 
@@ -677,7 +677,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_tech_check_level(2).exec(ctx);
 
     Fred::InfoNssetOutput info_data_12 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_12 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data_12 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     Fred::InfoNssetOutput info_data_11_with_changes = info_data_11;
 
@@ -995,7 +995,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_history_test, update_nsset_fixture)
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
-    std::vector<Fred::InfoNssetHistoryOutput> history_info_data = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoNssetHistoryOutput> history_info_data = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
 
     BOOST_CHECK(history_info_data.at(0) == info_data_2);
     BOOST_CHECK(history_info_data.at(1) == info_data_1);
