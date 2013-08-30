@@ -164,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset, update_keyset_fixture )
 BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
 {
     Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_1 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_1 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     //update_registrar_handle check
     BOOST_CHECK(info_data_1.info_keyset_data.update_registrar_handle.isnull());
@@ -180,7 +180,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_2 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_2 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_1_with_changes = info_data_1;
 
@@ -222,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
         ).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_3 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_3 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_3 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_2_with_changes = info_data_2;
 
@@ -279,7 +279,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
         ).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_4 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_4 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_4 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_3_with_changes = info_data_3;
 
@@ -314,7 +314,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).set_authinfo("kukauthinfo").exec(ctx);
 
     Fred::InfoKeysetOutput info_data_5 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_5 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_5 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_4_with_changes = info_data_4;
 
@@ -355,7 +355,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).add_tech_contact(admin_contact4_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_6 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_6 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_6 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_5_with_changes = info_data_5;
 
@@ -395,7 +395,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).rem_tech_contact(admin_contact5_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_7 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_7 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_7 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_6_with_changes = info_data_6;
 
@@ -439,7 +439,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).add_dns_key(Fred::DnsKey(257, 3, 5, "key2")).add_dns_key(Fred::DnsKey(257, 3, 5, "key3")).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_8 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_8 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_8 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_7_with_changes = info_data_7;
 
@@ -482,7 +482,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).rem_dns_key(Fred::DnsKey(257, 3, 5, "key")).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_9 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_9 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_9 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_8_with_changes = info_data_8;
 
@@ -528,7 +528,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).set_logd_request_id(10).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_10 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_10 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_10 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     //request id
     BOOST_CHECK(history_info_data_10.at(0).logd_request_id == 10);
@@ -834,7 +834,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset_history_test, update_keyset_fixture)
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
 
-    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoKeysetHistoryOutput> history_info_data = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
 
     BOOST_CHECK(history_info_data.at(0) == info_data_2);
     BOOST_CHECK(history_info_data.at(1) == info_data_1);
