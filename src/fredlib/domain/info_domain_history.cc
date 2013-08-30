@@ -42,17 +42,14 @@ namespace Fred
 {
 
     InfoDomainHistory::InfoDomainHistory(const std::string& roid
-            , const Optional<boost::posix_time::ptime>& history_timestamp
-            , const std::string& registrar)
+            , const Optional<boost::posix_time::ptime>& history_timestamp)
         : roid_(roid)
         , history_timestamp_(history_timestamp)
-        , registrar_(registrar)
         , lock_(false)
     {}
 
-    InfoDomainHistory::InfoDomainHistory(const std::string& roid, const std::string& registrar)
+    InfoDomainHistory::InfoDomainHistory(const std::string& roid)
     : roid_(roid)
-    , registrar_(registrar)
     , lock_(false)
     {}
 
@@ -74,23 +71,6 @@ namespace Fred
 
         try
         {
-            //check registrar exists
-            //TODO: check registrar access
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
-                    , Database::query_param_list(registrar_));
-
-                if (res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-            }
-
             //info about domain history by roid and optional history timestamp
             if(!roid_.empty())
             {
@@ -257,7 +237,6 @@ namespace Fred
     {
         return os << "#InfoDomainHistory roid: " << i.roid_
                 << " history_timestamp: " << i.history_timestamp_.print_quoted()
-                << " registrar: " << i.registrar_
                 << " lock: " << i.lock_
                 ;
     }
