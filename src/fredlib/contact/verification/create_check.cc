@@ -60,11 +60,6 @@ namespace Fred
         return *this;
     }
 
-    CreateContactCheck& CreateContactCheck::unset_logd_request_id() {
-        logd_request_id_ = Nullable<long long>();
-        return *this;
-    }
-
     std::string CreateContactCheck::exec(OperationContext& _ctx) {
         /* TODO - FIXME
            temporary ugliness - waiting for boost 1.42 to use boost::uuid

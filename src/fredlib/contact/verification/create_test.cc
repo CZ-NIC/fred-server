@@ -56,11 +56,6 @@ namespace Fred
         return *this;
     }
 
-    CreateContactTest& CreateContactTest::unset_logd_request_id() {
-        logd_request_id_ = Nullable<long long>();
-        return *this;
-    }
-
     void CreateContactTest::exec(OperationContext& _ctx) {
         try {
             _ctx.get_conn().exec_params(

@@ -56,10 +56,6 @@ namespace Fred
         logd_request_id_ = _logd_request_id;
         return *this;
     }
-    UpdateContactCheck& UpdateContactCheck::unset_logd_request_id () {
-        logd_request_id_ = Optional<long long>();
-        return *this;
-    }
 
     void UpdateContactCheck::exec (OperationContext& _ctx) {
         try {

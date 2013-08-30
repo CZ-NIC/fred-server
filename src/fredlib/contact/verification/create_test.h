@@ -67,12 +67,6 @@ namespace Fred
          * Call with another value for re-set, no need to unset first.
          */
         CreateContactTest& set_logd_request_id(long long _logd_request_id);
-        /**
-         * unsetter of optional logd_request_id
-         * Erases set value. Is idempotent.
-         * If no value is set at exec() run no logd_request is reffered to by this record after creation.
-         */
-        CreateContactTest& unset_logd_request_id();
 
         // exec
         void exec(OperationContext& ctx);

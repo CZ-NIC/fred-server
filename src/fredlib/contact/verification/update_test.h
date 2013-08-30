@@ -68,23 +68,11 @@ namespace Fred
              * setter of optional logd_request_id
              */
             UpdateContactTest& set_logd_request_id (long long _logd_request_id);
-            /**
-             * unsetter of optional logd_request_id
-             * Erases set value. Is idempotent.
-             * If no value is set at exec() run no logd_request is reffered to by this record after creation.
-             */
-            UpdateContactTest& unset_logd_request_id ();
 
             /**
              * setter of optional error message
              */
             UpdateContactTest& set_error_msg (const std::string& _error_msg);
-            /**
-             * unsetter of optional error message
-             * Erases set value. Is idempotent.
-             * If no value is set at exec() run no error message is stored for this update.
-             */
-            UpdateContactTest& unset_error_msg ();
 
             // exec and serialization
             void exec(OperationContext& _ctx);

@@ -67,17 +67,9 @@ namespace Fred
         logd_request_id_ = _logd_request_id;
         return *this;
     }
-    UpdateContactTest& UpdateContactTest::unset_logd_request_id () {
-        logd_request_id_ = Nullable<long long>();
-        return *this;
-    }
 
     UpdateContactTest& UpdateContactTest::set_error_msg (const std::string& _error_msg) {
         error_msg_ = _error_msg;
-        return *this;
-    }
-    UpdateContactTest& UpdateContactTest::unset_error_msg () {
-        error_msg_ = Nullable<std::string>();
         return *this;
     }
 
