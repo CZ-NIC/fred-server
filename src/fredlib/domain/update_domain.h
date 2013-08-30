@@ -48,7 +48,8 @@ namespace Fred
     class UpdateDomain
     {
         const std::string fqdn_;/**< fully qualified domain name */
-        const std::string registrar_;/**< registrar handle */
+        const std::string registrar_;/**< registrar performing the update */
+        Optional<std::string> sponsoring_registrar_;/**< set registrar administering the object */
         Optional<std::string> registrant_;/**< registrant contact handle*/
         Optional<std::string> authinfo_;/**< transfer password */
         Optional<Nullable<std::string> > nsset_;/**< nsset handle or NULL if missing */
@@ -66,11 +67,13 @@ namespace Fred
         DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);/**< exception members for vector of already set admin contact handles */
         DECLARE_EXCEPTION_DATA(invalid_expiration_date, boost::gregorian::date);/**< exception members for invalid expiration date of the domain */
         DECLARE_EXCEPTION_DATA(invalid_enum_validation_expiration_date, boost::gregorian::date);/**< exception members for invalid ENUM validation expiration date of the domain */
+        DECLARE_EXCEPTION_DATA(unknown_sponsoring_registrar_handle, std::string);/**< exception member for unknown sponsoring registrar of the domain */
 
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_domain_fqdn<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
+        , ExceptionData_unknown_sponsoring_registrar_handle<Exception>
         , ExceptionData_unknown_nsset_handle<Exception>
         , ExceptionData_unknown_keyset_handle<Exception>
         , ExceptionData_unknown_registrant_handle<Exception>
@@ -92,7 +95,8 @@ namespace Fred
         /**
         * Update domain constructor with all parameters.
         * @param fqdn sets fully qualified domain name into @ref fqdn_ attribute
-        * @param registrar sets registrar handle into @ref registrar_ attribute
+        * @param registrar sets handle of registrar performing the update into @ref registrar_ attribute
+        * @param sponsoring_registrar sets registrar administering the domain into @ref sponsoring_registrar_ attribute
         * @param registrant sets registrant contact handle into @ref registrant_ attribute
         * @param authinfo sets transfer password into @ref authinfo_ attribute
         * @param nsset sets nsset handle or NULL in case of no nsset into @ref nsset_ attribute
@@ -108,6 +112,7 @@ namespace Fred
         */
         UpdateDomain(const std::string& fqdn
             , const std::string& registrar
+            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& registrant
             , const Optional<std::string>& authinfo
             , const Optional<Nullable<std::string> >& nsset
@@ -119,6 +124,13 @@ namespace Fred
             , const Optional<bool>& enum_publish_flag
             , const Optional<unsigned long long> logd_request_id
             );
+
+        /**
+        * Set domain sponsoring registrar.
+        * @param sponsoring_registrar sets registrar administering the domain into @ref sponsoring_registrar_ attribute
+        */
+        UpdateDomain& set_sponsoring_registrar(const std::string& sponsoring_registrar);
+
         /**
         * Set domain registrant.
         * @param registrant sets registrant contact handle into @ref registrant_ attribute

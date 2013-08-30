@@ -167,6 +167,7 @@ BOOST_AUTO_TEST_CASE(info_domain)
     //call update using big ctor
     Fred::UpdateDomain(test_domain_handle//fqdn
             , registrar_handle//registrar
+            , Optional<std::string>()//sponsoring registrar
             , registrant_contact_handle //registrant - owner
             , std::string("testauthinfo1") //authinfo
             , Nullable<std::string>()//unset nsset - set to null

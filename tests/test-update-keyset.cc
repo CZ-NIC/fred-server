@@ -212,6 +212,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
 
     Fred::UpdateKeyset(test_keyset_handle//const std::string& handle
         , registrar_handle//const std::string& registrar
+        , Optional<std::string>(registrar_handle)//sponsoring registrar
         , Optional<std::string>("testauthinfo")//const Optional<std::string>& authinfo
         , Util::vector_of<std::string>(admin_contact5_handle) //const std::vector<std::string>& add_tech_contact
         , Util::vector_of<std::string>(admin_contact6_handle)//const std::vector<std::string>& rem_tech_contact
@@ -232,6 +233,10 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     //updated update_registrar_handle
     BOOST_CHECK(registrar_handle == std::string(info_data_3.info_keyset_data.update_registrar_handle));
     info_data_2_with_changes.info_keyset_data.update_registrar_handle = registrar_handle;
+
+    //updated sponsoring_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_3.info_keyset_data.sponsoring_registrar_handle));
+    info_data_2_with_changes.info_keyset_data.sponsoring_registrar_handle = registrar_handle;
 
     //updated update_time
     info_data_2_with_changes.info_keyset_data.update_time = info_data_3.info_keyset_data.update_time;
@@ -264,6 +269,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
 
     Fred::UpdateKeyset(test_keyset_handle//const std::string& handle
         , registrar_handle//const std::string& registrar
+        , Optional<std::string>()//sponsoring registrar
         , Optional<std::string>()//const Optional<std::string>& authinfo
         , std::vector<std::string>() //const std::vector<std::string>& add_tech_contact
         , std::vector<std::string>()//const std::vector<std::string>& rem_tech_contact
@@ -562,8 +568,6 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     BOOST_CHECK(history_info_data_10.at(1).next_historyid == history_info_data_10.at(0).info_keyset_data.historyid);
     BOOST_CHECK(history_info_data_10.at(0).info_keyset_data.crhistoryid == info_data_10.info_keyset_data.crhistoryid);
 
-
-
 }//update_keyset
 
 /**
@@ -606,6 +610,34 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_registrar, update_keyset_fixture)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
+    }
+
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
+
+}
+
+/**
+ * test UpdateKeyset with wrong sponsoring registrar
+ */
+BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_sponsoring_registrar, update_keyset_fixture)
+{
+    std::string bad_registrar_handle = registrar_handle+xmark;
+
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
+            .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateKeyset::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_sponsoring_registrar_handle());
+        BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);

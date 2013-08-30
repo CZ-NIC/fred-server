@@ -26,6 +26,8 @@
 
 #include <string>
 
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
@@ -79,11 +81,17 @@ namespace Fred
     {
         const std::string handle_;//object identifier
         const std::string obj_type_;//object type name
-        const std::string registrar_;//set registrar
+        const std::string registrar_;//set registrar performing the update
+        Optional<std::string> sponsoring_registrar_;//set registrar administering the object
         Optional<std::string> authinfo_;//set authinfo
         Nullable<unsigned long long> logd_request_id_;//logger request_id
+
+        boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>
+            callback_unknown_sponsoring_registrar_handle_;//exception callback
+
     public:
         DECLARE_EXCEPTION_DATA(unknown_object_handle, std::string);
+
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_object_type<Exception>
@@ -97,10 +105,19 @@ namespace Fred
         UpdateObject(const std::string& handle
             , const std::string& obj_type
             , const std::string& registrar
+            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
-            , const Nullable<unsigned long long>& logd_request_id);
+            , const Nullable<unsigned long long>& logd_request_id
+            , const boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>&
+                callback_unknown_sponsoring_registrar_handle
+        );
+        UpdateObject& set_sponsoring_registrar(const std::string& sponsoring_registrar);
         UpdateObject& set_authinfo(const std::string& authinfo);
         UpdateObject& set_logd_request_id(const Nullable<unsigned long long>& logd_request_id);
+
+        UpdateObject& set_callback_unknown_sponsoring_registrar_handle(
+            const boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>& callback_unknown_sponsoring_registrar_handle);
+
         unsigned long long exec(OperationContext& ctx);//return history_id
 
         friend std::ostream& operator<<(std::ostream& os, const UpdateObject& i);

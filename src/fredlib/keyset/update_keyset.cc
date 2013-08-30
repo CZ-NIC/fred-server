@@ -44,6 +44,7 @@ namespace Fred
 
     UpdateKeyset::UpdateKeyset(const std::string& handle
             , const std::string& registrar
+            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
             , const std::vector<std::string>& add_tech_contact
             , const std::vector<std::string>& rem_tech_contact
@@ -53,6 +54,7 @@ namespace Fred
             )
     : handle_(handle)
     , registrar_(registrar)
+    , sponsoring_registrar_(sponsoring_registrar)
     , authinfo_(authinfo)
     , add_tech_contact_(add_tech_contact)
     , rem_tech_contact_(rem_tech_contact)
@@ -62,6 +64,12 @@ namespace Fred
         ? Nullable<unsigned long long>(logd_request_id.get_value())
         : Nullable<unsigned long long>())//is NULL if not set
     {}
+
+    UpdateKeyset& UpdateKeyset::set_sponsoring_registrar(const std::string& sponsoring_registrar)
+    {
+        sponsoring_registrar_ = sponsoring_registrar;
+        return *this;
+    }
 
     UpdateKeyset& UpdateKeyset::set_authinfo(const std::string& authinfo)
     {
@@ -142,9 +150,12 @@ namespace Fred
                 keyset_id = keyset_id_res[0][0];
             }
 
-            history_id = Fred::UpdateObject(handle_,"keyset", registrar_, authinfo_, logd_request_id_).exec(ctx);
-
             Exception update_keyset_exception;
+
+            history_id = Fred::UpdateObject(handle_,"keyset", registrar_
+                , sponsoring_registrar_, authinfo_, logd_request_id_
+                , boost::bind(&Exception::set_unknown_sponsoring_registrar_handle,&update_keyset_exception,_1)
+            ).exec(ctx);
 
             //add tech contacts
             if(!add_tech_contact_.empty())
@@ -362,6 +373,7 @@ namespace Fred
     {
         os << "#UpdateKeyset handle: " << i.handle_
             << " registrar: " << i.registrar_
+            << " sponsoring_registrar: " << i.sponsoring_registrar_.print_quoted()
             << " authinfo: " << i.authinfo_.print_quoted();
 
         if(!i.add_tech_contact_.empty()) os << " add_tech_contact: ";

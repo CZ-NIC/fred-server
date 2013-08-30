@@ -237,6 +237,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     Fred::UpdateNsset(test_nsset_handle//handle
             , registrar_handle//registrar
+            , Optional<std::string>()//sponsoring registrar
             , Optional<std::string>()//authinfo
             , std::vector<Fred::DnsHost>() //add_dns
             , std::vector<std::string>() //rem_dns
@@ -279,6 +280,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     Fred::UpdateNsset(test_nsset_handle//handle
             , registrar_handle//registrar
+                , Optional<std::string>(registrar_handle)//sponsoring registrar
                 , Optional<std::string>("passwd")//authinfo
                 , Util::vector_of<Fred::DnsHost>
                     (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //add_dns
@@ -303,6 +305,11 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //updated update_registrar_handle
     BOOST_CHECK(registrar_handle == std::string(info_data_4.info_nsset_data.update_registrar_handle));
     info_data_3_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated sponsoring_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_4.info_nsset_data.sponsoring_registrar_handle));
+    info_data_3_with_changes.info_nsset_data.sponsoring_registrar_handle = registrar_handle;
+
 
     //updated update_time
     info_data_3_with_changes.info_nsset_data.update_time = info_data_4.info_nsset_data.update_time;
@@ -335,6 +342,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_4.at(0).info_nsset_data.crhistoryid == info_data_4.info_nsset_data.crhistoryid);
 
     Fred::UpdateNsset(test_nsset_handle, registrar_handle)
+        .set_sponsoring_registrar(registrar_handle)
         .add_dns(Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))
         .rem_dns("b.ns.nic.cz")
         .add_tech_contact(admin_contact2_handle)
@@ -356,6 +364,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //updated update_registrar_handle
     BOOST_CHECK(registrar_handle == std::string(info_data_5.info_nsset_data.update_registrar_handle));
     info_data_4_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
+
+    //updated sponsoring_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_5.info_nsset_data.sponsoring_registrar_handle));
+    info_data_4_with_changes.info_nsset_data.sponsoring_registrar_handle = registrar_handle;
 
     //updated update_time
     info_data_4_with_changes.info_nsset_data.update_time = info_data_5.info_nsset_data.update_time;
@@ -753,6 +765,34 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_registrar, update_nsset_fixture)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
+    }
+
+    Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_nsset_data.delete_time.isnull());
+
+}
+
+/**
+ * test UpdateNsset with wrong sponsoring registrar
+ */
+BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_sponsoring_registrar, update_nsset_fixture)
+{
+    Fred::OperationContext ctx;
+    std::string bad_registrar_handle = registrar_handle+xmark;
+    Fred::InfoNssetOutput info_data_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateNsset(test_nsset_handle, registrar_handle)
+            .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateNsset::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_sponsoring_registrar_handle());
+        BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
