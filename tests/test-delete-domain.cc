@@ -196,14 +196,14 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomain(test_domain_fqdn, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomain(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
     ctx.commit_transaction();
 
     std::vector<Fred::InfoDomainHistoryOutput> domain_history_info1 = Fred::InfoDomainHistory(
-    domain_info1.info_domain_data.roid, registrar_handle).exec(ctx);
+    domain_info1.info_domain_data.roid).exec(ctx);
 
     BOOST_CHECK(!domain_history_info1.at(0).info_domain_data.delete_time.isnull());
 
@@ -250,14 +250,14 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomain(test_domain_fqdn, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomain(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
     ctx.commit_transaction();
 
     std::vector<Fred::InfoDomainHistoryOutput> domain_history_info1 = Fred::InfoDomainHistory(
-    domain_info1.info_domain_data.roid, registrar_handle).exec(ctx);
+    domain_info1.info_domain_data.roid).exec(ctx);
 
     BOOST_CHECK(!domain_history_info1.at(0).info_domain_data.delete_time.isnull());
 

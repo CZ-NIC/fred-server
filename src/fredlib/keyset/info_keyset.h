@@ -65,7 +65,6 @@ namespace Fred
     class InfoKeyset
     {
         const std::string handle_;//keyset identifier
-        const std::string registrar_;//registrar identifier
         bool lock_;//lock object_registry row
 
     public:
@@ -73,12 +72,9 @@ namespace Fred
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_keyset_handle<Exception>
-        , ExceptionData_unknown_registrar_handle<Exception>
         {};
 
-
-        InfoKeyset(const std::string& handle
-                , const std::string& registrar);
+        InfoKeyset(const std::string& handle);
         InfoKeyset& set_lock(bool lock = true);//set lock object_registry row
         InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 

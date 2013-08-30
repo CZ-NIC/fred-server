@@ -40,10 +40,8 @@
 
 namespace Fred
 {
-    InfoContact::InfoContact(const std::string& handle
-            , const std::string& registrar)
+    InfoContact::InfoContact(const std::string& handle)
     : handle_(handle)
-    , registrar_(registrar)
     , lock_(false)
     {}
 
@@ -59,25 +57,6 @@ namespace Fred
 
         try
         {
-            //check registrar exists
-            //TODO: check registrar access
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-
-                if (res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-
-            }
-
-
             //info about contact and optionally lock object_registry row for update
             {
                 Database::Result res = ctx.get_conn().exec_params(std::string(
@@ -216,7 +195,6 @@ namespace Fred
     std::ostream& operator<<(std::ostream& os, const InfoContact& ic)
     {
         return os << "#InfoContact handle: " << ic.handle_
-                << " registrar: " << ic.registrar_
                 << " lock: " << ic.lock_
                 ;
     }

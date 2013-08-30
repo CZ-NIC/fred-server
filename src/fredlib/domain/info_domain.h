@@ -64,17 +64,14 @@ namespace Fred
     class InfoDomain
     {
         const std::string fqdn_;//domain identifier
-        const std::string registrar_;//registrar identifier
         bool lock_;//lock object_registry row for domain
 
     public:
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_domain_fqdn<Exception>
-        , ExceptionData_unknown_registrar_handle<Exception>
         {};
-        InfoDomain(const std::string& fqdn
-                , const std::string& registrar);
+        InfoDomain(const std::string& fqdn);
         InfoDomain& set_lock(bool lock = true);//set lock object_registry row for domain
         InfoDomainOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 

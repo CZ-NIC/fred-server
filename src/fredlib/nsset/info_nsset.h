@@ -65,17 +65,14 @@ namespace Fred
     class InfoNsset
     {
         const std::string handle_;//nsset identifier
-        const std::string registrar_;//registrar identifier
         bool lock_;//lock object_registry row for domain
     public:
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_nsset_handle<Exception>
-        , ExceptionData_unknown_registrar_handle<Exception>
         {};
 
-        InfoNsset(const std::string& handle
-                , const std::string& registrar);
+        InfoNsset(const std::string& handle);
         InfoNsset& set_lock(bool lock = true);//set lock object_registry row
         InfoNssetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 

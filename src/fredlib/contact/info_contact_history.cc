@@ -42,17 +42,14 @@ namespace Fred
 {
 
     InfoContactHistory::InfoContactHistory(const std::string& roid
-            , const Optional<boost::posix_time::ptime>& history_timestamp
-            , const std::string& registrar)
+            , const Optional<boost::posix_time::ptime>& history_timestamp)
         : roid_(roid)
         , history_timestamp_(history_timestamp)
-        , registrar_(registrar)
         , lock_(false)
     {}
 
-    InfoContactHistory::InfoContactHistory(const std::string& roid, const std::string& registrar)
+    InfoContactHistory::InfoContactHistory(const std::string& roid)
     : roid_(roid)
-    , registrar_(registrar)
     , lock_(false)
     {}
 
@@ -74,23 +71,6 @@ namespace Fred
 
         try
         {
-            //check registrar exists
-            //TODO: check registrar access
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-
-                if (res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-            }
-
             //info about contact history by roid and optional history timestamp
             if(!roid_.empty())
             {
@@ -252,7 +232,6 @@ namespace Fred
     {
         return os << "#InfoContactHistory roid: " << ich.roid_
                 << " history_timestamp: " << ich.history_timestamp_.print_quoted()
-                << " registrar: " << ich.registrar_
                 << " lock: " << ich.lock_
                 ;
     }

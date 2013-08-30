@@ -208,7 +208,7 @@ struct merge_contact_contacts_fixture
             .exec(ctx);
         BOOST_TEST_MESSAGE(std::string("merge_contact_contacts_fixture src_contact_handle: ") + src_contact_handle);
 
-        Fred::InfoContactOutput  ic = Fred::InfoContact(src_contact_handle,registrar_handle).exec(ctx);
+        Fred::InfoContactOutput  ic = Fred::InfoContact(src_contact_handle).exec(ctx);
 
         BOOST_TEST_MESSAGE(std::string("merge_contact_contacts_fixture src_contact_handle roid: ") + ic.info_contact_data.roid);
 
@@ -560,33 +560,33 @@ struct merge_contact_n_fixture
         info_nsset_1.reserve(nsset_count);
         for(int i = 0; i < nsset_count; ++i)
         {
-            info_nsset_1.push_back(Fred::InfoNsset(merge_contact_n_nsset_fixture::get_handle(i), registrar_handle).exec(ctx));
+            info_nsset_1.push_back(Fred::InfoNsset(merge_contact_n_nsset_fixture::get_handle(i)).exec(ctx));
         }
 
         std::vector<Fred::InfoKeysetOutput> info_keyset_1;
         info_keyset_1.reserve(keyset_count);
         for(int i = 0; i < keyset_count; ++i)
         {
-            info_keyset_1.push_back(Fred::InfoKeyset(merge_contact_n_keyset_fixture::get_handle(i), registrar_handle).exec(ctx));
+            info_keyset_1.push_back(Fred::InfoKeyset(merge_contact_n_keyset_fixture::get_handle(i)).exec(ctx));
         }
 
         std::vector<Fred::InfoDomainOutput> info_domain_owner_1;
         info_domain_owner_1.reserve(domain_owner_count);
         for(int i = 0; i < domain_owner_count; ++i)
         {
-            info_domain_owner_1.push_back(Fred::InfoDomain(merge_contact_n_domain_owner_fixture::get_handle(i), registrar_handle).exec(ctx));
+            info_domain_owner_1.push_back(Fred::InfoDomain(merge_contact_n_domain_owner_fixture::get_handle(i)).exec(ctx));
         }
 
         std::vector<Fred::InfoDomainOutput> info_domain_admin_1;
         info_domain_admin_1.reserve(domain_admin_count);
         for(int i = 0; i < domain_admin_count; ++i)
         {
-            info_domain_admin_1.push_back(Fred::InfoDomain(merge_contact_n_domain_admin_fixture::get_handle(i), registrar_handle).exec(ctx));
+            info_domain_admin_1.push_back(Fred::InfoDomain(merge_contact_n_domain_admin_fixture::get_handle(i)).exec(ctx));
         }
 
-        Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContact(src_contact_handle, registrar_handle).exec(ctx);
+        Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContact(src_contact_handle).exec(ctx);
         std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
-                info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
+                info_src_contact_1.info_contact_data.roid).exec(ctx);
         BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
 
         //merge
@@ -598,28 +598,28 @@ struct merge_contact_n_fixture
         info_nsset_2.reserve(nsset_count);
         for(int i = 0; i < nsset_count; ++i)
         {
-            info_nsset_2.push_back(Fred::InfoNsset(merge_contact_n_nsset_fixture::get_handle(i), registrar_handle).exec(ctx));
+            info_nsset_2.push_back(Fred::InfoNsset(merge_contact_n_nsset_fixture::get_handle(i)).exec(ctx));
         }
 
         std::vector<Fred::InfoKeysetOutput> info_keyset_2;
         info_keyset_2.reserve(keyset_count);
         for(int i = 0; i < keyset_count; ++i)
         {
-            info_keyset_2.push_back(Fred::InfoKeyset(merge_contact_n_keyset_fixture::get_handle(i), registrar_handle).exec(ctx));
+            info_keyset_2.push_back(Fred::InfoKeyset(merge_contact_n_keyset_fixture::get_handle(i)).exec(ctx));
         }
 
         std::vector<Fred::InfoDomainOutput> info_domain_owner_2;
         info_domain_owner_2.reserve(domain_owner_count);
         for(int i = 0; i < domain_owner_count; ++i)
         {
-            info_domain_owner_2.push_back(Fred::InfoDomain(merge_contact_n_domain_owner_fixture::get_handle(i), registrar_handle).exec(ctx));
+            info_domain_owner_2.push_back(Fred::InfoDomain(merge_contact_n_domain_owner_fixture::get_handle(i)).exec(ctx));
         }
 
         std::vector<Fred::InfoDomainOutput> info_domain_admin_2;
         info_domain_admin_2.reserve(domain_admin_count);
         for(int i = 0; i < domain_admin_count; ++i)
         {
-            info_domain_admin_2.push_back(Fred::InfoDomain(merge_contact_n_domain_admin_fixture::get_handle(i), registrar_handle).exec(ctx));
+            info_domain_admin_2.push_back(Fred::InfoDomain(merge_contact_n_domain_admin_fixture::get_handle(i)).exec(ctx));
         }
 
         //compare state before merge with state after
@@ -664,7 +664,7 @@ struct merge_contact_n_fixture
         }
 
         std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
-            info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
+            info_src_contact_1.info_contact_data.roid).exec(ctx);
         BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 
     }
@@ -700,14 +700,14 @@ BOOST_AUTO_TEST_CASE(merge_contact_n10_k10_do20_da20){merge_contact_n_fixture(10
 BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
 {
     //info before merge
-    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
-    Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContact(src_contact_handle, registrar_handle).exec(ctx);
+    Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContact(src_contact_handle).exec(ctx);
     std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
-            info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
+            info_src_contact_1.info_contact_data.roid).exec(ctx);
     BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
 
     //merge
@@ -715,10 +715,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     ctx.commit_transaction();
 
     //info after merge
-    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     //compare state before merge with state after
     Fred::InfoDomainOutput info_domain_owner_with_change = info_domain_owner_1;
@@ -750,7 +750,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     BOOST_CHECK(info_nsset_with_change == info_nsset_2);
 
     std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
-        info_src_contact_1.info_contact_data.roid, registrar_handle).exec(ctx);
+        info_src_contact_1.info_contact_data.roid).exec(ctx);
     BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 }
 
@@ -762,10 +762,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_src_contact, merge_contact_domain
     std::string bad_src_contact_handle = src_contact_handle+"_bad";
 
     //info before merge
-    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     try
     {
@@ -780,10 +780,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_src_contact, merge_contact_domain
     }
 
     //info after merge
-    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     //compare state before merge with state after
     BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
@@ -800,10 +800,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_dst_contact, merge_contact_domain
     std::string bad_dst_contact_handle = dst_contact_handle+"_bad";
 
     //info before merge
-    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     try
     {
@@ -818,10 +818,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_dst_contact, merge_contact_domain
     }
 
     //info after merge
-    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     //compare state before merge with state after
     BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
@@ -838,10 +838,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_src_contact, merge_contact_
     std::string different_src_contact_handle = src_contact_handle+"_different";
 
     //info before merge
-    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     Fred::CreateContact(different_src_contact_handle,registrar_handle)
                 .set_name("COMMON NAME")
@@ -864,10 +864,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_src_contact, merge_contact_
     }
 
     //info after merge
-    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     //compare state before merge with state after
     BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
@@ -884,10 +884,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_dst_contact, merge_contact_
     std::string different_dst_contact_handle = dst_contact_handle+"_different";
 
     //info before merge
-    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     Fred::CreateContact(different_dst_contact_handle,registrar_handle)
                 .set_name("COMMON NAME")
@@ -910,10 +910,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_dst_contact, merge_contact_
     }
 
     //info after merge
-    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     //compare state before merge with state after
     BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
@@ -928,10 +928,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_dst_contact, merge_contact_
 BOOST_FIXTURE_TEST_CASE(merge_contact_with_same_src_and_dst_contact, merge_contact_domain_fixture)
 {
     //info before merge
-    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     try
     {
@@ -948,10 +948,10 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_same_src_and_dst_contact, merge_conta
     }
 
     //info after merge
-    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle, registrar_handle).exec(ctx);
-    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomain(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomain(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     //compare state before merge with state after
     BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);

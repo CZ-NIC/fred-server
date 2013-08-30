@@ -131,14 +131,14 @@ BOOST_FIXTURE_TEST_CASE(delete_nsset, delete_nsset_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoNssetOutput nsset_info1 = Fred::InfoNsset(test_nsset_handle, registrar_handle).exec(ctx);
+    Fred::InfoNssetOutput nsset_info1 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
     BOOST_CHECK(nsset_info1.info_nsset_data.delete_time.isnull());
 
     Fred::DeleteNsset(test_nsset_handle).exec(ctx);
     ctx.commit_transaction();
 
     std::vector<Fred::InfoNssetHistoryOutput> nsset_history_info1 = Fred::InfoNssetHistory(
-    nsset_info1.info_nsset_data.roid, registrar_handle).exec(ctx);
+    nsset_info1.info_nsset_data.roid).exec(ctx);
 
     BOOST_CHECK(!nsset_history_info1.at(0).info_nsset_data.delete_time.isnull());
 

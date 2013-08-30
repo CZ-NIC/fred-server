@@ -56,17 +56,15 @@ namespace Fred
     {
         const std::string roid_;//keyset identifier
         Optional<boost::posix_time::ptime> history_timestamp_;//history timestamp
-        const std::string registrar_;//registrar identifier
         bool lock_;//lock object_registry row for domain
     public:
         struct Exception
         : virtual Fred::OperationException
         , ExceptionData_unknown_registry_object_identifier<Exception>
-        , ExceptionData_unknown_registrar_handle<Exception>
         {};
 
-        InfoKeysetHistory(const std::string& roid, const std::string& registrar);
-        InfoKeysetHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp, const std::string& registrar);
+        InfoKeysetHistory(const std::string& roid);
+        InfoKeysetHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp);
 
         InfoKeysetHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);//set history timestamp
         InfoKeysetHistory& set_lock(bool lock = true);//set lock object_registry row for domain
