@@ -40,10 +40,8 @@
 
 namespace Fred
 {
-    InfoNsset::InfoNsset(const std::string& handle
-            , const std::string& registrar)
+    InfoNsset::InfoNsset(const std::string& handle)
     : handle_(handle)
-    , registrar_(registrar)
     , lock_(false)
     {}
 
@@ -59,25 +57,6 @@ namespace Fred
 
         try
         {
-            //check registrar exists
-            //TODO: check registrar access
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
-                    , Database::query_param_list(registrar_));
-
-                if (res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-
-            }
-
-
             //info about nsset
             unsigned long long nsset_id = 0;
             {
@@ -222,7 +201,6 @@ namespace Fred
     std::ostream& operator<<(std::ostream& os, const InfoNsset& i)
     {
         return os << "#InfoNsset handle: " << i.handle_
-            << " registrar: " << i.registrar_
             << " lock: " << i.lock_;
     }
 
