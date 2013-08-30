@@ -150,8 +150,8 @@ struct update_keyset_fixture
 */
 BOOST_FIXTURE_TEST_CASE(info_keyset, update_keyset_fixture )
 {
-    Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
-    Fred::InfoKeysetOutput keyset_info2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).set_lock().exec(ctx);
+    Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoKeysetOutput keyset_info2 = Fred::InfoKeyset(test_keyset_handle).set_lock().exec(ctx);
 
     BOOST_CHECK(keyset_info1 == keyset_info2);
 }
@@ -163,7 +163,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset, update_keyset_fixture )
  */
 BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
 {
-    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_1 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 
     //update_registrar_handle check
@@ -179,7 +179,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     //empty update
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).exec(ctx);
 
-    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_2 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_1_with_changes = info_data_1;
@@ -221,7 +221,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
         , Optional<unsigned long long>(0)//const Optional<unsigned long long> logd_request_id
         ).exec(ctx);
 
-    Fred::InfoKeysetOutput info_data_3 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_3 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_3 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_2_with_changes = info_data_2;
@@ -278,7 +278,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
         , Optional<unsigned long long>()//const Optional<unsigned long long> logd_request_id
         ).exec(ctx);
 
-    Fred::InfoKeysetOutput info_data_4 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_4 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_4 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_3_with_changes = info_data_3;
@@ -313,7 +313,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     //transfer password
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).set_authinfo("kukauthinfo").exec(ctx);
 
-    Fred::InfoKeysetOutput info_data_5 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_5 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_5 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_4_with_changes = info_data_4;
@@ -354,7 +354,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     //add tech contact
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).add_tech_contact(admin_contact4_handle).exec(ctx);
 
-    Fred::InfoKeysetOutput info_data_6 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_6 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_6 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_5_with_changes = info_data_5;
@@ -394,7 +394,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     //remove tech contact
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).rem_tech_contact(admin_contact5_handle).exec(ctx);
 
-    Fred::InfoKeysetOutput info_data_7 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_7 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_7 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_6_with_changes = info_data_6;
@@ -438,7 +438,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     //add dnskey
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).add_dns_key(Fred::DnsKey(257, 3, 5, "key2")).add_dns_key(Fred::DnsKey(257, 3, 5, "key3")).exec(ctx);
 
-    Fred::InfoKeysetOutput info_data_8 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_8 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_8 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_7_with_changes = info_data_7;
@@ -481,7 +481,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     //remove dnskey
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).rem_dns_key(Fred::DnsKey(257, 3, 5, "key")).exec(ctx);
 
-    Fred::InfoKeysetOutput info_data_9 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_9 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_9 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_8_with_changes = info_data_8;
@@ -527,7 +527,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     //request_id
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).set_logd_request_id(10).exec(ctx);
 
-    Fred::InfoKeysetOutput info_data_10 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_10 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data_10 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 
     //request id
@@ -598,7 +598,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_registrar, update_keyset_fixture)
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
 
-    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
 
     try
     {
@@ -612,7 +612,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_registrar, update_keyset_fixture)
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
-    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
 
@@ -625,7 +625,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_sponsoring_registrar, update_keyset_
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
 
-    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
 
     try
     {
@@ -640,7 +640,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_sponsoring_registrar, update_keyset_
         BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
-    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
 
@@ -653,7 +653,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_wrong_tech_contact, update_keyset_fixt
 {
     std::string bad_tech_contact_handle = admin_contact5_handle+xmark;
 
-    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
 
     BOOST_MESSAGE(std::string("handle: ") + info_data_1.info_keyset_data.handle + " roid: " + info_data_1.info_keyset_data.roid);
     try
@@ -671,7 +671,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_wrong_tech_contact, update_keyset_fixt
         BOOST_CHECK(ex.get_vector_of_unknown_technical_contact_handle().at(0).compare(bad_tech_contact_handle) == 0);
     }
 
-    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
 }
@@ -681,7 +681,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_wrong_tech_contact, update_keyset_fixt
  */
 BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_tech_contact, update_keyset_fixture)
 {
-    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
 
     try
     {
@@ -697,7 +697,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_tech_contact, update_key
         BOOST_CHECK(ex.get_vector_of_already_set_technical_contact_handle().at(0).compare(admin_contact6_handle) == 0);
     }
 
-    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
 }
@@ -710,7 +710,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_wrong_tech_contact, update_keyset_fixt
 {
     std::string bad_tech_contact_handle = admin_contact6_handle+xmark;
 
-    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
 
     try
     {
@@ -726,7 +726,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_wrong_tech_contact, update_keyset_fixt
         BOOST_CHECK(ex.get_vector_of_unknown_technical_contact_handle().at(0).compare(bad_tech_contact_handle) == 0);
     }
 
-    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
 }
@@ -738,7 +738,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_unassigned_tech_contact, update_keyset
 {
     std::string bad_tech_contact_handle = admin_contact4_handle;
 
-    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
 
     try
     {
@@ -755,7 +755,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_unassigned_tech_contact, update_keyset
         BOOST_CHECK(ex.get_vector_of_unassigned_technical_contact_handle().at(0).compare(bad_tech_contact_handle) == 0);
     }
 
-    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
 }
@@ -766,7 +766,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_unassigned_tech_contact, update_keyset
  */
 BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_dnskey, update_keyset_fixture)
 {
-    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
 
     try
     {
@@ -782,7 +782,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_dnskey, update_keyset_fi
         BOOST_CHECK(ex.get_vector_of_already_set_dns_key().at(0) == Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"));
     }
 
-    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
 }
@@ -792,7 +792,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_dnskey, update_keyset_fi
  */
 BOOST_FIXTURE_TEST_CASE(update_keyset_unassigned_dnskey, update_keyset_fixture)
 {
-    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
 
     try
     {
@@ -808,7 +808,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_unassigned_dnskey, update_keyset_fixture)
         BOOST_CHECK(ex.get_vector_of_unassigned_dns_key().at(0) == Fred::DnsKey(257, 3, 5, "unassignedkey"));
     }
 
-    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
 }
@@ -823,7 +823,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_unassigned_dnskey, update_keyset_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(info_keyset_history_test, update_keyset_fixture)
 {
-    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     //call update
     {
         Fred::OperationContext ctx;//new connection to rollback on error
@@ -832,7 +832,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset_history_test, update_keyset_fixture)
         ctx.commit_transaction();
     }
 
-    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
 
     std::vector<Fred::InfoKeysetHistoryOutput> history_info_data = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid, registrar_handle).exec(ctx);
 

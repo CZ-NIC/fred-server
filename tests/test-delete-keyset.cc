@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(delete_keyset, delete_keyset_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeyset(test_keyset_handle, registrar_handle).exec(ctx);
+    Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
     BOOST_CHECK(keyset_info1.info_keyset_data.delete_time.isnull());
 
     Fred::DeleteKeyset(test_keyset_handle).exec(ctx);
