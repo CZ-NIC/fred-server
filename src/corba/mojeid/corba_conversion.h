@@ -220,16 +220,6 @@ Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contac
     data.handle = corba_unwrap_string(_contact.username);
     data.organization = corba_unwrap_nullable_string(_contact.organization);
     data.vat = corba_unwrap_nullable_string(_contact.vat_reg_num);
-    data.auth_info = corba_unwrap_normalize_nullable_string(_contact.auth_info);
-    data.disclosename = true;
-    data.discloseorganization = true;
-    data.discloseaddress = corba_unwrap_nullable_boolean(_contact.disclose_address, true);
-    data.disclosetelephone = corba_unwrap_nullable_boolean(_contact.disclose_phone, false);
-    data.disclosefax = corba_unwrap_nullable_boolean(_contact.disclose_fax, false);
-    data.discloseemail = corba_unwrap_nullable_boolean(_contact.disclose_email, false);
-    data.disclosenotifyemail = corba_unwrap_nullable_boolean(_contact.disclose_notify_email, false);
-    data.disclosevat = corba_unwrap_nullable_boolean(_contact.disclose_vat, false);
-    data.discloseident = corba_unwrap_nullable_boolean(_contact.disclose_ident, false);
 
     return data;
 }
@@ -249,7 +239,6 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
     data->organization = corba_wrap_nullable_string(_contact.organization);
     data->vat_reg_num  = corba_wrap_nullable_string(_contact.vat);
     data->ssn_type     = corba_wrap_nullable_string(_contact.ssntype);
-    data->auth_info    = corba_wrap_nullable_string(_contact.auth_info);
 
     std::string type = static_cast<std::string>(_contact.ssntype);
     data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(_contact.ssn) : 0;
@@ -257,16 +246,6 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
     data->vat_id_num   = type == "ICO"      ? corba_wrap_nullable_string(_contact.ssn) : 0;
     data->ssn_id_num   = type == "MPSV"     ? corba_wrap_nullable_string(_contact.ssn) : 0;
     data->birth_date   = type == "BIRTHDAY" ? corba_wrap_nullable_date(_contact.ssn) : 0;
-
-    data->disclose_name         = corba_wrap_nullable_boolean(_contact.disclosename);
-    data->disclose_organization = corba_wrap_nullable_boolean(_contact.discloseorganization);
-    data->disclose_vat          = corba_wrap_nullable_boolean(_contact.disclosevat);
-    data->disclose_ident        = corba_wrap_nullable_boolean(_contact.discloseident);
-    data->disclose_email        = corba_wrap_nullable_boolean(_contact.discloseemail);
-    data->disclose_notify_email = corba_wrap_nullable_boolean(_contact.disclosenotifyemail);
-    data->disclose_address      = corba_wrap_nullable_boolean(_contact.discloseaddress);
-    data->disclose_phone        = corba_wrap_nullable_boolean(_contact.disclosetelephone);
-    data->disclose_fax          = corba_wrap_nullable_boolean(_contact.disclosefax);
 
     data->addresses.length(1);
     data->addresses[0].type         = "DEFAULT";
