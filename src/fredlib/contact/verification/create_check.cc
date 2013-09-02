@@ -25,9 +25,11 @@
 #include <boost/algorithm/string/join.hpp>
 /* TODO - FIXME - only temporary for uuid mockup */
 #include  <cstdlib>
+#include "util/random_data_generator.h"
 
 #include "fredlib/contact/verification/create_check.h"
 #include "fredlib/contact/verification/enum_check_status.h"
+
 
 namespace Fred
 {
@@ -81,7 +83,7 @@ namespace Fred
 
                 // generate random 128bits = 16 bytes
                 for (int i = 0; i < 16; ++i) {
-                    bytes.push_back( rand()%256 );
+                    bytes.push_back( RandomDataGenerator().xletter()%256 );
                 }
                 /* some specific uuid rules
                  * http://www.cryptosys.net/pki/Uuid.c.html
