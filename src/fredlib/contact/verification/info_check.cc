@@ -24,9 +24,77 @@
 #include "fredlib/contact/verification/info_check.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <string>
 
 namespace Fred
 {
+
+    std::string InfoContactCheckOutput::ContactTestResultState::to_string(const std::string& _each_line_prefix) const {
+        std::string result;
+
+        result =
+            _each_line_prefix + "<InfoContactCheckOutput::ContactTestResultState> {" + "\n"
+            + _each_line_prefix + _each_line_prefix + " status_name: " +      status_name + "\n"
+            + _each_line_prefix + _each_line_prefix + " error_msg: " +        error_msg.print_quoted() + "\n"
+            + _each_line_prefix + _each_line_prefix + " local_update_time:" + boost::posix_time::to_simple_string(local_update_time) + "\n"
+            + _each_line_prefix + _each_line_prefix + " logd_request_id:" +   logd_request_id.print_quoted()
+            + "\n" + _each_line_prefix + "}";
+
+        return result;
+    }
+
+    std::string InfoContactCheckOutput::ContactTestResultData::to_string(const std::string& _each_line_prefix) const {
+        std::string result;
+
+        result =
+            _each_line_prefix + "<InfoContactCheckOutput::ContactTestResultData> {" + "\n"
+            + _each_line_prefix + _each_line_prefix + " test_name: " +         test_name + "\n"
+            + _each_line_prefix + _each_line_prefix + " local_create_time: " + boost::posix_time::to_simple_string(local_create_time) + "\n"
+            + _each_line_prefix + _each_line_prefix + " state_history: \n";
+
+        for(std::vector<ContactTestResultState>::const_iterator it = state_history.begin(); it != state_history.end(); ++it) {
+            result += _each_line_prefix + it->to_string(_each_line_prefix + _each_line_prefix );
+        }
+        result += "\n" + _each_line_prefix + "}";
+
+        return result;
+    }
+
+    std::string InfoContactCheckOutput::ContactCheckState::to_string(const std::string& _each_line_prefix) const {
+        std::string result;
+
+        result =
+            _each_line_prefix + "<InfoContactCheckOutput::ContactCheckState> {" + "\n"
+            + _each_line_prefix + _each_line_prefix + "status_name: " +      status_name + "\n"
+            + _each_line_prefix + _each_line_prefix + "local_update_time:" + boost::posix_time::to_simple_string(local_update_time) + "\n"
+            + _each_line_prefix + _each_line_prefix + "logd_request_id:" +   logd_request_id.print_quoted()
+            + "\n" + _each_line_prefix + "}";
+
+        return result;
+    }
+
+    std::string InfoContactCheckOutput::to_string(const std::string& _each_line_prefix) const {
+        std::string result;
+
+        result =
+            _each_line_prefix + "<InfoContactCheckOutput> {" + "\n"
+            + _each_line_prefix + _each_line_prefix + "handle: " +             handle + "\n"
+            + _each_line_prefix + _each_line_prefix + "testsuite_name: " +     testsuite_name + "\n"
+            + _each_line_prefix + _each_line_prefix + "contact_history_id: " + boost::lexical_cast<std::string>(contact_history_id) + "\n"
+            + _each_line_prefix + _each_line_prefix + "local_create_time:" +   boost::posix_time::to_simple_string(local_create_time) + "\n"
+            + _each_line_prefix + _each_line_prefix + "check_state_history: \n";
+        for(std::vector<ContactCheckState>::const_iterator it = check_state_history.begin(); it != check_state_history.end(); ++it) {
+            result += it->to_string(_each_line_prefix + _each_line_prefix );
+        }
+        result += _each_line_prefix + _each_line_prefix + "tests: \n";
+        for(std::vector<ContactTestResultData>::const_iterator it = tests.begin(); it != tests.end(); ++it) {
+            result += it->to_string(_each_line_prefix + _each_line_prefix );
+        }
+        result += "\n" + _each_line_prefix + "}";
+
+        return result;
+    }
+
     InfoContactCheck::InfoContactCheck( const std::string& _handle)
         : handle_(_handle)
     {}

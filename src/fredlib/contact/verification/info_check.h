@@ -61,18 +61,24 @@ namespace Fred
             Nullable<std::string>    error_msg;
             boost::posix_time::ptime local_update_time;
             Nullable<long long>      logd_request_id;
+
+            std::string to_string(const std::string& _each_line_prefix = "\t") const;
         };
 
         struct ContactTestResultData {
             std::string                         test_name;
             boost::posix_time::ptime            local_create_time;
             std::vector<ContactTestResultState> state_history;  /* current state is also included */
+
+            std::string to_string(const std::string& _each_line_prefix = "\t") const;
         };
 
         struct ContactCheckState {
             std::string              status_name;
             boost::posix_time::ptime local_update_time;
             Nullable<long long>      logd_request_id;
+
+            std::string to_string(const std::string& _each_line_prefix = "\t") const;
         };
 
 
@@ -82,6 +88,8 @@ namespace Fred
         boost::posix_time::ptime           local_create_time;
         std::vector<ContactCheckState>     check_state_history; /* current state is also included */
         std::vector<ContactTestResultData> tests;
+
+        std::string to_string(const std::string& _each_line_prefix = "\t") const;
     };
 
     /**
