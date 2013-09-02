@@ -40,6 +40,13 @@ namespace Fred
             Nullable<long long> logd_request_id_;
 
         public:
+            struct ExceptionUnknownContactHandle : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown contact handle";}
+            };
+            struct ExceptionUnknownStatusName : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown testsuite name";}
+            };
+
             /**
              * constructor only with mandatory parameters
              * @param _check_handle     identifies which contact_check to update.

@@ -100,8 +100,23 @@ namespace Fred
             if (update_contact_check_res.size() != 1) {
                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_test update failed"));
             }
-        } catch(ExceptionStack& ex) {
-            ex.add_exception_stack_info( to_string() );
+        } catch(const std::exception& _exc) {
+
+            std::string what_string(_exc.what());
+
+            if(what_string.find("fk_contact_check_contact_history_id") != std::string::npos) {
+                throw ExceptionUnknownContactHandle();
+            }
+
+            if(what_string.find("contact_test_result_fk_Enum_contact_test_id") != std::string::npos) {
+                throw ExceptionUnknownTestName();
+            }
+
+            if(what_string.find("contact_test_result_history_fk_Enum_contact_test_status_id") != std::string::npos) {
+                throw ExceptionUnknownStatusName();
+            }
+
+            // problem was elsewhere so let it propagate
             throw;
         }
     }

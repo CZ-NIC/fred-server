@@ -79,8 +79,19 @@ namespace Fred
                     (logd_request_id_)
             );
 
-        } catch(ExceptionStack& ex) {
-            ex.add_exception_stack_info( to_string() );
+        } catch(const std::exception& _exc) {
+
+            std::string what_string(_exc.what());
+
+            if(what_string.find("fk_contact_check_contact_history_id") != std::string::npos) {
+                throw ExceptionUnknownContactHandle();
+            }
+
+            if(what_string.find("contact_test_result_fk_Enum_contact_test_id") != std::string::npos) {
+                throw ExceptionUnknownTestName();
+            }
+
+            // problem was elsewhere so let it propagate
             throw;
         }
     }

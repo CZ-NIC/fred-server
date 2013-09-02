@@ -41,6 +41,16 @@ namespace Fred
             Nullable<long long> logd_request_id_;
 
         public:
+            struct ExceptionUnknownContactHandle : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown contact handle";}
+            };
+            struct ExceptionUnknownTestsuiteName : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown testsuite name";}
+            };
+            struct ExceptionCheckAlreadyExists : virtual Fred::OperationException {
+                const char* what() const throw() {return "check for this contact testsuite combination already exists";}
+            };
+
             /**
              * constructor only with mandatory parameters
              * @param _contact_handle   identifies contact to be checked - current "snapshot" of historical data is used during check.

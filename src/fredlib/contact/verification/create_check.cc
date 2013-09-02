@@ -126,12 +126,9 @@ namespace Fred
                 ")"
                 "VALUES ("
                 "   $1::uuid,"
-                "   (SELECT o_h.historyid"
-                "       FROM object_registry AS o_r"
-                "           LEFT JOIN object_history AS o_h USING(id)"
-                "           LEFT JOIN h AS ON o_h.historyid = h.id"
-                "       WHERE o_r.name=$2::varchar"
-                "       AND h.next IS NULL),"
+                "   (SELECT historyid"
+                "       FROM object_registry"
+                "       WHERE name=$2::varchar),"
                 "   (SELECT id FROM enum_contact_testsuite WHERE name=$3::varchar),"
                 "   (SELECT id FROM enum_contact_check_status WHERE name=$4::varchar),"
                 "   $5::bigint"
@@ -143,8 +140,23 @@ namespace Fred
                     (Fred::ContactCheckStatus::ENQUEUED)
                     (logd_request_id_)
             );
-        } catch(ExceptionStack& ex) {
-            ex.add_exception_stack_info( to_string() );
+        } catch(const std::exception& _exc) {
+
+            std::string what_string(_exc.what());
+
+            if(what_string.find("fk_contact_check_contact_history_id") != std::string::npos) {
+                throw ExceptionUnknownContactHandle();
+            }
+
+            if(what_string.find("contact_check_fk_Enum_contact_testsuite_id") != std::string::npos) {
+                throw ExceptionUnknownTestsuiteName();
+            }
+
+            if(what_string.find("fk_contact_check_contact_history_id") != std::string::npos) {
+                throw ExceptionCheckAlreadyExists();
+            }
+
+            // problem was elsewhere so let it propagate
             throw;
         }
 
