@@ -156,6 +156,7 @@ noinst_HEADERS = \
 		util/cfg/handle_adifd_args.h \
 		util/cfg/handle_logd_args.h \
 		util/cfg/handle_rifd_args.h \
+		util/cfg/handle_registrars_charging_args.h \
 		util/cfg/command_selection_args.h \
 		util/cfg/check_args.h \
 		util/cfg/validate_args.h \

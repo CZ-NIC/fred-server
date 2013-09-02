@@ -56,6 +56,7 @@ private:
   unsigned rifd_session_timeout_;
   unsigned rifd_session_registrar_max_;
   bool rifd_epp_update_domain_keyset_clear_;
+  bool charging_of_epp_create_and_renew_domain_disabled_;
 
 
   DBSharedPtr  db_disconnect_guard_;
@@ -85,6 +86,7 @@ public:
           , unsigned rifd_session_timeout
           , unsigned rifd_session_registrar_max
           , bool rifd_epp_update_domain_keyset_clear
+          , bool charging_of_epp_create_and_renew_domain_disabled
           );
   virtual ~ccReg_EPP_i();
 

@@ -666,6 +666,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     , unsigned rifd_session_timeout
     , unsigned rifd_session_registrar_max
     , bool rifd_epp_update_domain_keyset_clear
+    , bool charging_of_epp_create_and_renew_domain_disabled
 )
 
     : database(_db),
@@ -684,7 +685,8 @@ ccReg_EPP_i::ccReg_EPP_i(
     , rifd_session_max_(rifd_session_max)
     , rifd_session_timeout_(rifd_session_timeout)
     , rifd_session_registrar_max_(rifd_session_registrar_max)
-    , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear) ,
+    , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear)
+    , charging_of_epp_create_and_renew_domain_disabled_(charging_of_epp_create_and_renew_domain_disabled),
 
     db_disconnect_guard_(),
     regMan(),
@@ -5430,26 +5432,39 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                 }
 
                             }
-                            std::auto_ptr<Fred::Invoicing::Manager> invMan(
-                                    Fred::Invoicing::Manager::create());
-                            if (invMan->chargeDomainCreate(zone, action.getRegistrar(),
-                                        id, Database::Date(std::string(exDate)), period_count)) {
 
-                                if(!invMan->chargeDomainRenew(zone, action.getRegistrar(),
-                                        id, Database::Date(std::string(exDate)), period_count)) {
+                            if(!charging_of_epp_create_and_renew_domain_disabled_)
+                            {
+                                std::auto_ptr<Fred::Invoicing::Manager> invMan(
+                                        Fred::Invoicing::Manager::create());
+                                if (invMan->chargeDomainCreate(zone, action.getRegistrar(),
+                                            id, Database::Date(std::string(exDate)), period_count)) {
+
+                                    if(!invMan->chargeDomainRenew(zone, action.getRegistrar(),
+                                            id, Database::Date(std::string(exDate)), period_count)) {
+                                        code = COMMAND_BILLING_FAILURE;
+                                    }
+
+                                    else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
+                                        if (action.getDB()->SaveObjectCreate(id)) {
+                                            code = COMMAND_OK;
+                                        }
+                                    } else {
+                                        code = COMMAND_FAILED;
+                                    }
+                                } else {
                                     code = COMMAND_BILLING_FAILURE;
                                 }
 
-                                else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
-                                    if (action.getDB()->SaveObjectCreate(id)) {
-                                        code = COMMAND_OK;
-                                    }
-                                } else {
-                                    code = COMMAND_FAILED;
+                            }
+                            else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
+                                if (action.getDB()->SaveObjectCreate(id)) {
+                                    code = COMMAND_OK;
                                 }
                             } else {
-                                code = COMMAND_BILLING_FAILURE;
+                                code = COMMAND_FAILED;
                             }
+
 
                         } else
                             code = COMMAND_FAILED;
@@ -5461,7 +5476,6 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                             mm , action.getDB(), action.getRegistrar(), id ));
                                 action.setNotifier(ntf.get());
                             }
-
                     }
                 }
 
@@ -5678,12 +5692,15 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
                         CORBA::string_free(exDate);
                         exDate = CORBA::string_dup(action.getDB()->GetDomainExDate(id) );
 
-
-
-                        std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
-                        if (invMan->chargeDomainRenew(zone, action.getRegistrar(),
-                                    id, Database::Date(std::string(exDate)), period_count) == false ) {
-                            code = COMMAND_BILLING_FAILURE;
+                        if(!charging_of_epp_create_and_renew_domain_disabled_)
+                        {
+                            std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+                            if (invMan->chargeDomainRenew(zone, action.getRegistrar(),
+                                        id, Database::Date(std::string(exDate)), period_count) == false ) {
+                                code = COMMAND_BILLING_FAILURE;
+                            } else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
+                                code = COMMAND_OK;
+                            }
                         } else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
                             code = COMMAND_OK;
                         }
