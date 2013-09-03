@@ -63,6 +63,9 @@ namespace Fred
             Nullable<long long>      logd_request_id;
 
             std::string to_string(const std::string& _each_line_prefix = "\t") const;
+            bool operator==(const ContactTestResultState& rhs) const {
+                return this->to_string() == rhs.to_string();
+            };
         };
 
         struct ContactTestResultData {
@@ -71,6 +74,9 @@ namespace Fred
             std::vector<ContactTestResultState> state_history;  /* current state is also included */
 
             std::string to_string(const std::string& _each_line_prefix = "\t") const;
+            bool operator==(const ContactTestResultData& rhs) const {
+                return this->to_string() == rhs.to_string();
+            };
         };
 
         struct ContactCheckState {
@@ -79,6 +85,9 @@ namespace Fred
             Nullable<long long>      logd_request_id;
 
             std::string to_string(const std::string& _each_line_prefix = "\t") const;
+            bool operator==(const ContactCheckState& rhs) const {
+                return this->to_string() == rhs.to_string();
+            };
         };
 
 
@@ -90,6 +99,9 @@ namespace Fred
         std::vector<ContactTestResultData> tests;
 
         std::string to_string(const std::string& _each_line_prefix = "\t") const;
+        bool operator==(const InfoContactCheckOutput& rhs) const {
+            return this->to_string() == rhs.to_string();
+        };
     };
 
     /**
