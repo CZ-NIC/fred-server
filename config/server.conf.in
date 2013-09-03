@@ -123,5 +123,5 @@ demo_mode = false
 # Registrars charging configuration
 ##
 [registrars_charging]
-charging_of_epp_create_and_renew_domain_disabled = false
+charging_of_epp_create_and_renew_domain_disabled = @REGISTRARS_CHARGING_DISABLED@
 
