@@ -1663,7 +1663,8 @@ tests_test_server_SOURCES = \
 		tests/test-create-domain.cc \
 		tests/test-domain-name.cc \
 		tests/contact_verification/test-create_check_unit.cc \
-		tests/contact_verification/test-create_check_integ.cc
+		tests/contact_verification/test-create_check_integ.cc \ 
+		tests/contact_verification/test-update_check_unit.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
