@@ -96,8 +96,7 @@ namespace Fred
                 "   $2::int,"
                 "   (SELECT id FROM enum_contact_test_status WHERE name=$3::varchar),"
                 "   $4::bigint"
-                ")"
-                "RETURNING id;",
+                ");",
                 Database::query_param_list
                     (check_id)
                     (test_id)
