@@ -173,8 +173,8 @@ BOOST_AUTO_TEST_CASE(test_Setter_reset)
             serialized.find("status_name_: " + it->get<1>() ) != std::string::npos,
             "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-                    serialized.find("logd_request_id_: " + Nullable<long long>( it->get<2>() ).print_quoted() ) == std::string::npos,
-                    "Found invalid logd request id \"" + Nullable<long long>( it->get<2>() ).print_quoted() + "\" in " + serialized + ".");
+            serialized.find("logd_request_id_: " + Nullable<long long>( it->get<2>() ).print_quoted() ) == std::string::npos,
+            "Found invalid logd request id \"" + Nullable<long long>( it->get<2>() ).print_quoted() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("logd_request_id_: " + Nullable<long long>( it->get<3>() ).print_quoted() ) != std::string::npos,
             "Cannot find logd request id \"" + Nullable<long long>( it->get<3>() ).print_quoted() + "\" in " + serialized + ".");
