@@ -99,6 +99,10 @@ namespace Fred
             std::string handle_;
 
         public:
+            struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown check handle";}
+            };
+
             /**
              * constructor with only parameter
              * @param _handle     identifies which contact_check to update by it's handle.

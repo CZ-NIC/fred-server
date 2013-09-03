@@ -117,6 +117,32 @@ namespace Fred
 
         std::string handle = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
 
+        // using solo select for easy checking of existence (subselect would be strange)
+        Database::Result contact_history_res = _ctx.get_conn().exec_params(
+            "SELECT historyid"
+            "   FROM object_registry"
+            "   WHERE name=$1::varchar "
+            "       AND type='1' "
+            "   FOR SHARE;", // prevent deletion
+            Database::query_param_list(contact_handle_)
+        );
+        if(contact_history_res.size() != 1) {
+            throw ExceptionUnknownContactHandle();
+        }
+        long contact_history_id = static_cast<long>(contact_history_res[0]["historyid"]);
+
+        Database::Result testsuite_res = _ctx.get_conn().exec_params(
+            "SELECT id "
+            "   FROM enum_contact_testsuite "
+            "   WHERE name=$1::varchar "
+            "   FOR SHARE;",
+            Database::query_param_list(testsuite_name_)
+        );
+        if(testsuite_res.size() != 1) {
+            throw ExceptionUnknownTestsuiteName();
+        }
+        long testsuite_id = static_cast<long>(testsuite_res[0]["id"]);
+
         try {
             _ctx.get_conn().exec_params(
                 "INSERT INTO contact_check ( "
@@ -128,17 +154,15 @@ namespace Fred
                 ")"
                 "VALUES ("
                 "   $1::uuid,"
-                "   (SELECT historyid"
-                "       FROM object_registry"
-                "       WHERE name=$2::varchar),"
-                "   (SELECT id FROM enum_contact_testsuite WHERE name=$3::varchar),"
+                "   $2::int,"
+                "   $3::int,"
                 "   (SELECT id FROM enum_contact_check_status WHERE name=$4::varchar),"
                 "   $5::bigint"
                 ");",
                 Database::query_param_list
                     (handle)
-                    (contact_handle_)
-                    (testsuite_name_)
+                    (contact_history_id)
+                    (testsuite_id)
                     (Fred::ContactCheckStatus::ENQUEUED)
                     (logd_request_id_)
             );

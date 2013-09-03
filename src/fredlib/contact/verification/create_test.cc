@@ -57,6 +57,32 @@ namespace Fred
     }
 
     void CreateContactTest::exec(OperationContext& _ctx) {
+        // using solo select for easy checking of existence (subselect would be strange)
+        Database::Result check_res = _ctx.get_conn().exec_params(
+            "SELECT id "
+            "   FROM contact_check "
+            "   WHERE handle=$1::uuid "
+            "   FOR SHARE;",
+            Database::query_param_list(check_handle_)
+        );
+        if(check_res.size() != 1) {
+            throw ExceptionUnknownCheckHandle();
+        }
+        long check_id = static_cast<long>(check_res[0]["id"]);
+
+        // using solo select for easy checking of existence (subselect would be strange)
+        Database::Result test_res = _ctx.get_conn().exec_params(
+            "SELECT id "
+            "   FROM enum_contact_test "
+            "   WHERE name=$1::varchar"
+            "   FOR SHARE;",
+            Database::query_param_list(test_name_)
+        );
+        if(test_res.size() != 1) {
+            throw ExceptionUnknownTestName();
+        }
+        long test_id = static_cast<long>(check_res[0]["id"]);
+
         try {
             _ctx.get_conn().exec_params(
                 "INSERT INTO contact_test_result ( "
@@ -66,15 +92,15 @@ namespace Fred
                 "   logd_request_id"
                 ")"
                 "VALUES ("
-                "   (SELECT id FROM contact_check WHERE handle=$1::varchar),"
-                "   (SELECT id FROM enum_contact_test WHERE name=$2::varchar),"
+                "   $1::bigint,"
+                "   $2::int,"
                 "   (SELECT id FROM enum_contact_test_status WHERE name=$3::varchar),"
                 "   $4::bigint"
                 ")"
                 "RETURNING id;",
                 Database::query_param_list
-                    (check_handle_)
-                    (test_name_)
+                    (check_id)
+                    (test_id)
                     (Fred::ContactTestStatus::RUNNING)
                     (logd_request_id_)
             );
@@ -83,8 +109,8 @@ namespace Fred
 
             std::string what_string(_exc.what());
 
-            if(what_string.find("fk_contact_check_contact_history_id") != std::string::npos) {
-                throw ExceptionUnknownContactHandle();
+            if(what_string.find("contact_test_result_fk_Contact_check_id") != std::string::npos) {
+                throw ExceptionUnknownCheckHandle();
             }
 
             if(what_string.find("contact_test_result_fk_Enum_contact_test_id") != std::string::npos) {

@@ -74,6 +74,45 @@ namespace Fred
     }
 
     void UpdateContactTest::exec (OperationContext& _ctx) {
+        // using solo select for easy checking of existence (subselect would be strange)
+        Database::Result status_res = _ctx.get_conn().exec_params(
+            "SELECT id "
+            "   FROM enum_contact_test_status "
+            "   WHERE name=$1::varchar "
+            "   FOR SHARE;",
+            Database::query_param_list(status_name_)
+        );
+        if(status_res.size() != 1) {
+            throw ExceptionUnknownStatusName();
+        }
+        long status_id = static_cast<long>(status_res[0]["id"]);
+
+        // using solo select for easy checking of existence (subselect would be strange)
+        Database::Result check_res = _ctx.get_conn().exec_params(
+            "SELECT id "
+            "   FROM contact_check "
+            "   WHERE handle=$1::uuid "
+            "   FOR SHARE;",
+            Database::query_param_list(check_handle_)
+        );
+        if(check_res.size() != 1) {
+            throw ExceptionUnknownCheckHandle();
+        }
+        long check_id = static_cast<long>(check_res[0]["id"]);
+
+        // using solo select for easy checking of existence (subselect would be strange)
+        Database::Result test_res = _ctx.get_conn().exec_params(
+            "SELECT id "
+            "   FROM enum_contact_test "
+            "   WHERE name=$1::varchar"
+            "   FOR SHARE;",
+            Database::query_param_list(test_name_)
+        );
+        if(test_res.size() != 1) {
+            throw ExceptionUnknownTestName();
+        }
+        long test_id = static_cast<long>(check_res[0]["id"]);
+
         try {
             Database::Result update_contact_check_res = _ctx.get_conn().exec_params(
                 "UPDATE contact_test_result SET ( "
@@ -81,20 +120,20 @@ namespace Fred
                 "    logd_request_id,"
                 "    error_msg"
                 ") = ("
-                "    (SELECT id FROM enum_contact_test_status WHERE name=$1::varchar),"
+                "    $1::int,"
                 "    $2::bigint,"
-                "    $3::bigint"
+                "    $3::varchar"
                 ")"
                 "WHERE contact_check_id="
-                "    (SELECT id FROM contact_check WHERE handle=$4::cont_chck_handle)"
+                "    $4::bigint"
                 "AND enum_contact_test_id="
-                "    (SELECT id FROM enum_contact_test WHERE name=$5::varchar)",
+                "    $5::int",
                 Database::query_param_list
-                    (status_name_)
+                    (status_id)
                     (logd_request_id_)
                     (error_msg_)
-                    (check_handle_)
-                    (test_name_)
+                    (check_id)
+                    (test_id)
             );
 
             if (update_contact_check_res.size() != 1) {
@@ -104,8 +143,8 @@ namespace Fred
 
             std::string what_string(_exc.what());
 
-            if(what_string.find("fk_contact_check_contact_history_id") != std::string::npos) {
-                throw ExceptionUnknownContactHandle();
+            if(what_string.find("contact_test_result_fk_Contact_check_id") != std::string::npos) {
+                throw ExceptionUnknownCheckHandle();
             }
 
             if(what_string.find("contact_test_result_fk_Enum_contact_test_id") != std::string::npos) {

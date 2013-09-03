@@ -123,7 +123,16 @@ namespace Fred
                 Database::query_param_list(_output_timezone)(handle_) );
 
             if (contact_check_data.size() != 1) {
-               BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check (get) info failed"));
+                if(_ctx.get_conn().
+                        exec_params(
+                            "SELECT handle FROM contact_check WHERE handle=$1::uuid",
+                            Database::query_param_list(handle_))
+                        .size() == 0)
+                {
+                    throw ExceptionUnknownCheckHandle();
+                }
+
+                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check (get) info failed"));
             }
 
             result.handle = handle_;

@@ -58,32 +58,51 @@ namespace Fred
     }
 
     void UpdateContactCheck::exec (OperationContext& _ctx) {
+
+        // using solo select for easy checking of existence (subselect would be strange)
+        Database::Result status_res = _ctx.get_conn().exec_params(
+            "SELECT id "
+            "   FROM enum_contact_check_status "
+            "   WHERE name=$1::varchar "
+            "   FOR SHARE;",
+            Database::query_param_list(status_name_)
+        );
+        if(status_res.size() != 1) {
+            throw ExceptionUnknownStatusName();
+        }
+        long status_id = static_cast<long>(status_res[0]["id"]);
+
         try {
             Database::Result update_contact_check_res = _ctx.get_conn().exec_params(
                "UPDATE contact_check SET ( "
-               "    enum_contact_check_status_id,"
-               "    logd_request_id"
-               ") = ("
-               "    (SELECT id FROM enum_contact_check_status WHERE name=$1::varchar),"
-               "    $2::bigint"
-               ")"
-               "WHERE handle=$3::cont_chck_handle;",
+               "        enum_contact_check_status_id,"
+               "        logd_request_id"
+               "    ) = ("
+               "        $1::int, "
+               "        $2::bigint "
+               "    )"
+               "    WHERE handle=$3::cont_chck_handle"
+               "    RETURNING id;",
                Database::query_param_list
-                (status_name_)
+                (status_id)
                 (logd_request_id_)
                 (check_handle_)
             );
 
             if (update_contact_check_res.size() != 1) {
-               BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check update failed"));
+                if(_ctx.get_conn().
+                        exec_params(
+                            "SELECT handle FROM contact_check WHERE handle=$1::uuid",
+                            Database::query_param_list(check_handle_))
+                        .size() == 0)
+                {
+                    throw ExceptionUnknownCheckHandle();
+                }
+                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check update failed"));
             }
         } catch(const std::exception& _exc) {
 
             std::string what_string(_exc.what());
-
-            if(what_string.find("fk_contact_check_contact_history_id") != std::string::npos) {
-                throw ExceptionUnknownContactHandle();
-            }
 
             if(what_string.find("contact_check_fk_Enum_contact_check_status_id") != std::string::npos) {
                 throw ExceptionUnknownStatusName();
