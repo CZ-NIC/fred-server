@@ -115,7 +115,7 @@ namespace Fred
 
     std::ostream& operator<<(std::ostream& os, const UpdateContactCheck& i) {
         os << "#UpdateContactCheck "
-            << " handle_: "          << i.check_handle_
+            << " check_handle_: "          << i.check_handle_
             << " logd_request_id_: " << i.logd_request_id_.print_quoted()
             << " status_name_: "     << i.status_name_;
 
