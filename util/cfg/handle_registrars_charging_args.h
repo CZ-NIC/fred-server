@@ -52,7 +52,7 @@ public:
                 new po::options_description(std::string("Registrars charging configuration")));
         opts_descs->add_options()
                 ("registrars_charging.charging_of_epp_create_and_renew_domain_disabled",
-                 po::value<bool>()->default_value(false),
+                 po::value<bool>()->default_value(true),
                  "disabled charging for EPP commands create and renew domain");
 
         return opts_descs;
