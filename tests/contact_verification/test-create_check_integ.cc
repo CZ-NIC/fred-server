@@ -407,31 +407,5 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_testsuite_name, fixture_valid_cont
         BOOST_FAIL("should have caught the exception");
     }
 }
-/**
- setting contact handle and testsuite name identical to already existing record
- @pre contact handle from existing contact_check
- @pre testsuite name from the same (see above) contact_check
- @post Fred::CreateContactCheck::ExceptionCheckAlreadyExists
- */
-BOOST_FIXTURE_TEST_CASE(test_Exec_duplicate_check, fixture_mandatory_input)
-{
-    Fred::CreateContactCheck create_check(contact_handle, testsuite_name);
-
-    bool caught_the_right_exception = false;
-    create_check.exec(ctx);
-
-    try {
-        // executing second time with the same data
-        create_check.exec(ctx);
-    } catch(const Fred::CreateContactCheck::ExceptionCheckAlreadyExists& exp) {
-        caught_the_right_exception = true;
-    } catch(...) {
-        BOOST_FAIL("incorrect exception caught");
-    }
-
-    if(! caught_the_right_exception) {
-        BOOST_FAIL("should have caught the exception");
-    }
-}
 
 BOOST_AUTO_TEST_SUITE_END();
