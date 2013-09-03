@@ -178,10 +178,6 @@ namespace Fred
                 throw ExceptionUnknownTestsuiteName();
             }
 
-            if(what_string.find("fk_contact_check_contact_history_id") != std::string::npos) {
-                throw ExceptionCheckAlreadyExists();
-            }
-
             // problem was elsewhere so let it propagate
             throw;
         }

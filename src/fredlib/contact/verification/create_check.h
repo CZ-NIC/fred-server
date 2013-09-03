@@ -47,9 +47,6 @@ namespace Fred
             struct ExceptionUnknownTestsuiteName : virtual Fred::OperationException {
                 const char* what() const throw() {return "unknown testsuite name";}
             };
-            struct ExceptionCheckAlreadyExists : virtual Fred::OperationException {
-                const char* what() const throw() {return "check for this contact testsuite combination already exists";}
-            };
 
             /**
              * constructor only with mandatory parameters
