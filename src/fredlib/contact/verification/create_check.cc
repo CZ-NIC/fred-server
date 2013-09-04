@@ -122,7 +122,7 @@ namespace Fred
             "SELECT historyid"
             "   FROM object_registry"
             "   WHERE name=$1::varchar "
-            "       AND type='1' "
+            "       AND type=1 "
             "   FOR SHARE;", // prevent deletion
             Database::query_param_list(contact_handle_)
         );
