@@ -81,7 +81,7 @@ namespace Fred
                "        $1::int, "
                "        $2::bigint "
                "    )"
-               "    WHERE handle=$3::cont_chck_handle"
+               "    WHERE handle=$3::uuid"
                "    RETURNING id;",
                Database::query_param_list
                 (status_id)
