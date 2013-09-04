@@ -246,19 +246,6 @@ namespace Fred
             // get check state history
             Database::Result contact_check_historical_data = _ctx.get_conn().exec_params(
                 "SELECT "
-                "    check_.logd_request_id     AS logd_request_id_, "
-                "    check_.update_time "
-                "        AT TIME ZONE 'utc' "
-                "        AT TIME ZONE $1::text AS update_time_, "
-                "    status.name               AS status_name_ "
-                "FROM contact_check AS check_ "
-                "JOIN enum_contact_check_status AS status "
-                "    ON check_.enum_contact_check_status_id = status.id "
-                "WHERE check_.id=$2::bigint "
-                ""
-                "UNION ALL " /* only reason for "ALL" is to disable search for duplicates in postgres*/
-                ""
-                "SELECT "
                 "    history.logd_request_id   AS logd_request_id_, "
                 "    history.update_time "
                 "        AT TIME ZONE 'utc' "                       /* conversion from 'utc' ... */
@@ -269,17 +256,12 @@ namespace Fred
                 "    ON history.enum_contact_check_status_id = status.id "
                 "WHERE history.contact_check_id=$2::bigint "
                 ""
-                "ORDER BY status_name_ ASC;",
+                "ORDER BY update_time_ ASC, history.id ASC;",
                 Database::query_param_list(_output_timezone)(temp_check_id) );
-
-            if (contact_check_historical_data.size() < 1) {
-               // at least in (non-historical) contact_check table should be a record
-               BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check (get) info failed"));
-            }
 
             result.check_state_history.reserve(contact_check_historical_data.size());
 
-            // for each check historical (current included) state
+            // for each check historical state
             for(Database::Result::Iterator it_check_history = contact_check_historical_data.begin(); it_check_history != contact_check_historical_data.end(); ++it_check_history) {
 
                InfoContactCheckOutput::ContactCheckState temp_check_history_state;
@@ -290,6 +272,33 @@ namespace Fred
 
                result.check_state_history.push_back(temp_check_history_state);
             }
+
+            Database::Result contact_check_current_data = _ctx.get_conn().exec_params(
+                "SELECT "
+                "    check_.logd_request_id     AS logd_request_id_, "
+                "    check_.update_time "
+                "        AT TIME ZONE 'utc' "
+                "        AT TIME ZONE $1::text AS update_time_, "   /* conversion from 'utc' ... */
+                "    status.name               AS status_name_ "    /* ... to _output_timezone */
+                "FROM contact_check AS check_ "
+                "JOIN enum_contact_check_status AS status "
+                "    ON check_.enum_contact_check_status_id = status.id "
+                "WHERE check_.id=$2::bigint;",
+                Database::query_param_list(_output_timezone)(temp_check_id) );
+
+            if (contact_check_current_data.size() != 1) {
+               // at least in (non-historical) contact_check table should be a record
+               BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check (get) info failed"));
+            }
+
+            // adding current state
+           InfoContactCheckOutput::ContactCheckState temp_check_history_state;
+
+           temp_check_history_state.logd_request_id = contact_check_current_data[0]["logd_request_id_"];
+           temp_check_history_state.status_name = static_cast<std::string>( contact_check_current_data[0]["status_name_"]);
+           temp_check_history_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( contact_check_current_data[0]["update_time_"]));
+
+           result.check_state_history.push_back(temp_check_history_state);
 
         } catch(ExceptionStack& ex) {
             ex.add_exception_stack_info( to_string() );
