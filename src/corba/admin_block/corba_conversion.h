@@ -230,11 +230,11 @@ Registry::Administrative::OWNER_HAS_OTHER_DOMAIN corba_wrap_exception(const Regi
         Registry::Administrative::OwnerDomain &item = ex.what[n];
         item.ownerId = pItem->first;
         item.ownerHandle = corba_wrap_string(pItem->second.owner_handle);
-        item.domain.length(pItem->second.domain.size());
+        item.otherDomainList.length(pItem->second.domain.size());
         int n = 0;
         for (Registry::Administrative::EX_DOMAIN_ID_ALREADY_BLOCKED::Type::const_iterator pDomain = pItem->second.domain.begin();
              pDomain != pItem->second.domain.end(); ++n, ++pDomain) {
-            Registry::Administrative::DomainIdHandle &domain = item.domain[n];
+            Registry::Administrative::DomainIdHandle &domain = item.otherDomainList[n];
             domain.domainId = pDomain->domain_id;
             domain.domainHandle = corba_wrap_string(pDomain->domain_handle);
         }
