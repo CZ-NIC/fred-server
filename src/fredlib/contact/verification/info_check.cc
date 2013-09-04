@@ -38,7 +38,7 @@ namespace Fred
             + _each_line_prefix + _each_line_prefix + " error_msg: " +        error_msg.print_quoted() + "\n"
             + _each_line_prefix + _each_line_prefix + " local_update_time:" + boost::posix_time::to_simple_string(local_update_time) + "\n"
             + _each_line_prefix + _each_line_prefix + " logd_request_id:" +   logd_request_id.print_quoted()
-            + "\n" + _each_line_prefix + "}";
+            + "\n" + _each_line_prefix + "}\n";
 
         return result;
     }
@@ -55,7 +55,7 @@ namespace Fred
         for(std::vector<ContactTestResultState>::const_iterator it = state_history.begin(); it != state_history.end(); ++it) {
             result += _each_line_prefix + it->to_string(_each_line_prefix + _each_line_prefix );
         }
-        result += "\n" + _each_line_prefix + "}";
+        result += "\n" + _each_line_prefix + "}\n";
 
         return result;
     }
@@ -68,7 +68,7 @@ namespace Fred
             + _each_line_prefix + _each_line_prefix + "status_name: " +      status_name + "\n"
             + _each_line_prefix + _each_line_prefix + "local_update_time:" + boost::posix_time::to_simple_string(local_update_time) + "\n"
             + _each_line_prefix + _each_line_prefix + "logd_request_id:" +   logd_request_id.print_quoted()
-            + "\n" + _each_line_prefix + "}";
+            + "\n" + _each_line_prefix + "}\n";
 
         return result;
     }
@@ -90,7 +90,7 @@ namespace Fred
         for(std::vector<ContactTestResultData>::const_iterator it = tests.begin(); it != tests.end(); ++it) {
             result += it->to_string(_each_line_prefix + _each_line_prefix );
         }
-        result += "\n" + _each_line_prefix + "}";
+        result += "\n" + _each_line_prefix + "}\n";
 
         return result;
     }
