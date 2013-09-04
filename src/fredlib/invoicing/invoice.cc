@@ -155,7 +155,7 @@ public:
       , unsigned long long zone_id
       , unsigned long long registrar_id
       , unsigned long long object_id
-      , boost::posix_time::ptime crdate //local timestamp
+      , boost::posix_time::ptime crdate //utc timestamp
       , boost::gregorian::date date_from //local date included in interval
       , boost::gregorian::date date_to //local date not included in interval, can be unspecified
       , Decimal quantity
@@ -190,8 +190,8 @@ public:
                   " FROM price_list pl "
                       " JOIN enum_operation eo ON pl.operation_id = eo.id "
                       " JOIN zone z ON z.id = pl.zone_id "
-                  " WHERE valid_from < ($1::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC' "
-                        " AND (pl.valid_to is NULL OR pl.valid_to > ($1::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC') "
+                  " WHERE pl.valid_from < $1::timestamp "
+                        " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp ) "
                   " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
                   " ORDER BY pl.valid_from DESC "
                   " LIMIT 1 "
@@ -259,7 +259,7 @@ public:
               " , crdate, quantity, date_from,  date_to "
               " , registrar_credit_transaction_id) "
               "  VALUES (DEFAULT, $1::bigint, $2::bigint, $3::bigint, $4::bigint "
-              " , ($5::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC', $6::integer, $7::date, $8::date "
+              " , $5::timestamp, $6::integer, $7::date, $8::date "
               " , $9::bigint) "
               //" RETURNING id "
               , Database::query_param_list(object_id ? object_id : Database::QPNull)
@@ -282,7 +282,7 @@ public:
           , unsigned long long zone_id
           , unsigned long long registrar_id
           , unsigned long long object_id
-          , boost::posix_time::ptime crdate //local timestamp
+          , boost::posix_time::ptime crdate //utc timestamp
           , boost::gregorian::date date_from //local date
           , boost::gregorian::date date_to //local date
           , Decimal quantity)
@@ -296,8 +296,8 @@ public:
               " FROM price_list pl "
                   " JOIN enum_operation eo ON pl.operation_id = eo.id "
                   " JOIN zone z ON z.id = pl.zone_id "
-              " WHERE valid_from < ($1::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC' "
-                  " AND (pl.valid_to is NULL OR pl.valid_to > ($1::timestamp AT TIME ZONE 'Europe/Prague' ) AT TIME ZONE 'UTC' ) "
+              " WHERE pl.valid_from < $1::timestamp "
+                  " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp) "
               " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
               " ORDER BY pl.valid_from DESC "
               " LIMIT 1 "
@@ -331,7 +331,7 @@ public:
           , unsigned long long zone_id
           , unsigned long long registrar_id
           , unsigned long long object_id
-          , boost::posix_time::ptime crdate //local timestamp
+          , boost::posix_time::ptime crdate //utc timestamp
           , boost::gregorian::date date_from //local date
           , boost::gregorian::date date_to //local date
           , Decimal quantity
@@ -384,7 +384,7 @@ public:
                 , zone//unsigned long long zone_id
                 , registrar//unsigned long long registrar_id
                 , objectId//unsigned long long object_id
-                , boost::posix_time::microsec_clock::local_time()//boost::posix_time::ptime crdate
+                , boost::posix_time::microsec_clock::universal_time()//boost::posix_time::ptime crdate
                 , exDate.get() - boost::gregorian::months(units_count)//boost::gregorian::date date_from
                 , boost::gregorian::date()//boost::gregorian::date date_to
                 , Decimal(boost::lexical_cast<std::string>(1))// quantity
@@ -405,7 +405,7 @@ public:
                 , zone//unsigned long long zone_id
                 , registrar//unsigned long long registrar_id
                 , objectId//unsigned long long object_id
-                , boost::posix_time::microsec_clock::local_time()//boost::posix_time::ptime crdate
+                , boost::posix_time::microsec_clock::universal_time()//boost::posix_time::ptime crdate
                 , exDate.get() - boost::gregorian::months(units_count)//boost::gregorian::date date_from
                 , exDate.get()//boost::gregorian::date date_to
                 , Decimal(boost::lexical_cast<std::string>(units_count))/Decimal("12") //unsigned long quantity - for renew in years
@@ -491,7 +491,7 @@ public:
                 charge_zone_id,//unsigned long long zone_id
                 registrar_id, //unsigned long long registrar_id
                 0, //unsigned long long object_id
-                boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodTo()) - seconds(1), //boost::posix_time::ptime crdate
+                (rfi->getPeriodTo()) - seconds(1), //boost::posix_time::ptime crdate
                 boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodFrom()).date(), //boost::gregorian::date date_from
                 boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodTo()).date(), //boost::gregorian::date date_to
                 Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years
