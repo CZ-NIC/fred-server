@@ -150,7 +150,7 @@ public:
 
   // WARNING: this is called from epp_impl.cc and it's sharing connection with dbsql's DB
   // so it must *NOT* create Database::Transactions
-  virtual bool charge_operation(
+  virtual bool charge_operation_auto_price(
       const std::string& operation
       , unsigned long long zone_id
       , unsigned long long registrar_id
@@ -158,146 +158,38 @@ public:
       , boost::posix_time::ptime crdate //utc timestamp
       , boost::gregorian::date date_from //local date included in interval
       , boost::gregorian::date date_to //local date not included in interval, can be unspecified
-      , Decimal quantity
-      , Money price)
+      , Decimal quantity)
   {
       //if (registrar is "system registrar") return ok //no charging
-      try
-      {
-          // TODO we rely that connection is saved in thread specific data
-          Database::Connection conn = Database::Manager::acquire();
 
-          // find out whether the registrar in question is system registrar
-          bool system = false;
-          Database::Result rsys =
-            conn.exec_params("SELECT system FROM registrar WHERE id=$1::integer",
-                Database::query_param_list(registrar_id));
-          if(rsys.size() != 1 || rsys[0][0].isnull()) {
-              throw std::runtime_error((boost::format("Registrar ID %1% not found ") % registrar_id).str());
-          } else {
-              system = rsys[0][0];
-              if(system) {
-                  LOGGER(PACKAGE).info ( (boost::format("Registrar ID %1% has system flag set, not billing") % registrar_id).str());
-                  // no billing for system registrar
-                  return true;
-              }
-          }
-
-          //get_operation_payment_settings
-          Database::Result operation_price_list_result
-              = conn.exec_params(
-              "SELECT enable_postpaid_operation, operation_id, price, quantity"
-                  " FROM price_list pl "
-                      " JOIN enum_operation eo ON pl.operation_id = eo.id "
-                      " JOIN zone z ON z.id = pl.zone_id "
-                  " WHERE pl.valid_from < $1::timestamp "
-                        " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp ) "
-                  " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
-                  " ORDER BY pl.valid_from DESC "
-                  " LIMIT 1 "
-              , Database::query_param_list(crdate)(zone_id)(operation));
-
-          if(operation_price_list_result.size() != 1)
-          {
-              //operation not found in price_list no billing
-              return true;
-          }
-
-          bool enable_postpaid_operation = operation_price_list_result[0][0];
-          unsigned long long operation_id = operation_price_list_result[0][1];
-
-          //get_registrar_credit - lock record in registrar_credit table for registrar and zone
-          Database::Result locked_registrar_credit_result
-              = conn.exec_params(
-              "SELECT id, credit "
-                   " FROM registrar_credit "
-                   " WHERE registrar_id = $1::bigint "
-                       " AND zone_id = $2::bigint "
-               " FOR UPDATE "
-              , Database::query_param_list(registrar_id)(zone_id));
-
-          if(locked_registrar_credit_result.size() != 1)
-          {
-              std::string errmsg = str( boost::format("ManagerImpl::charge_operation"
-                      " zone_id %1% registrar_id %2% unable to get registrar_credit")
-              % zone_id % registrar_id );
-
-              LOGGER(PACKAGE).error(errmsg);
-              throw std::runtime_error(errmsg);
-          }
-
-          unsigned long long registrar_credit_id = locked_registrar_credit_result[0][0];
-          Money registrar_credit_balance = std::string(locked_registrar_credit_result[0][1]);
-
-          if(registrar_credit_balance < price && !enable_postpaid_operation)
-          {
-              //insufficient balance
-              return false;
-          }
-
-          // save info about debt into credit
-          Database::Result registrar_credit_transaction_result
-              = conn.exec_params(
-                "INSERT INTO registrar_credit_transaction "
-                    " (id, balance_change, registrar_credit_id) "
-                    " VALUES (DEFAULT, $1::numeric , $2::bigint) "
-                " RETURNING id "
-              , Database::query_param_list(Money("0") - price)(registrar_credit_id));
-
-          if(registrar_credit_transaction_result.size() != 1)
-          {
-              throw std::runtime_error("charge_operation: registrar_credit_transaction failed");
-          }
-
-          unsigned long long registrar_credit_transaction_id = registrar_credit_transaction_result[0][0];
-
-          // new record to invoice_operation
-          //Database::Result invoice_operation_result =
-          conn.exec_params(
-              "INSERT INTO invoice_operation "
-              " (id, object_id, registrar_id, operation_id, zone_id" //4
-              " , crdate, quantity, date_from,  date_to "
-              " , registrar_credit_transaction_id) "
-              "  VALUES (DEFAULT, $1::bigint, $2::bigint, $3::bigint, $4::bigint "
-              " , $5::timestamp, $6::integer, $7::date, $8::date "
-              " , $9::bigint) "
-              //" RETURNING id "
-              , Database::query_param_list(object_id ? object_id : Database::QPNull)
-              (registrar_id)(operation_id)(zone_id)
-              (crdate)(quantity.get_string())(date_from)(date_to.is_special() ? Database::QPNull : Database::QueryParam(date_to))
-              (registrar_credit_transaction_id)
-              );
-
-      }
-      catch(const std::exception& ex)
-      {
-          throw;
-      }
-
-      return true;
-  }
-
-  virtual bool charge_operation_auto_price(
-          const std::string& operation
-          , unsigned long long zone_id
-          , unsigned long long registrar_id
-          , unsigned long long object_id
-          , boost::posix_time::ptime crdate //utc timestamp
-          , boost::gregorian::date date_from //local date
-          , boost::gregorian::date date_to //local date
-          , Decimal quantity)
-  {
+      // TODO we rely that connection is saved in thread specific data
       Database::Connection conn = Database::Manager::acquire();
 
-      //get_price_list_info
+      // find out whether the registrar in question is system registrar
+      bool system = false;
+      Database::Result rsys =
+        conn.exec_params("SELECT system FROM registrar WHERE id=$1::integer",
+            Database::query_param_list(registrar_id));
+      if(rsys.size() != 1 || rsys[0][0].isnull()) {
+          throw std::runtime_error((boost::format("Registrar ID %1% not found ") % registrar_id).str());
+      } else {
+          system = rsys[0][0];
+          if(system) {
+              LOGGER(PACKAGE).info ( (boost::format("Registrar ID %1% has system flag set, not billing") % registrar_id).str());
+              // no billing for system registrar
+              return true;
+          }
+      }
+
+      //get_operation_payment_settings
       Database::Result operation_price_list_result
           = conn.exec_params(
-          "SELECT enable_postpaid_operation, operation_id, price, quantity "
+          "SELECT enable_postpaid_operation, operation_id, price, quantity"
               " FROM price_list pl "
                   " JOIN enum_operation eo ON pl.operation_id = eo.id "
                   " JOIN zone z ON z.id = pl.zone_id "
               " WHERE pl.valid_from < $1::timestamp "
-                  " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp) "
+                    " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp ) "
               " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
               " ORDER BY pl.valid_from DESC "
               " LIMIT 1 "
@@ -308,6 +200,8 @@ public:
           throw std::runtime_error("charge_operation_auto_price: operation not found");
       }
 
+      bool enable_postpaid_operation = operation_price_list_result[0][0];
+      unsigned long long operation_id = operation_price_list_result[0][1];
       Money price_list_price = std::string(operation_price_list_result[0][2]);
       Decimal  price_list_quantity = std::string(operation_price_list_result[0][3]);
 
@@ -321,54 +215,70 @@ public:
               * quantity
               / price_list_quantity;//count_price
 
-      return charge_operation(operation, zone_id, registrar_id
-          , object_id, crdate, date_from, date_to, quantity, price);
+      //get_registrar_credit - lock record in registrar_credit table for registrar and zone
+      Database::Result locked_registrar_credit_result
+          = conn.exec_params(
+          "SELECT id, credit "
+               " FROM registrar_credit "
+               " WHERE registrar_id = $1::bigint "
+                   " AND zone_id = $2::bigint "
+           " FOR UPDATE "
+          , Database::query_param_list(registrar_id)(zone_id));
 
-  }
-
-  virtual bool charge_operation_custom_price(
-          const std::string& operation
-          , unsigned long long zone_id
-          , unsigned long long registrar_id
-          , unsigned long long object_id
-          , boost::posix_time::ptime crdate //utc timestamp
-          , boost::gregorian::date date_from //local date
-          , boost::gregorian::date date_to //local date
-          , Decimal quantity
-          , Money price)
-  {
-      try
+      if(locked_registrar_credit_result.size() != 1)
       {
-          Database::Connection conn = Database::Manager::acquire();
+          std::string errmsg = str( boost::format("ManagerImpl::charge_operation"
+                  " zone_id %1% registrar_id %2% unable to get registrar_credit")
+          % zone_id % registrar_id );
 
-          //assert(operation is not for auto processing) - get_operation_payment_settings
-          Database::Result operation_price_list_result
-              = conn.exec_params(
-              "SELECT enable_postpaid_operation, operation_id "
-                  " FROM price_list pl "
-                      " JOIN enum_operation eo ON pl.operation_id = eo.id "
-                      " JOIN zone z ON z.id = pl.zone_id "
-                  " WHERE pl.zone_id = $1::bigint AND eo.operation = $2::text "
-              , Database::query_param_list(zone_id)(operation));
-
-          if(operation_price_list_result.size() > 0)
-          {
-              throw std::runtime_error("charge_operation_custom_price: operation is for auto processing");
-          }
-
-          return charge_operation(operation, zone_id, registrar_id, object_id, crdate, date_from, date_to, quantity, price);
-      }//try
-      catch(const std::exception& ex)
-      {
-          throw;
+          LOGGER(PACKAGE).error(errmsg);
+          throw std::runtime_error(errmsg);
       }
 
-      return false;
+      unsigned long long registrar_credit_id = locked_registrar_credit_result[0][0];
+      Money registrar_credit_balance = std::string(locked_registrar_credit_result[0][1]);
+
+      if(registrar_credit_balance < price && !enable_postpaid_operation)
+      {
+          //insufficient balance
+          return false;
+      }
+
+      // save info about debt into credit
+      Database::Result registrar_credit_transaction_result
+          = conn.exec_params(
+            "INSERT INTO registrar_credit_transaction "
+                " (id, balance_change, registrar_credit_id) "
+                " VALUES (DEFAULT, $1::numeric , $2::bigint) "
+            " RETURNING id "
+          , Database::query_param_list(Money("0") - price)(registrar_credit_id));
+
+      if(registrar_credit_transaction_result.size() != 1)
+      {
+          throw std::runtime_error("charge_operation: registrar_credit_transaction failed");
+      }
+
+      unsigned long long registrar_credit_transaction_id = registrar_credit_transaction_result[0][0];
+
+      // new record to invoice_operation
+      //Database::Result invoice_operation_result =
+      conn.exec_params(
+          "INSERT INTO invoice_operation "
+          " (id, object_id, registrar_id, operation_id, zone_id" //4
+          " , crdate, quantity, date_from,  date_to "
+          " , registrar_credit_transaction_id) "
+          "  VALUES (DEFAULT, $1::bigint, $2::bigint, $3::bigint, $4::bigint "
+          " , $5::timestamp, $6::integer, $7::date, $8::date "
+          " , $9::bigint) "
+          //" RETURNING id "
+          , Database::query_param_list(object_id ? object_id : Database::QPNull)
+          (registrar_id)(operation_id)(zone_id)
+          (crdate)(quantity.get_string())(date_from)(date_to.is_special() ? Database::QPNull : Database::QueryParam(date_to))
+          (registrar_credit_transaction_id)
+          );
+
+      return true;
   }
-
-
-
-
 
   virtual bool chargeDomainCreate(
           const Database::ID &zone,
