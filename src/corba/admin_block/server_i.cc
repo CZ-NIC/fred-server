@@ -85,6 +85,9 @@ namespace Registry
             catch (const EX_DOMAIN_ID_ALREADY_BLOCKED &e) {
                 throw corba_wrap_exception(e);
             }
+            catch (const EX_OWNER_HAS_OTHER_DOMAIN &e) {
+                throw corba_wrap_exception(e);
+            }
             catch (const EX_INTERNAL_SERVER_ERROR &e) {
                 throw corba_wrap_exception(e);
             }

@@ -679,6 +679,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/reminder.h \
 		src/fredlib/opcontext.cc \
 		src/fredlib/opcontext.h \
+		src/fredlib/domain/copy_contact.h \
+		src/fredlib/domain/copy_contact.cc \
 		src/fredlib/domain/update_domain.h \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/info_domain_data.h \
@@ -1234,6 +1236,8 @@ src_corba_fred_adifd_SOURCES = \
 		src/fredlib/domain/create_domain_name_blacklist_id.h \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/update_domain.h \
+		src/fredlib/domain/copy_contact.cc \
+		src/fredlib/domain/copy_contact.h \
 		src/fredlib/contact/info_contact_data.h \
 		src/fredlib/contact/info_contact_data.cc \
 		src/fredlib/contact/info_contact.h \

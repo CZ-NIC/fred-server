@@ -22,7 +22,6 @@
  */
 
 #include "administrativeblocking.h"
-#include "corba/connection_releaser.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
 #include "fredlib/domain/get_object_state_id_map.h"
 #include "fredlib/domain/create_administrative_object_block_request.h"
@@ -32,9 +31,9 @@
 #include "fredlib/domain/create_domain_name_blacklist.h"
 #include "fredlib/domain/create_domain_name_blacklist_id.h"
 #include "fredlib/domain/update_domain.h"
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/contact/create_contact.h"
+#include "fredlib/domain/copy_contact.h"
 #include <memory>
+#include <map>
 
 namespace
 {
@@ -65,6 +64,166 @@ namespace Registry
             }
         }
 
+        namespace
+        {
+            struct DomainInfo
+            {
+                std::string registrar_handle;
+                Fred::ObjectId owner_id;
+            };
+
+            struct OwnerCopy
+            {
+                std::string old_owner_handle;
+                Fred::ObjectId new_owner_id;
+                std::string new_owner_handle;
+            };
+
+            typedef std::map< Fred::ObjectId, DomainInfo > DomainIdDomainInfo;
+            typedef std::map< Fred::ObjectId, OwnerCopy > OwnerIdOwnerCopy;
+
+            static const std::string owner_copy_suffix = "-ABC_"; //AdministrativeBlockingCopy
+            static const std::string owner_copy_zero_idx = "00000";
+
+            std::string get_copy_owner_handle(
+                const std::string &_owner_handle,
+                unsigned long long _log_req_id,
+                Fred::OperationContext &_ctx)
+            {
+                std::string new_owner_handle = _owner_handle + owner_copy_suffix;
+                Database::Result last_owner_res = _ctx.get_conn().exec_params(
+                    "SELECT name "
+                    "FROM object_registry "
+                    "WHERE (type=$1::bigint) AND "
+                          "($2::text<name) AND "
+                          "(name LIKE $3::text) AND "
+                          "erdate IS NULL "
+                    "ORDER BY name DESC LIMIT 1", Database::query_param_list(Fred::CopyContact::OBJECT_TYPE_ID_CONTACT)
+                                                                            (new_owner_handle)
+                                                                            (new_owner_handle + "%"));
+                if (last_owner_res.size() == 0) {
+                    new_owner_handle += owner_copy_zero_idx;
+                    return new_owner_handle;
+                }
+                const std::string last_owner_name = static_cast< std::string >(last_owner_res[0][0]);
+                const std::string str_copy_idx = last_owner_name.substr(new_owner_handle.length());
+                ::size_t copy_idx = 0;
+                for (const char *pC = str_copy_idx.c_str(); *pC != '\0'; ++pC) {
+                    const char c = *pC;
+                    if ((c < '0') || ('9' < c)) {
+                        new_owner_handle = last_owner_name + owner_copy_suffix + owner_copy_zero_idx;
+                        return new_owner_handle;
+                    }
+                    copy_idx = 10 * copy_idx + int(c) - int('0');
+                }
+                ++copy_idx;
+                std::ostringstream idx;
+                idx << std::setw(owner_copy_zero_idx.length()) << std::setfill('0') << copy_idx;
+                new_owner_handle += idx.str();
+                return new_owner_handle;
+            }
+
+            void copy_domain_owners(
+                const IdlDomainIdList &_domain_list,
+                DomainIdDomainInfo &_domain_id_domain_info,
+                OwnerIdOwnerCopy &_owner_id_owner_copy,
+                unsigned long long _log_req_id,
+                Fred::OperationContext &_ctx)
+            {
+                Database::Result sys_registrar_res = _ctx.get_conn().exec(
+                    "SELECT handle "
+                    "FROM registrar "
+                    "WHERE system IS true");
+                if (sys_registrar_res.size() != 1) {
+                    if (sys_registrar_res.size() == 0) {
+                        throw std::runtime_error("system registrar not found");
+                    }
+                    throw std::runtime_error("too many system registrars");
+                }
+                const std::string sys_registrar_handle = static_cast< std::string >(sys_registrar_res[0][0]);
+                std::ostringstream query;
+                for (IdlDomainIdList::const_iterator pObjectId = _domain_list.begin(); pObjectId != _domain_list.end(); ++pObjectId) {
+                    if (query.str().empty()) {
+                        query << "SELECT d.id,d.registrant,obr.name,r.handle "
+                                 "FROM domain d "
+                                 "JOIN object_registry obr ON obr.id=d.registrant "
+                                 "JOIN registrar r ON r.id=obr.crid "
+                                 "WHERE d.id IN (";
+                    }
+                    else {
+                        query << ",";
+                    }
+                    query << (*pObjectId);
+                }
+                query << ")";
+                Database::Result domain_info_res = _ctx.get_conn().exec(query.str());
+                for (unsigned idx = 0; idx < domain_info_res.size(); ++idx) {
+                    OwnerCopy item;
+                    const std::string domain_registrar = static_cast< std::string >(domain_info_res[idx][3]);
+                    const Fred::ObjectId old_owner_id = static_cast< Fred::ObjectId >(domain_info_res[idx][1]);
+                    if (_owner_id_owner_copy.find(old_owner_id) == _owner_id_owner_copy.end()) {
+                        _owner_id_owner_copy[old_owner_id].old_owner_handle = static_cast< std::string >(domain_info_res[idx][2]);
+                    }
+                    const Fred::ObjectId domain_id = static_cast< Fred::ObjectId >(domain_info_res[idx][0]);
+                    _domain_id_domain_info[domain_id].registrar_handle = domain_registrar;
+                    _domain_id_domain_info[domain_id].owner_id = old_owner_id;
+                }
+                for (OwnerIdOwnerCopy::iterator pOwnerCopy = _owner_id_owner_copy.begin(); pOwnerCopy != _owner_id_owner_copy.end(); ++pOwnerCopy) {
+                    pOwnerCopy->second.new_owner_handle = get_copy_owner_handle(pOwnerCopy->second.old_owner_handle, _log_req_id, _ctx);
+                    Fred::CopyContact copy_contact(pOwnerCopy->second.old_owner_handle,
+                                                   pOwnerCopy->second.new_owner_handle,
+                                                   sys_registrar_handle,
+                                                   _log_req_id);
+                    pOwnerCopy->second.new_owner_id = copy_contact.exec(_ctx);
+                }
+            }
+
+            void check_owner_has_no_other_domains(
+                const IdlDomainIdList &_domain_list,
+                Fred::OperationContext &_ctx)
+            {
+                if (_domain_list.empty()) {
+                    return;
+                }
+                IdlDomainIdList::const_iterator pDomainId = _domain_list.begin();
+                Database::query_param_list param(*pDomainId);
+                std::ostringstream set_of_domain_id;
+                set_of_domain_id << "($" << param.size() << "::bigint";
+                for (++pDomainId; pDomainId != _domain_list.end(); ++pDomainId) {
+                    param(*pDomainId);
+                    set_of_domain_id << ",$" << param.size() << "::bigint";
+                }
+                set_of_domain_id << ")";
+                Database::Result check_res = _ctx.get_conn().exec_params(
+                    "SELECT d.id,dh.name,d.registrant,oh.name "
+                    "FROM domain d "
+                    "JOIN object_registry dh ON dh.id=d.id "
+                    "JOIN object_registry oh ON oh.id=d.registrant "
+                    "WHERE d.registrant IN (SELECT registrant "
+                                           "FROM domain "
+                                           "WHERE id IN " + set_of_domain_id.str() + " GROUP BY registrant) AND "
+                          "d.id NOT IN " + set_of_domain_id.str(), param);
+                if (check_res.size() <= 0) {
+                    return;
+                }
+                EX_OWNER_HAS_OTHER_DOMAIN ex;
+                for (unsigned idx = 0; idx < check_res.size(); ++idx) {
+                    EX_DOMAIN_ID_ALREADY_BLOCKED::Item domain;
+                    domain.domain_id = static_cast< Fred::ObjectId >(check_res[idx][0]);
+                    domain.domain_handle = static_cast< std::string >(check_res[idx][1]);
+                    const Fred::ObjectId owner_id = static_cast< Fred::ObjectId >(check_res[idx][2]);
+                    EX_OWNER_HAS_OTHER_DOMAIN::Type::iterator pItem = ex.what.find(owner_id);
+                    if (pItem == ex.what.end()) {
+                        EX_OWNER_HAS_OTHER_DOMAIN::Item item;
+                        item.owner_handle = static_cast< std::string >(check_res[idx][3]);
+                        pItem = ex.what.insert(std::make_pair(owner_id, item)).first;
+                    }
+                    pItem->second.domain.insert(domain);
+                }
+                throw ex;
+            }
+        }
+
         IdlOwnerChangeList BlockingImpl::blockDomainsId(
             const IdlDomainIdList &_domain_list,
             const Fred::StatusList &_status_list,
@@ -79,14 +238,21 @@ namespace Registry
                 IdlOwnerChangeList result;
                 Fred::OperationContext ctx;
                 Fred::StatusList contact_status_list;
+                DomainIdDomainInfo domain_id_domain_info;
+                OwnerIdOwnerCopy owner_id_owner_copy;
                 if ((_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER) ||
                     (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY)) {
                     Fred::GetObjectStateIdMap::StateIdMap state_id;
-                    enum { CONTACT_TYPE = 1 };
-                    Fred::GetObjectStateIdMap::get_result(ctx, _status_list, CONTACT_TYPE, state_id);
+                    Fred::GetObjectStateIdMap::get_result(ctx, _status_list, Fred::CopyContact::OBJECT_TYPE_ID_CONTACT, state_id);
                     for (Fred::GetObjectStateIdMap::StateIdMap::const_iterator pState = state_id.begin();
                          pState != state_id.end(); ++pState) {
                         contact_status_list.insert(pState->first);
+                    }
+                    if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY) {
+                        copy_domain_owners(_domain_list, domain_id_domain_info, owner_id_owner_copy, _log_req_id, ctx);
+                    }
+                    else if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER) {
+                        check_owner_has_no_other_domains(_domain_list, ctx);
                     }
                 }
                 StringSet contact_blocked;
@@ -119,184 +285,18 @@ namespace Registry
                             create_object_block_request.exec(ctx);
                         }
                         else if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY) {
-                            std::string owner_copy_name;
-                            Fred::ObjectId contact_type;
-                            std::string registrar;
                             const std::string domain = create_object_block_request.exec(ctx);
                             IdlOwnerChange result_item;
                             result_item.domain_id = object_id;
                             result_item.domain_handle = domain;
-                            {
-                                Database::query_param_list param(object_id);
-                                Database::Result owner_result = ctx.get_conn().exec_params(
-                                    "SELECT o.id,o.name,o.type,rar.handle "
-                                    "FROM domain d "
-                                    "JOIN object_registry o ON o.id=d.registrant "
-                                    "JOIN registrar rar ON rar.id=o.crid "
-                                    "WHERE d.id=$1::bigint", param);
-                                if (owner_result.size() <= 0) {
-                                    std::string errmsg("|| not found:object_id: ");
-                                    errmsg += boost::lexical_cast< std::string >(object_id);
-                                    errmsg += " |";
-                                    EX_INTERNAL_SERVER_ERROR ex;
-                                    ex.what = errmsg;
-                                    throw ex;
-                                }
-                                const Database::Row &row = owner_result[0];
-                                result_item.old_owner_id = static_cast< Fred::ObjectId >(row[0]);
-                                const std::string owner_name = static_cast< std::string >(row[1]);
-                                contact_type = static_cast< Fred::ObjectId >(row[2]);
-                                registrar = static_cast< std::string >(row[3]);
-                                result_item.old_owner_handle = owner_name;
-                                static const std::string owner_copy_suffix = "-ABC_"; //AdministrativeBlockingCopy
-                                owner_copy_name = owner_name + owner_copy_suffix;
-                                Database::Result last_owner_result = ctx.get_conn().exec_params(
-                                    "SELECT name "
-                                    "FROM object_registry "
-                                    "WHERE (type=$1::bigint) AND "
-                                          "($2<name) AND "
-                                          "(name LIKE $3) AND "
-                                          "((erdate IS NULL) OR (NOW()<erdate)) "
-                                    "ORDER BY name DESC LIMIT 1", Database::query_param_list(contact_type)
-                                                                                            (owner_copy_name)
-                                                                                            (owner_copy_name + "%"));
-                                static const std::string owner_copy_zero_idx = "00000";
-                                if (last_owner_result.size() == 0) {
-                                    owner_copy_name += owner_copy_zero_idx;
-                                }
-                                else {
-                                    const std::string last_owner_name = static_cast< std::string >(last_owner_result[0][0]);
-                                    const std::string str_copy_idx = last_owner_name.substr(owner_copy_name.length());
-                                    ::size_t copy_idx = 0;
-                                    bool ilegal_copy_idx = false;
-                                    for (const char *pC = str_copy_idx.c_str(); *pC != '\0'; ++pC) {
-                                        if (('0' <= *pC) && (*pC <= '9')) {
-                                            copy_idx = 10 * copy_idx + int(*pC) - int('0');
-                                        }
-                                        else {
-                                            ilegal_copy_idx = true;
-                                            break;
-                                        }
-                                    }
-                                    if (ilegal_copy_idx) {
-                                        owner_copy_name = last_owner_name + owner_copy_suffix + owner_copy_zero_idx;
-                                    }
-                                    else {
-                                        ++copy_idx;
-                                        std::ostringstream idx;
-                                        idx << std::setw(owner_copy_zero_idx.length()) << std::setfill('0') << copy_idx;
-                                        owner_copy_name += idx.str();
-                                    }
-                                }
-                                Fred::InfoContact info_contact(owner_name, registrar);
-                                Fred::InfoContactOutput old_contact = info_contact.exec(ctx);
-                                Fred::CreateContact create_contact(owner_copy_name, registrar);
-                                if (!old_contact.info_contact_data.authinfopw.empty()) {
-                                    create_contact.set_authinfo(old_contact.info_contact_data.authinfopw);
-                                }
-                                if (!old_contact.info_contact_data.name.isnull()) {
-                                    create_contact.set_name(old_contact.info_contact_data.name);
-                                }
-                                if (!old_contact.info_contact_data.organization.isnull()) {
-                                    create_contact.set_organization(old_contact.info_contact_data.organization);
-                                }
-                                if (!old_contact.info_contact_data.street1.isnull()) {
-                                    create_contact.set_street1(old_contact.info_contact_data.street1);
-                                }
-                                if (!old_contact.info_contact_data.street2.isnull()) {
-                                    create_contact.set_street2(old_contact.info_contact_data.street2);
-                                }
-                                if (!old_contact.info_contact_data.street3.isnull()) {
-                                    create_contact.set_street3(old_contact.info_contact_data.street3);
-                                }
-                                if (!old_contact.info_contact_data.city.isnull()) {
-                                    create_contact.set_city(old_contact.info_contact_data.city);
-                                }
-                                if (!old_contact.info_contact_data.stateorprovince.isnull()) {
-                                    create_contact.set_stateorprovince(old_contact.info_contact_data.stateorprovince);
-                                }
-                                if (!old_contact.info_contact_data.postalcode.isnull()) {
-                                    create_contact.set_postalcode(old_contact.info_contact_data.postalcode);
-                                }
-                                if (!old_contact.info_contact_data.country.isnull()) {
-                                    create_contact.set_country(old_contact.info_contact_data.country);
-                                }
-                                if (!old_contact.info_contact_data.telephone.isnull()) {
-                                    create_contact.set_telephone(old_contact.info_contact_data.telephone);
-                                }
-                                if (!old_contact.info_contact_data.fax.isnull()) {
-                                    create_contact.set_fax(old_contact.info_contact_data.fax);
-                                }
-                                if (!old_contact.info_contact_data.email.isnull()) {
-                                    create_contact.set_email(old_contact.info_contact_data.email);
-                                }
-                                if (!old_contact.info_contact_data.notifyemail.isnull()) {
-                                    create_contact.set_notifyemail(old_contact.info_contact_data.notifyemail);
-                                }
-                                if (!old_contact.info_contact_data.vat.isnull()) {
-                                    create_contact.set_vat(old_contact.info_contact_data.vat);
-                                }
-                                if (!old_contact.info_contact_data.ssntype.isnull()) {
-                                    create_contact.set_ssntype(old_contact.info_contact_data.ssntype);
-                                }
-                                if (!old_contact.info_contact_data.ssn.isnull()) {
-                                    create_contact.set_ssn(old_contact.info_contact_data.ssn);
-                                }
-                                if (!old_contact.info_contact_data.disclosename.isnull()) {
-                                    create_contact.set_disclosename(old_contact.info_contact_data.disclosename);
-                                }
-                                if (!old_contact.info_contact_data.discloseorganization.isnull()) {
-                                    create_contact.set_discloseorganization(old_contact.info_contact_data.discloseorganization);
-                                }
-                                if (!old_contact.info_contact_data.discloseaddress.isnull()) {
-                                    create_contact.set_discloseaddress(old_contact.info_contact_data.discloseaddress);
-                                }
-                                if (!old_contact.info_contact_data.disclosetelephone.isnull()) {
-                                    create_contact.set_disclosetelephone(old_contact.info_contact_data.disclosetelephone);
-                                }
-                                if (!old_contact.info_contact_data.disclosefax.isnull()) {
-                                    create_contact.set_disclosefax(old_contact.info_contact_data.disclosefax);
-                                }
-                                if (!old_contact.info_contact_data.discloseemail.isnull()) {
-                                    create_contact.set_discloseemail(old_contact.info_contact_data.discloseemail);
-                                }
-                                if (!old_contact.info_contact_data.disclosevat.isnull()) {
-                                    create_contact.set_disclosevat(old_contact.info_contact_data.disclosevat);
-                                }
-                                if (!old_contact.info_contact_data.discloseident.isnull()) {
-                                    create_contact.set_discloseident(old_contact.info_contact_data.discloseident);
-                                }
-                                if (!old_contact.info_contact_data.disclosenotifyemail.isnull()) {
-                                    create_contact.set_disclosenotifyemail(old_contact.info_contact_data.disclosenotifyemail);
-                                }
-                                if (0 < _log_req_id) {
-                                    create_contact.set_logd_request_id(_log_req_id);
-                                }
-                                create_contact.exec(ctx);
-                                Database::Result new_owner_result = ctx.get_conn().exec_params(
-                                    "SELECT id "
-                                    "FROM object_registry "
-                                    "WHERE (type=$1::bigint) AND "
-                                          "(name=$2)", Database::query_param_list(contact_type)
-                                                                                 (owner_copy_name));
-                                if (new_owner_result.size() <= 0) {
-                                    std::string errmsg("|| not found:object_id: ");
-                                    errmsg += boost::lexical_cast< std::string >(object_id);
-                                    errmsg += " |";
-                                    EX_INTERNAL_SERVER_ERROR ex;
-                                    ex.what = errmsg;
-                                    throw ex;
-                                }
-                                result_item.new_owner_handle = owner_copy_name;
-                                result_item.new_owner_id = static_cast< Fred::ObjectId >(new_owner_result[0][0]);
-                            }
+                            result_item.old_owner_id = domain_id_domain_info[object_id].owner_id;
+                            const OwnerCopy &owner_copy = owner_id_owner_copy[result_item.old_owner_id];
+                            result_item.old_owner_handle = owner_copy.old_owner_handle;
+                            result_item.new_owner_handle = owner_copy.new_owner_handle;
+                            result_item.new_owner_id = owner_copy.new_owner_id;
                             if (!contact_status_list.empty()) {
-                                Fred::CreateAdministrativeObjectBlockRequest block_owner_request(owner_copy_name, contact_type, contact_status_list);
-                                block_owner_request.set_reason(_reason);
-                                const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
-                                Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
-                                Fred::UpdateDomain update_domain(domain, registrar);
-                                update_domain.set_registrant(owner_copy_name);
+                                Fred::UpdateDomain update_domain(domain, domain_id_domain_info[object_id].registrar_handle);
+                                update_domain.set_registrant(result_item.new_owner_handle);
                                 if (0 < _log_req_id) {
                                     update_domain.set_logd_request_id(_log_req_id);
                                 }
@@ -338,6 +338,16 @@ namespace Registry
                         }
                     }
                 }
+                if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY) {
+                    for (OwnerIdOwnerCopy::const_iterator pOwnerCopy = owner_id_owner_copy.begin(); pOwnerCopy != owner_id_owner_copy.end(); ++pOwnerCopy) {
+                        Fred::CreateAdministrativeObjectBlockRequest block_owner_request(pOwnerCopy->second.new_owner_handle,
+                                                                                         Fred::CopyContact::OBJECT_TYPE_ID_CONTACT,
+                                                                                         contact_status_list);
+                        block_owner_request.set_reason(_reason);
+                        const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
+                        Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
+                    }
+                }
                 if (!domain_id_not_found.what.empty()) {
                     throw domain_id_not_found;
                 }
@@ -357,6 +367,9 @@ namespace Registry
                 throw;
             }
             catch (const EX_DOMAIN_ID_ALREADY_BLOCKED&) {
+                throw;
+            }
+            catch (const EX_OWNER_HAS_OTHER_DOMAIN&) {
                 throw;
             }
             catch (const std::exception &e) {

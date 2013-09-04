@@ -84,6 +84,15 @@ namespace Registry
             Type what;
         };
 
+        struct EX_OWNER_HAS_OTHER_DOMAIN {
+            struct Item {
+                std::string owner_handle;
+                EX_DOMAIN_ID_ALREADY_BLOCKED::Type domain;
+            };
+            typedef std::map< unsigned long long, struct Item > Type;
+            Type what;
+        };
+
         struct EX_DOMAIN_ID_NOT_BLOCKED {
             struct Item {
                 unsigned long long domain_id;

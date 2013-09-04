@@ -38,6 +38,11 @@ namespace Fred
         CopyContact(const std::string &_src_contact_handle,
             const std::string &_dst_contact_handle,
             RequestId _request_id);
+        CopyContact(const std::string &_src_contact_handle,
+            const std::string &_dst_contact_handle,
+            const Optional< std::string > &_dst_registrar_handle,
+            RequestId _request_id);
+        CopyContact& set_registrar_handle(const std::string &_registrar_handle);
         ObjectId exec(OperationContext &_ctx);
 
     //exception impl
@@ -54,6 +59,7 @@ namespace Fred
     private:
         const std::string src_contact_handle_;
         const std::string dst_contact_handle_;
+        Optional< std::string > dst_registrar_handle_;
         const RequestId request_id_;
     };//class CopyContact
 

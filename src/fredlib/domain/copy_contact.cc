@@ -24,6 +24,8 @@
 #include "fredlib/domain/copy_contact.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
 #include "fredlib/domain/get_object_state_id_map.h"
+#include "fredlib/contact/info_contact.h"
+#include "fredlib/contact/create_contact.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -43,98 +45,89 @@ namespace Fred
         request_id_(_request_id)
     {}
 
+    CopyContact::CopyContact(const std::string &_src_contact_handle,
+        const std::string &_dst_contact_handle,
+        const Optional< std::string > &_dst_registrar_handle,
+        RequestId _request_id)
+    :   src_contact_handle_(_src_contact_handle),
+        dst_contact_handle_(_dst_contact_handle),
+        dst_registrar_handle_(_dst_registrar_handle),
+        request_id_(_request_id)
+    {}
+
+    namespace
+    {
+        template< class T >
+        Optional< T > to_optional(const Nullable< T > &_n)
+        {
+            return _n.isnull() ? Optional< T >() : Optional< T >(_n);
+        }
+
+        Optional< std::string > to_optional(const std::string &_n)
+        {
+            return _n.empty() ? Optional< std::string >() : Optional< std::string >(_n);
+        }
+
+        Optional< unsigned long long > to_optional(unsigned long long _n)
+        {
+            return _n <= 0 ? Optional< unsigned long long >() : Optional< unsigned long long >(_n);
+        }
+    }
+
     ObjectId CopyContact::exec(OperationContext &_ctx)
     {
-        enum ColumnIdx
-        {
-            COL_OBJ_REG_ID = 0,
-            COL_OBJ_REG_CRID = 1,
-        };
-        Database::Result src_obj_info_res = _ctx.get_conn().exec_params(
-            "SELECT id,crid "
-            "FROM object_registry "
-            "WHERE type=$1::integer AND "
-                  "name=UPPER($2::text) AND "
-                  "erdate IS NULL "
-            "FOR UPDATE",
+        Database::Result src_registrar_res = _ctx.get_conn().exec_params(
+            "SELECT r.handle "
+            "FROM object_registry obr "
+            "JOIN registrar r ON r.id=obr.crid "
+            "WHERE obr.type=$1::integer AND obr.name=UPPER($2::text) AND obr.erdate IS NULL",
             Database::query_param_list
                 (OBJECT_TYPE_ID_CONTACT)(src_contact_handle_));
-
-        if (src_obj_info_res.size() != 1) {
+        if (src_registrar_res.size() != 1) {
             BOOST_THROW_EXCEPTION(Exception().set_src_contact_handle_not_found(src_contact_handle_));
         }
-        const ObjectId src_object_id   = src_obj_info_res[0][COL_OBJ_REG_ID];
-        const ObjectId src_object_crid = src_obj_info_res[0][COL_OBJ_REG_CRID];
-
-        Database::Result roreg = _ctx.get_conn().exec_params(
-            "SELECT create_object($1::integer,$2::text, $3::integer)",
-            Database::query_param_list(src_object_crid)(dst_contact_handle_)(OBJECT_TYPE_ID_CONTACT));
-        if (roreg.size() != 1) {
-            BOOST_THROW_EXCEPTION(Exception().set_create_contact_failed(dst_contact_handle_));
+        const std::string src_registrar_handle = src_registrar_res[0][0];
+        Fred::InfoContact info_contact(src_contact_handle_, src_registrar_handle);
+        Fred::InfoContactOutput old_contact = info_contact.exec(_ctx);
+        Fred::CreateContact create_contact(dst_contact_handle_, dst_registrar_handle_,
+          to_optional(old_contact.info_contact_data.authinfopw),
+          to_optional(old_contact.info_contact_data.name),
+          to_optional(old_contact.info_contact_data.organization),
+          to_optional(old_contact.info_contact_data.street1),
+          to_optional(old_contact.info_contact_data.street2),
+          to_optional(old_contact.info_contact_data.street3),
+          to_optional(old_contact.info_contact_data.city),
+          to_optional(old_contact.info_contact_data.stateorprovince),
+          to_optional(old_contact.info_contact_data.postalcode),
+          to_optional(old_contact.info_contact_data.country),
+          to_optional(old_contact.info_contact_data.telephone),
+          to_optional(old_contact.info_contact_data.fax),
+          to_optional(old_contact.info_contact_data.email),
+          to_optional(old_contact.info_contact_data.notifyemail),
+          to_optional(old_contact.info_contact_data.vat),
+          to_optional(old_contact.info_contact_data.ssntype),
+          to_optional(old_contact.info_contact_data.ssn),
+          to_optional(old_contact.info_contact_data.disclosename),
+          to_optional(old_contact.info_contact_data.discloseorganization),
+          to_optional(old_contact.info_contact_data.discloseaddress),
+          to_optional(old_contact.info_contact_data.disclosetelephone),
+          to_optional(old_contact.info_contact_data.disclosefax),
+          to_optional(old_contact.info_contact_data.discloseemail),
+          to_optional(old_contact.info_contact_data.disclosevat),
+          to_optional(old_contact.info_contact_data.discloseident),
+          to_optional(old_contact.info_contact_data.disclosenotifyemail),
+          to_optional(request_id_));
+        create_contact.exec(_ctx);
+        Database::Result dst_contact_id_res = _ctx.get_conn().exec_params(
+            "SELECT id "
+            "FROM object_registry "
+            "WHERE type=$1::integer AND name=UPPER($2::text) AND erdate IS NULL",
+            Database::query_param_list
+                (OBJECT_TYPE_ID_CONTACT)(dst_contact_handle_));
+        if (dst_contact_id_res.size() != 1) {
+            BOOST_THROW_EXCEPTION(Exception().set_create_contact_failed("dst_contact " + dst_contact_handle_ + " not found"));
         }
-        const ObjectId dst_object_id = static_cast< ObjectId >(roreg[0][0]);
-        if (dst_object_id == 0) {
-            BOOST_THROW_EXCEPTION(Exception().set_dst_contact_handle_already_exist(dst_contact_handle_));
-        }
-        /* object record */
-        _ctx.get_conn().exec_params(
-            "INSERT INTO object (id,clid,authinfopw) VALUES ("
-                "$1::integer,"
-                "(SELECT clid FROM object WHERE id=$2::integer),"
-                "(SELECT authinfopw FROM object WHERE id=$2::integer))",
-            Database::query_param_list(dst_object_id)
-                (src_object_id));
-        /* contact record */
-        _ctx.get_conn().exec_params(
-            "INSERT INTO contact ("
-                "id,name,organization,street1,street2,street3,city,stateorprovince,postalcode,country,"
-                "telephone,fax,email,disclosename,discloseorganization,discloseaddress,disclosetelephone,disclosefax,"
-                "discloseemail,notifyemail,vat,ssn,ssntype,disclosevat,discloseident,disclosenotifyemail) "
-            "SELECT "
-                "$1::integer,name,organization,street1,street2,street3,city,stateorprovince,postalcode,country,"
-                "telephone,fax,email,disclosename,discloseorganization,discloseaddress,disclosetelephone,disclosefax,"
-                "discloseemail,notifyemail,vat,ssn,ssntype,disclosevat,discloseident,disclosenotifyemail "
-            "FROM contact WHERE id=$2::integer",
-            Database::query_param_list(dst_object_id)
-                (src_object_id));
-
-        _ctx.get_conn().exec_params(
-            "INSERT INTO history (request_id) VALUES ($1::bigint)",
-            Database::query_param_list(request_id_));
-        Database::Result rhistory = _ctx.get_conn().exec("SELECT currval('history_id_seq')");
-        const unsigned long long history_id = rhistory[0][0];
-        if (history_id == 0) {
-            throw std::runtime_error("cannot save new history");
-        }
-
-        _ctx.get_conn().exec_params(
-            "UPDATE object_registry SET historyid=$1::integer "
-                "WHERE id=$2::integer",
-            Database::query_param_list(history_id)(dst_object_id));
-
-        _ctx.get_conn().exec_params(
-            "INSERT INTO object_history (historyid,id,clid,upid,trdate,update,authinfopw) "
-            "SELECT $1::integer,o.id,o.clid,o.upid,o.trdate,o.update,o.authinfopw "
-            "FROM object o "
-            "WHERE o.id=$2::integer",
-            Database::query_param_list(history_id)(dst_object_id));
-
-        _ctx.get_conn().exec_params(
-            "INSERT INTO contact_history ("
-                "historyid,id,name,organization,street1,street2,street3,"
-                "city,stateorprovince,postalcode,country,telephone,fax,email,disclosename,"
-                "discloseorganization,discloseaddress,disclosetelephone,disclosefax,discloseemail,"
-                "notifyemail,vat,ssn,ssntype,disclosevat,discloseident,disclosenotifyemail) "
-            "SELECT "
-                "$1::integer,id,name,organization,street1,street2,street3,"
-                "city,stateorprovince,postalcode,country,telephone,fax,email,disclosename,"
-                "discloseorganization,discloseaddress,disclosetelephone,disclosefax,discloseemail,"
-                "notifyemail,vat,ssn,ssntype,disclosevat,discloseident,disclosenotifyemail "
-            "FROM contact "
-            "WHERE id=$2::integer",
-                Database::query_param_list(history_id)(dst_object_id));
-
-        return dst_object_id;
+        return dst_contact_id_res[0][0];
     }//CopyContact::exec
 
 }//namespace Fred
