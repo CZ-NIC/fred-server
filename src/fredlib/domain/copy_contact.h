@@ -34,7 +34,7 @@ namespace Fred
     class CopyContact
     {
     public:
-        enum { OBJECT_TYPE_ID_CONTACT = 1 };
+        enum DbConst { OBJECT_TYPE_ID_CONTACT = 1 };
         CopyContact(const std::string &_src_contact_handle,
             const std::string &_dst_contact_handle,
             RequestId _request_id);
