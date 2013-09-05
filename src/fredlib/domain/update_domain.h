@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file update_domain.h
+ *  @file
  *  domain update
  */
 
@@ -48,14 +48,14 @@ namespace Fred
     class UpdateDomain
     {
         const std::string fqdn_;/**< fully qualified domain name */
-        const std::string registrar_;/**< registrar performing the update */
-        Optional<std::string> sponsoring_registrar_;/**< set registrar administering the object */
+        const std::string registrar_;/**< handle of registrar performing the update */
+        Optional<std::string> sponsoring_registrar_;/**< set handle of registrar administering the object */
         Optional<std::string> registrant_;/**< registrant contact handle*/
         Optional<std::string> authinfo_;/**< transfer password */
         Optional<Nullable<std::string> > nsset_;/**< nsset handle or NULL if missing */
         Optional<Nullable<std::string> > keyset_;/**< keyset handle or NULL if missing */
-        std::vector<std::string> add_admin_contact_;/**< admin contacts to be added */
-        std::vector<std::string> rem_admin_contact_;/**< admin contacts to be removed */
+        std::vector<std::string> add_admin_contact_;/**< admin contact handles to be added */
+        std::vector<std::string> rem_admin_contact_;/**< admin contact handles to be removed */
         Optional<boost::gregorian::date> expiration_date_;/**< the expiration date of the domain */
         Optional<boost::gregorian::date> enum_validation_expiration_;/**< the expiration date of the ENUM domain validation, prohibited for non-ENUM domains */
         Optional<bool> enum_publish_flag_;/**< flag for publishing ENUM number and associated contact in public directory, prohibited for non-ENUM domains */
@@ -127,94 +127,109 @@ namespace Fred
             );
 
         /**
-        * Set domain sponsoring registrar.
+        * Sets domain sponsoring registrar.
         * @param sponsoring_registrar sets registrar administering the domain into @ref sponsoring_registrar_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_sponsoring_registrar(const std::string& sponsoring_registrar);
 
         /**
-        * Set domain registrant.
+        * Sets domain registrant.
         * @param registrant sets registrant contact handle into @ref registrant_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_registrant(const std::string& registrant);
 
         /**
-        * Set domain transfer password.
+        * Sets domain transfer password.
         * @param authinfo sets transfer password into @ref authinfo_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_authinfo(const std::string& authinfo);
 
         /**
-        * Set domain nsset.
+        * Sets domain nsset.
         * @param nsset sets nsset handle or NULL in case of no nsset into @ref nsset_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_nsset(const Nullable<std::string>& nsset);
 
         /**
-        * Set domain nsset handle.
+        * Sets domain nsset handle.
         * @param nsset sets nsset handle into @ref nsset_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_nsset(const std::string& nsset);
 
         /**
         * Unset domain nsset for update.
         * @param nsset sets NULL with meaning no nsset into @ref nsset_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& unset_nsset();
 
         /**
-        * Set domain keyset for update.
+        * Sets domain keyset for update.
         * @param keyset sets keyset handle or NULL in case of no keyset into @ref keyset_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_keyset(const Nullable<std::string>& keyset);
 
         /**
-        * Set domain keyset handle.
+        * Sets domain keyset handle.
         * @param nsset sets keyset handle into @ref keyset_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_keyset(const std::string& keyset);
 
         /**
         * Unset domain keyset for update.
         * @param keyset sets NULL with meaning no keyset into @ref keyset_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& unset_keyset();
 
         /**
         * Add admin contact handle.
         * @param admin_contact sets admin contact handle to be added into @ref add_admin_contact_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& add_admin_contact(const std::string& admin_contact);
 
         /**
         * Remove admin contact handle.
         * @param admin_contact sets admin contact handle to be removed into @ref rem_admin_contact_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& rem_admin_contact(const std::string& admin_contact);
 
         /**
-        * Set domain expiration date.
+        * Sets domain expiration date.
         * @param exdate sets domain expiration date into @ref expiration_date_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_domain_expiration(const boost::gregorian::date& exdate);
 
         /**
-        * Set expiration date of the ENUM domain validation.
+        * Sets expiration date of the ENUM domain validation.
         * @param valexdate sets the expiration date of the ENUM domain validation into @ref expiration_date_ attribute
         * , it is prohibited to set this parameter for non-ENUM domains
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_enum_validation_expiration(const boost::gregorian::date& valexdate);
 
         /**
-        * Set flag for publishing ENUM number and associated contact in public directory.
+        * Sets flag for publishing ENUM number and associated contact in public directory.
         * @param enum_publish_flag sets flag for publishing ENUM number and associated contact in public directory into @ref enum_publish_flag_ attribute
         * , it is prohibited to set this parameter for non-ENUM domains
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_enum_publish_flag(bool enum_publish_flag);
 
         /**
-        * Set logger request id
+        * Sets logger request id
         * @param logd_request_id sets logger request id into @ref logd_request_id_ attribute
+        * @return operation instance reference to allow method chaining
         */
         UpdateDomain& set_logd_request_id(unsigned long long logd_request_id);
 

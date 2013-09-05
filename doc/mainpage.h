@@ -28,5 +28,5 @@
 
 /**
  * @namespace Fred
- * registry library top level namespace.
+ * domain registry library.
  */
