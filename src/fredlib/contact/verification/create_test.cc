@@ -81,7 +81,7 @@ namespace Fred
         if(test_res.size() != 1) {
             throw ExceptionUnknownTestName();
         }
-        long test_id = static_cast<long>(check_res[0]["id"]);
+        long test_id = static_cast<long>(test_res[0]["id"]);
 
         try {
             _ctx.get_conn().exec_params(
