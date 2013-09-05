@@ -118,3 +118,10 @@ hostname = demo.contactverification.cz
 # demo_mode = true - uses constant PINs (do not use on production)
 demo_mode = false
 
+
+##
+# Registrars charging configuration
+##
+[registrars_charging]
+charging_of_epp_create_and_renew_domain_disabled = @REGISTRARS_CHARGING_DISABLED@
+

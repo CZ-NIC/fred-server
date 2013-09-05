@@ -208,6 +208,13 @@ AC_ARG_WITH([hp_login_note], [AS_HELP_STRING([--with-hp_login_note],
 
 AS_AC_TEST_CORBA_PORTS()
 
+# charging registrars disabled configuration
+AC_ARG_WITH([registrars_charging_disabled], [AS_HELP_STRING([--with-registrars_charging_disabled],
+            [Registrars charging disabled [true]])],
+            [AC_SUBST([REGISTRARS_CHARGING_DISABLED], [$withval])],
+            [AC_SUBST([REGISTRARS_CHARGING_DISABLED], [true])])
+
+
 #expand paths for bindir, sbindir and datarootdir variable
 AS_AC_EXPAND([BINDIR], [$bindir])
 AS_AC_EXPAND([DATAROOTDIR], [$datarootdir])
