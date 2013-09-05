@@ -1802,10 +1802,10 @@ public:
             ("price_add", "add price")
             ("valid_from", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.valid_from))
-                , "price valid from datetime")
+                , "price valid from UTC datetime e.g. '2006-09-09 19:15:56'")
             ("valid_to", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.valid_to))
-                , "price valid to datetime")
+                , "price valid to UTC datetime e.g. '2007-09-29 19:15:56'")
             ("operation_price", boost::program_options
                 ::value<Checked::string_fpnumber>()->notifier(save_optional_string(params.operation_price))
                 , "operation price like: 140.00")
