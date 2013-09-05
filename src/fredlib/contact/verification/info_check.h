@@ -130,6 +130,18 @@ namespace Fred
             // serialization
             friend std::ostream& operator<<(std::ostream& _os, const InfoContactCheck& _i);
             std::string to_string() const;
+
+        private:
+            /**
+             * Get data for tests of specific check.
+             * @param _check_id     specifies check which tests data should be retrieved
+             */
+            static std::vector<InfoContactCheckOutput::ContactTestResultData> get_test_data(OperationContext& _ctx, long long _check_id, const std::string& _output_timezone = "Europe/Prague");
+            /**
+             * Get data for historical states (explicitly: except the current state) of specific check.
+             * @param _check_id     specifies check which history should be retrieved
+             */
+            static std::vector<InfoContactCheckOutput::ContactCheckState> get_check_historical_states(OperationContext& _ctx, long long _check_id, const std::string& _output_timezone = "Europe/Prague");
     };
 }
 #endif // #include guard end
