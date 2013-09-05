@@ -237,11 +237,11 @@ namespace Fred
             "FROM contact_test_result_history AS history "
             "JOIN enum_contact_test_status AS status "
             "    ON history.enum_contact_test_status_id = status.id "
-            "WHERE history.contact_test_result_id=$2::bigint[] "
+            "WHERE history.contact_test_result_id = ANY($2::bigint[]) "
             "ORDER BY id_ ASC, update_time_ ASC, history.id ASC;",
             Database::query_param_list
                 (_output_timezone)
-                ("ARRAY[" + boost::algorithm::join(test_ids, ",") + "]")
+                ("{" + boost::algorithm::join(test_ids, ",") + "}")
         );
 
         // iterator through test history "timelines"
