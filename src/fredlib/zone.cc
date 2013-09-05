@@ -1328,12 +1328,27 @@ namespace Fred
             try
             {
                 Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
 
                 Database::Result res_op = conn.exec_params(
                         "SELECT id FROM enum_operation WHERE operation=$1::text"
                         , Database::query_param_list(operation));
-                if(res_op.size() == 0) throw std::runtime_error("addPrice: operation not found");
+                if(res_op.size() != 1) throw std::runtime_error("addPrice: operation not found");
                 int operationId = res_op[0][0];
+
+                Database::Result update_result = conn.exec_params(
+                    "UPDATE price_list SET valid_to=$1::timestamp "
+                    " WHERE id = (SELECT id FROM price_list WHERE zone_id=$2::integer AND operation_id=$3::integer "
+                    " AND valid_from <= $1::timestamp AND  valid_from <= current_timestamp "
+                    " AND (valid_to IS NULL or valid_to>current_timestamp) ORDER BY valid_from DESC LIMIT 1) "
+                    " RETURNING id"
+                    , Database::query_param_list(validFrom.iso_str())(zoneId)(operationId));
+                if (update_result.size() > 1)
+                {
+                    throw std::runtime_error("update price_list.valid_to failed");
+                }
+
+                tx.commit();
 
             	ModelPriceList pl;
             	pl.setZoneId(zoneId);
