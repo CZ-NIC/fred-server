@@ -1668,7 +1668,8 @@ tests_test_server_SOURCES = \
 		tests/contact_verification/test-update_check_integ.cc \
 		tests/contact_verification/test-create_test_unit.cc \
 		tests/contact_verification/test-create_test_integ.cc \
-		tests/contact_verification/test-update_test_unit.cc
+		tests/contact_verification/test-update_test_unit.cc \
+		tests/contact_verification/test-update_test_integ.cc
 		
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
