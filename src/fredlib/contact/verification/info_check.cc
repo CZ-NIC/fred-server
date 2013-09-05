@@ -255,9 +255,12 @@ namespace Fred
             temp_test_data.test_name = static_cast<std::string>( (*it_tests)["test_name_"]);
 
             // for each history state of this test (NOTE - states are clustered by test id)
-            while( static_cast<long long>( (*it_test_histories)["id_"] ) == static_cast<long long>( (*it_tests)["id_"] )
-                && it_test_histories != contact_test_history_result.end()
+            while( it_test_histories != contact_test_history_result.end()
             ) {
+                if( static_cast<long long>( (*it_test_histories)["id_"] ) == static_cast<long long>( (*it_tests)["id_"] ) ) {
+                    break;
+                }
+
                 InfoContactCheckOutput::ContactTestResultState temp_test_history_state;
                 temp_test_history_state.error_msg = (*it_test_histories)["error_msg_"]; // nullable has it's own implicit casting
                 temp_test_history_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it_test_histories)["update_time_"]));
@@ -267,11 +270,6 @@ namespace Fred
                 // add to this test history
                 temp_test_data.state_history.push_back(temp_test_history_state);
                 ++it_test_histories;
-                if( it_test_histories == contact_test_history_result.end() ) {
-                    if( it_tests + 1 != contact_test_result.end() ) {
-                        BOOST_THROW_EXCEPTION(Fred::InternalError("missing state history for contact_test(s)"));
-                    }
-                }
             }
             // current state of this test
             InfoContactCheckOutput::ContactTestResultState temp_test_current_state;
