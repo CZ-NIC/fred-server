@@ -34,9 +34,7 @@ Registry::Administrative::NullableString* corba_wrap_nullable_string(const Nulla
     if (_v.isnull()) {
         return 0;
     }
-    else {
-        return new Registry::Administrative::NullableString(static_cast<std::string>(_v).c_str());
-    }
+    return new Registry::Administrative::NullableString(static_cast<std::string>(_v).c_str());
 }
 
 Registry::Administrative::NullableBoolean* corba_wrap_nullable_boolean(const Nullable<bool> &_v)
@@ -44,9 +42,7 @@ Registry::Administrative::NullableBoolean* corba_wrap_nullable_boolean(const Nul
     if (_v.isnull()) {
         return 0;
     }
-    else {
-        return new Registry::Administrative::NullableBoolean(static_cast<bool>(_v));
-    }
+    return new Registry::Administrative::NullableBoolean(static_cast<bool>(_v));
 }
 
 Registry::Administrative::NullableBoolean* corba_wrap_nullable_boolean(const bool _v)
@@ -60,20 +56,16 @@ Registry::Administrative::NullableDate* corba_wrap_nullable_date(const Nullable<
     if (_v.isnull()) {
         return 0;
     }
-    else {
-        boost::gregorian::date tmp
-            = boost::gregorian::from_string(static_cast<std::string>(_v));
-        if (tmp.is_special()) {
-            return 0;
-        }
-        else {
-            Registry::Administrative::Date d;
-            d.year  = static_cast<int>(tmp.year());
-            d.month = static_cast<int>(tmp.month());
-            d.day   = static_cast<int>(tmp.day());
-            return new Registry::Administrative::NullableDate(d);
-        }
+    boost::gregorian::date tmp
+        = boost::gregorian::from_string(static_cast<std::string>(_v));
+    if (tmp.is_special()) {
+        return 0;
     }
+    Registry::Administrative::Date d;
+    d.year  = static_cast<int>(tmp.year());
+    d.month = static_cast<int>(tmp.month());
+    d.day   = static_cast<int>(tmp.day());
+    return new Registry::Administrative::NullableDate(d);
 }
 
 
@@ -82,9 +74,7 @@ Nullable<std::string> corba_unwrap_nullable_string(const Registry::Administrativ
     if (_v) {
         return std::string(_v->_value());
     }
-    else {
-        return Nullable<std::string>();
-    }
+    return Nullable<std::string>();
 }
 
 bool is_not_normal(int c)
@@ -103,9 +93,7 @@ Nullable<std::string> corba_unwrap_normalize_nullable_string(const Registry::Adm
 
         return tmp;
     }
-    else {
-        return Nullable<std::string>();
-    }
+    return Nullable<std::string>();
 }
 
 Nullable<bool> corba_unwrap_nullable_boolean(const Registry::Administrative::NullableBoolean *_v)
@@ -113,9 +101,7 @@ Nullable<bool> corba_unwrap_nullable_boolean(const Registry::Administrative::Nul
     if (_v) {
         return _v->_value();
     }
-    else {
-        return Nullable<bool>();
-    }
+    return Nullable<bool>();
 }
 
 bool corba_unwrap_nullable_boolean(const Registry::Administrative::NullableBoolean *_v, const bool null_value)
@@ -123,25 +109,16 @@ bool corba_unwrap_nullable_boolean(const Registry::Administrative::NullableBoole
     if (_v) {
         return _v->_value();
     }
-    else {
-        return null_value;
-    }
+    return null_value;
 }
 
 
-Nullable<std::string> corba_unwrap_nullable_date(const Registry::Administrative::NullableDate *_v)
+Nullable< boost::gregorian::date > corba_unwrap_nullable_date(const Registry::Administrative::NullableDate *_v)
 {
     if (_v) {
-        boost::format date_fmt = boost::format ("%1%-%2%-%3%")
-                            % _v->_value().year
-                            % _v->_value().month
-                            % _v->_value().day;
-
-        return Nullable<std::string>(date_fmt.str());
+        return Nullable< boost::gregorian::date >(boost::gregorian::date(_v->_value().year, _v->_value().month, _v->_value().day));
     }
-    else {
-        return Nullable<std::string>();
-    }
+    return Nullable< boost::gregorian::date >();
 }
 
 Registry::Administrative::StatusDescList* corba_wrap_status_desc_list(const Fred::GetBlockingStatusDescList::StatusDescList &_desc_list)

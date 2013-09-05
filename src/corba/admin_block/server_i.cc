@@ -73,6 +73,7 @@ namespace Registry
                 return corba_wrap_owner_change_list(bimpl_->blockDomainsId(corba_unwrap_domain_id_list(domain_list),
                                                                            corba_unwrap_status_list(status_list),
                                                                            corba_unwrap_owner_block_mode(owner_block_mode),
+                                                                           corba_unwrap_nullable_date(block_to_date),
                                                                            reason,
                                                                            log_req_id));
             }

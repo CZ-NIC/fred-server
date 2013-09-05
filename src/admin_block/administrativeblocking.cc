@@ -228,6 +228,7 @@ namespace Registry
             const IdlDomainIdList &_domain_list,
             const Fred::StatusList &_status_list,
             IdlOwnerBlockMode _owner_block_mode,
+            const Nullable< boost::gregorian::date > &_block_to_date,
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
@@ -256,11 +257,20 @@ namespace Registry
                     }
                 }
                 StringSet contact_blocked;
+                boost::posix_time::ptime block_time_limit;
+                if (!_block_to_date.isnull()) {
+                    // block to date 12:00:00 https://admin.nic.cz/ticket/6314#comment:50
+                    block_time_limit = boost::posix_time::ptime(static_cast< boost::gregorian::date >(_block_to_date),
+                                                                boost::posix_time::time_duration(12, 0, 0));
+                }
                 for (IdlDomainIdList::const_iterator pObjectId = _domain_list.begin(); pObjectId != _domain_list.end(); ++pObjectId) {
                     try {
                         const Fred::ObjectId object_id = *pObjectId;
                         Fred::CreateAdministrativeObjectBlockRequestId create_object_block_request(object_id, _status_list);
                         create_object_block_request.set_reason(_reason);
+                        if (!_block_to_date.isnull()) {
+                            create_object_block_request.set_valid_to(block_time_limit);
+                        }
                         if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER) {
                             Database::query_param_list param(object_id);
                             Database::Result registrant_result = ctx.get_conn().exec_params(
@@ -279,6 +289,9 @@ namespace Registry
                                 contact_blocked.insert(registrant);
                                 Fred::CreateAdministrativeObjectBlockRequest block_owner_request(registrant, type, contact_status_list);
                                 block_owner_request.set_reason(_reason);
+                                if (!_block_to_date.isnull()) {
+                                    block_owner_request.set_valid_to(block_time_limit);
+                                }
                                 const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
                                 Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
                             }
@@ -344,6 +357,9 @@ namespace Registry
                                                                                          Fred::CopyContact::OBJECT_TYPE_ID_CONTACT,
                                                                                          contact_status_list);
                         block_owner_request.set_reason(_reason);
+                        if (!_block_to_date.isnull()) {
+                            block_owner_request.set_valid_to(block_time_limit);
+                        }
                         const Fred::ObjectId registrant_id = block_owner_request.exec(ctx);
                         Fred::PerformObjectStateRequest(registrant_id).exec(ctx);
                     }
@@ -624,7 +640,7 @@ namespace Registry
 
         void BlockingImpl::blacklistAndDeleteDomainsId(
             const IdlDomainIdList &_domain_list,
-            const Nullable< std::string > &_blacklist_to_date,
+            const Nullable< boost::gregorian::date > &_blacklist_to_date,
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
@@ -632,7 +648,7 @@ namespace Registry
 
         void BlockingImpl::blacklistDomainsId(
             const IdlDomainIdList &_domain_list,
-            const Nullable<std::string> &_blacklist_to_date,
+            const Nullable< boost::gregorian::date > &_blacklist_to_date,
             bool _with_delete,
             unsigned long long _log_req_id)
         {
