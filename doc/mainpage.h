@@ -30,3 +30,8 @@
  * @namespace Fred
  * domain registry library.
  */
+
+/**
+ * @namespace Registry
+ * .
+ */
