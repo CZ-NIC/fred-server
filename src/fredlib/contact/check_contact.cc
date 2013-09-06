@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file check_contact.cc
+ *  @file
  *  contact check
  */
 
