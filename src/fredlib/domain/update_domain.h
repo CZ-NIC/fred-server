@@ -40,10 +40,10 @@ namespace Fred
     * Update of the domain.
     * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
     * Data set into instance by constructor and methods serve as input data of the update.
-    * Update is executed by @ref exec method with database connection supplied in @ref ctx.
+    * Update is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered incosistent and should be rolled back by caller.
     * In case of wrong input data or other predictable and superable failure the instance of @ref UpdateDomain::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and incostistencies the instance of @ref InternalError is thrown with some description of what went wrong set.
+    * In case of other unsuperable failures and incostistencies the instance of @ref InternalError or other exception is thrown.
     */
     class UpdateDomain
     {
@@ -183,21 +183,21 @@ namespace Fred
         UpdateDomain& set_keyset(const std::string& keyset);
 
         /**
-        * Unset domain keyset for update.
+        * Unsets domain keyset for update.
         * @param keyset sets NULL with meaning no keyset into @ref keyset_ attribute
         * @return operation instance reference to allow method chaining
         */
         UpdateDomain& unset_keyset();
 
         /**
-        * Add admin contact handle.
+        * Adds admin contact handle.
         * @param admin_contact sets admin contact handle to be added into @ref add_admin_contact_ attribute
         * @return operation instance reference to allow method chaining
         */
         UpdateDomain& add_admin_contact(const std::string& admin_contact);
 
         /**
-        * Remove admin contact handle.
+        * Removes admin contact handle.
         * @param admin_contact sets admin contact handle to be removed into @ref rem_admin_contact_ attribute
         * @return operation instance reference to allow method chaining
         */
@@ -234,14 +234,14 @@ namespace Fred
         UpdateDomain& set_logd_request_id(unsigned long long logd_request_id);
 
         /**
-        * Execute update
+        * Executes update
         * @param ctx contains reference to database and logging interface
         * @return new history_id
         */
         unsigned long long exec(OperationContext& ctx);//return new history_id
 
         /**
-        * Dump state of the instance into stream
+        * Dumps state of the instance into stream
         * @param os contains output stream reference
         * @param i reference of instance to be dumped into the stream
         * @return output stream reference
@@ -249,7 +249,7 @@ namespace Fred
         friend std::ostream& operator<<(std::ostream& os, const UpdateDomain& i);
 
         /**
-        * Dump state of the instance into the string
+        * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
         std::string to_string();

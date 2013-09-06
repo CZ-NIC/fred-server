@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file delete_contact.cc
+ *  @file
  *  contact delete
  */
 

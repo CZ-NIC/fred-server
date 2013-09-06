@@ -41,10 +41,10 @@ namespace Fred
     * Create of the contact.
     * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
     * Data set into instance by constructor and methods serve as input data of the create.
-    * Create is executed by @ref exec method with database connection supplied in @ref ctx.
+    * Create is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered incosistent and should be rolled back by caller.
     * In case of wrong input data or other predictable and superable failure the instance of @ref CreateContact::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and incostistencies the instance of @ref InternalError is thrown with some description of what went wrong set.
+    * In case of other unsuperable failures and incostistencies the instance of @ref InternalError or other exception is thrown.
     */
     class CreateContact
     {
@@ -351,7 +351,7 @@ namespace Fred
         CreateContact& set_logd_request_id(unsigned long long logd_request_id);
 
         /**
-        * Execute create
+        * Executes create
         * @param ctx contains reference to database and logging interface
         * @param returned_timestamp_pg_time_zone_name is postgresql time zone name of the returned timestamp
         * @return timestamp of the contact creation
@@ -359,7 +359,7 @@ namespace Fred
         boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
-        * Dump state of the instance into stream
+        * Dumps state of the instance into stream
         * @param os contains output stream reference
         * @param i reference of instance to be dumped into the stream
         * @return output stream reference
@@ -367,7 +367,7 @@ namespace Fred
         friend std::ostream& operator<<(std::ostream& os, const CreateContact& i);
 
         /**
-        * Dump state of the instance into the string
+        * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
         std::string to_string();
