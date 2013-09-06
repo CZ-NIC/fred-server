@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_contact_data.h
+ *  @file
  *  common contact info data
  */
 
@@ -37,53 +37,75 @@
 
 namespace Fred
 {
+    /**
+     * Common data of the contact.
+     * Current or history state of the contact.
+     */
     struct InfoContactData
     {
-        unsigned long long crhistoryid;//first historyid
-        unsigned long long historyid;//last historyid
-        Nullable<boost::posix_time::ptime> delete_time; //keyset delete time
-        std::string handle;//contact identifier
-        std::string roid;//contact identifier
-        std::string sponsoring_registrar_handle;//registrar which have right for change
-        std::string create_registrar_handle;//registrar which created contact
-        Nullable<std::string> update_registrar_handle;//registrar which last time changed contact
-        boost::posix_time::ptime creation_time;//time of creation
-        Nullable<boost::posix_time::ptime> update_time; //last update time
-        Nullable<boost::posix_time::ptime> transfer_time; //last transfer time
-        std::string authinfopw;//password for transfer
-        Nullable<std::string> name;
-        Nullable<std::string> organization;
-        Nullable<std::string> street1;
-        Nullable<std::string> street2;
-        Nullable<std::string> street3;
-        Nullable<std::string> city;
-        Nullable<std::string> stateorprovince;
-        Nullable<std::string> postalcode;
-        Nullable<std::string> country;
-        Nullable<std::string> telephone;
-        Nullable<std::string> fax;
-        Nullable<std::string> email;
-        Nullable<std::string> notifyemail;
-        Nullable<std::string> vat;
-        Nullable<std::string> ssntype;
-        Nullable<std::string> ssn;
-        Nullable<bool> disclosename;
-        Nullable<bool> discloseorganization;
-        Nullable<bool> discloseaddress;
-        Nullable<bool> disclosetelephone;
-        Nullable<bool> disclosefax;
-        Nullable<bool> discloseemail;
-        Nullable<bool> disclosevat;
-        Nullable<bool> discloseident;
-        Nullable<bool> disclosenotifyemail;
+        unsigned long long crhistoryid;/**< first historyid of the contact history*/
+        unsigned long long historyid;/**< last historyid of the contact history*/
+        Nullable<boost::posix_time::ptime> delete_time; /**< contact delete time*/
+        std::string handle;/**< contact handle */
+        std::string roid;/**< registry object identifier of the contact */
+        std::string sponsoring_registrar_handle;/**< registrar administering the contact */
+        std::string create_registrar_handle;/**< registrar that created the contact */
+        Nullable<std::string> update_registrar_handle;/**< registrar which last time changed the contact */
+        boost::posix_time::ptime creation_time;/**< creation time of the contact*/
+        Nullable<boost::posix_time::ptime> update_time; /**< last update time of the contact */
+        Nullable<boost::posix_time::ptime> transfer_time; /**<last transfer time */
+        std::string authinfopw;/**< password for transfer */
+        Nullable<std::string> name ;/**< name of contact person */
+        Nullable<std::string> organization;/**< full trade name of organization */
+        Nullable<std::string> street1;/**< part of address */
+        Nullable<std::string> street2;/**< part of address */
+        Nullable<std::string> street3;/**< part of address*/
+        Nullable<std::string> city;/**< part of address - city */
+        Nullable<std::string> stateorprovince;/**< part of address - region */
+        Nullable<std::string> postalcode;/**< part of address - postal code */
+        Nullable<std::string> country;/**< two character country code or country name */
+        Nullable<std::string> telephone;/**<  telephone number */
+        Nullable<std::string> fax;/**< fax number */
+        Nullable<std::string> email;/**< e-mail address */
+        Nullable<std::string> notifyemail;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
+        Nullable<std::string> vat;/**< taxpayer identification number */
+        Nullable<std::string> ssntype;/**< type of identification from enumssntype table */
+        Nullable<std::string> ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+        Nullable<bool> disclosename;/**< whether to reveal contact name */
+        Nullable<bool> discloseorganization;/**< whether to reveal organization */
+        Nullable<bool> discloseaddress;/**< whether to reveal address */
+        Nullable<bool> disclosetelephone;/**< whether to reveal phone number */
+        Nullable<bool> disclosefax;/**< whether to reveal fax number */
+        Nullable<bool> discloseemail;/**< whether to reveal email address */
+        Nullable<bool> disclosevat;/**< whether to reveal taxpayer identification number */
+        Nullable<bool> discloseident;/**< whether to reveal unambiguous identification number */
+        Nullable<bool> disclosenotifyemail;/**< whether to reveal notify email */
 
     private:
-        bool print_diff_;
+        bool print_diff_;/**< whether to print debug diff made by contact comparsion operators @ref operator==  and @ref operator!=*/
     public:
-
+        /**
+        * Constructor of the contact data structure.
+        */
         InfoContactData();
+        /**
+        * Equality of the contact data structure operator.
+        * @param rhs is right hand side of the contact data comparsion
+        * @return true if equal, false if not
+        */
         bool operator==(const InfoContactData& rhs) const;
+
+        /**
+        * Equality of the contact data structure operator.
+        * @param rhs is right hand side of the contact data comparsion
+        * @return true if not equal, false if equal
+        */
         bool operator!=(const InfoContactData& rhs) const;
+
+        /**
+        * Set comparsion operators to print debug diff.
+        * @param print_diff is value set to @ref print_diff_ attribute
+        */
         void set_diff_print(bool print_diff = true);
     };
 

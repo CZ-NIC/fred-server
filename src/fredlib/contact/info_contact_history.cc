@@ -228,11 +228,11 @@ namespace Fred
         return contact_history_res;
     }//InfoContactHistory::exec
 
-    std::ostream& operator<<(std::ostream& os, const InfoContactHistory& ich)
+    std::ostream& operator<<(std::ostream& os, const InfoContactHistory& i)
     {
-        return os << "#InfoContactHistory roid: " << ich.roid_
-                << " history_timestamp: " << ich.history_timestamp_.print_quoted()
-                << " lock: " << ich.lock_
+        return os << "#InfoContactHistory roid: " << i.roid_
+                << " history_timestamp: " << i.history_timestamp_.print_quoted()
+                << " lock: " << i.lock_
                 ;
     }
     std::string InfoContactHistory::to_string()

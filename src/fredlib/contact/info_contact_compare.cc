@@ -17,8 +17,8 @@
  */
 
 /**
- *  @info_conatct_compare.cc
- *  comparsion of conatct info
+ *  @file
+ *  comparsion of contact info
  */
 
 #include <string>
