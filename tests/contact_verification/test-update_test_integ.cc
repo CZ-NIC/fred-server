@@ -34,6 +34,7 @@
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
+#include "util/optional_nullable_equal.h"
 #include "random_data_generator.h"
 
 //not using UTF defined main
@@ -114,7 +115,12 @@ struct eval {
                         + " 'now' is:" + boost::posix_time::to_simple_string(now) );
                     BOOST_CHECK_EQUAL(post_it->state_history.back().status_name, new_status);
                     BOOST_CHECK_EQUAL(post_it->state_history.back().logd_request_id, new_logd_request);
-                    BOOST_CHECK_EQUAL(post_it->state_history.back().error_msg.print_quoted(), new_error_msg.print_quoted());
+                    BOOST_CHECK_MESSAGE(
+                        equal(post_it->state_history.back().error_msg, new_error_msg ),
+                        std::string("difference in post_it->state_history.back() and new_error_msg")
+                        + post_it->state_history.back().error_msg.print_quoted() + "\n"
+                        + new_error_msg.print_quoted()
+                    );
                 } else {
                     BOOST_CHECK_EQUAL( it->state_history.size(), post_it->state_history.size());
                     for(
