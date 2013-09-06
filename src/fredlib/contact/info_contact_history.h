@@ -63,7 +63,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered incosistent and should be rolled back by caller.
     * In case of wrong input data or other predictable and superable failure the instance of @ref InfoContactHistory::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and incostistencies the instance of @ref InternalError or other exception is thrown.
+    * In case of other unsuperable failures and inconstistencies the instance of @ref InternalError or other exception is thrown.
     */
     class InfoContactHistory
     {
