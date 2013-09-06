@@ -31,6 +31,7 @@
 #include "fredlib/domain/create_domain_name_blacklist.h"
 #include "fredlib/domain/create_domain_name_blacklist_id.h"
 #include "fredlib/domain/update_domain.h"
+#include "fredlib/domain/delete_domain.h"
 #include "fredlib/domain/copy_contact.h"
 #include <memory>
 #include <map>
@@ -644,6 +645,28 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
+            try {
+                Fred::OperationContext ctx;
+                for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
+                    const Fred::ObjectId object_id = *pDomainId;
+                    Fred::CreateDomainNameBlacklistId create_domain_name_blacklist(object_id, _reason);
+                    create_domain_name_blacklist.exec(ctx);
+                    Database::Result object_handle_res = ctx.get_conn().exec_params(
+                        "SELECT name "
+                        "FROM object_registry "
+                        "WHERE id=$1::bigint", Database::query_param_list(object_id));
+                    if (object_handle_res.size() == 1) {
+                        const std::string domain = static_cast< std::string >(object_handle_res[0][0]);
+                        Fred::DeleteDomain(domain).exec(ctx);
+                    }
+                }
+                ctx.commit_transaction();
+            }
+            catch (const std::exception &e) {
+                EX_INTERNAL_SERVER_ERROR ex;
+                ex.what = e.what();
+                throw ex;
+            }
         }
 
         void BlockingImpl::blacklistDomainsId(
