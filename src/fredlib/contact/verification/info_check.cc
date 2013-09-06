@@ -255,9 +255,8 @@ namespace Fred
             temp_test_data.test_name = static_cast<std::string>( (*it_tests)["test_name_"]);
 
             // for each history state of this test (NOTE - states are clustered by test id)
-            while( it_test_histories != contact_test_history_result.end()
-            ) {
-                if( static_cast<long long>( (*it_test_histories)["id_"] ) == static_cast<long long>( (*it_tests)["id_"] ) ) {
+            while( it_test_histories != contact_test_history_result.end() ) {
+                if( static_cast<long long>( (*it_test_histories)["id_"] ) != static_cast<long long>( (*it_tests)["id_"] ) ) {
                     break;
                 }
 
