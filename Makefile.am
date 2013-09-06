@@ -168,6 +168,7 @@ noinst_HEADERS = \
 		src/corba/common_wrappers.h \
 		src/corba/contact_verification/corba_conversion.h \
 		util/optional_value.h \
+		util/is_equal_optional_nullable.h \
 		util/output_indenter.h
 
 
