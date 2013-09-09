@@ -16,6 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *  @file
+ *  integration tests for UpdateContactCheck operation
+ */
+
 #include <vector>
 #include <utility>
 #include <string>

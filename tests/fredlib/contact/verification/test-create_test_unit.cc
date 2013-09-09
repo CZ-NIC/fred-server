@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  unit tests for CreateContactTest
+ *  unit tests for CreateContactTest operation
  */
 
 #include <vector>

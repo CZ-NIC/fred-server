@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  integration tests for UpdateContactTest
+ *  integration tests for UpdateContactTest operation
  */
 
 #include <vector>
