@@ -39,12 +39,14 @@ namespace Zone {
         bool is_enum;
         std::string name;
         unsigned dots_max;
+        unsigned ex_period_min;
+        unsigned ex_period_max;
 
         Data()
-        : id(0), is_enum(false), dots_max(0) {}
+        : id(0), is_enum(false), dots_max(0), ex_period_min(0), ex_period_max(0)  {}
 
-        Data(unsigned long long _id, bool _is_enum, const std::string& _fqdn, unsigned _dots_max)
-        : id(_id), is_enum(_is_enum), name(_fqdn), dots_max(_dots_max){}
+        Data(unsigned long long _id, bool _is_enum, const std::string& _fqdn, unsigned _dots_max, unsigned _ex_period_min, unsigned _ex_period_max)
+        : id(_id), is_enum(_is_enum), name(_fqdn), dots_max(_dots_max), ex_period_min(_ex_period_min), ex_period_max(_ex_period_max){}
     };
 
     DECLARE_EXCEPTION_DATA(unknown_zone_in_fqdn, std::string);
